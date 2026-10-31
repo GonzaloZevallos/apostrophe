@@ -1,6 +1,6 @@
 /**
  * "Stock y entradas" on a variety's page: its last 3 movements, the stock entries and the
- * withdrawals that touch it, as `GET /stock/varieties/{id}/movements` answered them (newest
+ * withdrawals that touch it, as `GET /stock/products/{id}/movements` answered them (newest
  * first), and "Ver todas" to its whole list. Until that answer arrives the entries
  * `GET /stock` already answered stand in (filtered only by `entriesOf`). A withdrawal row is
  * told apart by its reason word and a minus sign, never by colour, and opens the withdrawal's

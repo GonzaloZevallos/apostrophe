@@ -207,12 +207,12 @@ function AnalisisContenido({
       <div className="analisis__columnas">
         <div className="analisis__principal">
           <span className="pie">{ANALYSIS_TEXT.porVariedad}</span>
-          {m.varieties.length === 0 && <span className="pie">{t(EMPTY_STATE_KEYS.analysisEmptyMonth)}</span>}
-          {m.varieties.length > 0 &&
+          {m.products.length === 0 && <span className="pie">{t(EMPTY_STATE_KEYS.analysisEmptyMonth)}</span>}
+          {m.products.length > 0 &&
             (phone ? (
-              <TarjetasVariedades varieties={m.varieties} />
+              <TarjetasVariedades products={m.products} />
             ) : (
-              <TablaVariedades varieties={m.varieties} />
+              <TablaVariedades products={m.products} />
             ))}
 
           <span className="pie">{ANALYSIS_TEXT.semanaASemanaUltimas}</span>

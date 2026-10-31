@@ -118,10 +118,10 @@ function VarietyPageView({
   const { blocker, disarm } = useGuard(dirty)
   const onDirtyChange = useCallback((value: boolean) => setDirty(value), [])
 
-  const varietyQuery = useQuery({ queryKey: keys.variety(id), queryFn: () => get<VarietyDetail & Variety>(`/varieties/${id}`) })
+  const varietyQuery = useQuery({ queryKey: keys.variety(id), queryFn: () => get<VarietyDetail & Variety>(`/api/products/${id}`) })
   const pricesQuery = useQuery({
     queryKey: keys.varietyPrices(id),
-    queryFn: () => get<PriceRow[]>(`/varieties/${id}/prices`),
+    queryFn: () => get<PriceRow[]>(`/api/products/${id}/prices`),
   })
   const archived = varietyQuery.data?.archived === true
   useBackParent('variety', !publishRecord || varietyQuery.data === undefined ? undefined : archived ? { parent: 'varieties-archived' } : { title: COMMON_TEXT.varieties })
@@ -136,11 +136,11 @@ function VarietyPageView({
   const { restoreFromPage, sending: restoring, notice: restoreNotice } = useRestore()
   const catalogQuery = useQuery({
     ...catalogQueryOptions(),
-    select: (catalog) => catalog.varieties.find((row) => row.id === varietyId) ?? null,
+    select: (catalog) => catalog.products.find((row) => row.product_id === varietyId) ?? null,
   })
 
   const archivedCatalogQuery = useQuery({ ...archivedCatalogQueryOptions(), enabled: archived })
-  const archivedAttributes = archivedCatalogQuery.data?.find((attributes) => attributes.variety_id === varietyId) ?? null
+  const archivedAttributes = archivedCatalogQuery.data?.find((attributes) => attributes.product_id === varietyId) ?? null
 
   const catalogRow = catalogQuery.data ?? null
   const ready = varietyQuery.data !== undefined && pricesQuery.data !== undefined && stockQuery.data !== undefined
@@ -172,7 +172,7 @@ function VarietyPageView({
 
   const variety = varietyQuery.data
   const stock = stockQuery.data
-  const row = stock.varieties.find((candidate) => candidate.variety_id === varietyId)
+  const row = stock.products.find((candidate) => candidate.product_id === varietyId)
   const form = readForm(location.state)
 
   function leaveForm(): void {

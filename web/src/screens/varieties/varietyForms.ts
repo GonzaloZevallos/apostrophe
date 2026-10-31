@@ -28,7 +28,7 @@ export function useOpenForm(): (form: VarietyForm) => void {
   return useCallback((form) => void navigate('.', { state: { form } }), [navigate])
 }
 
-/** The messages of the refusals of a variety's name on save (`POST /varieties`). */
+/** The messages of the refusals of a variety's name on save (`POST /api/products`). */
 export const SAVE_OVERRIDES: Partial<Record<RefusalCode, Refusal | string>> = {
   'variety.name_taken': NAME_TAKEN_MESSAGE,
   'variety.name_archived': NAME_ARCHIVED_MESSAGE,

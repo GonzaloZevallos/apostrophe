@@ -22,10 +22,10 @@ import { COMMON_TEXT } from '../../copy/common'
 
 export default function PriceHistory({ varietyId }: { varietyId: number }) {
   const id = String(varietyId)
-  const varietyQuery = useQuery({ queryKey: keys.variety(id), queryFn: () => get<Variety>(`/varieties/${id}`) })
+  const varietyQuery = useQuery({ queryKey: keys.variety(id), queryFn: () => get<Variety>(`/api/products/${id}`) })
   const pricesQuery = useQuery({
     queryKey: keys.varietyPrices(id),
-    queryFn: () => get<PriceRow[]>(`/varieties/${id}/prices`),
+    queryFn: () => get<PriceRow[]>(`/api/products/${id}/prices`),
   })
   useBackParent('variety-prices', varietyQuery.data === undefined ? undefined : { title: varietyQuery.data.name })
   const failure = varietyQuery.error ?? pricesQuery.error

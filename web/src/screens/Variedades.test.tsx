@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import type { FirstRunAnswer } from '../api/firstRun'
+import type { VarietyStock } from '../api/stock'
 import { router as appRouter } from '../router'
 import { renderWithViewport } from '../test-viewport'
 import { expectIconAndTextRule, iconAndTextProblems } from '../test/iconAndTextRule'
@@ -24,7 +25,7 @@ import {
   WITHDRAWAL_NEW,
   pathTo,
 } from '../routes'
-import { NO_PRICE_TODAY } from './Variedades'
+import { NO_PRICE_TODAY, type Variety } from './Variedades'
 import { EMPTY_DETAIL, EMPTY_TITLE } from '../copy/varieties'
 import { LIMITS, SAMPLES } from '../copy/limits'
 import { chooseTheme } from '../theme'
@@ -32,23 +33,23 @@ import { chooseTheme } from '../theme'
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 
 function price(list: number) {
-  return { id: 1, effective_from: '2026-09-25', list_price: list, bulk_price: null, bulk_minimum: null }
+  return { id: 1, effective_from: '2026-09-25', list_price: list, bulk_price: null, bulk_minimum: null, vip_price: null }
 }
 
 const VARIETIES = [
-  { id: 4, name: 'Sir Jack', current_price: price(11000) },
-  { id: 2, name: 'Golden Cookies', current_price: price(14000) },
-  { id: 3, name: 'Mango Bomb', current_price: null },
-  { id: 1, name: '24K Gold', current_price: price(12000) },
-]
+  { id: 4, name: 'Sir Jack', archived: false, current_price: price(11000) },
+  { id: 2, name: 'Golden Cookies', archived: false, current_price: price(14000) },
+  { id: 3, name: 'Mango Bomb', archived: false, current_price: null },
+  { id: 1, name: '24K Gold', archived: false, current_price: price(12000) },
+] satisfies Variety[]
 
-function stockRow(variety_id: number, patch: Record<string, unknown>) {
-  return { variety_id, quantity: 0, status: 'ok', sold_out_since: null, threshold: null, days_left: null, ...patch }
+function stockRow(product_id: number, patch: Partial<VarietyStock>) {
+  return { product_id, quantity: 0, status: 'ok', sold_out_since: null, threshold: null, days_left: null, ...patch } satisfies VarietyStock
 }
 
 const STOCK = {
   total: 153,
-  varieties: [
+  products: [
     stockRow(1, { quantity: 135, status: 'ok', days_left: 270 }),
     stockRow(2, { quantity: 18, status: 'low', threshold: 20, days_left: 24 }),
     stockRow(3, { quantity: 0, status: 'no_entries' }),
@@ -62,8 +63,8 @@ function catalogOf(hidden: number[]) {
     text: 'texto',
     header: '',
     footer: '',
-    varieties: VARIETIES.map((variety) => ({
-      id: variety.id,
+    products: VARIETIES.map((variety) => ({
+      product_id: variety.id,
       name: variety.name,
       emoji: null,
       indica_share: null,
@@ -85,14 +86,14 @@ type Answers = Record<string, () => Response | Promise<Response>>
 function defaults(): Answers {
   return {
     'GET /auth/me': () => json(200, ME),
-    'GET /varieties': () => json(200, VARIETIES),
+    'GET /api/products': () => json(200, VARIETIES),
     'GET /stock': () => json(200, STOCK),
     'GET /catalog': () => json(200, catalogOf([])),
     'GET /first-run': () => json(200, FIRST_RUN_NONE),
-    'GET /varieties/1': () => json(200, VARIETIES[3]),
-    'GET /varieties/1/prices': () => json(200, [price(12000)]),
-    'GET /varieties/7': () => json(200, { id: 7, name: 'Sir Jack', current_price: null }),
-    'GET /varieties/7/prices': () => json(200, []),
+    'GET /api/products/1': () => json(200, VARIETIES[3]),
+    'GET /api/products/1/prices': () => json(200, [price(12000)]),
+    'GET /api/products/7': () => json(200, { id: 7, name: 'Sir Jack', current_price: null }),
+    'GET /api/products/7/prices': () => json(200, []),
   }
 }
 
@@ -166,6 +167,26 @@ describe('the list', () => {
     expect(screen.getAllByText('Hidden')).toHaveLength(1)
   })
 
+  test("a product's row shows the figure of the stock row whose product_id is its id", async () => {
+    const target = VARIETIES[1]!
+    const row = {
+      product_id: target.id,
+      quantity: 42,
+      status: 'ok',
+      sold_out_since: null,
+      threshold: null,
+      days_left: null,
+    } satisfies VarietyStock
+    renderApp(VARIETIES_PATH, {
+      answers: { 'GET /stock': () => json(200, { total: 42, products: [row], entries: [] }) },
+    })
+
+    const link = (await screen.findByText(target.name)).closest('a')
+    expect(link).not.toBeNull()
+    await waitFor(() => expect(link).toHaveTextContent('42 g'))
+    expect(screen.queryByText('Sir Jack')).toBeNull()
+  })
+
   test('the summary line counts what is not ok by word, in stock-status order', async () => {
     renderApp(VARIETIES_PATH)
 
@@ -175,8 +196,8 @@ describe('the list', () => {
   test('the summary line says everything is fine when every variety is ok', async () => {
     renderApp(VARIETIES_PATH, {
       answers: {
-        'GET /varieties': () => json(200, VARIETIES.slice(0, 2)),
-        'GET /stock': () => json(200, { ...STOCK, varieties: [stockRow(4, {}), stockRow(2, {})] }),
+        'GET /api/products': () => json(200, VARIETIES.slice(0, 2)),
+        'GET /stock': () => json(200, { ...STOCK, products: [stockRow(4, {}), stockRow(2, {})] }),
       },
     })
 
@@ -186,8 +207,8 @@ describe('the list', () => {
   test('with no varieties there is no summary line, the fixed empty state, and the actions stay', async () => {
     renderApp(VARIETIES_PATH, {
       answers: {
-        'GET /varieties': () => json(200, []),
-        'GET /stock': () => json(200, { total: 0, varieties: [], entries: [] }),
+        'GET /api/products': () => json(200, []),
+        'GET /stock': () => json(200, { total: 0, products: [], entries: [] }),
       },
     })
 
@@ -297,7 +318,7 @@ describe('on a computer: two panes', () => {
   test('while the list loads nothing is selected', async () => {
     const { router } = renderApp(VARIETIES_PATH, {
       computer: true,
-      answers: { 'GET /varieties': () => new Response(null, { status: 200 }) },
+      answers: { 'GET /api/products': () => new Response(null, { status: 200 }) },
     })
 
     await act(() => Promise.resolve())
@@ -308,8 +329,8 @@ describe('on a computer: two panes', () => {
     const { router } = renderApp(VARIETIES_PATH, {
       computer: true,
       answers: {
-        'GET /varieties': () => json(200, []),
-        'GET /stock': () => json(200, { total: 0, varieties: [], entries: [] }),
+        'GET /api/products': () => json(200, []),
+        'GET /stock': () => json(200, { total: 0, products: [], entries: [] }),
       },
     })
 
@@ -362,27 +383,27 @@ describe('removing the selected variety on a computer', () => {
     let written = false
     const remaining = () => (written ? list.filter((variety) => variety.id !== removed.id) : list)
     const answers: Answers = {
-      'GET /varieties': () => json(200, remaining()),
+      'GET /api/products': () => json(200, remaining()),
       'GET /stock': () =>
         json(200, {
           total: 0,
-          varieties: remaining().map((variety) => stockRow(variety.id, { status: 'no_entries' })),
+          products: remaining().map((variety) => stockRow(variety.id, { status: 'no_entries' })),
           entries: [],
         }),
-      'GET /varieties?archived=true': () =>
+      'GET /api/products?archived=true': () =>
         json(200, written && action === 'archive' ? [{ ...removed, archived: true, current_price: null }] : []),
     }
     for (const variety of list) {
-      answers[`GET /varieties/${variety.id}`] = () => json(200, { ...variety, archived: false, removal: action })
-      answers[`GET /varieties/${variety.id}/prices`] = () => json(200, [])
+      answers[`GET /api/products/${variety.id}`] = () => json(200, { ...variety, archived: false, removal: action })
+      answers[`GET /api/products/${variety.id}/prices`] = () => json(200, [])
     }
     if (action === 'archive') {
-      answers[`POST /varieties/${removed.id}/archive`] = () => {
+      answers[`POST /api/products/${removed.id}/archive`] = () => {
         written = true
         return json(200, { ...removed, current_price: null, archived: true, removal: null })
       }
     } else {
-      answers[`DELETE /varieties/${removed.id}`] = () => {
+      answers[`DELETE /api/products/${removed.id}`] = () => {
         written = true
         return new Response(null, { status: 204 })
       }
@@ -407,7 +428,7 @@ describe('removing the selected variety on a computer', () => {
       answers: answersFor(action, list, removed),
     })
 
-    // On a computer the left pane's mounted GET /varieties query is the cache `leave()` reads, so
+    // On a computer the left pane's mounted GET /api/products query is the cache `leave()` reads, so
     // waiting for every row here is what makes the next-by-name branch the one under test.
     await waitFor(() => {
       const paths = list.map((variety) => pathTo(VARIETY, { id: variety.id }))
@@ -458,8 +479,8 @@ describe('the icon and text rule', () => {
   test('the empty list screen follows the rule too', async () => {
     renderApp(VARIETIES_PATH, {
       answers: {
-        'GET /varieties': () => json(200, []),
-        'GET /stock': () => json(200, { total: 0, varieties: [], entries: [] }),
+        'GET /api/products': () => json(200, []),
+        'GET /stock': () => json(200, { total: 0, products: [], entries: [] }),
       },
     })
     await screen.findByText('No varieties yet')
@@ -476,8 +497,8 @@ describe('the icon and text rule', () => {
   test('the limits check rejects an empty state longer than its limit', async () => {
     renderApp(VARIETIES_PATH, {
       answers: {
-        'GET /varieties': () => json(200, []),
-        'GET /stock': () => json(200, { total: 0, varieties: [], entries: [] }),
+        'GET /api/products': () => json(200, []),
+        'GET /stock': () => json(200, { total: 0, products: [], entries: [] }),
       },
     })
     const title = await screen.findByText(EMPTY_TITLE)
@@ -491,7 +512,7 @@ describe('the icon and text rule', () => {
 describe('New variety', () => {
   test('saves the name, says "Variety saved" and goes back to the list', async () => {
     const { router, fetchMock } = renderApp(VARIETIES_PATH, {
-      answers: { 'POST /varieties': () => json(201, { id: 9, name: 'Sour Diesel', current_price: null }) },
+      answers: { 'POST /api/products': () => json(201, { id: 9, name: 'Sour Diesel', current_price: null }) },
     })
     await userEvent.click(await screen.findByRole('link', { name: 'New variety' }))
 
@@ -500,13 +521,13 @@ describe('New variety', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Add the variety' }))
 
     expect(await screen.findByText('Variety saved')).toBeInTheDocument()
-    expect(writes(fetchMock)).toEqual([{ call: 'POST /varieties', body: { name: 'Sour Diesel' } }])
+    expect(writes(fetchMock)).toEqual([{ call: 'POST /api/products', body: { name: 'Sour Diesel' } }])
     expect(router.state.location.pathname).toBe(VARIETIES_PATH)
   })
 
   test('a refusal shows under the name and keeps what was typed', async () => {
     renderApp(VARIETY_NEW, {
-      answers: { 'POST /varieties': () => json(409, { code: 'variety.name_taken' }) },
+      answers: { 'POST /api/products': () => json(409, { code: 'variety.name_taken' }) },
     })
 
     await userEvent.type(await screen.findByPlaceholderText('Variety name'), 'Sir Jack')
@@ -518,7 +539,7 @@ describe('New variety', () => {
 
   test('a name held by an archived variety shows its own refusal under the name and keeps what was typed', async () => {
     renderApp(VARIETY_NEW, {
-      answers: { 'POST /varieties': () => json(409, { code: 'variety.name_archived' }) },
+      answers: { 'POST /api/products': () => json(409, { code: 'variety.name_archived' }) },
     })
 
     await userEvent.type(await screen.findByPlaceholderText('Variety name'), 'Sir Jack')

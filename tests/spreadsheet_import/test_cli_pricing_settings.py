@@ -122,7 +122,7 @@ def test_a_sheet_with_bulk_prices_and_an_amigo_row_turns_both_switches_on(
     assert code == 0
     assert "Switches turned on: Bulk pricing, VIP customers" in out
     assert _switches(client) == (True, True)
-    price = client.get("/varieties").json()[0]["current_price"]
+    price = client.get("/api/products").json()[0]["current_price"]
     assert (price["list_price"], price["bulk_price"], price["vip_price"]) == (1000, 800, 800)
     assert _only_sale(client)["total"] == 8000
 
@@ -137,7 +137,7 @@ def test_the_dry_run_reports_the_switches_and_changes_none(
     assert code == 0
     assert "Switches turned on: Bulk pricing, VIP customers" in out
     assert _switches(client) == (False, False)
-    assert client.get("/varieties").json() == []
+    assert client.get("/api/products").json() == []
 
 
 def test_a_sheet_with_neither_leaves_both_off_and_stores_no_vip_price(
@@ -150,7 +150,7 @@ def test_a_sheet_with_neither_leaves_both_off_and_stores_no_vip_price(
     assert code == 0
     assert "Switches turned on: none" in out
     assert _switches(client) == (False, False)
-    assert client.get("/varieties").json()[0]["current_price"]["vip_price"] is None
+    assert client.get("/api/products").json()[0]["current_price"]["vip_price"] is None
     assert _only_sale(client)["total"] == 10_000
 
 
@@ -164,7 +164,7 @@ def test_bulk_prices_without_a_vip_customer_switch_only_bulk_on_and_store_no_vip
     assert code == 0
     assert "Switches turned on: Bulk pricing\n" in out
     assert _switches(client) == (True, False)
-    price = client.get("/varieties").json()[0]["current_price"]
+    price = client.get("/api/products").json()[0]["current_price"]
     assert (price["bulk_price"], price["vip_price"]) == (800, None)
     assert _only_sale(client)["total"] == 8000
 

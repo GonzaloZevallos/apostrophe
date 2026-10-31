@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Stock</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1E6B47}a:hover{color:#14532F}
+</style>
+</helmet>
+<div style="width: 390px; height: 900px; box-sizing: border-box; background: #F6F7F5; font-family: 'Geist', system-ui, sans-serif; color: #15201A; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<header style="padding: 14px 16px 6px; display: flex; align-items: center; gap: 12px"><button aria-label="Volver" style="width: 36px; height: 36px; border-radius: 18px; border: none; background: #E6ECE8; color: #15201A; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><h1 style="margin: 0; flex-grow: 1; font-size: 22px; font-weight: 600; letter-spacing: -0.02em">Stock</h1></header>
+<div style="padding: 4px 16px 0; display: flex; flex-direction: column; gap: 12px">
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px"><button style="height: 52px; border-radius: 14px; border: none; background: #1E6B47; color: #FFFFFF; font: 600 15px 'Geist', sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>Cargar entrada</button><button style="height: 52px; border-radius: 14px; border: 1px solid #DCE3DE; background: #FFFFFF; color: #15201A; font: 600 15px 'Geist', sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>Registrar retiro</button></div>
+<section style="background: #FFFFFF; border-radius: 16px; box-shadow: 0 1px 2px rgba(21,32,26,.06); display: flex; flex-direction: column"><div style="padding: 12px 14px 4px; display: flex; justify-content: space-between"><h2 style="margin: 0; font-size: 14px; font-weight: 600">Lo que tenés</h2><span style="font-size: 12px; color: #C0352B; font-weight: 600">2 por reponer</span></div><div style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid #E9EEEA"><span style="flex-grow: 1; font-size: 14px; font-weight: 500">Café en grano</span><span style="font-size: 12px; color: #56645C">mín. 5</span><span style="font-size: 15px; font-weight: 600; color: #C0352B; font-variant-numeric: tabular-nums">3 u</span></div><div style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid #E9EEEA"><span style="flex-grow: 1; font-size: 14px; font-weight: 500">Miel 500 g</span><span style="font-size: 12px; color: #56645C">mín. 4</span><span style="font-size: 15px; font-weight: 600; color: #C0352B; font-variant-numeric: tabular-nums">2 u</span></div><div style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid #E9EEEA"><span style="flex-grow: 1; font-size: 14px; font-weight: 500">Galletitas</span><span style="font-size: 12px; color: #56645C"></span><span style="font-size: 15px; font-weight: 600; color: #56645C; font-variant-numeric: tabular-nums">46 u</span></div><div style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid #E9EEEA"><span style="flex-grow: 1; font-size: 14px; font-weight: 500">Té en hebras</span><span style="font-size: 12px; color: #56645C"></span><span style="font-size: 15px; font-weight: 600; color: #56645C; font-variant-numeric: tabular-nums">1,2 kg</span></div><div style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid #E9EEEA"><span style="flex-grow: 1; font-size: 14px; font-weight: 500">Alfajores</span><span style="font-size: 12px; color: #56645C"></span><span style="font-size: 15px; font-weight: 600; color: #56645C; font-variant-numeric: tabular-nums">58 u</span></div></section>
+<section style="background: #FFFFFF; border-radius: 16px; box-shadow: 0 1px 2px rgba(21,32,26,.06); display: flex; flex-direction: column"><h2 style="margin: 0; padding: 12px 14px 4px; font-size: 14px; font-weight: 600">Últimos movimientos</h2><div style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #E9EEEA; font-size: 13px"><span style="color: #1E7A45"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span><span style="flex-grow: 1">Entrada · 24 Galletitas</span><span style="color: #56645C">hoy</span></div><div style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #E9EEEA; font-size: 13px"><span style="color: #A85A06"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg></span><span style="flex-grow: 1">Retiro · 2 Alfajores (Marketing)</span><span style="color: #56645C">ayer</span></div><div style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #E9EEEA; font-size: 13px"><span style="color: #1E7A45"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span><span style="flex-grow: 1">Entrada · 2 kg Té en hebras</span><span style="color: #56645C">lun</span></div></section>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 /**
  * The one removal action of a live variety's page (`varieties.md`, "Deleting and archiving"):
- * "Eliminar variedad" through a destructive confirmation when `GET /varieties/{id}` says
+ * "Eliminar variedad" through a destructive confirmation when `GET /api/products/{id}` says
  * `delete`, "Archivar variedad" through a confirmation when it says `archive`, and nothing
  * for any other answer. The page never decides which: `removal` is the server's, worked out
  * from history when the page was read.

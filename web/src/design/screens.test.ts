@@ -1,5 +1,6 @@
-import { readdirSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   assertAccountKinds,
@@ -8,6 +9,7 @@ import {
   assertSelectedNeeds,
   sectionOccurrences,
 } from '../../../scripts/design/screens.mjs'
+import { ROUTE_REGISTRY } from '../mobile-standard/registry'
 import { COMPUTER_MIN_WIDTH } from '../shell/useViewport'
 import screens from '../../../scripts/design/screens.json'
 import { TEXT_SCALE } from '../../../scripts/design/textScale.mjs'
@@ -110,6 +112,50 @@ describe('assertScreens', () => {
     expect(() =>
       assertScreens([{ screen: 'OnboardingStockCompuOscuro', design: 'OnboardingStock', tema: 'oscuro' }]),
     ).not.toThrow()
+  })
+
+  describe('a dark twin and its drawings', () => {
+    const MESSAGE = (screen: string) => `${screen}: a dark twin must compare its own dark drawing`
+    const pantallasWith = (...files: string[]): string => {
+      const dir = mkdtempSync(join(tmpdir(), 'pantallas-'))
+      for (const file of files) writeFileSync(join(dir, `${file}.dc.html`), '')
+      return dir
+    }
+
+    it('refuses the light file when the twin has a drawing named after its own screen', () => {
+      const dir = pantallasWith('Inicio', 'InicioOscuro')
+      expect(() => assertScreens([{ screen: 'InicioOscuro', design: 'Inicio', tema: 'oscuro' }], dir)).toThrow(
+        new Error(MESSAGE('InicioOscuro')),
+      )
+      expect(() => assertScreens([{ screen: 'InicioOscuro', tema: 'oscuro' }], dir)).not.toThrow()
+    })
+
+    it('accepts the light file when no dark drawing exists', () => {
+      const dir = pantallasWith('Inicio')
+      expect(() => assertScreens([{ screen: 'InicioOscuro', design: 'Inicio', tema: 'oscuro' }], dir)).not.toThrow()
+    })
+
+    it('holds a twin of another design to that design\'s own dark drawing', () => {
+      const dir = pantallasWith('OnboardingListo', 'OnboardingListoOscuro')
+      const row = { screen: 'ListoOscuro', tema: 'oscuro' }
+      expect(() => assertScreens([{ ...row, design: 'OnboardingListo' }], dir)).toThrow(new Error(MESSAGE('ListoOscuro')))
+      expect(() => assertScreens([{ ...row, design: 'OnboardingListoOscuro' }], dir)).not.toThrow()
+    })
+
+    it('prefers the twin\'s own file over its design\'s dark drawing', () => {
+      const dir = pantallasWith('OnboardingListo', 'ListoOscuro', 'OnboardingListoOscuro')
+      const row = { screen: 'ListoOscuro', tema: 'oscuro' }
+      expect(() => assertScreens([{ ...row, design: 'OnboardingListoOscuro' }], dir)).toThrow(
+        new Error(MESSAGE('ListoOscuro')),
+      )
+      expect(() => assertScreens([{ ...row, design: 'ListoOscuro' }], dir)).not.toThrow()
+    })
+
+    it('does not treat a design that is itself a dark drawing as a light one', () => {
+      const dir = pantallasWith('OnboardingListoOscuro', 'OnboardingListoOscuroOscuro')
+      const row = { screen: 'ListoOscuro', design: 'OnboardingListoOscuro', tema: 'oscuro' }
+      expect(() => assertScreens([row], dir)).not.toThrow()
+    })
   })
 
   it('accepts a Compu entry outside the Onboarding, and one with Compu in the middle of its name', () => {
@@ -280,8 +326,8 @@ describe('assertScreens', () => {
 
   it('refuses a section that occurs more than once in its design file', () => {
     expect(() =>
-      assertScreens([{ screen: 'AnalisisX', design: 'Analisis', section: 'Promotion' }]),
-    ).toThrow(/^AnalisisX: section "Promotion" occurs \d+ times in Analisis\.dc\.html, expected exactly once$/)
+      assertScreens([{ screen: 'AnalisisX', design: 'Analisis', section: 'Hoy' }]),
+    ).toThrow(/^AnalisisX: section "Hoy" occurs \d+ times in Analisis\.dc\.html, expected exactly once$/)
   })
 
   it('refuses a needs that is not a non-empty string', () => {
@@ -409,11 +455,7 @@ describe('the 130 % rows of the real screens.json', () => {
   // (960x920, and 1280x920 once the 960 set at 130 % had shown a break).
   const HOME_WIDTH: Record<string, number> = {
     InicioHoyCompu960Texto130: 960,
-    InicioCompu960Texto130: 960,
-    InicioMesCompu960Texto130: 960,
     InicioHoyCompuTexto130: 1280,
-    InicioCompuTexto130: 1280,
-    InicioMesCompuTexto130: 1280,
   }
   const HOME_TEXTO130 = Object.keys(HOME_WIDTH)
   const isOnboardingNarrow = (row: Row): boolean =>
@@ -421,7 +463,7 @@ describe('the 130 % rows of the real screens.json', () => {
   const isNamedHome = (row: Row): boolean =>
     HOME_TEXTO130.includes(row.screen) && row.viewport?.[0] === HOME_WIDTH[row.screen] && row.viewport?.[1] === 920
 
-  it('accepts a 130 % row only as a 320x844 Onboarding row or one of the six named Home rows at their own width x 920', () => {
+  it('accepts a 130 % row only as a 320x844 Onboarding row or one of the two named Home rows at their own width x 920', () => {
     const scaled = rows.filter((row) => row.text_scale !== undefined)
     expect(scaled.length).toBeGreaterThan(HOME_TEXTO130.length)
     for (const row of scaled) {
@@ -435,7 +477,7 @@ describe('the 130 % rows of the real screens.json', () => {
     const other: Row[] = [
       { screen: 'InicioHoyCompu960Texto130', viewport: [1280, 920], text_scale: TEXT_SCALE },
       { screen: 'InicioHoyCompuTexto130', viewport: [960, 920], text_scale: TEXT_SCALE },
-      { screen: 'InicioCompuTexto130', viewport: [1280, 844], text_scale: TEXT_SCALE },
+      { screen: 'InicioHoyCompuTexto130', viewport: [1280, 844], text_scale: TEXT_SCALE },
       { screen: 'InicioTexto130', viewport: [1280, 920], text_scale: TEXT_SCALE },
       { screen: 'InicioHoyCompu960Texto130', viewport: [960, 844], text_scale: TEXT_SCALE },
       { screen: 'InicioTexto130', viewport: [960, 920], text_scale: TEXT_SCALE },
@@ -471,48 +513,39 @@ describe('the Inicio rows of the real screens.json', () => {
     return found
   }
   const clicks = (r: Row): unknown[] => (r.steps ?? []).flatMap((step) => ('click' in step ? [step.click] : []))
-  const HOY_PHONE = 'Hoy · la pestaña con la que abre el panel'
-  const SEMANA_PHONE = 'Semana · Ganancia y Caja sólo acá y en Mes, nunca en Hoy'
-  const SEMANA_COMPU = 'Semana · Ganancia y Caja sólo acá y en Mes'
+  // GH-526: the 2026-10-29 drawings of Inicio and InicioCompu draw one frame, Hoy, so no Inicio row crops to
+  // a section any more: `section` is absent on every row of both drawings.
 
   it('captures Hoy, the tab Inicio opens on, with no step, on phone and computer', () => {
     expect(clicks(row('InicioHoy'))).toEqual([])
-    expect(row('InicioHoy')).toMatchObject({ design: 'Inicio', section: HOY_PHONE })
+    expect(row('InicioHoy')).toMatchObject({ design: 'Inicio' })
+    expect(row('InicioHoy').section).toBeUndefined()
     expect(clicks(row('InicioHoyCompu'))).toEqual([])
     expect(row('InicioHoyCompu')).toMatchObject({
       design: 'InicioCompu',
-      section: HOY_PHONE,
       viewport: [1280, 920],
     })
-    // GH-274: added beside the original assertion, which stays as it was.
-    expect(row('InicioHoyCompu').section).toBe(HOY_PHONE)
+    expect(row('InicioHoyCompu').section).toBeUndefined()
   })
 
-  it('captures the dark computer Hoy against the light computer drawing, as the other CompuOscuro twins do', () => {
+  it('captures the dark computer Hoy against its own dark drawing, InicioCompuOscuro', () => {
     expect(clicks(row('InicioHoyCompuOscuro'))).toEqual([])
     expect(row('InicioHoyCompuOscuro')).toMatchObject({
-      design: 'InicioCompu',
-      section: HOY_PHONE,
+      design: 'InicioCompuOscuro',
       tema: 'oscuro',
       viewport: [1280, 920],
     })
-    // GH-274, deliberate: the original `toBeUndefined()` cannot hold, the brief crops this row to the new Hoy
-    // caption. It fails when the row loses its crop (`section` undefined), so the capture shows both
-    // computer frames again. It is redundant with the `toMatchObject` above, which fails the same way; it
-    // stays so the change reads at the line where `toBeUndefined()` stood.
-    expect(row('InicioHoyCompuOscuro').section).toBe(HOY_PHONE)
+    expect(row('InicioHoyCompuOscuro').section).toBeUndefined()
   })
 
-  it('crops the computer Hoy rows to one frame of InicioCompu.dc.html, never to two', () => {
+  it('names no section for the computer Hoy rows, since InicioCompu.dc.html draws one frame', () => {
     const drawing = readFileSync(
       resolve(process.cwd(), '..', 'docs/product/design-system/pantallas/InicioCompu.dc.html'),
       'utf-8',
     )
-    for (const key of ['InicioHoyCompu', 'InicioHoyCompuOscuro']) {
-      const section = row(key).section ?? ''
-      expect(sectionOccurrences(drawing, section), key).toBe(1)
-      expect(sectionOccurrences(drawing + drawing, section), `${key} drawn twice`).toBe(2)
-    }
+    // A frame label would occur once; the drawing carries none, so a crop could never find its block.
+    expect(sectionOccurrences(drawing, 'Hoy · la pestaña con la que abre el panel')).toBe(0)
+    for (const key of ['InicioHoyCompu', 'InicioHoyCompuOscuro']) expect(row(key).section, key).toBeUndefined()
   })
 
   it('captures the dark Hoy against the dark drawing, which draws Hoy alone', () => {
@@ -520,70 +553,69 @@ describe('the Inicio rows of the real screens.json', () => {
     expect(row('InicioOscuro').tema).toBe('oscuro')
   })
 
-  it('crops each Semana capture to the block that draws Semana', () => {
-    expect(clicks(row('Inicio'))).toEqual(['Week'])
-    expect(row('Inicio').section).toBe(SEMANA_PHONE)
-    expect(clicks(row('InicioCompu'))).toEqual(['Week'])
-    expect(row('InicioCompu').section).toBe(SEMANA_COMPU)
+  // GH-526: the 2026-10-29 Inicio and InicioCompu draw one frame, Hoy: there is no Semana or Mes block, so the
+  // rows that clicked Week or Month have no drawing to be compared with and were dropped.
+  const DROPPED_SEMANA_MES = [
+    'Inicio',
+    'InicioCompu',
+    'InicioCompuOscuro',
+    'InicioMesCompu',
+    'InicioCompu960',
+    'InicioMesCompu960',
+    'InicioCompu960Texto130',
+    'InicioMesCompu960Texto130',
+    'InicioCompuTexto130',
+    'InicioMesCompuTexto130',
+  ]
+
+  it('has no row that clicks Week or Month against the Hoy-only Inicio drawings', () => {
+    const names = rows.map((r) => r.screen)
+    for (const name of DROPPED_SEMANA_MES) expect(names, name).not.toContain(name)
+    const inicio = rows.filter((r) => ['Inicio', 'InicioCompu', 'InicioOscuro'].includes(r.design ?? r.screen))
+    expect(inicio.length).toBeGreaterThan(0)
+    for (const r of inicio) expect(clicks(r), r.screen).toEqual([])
   })
 
   it('keeps every Inicio row in the Inicio drawings, which assertScreens accepts', () => {
     const inicio = rows.filter((r) => /^Inicio(Hoy|Oscuro|Compu)*$/.test(r.screen))
     expect(inicio.map((r) => r.screen)).toEqual([
-      'Inicio',
       'InicioHoy',
       'InicioOscuro',
-      'InicioCompu',
       'InicioHoyCompu',
       'InicioHoyCompuOscuro',
-      'InicioCompuOscuro',
     ])
     expect(() => assertScreens(inicio)).not.toThrow()
   })
 
-  it('pairs the dark InicioCompu with the light drawing and the same Semana crop', () => {
-    const dark = row('InicioCompuOscuro')
-    expect(dark.design).toBe('InicioCompu')
-    expect(dark.tema).toBe('oscuro')
-    expect(dark.section).toBe(SEMANA_COMPU)
-    expect(clicks(dark)).toEqual(['Week'])
-  })
-
   // GH-272 follow-up: Home's evidence rows. Screenshots judged by eye, never fed to ae.mjs.
-  // Month has no drawing of its own, so it reuses the Week block, which says Ganancia and Caja show "in Mes".
-  const HOME_EVIDENCE: [string, string, number[], string[], number | undefined][] = [
-    ['InicioMesCompu', SEMANA_COMPU, [1280, 920], ['Month'], undefined],
-    ['InicioHoyCompu960', HOY_PHONE, [960, 920], [], undefined],
-    ['InicioCompu960', SEMANA_COMPU, [960, 920], ['Week'], undefined],
-    ['InicioMesCompu960', SEMANA_COMPU, [960, 920], ['Month'], undefined],
-    ['InicioHoyCompu960Texto130', HOY_PHONE, [960, 920], [], TEXT_SCALE],
-    ['InicioCompu960Texto130', SEMANA_COMPU, [960, 920], ['Week'], TEXT_SCALE],
-    ['InicioMesCompu960Texto130', SEMANA_COMPU, [960, 920], ['Month'], TEXT_SCALE],
-    ['InicioHoyCompuTexto130', HOY_PHONE, [1280, 920], [], TEXT_SCALE],
-    ['InicioCompuTexto130', SEMANA_COMPU, [1280, 920], ['Week'], TEXT_SCALE],
-    ['InicioMesCompuTexto130', SEMANA_COMPU, [1280, 920], ['Month'], TEXT_SCALE],
+  const HOME_EVIDENCE: [string, undefined, number[], string[], number | undefined][] = [
+    ['InicioHoyCompu960', undefined, [960, 920], [], undefined],
+    ['InicioHoyCompu960Texto130', undefined, [960, 920], [], TEXT_SCALE],
+    ['InicioHoyCompuTexto130', undefined, [1280, 920], [], TEXT_SCALE],
   ]
 
   it.each(HOME_EVIDENCE)('pins %s: design, section, clicks, viewport and text_scale', (name, section, viewport, taps, scale) => {
     const r = row(name)
     expect(r).toMatchObject({
       account: 'inicio',
-      // The same route and path as the Semana row, which is Inicio's own (routes.ts owns the literal).
-      route: row('InicioCompu').route,
-      path: row('InicioCompu').path,
+      // The same route and path as InicioHoyCompu, which is Inicio's own (routes.ts owns the literal).
+      route: row('InicioHoyCompu').route,
+      path: row('InicioHoyCompu').path,
       design: 'InicioCompu',
-      section,
       viewport,
     })
+    expect(r.section).toBe(section)
     expect(clicks(r)).toEqual(taps)
     expect(r.text_scale).toBe(scale)
     expect(r.tema).toBeUndefined()
   })
 
-  it('puts the seven evidence rows right after InicioCompuOscuro, in that order', () => {
+  it('keeps the three evidence rows together, in that order', () => {
     const names = rows.map((r) => r.screen)
-    const at = names.indexOf('InicioCompuOscuro')
-    expect(names.slice(at + 1, at + 1 + HOME_EVIDENCE.length)).toEqual(HOME_EVIDENCE.map(([name]) => name))
+    const evidence = HOME_EVIDENCE.map(([name]) => name)
+    const at = names.indexOf(evidence.at(0) ?? '')
+    expect(at).toBeGreaterThan(-1)
+    expect(names.slice(at, at + evidence.length)).toEqual(evidence)
   })
 
   it('explains in the registry note that the evidence rows are screenshots, never compared by ae.mjs', () => {
@@ -740,15 +772,21 @@ describe('the real registry covers its evidence', () => {
 
   it('has a row for every Onboarding design, phone and computer, light and dark', () => {
     const pantallas = resolve(process.cwd(), '..', 'docs/product/design-system/pantallas')
-    const designs = readdirSync(pantallas)
-      .filter((file) => /^Onboarding.*\.dc\.html$/.test(file))
-      .map((file) => file.replace('.dc.html', ''))
+    const designs = [
+      ...new Set(
+        readdirSync(pantallas)
+          .filter((file) => /^Onboarding.*\.dc\.html$/.test(file))
+          .map((file) => file.replace('.dc.html', '').replace(/Oscuro$/, '')),
+      ),
+    ]
     expect(designs.length).toBeGreaterThan(0)
     const has = (design: string, computer: boolean, dark: boolean) =>
       screens.screens.some((s) => {
         const isComputer = s.viewport !== undefined && s.viewport[0]! >= COMPUTER_MIN_WIDTH
         const isPhone = s.viewport === undefined
-        return (s.design ?? s.screen) === design && (computer ? isComputer : isPhone) && (s.tema === 'oscuro') === dark
+        const own = s.design ?? s.screen
+        const named = own === design || (dark && own === `${design}Oscuro`)
+        return named && (computer ? isComputer : isPhone) && (s.tema === 'oscuro') === dark
       })
     for (const design of designs) {
       expect(has(design, false, false), `${design}: phone light`).toBe(true)
@@ -783,7 +821,7 @@ describe('the archived variety rows of the real screens.json', () => {
   ]
 
   // The Archivadas list's own path, read from the registry's list row.
-  const listPath = screens.registry.find((r) => r.kind === 'card' && r.path.endsWith('archived'))!.path
+  const listPath = ROUTE_REGISTRY.find((r) => r.kind === 'card' && r.path.endsWith('archived'))!.path
 
   it('has each key exactly once', () => {
     for (const key of keys) {
@@ -791,12 +829,14 @@ describe('the archived variety rows of the real screens.json', () => {
     }
   })
 
-  it('names, for each, a design file that exists, the light file for a dark twin', () => {
+  it('names, for each, a design file that exists, the light file for a dark twin that has no dark drawing', () => {
     for (const key of keys) {
       const entry = screens.screens.find((s) => s.screen === key)!
       const design = entry.design ?? key
       expect(design, key).toBe(key.replace('Oscuro', ''))
       expect(readdirSync(pantallas), key).toContain(`${design}.dc.html`)
+      // The light file is only right while the twin has no dark drawing of its own (GH-526 invariant 6).
+      if (key.endsWith('Oscuro')) expect(readdirSync(pantallas), key).not.toContain(`${key}.dc.html`)
     }
   })
 
@@ -822,8 +862,8 @@ describe('the archived variety rows of the real screens.json', () => {
   })
 
   it('keeps archived_parent as the registry row it was', () => {
-    const row = screens.registry.find((r) => r.path === '/varieties/{id}')
-    expect(row?.archived_parent).toBe(listPath)
+    const row = ROUTE_REGISTRY.find((r) => r.path === '/varieties/{id}')
+    expect(row?.archivedParent).toBe(listPath)
   })
 })
 
@@ -1017,9 +1057,9 @@ describe('assertSelectedAccounts', () => {
     expect(() => assertSelectedAccounts(screens.screens, all)).not.toThrow()
   })
 
-  it('puts the six Inicio rows on an ended account and each first-run frame on its own account', () => {
+  it('puts the four Inicio rows on an ended account and each first-run frame on its own account', () => {
     const accountOf = (key: string) => (screens.screens.find((s) => s.screen === key) as { account?: string }).account
-    for (const key of ['Inicio', 'InicioHoy', 'InicioOscuro', 'InicioCompu', 'InicioHoyCompu', 'InicioHoyCompuOscuro']) {
+    for (const key of ['InicioHoy', 'InicioOscuro', 'InicioHoyCompu', 'InicioHoyCompuOscuro']) {
       expect(accountOf(key), key).toBe('inicio')
     }
     const frames: Record<string, string[]> = {
@@ -1099,20 +1139,32 @@ describe('assertAccountKinds', () => {
 
 describe('the customer dark twins of the real screens.json', () => {
   const pantallas = resolve(process.cwd(), '..', 'docs/product/design-system/pantallas')
-  const pairs = [
+  // GH-526: twins whose dark drawing exists compare it; the others keep the light file until one is drawn.
+  const ownDark = [
     ['Clientes', 'ClientesOscuro'],
     ['ClientesCompu', 'ClientesCompuOscuro'],
     ['ClienteFicha', 'ClienteFichaOscuro'],
     ['Cobro', 'CobroOscuro'],
-    ['CobroCompu', 'CobroCompuOscuro'],
   ] as const
+  const lightKept = [['CobroCompu', 'CobroCompuOscuro']] as const
+  const pairs = [...ownDark, ...lightKept]
   const entry = (key: string) => screens.screens.find((s) => s.screen === key)
 
-  it('has each twin exactly once, compared against the light design file, which exists', () => {
-    for (const [light, dark] of pairs) {
+  it('has each twin exactly once, compared against its own dark drawing, which exists', () => {
+    for (const [light, dark] of ownDark) {
+      expect(screens.screens.filter((s) => s.screen === dark).length, dark).toBe(1)
+      expect(entry(dark)?.design, dark).toBe(dark)
+      expect(readdirSync(pantallas), dark).toContain(`${dark}.dc.html`)
+      expect(readdirSync(pantallas), light).toContain(`${light}.dc.html`)
+    }
+  })
+
+  it('keeps the light file for a twin with no dark drawing, and that drawing is absent', () => {
+    for (const [light, dark] of lightKept) {
       expect(screens.screens.filter((s) => s.screen === dark).length, dark).toBe(1)
       expect(entry(dark)?.design, dark).toBe(light)
-      expect(readdirSync(pantallas), dark).toContain(`${light}.dc.html`)
+      expect(readdirSync(pantallas), light).toContain(`${light}.dc.html`)
+      expect(readdirSync(pantallas), dark).not.toContain(`${dark}.dc.html`)
     }
   })
 

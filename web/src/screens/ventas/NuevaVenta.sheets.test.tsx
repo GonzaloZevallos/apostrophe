@@ -38,7 +38,7 @@ beforeEach(() => {
     'fetch',
     vi.fn((path: string, init?: RequestInit) => {
       const method = init?.method ?? 'GET'
-      if (method === 'GET' && path === '/varieties?on=2026-10-02') {
+      if (method === 'GET' && path === '/api/products?on=2026-10-02') {
         return Promise.resolve(jsonResponse(200, [ROSA]))
       }
       if (method === 'GET' && path.startsWith(pathTo(CUSTOMERS))) {

@@ -45,7 +45,7 @@ function answer(
     resume: first === -1 ? 'finish' : (ORDER[first] ?? null),
     steps: ORDER.map((step, index) => ({ step, state: states[index] ?? 'pending' })),
     can_skip_rest: states[0] === 'done' && states[1] === 'done',
-    varieties_count: 1,
+    products_count: 1,
     stock_entries_count: 0,
     price_target: null,
     priced_target: null,
@@ -134,21 +134,21 @@ afterEach(() => {
 })
 
 const STOCK_FORM_READS = {
-  'GET /varieties': () => json([{ id: 7, name: 'Mango Bomb', current_price: null }]),
-  'GET /stock': () => json({ total: 0, varieties: [], entries: [] }),
+  'GET /api/products': () => json([{ id: 7, name: 'Mango Bomb', current_price: null }]),
+  'GET /stock': () => json({ total: 0, products: [], entries: [] }),
 }
 
-test('step 1 with a price target shows the price form only and ends with one variety: no name field, no POST /varieties', async () => {
+test('step 1 with a price target shows the price form only and ends with one variety: no name field, no POST /api/products', async () => {
   const afterPrice = answer(['done', 'pending', 'pending', 'pending', 'pending', 'pending'], {
     stock_target: MANGO,
   })
   const priceBodies: unknown[] = []
   stubFetch(answer(NONE, { price_target: MANGO }), {
-    'POST /varieties/7/prices': (body) => {
+    'POST /api/products/7/prices': (body) => {
       priceBodies.push(body)
       return json({})
     },
-    'GET /onboarding-progress': () => json(calls.includes('POST /varieties/7/prices') ? afterPrice : answer(NONE, { price_target: MANGO })),
+    'GET /onboarding-progress': () => json(calls.includes('POST /api/products/7/prices') ? afterPrice : answer(NONE, { price_target: MANGO })),
   })
   const user = userEvent.setup()
   renderAt(ONBOARDING_VARIETY)
@@ -166,7 +166,7 @@ test('step 1 with a price target shows the price form only and ends with one var
   await user.click(screen.getByRole('button', { name: 'Save the variety' }))
 
   expect(await screen.findByRole('heading', { name: 'Add what you have today' })).toBeInTheDocument()
-  expect(calls).not.toContain('POST /varieties')
+  expect(calls).not.toContain('POST /api/products')
   expect(priceBodies).toEqual([{ effective_from: '2026-10-03', list_price: 12000 }])
 })
 
@@ -194,8 +194,8 @@ test('step 1 follows the pricing switches: with both on, the price form offers t
 test('step 1 with no target saves the variety and its price with one action; a refused price keeps what was typed and the retry sends only the price', async () => {
   let refuse = true
   stubFetch(answer(NONE), {
-    'POST /varieties': () => json({ id: 7, name: 'Mango Bomb', current_price: null }, 201),
-    'POST /varieties/7/prices': () =>
+    'POST /api/products': () => json({ id: 7, name: 'Mango Bomb', current_price: null }, 201),
+    'POST /api/products/7/prices': () =>
       refuse ? json({ code: 'variety.price_entry_invalid' }, 422) : json({}),
   })
   const user = userEvent.setup()
@@ -210,8 +210,8 @@ test('step 1 with no target saves the variety and its price with one action; a r
 
   refuse = false
   await user.click(screen.getByRole('button', { name: 'Save the variety' }))
-  await waitFor(() => expect(calls.filter((call) => call === 'POST /varieties/7/prices')).toHaveLength(2))
-  expect(calls.filter((call) => call === 'POST /varieties')).toHaveLength(1)
+  await waitFor(() => expect(calls.filter((call) => call === 'POST /api/products/7/prices')).toHaveLength(2))
+  expect(calls.filter((call) => call === 'POST /api/products')).toHaveLength(1)
 })
 
 test('step 2 saves the opening stock of the stock target through the owner, then offers Seguir (advance) and Agregar otra variedad', async () => {
@@ -244,7 +244,7 @@ test('step 2 saves the opening stock of the stock target through the owner, then
 
   expect(await screen.findByRole('button', { name: 'Add another variety' })).toBeInTheDocument()
   expect(bodies).toEqual([
-    { date: '2026-10-03', variety_id: 7, origin: 'opening_stock', quantity: '500' },
+    { date: '2026-10-03', product_id: 7, origin: 'opening_stock', quantity: '500' },
   ])
   // Saving the stock is not an Onboarding write: nothing was sent to it yet.
   expect(calls.filter((call) => call.startsWith('POST /onboarding-progress'))).toEqual([])
@@ -282,7 +282,7 @@ test('"Add another variety" goes back to step 1 with the progress still on steps
 })
 
 test('step 3 sends the pass done only after the save answered, and a refused save sends none and keeps what was typed', async () => {
-  const catalog = { text: null, header: 'H', footer: 'F', varieties: [] }
+  const catalog = { text: null, header: 'H', footer: 'F', products: [] }
   let refuse = true
   stubFetch(answer(REQUIRED, { stock_entries_count: 1 }), {
     'GET /catalog': () => json(catalog),
@@ -314,7 +314,7 @@ test('step 3 sends the pass done only after the save answered, and a refused sav
 test('step 3 "Leave as is" passes it done with the defaults kept, and sends no catalog write', async () => {
   const bodies: unknown[] = []
   stubFetch(answer(REQUIRED, { stock_entries_count: 1 }), {
-    'GET /catalog': () => json({ text: null, header: 'H', footer: 'F', varieties: [] }),
+    'GET /catalog': () => json({ text: null, header: 'H', footer: 'F', products: [] }),
     'POST /onboarding-progress/passes': (body) => {
       bodies.push(body)
       return json(answer(['done', 'done', 'done', 'pending', 'pending', 'pending']))
@@ -481,7 +481,7 @@ function expectNoNestedForm(): void {
 
 test('step 3 draws "Leave as is" as a form submit that is not inside another form, under the icon and text rule', async () => {
   stubFetch(answer(REQUIRED, { stock_entries_count: 1 }), {
-    'GET /catalog': () => json({ text: null, header: 'H', footer: 'F', varieties: [] }),
+    'GET /catalog': () => json({ text: null, header: 'H', footer: 'F', products: [] }),
   })
   renderAt(ONBOARDING_CATALOG_MESSAGE)
 

@@ -10,6 +10,7 @@ import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Outlet, RouterProvider, createMemoryRouter, matchRoutes, useLocation } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
+import type { Catalog, ArchivedAttributes } from '../../api/catalog'
 import type { Me } from '../../api/me'
 import { SHOWN_EN } from '../../test/shownLanguage'
 import FlashProvider from '../../flash/FlashProvider'
@@ -54,7 +55,7 @@ function entry(id: number, varietyId: number, date: string, grams: number) {
   return {
     id,
     date,
-    variety_id: varietyId,
+    product_id: varietyId,
     origin: 'purchase',
     quantity: grams,
     total_cost: 280000,
@@ -63,10 +64,10 @@ function entry(id: number, varietyId: number, date: string, grams: number) {
   }
 }
 
-const STOCK_ROW = { variety_id: 1, quantity: 18, status: 'low', sold_out_since: null, threshold: 20, days_left: 24 }
+const STOCK_ROW = { product_id: 1, quantity: 18, status: 'low', sold_out_since: null, threshold: 20, days_left: 24 }
 
 function stockOf(row: Record<string, unknown>, entries = ENTRIES) {
-  return { total: 18, varieties: [row, { ...STOCK_ROW, variety_id: 2 }], entries }
+  return { total: 18, products: [row, { ...STOCK_ROW, product_id: 2 }], entries }
 }
 const ENTRIES = [
   entry(14, 1, '2026-09-30', 10),
@@ -77,16 +78,16 @@ const ENTRIES = [
 ]
 
 function archivedRow(shown: boolean) {
-  return { variety_id: 1, name: '24K Gold', shown, emoji: '🍪', indica_share: 70, aroma: 'Galletita y vainilla' }
+  return { product_id: 1, name: '24K Gold', shown, emoji: '🍪', indica_share: 70, aroma: 'Galletita y vainilla' }
 }
 
 const CATALOG = {
   text: 'texto',
   header: '',
   footer: '',
-  varieties: [
-    { id: 1, name: '24K Gold', emoji: '🍪', indica_share: 70, aroma: 'Galletita y vainilla', shown: true, state: 'in' },
-    { id: 2, name: 'Otra', emoji: null, indica_share: null, aroma: null, shown: true, state: 'in' },
+  products: [
+    { product_id: 1, name: '24K Gold', emoji: '🍪', indica_share: 70, aroma: 'Galletita y vainilla', shown: true, state: 'in' },
+    { product_id: 2, name: 'Otra', emoji: null, indica_share: null, aroma: null, shown: true, state: 'in' },
   ],
 }
 
@@ -98,16 +99,16 @@ type Answers = Record<string, () => Response>
 
 function defaults(): Answers {
   return {
-    'GET /varieties/1': () => json(200, VARIETY_ROW),
-    'GET /varieties/1/prices': () => json(200, PRICES),
+    'GET /api/products/1': () => json(200, VARIETY_ROW),
+    'GET /api/products/1/prices': () => json(200, PRICES),
     'GET /stock': () => json(200, stockOf(STOCK_ROW)),
     'GET /catalog': () => json(200, CATALOG),
     'GET /catalog/archived': () => json(200, [archivedRow(true)]),
     'GET /pricing-settings': () => json(200, { is_bulk_pricing: true, is_vip_customers: true }),
-    'GET /stock/varieties/1/movements': () =>
+    'GET /stock/products/1/movements': () =>
       json(
         200,
-        ENTRIES.filter((row) => row.variety_id === 1).map((row) => ({ ...row, kind: 'entry' })),
+        ENTRIES.filter((row) => row.product_id === 1).map((row) => ({ ...row, kind: 'entry' })),
       ),
   }
 }
@@ -202,17 +203,61 @@ describe('the summary line', () => {
   })
 
   test('no price in force says it cannot be sold', async () => {
-    renderPage(VARIETY_ONE, { 'GET /varieties/1': () => json(200, NO_PRICE_ROW) })
+    renderPage(VARIETY_ONE, { 'GET /api/products/1': () => json(200, NO_PRICE_ROW) })
 
     expect(await screen.findByText(/No price: cannot be sold/)).toBeInTheDocument()
   })
 
   test('a variety left out of the catalog is marked "Hidden" beside its status', async () => {
-    const hidden = { ...CATALOG, varieties: [{ ...CATALOG.varieties[0], shown: false, state: 'hidden' }] }
+    const hidden = { ...CATALOG, products: [{ ...CATALOG.products[0], shown: false, state: 'hidden' }] }
     renderPage(VARIETY_ONE, { 'GET /catalog': () => json(200, hidden) })
 
     const line = (await screen.findByText('Hidden')).closest('p')
     expect(line).toHaveTextContent('18 g · low · Hidden · 24 days')
+  })
+})
+
+describe("the page's product id against the catalog's product_id", () => {
+  const TWO = pathTo(VARIETY, { id: 2 })
+  const TWO_ROW = { id: 2, name: 'Otra', current_price: null }
+
+  function answersFor(two: Answers): Answers {
+    return {
+      'GET /api/products/2': () => json(200, TWO_ROW),
+      'GET /api/products/2/prices': () => json(200, []),
+      'GET /stock/products/2/movements': () => json(200, []),
+      ...two,
+    }
+  }
+
+  test("a live page reads the catalog row whose product_id is its own, not the first row's", async () => {
+    const catalog = {
+      ...CATALOG,
+      products: [
+        { product_id: 1, name: '24K Gold', emoji: null, indica_share: null, aroma: null, shown: true, state: 'in' },
+        { product_id: 2, name: 'Otra', emoji: null, indica_share: null, aroma: null, shown: false, state: 'hidden' },
+      ],
+    } satisfies Catalog
+    renderPage(TWO, answersFor({ 'GET /catalog': () => json(200, catalog) }))
+
+    expect(await screen.findByText('Hidden')).toBeInTheDocument()
+  })
+
+  test("an archived page reads the archived attributes whose product_id is its own", async () => {
+    const attributes = [
+      { product_id: 1, name: '24K Gold', shown: true, emoji: null, indica_share: null, aroma: null },
+      { product_id: 2, name: 'Otra', shown: false, emoji: null, indica_share: null, aroma: null },
+    ] satisfies ArchivedAttributes[]
+    renderPage(
+      TWO,
+      answersFor({
+        'GET /api/products/2': () => json(200, { ...TWO_ROW, archived: true, removal: null }),
+        'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
+        'GET /catalog/archived': () => json(200, attributes),
+      }),
+    )
+
+    expect(await screen.findByText('Hidden')).toBeInTheDocument()
   })
 })
 
@@ -241,7 +286,7 @@ describe('the icon and text rule', () => {
   })
 
   test('"Delete variety" is the critical icon + text action with its current word as its name', async () => {
-    renderPage(VARIETY_ONE, { 'GET /varieties/1': () => json(200, { ...VARIETY_ROW, removal: 'delete' }) })
+    renderPage(VARIETY_ONE, { 'GET /api/products/1': () => json(200, { ...VARIETY_ROW, removal: 'delete' }) })
 
     const button = await screen.findByRole('button', { name: 'Delete variety' })
     expect(button).toHaveClass('boton--critico')
@@ -251,7 +296,7 @@ describe('the icon and text rule', () => {
   })
 
   test('what the live page keeps as text is only its links and the switch; Archive variety has its icon', async () => {
-    renderPage(VARIETY_ONE, { 'GET /varieties/1': () => json(200, { ...VARIETY_ROW, removal: 'archive' }) })
+    renderPage(VARIETY_ONE, { 'GET /api/products/1': () => json(200, { ...VARIETY_ROW, removal: 'archive' }) })
 
     await screen.findByRole('link', { name: '+ Entry' })
     expect(await screen.findByRole('button', { name: 'Archive variety' })).toBeInTheDocument()
@@ -263,7 +308,7 @@ describe('the icon and text rule', () => {
 
   test('an archived variety keeps only Restore, with its icon', async () => {
     renderPage(VARIETY_ONE, {
-      'GET /varieties/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
+      'GET /api/products/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
       'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
     })
 
@@ -274,7 +319,7 @@ describe('the icon and text rule', () => {
 
 describe("an archived variety's summary line and its one action", () => {
   const ARCHIVED: Answers = {
-    'GET /varieties/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
+    'GET /api/products/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
     'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
   }
 
@@ -295,7 +340,7 @@ describe("an archived variety's summary line and its one action", () => {
   test('its grams show as a figure even when negative, and no price says No price', async () => {
     renderPage(VARIETY_ONE, {
       ...ARCHIVED,
-      'GET /varieties/1': () => json(200, { ...NO_PRICE_ROW, archived: true, removal: null }),
+      'GET /api/products/1': () => json(200, { ...NO_PRICE_ROW, archived: true, removal: null }),
       'GET /stock?archived=true': () => json(200, stockOf({ ...STOCK_ROW, quantity: -4, status: 'sold_out' })),
     })
 
@@ -319,7 +364,7 @@ describe("an archived variety's summary line and its one action", () => {
 
 describe("an archived variety's four sections, read-only", () => {
   const ARCHIVED: Answers = {
-    'GET /varieties/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
+    'GET /api/products/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
     'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
     'GET /catalog/archived': () => json(200, [archivedRow(false)]),
   }
@@ -400,7 +445,7 @@ describe('the actions and the sections', () => {
 
   test('a withdrawal in Stock and entries says its reason and a minus sign, mixed with entries, and opens its detail', async () => {
     renderPage(pathTo(VARIETY, { id: 1 }), {
-      'GET /stock/varieties/1/movements': () =>
+      'GET /stock/products/1/movements': () =>
         json(200, [
           { ...ENTRIES[0], kind: 'entry' },
           { kind: 'withdrawal', id: 5, date: '2026-09-25', reason: 'promotion', quantity: 5.5 },
@@ -434,7 +479,7 @@ describe('the actions and the sections', () => {
   test('Precios follows the switches: each rule shows only while it is on, and comes back when on again', async () => {
     renderPage(pathTo(VARIETY, { id: 1 }), {
       'GET /pricing-settings': () => json(200, { is_bulk_pricing: false, is_vip_customers: true }),
-      'GET /varieties/1/prices': () =>
+      'GET /api/products/1/prices': () =>
         json(200, [{ ...PRICES[1], vip_price: 9000 }, { ...PRICES[0], vip_price: null }]),
     })
 
@@ -457,10 +502,10 @@ describe('the actions and the sections', () => {
 
   test("an archived variety's Precios follows the switches too, read-only", async () => {
     renderPage(pathTo(VARIETY, { id: 1 }), {
-      'GET /varieties/1': () => json(200, { ...VARIETY_ROW, archived: true }),
+      'GET /api/products/1': () => json(200, { ...VARIETY_ROW, archived: true }),
       'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
       'GET /pricing-settings': () => json(200, { is_bulk_pricing: true, is_vip_customers: false }),
-      'GET /varieties/1/prices': () => json(200, [{ ...PRICES[1], vip_price: 9000 }, PRICES[0]]),
+      'GET /api/products/1/prices': () => json(200, [{ ...PRICES[1], vip_price: 9000 }, PRICES[0]]),
     })
 
     const section = (await screen.findByRole('heading', { name: 'Prices' })).closest('section')
@@ -509,7 +554,7 @@ describe('the actions and the sections', () => {
   })
 
   test('In the catalog tells a hidden variety by word', async () => {
-    const hidden = { ...CATALOG, varieties: [{ ...CATALOG.varieties[0], shown: false, state: 'hidden' }] }
+    const hidden = { ...CATALOG, products: [{ ...CATALOG.products[0], shown: false, state: 'hidden' }] }
     renderPage(VARIETY_ONE, { 'GET /catalog': () => json(200, hidden) })
 
     const section = (await screen.findByRole('heading', { name: 'In the catalog' })).closest('section')
@@ -520,8 +565,8 @@ describe('the actions and the sections', () => {
 describe('gone and foreign varieties', () => {
   test('a variety that is not there, or is another business\'s, shows "That is gone."', async () => {
     renderPage(VARIETY_ONE, {
-      'GET /varieties/1': () => json(404, { code: 'variety.not_found' }),
-      'GET /varieties/1/prices': () => json(404, { code: 'variety.not_found' }),
+      'GET /api/products/1': () => json(404, { code: 'variety.not_found' }),
+      'GET /api/products/1/prices': () => json(404, { code: 'variety.not_found' }),
     })
 
     expect(await screen.findByText('That is gone.')).toBeInTheDocument()
@@ -625,7 +670,7 @@ describe('renaming from the page', () => {
   test('saving renames, closes the form and toasts "Variety saved"', async () => {
     const user = userEvent.setup()
     const { fetchMock } = renderPage(VARIETY_ONE, {
-      'PATCH /varieties/1': () => json(200, { ...VARIETY_ROW, name: 'Gold' }),
+      'PATCH /api/products/1': () => json(200, { ...VARIETY_ROW, name: 'Gold' }),
     })
     await user.click(await screen.findByRole('button', { name: 'Edit name' }))
     const field = await screen.findByLabelText('Name')
@@ -635,7 +680,7 @@ describe('renaming from the page', () => {
 
     expect(await screen.findByText('Variety saved')).toBeInTheDocument()
     expect(screen.queryByText('Rename variety')).not.toBeInTheDocument()
-    expect(writes(fetchMock)).toEqual(['PATCH /varieties/1'])
+    expect(writes(fetchMock)).toEqual(['PATCH /api/products/1'])
   })
 
   test('leaving with a changed name asks first, and keeping stays on the form', async () => {
@@ -667,7 +712,7 @@ describe('renaming from the page', () => {
 
   test('a name already taken is refused inline and keeps what was typed', async () => {
     const user = userEvent.setup()
-    renderPage(VARIETY_ONE, { 'PATCH /varieties/1': () => json(409, { code: 'variety.name_taken' }) })
+    renderPage(VARIETY_ONE, { 'PATCH /api/products/1': () => json(409, { code: 'variety.name_taken' }) })
     await user.click(await screen.findByRole('button', { name: 'Edit name' }))
     const field = await screen.findByLabelText('Name')
     await user.clear(field)
@@ -686,7 +731,7 @@ describe('turning the warning off', () => {
     let stock = stockOf(STOCK_ROW)
     const { fetchMock } = renderPage(VARIETY_ONE, {
       'GET /stock': () => json(200, stock),
-      'PUT /stock/varieties/1/threshold': () => {
+      'PUT /stock/products/1/threshold': () => {
         throw new Error('replaced below')
       },
     })
@@ -694,7 +739,7 @@ describe('turning the warning off', () => {
       'fetch',
       vi.fn((url: string, init?: RequestInit) => {
         const key = `${init?.method ?? 'GET'} ${url}`
-        if (key === 'PUT /stock/varieties/1/threshold') {
+        if (key === 'PUT /stock/products/1/threshold') {
           return new Promise<Response>((resolve) => {
             release = resolve
           })
@@ -720,7 +765,7 @@ describe('turning the warning off', () => {
   test('a refusal leaves the switch on and says so inline', async () => {
     const user = userEvent.setup()
     renderPage(VARIETY_ONE, {
-      'PUT /stock/varieties/1/threshold': () => json(422, { code: 'stock.threshold_invalid' }),
+      'PUT /stock/products/1/threshold': () => json(422, { code: 'stock.threshold_invalid' }),
     })
 
     const toggle = await screen.findByRole('switch')
@@ -783,7 +828,7 @@ describe('Low stock warning: the form', () => {
     let stock = stockOf(OFF)
     const { fetchMock } = renderPage(VARIETY_ONE, {
       'GET /stock': () => json(200, stock),
-      'PUT /stock/varieties/1/threshold': () => {
+      'PUT /stock/products/1/threshold': () => {
         stock = stockOf({ ...STOCK_ROW, threshold: 15.5 })
         return json(200, { ...STOCK_ROW, threshold: 15.5 })
       },
@@ -794,7 +839,7 @@ describe('Low stock warning: the form', () => {
 
     expect(await screen.findByText('Warning saved')).toBeInTheDocument()
     expect(screen.queryByLabelText('Warn when below')).not.toBeInTheDocument()
-    expect(putOf(fetchMock)).toEqual({ url: '/stock/varieties/1/threshold', body: { quantity: 15.5 } })
+    expect(putOf(fetchMock)).toEqual({ url: '/stock/products/1/threshold', body: { quantity: 15.5 } })
     await waitFor(() => expect(reads(fetchMock, 'GET /stock')).toBe(2))
     await waitFor(() => expect(reads(fetchMock, 'GET /catalog')).toBe(2))
     expect(await screen.findByRole('switch')).toBeChecked()
@@ -802,7 +847,7 @@ describe('Low stock warning: the form', () => {
 
   test('a refused amount shows under the field and keeps what was typed', async () => {
     const user = userEvent.setup()
-    renderPage(VARIETY_ONE, { 'PUT /stock/varieties/1/threshold': () => json(422, { code: 'stock.threshold_invalid' }) })
+    renderPage(VARIETY_ONE, { 'PUT /stock/products/1/threshold': () => json(422, { code: 'stock.threshold_invalid' }) })
     await user.click(await screen.findByRole('button', { name: 'Edit warning' }))
     const field = await screen.findByLabelText('Warn when below')
     await user.clear(field)
@@ -830,7 +875,7 @@ describe('Low stock warning: the form', () => {
 
   test('a variety that is gone while saving shows "That is gone."', async () => {
     const user = userEvent.setup()
-    renderPage(VARIETY_ONE, { 'PUT /stock/varieties/1/threshold': () => json(404, { code: 'variety.not_found' }) })
+    renderPage(VARIETY_ONE, { 'PUT /stock/products/1/threshold': () => json(404, { code: 'variety.not_found' }) })
     await user.click(await screen.findByRole('button', { name: 'Edit warning' }))
     await user.type(await screen.findByLabelText('Warn when below'), '1')
     await user.click(screen.getByRole('button', { name: 'Save the warning' }))
@@ -906,7 +951,7 @@ describe('In the catalog: the form', () => {
   test('saving puts the four values, closes the form, toasts and asks the catalog again', async () => {
     const user = userEvent.setup()
     const { fetchMock } = renderPage(VARIETY_ONE, {
-      'PUT /catalog/varieties/1': () => json(200, CATALOG),
+      'PUT /catalog/products/1': () => json(200, CATALOG),
     })
     await user.click(within(await section()).getByRole('button', { name: 'Edit catalog' }))
     await user.click(screen.getByRole('switch', { name: 'Show in the catalog' }))
@@ -919,7 +964,7 @@ describe('In the catalog: the form', () => {
     expect(await screen.findByText('Catalog saved')).toBeInTheDocument()
     expect(screen.queryByLabelText('Emoji')).not.toBeInTheDocument()
     expect(putOf(fetchMock)).toEqual({
-      url: '/catalog/varieties/1',
+      url: '/catalog/products/1',
       body: { shown: false, emoji: null, indica_share: 70, aroma: 'Cítrico' },
     })
     await waitFor(() => expect(reads(fetchMock, 'GET /catalog')).toBe(2))
@@ -928,7 +973,7 @@ describe('In the catalog: the form', () => {
   test('a too-long aroma is refused under its own field and keeps everything typed', async () => {
     const user = userEvent.setup()
     renderPage(VARIETY_ONE, {
-      'PUT /catalog/varieties/1': () => json(422, { code: 'catalog.aroma_too_long' }),
+      'PUT /catalog/products/1': () => json(422, { code: 'catalog.aroma_too_long' }),
     })
     await user.click(within(await section()).getByRole('button', { name: 'Edit catalog' }))
     await user.type(screen.getByLabelText('Emoji'), 'x')
@@ -951,7 +996,7 @@ describe('In the catalog: the form', () => {
     ['catalog.indica_share_invalid', '% indica', 'The indica percentage goes from 0 to 100'],
   ])('%s is shown under %s only', async (code, label, message) => {
     const user = userEvent.setup()
-    renderPage(VARIETY_ONE, { 'PUT /catalog/varieties/1': () => json(422, { code }) })
+    renderPage(VARIETY_ONE, { 'PUT /catalog/products/1': () => json(422, { code }) })
     await user.click(within(await section()).getByRole('button', { name: 'Edit catalog' }))
     await user.type(screen.getByLabelText('Aroma/flavor'), '!')
     await user.click(screen.getByRole('button', { name: 'Save the catalog' }))
@@ -976,7 +1021,7 @@ describe('In the catalog: the form', () => {
 
   test('a variety that is gone while saving shows "That is gone."', async () => {
     const user = userEvent.setup()
-    renderPage(VARIETY_ONE, { 'PUT /catalog/varieties/1': () => json(404, { code: 'catalog.variety_not_found' }) })
+    renderPage(VARIETY_ONE, { 'PUT /catalog/products/1': () => json(404, { code: 'catalog.variety_not_found' }) })
     await user.click(within(await section()).getByRole('button', { name: 'Edit catalog' }))
     await user.click(screen.getByRole('button', { name: 'Save the catalog' }))
 

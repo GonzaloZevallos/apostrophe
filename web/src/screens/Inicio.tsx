@@ -32,6 +32,7 @@ import { useOutletContext } from 'react-router'
 import BrandMark from '../components/BrandMark'
 import InAppLink from '../components/InAppLink'
 import { owedPlace, useReturnToPlace } from '../components/useReturnToPlace'
+import { peekPaymentReturn } from '../paymentReturn'
 import { get, NetworkError } from '../api/client'
 import { firstRunQuery } from '../api/firstRun'
 import { onboardingProgressQuery } from '../api/onboarding'
@@ -39,6 +40,7 @@ import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { panelQuery, type PanelTab } from '../api/panel'
 import ErrorGenerico from '../components/ErrorGenerico'
+import Loading from '../components/Loading'
 import { AvisoCuerpo } from '../components/AvisoAmbar'
 import SinConexion from '../components/SinConexion'
 import { initialsOf } from '../format/initials'
@@ -83,11 +85,8 @@ export default function Inicio() {
   // The notices above the panel make the page taller once they answer (pending, not failed: a
   // failure draws none), so the place is applied after them, never against a shorter page.
   const settled = !pinnedCatalog.isPending && !onboardingQuery.isPending && !firstRun.isPending
-  useReturnToPlace({
-    root,
-    ready: panelRead.data !== undefined && !panelRead.isFetching && settled,
-    fallback: owedPlace,
-  })
+  const ready = panelRead.data !== undefined && !panelRead.isFetching && settled
+  useReturnToPlace({ root, ready, fallback: owedPlace })
   const failed = [panelRead, onboardingQuery].find((query) => query.isError)
 
   return (
@@ -133,6 +132,11 @@ export default function Inicio() {
         {failed !== undefined && failed.error instanceof NetworkError && <SinConexion />}
         {failed !== undefined && !(failed.error instanceof NetworkError) && <ErrorGenerico />}
 
+        {/* A saved payment drops the cached panel and leaves the hand-off: Home reads again and the
+            notices above it make the page taller once they answer. While that hand-off waits for
+            its place, the marker tells the scroll owner (`ScrollSync`) the page is not at its final
+            height yet. A first visit shows none: it has no place to return to. */}
+        {!ready && failed === undefined && peekPaymentReturn() !== null && <Loading />}
         {panelRead.data !== undefined && (
           <InicioPanel panel={panelRead.data} tab={tab} onTab={setTab} today={me.today} />
         )}

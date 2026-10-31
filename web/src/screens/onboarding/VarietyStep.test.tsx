@@ -67,7 +67,7 @@ function progress(): OnboardingProgress {
       state: (step === 'variety' && varietyDone) || (step === 'stock' && stocked) ? 'done' : 'pending',
     })),
     can_skip_rest: varietyDone && stocked,
-    varieties_count: varieties.length,
+    products_count: varieties.length,
     stock_entries_count: stocked ? 1 : 0,
     price_target: target(sorted.find((item) => item.price === null)),
     priced_target: target(pricedOne),
@@ -90,14 +90,14 @@ function fakeApi(input: RequestInfo | URL, init?: RequestInit): Promise<Response
   if (key === 'GET /pricing-settings') {
     return Promise.resolve(json({ is_bulk_pricing: false, is_vip_customers: false }))
   }
-  if (key === 'POST /varieties') {
+  if (key === 'POST /api/products') {
     if (nameRefusal !== null) return Promise.resolve(json({ code: nameRefusal }, 422))
     const body = JSON.parse(String(init?.body)) as { name: string }
     const created: Stored = { id: nextId++, name: body.name, price: null }
     varieties.push(created)
     return Promise.resolve(json({ id: created.id, name: created.name, archived: false, current_price: null }, 201))
   }
-  const price = /^\/varieties\/(\d+)\/prices$/.exec(path)
+  const price = /^\/api\/products\/(\d+)\/prices$/.exec(path)
   if (method === 'POST' && price !== null) {
     if (priceRefusals > 0) {
       priceRefusals -= 1
@@ -108,7 +108,7 @@ function fakeApi(input: RequestInfo | URL, init?: RequestInit): Promise<Response
     found.price = (JSON.parse(String(init?.body)) as { list_price: number }).list_price
     return Promise.resolve(json({ id: 1, list_price: found.price }, 201))
   }
-  const read = /^\/varieties\/(\d+)$/.exec(path)
+  const read = /^\/api\/products\/(\d+)$/.exec(path)
   if (method === 'GET' && read !== null) {
     const found = varieties.find((item) => item.id === Number(read[1]))
     if (found === undefined) return Promise.resolve(json({ code: 'variety.not_found' }, 404))
@@ -195,11 +195,11 @@ test('one primary action saves the variety and then its price', async () => {
   await user.click(screen.getByRole('button', { name: 'Save the variety' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(ONBOARDING_STOCK))
-  expect(bodies['POST /varieties']).toEqual([{ name: 'Mango Bomb' }])
-  expect(bodies['POST /varieties/1/prices']).toEqual([{ effective_from: '2026-10-03', list_price: 12000 }])
+  expect(bodies['POST /api/products']).toEqual([{ name: 'Mango Bomb' }])
+  expect(bodies['POST /api/products/1/prices']).toEqual([{ effective_from: '2026-10-03', list_price: 12000 }])
   // The progress is read again between the two writes.
-  expect(calls.indexOf('POST /varieties')).toBeLessThan(calls.indexOf('POST /varieties/1/prices'))
-  expect(calls.slice(calls.indexOf('POST /varieties'), calls.indexOf('POST /varieties/1/prices'))).toContain(
+  expect(calls.indexOf('POST /api/products')).toBeLessThan(calls.indexOf('POST /api/products/1/prices'))
+  expect(calls.slice(calls.indexOf('POST /api/products'), calls.indexOf('POST /api/products/1/prices'))).toContain(
     'GET /onboarding-progress',
   )
 })
@@ -236,11 +236,11 @@ test('a refused price keeps everything typed, shows on its field, and the retry 
 
   await user.click(screen.getByRole('button', { name: 'Save the variety' }))
   await waitFor(() => expect(router.state.location.pathname).toBe(ONBOARDING_STOCK))
-  expect(count('POST /varieties')).toBe(1)
-  expect(count('POST /varieties/1/prices')).toBe(2)
+  expect(count('POST /api/products')).toBe(1)
+  expect(count('POST /api/products/1/prices')).toBe(2)
 })
 
-test('a double tap sends one POST /varieties', async () => {
+test('a double tap sends one POST /api/products', async () => {
   const user = userEvent.setup()
   renderStep()
 
@@ -249,8 +249,8 @@ test('a double tap sends one POST /varieties', async () => {
   const save = screen.getByRole('button', { name: 'Save the variety' })
   await user.dblClick(save)
 
-  await waitFor(() => expect(count('POST /varieties/1/prices')).toBeGreaterThan(0))
-  expect(count('POST /varieties')).toBe(1)
+  await waitFor(() => expect(count('POST /api/products/1/prices')).toBeGreaterThan(0))
+  expect(count('POST /api/products')).toBe(1)
 })
 
 test('the price input keeps its DOM node and value across the variety write and the refresh', async () => {
@@ -267,10 +267,10 @@ test('the price input keeps its DOM node and value across the variety write and 
   expect(screen.getByLabelText(/^List price/)).toBe(price)
   expect(price).toHaveValue('12000')
   expect(screen.queryByLabelText(/^Name/)).not.toBeInTheDocument()
-  expect(bodies['POST /varieties/1/prices']).toEqual([{ effective_from: '2026-10-03', list_price: 12000 }])
+  expect(bodies['POST /api/products/1/prices']).toEqual([{ effective_from: '2026-10-03', list_price: 12000 }])
 })
 
-test('variety saved and price refused, then step 2 and back with no reload: the price form of that variety, no second POST /varieties', async () => {
+test('variety saved and price refused, then step 2 and back with no reload: the price form of that variety, no second POST /api/products', async () => {
   priceRefusals = 1
   const user = userEvent.setup()
   const router = renderStep()
@@ -291,7 +291,7 @@ test('variety saved and price refused, then step 2 and back with no reload: the 
   await user.type(screen.getByLabelText(/^List price/), '9000')
   await user.click(screen.getByRole('button', { name: 'Save the variety' }))
   await waitFor(() => expect(router.state.location.pathname).toBe(ONBOARDING_STOCK))
-  expect(count('POST /varieties')).toBe(1)
+  expect(count('POST /api/products')).toBe(1)
 })
 
 test('with one variety priced and a second saved with no price, step 1 shows the second and only its price', async () => {
@@ -309,7 +309,7 @@ test('with one variety priced and a second saved with no price, step 1 shows the
   await user.click(screen.getByRole('button', { name: 'Save the variety' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(ONBOARDING_STOCK))
-  expect(count('POST /varieties')).toBe(0)
+  expect(count('POST /api/products')).toBe(0)
   expect(varieties).toHaveLength(2)
 })
 
@@ -332,7 +332,7 @@ test('two unpriced varieties and one priced: the first price save stays on step 
   await user.type(screen.getByLabelText(/^List price/), '6000')
   await user.click(screen.getByRole('button', { name: 'Save the variety' }))
   await waitFor(() => expect(router.state.location.pathname).toBe(ONBOARDING_STOCK))
-  expect(count('POST /varieties')).toBe(0)
+  expect(count('POST /api/products')).toBe(0)
 })
 
 test('arriving with only a priced variety shows "Hecho" with its name and price; its action goes to step 2 and writes nothing', async () => {
@@ -358,9 +358,9 @@ test('a "Hecho" read that answers no price today refetches the progress and show
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
-      if (`${init?.method ?? 'GET'} ${String(input)}` === 'GET /varieties/1' && served === 0) {
+      if (`${init?.method ?? 'GET'} ${String(input)}` === 'GET /api/products/1' && served === 0) {
         served += 1
-        calls.push('GET /varieties/1')
+        calls.push('GET /api/products/1')
         // The price went away between the two reads (a partner removed it).
         const only = varieties[0]
         if (only !== undefined) only.price = null

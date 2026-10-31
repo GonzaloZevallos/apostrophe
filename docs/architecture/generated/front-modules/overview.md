@@ -38,6 +38,7 @@ src_App_tsx-->src_queryClient_ts
 src_App_tsx-->src_router_tsx
 src_Root_tsx-->src_components
 src_Root_tsx-->src_queryClient_ts
+src_Root_tsx-->src_shell
 src_Root_tsx-->src_useOnline_ts
 src_api-->src_copy
 src_api-->src_i18n
@@ -69,7 +70,6 @@ src_router_tsx-->src_Root_tsx
 src_router_tsx-->src_routes_ts
 src_router_tsx-->src_screens
 src_router_tsx-->src_shell
-src_routes_ts-->src_paymentReturn_ts
 src_sales-->src_api
 src_sales-->src_copy
 src_sales-->src_format
@@ -81,6 +81,7 @@ src_screens-->src_domain
 src_screens-->src_flash
 src_screens-->src_format
 src_screens-->src_i18n
+src_screens-->src_paymentReturn_ts
 src_screens-->src_routes_ts
 src_screens-->src_sales
 src_screens-->src_session_ts

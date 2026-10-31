@@ -192,6 +192,17 @@ test('"New sale" is fixed, apart from the tabs, and goes straight to the sale fo
 })
 
 test.each([
+  ['the bar', 0],
+  ['the rail', 1],
+])('"New sale" in %s opens the form as an in-app entry, so Close goes back through history', async (_where, index) => {
+  renderShell([HOME])
+
+  await userEvent.click(screen.getAllByRole('link', { name: /New sale/ })[index] as HTMLElement)
+
+  expect(await screen.findByText(`en ${SALE_NEW} inApp=true`)).toBeInTheDocument()
+})
+
+test.each([
   ['a root', HOME, true, true, false],
   ['a root that is Gastos', EXPENSES, true, true, false],
   ['a card: a sale', pathTo(SALE, { id: 7 }), true, false, true],

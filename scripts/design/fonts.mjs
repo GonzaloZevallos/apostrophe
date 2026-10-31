@@ -1,21 +1,40 @@
-// Fonts of a design capture (ADR-0042). The design files load Plus Jakarta Sans from Google
+// Fonts of a design capture (ADR-0042). The design files load their family from Google
 // Fonts with `display=swap`; a capture must not depend on the network, so the request is
 // answered from the app's own self-hosted package (@fontsource/geist), with
-// `font-display: block`. The drawings still name Plus Jakarta Sans in their own CSS, so each
-// face is declared under that name but filled with the Geist files: the drawing side is drawn
-// in Geist, like the app. Pure: no file is read here, `comparisons.mjs` injects the reader.
+// `font-display: block`. The old drawings still name Plus Jakarta Sans in their own CSS, so
+// that family is declared under its own name but filled with the Geist files: the drawing side
+// is drawn in Geist, like the app. The redesign drawings ask for Geist itself. Pure: no file is
+// read here, `comparisons.mjs` injects the reader.
 
-// Where the stylesheet says its files live; a request for one is served from `files/`.
-export const GSTATIC_PREFIX = 'https://fonts.gstatic.com/s/plusjakartasans/v1/'
+// The closed map of families a capture serves. It is the only place in scripts/design/ that
+// names a font package or a gstatic prefix: a file is served only under the prefix of its own
+// family, and a family that is not a key is never served.
+//
+// `face` is the family the package declares in its own CSS. Plus Jakarta Sans is no longer
+// installed (Geist replaced it in the app): its request is answered from the Geist package, and
+// `fontCss` re-declares each face under the name that was asked.
+export const FONT_FAMILIES = Object.freeze({
+  'Plus Jakarta Sans': Object.freeze({
+    package: '@fontsource/geist',
+    face: 'Geist',
+    prefix: 'https://fonts.gstatic.com/s/plusjakartasans/v1/',
+  }),
+  Geist: Object.freeze({
+    package: '@fontsource/geist',
+    face: 'Geist',
+    prefix: 'https://fonts.gstatic.com/s/geist/v1/',
+  }),
+})
 
-// The family the drawings ask for and declare, and the one the Geist package declares.
-export const REQUESTED_FAMILY = 'Plus Jakarta Sans'
-const FAMILY = /^Plus Jakarta Sans:wght@(\d+(?:;\d+)*)$/
-const LOCAL_FAMILY = /font-family:\s*'Geist'/g
+const FAMILY = /^([^:]+):wght@(\d+(?:;\d+)*)$/
 const FILE_NAME = /^[a-z0-9-]+\.woff2?$/
 
-// What to do with a request URL: a stylesheet for the weights it asks, a font file by its
-// name, or nothing (the capture aborts it).
+const isFamily = (name) => Object.hasOwn(FONT_FAMILIES, name)
+// fontsource names its files `<package-name>-<subset>-<weight>-<style>`.
+const fileStem = (family) => FONT_FAMILIES[family].package.split('/').pop()
+
+// What to do with a request URL: a stylesheet for the family and weights it asks, a font file
+// by its family and name, or nothing (the capture aborts it).
 export function fontRoute(url) {
   let parsed
   try {
@@ -26,29 +45,41 @@ export function fontRoute(url) {
   if (parsed.protocol !== 'https:') return { kind: 'unserved' }
   if (parsed.hostname === 'fonts.googleapis.com' && parsed.pathname === '/css2') {
     const families = parsed.searchParams.getAll('family')
-    const match = families.length === 1 ? FAMILY.exec(families[0]) : null
-    if (match) return { kind: 'stylesheet', weights: match[1].split(';').map(Number) }
+    // One family, asked once or repeated (Marca.dc.html asks Geist twice, for two weight sets): the
+    // weights are merged. Two different families stay unserved.
+    const matches = families.map((family) => FAMILY.exec(family))
+    const [first] = matches
+    if (first && isFamily(first[1]) && matches.every((match) => match && match[1] === first[1])) {
+      const weights = [...new Set(matches.flatMap((match) => (match ? match[2] : '').split(';').map(Number)))]
+      return { kind: 'stylesheet', family: first[1], weights: weights.sort((a, b) => a - b) }
+    }
     return { kind: 'unserved' }
   }
-  const prefix = new URL(GSTATIC_PREFIX)
-  if (parsed.hostname === prefix.hostname && parsed.pathname.startsWith(prefix.pathname)) {
+  for (const family of Object.keys(FONT_FAMILIES)) {
+    const prefix = new URL(FONT_FAMILIES[family].prefix)
+    if (parsed.hostname !== prefix.hostname || !parsed.pathname.startsWith(prefix.pathname)) continue
     const name = parsed.pathname.slice(prefix.pathname.length)
-    if (FILE_NAME.test(name)) return { kind: 'file', name }
+    if (FILE_NAME.test(name) && name.startsWith(`${fileStem(family)}-`)) {
+      return { kind: 'file', family, name }
+    }
   }
   return { kind: 'unserved' }
 }
 
-// The stylesheet for `weights`, from `read(weight)` (the text of fontsource's `<weight>.css`).
-// `read` throws when the weight has no local CSS: there is no fallback to the network.
-export function fontCss(weights, read) {
+// The stylesheet of `family` for `weights`, from `read(weight)` (the text of fontsource's
+// `<weight>.css`). `read` throws when the weight has no local CSS: there is no fallback to
+// the network. Every URL must end up under the prefix of this family.
+export function fontCss(family, weights, read) {
+  if (!isFamily(family)) throw new Error(`the family ${family} is not served`)
+  const { prefix, face } = FONT_FAMILIES[family]
   return weights
     .map((weight) => {
       const css = read(weight)
         .replace(/font-display:\s*swap/g, 'font-display: block')
-        .replace(LOCAL_FAMILY, `font-family: '${REQUESTED_FAMILY}'`)
-        .replace(/url\(\.\/files\/([^)]+)\)/g, `url(${GSTATIC_PREFIX}$1)`)
+        .replace(new RegExp(`font-family:\\s*'${face}'`, 'g'), `font-family: '${family}'`)
+        .replace(/url\(\.\/files\/([^)]+)\)/g, `url(${prefix}$1)`)
       for (const [, target] of css.matchAll(/url\(([^)]+)\)/g)) {
-        if (!target.startsWith(GSTATIC_PREFIX)) {
+        if (!target.startsWith(prefix)) {
           throw new Error(`the stylesheet of weight ${weight} has a URL outside the local files`)
         }
       }

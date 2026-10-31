@@ -10,7 +10,7 @@
 // never thrown: one broken screen must not hide the others. The facts carry `today`.
 //
 // A design capture never touches the network (ADR-0042): its Google Fonts requests are
-// served from @fontsource/geist, every other non-file request is aborted. Both
+// served from the self-hosted Geist files (FONT_FAMILIES), every other non-file request is aborted. Both
 // captures run on a paused fake clock (the facts' `today` at noon, Argentina) and are taken
 // only once the page is at rest (ADR-0042, `settle.mjs`): the applied-check passes and, for three
 // frames, nothing is requested, mutated or animating and the layout (control state included) is
@@ -43,7 +43,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 import { assertAccountKinds, assertScreens, assertSelectedAccounts, assertSelectedNeeds } from './screens.mjs'
-import { fontCss, fontRoute } from './fonts.mjs'
+import { FONT_FAMILIES, fontCss, fontRoute } from './fonts.mjs'
 import { pageProbe } from './probe.mjs'
 import {
   SETTLE_ADVANCE_MS,
@@ -69,7 +69,7 @@ const REPO = resolve(HERE, '..', '..')
 const PROTOTYPE = join(REPO, 'docs', 'product', 'design-system', 'pantallas')
 const require = createRequire(join(REPO, 'web', 'package.json'))
 const { chromium } = require('playwright')
-const FONT_ROOT = join(REPO, 'web', 'node_modules', '@fontsource', 'geist')
+const fontRoot = (family) => join(REPO, 'web', 'node_modules', FONT_FAMILIES[family].package)
 
 const { values } = parseArgs({
   options: {
@@ -289,7 +289,7 @@ function fail(ctx, message) {
   ctx.notes.push(message)
 }
 
-const readFontCss = (weight) => readFileSync(join(FONT_ROOT, `${weight}.css`), 'utf-8')
+const readFontCss = (family) => (weight) => readFileSync(join(fontRoot(family), `${weight}.css`), 'utf-8')
 
 // The design context's network: file:// goes through, Google Fonts is answered from the
 // local package, everything else is aborted and never reaches the network.
@@ -300,10 +300,10 @@ async function routeDesign(context, ctx) {
     const target = fontRoute(url)
     try {
       if (target.kind === 'stylesheet') {
-        return await route.fulfill({ contentType: 'text/css', body: fontCss(target.weights, readFontCss) })
+        return await route.fulfill({ contentType: 'text/css', body: fontCss(target.family, target.weights, readFontCss(target.family)) })
       }
       if (target.kind === 'file') {
-        const body = readFileSync(join(FONT_ROOT, 'files', target.name))
+        const body = readFileSync(join(fontRoot(target.family), 'files', target.name))
         return await route.fulfill({ contentType: target.name.endsWith('.woff2') ? 'font/woff2' : 'font/woff', body })
       }
     } catch (error) {

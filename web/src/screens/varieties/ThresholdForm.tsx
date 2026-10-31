@@ -1,5 +1,5 @@
 /**
- * `ThresholdForm`: sets a variety's low-stock warning (`PUT /stock/varieties/{id}/threshold`
+ * `ThresholdForm`: sets a variety's low-stock warning (`PUT /stock/products/{id}/threshold`
  * with `{quantity}`), opened over its page. Like `RenameForm` it knows nothing of the router:
  * its host supplies the exits and learns whether something was typed. A refusal shows under
  * the field and keeps what was typed. What counts as a valid threshold (above zero) is the

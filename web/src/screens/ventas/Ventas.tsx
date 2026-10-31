@@ -84,9 +84,9 @@ function varietyNames(lines: Sale['lines']): string {
   const seen = new Set<string>()
   const names: string[] = []
   for (const line of lines) {
-    if (!seen.has(line.variety_name)) {
-      seen.add(line.variety_name)
-      names.push(line.variety_name)
+    if (!seen.has(line.product_name)) {
+      seen.add(line.product_name)
+      names.push(line.product_name)
     }
   }
   return names.join(', ')

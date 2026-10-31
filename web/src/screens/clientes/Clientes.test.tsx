@@ -14,6 +14,7 @@
 
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMER_PAYMENT, CUSTOMERS, pathTo } from '../../routes'
 import { inAppState } from '../../components/inAppState'
+import { consumePaymentReturn, peekPaymentReturn, setPaymentReturn } from '../../paymentReturn'
 import { toast } from '../../components/feedback'
 import { LIMITS, SAMPLES } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
@@ -89,6 +90,9 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  // The hand-off a "Collect" click leaves lives in a module, not in the router: a test that
+  // clicks it and never comes back would otherwise focus the next test's list.
+  consumePaymentReturn()
 })
 
 test('the search is a search field with a search key and no autofill', async () => {
@@ -487,6 +491,20 @@ test('"Collect from X" opens Registrar cobro for that customer as an in-app entr
   expect(router.state.location.pathname).toBe(CUSTOMERS)
 })
 
+test('opening "Collect from X" from the list leaves no hand-off, and Back through history keeps none', async () => {
+  consumePaymentReturn()
+  vi.mocked(fetch).mockImplementation(fetchApp)
+  const router = renderApp()
+
+  await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
+  expect(await screen.findByRole('button', { name: 'Save' })).toBeInTheDocument()
+  expect(peekPaymentReturn()).toBeNull()
+
+  await act(() => router.navigate(-1))
+  expect(router.state.location.pathname).toBe(CUSTOMERS)
+  expect(peekPaymentReturn()).toBeNull()
+})
+
 test('Cerrar on Registrar cobro with nothing behind it goes to Clientes', async () => {
   vi.mocked(fetch).mockImplementation(fetchApp)
   const router = renderApp([ANA_PAYMENT])
@@ -705,23 +723,20 @@ test('on a phone, a customer\'s card is alone, with no list behind it', async ()
   expect(screen.queryByRole('region', { name: 'Everyone · A–Z' })).not.toBeInTheDocument()
 })
 
-// Back from Record payment the list is at its place (PM option a): the hand-off the link left
-// is applied once the data has rendered, then taken.
-test('after Close the list focuses that customer\'s "Collect" and scrolls to the offset it was at', async () => {
+// After a save the list focuses its control (PM option a): the hand-off the save left is
+// applied once the data has rendered, then taken.
+test('after a save the list focuses that customer\'s "Collect" (the scroll is ScrollSync\'s)', async () => {
   vi.mocked(fetch).mockImplementation(fetchApp)
-  const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
-  Object.defineProperty(window, 'scrollY', { configurable: true, value: 480 })
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
   const router = renderApp()
 
   await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
   await screen.findByRole('button', { name: 'Save' })
-  scrollTo.mockClear()
+  setPaymentReturn(customerFixture.id)
   await act(() => router.navigate(-1))
 
   const collect = (await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!
   await waitFor(() => expect(collect).toHaveFocus())
-  expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ top: 480 }))
-  Reflect.deleteProperty(window, 'scrollY')
 })
 
 test('when the customer owes nothing any more the list focuses the "Owed to you" block instead', async () => {
@@ -738,6 +753,7 @@ test('when the customer owes nothing any more the list focuses the "Owed to you"
   await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
   await screen.findByRole('button', { name: 'Save' })
   paid = true
+  setPaymentReturn(customerFixture.id)
   await act(() => router.navigate(-1))
 
   const nobody = await screen.findByText(NOBODY_OWES)

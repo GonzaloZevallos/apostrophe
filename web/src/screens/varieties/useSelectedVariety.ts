@@ -13,6 +13,6 @@ import type { Variety } from '../Variedades'
 import { varietiesByName } from './varietiesByName'
 
 export function useSelectedVariety(): number | null {
-  const { data } = useQuery({ queryKey: keys.varieties(), queryFn: () => get<Variety[]>('/varieties') })
+  const { data } = useQuery({ queryKey: keys.varieties(), queryFn: () => get<Variety[]>('/api/products') })
   return data === undefined ? null : (varietiesByName(data)[0]?.id ?? null)
 }

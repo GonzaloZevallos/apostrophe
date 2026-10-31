@@ -2,44 +2,32 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<title>Entrar a apostrophe</title>
+<title>Ingreso</title>
 </head>
 <body>
 <x-dc>
 <helmet>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
 <style>
-body { margin: 0 }
-a { color: #1B4FA8 } a:hover { color: #231E18 }
+body{margin:0}
+a{color:#1E6B47}a:hover{color:#14532F}
 </style>
 </helmet>
-
-<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FCFBF8; color: #231E18; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
-  <div style="flex: 1; padding: 72px 28px 0; display: flex; flex-direction: column; gap: 32px">
-    <div style="display: flex; flex-direction: column; gap: 10px">
-      <span style="display: flex; align-items: baseline; gap: 2px"><span style="font-size: 34px; font-weight: 700; letter-spacing: -0.04em">apostrophe</span><span style="font-size: 34px; font-weight: 700; color: #1B4FA8">’</span></span>
-      <span style="font-size: 16px; color: #706659; line-height: 1.5">Tus ventas, tu stock y lo que te deben.</span>
-    </div>
-    <div style="display: flex; flex-direction: column; gap: 14px">
-      <label style="display: flex; flex-direction: column; gap: 6px">
-        <span style="font-size: 14px; color: #706659">Email</span>
-        <input type="email" value="vos@lahuerta.com" style="height: 56px; box-sizing: border-box; padding: 0 16px; border-radius: 16px; border: 0;  background: #F2EEE6; color: #231E18; font: inherit; font-size: 17px">
-        
-      </label>
-
-      <label style="display: flex; flex-direction: column; gap: 6px">
-        <span style="font-size: 14px; color: #706659">Contraseña</span>
-        <input type="password" value="••••••••••" style="height: 56px; box-sizing: border-box; padding: 0 16px; border-radius: 16px; border: 0; box-shadow: inset 0 0 0 2px #7A4A00; background: #F2EEE6; color: #231E18; font: inherit; font-size: 17px">
-        <span style="font-size: 13px; color: #7A4A00">Email o contraseña incorrectos</span>
-      </label>
-
-      <div style="margin-top: 6px"><a href="Inicio.dc.html" style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 56px; border-radius: 999px; background: #231E18; color: #FCFBF8; text-decoration: none; font-size: 17px; font-weight: 600">Entrá</a></div>
-      <span style="font-size: 14px; color: #706659; text-align: center">Te quedan 3 intentos antes de esperar 15 minutos</span>
-    </div>
-  </div>
-  <div style="padding: 0 28px 32px; font-size: 13px; color: #706659; text-align: center">Para usar apostrophe te tiene que invitar un negocio.</div>
-
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FFFFFF; font-family: 'Geist', system-ui, sans-serif; color: #15201A; display: flex; flex-direction: column; position: relative; overflow: hidden">
+<div style="flex-grow: 1; padding: 0 24px; display: flex; flex-direction: column; justify-content: center; gap: 26px">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 14px"><svg width="72" height="72" viewBox="0 0 120 120" aria-hidden="true"><rect width="120" height="120" rx="28" fill="#1E6B47"/><g fill="#FFFFFF"><path transform="translate(-8 -8) scale(1.12)" d="M60 24a20 20 0 0 1 20 20C80 68 66 86 42 94l-3-7C54 80 62 72 64 63.6A20 20 0 1 1 60 24Z"/></g></svg><span style="font-size: 30px; font-weight: 600; letter-spacing: -0.02em">apostrophe</span><span style="font-size: 14px; color: #56645C; text-align: center">Hola de nuevo. Tu negocio, anotado.</span></div>
+<div style="display: flex; flex-direction: column; gap: 12px"><label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #56645C">Email<input value="zeta@ejemplo.com" style="height: 48px; border-radius: 12px; border: 1px solid #DCE3DE; padding: 0 12px; font: 15px 'Geist', sans-serif; color: #15201A; background: #FFFFFF"></label><label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #56645C">Contraseña<input value="••••••••••" style="height: 48px; border-radius: 12px; border: 1px solid #DCE3DE; padding: 0 12px; font: 15px 'Geist', sans-serif; color: #15201A; background: #FFFFFF"></label><a href="#" style="align-self: flex-end; font-size: 13px; text-decoration: none; font-weight: 500">Olvidé mi contraseña</a></div>
+<button style="height: 54px; border-radius: 16px; border: none; background: #1E6B47; color: #FFFFFF; font: 600 16px 'Geist', sans-serif; ">Entrar</button>
+<span style="font-size: 12px; color: #56645C; text-align: center">Se entra solo con una invitación de tu negocio.</span></div>
 </div>
 </x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
 </body>
 </html>

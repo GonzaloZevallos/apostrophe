@@ -27,6 +27,7 @@ import SinConexion from '../../components/SinConexion'
 import { useBackOr } from '../../components/useBackOr'
 import { useGoneExit } from '../../components/useGoneExit'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
+import { consumePaymentReturn, setPaymentReturn } from '../../paymentReturn'
 import { CUSTOMERS } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import Cobro from './Cobro'
@@ -62,13 +63,18 @@ export default function CobroRoute() {
   // The one way out of every close gesture: none does anything while the save is in
   // flight or while the leave confirmation is showing.
   const blocked = blocker.state === 'blocked'
+  // Close, Escape and the backdrop leave the hand-off too: the origin focuses this customer's
+  // control, as after a save. Opening the link never does, and the page's place is ScrollSync's.
   const leave = useCallback(() => {
     if (sending || blocked) return
+    setPaymentReturn(Number(customerId))
     back()
-  }, [sending, blocked, back])
+  }, [sending, blocked, back, customerId])
 
+  // A save leaves the hand-off: the origin focuses this customer's control.
   function onDone(): void {
     disarm()
+    setPaymentReturn(Number(customerId))
     back()
   }
 
@@ -100,7 +106,11 @@ export default function CobroRoute() {
   const wasBlocked = useRef(false)
   useEffect(() => {
     if (blocked) {
-      if (!wasBlocked.current) focusBeforeAsking.current = document.activeElement
+      if (!wasBlocked.current) {
+        focusBeforeAsking.current = document.activeElement
+        // The leave was asked, not made: the note `leave` left must not outlive "keep editing".
+        consumePaymentReturn()
+      }
     } else if (wasBlocked.current) {
       const before = focusBeforeAsking.current
       if (stillFocusable(before)) before.focus()

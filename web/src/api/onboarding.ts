@@ -36,7 +36,7 @@ export interface OnboardingProgress {
   resume: StepSlug | 'finish' | null
   steps: OnboardingStepAnswer[]
   can_skip_rest: boolean
-  varieties_count: number
+  products_count: number
   stock_entries_count: number
   price_target: OnboardingTarget | null
   priced_target: OnboardingTarget | null

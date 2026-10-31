@@ -19,14 +19,14 @@ GOLD_JANUARY = {
 
 
 def _register(client: TestClient, name: str = "24K Gold") -> dict[str, Any]:
-    response = client.post("/varieties", json={"name": name})
+    response = client.post("/api/products", json={"name": name})
     assert response.status_code == 201
     body: dict[str, Any] = response.json()
     return body
 
 
 def _price(client: TestClient, variety_id: int, **entry: Any) -> dict[str, Any]:
-    response = client.post(f"/varieties/{variety_id}/prices", json=entry)
+    response = client.post(f"/api/products/{variety_id}/prices", json=entry)
     assert response.status_code == 201, response.text
     body: dict[str, Any] = response.json()
     return body
@@ -39,14 +39,14 @@ def test_a_registered_variety_is_listed_without_a_price_until_it_gets_one(
 
     assert variety["name"] == "Sir Jack"
     assert variety["current_price"] is None
-    assert client.get("/varieties").json() == [variety]
+    assert client.get("/api/products").json() == [variety]
 
 
 def test_varieties_are_listed_by_name(client: TestClient) -> None:
     for name in ("Sir Jack", "24K Gold", "golden Cookies"):
         _register(client, name)
 
-    names = [v["name"] for v in client.get("/varieties").json()]
+    names = [v["name"] for v in client.get("/api/products").json()]
 
     assert names == ["24K Gold", "golden Cookies", "Sir Jack"]
 
@@ -55,8 +55,8 @@ def test_two_varieties_cannot_share_a_name_whatever_the_case(client: TestClient)
     _register(client, "24K Gold")
     other = _register(client, "Sir Jack")
 
-    assert client.post("/varieties", json={"name": "24k gold"}).status_code == 409
-    rename = client.patch(f"/varieties/{other['id']}", json={"name": "24K GOLD"})
+    assert client.post("/api/products", json={"name": "24k gold"}).status_code == 409
+    rename = client.patch(f"/api/products/{other['id']}", json={"name": "24K GOLD"})
     assert rename.status_code == 409
 
 
@@ -65,15 +65,15 @@ def test_two_businesses_may_each_have_a_variety_of_the_same_name(
 ) -> None:
     _register(client, "24K Gold")
 
-    assert other_client.post("/varieties", json={"name": "24K Gold"}).status_code == 201
-    assert [v["name"] for v in other_client.get("/varieties").json()] == ["24K Gold"]
+    assert other_client.post("/api/products", json={"name": "24K Gold"}).status_code == 201
+    assert [v["name"] for v in other_client.get("/api/products").json()] == ["24K Gold"]
 
 
 def test_a_variety_can_be_renamed_keeping_its_prices(client: TestClient) -> None:
     variety = _register(client)
     _price(client, variety["id"], **GOLD_JANUARY)
 
-    renamed = client.patch(f"/varieties/{variety['id']}", json={"name": "24K Gold Premium"})
+    renamed = client.patch(f"/api/products/{variety['id']}", json={"name": "24K Gold Premium"})
 
     assert renamed.status_code == 200
     assert renamed.json()["name"] == "24K Gold Premium"
@@ -81,8 +81,8 @@ def test_a_variety_can_be_renamed_keeping_its_prices(client: TestClient) -> None
 
 
 def test_a_variety_that_does_not_exist_is_not_found(client: TestClient) -> None:
-    assert client.get("/varieties/99").status_code == 404
-    assert client.post("/varieties/99/prices", json=GOLD_JANUARY).status_code == 404
+    assert client.get("/api/products/99").status_code == 404
+    assert client.post("/api/products/99/prices", json=GOLD_JANUARY).status_code == 404
 
 
 def test_a_price_entry_is_recorded_and_becomes_the_current_price(
@@ -94,7 +94,7 @@ def test_a_price_entry_is_recorded_and_becomes_the_current_price(
     entry = _price(client, variety["id"], **GOLD_JANUARY)
 
     assert entry == {"id": entry["id"], **GOLD_JANUARY, "vip_price": None}
-    listed = client.get(f"/varieties/{variety['id']}").json()
+    listed = client.get(f"/api/products/{variety['id']}").json()
     assert listed["current_price"] == entry
 
 
@@ -115,7 +115,7 @@ def test_the_current_price_follows_the_day_asked_for(client: TestClient) -> None
     _price(client, variety_id, effective_from="2026-11-01", list_price=12_000)
 
     def on(day: str) -> Any:
-        response = client.get(f"/varieties/{variety_id}/current-price", params={"on": day})
+        response = client.get(f"/api/products/{variety_id}/current-price", params={"on": day})
         if response.status_code != 200:
             return response.status_code
         return response.json()["list_price"]
@@ -125,19 +125,19 @@ def test_the_current_price_follows_the_day_asked_for(client: TestClient) -> None
     assert on("2026-10-31") == 11_000
     assert on("2026-11-01") == 12_000
     # Without a day, today: 2026-10-02.
-    today = client.get(f"/varieties/{variety_id}/current-price").json()
+    today = client.get(f"/api/products/{variety_id}/current-price").json()
     assert today["list_price"] == 11_000
 
 
 def test_listing_varieties_follows_the_day_asked_for(client: TestClient) -> None:
-    # docs/adr/0011: `GET /varieties?on=` is for Nueva venta's date changes, so a
+    # docs/adr/0011: `GET /api/products?on=` is for Nueva venta's date changes, so a
     # variety's `current_price` in the list answer follows that day, not today.
     variety_id = _register(client)["id"]
     _price(client, variety_id, **GOLD_JANUARY)
     _price(client, variety_id, effective_from="2026-11-01", list_price=12_000)
 
     def listed_price(**params: str) -> Any:
-        body = client.get("/varieties", params=params).json()
+        body = client.get("/api/products", params=params).json()
         return body[0]["current_price"]
 
     assert listed_price(on="2025-12-31") is None
@@ -154,16 +154,16 @@ def test_today_is_the_business_day_in_argentina(client: TestClient, clock: Movab
 
     # 02:00 UTC on the 3rd is still 23:00 on the 2nd in Buenos Aires.
     clock.set(datetime(2026, 10, 3, 2, 0, tzinfo=UTC))
-    assert client.get(f"/varieties/{variety_id}").json()["current_price"] is None
+    assert client.get(f"/api/products/{variety_id}").json()["current_price"] is None
     clock.set(datetime(2026, 10, 3, 3, 0, tzinfo=UTC))
-    assert client.get(f"/varieties/{variety_id}").json()["current_price"] is not None
+    assert client.get(f"/api/products/{variety_id}").json()["current_price"] is not None
 
 
 def test_a_second_entry_on_the_same_day_is_refused(client: TestClient) -> None:
     variety_id = _register(client)["id"]
     _price(client, variety_id, **GOLD_JANUARY)
 
-    again = client.post(f"/varieties/{variety_id}/prices", json=GOLD_JANUARY)
+    again = client.post(f"/api/products/{variety_id}/prices", json=GOLD_JANUARY)
 
     assert again.status_code == 409
 
@@ -176,7 +176,7 @@ def test_a_broken_price_entry_is_refused_with_the_rule_it_breaks(
 
     def refusal(**changes: Any) -> tuple[int, str]:
         entry = {**GOLD_JANUARY, **changes}
-        response = client.post(f"/varieties/{variety_id}/prices", json=entry)
+        response = client.post(f"/api/products/{variety_id}/prices", json=entry)
         return response.status_code, response.json()["detail"]
 
     assert refusal(bulk_price=None) == (422, "a bulk price and a bulk minimum go together")
@@ -190,7 +190,7 @@ def test_the_price_history_is_newest_first(client: TestClient) -> None:
     _price(client, variety_id, **GOLD_JANUARY)
     _price(client, variety_id, effective_from="2026-06-01", list_price=12_000)
 
-    history = client.get(f"/varieties/{variety_id}/prices").json()
+    history = client.get(f"/api/products/{variety_id}/prices").json()
 
     assert [e["effective_from"] for e in history] == ["2026-06-01", "2026-01-01"]
 
@@ -202,24 +202,24 @@ def test_a_deleted_entry_leaves_the_history_and_the_previous_price_rules_again(
     _price(client, variety_id, **GOLD_JANUARY)
     mistake = _price(client, variety_id, effective_from="2026-09-01", list_price=99_000)
 
-    deleted = client.delete(f"/varieties/{variety_id}/prices/{mistake['id']}")
+    deleted = client.delete(f"/api/products/{variety_id}/prices/{mistake['id']}")
 
     assert deleted.status_code == 204
-    assert len(client.get(f"/varieties/{variety_id}/prices").json()) == 1
-    assert client.get(f"/varieties/{variety_id}").json()["current_price"]["list_price"] == 11_000
-    again = client.delete(f"/varieties/{variety_id}/prices/{mistake['id']}")
+    assert len(client.get(f"/api/products/{variety_id}/prices").json()) == 1
+    assert client.get(f"/api/products/{variety_id}").json()["current_price"]["list_price"] == 11_000
+    again = client.delete(f"/api/products/{variety_id}/prices/{mistake['id']}")
     assert again.status_code == 404
 
 
 def test_refusal_bodies_carry_the_rule_s_code(client: TestClient) -> None:
     """One behaviour test per code family of this capability (docs/adr/0008)."""
-    bad_name = client.post("/varieties", json={"name": ""})
+    bad_name = client.post("/api/products", json={"name": ""})
     assert bad_name.status_code == 422
     assert bad_name.json()["code"] == "variety.name_invalid"
 
     variety_id = _register(client)["id"]
     bad_quantity = client.post(
-        f"/varieties/{variety_id}/prices",
+        f"/api/products/{variety_id}/prices",
         json={
             "effective_from": "2026-01-01",
             "list_price": 11_000,
@@ -243,10 +243,10 @@ def test_a_vip_price_is_stored_and_answered_on_the_entry_the_current_price_and_t
     entry = _price(client, variety_id, **GOLD_WITH_VIP)
 
     assert entry["vip_price"] == 9_000
-    assert client.get(f"/varieties/{variety_id}").json()["current_price"]["vip_price"] == 9_000
-    assert client.get(f"/varieties/{variety_id}/current-price").json()["vip_price"] == 9_000
-    assert client.get(f"/varieties/{variety_id}/prices").json()[0]["vip_price"] == 9_000
-    assert client.get("/varieties").json()[0]["current_price"]["vip_price"] == 9_000
+    assert client.get(f"/api/products/{variety_id}").json()["current_price"]["vip_price"] == 9_000
+    assert client.get(f"/api/products/{variety_id}/current-price").json()["vip_price"] == 9_000
+    assert client.get(f"/api/products/{variety_id}/prices").json()[0]["vip_price"] == 9_000
+    assert client.get("/api/products").json()[0]["current_price"]["vip_price"] == 9_000
 
 
 def test_an_entry_without_a_vip_price_answers_null(client: TestClient, engine: Engine) -> None:
@@ -288,13 +288,13 @@ def test_a_vip_price_at_or_above_list_is_refused_with_its_code_and_without_the_a
 
     for vip_price in (11_000, 12_345):
         response = client.post(
-            f"/varieties/{variety_id}/prices", json={**GOLD_JANUARY, "vip_price": vip_price}
+            f"/api/products/{variety_id}/prices", json={**GOLD_JANUARY, "vip_price": vip_price}
         )
         assert response.status_code == 422
         assert response.json()["code"] == "variety.vip_price_not_below_list"
         assert str(vip_price) not in response.text
         assert "11000" not in response.text
-    assert client.get(f"/varieties/{variety_id}/prices").json() == []
+    assert client.get(f"/api/products/{variety_id}/prices").json() == []
 
 
 def test_with_bulk_off_the_bulk_values_posted_are_not_stored(
@@ -346,14 +346,15 @@ def test_an_earlier_entry_keeps_its_stored_rules_when_a_later_one_is_recorded_wi
     later = _price(client, variety_id, **{**GOLD_WITH_VIP, "effective_from": "2026-06-01"})
 
     assert (later["bulk_price"], later["vip_price"]) == (None, None)
-    history = {e["effective_from"]: e for e in client.get(f"/varieties/{variety_id}/prices").json()}
+    prices = client.get(f"/api/products/{variety_id}/prices").json()
+    history = {e["effective_from"]: e for e in prices}
     assert (history["2026-01-01"]["bulk_price"], history["2026-01-01"]["vip_price"]) == (
         10_000,
         9_000,
     )
 
     set_switches(engine, bulk=True, vip=True)
-    current = client.get(f"/varieties/{variety_id}/current-price").json()
+    current = client.get(f"/api/products/{variety_id}/current-price").json()
     assert (current["bulk_price"], current["vip_price"]) == (None, None)
     assert history["2026-01-01"]["vip_price"] == 9_000
 
@@ -377,14 +378,14 @@ def test_an_archived_variety_is_absent_from_the_list_but_still_found_by_id(
     gone = _register(client, "Gone")
     archive_by_hand(engine, gone["id"])
 
-    assert [v["id"] for v in client.get("/varieties").json()] == [kept["id"]]
-    assert client.get(f"/varieties/{gone['id']}").status_code == 200
+    assert [v["id"] for v in client.get("/api/products").json()] == [kept["id"]]
+    assert client.get(f"/api/products/{gone['id']}").status_code == 200
 
 
 def test_an_archived_variety_still_holds_its_name(client: TestClient, engine: Engine) -> None:
     gone = _register(client, "Gone")
     archive_by_hand(engine, gone["id"])
 
-    assert client.post("/varieties", json={"name": " GONE "}).status_code == 409
+    assert client.post("/api/products", json={"name": " GONE "}).status_code == 409
     other = _register(client, "Other")
-    assert client.patch(f"/varieties/{other['id']}", json={"name": "gone"}).status_code == 409
+    assert client.patch(f"/api/products/{other['id']}", json={"name": "gone"}).status_code == 409

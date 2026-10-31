@@ -39,7 +39,7 @@ phone, an empty name and a too-long name.
   the same diff, or pytest fails.
 - Old English messages, including varieties' `NameTaken(name)`, stay in `detail`
   (ADR-0005 allows them); no screen renders them.
-- Bare `HTTPException`s outside `TranslateErrors` (`/varieties/{id}/current-price`'s 404,
+- Bare `HTTPException`s outside `TranslateErrors` (`/api/products/{id}/current-price`'s 404,
   the 401) carry no code; the front does not call the first and handles the second as a
   session boundary.
 

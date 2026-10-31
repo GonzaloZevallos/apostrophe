@@ -16,7 +16,6 @@ import {
   ONBOARDING_DONE,
   ONBOARDING_STOCK,
   SETTINGS,
-  paymentLink,
 } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
@@ -30,7 +29,7 @@ import type { Me } from '../api/me'
 import { SHOWN_EN } from '../test/shownLanguage'
 import { LIMITS } from '../copy/limits'
 import { chooseTheme } from '../theme'
-import { consumePaymentReturn } from '../paymentReturn'
+import { consumePaymentReturn, setPaymentReturn } from '../paymentReturn'
 import { invalidateResource } from '../api/keys'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import type { OnboardingProgress } from '../api/onboarding'
@@ -66,7 +65,7 @@ const NOT_OFFERED: OnboardingProgress = {
   resume: null,
   steps: [],
   can_skip_rest: false,
-  varieties_count: 0,
+  products_count: 0,
   stock_entries_count: 0,
   price_target: null,
   priced_target: null,
@@ -563,7 +562,7 @@ const MID_ONBOARDING: OnboardingProgress = {
   count: 1,
   resume: 'stock',
   steps: STEPS_AFTER_ONE,
-  varieties_count: 1,
+  products_count: 1,
 }
 
 const FINISH: OnboardingProgress = {
@@ -877,26 +876,23 @@ test('a stock write elsewhere makes the next read of /first-run, and the checkli
   await waitFor(() => expect(screen.queryByRole('list', { name: 'To get started' })).not.toBeInTheDocument())
 })
 
-// Back from Record payment, Home is at its place (PM option a): the hand-off the link left is
-// applied once the panel has rendered, then taken.
-const PLAIN_CLICK = { button: 0, metaKey: false, ctrlKey: false, shiftKey: false, altKey: false }
+// Back from Record payment, Home takes focus back (PM option a): the hand-off a save left is
+// applied once the panel has rendered, then taken. The page's scroll is ScrollSync's (ADR-0069).
 
-test('after Close Home focuses that customer\'s "Collect" and scrolls to the offset it was at', async () => {
+test('after a save Home focuses that customer\'s "Collect" and leaves the scroll to ScrollSync', async () => {
   const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
-  Object.defineProperty(window, 'scrollY', { configurable: true, value: 320 })
-  paymentLink(1, 'home').onClick(PLAIN_CLICK)
+  setPaymentReturn(1)
   stubFetch(PANEL)
   renderInicio()
 
   const collect = await screen.findByRole('link', { name: 'Collect from Ana Pérez' })
 
   await waitFor(() => expect(collect).toHaveFocus())
-  expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ top: 320 }))
-  Reflect.deleteProperty(window, 'scrollY')
+  expect(scrollTo).not.toHaveBeenCalled()
 })
 
 test('when that customer\'s row is gone Home focuses the "Owed to you" heading', async () => {
-  paymentLink(99, 'home').onClick(PLAIN_CLICK)
+  setPaymentReturn(99)
   stubFetch(PANEL)
   renderInicio()
 
@@ -906,7 +902,7 @@ test('when that customer\'s row is gone Home focuses the "Owed to you" heading',
 })
 
 test('when nobody owes any more Home focuses the "Nobody owes you" line', async () => {
-  paymentLink(1, 'home').onClick(PLAIN_CLICK)
+  setPaymentReturn(1)
   stubFetch({ ...PANEL, debts: { total_owed: 0, sales_owing_count: 0, oldest: null, teaser: [] } })
   renderInicio()
 
@@ -927,9 +923,9 @@ test('with no hand-off Home moves nothing and focuses nothing', async () => {
   expect(scrollTo).not.toHaveBeenCalled()
 })
 
-test('Home applies the offset only after the notice above the panel has answered, never against a shorter page', async () => {
+test('Home takes focus back only after the notice above the panel has answered', async () => {
   const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
-  paymentLink(1, 'home').onClick(PLAIN_CLICK)
+  setPaymentReturn(1)
   let answerFirstRun: (response: Response) => void = () => undefined
   vi.stubGlobal(
     'fetch',
@@ -952,7 +948,69 @@ test('Home applies the offset only after the notice above the panel has answered
   answerFirstRun(jsonResponse(200, CHECKLIST))
 
   await waitFor(() => expect(collect).toHaveFocus())
-  expect(scrollTo).toHaveBeenCalled()
+})
+
+// The scroll owner waits for the Loading marker before it puts Home back at its offset (ADR-0069):
+// after a save Home shows it until the hand-off has its place; a first visit never does.
+
+function holdFirstRun(): (response: Response) => void {
+  let answerFirstRun: (response: Response) => void = () => undefined
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      const url = String(input)
+      if (url.includes('/first-run')) return new Promise<Response>((resolve) => (answerFirstRun = resolve))
+      if (url.includes('/onboarding-progress')) return Promise.resolve(jsonResponse(200, NOT_OFFERED))
+      if (url.includes('/pinned-catalog/status')) return Promise.resolve(jsonResponse(200, { status: null }))
+      if (url.includes('/panel')) return Promise.resolve(jsonResponse(200, PANEL))
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    }),
+  )
+  return (response) => answerFirstRun(response)
+}
+
+test('after a save Home shows the Loading marker until the notices above the panel have answered', async () => {
+  setPaymentReturn(1)
+  const answerFirstRun = holdFirstRun()
+  renderInicio()
+
+  const collect = await screen.findByRole('link', { name: 'Collect from Ana Pérez' })
+  expect(screen.getByRole('progressbar')).toBeInTheDocument()
+
+  answerFirstRun(jsonResponse(200, NONE))
+
+  await waitFor(() => expect(screen.queryByRole('progressbar')).not.toBeInTheDocument())
+  expect(collect).toBeInTheDocument()
+})
+
+test('a first visit to Home shows no Loading marker while the notices answer', async () => {
+  holdFirstRun()
+  renderInicio()
+
+  await screen.findByRole('link', { name: 'Collect from Ana Pérez' })
+
+  expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+})
+
+test('a failed panel read hides the Loading marker even with a hand-off waiting', async () => {
+  setPaymentReturn(1)
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      const url = String(input)
+      if (url.includes('/first-run')) return Promise.resolve(jsonResponse(200, NONE))
+      if (url.includes('/onboarding-progress')) return Promise.resolve(jsonResponse(200, NOT_OFFERED))
+      if (url.includes('/pinned-catalog/status')) return Promise.resolve(jsonResponse(200, { status: null }))
+      if (url.includes('/panel')) return Promise.resolve(jsonResponse(500, { detail: 'boom' }))
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    }),
+  )
+  renderInicio()
+
+  await waitFor(() => expect(screen.queryByRole('progressbar')).not.toBeInTheDocument())
+  await new Promise((resolve) => setTimeout(resolve, 50))
+  expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Collect from Ana Pérez' })).not.toBeInTheDocument()
 })
 
 /** The header's mark with the clipping box as the observer's root, and what that observer is told. */

@@ -68,7 +68,9 @@ def test_an_exported_customer_has_no_channel_and_the_ids_exported_are_the_ids_de
     staying_ids = _customer_ids(db_path, "Otro Negocio")
     assert len(leaving_ids) == 3
 
-    result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO())
+    result = main(
+        [EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO(), clock=clock
+    )
 
     assert result == 0
     (export,) = export_dir.glob("*.json")

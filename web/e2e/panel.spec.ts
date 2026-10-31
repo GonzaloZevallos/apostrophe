@@ -63,7 +63,7 @@ interface PanelAnswer {
     teaser: { customer_id: number; name: string; balance: number; owing_since: string }[]
   }
   stock: {
-    variety_id: number
+    product_id: number
     name: string
     quantity: number
     status: Status
@@ -247,10 +247,10 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   const extraDatesIso = [...new Set([mondayIso, monthStartIso])].filter((iso) => iso !== todayIso)
   if (extraDatesIso.length > 0) {
     const varietiesAnswer: { id: number; name: string }[] = await (
-      await page.request.get(`/varieties?on=${todayIso}`)
+      await page.request.get(`/api/products?on=${todayIso}`)
     ).json()
     const rosaId = varietiesAnswer.find((variety) => variety.name === 'Rosa')?.id
-    if (rosaId === undefined) throw new Error('Rosa missing from GET /varieties?on=')
+    if (rosaId === undefined) throw new Error('Rosa missing from GET /api/products?on=')
     for (const dateIso of extraDatesIso) {
       const extraResponse = await page.request.post('/sales', {
         data: {
@@ -259,7 +259,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
           shipping_charged: 0,
           note: null,
           payment: 'cash',
-          lines: [{ variety_id: rosaId, quantity: '1', gift: false, special_price: null }],
+          lines: [{ product_id: rosaId, quantity: '1', gift: false, special_price: null }],
         },
       })
       expect(extraResponse.ok()).toBe(true)

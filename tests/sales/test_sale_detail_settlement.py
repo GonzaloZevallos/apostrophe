@@ -52,9 +52,9 @@ def calls(app: FastAPI) -> dict[str, int]:
 
 
 def _variety(client: TestClient) -> int:
-    variety = client.post("/varieties", json={"name": "Lavanda"}).json()
+    variety = client.post("/api/products", json={"name": "Lavanda"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 10_000},
     )
     return int(variety["id"])
@@ -71,7 +71,7 @@ def _customer(client: TestClient, name: str = "Juana") -> int:
 def _sale(client: TestClient, variety_id: int, payment: str, customer_id: int | None) -> int:
     body: dict[str, object] = {
         "payment": payment,
-        "lines": [{"variety_id": variety_id, "quantity": "1"}],
+        "lines": [{"product_id": variety_id, "quantity": "1"}],
     }
     if customer_id is not None:
         body["customer_id"] = customer_id

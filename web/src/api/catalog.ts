@@ -12,7 +12,7 @@ import { keys } from './keys'
 export type CatalogVarietyState = 'in' | 'hidden' | 'no_price' | 'sold_out' | 'no_entries'
 
 export interface CatalogVariety {
-  id: number
+  product_id: number
   name: string
   emoji: string | null
   indica_share: number | null
@@ -25,13 +25,13 @@ export interface Catalog {
   text: string | null
   header: string
   footer: string
-  varieties: CatalogVariety[]
+  products: CatalogVariety[]
 }
 
 /** One row of `GET /catalog/archived`: an archived variety's stored catalog attributes (ADR-0032).
  * `GET /catalog` never lists an archived variety, so this list is the only place they are read. */
 export interface ArchivedAttributes {
-  variety_id: number
+  product_id: number
   name: string
   shown: boolean
   emoji: string | null

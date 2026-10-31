@@ -319,12 +319,12 @@ function VentaDetalleScreen() {
           <div className="venta-detalle__lineas">
             {sale.lines.map((line, index) => (
               // A sale can have two lines of the same variety (a gift line and a
-              // paid one, say): `SaleIn` sets no uniqueness rule on `variety_id`,
+              // paid one, say): `SaleIn` sets no uniqueness rule on `product_id`,
               // so the line's position — fixed and unique within one sale —
               // joins it in the key.
-              <div key={`${line.variety_id}-${index}`} className="venta-detalle__linea">
+              <div key={`${line.product_id}-${index}`} className="venta-detalle__linea">
                 <div className="venta-detalle__linea-superior">
-                  <span className="venta-detalle__variedad">{line.variety_name}</span>
+                  <span className="venta-detalle__variedad">{line.product_name}</span>
                   <span className="venta-detalle__gramos cifra-s">{formatGrams(line.quantity)}</span>
                 </div>
                 <div className="venta-detalle__linea-inferior">

@@ -1,23 +1,24 @@
 /**
- * The return-of-place hand-off for Record payment (GH-281, PM option a): when "Collect" or
- * "Record payment" is followed, the screen it was followed from leaves a one-shot note of
- * where the seller was, and the origin picks it up when it is drawn again after Close or a
- * save. It holds a customer id and a scroll offset, in memory only: never in `history`, in
- * browser storage or in a URL, and no name, phone number or amount (§9). Only the payment
- * link helper in `routes.ts` sets it; the screens that come back to a place read it through
- * `useReturnToPlace`.
+ * The return-of-place hand-off for Record payment (GH-281, GH-480): when a payment is saved
+ * or the form is closed, `CobroRoute` leaves a one-shot note of whose payment it was, and the screen the seller comes
+ * back to picks it up once it is drawn again, to put focus on that customer's control. It
+ * holds a customer id only, in memory only: never in `history`, in browser storage or in a URL,
+ * and no name, phone number, amount or scroll offset (§9). Only `CobroRoute` writes it, on a
+ * save or on Close, Escape and the backdrop: opening the link and the browser's Back leave
+ * nothing behind. The page's scroll is not part of it: it belongs to
+ * `shell/ScrollSync.tsx` alone (ADR-0069). The screens that come back to a place read it
+ * through `useReturnToPlace`.
  */
 
 export interface PaymentReturn {
   customerId: number
-  scrollY: number
 }
 
 let pending: PaymentReturn | null = null
 
 /** Leaves the note, replacing any earlier one. */
-export function setPaymentReturn(customerId: number, scrollY: number): void {
-  pending = { customerId, scrollY }
+export function setPaymentReturn(customerId: number): void {
+  pending = { customerId }
 }
 
 /** Reads the note without taking it: a screen under the sheet looks, only the origin takes. */
@@ -30,9 +31,4 @@ export function consumePaymentReturn(): PaymentReturn | null {
   const taken = pending
   pending = null
   return taken
-}
-
-/** How far the page is scrolled now; the document scrolls on both viewports. */
-export function pageScrollY(): number {
-  return 'scrollY' in globalThis && typeof globalThis.scrollY === 'number' ? globalThis.scrollY : 0
 }

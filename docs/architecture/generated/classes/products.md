@@ -198,6 +198,19 @@ classDiagram
     variety_id : Mapped~int~
     vip_price : Mapped~int #124; None~
   }
+  class ProductDetailOut {
+    removal : Literal~'delete', 'archive'~ #124; None
+  }
+  class ProductIn {
+    name : str
+  }
+  class ProductOut {
+    archived : bool
+    current_price : PriceEntryOut #124; None
+    id : int
+    name : str
+    of(product: Product, day: date) 'ProductOut'
+  }
   class ProductRow {
     archived_at : Mapped~datetime #124; None~
     business_id : Mapped~int~
@@ -227,18 +240,5 @@ classDiagram
     remove_unused(product_id: int) bool
     save(product: Product) Product
   }
-  class VarietyDetailOut {
-    removal : Literal~'delete', 'archive'~ #124; None
-  }
-  class VarietyIn {
-    name : str
-  }
-  class VarietyOut {
-    archived : bool
-    current_price : PriceEntryOut #124; None
-    id : int
-    name : str
-    of(variety: Product, day: date) 'VarietyOut'
-  }
-  VarietyDetailOut --|> VarietyOut
+  ProductDetailOut --|> ProductOut
 ```

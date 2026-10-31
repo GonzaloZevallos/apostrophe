@@ -40,8 +40,8 @@ const SALE = {
   bill: null,
   lines: [
     {
-      variety_id: 1,
-      variety_name: '24K Gold',
+      product_id: 1,
+      product_name: '24K Gold',
       quantity: 1,
       pricing_rule: 'list',
       price_per_gram: 11000,
@@ -82,12 +82,12 @@ const CATALOG = {
   text: '**24K Gold**',
   header: '',
   footer: '',
-  varieties: [{ id: 2, name: 'Sir Jack', emoji: '👑', indica_share: null, aroma: null, shown: false, state: 'hidden' }],
+  products: [{ product_id: 2, name: 'Sir Jack', emoji: '👑', indica_share: null, aroma: null, shown: false, state: 'hidden' }],
 }
 
 const STOCK = {
   total: 18,
-  varieties: [{ variety_id: 1, quantity: 18, status: 'ok', sold_out_since: null, threshold: null, days_left: null }],
+  products: [{ product_id: 1, quantity: 18, status: 'ok', sold_out_since: null, threshold: null, days_left: null }],
   entries: [],
 }
 
@@ -103,17 +103,17 @@ function fakeApi(): void {
       const answers: Record<string, unknown> = {
         'GET /auth/me': ME,
         'GET /pricing-settings': SETTINGS_ON,
-        'GET /varieties/1': VARIETY_ROW,
-        'GET /varieties/1/prices': HISTORY,
+        'GET /api/products/1': VARIETY_ROW,
+        'GET /api/products/1/prices': HISTORY,
         'GET /sales/1': SALE,
         'GET /customers/1': CUSTOMER,
         'GET /customers/1/account': ACCOUNT,
         'GET /stock': STOCK,
         'GET /stock?archived=true': STOCK,
-        'GET /stock/varieties/1/movements': [],
+        'GET /stock/products/1/movements': [],
         'GET /stock/withdrawals/1': WITHDRAWAL,
-        'GET /varieties': [VARIETY_ROW],
-        'GET /varieties?archived=true': [ARCHIVED],
+        'GET /api/products': [VARIETY_ROW],
+        'GET /api/products?archived=true': [ARCHIVED],
         'GET /catalog': CATALOG,
         'GET /catalog/archived': [],
       }

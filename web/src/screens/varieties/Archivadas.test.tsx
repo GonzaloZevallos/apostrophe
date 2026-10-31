@@ -10,6 +10,7 @@ import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Outlet, RouterProvider, createMemoryRouter, type InitialEntry } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
+import type { ArchivedAttributes } from '../../api/catalog'
 import type { Me } from '../../api/me'
 import { SHOWN_EN } from '../../test/shownLanguage'
 import { inAppState } from '../../components/inAppState'
@@ -18,7 +19,7 @@ import { ARCHIVED_VARIETIES, VARIETIES, VARIETY, pathTo, relative } from '../../
 import { LIMITS, SAMPLES } from '../../copy/limits'
 import { iconAndTextProblems, expectIconAndTextRule } from '../../test/iconAndTextRule'
 import Shell from '../../shell/Shell'
-import Variedades from '../Variedades'
+import Variedades, { type Variety } from '../Variedades'
 import ArchivedIndex from './ArchivedIndex'
 import ArchivedVarieties from './ArchivedVarieties'
 import VarietiesIndex from './VarietiesIndex'
@@ -36,7 +37,7 @@ function json(status: number, body: unknown): Response {
 const FROM_FOOT_LINK: InitialEntry[] = [VARIETIES, { pathname: ARCHIVED_VARIETIES, state: inAppState({ pathname: VARIETIES }) }]
 const NAMES: Record<number, string> = { 4: 'Alfa Vieja', 5: 'Zeta Vieja' }
 const GRAMS: Record<number, number> = { 4: 7, 5: 3 }
-const CATALOG = { text: '', header: '', footer: '', varieties: [] }
+const CATALOG = { text: '', header: '', footer: '', products: [] }
 
 type Answers = Record<string, () => Response>
 
@@ -47,33 +48,33 @@ function fakeApi(hidden: readonly number[] = [], overrides: Answers = {}): Answe
   const archivedIds = () => [5, 4].filter((id) => !live.has(id))
   const rowOf = (id: number) => ({ id, name: NAMES[id], archived: !live.has(id), current_price: null })
   const answers: Answers = {
-    'GET /varieties': () => json(200, [4, 5].filter((id) => live.has(id)).map(rowOf)),
-    'GET /varieties?archived=true': () => json(200, archivedIds().map(rowOf)),
+    'GET /api/products': () => json(200, [4, 5].filter((id) => live.has(id)).map(rowOf)),
+    'GET /api/products?archived=true': () => json(200, archivedIds().map(rowOf)),
     'GET /stock': () =>
       json(200, {
         total: 0,
-        varieties: [...live].map((id) => ({ variety_id: id, quantity: GRAMS[id], status: 'ok', sold_out_since: null, threshold: null, days_left: null })),
+        products: [...live].map((id) => ({ product_id: id, quantity: GRAMS[id], status: 'ok', sold_out_since: null, threshold: null, days_left: null })),
         entries: [],
       }),
     'GET /stock?archived=true': () =>
       json(200, {
         total: 10,
-        varieties: archivedIds().map((id) => ({ variety_id: id, quantity: GRAMS[id], status: 'ok', sold_out_since: null, threshold: null, days_left: null })),
+        products: archivedIds().map((id) => ({ product_id: id, quantity: GRAMS[id], status: 'ok', sold_out_since: null, threshold: null, days_left: null })),
         entries: [],
       }),
     'GET /catalog': () => json(200, CATALOG),
     'GET /catalog/archived': () =>
       json(
         200,
-        archivedIds().map((id) => ({ variety_id: id, name: NAMES[id], shown: !hidden.includes(id), emoji: null, indica_share: null, aroma: null })),
+        archivedIds().map((id) => ({ product_id: id, name: NAMES[id], shown: !hidden.includes(id), emoji: null, indica_share: null, aroma: null })),
       ),
   }
   for (const id of [4, 5]) {
-    answers[`GET /varieties/${id}`] = () =>
+    answers[`GET /api/products/${id}`] = () =>
       json(200, { ...rowOf(id), removal: live.has(id) ? 'archive' : null })
-    answers[`GET /varieties/${id}/prices`] = () => json(200, [])
-    answers[`GET /stock/varieties/${id}/movements`] = () => json(200, [])
-    answers[`POST /varieties/${id}/restore`] = () => {
+    answers[`GET /api/products/${id}/prices`] = () => json(200, [])
+    answers[`GET /stock/products/${id}/movements`] = () => json(200, [])
+    answers[`POST /api/products/${id}/restore`] = () => {
       live.add(id)
       return json(200, { id, name: NAMES[id], archived: false, removal: 'archive' })
     }
@@ -161,7 +162,7 @@ describe('Archivadas (N) on Variedades', () => {
   })
 
   test('shows nothing when there are none', async () => {
-    renderAt(VARIETIES, { 'GET /varieties?archived=true': () => json(200, []) })
+    renderAt(VARIETIES, { 'GET /api/products?archived=true': () => json(200, []) })
     await screen.findByText('All entries')
     await waitFor(() => expect(screen.queryByText(/Archived \(/)).toBeNull())
   })
@@ -169,7 +170,7 @@ describe('Archivadas (N) on Variedades', () => {
 
 describe('the Archivadas card', () => {
   test('its empty state is measured copy and the screen follows the rule', async () => {
-    renderAt(ARCHIVED_VARIETIES, { 'GET /varieties?archived=true': () => json(200, []) })
+    renderAt(ARCHIVED_VARIETIES, { 'GET /api/products?archived=true': () => json(200, []) })
     const title = await screen.findByText('You have no archived varieties')
 
     expect(title).toHaveAttribute('data-copy', 'emptyTitle')
@@ -206,16 +207,37 @@ describe('the Archivadas card', () => {
     expect(screen.getAllByText('Hidden')).toHaveLength(1)
   })
 
+  test("joins the archived products to their catalog attributes on product_id, so Hidden marks only the matching row", async () => {
+    const archived = [
+      { id: 21, name: 'Mora Vieja', archived: true, current_price: null },
+      { id: 22, name: 'Nogal Viejo', archived: true, current_price: null },
+    ] satisfies Variety[]
+    const attributes = [
+      { product_id: 22, name: 'Nogal Viejo', shown: false, emoji: null, indica_share: null, aroma: null },
+      { product_id: 21, name: 'Mora Vieja', shown: true, emoji: null, indica_share: null, aroma: null },
+      { product_id: 1, name: 'Otro', shown: false, emoji: null, indica_share: null, aroma: null },
+    ] satisfies ArchivedAttributes[]
+    renderAt(ARCHIVED_VARIETIES, {
+      'GET /api/products?archived=true': () => json(200, archived),
+      'GET /catalog/archived': () => json(200, attributes),
+    })
+
+    const hidden = await screen.findByText('Hidden')
+    expect(screen.getAllByText('Hidden')).toHaveLength(1)
+    expect(hidden.closest('div')).toHaveTextContent('Nogal Viejo')
+    expect(screen.getByText('Mora Vieja').closest('div')).not.toHaveTextContent('Hidden')
+  })
+
   test('an empty list reached by an in-app link goes on to Variedades (a typed address keeps the fixed line, below)', async () => {
     const { router } = renderAt(
       [{ pathname: VARIETIES }, { pathname: ARCHIVED_VARIETIES, state: inAppState({ pathname: VARIETIES }) }],
-      { 'GET /varieties?archived=true': () => json(200, []) },
+      { 'GET /api/products?archived=true': () => json(200, []) },
     )
     await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES))
   })
 
   test('says so with a fixed line when there are none', async () => {
-    renderAt(ARCHIVED_VARIETIES, { 'GET /varieties?archived=true': () => json(200, []) })
+    renderAt(ARCHIVED_VARIETIES, { 'GET /api/products?archived=true': () => json(200, []) })
     expect(await screen.findByText('You have no archived varieties')).toBeTruthy()
   })
 
@@ -227,13 +249,13 @@ describe('the Archivadas card', () => {
     expect(await screen.findByText('Variety restored')).toBeTruthy()
     expect(screen.queryByRole('dialog')).toBeNull()
     const requested = fetchMock.mock.calls.filter(([, init]) => init?.method === 'POST').map(([url]) => url)
-    expect(requested).toEqual(['/varieties/4/restore'])
+    expect(requested).toEqual(['/api/products/4/restore'])
   })
 
   test('a variety already gone shows the generic gone notice', async () => {
     const user = userEvent.setup()
     renderAt(ARCHIVED_VARIETIES, {
-      'POST /varieties/4/restore': () => json(404, { code: 'variety.not_found', detail: 'x' }),
+      'POST /api/products/4/restore': () => json(404, { code: 'variety.not_found', detail: 'x' }),
     })
     await screen.findByText('Alfa Vieja')
     await user.click(screen.getAllByRole('button', { name: 'Restore' })[0]!)
@@ -281,7 +303,7 @@ describe("an archived variety's page", () => {
     // Nothing refetched the page under the seller's finger before it left.
     const posted = fetchMock.mock.calls.findIndex(([, init]) => init?.method === 'POST')
     const requested = fetchMock.mock.calls.slice(posted + 1).map(([url]) => url)
-    expect(requested).not.toContain('/varieties/4')
+    expect(requested).not.toContain('/api/products/4')
     expect(requested).not.toContain('/stock?archived=true')
     watch.stop()
     expect(watch.seen()).toBe(false)
@@ -355,7 +377,7 @@ describe("an archived variety's page", () => {
   test('a variety gone meanwhile shows the gone notice and navigates nowhere', async () => {
     const user = userEvent.setup()
     const { router } = renderAt([VARIETIES, ARCHIVED_VARIETIES], {
-      'POST /varieties/4/restore': () => json(404, { code: 'variety.not_found', detail: 'x' }),
+      'POST /api/products/4/restore': () => json(404, { code: 'variety.not_found', detail: 'x' }),
     })
     await user.click(await screen.findByRole('link', { name: /Alfa Vieja/ }))
     await user.click(await screen.findByRole('button', { name: 'Restore' }))
@@ -415,7 +437,7 @@ describe('on a computer (two panes)', () => {
   })
 
   test('with none archived, Archivadas selects nothing and says so on the left', async () => {
-    const { router } = renderComputer(ARCHIVED_VARIETIES, { 'GET /varieties?archived=true': () => json(200, []) })
+    const { router } = renderComputer(ARCHIVED_VARIETIES, { 'GET /api/products?archived=true': () => json(200, []) })
     expect(await screen.findByText('You have no archived varieties')).toBeTruthy()
     expect(router.state.location.pathname).toBe(ARCHIVED_VARIETIES)
   })
@@ -497,10 +519,10 @@ describe('on a computer (two panes)', () => {
     let elsewhere = false
     const api = fakeApi()
     const { router } = renderComputer([VARIETIES, pathTo(VARIETY, { id: 4 })], {
-      'GET /varieties/5': () =>
+      'GET /api/products/5': () =>
         elsewhere
           ? json(200, { id: 5, name: 'Zeta Vieja', archived: false, removal: 'archive', current_price: null })
-          : api['GET /varieties/5']!(),
+          : api['GET /api/products/5']!(),
     })
     await screen.findByText('Zeta Vieja')
     elsewhere = true

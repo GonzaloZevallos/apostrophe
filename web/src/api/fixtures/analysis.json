@@ -13,9 +13,9 @@
     "shortfall": { "amount": 3000, "pending_quantity": 1.0, "all_pending": false },
     "promotion": { "amount": 4000, "pending_quantity": 0.5, "all_pending": false },
     "own_use": { "amount": 1500, "pending_quantity": 0.0, "all_pending": false },
-    "varieties": [
+    "products": [
       {
-        "variety_id": 1,
+        "product_id": 1,
         "name": "Flor A",
         "sales_without_shipping": 60000,
         "share_percent": 73,
@@ -25,7 +25,7 @@
         "margin": { "amount": 40000, "percent": 67, "pending_quantity": 0.0 }
       },
       {
-        "variety_id": 2,
+        "product_id": 2,
         "name": "Flor B",
         "sales_without_shipping": 21818,
         "share_percent": 27,
@@ -35,7 +35,7 @@
         "margin": { "amount": 6000, "percent": 40, "pending_quantity": 2.5 }
       },
       {
-        "variety_id": 3,
+        "product_id": 3,
         "name": "Flor Gift",
         "sales_without_shipping": 0,
         "share_percent": 0,

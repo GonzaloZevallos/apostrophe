@@ -26,7 +26,7 @@ export default function VarietiesBehind() {
   const me = useOutletContext<Me>()
   const varieties = useQuery({
     queryKey: keys.varieties(),
-    queryFn: () => get<Variety[]>('/varieties'),
+    queryFn: () => get<Variety[]>('/api/products'),
     retry: false,
   })
   const stock = useQuery({
@@ -36,9 +36,9 @@ export default function VarietiesBehind() {
   })
 
   if (varieties.data === undefined || stock.data === undefined) return null
-  const stockRows = stock.data.varieties
+  const stockRows = stock.data.products
   const rows = varietiesByName(varieties.data).flatMap((variety) => {
-    const row = stockRows.find((candidate) => candidate.variety_id === variety.id)
+    const row = stockRows.find((candidate) => candidate.product_id === variety.id)
     return row === undefined ? [] : [{ variety, row }]
   })
 

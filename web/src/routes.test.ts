@@ -5,6 +5,8 @@ import { isValidElement } from "react";
 import { matchRoutes, type RouteObject } from "react-router";
 import { describe, expect, test } from "vitest";
 import screensJson from "../../scripts/design/screens.json";
+import { ROUTE_REGISTRY } from "./mobile-standard/registry";
+import { patternsMatch } from "./mobile-standard/routeCoverage";
 import { router } from "./router";
 import { consumePaymentReturn, peekPaymentReturn } from "./paymentReturn";
 import { SHELL_TEXT } from "./copy/shell";
@@ -182,6 +184,27 @@ describe("the screens that are a modal on a computer", () => {
   });
 });
 
+describe("the screens a phone draws as a Sheet (`sheetOnPhone`)", () => {
+  test("are the nine route-drawn forms, and no other: a phone leaves the page under them where it is", () => {
+    const sheets = SCREENS.filter((entry) => "sheetOnPhone" in entry && entry.sheetOnPhone === true).map((entry) => entry.id);
+    expect(sheets.sort()).toEqual([
+      "customer-edit",
+      "customer-new",
+      "expense-new",
+      "stock-entry",
+      "stock-entry-new",
+      "variety-new",
+      "variety-price-new",
+      "withdrawal-edit",
+      "withdrawal-new",
+    ]);
+  });
+
+  test("a full-screen form such as the new sale is not one", () => {
+    expect(SCREENS.find((entry) => entry.id === "sale-new")).not.toHaveProperty("sheetOnPhone");
+  });
+});
+
 describe("the new stock entry form's parent", () => {
   const VARIEDADES: ParentRef = { id: "varieties", path: "/varieties", titleKey: "common:varieties" };
 
@@ -294,18 +317,37 @@ describe("the router against the registry", () => {
   });
 });
 
-/** One shape for a path template: `:name` on the front and `{name}` in screens.json are both
- * `{id}`, so `/sales/{owing_sale}` and `/sales/:id` are the same path. */
-function normalise(path: string): string {
-  return path.replace(/:[A-Za-z_]+|\{[A-Za-z_]+\}/g, "{id}");
-}
-
+/** A registry row as these checks read it: `ROUTE_REGISTRY`'s entries fit it. Paths are
+ * compared only through `patternsMatch`, so `/sales/{owing_sale}` and `/sales/:id` are one path. */
 interface RegistryRow {
   path: string;
   kind: string;
-  parent?: string;
+  parent: string | null;
   /** The parent on a computer, when it is not the phone's. */
-  computer_parent?: string;
+  computerParent: string | null;
+}
+
+/** The registry's rows of the screens `routes.ts` declares: every row but the public pages. */
+const SCREEN_ROWS = ROUTE_REGISTRY.filter(
+  (row) => !OUTSIDE.some((page) => patternsMatch(page.path, row.path)),
+);
+
+/** What is wrong between the registry's rows and the public pages outside `Shell`: a page with
+ * no row, a row that is not a root, or a root with a parent. The catch-all is no screen. */
+function outsideDisagreements(
+  rows: readonly RegistryRow[],
+  pages: readonly routes.Outside[],
+): string[] {
+  return pages
+    .filter((page) => page.path !== routes.CATCH_ALL)
+    .flatMap((page) => {
+      const row = rows.find((candidate) => patternsMatch(candidate.path, page.path));
+      if (row === undefined) return [`${page.path}: no registry row`];
+      return [
+        ...(row.kind === "root" ? [] : [`${page.path}: kind root is not ${row.kind}`]),
+        ...(row.parent === null ? [] : [`${page.path}: a public page has no parent`]),
+      ];
+    });
 }
 
 /** What is wrong between the design registry's rows and the front's screens: a screen with no
@@ -316,23 +358,26 @@ function registryDisagreements(
   screens: readonly routes.Screen[],
 ): string[] {
   const missing = screens
-    .filter((s) => !rows.some((row) => normalise(row.path) === normalise(s.path)))
+    .filter((s) => !rows.some((row) => patternsMatch(row.path, s.path)))
     .map((s) => `${s.path}: no registry row`);
   const wrong = rows.flatMap((row) => {
-    const entry = screens.find((s) => normalise(s.path) === normalise(row.path));
+    const entry = screens.find((s) => patternsMatch(row.path, s.path));
     if (entry === undefined) return [`${row.path}: no screen declares it`];
     const found: string[] = [];
     if (entry.kind !== row.kind)
       found.push(`${row.path}: kind ${entry.kind} is not ${row.kind}`);
     for (const viewport of VIEWPORTS) {
-      const parent = parentOf(entry.id, viewport);
-      const have = parent === undefined ? undefined : normalise(parent.path);
+      const have = parentOf(entry.id, viewport)?.path ?? null;
       const want =
-        viewport === "computer" && row.computer_parent !== undefined
-          ? row.computer_parent
+        viewport === "computer" && row.computerParent !== null
+          ? row.computerParent
           : row.parent;
-      if (have !== (want === undefined ? undefined : normalise(want)))
-        found.push(`${row.path}: parent ${have} on ${viewport} is not ${want}`);
+      const agree =
+        have === null || want === null ? have === want : patternsMatch(have, want);
+      if (!agree)
+        found.push(
+          `${row.path}: parent ${have ?? "none"} on ${viewport} is not ${want ?? "none"}`,
+        );
     }
     return found;
   });
@@ -351,7 +396,7 @@ function settingsGroupsNotForms(
       (s) => s.path.startsWith(`${routes.SETTINGS}/`) && parentOf(s.id, "phone")?.id === "settings",
     )
     .flatMap((s) => {
-      const row = rows.find((r) => normalise(r.path) === normalise(s.path));
+      const row = rows.find((r) => patternsMatch(r.path, s.path));
       return [
         ...(s.kind === "form" ? [] : [`${s.path}: screen kind ${s.kind}`]),
         ...(row?.kind === "form" ? [] : [`${s.path}: registry kind ${row?.kind}`]),
@@ -361,21 +406,45 @@ function settingsGroupsNotForms(
 
 describe("the registry against screens.json", () => {
   test("every routes.ts screen has a registry row that agrees on path, kind and parent, on both viewports", () => {
-    expect(screensJson.registry.length).toBe(SCREENS.length);
-    expect(registryDisagreements(screensJson.registry, SCREENS)).toEqual([]);
+    expect(SCREEN_ROWS.length).toBe(SCREENS.length);
+    expect(registryDisagreements(SCREEN_ROWS, SCREENS)).toEqual([]);
+  });
+
+  test("every public page outside Shell has a root row with no parent, and the registry has no other row", () => {
+    expect(outsideDisagreements(ROUTE_REGISTRY, OUTSIDE)).toEqual([]);
+    const pages = OUTSIDE.filter((page) => page.path !== routes.CATCH_ALL);
+    expect(ROUTE_REGISTRY.length).toBe(SCREENS.length + pages.length);
+  });
+
+  test("a public page with no row, or a row that is not a parentless root, is refused", () => {
+    const pages: routes.Outside[] = [
+      { path: routes.LOGIN },
+      { path: routes.INVITATION },
+      { path: routes.RESET },
+      { path: routes.CATCH_ALL },
+    ];
+    const rows: RegistryRow[] = [
+      { path: routes.LOGIN, kind: "form", parent: null, computerParent: null },
+      { path: routes.INVITATION, kind: "root", parent: routes.HOME, computerParent: null },
+    ];
+    expect(outsideDisagreements(rows, pages)).toEqual([
+      `${routes.LOGIN}: kind root is not form`,
+      `${routes.INVITATION}: a public page has no parent`,
+      `${routes.RESET}: no registry row`,
+    ]);
   });
 
   test("a row that disagrees on kind or parent, names no screen, or is missing, is refused", () => {
     const rows: RegistryRow[] = [
-      { path: routes.CUSTOMER_NEW, kind: "card", parent: routes.CUSTOMERS },
-      { path: routes.CUSTOMER_EDIT, kind: "form", parent: routes.CUSTOMERS },
-      { path: routes.SETTINGS, kind: "card", parent: routes.MORE },
-      { path: "nowhere", kind: "form", parent: routes.CUSTOMERS },
+      { path: routes.CUSTOMER_NEW, kind: "card", parent: routes.CUSTOMERS, computerParent: null },
+      { path: routes.CUSTOMER_EDIT, kind: "form", parent: routes.CUSTOMERS, computerParent: null },
+      { path: routes.SETTINGS, kind: "card", parent: routes.MORE, computerParent: null },
+      { path: "nowhere", kind: "form", parent: routes.CUSTOMERS, computerParent: null },
     ];
     const refused = registryDisagreements(rows, SCREENS);
     expect(refused).toContain(`${routes.CUSTOMER_NEW}: kind form is not card`);
     expect(refused).toContain(
-      `${routes.CUSTOMER_EDIT}: parent ${normalise(routes.CUSTOMER)} on phone is not ${routes.CUSTOMERS}`,
+      `${routes.CUSTOMER_EDIT}: parent ${routes.CUSTOMER} on phone is not ${routes.CUSTOMERS}`,
     );
     expect(refused).toContain(
       `${routes.SETTINGS}: parent ${routes.HOME} on computer is not ${routes.MORE}`,
@@ -389,18 +458,18 @@ describe("the registry against screens.json", () => {
       (s) => s.path.startsWith(`${routes.SETTINGS}/`) && parentOf(s.id, "phone")?.id === "settings",
     );
     expect(groups.length).toBeGreaterThan(0);
-    expect(settingsGroupsNotForms(screensJson.registry, SCREENS)).toEqual([]);
+    expect(settingsGroupsNotForms(ROUTE_REGISTRY, SCREENS)).toEqual([]);
   });
 
   test("a Configuración group registered as a card, or with a card row, is refused", () => {
     const asCard = SCREENS.map((s) =>
       s.id === "settings-integrations" ? { ...s, kind: "card" as const } : s,
     );
-    expect(settingsGroupsNotForms(screensJson.registry, asCard)).toEqual([
+    expect(settingsGroupsNotForms(ROUTE_REGISTRY, asCard)).toEqual([
       `${routes.SETTINGS_INTEGRATIONS}: screen kind card`,
     ]);
-    const rows = screensJson.registry.map((r) =>
-      r.path === routes.SETTINGS_CATALOG_MESSAGE ? { ...r, kind: "card" } : r,
+    const rows = ROUTE_REGISTRY.map((r) =>
+      patternsMatch(r.path, routes.SETTINGS_CATALOG_MESSAGE) ? { ...r, kind: "card" } : r,
     );
     expect(settingsGroupsNotForms(rows, SCREENS)).toEqual([
       `${routes.SETTINGS_CATALOG_MESSAGE}: registry kind card`,
@@ -501,10 +570,69 @@ function listoRowsOverBound(
       ];
 }
 
-/** What is wrong with the routes of these entries: a null route, or a route that is not the path. */
-function routeProblems(entries: readonly RouteEntry[]): string[] {
+/** The screens of screens.json that may have `route: null` (not built yet), each with the issue
+ * that builds it. It can only shrink: an entry leaves when its screen is built. */
+const NULL_ROUTE_CEILING: Readonly<Record<string, number>> = Object.freeze({
+  InicioEditar: 327,
+  InicioEditarOscuro: 327,
+  WidgetCatalogo: 321,
+  WidgetCatalogoOscuro: 321,
+  WidgetPaso2: 321,
+  WidgetPaso2Oscuro: 321,
+  WidgetPaso5: 321,
+  WidgetPaso5Oscuro: 321,
+  WidgetTema: 327,
+  WidgetTemaOscuro: 327,
+  Pedidos: 500,
+  PedidosOscuro: 500,
+  PedidosCompu: 500,
+  PedidosCompuOscuro: 500,
+  PedidosVista: 500,
+  PedidosVistaOscuro: 500,
+  PedidosArmarVista: 500,
+  PedidosArmarVistaOscuro: 500,
+  PedidoDetalle: 500,
+  PedidoDetalleOscuro: 500,
+  Productos: 499,
+  ProductosOscuro: 499,
+  ProductosCompu: 499,
+  ProductosCompuOscuro: 499,
+  ProductoDetalle: 499,
+  ProductoDetalleOscuro: 499,
+  Stock: 499,
+  StockOscuro: 499,
+  PromocionNueva: 411,
+  PromocionNuevaOscuro: 411,
+  TiendaTelegram: 325,
+  TiendaTelegramOscuro: 325,
+  ConfiguracionBuscar: 499,
+  ConfiguracionBuscarOscuro: 499,
+  ConfiguracionCobros: 499,
+  ConfiguracionCobrosOscuro: 499,
+  ConfiguracionEstados: 326,
+  ConfiguracionEstadosOscuro: 326,
+  ConfiguracionEstadosCompu: 326,
+  ConfiguracionEstadosCompuOscuro: 326,
+  ConfiguracionEstadoPaso: 326,
+  ConfiguracionEstadoPasoOscuro: 326,
+  Marca: 493,
+  Onboarding: 418,
+  OnboardingOscuro: 418,
+  OnboardingCompu: 418,
+  OnboardingCompuOscuro: 418,
+});
+
+/** What is wrong with the routes of these entries: a null route that is not on the ceiling, or a
+ * route that is not the path. */
+function routeProblems(
+  entries: readonly RouteEntry[],
+  ceiling: Readonly<Record<string, number>> = NULL_ROUTE_CEILING,
+): string[] {
   return entries.flatMap((entry) => {
-    if (entry.route === null) return [`${entry.screen}: route is null, so it is not built`];
+    if (entry.route === null)
+      return Object.keys(ceiling).includes(entry.screen)
+        ? []
+        : [`${entry.screen}: route is null, so it is not built`];
     if (REACHED_BY_STEPS.includes(entry.screen))
       return "steps" in entry ? [] : [`${entry.screen}: reached by steps, so it needs steps`];
     return entry.route === entry.path
@@ -513,12 +641,93 @@ function routeProblems(entries: readonly RouteEntry[]): string[] {
   });
 }
 
+/** What is wrong with the ceiling against these entries: a key that is no row, a key whose row
+ * has a route, or an issue number that is not a positive integer. */
+function ceilingProblems(
+  entries: readonly RouteEntry[],
+  ceiling: Readonly<Record<string, number>>,
+): string[] {
+  return Object.entries(ceiling).flatMap(([screen, issue]) => {
+    const row = entries.find((entry) => entry.screen === screen);
+    const found: string[] = [];
+    if (row === undefined)
+      found.push(`${screen}: on the null-route ceiling but no row of screens.json`);
+    else if (row.route !== null)
+      found.push(`${screen}: on the null-route ceiling but its route is not null`);
+    if (!Number.isInteger(issue) || issue < 1)
+      found.push(`${screen}: its issue number is not a positive integer`);
+    return found;
+  });
+}
+
+/** A null-route row whose path is some built row's route: the unbuilt screen would shadow it. */
+function nullPathProblems(entries: readonly RouteEntry[]): string[] {
+  const built = entries.flatMap((entry) => (entry.route === null ? [] : [entry.route]));
+  return entries
+    .filter((entry) => entry.route === null && built.includes(entry.path))
+    .map((entry) => `${entry.screen}: its path ${entry.path} is a built row's route`);
+}
+
 describe("screens.json against the English routes", () => {
   test("route is path for every screen, and none is null", () => {
     expect(routeProblems(screensJson.screens)).toEqual([]);
   });
 
-  test("the route check reports a null route, a route that is not the path, and a step-reached screen with no steps", () => {
+  test("every ceiling entry is a null-route row, with a positive issue number", () => {
+    expect(ceilingProblems(screensJson.screens, NULL_ROUTE_CEILING)).toEqual([]);
+  });
+
+  test("a null-route row's path is no built row's route", () => {
+    expect(nullPathProblems(screensJson.screens)).toEqual([]);
+  });
+
+  test("the ceiling check reports a key with no row, a key whose row has a route, and an issue that is not a positive integer", () => {
+    const entries: RouteEntry[] = [
+      { screen: "Built", route: "/sales", path: "/sales" },
+      { screen: "Unbuilt", route: null, path: "/unbuilt" },
+    ];
+    expect(ceilingProblems(entries, { Unbuilt: 12 })).toEqual([]);
+    expect(
+      ceilingProblems(entries, { Ghost: 3, Built: 4, Unbuilt: 0 }),
+    ).toEqual([
+      "Ghost: on the null-route ceiling but no row of screens.json",
+      "Built: on the null-route ceiling but its route is not null",
+      "Unbuilt: its issue number is not a positive integer",
+    ]);
+    expect(ceilingProblems(entries, { Unbuilt: 1.5 })).toEqual([
+      "Unbuilt: its issue number is not a positive integer",
+    ]);
+  });
+
+  test("a null-route row whose path is a built row's route is reported", () => {
+    expect(
+      nullPathProblems([
+        { screen: "Ventas", route: "/sales", path: "/sales" },
+        { screen: "VentasVacio", route: null, path: "/sales" },
+        { screen: "Nueva", route: null, path: "/sales/new" },
+      ]),
+    ).toEqual(["VentasVacio: its path /sales is a built row's route"]);
+  });
+
+  test("one ceiling keeps the listed null row out of the report and the unlisted one in it, in the same run", () => {
+    expect(
+      routeProblems(
+        [
+          { screen: "Listed", route: null, path: "/listed" },
+          { screen: "Unlisted", route: null, path: "/unlisted" },
+        ],
+        { Listed: 9 },
+      ),
+    ).toEqual(["Unlisted: route is null, so it is not built"]);
+  });
+
+  test("the route check reports a null route only off the ceiling, a route that is not the path, and a step-reached screen with no steps", () => {
+    expect(
+      routeProblems(
+        [{ screen: "Listed", route: null, path: "/listed" }],
+        { Listed: 9 },
+      ),
+    ).toEqual([]);
     expect(
       routeProblems([
         { screen: "Inicio", route: "/", path: "/" },
@@ -559,14 +768,16 @@ describe("screens.json against the English routes", () => {
   });
 
   test("every English path of the registry is a screens.json path, with no exemption, and the old Spanish ones are gone", () => {
-    const paths = new Set([
-      ...screensJson.screens.map((entry) => normalise(entry.path)),
-      ...screensJson.registry.map((entry) => normalise(entry.path)),
-    ]);
+    const paths = [
+      ...screensJson.screens.map((entry) => entry.path),
+      ...ROUTE_REGISTRY.map((entry) => entry.path),
+    ];
     const registered = [...SCREENS, ...OUTSIDE]
       .filter((entry) => entry.path !== routes.CATCH_ALL)
-      .map((entry) => normalise(entry.path));
-    expect(registered.filter((path) => !paths.has(path))).toEqual([]);
+      .map((entry) => entry.path);
+    expect(
+      registered.filter((path) => !paths.some((known) => patternsMatch(path, known))),
+    ).toEqual([]);
     const everyPath = [...SCREENS, ...OUTSIDE].map((entry) => entry.path);
     for (const spanish of [
       "/ventas",
@@ -643,44 +854,33 @@ describe("the screen Record payment was opened from", () => {
     expect(readPaymentUnderneath(paymentLink(7, "customers").state)).toBe("customers");
   });
 
-  const plainClick = { button: 0, metaKey: false, ctrlKey: false, shiftKey: false, altKey: false };
-
-  test("following the link leaves the customer and the scroll offset for the origin, in memory", () => {
-    consumePaymentReturn();
-    Object.defineProperty(window, "scrollY", { configurable: true, value: 640 });
-
-    paymentLink("7", "customers").onClick(plainClick);
-
-    expect(consumePaymentReturn()).toEqual({ customerId: 7, scrollY: 640 });
-    Reflect.deleteProperty(window, "scrollY");
-  });
-
-  test.each([
-    ["a click that opens a new tab", { ...plainClick, ctrlKey: true }],
-    ["a click with Shift", { ...plainClick, shiftKey: true }],
-    ["a click with the meta key", { ...plainClick, metaKey: true }],
-    ["a middle click", { ...plainClick, button: 1 }],
-  ])("%s leaves nothing behind", (_label, click) => {
+  test("the link helper opens the payment and leaves nothing in memory", () => {
     consumePaymentReturn();
 
-    paymentLink(7, "home").onClick(click);
+    const link = paymentLink("7", "customers");
 
+    expect(link).toEqual({ to: "/customers/7/payment", state: { underneath: "customers" } });
     expect(peekPaymentReturn()).toBeNull();
   });
 
-  test("the guard flags a source that sets the hand-off, aliased or not, and passes the helper and the module", () => {
-    const direct = { path: "src/screens/X.tsx", content: "setPaymentReturn(7, 0)" };
+  test("the guard flags a source that sets the hand-off, aliased or not, the link helper included, and passes the save and the module", () => {
+    const direct = { path: "src/screens/X.tsx", content: "setPaymentReturn(7)" };
     const aliased = {
       path: "src/screens/Y.tsx",
-      content: "import { setPaymentReturn as remember } from '../paymentReturn'\nremember(7, 0)",
+      content: "import { setPaymentReturn as remember } from '../paymentReturn'\nremember(7)",
     };
-    const helper = { path: "src/routes.ts", content: "setPaymentReturn(Number(id), 0)" };
+    const helper = { path: "src/routes.ts", content: "setPaymentReturn(Number(id))" };
+    const save = { path: "src/screens/clientes/CobroRoute.tsx", content: "setPaymentReturn(Number(customerId))" };
     const reader = { path: "src/screens/Z.tsx", content: "import { peekPaymentReturn } from '../paymentReturn'" };
 
-    expect(findHandOffSetters([direct, aliased, helper, reader])).toEqual(["src/screens/X.tsx", "src/screens/Y.tsx"]);
+    expect(findHandOffSetters([direct, aliased, helper, save, reader])).toEqual([
+      "src/screens/X.tsx",
+      "src/screens/Y.tsx",
+      "src/routes.ts",
+    ]);
   });
 
-  test("the real front sources set the hand-off only through the link helper", () => {
+  test("the real front sources set the hand-off only in the save of Record payment", () => {
     const modules = import.meta.glob<string>(["/src/**/*.{ts,tsx}", "!/src/**/*.test.{ts,tsx}"], {
       query: "?raw",
       import: "default",
@@ -750,10 +950,10 @@ function withoutComments(content: string): string[] {
 }
 
 /** Files that write a front path as a string literal instead of a constant of `routes.ts`. */
-/** The sources, other than the hand-off module and the link helper, that name the setter (an alias still names it in its import). */
+/** The sources, other than the hand-off module and the save of Record payment, that name the setter (an alias still names it in its import). */
 function findHandOffSetters(files: Source[]): string[] {
   return files
-    .filter((file) => file.path !== "src/paymentReturn.ts" && file.path !== "src/routes.ts")
+    .filter((file) => file.path !== "src/paymentReturn.ts" && file.path !== "src/screens/clientes/CobroRoute.tsx")
     .filter((file) => /\bsetPaymentReturn\b/.test(file.content))
     .map((file) => file.path);
 }

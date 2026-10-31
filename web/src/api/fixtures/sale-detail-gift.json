@@ -8,8 +8,8 @@
   "total": 3500,
   "lines": [
     {
-      "variety_id": 1,
-      "variety_name": "Blue Dream",
+      "product_id": 1,
+      "product_name": "Blue Dream",
       "quantity": 2.0,
       "pricing_rule": "list",
       "price_per_gram": 1000,
@@ -17,8 +17,8 @@
       "cost": { "costed": 500, "pending_quantity": 0.0 }
     },
     {
-      "variety_id": 1,
-      "variety_name": "Blue Dream",
+      "product_id": 1,
+      "product_name": "Blue Dream",
       "quantity": 1.5,
       "pricing_rule": "list",
       "price_per_gram": 1000,
@@ -26,8 +26,8 @@
       "cost": { "costed": 375, "pending_quantity": 0.0 }
     },
     {
-      "variety_id": 2,
-      "variety_name": "OG Kush",
+      "product_id": 2,
+      "product_name": "OG Kush",
       "quantity": 1.0,
       "pricing_rule": "gift",
       "price_per_gram": 0,

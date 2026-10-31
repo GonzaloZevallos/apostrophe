@@ -12,6 +12,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { StockEntry } from '../api/stock'
 import StockEntryForm, { type StockEntryFormProps } from './StockEntryForm'
+import type { Variety } from './Variedades'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -21,10 +22,10 @@ function jsonResponse(status: number, body: unknown): Response {
 }
 
 const VARIETIES = [
-  { id: 3, name: 'Sir Jack', current_price: null },
-  { id: 4, name: 'Gelato', current_price: null },
-]
-const STOCK_VIEW = { total: 0, varieties: [], entries: [] }
+  { id: 3, name: 'Sir Jack', archived: false, current_price: null },
+  { id: 4, name: 'Gelato', archived: false, current_price: null },
+] satisfies Variety[]
+const STOCK_VIEW = { total: 0, products: [], entries: [] }
 
 function renderForm(onSaved: () => void) {
   render(
@@ -49,14 +50,14 @@ test('with a fixed variety and origin it posts the opening stock and offers no o
   const onSaved = vi.fn()
   const fetchMock = vi.fn((input: string | URL | Request, init?: RequestInit) => {
     const url = typeof input === 'string' ? input : input.toString()
-    if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+    if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
     if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
     if (url === '/stock/entries' && init?.method === 'POST') {
       return Promise.resolve(
         jsonResponse(201, {
           id: 10,
           date: '2026-10-03',
-          variety_id: 3,
+          product_id: 3,
           origin: 'opening_stock',
           quantity: 30,
           total_cost: null,
@@ -89,7 +90,7 @@ test('with a fixed variety and origin it posts the opening stock and offers no o
   const post = fetchMock.mock.calls.find(([url]) => String(url) === '/stock/entries')
   // The date is the `today` prop, with no field for it; no note, and no cost when none is typed.
   expect(JSON.parse(String(post?.[1]?.body))).toEqual({
-    variety_id: 3,
+    product_id: 3,
     origin: 'opening_stock',
     quantity: '30',
     date: '2026-10-03',
@@ -101,7 +102,7 @@ test('the locked form asks only for grams and the optional cost, and the no-cost
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       return Promise.resolve(jsonResponse(500, {}))
     }),
@@ -123,7 +124,7 @@ test('the locked form asks only for grams and the optional cost, and the no-cost
 test('with a cost typed, the locked form posts it', async () => {
   const fetchMock = vi.fn((input: string | URL | Request, init?: RequestInit) => {
     const url = typeof input === 'string' ? input : input.toString()
-    if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+    if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
     if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
     if (init?.method === 'POST') return Promise.resolve(jsonResponse(201, {}))
     return Promise.resolve(jsonResponse(500, {}))
@@ -146,7 +147,7 @@ test('without the locked props the form is the owner\'s whole form', async () =>
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       return Promise.resolve(jsonResponse(500, {}))
     }),
@@ -187,7 +188,7 @@ test('the owner refuses the entry inline and the form does not report it saved',
     'fetch',
     vi.fn((input: string | URL | Request, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       if (init?.method === 'POST') {
         return Promise.resolve(jsonResponse(422, { code: 'stock.date_in_future' }))
@@ -203,4 +204,34 @@ test('the owner refuses the entry inline and the form does not report it saved',
 
   expect(await screen.findByText('The date cannot be in the future')).toBeInTheDocument()
   expect(onSaved).not.toHaveBeenCalled()
+})
+
+test("an edit preselects the product whose id is the entry's product_id", async () => {
+  const entry = {
+    id: 10,
+    date: '2026-10-03',
+    product_id: VARIETIES[1]!.id,
+    origin: 'purchase',
+    quantity: 30,
+    total_cost: null,
+    cost_per_gram: null,
+    note: null,
+  } satisfies StockEntry
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: string | URL | Request) => {
+      const url = typeof input === 'string' ? input : input.toString()
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, { ...STOCK_VIEW, entries: [entry] }))
+      return Promise.resolve(jsonResponse(500, {}))
+    }),
+  )
+  render(
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <StockEntryForm mode="editar" initial={entry} today="2026-10-03" onSaved={vi.fn()} />
+    </QueryClientProvider>,
+  )
+
+  const field = await screen.findByRole('combobox')
+  await waitFor(() => expect(field).toHaveDisplayValue(VARIETIES[1]!.name))
 })

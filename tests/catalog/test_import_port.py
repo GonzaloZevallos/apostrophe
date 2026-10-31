@@ -36,7 +36,7 @@ REF = SheetRef(sheet="Catálogo", row=6)
 
 
 def _variety_id(client: TestClient) -> int:
-    variety: int = client.post("/varieties", json={"name": "Importada"}).json()["id"]
+    variety: int = client.post("/api/products", json={"name": "Importada"}).json()["id"]
     return variety
 
 

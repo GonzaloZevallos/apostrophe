@@ -28,7 +28,7 @@ SaleDate = date
 
 
 class LineIn(BaseModel):
-    variety_id: int
+    product_id: int
     quantity: Decimal
     gift: bool = False
     special_price: int | None = None
@@ -61,8 +61,8 @@ class SaleCustomerOut(BaseModel):
 
 
 class SaleLineOut(BaseModel):
-    variety_id: int
-    variety_name: str
+    product_id: int
+    product_name: str
     quantity: QuantityOut
     pricing_rule: PricingRule
     price_per_gram: int
@@ -72,8 +72,8 @@ class SaleLineOut(BaseModel):
     def of(cls, view_line: SaleViewLine) -> "SaleLineOut":
         line = view_line.line
         return cls(
-            variety_id=line.variety_id,
-            variety_name=view_line.variety_name,
+            product_id=line.variety_id,
+            product_name=view_line.variety_name,
             quantity=line.quantity.as_decimal(),
             pricing_rule=line.pricing_rule,
             price_per_gram=line.price_per_gram,
@@ -131,8 +131,8 @@ class LineCostOut(BaseModel):
 class SaleLineDetailOut(BaseModel):
     """`SaleLineOut`'s fields plus the line's cost of goods (ADR-0009)."""
 
-    variety_id: int
-    variety_name: str
+    product_id: int
+    product_name: str
     quantity: QuantityOut
     pricing_rule: PricingRule
     price_per_gram: int
@@ -143,8 +143,8 @@ class SaleLineDetailOut(BaseModel):
     def of(cls, view_line: SaleViewLine, cost: LineCost) -> "SaleLineDetailOut":
         line = view_line.line
         return cls(
-            variety_id=line.variety_id,
-            variety_name=view_line.variety_name,
+            product_id=line.variety_id,
+            product_name=view_line.variety_name,
             quantity=line.quantity.as_decimal(),
             pricing_rule=line.pricing_rule,
             price_per_gram=line.price_per_gram,
@@ -253,14 +253,13 @@ class SaleDetailOut(BaseModel):
         )
 
 
-# Keeps its wire name until the Product rename on the wire (ADR-0061).
 class ReturnedQuantityOut(BaseModel):
-    variety_id: int
+    product_id: int
     quantity: QuantityOut
 
 
 class DeleteSaleOut(BaseModel):
-    """`DELETE /sales/{id}`'s own response: the grams returned per variety, summed from
-    the sale's own lines and sorted by `variety_id`."""
+    """`DELETE /sales/{id}`'s own response: the quantity returned per product, summed from
+    the sale's own lines and sorted by `product_id`."""
 
     returned: list[ReturnedQuantityOut]

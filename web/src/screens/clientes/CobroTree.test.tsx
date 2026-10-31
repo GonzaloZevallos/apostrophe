@@ -18,6 +18,7 @@ import type { PaymentUnderneath, Viewport } from '../../routes'
 import panelFixture from '../../api/fixtures/panel.json'
 import { flipViewport, renderWithViewport } from '../../test-viewport'
 import { inAppState } from '../../components/inAppState'
+import { peekPaymentReturn } from '../../paymentReturn'
 
 const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
 const OWING = { id: 1, name: 'Ana Pérez', phone: '+5491122334455', vip: false, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }
@@ -55,7 +56,7 @@ function renderApp(entries: { pathname: string; state?: unknown }[], viewport: V
     'POST /customers/1/payments/preview': () => jsonResponse(200, RECORDED),
     'POST /customers/1/payments': () => jsonResponse(201, RECORDED),
     'GET /first-run': () => jsonResponse(200, { kind: 'none', checklist: [], import_notice: false, nothing_qualifies: false }),
-    'GET /varieties': () => jsonResponse(200, [{ current_price: { id: 1 } }]),
+    'GET /api/products': () => jsonResponse(200, [{ current_price: { id: 1 } }]),
     'GET /pinned-catalog/status': () => jsonResponse(200, { status: null }),
     'GET /onboarding-progress': () => jsonResponse(200, { offered: false }),
     ...answers,
@@ -129,6 +130,8 @@ describe('on a computer', () => {
     // A second Escape does nothing while the question shows.
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(router.state.location.pathname).toBe(PAYMENT)
+    // The leave was asked, not made: no hand-off is left behind to focus a control later.
+    expect(peekPaymentReturn()).toBeNull()
   })
 })
 

@@ -30,12 +30,6 @@
     "issue": 48
   },
   {
-    "screen": "Inicio",
-    "rule": "aria-busy",
-    "target": "",
-    "issue": 45
-  },
-  {
     "screen": "InicioChecklist",
     "rule": "aria-busy",
     "target": "",

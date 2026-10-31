@@ -122,9 +122,9 @@ def test_upgrading_twice_changes_nothing_on_libsql(tmp_path: Path) -> None:
 
 
 def _seed_customer_owing(client: TestClient) -> int:
-    variety = client.post("/varieties", json={"name": "Guard variety"}).json()
+    variety = client.post("/api/products", json={"name": "Guard variety"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 1_000},
     )
     customer = client.post(
@@ -136,7 +136,7 @@ def _seed_customer_owing(client: TestClient) -> int:
         json={
             "customer_id": customer_id,
             "payment": "owing",
-            "lines": [{"variety_id": variety["id"], "quantity": "10"}],
+            "lines": [{"product_id": variety["id"], "quantity": "10"}],
         },
     )
     assert sale.status_code == 201, sale.text

@@ -116,12 +116,12 @@ def seed(db_path: Path, clock: MovableClock | None = None) -> tuple[str, str]:
         assert customer.status_code == 201, customer.text
         customer_id = customer.json()["id"]
 
-        variety = client.post("/varieties", json={"name": "Lavanda"})
+        variety = client.post("/api/products", json={"name": "Lavanda"})
         assert variety.status_code == 201, variety.text
         variety_id = variety.json()["id"]
 
         price = client.post(
-            f"/varieties/{variety_id}/prices",
+            f"/api/products/{variety_id}/prices",
             json={"effective_from": days.price.isoformat(), "list_price": 5000},
         )
         assert price.status_code == 201, price.text
@@ -129,7 +129,7 @@ def seed(db_path: Path, clock: MovableClock | None = None) -> tuple[str, str]:
         entry = client.post(
             "/stock/entries",
             json={
-                "variety_id": variety_id,
+                "product_id": variety_id,
                 "origin": "purchase",
                 "quantity": 100,
                 "total_cost": 300000,
@@ -145,7 +145,7 @@ def seed(db_path: Path, clock: MovableClock | None = None) -> tuple[str, str]:
                 "shipping_charged": SHIPPING_CHARGED,
                 "note": SALE_NOTE,
                 "payment": "owing",
-                "lines": [{"variety_id": variety_id, "quantity": 10, "special_price": 6000}],
+                "lines": [{"product_id": variety_id, "quantity": 10, "special_price": 6000}],
             },
         )
         assert sale.status_code == 201, sale.text
@@ -178,13 +178,13 @@ def seed(db_path: Path, clock: MovableClock | None = None) -> tuple[str, str]:
         assert header_footer.status_code == 200, header_footer.text
 
         attributes = client.put(
-            f"/catalog/varieties/{variety_id}",
+            f"/catalog/products/{variety_id}",
             json={"shown": True, "emoji": "\U0001f33f", "indica_share": 50, "aroma": "floral"},
         )
         assert attributes.status_code == 200, attributes.text
 
         threshold = client.put(
-            f"/stock/varieties/{variety_id}/threshold", json={"quantity": LOW_STOCK_THRESHOLD}
+            f"/stock/products/{variety_id}/threshold", json={"quantity": LOW_STOCK_THRESHOLD}
         )
         assert threshold.status_code == 200, threshold.text
 

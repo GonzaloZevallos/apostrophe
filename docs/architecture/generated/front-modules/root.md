@@ -30,6 +30,5 @@ src_queryClient_ts-->src_routes_ts
 src_queryClient_ts-->src_session_ts
 src_router_tsx-->src_Root_tsx
 src_router_tsx-->src_routes_ts
-src_routes_ts-->src_paymentReturn_ts
 src_session_ts-->src_routes_ts
 ```

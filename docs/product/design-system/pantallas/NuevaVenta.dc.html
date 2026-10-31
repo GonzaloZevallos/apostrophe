@@ -7,82 +7,94 @@
 <body>
 <x-dc>
 <helmet>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
 <style>
-body { margin: 0 }
-a { color: #1B4FA8 } a:hover { color: #231E18 }
+body{margin:0}
+a{color:#1E6B47}a:hover{color:#14532F}
 </style>
 </helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F6F7F5; font-family: 'Geist', system-ui, sans-serif; color: #15201A; position: relative; overflow: hidden">
+  <div aria-hidden="true" style="padding: 16px; opacity: .5">
+    <span style="font-size: 22px; font-weight: 600">Hoy</span>
+  </div>
+  <div style="position: absolute; inset: 0; background: rgba(21,32,26,.4)"></div>
 
-<div style="width: 390px; min-height: 1000px; box-sizing: border-box; background: #FCFBF8; color: #231E18; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column">
-  <div style="padding: 24px 24px 0; display: flex; align-items: center; gap: 12px"><span style="flex: 1; font-size: 20px; font-weight: 600; letter-spacing: -0.02em">Nueva venta</span><span style="display: flex; align-items: center; gap: 5px; font-size: 15px; color: #706659">Hoy 05/10<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9.5 6 6 6-6"/></svg></span><span style="font-size: 15px; font-weight: 600; color: #706659">Cerrar</span></div>
-  <a href="NuevaVentaCliente.dc.html" style="padding: 20px 24px 0; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #231E18">
-    <span style="display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 999px; background: #F2EEE6; font-size: 15px; font-weight: 600">MS</span>
-    <span style="flex: 1; display: flex; flex-direction: column">
-      <span style="display: flex; align-items: center; gap: 7px"><span style="font-size: 17px; font-weight: 600">Mica Solano</span></span>
-      <span style="font-size: 14px; color: #706659">+54 9 11 6033-7725</span>
-    </span>
-    <span style="font-size: 15px; color: #1B4FA8; box-shadow: 0 1px 0 #1B4FA8">Cambiar</span>
-  </a>
-  <div style="margin: 18px 24px 0; border-top: 1px solid #EBE5DA"></div>
-  <div style="padding: 0 24px">
-    <div style="padding: 16px 0; border-bottom: 1px solid #EBE5DA;">
-      <div style="display: flex; align-items: baseline; gap: 12px">
-        <span style="flex: 1; font-size: 18px; font-weight: 600">24K Gold</span>
-        <span style="font-size: 28px; font-weight: 600; letter-spacing: -0.035em">10 g</span>
-      </div>
-      <div style="display: flex; align-items: center; gap: 8px; margin-top: 7px"><span style="font-size: 14px; color: #706659">$ 10.000 por gramo</span><span style="font-size: 12px; font-weight: 600; background: #E9EDF7; color: #1B4FA8; padding: 3px 9px; border-radius: 999px">VIP</span>
-        <span style="margin-left: auto; font-size: 18px; font-weight: 600">$ 100.000</span>
-      </div>
+  <section aria-label="Nueva venta" style="position: absolute; left: 0; right: 0; bottom: 0; top: 46px; background: #FFFFFF; border-radius: 22px 22px 0 0; display: flex; flex-direction: column">
+    <span aria-hidden="true" style="align-self: center; margin-top: 8px; width: 40px; height: 5px; border-radius: 3px; background: #D2DAD5"></span>
+    <div style="padding: 10px 16px 0; display: flex; justify-content: space-between; align-items: center">
+      <h1 style="margin: 0; font-size: 20px; font-weight: 600">Nueva venta</h1>
+      <button aria-label="Cerrar" style="width: 36px; height: 36px; border-radius: 18px; border: none; background: #EEF2EF; color: #15201A; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
-    <div style="padding: 16px 0; border-bottom: 1px solid #EBE5DA;">
-      <div style="display: flex; align-items: baseline; gap: 12px">
-        <span style="flex: 1; font-size: 18px; font-weight: 600">Golden Cookies</span>
-        <span style="font-size: 28px; font-weight: 600; letter-spacing: -0.035em">2 g</span>
-      </div>
-      <div style="display: flex; align-items: center; gap: 8px; margin-top: 7px"><span style="font-size: 14px; color: #706659">$ 12.000 por gramo</span><span style="font-size: 12px; font-weight: 600; background: #E9EDF7; color: #1B4FA8; padding: 3px 9px; border-radius: 999px">VIP</span>
-        <span style="margin-left: auto; font-size: 18px; font-weight: 600">$ 24.000</span>
-      </div>
-    </div>
-    <div style="padding: 16px 0; border-bottom: 1px solid #EBE5DA;">
-      <div style="display: flex; align-items: baseline; gap: 12px">
-        <span style="flex: 1; font-size: 18px; font-weight: 600">Sir Jack</span>
-        <span style="font-size: 28px; font-weight: 600; letter-spacing: -0.035em">1 g</span>
-      </div>
-      <div style="display: flex; align-items: center; gap: 8px; margin-top: 7px"><span style="font-size: 12px; font-weight: 600; background: #E9EDF7; color: #1B4FA8; padding: 3px 9px; border-radius: 999px">regalo</span>
-        <span style="margin-left: auto; font-size: 18px; font-weight: 600">$ 0</span>
-      </div>
-    </div>
-    <div style="padding: 15px 0; border-bottom: 1px solid #EBE5DA"><span style="font-size: 15px; color: #1B4FA8; box-shadow: 0 1px 0 #1B4FA8">Agregar otra variedad</span></div>
-    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 0; border-bottom: 1px solid #EBE5DA;"><span style="font-size: 16px">Envío cobrado</span><span style="font-size: 17px; font-weight: 600; color: #231E18">$ 6.000</span></div>
-    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 0;"><span style="font-size: 16px">Nota</span><span style="font-size: 15px; font-weight: 600; color: #231E18"><span style="font-weight: 400; color: #706659">Opcional</span></span></div>
-  </div>
-  <div style="padding: 10px 24px 0">
-    <div style="display: flex; gap: 5px; background: #F2EEE6; border-radius: 999px; padding: 4px">
-      <span style="flex: 1; text-align: center; padding: 11px 0; border-radius: 999px; font-size: 14px; color: #706659">Efectivo</span>
-      <span style="flex: 1; text-align: center; padding: 11px 0; border-radius: 999px; background: #FCFBF8; font-size: 14px; font-weight: 600">Transferencia</span>
-      <span style="flex: 1.05; text-align: center; padding: 11px 0; border-radius: 999px; font-size: 14px; color: #706659">Debiendo</span>
-    </div>
-  </div>
-  <div style="margin-top: auto; padding: 18px 24px 22px; border-top: 1px solid #EBE5DA">
-    <span style="display: block; font-size: 15px; color: #706659">Total</span>
-    <span style="display: block; font-size: 46px; font-weight: 600; letter-spacing: -0.045em; line-height: 1.05">$ 130.000</span>
-    <span style="display: block; font-size: 13px; color: #706659; margin-top: 4px">12 g vendidos · 1 g de regalo</span>
-    <div style="margin-top: 14px"><a href="Ventas.dc.html" style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 56px; border-radius: 999px; background: #231E18; color: #FCFBF8; text-decoration: none; font-size: 17px; font-weight: 600">Guardá la venta</a></div>
-  </div>
-  <div style="padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 8px">
-    <span style="font-size: 13px; color: #706659">Cambios sin guardar, al cerrar</span>
-    <div style="background: #F2EEE6; border-radius: 24px; padding: 20px">
-      <span style="display: block; font-size: 18px; font-weight: 600">¿Descartás la venta?</span>
-      <span style="display: block; font-size: 15px; color: #706659; line-height: 1.5; margin-top: 6px">Se pierde lo que cargaste: todavía no se guardó nada.</span>
-      <div style="display: flex; gap: 10px; margin-top: 16px">
-        <span style="flex: 1; display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 999px; background: #FCFBF8; font-size: 15px; font-weight: 600">No, seguí cargando</span>
-        <span style="flex: 1; display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 999px; background: #33281A; color: #F7EFE0; font-size: 15px; font-weight: 600">Sí, descartala</span>
-      </div>
-    </div>
-  </div>
 
+    <div style="padding: 12px 16px 0; display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 12px; color: #56645C; font-weight: 500">Cliente</span>
+      <div style="display: flex; gap: 8px">
+        <button aria-pressed="true" style="height: 40px; padding: 0 12px 0 6px; border-radius: 20px; border: 2px solid #1E6B47; background: #E2F1E8; color: #15201A; font: 600 13px 'Geist', sans-serif; display: flex; align-items: center; gap: 6px">
+          <span aria-hidden="true" style="width: 28px; height: 28px; border-radius: 14px; background: #1E6B47; color: #FFFFFF; font-size: 11px; display: flex; align-items: center; justify-content: center">LF</span>Lucía</button>
+        <button style="height: 40px; padding: 0 12px; border-radius: 20px; border: 1px solid #DCE3DE; background: #FFFFFF; color: #15201A; font: 500 13px 'Geist', sans-serif">Martín</button>
+        <button style="height: 40px; padding: 0 12px; border-radius: 20px; border: 1px solid #DCE3DE; background: #FFFFFF; color: #15201A; font: 500 13px 'Geist', sans-serif">Juan</button>
+        <button aria-label="Buscar otro cliente" style="width: 40px; height: 40px; border-radius: 20px; border: 1px solid #DCE3DE; background: #FFFFFF; color: #15201A; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
+      </div>
+      <span style="font-size: 12px; color: #1E6B47; background: #E2F1E8; border-radius: 8px; padding: 6px 8px">Lucía es <b>Mayorista</b>: los precios ya son los de mayorista.</span>
+    </div>
+
+    <div style="padding: 14px 16px 0; display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <span style="font-size: 12px; color: #56645C; font-weight: 500">Productos · los que más vendés</span>
+        <a href="#" style="font-size: 12px; text-decoration: none">Buscar</a>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+        <div style="border: 2px solid #1E6B47; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; justify-content: space-between"><span style="font-size: 13px; font-weight: 600">Café en grano</span><span style="font-size: 12px; color: #56645C; font-variant-numeric: tabular-nums">$5.900</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between">
+            <button aria-label="Uno menos de Café en grano" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: #EEF2EF; color: #15201A; font: 600 18px 'Geist', sans-serif">−</button>
+            <span style="font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums">2</span>
+            <button aria-label="Uno más de Café en grano" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: #1E6B47; color: #FFFFFF; font: 600 18px 'Geist', sans-serif">+</button>
+          </div>
+        </div>
+        <div style="border: 2px solid #1E6B47; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; justify-content: space-between"><span style="font-size: 13px; font-weight: 600">Galletitas</span><span style="font-size: 12px; color: #56645C; font-variant-numeric: tabular-nums">$1.350</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between">
+            <button aria-label="Uno menos de Galletitas" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: #EEF2EF; color: #15201A; font: 600 18px 'Geist', sans-serif">−</button>
+            <span style="font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums">3</span>
+            <button aria-label="Uno más de Galletitas" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: #1E6B47; color: #FFFFFF; font: 600 18px 'Geist', sans-serif">+</button>
+          </div>
+        </div>
+        <button style="border: 1px solid #DCE3DE; background: #FFFFFF; border-radius: 14px; padding: 10px; display: flex; justify-content: space-between; align-items: center; font-family: 'Geist', sans-serif; color: #15201A"><span style="font-size: 13px; font-weight: 600">Miel 500 g</span><span style="font-size: 12px; color: #56645C">$3.800</span></button>
+        <button style="border: 1px solid #DCE3DE; background: #FFFFFF; border-radius: 14px; padding: 10px; display: flex; justify-content: space-between; align-items: center; font-family: 'Geist', sans-serif; color: #15201A"><span style="font-size: 13px; font-weight: 600">Alfajores</span><span style="font-size: 12px; color: #56645C">$1.600</span></button>
+      </div>
+    </div>
+
+    <div style="margin: 14px 16px 0; padding: 10px 12px; border-radius: 12px; background: #E7F4EC; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #0B5E30">
+      <span style="font-size: 11px; font-weight: 700; background: #1E7A45; color: #FFFFFF; border-radius: 6px; padding: 2px 6px">3×2</span>
+      <span style="flex-grow: 1">Galletitas: una va de regalo</span>
+      <span style="font-weight: 600; font-variant-numeric: tabular-nums">−$1.350</span>
+      <button aria-label="Quitar la promoción" style="width: 28px; height: 28px; border-radius: 14px; border: none; background: transparent; color: #0B5E30; display: flex; align-items: center; justify-content: center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+
+    <div style="padding: 14px 16px 0; display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 12px; color: #56645C; font-weight: 500">Cómo paga</span>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap">
+        <button aria-pressed="true" style="height: 38px; padding: 0 14px; border-radius: 19px; border: 2px solid #1E6B47; background: #E2F1E8; color: #15201A; font: 600 13px 'Geist', sans-serif">Transferencia</button>
+        <button style="height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid #DCE3DE; background: #FFFFFF; color: #15201A; font: 500 13px 'Geist', sans-serif">Efectivo</button>
+        <button style="height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid #DCE3DE; background: #FFFFFF; color: #15201A; font: 500 13px 'Geist', sans-serif">Queda debiendo</button>
+      </div>
+    </div>
+
+    <div style="margin-top: auto; padding: 12px 16px 24px; border-top: 1px solid #DCE3DE; display: flex; flex-direction: column; gap: 8px">
+      <button style="height: 56px; border-radius: 16px; border: none; background: #1E6B47; color: #FFFFFF; font: 600 17px 'Geist', sans-serif; display: flex; align-items: center; justify-content: space-between; padding: 0 20px">
+        <span>Cobrar · 5 productos</span><span style="font-variant-numeric: tabular-nums">$14.500</span></button>
+    </div>
+  </section>
 </div>
 </x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
 </body>
 </html>

@@ -128,29 +128,29 @@ export default function StockEntryForm({
   const queryClient = useQueryClient()
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
-    queryFn: () => get<Variety[]>('/varieties'),
+    queryFn: () => get<Variety[]>('/api/products'),
   })
   const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   // An entry of an archived variety keeps it: editing may keep that variety but the picker
   // offers no other archived one. Its name comes from the archived list, asked only then.
   const listedVarieties = varietiesQuery.data
   const entryVarietyIsListed =
-    initial === undefined || listedVarieties === undefined || listedVarieties.some((v) => v.id === initial.variety_id)
+    initial === undefined || listedVarieties === undefined || listedVarieties.some((v) => v.id === initial.product_id)
   const archivedQuery = useQuery({
     queryKey: keys.archivedVarieties(),
-    queryFn: () => get<Variety[]>('/varieties?archived=true'),
+    queryFn: () => get<Variety[]>('/api/products?archived=true'),
     enabled: !entryVarietyIsListed,
   })
   const pickable = [
     ...(listedVarieties ?? []),
-    ...(archivedQuery.data ?? []).filter((v) => v.id === initial?.variety_id),
+    ...(archivedQuery.data ?? []).filter((v) => v.id === initial?.product_id),
   ]
 
   const [date, setDate] = useState(initial?.date ?? today)
   const [grams, setGrams] = useState(initial !== undefined ? String(initial.quantity) : '')
   const [varietyId, setVarietyId] = useState(
     initial !== undefined
-      ? String(initial.variety_id)
+      ? String(initial.product_id)
       : fixedVarietyId !== undefined
         ? String(fixedVarietyId)
         : preselectedVarietyId !== undefined
@@ -196,13 +196,13 @@ export default function StockEntryForm({
   const varietyGrams = (() => {
     const variety = Number(varietyId)
     if (varietyId === '' || !Number.isInteger(variety)) return null
-    const found = stockQuery.data?.varieties.find((row) => row.variety_id === variety)
+    const found = stockQuery.data?.products.find((row) => row.product_id === variety)
     return found?.quantity ?? null
   })()
 
   function buildBody(): {
     date: string
-    variety_id: number
+    product_id: number
     origin: Origin
     quantity: string
     total_cost?: number
@@ -215,7 +215,7 @@ export default function StockEntryForm({
     if (parsedCost !== undefined && !parsedCost.ok) return null
     return {
       date,
-      variety_id: variety,
+      product_id: variety,
       origin,
       quantity: previewGrams.value,
       total_cost: parsedCost?.ok ? parsedCost.value : undefined,

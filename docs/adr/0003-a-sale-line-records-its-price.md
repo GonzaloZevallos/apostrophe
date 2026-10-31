@@ -15,7 +15,7 @@ row, so the sheet tells the operator never to edit one. A typo in today's price 
   special) at the moment it is recorded. A sale's total is computed from what its lines
   stored, never from the price history again.
 - **Price entries are never rewritten.** A new price is a new entry effective from its
-  date. A **mistaken entry may be deleted** (`DELETE /varieties/{id}/prices/{entry_id}`):
+  date. A **mistaken entry may be deleted** (`DELETE /api/products/{id}/prices/{entry_id}`):
   sales already recorded keep their stored prices, and the entry before it becomes the
   current price again.
 

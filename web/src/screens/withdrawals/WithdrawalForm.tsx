@@ -87,7 +87,7 @@ function initialState(target: WithdrawalTarget, today: string, varietyId: string
     date: target.date,
     lines: target.lines.map((line, index) => ({
       key: index,
-      varietyId: String(line.variety_id),
+      varietyId: String(line.product_id),
       grams: String(line.quantity),
     })),
     note: target.note ?? '',
@@ -99,14 +99,14 @@ function initialState(target: WithdrawalTarget, today: string, varietyId: string
 /** The varieties the stored withdrawal already had on a line: an edit may keep them. */
 function storedIdsOf(target: WithdrawalTarget): ReadonlySet<string> {
   if (target === 'new') return new Set()
-  return new Set(target.lines.map((line) => String(line.variety_id)))
+  return new Set(target.lines.map((line) => String(line.product_id)))
 }
 
 /** Name by id, seeded from the stored lines and filled from every list that loads. */
 function seededNames(target: WithdrawalTarget): Map<string, string> {
   const names = new Map<string, string>()
   if (target !== 'new') {
-    for (const line of target.lines) names.set(String(line.variety_id), line.variety_name)
+    for (const line of target.lines) names.set(String(line.product_id), line.product_name)
   }
   return names
 }
@@ -136,7 +136,7 @@ function unchangedSince(form: FormState, sent: readonly LineState[], keys: Itera
   return kept
 }
 
-const fetchVarieties = () => get<Variety[]>('/varieties')
+const fetchVarieties = () => get<Variety[]>('/api/products')
 
 /** Equal by what was typed: the lines' keys are only React's. */
 function sameForm(a: FormState, b: FormState): boolean {
@@ -320,7 +320,7 @@ export default function WithdrawalForm({
       const grams = parseGrams(line.grams)
       const varietyId = Number(line.varietyId)
       if (!grams.ok || !Number.isInteger(varietyId)) return null
-      lines.push({ variety_id: varietyId, quantity: grams.value })
+      lines.push({ product_id: varietyId, quantity: grams.value })
     }
     const note = form.note.trim()
     return {

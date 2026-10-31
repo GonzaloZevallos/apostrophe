@@ -1,6 +1,6 @@
 /**
  * `PriceForm` (`PrecioNuevo.dc.html`): a new price entry for a variety
- * (`POST /varieties/{id}/prices`). It knows nothing of the router: its host supplies the
+ * (`POST /api/products/{id}/prices`). It knows nothing of the router: its host supplies the
  * exits and learns whether something was typed. A refusal shows under the field it is
  * about and keeps what was typed. A price has one code for several rules, so the code
  * alone picks the field: a repeated date under "Rige desde", a rule of the amounts under
@@ -98,7 +98,7 @@ export default function PriceForm({
     setErrors({})
     setSending(true)
     try {
-      await post(`/varieties/${varietyId}/prices`, {
+      await post(`/api/products/${varietyId}/prices`, {
         effective_from: effectiveFrom,
         ...read.amounts,
       })

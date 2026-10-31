@@ -116,7 +116,7 @@ export default function Catalogo() {
 
   const catalog = catalogQuery.data
   const settled = catalogQuery.isFetchedAfterMount && !catalogQuery.isFetching
-  const leftOut = catalog?.varieties.filter((variety) => variety.state !== 'in') ?? []
+  const leftOut = catalog?.products.filter((variety) => variety.state !== 'in') ?? []
 
   return (
     <main className="pantalla">
@@ -194,10 +194,10 @@ export default function Catalogo() {
                   {leftOut.map((variety) => {
                     const reason = REASON_LABEL[variety.state as Exclude<CatalogVarietyState, 'in'>]
                     return (
-                      <li key={variety.id} className="catalogo__fila">
+                      <li key={variety.product_id} className="catalogo__fila">
                         <span className="catalogo__fila-texto">
                           <Link
-                            to={{ pathname: pathTo(VARIETY, { id: variety.id }), hash: CATALOG_SECTION_ID }}
+                            to={{ pathname: pathTo(VARIETY, { id: variety.product_id }), hash: CATALOG_SECTION_ID }}
                             className="catalogo__fila-nombre"
                           >
                             {variety.name}

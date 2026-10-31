@@ -83,7 +83,7 @@ const SALE = {
   payment: 'cash',
   total: 6000,
   lines: [
-    { variety_id: 1, variety_name: 'Blue Dream', quantity: 5, pricing_rule: 'vip', price_per_gram: 1200, line_total: 6000 },
+    { product_id: 1, product_name: 'Blue Dream', quantity: 5, pricing_rule: 'vip', price_per_gram: 1200, line_total: 6000 },
   ],
 }
 const ACCOUNT = { balance: 0, owing_since: null, standing: 'settled', rows: [] }

@@ -3,7 +3,7 @@
  * (`priced_target`), its name, today's list price as Variedades shows it and "Hecho". Its one
  * primary action moves on to step 2 and writes nothing; there is no name field here and no
  * way to a second variety (that is "Agregar otra variedad", after step 2). The price is the
- * owner's own read (`GET /varieties/{id}`): when it answers no price today, or the variety is
+ * owner's own read (`GET /api/products/{id}`): when it answers no price today, or the variety is
  * gone, the host reads the progress again and draws what that names.
  */
 
@@ -35,7 +35,7 @@ export default function VarietyDone({ target, onStale }: VarietyDoneProps) {
   const navigate = useNavigate()
   const query = useQuery({
     queryKey: [...keys.variety(String(target.id)), 'step-one'],
-    queryFn: () => get<Variety>(`/varieties/${target.id}`),
+    queryFn: () => get<Variety>(`/api/products/${target.id}`),
     gcTime: 0,
   })
   const gone = query.error instanceof ApiError && isGone(query.error.code)

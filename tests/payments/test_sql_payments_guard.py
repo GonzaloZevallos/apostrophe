@@ -39,9 +39,9 @@ def _seed(client: TestClient) -> int:
     """One customer with every shape the guard's sums must handle: a two-line sale
     with shipping, left owing; a cash sale; a sale recorded with no customer and
     assigned later; a $0 gift sale; a partial later payment."""
-    variety = client.post("/varieties", json={"name": "Guard variety"}).json()
+    variety = client.post("/api/products", json={"name": "Guard variety"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 1_000},
     )
     customer = client.post(
@@ -56,8 +56,8 @@ def _seed(client: TestClient) -> int:
             "payment": "owing",
             "shipping_charged": 500,
             "lines": [
-                {"variety_id": variety["id"], "quantity": "10"},
-                {"variety_id": variety["id"], "quantity": "5"},
+                {"product_id": variety["id"], "quantity": "10"},
+                {"product_id": variety["id"], "quantity": "5"},
             ],
         },
     )
@@ -66,12 +66,12 @@ def _seed(client: TestClient) -> int:
         json={
             "customer_id": customer_id,
             "payment": "cash",
-            "lines": [{"variety_id": variety["id"], "quantity": "2"}],
+            "lines": [{"product_id": variety["id"], "quantity": "2"}],
         },
     )
     unassigned = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety["id"], "quantity": "1"}]},
+        json={"payment": "cash", "lines": [{"product_id": variety["id"], "quantity": "1"}]},
     ).json()
     assigned = client.put(f"/sales/{unassigned['id']}/customer", json={"customer_id": customer_id})
     assert assigned.status_code == 200, assigned.text
@@ -79,7 +79,7 @@ def _seed(client: TestClient) -> int:
         "/sales",
         json={
             "customer_id": customer_id,
-            "lines": [{"variety_id": variety["id"], "quantity": "3", "gift": True}],
+            "lines": [{"product_id": variety["id"], "quantity": "3", "gift": True}],
         },
     )
 

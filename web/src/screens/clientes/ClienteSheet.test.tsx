@@ -47,7 +47,7 @@ function renderApp(entries: { pathname: string; state?: unknown }[], viewport: V
     'GET /customers/1/account': () => jsonResponse(200, ACCOUNT),
     'GET /payments/debtors': () => jsonResponse(200, DEBTORS),
     'GET /first-run': () => jsonResponse(200, { kind: 'none', checklist: [], import_notice: false, nothing_qualifies: false }),
-    'GET /varieties': () => jsonResponse(200, [{ current_price: { id: 1 } }]),
+    'GET /api/products': () => jsonResponse(200, [{ current_price: { id: 1 } }]),
     'GET /pinned-catalog/status': () => jsonResponse(200, { status: null }),
     'GET /onboarding-progress': () => jsonResponse(200, { offered: false }),
     ...answers,

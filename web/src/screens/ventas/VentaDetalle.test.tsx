@@ -46,7 +46,7 @@ function jsonResponse(status: number, body: unknown): Response {
 }
 
 /** `DELETE /sales/{id}`'s own answer (ADR-0009): the grams the sale gave back. */
-const DELETED = { returned: [{ variety_id: 2, quantity: 3.5 }] }
+const DELETED = { returned: [{ product_id: 2, quantity: 3.5 }] }
 
 function renderDetalle(initialState?: unknown) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -398,8 +398,8 @@ test('a sale keeps its recorded "VIP" and "bulk" badges while both pricing switc
     ...SALE,
     customer: { id: 5, name: 'Ana Pérez', vip: true },
     lines: [
-      { ...line, variety_id: 2, variety_name: 'Flor A', pricing_rule: 'vip' },
-      { ...line, variety_id: 3, variety_name: 'Flor B', pricing_rule: 'bulk' },
+      { ...line, product_id: 2, product_name: 'Flor A', pricing_rule: 'vip' },
+      { ...line, product_id: 3, product_name: 'Flor B', pricing_rule: 'bulk' },
     ],
   }
   vi.mocked(fetch).mockImplementation((input) =>

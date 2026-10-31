@@ -28,10 +28,10 @@ def _ok(response: Any, status: int = 200) -> Any:
 
 
 def _variety(client: TestClient, name: str, price: int) -> int:
-    variety = _ok(client.post("/varieties", json={"name": name}), 201)
+    variety = _ok(client.post("/api/products", json={"name": name}), 201)
     _ok(
         client.post(
-            f"/varieties/{variety['id']}/prices",
+            f"/api/products/{variety['id']}/prices",
             json={"effective_from": "2020-01-01", "list_price": price},
         ),
         201,
@@ -41,7 +41,7 @@ def _variety(client: TestClient, name: str, price: int) -> int:
 
 def _entry(client: TestClient, variety_id: int, quantity: str, on: str, **more: Any) -> int:
     body = {
-        "variety_id": variety_id,
+        "product_id": variety_id,
         "origin": "opening_stock",
         "quantity": quantity,
         "date": on,
@@ -75,19 +75,19 @@ def _seed(client: TestClient, clock: MovableClock) -> Seed:
         _sale(
             client,
             "2026-09-12",
-            [{"variety_id": a, "quantity": "5"}, {"variety_id": b, "quantity": "2"}],
+            [{"product_id": a, "quantity": "5"}, {"product_id": b, "quantity": "2"}],
             customer_id=customer["id"],
             payment="owing",
         ),
         # paid on the spot
-        _sale(client, "2026-09-20", [{"variety_id": a, "quantity": "3"}], payment="cash"),
+        _sale(client, "2026-09-20", [{"product_id": a, "quantity": "3"}], payment="cash"),
         # a gift and a special price
         _sale(
             client,
             "2026-10-01",
             [
-                {"variety_id": a, "quantity": "2", "gift": True},
-                {"variety_id": b, "quantity": "1", "special_price": 1_500},
+                {"product_id": a, "quantity": "2", "gift": True},
+                {"product_id": b, "quantity": "1", "special_price": 1_500},
             ],
             payment="cash",
         ),
@@ -103,13 +103,13 @@ def _seed(client: TestClient, clock: MovableClock) -> Seed:
     _entry(client, a, "-4", "2026-09-25", origin="adjustment")
     _entry(client, a, "-150", "2026-10-02", origin="adjustment")
     # a sale line whose grams have no lot behind them
-    sales.append(_sale(client, "2026-10-03", [{"variety_id": a, "quantity": "10"}], payment="cash"))
+    sales.append(_sale(client, "2026-10-03", [{"product_id": a, "quantity": "10"}], payment="cash"))
     # a sale on the clock's own day, so the panel's today and week are not empty either
     sales.append(
         _sale(
             client,
             "2026-10-15",
-            [{"variety_id": a, "quantity": "1"}, {"variety_id": b, "quantity": "1"}],
+            [{"product_id": a, "quantity": "1"}, {"product_id": b, "quantity": "1"}],
             payment="cash",
         )
     )
@@ -147,17 +147,17 @@ def _books(client: TestClient, seed: Seed) -> dict[str, Any]:
 
 
 def _variety_row(stock: dict[str, Any], variety_id: int) -> dict[str, Any]:
-    (row,) = [r for r in stock["varieties"] if r["variety_id"] == variety_id]
+    (row,) = [r for r in stock["products"] if r["product_id"] == variety_id]
     assert isinstance(row, dict)
     return row
 
 
 def _archive(client: TestClient, variety_id: int) -> None:
-    _ok(client.post(f"/varieties/{variety_id}/archive"))
+    _ok(client.post(f"/api/products/{variety_id}/archive"))
 
 
 def _restore(client: TestClient, variety_id: int) -> None:
-    _ok(client.post(f"/varieties/{variety_id}/restore"))
+    _ok(client.post(f"/api/products/{variety_id}/restore"))
 
 
 def test_no_figure_of_the_books_moves_when_a_variety_is_archived_and_restored(
@@ -168,7 +168,7 @@ def test_no_figure_of_the_books_moves_when_a_variety_is_archived_and_restored(
     row_before = _variety_row(_ok(client.get("/stock")), seed.archived_id)
     # the seed really holds the hard cases: pending grams and a negative stock
     assert before["panel_periods"]["month"]["pending_cost"] is True
-    assert before["analysis"]["2026-09"]["month"]["varieties"]
+    assert before["analysis"]["2026-09"]["month"]["products"]
     assert before["account"]
     # today and week hold the sale of the clock's day: a filter on archived varieties there
     # would move them
@@ -180,7 +180,7 @@ def test_no_figure_of_the_books_moves_when_a_variety_is_archived_and_restored(
     archived_stock = _ok(client.get("/stock", params={"archived": "true"}))
     row_archived = _variety_row(archived_stock, seed.archived_id)
     listed_stock = _ok(client.get("/stock"))
-    assert seed.archived_id not in [r["variety_id"] for r in listed_stock["varieties"]]
+    assert seed.archived_id not in [r["product_id"] for r in listed_stock["products"]]
 
     _restore(client, seed.archived_id)
     after = _books(client, seed)
@@ -198,10 +198,10 @@ def test_a_restored_variety_comes_back_whole(
 ) -> None:
     seed = _seed(client, clock)
     a = seed.archived_id
-    _ok(client.put(f"/stock/varieties/{a}/threshold", json={"quantity": "20"}))
+    _ok(client.put(f"/stock/products/{a}/threshold", json={"quantity": "20"}))
     _ok(
         client.put(
-            f"/catalog/varieties/{a}",
+            f"/catalog/products/{a}",
             json={"shown": shown, "emoji": "🌿", "indica_share": 70, "aroma": "Cítrico"},
         )
     )
@@ -209,25 +209,25 @@ def test_a_restored_variety_comes_back_whole(
     def whole() -> dict[str, Any]:
         stock = _ok(client.get("/stock"))
         return {
-            "variety": _ok(client.get(f"/varieties/{a}")),
-            "prices": _ok(client.get(f"/varieties/{a}/prices")),
-            "entries": [e for e in stock["entries"] if e["variety_id"] == a],
+            "variety": _ok(client.get(f"/api/products/{a}")),
+            "prices": _ok(client.get(f"/api/products/{a}/prices")),
+            "entries": [e for e in stock["entries"] if e["product_id"] == a],
             "stock_row": _variety_row(stock, a),
-            "catalog": [v for v in _ok(client.get("/catalog"))["varieties"] if v["id"] == a],
+            "catalog": [v for v in _ok(client.get("/catalog"))["products"] if v["product_id"] == a],
         }
 
     before = whole()
     _archive(client, a)
-    assert a not in [row["variety_id"] for row in _ok(client.get("/panel"))["stock"]]
-    assert a not in [v["id"] for v in _ok(client.get("/varieties"))]
-    assert a not in [v["variety_id"] for v in _ok(client.get("/stock"))["varieties"]]
-    assert all(v["id"] != a for v in _ok(client.get("/catalog"))["varieties"])
+    assert a not in [row["product_id"] for row in _ok(client.get("/panel"))["stock"]]
+    assert a not in [v["id"] for v in _ok(client.get("/api/products"))]
+    assert a not in [v["product_id"] for v in _ok(client.get("/stock"))["products"]]
+    assert all(v["product_id"] != a for v in _ok(client.get("/catalog"))["products"])
     _restore(client, a)
 
     assert whole() == before
-    assert a in [v["id"] for v in _ok(client.get("/varieties"))]
-    assert a in [v["variety_id"] for v in _ok(client.get("/stock"))["varieties"]]
-    assert a in [row["variety_id"] for row in _ok(client.get("/panel"))["stock"]]
+    assert a in [v["id"] for v in _ok(client.get("/api/products"))]
+    assert a in [v["product_id"] for v in _ok(client.get("/stock"))["products"]]
+    assert a in [row["product_id"] for row in _ok(client.get("/panel"))["stock"]]
 
 
 def _edits(telegram: FakeTelegram) -> list[tuple[str, ...]]:
@@ -273,11 +273,11 @@ def test_archiving_a_hidden_or_unpriced_variety_sends_nothing(
     hidden = _qualifying(client, "Hidden")
     _ok(
         client.put(
-            f"/catalog/varieties/{hidden}",
+            f"/catalog/products/{hidden}",
             json={"shown": False, "emoji": None, "indica_share": None, "aroma": None},
         )
     )
-    unpriced = int(_ok(client.post("/varieties", json={"name": "Unpriced"}), 201)["id"])
+    unpriced = int(_ok(client.post("/api/products", json={"name": "Unpriced"}), 201)["id"])
     _publish(client)
     telegram.calls.clear()
 
@@ -295,7 +295,7 @@ def test_the_triggering_request_answers_normally_when_telegram_fails(
     _publish(client)
     telegram.fail_next(TelegramUnreachable())
 
-    archived = client.post(f"/varieties/{gone}/archive")
+    archived = client.post(f"/api/products/{gone}/archive")
 
     assert archived.status_code == 200, archived.text
     assert archived.json()["archived"] is True

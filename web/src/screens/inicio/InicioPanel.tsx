@@ -82,7 +82,7 @@ export default function InicioPanel({
           <span className="rotulo">{INICIO_TEXT.loQueTeQueda}</span>
           <div className="lista-stock">
             {stock.map((variety) => (
-              <StockRow key={variety.variety_id} variety={variety} today={today} />
+              <StockRow key={variety.product_id} variety={variety} today={today} />
             ))}
           </div>
         </div>
@@ -113,7 +113,7 @@ function StockRow({ variety, today }: { variety: PanelVarietyOut; today: string 
   )
   if (variety.status !== 'low') return <div className="fila-stock">{content}</div>
   return (
-    <InAppLink to={pathTo(VARIETY, { id: variety.variety_id })} className="fila-stock fila-stock--enlace">
+    <InAppLink to={pathTo(VARIETY, { id: variety.product_id })} className="fila-stock fila-stock--enlace">
       {content}
     </InAppLink>
   )

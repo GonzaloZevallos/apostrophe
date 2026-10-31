@@ -38,7 +38,7 @@ function CostSubRow({
   )
 }
 
-export function TablaVariedades({ varieties }: { varieties: Analysis['month']['varieties'] }) {
+export function TablaVariedades({ products }: { products: Analysis['month']['products'] }) {
   return (
     <div className="analisis__tabla-contenedor analisis__tabla-contenedor--variedades">
       <table className="analisis__tabla">
@@ -54,8 +54,8 @@ export function TablaVariedades({ varieties }: { varieties: Analysis['month']['v
           </tr>
         </thead>
         <tbody>
-          {varieties.map((variety) => (
-            <tr key={variety.variety_id}>
+          {products.map((variety) => (
+            <tr key={variety.product_id}>
               <td>{variety.name}</td>
               <td className="analisis__num cifra-n">
                 {formatMoney(variety.sales_without_shipping)}
