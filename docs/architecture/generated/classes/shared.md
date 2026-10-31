@@ -63,6 +63,13 @@ classDiagram
     commit() None
     rollback() None
   }
+  class Unit {
+    decimals : int
+    id : int
+    label : str
+    name : str
+    admits(quantity: _InHundredths) bool
+  }
   class UnknownLanguage {
   }
   class Week {
@@ -72,6 +79,9 @@ classDiagram
     next_first_day : date
     previous : Week
     containing(day: date) Week
+  }
+  class _InHundredths {
+    hundredths : int
   }
   BusinessLanguage --> Language : language
 ```

@@ -20,6 +20,7 @@ A diagram shows only its own package: classes of other packages, and the edges t
 - [classes/shared.md](classes/shared.md)
 - [classes/spreadsheet_import.md](classes/spreadsheet_import.md)
 - [classes/stock.md](classes/stock.md)
+- [classes/units.md](classes/units.md)
 - [data-model.md](data-model.md)
 - [front-modules/api.md](front-modules/api.md)
 - [front-modules/components.md](front-modules/components.md)

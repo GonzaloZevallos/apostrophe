@@ -384,12 +384,15 @@ classDiagram
     write_entry(variety_id: int, row: EntradaRow, recorded_at: datetime, today: date, transaction: Transaction) None
     write_threshold(variety_id: int, quantity: Quantity, transaction: Transaction) None
   }
+  class UnitsImport {
+    grams_unit_id() int
+  }
   class VarietiesImport {
     check_name(raw: str) VarietyKey #124; Refusal
     check_price_history(rows: Sequence~PriceHistoryRow~, keys: Mapping~str, str~) Sequence~Refusal #124; None~
     has_records() bool
     write_price_entry(variety_id: int, row: PriceHistoryRow, transaction: Transaction) None
-    write_variety(name: str, transaction: Transaction) int
+    write_variety(name: str, transaction: Transaction, unit_id: int) int
   }
   class VarietyKey {
     key : str

@@ -191,11 +191,20 @@ erDiagram
     INTEGER position
     INTEGER grams_hundredths
   }
+  unit {
+    INTEGER id PK
+    INTEGER business_id FK
+    VARCHAR(60) name
+    VARCHAR(60) name_key
+    VARCHAR(20) label
+    INTEGER decimals
+  }
   variety {
     INTEGER id PK
     INTEGER business_id FK
     VARCHAR(60) name
     VARCHAR(60) name_key
+    INTEGER unit_id FK "indexed"
     DATETIME archived_at "nullable"
   }
   app_user ||--o| reset_link : user_id
@@ -214,6 +223,7 @@ erDiagram
   business ||--o{ stock_threshold : business_id
   business ||--o{ stock_withdrawal : business_id
   business ||--o{ stock_withdrawal_line : business_id
+  business ||--o{ unit : business_id
   business ||--o{ variety : business_id
   business ||--o| catalog_header_footer : business_id
   business ||--o| first_run : business_id
@@ -227,6 +237,7 @@ erDiagram
   sale ||--o{ payment : sale_id
   sale ||--o{ sale_line : sale_id
   stock_withdrawal ||--o{ stock_withdrawal_line : stock_withdrawal_id
+  unit ||--o{ variety : unit_id
   variety ||--o{ catalog_attributes : variety_id
   variety ||--o{ price_entry : variety_id
   variety ||--o{ sale_line : variety_id

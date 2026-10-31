@@ -98,6 +98,7 @@ classDiagram
     is_archived : bool
     name
     price_entries : tuple~PriceEntry, ...~
+    unit_id : int
     archive(at: datetime) None
     current_price(on: date) PriceEntry #124; None
     delete_price(entry_id: int) None
@@ -154,6 +155,9 @@ classDiagram
   class ProductNotFound {
     code : ClassVar~str~
   }
+  class ProductUnitRequired {
+    code : ClassVar~str~
+  }
   class Products {
     add(product: Product) Product
     archived() list~Product~
@@ -164,6 +168,14 @@ classDiagram
     remove_price_entries(product_id: int) None
     remove_unused(product_id: int) bool
     save(product: Product) Product
+  }
+  class UnitNotFound {
+    code : ClassVar~str~
+  }
+  class UnitsReader {
+    get(unit_id: int) Unit #124; None
+    only_unit() Unit #124; None
+    units_of(product_ids: Collection~int~) dict~int, Unit~
   }
 ```
 
@@ -198,6 +210,9 @@ classDiagram
     variety_id : Mapped~int~
     vip_price : Mapped~int #124; None~
   }
+  class ProductCreateIn {
+    unit_id : int #124; None
+  }
   class ProductDetailOut {
     removal : Literal~'delete', 'archive'~ #124; None
   }
@@ -209,7 +224,8 @@ classDiagram
     current_price : PriceEntryOut #124; None
     id : int
     name : str
-    of(product: Product, day: date) 'ProductOut'
+    unit
+    of(product: Product, day: date, unit: Unit) 'ProductOut'
   }
   class ProductRow {
     archived_at : Mapped~datetime #124; None~
@@ -218,13 +234,14 @@ classDiagram
     name : Mapped~str~
     name_key : Mapped~str~
     price_entries : Mapped~list~PriceEntryRow~~
+    unit_id : Mapped~int~
   }
   class ProductsImport {
     check_name(raw: str) VarietyKey #124; Refusal
     check_price_history(rows: Sequence~PriceHistoryRow~, keys: Mapping~str, str~) Sequence~Refusal #124; None~
     has_records() bool
     write_price_entry(variety_id: int, row: PriceHistoryRow, transaction: Transaction) None
-    write_variety(name: str, transaction: Transaction) int
+    write_variety(name: str, transaction: Transaction, unit_id: int) int
   }
   class SqlProductFacts {
     varieties() list~VarietyFact~
@@ -240,5 +257,14 @@ classDiagram
     remove_unused(product_id: int) bool
     save(product: Product) Product
   }
+  class UnitOut {
+    decimals : int
+    id : int
+    label : str
+    name : str
+    of(unit: Unit) 'UnitOut'
+  }
+  ProductCreateIn --|> ProductIn
   ProductDetailOut --|> ProductOut
+  ProductOut --> UnitOut : unit
 ```

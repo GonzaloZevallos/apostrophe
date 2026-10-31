@@ -2660,6 +2660,30 @@
         "title": "PricingSettingsBody",
         "type": "object"
       },
+      "ProductCreateIn": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "ProductCreateIn",
+        "type": "object"
+      },
       "ProductDetailOut": {
         "description": "One product's page: also the one removal action it offers, worked out from history\nwhen it is read (`null` for an archived product).",
         "properties": {
@@ -2699,6 +2723,9 @@
               }
             ],
             "title": "Removal"
+          },
+          "unit": {
+            "$ref": "#/components/schemas/UnitOut"
           }
         },
         "required": [
@@ -2706,6 +2733,7 @@
           "name",
           "current_price",
           "archived",
+          "unit",
           "removal"
         ],
         "title": "ProductDetailOut",
@@ -2747,13 +2775,17 @@
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "unit": {
+            "$ref": "#/components/schemas/UnitOut"
           }
         },
         "required": [
           "id",
           "name",
           "current_price",
-          "archived"
+          "archived",
+          "unit"
         ],
         "title": "ProductOut",
         "type": "object"
@@ -3776,6 +3808,34 @@
         "title": "ThresholdIn",
         "type": "object"
       },
+      "UnitOut": {
+        "properties": {
+          "decimals": {
+            "title": "Decimals",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "label",
+          "decimals"
+        ],
+        "title": "UnitOut",
+        "type": "object"
+      },
       "UserOut": {
         "properties": {
           "email": {
@@ -4346,7 +4406,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ProductIn"
+                "$ref": "#/components/schemas/ProductCreateIn"
               }
             }
           },
