@@ -13,13 +13,15 @@ import {
   MORE,
   pathTo,
   SETTINGS_ACCOUNT,
+  SETTINGS_TIME_ZONE,
   STOCK,
   STOCK_ENTRY,
   VARIETIES,
   VARIETY,
 } from '../routes.ts'
 import { AUTH_TEXT } from '../copy/auth.ts'
-import { common } from './copy.ts'
+import { common, refusal, timeZone } from './copy.ts'
+import { REFUSAL_KEY } from '../api/refusals.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { STOCK_TEXT } from '../copy/stock.ts'
 import { VARIETIES_TEXT } from '../copy/varieties.ts'
@@ -140,5 +142,33 @@ export const RECORDS_STATES: readonly WalkState[] = [
     route: SETTINGS_ACCOUNT,
     steps: [{ click: common('common:changePassword') }],
     visible: AUTH_TEXT.currentPassword,
+  },
+
+  // The Time zone sheet: the search narrowing the list, the empty search, the fixed refusal
+  // (the write is stubbed, never sent) and the open "More info".
+  {
+    screen: 'ZonaHorariaBusqueda',
+    route: SETTINGS_TIME_ZONE,
+    steps: [{ fill: { label: timeZone('timeZone:searchLabel'), value: 'tokyo' } }],
+    visible: 'Asia/Tokyo',
+  },
+  {
+    screen: 'ZonaHorariaSinResultados',
+    route: SETTINGS_TIME_ZONE,
+    steps: [{ fill: { label: timeZone('timeZone:searchLabel'), value: 'zzzz' } }],
+    visible: timeZone('timeZone:empty', { query: 'zzzz' }),
+  },
+  {
+    screen: 'ZonaHorariaRechazo',
+    route: SETTINGS_TIME_ZONE,
+    steps: [{ click: timeZone('timeZone:save') }],
+    visible: refusal({ key: REFUSAL_KEY.unknown_time_zone }),
+    writes: [{ method: 'PUT', path: /^\/business\/time-zone$/, status: 422, body: { code: 'unknown_time_zone' } }],
+  },
+  {
+    screen: 'ZonaHorariaMasInfo',
+    route: SETTINGS_TIME_ZONE,
+    steps: [{ click: common('common:moreInfo') }],
+    visible: timeZone('timeZone:moreInfoBody'),
   },
 ]

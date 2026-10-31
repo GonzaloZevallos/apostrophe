@@ -77,6 +77,11 @@ export const STATE_NAMES: readonly string[] = [
   'ConfiguracionCategoriaRenombrar',
   'ConfiguracionCategoriaConfirmarBorrado',
   'ConfiguracionContrasena',
+  // The Time zone sheet (`time-zone-screen`).
+  'ZonaHorariaBusqueda',
+  'ZonaHorariaSinResultados',
+  'ZonaHorariaRechazo',
+  'ZonaHorariaMasInfo',
 ]
 
 function asRecord(value: unknown, what: string): Record<string, unknown> {
