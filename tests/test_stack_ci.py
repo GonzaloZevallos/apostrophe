@@ -327,11 +327,17 @@ def _vitest_problems(vitest: Data | None) -> list[str]:
     return problems
 
 
+def _triggers(workflow: Data) -> Data:
+    """The `on:` mapping; YAML 1.1 reads the key `on` as the boolean `True`."""
+    loaded = cast("dict[object, Data]", workflow)
+    return loaded.get("on") or loaded.get(True) or {}
+
+
 def _trigger_problems(workflow: Data) -> list[str]:
     """What starts the workflow, and that no command names the pull request's parent commit:
     only `ci_changes` does, which keeps the base one value the `changes` job prints."""
     problems: list[str] = []
-    triggers = cast("Data", workflow.get("on", workflow.get(True, {})))  # YAML reads `on` as True
+    triggers = _triggers(workflow)
     if cast("Data", triggers.get("push", {})).get("branches") != PUSH_BRANCHES:
         problems.append(f"`on.push.branches` is not {PUSH_BRANCHES}")
     if "pull_request" not in triggers or triggers["pull_request"] is not None:
@@ -616,27 +622,27 @@ def test_head_parent_back_in_a_run_is_refused() -> None:
 def test_a_push_trigger_without_agentic_ci_is_refused() -> None:
     message = f"`on.push.branches` is not {PUSH_BRANCHES}"
     workflow = _mutated()
-    workflow[True]["push"]["branches"] = ["master"]
+    _triggers(workflow)["push"]["branches"] = ["master"]
     assert message in _problems(workflow)
-    workflow[True]["push"]["branches"] = ["agentic-ci/**", "master"]
+    _triggers(workflow)["push"]["branches"] = ["agentic-ci/**", "master"]
     assert message in _problems(workflow)
 
 
 def test_a_pull_request_trigger_with_a_filter_is_refused() -> None:
     workflow = _mutated()
-    workflow[True]["pull_request"] = {"branches": ["master"]}
+    _triggers(workflow)["pull_request"] = {"branches": ["master"]}
     assert "`on.pull_request` is not the bare trigger" in _problems(workflow)
-    del workflow[True]["pull_request"]
+    del _triggers(workflow)["pull_request"]
     assert "`on.pull_request` is not the bare trigger" in _problems(workflow)
 
 
 def test_the_real_workflow_triggers_on_master_agentic_ci_and_pull_requests() -> None:
-    triggers = WORKFLOW[True]
+    triggers = _triggers(WORKFLOW)
     assert triggers["push"]["branches"] == ["master", "agentic-ci/**"]
     assert triggers["pull_request"] is None
 
 
-# --- the cancellation rule, evaluated from the workflow's own expression ---------------------------
+# --- the cancellation rule, evaluated from the workflow's own expression --------------------------
 
 _TOKENS = re.compile(r"\s*(?:(\|\||&&|==|\(|\)|,)|'([^']*)'|([A-Za-z_][\w.]*))")
 

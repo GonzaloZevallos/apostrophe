@@ -48,3 +48,33 @@ libre al rebasar.
 - La protección de rama de master debe pasar a requerir solo `ci-ok`, después de que el `ci-ok` de esta
   pull request haya reportado una vez.
 - `scripts/ci_vitest.py` es un input del selector: está en `SELECTOR_INPUTS` y en `affected_fallback`.
+
+## Addendum GH-557: CI corre también en `agentic-ci/**`
+
+- **El disparador.** `ci.yml` corre en un push a `master`, en un push a una rama `agentic-ci/**` y en
+  `pull_request`. El tier completo del sistema agentic empuja el head integrado a `agentic-ci/GH-<n>` y
+  espera `ci-ok`; antes, nada corría ahí. Una rama `agentic-ci/**` selecciona sus suites igual que un
+  pull request, no como un push a master.
+- **La cancelación.** Una corrida más nueva cancela la anterior en un pull request y en un push a una
+  rama `agentic-ci/**`; un push a master nunca cancela. Esto reemplaza la regla anterior, "una pull
+  request cancela su corrida anterior; un push a master nunca cancela". El grupo no cambia. La condición
+  es `github.event_name == 'pull_request' || (github.event_name == 'push' && startsWith(github.ref,
+  'refs/heads/agentic-ci/'))`, y `tests/test_stack_ci.py` evalúa esa misma expresión del workflow para
+  cinco casos (master, pull request, `agentic-ci/GH-1`, `agentic-ci-x` y un tag).
+- **`base_ref`.** `changes` imprime `base_ref`, el punto desde el que se hizo el diff. Un pull request
+  usa `HEAD^1`. Un push a `agentic-ci/**` usa `git merge-base origin/master HEAD`, porque la rama lleva
+  varios commits y `HEAD^1` vería solo el último. `vitest` recibe `base_ref` por `env:` y corre
+  `vitest list --changed="$BASE_REF"`; con `base_ref` vacío escribe un listado vacío. Por eso ambos
+  checkouts usan `fetch-depth: 0`.
+- **Cuándo `base_ref` es vacío.** Solo se imprime no vacío cuando salió un diff usable desde él. Es
+  vacío, y se selecciona todo (`vitest_all` es `true`, así que el listado vacío no importa), cuando el
+  evento no es un pull request ni un push a `agentic-ci/**`, cuando falta la referencia, cuando el
+  merge-base falla, sale vacío o no es un id hexadecimal completo (40 o 64 caracteres), y cuando el diff
+  falla o sale vacío. Un push a `master` y un tag `agentic-ci/x` o una rama `agentic-ci-x` no llaman a
+  git. Fallar cerrado es lo que pide el Gate: una selección equivocada llega ahora al merge.
+- **Lo que no corre en `agentic-ci/**`.** El job `docs` omite la comprobación de rupturas de la API,
+  que sigue siendo del pull request (no hay cuerpo de PR ni base que comparar). El job `coverage` no
+  publica comentario, porque su paso exige un evento `pull_request`; el resumen del job sí se escribe.
+- **Verificación.** Nada en el pull request puede ejercer el patrón de rama de GitHub. Después del merge,
+  el Operator empuja un head a `agentic-ci/<x>` y comprueba que el CI arranca y que `ci-ok` reporta sobre
+  ese head.
