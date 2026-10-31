@@ -44,7 +44,11 @@ def _exec(engine: Engine, statement: str, **params: object) -> None:
 
 
 def _seed(engine: Engine) -> None:
-    _exec(engine, "INSERT INTO business (id, name, language) VALUES (1, 'Uno', 'en'), (2, 'Dos', 'en'), (3, 'Vacio', 'en')")
+    _exec(
+        engine,
+        "INSERT INTO business (id, name, language) "
+        "VALUES (1, 'Uno', 'en'), (2, 'Dos', 'en'), (3, 'Vacio', 'en')",
+    )
     for variety_id, business_id, name in ((1, 1, "Con"), (2, 1, "Sin"), (3, 2, "Otra")):
         _exec(
             engine,
@@ -64,7 +68,9 @@ def _seed(engine: Engine) -> None:
         )
 
 
-def _snapshot(engine: Engine, keep: dict[str, set[str]] | None = None) -> dict[str, list[tuple[object, ...]]]:
+def _snapshot(
+    engine: Engine, keep: dict[str, set[str]] | None = None
+) -> dict[str, list[tuple[object, ...]]]:
     snapshot: dict[str, list[tuple[object, ...]]] = {}
     with engine.connect() as connection:
         for table in UNTOUCHED:

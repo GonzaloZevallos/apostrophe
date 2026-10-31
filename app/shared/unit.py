@@ -38,4 +38,5 @@ class Unit:
 
     def admits(self, quantity: _InHundredths) -> bool:
         """Whether `quantity` has no more decimals than this unit allows."""
-        return quantity.hundredths % 10 ** (_STORED_DECIMALS - self.decimals) == 0
+        remainder: int = quantity.hundredths % 10 ** (_STORED_DECIMALS - self.decimals)
+        return remainder == 0

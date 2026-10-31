@@ -1,8 +1,6 @@
 """A product's unit through `POST /api/products`, `GET /api/products` and
 `GET /api/products/{id}`, and the one a new business opens with."""
 
-from typing import Any
-
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
@@ -11,7 +9,9 @@ from sqlalchemy.engine import Engine
 def _business_id(engine: Engine, name: str) -> int:
     with engine.connect() as connection:
         return int(
-            connection.execute(text("SELECT id FROM business WHERE name = :n"), {"n": name}).scalar_one()
+            connection.execute(
+                text("SELECT id FROM business WHERE name = :n"), {"n": name}
+            ).scalar_one()
         )
 
 

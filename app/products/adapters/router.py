@@ -60,9 +60,7 @@ def get_pricing_settings(
     return factory(session, business_id)
 
 
-def get_units(
-    request: Request, session: SessionDep, business_id: CurrentBusinessId
-) -> UnitsReader:
+def get_units(request: Request, session: SessionDep, business_id: CurrentBusinessId) -> UnitsReader:
     # Products never imports `app.units`: `app/main.py` hangs the real reader on
     # `app.state` as a `(Session, business_id)` factory (docs/adr/0055).
     factory = cast(Callable[[Session, int], UnitsReader], request.app.state.products_units)

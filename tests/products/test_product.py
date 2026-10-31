@@ -181,7 +181,9 @@ def test_a_variety_is_live_until_it_carries_an_archived_instant() -> None:
     from datetime import UTC, datetime
 
     live = Product(ProductName.of("Gelato"), unit_id=1)
-    archived = Product(ProductName.of("Gelato"), unit_id=1, archived_at=datetime(2026, 1, 1, tzinfo=UTC))
+    archived = Product(
+        ProductName.of("Gelato"), unit_id=1, archived_at=datetime(2026, 1, 1, tzinfo=UTC)
+    )
 
     assert live.archived_at is None
     assert not live.is_archived

@@ -48,7 +48,9 @@ def test_removing_a_business_with_two_units_exports_and_deletes_both(
     assert row_counts(db_path, "unit", leaving) == 2
     staying_before = row_counts(db_path, "unit", staying)
 
-    result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO(), clock=clock)
+    result = main(
+        [EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO(), clock=clock
+    )
 
     assert result == 0
     document = json.loads(next(export_dir.glob("*.json")).read_text())

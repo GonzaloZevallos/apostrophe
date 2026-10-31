@@ -288,8 +288,7 @@ def test_a_raw_insert_without_a_vip_price_succeeds_and_reads_back_null(tmp_path:
     )
     _exec(
         engine,
-        "INSERT INTO variety (id, business_id, name, name_key, unit_id) "
-        "VALUES (1, 1, 'V', 'v', 1)",
+        "INSERT INTO variety (id, business_id, name, name_key, unit_id) VALUES (1, 1, 'V', 'v', 1)",
     )
 
     _exec(

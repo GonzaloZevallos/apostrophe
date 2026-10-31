@@ -28,7 +28,9 @@ class SqlUnitsReader:
     def only_unit(self) -> Unit | None:
         """The business's unit when it has exactly one, else `None`."""
         counted = self._session.scalar(
-            select(func.count()).select_from(UnitRow).where(UnitRow.business_id == self._business_id)
+            select(func.count())
+            .select_from(UnitRow)
+            .where(UnitRow.business_id == self._business_id)
         )
         if counted != 1:
             return None

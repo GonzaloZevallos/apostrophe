@@ -1124,7 +1124,9 @@ def test_a_body_reference_to_a_missing_or_foreign_unit_is_refused_the_same_way(
     foreign_unit = business_a.get(f"/api/products/{seeded_b['variety_id']}").json()["unit"]["id"]
 
     missing = business_b.post("/api/products", json={"name": "B unit", "unit_id": 999_999})
-    other_business = business_b.post("/api/products", json={"name": "B unit", "unit_id": foreign_unit})
+    other_business = business_b.post(
+        "/api/products", json={"name": "B unit", "unit_id": foreign_unit}
+    )
 
     assert missing.status_code == 404, missing.text
     assert other_business.status_code == 404, other_business.text
