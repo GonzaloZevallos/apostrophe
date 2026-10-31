@@ -58,6 +58,7 @@ classDiagram
   cli --> reset_password
   cli --> router
   cli --> sql_accounts
+  deps --> account
   deps --> address
   deps --> password
   deps --> ports
@@ -126,10 +127,14 @@ classDiagram
     id : int #124; None
     language : BusinessLanguage
     name
+    time_zone
   }
   class BusinessName {
     value : str
     of(raw: str) BusinessName
+  }
+  class BusinessTimeZone {
+    name : str
   }
   class CurrentPasswordWrong {
     code : ClassVar~str~
@@ -195,6 +200,9 @@ classDiagram
   }
   class StoredLanguageCorrupt {
   }
+  class TimeZoneUnavailable {
+    code : ClassVar~str~
+  }
   class User {
     business_id : int
     email
@@ -206,6 +214,7 @@ classDiagram
     code : ClassVar~str~
   }
   Business --> BusinessName : name
+  Business --> BusinessTimeZone : time_zone
   InvalidBusinessName --|> AccountRuleBroken
   InvalidEmail --|> AccountRuleBroken
   Invitation --> InvitationKind : kind
@@ -309,6 +318,7 @@ classDiagram
     id : Mapped~int~
     language : Mapped~str~
     name : Mapped~str~
+    time_zone : Mapped~str~
   }
   class ChangePasswordIn {
     current_password : str

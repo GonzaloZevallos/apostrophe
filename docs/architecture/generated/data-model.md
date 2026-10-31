@@ -15,6 +15,7 @@ erDiagram
     INTEGER id PK
     VARCHAR(60) name
     VARCHAR(35) language
+    VARCHAR(64) time_zone
   }
   catalog_attributes {
     INTEGER id PK
