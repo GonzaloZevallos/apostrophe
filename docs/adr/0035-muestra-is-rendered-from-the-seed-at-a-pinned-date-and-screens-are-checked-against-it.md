@@ -72,7 +72,13 @@ actualice la muestra o el dibujo.
   el guard revisa, incluida la revisión de rótulos en inglés de Análisis
   (`spanish_label_problems`, GH-333), que es una función aparte. `check_screen` no cambia: la
   pausa vive en `test_muestra_screens.py`, que llama a esas revisiones directamente para un
-  archivo pausado. Un test falla si un archivo pausado ya concuerda con la muestra: se quita de
+  archivo pausado. **Excepción nombrada (decisión humana, GH-526):** la regla de rótulos en
+  inglés de GH-333 vale solo para los dibujos anteriores al rediseño del 2026-10-29. El
+  rediseño (épica #494) escribe el texto de cada pantalla en español mediante claves de
+  i18next, así que los rótulos en español de `Analisis.dc.html` y `AnalisisCompu.dc.html` son
+  el objetivo, no un defecto. La excepción es la lista literal `REDESIGN_SPANISH` de
+  `muestra_families.py`, limitada a esos dos archivos; cualquier otro dibujo de Análisis con un
+  rótulo en español sigue fallando, y un test lo prueba. Un test falla si un archivo pausado ya concuerda con la muestra: se quita de
   la lista.
 - **Solo puede achicarse.** Agregar un archivo exige tocar el tope literal, que está acotado a
   los siete dibujos y a un issue del README; nunca se edita `muestra.md`, `check_screen` ni una

@@ -170,3 +170,11 @@ def pause_problems(
         if isinstance(issue, bool) or not isinstance(issue, int) or issue <= 0:
             problems.append(f"{name} in PAUSED_CEILING has issue {issue!r}, not a positive integer")
     return problems
+
+
+# GH-333's English-label rule applies only to drawings that predate the 2026-10-29 redesign.
+# The redesign writes each screen's copy in Spanish through i18next keys (epic #494), so the
+# Spanish labels of these redrawn Análisis drawings are the target, not a defect (human ruling
+# on GH-526). The exception is this literal list of files, never a rule on the label check
+# itself: any other Análisis drawing with a Spanish label still fails.
+REDESIGN_SPANISH: Final[tuple[str, ...]] = ("Analisis.dc.html", "AnalisisCompu.dc.html")

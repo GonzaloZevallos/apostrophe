@@ -11,6 +11,7 @@ from tests.design.muestra_families import (
     OTRAS,
     PAUSED,
     PAUSED_CEILING,
+    REDESIGN_SPANISH,
     Family,
     pause_problems,
 )
@@ -37,8 +38,9 @@ def real_muestra() -> Muestra:
 def screen_problems(family: Family, screen: str, page: str, muestra: Muestra) -> list[str]:
     """What the real-registry test holds a drawing to. A `PAUSED` drawing skips the figure
     agreement (`check_screen`'s `CHECKS` of its family) and nothing else: its dates, its denylist
-    and, on Análisis, the English-label check still apply. `check_screen` itself is never
-    changed."""
+    and, on Análisis, the English-label check still apply. The English-label check (GH-333)
+    exempts only the files in `REDESIGN_SPANISH`, the drawings of the 2026-10-29 redesign,
+    whose Spanish labels are the target. `check_screen` itself is never changed."""
     problems: list[str] = []
     if screen in PAUSED:
         read = read_screen(page)
@@ -46,7 +48,7 @@ def screen_problems(family: Family, screen: str, page: str, muestra: Muestra) ->
         problems += denylist_problems(screen, read, family.denylist)
     else:
         problems += check_screen(family.name, screen, page, muestra, family.denylist)
-    if family.name == "analisis":
+    if family.name == "analisis" and screen not in REDESIGN_SPANISH:
         problems += spanish_label_problems(screen, read_screen(page))
     return problems
 
@@ -295,6 +297,24 @@ def test_a_paused_drawing_that_loses_its_figures_is_not_rejected_for_them() -> N
 
     assert "Inicio.dc.html" in PAUSED
     assert screen_problems(family, "Inicio.dc.html", page, muestra) == []
+
+
+def test_the_redesign_drawings_are_exempt_from_the_english_label_rule_and_only_they() -> None:
+    muestra = real_muestra()
+    family = next(f for f in FAMILIES if f.name == "analisis")
+    page = (SCREENS / "Analisis.dc.html").read_text(encoding="utf-8")
+    spanish = "Spanish product label"
+
+    # The exception names existing files of the family, and nothing else.
+    assert set(REDESIGN_SPANISH) <= set(family.screens)
+    for screen in REDESIGN_SPANISH:
+        assert (SCREENS / screen).is_file(), screen
+    # The redesign drawing really carries Spanish labels, and is not rejected for them.
+    assert spanish_label_problems("Analisis.dc.html", read_screen(page)) != []
+    assert not any(spanish in p for p in screen_problems(family, "Analisis.dc.html", page, muestra))
+    # An older drawing with a Spanish label still fails.
+    old = screen_problems(family, "AnalisisOscuro.dc.html", page, muestra)
+    assert any("'Análisis' is a Spanish product label" in p for p in old)
 
 
 PAUSE_OK: tuple[tuple[str, int], ...] = (("Inicio.dc.html", 497), ("Analisis.dc.html", 321))
