@@ -1,4 +1,4 @@
-export function assertScreens(screens: ReadonlyArray<Readonly<Record<string, unknown>>>): void;
+export function assertScreens(screens: ReadonlyArray<Readonly<Record<string, unknown>>>, pantallas?: string): void;
 export function assertSelectedAccounts(
   selected: ReadonlyArray<Readonly<Record<string, unknown>>>,
   kinds: Readonly<Record<string, 'open' | 'ended' | 'pre_onboarding' | 'imported' | 'onboarding'>>,
