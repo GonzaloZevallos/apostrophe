@@ -13,6 +13,7 @@ import { StrictMode } from 'react'
 import { RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import panelFixture from '../../api/fixtures/panel.json'
+import { inAppState } from '../../components/inAppState'
 import { consumePaymentReturn, peekPaymentReturn } from '../../paymentReturn'
 import { router as appRouter } from '../../router'
 import { CUSTOMERS, HOME } from '../../routes'
@@ -104,7 +105,7 @@ describe.each<[string, string, string]>([
     // Open → Close: nothing is left and nothing is focused.
     await open()
     // The link opens the form as an in-app entry over the screen it came from.
-    expect(router.state.location.state).toMatchObject({ inApp: true, underneath })
+    expect(router.state.location.state).toEqual(inAppState({ pathname: origin }, { underneath }))
     await userEvent.click(screen.getByRole('button', { name: 'Close' }))
     await waitFor(() => expect(router.state.location.pathname).toBe(origin))
     expect(router.state.historyAction).toBe('POP')
