@@ -64,12 +64,15 @@ async function owingSale(page: Page, customerId: number, varietyId: number): Pro
 export async function seedLongLists(page: Page): Promise<void> {
   await businessWithRosa(page)
   const rosa = await rosaId(page)
+  const ids: number[] = []
   await inBatches(numbered('Zeta', LONG), async (name) => {
     const created = await page.request.post('/customers', { data: { name, phone: null, vip: false } })
     expect(created.ok(), await created.text()).toBe(true)
     const customer: { id: number } = await created.json()
-    await owingSale(page, customer.id, rosa)
+    ids.push(customer.id)
   })
+  // One at a time: two sales saved together can claim the same sale number and one fails with a 500.
+  for (const id of ids) await owingSale(page, id, rosa)
 }
 
 /** `LONG` more varieties ("Tulipan 01" ...), so Home's stock list is taller than any viewport. */

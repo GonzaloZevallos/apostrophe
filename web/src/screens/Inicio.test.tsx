@@ -949,3 +949,45 @@ test('Home takes focus back only after the notice above the panel has answered',
 
   await waitFor(() => expect(collect).toHaveFocus())
 })
+
+// The scroll owner waits for the Loading marker before it puts Home back at its offset (ADR-0068):
+// after a save Home shows it until the hand-off has its place; a first visit never does.
+
+function holdFirstRun(): (response: Response) => void {
+  let answerFirstRun: (response: Response) => void = () => undefined
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      const url = String(input)
+      if (url.includes('/first-run')) return new Promise<Response>((resolve) => (answerFirstRun = resolve))
+      if (url.includes('/onboarding-progress')) return Promise.resolve(jsonResponse(200, NOT_OFFERED))
+      if (url.includes('/pinned-catalog/status')) return Promise.resolve(jsonResponse(200, { status: null }))
+      if (url.includes('/panel')) return Promise.resolve(jsonResponse(200, PANEL))
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    }),
+  )
+  return (response) => answerFirstRun(response)
+}
+
+test('after a save Home shows the Loading marker until the notices above the panel have answered', async () => {
+  setPaymentReturn(1)
+  const answerFirstRun = holdFirstRun()
+  renderInicio()
+
+  const collect = await screen.findByRole('link', { name: 'Collect from Ana Pérez' })
+  expect(screen.getByRole('progressbar')).toBeInTheDocument()
+
+  answerFirstRun(jsonResponse(200, NONE))
+
+  await waitFor(() => expect(screen.queryByRole('progressbar')).not.toBeInTheDocument())
+  expect(collect).toBeInTheDocument()
+})
+
+test('a first visit to Home shows no Loading marker while the notices answer', async () => {
+  holdFirstRun()
+  renderInicio()
+
+  await screen.findByRole('link', { name: 'Collect from Ana Pérez' })
+
+  expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+})
