@@ -242,7 +242,7 @@
     { "screen": "ConfiguracionEstadosCompuOscuro", "route": null, "path": "/settings/order-states", "tema": "oscuro", "viewport": [1280, 920] },
     { "screen": "ConfiguracionEstadoPaso", "route": null, "path": "/settings/order-states/step" },
     { "screen": "ConfiguracionEstadoPasoOscuro", "route": null, "path": "/settings/order-states/step", "tema": "oscuro" },
-    { "screen": "Marca", "route": null, "path": "/brand" },
+    { "screen": "Marca", "route": null, "path": "/brand", "viewport": [560, 980] },
     { "screen": "Onboarding", "route": null, "path": "/getting-started" },
     { "screen": "OnboardingOscuro", "route": null, "path": "/getting-started", "tema": "oscuro" },
     { "screen": "OnboardingCompu", "design": "Onboarding", "route": null, "path": "/getting-started", "viewport": [1280, 920] },
