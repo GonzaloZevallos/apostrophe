@@ -13,8 +13,8 @@
  * number.
  */
 
-import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, SALE_NEW, paymentLink, pathTo } from '../../routes'
-import { consumePaymentReturn } from '../../paymentReturn'
+import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, SALE_NEW, pathTo } from '../../routes'
+import { consumePaymentReturn, setPaymentReturn } from '../../paymentReturn'
 import { inAppState } from '../../components/inAppState'
 import { useGoneNotice } from '../../components/goneExit'
 import { SheetRouterProvider } from '../../components/useSheetStack'
@@ -870,6 +870,16 @@ test('an untouched sheet leaves at once on history back', async () => {
   expect(screen.queryByText('Discard the payment?')).not.toBeInTheDocument()
 })
 
+test('"Record payment" on the card opens the form as an in-app entry over the card', async () => {
+  api.mockImplementation(dispatchFetch(OWING_FETCHES))
+  const router = renderFicha('1')
+
+  await userEvent.click(await screen.findByRole('link', { name: 'Record payment' }))
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER_PAYMENT, { id: 1 })))
+  expect(router.state.location.state).toEqual(inAppState({ pathname: pathTo(CUSTOMER, { id: 1 }) }, { underneath: 'card' }))
+})
+
 test('a touched sheet asks before history back leaves, "No" keeps what was typed and "Sí" leaves to Clientes, its parent', async () => {
   api.mockImplementation(dispatchFetch(OWING_FETCHES))
   const router = renderFicha('1', [pathTo(CUSTOMER, { id: 1 }), pathTo(CUSTOMER_PAYMENT, { id: 1 })])
@@ -1093,9 +1103,8 @@ test('the card and its form follow the icon and text rule: Delete payment is ico
   expectIconAndTextRule(document.body, RULE)
 })
 
-// Back from Record payment the card is at its place (PM option a): the hand-off the link left is
+// After a save the card focuses its control (PM option a): the hand-off the save left is
 // applied once the customer has rendered, then taken.
-const PLAIN_CLICK = { button: 0, metaKey: false, ctrlKey: false, shiftKey: false, altKey: false }
 
 function fakeCustomer(customer: unknown): void {
   api.mockImplementation(
@@ -1106,22 +1115,20 @@ function fakeCustomer(customer: unknown): void {
   )
 }
 
-test('after Close the card focuses "Record payment" and scrolls to the offset it was at', async () => {
+test('after a save the card focuses "Record payment" and leaves the scroll to ScrollSync', async () => {
   const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
-  Object.defineProperty(window, 'scrollY', { configurable: true, value: 210 })
-  paymentLink(1, 'card').onClick(PLAIN_CLICK)
+  setPaymentReturn(1)
   fakeCustomer(OWING_CUSTOMER)
   renderFicha('1')
 
   const record = await screen.findByRole('link', { name: 'Record payment' })
 
   await waitFor(() => expect(record).toHaveFocus())
-  expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ top: 210 }))
-  Reflect.deleteProperty(window, 'scrollY')
+  expect(scrollTo).not.toHaveBeenCalled()
 })
 
 test('when the balance is paid and the control is gone the card focuses its heading', async () => {
-  paymentLink(1, 'card').onClick(PLAIN_CLICK)
+  setPaymentReturn(1)
   fakeCustomer({ ...OWING_CUSTOMER, balance: 0, owing_since: null, standing: 'settled' })
   renderFicha('1')
 
@@ -1132,7 +1139,7 @@ test('when the balance is paid and the control is gone the card focuses its head
 })
 
 test('a hand-off for another customer leaves the card alone', async () => {
-  paymentLink(2, 'card').onClick(PLAIN_CLICK)
+  setPaymentReturn(2)
   fakeCustomer(OWING_CUSTOMER)
   renderFicha('1')
 
@@ -1154,10 +1161,9 @@ test('with no hand-off the card moves nothing and focuses nothing', async () => 
   expect(scrollTo).not.toHaveBeenCalled()
 })
 
-test('the card takes its place only once its account has answered, so a short page does not clamp the offset', async () => {
+test('the card takes focus back only once its account has answered', async () => {
   const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
-  Object.defineProperty(window, 'scrollY', { configurable: true, value: 210 })
-  paymentLink(1, 'card').onClick(PLAIN_CLICK)
+  setPaymentReturn(1)
   let answer: (response: Response) => void = () => undefined
   const held = new Promise<Response>((resolve) => {
     answer = resolve
@@ -1177,6 +1183,5 @@ test('the card takes its place only once its account has answered, so a short pa
   answer(jsonResponse(200, OWING_ACCOUNT))
 
   await waitFor(() => expect(record).toHaveFocus())
-  expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ top: 210 }))
-  Reflect.deleteProperty(window, 'scrollY')
+  expect(scrollTo).not.toHaveBeenCalled()
 })

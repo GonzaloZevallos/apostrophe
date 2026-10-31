@@ -184,6 +184,27 @@ describe("the screens that are a modal on a computer", () => {
   });
 });
 
+describe("the screens a phone draws as a Sheet (`sheetOnPhone`)", () => {
+  test("are the nine route-drawn forms, and no other: a phone leaves the page under them where it is", () => {
+    const sheets = SCREENS.filter((entry) => "sheetOnPhone" in entry && entry.sheetOnPhone === true).map((entry) => entry.id);
+    expect(sheets.sort()).toEqual([
+      "customer-edit",
+      "customer-new",
+      "expense-new",
+      "stock-entry",
+      "stock-entry-new",
+      "variety-new",
+      "variety-price-new",
+      "withdrawal-edit",
+      "withdrawal-new",
+    ]);
+  });
+
+  test("a full-screen form such as the new sale is not one", () => {
+    expect(SCREENS.find((entry) => entry.id === "sale-new")).not.toHaveProperty("sheetOnPhone");
+  });
+});
+
 describe("the new stock entry form's parent", () => {
   const VARIEDADES: ParentRef = { id: "varieties", path: "/varieties", titleKey: "common:varieties" };
 
@@ -785,44 +806,33 @@ describe("the screen Record payment was opened from", () => {
     expect(readPaymentUnderneath(paymentLink(7, "customers").state)).toBe("customers");
   });
 
-  const plainClick = { button: 0, metaKey: false, ctrlKey: false, shiftKey: false, altKey: false };
-
-  test("following the link leaves the customer and the scroll offset for the origin, in memory", () => {
-    consumePaymentReturn();
-    Object.defineProperty(window, "scrollY", { configurable: true, value: 640 });
-
-    paymentLink("7", "customers").onClick(plainClick);
-
-    expect(consumePaymentReturn()).toEqual({ customerId: 7, scrollY: 640 });
-    Reflect.deleteProperty(window, "scrollY");
-  });
-
-  test.each([
-    ["a click that opens a new tab", { ...plainClick, ctrlKey: true }],
-    ["a click with Shift", { ...plainClick, shiftKey: true }],
-    ["a click with the meta key", { ...plainClick, metaKey: true }],
-    ["a middle click", { ...plainClick, button: 1 }],
-  ])("%s leaves nothing behind", (_label, click) => {
+  test("the link helper opens the payment and leaves nothing in memory", () => {
     consumePaymentReturn();
 
-    paymentLink(7, "home").onClick(click);
+    const link = paymentLink("7", "customers");
 
+    expect(link).toEqual({ to: "/customers/7/payment", state: { underneath: "customers" } });
     expect(peekPaymentReturn()).toBeNull();
   });
 
-  test("the guard flags a source that sets the hand-off, aliased or not, and passes the helper and the module", () => {
-    const direct = { path: "src/screens/X.tsx", content: "setPaymentReturn(7, 0)" };
+  test("the guard flags a source that sets the hand-off, aliased or not, the link helper included, and passes the save and the module", () => {
+    const direct = { path: "src/screens/X.tsx", content: "setPaymentReturn(7)" };
     const aliased = {
       path: "src/screens/Y.tsx",
-      content: "import { setPaymentReturn as remember } from '../paymentReturn'\nremember(7, 0)",
+      content: "import { setPaymentReturn as remember } from '../paymentReturn'\nremember(7)",
     };
-    const helper = { path: "src/routes.ts", content: "setPaymentReturn(Number(id), 0)" };
+    const helper = { path: "src/routes.ts", content: "setPaymentReturn(Number(id))" };
+    const save = { path: "src/screens/clientes/CobroRoute.tsx", content: "setPaymentReturn(Number(customerId))" };
     const reader = { path: "src/screens/Z.tsx", content: "import { peekPaymentReturn } from '../paymentReturn'" };
 
-    expect(findHandOffSetters([direct, aliased, helper, reader])).toEqual(["src/screens/X.tsx", "src/screens/Y.tsx"]);
+    expect(findHandOffSetters([direct, aliased, helper, save, reader])).toEqual([
+      "src/screens/X.tsx",
+      "src/screens/Y.tsx",
+      "src/routes.ts",
+    ]);
   });
 
-  test("the real front sources set the hand-off only through the link helper", () => {
+  test("the real front sources set the hand-off only in the save of Record payment", () => {
     const modules = import.meta.glob<string>(["/src/**/*.{ts,tsx}", "!/src/**/*.test.{ts,tsx}"], {
       query: "?raw",
       import: "default",
@@ -892,10 +902,10 @@ function withoutComments(content: string): string[] {
 }
 
 /** Files that write a front path as a string literal instead of a constant of `routes.ts`. */
-/** The sources, other than the hand-off module and the link helper, that name the setter (an alias still names it in its import). */
+/** The sources, other than the hand-off module and the save of Record payment, that name the setter (an alias still names it in its import). */
 function findHandOffSetters(files: Source[]): string[] {
   return files
-    .filter((file) => file.path !== "src/paymentReturn.ts" && file.path !== "src/routes.ts")
+    .filter((file) => file.path !== "src/paymentReturn.ts" && file.path !== "src/screens/clientes/CobroRoute.tsx")
     .filter((file) => /\bsetPaymentReturn\b/.test(file.content))
     .map((file) => file.path);
 }

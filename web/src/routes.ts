@@ -1,5 +1,4 @@
 import type { CopyKey } from './i18n/resources.generated.ts'
-import { pageScrollY, setPaymentReturn } from './paymentReturn.ts'
 /**
  * The route registry: the one place the front writes a path, and the one place that says
  * what kind of screen each path is. No other file in `web/src` or `web/e2e` carries a route
@@ -187,34 +186,22 @@ export function readPaymentUnderneath(state: unknown): PaymentUnderneath {
   return 'card'
 }
 
-/** The part of a click the helper looks at: a plain click follows the link, a modified one
- * opens it elsewhere and leaves this page where it is. */
-interface LinkClick {
-  button: number
-  metaKey: boolean
-  ctrlKey: boolean
-  shiftKey: boolean
-  altKey: boolean
+/** Whether the history state carries the screen Record payment was opened over (`paymentLink`
+ * wrote it): the signal that the route opens over a screen instead of replacing it. */
+export function hasPaymentUnderneath(state: unknown): boolean {
+  return typeof state === 'object' && state !== null && 'underneath' in state && isPaymentUnderneath(state.underneath)
 }
 
 /**
  * The link to Record payment for a customer, from the screen it is opened from: the only
- * writer of `underneath`, and the only setter of the return-of-place hand-off (the customer
- * and the scroll offset the seller is at, in memory, `paymentReturn.ts`). The state is a
- * closed screen name, never a record (§9).
+ * writer of `underneath`, a closed screen name, never a record (§9). It leaves nothing in
+ * memory: the return-of-place hand-off is written by a save alone (`CobroRoute`).
  */
 export function paymentLink(
   customerId: number | string,
   underneath: PaymentUnderneath,
-): { to: string; state: { underneath: PaymentUnderneath }; onClick: (event: LinkClick) => void } {
-  return {
-    to: pathTo(CUSTOMER_PAYMENT, { id: customerId }),
-    state: { underneath },
-    onClick: (event) => {
-      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
-      setPaymentReturn(Number(customerId), pageScrollY())
-    },
-  }
+): { to: string; state: { underneath: PaymentUnderneath } } {
+  return { to: pathTo(CUSTOMER_PAYMENT, { id: customerId }), state: { underneath } }
 }
 
 /** The path as a route-table segment (`'/more'` → `'more'`). */
@@ -238,6 +225,9 @@ interface ScreenBase {
   /** The route is a modal on a computer: the shell draws no side rail behind its scrim. The
    * only thing that hides the rail; it is never inferred from `pane` or `kind`. */
   modalOnComputer?: true
+  /** The route is drawn by one `Sheet` over its parent on a phone (ADR-0062): the page under it
+   * keeps its place when it opens (navigation.md criterion 23). `scrollPlan.ts` reads it. */
+  sheetOnPhone?: true
 }
 
 export type Screen =
@@ -275,9 +265,9 @@ export const SCREENS = [
     pane: 'list',
     place: { bar: 'customers', rail: 'customers' },
   }),
-  screen({ id: 'customer-new', path: CUSTOMER_NEW, kind: 'form', titleKey: 'common:newCustomer', parent: 'customers' }),
+  screen({ id: 'customer-new', path: CUSTOMER_NEW, kind: 'form', titleKey: 'common:newCustomer', parent: 'customers', sheetOnPhone: true }),
   screen({ id: 'customer', path: CUSTOMER, kind: 'card', titleKey: 'shell:customer', pane: 'detail', parent: 'customers' }),
-  screen({ id: 'customer-edit', path: CUSTOMER_EDIT, kind: 'form', titleKey: 'common:editCustomer', parent: 'customer' }),
+  screen({ id: 'customer-edit', path: CUSTOMER_EDIT, kind: 'form', titleKey: 'common:editCustomer', parent: 'customer', sheetOnPhone: true }),
   screen({
     id: 'customer-payment',
     path: CUSTOMER_PAYMENT,
@@ -296,14 +286,14 @@ export const SCREENS = [
     place: { bar: 'varieties', rail: 'varieties' },
   }),
   screen({ id: 'variety', path: VARIETY, kind: 'card', titleKey: 'common:variety', pane: 'detail', parent: 'varieties', backLabel: 'record' }),
-  screen({ id: 'variety-new', path: VARIETY_NEW, kind: 'form', titleKey: 'common:newVariety', parent: 'varieties' }),
+  screen({ id: 'variety-new', path: VARIETY_NEW, kind: 'form', titleKey: 'common:newVariety', parent: 'varieties', sheetOnPhone: true }),
   screen({ id: 'variety-prices', path: VARIETY_PRICES, kind: 'card', titleKey: 'common:prices', parent: 'variety', backLabel: 'record' }),
-  screen({ id: 'variety-price-new', path: VARIETY_PRICE_NEW, kind: 'form', titleKey: 'common:newPrice', parent: 'variety', modalOnComputer: true }),
+  screen({ id: 'variety-price-new', path: VARIETY_PRICE_NEW, kind: 'form', titleKey: 'common:newPrice', parent: 'variety', modalOnComputer: true, sheetOnPhone: true }),
   screen({ id: 'variety-entries', path: VARIETY_ENTRIES, kind: 'card', titleKey: 'common:entries', parent: 'variety', backLabel: 'record' }),
   screen({ id: 'catalog', path: CATALOG, kind: 'card', titleKey: 'common:catalog', parent: 'varieties' }),
   screen({ id: 'stock', path: STOCK, kind: 'card', titleKey: 'common:allEntries', parent: 'varieties' }),
-  screen({ id: 'stock-entry-new', path: STOCK_ENTRY_NEW, kind: 'form', titleKey: 'common:stockEntry', parent: 'varieties' }),
-  screen({ id: 'stock-entry', path: STOCK_ENTRY, kind: 'form', titleKey: 'common:stockEntry', parent: 'stock' }),
+  screen({ id: 'stock-entry-new', path: STOCK_ENTRY_NEW, kind: 'form', titleKey: 'common:stockEntry', parent: 'varieties', sheetOnPhone: true }),
+  screen({ id: 'stock-entry', path: STOCK_ENTRY, kind: 'form', titleKey: 'common:stockEntry', parent: 'stock', sheetOnPhone: true }),
   screen({
     id: 'varieties-archived',
     path: ARCHIVED_VARIETIES,
@@ -312,9 +302,9 @@ export const SCREENS = [
     pane: 'list',
     parent: 'varieties',
   }),
-  screen({ id: 'withdrawal-new', path: WITHDRAWAL_NEW, kind: 'form', titleKey: 'common:takeFromStock', parent: 'varieties' }),
+  screen({ id: 'withdrawal-new', path: WITHDRAWAL_NEW, kind: 'form', titleKey: 'common:takeFromStock', parent: 'varieties', sheetOnPhone: true }),
   screen({ id: 'withdrawal', path: WITHDRAWAL, kind: 'card', titleKey: 'common:withdrawal', parent: 'varieties' }),
-  screen({ id: 'withdrawal-edit', path: WITHDRAWAL_EDIT, kind: 'form', titleKey: 'common:takeFromStock', parent: 'withdrawal' }),
+  screen({ id: 'withdrawal-edit', path: WITHDRAWAL_EDIT, kind: 'form', titleKey: 'common:takeFromStock', parent: 'withdrawal', sheetOnPhone: true }),
 
   screen({
     id: 'expenses',
@@ -323,7 +313,7 @@ export const SCREENS = [
     titleKey: 'common:expenses',
     place: { bar: 'more', rail: 'expenses' },
   }),
-  screen({ id: 'expense-new', path: EXPENSE_NEW, kind: 'form', titleKey: 'shell:newExpense', parent: 'expenses' }),
+  screen({ id: 'expense-new', path: EXPENSE_NEW, kind: 'form', titleKey: 'shell:newExpense', parent: 'expenses', sheetOnPhone: true }),
   screen({
     id: 'analysis',
     path: ANALYSIS,
@@ -476,6 +466,25 @@ function matchesTemplate(path: string, template: string): boolean {
     have.length === want.length &&
     want.every((segment, index) => (segment.startsWith(':') ? have[index] !== '' : segment === have[index]))
   )
+}
+
+/**
+ * The declared screen a pathname is, or `undefined` for a pathname outside the table. A static
+ * path wins over a parameterised one (`/customers/new` is the form, not a customer's card).
+ */
+export function screenAtPath(pathname: string): Screen | undefined {
+  const path = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname
+  let best: Screen | undefined
+  let bestParams = Number.POSITIVE_INFINITY
+  for (const candidate of SCREENS) {
+    if (!matchesTemplate(path, candidate.path)) continue
+    const params = candidate.path.split('/').filter((segment) => segment.startsWith(':')).length
+    if (params < bestParams) {
+      best = candidate
+      bestParams = params
+    }
+  }
+  return best
 }
 
 /** Whether `path` is one of the public pages (Entrar, an invitation, a reset). */
