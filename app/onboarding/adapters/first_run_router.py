@@ -20,8 +20,8 @@ from fastapi import APIRouter, Depends, Request, Response
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
-from app.accounts.adapters.deps import CurrentBusinessId
-from app.clock import Clock, get_clock, get_today
+from app.accounts.adapters.deps import CurrentBusinessId, get_today
+from app.clock import Clock, get_clock
 from app.db import get_session
 from app.onboarding.adapters.first_run_schemas import FirstRunOut
 from app.onboarding.adapters.sql_first_runs import SqlFirstRuns

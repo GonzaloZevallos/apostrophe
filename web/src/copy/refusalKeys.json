@@ -9,6 +9,7 @@
   "account.current_password_wrong": "refusals:generic",
   "account.reset_link_gone": "refusals:goneNotice",
   "business.language_not_selectable": "refusals:languageNotSelectable",
+  "time_zone_unavailable": "refusals:generic",
   "customer.not_found": "refusals:goneNotice",
   "customer.phone_taken": "refusals:generic",
   "customer.required_field_cleared": "refusals:generic",

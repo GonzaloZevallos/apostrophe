@@ -12,8 +12,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.accounts.adapters.deps import CurrentBusinessId
-from app.clock import Clock, get_clock, get_today
+from app.accounts.adapters.deps import CurrentBusinessId, get_today
+from app.clock import Clock, get_clock
 from app.db import get_session
 from app.http_errors import TranslateErrors
 from app.payments.adapters.schemas import (

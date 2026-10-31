@@ -11,6 +11,10 @@ from zoneinfo import ZoneInfo
 
 from fastapi import Request
 
+# Piece 1b of GH-318 part 6 deletes `BUSINESS_TIMEZONE` and the one-argument
+# `business_day` below: they stay only for the callers outside a request (the upkeep, the
+# push, the spreadsheet import) until those read their own business's zone. A request
+# learns its day from `get_today` in `app.accounts.adapters.deps`.
 BUSINESS_TIMEZONE = ZoneInfo("America/Argentina/Buenos_Aires")
 
 Clock = Callable[[], datetime]
@@ -27,7 +31,3 @@ def business_day(instant: datetime) -> date:
 def get_clock(request: Request) -> Clock:
     # Starlette's `State` is untyped; `create_app` always assigns a `Clock`.
     return cast(Clock, request.app.state.clock)
-
-
-def get_today(request: Request) -> date:
-    return business_day(get_clock(request)())

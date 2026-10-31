@@ -4,6 +4,7 @@ from typing import ClassVar
 
 from app.accounts.application.ports import Accounts, BusinessOpening
 from app.accounts.domain.account import (
+    DEFAULT_TIME_ZONE,
     Business,
     BusinessName,
     Email,
@@ -98,7 +99,7 @@ def accept_invitation(
     if accounts.user_by_email(email) is not None:
         raise EmailTaken()
     if name is not None:
-        business_id = accounts.add_business(Business(name, language)).id
+        business_id = accounts.add_business(Business(name, language, DEFAULT_TIME_ZONE)).id
         assert business_id is not None
         opening.opened(business_id, language)
     else:

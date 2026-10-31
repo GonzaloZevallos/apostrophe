@@ -12,9 +12,31 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
+from functools import cache
+from zoneinfo import ZoneInfo, available_timezones
 
 _PATTERN = re.compile(r"^(\d{4})-(0[1-9]|1[0-2])$")
+
+
+def business_day(instant: datetime, zone: ZoneInfo) -> date:
+    """The calendar day `instant` falls on in `zone`: the only function that turns an
+    instant into a business day (docs/adr/0057). `zone` is always the zone of one
+    business; there is no default."""
+    return instant.astimezone(zone).date()
+
+
+@cache
+def _known_zone_names() -> frozenset[str]:
+    return frozenset(available_timezones())
+
+
+def load_zone(name: str) -> ZoneInfo | None:
+    """The zone a stored name stands for, or `None` when the installed IANA data has no
+    such name. Membership in `available_timezones()` decides, never a `ZoneInfo(name)`
+    that raises: the constructor is not a validator (it accepts paths and, on some
+    platforms, other cases of a name)."""
+    return ZoneInfo(name) if name in _known_zone_names() else None
 
 
 @dataclass(frozen=True, order=True)

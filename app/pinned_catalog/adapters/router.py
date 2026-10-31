@@ -11,13 +11,13 @@ from fastapi import APIRouter, Depends, Request
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.accounts.adapters.deps import CurrentBusinessId
+from app.accounts.adapters.deps import CurrentBusinessId, get_today
 from app.catalog.application.ports import (
     CatalogLanguage,
     CatalogPricingSettings,
     CatalogWordsSource,
 )
-from app.clock import Clock, get_clock, get_today
+from app.clock import Clock, get_clock
 from app.http_errors import TranslateErrors
 from app.pinned_catalog.adapters.schemas import (
     OwnChatLookupIn,

@@ -16,6 +16,7 @@ from app.accounts.application.ports import LoginLocks
 from app.accounts.domain.account import (
     Business,
     BusinessName,
+    BusinessTimeZone,
     Email,
     StoredLanguageCorrupt,
     User,
@@ -31,10 +32,14 @@ class SqlAccounts:
         self._session = session
 
     def add_business(self, business: Business) -> Business:
-        row = BusinessRow(name=business.name.value, language=business.language.language.tag)
+        row = BusinessRow(
+            name=business.name.value,
+            language=business.language.language.tag,
+            time_zone=business.time_zone.name,
+        )
         self._session.add(row)
         self._session.flush()
-        return Business(business.name, business.language, row.id)
+        return Business(business.name, business.language, business.time_zone, row.id)
 
     def business(self, business_id: int) -> Business | None:
         row = self._session.get(BusinessRow, business_id)
@@ -46,13 +51,15 @@ class SqlAccounts:
             language = BusinessLanguage(Language(row.language))
         except InvalidLanguageTag:
             raise StoredLanguageCorrupt from None
-        return Business(BusinessName(row.name), language, row.id)
+        return Business(BusinessName(row.name), language, BusinessTimeZone(row.time_zone), row.id)
 
     def save_business(self, business: Business) -> None:
         assert business.id is not None
         row = self._session.get_one(BusinessRow, business.id)
         row.name = business.name.value
         row.language = business.language.language.tag
+        # `time_zone` is not written: the zone changes only through its own conditional
+        # UPDATE, so a rename or a language change from a stale read never undoes it.
         self._session.flush()
 
     def add_user(self, user: User) -> User:

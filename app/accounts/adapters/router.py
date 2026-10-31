@@ -16,6 +16,7 @@ from app.accounts.adapters.deps import (
     get_public_url,
     get_settings,
     get_signer,
+    get_today,
     raise_unauthenticated,
 )
 from app.accounts.adapters.sql_accounts import SqlAccounts
@@ -28,7 +29,7 @@ from app.accounts.domain.invitation import InvitationKind, InvitationNotUsable
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.reset_link import CurrentPasswordWrong, ResetLinkGone
 from app.accounts.domain.session_token import SESSION_LIFETIME, SessionSigner
-from app.clock import Clock, get_clock, get_today
+from app.clock import Clock, get_clock
 from app.db import get_session
 from app.http_errors import TranslateErrors
 from app.settings import Settings

@@ -5,7 +5,7 @@ from typing import Annotated, cast
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
-from app.accounts.adapters.deps import CurrentBusinessId
+from app.accounts.adapters.deps import CurrentBusinessId, get_today
 from app.catalog.adapters.schemas import (
     ArchivedCatalogProductOut,
     CatalogAttributesIn,
@@ -33,7 +33,6 @@ from app.catalog.domain.errors import (
     HeaderTooLong,
     IndicaShareInvalid,
 )
-from app.clock import get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
 from app.products.application.errors import ProductArchived

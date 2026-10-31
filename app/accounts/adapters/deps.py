@@ -9,8 +9,10 @@ never comes from the URL or the body: only from the session.
 import hashlib
 import hmac
 from collections.abc import Callable
+from datetime import date
 from ipaddress import IPv4Address, IPv4Network, IPv6Address, IPv6Network, ip_address
 from typing import Annotated, NoReturn, cast
+from zoneinfo import ZoneInfo
 
 from fastapi import Depends, HTTPException, Request, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -19,12 +21,15 @@ from sqlalchemy.orm import Session
 from app.accounts.adapters.sql_accounts import SqlAccounts
 from app.accounts.application.ports import BusinessOpening
 from app.accounts.application.sign_in import SignedIn, open_session
+from app.accounts.domain.account import TimeZoneUnavailable
 from app.accounts.domain.address import address_key
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.session_token import SessionSigner
 from app.clock import Clock, get_clock
 from app.db import get_session
+from app.http_errors import TranslateErrors
 from app.settings import Settings
+from app.shared.calendar import business_day, load_zone
 
 SESSION_COOKIE = "apostrophe_session"
 
@@ -94,6 +99,30 @@ def current_business_id(signed_in: CurrentSession) -> int:
 
 
 CurrentBusinessId = Annotated[int, Depends(current_business_id)]
+
+
+zone_as_http = TranslateErrors([(500, (TimeZoneUnavailable,))])
+
+
+def business_zone(signed_in: CurrentSession) -> ZoneInfo:
+    """The zone of the signed-in business, loaded from the name its session already read
+    (no query of its own). A stored name the installed data cannot load refuses this one
+    business with a 500 (`time_zone_unavailable`): there is no fallback to Argentina or
+    to any other zone (docs/adr/0057)."""
+    with zone_as_http:
+        zone = load_zone(signed_in.business.time_zone.name)
+        if zone is None:
+            raise TimeZoneUnavailable
+        return zone
+
+
+BusinessZoneDep = Annotated[ZoneInfo, Depends(business_zone)]
+
+
+def get_today(zone: BusinessZoneDep, clock: Annotated[Clock, Depends(get_clock)]) -> date:
+    """The day it is for the signed-in business: the injected clock's instant in its own zone.
+    The one way a request learns the day (`business_day` in `app.shared.calendar`)."""
+    return business_day(clock(), zone)
 
 
 def _parse_ip(raw: str) -> IPv4Address | IPv6Address | None:

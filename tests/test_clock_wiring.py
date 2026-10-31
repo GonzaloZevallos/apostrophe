@@ -11,6 +11,8 @@ import inspect
 
 from fastapi import FastAPI
 
+from app import clock as app_clock
+from app.accounts.adapters import deps
 from app.main import create_app
 from tests.conftest import MovableClock
 
@@ -23,3 +25,8 @@ def test_an_app_built_without_a_clock_runs_on_the_system_clock() -> None:
     default = inspect.signature(create_app).parameters["clock"].default
 
     assert (default.__module__, default.__name__) == ("app.clock", "system_clock")
+
+
+def test_a_request_learns_its_day_from_the_accounts_dependency_not_from_the_clock_module() -> None:
+    assert not hasattr(app_clock, "get_today")
+    assert deps.get_today.__module__ == "app.accounts.adapters.deps"

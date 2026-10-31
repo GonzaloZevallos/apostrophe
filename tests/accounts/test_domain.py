@@ -5,10 +5,13 @@ from datetime import UTC, datetime, timedelta
 import pytest
 
 from app.accounts.domain.account import (
+    DEFAULT_TIME_ZONE,
     BusinessName,
+    BusinessTimeZone,
     Email,
     InvalidBusinessName,
     InvalidEmail,
+    TimeZoneUnavailable,
     WeakPassword,
     check_password_strength,
 )
@@ -159,3 +162,24 @@ def test_an_address_guard_s_window_cutoff_is_fifteen_minutes_back() -> None:
     guard = AddressGuard()
 
     assert guard.window_cutoff(NOW) == NOW - timedelta(minutes=15)
+
+
+def test_a_business_time_zone_holds_the_name_it_was_given() -> None:
+    assert BusinessTimeZone("Europe/Madrid").name == "Europe/Madrid"
+
+
+@pytest.mark.parametrize("name", ["", " ", "\t\n"])
+def test_a_blank_business_time_zone_is_refused(name: str) -> None:
+    with pytest.raises(ValueError, match="needs a name"):
+        BusinessTimeZone(name)
+
+
+def test_the_default_business_time_zone_is_argentina() -> None:
+    assert DEFAULT_TIME_ZONE == BusinessTimeZone("America/Argentina/Buenos_Aires")
+
+
+def test_an_unavailable_time_zone_carries_its_own_code_and_never_the_stored_name() -> None:
+    error = TimeZoneUnavailable()
+
+    assert TimeZoneUnavailable.code == "time_zone_unavailable"
+    assert "Buenos" not in str(error)
