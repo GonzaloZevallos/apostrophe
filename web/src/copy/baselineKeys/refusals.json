@@ -317,6 +317,9 @@
   "refusals.ts:REFUSAL_TEXT.goneNotice": {
     "key": "refusals:goneNotice"
   },
+  "timeZone.ts:TIME_ZONE_INVALID_MESSAGE": {
+    "key": "refusals:timeZoneInvalid"
+  },
   "refusals.ts:REFUSAL_TEXT.hasHistory": {
     "key": "refusals:hasHistory"
   },

@@ -748,6 +748,7 @@
   {"source":"stock.ts:STOCK_TEXT.warningLow","args":["3,5 g"],"text":"Warning: 3,5 g left"},
   {"source":"stock.ts:onHandHelp","args":["3,5 g"],"text":"It has 3,5 g today"},
   {"source":"stock.ts:perGramPreview","args":["$ 11.000"],"text":"It comes to $ 11.000 per gram"},
+  {"source":"timeZone.ts:TIME_ZONE_INVALID_MESSAGE","args":null,"text":"That time zone can't be used. Pick another one from the list."},
   {"source":"varieties.ts:CATALOG_DISABLED_REASON","args":null,"text":"Add a variety with a price and its stock"},
   {"source":"varieties.ts:EMPTY_DETAIL","args":null,"text":"Add the first one with its price so you can sell and send your catalog."},
   {"source":"varieties.ts:EMPTY_TITLE","args":null,"text":"No varieties yet"},

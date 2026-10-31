@@ -6397,22 +6397,6 @@ body {
   display: flex;
   align-items: center;
   gap: var(--espacio-md);
-  width: 100%;
-  min-height: 44px;
-  padding: var(--espacio-sm) 0;
-  border: 0;
-  border-bottom: 1px solid var(--linea);
-  background: none;
-  color: var(--tinta);
-  font: inherit;
-  text-align: left;
-  touch-action: manipulation;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.zona__fila:active {
-  background: var(--superficie);
 }
 
 .zona__fila--elegida {

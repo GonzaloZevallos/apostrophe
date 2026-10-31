@@ -17,10 +17,12 @@ export const PLACEHOLDERS: Record<string, keyof typeof SAMPLES> = {
   count: 'count',
   customer: 'name',
   date: 'date',
+  datetime: 'date',
   fromDate: 'date',
   grams: 'grams',
   name: 'name',
   negativeAmount: 'negativeAmount',
   parent: 'name',
+  query: 'name',
   toDate: 'date',
 }

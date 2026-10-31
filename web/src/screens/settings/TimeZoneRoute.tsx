@@ -19,7 +19,7 @@ import { REFUSAL_KEY } from '../../api/refusals'
 import { type TimeZoneSettings, filterTimeZones, useSaveTimeZone, useTimeZone } from '../../api/timeZone'
 import AvisoAmbar from '../../components/AvisoAmbar'
 import Boton from '../../components/Boton'
-import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
+import ErrorGenerico from '../../components/ErrorGenerico'
 import Icono from '../../components/Icono'
 import Loading from '../../components/Loading'
 import MasInfo from '../../components/MasInfo'
@@ -69,7 +69,7 @@ function TimeZoneForm({ settings, onSaved }: { settings: TimeZoneSettings; onSav
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState(settings.time_zone)
   const [refusal, setRefusal] = useState<Refusal | null>(null)
-  const [message, setMessage] = useState<string | null>(null)
+  const [failed, setFailed] = useState(false)
   const [offline, setOffline] = useState(false)
 
   const shown = filterTimeZones(settings.time_zones, query)
@@ -79,13 +79,13 @@ function TimeZoneForm({ settings, onSaved }: { settings: TimeZoneSettings; onSav
   function choose(zone: string): void {
     setSelected(zone)
     setRefusal(null)
-    setMessage(null)
+    setFailed(false)
   }
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>): void {
     event.preventDefault()
     setRefusal(null)
-    setMessage(null)
+    setFailed(false)
     setOffline(false)
     save.mutate(selected, {
       onSuccess: onSaved,
@@ -95,7 +95,7 @@ function TimeZoneForm({ settings, onSaved }: { settings: TimeZoneSettings; onSav
         } else if (caught instanceof ApiError && caught.code === 'unknown_time_zone') {
           setRefusal(TIME_ZONE_INVALID)
         } else {
-          setMessage(ERROR_GENERICO_MENSAJE)
+          setFailed(true)
         }
       },
     })
@@ -122,19 +122,16 @@ function TimeZoneForm({ settings, onSaved }: { settings: TimeZoneSettings; onSav
             const chosen = zone === selected
             return (
               <li key={zone}>
-                <button
-                  type="button"
-                  className={chosen ? 'zona__fila zona__fila--elegida' : 'zona__fila'}
-                  aria-pressed={chosen}
-                  onClick={() => choose(zone)}
-                >
-                  <span className="zona__nombre">{zone}</span>
-                  {chosen && (
-                    <span className="zona__marca">
-                      <Icono nombre="hecho" label={t('timeZone:selected')} />
-                    </span>
-                  )}
-                </button>
+                <Boton variant="row" onClick={() => choose(zone)}>
+                  <span className={chosen ? 'zona__fila zona__fila--elegida' : 'zona__fila'}>
+                    <span className="zona__nombre">{zone}</span>
+                    {chosen && (
+                      <span className="zona__marca">
+                        <Icono nombre="hecho" label={t('timeZone:selected')} />
+                      </span>
+                    )}
+                  </span>
+                </Boton>
               </li>
             )
           })}
@@ -148,11 +145,7 @@ function TimeZoneForm({ settings, onSaved }: { settings: TimeZoneSettings; onSav
             {refusalText(t, refusal)}
           </AvisoAmbar>
         )}
-        {message !== null && (
-          <span className="campo__error" role="alert">
-            {message}
-          </span>
-        )}
+        {failed && <ErrorGenerico />}
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={save.isPending}>
           {save.isPending ? t('timeZone:saving') : t('timeZone:save')}
