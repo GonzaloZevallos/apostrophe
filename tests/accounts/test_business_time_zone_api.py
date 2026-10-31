@@ -30,6 +30,11 @@ def _put(client: TestClient, zone: str) -> Any:
     return client.put("/business/time-zone", json={"time_zone": zone})
 
 
+def _offsets(client: TestClient) -> dict[str, int | None]:
+    body = client.get("/business/time-zone").json()
+    return dict(zip(body["time_zones"], body["utc_offsets_minutes"], strict=True))
+
+
 def _stored(client: TestClient) -> str:
     stored: str = client.get("/business/time-zone").json()["time_zone"]
     return stored
@@ -92,6 +97,22 @@ def test_get_answers_the_stored_zone_the_accepted_list_and_the_clock_in_millisec
     assert body["now_epoch_ms"] == int(NOW.timestamp()) * 1000
 
 
+def test_get_answers_each_zone_utc_offset_at_the_clock_instant_either_side_of_a_change(
+    client: TestClient, clock: MovableClock
+) -> None:
+    """The front formats a zone's local time by adding this offset to `now_epoch_ms`, so a
+    zone whose clocks go back is right on both sides of the change (Madrid, 25 Oct 2026,
+    01:00 UTC)."""
+    clock.set(datetime(2026, 10, 25, 0, 59, tzinfo=UTC))
+    before = _offsets(client)
+    clock.set(datetime(2026, 10, 25, 1, 0, tzinfo=UTC))
+    after = _offsets(client)
+
+    assert (before["Europe/Madrid"], after["Europe/Madrid"]) == (120, 60)
+    assert before[ARGENTINA] == after[ARGENTINA] == -180
+    assert list(before) == list(accepted_time_zones())
+
+
 def test_get_lists_a_stored_name_off_the_accepted_list_too(
     client: TestClient, engine: Engine
 ) -> None:
@@ -102,6 +123,7 @@ def test_get_lists_a_stored_name_off_the_accepted_list_too(
 
     assert body["time_zone"] == "Etc/GMT+5"
     assert "Etc/GMT+5" in body["time_zones"]
+    assert _offsets(client)["Etc/GMT+5"] == -300
     assert [n for n in body["time_zones"] if n != "Etc/GMT+5"] == list(accepted_time_zones())
 
 

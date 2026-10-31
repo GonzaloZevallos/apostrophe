@@ -7,8 +7,11 @@ A name already stored is loaded by membership in `available_timezones()` instead
 (`app.shared.calendar.load_zone`), so a stored name off this list keeps working.
 """
 
+from datetime import datetime
 from functools import cache
 from zoneinfo import available_timezones
+
+from app.shared.calendar import load_zone, utc_offset_minutes
 
 REGIONS = (
     "Africa/",
@@ -33,3 +36,13 @@ def time_zones_to_show(stored: str) -> tuple[str, ...]:
     (a business keeps a zone the list no longer offers, and the screen must still show it)."""
     accepted = accepted_time_zones()
     return accepted if stored in accepted else (*accepted, stored)
+
+
+def utc_offsets_minutes(names: tuple[str, ...], instant: datetime) -> list[int | None]:
+    """Each name's offset from UTC at `instant`, in minutes, in the order of `names`. A name
+    that cannot be loaded answers `None`, so one bad stored name never fails the others."""
+    offsets: list[int | None] = []
+    for name in names:
+        zone = load_zone(name)
+        offsets.append(None if zone is None else utc_offset_minutes(instant, zone))
+    return offsets

@@ -30,7 +30,7 @@ from app.accounts.domain.invitation import InvitationKind, InvitationNotUsable
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.reset_link import CurrentPasswordWrong, ResetLinkGone
 from app.accounts.domain.session_token import SESSION_LIFETIME, SessionSigner
-from app.accounts.domain.time_zone import time_zones_to_show
+from app.accounts.domain.time_zone import time_zones_to_show, utc_offsets_minutes
 from app.clock import Clock, get_clock
 from app.db import get_session
 from app.http_errors import TranslateErrors
@@ -104,6 +104,11 @@ class TimeZoneOut(BaseModel):
     # The injected clock's instant, so the front previews a zone's local time without ever
     # reading its own clock (docs/adr/0057).
     now_epoch_ms: int
+    # Each listed zone's offset from UTC at that same instant, in minutes, in the order of
+    # `time_zones` (`null` for a name that cannot be loaded): the front adds it to
+    # `now_epoch_ms` to preview a zone's local time (the browser's date formatter is banned,
+    # ADR-0049). A name that cannot be loaded is left out; it never fails the others.
+    utc_offsets_minutes: list[int | None]
 
 
 class TimeZoneIn(BaseModel):
@@ -296,10 +301,13 @@ def get_time_zone(
     business_id: CurrentBusinessId, accounts: AccountsDep, clock: ClockDep
 ) -> TimeZoneOut:
     stored = manage_business.stored_time_zone(accounts, business_id)
+    instant = clock()
+    names = time_zones_to_show(stored)
     return TimeZoneOut(
         time_zone=stored,
-        time_zones=list(time_zones_to_show(stored)),
-        now_epoch_ms=(clock() - _EPOCH) // timedelta(milliseconds=1),
+        time_zones=list(names),
+        now_epoch_ms=(instant - _EPOCH) // timedelta(milliseconds=1),
+        utc_offsets_minutes=utc_offsets_minutes(names, instant),
     )
 
 

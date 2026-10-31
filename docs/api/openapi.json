@@ -3805,12 +3805,27 @@
             },
             "title": "Time Zones",
             "type": "array"
+          },
+          "utc_offsets_minutes": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Utc Offsets Minutes",
+            "type": "array"
           }
         },
         "required": [
           "time_zone",
           "time_zones",
-          "now_epoch_ms"
+          "now_epoch_ms",
+          "utc_offsets_minutes"
         ],
         "title": "TimeZoneOut",
         "type": "object"

@@ -26,6 +26,14 @@ def business_day(instant: datetime, zone: ZoneInfo) -> date:
     return instant.astimezone(zone).date()
 
 
+def utc_offset_minutes(instant: datetime, zone: ZoneInfo) -> int:
+    """`zone`'s offset from UTC at `instant`, in whole minutes: what a client adds to the
+    instant to show a zone's local clock without a time-zone database of its own. It is not
+    a business day; a day still comes only from `business_day`."""
+    offset = instant.astimezone(zone).utcoffset()
+    return 0 if offset is None else int(offset.total_seconds() // 60)
+
+
 @cache
 def _known_zone_names() -> frozenset[str]:
     return frozenset(available_timezones())

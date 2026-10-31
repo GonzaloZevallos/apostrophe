@@ -432,6 +432,7 @@ classDiagram
     now_epoch_ms : int
     time_zone : str
     time_zones : list~str~
+    utc_offsets_minutes : list~int #124; None~
   }
   class TimeZoneSavedOut {
     time_zone : str
