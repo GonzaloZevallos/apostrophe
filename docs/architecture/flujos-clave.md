@@ -14,6 +14,7 @@ sequenceDiagram
   participant Address as client_address
   participant UseCase as log_in
   participant Store as Accounts
+  participant Refuse as refuse_attempt
   participant Hasher as PasswordHasher
   participant Tx as Transaction
   participant Signer as SessionSigner
@@ -22,14 +23,14 @@ sequenceDiagram
   Router->>UseCase: log_in
   UseCase->>Store: login_locks
   alt a brake is locked
-    UseCase->>Store: refuse_attempt
+    UseCase->>Refuse: count the failure
     UseCase-->>Router: LoginLocked
     Router-->>Browser: 429
   else no brake is locked
     UseCase->>Store: user_by_email
-    UseCase->>Hasher: verify
+    UseCase->>Hasher: verify, or burn when the email is unknown
     alt unknown email or wrong password
-      UseCase->>Store: refuse_attempt
+      UseCase->>Refuse: count the failure
       UseCase-->>Router: None
       Router-->>Browser: 401
     else right password
@@ -64,7 +65,7 @@ sequenceDiagram
 | 16 | [app/accounts/application/sign_in.py](../../app/accounts/application/sign_in.py) | `log_in` |
 | 17 | [app/accounts/adapters/router.py](../../app/accounts/adapters/router.py) | `login` |
 
-`refuse_attempt` cuenta ambos frenos, bloquea el que acaba de llegar al límite y confirma antes de volver (pasos 5 y 10). Un email mal formado nunca se guarda: solo cuenta la dirección, y esa rama no está dibujada. Las rutas siguientes llevan el token a [app/accounts/adapters/deps.py](../../app/accounts/adapters/deps.py) `require_session`, que lo abre con [app/accounts/application/sign_in.py](../../app/accounts/application/sign_in.py) `open_session`; el Business sale de ahí ([modelo-de-datos.md](modelo-de-datos.md)).
+En el paso 9, `burn` (en el mismo archivo que `verify`) gasta el mismo tiempo cuando el email no existe y `verify` no corre. `refuse_attempt` es una función de `sign_in.py`, no del puerto, y cuenta ambos frenos, bloquea el que acaba de llegar al límite y confirma antes de volver (pasos 5 y 10). Un email mal formado nunca se guarda: solo cuenta la dirección, y esa rama no está dibujada. Las rutas siguientes llevan el token a [app/accounts/adapters/deps.py](../../app/accounts/adapters/deps.py) `require_session`, que lo abre con [app/accounts/application/sign_in.py](../../app/accounts/application/sign_in.py) `open_session`; el Business sale de ahí ([modelo-de-datos.md](modelo-de-datos.md)).
 
 ## Una venta con pago en el acto
 
@@ -136,15 +137,16 @@ sequenceDiagram
   participant History as business_history
   participant Order as lots_and_draws
   participant Level as stock_level
-  Browser->>Router: POST /entries
+  Browser->>Router: POST /stock/entries
   Router->>Entry: record_entry
   Entry->>Catalog: exists
   Entry->>Entries: add
   Entry->>Tx: commit
   Entry-->>Router: the StockEntry
   Router-->>Browser: 201
-  Browser->>Router: POST /withdrawals
+  Browser->>Router: POST /stock/withdrawals
   Router->>Withdrawal: record_withdrawal
+  Withdrawal->>Catalog: exists
   Withdrawal->>Withdrawals: add
   Withdrawal->>Tx: commit
   Withdrawal-->>Router: the WithdrawalView
@@ -171,19 +173,20 @@ sequenceDiagram
 | 7 | [app/stock/adapters/router.py](../../app/stock/adapters/router.py) | `record_entry` |
 | 8 | [app/stock/adapters/router.py](../../app/stock/adapters/router.py) | `record_withdrawal` |
 | 9 | [app/stock/application/manage_withdrawals.py](../../app/stock/application/manage_withdrawals.py) | `record_withdrawal` |
-| 10 | [app/stock/application/ports.py](../../app/stock/application/ports.py) | `Withdrawals` |
-| 11 | [app/shared/transaction.py](../../app/shared/transaction.py) | `Transaction` |
-| 12 | [app/stock/application/manage_withdrawals.py](../../app/stock/application/manage_withdrawals.py) | `WithdrawalView` |
-| 13 | [app/stock/adapters/router.py](../../app/stock/adapters/router.py) | `record_withdrawal` |
-| 14 | [app/stock/adapters/router.py](../../app/stock/adapters/router.py) | `get_stock` |
-| 15 | [app/stock/application/read_stock.py](../../app/stock/application/read_stock.py) | `read_stock` |
-| 16 | [app/stock/application/history.py](../../app/stock/application/history.py) | `business_history` |
-| 17 | [app/stock/domain/lot_order.py](../../app/stock/domain/lot_order.py) | `lots_and_draws` |
-| 18 | [app/stock/domain/stock_level.py](../../app/stock/domain/stock_level.py) | `stock_level` |
-| 19 | [app/stock/application/read_stock.py](../../app/stock/application/read_stock.py) | `StockView` |
-| 20 | [app/stock/adapters/router.py](../../app/stock/adapters/router.py) | `get_stock` |
+| 10 | [app/stock/application/ports.py](../../app/stock/application/ports.py) | `exists` |
+| 11 | [app/stock/application/ports.py](../../app/stock/application/ports.py) | `Withdrawals` |
+| 12 | [app/shared/transaction.py](../../app/shared/transaction.py) | `Transaction` |
+| 13 | [app/stock/application/manage_withdrawals.py](../../app/stock/application/manage_withdrawals.py) | `WithdrawalView` |
+| 14 | [app/stock/adapters/router.py](../../app/stock/adapters/router.py) | `record_withdrawal` |
+| 15 | [app/stock/adapters/router.py](../../app/stock/adapters/router.py) | `get_stock` |
+| 16 | [app/stock/application/read_stock.py](../../app/stock/application/read_stock.py) | `read_stock` |
+| 17 | [app/stock/application/history.py](../../app/stock/application/history.py) | `business_history` |
+| 18 | [app/stock/domain/lot_order.py](../../app/stock/domain/lot_order.py) | `lots_and_draws` |
+| 19 | [app/stock/domain/stock_level.py](../../app/stock/domain/stock_level.py) | `stock_level` |
+| 20 | [app/stock/application/read_stock.py](../../app/stock/application/read_stock.py) | `StockView` |
+| 21 | [app/stock/adapters/router.py](../../app/stock/adapters/router.py) | `get_stock` |
 
-En el paso 3, `record_entry` revisa primero la Variety (404) y recién después las reglas del dominio (422). El paso 17 arma, por Variety, los lotes y los retiros del Stock: fecha primero y después orden de registro, con `rank` para desempatar entre una entrada, una línea de venta y una línea de retiro ([app/stock/domain/lot_order.py](../../app/stock/domain/lot_order.py) `LotOrder`). Los routers de stock también llevan el upkeep de la venta de arriba.
+En el paso 3, y en el 10 para el retiro, se revisa primero la Variety (404) y recién después las reglas del dominio (422). El paso 18 arma, por Variety, los lotes y los retiros del Stock: fecha primero y después orden de registro, con `rank` para desempatar entre una entrada, una línea de venta y una línea de retiro ([app/stock/domain/lot_order.py](../../app/stock/domain/lot_order.py) `LotOrder`). Los routers de stock también llevan el upkeep de la venta de arriba.
 
 ## Abrir un Business nuevo
 

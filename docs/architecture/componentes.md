@@ -27,7 +27,7 @@ C4Component
 ## Las reglas
 
 - Un caso de uso que escribe confirma una sola vez, al final, a través del puerto [app/shared/transaction.py](../../app/shared/transaction.py) `Transaction`; los repositorios escriben pero nunca confirman.
-- Una capacidad nunca importa los adaptadores de otra: cada una declara en su propio `application/ports.py` lo que necesita de las demás, y [app/main.py](../../app/main.py) `create_app` las une, dejando en `app.state` una fábrica `(Session, business_id)` por puerto. El motivo está en [docs/adr/0006-capabilities-meet-through-ports.md](../adr/0006-capabilities-meet-through-ports.md).
+- El `domain/` y el `application/` de una capacidad nunca importan otra capacidad: cada una declara en su propio `application/ports.py` lo que necesita de las demás, y [tests/architecture/hexagon.py](../../tests/architecture/hexagon.py) lo define y [tests/architecture/test_architecture.py](../../tests/architecture/test_architecture.py) lo hace cumplir. Los adaptadores sí importan, por ejemplo, las tablas de otras capacidades. [app/main.py](../../app/main.py) `create_app` une los puertos dejando en `app.state` una fábrica por cada uno (la mayoría recibe la sesión y el id del Business; algunas también el día de hoy) o, en algunos casos, una instancia. El motivo está en [docs/adr/0006-capabilities-meet-through-ports.md](../adr/0006-capabilities-meet-through-ports.md).
 - Las respuestas de rechazo llevan un código que el front traduce: [app/http_errors.py](../../app/http_errors.py) `Refused` y `TranslateErrors` ([docs/adr/0008-refusals-carry-a-code-the-front-maps.md](../adr/0008-refusals-carry-a-code-the-front-maps.md)).
 
 ## Hexágonos y sus puertos
