@@ -51,7 +51,7 @@ function owesLine(balance: string, since: string) {
   return (
     <>
       {before}
-      <span className="cobro__importe">{balance}</span>
+      <span className="cobro__importe cifra-n">{balance}</span>
       {after}
     </>
   )
