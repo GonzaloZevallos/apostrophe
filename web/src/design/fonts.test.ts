@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import type { FontFamily, FontFamilyName } from '../../../scripts/design/fonts.mjs'
 import { FONT_FAMILIES, fontCss, fontRoute } from '../../../scripts/design/fonts.mjs'
 
 const GSTATIC_PREFIX = FONT_FAMILIES['Plus Jakarta Sans'].prefix
@@ -174,13 +175,13 @@ describe('fontCss with Geist', () => {
   })
 
   it('refuses a family that is not on the map', () => {
-    expect(() => fontCss('Roboto', [400], geistCss)).toThrow(/Roboto/)
+    expect(() => fontCss('Roboto' as string as FontFamilyName, [400], geistCss)).toThrow(/Roboto/)
   })
 })
 
 const WEB = resolve(__dirname, '..', '..')
 
-describe.each(Object.entries(FONT_FAMILIES))('the installed package of %s', (family, entry) => {
+describe.each(Object.entries(FONT_FAMILIES) as [FontFamilyName, FontFamily][])('the installed package of %s', (family, entry) => {
   const root = join(WEB, 'node_modules', entry.package)
   const read = (weight: number): string => readFileSync(join(root, `${weight}.css`), 'utf-8')
   const faces = (weight: number): string[] =>

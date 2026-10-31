@@ -2,14 +2,15 @@ export interface FontFamily {
   readonly package: string;
   readonly prefix: string;
 }
-export const FONT_FAMILIES: Readonly<Record<'Plus Jakarta Sans' | 'Geist', FontFamily>>;
+export type FontFamilyName = 'Plus Jakarta Sans' | 'Geist';
+export const FONT_FAMILIES: Readonly<Record<FontFamilyName, FontFamily>>;
 export type FontRoute =
-  | { kind: 'stylesheet'; family: string; weights: number[] }
-  | { kind: 'file'; family: string; name: string }
+  | { kind: 'stylesheet'; family: FontFamilyName; weights: number[] }
+  | { kind: 'file'; family: FontFamilyName; name: string }
   | { kind: 'unserved' };
 export function fontRoute(url: string): FontRoute;
 export function fontCss(
-  family: string,
+  family: FontFamilyName,
   weights: ReadonlyArray<number>,
   read: (weight: number) => string,
 ): string;
