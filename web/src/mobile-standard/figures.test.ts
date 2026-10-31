@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import { STOCK_TEXT } from '../copy/stock'
 import { formatGrams, formatMoney, formatSignedMoney } from '../format/money'
 import { FIGURE_SOURCES, isFigure } from './figures.ts'
 
@@ -29,6 +30,10 @@ describe('isFigure', () => {
 
   test('Days left’s figure, both texts the app prints', () => {
     for (const text of ['12 days', '1 days', '1 day']) expect(isFigure(text), text).toBe(true)
+  })
+
+  test('Days left as the copy module prints it', () => {
+    for (const days of [0, 1, 12, 365]) expect(isFigure(STOCK_TEXT.daysLeft(days)), String(days)).toBe(true)
   })
 
   test('surrounding white space does not matter', () => {
