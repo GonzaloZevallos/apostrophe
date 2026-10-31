@@ -4,7 +4,7 @@
  */
 
 import { describe, expect, test } from 'vitest'
-import { CUSTOMER, CUSTOMER_EDIT, CUSTOMER_PAYMENT, CUSTOMER_NEW, CUSTOMERS, HOME, SALE_NEW, SALES, VARIETIES, VARIETY, pathTo } from '../routes'
+import { CUSTOMER, CUSTOMER_EDIT, CUSTOMER_PAYMENT, CUSTOMER_NEW, CUSTOMERS, HOME, SALE_NEW, SALES, VARIETIES, VARIETY, VARIETY_PRICE_NEW, pathTo } from '../routes'
 import { decideScroll, type NavigationAction, type PlaceInHistory } from './scrollPlan'
 import type { Viewport } from '../routes'
 
@@ -89,5 +89,26 @@ describe('the two panes of a computer', () => {
 
   test('a pop between the panes still does nothing: both are one screen', () => {
     expect(decideScroll(at(pathTo(CUSTOMER, { id: 3 })), at(CUSTOMERS), 'POP', 'computer')).toBe('none')
+  })
+})
+
+describe('a form that is a modal on a computer', () => {
+  const price = pathTo(VARIETY_PRICE_NEW, { id: 1 })
+  const variety = pathTo(VARIETY, { id: 1 })
+
+  test.each(['PUSH', 'REPLACE'] as const)('opened over its screen leaves the page where it is (%s, computer)', (action) => {
+    expect(decideScroll(at(variety), at(price), action, 'computer')).toBe('none')
+  })
+
+  test('is a full screen on a phone: it opens at the top', () => {
+    expect(decideScroll(at(variety), at(price), 'PUSH', 'phone')).toBe('top')
+  })
+
+  test('a form that is never a modal still opens at the top on a computer', () => {
+    expect(decideScroll(at(CUSTOMERS), at(CUSTOMER_NEW), 'PUSH', 'computer')).toBe('top')
+  })
+
+  test('leaving it by a pop restores the screen under it', () => {
+    expect(decideScroll(at(price), at(variety), 'POP', 'computer')).toBe('restore')
   })
 })

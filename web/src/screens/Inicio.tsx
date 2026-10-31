@@ -38,6 +38,7 @@ import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { panelQuery, type PanelTab } from '../api/panel'
 import ErrorGenerico from '../components/ErrorGenerico'
+import Loading from '../components/Loading'
 import { AvisoCuerpo } from '../components/AvisoAmbar'
 import SinConexion from '../components/SinConexion'
 import { initialsOf } from '../format/initials'
@@ -128,6 +129,10 @@ export default function Inicio() {
         {failed !== undefined && failed.error instanceof NetworkError && <SinConexion />}
         {failed !== undefined && !(failed.error instanceof NetworkError) && <ErrorGenerico />}
 
+        {/* A payment drops the cached panel, so Home can be empty while it reads again, and the
+            notices above it make the page taller once they answer: the marker tells the scroll
+            owner (`ScrollSync`) the page is not at its final height yet. */}
+        {(panelRead.isPending || !settled) && failed === undefined && <Loading />}
         {panelRead.data !== undefined && (
           <InicioPanel panel={panelRead.data} tab={tab} onTab={setTab} today={me.today} />
         )}

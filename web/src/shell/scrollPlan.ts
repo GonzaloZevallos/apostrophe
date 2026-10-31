@@ -9,6 +9,8 @@
  *   - Record payment opened over its screen (state `underneath`)  -> `none` on the phone
  *       (the full-screen sheet has no outside, ADR-0062), `keep` on a computer
  *   - a computer's two panes (a list and the detail it picks)     -> `none`
+ *   - a form that is a modal on a computer (`modalOnComputer`),
+ *       opened over its screen                                    -> `none`: the page stays under it
  *   - any other PUSH or REPLACE                                   -> `top`
  */
 
@@ -46,5 +48,6 @@ export function decideScroll(
   if (viewport === 'computer' && samePanes(from, to)) return 'none'
   if (action === 'POP') return 'restore'
   if (hasPaymentUnderneath(to.state)) return viewport === 'phone' ? 'none' : 'keep'
+  if (viewport === 'computer' && screenAtPath(to.pathname)?.modalOnComputer === true) return 'none'
   return 'top'
 }

@@ -79,3 +79,17 @@ export async function seedLongVarieties(page: Page): Promise<void> {
     expect(created.ok(), await created.text()).toBe(true)
   })
 }
+
+/** `LONG` expenses ("Gasto 01" ...) dated on the business's own today, so Expenses scrolls. */
+export async function seedLongExpenses(page: Page): Promise<void> {
+  const me: { today: string } = await (await page.request.get('/auth/me')).json()
+  const categories: { id: number }[] = await (await page.request.get('/expense-categories')).json()
+  const category = categories[0]
+  if (category === undefined) throw new Error('a new business has no expense category')
+  await inBatches(numbered('Gasto', LONG), async (detail) => {
+    const recorded = await page.request.post('/expenses', {
+      data: { spent_on: me.today, category_id: category.id, amount: 4500, detail },
+    })
+    expect(recorded.status()).toBe(201)
+  })
+}

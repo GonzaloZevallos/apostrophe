@@ -14,9 +14,9 @@
  */
 
 import type { Locator, Page } from '@playwright/test'
-import { CUSTOMERS, HOME, SALE, SALES, SALE_NEW } from '../src/routes.js'
+import { CUSTOMERS, EXPENSES, HOME, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expect, test, withToastRecorder } from './fixtures.js'
-import { seedLongLists, seedLongVarieties } from './helpers/scrollSeed.js'
+import { seedLongExpenses, seedLongLists, seedLongVarieties } from './helpers/scrollSeed.js'
 import { expectToast } from './helpers/toast.js'
 import { expectPath } from './helpers/url.js'
 
@@ -102,6 +102,7 @@ test.describe.serial('Scroll on a change of screen', () => {
     ).newPage()
     await seedLongLists(page)
     await seedLongVarieties(page)
+    await seedLongExpenses(page)
   })
 
   test.afterAll(async () => {
@@ -166,13 +167,16 @@ test.describe.serial('Scroll on a change of screen', () => {
         await expectPath(page, SALE)
 
         const release = await holdSalesRequest(page)
-        await page.goBack()
-        await expectPath(page, SALES)
-        await twoFrames(page)
-        release()
+        try {
+          await page.goBack()
+          await expectPath(page, SALES)
+          await twoFrames(page)
+        } finally {
+          release()
+          await page.unroute((url) => url.pathname === SALES)
+        }
         await expect(rowOfSale(page)).toBeVisible()
         await expectScrolledTo(page, offset)
-        await page.unroute((url) => url.pathname === SALES)
       })
 
       test('"Close" of New sale, opened from a scrolled Customers list, returns to that offset', async () => {
@@ -188,21 +192,24 @@ test.describe.serial('Scroll on a change of screen', () => {
         await expectScrolledTo(page, offset)
       })
 
-      test("New sale's customer picker opens and closes without moving the page", async () => {
-        await page.goto(SALE_NEW)
-        await expect(page.getByRole('button', { name: 'Pick a customer' })).toBeVisible()
-        // The form is not taller than a computer's window: leave a page that can scroll to measure.
-        const reachable = await page.evaluate(
-          () => document.documentElement.scrollHeight - window.innerHeight,
-        )
-        test.skip(reachable < 50, 'this form fits the window, so there is no offset to keep')
-        await page.evaluate((top) => window.scrollTo(0, top), reachable)
-        const offset = await scrollY(page)
-
-        await tap(page.getByRole('button', { name: 'Pick a customer' }))
-        const sheet = page.getByRole('dialog')
+      test('a sheet over a scrolled list opens and closes without moving the page', async () => {
+        // A phone edits an expense in a sheet on Expenses with no route of its own; a computer
+        // opens a variety's price in a modal over Varieties. The page under either keeps its place.
+        const sheet = page.getByRole('dialog', { name: computer ? 'New price' : 'Edit expense' })
+        if (computer) {
+          await page.goto(VARIETIES)
+          await expect(page.getByRole('link', { name: /Tulipan 40/ })).toBeVisible()
+        } else {
+          await page.goto(EXPENSES)
+          await expect(page.getByRole('button', { name: /Gasto 25/ })).toBeVisible()
+        }
+        const offset = await scrollDown(page)
+        await tap(computer ? page.getByRole('link', { name: 'New price' }).first() : page.getByRole('button', { name: /Gasto 25/ }))
         await expect(sheet).toBeVisible()
-        await expectScrolledTo(page, offset)
+        // The picture a computer's modal covers is inert and re-renders as the detail beside the
+        // list changes (the browser keeps its content in place: PM, round 3), so only a phone's
+        // in-page sheet is held to the offset while it is open; both are, once closed.
+        if (!computer) await expectScrolledTo(page, offset)
         await sheet.getByRole('button', { name: 'Close' }).click()
         await expect(page.getByRole('dialog')).toHaveCount(0)
         await expectScrolledTo(page, offset)
