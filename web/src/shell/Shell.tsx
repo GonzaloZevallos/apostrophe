@@ -44,6 +44,7 @@ import {
   type RailPlace,
   type Screen,
 } from '../routes'
+import BrandMark from '../components/BrandMark'
 import BotonLink from '../components/BotonLink'
 import { NUEVA_VENTA_CLASS, NUEVA_VENTA_ESCRITORIO_CLASS } from '../components/botonVisual'
 import BackArrow from './BackArrow'
@@ -181,6 +182,7 @@ export default function Shell() {
     <div className="disposicion" ref={layoutRef}>
       {chrome.rail && (
         <nav className="riel-lateral" aria-label={t('shell:navigation')} data-menu>
+          <BrandMark variant="lockup" />
           {chrome.railNuevaVenta && (
             <>
               <BotonLink

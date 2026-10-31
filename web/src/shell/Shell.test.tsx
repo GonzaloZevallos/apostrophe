@@ -166,6 +166,7 @@ test('the rail is "New sale", four tabs, a divider, Gastos and Análisis, then t
     child.getAttribute('role') === 'separator' ? '---' : (child.textContent ?? ''),
   )
   expect(entries).toEqual([
+    'apostrophe’',
     'New sale',
     'Home',
     'Sales',
@@ -623,4 +624,20 @@ test('a computer layout never reads the keyboard', () => {
   } finally {
     Reflect.deleteProperty(window, 'visualViewport')
   }
+})
+
+test('the computer rail opens with the lockup named "apostrophe", above "New sale"', () => {
+  const { container } = renderShell([HOME], { computer: true })
+
+  const nav = within(rail(container))
+  const lockup = nav.getByRole('img', { name: 'apostrophe' })
+  expect(lockup).toHaveTextContent('apostrophe’')
+  expect(rail(container).firstElementChild).toBe(lockup)
+  expect(nav.getByRole('link', { name: 'New sale' })).toBeInTheDocument()
+})
+
+test('the bottom bar carries no brand', () => {
+  const { container } = renderShell([HOME])
+
+  expect(within(bar(container)).queryByRole('img', { name: 'apostrophe' })).not.toBeInTheDocument()
 })
