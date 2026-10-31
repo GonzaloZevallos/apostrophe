@@ -225,6 +225,9 @@ interface ScreenBase {
   /** The route is a modal on a computer: the shell draws no side rail behind its scrim. The
    * only thing that hides the rail; it is never inferred from `pane` or `kind`. */
   modalOnComputer?: true
+  /** The route is drawn by one `Sheet` over its parent on a phone (ADR-0062): the page under it
+   * keeps its place when it opens (navigation.md criterion 23). `scrollPlan.ts` reads it. */
+  sheetOnPhone?: true
 }
 
 export type Screen =
@@ -262,9 +265,9 @@ export const SCREENS = [
     pane: 'list',
     place: { bar: 'customers', rail: 'customers' },
   }),
-  screen({ id: 'customer-new', path: CUSTOMER_NEW, kind: 'form', titleKey: 'common:newCustomer', parent: 'customers' }),
+  screen({ id: 'customer-new', path: CUSTOMER_NEW, kind: 'form', titleKey: 'common:newCustomer', parent: 'customers', sheetOnPhone: true }),
   screen({ id: 'customer', path: CUSTOMER, kind: 'card', titleKey: 'shell:customer', pane: 'detail', parent: 'customers' }),
-  screen({ id: 'customer-edit', path: CUSTOMER_EDIT, kind: 'form', titleKey: 'common:editCustomer', parent: 'customer' }),
+  screen({ id: 'customer-edit', path: CUSTOMER_EDIT, kind: 'form', titleKey: 'common:editCustomer', parent: 'customer', sheetOnPhone: true }),
   screen({
     id: 'customer-payment',
     path: CUSTOMER_PAYMENT,
@@ -283,14 +286,14 @@ export const SCREENS = [
     place: { bar: 'varieties', rail: 'varieties' },
   }),
   screen({ id: 'variety', path: VARIETY, kind: 'card', titleKey: 'common:variety', pane: 'detail', parent: 'varieties', backLabel: 'record' }),
-  screen({ id: 'variety-new', path: VARIETY_NEW, kind: 'form', titleKey: 'common:newVariety', parent: 'varieties' }),
+  screen({ id: 'variety-new', path: VARIETY_NEW, kind: 'form', titleKey: 'common:newVariety', parent: 'varieties', sheetOnPhone: true }),
   screen({ id: 'variety-prices', path: VARIETY_PRICES, kind: 'card', titleKey: 'common:prices', parent: 'variety', backLabel: 'record' }),
-  screen({ id: 'variety-price-new', path: VARIETY_PRICE_NEW, kind: 'form', titleKey: 'common:newPrice', parent: 'variety', modalOnComputer: true }),
+  screen({ id: 'variety-price-new', path: VARIETY_PRICE_NEW, kind: 'form', titleKey: 'common:newPrice', parent: 'variety', modalOnComputer: true, sheetOnPhone: true }),
   screen({ id: 'variety-entries', path: VARIETY_ENTRIES, kind: 'card', titleKey: 'common:entries', parent: 'variety', backLabel: 'record' }),
   screen({ id: 'catalog', path: CATALOG, kind: 'card', titleKey: 'common:catalog', parent: 'varieties' }),
   screen({ id: 'stock', path: STOCK, kind: 'card', titleKey: 'common:allEntries', parent: 'varieties' }),
-  screen({ id: 'stock-entry-new', path: STOCK_ENTRY_NEW, kind: 'form', titleKey: 'common:stockEntry', parent: 'varieties' }),
-  screen({ id: 'stock-entry', path: STOCK_ENTRY, kind: 'form', titleKey: 'common:stockEntry', parent: 'stock' }),
+  screen({ id: 'stock-entry-new', path: STOCK_ENTRY_NEW, kind: 'form', titleKey: 'common:stockEntry', parent: 'varieties', sheetOnPhone: true }),
+  screen({ id: 'stock-entry', path: STOCK_ENTRY, kind: 'form', titleKey: 'common:stockEntry', parent: 'stock', sheetOnPhone: true }),
   screen({
     id: 'varieties-archived',
     path: ARCHIVED_VARIETIES,
@@ -299,9 +302,9 @@ export const SCREENS = [
     pane: 'list',
     parent: 'varieties',
   }),
-  screen({ id: 'withdrawal-new', path: WITHDRAWAL_NEW, kind: 'form', titleKey: 'common:takeFromStock', parent: 'varieties' }),
+  screen({ id: 'withdrawal-new', path: WITHDRAWAL_NEW, kind: 'form', titleKey: 'common:takeFromStock', parent: 'varieties', sheetOnPhone: true }),
   screen({ id: 'withdrawal', path: WITHDRAWAL, kind: 'card', titleKey: 'common:withdrawal', parent: 'varieties' }),
-  screen({ id: 'withdrawal-edit', path: WITHDRAWAL_EDIT, kind: 'form', titleKey: 'common:takeFromStock', parent: 'withdrawal' }),
+  screen({ id: 'withdrawal-edit', path: WITHDRAWAL_EDIT, kind: 'form', titleKey: 'common:takeFromStock', parent: 'withdrawal', sheetOnPhone: true }),
 
   screen({
     id: 'expenses',
@@ -310,7 +313,7 @@ export const SCREENS = [
     titleKey: 'common:expenses',
     place: { bar: 'more', rail: 'expenses' },
   }),
-  screen({ id: 'expense-new', path: EXPENSE_NEW, kind: 'form', titleKey: 'shell:newExpense', parent: 'expenses' }),
+  screen({ id: 'expense-new', path: EXPENSE_NEW, kind: 'form', titleKey: 'shell:newExpense', parent: 'expenses', sheetOnPhone: true }),
   screen({
     id: 'analysis',
     path: ANALYSIS,

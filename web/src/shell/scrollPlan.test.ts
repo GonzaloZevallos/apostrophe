@@ -100,8 +100,8 @@ describe('a form that is a modal on a computer', () => {
     expect(decideScroll(at(variety), at(price), action, 'computer')).toBe('none')
   })
 
-  test('is a full screen on a phone: it opens at the top', () => {
-    expect(decideScroll(at(variety), at(price), 'PUSH', 'phone')).toBe('top')
+  test('is a sheet on a phone: it too leaves the page where it is', () => {
+    expect(decideScroll(at(variety), at(price), 'PUSH', 'phone')).toBe('none')
   })
 
   test('a form that is never a modal still opens at the top on a computer', () => {
@@ -110,5 +110,24 @@ describe('a form that is a modal on a computer', () => {
 
   test('leaving it by a pop restores the screen under it', () => {
     expect(decideScroll(at(price), at(variety), 'POP', 'computer')).toBe('restore')
+  })
+})
+
+describe('a form drawn by a Sheet on a phone (`sheetOnPhone`)', () => {
+  test.each(['PUSH', 'REPLACE'] as const)('opened over its screen leaves the page where it is (%s)', (action) => {
+    expect(decideScroll(at(CUSTOMERS), at(CUSTOMER_NEW), action, 'phone')).toBe('none')
+    expect(decideScroll(at(pathTo(CUSTOMER, { id: 3 })), at(pathTo(CUSTOMER_EDIT, { id: 3 })), action, 'phone')).toBe('none')
+  })
+
+  test('a form the table does not mark is a full screen: it opens at the top', () => {
+    expect(decideScroll(at(SALES), at(SALE_NEW), 'PUSH', 'phone')).toBe('top')
+  })
+
+  test('the same sheet on a computer is an arrival: the flag is the phone\'s only', () => {
+    expect(decideScroll(at(CUSTOMERS), at(CUSTOMER_NEW), 'PUSH', 'computer')).toBe('top')
+  })
+
+  test('closing it by a pop restores the screen under it', () => {
+    expect(decideScroll(at(CUSTOMER_NEW), at(CUSTOMERS), 'POP', 'phone')).toBe('restore')
   })
 })

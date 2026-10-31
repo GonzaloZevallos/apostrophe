@@ -1,7 +1,7 @@
 /**
  * What the page does when the location changes, as one pure function (navigation.md,
  * "Scroll on a change of screen", criteria 21-23; ADR-0068). `ScrollSync` is the only caller.
- * The rules read the screens table (`kind`-free: only `pane`, `parent` and `modalOnComputer`
+ * The rules read the screens table (`kind`-free: only `pane`, `parent`, `modalOnComputer` and `sheetOnPhone`
  * of `routes.ts`) and the history state, never a list of paths.
  *
  *   - same pathname (a sheet's depth, a state-only change)        -> `none`
@@ -9,6 +9,7 @@
  *   - Record payment opened over its screen (state `underneath`)  -> `none` on the phone
  *       (the full-screen sheet has no outside, ADR-0062), `keep` on a computer
  *   - a computer's two panes (a list and the detail it picks)     -> `none`
+ *   - a form drawn by a Sheet on a phone (`sheetOnPhone`)         -> `none`: the page stays under it
  *   - a form that is a modal on a computer (`modalOnComputer`),
  *       opened over its screen                                    -> `none`: the page stays under it
  *   - any other PUSH or REPLACE                                   -> `top`
@@ -48,6 +49,8 @@ export function decideScroll(
   if (viewport === 'computer' && samePanes(from, to)) return 'none'
   if (action === 'POP') return 'restore'
   if (hasPaymentUnderneath(to.state)) return viewport === 'phone' ? 'none' : 'keep'
-  if (viewport === 'computer' && screenAtPath(to.pathname)?.modalOnComputer === true) return 'none'
+  const target = screenAtPath(to.pathname)
+  if (viewport === 'computer' && target?.modalOnComputer === true) return 'none'
+  if (viewport === 'phone' && target?.sheetOnPhone === true) return 'none'
   return 'top'
 }
