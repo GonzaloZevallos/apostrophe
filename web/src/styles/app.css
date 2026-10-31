@@ -6365,3 +6365,75 @@ body {
     flex: 1 1 8rem;
   }
 }
+
+/* Configuración → Negocio → Time zone: the row (name on one line, cut with an ellipsis) and the
+ * chooser's list (one 44 px row per zone, the chosen one told by a check and its word). */
+.zona-fila__rotulo {
+  flex: none;
+}
+
+.zona-fila__valor {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+  color: var(--tinta2);
+}
+
+.zona__rotulo {
+  display: block;
+  margin-bottom: var(--espacio-xs);
+}
+
+.zona__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.zona__fila {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--espacio-sm) 0;
+  border: 0;
+  border-bottom: 1px solid var(--linea);
+  background: none;
+  color: var(--tinta);
+  font: inherit;
+  text-align: left;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.zona__fila:active {
+  background: var(--superficie);
+}
+
+.zona__fila--elegida {
+  font-weight: 600;
+}
+
+.zona__nombre {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zona__marca {
+  flex: none;
+  display: inline-flex;
+}
+
+.zona__vacio,
+.zona__ahora {
+  margin: var(--espacio-md) 0;
+  color: var(--tinta2);
+}

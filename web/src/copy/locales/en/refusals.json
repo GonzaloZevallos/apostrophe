@@ -25,5 +25,6 @@
   "withdrawalGramsNotPositive": "Grams have to be more than zero",
   "withdrawalGramsTooPrecise": "Grams allow up to two decimals",
   "withdrawalNoteTooLong": "The note allows up to 200 characters",
-  "withdrawalVarietyNotFound": "A variety is gone: pick another"
+  "withdrawalVarietyNotFound": "A variety is gone: pick another",
+  "timeZoneInvalid": "That time zone can't be used. Pick another one from the list."
 }

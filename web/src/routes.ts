@@ -68,6 +68,7 @@ export type ScreenId =
   | 'analysis'
   | 'settings'
   | 'settings-business'
+  | 'settings-time-zone'
   | 'settings-users'
   | 'settings-prices'
   | 'settings-integrations'
@@ -137,6 +138,7 @@ export const ANALYSIS = '/analysis'
 
 export const SETTINGS = '/settings'
 export const SETTINGS_BUSINESS = '/settings/business'
+export const SETTINGS_TIME_ZONE = '/settings/business/time-zone'
 export const SETTINGS_USERS = '/settings/users'
 export const SETTINGS_PRICES = '/settings/prices'
 export const SETTINGS_INTEGRATIONS = '/settings/integrations'
@@ -331,6 +333,7 @@ export const SCREENS = [
     place: { bar: 'more', rail: 'business' },
   }),
   screen({ id: 'settings-business', path: SETTINGS_BUSINESS, kind: 'form', titleKey: 'common:business', parent: 'settings' }),
+  screen({ id: 'settings-time-zone', path: SETTINGS_TIME_ZONE, kind: 'form', titleKey: 'timeZone:title', parent: 'settings-business' }),
   screen({ id: 'settings-users', path: SETTINGS_USERS, kind: 'form', titleKey: 'common:users', parent: 'settings' }),
   screen({ id: 'settings-prices', path: SETTINGS_PRICES, kind: 'form', titleKey: 'common:prices', parent: 'settings' }),
   screen({

@@ -32,6 +32,7 @@ import {
   languageName,
 } from '../../copy/settings'
 import SettingsGroup from './SettingsGroup'
+import TimeZoneRow from './TimeZoneRow'
 import { COMMON_TEXT } from '../../copy/common'
 import { useTranslation } from 'react-i18next'
 import { refusalText, type Refusal } from '../../i18n/refusalKeys'
@@ -164,6 +165,7 @@ function BusinessForm({ initialName, language, selectable }: BusinessFormProps) 
         </Boton>
         {offline && <SinConexion />}
       </form>
+      <TimeZoneRow />
       {selectable.length > 1 && <LanguageControl language={language} selectable={selectable} />}
     </SettingsGroup>
   )

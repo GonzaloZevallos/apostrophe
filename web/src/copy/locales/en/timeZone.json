@@ -1,0 +1,13 @@
+{
+  "title": "Time zone",
+  "searchPlaceholder": "Search by place",
+  "searchLabel": "Search time zones",
+  "listLabel": "Time zones",
+  "selected": "Selected",
+  "localTime": "It is {{datetime}} there now",
+  "pastRecords": "Past records keep their dates. Only \"today\" and the daily catalog refresh change.",
+  "moreInfoBody": "Sales, payments, stock entries, expenses and prices stay on the day they were recorded. \"Today\" and the days counted from it start at midnight in the zone you pick.",
+  "save": "Save time zone",
+  "saving": "Saving…",
+  "empty": "No time zone matches \"{{query}}\". Try another place."
+}

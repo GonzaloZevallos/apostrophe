@@ -278,6 +278,7 @@
     { "path": "/analysis", "kind": "root" },
     { "path": "/settings", "kind": "card", "parent": "/more", "computer_parent": "/" },
     { "path": "/settings/business", "kind": "form", "parent": "/settings" },
+    { "path": "/settings/business/time-zone", "kind": "form", "parent": "/settings/business" },
     { "path": "/settings/users", "kind": "form", "parent": "/settings" },
     { "path": "/settings/prices", "kind": "form", "parent": "/settings" },
     { "path": "/settings/integrations", "kind": "form", "parent": "/settings" },

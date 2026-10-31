@@ -44,6 +44,7 @@ const EXPECTED: Record<ScreenId, readonly [Chrome, Chrome]> = {
   analysis: [ROOT, ROOT],
   settings: [CARD, CARD],
   'settings-business': [FORM, FORM],
+  'settings-time-zone': [FORM, FORM],
   'settings-users': [FORM, FORM],
   'settings-prices': [FORM, FORM],
   'settings-integrations': [FORM, FORM],

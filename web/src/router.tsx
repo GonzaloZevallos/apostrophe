@@ -59,6 +59,7 @@ import Settings from './screens/settings/Settings'
 import AccountGroup from './screens/settings/AccountGroup'
 import AppearanceGroup from './screens/settings/AppearanceGroup'
 import BusinessGroup from './screens/settings/BusinessGroup'
+import TimeZoneRoute from './screens/settings/TimeZoneRoute'
 import CatalogMessageGroup from './screens/settings/CatalogMessageGroup'
 import ExpenseCategoriesGroup from './screens/settings/ExpenseCategoriesGroup'
 import IntegrationsGroup from './screens/settings/IntegrationsGroup'
@@ -115,6 +116,7 @@ const ELEMENTS: Record<ScreenId, ReactElement> = {
   analysis: <Analisis />,
   settings: <Settings />,
   'settings-business': <BusinessGroup />,
+  'settings-time-zone': <TimeZoneRoute />,
   'settings-users': <UsersGroup />,
   'settings-prices': <PricingGroup />,
   'settings-integrations': <IntegrationsGroup />,
