@@ -11,6 +11,7 @@ Cada capacidad tiene su página en [docs/product/](product/):
 - [Catalog](product/catalog.md)
 - [Clientes](product/customers.md)
 - [Design capture](product/design-capture.md)
+- [Drawing as guide](product/drawing-as-guide.md)
 - [Expenses](product/expenses.md)
 - [Gate](product/gate.md)
 - [Icon and text rule](product/icon-and-text-rule.md)
