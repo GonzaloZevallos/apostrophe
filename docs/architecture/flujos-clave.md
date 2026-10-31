@@ -65,7 +65,7 @@ sequenceDiagram
 | 16 | [app/accounts/application/sign_in.py](../../app/accounts/application/sign_in.py) | `log_in` |
 | 17 | [app/accounts/adapters/router.py](../../app/accounts/adapters/router.py) | `login` |
 
-En el paso 9, `burn` (en el mismo archivo que `verify`) gasta el mismo tiempo cuando el email no existe y `verify` no corre. `refuse_attempt` es una función de `sign_in.py`, no del puerto, y cuenta ambos frenos, bloquea el que acaba de llegar al límite y confirma antes de volver (pasos 5 y 10). Un email mal formado nunca se guarda: solo cuenta la dirección, y esa rama no está dibujada. Las rutas siguientes llevan el token a [app/accounts/adapters/deps.py](../../app/accounts/adapters/deps.py) `require_session`, que lo abre con [app/accounts/application/sign_in.py](../../app/accounts/application/sign_in.py) `open_session`; el Business sale de ahí ([modelo-de-datos.md](modelo-de-datos.md)).
+En el paso 9, `burn` (en el mismo archivo que `verify`) gasta el mismo tiempo cuando el email no existe y `verify` no corre. `refuse_attempt` es una función de `sign_in.py`, no del puerto: en ambos pasos (5 y 10) cuenta los dos frenos y confirma antes de volver. Solo bloquea el freno que acaba de llegar al límite cuando ninguno estaba ya bloqueado al comenzar el intento, como en el paso 10; en el paso 5 hay un freno activo, así que solo cuenta y no fija ningún bloqueo. Un email mal formado nunca se guarda: solo cuenta la dirección, y esa rama no está dibujada. Las rutas siguientes llevan el token a [app/accounts/adapters/deps.py](../../app/accounts/adapters/deps.py) `require_session`, que lo abre con [app/accounts/application/sign_in.py](../../app/accounts/application/sign_in.py) `open_session`; el Business sale de ahí ([modelo-de-datos.md](modelo-de-datos.md)).
 
 ## Una venta con pago en el acto
 
@@ -116,7 +116,7 @@ sequenceDiagram
 | 11 | [app/sales/adapters/router.py](../../app/sales/adapters/router.py) | `record_sale` |
 | 12 | [app/pinned_catalog/adapters/safe_upkeep.py](../../app/pinned_catalog/adapters/safe_upkeep.py) | `run_upkeep_safely` |
 
-El paso 5 solo ocurre si la venta nombra un Customer. Si el repositorio rechaza una referencia borrada entre tanto, el caso de uso hace `rollback` y vuelve a preguntar antes de rechazar, y esa rama no está dibujada. [app/sales/adapters/sql_sales.py](../../app/sales/adapters/sql_sales.py) `SqlSales` guarda en el paso 8 la venta, sus líneas y el pago en el acto, todos con el `business_id` de la sesión. La tarea del paso 3 la agrega [app/main.py](../../app/main.py) `upkeep_gated`, la lista de dependencias de los routers de ventas, stock, productos y catálogo; si el pedido es rechazado, la tarea se descarta.
+El paso 5 solo ocurre si la venta nombra un Customer. Si el repositorio rechaza una referencia borrada entre tanto, el caso de uso hace `rollback` y vuelve a preguntar antes de rechazar, y esa rama no está dibujada. [app/sales/adapters/sql_sales.py](../../app/sales/adapters/sql_sales.py) `SqlSales` guarda en el paso 8 la venta, sus líneas y el pago en el acto, todos con el id del Business de la sesión. La tarea del paso 3 la agrega [app/main.py](../../app/main.py) `upkeep_gated`, la lista de dependencias de los routers de ventas, stock, productos y catálogo; si el pedido es rechazado, la tarea se descarta.
 
 ## Un movimiento de stock
 

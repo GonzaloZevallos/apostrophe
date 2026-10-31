@@ -33,7 +33,13 @@ if [[ ${#pages[@]} -eq 0 || ${#pages[@]} -ne $on_disk_pages ]]; then
   echo "found ${#pages[@]} markdown files by glob and $on_disk_pages by find under $written" >&2
   exit 1
 fi
-files+=("${pages[@]}")
+# mmdc is only given pages that hold a diagram: whether it exits 0 on a page with none is not
+# something this script should depend on.
+for page in "${pages[@]}"; do
+  if grep -q '^```mermaid$' "$page"; then
+    files+=("$page")
+  fi
+done
 
 rm -rf "$out"
 mkdir -p "$out"
