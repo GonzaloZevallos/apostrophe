@@ -62,21 +62,28 @@ classDiagram
   }
   class set_threshold {
   }
+  class unit_check {
+  }
   class variety_use {
   }
   history --> ports
   manage_entries --> errors
   manage_entries --> ports
+  manage_entries --> unit_check
   manage_entries --> variety_use
   manage_withdrawals --> errors
   manage_withdrawals --> ports
+  manage_withdrawals --> unit_check
   manage_withdrawals --> variety_use
   read_stock --> history
   read_stock --> ports
   set_threshold --> errors
   set_threshold --> ports
   set_threshold --> read_stock
+  set_threshold --> unit_check
   set_threshold --> variety_use
+  unit_check --> errors
+  unit_check --> ports
   variety_use --> errors
   variety_use --> ports
 ```
@@ -334,6 +341,9 @@ classDiagram
     clear(variety_id: int) None
     get(variety_id: int) Threshold #124; None
     set(variety_id: int, threshold: Threshold) None
+  }
+  class UnitsReader {
+    units_of(product_ids: Collection~int~) dict~int, Unit~
   }
   class VarietyArchived {
     variety_id : int
