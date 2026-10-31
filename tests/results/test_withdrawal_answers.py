@@ -21,9 +21,9 @@ HOY = TODAY.isoformat()
 
 
 def _variety(client: TestClient, name: str, price: int = 1_000) -> int:
-    variety = client.post("/varieties", json={"name": name}).json()
+    variety = client.post("/api/products", json={"name": name}).json()
     priced = client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2020-01-01", "list_price": price},
     )
     assert priced.status_code == 201, priced.text
@@ -34,7 +34,7 @@ def _entry(
     client: TestClient, variety_id: int, *, quantity: str, on: str, total_cost: int | None = None
 ) -> None:
     body: dict[str, Any] = {
-        "variety_id": variety_id,
+        "product_id": variety_id,
         "origin": "opening_stock",
         "quantity": quantity,
         "date": on,
@@ -48,7 +48,7 @@ def _entry(
 def _adjust(client: TestClient, variety_id: int, *, quantity: str, on: str) -> None:
     response = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "adjustment", "quantity": quantity, "date": on},
+        json={"product_id": variety_id, "origin": "adjustment", "quantity": quantity, "date": on},
     )
     assert response.status_code == 201, response.text
 
@@ -59,7 +59,7 @@ def _sale(client: TestClient, variety_id: int, *, quantity: str, on: str) -> Non
         json={
             "date": on,
             "payment": "cash",
-            "lines": [{"variety_id": variety_id, "quantity": quantity}],
+            "lines": [{"product_id": variety_id, "quantity": quantity}],
         },
     )
     assert response.status_code == 201, response.text
@@ -71,7 +71,7 @@ def _withdraw(client: TestClient, variety_id: int, *, reason: str, quantity: str
         json={
             "reason": reason,
             "date": on,
-            "lines": [{"variety_id": variety_id, "quantity": quantity}],
+            "lines": [{"product_id": variety_id, "quantity": quantity}],
         },
     )
     assert response.status_code == 201, response.text
@@ -167,16 +167,16 @@ def test_the_panel_and_analysis_agree_on_every_withdrawal_figure(client: TestCli
     assert header["promotion"] == month_row["promotion"]
     assert header["own_use"] == month_row["own_use"]
     assert header["shortfall"] == {"amount": 0, "pending_quantity": 1.0, "all_pending": True}
-    assert sum(v["cost"]["costed"] for v in header["varieties"]) == month["cost_of_goods"] == 500
+    assert sum(v["cost"]["costed"] for v in header["products"]) == month["cost_of_goods"] == 500
     # The panel's month shortfall is the header's, amount and pending flag.
     assert _same_line(month["shortfall"], header["shortfall"])
     assert month["pending_cost"] is True
     assert month["pending_cost"] == any(
-        v["cost"]["pending_quantity"] > 0 for v in header["varieties"]
+        v["cost"]["pending_quantity"] > 0 for v in header["products"]
     )
     # B's row holds the sale's 1 g only: its 2 g promotion is not a sale (ADR-0031), so
     # it must not add to the variety's pending cost (that would read 3.0).
-    b_row = next(v for v in header["varieties"] if v["name"] == "B")
+    b_row = next(v for v in header["products"] if v["name"] == "B")
     assert b_row["cost"] == {"costed": 0, "pending_quantity": 1.0}
 
     # Since the first record: every promotion ($100 + $400, B's 2 g pending) and own use.
@@ -301,7 +301,7 @@ def test_a_withdrawal_moves_none_of_the_sale_shortfall_or_cash_figures(
         "quantity_gifted",
         "average_margin",
         "shortfall",
-        "varieties",
+        "products",
     ):
         assert after_analysis["month"][key] == before_analysis["month"][key], key
     assert after_analysis["weekdays"] == before_analysis["weekdays"]

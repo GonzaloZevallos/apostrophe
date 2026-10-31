@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import CurrentBusinessId
 from app.catalog.adapters.schemas import (
-    ArchivedCatalogVarietyOut,
+    ArchivedCatalogProductOut,
     CatalogAttributesIn,
     CatalogOut,
     HeaderFooterIn,
@@ -131,13 +131,13 @@ def get_catalog(
 @router.get("/archived")
 def get_archived(
     varieties: VarietiesDep, attributes: AttributesDep
-) -> list[ArchivedCatalogVarietyOut]:
-    return [ArchivedCatalogVarietyOut.of(view) for view in read_archived(varieties, attributes)]
+) -> list[ArchivedCatalogProductOut]:
+    return [ArchivedCatalogProductOut.of(view) for view in read_archived(varieties, attributes)]
 
 
-@router.put("/varieties/{variety_id}")
+@router.put("/products/{product_id}")
 def put_variety_attributes(
-    variety_id: int,
+    product_id: int,
     body: CatalogAttributesIn,
     varieties: VarietiesDep,
     stock: StockDep,
@@ -162,7 +162,7 @@ def put_variety_attributes(
                 language,
                 business_id,
                 session,
-                variety_id,
+                product_id,
                 body.shown,
                 body.emoji,
                 body.indica_share,
@@ -170,7 +170,7 @@ def put_variety_attributes(
                 today,
             )
         except CatalogVarietyArchived as exc:
-            raise ProductArchived(variety_id) from exc
+            raise ProductArchived(product_id) from exc
         return CatalogOut.of(view)
 
 

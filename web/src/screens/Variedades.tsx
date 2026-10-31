@@ -8,7 +8,7 @@
  * and "Todas las entradas" and, when there are archived ones, "Archivadas (N)" at the foot.
  *
  * Nothing here decides anything: statuses and days left are `GET /stock`'s, prices are
- * `GET /varieties`', "Oculta" is `GET /catalog`'s own `shown`, and the summary line is counted
+ * `GET /api/products`', "Oculta" is `GET /catalog`'s own `shown`, and the summary line is counted
  * only by `summaryLine`. A row links to a variety's page by its id alone, never a business id.
  *
  * "Mandar catálogo" is disabled, with its reason in words, only while `GET /first-run` says the
@@ -96,7 +96,7 @@ export default function Variedades() {
   const goneExited = useGoneNotice()
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
-    queryFn: () => get<Variety[]>('/varieties'),
+    queryFn: () => get<Variety[]>('/api/products'),
   })
   const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   const catalogQuery = useQuery(catalogQueryOptions())
@@ -106,10 +106,10 @@ export default function Variedades() {
 
   const failure = varietiesQuery.error ?? stockQuery.error
   const ready = varietiesQuery.data !== undefined && stockQuery.data !== undefined
-  const hidden = new Set((catalogQuery.data?.varieties ?? []).filter((row) => !row.shown).map((row) => row.id))
+  const hidden = new Set((catalogQuery.data?.products ?? []).filter((row) => !row.shown).map((row) => row.product_id))
   const rows = ready
     ? varietiesByName(varietiesQuery.data).flatMap((variety) => {
-        const row = stockQuery.data.varieties.find((candidate) => candidate.variety_id === variety.id)
+        const row = stockQuery.data.products.find((candidate) => candidate.product_id === variety.id)
         return row === undefined ? [] : [{ variety, row }]
       })
     : []

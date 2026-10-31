@@ -36,7 +36,7 @@ const CATALOG = {
   text: null,
   header: '🌿 **CATÁLOGO** 🌿',
   footer: '📩 Consultas y pedidos por privado.',
-  varieties: [],
+  products: [],
 }
 
 afterEach(() => {

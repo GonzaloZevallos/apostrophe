@@ -41,7 +41,7 @@ function progress(states: StepState[]): OnboardingProgress {
     resume: 'categories',
     steps: ORDER.map((step, index) => ({ step, state: states[index] ?? 'pending' })),
     can_skip_rest: true,
-    varieties_count: 1,
+    products_count: 1,
     stock_entries_count: 1,
     price_target: null,
     priced_target: null,

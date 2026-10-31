@@ -204,7 +204,7 @@ def test_an_api_path_segment_is_a_front_segment_only_through_a_shared_front_path
     }
 
     check_front_segment_overlap(api_first_segments, front_segments, SHARED_FRONT_PATHS)
-    assert {"expenses", "varieties"} <= api_first_segments & front_segments
+    assert {"expenses", "sales"} <= api_first_segments & front_segments
 
 
 def test_the_overlap_check_accepts_a_segment_a_shared_path_serves() -> None:

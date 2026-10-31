@@ -144,4 +144,4 @@ def test_a_business_with_no_onboarding_imports_as_before(
 
     assert code == 0, err
     assert _onboarding(engine, business_id) is None
-    assert len(client.get("/varieties").json()) == 1
+    assert len(client.get("/api/products").json()) == 1

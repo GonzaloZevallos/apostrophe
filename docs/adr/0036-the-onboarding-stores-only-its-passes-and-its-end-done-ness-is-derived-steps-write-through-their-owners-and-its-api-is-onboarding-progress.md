@@ -59,7 +59,7 @@ it never does, is fixed here.
 - **`stock_target` keeps the lowest-id rule.** The difference is known and accepted: it can
   only show for varieties made outside the Onboarding, whose ids and names disagree.
 - **The answer still carries no amount.** The "Hecho" view reads today's list price from
-  the owner's `GET /varieties/{id}`.
+  the owner's `GET /api/products/{id}`.
 - **"Agregar otra variedad" reaches step 1 through a data-free history flag**
-  (`anotherVariety: true`), cleared by replacing the entry once `POST /varieties`
+  (`anotherVariety: true`), cleared by replacing the entry once `POST /api/products`
   succeeds. No name, amount or id goes to history state.

@@ -437,13 +437,13 @@ classDiagram
     next : str #124; None
     own_use : RowCostOut #124; None
     previous : str #124; None
+    products : list~ProductRowOut~
     promotion : RowCostOut #124; None
     quantity_gifted
     quantity_sold
     sales : int
     sales_without_shipping : int
     shortfall : RowCostOut #124; None
-    varieties : list~VarietyRowOut~
   }
   class AnalysisOut {
     first_record : date #124; None
@@ -511,12 +511,18 @@ classDiagram
   class PanelOut {
     debts
     periods
-    stock : list~PanelVarietyOut~
+    stock : list~PanelProductOut~
     of(panel: Panel) PanelOut
   }
-  class PanelVarietyOut {
+  class PanelProductOut {
+    days_left : int #124; None
     name : str
-    of_row(row: StockRow) PanelVarietyOut
+    product_id : int
+    quantity
+    sold_out_since : date #124; None
+    status : Literal
+    threshold : QuantityOut #124; None
+    of_row(row: StockRow) PanelProductOut
   }
   class PeriodOut {
     average_sale : int #124; None
@@ -543,6 +549,16 @@ classDiagram
     today
     week
   }
+  class ProductRowOut {
+    cost
+    margin
+    name : str
+    product_id : int
+    quantity_gifted
+    quantity_sold
+    sales_without_shipping : int
+    share_percent : int #124; None
+  }
   class RowCostOut {
     all_pending : bool
     amount : int
@@ -556,16 +572,6 @@ classDiagram
     promotion : RowCostOut #124; None
     sales : int
     shortfall : RowCostOut #124; None
-  }
-  class VarietyRowOut {
-    cost
-    margin
-    name : str
-    quantity_gifted
-    quantity_sold
-    sales_without_shipping : int
-    share_percent : int #124; None
-    variety_id : int
   }
   class WeekOut {
     best : bool
@@ -598,9 +604,9 @@ classDiagram
   PeriodsOut --> PeriodOut : month
   PeriodsOut --> PeriodOut : today
   PeriodsOut --> PeriodOut : week
+  ProductRowOut --> CostOut : cost
+  ProductRowOut --> MarginOut : margin
   SinceFirstRecordOut --> AmountWithPendingOut : profit
-  VarietyRowOut --> CostOut : cost
-  VarietyRowOut --> MarginOut : margin
   WeekOut --> AmountWithPendingOut : profit
   WeekOut --> RowCostOut : cost_of_goods
 ```

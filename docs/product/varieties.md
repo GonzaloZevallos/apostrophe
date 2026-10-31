@@ -144,7 +144,7 @@ Criterios de éxito:
   - Cuando se vuelve a activar una regla, el Current price no muestra línea de Bulk ni de VIP si su Price entry no la tiene; quien vende registra una Price entry nueva si quiere una.
 - Una Price entry por Variety por fecha de vigencia; una segunda en la misma fecha se rechaza.
 - **Sin ediciones**: una Price entry nunca se edita, su VIP price incluido. Una Price entry nueva la reemplaza desde su propia fecha (ADR-0003).
-- **Eliminar una Price entry** (`DELETE /varieties/{id}/prices/{entry_id}`, ADR-0003): cualquier Price entry se puede eliminar, incluida la que rige hoy. Vuelve a regir la anterior.
+- **Eliminar una Price entry** (`DELETE /api/products/{id}/prices/{entry_id}`, ADR-0003): cualquier Price entry se puede eliminar, incluida la que rige hoy. Vuelve a regir la anterior.
 - La representación propia de una Variety lleva su Current price de **hoy**, `null` cuando no tiene. Hoy es el día del negocio en hora de Argentina. Las respuestas llevan lo guardado, junto con los interruptores del Business; las pantallas ocultan lo desactivado.
 - El historial de precios lista primero la Price entry más nueva.
 - **Low-stock threshold**: gramos opcionales, mayores que cero, de hasta dos decimales, que se fijan o se desactivan por Variety. Desactivado significa que la Variety no tiene ninguno; no se conserva ningún monto anterior. Sus reglas y el **Stock status** están en `stock.md`.
@@ -636,7 +636,7 @@ El epic permite que un Business describa lo que vende con sus propias palabras. 
 Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md y docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md; lo entrega la parte product word, con el Product rename on the wire para la ruta de la API.
 
 - Quien vende va a elegir la palabra para lo que vende, en singular y en plural. El valor por defecto va a ser "Product" / "Products". Se va a mostrar tal como se tipeó y nunca se va a traducir, porque es un dato propio de quien vende.
-- El código, los tests y los docs van a decir **Product**, y la ruta de la API va a pasar a ser `/api/products`. Las columnas que referencian el id de una Variety van a seguir siendo `variety_id` hasta #75 (ADR-0061). Las rutas del front bajo `/varieties/*` no se van a mover.
+- El código, los tests y los docs van a decir **Product**, y la ruta de la API es `/api/products`. Las columnas que referencian el id de una Variety van a seguir siendo `variety_id` hasta #75 (ADR-0061). Las rutas del front bajo `/varieties/*` no se van a mover.
 - Va a reemplazar: "**Variety**: un nombre, sin espacios al principio ni al final, con los espacios internos colapsados, de hasta 60 caracteres. Renombrarla conserva sus precios. Las Varieties se listan por nombre." y el título de la capacidad, "Las Varieties que vende un **Business** y el historial de precios de cada una".
 
 ### Categorías, subcategorías y atributos

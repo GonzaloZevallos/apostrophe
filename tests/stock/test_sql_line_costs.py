@@ -22,17 +22,17 @@ from app.stock.adapters.line_costs import SqlLineCosts
 
 
 def _variety_id(client: TestClient, list_price: int = 10_000) -> int:
-    variety = client.post("/varieties", json={"name": "Lavanda"}).json()
+    variety = client.post("/api/products", json={"name": "Lavanda"}).json()
     variety_id = int(variety["id"])
     client.post(
-        f"/varieties/{variety_id}/prices",
+        f"/api/products/{variety_id}/prices",
         json={"effective_from": "2026-01-01", "list_price": list_price},
     )
     return variety_id
 
 
 def _entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
-    body: dict[str, Any] = {"variety_id": variety_id, "origin": "purchase", "quantity": "5"}
+    body: dict[str, Any] = {"product_id": variety_id, "origin": "purchase", "quantity": "5"}
     body.update(overrides)
     response = client.post("/stock/entries", json=body)
     assert response.status_code == 201, response.text
@@ -54,7 +54,7 @@ def test_a_line_spanning_two_lots_is_split_between_costed_and_pending(
 
     sale_response = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "10"}]},
+        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "10"}]},
     )
     assert sale_response.status_code == 201, sale_response.text
     sale = sale_response.json()

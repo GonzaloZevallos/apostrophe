@@ -42,15 +42,15 @@ def settings(tmp_path: Path) -> Settings:
 
 
 def _qualifying_variety(client: TestClient, name: str) -> int:
-    variety: int = client.post("/varieties", json={"name": name}).json()["id"]
+    variety: int = client.post("/api/products", json={"name": name}).json()["id"]
     priced = client.post(
-        f"/varieties/{variety}/prices",
+        f"/api/products/{variety}/prices",
         json={"effective_from": "2026-01-01", "list_price": 11_000},
     )
     assert priced.status_code == 201, priced.text
     stocked = client.post(
         "/stock/entries",
-        json={"variety_id": variety, "origin": "opening_stock", "quantity": "50"},
+        json={"product_id": variety, "origin": "opening_stock", "quantity": "50"},
     )
     assert stocked.status_code == 201, stocked.text
     return variety
@@ -58,7 +58,7 @@ def _qualifying_variety(client: TestClient, name: str) -> int:
 
 def _attributes(client: TestClient, variety: int) -> dict[str, Any]:
     response = client.put(
-        f"/catalog/varieties/{variety}",
+        f"/catalog/products/{variety}",
         json={"shown": True, "emoji": None, "indica_share": 60, "aroma": "Citrus"},
     )
     assert response.status_code == 200, response.text

@@ -21,14 +21,14 @@ def _states(answer: dict[str, Any]) -> dict[str, str]:
 
 
 def _variety(client: TestClient, name: str = "Lemon Haze") -> int:
-    created = client.post("/varieties", json={"name": name})
+    created = client.post("/api/products", json={"name": name})
     assert created.status_code == 201, created.text
     return int(created.json()["id"])
 
 
 def _price(client: TestClient, variety_id: int, effective_from: str = "2026-10-01") -> int:
     entry = client.post(
-        f"/varieties/{variety_id}/prices",
+        f"/api/products/{variety_id}/prices",
         json={"effective_from": effective_from, "list_price": 11_000},
     )
     assert entry.status_code == 201, entry.text
@@ -38,7 +38,7 @@ def _price(client: TestClient, variety_id: int, effective_from: str = "2026-10-0
 def _stock(client: TestClient, variety_id: int) -> None:
     entry = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "opening_stock", "quantity": "50"},
+        json={"product_id": variety_id, "origin": "opening_stock", "quantity": "50"},
     )
     assert entry.status_code == 201, entry.text
 
@@ -82,7 +82,7 @@ def test_a_new_business_is_offered_the_onboarding_at_its_first_step(client: Test
         "resume": "variety",
         "steps": [{"step": name, "state": "pending"} for name in STEP_NAMES],
         "can_skip_rest": False,
-        "varieties_count": 0,
+        "products_count": 0,
         "stock_entries_count": 0,
         "price_target": None,
         "priced_target": None,
@@ -134,7 +134,7 @@ def test_a_last_pass_with_no_price_left_does_not_end_it_and_advance_ends_it_once
     variety_id, entry_id = _required_steps(client)
     for step in ("header_footer", "bot", "partner"):
         assert _pass(client, step, "skipped").json()["over"] is False
-    assert client.delete(f"/varieties/{variety_id}/prices/{entry_id}").status_code == 204
+    assert client.delete(f"/api/products/{variety_id}/prices/{entry_id}").status_code == 204
 
     last = _pass(client, "categories")
 
@@ -167,14 +167,14 @@ def test_an_unpriced_variety_is_the_price_target_and_priced_it_becomes_the_stock
     before = client.get("/onboarding-progress").json()
     assert before["price_target"] == {"id": variety_id, "name": "Lemon Haze"}
     assert before["stock_target"] is None
-    assert before["varieties_count"] == 1
+    assert before["products_count"] == 1
 
     _price(client, variety_id)
     after = client.get("/onboarding-progress").json()
 
     assert after["price_target"] is None
     assert after["stock_target"] == {"id": variety_id, "name": "Lemon Haze"}
-    assert after["varieties_count"] == 1
+    assert after["products_count"] == 1
     assert _states(after)["variety"] == "done"
 
 
@@ -317,7 +317,7 @@ def test_the_state_is_the_session_s_business_only(
     other = other_client.get("/onboarding-progress").json()
 
     assert other["count"] == 0
-    assert other["varieties_count"] == 0
+    assert other["products_count"] == 0
     assert other["price_target"] is None
     assert other["priced_target"] is None
     assert other_client.post("/onboarding-progress/skip-rest").status_code == 409

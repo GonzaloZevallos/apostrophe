@@ -1,5 +1,5 @@
 /**
- * `RenameForm` at the component seam: renames a variety (`PATCH /varieties/{id}`). Its
+ * `RenameForm` at the component seam: renames a variety (`PATCH /api/products/{id}`). Its
  * host owns the exits, so a tiny host stands in for the variety's page, which opens the
  * form through history state. A refusal shows under the name and keeps what was typed.
  */
@@ -59,13 +59,13 @@ test('starts on the saved name; a save patches the new name and hands "Variety s
   await user.click(screen.getByRole('button', { name: 'Save the name' }))
 
   expect(await screen.findByText(/state: saved Variety saved/)).toBeInTheDocument()
-  expect(writes(fetchMock)).toEqual([{ call: 'PATCH /varieties/1', body: { name: 'Gold 24K' } }])
+  expect(writes(fetchMock)).toEqual([{ call: 'PATCH /api/products/1', body: { name: 'Gold 24K' } }])
 })
 
 test('a save marks the catalog stale', async () => {
   const user = userEvent.setup()
   const { queryClient } = renderHost(async () => jsonResponse(200, { id: 1, name: 'Gold' }))
-  queryClient.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', varieties: [] })
+  queryClient.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', products: [] })
 
   await user.type(screen.getByLabelText('Name'), 'x')
   await user.click(screen.getByRole('button', { name: 'Save the name' }))

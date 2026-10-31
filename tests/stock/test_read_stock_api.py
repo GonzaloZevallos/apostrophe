@@ -1,4 +1,4 @@
-"""`GET /stock` and `PUT /stock/varieties/{variety_id}/threshold` through the HTTP API,
+"""`GET /stock` and `PUT /stock/products/{variety_id}/threshold` through the HTTP API,
 over a real database (CODING_STANDARDS section 5): the one place a variety's grams,
 status and days left are computed is `stock_level` over `lots_and_draws`, read here only
 through the routes' own answers.
@@ -17,20 +17,20 @@ TODAY = "2026-10-02"
 
 
 def _variety_id(client: TestClient, name: str = "Zkittlez") -> int:
-    return int(client.post("/varieties", json={"name": name}).json()["id"])
+    return int(client.post("/api/products", json={"name": name}).json()["id"])
 
 
 def _priced_variety_id(client: TestClient, name: str = "Zkittlez", list_price: int = 10_000) -> int:
     variety_id = _variety_id(client, name)
     client.post(
-        f"/varieties/{variety_id}/prices",
+        f"/api/products/{variety_id}/prices",
         json={"effective_from": "2026-01-01", "list_price": list_price},
     )
     return variety_id
 
 
 def _record(client: TestClient, variety_id: int, **overrides: Any) -> dict[str, Any]:
-    body: dict[str, Any] = {"variety_id": variety_id, "origin": "opening_stock", "quantity": "50"}
+    body: dict[str, Any] = {"product_id": variety_id, "origin": "opening_stock", "quantity": "50"}
     body.update(overrides)
     response = client.post("/stock/entries", json=body)
     assert response.status_code == 201, response.text
@@ -41,7 +41,7 @@ def _record(client: TestClient, variety_id: int, **overrides: Any) -> dict[str, 
 def _sale(client: TestClient, variety_id: int, quantity: str, **overrides: Any) -> dict[str, Any]:
     body: dict[str, Any] = {
         "payment": "cash",
-        "lines": [{"variety_id": variety_id, "quantity": quantity}],
+        "lines": [{"product_id": variety_id, "quantity": quantity}],
     }
     body.update(overrides)
     response = client.post("/sales", json=body)
@@ -51,7 +51,7 @@ def _sale(client: TestClient, variety_id: int, quantity: str, **overrides: Any) 
 
 
 def _variety_row(stock: dict[str, Any], variety_id: int) -> dict[str, Any]:
-    rows = [row for row in stock["varieties"] if row["variety_id"] == variety_id]
+    rows = [row for row in stock["products"] if row["product_id"] == variety_id]
     assert len(rows) == 1, stock
     row: dict[str, Any] = rows[0]
     return row
@@ -61,7 +61,7 @@ def test_a_fresh_business_has_no_stock(client: TestClient) -> None:
     stock = client.get("/stock").json()
 
     assert stock["total"] == 0.0
-    assert stock["varieties"] == []
+    assert stock["products"] == []
     assert stock["entries"] == []
 
 
@@ -106,11 +106,11 @@ def test_setting_a_threshold_makes_low_stock_show_up(client: TestClient) -> None
     variety_id = _variety_id(client)
     _record(client, variety_id, quantity="10")
 
-    set_response = client.put(f"/stock/varieties/{variety_id}/threshold", json={"quantity": "20"})
+    set_response = client.put(f"/stock/products/{variety_id}/threshold", json={"quantity": "20"})
 
     assert set_response.status_code == 200, set_response.text
     body = set_response.json()
-    assert body["variety_id"] == variety_id
+    assert body["product_id"] == variety_id
     assert body["threshold"] == 20.0
     assert body["status"] == "low"
 
@@ -120,10 +120,10 @@ def test_setting_a_threshold_makes_low_stock_show_up(client: TestClient) -> None
 
 def test_turning_off_a_threshold_is_idempotent(client: TestClient) -> None:
     variety_id = _variety_id(client)
-    client.put(f"/stock/varieties/{variety_id}/threshold", json={"quantity": "20"})
+    client.put(f"/stock/products/{variety_id}/threshold", json={"quantity": "20"})
 
-    first_off = client.put(f"/stock/varieties/{variety_id}/threshold", json={"quantity": None})
-    second_off = client.put(f"/stock/varieties/{variety_id}/threshold", json={"quantity": None})
+    first_off = client.put(f"/stock/products/{variety_id}/threshold", json={"quantity": None})
+    second_off = client.put(f"/stock/products/{variety_id}/threshold", json={"quantity": None})
 
     assert first_off.status_code == 200
     assert first_off.json()["threshold"] is None
@@ -134,14 +134,14 @@ def test_turning_off_a_threshold_is_idempotent(client: TestClient) -> None:
 def test_a_zero_threshold_is_refused(client: TestClient) -> None:
     variety_id = _variety_id(client)
 
-    response = client.put(f"/stock/varieties/{variety_id}/threshold", json={"quantity": "0"})
+    response = client.put(f"/stock/products/{variety_id}/threshold", json={"quantity": "0"})
 
     assert response.status_code == 422
     assert response.json()["code"] == "stock.threshold_invalid"
 
 
 def test_an_unknown_variety_threshold_is_not_found(client: TestClient) -> None:
-    response = client.put("/stock/varieties/999999/threshold", json={"quantity": "10"})
+    response = client.put("/stock/products/999999/threshold", json={"quantity": "10"})
 
     assert response.status_code == 404
     assert response.json()["code"] == "variety.not_found"
@@ -152,7 +152,7 @@ def test_a_foreign_variety_threshold_answers_the_same_404(
 ) -> None:
     foreign_variety = _variety_id(other_client)
 
-    response = client.put(f"/stock/varieties/{foreign_variety}/threshold", json={"quantity": "10"})
+    response = client.put(f"/stock/products/{foreign_variety}/threshold", json={"quantity": "10"})
 
     assert response.status_code == 404
     assert response.json()["code"] == "variety.not_found"
@@ -161,7 +161,7 @@ def test_a_foreign_variety_threshold_answers_the_same_404(
 def test_a_malformed_threshold_grams_value_is_refused(client: TestClient) -> None:
     variety_id = _variety_id(client)
 
-    response = client.put(f"/stock/varieties/{variety_id}/threshold", json={"quantity": "1.234"})
+    response = client.put(f"/stock/products/{variety_id}/threshold", json={"quantity": "1.234"})
 
     assert response.status_code == 422
     assert response.json()["code"] == "grams.invalid"
@@ -172,8 +172,8 @@ def test_turning_off_an_unset_threshold_is_not_found_for_a_foreign_or_missing_va
 ) -> None:
     foreign_variety = _variety_id(other_client)
 
-    missing = client.put("/stock/varieties/999999/threshold", json={"quantity": None})
-    foreign = client.put(f"/stock/varieties/{foreign_variety}/threshold", json={"quantity": None})
+    missing = client.put("/stock/products/999999/threshold", json={"quantity": None})
+    foreign = client.put(f"/stock/products/{foreign_variety}/threshold", json={"quantity": None})
 
     assert missing.status_code == 404
     assert foreign.status_code == 404
@@ -202,7 +202,7 @@ def test_a_gift_also_draws_down_stock(client: TestClient) -> None:
     _record(client, variety_id, quantity="50")
 
     _sale(
-        client, variety_id, "10", lines=[{"variety_id": variety_id, "quantity": "10", "gift": True}]
+        client, variety_id, "10", lines=[{"product_id": variety_id, "quantity": "10", "gift": True}]
     )
 
     stock = client.get("/stock").json()
@@ -268,7 +268,7 @@ def test_an_archived_variety_leaves_the_rows_but_its_grams_stay_in_the_total(
 
     stock = client.get("/stock").json()
 
-    assert [row["variety_id"] for row in stock["varieties"]] == [kept]
+    assert [row["product_id"] for row in stock["products"]] == [kept]
     assert stock["total"] == 50.0
 
 
@@ -285,12 +285,12 @@ def test_the_archived_rows_are_read_with_archived_true_and_the_total_does_not_ch
     default = client.get("/stock").json()
     only_archived = client.get("/stock?archived=true").json()
 
-    assert [row["variety_id"] for row in default["varieties"]] == [kept]
-    assert [row["variety_id"] for row in only_archived["varieties"]] == [archived]
-    assert only_archived["varieties"][0]["quantity"] == 20.0
+    assert [row["product_id"] for row in default["products"]] == [kept]
+    assert [row["product_id"] for row in only_archived["products"]] == [archived]
+    assert only_archived["products"][0]["quantity"] == 20.0
     assert default["total"] == total_before == only_archived["total"]
-    assert [entry["variety_id"] for entry in only_archived["entries"]] == [
-        entry["variety_id"] for entry in default["entries"]
+    assert [entry["product_id"] for entry in only_archived["entries"]] == [
+        entry["product_id"] for entry in default["entries"]
     ]
 
 
@@ -299,9 +299,9 @@ def test_archived_false_is_the_default_rows(client: TestClient, engine: Engine) 
     archived = _variety_id(client, "Archived")
     archive_by_hand(engine, archived)
 
-    rows = client.get("/stock?archived=false").json()["varieties"]
+    rows = client.get("/stock?archived=false").json()["products"]
 
-    assert [row["variety_id"] for row in rows] == [kept]
+    assert [row["product_id"] for row in rows] == [kept]
 
 
 def test_entries_sort_by_date_then_recorded_at_then_id_newest_first(
@@ -337,4 +337,4 @@ def test_entries_sort_by_date_then_recorded_at_then_id_newest_first(
     # though c has the higher id; (iii) the id decides: f before e, both recorded at NOW.
     assert [entry["id"] for entry in stock["entries"]] == [b, c, f, e, a, archived_entry]
     assert stock["total"] == 35.0
-    assert [row["variety_id"] for row in stock["varieties"]] == [kept]
+    assert [row["product_id"] for row in stock["products"]] == [kept]

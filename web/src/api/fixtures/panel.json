@@ -68,7 +68,7 @@
   },
   "stock": [
     {
-      "variety_id": 1,
+      "product_id": 1,
       "name": "Criolla",
       "quantity": 18.0,
       "status": "low",

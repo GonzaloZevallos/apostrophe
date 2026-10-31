@@ -1,5 +1,5 @@
 /**
- * `VarietyNew` (`VariedadNueva.dc.html`, frame 1): adds a variety (`POST /varieties`) on its
+ * `VarietyNew` (`VariedadNueva.dc.html`, frame 1): adds a variety (`POST /api/products`) on its
  * own route, `/varieties/new`, a form: "Cerrar" and a save go back by history, or to the list
  * when there is no history (a direct link); a save arms "Variedad guardada" for the screen
  * history returns to; leaving with a name typed asks first. Refusals show under the name and

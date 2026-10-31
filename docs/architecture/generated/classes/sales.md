@@ -344,16 +344,16 @@ classDiagram
   }
   class LineIn {
     gift : bool
+    product_id : int
     quantity
     special_price : int #124; None
-    variety_id : int
   }
   class PlannedPriceBook {
     for_variety(variety_id: int, day: date) VarietyPricing #124; None
   }
   class ReturnedQuantityOut {
+    product_id : int
     quantity
-    variety_id : int
   }
   class SaleBillLineOut {
     amount : int
@@ -408,18 +408,18 @@ classDiagram
     line_total : int
     price_per_gram : int
     pricing_rule : PricingRule
+    product_id : int
+    product_name : str
     quantity
-    variety_id : int
-    variety_name : str
     of(view_line: SaleViewLine, cost: LineCost) 'SaleLineDetailOut'
   }
   class SaleLineOut {
     line_total : int
     price_per_gram : int
     pricing_rule : PricingRule
+    product_id : int
+    product_name : str
     quantity
-    variety_id : int
-    variety_name : str
     of(view_line: SaleViewLine) 'SaleLineOut'
   }
   class SaleLineRow {

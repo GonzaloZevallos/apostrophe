@@ -309,8 +309,27 @@ def test_an_unmatched_spanish_path_is_not_redirected(served_client: TestClient) 
     assert "location" not in response.headers
 
 
+def test_the_varieties_front_paths_are_the_shell_and_a_trailing_slash_redirects(
+    served_client: TestClient,
+) -> None:
+    # Characterization (GH-388): the front's own `/varieties` paths answer the same however
+    # the API names its products. Unchanged through every slice of the rename.
+    for path in ("/varieties", "/varieties/7"):
+        response = _request(served_client, "GET", path, HTML)
+
+        assert response.status_code == 200, path
+        assert "the app shell" in response.text, path
+    redirect = _request(served_client, "GET", "/varieties/7/", HTML, "?a=1")
+
+    assert redirect.status_code == 308
+    assert redirect.headers["location"] == "/varieties/7?a=1"
+
+
 # What a shared template with {id} = 7 is, concretely: `/sales/{id}` -> `/sales/7`.
 SHARED_CONCRETE = sorted(path.replace("{id}", "7") for path in SHARED_FRONT_PATHS)
+# `/varieties` is a front segment only since the products API moved to `/api/products`: a
+# JSON request there is no API route's, so the API-reach tests skip it.
+SHARED_API_CONCRETE = [path for path in SHARED_CONCRETE if not path.startswith("/varieties")]
 
 
 def test_the_shared_list_is_the_one_the_plan_names() -> None:
@@ -380,7 +399,7 @@ def test_a_json_request_to_a_shared_path_reaches_the_api_signed_out(
     served_client: TestClient, anonymous_client: TestClient
 ) -> None:
     for accept in (JSON, ANY):
-        for path in SHARED_CONCRETE:
+        for path in SHARED_API_CONCRETE:
             through_the_front = _request(served_client, "GET", path, accept)
             api_alone = _request(anonymous_client, "GET", path, accept)
 
@@ -392,7 +411,7 @@ def test_a_json_request_to_a_shared_path_reaches_the_api_signed_in(
 ) -> None:
     served_client.headers["Authorization"] = client.headers["Authorization"]
 
-    for path in SHARED_CONCRETE:
+    for path in SHARED_API_CONCRETE:
         through_the_front = _request(served_client, "GET", path, JSON)
         api_alone = _request(client, "GET", path, JSON)
 
@@ -402,7 +421,7 @@ def test_a_json_request_to_a_shared_path_reaches_the_api_signed_in(
 def test_a_path_the_template_does_not_match_is_not_the_shell(
     served_client: TestClient,
 ) -> None:
-    for path in ("/sales/abc", "/customers/new/7", "/varieties/entries/abc"):
+    for path in ("/sales/abc", "/customers/new/7", "/expenses/abc"):
         response = _request(served_client, "GET", path, HTML)
 
         assert "the app shell" not in response.text, path
@@ -477,6 +496,7 @@ SHARED_FRONT_ROUTES: list[str] = sorted(
     for path in SHARED_FRONT_PATHS
     if path.startswith(("/varieties", "/expenses"))
 )
+SHARED_API_ROUTES = [path for path in SHARED_FRONT_ROUTES if path.startswith("/expenses")]
 
 
 @pytest.mark.parametrize("method", ["GET", "HEAD"])
@@ -491,7 +511,7 @@ def test_every_shared_front_route_in_the_contract_is_the_shell_for_a_navigation(
     assert method == "HEAD" or "the app shell" in response.text
 
 
-@pytest.mark.parametrize("path", SHARED_FRONT_ROUTES)
+@pytest.mark.parametrize("path", SHARED_API_ROUTES)
 def test_every_shared_front_route_in_the_contract_reaches_the_api_for_json(
     served_client: TestClient, path: str
 ) -> None:
@@ -505,7 +525,7 @@ def test_every_shared_front_route_in_the_contract_reaches_the_api_for_json(
 def test_a_gated_api_route_under_a_shared_path_answers_401_signed_out_for_json(
     served_client: TestClient,
 ) -> None:
-    for path in ("/varieties/7", "/varieties/7/prices", "/varieties"):
+    for path in ("/customers/7", "/sales/7", "/customers"):
         assert _request(served_client, "GET", path, JSON).status_code == 401
 
 
@@ -522,19 +542,17 @@ def test_a_write_to_a_parameterised_shared_path_is_never_the_shell(
 @pytest.mark.parametrize(
     "path",
     [
-        "/varieties/7a",
-        "/varieties/a7",
-        "/varieties/-7",
-        "/varieties/7/entries/x",
-        "/varieties/entries/7a",
-        "/varieties/7/prices/new/x",
-        "/varieties/7/prices/7",
-        "/varieties/entries/7/x",
-        "/varieties/7%0A",
-        "/varieties/%0A7",
-        "/varieties//7",
-        "/varieties/7//",
-        "/varieties/٧",
+        "/customers/7a",
+        "/customers/a7",
+        "/customers/-7",
+        "/customers/7/edit/x",
+        "/customers/7/payment/x",
+        "/customers/new/x",
+        "/customers/7%0A",
+        "/customers/%0A7",
+        "/customers//7",
+        "/customers/7//",
+        "/customers/٧",
     ],
 )
 def test_a_near_miss_of_a_shared_pattern_is_never_the_shell(
@@ -576,7 +594,7 @@ def test_a_head_navigation_to_a_slashed_shared_path_is_a_308_too(
 def test_a_slashed_shared_path_is_redirected_only_for_a_html_navigation(
     served_client: TestClient, method: str, accept: str
 ) -> None:
-    response = _request(served_client, method, "/varieties/7/", accept)
+    response = _request(served_client, method, "/customers/7/", accept)
 
     assert response.status_code != 308
     assert "the app shell" not in response.text
@@ -598,3 +616,15 @@ def test_the_onboarding_progress_api_is_never_the_shell(served_client: TestClien
 
         assert response.status_code == 401
         assert "the app shell" not in response.text
+
+
+def test_the_products_api_path_reaches_the_api_for_a_navigation(
+    served_client: TestClient,
+) -> None:
+    # `products` is an API segment, never a front path: even a browser's text/html GET
+    # there is the API's own answer (signed out: 401 JSON), not the app shell.
+    response = _request(served_client, "GET", "/api/products", HTML)
+
+    assert response.status_code == 401
+    assert response.headers["content-type"].startswith("application/json")
+    assert "the app shell" not in response.text

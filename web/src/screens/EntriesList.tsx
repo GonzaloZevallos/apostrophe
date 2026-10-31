@@ -1,12 +1,12 @@
 /**
  * `EntriesList` (`stock.md`, "Todas las entradas"; `TodasLasEntradas.dc.html`): every stock
  * entry, newest first, and no withdrawal; or with a `varietyId` that variety's movements as
- * `GET /stock/varieties/{id}/movements` answers them: its entries and the withdrawals that
+ * `GET /stock/products/{id}/movements` answers them: its entries and the withdrawals that
  * touch it, a withdrawal told by its reason word and a minus sign and opening its detail. It is a card; the shell draws its one back ("‹ Variedades",
  * or "‹ <variety>" for one variety's list, declared through `useBackParent`). Each row
  * links to the entry's form to edit it and deletes it after "Antes de borrar", naming the
  * date, variety and grams. Every figure is what `GET /stock` answered; a variety's name
- * comes from `GET /varieties`, joined by id. One archived variety's list is read-only: its
+ * comes from `GET /api/products`, joined by id. One archived variety's list is read-only: its
  * entry rows have no edit or delete and open nothing (they stay editable and deletable from
  * "Todas las entradas"); its withdrawal rows still open the withdrawal's detail.
  */
@@ -64,11 +64,11 @@ export default function EntriesList({ varietyId }: Props) {
   const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
-    queryFn: () => get<Variety[]>('/varieties'),
+    queryFn: () => get<Variety[]>('/api/products'),
   })
   const varietyQuery = useQuery({
     queryKey: keys.variety(String(varietyId)),
-    queryFn: () => get<Variety>(`/varieties/${varietyId}`),
+    queryFn: () => get<Variety>(`/api/products/${varietyId}`),
     enabled: varietyId !== undefined,
   })
   const movementsQuery = useQuery({
@@ -166,7 +166,7 @@ export default function EntriesList({ varietyId }: Props) {
           title={STOCK_TEXT.antesDeBorrar}
           detail={STOCK_TEXT.borrasLaEntradaDel(
             formatDate(confirming.date, me.today),
-            nameOf(confirming.variety_id),
+            nameOf(confirming.product_id),
             formatGrams(confirming.quantity),
           )}
           confirmText={COMMON_TEXT.yesDelete}
@@ -224,7 +224,7 @@ export function EntryRows({
               <span className="fila-entrada__linea1">
                 {formatDate(entry.date, today)}
                 {OUT_OF_DATE_JOINER}
-                {nameOf(entry.variety_id)}
+                {nameOf(entry.product_id)}
               </span>
               <span className="fila-entrada__linea2">
                 {t(ORIGIN_LABEL[entry.origin])}

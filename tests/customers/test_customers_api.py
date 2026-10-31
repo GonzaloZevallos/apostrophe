@@ -47,9 +47,9 @@ def test_a_customer_with_a_sale_left_owing_shows_the_balance_everywhere_they_are
     client: TestClient,
 ) -> None:
     customer = _register(client)
-    variety = client.post("/varieties", json={"name": "Lavanda"}).json()
+    variety = client.post("/api/products", json={"name": "Lavanda"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 10_000},
     )
     client.post(
@@ -57,7 +57,7 @@ def test_a_customer_with_a_sale_left_owing_shows_the_balance_everywhere_they_are
         json={
             "customer_id": customer["id"],
             "payment": "owing",
-            "lines": [{"variety_id": variety["id"], "quantity": "1"}],
+            "lines": [{"product_id": variety["id"], "quantity": "1"}],
         },
     )
 
@@ -79,9 +79,9 @@ def test_a_later_payment_lowers_the_balance_everywhere_it_is_read(client: TestCl
     (balance unchanged, sale still fully owing) is the one case a correct `Balances`/
     `OwingSales` wiring must reject."""
     customer = _register(client)
-    variety = client.post("/varieties", json={"name": "Lavanda"}).json()
+    variety = client.post("/api/products", json={"name": "Lavanda"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 10_000},
     )
     sale = client.post(
@@ -89,7 +89,7 @@ def test_a_later_payment_lowers_the_balance_everywhere_it_is_read(client: TestCl
         json={
             "customer_id": customer["id"],
             "payment": "owing",
-            "lines": [{"variety_id": variety["id"], "quantity": "1"}],
+            "lines": [{"product_id": variety["id"], "quantity": "1"}],
         },
     ).json()
 
@@ -289,9 +289,9 @@ def test_clearing_the_phone_keeps_the_customers_sales_payments_and_balance(
     client: TestClient, cleared_with: str | None
 ) -> None:
     customer = _register(client)
-    variety = client.post("/varieties", json={"name": "Lavanda"}).json()
+    variety = client.post("/api/products", json={"name": "Lavanda"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 10_000},
     )
     sale = client.post(
@@ -299,7 +299,7 @@ def test_clearing_the_phone_keeps_the_customers_sales_payments_and_balance(
         json={
             "customer_id": customer["id"],
             "payment": "owing",
-            "lines": [{"variety_id": variety["id"], "quantity": "1"}],
+            "lines": [{"product_id": variety["id"], "quantity": "1"}],
         },
     ).json()
     payment = client.post(
@@ -445,9 +445,9 @@ def test_a_no_phone_customer_can_be_chosen_for_a_sale_left_owing_and_paid(
     client: TestClient,
 ) -> None:
     customer = _register(client, "Sin Numero", None)
-    variety = client.post("/varieties", json={"name": "Lavanda"}).json()
+    variety = client.post("/api/products", json={"name": "Lavanda"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 10_000},
     )
 
@@ -456,7 +456,7 @@ def test_a_no_phone_customer_can_be_chosen_for_a_sale_left_owing_and_paid(
         json={
             "customer_id": customer["id"],
             "payment": "owing",
-            "lines": [{"variety_id": variety["id"], "quantity": "1"}],
+            "lines": [{"product_id": variety["id"], "quantity": "1"}],
         },
     )
     assert sale.status_code == 201, sale.text

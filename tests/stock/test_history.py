@@ -25,14 +25,14 @@ TODAY = date(2026, 10, 2)
 
 
 def _variety(client: TestClient, name: str) -> int:
-    variety_id = int(client.post("/varieties", json={"name": name}).json()["id"])
+    variety_id = int(client.post("/api/products", json={"name": name}).json()["id"])
     price = {"effective_from": "2026-01-01", "list_price": 10_000}
-    client.post(f"/varieties/{variety_id}/prices", json=price)
+    client.post(f"/api/products/{variety_id}/prices", json=price)
     return variety_id
 
 
 def _entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
-    body: dict[str, Any] = {"variety_id": variety_id, "origin": "purchase", "quantity": "5"}
+    body: dict[str, Any] = {"product_id": variety_id, "origin": "purchase", "quantity": "5"}
     body.update(overrides)
     assert client.post("/stock/entries", json=body).status_code == 201
 
@@ -67,7 +67,7 @@ def test_history_orders_a_sale_line_and_a_withdrawal_line_by_recording_and_costs
     _entry(client, variety_id, quantity="10", total_cost=10_000)
     _entry(client, other_id, quantity="10", total_cost=50_000)
     sale = client.post(
-        "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "4"}]}
+        "/sales", json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "4"}]}
     )
     assert sale.status_code == 201, sale.text
     business_id = _business_of(engine, variety_id)
@@ -102,7 +102,7 @@ def test_history_narrowed_to_one_variety_gives_that_variety_the_same_draws_and_c
     _entry(client, variety_id, quantity="2", total_cost=4_000)
     _entry(client, other_id, quantity="2", total_cost=9_000)
     client.post(
-        "/sales", json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "1"}]}
+        "/sales", json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "1"}]}
     )
     business_id = _business_of(engine, variety_id)
 

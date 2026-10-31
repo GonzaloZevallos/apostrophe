@@ -51,7 +51,7 @@ function entry(id: number, date: string, varietyId: number, grams: number, total
   return {
     id,
     date,
-    variety_id: varietyId,
+    product_id: varietyId,
     origin: total === null ? 'harvest' : 'purchase',
     quantity: grams,
     total_cost: total,
@@ -62,7 +62,7 @@ function entry(id: number, date: string, varietyId: number, grams: number, total
 
 const STOCK = {
   total: 70,
-  varieties: [],
+  products: [],
   entries: [
     entry(12, '2026-10-05', 3, 30, 150000),
     entry(11, '2026-08-26', 4, 10, null),
@@ -94,13 +94,13 @@ function fakeApi(overrides: Record<string, () => Response> = {}) {
       const override = overrides[key]
       if (override !== undefined) return Promise.resolve(override())
       if (key === 'GET /stock') return Promise.resolve(jsonResponse(200, STOCK))
-      if (key === 'GET /varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
-      const movements = /^GET \/stock\/varieties\/(\d+)\/movements$/.exec(key)
+      if (key === 'GET /api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
+      const movements = /^GET \/stock\/products\/(\d+)\/movements$/.exec(key)
       if (movements !== null) {
-        const own = STOCK.entries.filter((row) => String(row.variety_id) === movements[1])
+        const own = STOCK.entries.filter((row) => String(row.product_id) === movements[1])
         return Promise.resolve(jsonResponse(200, own.map((row) => ({ ...row, kind: 'entry' }))))
       }
-      const one = /^GET \/varieties\/(\d+)$/.exec(key)
+      const one = /^GET \/api\/products\/(\d+)$/.exec(key)
       if (one !== null) {
         const found = VARIETIES.find((variety) => String(variety.id) === one[1])
         return Promise.resolve(
@@ -188,7 +188,7 @@ test("a variety's list shows only its entries", async () => {
 const ARCHIVED_VARIETY = { id: 3, name: '24K Gold', current_price: null, archived: true }
 
 test("an archived variety's list is read-only: entry rows have no edit, no delete and open nothing", async () => {
-  fakeApi({ 'GET /varieties/3': () => jsonResponse(200, ARCHIVED_VARIETY) })
+  fakeApi({ 'GET /api/products/3': () => jsonResponse(200, ARCHIVED_VARIETY) })
   renderAt(pathTo(VARIETY_ENTRIES, { id: 3 }))
 
   const rows = await screen.findAllByRole('listitem')
@@ -201,8 +201,8 @@ test("an archived variety's list is read-only: entry rows have no edit, no delet
 
 test("an archived variety's withdrawal rows still open the withdrawal's detail", async () => {
   fakeApi({
-    'GET /varieties/3': () => jsonResponse(200, ARCHIVED_VARIETY),
-    'GET /stock/varieties/3/movements': () =>
+    'GET /api/products/3': () => jsonResponse(200, ARCHIVED_VARIETY),
+    'GET /stock/products/3/movements': () =>
       jsonResponse(200, [
         { kind: 'withdrawal', id: 9, date: '2026-10-06', reason: 'promotion', quantity: 5.5 },
         { ...STOCK.entries[0], kind: 'entry' },
@@ -218,7 +218,7 @@ test("an archived variety's withdrawal rows still open the withdrawal's detail",
 
 test("a variety's list holds its withdrawals, told by reason word and minus sign, each opening its detail", async () => {
   fakeApi({
-    'GET /stock/varieties/3/movements': () =>
+    'GET /stock/products/3/movements': () =>
       jsonResponse(200, [
         { kind: 'withdrawal', id: 9, date: '2026-10-06', reason: 'promotion', quantity: 5.5 },
         { ...STOCK.entries[0], kind: 'entry' },
@@ -242,8 +242,8 @@ test("a variety's list holds its withdrawals, told by reason word and minus sign
 test('"All entries" shows the entry and no withdrawal, and never asks for movements', async () => {
   const recorded = entry(12, '2026-10-05', 3, 30, 150000)
   fakeApi({
-    'GET /stock': () => jsonResponse(200, { total: 30, varieties: [], entries: [recorded] }),
-    'GET /stock/varieties/3/movements': () =>
+    'GET /stock': () => jsonResponse(200, { total: 30, products: [], entries: [recorded] }),
+    'GET /stock/products/3/movements': () =>
       jsonResponse(200, [
         { kind: 'withdrawal', id: 9, date: '2026-10-06', reason: 'promotion', quantity: 5.5 },
         { ...recorded, kind: 'entry' },
@@ -317,7 +317,7 @@ test('with no entries the empty state shows, with no rows', async () => {
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/stock') return Promise.resolve(jsonResponse(200, { total: 0, varieties: [], entries: [] }))
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, { total: 0, products: [], entries: [] }))
       return Promise.resolve(jsonResponse(200, VARIETIES))
     }),
   )
@@ -338,7 +338,7 @@ test('a variety that is gone, or an id that is not a number, shows "That is gone
 test('a delete marks the catalog stale and the stock list refetches', async () => {
   fakeApi({ 'DELETE /stock/entries/12': () => new Response(null, { status: 204 }) })
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  client.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', varieties: [] })
+  client.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', products: [] })
   renderAt(STOCK_PATH, client)
 
   const rows = await screen.findAllByRole('listitem')
@@ -367,7 +367,7 @@ test('the empty state keeps the title and the line within their limits', async (
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/stock') return Promise.resolve(jsonResponse(200, { total: 0, varieties: [], entries: [] }))
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, { total: 0, products: [], entries: [] }))
       return Promise.resolve(jsonResponse(200, VARIETIES))
     }),
   )

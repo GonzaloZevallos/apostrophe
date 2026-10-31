@@ -38,7 +38,7 @@ const CREATED = jsonResponse(201, {
 
 test('the date starts as today and a save posts the amounts, goes back and toasts "Price saved" once', async () => {
   const user = userEvent.setup()
-  const { router, fetchMock } = await renderOpened(api({ 'POST /varieties/1/prices': () => CREATED.clone() }),
+  const { router, fetchMock } = await renderOpened(api({ 'POST /api/products/1/prices': () => CREATED.clone() }),
   )
 
   expect(await screen.findByRole('button', { name: 'Today 02/10' })).toBeInTheDocument()
@@ -49,13 +49,13 @@ test('the date starts as today and a save posts the amounts, goes back and toast
   expect(router.state.location.pathname).toBe(VARIETY_PATH)
   expect(await screen.findAllByText('Price saved')).toHaveLength(1)
   expect(writes(fetchMock)).toEqual([
-    { call: 'POST /varieties/1/prices', body: { effective_from: ME.today, list_price: 12000 } },
+    { call: 'POST /api/products/1/prices', body: { effective_from: ME.today, list_price: 12000 } },
   ])
 })
 
 test('a save sends the bulk tier when one is typed', async () => {
   const user = userEvent.setup()
-  const { fetchMock } = await renderOpened(api({ 'POST /varieties/1/prices': () => CREATED.clone() }),
+  const { fetchMock } = await renderOpened(api({ 'POST /api/products/1/prices': () => CREATED.clone() }),
   )
 
   await user.type(await screen.findByLabelText(/^List price/), '12000')
@@ -74,9 +74,9 @@ test('a save sends the bulk tier when one is typed', async () => {
 
 test('a save marks the catalog stale', async () => {
   const user = userEvent.setup()
-  const { queryClient } = await renderOpened(api({ 'POST /varieties/1/prices': () => CREATED.clone() }),
+  const { queryClient } = await renderOpened(api({ 'POST /api/products/1/prices': () => CREATED.clone() }),
   )
-  queryClient.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', varieties: [] })
+  queryClient.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', products: [] })
 
   await user.type(await screen.findByLabelText(/^List price/), '12000')
   await user.click(screen.getByRole('button', { name: 'Save the price' }))
@@ -88,7 +88,7 @@ test('a save marks the catalog stale', async () => {
 test('a repeated date is refused under "Effective from" and keeps what was typed', async () => {
   const user = userEvent.setup()
   const { router } = await renderOpened(api({
-      'POST /varieties/1/prices': () => jsonResponse(409, { code: 'variety.duplicate_effective_date' }),
+      'POST /api/products/1/prices': () => jsonResponse(409, { code: 'variety.duplicate_effective_date' }),
     }),
   )
 
@@ -104,7 +104,7 @@ test('a repeated date is refused under "Effective from" and keeps what was typed
 
 test('an invalid price set is refused under "List price"', async () => {
   const user = userEvent.setup()
-  await renderOpened(api({ 'POST /varieties/1/prices': () => jsonResponse(422, { code: 'variety.price_entry_invalid' }) }),
+  await renderOpened(api({ 'POST /api/products/1/prices': () => jsonResponse(422, { code: 'variety.price_entry_invalid' }) }),
   )
 
   await user.type(await screen.findByLabelText(/^List price/), '12000')
@@ -116,7 +116,7 @@ test('an invalid price set is refused under "List price"', async () => {
 
 test('a grams refusal is shown under "Minimum in grams"', async () => {
   const user = userEvent.setup()
-  await renderOpened(api({ 'POST /varieties/1/prices': () => jsonResponse(422, { code: 'grams.invalid' }) }),
+  await renderOpened(api({ 'POST /api/products/1/prices': () => jsonResponse(422, { code: 'grams.invalid' }) }),
   )
 
   await user.type(await screen.findByLabelText(/^List price/), '12000')
@@ -182,7 +182,7 @@ test('closing with something typed asks first; staying keeps it, discarding save
 test('a variety that is gone says "That is gone." and goes back to Variedades', async () => {
   renderVarieties(
     [NEW_PATH],
-    api({ 'GET /varieties/1': () => jsonResponse(404, { code: 'variety.not_found' }) }),
+    api({ 'GET /api/products/1': () => jsonResponse(404, { code: 'variety.not_found' }) }),
   )
 
   expect(await screen.findByText('That is gone.')).toBeInTheDocument()
@@ -191,7 +191,7 @@ test('a variety that is gone says "That is gone." and goes back to Variedades', 
 
 test('a variety that vanishes while saving shows the gone screen', async () => {
   const user = userEvent.setup()
-  await renderOpened(api({ 'POST /varieties/1/prices': () => jsonResponse(404, { code: 'variety.not_found' }) }),
+  await renderOpened(api({ 'POST /api/products/1/prices': () => jsonResponse(404, { code: 'variety.not_found' }) }),
   )
 
   await user.type(await screen.findByLabelText(/^List price/), '12000')
@@ -218,7 +218,7 @@ test('with Clientes VIP on, a typed "VIP price" is sent beside the amounts', asy
   const user = userEvent.setup()
   const { fetchMock } = renderVarieties(
     [pathTo(VARIETY, { id: 1 }), NEW_PATH],
-    api({ 'POST /varieties/1/prices': () => CREATED.clone() }),
+    api({ 'POST /api/products/1/prices': () => CREATED.clone() }),
   )
 
   await user.type(await screen.findByLabelText(/^List price/), '12000')
@@ -237,7 +237,7 @@ test('with Clientes VIP off the form has no "VIP price" and says nothing about i
   const user = userEvent.setup()
   const { fetchMock } = renderVarieties(
     [pathTo(VARIETY, { id: 1 }), NEW_PATH],
-    api({ ...switches(true, false), 'POST /varieties/1/prices': () => CREATED.clone() }),
+    api({ ...switches(true, false), 'POST /api/products/1/prices': () => CREATED.clone() }),
   )
 
   await user.type(await screen.findByLabelText(/^List price/), '12000')
@@ -254,7 +254,7 @@ test('with Bulk price off the form has no bulk price or minimum and says nothing
   const user = userEvent.setup()
   const { fetchMock } = renderVarieties(
     [pathTo(VARIETY, { id: 1 }), NEW_PATH],
-    api({ ...switches(false, true), 'POST /varieties/1/prices': () => CREATED.clone() }),
+    api({ ...switches(false, true), 'POST /api/products/1/prices': () => CREATED.clone() }),
   )
 
   await user.type(await screen.findByLabelText(/^List price/), '12000')
@@ -283,7 +283,7 @@ test('a VIP price at or above list is refused inline under its field and keeps w
   renderVarieties(
     [pathTo(VARIETY, { id: 1 }), NEW_PATH],
     api({
-      'POST /varieties/1/prices': () => jsonResponse(422, { code: 'variety.vip_price_not_below_list' }),
+      'POST /api/products/1/prices': () => jsonResponse(422, { code: 'variety.vip_price_not_below_list' }),
     }),
   )
 
@@ -366,7 +366,7 @@ test('picking another day reads "dd/mm" on the chip, and "Today" from the chip g
 
 test('a save at today\'s date never puts a date input in the DOM', async () => {
   const user = userEvent.setup()
-  await renderOpened(api({ 'POST /varieties/1/prices': () => CREATED.clone() }))
+  await renderOpened(api({ 'POST /api/products/1/prices': () => CREATED.clone() }))
 
   await user.type(await screen.findByLabelText(/^List price/), '12000')
   expect(document.querySelector('input[type=date]')).toBeNull()
@@ -380,7 +380,7 @@ test('a refused save keeps the chosen date, and a save sends it', async () => {
   const user = userEvent.setup()
   let calls = 0
   const { fetchMock } = await renderOpened(api({
-    'POST /varieties/1/prices': () =>
+    'POST /api/products/1/prices': () =>
       ++calls === 1 ? jsonResponse(409, { code: 'variety.duplicate_effective_date' }) : CREATED.clone(),
   }))
 

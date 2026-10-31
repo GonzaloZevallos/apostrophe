@@ -27,17 +27,17 @@ const VARIETIES = [
   { id: 1, name: '24K Gold', archived: false, current_price: null },
   { id: 2, name: 'Sir Jack', archived: false, current_price: null },
 ]
-const STOCK_ROW = { variety_id: 1, quantity: 30, status: 'ok', sold_out_since: null, threshold: 20, days_left: 40 }
+const STOCK_ROW = { product_id: 1, quantity: 30, status: 'ok', sold_out_since: null, threshold: 20, days_left: 40 }
 const STOCK = {
   total: 30,
-  varieties: [STOCK_ROW, { ...STOCK_ROW, variety_id: 2, quantity: 0, status: 'no_entries', threshold: null, days_left: null }],
+  products: [STOCK_ROW, { ...STOCK_ROW, product_id: 2, quantity: 0, status: 'no_entries', threshold: null, days_left: null }],
   entries: [],
 }
 const CATALOG = {
   text: 'texto',
   header: '',
   footer: '',
-  varieties: [{ id: 1, name: '24K Gold', emoji: '🍪', indica_share: 70, aroma: 'Vainilla', shown: true, state: 'in' }],
+  products: [{ product_id: 1, name: '24K Gold', emoji: '🍪', indica_share: 70, aroma: 'Vainilla', shown: true, state: 'in' }],
 }
 const VARIETY_ONE = pathTo(VARIETY, { id: 1 })
 
@@ -57,11 +57,11 @@ function renderApp(
 ) {
   const table: Answers = {
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /varieties': () => jsonResponse(200, VARIETIES),
-    'GET /varieties/1': () => jsonResponse(200, VARIETIES[0]),
-    'GET /varieties/1/prices': () => jsonResponse(200, []),
+    'GET /api/products': () => jsonResponse(200, VARIETIES),
+    'GET /api/products/1': () => jsonResponse(200, VARIETIES[0]),
+    'GET /api/products/1/prices': () => jsonResponse(200, []),
     'GET /stock': () => jsonResponse(200, STOCK),
-    'GET /stock/varieties/1/movements': () => jsonResponse(200, []),
+    'GET /stock/products/1/movements': () => jsonResponse(200, []),
     'GET /catalog': () => jsonResponse(200, CATALOG),
     'GET /pricing-settings': () => jsonResponse(200, { is_bulk_pricing: false, is_vip_customers: false }),
     'GET /first-run': () =>
@@ -125,7 +125,7 @@ describe('New variety on a phone', () => {
 
   test('while Varieties is pending, and after an error, the pane is empty', async () => {
     renderApp({ pathname: VARIETY_NEW }, 'phone', {
-      'GET /varieties': () => new Promise<Response>(() => undefined),
+      'GET /api/products': () => new Promise<Response>(() => undefined),
     })
     await screen.findByRole('dialog', { name: COMMON_TEXT.newVariety })
     expectBehindPaneEmpty(behindPane())

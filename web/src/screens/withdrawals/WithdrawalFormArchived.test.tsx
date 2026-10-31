@@ -173,7 +173,7 @@ test('editing a line on a variety archived since keeps its id and name, also whi
       body: {
         reason: 'promotion',
         date: '2026-10-02',
-        lines: [{ variety_id: 1, quantity: '5.5' }],
+        lines: [{ product_id: 1, quantity: '5.5' }],
         note: 'Para la fiesta',
       },
     },
@@ -196,7 +196,7 @@ test('a stale save keeps the guilty line\'s variety and name, says it is gone an
   expect(router.state.location.pathname).toBe(WITHDRAWAL_NEW)
   expect(screen.queryByText('That is gone. The list is up to date.')).not.toBeInTheDocument()
   // the list was fetched again to learn who is gone
-  expect(fetchMock.mock.calls.filter(([url]) => url === '/varieties').length).toBeGreaterThanOrEqual(2)
+  expect(fetchMock.mock.calls.filter(([url]) => url === '/api/products').length).toBeGreaterThanOrEqual(2)
   expect(state.writes).toHaveLength(1)
 
   // choosing another variety clears the message and frees the save
@@ -206,8 +206,8 @@ test('a stale save keeps the guilty line\'s variety and name, says it is gone an
   await userEvent.click(screen.getByRole('button', { name: SUBMIT_NEW }))
   await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
   expect(state.writes.map((write) => write.body)).toEqual([
-    { reason: 'promotion', date: '2026-10-06', lines: [{ variety_id: 1, quantity: '2' }] },
-    { reason: 'promotion', date: '2026-10-06', lines: [{ variety_id: 2, quantity: '2' }] },
+    { reason: 'promotion', date: '2026-10-06', lines: [{ product_id: 1, quantity: '2' }] },
+    { reason: 'promotion', date: '2026-10-06', lines: [{ product_id: 2, quantity: '2' }] },
   ])
 })
 
@@ -384,7 +384,7 @@ test('the form never calls onGone on variety.archived', async () => {
   vi.stubGlobal(
     'fetch',
     vi.fn(async (url: string, init?: RequestInit) => {
-      if (url === '/varieties') return jsonResponse(200, state.listed)
+      if (url === '/api/products') return jsonResponse(200, state.listed)
       return serve(state, url, init)
     }),
   )

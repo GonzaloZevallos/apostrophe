@@ -53,7 +53,7 @@ class ProgressOut(BaseModel):
     resume: StepSlug | Literal["finish"] | None
     steps: list[StepOut]
     can_skip_rest: bool
-    varieties_count: int
+    products_count: int
     stock_entries_count: int
     price_target: TargetOut | None
     priced_target: TargetOut | None
@@ -68,7 +68,7 @@ class ProgressOut(BaseModel):
             resume=None,
             steps=[],
             can_skip_rest=False,
-            varieties_count=0,
+            products_count=0,
             stock_entries_count=0,
             price_target=None,
             priced_target=None,
@@ -88,7 +88,7 @@ class ProgressOut(BaseModel):
                 StepOut(step=STEP_SLUGS[item.step], state=item.state) for item in progress.steps
             ],
             can_skip_rest=progress.can_skip_rest,
-            varieties_count=progress.varieties_count,
+            products_count=progress.varieties_count,
             stock_entries_count=progress.stock_entries_count,
             price_target=TargetOut.of(progress.price_target),
             priced_target=TargetOut.of(progress.priced_target),

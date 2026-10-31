@@ -92,11 +92,11 @@ HINT = (
 
 
 def varieties_by_name(client: TestClient) -> dict[str, int]:
-    return {v["name"]: v["id"] for v in client.get("/varieties").json()}
+    return {v["name"]: v["id"] for v in client.get("/api/products").json()}
 
 
 def movements_of(client: TestClient, variety_id: int) -> list[dict[str, Any]]:
-    answer: list[dict[str, Any]] = client.get(f"/stock/varieties/{variety_id}/movements").json()
+    answer: list[dict[str, Any]] = client.get(f"/stock/products/{variety_id}/movements").json()
     return answer
 
 
@@ -116,7 +116,7 @@ def assert_seed_states(client: TestClient) -> None:
     own_use = {"amount": OWN_USE_AMOUNT, "pending_quantity": 1, "all_pending": False}
     assert week["own_use"] == own_use, "own use" + HINT
     assert periods["week"]["own_use"] == {"amount": OWN_USE_AMOUNT, "pending": True}, HINT
-    stock = {row["variety_id"]: row["status"] for row in client.get("/stock").json()["varieties"]}
+    stock = {row["product_id"]: row["status"] for row in client.get("/stock").json()["products"]}
     assert stock[jack] == "sold_out", "Sir Jack sold out" + HINT
     jack_uses = [
         m for m in movements_of(client, jack) if m["kind"] == "withdrawal" and m["date"] == day
@@ -183,7 +183,7 @@ def test_the_archived_variety_has_one_opening_stock_entry_and_nothing_else(
 ) -> None:
     sample = seeded_at_capture_date(client, clock)
 
-    archived = client.get("/varieties", params={"archived": "true"}).json()
+    archived = client.get("/api/products", params={"archived": "true"}).json()
     assert [(v["id"], v["name"], v["archived"]) for v in archived] == [
         (sample.archived, ARCHIVED_NAME, True)
     ]
@@ -200,8 +200,8 @@ def test_the_archived_variety_has_one_opening_stock_entry_and_nothing_else(
     }
     assert movements[0]["date"] in others
     stock = {
-        r["variety_id"]: r
-        for r in client.get("/stock", params={"archived": "true"}).json()["varieties"]
+        r["product_id"]: r
+        for r in client.get("/stock", params={"archived": "true"}).json()["products"]
     }
     assert stock[sample.archived]["threshold"] == 15
     assert stock[sample.archived]["quantity"] == 25
@@ -212,8 +212,8 @@ def test_the_archived_variety_is_hidden_and_carries_its_catalog_attributes(
 ) -> None:
     sample = seeded_at_capture_date(client, clock)
 
-    client.post(f"/varieties/{sample.archived}/restore")
-    catalog = {v["id"]: v for v in client.get("/catalog").json()["varieties"]}
+    client.post(f"/api/products/{sample.archived}/restore")
+    catalog = {v["product_id"]: v for v in client.get("/catalog").json()["products"]}
 
     assert catalog[sample.archived]["shown"] is False
     assert catalog[sample.archived]["emoji"] == "🫐"
@@ -227,21 +227,22 @@ def test_the_archived_variety_touches_no_read_of_the_live_business(
     sample = seeded_at_capture_date(client, clock)
     gone = sample.archived
 
-    assert gone not in [r["variety_id"] for r in client.get("/panel").json()["stock"]]
-    assert gone not in [r["variety_id"] for r in client.get("/stock").json()["varieties"]]
-    assert gone not in [v["id"] for v in client.get("/varieties").json()]
+    assert gone not in [r["product_id"] for r in client.get("/panel").json()["stock"]]
+    assert gone not in [r["product_id"] for r in client.get("/stock").json()["products"]]
+    assert gone not in [v["id"] for v in client.get("/api/products").json()]
     catalog = client.get("/catalog").json()
-    assert gone not in [v["id"] for v in catalog["varieties"]]
+    assert gone not in [v["product_id"] for v in catalog["products"]]
     assert ARCHIVED_NAME not in (catalog["text"] or "")
     analysis = client.get("/analysis").json()
-    assert gone not in [v["variety_id"] for v in analysis["month"]["varieties"]]
+    assert gone not in [v["product_id"] for v in analysis["month"]["products"]]
 
     assert gone in [
-        r["variety_id"]
-        for r in client.get("/stock", params={"archived": "true"}).json()["varieties"]
+        r["product_id"]
+        for r in client.get("/stock", params={"archived": "true"}).json()["products"]
     ]
-    assert gone in [v["id"] for v in client.get("/varieties", params={"archived": "true"}).json()]
-    assert gone in {e["variety_id"] for e in client.get("/stock").json()["entries"]}
+    archived = client.get("/api/products", params={"archived": "true"}).json()
+    assert gone in [v["id"] for v in archived]
+    assert gone in {e["product_id"] for e in client.get("/stock").json()["entries"]}
 
 
 def test_the_panel_and_the_analysis_agree_on_the_current_week_and_month(
@@ -265,7 +266,7 @@ def test_the_panel_and_the_analysis_agree_on_the_current_week_and_month(
         assert row["expenses"] == panel["expenses"]
         assert row["cash"] == panel["cash"]
 
-    varieties = analysis["month"]["varieties"]
+    varieties = analysis["month"]["products"]
     assert sum(v["cost"]["costed"] for v in varieties) == periods["month"]["cost_of_goods"]
     assert analysis["month"]["sales"] == periods["month"]["sales"]
 
@@ -325,7 +326,7 @@ class RewritingApi(ClientApi):
                     super().call(then_method, then_path, then_body)
                 return answer
         answer = super().call(method, path, body)
-        if method == "POST" and path == "/varieties" and isinstance(body, dict):
+        if method == "POST" and path == "/api/products" and isinstance(body, dict):
             self.ids[body["name"]] = answer["id"]
         return answer
 
@@ -334,7 +335,7 @@ def own_use_of(method: str, path: str, body: dict[str, Any], ids: dict[str, int]
     return (
         (method, path) == ("POST", "/stock/withdrawals")
         and body["reason"] == "own_use"
-        and any(line["variety_id"] == ids["Sir Jack"] for line in body["lines"])
+        and any(line["product_id"] == ids["Sir Jack"] for line in body["lines"])
     )
 
 
@@ -342,7 +343,7 @@ def adjustment_of(method: str, path: str, body: dict[str, Any], ids: dict[str, i
     return (
         (method, path) == ("POST", "/stock/entries")
         and body["origin"] == "adjustment"
-        and body["variety_id"] == ids["24K Gold"]
+        and body["product_id"] == ids["24K Gold"]
     )
 
 
@@ -352,8 +353,8 @@ def jack_line_to_cookies(
     if not own_use_of(method, path, body, ids):
         return None
     lines = [
-        {**line, "variety_id": ids["Golden Cookies"]}
-        if line["variety_id"] == ids["Sir Jack"]
+        {**line, "product_id": ids["Golden Cookies"]}
+        if line["product_id"] == ids["Sir Jack"]
         else line
         for line in body["lines"]
     ]
@@ -367,12 +368,12 @@ def jack_gram_to_promotion(
     capture day's promotion of Sir Jack's 1 g); the brief's "removed here, added there"."""
     if not own_use_of(method, path, body, ids):
         return None
-    lines = [line for line in body["lines"] if line["variety_id"] != ids["Sir Jack"]]
+    lines = [line for line in body["lines"] if line["product_id"] != ids["Sir Jack"]]
     promotion = {
         "date": body["date"],
         "reason": "promotion",
         "note": None,
-        "lines": [{"variety_id": ids["Sir Jack"], "quantity": "1"}],
+        "lines": [{"product_id": ids["Sir Jack"], "quantity": "1"}],
     }
     return Rewrite({**body, "lines": lines}, [("POST", "/stock/withdrawals", promotion)])
 
@@ -382,7 +383,7 @@ def adjustment_to_cookies(
 ) -> Rewrite | None:
     if not adjustment_of(method, path, body, ids):
         return None
-    return Rewrite({**body, "variety_id": ids["Golden Cookies"]})
+    return Rewrite({**body, "product_id": ids["Golden Cookies"]})
 
 
 def adjustment_of_three(

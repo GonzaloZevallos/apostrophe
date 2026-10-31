@@ -5,7 +5,7 @@ function entry(id: number, varietyId: number): StockEntry {
   return {
     id,
     date: '2026-10-01',
-    variety_id: varietyId,
+    product_id: varietyId,
     origin: 'purchase',
     quantity: 10,
     total_cost: null,
@@ -15,7 +15,7 @@ function entry(id: number, varietyId: number): StockEntry {
 }
 
 function view(entries: StockEntry[]): StockView {
-  return { total: 0, varieties: [], entries }
+  return { total: 0, products: [], entries }
 }
 
 describe('entriesOf', () => {
@@ -51,7 +51,7 @@ describe('setThreshold', () => {
     await setThreshold(3, 15.5)
 
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
-    expect(url).toBe('/stock/varieties/3/threshold')
+    expect(url).toBe('/stock/products/3/threshold')
     expect(init.method).toBe('PUT')
     expect(JSON.parse(String(init.body))).toEqual({ quantity: 15.5 })
   })

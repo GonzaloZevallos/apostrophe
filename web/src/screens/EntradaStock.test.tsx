@@ -114,9 +114,9 @@ function renderGone(entries: HistoryEntry[], index = entries.length - 1) {
 const VARIETIES = [{ id: 3, name: 'Sir Jack', current_price: null }]
 const STOCK_VIEW = {
   total: 18.5,
-  varieties: [
+  products: [
     {
-      variety_id: 3,
+      product_id: 3,
       quantity: 18.5,
       status: 'ok',
       sold_out_since: null,
@@ -136,7 +136,7 @@ test('a new entry starts dated today and shows "Hoy tiene N g" once a variety is
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       return Promise.resolve(jsonResponse(500, {}))
     }),
@@ -156,13 +156,13 @@ test('records an entry and lands back on the list with the saved toast', async (
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       return Promise.resolve(
         jsonResponse(201, {
           id: 10,
           date: '2026-10-03',
-          variety_id: 3,
+          product_id: 3,
           origin: 'harvest',
           quantity: 30,
           total_cost: null,
@@ -188,14 +188,14 @@ test('an adjustment can carry negative grams, sent through to the API as typed',
     'fetch',
     vi.fn((input: string | URL | Request, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       expect(init?.body).toEqual(expect.stringContaining('"-4.5"'))
       return Promise.resolve(
         jsonResponse(201, {
           id: 11,
           date: '2026-10-03',
-          variety_id: 3,
+          product_id: 3,
           origin: 'adjustment',
           quantity: -4.5,
           total_cost: null,
@@ -221,14 +221,14 @@ test('re-saving an existing negative adjustment keeps its negative grams through
     'fetch',
     vi.fn((input: string | URL | Request, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       if (init?.method === 'GET') {
         return Promise.resolve(
           jsonResponse(200, {
             id: 12,
             date: '2026-09-15',
-            variety_id: 3,
+            product_id: 3,
             origin: 'adjustment',
             quantity: -4.5,
             total_cost: null,
@@ -242,7 +242,7 @@ test('re-saving an existing negative adjustment keeps its negative grams through
         jsonResponse(200, {
           id: 12,
           date: '2026-09-15',
-          variety_id: 3,
+          product_id: 3,
           origin: 'adjustment',
           quantity: -4.5,
           total_cost: null,
@@ -267,7 +267,7 @@ test('a purchase refused for missing cost shows the refusal on its own field, ke
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       return Promise.resolve(jsonResponse(422, { detail: 'needs a cost', code: 'stock.cost_required' }))
     }),
@@ -287,14 +287,14 @@ test('editing an entry confirms before saving', async () => {
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       if (url === '/stock/entries/10') {
         return Promise.resolve(
           jsonResponse(200, {
             id: 10,
             date: '2026-09-20',
-            variety_id: 3,
+            product_id: 3,
             origin: 'harvest',
             quantity: 25,
             total_cost: null,
@@ -307,7 +307,7 @@ test('editing an entry confirms before saving', async () => {
         jsonResponse(200, {
           id: 10,
           date: '2026-09-20',
-          variety_id: 3,
+          product_id: 3,
           origin: 'harvest',
           quantity: 28,
           total_cost: null,
@@ -339,14 +339,14 @@ test('deleting an entry confirms first, naming the date, variety and grams', asy
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       if (url === '/stock/entries/10') {
         return Promise.resolve(
           jsonResponse(200, {
             id: 10,
             date: '2026-09-20',
-            variety_id: 3,
+            product_id: 3,
             origin: 'harvest',
             quantity: 25,
             total_cost: null,
@@ -390,7 +390,7 @@ test('deleting an entry never re-fetches the entry it just deleted', async () =>
     'fetch',
     vi.fn((input: string | URL | Request, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       if (url === '/stock/entries/10' && init?.method === 'DELETE') {
         return Promise.resolve(new Response(null, { status: 204 }))
@@ -401,7 +401,7 @@ test('deleting an entry never re-fetches the entry it just deleted', async () =>
           jsonResponse(200, {
             id: 10,
             date: '2026-09-20',
-            variety_id: 3,
+            product_id: 3,
             origin: 'harvest',
             quantity: 25,
             total_cost: null,
@@ -422,7 +422,7 @@ test('deleting an entry never re-fetches the entry it just deleted', async () =>
   expect(getEntryCalls).toBe(1)
 })
 
-function stockOf(entries: { id: number; variety_id: number }[]) {
+function stockOf(entries: { id: number; product_id: number }[]) {
   return {
     ...STOCK_VIEW,
     entries: entries.map((row) => ({
@@ -445,7 +445,7 @@ function fakeFor(stock: unknown, extra: Record<string, () => Response> = {}) {
       const key = `${init?.method ?? 'GET'} ${url}`
       const hit = extra[key]
       if (hit !== undefined) return Promise.resolve(hit())
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, stock))
       return Promise.resolve(jsonResponse(500, {}))
     }),
@@ -464,7 +464,7 @@ test('an entry started from a variety has it chosen and "Initial stock" preselec
 })
 
 test('an entry started from a variety that already has entries keeps Compra', async () => {
-  fakeFor(stockOf([{ id: 1, variety_id: 3 }]))
+  fakeFor(stockOf([{ id: 1, product_id: 3 }]))
   renderForm(`${STOCK_ENTRY_NEW}?variety=3`)
 
   const select = await screen.findByRole('combobox', { name: /^Variety/ })
@@ -474,7 +474,7 @@ test('an entry started from a variety that already has entries keeps Compra', as
 })
 
 test("another variety's entries do not stop 'Initial stock' from being preselected", async () => {
-  fakeFor(stockOf([{ id: 1, variety_id: 9 }]))
+  fakeFor(stockOf([{ id: 1, product_id: 9 }]))
   renderForm(`${STOCK_ENTRY_NEW}?variety=3`)
 
   const select = await screen.findByRole('combobox', { name: /^Variety/ })
@@ -513,7 +513,7 @@ test('Cerrar with no history goes to "All entries" for an edit', async () => {
       jsonResponse(200, {
         id: 10,
         date: '2026-09-20',
-        variety_id: 3,
+        product_id: 3,
         origin: 'harvest',
         quantity: 25,
         total_cost: null,
@@ -532,7 +532,7 @@ test('a save goes back by history too, and says "Entry saved" there', async () =
       jsonResponse(201, {
         id: 11,
         date: '2026-10-03',
-        variety_id: 3,
+        product_id: 3,
         origin: 'opening_stock',
         quantity: 30,
         total_cost: null,
@@ -564,7 +564,7 @@ test('a save marks the catalog stale, since stock changes what it says', async (
       jsonResponse(201, {
         id: 11,
         date: '2026-10-03',
-        variety_id: 3,
+        product_id: 3,
         origin: 'harvest',
         quantity: 30,
         total_cost: null,
@@ -573,7 +573,7 @@ test('a save marks the catalog stale, since stock changes what it says', async (
       }),
   })
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  client.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', varieties: [] })
+  client.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', products: [] })
   renderForm(STOCK_ENTRY_NEW, client)
 
   await userEvent.type(await screen.findByLabelText('Grams'), '30')
@@ -604,7 +604,7 @@ test('Cerrar with something typed asks before discarding, and leaving is refused
 const ENTRY_10 = {
   id: 10,
   date: '2026-09-20',
-  variety_id: 3,
+  product_id: 3,
   origin: 'harvest',
   quantity: 25,
   total_cost: null,
@@ -732,14 +732,14 @@ test('editing an entry of an archived variety shows it as the chosen one, and of
       jsonResponse(200, {
         id: 10,
         date: '2026-09-20',
-        variety_id: 8,
+        product_id: 8,
         origin: 'harvest',
         quantity: 25,
         total_cost: null,
         cost_per_gram: null,
         note: null,
       }),
-    'GET /varieties?archived=true': () =>
+    'GET /api/products?archived=true': () =>
       jsonResponse(200, [
         { id: 8, name: 'Vieja', archived: true, current_price: null },
         { id: 9, name: 'Otra archivada', archived: true, current_price: null },
@@ -759,7 +759,7 @@ test('a new entry never asks for the archived varieties', async () => {
   renderForm(STOCK_ENTRY_NEW)
 
   await screen.findByRole('option', { name: 'Sir Jack' })
-  expect(fetch).not.toHaveBeenCalledWith('/varieties?archived=true', expect.anything())
+  expect(fetch).not.toHaveBeenCalledWith('/api/products?archived=true', expect.anything())
 })
 
 test('the form keeps the icon and text rule, its help lines within their limits', async () => {
@@ -767,7 +767,7 @@ test('the form keeps the icon and text rule, its help lines within their limits'
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
-      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
       if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       return Promise.resolve(jsonResponse(500, {}))
     }),

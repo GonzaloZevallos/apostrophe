@@ -41,7 +41,7 @@ const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02'
 const LIVE = { id: 1, name: '24K Gold', archived: false, removal: null, current_price: null }
 const ARCHIVED = { id: 2, name: 'Vieja', archived: true, removal: null, current_price: null }
 const FIRST_RUN_NONE = { kind: 'none', checklist: [], import_notice: false, nothing_qualifies: false }
-const CATALOG_ANSWER = { text: null, header: '', footer: '', varieties: [] }
+const CATALOG_ANSWER = { text: null, header: '', footer: '', products: [] }
 
 function json(body: unknown, status = 200): Promise<Response> {
   return Promise.resolve(
@@ -54,12 +54,12 @@ function answer(input: RequestInfo | URL): Promise<Response> {
   const url = String(input)
   const [path = '', query = ''] = url.split('?')
   if (path === '/auth/me') return json(ME)
-  if (path === '/varieties') return json(query.includes('archived=true') ? [ARCHIVED] : [LIVE])
-  if (path === '/varieties/1') return json(LIVE)
-  if (path === '/varieties/2') return json(ARCHIVED)
-  if (/^\/varieties\/\d+\/prices$/.test(path)) return json([])
-  if (path === '/stock') return json({ total: 0, varieties: [], entries: [] })
-  if (/^\/stock\/varieties\/\d+\/movements$/.test(path)) return json([])
+  if (path === '/api/products') return json(query.includes('archived=true') ? [ARCHIVED] : [LIVE])
+  if (path === '/api/products/1') return json(LIVE)
+  if (path === '/api/products/2') return json(ARCHIVED)
+  if (/^\/api\/products\/\d+\/prices$/.test(path)) return json([])
+  if (path === '/stock') return json({ total: 0, products: [], entries: [] })
+  if (/^\/stock\/products\/\d+\/movements$/.test(path)) return json([])
   if (path === '/catalog') return json(CATALOG_ANSWER)
   if (path === '/catalog/archived') return json([])
   if (path === '/first-run') return json(FIRST_RUN_NONE)

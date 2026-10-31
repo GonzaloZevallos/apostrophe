@@ -15,9 +15,9 @@ PRICE = 1_000
 
 
 def _priced_variety(client: TestClient) -> int:
-    variety: dict[str, int] = client.post("/varieties", json={"name": "Variety"}).json()
+    variety: dict[str, int] = client.post("/api/products", json={"name": "Variety"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": PRICE},
     )
     return variety["id"]
@@ -30,7 +30,7 @@ def _owing_sale(client: TestClient, customer_id: int, variety_id: int, quantity:
             "customer_id": customer_id,
             "payment": "owing",
             "date": SALE_DATE,
-            "lines": [{"variety_id": variety_id, "quantity": str(quantity)}],
+            "lines": [{"product_id": variety_id, "quantity": str(quantity)}],
         },
     )
     assert sale.status_code == 201, sale.text

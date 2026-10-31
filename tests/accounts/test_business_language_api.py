@@ -146,24 +146,24 @@ def test_one_business_changing_its_language_leaves_the_other(
 
 
 def test_a_change_leaves_the_business_s_own_texts(client: TestClient) -> None:
-    variety = client.post("/varieties", json={"name": "Ananá"}).json()
+    variety = client.post("/api/products", json={"name": "Ananá"}).json()
     client.put(
-        f"/catalog/varieties/{variety['id']}",
+        f"/catalog/products/{variety['id']}",
         json={"shown": True, "emoji": None, "indica_share": None, "aroma": "Cítrico"},
     )
     client.put("/catalog/header-footer", json={"header": "Hola!", "footer": "Chau"})
     before = (
         client.get("/catalog/header-footer").json(),
-        client.get("/varieties").json(),
-        client.get("/catalog/varieties").json(),
+        client.get("/api/products").json(),
+        client.get("/catalog/products").json(),
     )
 
     _change(client, "de")
 
     assert before == (
         client.get("/catalog/header-footer").json(),
-        client.get("/varieties").json(),
-        client.get("/catalog/varieties").json(),
+        client.get("/api/products").json(),
+        client.get("/catalog/products").json(),
     )
 
 
@@ -184,14 +184,14 @@ def _status(client: TestClient) -> dict[str, Any]:
 
 
 def _published(client: TestClient) -> int:
-    variety = client.post("/varieties", json={"name": "V1"}).json()
+    variety = client.post("/api/products", json={"name": "V1"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 9000},
     )
     client.post(
         "/stock/entries",
-        json={"variety_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
+        json={"product_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
     )
     client.post(
         "/pinned-catalog/test",
@@ -240,7 +240,7 @@ def _stale(client: TestClient, telegram: FakeTelegram) -> None:
     """Published, then a price change whose edit failed: the business is Out of date."""
     variety_id = _published(client)
     telegram.fail_next(TelegramUnreachable())
-    client.patch(f"/varieties/{variety_id}", json={"name": "V1 Renamed"})
+    client.patch(f"/api/products/{variety_id}", json={"name": "V1 Renamed"})
     assert _status(client)["state"] == "out_of_date"
     telegram.calls.clear()
 

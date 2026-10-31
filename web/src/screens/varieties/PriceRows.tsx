@@ -63,7 +63,7 @@ export default function PriceRows({ varietyId, history, currentPriceId, limit, r
     setOffline(false)
     setFailed(false)
     try {
-      await del(`/varieties/${varietyId}/prices/${entry.id}`)
+      await del(`/api/products/${varietyId}/prices/${entry.id}`)
       invalidateResource(queryClient, 'varieties')
       setDeleting(null)
       flash.showNow(VARIETIES_TEXT.precioEliminado)

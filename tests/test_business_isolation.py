@@ -68,12 +68,14 @@ MARKER = "zz-isolation-marker"
 
 
 def seed_varieties(client: TestClient) -> dict[str, int]:
-    variety = client.post("/varieties", json={"name": f"{MARKER} variety"}).json()
+    variety = client.post("/api/products", json={"name": f"{MARKER} variety"}).json()
     entry = client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 11_000},
     ).json()
-    return {"variety_id": variety["id"], "entry_id": entry["id"]}
+    # `product_id` fills the `{product_id}` path parameter of the sweep's routes; `variety_id`
+    # is the key the tests below read back.
+    return {"variety_id": variety["id"], "product_id": variety["id"], "entry_id": entry["id"]}
 
 
 def seed_customers(client: TestClient) -> dict[str, int]:
@@ -104,9 +106,9 @@ def seed_expenses(client: TestClient) -> dict[str, int]:
 
 
 def seed_sales(client: TestClient) -> dict[str, int]:
-    variety = client.post("/varieties", json={"name": f"{MARKER} sales variety"}).json()
+    variety = client.post("/api/products", json={"name": f"{MARKER} sales variety"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 11_000},
     )
     customer = client.post(
@@ -117,7 +119,7 @@ def seed_sales(client: TestClient) -> dict[str, int]:
         json={
             "payment": "cash",
             "note": MARKER,
-            "lines": [{"variety_id": variety["id"], "quantity": "10"}],
+            "lines": [{"product_id": variety["id"], "quantity": "10"}],
         },
     ).json()
     client.post(
@@ -125,30 +127,30 @@ def seed_sales(client: TestClient) -> dict[str, int]:
         json={
             "payment": "owing",
             "customer_id": customer["id"],
-            "lines": [{"variety_id": variety["id"], "quantity": "10"}],
+            "lines": [{"product_id": variety["id"], "quantity": "10"}],
         },
     )
     return {"sale_id": without_customer["id"]}
 
 
 def seed_catalog(client: TestClient) -> dict[str, int]:
-    variety = client.post("/varieties", json={"name": f"{MARKER} catalog variety"}).json()
+    variety = client.post("/api/products", json={"name": f"{MARKER} catalog variety"}).json()
     price = client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 11_000},
     )
     assert price.status_code == 201, price.text
     entry = client.post(
         "/stock/entries",
         json={
-            "variety_id": variety["id"],
+            "product_id": variety["id"],
             "origin": "opening_stock",
             "quantity": "50",
         },
     )
     assert entry.status_code == 201, entry.text
     attributes = client.put(
-        f"/catalog/varieties/{variety['id']}",
+        f"/catalog/products/{variety['id']}",
         json={"shown": True, "emoji": None, "indica_share": None, "aroma": MARKER},
     )
     assert attributes.status_code == 200, attributes.text
@@ -158,11 +160,11 @@ def seed_catalog(client: TestClient) -> dict[str, int]:
 
 
 def seed_stock(client: TestClient) -> dict[str, int]:
-    variety = client.post("/varieties", json={"name": f"{MARKER} stock variety"}).json()
+    variety = client.post("/api/products", json={"name": f"{MARKER} stock variety"}).json()
     entry = client.post(
         "/stock/entries",
         json={
-            "variety_id": variety["id"],
+            "product_id": variety["id"],
             "origin": "opening_stock",
             "quantity": "50",
             "note": MARKER,
@@ -174,7 +176,7 @@ def seed_stock(client: TestClient) -> dict[str, int]:
         json={
             "reason": "promotion",
             "note": MARKER,
-            "lines": [{"variety_id": variety["id"], "quantity": "5"}],
+            "lines": [{"product_id": variety["id"], "quantity": "5"}],
         },
     )
     assert withdrawal.status_code == 201, withdrawal.text
@@ -197,9 +199,9 @@ def seed_pinned_catalog(client: TestClient) -> dict[str, int]:
 
 
 def seed_payments(client: TestClient) -> dict[str, int]:
-    variety = client.post("/varieties", json={"name": f"{MARKER} payments variety"}).json()
+    variety = client.post("/api/products", json={"name": f"{MARKER} payments variety"}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 11_000},
     )
     customer = client.post(
@@ -211,7 +213,7 @@ def seed_payments(client: TestClient) -> dict[str, int]:
         json={
             "payment": "owing",
             "customer_id": customer_id,
-            "lines": [{"variety_id": variety["id"], "quantity": "10"}],
+            "lines": [{"product_id": variety["id"], "quantity": "10"}],
         },
     )
     payment = client.post(
@@ -253,9 +255,9 @@ SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
 ]
 
 BODIES: dict[tuple[str, str], dict[str, Any]] = {
-    ("POST", "/varieties"): {"name": "Another variety"},
-    ("PATCH", "/varieties/{variety_id}"): {"name": "Renamed"},
-    ("POST", "/varieties/{variety_id}/prices"): {
+    ("POST", "/api/products"): {"name": "Another variety"},
+    ("PATCH", "/api/products/{product_id}"): {"name": "Renamed"},
+    ("POST", "/api/products/{product_id}/prices"): {
         "effective_from": "2026-02-01",
         "list_price": 12_000,
     },
@@ -282,29 +284,29 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
     ("POST", "/sales"): {
         "payment": "owing",
         "customer_id": 1,
-        "lines": [{"variety_id": 1, "quantity": "1"}],
+        "lines": [{"product_id": 1, "quantity": "1"}],
     },
     ("PUT", "/sales/{sale_id}/customer"): {"customer_id": 1},
     ("POST", "/stock/entries"): {
-        "variety_id": 1,
+        "product_id": 1,
         "origin": "opening_stock",
         "quantity": "10",
     },
     ("PUT", "/stock/entries/{stock_entry_id}"): {
-        "variety_id": 1,
+        "product_id": 1,
         "origin": "opening_stock",
         "quantity": "20",
     },
     ("POST", "/stock/withdrawals"): {
         "reason": "own_use",
-        "lines": [{"variety_id": 1, "quantity": "1"}],
+        "lines": [{"product_id": 1, "quantity": "1"}],
     },
     ("PUT", "/stock/withdrawals/{withdrawal_id}"): {
         "reason": "own_use",
-        "lines": [{"variety_id": 1, "quantity": "2"}],
+        "lines": [{"product_id": 1, "quantity": "2"}],
     },
-    ("PUT", "/stock/varieties/{variety_id}/threshold"): {"quantity": "15"},
-    ("PUT", "/catalog/varieties/{variety_id}"): {
+    ("PUT", "/stock/products/{product_id}/threshold"): {"quantity": "15"},
+    ("PUT", "/catalog/products/{product_id}"): {
         "shown": True,
         "emoji": None,
         "indica_share": 50,
@@ -476,9 +478,9 @@ def seeded_b(business_a: TestClient) -> dict[str, int]:
     """Business A's own variety and customer, named without `MARKER`: the valid
     reference `REFERENCES`-style checks send last, so `MARKER` never has to appear in
     a body that `test_another_business_lists_none_of_its_records` would then see."""
-    variety = business_a.post("/varieties", json={"name": "Referenced variety"}).json()
+    variety = business_a.post("/api/products", json={"name": "Referenced variety"}).json()
     business_a.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 11_000},
     )
     customer = business_a.post(
@@ -491,7 +493,7 @@ def _sale_body(*, variety_id: int, customer_id: int) -> dict[str, Any]:
     return {
         "payment": "owing",
         "customer_id": customer_id,
-        "lines": [{"variety_id": variety_id, "quantity": "1"}],
+        "lines": [{"product_id": variety_id, "quantity": "1"}],
     }
 
 
@@ -514,9 +516,9 @@ def test_a_body_reference_to_a_missing_or_foreign_variety_is_refused_the_same_wa
     assert other_business.status_code == 404, other_business.text
     assert missing.json() == other_business.json()
 
-    own_variety = business_b.post("/varieties", json={"name": "B variety"}).json()
+    own_variety = business_b.post("/api/products", json={"name": "B variety"}).json()
     business_b.post(
-        f"/varieties/{own_variety['id']}/prices",
+        f"/api/products/{own_variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 5_000},
     )
     valid = business_b.post(
@@ -529,9 +531,9 @@ def test_a_withdrawal_naming_a_missing_or_foreign_variety_is_refused_the_same_wa
     business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
 ) -> None:
     def body(variety_id: int) -> dict[str, Any]:
-        return {"reason": "promotion", "lines": [{"variety_id": variety_id, "quantity": "1"}]}
+        return {"reason": "promotion", "lines": [{"product_id": variety_id, "quantity": "1"}]}
 
-    own_variety = business_b.post("/varieties", json={"name": "B withdrawal variety"}).json()
+    own_variety = business_b.post("/api/products", json={"name": "B withdrawal variety"}).json()
     own = business_b.post("/stock/withdrawals", json=body(own_variety["id"]))
     assert own.status_code == 201, own.text
     path = f"/stock/withdrawals/{own.json()['id']}"
@@ -548,15 +550,15 @@ def test_a_withdrawal_naming_a_missing_or_foreign_variety_is_refused_the_same_wa
         assert other_business.status_code == 404, other_business.text
         assert missing.json() == other_business.json()
 
-    assert business_b.get(f"/stock/varieties/{seeded_b['variety_id']}/movements").status_code == 404
+    assert business_b.get(f"/stock/products/{seeded_b['variety_id']}/movements").status_code == 404
 
 
 def test_a_body_reference_to_a_missing_or_foreign_customer_is_refused_the_same_way(
     business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
 ) -> None:
-    variety = business_b.post("/varieties", json={"name": "B variety 2"}).json()
+    variety = business_b.post("/api/products", json={"name": "B variety 2"}).json()
     business_b.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 5_000},
     )
     foreign_customer = seeded_b["customer_id"]
@@ -584,14 +586,14 @@ def test_a_body_reference_to_a_missing_or_foreign_customer_is_refused_the_same_w
 def test_assigning_a_customer_from_another_business_is_refused_the_same_way_as_missing(
     business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
 ) -> None:
-    variety = business_b.post("/varieties", json={"name": "B variety 3"}).json()
+    variety = business_b.post("/api/products", json={"name": "B variety 3"}).json()
     business_b.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 5_000},
     )
     sale_id = business_b.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety["id"], "quantity": "1"}]},
+        json={"payment": "cash", "lines": [{"product_id": variety["id"], "quantity": "1"}]},
     ).json()["id"]
     foreign_customer = seeded_b["customer_id"]
 
@@ -614,13 +616,13 @@ def test_assigning_a_customer_from_another_business_is_refused_the_same_way_as_m
 def test_another_business_reads_none_of_the_archived_stock_rows(
     business_a: TestClient, business_b: TestClient, engine: Engine
 ) -> None:
-    variety = business_a.post("/varieties", json={"name": "Archived here"}).json()
+    variety = business_a.post("/api/products", json={"name": "Archived here"}).json()
     archive_by_hand(engine, variety["id"])
-    assert [
-        r["variety_id"] for r in business_a.get("/stock?archived=true").json()["varieties"]
-    ] == [variety["id"]]
+    assert [r["product_id"] for r in business_a.get("/stock?archived=true").json()["products"]] == [
+        variety["id"]
+    ]
 
-    assert business_b.get("/stock?archived=true").json()["varieties"] == []
+    assert business_b.get("/stock?archived=true").json()["products"] == []
 
 
 @pytest.mark.parametrize("path", LISTS)
@@ -645,10 +647,10 @@ def test_business_a_sees_its_own_catalog_seed(
 
     assert catalog["header"] == MARKER
     assert catalog["text"] is not None and MARKER in catalog["text"]
-    assert any(variety["name"] == f"{MARKER} catalog variety" for variety in catalog["varieties"])
+    assert any(variety["name"] == f"{MARKER} catalog variety" for variety in catalog["products"])
     assert any(
         variety["name"] == f"{MARKER} catalog variety" and variety["state"] == "in"
-        for variety in catalog["varieties"]
+        for variety in catalog["products"]
     )
 
 
@@ -791,9 +793,9 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
     filtered by business: without the `business_id` filter it would draw from A's
     lot and B would show a shortfall too."""
     today = clock().date().isoformat()
-    variety = business_a.post("/varieties", json={"name": f"{MARKER} panel variety"}).json()
+    variety = business_a.post("/api/products", json={"name": f"{MARKER} panel variety"}).json()
     business_a.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 10_000},
     )
     customer = business_a.post(
@@ -804,7 +806,7 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
         json={
             "date": today,
             "payment": "cash",
-            "lines": [{"variety_id": variety["id"], "quantity": "3", "gift": True}],
+            "lines": [{"product_id": variety["id"], "quantity": "3", "gift": True}],
         },
     )
     assert gifted.status_code == 201, gifted.text
@@ -814,7 +816,7 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
             "date": today,
             "customer_id": customer["id"],
             "payment": "owing",
-            "lines": [{"variety_id": variety["id"], "quantity": "2"}],
+            "lines": [{"product_id": variety["id"], "quantity": "2"}],
         },
     )
     assert owing.status_code == 201, owing.text
@@ -839,7 +841,7 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
     purchase = business_a.post(
         "/stock/entries",
         json={
-            "variety_id": variety["id"],
+            "product_id": variety["id"],
             "origin": "purchase",
             "quantity": "50",
             "total_cost": 2_000,
@@ -850,7 +852,7 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
     adjustment = business_a.post(
         "/stock/entries",
         json={
-            "variety_id": variety["id"],
+            "product_id": variety["id"],
             "origin": "adjustment",
             "quantity": "-5",
             "date": today,
@@ -973,7 +975,7 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
 
     assert a_analysis["first_record"] is not None
     assert a_analysis["month"]["sales"] > 0
-    assert any(MARKER in variety["name"] for variety in a_analysis["month"]["varieties"])
+    assert any(MARKER in variety["name"] for variety in a_analysis["month"]["products"])
 
     current_month = str(Month.containing(TODAY))
     assert b_analysis == {
@@ -991,7 +993,7 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
             "shortfall": None,
             "promotion": None,
             "own_use": None,
-            "varieties": [],
+            "products": [],
         },
         "weeks": [],
         "months": [],
@@ -1045,9 +1047,9 @@ def test_another_business_dismissing_the_import_notice_leaves_a_s_own(
 def test_another_business_has_no_priced_target_while_a_has_one(
     business_a: TestClient, business_b: TestClient
 ) -> None:
-    variety = business_a.post("/varieties", json={"name": "Priced variety"}).json()
+    variety = business_a.post("/api/products", json={"name": "Priced variety"}).json()
     business_a.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 11_000},
     )
 
@@ -1062,55 +1064,55 @@ def test_another_business_has_no_priced_target_while_a_has_one(
 @pytest.mark.parametrize(
     ("method", "path"),
     [
-        ("GET", "/varieties/{id}"),
-        ("POST", "/varieties/{id}/archive"),
-        ("POST", "/varieties/{id}/restore"),
-        ("PATCH", "/varieties/{id}"),
-        ("POST", "/varieties/{id}/prices"),
-        ("DELETE", "/varieties/{id}"),
+        ("GET", "/api/products/{id}"),
+        ("POST", "/api/products/{id}/archive"),
+        ("POST", "/api/products/{id}/restore"),
+        ("PATCH", "/api/products/{id}"),
+        ("POST", "/api/products/{id}/prices"),
+        ("DELETE", "/api/products/{id}"),
     ],
 )
 def test_another_business_cannot_reach_an_archived_variety(
     business_a: TestClient, business_b: TestClient, method: str, path: str
 ) -> None:
-    variety = business_a.post("/varieties", json={"name": f"{MARKER} archived"}).json()
-    business_a.post(f"/varieties/{variety['id']}/archive")
+    variety = business_a.post("/api/products", json={"name": f"{MARKER} archived"}).json()
+    business_a.post(f"/api/products/{variety['id']}/archive")
     body = {"name": "Renamed", "effective_from": "2026-02-01", "list_price": 12_000}
 
     response = business_b.request(method, path.format(id=variety["id"]), json=body)
 
     assert response.status_code == 404, response.text
     assert response.json()["code"] == "variety.not_found"
-    b_archived = business_b.get("/varieties", params={"archived": "true"}).json()
+    b_archived = business_b.get("/api/products", params={"archived": "true"}).json()
     assert b_archived == []
-    assert business_a.get(f"/varieties/{variety['id']}").json()["archived"] is True
+    assert business_a.get(f"/api/products/{variety['id']}").json()["archived"] is True
 
 
 @pytest.mark.parametrize("archived", [False, True])
 def test_another_business_cannot_delete_a_variety_with_no_history(
     business_a: TestClient, business_b: TestClient, archived: bool
 ) -> None:
-    variety = business_a.post("/varieties", json={"name": f"{MARKER} deletable"}).json()
+    variety = business_a.post("/api/products", json={"name": f"{MARKER} deletable"}).json()
     if archived:
-        business_a.post(f"/varieties/{variety['id']}/archive")
+        business_a.post(f"/api/products/{variety['id']}/archive")
 
-    response = business_b.delete(f"/varieties/{variety['id']}")
+    response = business_b.delete(f"/api/products/{variety['id']}")
 
     assert response.status_code == 404, response.text
     assert response.json()["code"] == "variety.not_found"
-    assert business_a.get(f"/varieties/{variety['id']}").status_code == 200
+    assert business_a.get(f"/api/products/{variety['id']}").status_code == 200
 
 
 def test_another_business_reads_none_of_the_archived_catalog_attributes(
     business_a: TestClient, business_b: TestClient, engine: Engine
 ) -> None:
-    variety = business_a.post("/varieties", json={"name": "Archived catalog here"}).json()
+    variety = business_a.post("/api/products", json={"name": "Archived catalog here"}).json()
     attributes = business_a.put(
-        f"/catalog/varieties/{variety['id']}",
+        f"/catalog/products/{variety['id']}",
         json={"shown": False, "emoji": None, "indica_share": 40, "aroma": MARKER},
     )
     assert attributes.status_code == 200, attributes.text
     archive_by_hand(engine, variety["id"])
-    assert [r["variety_id"] for r in business_a.get("/catalog/archived").json()] == [variety["id"]]
+    assert [r["product_id"] for r in business_a.get("/catalog/archived").json()] == [variety["id"]]
 
     assert business_b.get("/catalog/archived").json() == []

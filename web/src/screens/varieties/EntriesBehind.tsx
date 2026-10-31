@@ -26,7 +26,7 @@ export default function EntriesBehind() {
   const me = useOutletContext<Me>()
   const varieties = useQuery({
     queryKey: keys.varieties(),
-    queryFn: () => get<Variety[]>('/varieties'),
+    queryFn: () => get<Variety[]>('/api/products'),
     retry: false,
   })
   const stock = useQuery({

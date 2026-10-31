@@ -10,8 +10,7 @@ from app.products.domain.product import PriceEntry, Product
 QuantityOut = Annotated[Decimal, PlainSerializer(float, return_type=float, when_used="json")]
 
 
-# Keeps its wire name until the Product rename on the wire (ADR-0061).
-class VarietyIn(BaseModel):
+class ProductIn(BaseModel):
     name: str
 
 
@@ -44,30 +43,28 @@ class PriceEntryOut(BaseModel):
         )
 
 
-# Keeps its wire name until the Product rename on the wire (ADR-0061).
-class VarietyOut(BaseModel):
+class ProductOut(BaseModel):
     id: int
     name: str
     # The price in force on the day asked for (today, unless the caller asked for
-    # another day, docs/adr/0011); `null` when the variety has none that day.
+    # another day, docs/adr/0011); `null` when the product has none that day.
     current_price: PriceEntryOut | None
     archived: bool
 
     @classmethod
-    def of(cls, variety: Product, day: date) -> "VarietyOut":
-        assert variety.id is not None, "only stored varieties go out"
-        price = variety.current_price(day)
+    def of(cls, product: Product, day: date) -> "ProductOut":
+        assert product.id is not None, "only stored products go out"
+        price = product.current_price(day)
         return cls(
-            id=variety.id,
-            name=variety.name.value,
+            id=product.id,
+            name=product.name.value,
             current_price=None if price is None else PriceEntryOut.of(price),
-            archived=variety.is_archived,
+            archived=product.is_archived,
         )
 
 
-# Keeps its wire name until the Product rename on the wire (ADR-0061).
-class VarietyDetailOut(VarietyOut):
-    """One variety's page: also the one removal action it offers, worked out from history
-    when it is read (`null` for an archived variety)."""
+class ProductDetailOut(ProductOut):
+    """One product's page: also the one removal action it offers, worked out from history
+    when it is read (`null` for an archived product)."""
 
     removal: Literal["delete", "archive"] | None

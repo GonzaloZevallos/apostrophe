@@ -23,7 +23,7 @@ function inApp(node: React.ReactNode) {
   )
 }
 
-const LOW: VarietyStock = { variety_id: 1, quantity: 18, status: 'low', sold_out_since: null, threshold: 20, days_left: 24 }
+const LOW: VarietyStock = { product_id: 1, quantity: 18, status: 'low', sold_out_since: null, threshold: 20, days_left: 24 }
 
 function threshold(row: VarietyStock, readOnly: boolean) {
   inApp(<VarietyThresholdSection varietyId={1} row={row} refreshing={false} onGone={() => undefined} readOnly={readOnly} />)

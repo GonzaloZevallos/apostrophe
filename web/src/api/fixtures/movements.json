@@ -3,7 +3,7 @@
     "kind": "entry",
     "id": 3,
     "date": "2026-10-02",
-    "variety_id": 1,
+    "product_id": 1,
     "origin": "purchase",
     "quantity": 20.0,
     "total_cost": 170000,

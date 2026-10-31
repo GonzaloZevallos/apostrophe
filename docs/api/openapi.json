@@ -180,6 +180,13 @@
             ],
             "title": "Previous"
           },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/ProductRowOut"
+            },
+            "title": "Products",
+            "type": "array"
+          },
           "promotion": {
             "anyOf": [
               {
@@ -215,13 +222,6 @@
                 "type": "null"
               }
             ]
-          },
-          "varieties": {
-            "items": {
-              "$ref": "#/components/schemas/VarietyRowOut"
-            },
-            "title": "Varieties",
-            "type": "array"
           }
         },
         "required": [
@@ -236,7 +236,7 @@
           "shortfall",
           "promotion",
           "own_use",
-          "varieties"
+          "products"
         ],
         "title": "AnalysisMonthOut",
         "type": "object"
@@ -339,7 +339,7 @@
         "title": "AppliedToOut",
         "type": "object"
       },
-      "ArchivedCatalogVarietyOut": {
+      "ArchivedCatalogProductOut": {
         "properties": {
           "aroma": {
             "anyOf": [
@@ -378,24 +378,24 @@
             "title": "Name",
             "type": "string"
           },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
           "shown": {
             "title": "Shown",
             "type": "boolean"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
           }
         },
         "required": [
-          "variety_id",
+          "product_id",
           "name",
           "shown",
           "emoji",
           "indica_share",
           "aroma"
         ],
-        "title": "ArchivedCatalogVarietyOut",
+        "title": "ArchivedCatalogProductOut",
         "type": "object"
       },
       "AssignCustomerIn": {
@@ -572,6 +572,13 @@
             "title": "Header",
             "type": "string"
           },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/CatalogProductOut"
+            },
+            "title": "Products",
+            "type": "array"
+          },
           "text": {
             "anyOf": [
               {
@@ -582,25 +589,18 @@
               }
             ],
             "title": "Text"
-          },
-          "varieties": {
-            "items": {
-              "$ref": "#/components/schemas/CatalogVarietyOut"
-            },
-            "title": "Varieties",
-            "type": "array"
           }
         },
         "required": [
           "text",
           "header",
           "footer",
-          "varieties"
+          "products"
         ],
         "title": "CatalogOut",
         "type": "object"
       },
-      "CatalogVarietyOut": {
+      "CatalogProductOut": {
         "properties": {
           "aroma": {
             "anyOf": [
@@ -624,10 +624,6 @@
             ],
             "title": "Emoji"
           },
-          "id": {
-            "title": "Id",
-            "type": "integer"
-          },
           "indica_share": {
             "anyOf": [
               {
@@ -642,6 +638,10 @@
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
           },
           "shown": {
             "title": "Shown",
@@ -660,7 +660,7 @@
           }
         },
         "required": [
-          "id",
+          "product_id",
           "name",
           "emoji",
           "indica_share",
@@ -668,7 +668,7 @@
           "shown",
           "state"
         ],
-        "title": "CatalogVarietyOut",
+        "title": "CatalogProductOut",
         "type": "object"
       },
       "CategoryIn": {
@@ -1069,7 +1069,7 @@
         "type": "object"
       },
       "DeleteSaleOut": {
-        "description": "`DELETE /sales/{id}`'s own response: the grams returned per variety, summed from\nthe sale's own lines and sorted by `variety_id`.",
+        "description": "`DELETE /sales/{id}`'s own response: the quantity returned per product, summed from\nthe sale's own lines and sorted by `product_id`.",
         "properties": {
           "returned": {
             "items": {
@@ -1113,6 +1113,10 @@
           "origin": {
             "$ref": "#/components/schemas/Origin"
           },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
           "quantity": {
             "anyOf": [
               {
@@ -1135,14 +1139,10 @@
               }
             ],
             "title": "Total Cost"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
           }
         },
         "required": [
-          "variety_id",
+          "product_id",
           "origin",
           "quantity"
         ],
@@ -1191,6 +1191,10 @@
           "origin": {
             "$ref": "#/components/schemas/Origin"
           },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
           "quantity": {
             "title": "Quantity",
             "type": "number"
@@ -1205,16 +1209,12 @@
               }
             ],
             "title": "Total Cost"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
           }
         },
         "required": [
           "id",
           "date",
-          "variety_id",
+          "product_id",
           "origin",
           "quantity",
           "total_cost",
@@ -1260,6 +1260,10 @@
           "origin": {
             "$ref": "#/components/schemas/Origin"
           },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
           "quantity": {
             "title": "Quantity",
             "type": "number"
@@ -1274,16 +1278,12 @@
               }
             ],
             "title": "Total Cost"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
           }
         },
         "required": [
           "id",
           "date",
-          "variety_id",
+          "product_id",
           "origin",
           "quantity",
           "total_cost",
@@ -1580,6 +1580,10 @@
             "title": "Gift",
             "type": "boolean"
           },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
           "quantity": {
             "anyOf": [
               {
@@ -1602,14 +1606,10 @@
               }
             ],
             "title": "Special Price"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
           }
         },
         "required": [
-          "variety_id",
+          "product_id",
           "quantity"
         ],
         "title": "LineIn",
@@ -1634,7 +1634,7 @@
         "type": "object"
       },
       "MarginOut": {
-        "description": "A margin in pesos, worked out over costed grams only (ADR-0020): a variety's own\nmargin, or the chosen month's average margin. `percent` is `null` when the sales it\nis taken over are $0; `pending_quantity` is the sold-or-gifted grams behind it that are\nnot costed yet.",
+        "description": "A margin in pesos, worked out over costed grams only (ADR-0020): a product's own\nmargin, or the chosen month's average margin. `percent` is `null` when the sales it\nis taken over are $0; `pending_quantity` is the sold-or-gifted grams behind it that are\nnot costed yet.",
         "properties": {
           "amount": {
             "title": "Amount",
@@ -1858,7 +1858,7 @@
           },
           "stock": {
             "items": {
-              "$ref": "#/components/schemas/PanelVarietyOut"
+              "$ref": "#/components/schemas/PanelProductOut"
             },
             "title": "Stock",
             "type": "array"
@@ -1872,8 +1872,8 @@
         "title": "PanelOut",
         "type": "object"
       },
-      "PanelVarietyOut": {
-        "description": "`VarietyStockOut`'s own keys plus `name` (plan invariant: \"`PanelVarietyOut`\nsubclasses `VarietyStockOut` and adds only `name`\").",
+      "PanelProductOut": {
+        "description": "The keys of stock's `ProductStockOut` plus `name`; the row's internal id is mapped to\n`product_id` here, in the adapter.",
         "properties": {
           "days_left": {
             "anyOf": [
@@ -1889,6 +1889,10 @@
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
           },
           "quantity": {
             "title": "Quantity",
@@ -1926,14 +1930,10 @@
               }
             ],
             "title": "Threshold"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
           }
         },
         "required": [
-          "variety_id",
+          "product_id",
           "quantity",
           "status",
           "sold_out_since",
@@ -1941,7 +1941,7 @@
           "days_left",
           "name"
         ],
-        "title": "PanelVarietyOut",
+        "title": "PanelProductOut",
         "type": "object"
       },
       "PassIn": {
@@ -2660,6 +2660,224 @@
         "title": "PricingSettingsBody",
         "type": "object"
       },
+      "ProductDetailOut": {
+        "description": "One product's page: also the one removal action it offers, worked out from history\nwhen it is read (`null` for an archived product).",
+        "properties": {
+          "archived": {
+            "title": "Archived",
+            "type": "boolean"
+          },
+          "current_price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PriceEntryOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "removal": {
+            "anyOf": [
+              {
+                "enum": [
+                  "delete",
+                  "archive"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Removal"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "current_price",
+          "archived",
+          "removal"
+        ],
+        "title": "ProductDetailOut",
+        "type": "object"
+      },
+      "ProductIn": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "ProductIn",
+        "type": "object"
+      },
+      "ProductOut": {
+        "properties": {
+          "archived": {
+            "title": "Archived",
+            "type": "boolean"
+          },
+          "current_price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PriceEntryOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "current_price",
+          "archived"
+        ],
+        "title": "ProductOut",
+        "type": "object"
+      },
+      "ProductRowOut": {
+        "properties": {
+          "cost": {
+            "$ref": "#/components/schemas/CostOut"
+          },
+          "margin": {
+            "$ref": "#/components/schemas/MarginOut"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
+          "quantity_gifted": {
+            "title": "Quantity Gifted",
+            "type": "number"
+          },
+          "quantity_sold": {
+            "title": "Quantity Sold",
+            "type": "number"
+          },
+          "sales_without_shipping": {
+            "title": "Sales Without Shipping",
+            "type": "integer"
+          },
+          "share_percent": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Share Percent"
+          }
+        },
+        "required": [
+          "product_id",
+          "name",
+          "sales_without_shipping",
+          "share_percent",
+          "quantity_sold",
+          "quantity_gifted",
+          "cost",
+          "margin"
+        ],
+        "title": "ProductRowOut",
+        "type": "object"
+      },
+      "ProductStockOut": {
+        "description": "One product's row in `GET /stock` (and the threshold route's own response):\ncomputed only by `stock_level` over `lots_and_draws` (stock-domain), never by a\nSQL aggregate or front code.",
+        "properties": {
+          "days_left": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days Left"
+          },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "number"
+          },
+          "sold_out_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sold Out Since"
+          },
+          "status": {
+            "enum": [
+              "no_entries",
+              "sold_out",
+              "low",
+              "ok"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold"
+          }
+        },
+        "required": [
+          "product_id",
+          "quantity",
+          "status",
+          "sold_out_since",
+          "threshold",
+          "days_left"
+        ],
+        "title": "ProductStockOut",
+        "type": "object"
+      },
       "ProgressOut": {
         "properties": {
           "can_skip_rest": {
@@ -2697,6 +2915,10 @@
                 "type": "null"
               }
             ]
+          },
+          "products_count": {
+            "title": "Products Count",
+            "type": "integer"
           },
           "resume": {
             "anyOf": [
@@ -2741,10 +2963,6 @@
                 "type": "null"
               }
             ]
-          },
-          "varieties_count": {
-            "title": "Varieties Count",
-            "type": "integer"
           }
         },
         "required": [
@@ -2754,7 +2972,7 @@
           "resume",
           "steps",
           "can_skip_rest",
-          "varieties_count",
+          "products_count",
           "stock_entries_count",
           "price_target",
           "priced_target",
@@ -2802,17 +3020,17 @@
       },
       "ReturnedQuantityOut": {
         "properties": {
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
           "quantity": {
             "title": "Quantity",
             "type": "number"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
           }
         },
         "required": [
-          "variety_id",
+          "product_id",
           "quantity"
         ],
         "title": "ReturnedQuantityOut",
@@ -3196,22 +3414,22 @@
           "pricing_rule": {
             "$ref": "#/components/schemas/PricingRule"
           },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
+          "product_name": {
+            "title": "Product Name",
+            "type": "string"
+          },
           "quantity": {
             "title": "Quantity",
             "type": "number"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
-          },
-          "variety_name": {
-            "title": "Variety Name",
-            "type": "string"
           }
         },
         "required": [
-          "variety_id",
-          "variety_name",
+          "product_id",
+          "product_name",
           "quantity",
           "pricing_rule",
           "price_per_gram",
@@ -3234,22 +3452,22 @@
           "pricing_rule": {
             "$ref": "#/components/schemas/PricingRule"
           },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
+          "product_name": {
+            "title": "Product Name",
+            "type": "string"
+          },
           "quantity": {
             "title": "Quantity",
             "type": "number"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
-          },
-          "variety_name": {
-            "title": "Variety Name",
-            "type": "string"
           }
         },
         "required": [
-          "variety_id",
-          "variety_name",
+          "product_id",
+          "product_name",
           "quantity",
           "pricing_rule",
           "price_per_gram",
@@ -3486,7 +3704,7 @@
         "type": "string"
       },
       "StockOut": {
-        "description": "`GET /stock`'s own shape: the business's total grams, every variety's own row,\nand its entries, newest date first then most recently recorded first.",
+        "description": "`GET /stock`'s own shape: the business's total grams, every product's own row,\nand its entries, newest date first then most recently recorded first.",
         "properties": {
           "entries": {
             "items": {
@@ -3495,21 +3713,21 @@
             "title": "Entries",
             "type": "array"
           },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/ProductStockOut"
+            },
+            "title": "Products",
+            "type": "array"
+          },
           "total": {
             "title": "Total",
             "type": "number"
-          },
-          "varieties": {
-            "items": {
-              "$ref": "#/components/schemas/VarietyStockOut"
-            },
-            "title": "Varieties",
-            "type": "array"
           }
         },
         "required": [
           "total",
-          "varieties",
+          "products",
           "entries"
         ],
         "title": "StockOut",
@@ -3534,7 +3752,7 @@
         "type": "object"
       },
       "ThresholdIn": {
-        "description": "`PUT /stock/varieties/{variety_id}/threshold`'s body: `None` turns the\nthreshold off, rather than storing a zero or negative one (`Threshold.of`\nrefuses both).",
+        "description": "`PUT /stock/products/{product_id}/threshold`'s body: `None` turns the\nthreshold off, rather than storing a zero or negative one (`Threshold.of`\nrefuses both).",
         "properties": {
           "quantity": {
             "anyOf": [
@@ -3609,224 +3827,6 @@
           "type"
         ],
         "title": "ValidationError",
-        "type": "object"
-      },
-      "VarietyDetailOut": {
-        "description": "One variety's page: also the one removal action it offers, worked out from history\nwhen it is read (`null` for an archived variety).",
-        "properties": {
-          "archived": {
-            "title": "Archived",
-            "type": "boolean"
-          },
-          "current_price": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PriceEntryOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "id": {
-            "title": "Id",
-            "type": "integer"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "removal": {
-            "anyOf": [
-              {
-                "enum": [
-                  "delete",
-                  "archive"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Removal"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "current_price",
-          "archived",
-          "removal"
-        ],
-        "title": "VarietyDetailOut",
-        "type": "object"
-      },
-      "VarietyIn": {
-        "properties": {
-          "name": {
-            "title": "Name",
-            "type": "string"
-          }
-        },
-        "required": [
-          "name"
-        ],
-        "title": "VarietyIn",
-        "type": "object"
-      },
-      "VarietyOut": {
-        "properties": {
-          "archived": {
-            "title": "Archived",
-            "type": "boolean"
-          },
-          "current_price": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PriceEntryOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "id": {
-            "title": "Id",
-            "type": "integer"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "current_price",
-          "archived"
-        ],
-        "title": "VarietyOut",
-        "type": "object"
-      },
-      "VarietyRowOut": {
-        "properties": {
-          "cost": {
-            "$ref": "#/components/schemas/CostOut"
-          },
-          "margin": {
-            "$ref": "#/components/schemas/MarginOut"
-          },
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "quantity_gifted": {
-            "title": "Quantity Gifted",
-            "type": "number"
-          },
-          "quantity_sold": {
-            "title": "Quantity Sold",
-            "type": "number"
-          },
-          "sales_without_shipping": {
-            "title": "Sales Without Shipping",
-            "type": "integer"
-          },
-          "share_percent": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Share Percent"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "variety_id",
-          "name",
-          "sales_without_shipping",
-          "share_percent",
-          "quantity_sold",
-          "quantity_gifted",
-          "cost",
-          "margin"
-        ],
-        "title": "VarietyRowOut",
-        "type": "object"
-      },
-      "VarietyStockOut": {
-        "description": "One variety's row in `GET /stock` (and the threshold route's own response):\ncomputed only by `stock_level` over `lots_and_draws` (stock-domain), never by a\nSQL aggregate or front code.",
-        "properties": {
-          "days_left": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Days Left"
-          },
-          "quantity": {
-            "title": "Quantity",
-            "type": "number"
-          },
-          "sold_out_since": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Sold Out Since"
-          },
-          "status": {
-            "enum": [
-              "no_entries",
-              "sold_out",
-              "low",
-              "ok"
-            ],
-            "title": "Status",
-            "type": "string"
-          },
-          "threshold": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Threshold"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "variety_id",
-          "quantity",
-          "status",
-          "sold_out_since",
-          "threshold",
-          "days_left"
-        ],
-        "title": "VarietyStockOut",
         "type": "object"
       },
       "WeekOut": {
@@ -3996,6 +3996,10 @@
       },
       "WithdrawalLineIn": {
         "properties": {
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
           "quantity": {
             "anyOf": [
               {
@@ -4007,14 +4011,10 @@
               }
             ],
             "title": "Quantity"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
           }
         },
         "required": [
-          "variety_id",
+          "product_id",
           "quantity"
         ],
         "title": "WithdrawalLineIn",
@@ -4022,22 +4022,22 @@
       },
       "WithdrawalLineOut": {
         "properties": {
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
+          "product_name": {
+            "title": "Product Name",
+            "type": "string"
+          },
           "quantity": {
             "title": "Quantity",
             "type": "number"
-          },
-          "variety_id": {
-            "title": "Variety Id",
-            "type": "integer"
-          },
-          "variety_name": {
-            "title": "Variety Name",
-            "type": "string"
           }
         },
         "required": [
-          "variety_id",
-          "variety_name",
+          "product_id",
+          "product_name",
           "quantity"
         ],
         "title": "WithdrawalLineOut",
@@ -4268,6 +4268,574 @@
         "summary": "Get Analysis",
         "tags": [
           "results"
+        ]
+      }
+    },
+    "/api/products": {
+      "get": {
+        "description": "Each product's current price as of `on` (today when omitted, docs/adr/0011),\ninside the session's own business. Archived products only with `archived=true`.",
+        "operationId": "list_all_products_api_products_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "on",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "On"
+            }
+          },
+          {
+            "in": "query",
+            "name": "archived",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Archived",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProductOut"
+                  },
+                  "title": "Response List All Products Api Products Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List All Products",
+        "tags": [
+          "products"
+        ]
+      },
+      "post": {
+        "operationId": "register_product_api_products_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Register Product",
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/api/products/{product_id}": {
+      "delete": {
+        "operationId": "delete_product_api_products__product_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Product",
+        "tags": [
+          "products"
+        ]
+      },
+      "get": {
+        "operationId": "get_product_api_products__product_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Product",
+        "tags": [
+          "products"
+        ]
+      },
+      "patch": {
+        "operationId": "rename_product_api_products__product_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Rename Product",
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/api/products/{product_id}/archive": {
+      "post": {
+        "operationId": "archive_product_api_products__product_id__archive_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Archive Product",
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/api/products/{product_id}/current-price": {
+      "get": {
+        "description": "The price entry in force on `on` (today when omitted); 404 when there is none.",
+        "operationId": "current_price_api_products__product_id__current_price_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "on",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "On"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceEntryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Current Price",
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/api/products/{product_id}/prices": {
+      "get": {
+        "operationId": "price_history_api_products__product_id__prices_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PriceEntryOut"
+                  },
+                  "title": "Response Price History Api Products  Product Id  Prices Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Price History",
+        "tags": [
+          "products"
+        ]
+      },
+      "post": {
+        "operationId": "record_price_entry_api_products__product_id__prices_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PriceEntryIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceEntryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Record Price Entry",
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/api/products/{product_id}/prices/{entry_id}": {
+      "delete": {
+        "operationId": "delete_price_entry_api_products__product_id__prices__entry_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "entry_id",
+            "required": true,
+            "schema": {
+              "title": "Entry Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Price Entry",
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/api/products/{product_id}/restore": {
+      "post": {
+        "operationId": "restore_product_api_products__product_id__restore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Restore Product",
+        "tags": [
+          "products"
         ]
       }
     },
@@ -4550,7 +5118,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/ArchivedCatalogVarietyOut"
+                    "$ref": "#/components/schemas/ArchivedCatalogProductOut"
                   },
                   "title": "Response Get Archived Catalog Archived Get",
                   "type": "array"
@@ -4617,16 +5185,16 @@
         ]
       }
     },
-    "/catalog/varieties/{variety_id}": {
+    "/catalog/products/{product_id}": {
       "put": {
-        "operationId": "put_variety_attributes_catalog_varieties__variety_id__put",
+        "operationId": "put_variety_attributes_catalog_products__product_id__put",
         "parameters": [
           {
             "in": "path",
-            "name": "variety_id",
+            "name": "product_id",
             "required": true,
             "schema": {
-              "title": "Variety Id",
+              "title": "Product Id",
               "type": "integer"
             }
           }
@@ -6414,7 +6982,7 @@
     },
     "/stock": {
       "get": {
-        "description": "`archived=true` answers the archived varieties' rows instead of the listed ones;\nthe total and the entries are the business's either way.",
+        "description": "`archived=true` answers the archived products' rows instead of the listed ones;\nthe total and the entries are the business's either way.",
         "operationId": "get_stock_stock_get",
         "parameters": [
           {
@@ -6647,16 +7215,16 @@
         ]
       }
     },
-    "/stock/varieties/{variety_id}/movements": {
+    "/stock/products/{product_id}/movements": {
       "get": {
-        "operationId": "get_movements_stock_varieties__variety_id__movements_get",
+        "operationId": "get_movements_stock_products__product_id__movements_get",
         "parameters": [
           {
             "in": "path",
-            "name": "variety_id",
+            "name": "product_id",
             "required": true,
             "schema": {
-              "title": "Variety Id",
+              "title": "Product Id",
               "type": "integer"
             }
           }
@@ -6676,7 +7244,7 @@
                       }
                     ]
                   },
-                  "title": "Response Get Movements Stock Varieties  Variety Id  Movements Get",
+                  "title": "Response Get Movements Stock Products  Product Id  Movements Get",
                   "type": "array"
                 }
               }
@@ -6705,16 +7273,16 @@
         ]
       }
     },
-    "/stock/varieties/{variety_id}/threshold": {
+    "/stock/products/{product_id}/threshold": {
       "put": {
-        "operationId": "set_threshold_stock_varieties__variety_id__threshold_put",
+        "operationId": "set_threshold_stock_products__product_id__threshold_put",
         "parameters": [
           {
             "in": "path",
-            "name": "variety_id",
+            "name": "product_id",
             "required": true,
             "schema": {
-              "title": "Variety Id",
+              "title": "Product Id",
               "type": "integer"
             }
           }
@@ -6734,7 +7302,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/VarietyStockOut"
+                  "$ref": "#/components/schemas/ProductStockOut"
                 }
               }
             },
@@ -6945,574 +7513,6 @@
         "summary": "Edit Withdrawal",
         "tags": [
           "stock"
-        ]
-      }
-    },
-    "/varieties": {
-      "get": {
-        "description": "Each variety's current price as of `on` (today when omitted, docs/adr/0011),\ninside the session's own business. Archived varieties only with `archived=true`.",
-        "operationId": "list_varieties_varieties_get",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "on",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "format": "date",
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "On"
-            }
-          },
-          {
-            "in": "query",
-            "name": "archived",
-            "required": false,
-            "schema": {
-              "default": false,
-              "title": "Archived",
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/VarietyOut"
-                  },
-                  "title": "Response List Varieties Varieties Get",
-                  "type": "array"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "List Varieties",
-        "tags": [
-          "varieties"
-        ]
-      },
-      "post": {
-        "operationId": "register_variety_varieties_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VarietyIn"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VarietyOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Register Variety",
-        "tags": [
-          "varieties"
-        ]
-      }
-    },
-    "/varieties/{variety_id}": {
-      "delete": {
-        "operationId": "delete_variety_varieties__variety_id__delete",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "variety_id",
-            "required": true,
-            "schema": {
-              "title": "Variety Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Delete Variety",
-        "tags": [
-          "varieties"
-        ]
-      },
-      "get": {
-        "operationId": "get_variety_varieties__variety_id__get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "variety_id",
-            "required": true,
-            "schema": {
-              "title": "Variety Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VarietyDetailOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Get Variety",
-        "tags": [
-          "varieties"
-        ]
-      },
-      "patch": {
-        "operationId": "rename_variety_varieties__variety_id__patch",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "variety_id",
-            "required": true,
-            "schema": {
-              "title": "Variety Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VarietyIn"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VarietyOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Rename Variety",
-        "tags": [
-          "varieties"
-        ]
-      }
-    },
-    "/varieties/{variety_id}/archive": {
-      "post": {
-        "operationId": "archive_variety_varieties__variety_id__archive_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "variety_id",
-            "required": true,
-            "schema": {
-              "title": "Variety Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VarietyOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Archive Variety",
-        "tags": [
-          "varieties"
-        ]
-      }
-    },
-    "/varieties/{variety_id}/current-price": {
-      "get": {
-        "description": "The price entry in force on `on` (today when omitted); 404 when there is none.",
-        "operationId": "current_price_varieties__variety_id__current_price_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "variety_id",
-            "required": true,
-            "schema": {
-              "title": "Variety Id",
-              "type": "integer"
-            }
-          },
-          {
-            "in": "query",
-            "name": "on",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "format": "date",
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "On"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PriceEntryOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Current Price",
-        "tags": [
-          "varieties"
-        ]
-      }
-    },
-    "/varieties/{variety_id}/prices": {
-      "get": {
-        "operationId": "price_history_varieties__variety_id__prices_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "variety_id",
-            "required": true,
-            "schema": {
-              "title": "Variety Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/PriceEntryOut"
-                  },
-                  "title": "Response Price History Varieties  Variety Id  Prices Get",
-                  "type": "array"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Price History",
-        "tags": [
-          "varieties"
-        ]
-      },
-      "post": {
-        "operationId": "record_price_entry_varieties__variety_id__prices_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "variety_id",
-            "required": true,
-            "schema": {
-              "title": "Variety Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PriceEntryIn"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PriceEntryOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Record Price Entry",
-        "tags": [
-          "varieties"
-        ]
-      }
-    },
-    "/varieties/{variety_id}/prices/{entry_id}": {
-      "delete": {
-        "operationId": "delete_price_entry_varieties__variety_id__prices__entry_id__delete",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "variety_id",
-            "required": true,
-            "schema": {
-              "title": "Variety Id",
-              "type": "integer"
-            }
-          },
-          {
-            "in": "path",
-            "name": "entry_id",
-            "required": true,
-            "schema": {
-              "title": "Entry Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Delete Price Entry",
-        "tags": [
-          "varieties"
-        ]
-      }
-    },
-    "/varieties/{variety_id}/restore": {
-      "post": {
-        "operationId": "restore_variety_varieties__variety_id__restore_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "variety_id",
-            "required": true,
-            "schema": {
-              "title": "Variety Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VarietyOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Restore Variety",
-        "tags": [
-          "varieties"
         ]
       }
     }

@@ -23,7 +23,7 @@ def _facts(engine: Engine) -> list[VarietyFact]:
 
 
 def _variety(client: TestClient, name: str) -> int:
-    created = client.post("/varieties", json={"name": name})
+    created = client.post("/api/products", json={"name": name})
     assert created.status_code == 201, created.text
     return int(created.json()["id"])
 
@@ -55,11 +55,11 @@ def test_an_archived_variety_is_not_a_fact_and_a_price_today_marks_the_priced_on
     unpriced = _variety(client, "Almendra")
     archived = _variety(client, "Zapallo")
     price = client.post(
-        f"/varieties/{priced}/prices",
+        f"/api/products/{priced}/prices",
         json={"effective_from": TODAY.isoformat(), "list_price": 11_000},
     )
     assert price.status_code == 201, price.text
-    assert client.post(f"/varieties/{archived}/archive").status_code == 200
+    assert client.post(f"/api/products/{archived}/archive").status_code == 200
 
     facts = _facts(engine)
 

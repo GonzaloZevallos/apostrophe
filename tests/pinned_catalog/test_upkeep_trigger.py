@@ -42,9 +42,9 @@ def _status(client: TestClient) -> dict[str, Any] | None:
 
 
 def _register_priced_variety(client: TestClient, name: str) -> dict[str, Any]:
-    variety: dict[str, Any] = client.post("/varieties", json={"name": name}).json()
+    variety: dict[str, Any] = client.post("/api/products", json={"name": name}).json()
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 9000},
     )
     return variety
@@ -53,7 +53,7 @@ def _register_priced_variety(client: TestClient, name: str) -> dict[str, Any]:
 def _add_stock_entry(client: TestClient, variety_id: int, quantity: str = "50") -> dict[str, Any]:
     entry: dict[str, Any] = client.post(
         "/stock/entries",
-        json={"variety_id": variety_id, "origin": "opening_stock", "quantity": quantity},
+        json={"product_id": variety_id, "origin": "opening_stock", "quantity": quantity},
     ).json()
     return entry
 
@@ -84,13 +84,13 @@ def test_a_refused_write_calls_the_fake_zero_times(
     variety = _register_qualifying_variety(client, "V1")
     _publish(client)
     telegram.fail_next(TelegramUnreachable())
-    client.patch(f"/varieties/{variety['id']}", json={"name": "V1 Renamed"})
+    client.patch(f"/api/products/{variety['id']}", json={"name": "V1 Renamed"})
     failed_status = _status(client)
     assert failed_status is not None
     assert failed_status["reason"] == "telegram_unreachable"
     telegram.calls.clear()
 
-    refused = client.post("/varieties", json={"name": ""})
+    refused = client.post("/api/products", json={"name": ""})
     assert refused.status_code >= 400
 
     assert telegram.calls == []  # a task that ran would have retried and succeeded
@@ -100,16 +100,16 @@ def test_a_refused_write_calls_the_fake_zero_times(
 def test_a_recorded_price_entry_triggers_an_edit(
     client: TestClient, telegram: FakeTelegram
 ) -> None:
-    variety = client.post("/varieties", json={"name": "V1"}).json()
+    variety = client.post("/api/products", json={"name": "V1"}).json()
     client.post(
         "/stock/entries",
-        json={"variety_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
+        json={"product_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
     )
     _publish(client)
     telegram.calls.clear()
 
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 9000},
     )
 
@@ -124,10 +124,10 @@ def test_deleting_the_only_price_entry_triggers_an_edit(
 ) -> None:
     variety = _register_qualifying_variety(client, "V1")
     _publish(client)
-    entry_id = client.get(f"/varieties/{variety['id']}/prices").json()[0]["id"]
+    entry_id = client.get(f"/api/products/{variety['id']}/prices").json()[0]["id"]
     telegram.calls.clear()
 
-    deleted = client.delete(f"/varieties/{variety['id']}/prices/{entry_id}")
+    deleted = client.delete(f"/api/products/{variety['id']}/prices/{entry_id}")
     assert deleted.status_code == 204
 
     assert len(_edits(telegram)) == 1
@@ -141,7 +141,7 @@ def test_catalog_attributes_change_triggers_an_edit(
     telegram.calls.clear()
 
     changed = client.put(
-        f"/catalog/varieties/{variety['id']}",
+        f"/catalog/products/{variety['id']}",
         json={"shown": True, "emoji": None, "indica_share": None, "aroma": "Cítrico"},
     )
     assert changed.status_code == 200, changed.text
@@ -165,7 +165,7 @@ def test_a_variety_renamed_triggers_an_edit(client: TestClient, telegram: FakeTe
     _publish(client)
     telegram.calls.clear()
 
-    renamed = client.patch(f"/varieties/{variety['id']}", json={"name": "V1 Renamed"})
+    renamed = client.patch(f"/api/products/{variety['id']}", json={"name": "V1 Renamed"})
     assert renamed.status_code == 200, renamed.text
 
     assert len(_edits(telegram)) == 1
@@ -174,21 +174,21 @@ def test_a_variety_renamed_triggers_an_edit(client: TestClient, telegram: FakeTe
 def test_a_variety_selling_out_and_coming_back_triggers_edits(
     client: TestClient, telegram: FakeTelegram
 ) -> None:
-    sellable = client.post("/varieties", json={"name": "Sellable"}).json()
+    sellable = client.post("/api/products", json={"name": "Sellable"}).json()
     client.post(
-        f"/varieties/{sellable['id']}/prices",
+        f"/api/products/{sellable['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 9000},
     )
     client.post(
         "/stock/entries",
-        json={"variety_id": sellable["id"], "origin": "opening_stock", "quantity": "10"},
+        json={"product_id": sellable["id"], "origin": "opening_stock", "quantity": "10"},
     )
     _publish(client)
     telegram.calls.clear()
 
     sale = client.post(
         "/sales",
-        json={"lines": [{"variety_id": sellable["id"], "quantity": "10"}], "payment": "cash"},
+        json={"lines": [{"product_id": sellable["id"], "quantity": "10"}], "payment": "cash"},
     )
     assert sale.status_code == 201, sale.text  # sells all the stock: now sold out
 
@@ -209,7 +209,7 @@ def test_topping_up_an_in_catalog_variety_sends_nothing(
 
     topped_up = client.post(
         "/stock/entries",
-        json={"variety_id": variety["id"], "origin": "opening_stock", "quantity": "10"},
+        json={"product_id": variety["id"], "origin": "opening_stock", "quantity": "10"},
     )
     assert topped_up.status_code == 201, topped_up.text
 
@@ -230,15 +230,15 @@ def test_a_message_deleted_then_a_price_change_keeps_showing_message_gone(
     telegram.calls.clear()
 
     client.post(
-        f"/varieties/{variety['id']}/prices",
+        f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-02-01", "list_price": 9500},
     )
     status = _status(client)
     assert status is not None
     assert status["reason"] == "message_gone"
 
-    entry_id = client.get(f"/varieties/{variety['id']}/prices").json()[-1]["id"]
-    client.delete(f"/varieties/{variety['id']}/prices/{entry_id}")
+    entry_id = client.get(f"/api/products/{variety['id']}/prices").json()[-1]["id"]
+    client.delete(f"/api/products/{variety['id']}/prices/{entry_id}")
 
     status_after = _status(client)
     assert status_after is not None
@@ -252,7 +252,7 @@ def test_resilience_a_failed_trigger_never_fails_the_save_and_clears_on_the_next
     _publish(client)
 
     telegram.fail_next(TelegramUnreachable())
-    renamed = client.patch(f"/varieties/{variety['id']}", json={"name": "V1 Renamed"})
+    renamed = client.patch(f"/api/products/{variety['id']}", json={"name": "V1 Renamed"})
     assert renamed.status_code == 200, renamed.text  # the save itself always succeeds
 
     status = _status(client)
@@ -261,7 +261,7 @@ def test_resilience_a_failed_trigger_never_fails_the_save_and_clears_on_the_next
     assert status["reason"] == "telegram_unreachable"
     last_published_on = status["last_published_on"]
 
-    renamed_again = client.patch(f"/varieties/{variety['id']}", json={"name": "V1 Again"})
+    renamed_again = client.patch(f"/api/products/{variety['id']}", json={"name": "V1 Again"})
     assert renamed_again.status_code == 200, renamed_again.text
 
     recovered = _status(client)
@@ -279,17 +279,17 @@ def test_too_long_text_is_not_sent_and_the_pin_keeps_its_text(
     _publish(client)
 
     for i in range(1, 18):
-        over = client.post("/varieties", json={"name": f"Over{i}"}).json()
+        over = client.post("/api/products", json={"name": f"Over{i}"}).json()
         client.post(
-            f"/varieties/{over['id']}/prices",
+            f"/api/products/{over['id']}/prices",
             json={"effective_from": "2026-01-01", "list_price": 9000},
         )
         client.post(
             "/stock/entries",
-            json={"variety_id": over["id"], "origin": "opening_stock", "quantity": "50"},
+            json={"product_id": over["id"], "origin": "opening_stock", "quantity": "50"},
         )
         client.put(
-            f"/catalog/varieties/{over['id']}",
+            f"/catalog/products/{over['id']}",
             json={"shown": True, "emoji": None, "indica_share": None, "aroma": "a" * 200},
         )
 
@@ -302,7 +302,7 @@ def test_too_long_text_is_not_sent_and_the_pin_keeps_its_text(
     telegram.calls.clear()
 
     # One more trigger over the limit: still refused, the pin keeps its last text.
-    renamed = client.patch(f"/varieties/{variety['id']}", json={"name": "V1 Renamed"})
+    renamed = client.patch(f"/api/products/{variety['id']}", json={"name": "V1 Renamed"})
     assert renamed.status_code == 200, renamed.text
 
     assert _edits(telegram) == []
@@ -325,7 +325,7 @@ def test_a_stock_entry_created_brings_a_variety_into_the_catalog(
 
     created = client.post(
         "/stock/entries",
-        json={"variety_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
+        json={"product_id": variety["id"], "origin": "opening_stock", "quantity": "50"},
     )
     assert created.status_code == 201, created.text
 
@@ -336,9 +336,9 @@ def test_editing_a_stock_entry_triggers_an_edit(client: TestClient, telegram: Fa
     """`PUT /stock/entries/{id}` (the brief's own "stock entries ... edited"): moving
     the entry to a different variety sells the first one out and brings the second
     one in, changing the text."""
-    sold = client.post("/varieties", json={"name": "WasStocked"}).json()
+    sold = client.post("/api/products", json={"name": "WasStocked"}).json()
     client.post(
-        f"/varieties/{sold['id']}/prices",
+        f"/api/products/{sold['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 9000},
     )
     entry = _add_stock_entry(client, sold["id"])
@@ -348,7 +348,7 @@ def test_editing_a_stock_entry_triggers_an_edit(client: TestClient, telegram: Fa
 
     edited = client.put(
         f"/stock/entries/{entry['id']}",
-        json={"variety_id": gains["id"], "origin": "opening_stock", "quantity": "50"},
+        json={"product_id": gains["id"], "origin": "opening_stock", "quantity": "50"},
     )
     assert edited.status_code == 200, edited.text
 
@@ -391,7 +391,7 @@ def test_nothing_is_attempted_after_a_token_change_until_publicar(
     assert changed.json()["previous_pin_left"] is True
     telegram.calls.clear()
 
-    renamed = client.patch(f"/varieties/{variety['id']}", json={"name": "V1 Renamed"})
+    renamed = client.patch(f"/api/products/{variety['id']}", json={"name": "V1 Renamed"})
     assert renamed.status_code == 200, renamed.text
 
     assert telegram.calls == []
@@ -417,7 +417,7 @@ def test_nothing_is_attempted_after_a_channel_change_until_publicar(
     assert changed.json()["previous_pin_left"] is True
     telegram.calls.clear()
 
-    renamed = client.patch(f"/varieties/{variety['id']}", json={"name": "V1 Renamed"})
+    renamed = client.patch(f"/api/products/{variety['id']}", json={"name": "V1 Renamed"})
     assert renamed.status_code == 200, renamed.text
 
     assert telegram.calls == []
@@ -432,7 +432,7 @@ def test_nothing_is_attempted_after_a_channel_change_until_publicar(
 def _withdraw(client: TestClient, variety_id: int, quantity: str, **extra: Any) -> dict[str, Any]:
     body: dict[str, Any] = {
         "reason": "promotion",
-        "lines": [{"variety_id": variety_id, "quantity": quantity}],
+        "lines": [{"product_id": variety_id, "quantity": quantity}],
     }
     response = client.post("/stock/withdrawals", json=body | extra)
     assert response.status_code == 201, response.text
@@ -481,7 +481,7 @@ def test_an_edit_moving_the_only_line_between_varieties_edits_the_pin_once(
 
     edited = client.put(
         f"/stock/withdrawals/{withdrawal['id']}",
-        json={"reason": "promotion", "lines": [{"variety_id": beta["id"], "quantity": "50"}]},
+        json={"reason": "promotion", "lines": [{"product_id": beta["id"], "quantity": "50"}]},
     )
     assert edited.status_code == 200, edited.text
 
@@ -517,7 +517,7 @@ def test_a_note_only_edit_sends_nothing(client: TestClient, telegram: FakeTelegr
         json={
             "reason": "promotion",
             "note": "otra nota",
-            "lines": [{"variety_id": variety["id"], "quantity": "5"}],
+            "lines": [{"product_id": variety["id"], "quantity": "5"}],
         },
     )
     assert edited.status_code == 200, edited.text
@@ -567,7 +567,7 @@ def test_a_pin_posted_with_the_spanish_fixed_lines_gets_one_edit_and_no_new_post
     telegram.calls.clear()
 
     saved = client.put(
-        f"/catalog/varieties/{variety['id']}",
+        f"/catalog/products/{variety['id']}",
         json={"shown": True, "emoji": None, "indica_share": None, "aroma": None},
     )
 

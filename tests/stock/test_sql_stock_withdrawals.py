@@ -22,7 +22,7 @@ TODAY = date(2026, 10, 2)
 
 
 def _variety(client: TestClient, name: str) -> int:
-    return int(client.post("/varieties", json={"name": name}).json()["id"])
+    return int(client.post("/api/products", json={"name": name}).json()["id"])
 
 
 def _business_of(engine: Engine, variety_id: int) -> int:
@@ -143,7 +143,7 @@ def test_another_business_withdrawal_is_invisible(
 ) -> None:
     variety_id = _variety(client, "Lavanda")
     business_id = _business_of(engine, variety_id)
-    other_variety = int(other_client.post("/varieties", json={"name": "Menta"}).json()["id"])
+    other_variety = int(other_client.post("/api/products", json={"name": "Menta"}).json()["id"])
     other_business_id = _business_of(engine, other_variety)
     assert other_business_id != business_id
 

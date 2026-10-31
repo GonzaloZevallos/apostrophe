@@ -1,6 +1,6 @@
 """`GET /panel`'s HTTP shape (`web/src/api/fixtures/panel.json`, plan: "Answer
-shape"). Adapters may import anything (CODING_STANDARDS section 1): `PanelVarietyOut`
-reuses stock's own `VarietyStockOut` and `QuantityOut`, rather than a second quantity or
+shape"). Adapters may import anything (CODING_STANDARDS section 1): `PanelProductOut`
+reuses stock's own `Status` and `QuantityOut`, rather than a second quantity or
 status format.
 
 `GET /analysis`'s response shape (docs/adr/0020, plan: Response contract).
@@ -24,22 +24,25 @@ from pydantic import BaseModel
 from app.products.adapters.schemas import QuantityOut
 from app.results.application.ports import DebtorRow, StockRow
 from app.results.application.read_panel import CostLineFigures, DebtsSummary, Panel, PeriodFigures
-from app.stock.adapters.schemas import VarietyStockOut
+from app.stock.adapters.schemas import Status
 
 
-class PanelVarietyOut(VarietyStockOut):
-    """`VarietyStockOut`'s own keys plus `name` (plan invariant: "`PanelVarietyOut`
-    subclasses `VarietyStockOut` and adds only `name`")."""
+class PanelProductOut(BaseModel):
+    """The keys of stock's `ProductStockOut` plus `name`; the row's internal id is mapped to
+    `product_id` here, in the adapter."""
 
+    product_id: int
+    quantity: QuantityOut
+    status: Status
+    sold_out_since: date | None
+    threshold: QuantityOut | None
+    days_left: int | None
     name: str
 
     @classmethod
-    def of_row(cls, row: StockRow) -> PanelVarietyOut:
-        # Not named `of`: `VarietyStockOut.of` takes a `VarietyStock` (stock's own
-        # application view), and redeclaring `of` here with a different parameter
-        # type would violate Liskov substitution on the inherited classmethod.
+    def of_row(cls, row: StockRow) -> PanelProductOut:
         return cls(
-            variety_id=row.variety_id,
+            product_id=row.variety_id,
             name=row.name,
             quantity=row.quantity.as_decimal(),
             status=row.status,
@@ -145,7 +148,7 @@ class PeriodsOut(BaseModel):
 class PanelOut(BaseModel):
     periods: PeriodsOut
     debts: DebtsOut
-    stock: list[PanelVarietyOut]
+    stock: list[PanelProductOut]
 
     @classmethod
     def of(cls, panel: Panel) -> PanelOut:
@@ -156,12 +159,12 @@ class PanelOut(BaseModel):
                 month=PeriodOut.of(panel.month),
             ),
             debts=DebtsOut.of(panel.debts),
-            stock=[PanelVarietyOut.of_row(row) for row in panel.stock],
+            stock=[PanelProductOut.of_row(row) for row in panel.stock],
         )
 
 
 class MarginOut(BaseModel):
-    """A margin in pesos, worked out over costed grams only (ADR-0020): a variety's own
+    """A margin in pesos, worked out over costed grams only (ADR-0020): a product's own
     margin, or the chosen month's average margin. `percent` is `null` when the sales it
     is taken over are $0; `pending_quantity` is the sold-or-gifted grams behind it that are
     not costed yet."""
@@ -195,8 +198,8 @@ class RowCostOut(BaseModel):
     all_pending: bool
 
 
-class VarietyRowOut(BaseModel):
-    variety_id: int
+class ProductRowOut(BaseModel):
+    product_id: int
     name: str
     sales_without_shipping: int
     share_percent: int | None
@@ -218,7 +221,7 @@ class AnalysisMonthOut(BaseModel):
     shortfall: RowCostOut | None
     promotion: RowCostOut | None
     own_use: RowCostOut | None
-    varieties: list[VarietyRowOut]
+    products: list[ProductRowOut]
 
 
 class WeekOut(BaseModel):
