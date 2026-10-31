@@ -25,6 +25,7 @@ subgraph src["src"]
     src_api_refusals_ts["refusals.ts"]
     src_api_sales_ts["sales.ts"]
     src_api_stock_ts["stock.ts"]
+    src_api_timeZone_ts["timeZone.ts"]
     src_api_varieties_ts["varieties.ts"]
   end
 end
@@ -50,5 +51,8 @@ src_api_pricingSettings_ts-->src_api_keys_ts
 src_api_refusals_ts-->src_api_contract_json
 src_api_sales_ts-->src_api_client_ts
 src_api_stock_ts-->src_api_client_ts
+src_api_timeZone_ts-->src_api_client_ts
+src_api_timeZone_ts-->src_api_keys_ts
+src_api_timeZone_ts-->src_api_me_ts
 src_api_varieties_ts-->src_api_client_ts
 ```
