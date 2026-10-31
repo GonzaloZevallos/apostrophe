@@ -198,3 +198,28 @@ def test_an_upsert_with_returning_works_on_login_guard_on_libsql(engine: Engine)
         session.commit()
 
     assert (first, second) == (1, 2)
+
+
+def test_the_guarded_decimals_update_refuses_a_finer_quantity_and_allows_a_multiple_on_libsql(
+    client: TestClient,
+) -> None:
+    unit = client.post("/api/units", json={"name": "Kilos", "label": "kg", "decimals": 2}).json()
+    product = client.post("/api/products", json={"name": "Gold", "unit_id": unit["id"]}).json()
+    entry = client.post(
+        "/stock/entries",
+        json={"product_id": product["id"], "origin": "opening_stock", "quantity": "2.55"},
+    )
+    assert entry.status_code == 201, entry.text
+
+    refused = client.patch(f"/api/units/{unit['id']}", json={"decimals": 1})
+
+    assert refused.status_code == 422
+    assert refused.json()["code"] == "unit.decimals_in_use"
+    fixed = client.put(
+        f"/stock/entries/{entry.json()['id']}",
+        json={"product_id": product["id"], "origin": "opening_stock", "quantity": "2.5"},
+    )
+    assert fixed.status_code == 200, fixed.text
+    lowered = client.patch(f"/api/units/{unit['id']}", json={"decimals": 1})
+    assert lowered.status_code == 200
+    assert lowered.json()["decimals"] == 1

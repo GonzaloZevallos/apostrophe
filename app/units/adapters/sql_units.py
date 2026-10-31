@@ -1,13 +1,25 @@
-from sqlalchemy import func, select
+from collections.abc import Sequence
+from typing import Protocol
+
+from sqlalchemy import ColumnElement, func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.db import flush_or_refuse
 from app.shared.names import name_key
 from app.shared.reference import ReferenceRefused
-from app.shared.unit import Unit
+from app.shared.unit import MAX_DECIMALS, Unit
 from app.units.adapters.tables import UnitRow
 from app.units.domain.unit import UnitDraft, UnitInUse, UnitName, UnitNameTaken
+
+
+class FinerQuantity(Protocol):
+    """One quantity column's clause: true when some quantity of a product of `unit_id` is
+    not a multiple of `step` hundredths. Each hexagon that records a quantity builds its own
+    in its own adapter and `app/main.py` hands them over, so units never reads another
+    hexagon's tables (docs/adr/0055)."""
+
+    def __call__(self, unit_id: int, business_id: int, step: int) -> ColumnElement[bool]: ...
 
 
 class SqlUnits:
@@ -18,9 +30,15 @@ class SqlUnits:
     `IntegrityError` is never let through: it would carry SQL, and which constraint fired
     is told apart here by which statement raised it, not by parsing the error text."""
 
-    def __init__(self, session: Session, business_id: int) -> None:
+    def __init__(
+        self,
+        session: Session,
+        business_id: int,
+        finer_quantities: Sequence[FinerQuantity] = (),
+    ) -> None:
         self._session = session
         self._business_id = business_id
+        self._finer_quantities = tuple(finer_quantities)
 
     def list(self) -> list[Unit]:
         statement = (
@@ -68,6 +86,25 @@ class SqlUnits:
         row.decimals = unit.decimals
         self._flush_naming()
         return unit_of(row)
+
+    def lower_decimals(self, unit_id: int, decimals: int) -> bool:
+        """One statement: the quantity checks and the update cannot be pulled apart by a
+        quantity recorded in between. `step` is how many hundredths one unit of the last
+        decimal the unit will allow is worth."""
+        step = 10 ** (MAX_DECIMALS - decimals)
+        statement = (
+            update(UnitRow)
+            .where(
+                UnitRow.id == unit_id,
+                UnitRow.business_id == self._business_id,
+                *(~finer(unit_id, self._business_id, step) for finer in self._finer_quantities),
+            )
+            .values(decimals=decimals)
+            .returning(UnitRow.id)
+        )
+        lowered = self._session.execute(statement).first()
+        self._session.expire_all()
+        return lowered is not None
 
     def remove(self, unit_id: int) -> None:
         row = self._row(unit_id)

@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import Annotated, cast
 
 from fastapi import APIRouter, Depends, Request
@@ -9,7 +9,7 @@ from app.db import get_session
 from app.http_errors import TranslateErrors
 from app.shared.unit import UnitNotFound
 from app.units.adapters.schemas import UnitIn, UnitOut, UnitPatch
-from app.units.adapters.sql_units import SqlUnits
+from app.units.adapters.sql_units import FinerQuantity, SqlUnits
 from app.units.application import manage_units
 from app.units.application.ports import UnitUse
 from app.units.domain.unit import UnitRuleBroken
@@ -19,8 +19,11 @@ router = APIRouter(prefix="/api/units", tags=["units"])
 SessionDep = Annotated[Session, Depends(get_session)]
 
 
-def get_units(session: SessionDep, business_id: CurrentBusinessId) -> SqlUnits:
-    return SqlUnits(session, business_id)
+def get_units(request: Request, session: SessionDep, business_id: CurrentBusinessId) -> SqlUnits:
+    # One clause per quantity column, each built by the hexagon that records it:
+    # `app/main.py` hangs them on `app.state` so units never imports those hexagons.
+    finer_quantities: Sequence[FinerQuantity] = request.app.state.units_finer_quantities
+    return SqlUnits(session, business_id, finer_quantities)
 
 
 def get_unit_use(request: Request, session: SessionDep, business_id: CurrentBusinessId) -> UnitUse:

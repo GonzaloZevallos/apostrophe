@@ -159,6 +159,12 @@ def test_lowering_decimals_is_refused_with_its_own_code_and_changes_nothing(
     client: TestClient,
 ) -> None:
     kilos = _add(client, "Kilos", "kg", 2)
+    product_id = _product(client, "Gold", kilos["id"])
+    entry = client.post(
+        "/stock/entries",
+        json={"product_id": product_id, "origin": "opening_stock", "quantity": "1.25"},
+    )
+    assert entry.status_code == 201, entry.text
 
     refused = client.patch(f"/api/units/{kilos['id']}", json={"name": "Renamed", "decimals": 1})
 

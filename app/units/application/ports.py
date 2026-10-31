@@ -28,6 +28,12 @@ class Units(Protocol):
         `UnitNameTaken`."""
         ...
 
+    def lower_decimals(self, unit_id: int, decimals: int) -> bool:
+        """Sets the unit's decimals in one guarded statement that holds the whole rule: it
+        writes only while no recorded quantity of the unit's products is finer than
+        `decimals`. Answers whether it wrote; nothing is committed."""
+        ...
+
     def remove(self, unit_id: int) -> None:
         """Deletes the unit; one a product still references raises `UnitInUse`, the
         foreign key being the backstop of `UnitUse`."""

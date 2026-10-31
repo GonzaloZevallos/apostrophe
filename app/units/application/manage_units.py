@@ -70,8 +70,8 @@ def edit_unit(
     decimals: int | None,
 ) -> CountedUnit:
     """Renaming (name or label) and raising decimals are always allowed. Lowering decimals
-    is refused outright until the guarded statement that checks every recorded quantity
-    lands, so a unit never loses decimals a quantity may use."""
+    goes through the store's one guarded statement, which checks every recorded quantity,
+    so a unit never loses decimals a quantity may use."""
     current = get_unit(units, unit_id)
     draft = UnitDraft(
         UnitName.of(current.name if raw_name is None else raw_name),
@@ -81,7 +81,7 @@ def edit_unit(
     holder = units.by_name(draft.name)
     if holder is not None and holder.id != unit_id:
         raise UnitNameTaken
-    if draft.decimals < current.decimals:
+    if draft.decimals < current.decimals and not units.lower_decimals(unit_id, draft.decimals):
         raise DecimalsInUse
     stored = units.save(Unit(unit_id, draft.name.value, draft.label.value, draft.decimals))
     transaction.commit()

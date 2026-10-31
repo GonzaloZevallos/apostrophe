@@ -59,10 +59,12 @@ from app.pinned_catalog.application.push import BusinessLocks
 from app.pricing_settings.adapters.opening import PricingSettingsOpening
 from app.pricing_settings.adapters.router import router as pricing_settings_router
 from app.pricing_settings.adapters.sql_pricing_settings import SqlPricingSettings
+from app.products.adapters.finer_quantity import finer_bulk_minimums
 from app.products.adapters.onboarding_facts import SqlProductFacts
 from app.products.adapters.router import router as products_router
 from app.products.adapters.unit_use import SqlUnitUse
 from app.results.adapters.router import router as results_router
+from app.sales.adapters.finer_quantity import finer_sale_lines
 from app.sales.adapters.router import router as sales_router
 from app.sales.adapters.sales_ledger import SqlSalesLedger
 from app.settings import Settings
@@ -70,6 +72,11 @@ from app.shared.copy import CopyCatalog
 from app.shared.language import BusinessLanguage
 from app.static_spa import FrontNavigation, MissingBuiltFront, ShellPage, SpaStatic, api_segments
 from app.stock.adapters.draw_costs import SqlDrawCosts
+from app.stock.adapters.finer_quantity import (
+    finer_stock_entries,
+    finer_thresholds,
+    finer_withdrawal_lines,
+)
 from app.stock.adapters.leaving import SqlStockLeaving
 from app.stock.adapters.line_costs import SqlLineCosts
 from app.stock.adapters.onboarding_facts import SqlStockFacts
@@ -244,6 +251,15 @@ def create_app(
     app.state.stock_units = SqlUnitsReader
     # Units counts a unit's products only through its own `UnitUse` port (docs/adr/0055).
     app.state.units_use = SqlUnitUse
+    # And lowers a unit's decimals only while no quantity column holds a finer value: one
+    # clause per column, each built by the hexagon that records it.
+    app.state.units_finer_quantities = (
+        finer_sale_lines,
+        finer_stock_entries,
+        finer_withdrawal_lines,
+        finer_thresholds,
+        finer_bulk_minimums,
+    )
     # A factory, not an instance (the same shape as `business_opening` above): sales
     # reaches line cost only through its own `LineCosts` port, never `app.stock`
     # directly (CODING_STANDARDS section 1). A dependency under `app/sales/adapters/`
