@@ -17,6 +17,7 @@ import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import { formatGramsInput } from '../../format/money'
 import { parseGrams } from '../../format/parse'
+import { exceedsDecimals, useDecimalsSentence } from '../../format/unitDecimals'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
 import { THRESHOLD_INVALID_MESSAGE, THRESHOLD_OVERRIDES, THRESHOLD_SAVED, VARIETIES_TEXT } from '../../copy/varieties'
 import Boton from '../../components/Boton'
@@ -30,6 +31,8 @@ function typedFrom(threshold: number | null): string {
 
 export interface ThresholdFormProps {
   varietyId: number
+  /** How many decimals the product's unit allows. */
+  decimals: number
   /** The saved threshold from `GET /stock`; `null` when the warning is off. */
   threshold: number | null
   onDone: (saved: SuccessToast) => void
@@ -38,8 +41,9 @@ export interface ThresholdFormProps {
   onGone: () => void
 }
 
-export default function ThresholdForm({ varietyId, threshold, onDone, onCancel, onDirtyChange, onGone }: ThresholdFormProps) {
+export default function ThresholdForm({ varietyId, decimals, threshold, onDone, onCancel, onDirtyChange, onGone }: ThresholdFormProps) {
   const queryClient = useQueryClient()
+  const sentence = useDecimalsSentence()
   const saved = typedFrom(threshold)
   const [grams, setGrams] = useState(saved)
   const [error, setError] = useState<string | null>(null)
@@ -55,6 +59,10 @@ export default function ThresholdForm({ varietyId, threshold, onDone, onCancel, 
     event.preventDefault()
     setError(null)
     setOffline(false)
+    if (exceedsDecimals(grams, decimals)) {
+      setError(sentence(decimals))
+      return
+    }
     const parsed = parseGrams(grams)
     if (!parsed.ok) {
       setError(THRESHOLD_INVALID_MESSAGE)
@@ -72,6 +80,7 @@ export default function ThresholdForm({ varietyId, threshold, onDone, onCancel, 
       } else if (caught instanceof ApiError) {
         const message = resolveOverride(THRESHOLD_OVERRIDES, caught.code)
         if (message !== undefined) setError(message)
+        else if (caught.code === 'quantity.too_many_decimals') setError(sentence(decimals))
         else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') setError(GENERIC_REFUSAL_MESSAGE)
         else setError(ERROR_GENERICO_MENSAJE)
       } else if (caught instanceof NetworkError) {
@@ -100,6 +109,7 @@ export default function ThresholdForm({ varietyId, threshold, onDone, onCancel, 
             type="text"
             inputMode="decimal"
             value={grams}
+            aria-invalid={error !== null}
             onChange={(event) => setGrams(event.target.value)}
           />
           {error !== null && (

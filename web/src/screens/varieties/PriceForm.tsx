@@ -15,6 +15,7 @@ import { ApiError, NetworkError, UNKNOWN_CODE, post } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
 import type { PricingSettings } from '../../api/pricingSettings'
 import { chipDate } from '../../format/dates'
+import { exceedsDecimals, useDecimalsSentence } from '../../format/unitDecimals'
 import { isGone, kindOf } from '../../api/refusals'
 import type { SuccessToast } from '../../components/AvisoExito'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
@@ -34,6 +35,8 @@ import { COMMON_TEXT } from '../../copy/common'
 
 export interface PriceFormProps {
   varietyId: number
+  /** How many decimals the product's unit allows (the bulk minimum is checked against it). */
+  decimals: number
   today: string
   /** The switches in force: a rule that is off has no field and nothing about it is sent. */
   settings: PricingSettings
@@ -50,6 +53,7 @@ export interface PriceFormProps {
 
 export default function PriceForm({
   varietyId,
+  decimals,
   today,
   settings,
   onDone,
@@ -62,6 +66,7 @@ export default function PriceForm({
 }: PriceFormProps) {
   const queryClient = useQueryClient()
   const { t } = useTranslation()
+  const sentence = useDecimalsSentence()
   const [effectiveFrom, setEffectiveFrom] = useState(today)
   const [values, setValues] = useState<PriceValues>({
     listPrice: '',
@@ -91,8 +96,9 @@ export default function PriceForm({
     event.preventDefault()
     setOffline(false)
     const read = readPriceValues(values, settings)
-    if (!read.ok) {
-      setErrors(read.errors)
+    const tooFine = settings.is_bulk_pricing && exceedsDecimals(bulkMinimum, decimals)
+    if (tooFine || !read.ok) {
+      setErrors({ ...(read.ok ? {} : read.errors), ...(tooFine ? { bulkMinimum: sentence(decimals) } : {}) })
       return
     }
     setErrors({})
@@ -110,7 +116,8 @@ export default function PriceForm({
         onGone()
       } else if (caught instanceof ApiError) {
         const mapped = fieldOfCode(caught.code)
-        if (mapped !== undefined) setErrors({ [mapped.field]: messageText(t, mapped.message) })
+        if (caught.code === 'quantity.too_many_decimals') setErrors({ bulkMinimum: sentence(decimals) })
+        else if (mapped !== undefined) setErrors({ [mapped.field]: messageText(t, mapped.message) })
         else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') {
           setErrors({ form: GENERIC_REFUSAL_MESSAGE })
         } else setErrors({ form: ERROR_GENERICO_MENSAJE })

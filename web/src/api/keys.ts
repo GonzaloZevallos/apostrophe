@@ -13,6 +13,7 @@ export type Resource =
   | 'customers'
   | 'expenses'
   | 'expenseCategories'
+  | 'units'
   | 'sales'
   | 'stock'
   | 'catalog'
@@ -27,6 +28,7 @@ const PREFIX: Record<Resource, string> = {
   customers: 'customers',
   expenses: 'expenses',
   expenseCategories: 'expense-categories',
+  units: 'units',
   sales: 'sales',
   stock: 'stock',
   catalog: 'catalog',
@@ -46,6 +48,7 @@ export const keys = {
   customer: (id: string) => [PREFIX.customers, id] as const,
   expenses: (month: string) => [PREFIX.expenses, month] as const,
   expenseCategories: () => [PREFIX.expenseCategories] as const,
+  units: () => [PREFIX.units] as const,
   // `Nueva venta`'s own prices and customer-by-id fetches (plan, invariants:
   // "fetched under form-only keys (['sale-form', ...])"), deliberately outside the
   // `Resource`/`PREFIX` invalidation system above: these two queries are never

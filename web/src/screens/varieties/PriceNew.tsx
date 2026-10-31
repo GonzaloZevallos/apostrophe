@@ -132,6 +132,7 @@ export default function PriceNew({ varietyId }: { varietyId: number }) {
       form={
         <PriceForm
           varietyId={varietyId}
+          decimals={varietyQuery.data.unit?.decimals ?? 2}
           today={me.today}
           settings={settingsQuery.data}
           onDone={onDone}

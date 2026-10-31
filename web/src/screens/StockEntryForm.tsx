@@ -31,6 +31,7 @@ import { useViewport } from '../shell/useViewport'
 import { formatDate } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import { parseMoney, parseSignedGrams } from '../format/parse'
+import { exceedsDecimals, useDecimalsSentence } from '../format/unitDecimals'
 import type { Variety } from './Variedades'
 import { varietiesByName } from './varieties/varietiesByName'
 import Boton from '../components/Boton'
@@ -163,6 +164,9 @@ export default function StockEntryForm({
   )
   const [note, setNote] = useState(initial?.note ?? '')
   const [formError, setFormError] = useState<string | null>(null)
+  // The quantity has more decimals than the product's unit allows (checked here, or answered by the server).
+  const [decimalsRefused, setDecimalsRefused] = useState(false)
+  const sentence = useDecimalsSentence()
   const [offline, setOffline] = useState(false)
   const [sending, setSending] = useState(false)
   const [confirmingSave, setConfirmingSave] = useState(false)
@@ -199,6 +203,14 @@ export default function StockEntryForm({
     const found = stockQuery.data?.products.find((row) => row.product_id === variety)
     return found?.quantity ?? null
   })()
+
+  const unitDecimals = pickable.find((variety) => String(variety.id) === varietyId)?.unit?.decimals ?? 2
+  const quantityChanged = initial === undefined || grams !== String(initial.quantity)
+  const decimalsField = decimalsRefused && (
+    <span className="campo__error" role="alert">
+      {sentence(unitDecimals)}
+    </span>
+  )
 
   function buildBody(): {
     date: string
@@ -247,7 +259,9 @@ export default function StockEntryForm({
         entryIsGone()
         return
       }
-      if (caught instanceof ApiError) {
+      if (caught instanceof ApiError && caught.code === 'quantity.too_many_decimals') {
+        setDecimalsRefused(true)
+      } else if (caught instanceof ApiError) {
         const message = resolveOverride(FIELD_OVERRIDES, caught.code)
         setFormError(message ?? (caught.code !== UNKNOWN_CODE ? GENERIC_REFUSAL : ERROR_GENERICO_MENSAJE))
       } else if (caught instanceof NetworkError) {
@@ -263,6 +277,10 @@ export default function StockEntryForm({
 
   function onSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault()
+    if (quantityChanged && exceedsDecimals(grams, unitDecimals)) {
+      setDecimalsRefused(true)
+      return
+    }
     if (mode === 'editar') {
       setConfirmingSave(true)
       return
@@ -359,9 +377,14 @@ export default function StockEntryForm({
                 className="campo__input"
                 inputMode="decimal"
                 value={grams}
-                onChange={(event) => setGrams(event.target.value)}
+                aria-invalid={decimalsRefused}
+                onChange={(event) => {
+                  setGrams(event.target.value)
+                  setDecimalsRefused(false)
+                }}
                 required
               />
+              {decimalsField}
             </label>
             <div className="campo">
               <div className="origen-pildoras">
@@ -399,9 +422,14 @@ export default function StockEntryForm({
                 className="campo__input"
                 inputMode="decimal"
                 value={grams}
-                onChange={(event) => setGrams(event.target.value)}
+                aria-invalid={decimalsRefused}
+                onChange={(event) => {
+                  setGrams(event.target.value)
+                  setDecimalsRefused(false)
+                }}
                 required
               />
+              {decimalsField}
             </label>
             <label className="campo">
               <span className="campo__rotulo">{COMMON_TEXT.variety}</span>
