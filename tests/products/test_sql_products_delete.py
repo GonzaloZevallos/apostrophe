@@ -53,6 +53,12 @@ def engine(request: pytest.FixtureRequest, tmp_path: Path) -> Iterator[Engine]:
         connection.execute(
             text("INSERT INTO business (id, name, language) VALUES (1, 'Negocio', 'en')")
         )
+        connection.execute(
+            text(
+                "INSERT INTO unit (id, business_id, name, name_key, label, decimals) "
+                "VALUES (1, 1, 'grams', 'grams', 'g', 2)"
+            )
+        )
     yield engine
     engine.dispose()
 
@@ -67,7 +73,7 @@ class BothRulesOn:
 def _seed_variety(engine: Engine) -> int:
     """A variety with a price entry, a threshold and catalog attributes, and no history."""
     with Session(engine) as session:
-        variety = SqlProducts(session, BUSINESS).add(Product(ProductName.of("Gold")))
+        variety = SqlProducts(session, BUSINESS).add(Product(ProductName.of("Gold"), unit_id=1))
         assert variety.id is not None
         variety.record_price(PriceEntry.of(date(2026, 1, 1), 10_000))
         SqlProducts(session, BUSINESS).save(variety)

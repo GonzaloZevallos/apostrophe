@@ -10,7 +10,7 @@ directly.
 from datetime import UTC, date, datetime
 
 from fastapi.testclient import TestClient
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
@@ -37,6 +37,15 @@ def _business_id(engine: Engine, email: str) -> int:
         row = session.scalar(select(UserRow).where(UserRow.email == email))
         assert row is not None
         return row.business_id
+
+
+def _unit_id(session: Session, business_id: int) -> int:
+    """The business's one unit, the default it opened with."""
+    return int(
+        session.execute(
+            text("SELECT id FROM unit WHERE business_id = :b"), {"b": business_id}
+        ).scalar_one()
+    )
 
 
 def _customer_id(client: TestClient, phone: str = "11 2345-6789") -> int:
@@ -101,7 +110,7 @@ def test_has_records_is_false_for_a_fresh_business_true_after_write(
         assert sales_import.has_records() is False
 
         varieties_import = ProductsImport(session, business_id)
-        variety_id = varieties_import.write_variety("Blue Dream", NoCommit())
+        variety_id = varieties_import.write_variety("Blue Dream", NoCommit(), _unit_id(session, business_id))
         varieties_import.write_price_entry(
             variety_id,
             _price_row(effective=date(2026, 1, 1), list_price=1_000),
@@ -229,7 +238,7 @@ def test_planned_price_book_agrees_with_the_sql_book_once_written(
         planned_total = planned[0].total
 
         varieties_import = ProductsImport(session, business_id)
-        variety_id = varieties_import.write_variety("Blue Dream", NoCommit())
+        variety_id = varieties_import.write_variety("Blue Dream", NoCommit(), _unit_id(session, business_id))
         varieties_import.write_price_entry(variety_id, history[0], NoCommit())
         written_total = sales_import.write_sale(
             variety_id,
@@ -258,7 +267,7 @@ def test_write_sale_stores_the_pricing_rule_from_the_row_s_own_vip_fact(
     run_today = date(2026, 8, 1)
     with Session(engine) as session:
         varieties_import = ProductsImport(session, business_id)
-        variety_id = varieties_import.write_variety("Blue Dream", NoCommit())
+        variety_id = varieties_import.write_variety("Blue Dream", NoCommit(), _unit_id(session, business_id))
         varieties_import.write_price_entry(
             variety_id,
             _price_row(
@@ -388,7 +397,7 @@ def test_planned_price_book_matches_what_write_sale_stores_for_bulk_list_vip_and
 
     with Session(engine) as session:
         varieties_import = ProductsImport(session, business_id)
-        variety_id = varieties_import.write_variety("Blue Dream", NoCommit())
+        variety_id = varieties_import.write_variety("Blue Dream", NoCommit(), _unit_id(session, business_id))
         varieties_import.write_price_entry(variety_id, history[0], NoCommit())
         session.commit()
 

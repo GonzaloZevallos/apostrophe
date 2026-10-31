@@ -281,7 +281,16 @@ def test_a_raw_insert_without_a_vip_price_succeeds_and_reads_back_null(tmp_path:
     engine = make_engine(f"sqlite:///{tmp_path / 'apostrophe.db'}")
     upgrade_to_head(engine)
     _exec(engine, "INSERT INTO business (id, name, language) VALUES (1, 'Uno', 'en')")
-    _exec(engine, "INSERT INTO variety (id, business_id, name, name_key) VALUES (1, 1, 'V', 'v')")
+    _exec(
+        engine,
+        "INSERT INTO unit (id, business_id, name, name_key, label, decimals) "
+        "VALUES (1, 1, 'u', 'u', 'u', 0)",
+    )
+    _exec(
+        engine,
+        "INSERT INTO variety (id, business_id, name, name_key, unit_id) "
+        "VALUES (1, 1, 'V', 'v', 1)",
+    )
 
     _exec(
         engine,

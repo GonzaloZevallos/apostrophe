@@ -90,7 +90,7 @@ def test_a_bulk_price_is_positive_and_lower_than_the_list_price_from_some_grams(
 
 
 def _gold() -> Product:
-    variety = Product(ProductName.of("24K Gold"))
+    variety = Product(ProductName.of("24K Gold"), unit_id=1)
     variety.record_price(PriceEntry.of(date(2026, 1, 1), 11_000, 10_000, Quantity.of(10), id=1))
     variety.record_price(PriceEntry.of(date(2026, 3, 1), 12_000, id=2))
     return variety
@@ -180,8 +180,8 @@ def test_a_vip_price_must_be_positive(vip_price: int) -> None:
 def test_a_variety_is_live_until_it_carries_an_archived_instant() -> None:
     from datetime import UTC, datetime
 
-    live = Product(ProductName.of("Gelato"))
-    archived = Product(ProductName.of("Gelato"), archived_at=datetime(2026, 1, 1, tzinfo=UTC))
+    live = Product(ProductName.of("Gelato"), unit_id=1)
+    archived = Product(ProductName.of("Gelato"), unit_id=1, archived_at=datetime(2026, 1, 1, tzinfo=UTC))
 
     assert live.archived_at is None
     assert not live.is_archived
@@ -189,7 +189,7 @@ def test_a_variety_is_live_until_it_carries_an_archived_instant() -> None:
 
 
 def _bare_gold() -> Product:
-    return Product(ProductName.of("24K Gold"), id=1)
+    return Product(ProductName.of("24K Gold"), unit_id=1, id=1)
 
 
 def test_archiving_sets_the_instant_once_and_a_second_archive_keeps_it() -> None:

@@ -246,7 +246,7 @@ class RefusingVarieties:
 
     def get(self, variety_id: int) -> Product | None:
         self._reads += 1
-        return Product(ProductName.of("Gold"), id=7) if self._reads == 1 else self._then
+        return Product(ProductName.of("Gold"), unit_id=1, id=7) if self._reads == 1 else self._then
 
     def listed(self) -> list[Product]:
         return []
@@ -292,7 +292,7 @@ def test_a_price_refused_by_the_foreign_key_answers_the_variety_gone() -> None:
 
 def test_a_price_refused_with_the_variety_archived_meanwhile_answers_archived() -> None:
     transaction = CountingTransaction()
-    archived = Product(ProductName.of("Gold"), id=7, archived_at=NOW)
+    archived = Product(ProductName.of("Gold"), unit_id=1, id=7, archived_at=NOW)
 
     with pytest.raises(ProductArchived):
         _record_price(archived, transaction)
@@ -304,7 +304,7 @@ def test_a_price_refused_with_the_variety_still_live_re_raises_the_signal() -> N
     transaction = CountingTransaction()
 
     with pytest.raises(ReferenceRefused):
-        _record_price(Product(ProductName.of("Gold"), id=7), transaction)
+        _record_price(Product(ProductName.of("Gold"), unit_id=1, id=7), transaction)
 
     assert (transaction.rollbacks, transaction.commits) == (1, 0)
 

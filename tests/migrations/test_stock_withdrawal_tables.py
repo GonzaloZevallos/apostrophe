@@ -60,7 +60,16 @@ def test_two_lines_of_one_withdrawal_cannot_share_a_position() -> None:
     _insert_header(engine, WithdrawalReason.PROMOTION.value)
     with engine.begin() as connection:
         connection.execute(
-            text("INSERT INTO variety (id, business_id, name, name_key) VALUES (1, 1, 'v', 'v')")
+            text(
+                "INSERT INTO unit (id, business_id, name, name_key, label, decimals) "
+                "VALUES (1, 1, 'u', 'u', 'u', 0)"
+            )
+        )
+        connection.execute(
+            text(
+                "INSERT INTO variety (id, business_id, name, name_key, unit_id) "
+                "VALUES (1, 1, 'v', 'v', 1)"
+            )
         )
     line = (
         "INSERT INTO stock_withdrawal_line "

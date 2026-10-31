@@ -9,7 +9,7 @@ only `VarietiesImport` itself, the seam under test, is built and called directly
 from datetime import date
 
 from fastapi.testclient import TestClient
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
@@ -28,6 +28,15 @@ def _business_id(engine: Engine, email: str) -> int:
         row = session.scalar(select(UserRow).where(UserRow.email == email))
         assert row is not None
         return row.business_id
+
+
+def _unit_id(session: Session, business_id: int) -> int:
+    """The business's one unit, the default it opened with."""
+    return int(
+        session.execute(
+            text("SELECT id FROM unit WHERE business_id = :b"), {"b": business_id}
+        ).scalar_one()
+    )
 
 
 def _price_row(
@@ -60,7 +69,7 @@ def test_has_records_is_true_once_a_variety_is_written(client: TestClient, engin
     business_id = _business_id(engine, "uno@example.com")
     with Session(engine) as session:
         imports = ProductsImport(session, business_id)
-        imports.write_variety("Blue Dream", NoCommit())
+        imports.write_variety("Blue Dream", NoCommit(), _unit_id(session, business_id))
         session.commit()
         assert imports.has_records() is True
 
@@ -183,7 +192,7 @@ def test_write_variety_then_write_price_entry_round_trips_through_a_real_session
     )
     with Session(engine) as session:
         imports = ProductsImport(session, business_id)
-        variety_id = imports.write_variety("Blue Dream", NoCommit())
+        variety_id = imports.write_variety("Blue Dream", NoCommit(), _unit_id(session, business_id))
         imports.write_price_entry(variety_id, row, NoCommit())
         session.commit()
 

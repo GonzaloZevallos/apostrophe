@@ -55,8 +55,14 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    # SQLite drops a column that carries a foreign key by copying the table, and five
+    # tables reference `variety`: the copy must not trip them, as in the runner's upgrade.
+    # The pragma only takes effect outside a transaction, which is where a downgrade's
+    # first statement runs; the references are checked again once the copy is back.
+    op.execute("PRAGMA foreign_keys = OFF")
     with op.batch_alter_table("variety") as batch:
         batch.drop_index(op.f("ix_variety_unit_id"))
         batch.drop_constraint(op.f("fk_variety_unit_id_unit"), type_="foreignkey")
         batch.drop_column("unit_id")
     op.drop_table("unit")
+    op.execute("PRAGMA foreign_keys = ON")
