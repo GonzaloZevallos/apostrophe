@@ -43,9 +43,9 @@ async function businessWithRosa(page: Page): Promise<void> {
 
 async function rosaId(page: Page): Promise<number> {
   const me: { today: string } = await (await page.request.get('/auth/me')).json()
-  const varieties: { id: number; name: string }[] = await (await page.request.get(`/varieties?on=${me.today}`)).json()
+  const varieties: { id: number; name: string }[] = await (await page.request.get(`/api/products?on=${me.today}`)).json()
   const rosa = varieties.find((variety) => variety.name === 'Rosa')
-  if (rosa === undefined) throw new Error('Rosa missing from GET /varieties')
+  if (rosa === undefined) throw new Error('Rosa missing from GET /api/products')
   return rosa.id
 }
 
@@ -54,7 +54,7 @@ async function owingSale(page: Page, customerId: number, varietyId: number): Pro
     data: {
       customer_id: customerId,
       payment: 'owing',
-      lines: [{ variety_id: varietyId, quantity: '1', gift: false, special_price: null }],
+      lines: [{ product_id: varietyId, quantity: '1', gift: false, special_price: null }],
     },
   })
   expect(sold.ok(), await sold.text()).toBe(true)
@@ -78,7 +78,7 @@ export async function seedLongLists(page: Page): Promise<void> {
 /** `LONG` more varieties ("Tulipan 01" ...), so Home's stock list is taller than any viewport. */
 export async function seedLongVarieties(page: Page): Promise<void> {
   await inBatches(numbered('Tulipan', LONG), async (name) => {
-    const created = await page.request.post('/varieties', { data: { name } })
+    const created = await page.request.post('/api/products', { data: { name } })
     expect(created.ok(), await created.text()).toBe(true)
   })
 }
