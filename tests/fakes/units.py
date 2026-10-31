@@ -14,6 +14,12 @@ GRAMS = Unit(id=1, name="grams", label="g", decimals=2)
 class GramsEverywhere:
     """Satisfies each hexagon's own `UnitsReader` port: `units_of` for sales and products."""
 
+    def get(self, unit_id: int) -> Unit | None:
+        return GRAMS if unit_id == GRAMS.id else None
+
+    def only_unit(self) -> Unit | None:
+        return GRAMS
+
     def units_of(self, product_ids: Collection[int]) -> dict[int, Unit]:
         return {product_id: GRAMS for product_id in product_ids}
 
