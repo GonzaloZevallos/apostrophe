@@ -215,6 +215,19 @@ SHA-256 del SVG y el tamaño de cada ícono; `web/src/design/icons.test.ts` fall
 cambia y los PNG no se generaron de nuevo. El maskable y el de Apple son a sangre y opacos,
 con el apóstrofo dentro del 80 % central.
 
+### El wordmark
+
+El wordmark es "apostrophe" en minúscula, en Geist 600, con el ’ (U+2019) en `--acento`
+(`#1e6b47` en claro, `#5cc594` en oscuro). Lo dibuja `BrandMark`
+(`web/src/components/BrandMark.tsx`) junto con la marca de `mark.svg`. La marca con el
+wordmark va arriba en Entrar, en las dos pantallas de invitación, en el primer paso del
+Onboarding y sobre "+ Nueva venta" en el riel de la compu. La marca sola va en línea al
+comienzo del encabezado de Inicio en el celular, y solo cuando el nombre del negocio entra
+entero a su lado: si no entran los dos, la marca pasa a una segunda línea recortada, así el
+encabezado no crece ni el nombre pierde un carácter. En ningún otro lugar. No es un control
+(tocarla no hace nada) y su nombre accesible es "apostrophe" en todo negocio, tema e idioma,
+el de prueba incluido.
+
 ## En el celular
 
 Qué significa "se siente como una app" por debajo de los 900 px del punto de corte de la

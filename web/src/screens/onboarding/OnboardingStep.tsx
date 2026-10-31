@@ -25,6 +25,7 @@ import {
 } from '../../api/onboarding'
 import { isGone } from '../../api/refusals'
 import Boton from '../../components/Boton'
+import BrandMark from '../../components/BrandMark'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import LeaveConfirm from '../../components/LeaveConfirm'
@@ -118,6 +119,7 @@ export default function OnboardingStep({
   return (
     <main className="pantalla onboarding">
       <div className="onboarding__columna">
+        {isFirst(slug) && <BrandMark variant="lockup" />}
         <div className={`onboarding__cabecera${previous === undefined ? ' onboarding__cabecera--derecha' : ''}`}>
           {previous !== undefined && (
             <Boton variant="secondary" icon="atras" onClick={() => void navigate(previous)}>

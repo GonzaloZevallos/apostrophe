@@ -87,6 +87,14 @@ The Yerba mark is a white apostrophe on a green (`#1e6b47`) rounded square. It i
 - **The check** is `web/src/design/icons.test.ts`: it decodes the PNGs, and fails when the SVG changes without the PNGs being rendered again.
 - **The installed app does not change:** the manifest's `id`, `name` and `short_name` are never edited by a rebrand.
 
+### Wordmark
+
+The wordmark is "apostrophe" in lower case, Geist 600, with the ’ (U+2019) in `--acento` (`#1e6b47` in light, `#5cc594` in dark). `BrandMark` (`web/src/components/BrandMark.tsx`) draws it, with the mark from `mark.svg`; it is the only place either is drawn.
+
+- **Where it shows.** The mark with the wordmark (the lockup) goes at the top of Sign in, of both invitation screens (new Business and joining one), of the first Onboarding step, and above "+ New sale" in the computer's side rail. The mark alone goes inline at the start of Home's header on the phone, and only when the business name fits whole beside it: CSS decides, by wrapping the mark onto a clipped second line, so the header never gets taller and the name never loses a character. Nowhere else: no other Tab root, card, detail, Sheet, Catalog, Sale bill or Telegram text.
+- **Not a control.** Tapping the brand does nothing: no link, no hover or press state.
+- **Fixed name.** Its accessible name is "apostrophe" in every Business, theme and Language, the Test locale included (`brand.wordmark` and `brand.mark.label` are verbatim keys). Beside the wordmark the mark is decorative and the ’ is `aria-hidden`; alone in Home's header the mark is an image named "apostrophe" while it is visible.
+
 ## Theme
 
 The owner's decision of 2026-10-29 wins over ADR-0026 (the ADR is not edited here).
