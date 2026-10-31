@@ -1,7 +1,15 @@
-export const GSTATIC_PREFIX: string;
+export interface FontFamily {
+  readonly package: string;
+  readonly prefix: string;
+}
+export const FONT_FAMILIES: Readonly<Record<'Plus Jakarta Sans' | 'Geist', FontFamily>>;
 export type FontRoute =
-  | { kind: 'stylesheet'; weights: number[] }
-  | { kind: 'file'; name: string }
+  | { kind: 'stylesheet'; family: string; weights: number[] }
+  | { kind: 'file'; family: string; name: string }
   | { kind: 'unserved' };
 export function fontRoute(url: string): FontRoute;
-export function fontCss(weights: ReadonlyArray<number>, read: (weight: number) => string): string;
+export function fontCss(
+  family: string,
+  weights: ReadonlyArray<number>,
+  read: (weight: number) => string,
+): string;
