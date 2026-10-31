@@ -226,6 +226,70 @@ def test_real_run_imports_and_the_figures_match(
     assert customers[0]["owing_since"] == "2026-01-10"
 
 
+def _set_zone(engine: Engine, business_id: int, zone: str) -> None:
+    with Session(engine) as session:
+        session.get_one(BusinessRow, business_id).time_zone = zone
+        session.commit()
+
+
+def _dry_run(
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
+) -> tuple[int, str, str]:
+    xlsx = _save_workbook(_workbook(), tmp_path)
+    mapping = _save_mapping(tmp_path, ((CUSTOMER, PHONE),))
+    out, err = io.StringIO(), io.StringIO()
+    code = run(
+        [str(_business_id(engine)), str(xlsx), "--mapping", str(mapping), "--dry-run"],
+        engine=engine,
+        clock=clock,
+        out=out,
+        err=err,
+        text=operator_text_en,
+    )
+    return code, out.getvalue(), err.getvalue()
+
+
+def test_the_import_counts_today_in_the_target_businesss_zone(
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
+) -> None:
+    # The sheet's latest sale is dated 10 January 2026. At this instant it is still the
+    # 9th in Buenos Aires and already the 10th on Kiritimati (UTC+14).
+    clock.set(datetime(2026, 1, 9, 20, 0, tzinfo=UTC))
+
+    code, out, _ = _dry_run(client, engine, clock, tmp_path, operator_text_en)
+    assert code == 0
+    assert "Writable: no" in out
+
+    _set_zone(engine, _business_id(engine), "Pacific/Kiritimati")
+    code, out, _ = _dry_run(client, engine, clock, tmp_path, operator_text_en)
+    assert code == 0
+    assert "Writable: yes" in out
+
+
+def test_a_target_whose_zone_cannot_be_loaded_stops_the_import_naming_no_data(
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
+) -> None:
+    _set_zone(engine, _business_id(engine), "Not/AZone")
+
+    code, out, err = _dry_run(client, engine, clock, tmp_path, operator_text_en)
+
+    assert code == 1
+    assert out == ""
+    assert err == "refused: import.time_zone_unavailable\n"
+
+
 def test_an_unknown_business_is_refused_with_no_echo(
     engine: Engine, clock: MovableClock, tmp_path: Path, operator_text_en: OperatorText
 ) -> None:
