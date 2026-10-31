@@ -92,28 +92,6 @@ export function shiftMonth(month: string, delta: number): string {
   return `${String(shiftedYear).padStart(4, '0')}-${String(shiftedMonth + 1).padStart(2, '0')}`
 }
 
-/** The business's local date and time in `zone` at `epochMs`, as `dd/mm HH:MM`, for the Time zone
- * screen's preview. `epochMs` is the API's `now_epoch_ms`, never the device's clock. `null` for a
- * zone this browser does not know (`Intl` throws a `RangeError`): the screen then hides the preview. */
-export function localDateTimeIn(epochMs: number, zone: string): string | null {
-  let parts: Intl.DateTimeFormatPart[]
-  try {
-    parts = new Intl.DateTimeFormat('en', {
-      timeZone: zone,
-      day: '2-digit',
-      month: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      hourCycle: 'h23',
-    }).formatToParts(new Date(epochMs))
-  } catch (caught) {
-    if (caught instanceof RangeError) return null
-    throw caught
-  }
-  const part = (type: Intl.DateTimeFormatPartTypes): string => parts.find((p) => p.type === type)?.value ?? ''
-  return `${part('day')}/${part('month')} ${part('hour')}:${part('minute')}`
-}
-
 /* ------------------------------------------------------------------ */
 /* Periods (plan, invariants): Hoy, Semana, Mes, Fechas' defaults and the form's max   */
 /* date are all computed here, on an API date's digits alone, from `me.today`, never  */
