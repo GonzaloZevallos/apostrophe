@@ -1053,14 +1053,22 @@ CHECKS: dict[str, tuple[Check, ...]] = {
 
 
 def check_screen(
-    family: str, name: str, page: str, muestra: Muestra, denylist: tuple[str, ...]
+    family: str,
+    name: str,
+    page: str,
+    muestra: Muestra,
+    denylist: tuple[str, ...],
+    *,
+    paused: bool = False,
 ) -> list[str]:
-    """Every problem of one screen of `family`, or one problem for what `muestra.md` lacks."""
+    """Every problem of one screen of `family`, or one problem for what `muestra.md` lacks.
+    A `paused` screen (`PAUSED` in muestra_families.py) skips the figure agreement alone: its
+    dates and the denylist are still checked."""
     screen = read_screen(page)
     checked = in_spanish(screen) if family == "analisis" else screen
     problems: list[str] = []
     try:
-        for check in CHECKS[family]:
+        for check in () if paused else CHECKS[family]:
             problems += check(name, checked, muestra)
     except MuestraError as error:
         problems.append(_problem(name, str(error)))
