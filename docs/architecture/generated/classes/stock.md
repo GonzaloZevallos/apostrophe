@@ -98,6 +98,8 @@ classDiagram
   }
   class draw_rows {
   }
+  class finer_quantity {
+  }
   class import_port {
   }
   class leaving {
@@ -130,6 +132,7 @@ classDiagram
   draw_costs --> sql_draws
   draw_costs --> sql_stock_entries
   draw_costs --> sql_stock_withdrawals
+  finer_quantity --> tables
   import_port --> sql_stock_entries
   import_port --> sql_thresholds
   import_port --> tables

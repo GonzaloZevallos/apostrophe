@@ -64,6 +64,8 @@ classDiagram
   }
   class customer_facts {
   }
+  class finer_quantity {
+  }
   class import_port {
   }
   class price_book {
@@ -78,6 +80,7 @@ classDiagram
   }
   class tables {
   }
+  finer_quantity --> tables
   import_port --> price_book
   import_port --> sql_sales
   import_port --> tables

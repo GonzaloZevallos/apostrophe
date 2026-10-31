@@ -14,6 +14,8 @@ classDiagram
   }
   class errors {
   }
+  class finer_quantity {
+  }
   class import_port {
   }
   class manage_prices {
@@ -36,7 +38,10 @@ classDiagram
   }
   class tables {
   }
+  class unit_use {
+  }
   errors --> product
+  finer_quantity --> tables
   import_port --> manage_prices
   import_port --> manage_products
   import_port --> ports
@@ -62,6 +67,7 @@ classDiagram
   sql_products --> product
   sql_products --> tables
   tables --> product
+  unit_use --> tables
 ```
 
 ## domain
@@ -178,9 +184,6 @@ classDiagram
   class UnitChanging {
     change_unit(product_id: int, unit: Unit) bool
   }
-  class UnitNotFound {
-    code : ClassVar~str~
-  }
   class UnitsReader {
     get(unit_id: int) Unit #124; None
     only_unit() Unit #124; None
@@ -271,6 +274,10 @@ classDiagram
     remove_price_entries(product_id: int) None
     remove_unused(product_id: int) bool
     save(product: Product) Product
+  }
+  class SqlUnitUse {
+    products_per_unit() dict~int, int~
+    products_using(unit_id: int) int
   }
   class UnitOut {
     decimals : int

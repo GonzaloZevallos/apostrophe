@@ -125,6 +125,7 @@ classDiagram
     by_name(name: UnitName) Unit #124; None
     count() int
     list() list~Unit~
+    lower_decimals(unit_id: int, decimals: int) bool
     remove(unit_id: int) None
     save(unit: Unit) Unit
   }
@@ -134,12 +135,15 @@ classDiagram
 
 ```mermaid
 classDiagram
+  class FinerQuantity {
+  }
   class SqlUnits {
     add(draft: UnitDraft) Unit
     by_id(unit_id: int) Unit #124; None
     by_name(name: UnitName) Unit #124; None
     count() int
     list() list~Unit~
+    lower_decimals(unit_id: int, decimals: int) bool
     remove(unit_id: int) None
     save(unit: Unit) Unit
   }
