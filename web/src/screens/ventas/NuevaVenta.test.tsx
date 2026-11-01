@@ -654,3 +654,43 @@ test('a forced sale.grams_invalid answer keeps everything typed, the message at 
   expect(screen.getByLabelText('Line 1 variety')).toHaveValue('1')
   expect(screen.getByLabelText('Line 1 grams')).toHaveValue('2')
 })
+
+const WHOLE_ROSA = { ...ROSA, unit: { id: 1, name: 'unit', label: 'unit', decimals: 0 } }
+
+function postsOf(fetchMock: Awaited<ReturnType<typeof openForm>>): unknown[] {
+  return fetchMock.mock.calls.filter(([, init]) => (init as RequestInit | undefined)?.method === 'POST')
+}
+
+test('a line finer than its product unit shows the decimals sentence, keeps the typed quantity and posts nothing', async () => {
+  const user = userEvent.setup()
+  const fetchMock = await openForm({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [WHOLE_ROSA, TULIPAN]),
+  })
+
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), '1.5')
+  await user.click(screen.getByRole('radio', { name: 'Cash' }))
+  await user.click(screen.getByRole('button', { name: 'Save sale' }))
+
+  expect(await screen.findByText('Whole units only')).toBeInTheDocument()
+  expect(screen.getByLabelText('Line 1 grams')).toHaveValue('1.5')
+  expect(postsOf(fetchMock)).toEqual([])
+})
+
+test('a server quantity.too_many_decimals shows its sentence at form level', async () => {
+  const user = userEvent.setup()
+  await openForm({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [WHOLE_ROSA, TULIPAN]),
+    'POST /sales': () => jsonResponse(422, { code: 'quantity.too_many_decimals', detail: 'diagnostic' }),
+  })
+
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2')
+  await user.click(screen.getByRole('radio', { name: 'Cash' }))
+  await user.click(screen.getByRole('button', { name: 'Save sale' }))
+
+  expect(await screen.findByText('This quantity has too many decimals for its unit.')).toBeInTheDocument()
+  expect(screen.getByLabelText('Line 1 grams')).toHaveValue('2')
+})

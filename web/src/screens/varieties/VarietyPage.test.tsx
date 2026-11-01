@@ -1118,6 +1118,18 @@ describe('the unit of the product', () => {
     )
   })
 
+  test('a change refused as unit_locked shows the lock reason under the field', async () => {
+    renderPage(VARIETY_ONE, {
+      ...WITH_UNITS,
+      'GET /api/products/1': () => json(200, { ...VARIETY_ROW, removal: 'delete' }),
+      'PATCH /api/products/1': () => json(409, { code: 'product.unit_locked' }),
+    })
+    const select = await screen.findByRole('combobox', { name: 'Unit' })
+    await waitFor(() => expect(within(select).getByRole('option', { name: 'Pieces' })).toBeInTheDocument())
+    await userEvent.selectOptions(select, 'Pieces')
+    expect(await screen.findByRole('alert')).toHaveTextContent('It has recorded sales, stock or withdrawals.')
+  })
+
   test('with history the unit is read-only and says why', async () => {
     renderPage(VARIETY_ONE, { ...WITH_UNITS, 'GET /api/products/1': () => json(200, { ...VARIETY_ROW, removal: 'archive' }) })
     expect(await screen.findByText('It has recorded sales, stock or withdrawals.')).toBeInTheDocument()

@@ -272,3 +272,46 @@ test('a server too-many-decimals answer shows at form level and keeps the typed 
   expect(await screen.findByRole('alert')).toHaveTextContent('This quantity has too many decimals for its unit.')
   expect(screen.getByLabelText('Grams')).toHaveValue('2')
 })
+
+function renderEdit(quantity: number) {
+  const entry = {
+    id: 10,
+    date: '2026-10-03',
+    product_id: VARIETIES[1]!.id,
+    origin: 'purchase',
+    quantity,
+    total_cost: null,
+    cost_per_gram: null,
+    note: null,
+  } satisfies StockEntry
+  const fetchMock = stubStock(() => jsonResponse(200, {}))
+  render(
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <StockEntryForm mode="editar" initial={entry} today="2026-10-03" onSaved={vi.fn()} />
+    </QueryClientProvider>,
+  )
+  return fetchMock
+}
+
+test('an edit that changes the quantity to one finer than the unit is turned back, with no request', async () => {
+  const fetchMock = renderEdit(30)
+  const field = await screen.findByLabelText('Grams')
+  await userEvent.clear(field)
+  await userEvent.type(field, '1.5')
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  expect(await screen.findByText('Whole units only')).toBeInTheDocument()
+  expect(screen.queryByText('Save the changes?')).not.toBeInTheDocument()
+  expect(field).toHaveValue('1.5')
+  expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'PUT' || init?.method === 'PATCH')).toBe(false)
+})
+
+test('an edit that leaves a stored finer quantity unchanged is not re-checked and goes on to its confirmation', async () => {
+  renderEdit(1.5)
+  await screen.findByLabelText('Grams')
+  await waitFor(() => expect(screen.getByRole('combobox')).toHaveDisplayValue('Gelato'))
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  expect(await screen.findByText('Save the changes?')).toBeInTheDocument()
+  expect(screen.queryByText('Whole units only')).not.toBeInTheDocument()
+})

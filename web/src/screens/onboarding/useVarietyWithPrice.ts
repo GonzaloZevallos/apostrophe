@@ -88,9 +88,11 @@ export function useVarietyWithPrice({
   async function saveVariety(name: string): Promise<OnboardingTarget | null> {
     let created: OnboardingTarget
     try {
-      // A new business has one unit, the default: the first step always names it.
-      const [unit] = await listUnits()
-      const answer = await post<Variety>('/api/products', { name, unit_id: unit?.id })
+      // The first step has no unit field: it names the business's only unit. With two or more
+      // there is no hidden default, so none is sent and the server refuses with unit_required.
+      const units = await listUnits()
+      const only = units.length === 1 ? units[0] : undefined
+      const answer = await post<Variety>('/api/products', only === undefined ? { name } : { name, unit_id: only.id })
       created = { id: answer.id, name: answer.name }
     } catch (caught) {
       if (caught instanceof NetworkError) setOffline(true)

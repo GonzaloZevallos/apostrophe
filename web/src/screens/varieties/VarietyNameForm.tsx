@@ -120,12 +120,12 @@ export default function VarietyNameForm({ onSaved, onDirtyChange, sheet = false 
               </option>
             ))}
           </select>
-          {unitError !== null && (
-            <span className="campo__error" role="alert">
-              {unitError}
-            </span>
-          )}
         </label>
+      )}
+      {unitError !== null && (
+        <span className="campo__error" role="alert">
+          {unitError}
+        </span>
       )}
       <Actions>
         {offline && <SinConexion />}

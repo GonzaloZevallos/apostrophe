@@ -69,6 +69,7 @@ function UnitChoice({ varietyId, unit }: { varietyId: number; unit: ProductUnit 
     } catch (caught) {
       if (caught instanceof NetworkError) setOffline(true)
       else if (caught instanceof ApiError && caught.code === 'product.unit_decimals_in_use') setError(t('units:errUnitDecimals'))
+      else if (caught instanceof ApiError && caught.code === 'product.unit_locked') setError(t('units:unitLockedReason'))
       else if (caught instanceof ApiError && caught.code === 'product.unit_required') setError(t('units:errUnitRequired'))
       else if (caught instanceof ApiError && caught.code !== UNKNOWN_CODE) setError(t('units:unitSaveError'))
       else setError(t('common:genericError'))
