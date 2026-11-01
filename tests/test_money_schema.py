@@ -123,7 +123,12 @@ def test_the_schema_type_is_a_decimal_in_the_model() -> None:
 
 @pytest.mark.parametrize(
     ("raw", "exponent"),
-    [('{"price": 1e3}', 0), ('{"price": 1e16}', 0), ('{"price": 11000.50}', -1), ('{"price": 3}', 0)],
+    [
+        ('{"price": 1e3}', 0),
+        ('{"price": 1e16}', 0),
+        ('{"price": 11000.50}', -1),
+        ('{"price": 3}', 0),
+    ],
 )
 def test_the_value_comes_back_without_trailing_zeros_or_a_positive_exponent(
     raw: str, exponent: int
