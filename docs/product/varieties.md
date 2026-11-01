@@ -9,7 +9,7 @@ Products es la única pantalla de un Product. Su lista y la página de cada Prod
 - su **Stock**, sus **Stock entry**, sus **Stock withdrawal** y su **Low-stock threshold** (`stock.md`);
 - sus **Catalog attributes** (`catalog.md`).
 
-Qué campos de precio muestra y guarda una **Price entry** sigue los **Pricing settings** del Business (pricing-settings.md). Products es una pestaña (navigation.md). Reemplazó a la antigua pestaña Stock, a la vieja pantalla Catalog y a las viejas pantallas de Varieties; sus rutas redirigen (navigation.md). También cubre el final de la vida de un Product: un Product sin **Product history** se puede eliminar, y uno con historial se puede archivar y restaurar más adelante, sin que se mueva ninguna cifra pasada.
+Qué campos de precio muestra y guarda una **Price entry** sigue los **Pricing settings** del Business (pricing-settings.md). Products es una pestaña (navigation.md). Reemplazó a la antigua pestaña Stock, a la vieja pantalla Catalog y a las viejas pantallas de Products (las anteriores a esta pestaña); sus rutas redirigen (navigation.md). También cubre el final de la vida de un Product: un Product sin **Product history** se puede eliminar, y uno con historial se puede archivar y restaurar más adelante, sin que se mueva ninguna cifra pasada.
 
 ## Jobs
 
