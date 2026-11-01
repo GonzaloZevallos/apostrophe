@@ -119,3 +119,13 @@ def test_a_refusal_never_carries_the_amount() -> None:
 
 def test_the_schema_type_is_a_decimal_in_the_model() -> None:
     assert Priced.model_fields["price"].annotation is Decimal
+
+
+@pytest.mark.parametrize(
+    ("raw", "exponent"),
+    [('{"price": 1e3}', 0), ('{"price": 1e16}', 0), ('{"price": 11000.50}', -1), ('{"price": 3}', 0)],
+)
+def test_the_value_comes_back_without_trailing_zeros_or_a_positive_exponent(
+    raw: str, exponent: int
+) -> None:
+    assert Priced.model_validate_json(raw).price.as_tuple().exponent == exponent

@@ -54,8 +54,9 @@ def _from_json_float(value: float) -> Decimal:
 def _checked(value: Decimal) -> Decimal:
     # Money.of raises InvalidMoney, a ValueError with a fixed message, which pydantic
     # reports as a validation error.
-    money = Money.of(value)
-    return money.as_decimal() if money.hundredths == 0 else value
+    # Back through hundredths, so the value is canonical: no negative zero, no positive
+    # exponent such as 1E+3, and no trailing zeros from a float's repr.
+    return Money.of(value).as_decimal()
 
 
 MoneyAmount = Annotated[Decimal, BeforeValidator(_as_decimal), AfterValidator(_checked)]
