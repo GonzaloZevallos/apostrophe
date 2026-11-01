@@ -71,6 +71,7 @@ class ProductsImport:
             key = keys[row.variety]
             variety = varieties.get(key)
             if variety is None:
+                # `unit_id=0` names no unit: this Product only plans prices and is never stored.
                 variety = Product(ProductName.of(row.variety), unit_id=0)
                 varieties[key] = variety
             try:
