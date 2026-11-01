@@ -175,6 +175,10 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
         "bill.payment.still_owed": "integer",
         "bill.balance": "integer",
     },
+    "timeZone": {
+        # An offset is `null` for a listed name this runtime cannot load.
+        "utc_offsets_minutes[]": "integer",
+    },
     "withdrawal": {
         "note": "string",
     },
