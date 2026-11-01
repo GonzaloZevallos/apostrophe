@@ -195,7 +195,7 @@ describe('the Archivadas card', () => {
     for (const mark of screen.getAllByText('Archived', { selector: '.insignia' })) expect(mark.className).toBe('insignia')
     expect(screen.queryByText('Hidden')).toBeNull()
     expect(screen.getAllByRole('button', { name: 'Restore' })).toHaveLength(2)
-    expect(screen.getByRole('button', { name: '‹ Varieties' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '‹ Products' })).toBeTruthy()
     expect(screen.queryByText('+ New sale')).toBeNull()
   })
 

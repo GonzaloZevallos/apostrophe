@@ -196,7 +196,7 @@ test('month navigation requests the previous month and disables at the bounds', 
 test('the computer table carries headers, the margin stack, pending marks and the best/current week', async () => {
   renderAnalisis(async () => jsonResponse(200, analysisFixture), 'computer')
 
-  const table = (await screen.findAllByText('Variety')).find(
+  const table = (await screen.findAllByText('Product')).find(
     (node) => node.closest('table') !== null,
   )
   expect(table).not.toBeUndefined()

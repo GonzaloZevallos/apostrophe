@@ -246,7 +246,7 @@ describe('the list', () => {
       'Home',
       'Sales',
       'Customers',
-      'Varieties',
+      'Products',
       'More',
     ])
   })
@@ -336,7 +336,7 @@ describe('on a computer: two panes', () => {
 
     expect(await screen.findByText('No varieties yet')).toBeInTheDocument()
     expect(router.state.location.pathname).toBe(VARIETIES_PATH)
-    expect(screen.getAllByRole('heading').map((heading) => heading.textContent)).toEqual(['Varieties'])
+    expect(screen.getAllByRole('heading').map((heading) => heading.textContent)).toEqual(['Products'])
   })
 
   test('Back from a form opened over the page returns to the variety, both panes still there', async () => {

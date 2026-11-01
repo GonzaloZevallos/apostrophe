@@ -141,7 +141,7 @@ test('real screens: a flash toast, a toast on its own timer and the card\'s hist
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: '+ Stock entry' }).click()
   await page.getByLabel('Grams').fill('50')
-  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
+  await page.getByLabel('Product').selectOption({ label: 'Rosa' })
   await page.getByLabel('Total cost').fill('20000')
   // FlashProvider: 2.5 s on the flash toast.
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())

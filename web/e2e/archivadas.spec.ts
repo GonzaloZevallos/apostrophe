@@ -76,7 +76,7 @@ for (const viewport of VIEWPORTS) {
         await expect(page).toHaveURL(/\/varieties\/[0-9]+$/)
       } else {
         await expect(page).toHaveURL(/\/varieties\/archived$/)
-        await expect(page.getByRole('button', { name: '‹ Varieties' })).toBeVisible()
+        await expect(page.getByRole('button', { name: '‹ Products' })).toBeVisible()
         await page.getByRole('link', { name: /Rosa/ }).click()
       }
       // The archived page's own heading, on both viewports (a phone has no Rosa link here).

@@ -44,7 +44,7 @@
   {
     "screen": "DescartarVenta",
     "rule": "autocomplete",
-    "target": "combobox:Line # variety",
+    "target": "combobox:Line # product",
     "issue": 78
   },
   {
@@ -80,7 +80,7 @@
   {
     "screen": "ElegirCliente",
     "rule": "autocomplete",
-    "target": "combobox:Line # variety",
+    "target": "combobox:Line # product",
     "issue": 78
   },
   {
@@ -122,7 +122,7 @@
   {
     "screen": "EntradaStock",
     "rule": "autocomplete",
-    "target": "combobox:Variety",
+    "target": "combobox:Product",
     "issue": 47
   },
   {
@@ -152,7 +152,7 @@
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "autocomplete",
-    "target": "combobox:Variety It has # g today",
+    "target": "combobox:Product It has # g today",
     "issue": 47
   },
   {
@@ -182,7 +182,7 @@
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "autocomplete",
-    "target": "combobox:Variety It has # g today",
+    "target": "combobox:Product It has # g today",
     "issue": 47
   },
   {
@@ -212,7 +212,7 @@
   {
     "screen": "EntradaStockEditar",
     "rule": "autocomplete",
-    "target": "combobox:Variety It has # g today",
+    "target": "combobox:Product It has # g today",
     "issue": 47
   },
   {
@@ -242,7 +242,7 @@
   {
     "screen": "EntradaStockSinEntradas",
     "rule": "autocomplete",
-    "target": "combobox:Variety It has # g today",
+    "target": "combobox:Product It has # g today",
     "issue": 47
   },
   {
@@ -398,7 +398,7 @@
   {
     "screen": "NuevaVenta",
     "rule": "autocomplete",
-    "target": "combobox:Line # variety",
+    "target": "combobox:Line # product",
     "issue": 78
   },
   {
@@ -434,7 +434,7 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "autocomplete",
-    "target": "combobox:Line # variety",
+    "target": "combobox:Line # product",
     "issue": 78
   },
   {
@@ -476,7 +476,7 @@
   {
     "screen": "NuevaVentaConLinea",
     "rule": "autocomplete",
-    "target": "combobox:Line # variety",
+    "target": "combobox:Line # product",
     "issue": 78
   },
   {
@@ -512,7 +512,7 @@
   {
     "screen": "NuevaVentaConLineaYPago",
     "rule": "autocomplete",
-    "target": "combobox:Line # variety",
+    "target": "combobox:Line # product",
     "issue": 78
   },
   {
@@ -548,7 +548,7 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "combobox:Line # variety",
+    "target": "combobox:Line # product",
     "issue": 78
   },
   {

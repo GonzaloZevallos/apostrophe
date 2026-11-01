@@ -2,7 +2,7 @@
  * `fillSaleLine` (plan, "new-sale": "Tests"): the one seam every e2e sale fills a
  * line through, since `NuevaVenta`'s line editor (plan, "Binding UX decision")
  * only ever shows one line's own fields at a time — a line's `aria-label`s
- * ("Line N variety", "Line N grams", ...) exist only while it is open.
+ * ("Line N product", "Line N grams", ...) exist only while it is open.
  *
  * Line `n` opens first, if it isn't already: clicking "Add another variety"
  * when it doesn't exist yet, or tapping its own closed row (named "Line N: " plus
@@ -25,7 +25,7 @@ export async function fillSaleLine(
   n: number,
   { variety, grams, gift, specialPrice }: SaleLineInput,
 ): Promise<void> {
-  const varietyField = page.getByLabel(`Line ${n} variety`)
+  const varietyField = page.getByLabel(`Line ${n} product`)
   // The lines render only once the varieties have arrived, and `count()` below does not
   // wait: read before that, it would see no line and add a second one. "Agregar otra
   // variedad" is on screen exactly when the lines are.
