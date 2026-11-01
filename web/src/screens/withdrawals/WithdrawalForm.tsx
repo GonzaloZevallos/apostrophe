@@ -451,7 +451,9 @@ export default function WithdrawalForm({
             required
           />
         </label>
-        {form.lines.map((line, index) => (
+        {form.lines.map((line, index) => {
+          const finerDecimals = finerThanUnit(line)
+          return (
           <fieldset className="campo" key={line.key}>
             <legend className="campo__rotulo">
               {form.lines.length === 1 ? STOCK_TEXT.variedadYGramos : STOCK_TEXT.variedadYGramos0(index + 1)}
@@ -483,12 +485,12 @@ export default function WithdrawalForm({
               enterKeyHint={index === form.lines.length - 1 ? 'done' : 'next'}
               value={line.grams}
               onChange={(event) => setLine(line.key, { grams: event.target.value })}
-              aria-invalid={finerThanUnit(line) !== null || undefined}
+              aria-invalid={finerDecimals !== null || undefined}
               required
             />
-            {finerThanUnit(line) !== null && (
+            {finerDecimals !== null && (
               <span className="campo__error" role="alert">
-                {decimalsSentence(finerThanUnit(line) ?? 2)}
+                {decimalsSentence(finerDecimals)}
               </span>
             )}
             {form.lines.length > 1 && (
@@ -507,7 +509,8 @@ export default function WithdrawalForm({
               />
             )}
           </fieldset>
-        ))}
+          )
+        })}
         <Boton
           variant="secondary"
           icon="agregar"

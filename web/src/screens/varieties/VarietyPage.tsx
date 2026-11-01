@@ -221,7 +221,7 @@ function VarietyPageView({
       node: (
         <ThresholdForm
           varietyId={varietyId}
-          decimals={variety.unit?.decimals ?? 2}
+          decimals={variety.unit?.decimals}
           threshold={row.threshold}
           onDone={onSaved}
           onCancel={leaveForm}

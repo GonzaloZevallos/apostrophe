@@ -206,9 +206,9 @@ export default function StockEntryForm({
     return found?.quantity ?? null
   })()
 
-  const unitDecimals = pickable.find((variety) => String(variety.id) === varietyId)?.unit?.decimals ?? 2
+  const unitDecimals = pickable.find((variety) => String(variety.id) === varietyId)?.unit?.decimals
   const quantityChanged = initial === undefined || grams !== String(initial.quantity)
-  const decimalsField = decimalsRefused && (
+  const decimalsField = decimalsRefused && unitDecimals !== undefined && (
     <span className="campo__error" role="alert">
       {sentence(unitDecimals)}
     </span>
@@ -279,7 +279,7 @@ export default function StockEntryForm({
 
   function onSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault()
-    if (quantityChanged && exceedsDecimals(grams, unitDecimals)) {
+    if (quantityChanged && unitDecimals !== undefined && exceedsDecimals(grams, unitDecimals)) {
       setDecimalsRefused(true)
       return
     }

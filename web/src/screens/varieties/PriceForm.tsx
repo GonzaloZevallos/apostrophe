@@ -36,7 +36,7 @@ import { COMMON_TEXT } from '../../copy/common'
 export interface PriceFormProps {
   varietyId: number
   /** How many decimals the product's unit allows (the bulk minimum is checked against it). */
-  decimals: number
+  decimals: number | undefined
   today: string
   /** The switches in force: a rule that is off has no field and nothing about it is sent. */
   settings: PricingSettings
@@ -96,9 +96,9 @@ export default function PriceForm({
     event.preventDefault()
     setOffline(false)
     const read = readPriceValues(values, settings)
-    const tooFine = settings.is_bulk_pricing && exceedsDecimals(bulkMinimum, decimals)
+    const tooFine = decimals !== undefined && settings.is_bulk_pricing && exceedsDecimals(bulkMinimum, decimals)
     if (tooFine || !read.ok) {
-      setErrors({ ...(read.ok ? {} : read.errors), ...(tooFine ? { bulkMinimum: sentence(decimals) } : {}) })
+      setErrors({ ...(read.ok ? {} : read.errors), ...(tooFine && decimals !== undefined ? { bulkMinimum: sentence(decimals) } : {}) })
       return
     }
     setErrors({})

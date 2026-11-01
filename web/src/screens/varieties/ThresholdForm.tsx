@@ -32,7 +32,7 @@ function typedFrom(threshold: number | null): string {
 export interface ThresholdFormProps {
   varietyId: number
   /** How many decimals the product's unit allows. */
-  decimals: number
+  decimals: number | undefined
   /** The saved threshold from `GET /stock`; `null` when the warning is off. */
   threshold: number | null
   onDone: (saved: SuccessToast) => void
@@ -59,7 +59,7 @@ export default function ThresholdForm({ varietyId, decimals, threshold, onDone, 
     event.preventDefault()
     setError(null)
     setOffline(false)
-    if (exceedsDecimals(grams, decimals)) {
+    if (decimals !== undefined && exceedsDecimals(grams, decimals)) {
       setError(sentence(decimals))
       return
     }
@@ -80,7 +80,7 @@ export default function ThresholdForm({ varietyId, decimals, threshold, onDone, 
       } else if (caught instanceof ApiError) {
         const message = resolveOverride(THRESHOLD_OVERRIDES, caught.code)
         if (message !== undefined) setError(message)
-        else if (caught.code === 'quantity.too_many_decimals') setError(sentence(decimals))
+        else if (caught.code === 'quantity.too_many_decimals' && decimals !== undefined) setError(sentence(decimals))
         else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') setError(GENERIC_REFUSAL_MESSAGE)
         else setError(ERROR_GENERICO_MENSAJE)
       } else if (caught instanceof NetworkError) {

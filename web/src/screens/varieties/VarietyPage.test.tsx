@@ -1101,7 +1101,7 @@ describe('the unit of the product', () => {
     await userEvent.selectOptions(select, 'Pieces')
     await waitFor(() => expect(writes(fetchMock)).toContain('PATCH /api/products/1'))
     const patch = fetchMock.mock.calls.find(([, init]) => (init as RequestInit | undefined)?.method === 'PATCH')
-    expect(JSON.parse((patch?.[1] as RequestInit).body as string)).toEqual({ unit_id: 5 })
+    expect(JSON.parse(String((patch?.[1] as RequestInit | undefined)?.body))).toEqual({ unit_id: 5 })
   })
 
   test('a refused change shows the field sentence for unit_decimals_in_use', async () => {

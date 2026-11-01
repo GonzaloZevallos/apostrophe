@@ -55,6 +55,7 @@ import { useVisualViewport } from '../../components/useVisualViewport'
 import { formatDateLong, formatDateShort, maxSaleDate } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { parseGrams, parseMoney } from '../../format/parse'
+import { useTranslation } from 'react-i18next'
 import { exceedsDecimals, useDecimalsSentence } from '../../format/unitDecimals'
 import {
   type LineValidation,
@@ -178,6 +179,7 @@ function NuevaVentaForm() {
   // Save looks unready before the choice on the phone only; the computer draws it as it always did.
   const onPhone = useViewport() === 'phone'
   const decimalsSentence = useDecimalsSentence()
+  const { t } = useTranslation()
 
   const initialCustomerId = readNewSaleState(location.state)
 
@@ -349,9 +351,10 @@ function NuevaVentaForm() {
    * variety when something else was typed. A fully blank line never reaches here
    * closed (it is removed instead), so returning `null` here only ever means a
    * line that prices cleanly. */
-  function tooFine(line: LineState): boolean {
+  /** The decimals the line's product unit allows, when the typed quantity has more; else null. */
+  function finerThanUnit(line: LineState): number | null {
     const decimals = varietyOf(line.varietyId)?.unit?.decimals
-    return decimals !== undefined && exceedsDecimals(line.grams, decimals)
+    return decimals !== undefined && exceedsDecimals(line.grams, decimals) ? decimals : null
   }
 
   function combinedLineError(line: LineState): string | null {
@@ -362,7 +365,8 @@ function NuevaVentaForm() {
     const gramsTyped = line.grams.trim() !== ''
     const somethingTyped = line.varietyId !== '' || gramsTyped || line.gift || line.specialPrice.trim() !== ''
     if (!parseGrams(line.grams).ok && somethingTyped) return LINE_GRAMS_INVALID
-    if (tooFine(line)) return decimalsSentence(varietyOf(line.varietyId)?.unit?.decimals ?? 2)
+    const finer = finerThanUnit(line)
+    if (finer !== null) return decimalsSentence(finer)
     if (line.varietyId === '' && somethingTyped) return LINE_VARIETY_MISSING
     return null
   }
@@ -441,7 +445,7 @@ function NuevaVentaForm() {
   function fieldForError(line: LineState): 'variety' | 'grams' | 'specialPrice' {
     if (specialPriceErrorFor(line) !== null) return 'specialPrice'
     if (noPriceErrorFor(line.key) !== null) return 'variety'
-    if (!parseGrams(line.grams).ok || tooFine(line)) return 'grams'
+    if (!parseGrams(line.grams).ok || finerThanUnit(line) !== null) return 'grams'
     return 'variety'
   }
 
