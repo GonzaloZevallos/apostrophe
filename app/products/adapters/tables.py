@@ -5,7 +5,7 @@ from datetime import date, datetime
 from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db import Base, UtcDateTime
+from app.db import Base, UtcDateTime, money_column
 from app.products.domain.product import NAME_MAX_LENGTH
 
 
@@ -34,8 +34,8 @@ class PriceEntryRow(Base):
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
     variety_id: Mapped[int] = mapped_column(ForeignKey("variety.id"))
     effective_from: Mapped[date]
-    list_price: Mapped[int]
-    bulk_price: Mapped[int | None]
+    list_price: Mapped[int] = money_column()
+    bulk_price: Mapped[int | None] = money_column(nullable=True)
     bulk_minimum_hundredths: Mapped[int | None]
-    vip_price: Mapped[int | None]
+    vip_price: Mapped[int | None] = money_column(nullable=True)
     variety: Mapped[ProductRow] = relationship(back_populates="price_entries")

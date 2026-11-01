@@ -11,7 +11,7 @@ from datetime import date, datetime
 from sqlalchemy import CheckConstraint, ForeignKey, Index, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.db import Base, UtcDateTime
+from app.db import Base, UtcDateTime, money_column
 from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import NOTE_MAX_LENGTH
 
@@ -30,7 +30,7 @@ class StockEntryRow(Base):
     origin: Mapped[str] = mapped_column(String(ORIGIN_MAX_LENGTH))
     # Signed: a negative adjustment takes grams away (app/shared/quantity.py).
     grams_hundredths: Mapped[int]
-    total_cost: Mapped[int | None]
+    total_cost: Mapped[int | None] = money_column(nullable=True)
     note: Mapped[str | None] = mapped_column(String(NOTE_MAX_LENGTH))
     # Set once at creation from the injected clock; never changed by an edit. Lots and
     # draws are ordered only by it, through LotOrder (built elsewhere).

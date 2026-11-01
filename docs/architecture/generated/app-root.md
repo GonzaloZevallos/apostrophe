@@ -25,6 +25,8 @@ classDiagram
   }
   class MissingSetting {
   }
+  class MoneyFormatMissing {
+  }
   class Refused {
     code : str
   }
