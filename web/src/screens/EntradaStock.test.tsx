@@ -496,7 +496,7 @@ test('Cerrar goes back by history to where the form was opened', async () => {
   await renderFromVariety()
 
   await userEvent.click(await screen.findByRole('button', { name: 'Close' }))
-  expect(await screen.findByText('Product page')).toBeInTheDocument()
+  expect(await screen.findByText('la página de la variety')).toBeInTheDocument()
   expect(screen.getByTestId('where')).toHaveTextContent(pathTo(VARIETY, { id: 3 }))
 })
 
@@ -544,7 +544,7 @@ test('a save goes back by history too, and says "Entry saved" there', async () =
 
   await userEvent.type(await screen.findByLabelText('Grams'), '30')
   await userEvent.click(screen.getByRole('button', { name: 'Save the entry' }))
-  expect(await screen.findByText('Product page')).toBeInTheDocument()
+  expect(await screen.findByText('la página de la variety')).toBeInTheDocument()
   expect(await screen.findByText('Entry saved')).toBeInTheDocument()
 })
 
@@ -590,14 +590,14 @@ test('Cerrar with something typed asks before discarding, and leaving is refused
   await userEvent.type(await screen.findByLabelText('Grams'), '30')
   await userEvent.click(screen.getByRole('button', { name: 'Close' }))
   expect(await screen.findByRole('alertdialog')).toHaveTextContent('Discard the entry?')
-  expect(screen.queryByText('Product page')).not.toBeInTheDocument()
+  expect(screen.queryByText('la página de la variety')).not.toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'No, keep entering' }))
   expect(screen.getByLabelText('Grams')).toHaveValue('30')
 
   await userEvent.click(screen.getByRole('button', { name: 'Close' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Yes, discard it' }))
-  expect(await screen.findByText('Product page')).toBeInTheDocument()
+  expect(await screen.findByText('la página de la variety')).toBeInTheDocument()
 })
 
 // The gone exit (navigation.md, "A gone exit is the same move as Cerrar").
