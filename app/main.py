@@ -203,8 +203,8 @@ def create_app(
     )
     app.state.pinned_catalog_locks = BusinessLocks()
     # The readers outside a request get a business's stored zone through their own
-    # Protocols (`BusinessZones`, `BusinessZone`, `TargetZone`), all served by this one
-    # accounts adapter (ADR-0055).
+    # Protocols (`BusinessZones`, `BusinessZone`), served by this accounts adapter
+    # (ADR-0055); the import CLI's `TargetZone` is `accounts.adapters.import_port`'s.
     app.state.business_zones = SqlBusinessZones(cast(Engine, app.state.engine))
     app.state.pinned_catalog_cipher = TokenCipher(settings.secret_key)
     app.state.pinned_catalog_upkeep_ticker = upkeep_ticker

@@ -1,7 +1,8 @@
 """Accounts' side of the zone Protocols the readers outside a request declare for
-themselves (ADR-0055): `pinned_catalog`'s `BusinessZones`/`BusinessZone` and
-`spreadsheet_import`'s `TargetZone`. They answer the stored name only; each reader turns
-it into a zone with `load_zone` and decides what an unloadable name means for it.
+themselves (ADR-0055): `pinned_catalog`'s `BusinessZones`/`BusinessZone`.
+`spreadsheet_import`'s `TargetZone` is served by `import_port.TargetZone`. They answer
+the stored name only; each reader turns it into a zone with `load_zone` and decides what
+an unloadable name means for it.
 """
 
 from __future__ import annotations
