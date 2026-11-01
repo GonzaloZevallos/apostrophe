@@ -95,6 +95,7 @@ def _planned_pricing(variety: Product | None, variety_id: int, day: date) -> Var
 
 
 def _build_variety(name_source: str, rows: Sequence[PriceHistoryRow]) -> Product:
+    # `unit_id=0` names no unit: this Product only plans prices and is never stored.
     variety = Product(ProductName.of(name_source), unit_id=0)
     for row in rows:
         try:
