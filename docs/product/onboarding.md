@@ -8,7 +8,7 @@ El Onboarding nunca pregunta cómo se llama lo que vende el Business: en pantall
 
 **Cuando** acabo de abrir mi negocio y todavía está vacío, **quiero** que me guíen por lo que necesita, un paso corto por vez, con los valores por defecto ya completos, **para** registrar mi primera venta el mismo día sin buscar entre Settings, Products y la pantalla del Catalog.
 
-Antes, quien vendía caía en un Home vacío y abría Varieties, la pantalla del Catalog y Settings una por una. Antes de la app, hacía todo eso en la pestaña Ajustes de la planilla.
+Antes, quien vendía caía en un Home vacío y abría Products, la pantalla del Catalog y Settings una por una. Antes de la app, hacía todo eso en la pestaña Ajustes de la planilla.
 
 **Cuando** manejo mi negocio desde el celular entre pedidos o en medio de un chat con un cliente, varias veces al día, **quiero** la app organizada según lo que de verdad hago y cada cuánto, **para** volver con el cliente en vez de buscar entre menús. (El job de navegación, navigation.md: lo sirve acá el Onboarding como el único elemento de primer uso de un Business nuevo.)
 

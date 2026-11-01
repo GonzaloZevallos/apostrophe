@@ -93,7 +93,7 @@ Criterios de éxito:
    necesita más que el celular. Una Stock entry iniciada desde la página de un Product tiene ese Product
    elegido, con "Initial stock" preseleccionado solo cuando no tiene Stock entries.
 8. **Nada perdido, nada inventado**: todo lo que quien vendía podía hacer en las antiguas pantallas Stock,
-   Catalog y Varieties sigue al alcance; cada ruta vieja redirige
+   Catalog y Products sigue al alcance; cada ruta vieja redirige
    de forma permanente; ningún link apunta a una pantalla que no existe.
 9. **Fuera del camino en pocos toques**: desde la propia página de un Product, en celular y computadora, quien
    vende lo saca de toda lista y selector. La app ofrece Delete solo cuando el
@@ -164,7 +164,7 @@ Criterios de éxito:
 
 ### Eliminar y archivar un Product
 
-- **Historial**: la Product history es cualquier Sale line del Product (los **Gift** y los Special price
+- **Historial**: Product history es cualquier Sale line del Product (los **Gift** y los Special price
   incluidos) o cualquier Stock entry de él (de cualquier origen: **Purchase**, **Harvest**, **Opening stock** o un Adjustment de
   cualquiera de los dos signos), o cualquier línea de Stock withdrawal de él (**Promotion** u **Own use**). Se calcula
   en el momento y nunca se guarda.
@@ -240,7 +240,7 @@ Criterios de éxito:
 - Recargar cualquiera de ellas abre la pantalla, nunca la respuesta de la API (ADR-0024 y
   ADR-0033 rigen las rutas compartidas con la API).
 - Las rutas viejas (`/variedades`, `/mi-stock`, `/mi-stock/nueva-entrada`,
-  `/mi-stock/entradas/{id}`, `/catalogo` y toda otra ruta de las antiguas Stock, Varieties o
+  `/mi-stock/entradas/{id}`, `/catalogo` y toda otra ruta de las antiguas Stock, Products o
   Catalog) redirigen de forma permanente (navigation.md).
 
 ### En pantalla: la lista de Products (`Products`)
@@ -521,7 +521,7 @@ Criterios de éxito:
   por nombre; sin Products el panel derecho queda sin ninguna cifra; archivar o
   eliminar el Product seleccionado selecciona el siguiente, si no el anterior, si no el estado
   vacío; en el celular la lista nunca abre un Product.
-- **Nada perdido (criterio 8)**: cada ruta vieja de Stock, Varieties y Catalog responde una
+- **Nada perdido (criterio 8)**: cada ruta vieja de Stock, Products y Catalog responde una
   redirección permanente, probada una por una, `/mi-stock/entradas/{id}` incluida; cada acción
   vieja tiene un lugar en las pantallas nuevas; ningún link apunta a una pantalla que falta; recargar
   `/varieties/{low}/entries`, `/varieties/entries/{id}` y `/varieties/archived`
