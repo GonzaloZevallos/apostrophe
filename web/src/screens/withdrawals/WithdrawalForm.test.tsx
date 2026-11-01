@@ -242,5 +242,5 @@ test('with two lines the form keeps the icon and text rule: Quitar is icon-only,
 
   await userEvent.click(quitar)
   expect(screen.queryByLabelText('Product 2')).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: /^Remove variety/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /^Remove product/ })).not.toBeInTheDocument()
 })

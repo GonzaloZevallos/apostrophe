@@ -173,7 +173,7 @@ describe('the action the page offers', () => {
     renderPage({ removal: null })
 
     await screen.findByRole('heading', { name: 'Blue Dream' })
-    expect(screen.queryByRole('button', { name: /variedad$/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^(Delete|Archive) product$/ })).not.toBeInTheDocument()
   })
 })
 
