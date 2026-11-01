@@ -9,7 +9,7 @@
 
 Every business has exactly one stored language, a **Language** tag. The words in other languages arrive with #317. Until then English is the only **Selectable language**, the language control does not show, and nothing visible changes for anyone.
 
-The language covers the app's own texts only (**Product language**): screens, and the catalog's fixed lines that customers read. It never touches the seller's own data: variety names, aroma, notes, expense categories, and the catalog header and footer stay exactly as stored. Number and date formats stay Argentine, and the catalog's money and grams formats (`$11.000`, `2,5 g`) are the same in every language.
+The language covers the app's own texts only (**Product language**): screens, and the catalog's fixed lines that customers read. It never touches the seller's own data: product names, aroma, notes, expense categories, and the catalog header and footer stay exactly as stored. Number and date formats stay Argentine, and the catalog's money and grams formats (`$11.000`, `2,5 g`) are the same in every language.
 
 ## Stored and shown language
 

@@ -45,7 +45,7 @@ Success criteria:
 2. For any month, the view shows every expense of that month and the month's total. It
    breaks them down by category, with a subtotal for each. The totals always equal the sum
    of the expenses shown, including straight after an edit or a delete.
-3. Flower is never an expense. Nothing here records grams or a variety, and a purchase
+3. Flower is never an expense. Nothing here records grams or a product, and a purchase
    never appears in the expense lists. That way results can count expenses and purchases
    separately without counting anything twice.
 4. Everything here is done from the phone with no API call by hand.
@@ -62,7 +62,7 @@ Success criteria:
 
 ### Expense category
 
-- Category names follow the variety-name rule:
+- Category names follow the product-name rule:
   - trimmed, inner spaces collapsed, up to 60 characters;
   - unique within a business whatever the case or spacing;
   - two businesses may each have a category with the same name.
@@ -104,7 +104,7 @@ Success criteria:
   business's own categories. Any other category id answers 404.
 - **Amount**: required, in whole pesos, above zero.
 - **Detail**: required, trimmed, not blank, up to 200 characters.
-- An expense has no grams, no variety and no pending, draft or approval state.
+- An expense has no grams, no product and no pending, draft or approval state.
 - **Edit**: all four fields can be edited in place, with the same validation as when
   recording. No edit history is kept.
 - **Delete**: removes the expense for good.
@@ -201,7 +201,7 @@ Read from the data and from tests; there is no telemetry.
   If it stays high, the categories are not helping the user see where the money goes.
 - **M4, use**: businesses with at least one expense in a month, out of active businesses.
 - **M5, flower kept out (criterion 3)**: purchases that appear in the expense lists must be
-  0, by construction. An expense has no field that could hold grams or a variety.
+  0, by construction. An expense has no field that could hold grams or a product.
 - **M6, no curl (criterion 4)**: the end-to-end front run:
   - records an expense from More → "+ Add expense" and one from Expenses;
   - edits and deletes one;

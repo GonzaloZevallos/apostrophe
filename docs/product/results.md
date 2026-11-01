@@ -9,25 +9,25 @@ Whether a business makes money and how much it actually has, over today, this we
 - payments, balances and settlement from payments (ADR-0012);
 - stock status and days left from stock.
 
-It computes nothing those capabilities already compute, beyond adding them up. Its period figures come from the one computation Analysis also reads (ADR-0020): Profit here and profit in Analysis are the same figure. Home also carries the Onboarding's notice (onboarding.md), the first-run checklist and the after-import notice (navigation.md); their place on Home is set here. An archived variety (varieties.md) leaves What you have left and "Start with your varieties", while every period figure keeps it.
+It computes nothing those capabilities already compute, beyond adding them up. Its period figures come from the one computation Analysis also reads (ADR-0020): Profit here and profit in Analysis are the same figure. Home also carries the Onboarding's notice (onboarding.md), the first-run checklist and the after-import notice (navigation.md); their place on Home is set here. An archived product (varieties.md) leaves What you have left and "Start with your products", while every period figure keeps it.
 
 ## Jobs
 
-**When** I open the app, or stop between orders or at the end of the day to see how today, this week or this month is going, **I want to** see on one screen what I sold, what it cost me, what I spent, what I earned (Profit), the money that actually moved (Cash), who owes me and what I have left of each variety, **so I can** tell whether I'm making money and how much I actually have, and know whether to restock or chase a debt, without opening Sales, Customers and Varieties one by one or doing any arithmetic myself.
+**When** I open the app, or stop between orders or at the end of the day to see how today, this week or this month is going, **I want to** see on one screen what I sold, what it cost me, what I spent, what I earned (Profit), the money that actually moved (Cash), who owes me and what I have left of each product, **so I can** tell whether I'm making money and how much I actually have, and know whether to restock or chase a debt, without opening Sales, Customers and Products one by one or doing any arithmetic myself.
 
 Profit and Cash exist nowhere else in the product, and they are why the panel exists. The spreadsheet's Panel got profit wrong: its profit dropped the week flower was bought. Showing debt and stock on the same screen is a convenience on top of that.
 
-**When** I open the app between orders or at the end of the day, **I want** to see what I sold today, who owes me and what is running out, and act on it at once (collect from a debtor, open a variety that is running low, fix what a notice tells me), **so I can** get back to the customer without going through Customers and Varieties one by one or doing any arithmetic.
+**When** I open the app between orders or at the end of the day, **I want** to see what I sold today, who owes me and what is running out, and act on it at once (collect from a debtor, open a product that is running low, fix what a notice tells me), **so I can** get back to the customer without going through Customers and Products one by one or doing any arithmetic.
 
-This refines the panel job above and the navigation job for Today (GH-45); it is not a new job. Its protagonist is the seller, on the phone, with little time; Week and Month are for the weekly or monthly look, Analysis for anything deeper. Before it, the seller went into Customers to collect and into Varieties variety by variety, and set the business up without a guide, often forgetting the bot.
+This refines the panel job above and the navigation job for Today (GH-45); it is not a new job. Its protagonist is the seller, on the phone, with little time; Week and Month are for the weekly or monthly look, Analysis for anything deeper. Before it, the seller went into Customers to collect and into Products product by product, and set the business up without a guide, often forgetting the bot.
 
-**When** I take grams out of my own stock without selling them (to share at a party so people get to know the business, or for my own use), **I want** to record them from my phone in a few taps (date, varieties and grams, the reason), **so I can** keep stock right and see in Profit what promoting the business and my own consumption cost me, without recording a sale nobody made or an adjustment that reads as lost flower. (Served here by the Promotion and Own use lines of Week and Month; the withdrawal is defined in stock.md.)
+**When** I take grams out of my own stock without selling them (to share at a party so people get to know the business, or for my own use), **I want** to record them from my phone in a few taps (date, products and grams, the reason), **so I can** keep stock right and see in Profit what promoting the business and my own consumption cost me, without recording a sale nobody made or an adjustment that reads as lost flower. (Served here by the Promotion and Own use lines of Week and Month; the withdrawal is defined in stock.md.)
 
 **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by Today showing what can be acted on today, with "Collect" on each debtor.)
 
-**When** I have just opened my business and it is still empty, **I want** to be walked through what it needs, one short step at a time, with defaults already filled in, **so I can** record my first sale the same day without hunting through Settings, Varieties and the catalog screen. (Served here by the "Go on to the setup" notice at the top of Home, the only way back into the Onboarding; defined in onboarding.md.)
+**When** I have just opened my business and it is still empty, **I want** to be walked through what it needs, one short step at a time, with defaults already filled in, **so I can** record my first sale the same day without hunting through Settings, Products and the catalog screen. (Served here by the "Go on to the setup" notice at the top of Home, the only way back into the Onboarding; defined in onboarding.md.)
 
-**When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if it never moved and archiving it if it has history, **so** my lists show only what I still sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly as it was if I start selling it again. (Served here by What you have left leaving archived varieties out while every period figure stays the same; defined in varieties.md.)
+**When** a product I loaded by mistake, or one I no longer work with, keeps showing in my lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if it never moved and archiving it if it has history, **so** my lists show only what I still sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly as it was if I start selling it again. (Served here by What you have left leaving archived products out while every period figure stays the same; defined in varieties.md.)
 
 Success criteria:
 
@@ -35,7 +35,7 @@ Success criteria:
 2. **It never disagrees with the dedicated screens**:
    - the period's sales total and count equal Sales for the same period;
    - Owed to you's total, count and oldest date equal the Customers' "Owed to you" section;
-   - each variety's grams, status and days left equal Varieties;
+   - each product's grams, status and days left equal Products;
    - Week's and Month's Profit, cost of goods sold, stock shortfall, Promotion, Own use, expenses and Cash equal Analysis's row for the same week and month.
 
    Any figure that disagrees is a defect.
@@ -48,8 +48,8 @@ Success criteria:
    - Flower lost to a negative adjustment lowers Profit on the adjustment's date.
    - Grams withdrawn for promotion or own use lower Profit on the withdrawal's date, each reason on its own line, never folded into cost of goods sold or stock shortfall.
    - Corrected stock entries and withdrawals show the next time the panel opens: a period has no closing date.
-   - Archiving or restoring a variety moves no figure.
-4. **Who owes and what's left, at a glance**: money owed, each debtor one tap from collecting, and stock per unarchived variety with its status. Status is told by shape and word, never by color alone.
+   - Archiving or restoring a product moves no figure.
+4. **Who owes and what's left, at a glance**: money owed, each debtor one tap from collecting, and stock per unarchived product with its status. Status is told by shape and word, never by color alone.
 5. **Businesses never mix** (ADR-0004): every figure comes from the caller's business alone, and the panel route joins the isolation sweep. No figure goes to the console or browser storage.
 6. **Nothing invented, nothing computed in the browser**:
    - every figure comes from the server;
@@ -57,7 +57,7 @@ Success criteria:
    - average sale shows nothing when the period has no sales.
 7. **A withdrawal is not a sale**: recording one leaves sales, number of sales, average sale, grams sold, You gave away, cost of goods sold, stock shortfall and Cash exactly as they were.
 8. **Collect in one tap from Today**: "Collect" on each debtor row of the "Owed to you" block opens Record payment with that customer chosen, accessible name "Collect from <name>"; back or "Close" leaves it in one move.
-9. **Today is only what can be acted on**: sold today, then Owed to you, then What you have left; a low variety links to its page; no result figure (Profit, Cash, costs, Expenses, You gave away, Purchases) shows on Today.
+9. **Today is only what can be acted on**: sold today, then Owed to you, then What you have left; a low product links to its page; no result figure (Profit, Cash, costs, Expenses, You gave away, Purchases) shows on Today.
 10. **First run follows today's definition**: a brand-new business gets the Onboarding notice; only a business that existed before the Onboarding shipped sees the four-step checklist; an imported business sees the dismissable after-import notice; at most one first-run element shows at a time (navigation.md).
 11. **Every notice leads to its fix**: "Your Telegram catalog is out of date" opens the catalog screen; the business avatar opens Settings.
 12. **Looks as designed**: Home, `InicioOscuro` (Home, dark theme) and `InicioCompu` (Home, computer layout) match `docs/product/design-system/pantallas/`, phone and computer, both themes.
@@ -76,7 +76,7 @@ Success criteria:
 
 ### Figures per period
 
-Each figure is counted on its own date. Sales, cost of goods sold, stock shortfall, promotion and own-use cost, expenses, Profit and Cash come from the same period computation as Analysis (ADR-0020), never from a second sum. They count every variety, archived ones included.
+Each figure is counted on its own date. Sales, cost of goods sold, stock shortfall, promotion and own-use cost, expenses, Profit and Cash come from the same period computation as Analysis (ADR-0020), never from a second sum. They count every product, archived ones included.
 
 - **Sales**: the sum of the period's sale totals, shipping included, paid or not. It is the same figure as Sales' total. Its heading follows the tab: "You sold today", "You sold this week" or "You sold this month". Withdrawals are never sales.
 - **Number of sales**: counts sales, not lines.
@@ -136,15 +136,15 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 
 ### What you have left
 
-- Every unarchived variety, sorted by name, including varieties with no entries. Archived varieties are left out (varieties.md).
-- Each one shows what Varieties shows:
+- Every unarchived product, sorted by name, including products with no entries. Archived products are left out (varieties.md).
+- Each one shows what Products shows:
   - grams;
   - its status mark, told by shape and word;
   - days left;
   - its detail line: "No grams since 30/09", "You are warned below 20 g" or "Add its first entry".
-- A variety that is low links to its page (varieties.md).
-- A variety with no threshold shows no warning line.
-- Low varieties are not moved first; the order is by name.
+- A product that is low links to its page (varieties.md).
+- A product with no threshold shows no warning line.
+- Low products are not moved first; the order is by name.
 - There is no total grams.
 
 ### On screen (Home; `InicioOscuro`, Home in the dark theme; `InicioCompu`, Home in the computer layout)
@@ -156,7 +156,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
      - "Go on to the setup", while the Onboarding is not over (onboarding.md): "N of 6 steps" and what is next, not dismissible;
      - the first-run checklist while it shows (navigation.md), for a business that existed before the Onboarding.
 
-     Once neither applies, "Start with your varieties" takes this place whenever no unarchived variety has a current price today. It never shows together with the Onboarding notice or the checklist;
+     Once neither applies, "Start with your products" takes this place whenever no unarchived product has a current price today. It never shows together with the Onboarding notice or the checklist;
   2. "Your Telegram catalog is out of date", while the pinned catalog is out of date (pinned-catalog.md). It opens the catalog screen (catalog.md);
   3. "Connect the bot so the pinned catalog updates by itself", for a business loaded by the spreadsheet import, until dismissed or the bot is first published (navigation.md);
   4. the tab's figures, as listed above.
@@ -179,11 +179,11 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 
 ## Metrics
 
-- **Speed (criterion 1)**: the panel, and each period switch, answer in under 300 ms with a few hundred sales and a few dozen varieties and customers. Guarded by query plan and statement count, never elapsed time (ADR-0038): the same number of statements on a small seeded business as on a seeded year.
+- **Speed (criterion 1)**: the panel, and each period switch, answer in under 300 ms with a few hundred sales and a few dozen products and customers. Guarded by query plan and statement count, never elapsed time (ADR-0038): the same number of statements on a small seeded business as on a seeded year.
 - **Agreement (criterion 2)**: 0 differences, per period:
   - sales total and count against Sales;
   - Owed to you figures against the Customers' "Owed to you" section;
-  - each variety's grams, status, days left and detail against Varieties;
+  - each product's grams, status, days left and detail against Products;
   - Week's and Month's Profit, cost of goods sold, stock shortfall, Promotion, Own use, expenses and Cash against `GET /analysis`'s row for the same week and month, over a seeded history that includes a negative adjustment with costed grams, one with pending grams, a sale line with pending grams, a costed withdrawal of each reason and a withdrawal with pending grams.
 - **Formulas (criterion 3)**: a matrix, 100% passing, covering:
   - Profit and Cash;
@@ -195,12 +195,12 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
   - pending grams on a sale line leaving their sales out of Profit while "You sold today" keeps the full sales;
   - pending cost showing the note under Cost of goods sold, Stock shortfall, Promotion, Own use and Profit as defined, and never under Cash;
   - negative Profit and Cash shown as "−$ X".
-- **Archiving moves nothing (criterion 3)**: every period figure is identical before archiving a variety with history, after archiving and after restoring; the archived variety is absent from What you have left and does not count for "Start with your varieties".
+- **Archiving moves nothing (criterion 3)**: every period figure is identical before archiving a product with history, after archiving and after restoring; the archived product is absent from What you have left and does not count for "Start with your products".
 - **Not a sale (criterion 7)**: after recording a withdrawal, 0 differences in sales, number of sales, average sale, grams sold, You gave away, cost of goods sold, stock shortfall and Cash.
 - **Tabs (criterion 9)**: front tests, phone and computer, show Today with sold today, Owed to you and What you have left only, in that order, and Profit, Cash, Cost of goods sold, Stock shortfall, Promotion, Own use, Expenses, You gave away and Purchases only on Week and Month, Promotion and Own use right after Stock shortfall.
 - **One-tap collect (criterion 8)**: the end-to-end front run, phone and computer viewports, taps "Collect from <name>" on Today, Record payment opens with that customer chosen, a payment is saved, and one back move returns to Home.
 - **Refresh after Collect**: front tests show a partial payment leaving the debtor with the new balance, a full payment removing the row and the teaser refilling to 3 by its order, "Nobody owes you" when nobody is left owing, and both toasts reading as specified with no customer name.
-- **Home's order (criteria 10, 11)**: front tests, phone and computer, show at most one of the Onboarding notice, the checklist or "Start with your varieties" (never two), then the out-of-date notice, then the after-import notice, then the figures; the out-of-date notice opens the catalog screen and the avatar opens Settings.
+- **Home's order (criteria 10, 11)**: front tests, phone and computer, show at most one of the Onboarding notice, the checklist or "Start with your products" (never two), then the out-of-date notice, then the after-import notice, then the figures; the out-of-date notice opens the catalog screen and the avatar opens Settings.
 - **First run (criterion 10)**: the first-run matrices of navigation.md, 100% passing.
 - **Period edges**: a week that crosses a month and a year, Monday as the first day, and a day boundary in Argentina time. 100% passing.
 - **Debtors teaser (criterion 4)**: ordered by balance, then owing since, then name; credits excluded; "Nobody owes you" when nobody owes; "Collect" with its accessible name on every row. No state is told by color alone, in both themes.
@@ -217,12 +217,12 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - Dates or any custom range; comparing with earlier periods; charts.
 - Recording anything from the panel other than through "+ New sale" and "Collect".
 - Live updates between partners.
-- Margins per variety (#8), stock shortfall per variety, and promotion or own-use cost per variety.
+- Margins per product (#8), stock shortfall per product, and promotion or own-use cost per product.
 - Pending grams counted on the panel ("and N g without cost"): the panel's note is fixed and carries no grams; Analysis shows the counts.
 - Stock's total grams on the panel.
 - Dismissing the Onboarding notice.
-- Archived varieties on the panel.
-- Putting low varieties first in What you have left.
+- Archived products on the panel.
+- Putting low products first in What you have left.
 - Restyling Record payment to `Cobro.dc.html`: the payments screen's own work.
 - A checklist for a brand-new business: it gets the Onboarding.
 
@@ -258,5 +258,5 @@ Decided in docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is
 Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; delivered by the withdrawal reasons part.
 
 - The cost line of the withdrawal reason now called "Promotion" will read "Marketing", with the reason's rename (`stock.md`). It will sit where it does today, right after Stock shortfall and before Expenses.
-- It will replace: "**Promotion cost** ("Promotion") and **own-use cost** ("Own use")" and "Promotion and Own use sit right after Stock shortfall and before Expenses.", and in Out of scope "promotion or own-use cost per variety" keeps holding under the new name.
-- The "Flower purchases" label and "What you have left" quantities will follow the product word and the unit of each product.
+- It will replace: "**Promotion cost** ("Promotion") and **own-use cost** ("Own use")" and "Promotion and Own use sit right after Stock shortfall and before Expenses.", and in Out of scope "promotion or own-use cost per product" keeps holding under the new name.
+- The "Flower purchases" label and "What you have left" quantities will follow the unit of each product.

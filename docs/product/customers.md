@@ -2,7 +2,7 @@
 
 Las personas a quienes un **Business** le vende, cada una identificada dentro de ese Business por su propio registro, y vistas solo por ese Business (ADR-0004). El nombre es la forma en que un **User** reconoce a un **Customer**; el **Phone number** es un dato de contacto opcional.
 
-Las **Sales** y los **Payments** se apoyan en esta capacidad: toda Sale y toda deuda pertenece a un Customer de acá. Un **VIP customer** paga el **VIP price** de una **Variety** cuando lo tiene y es menor que lo que da cualquier otra regla. Esto vale solo en un Business con la opción VIP customers activada (pricing-settings.md, sales.md).
+Las **Sales** y los **Payments** se apoyan en esta capacidad: toda Sale y toda deuda pertenece a un Customer de acá. Un **VIP customer** paga el **VIP price** de un **Product** cuando lo tiene y es menor que lo que da cualquier otra regla. Esto vale solo en un Business con la opción VIP customers activada (pricing-settings.md, sales.md).
 
 El **Balance**, el **Owing since** y la cuenta de un Customer se definen en `payments.md` y se muestran en su ficha y en la sección "Owed to you" de Customers.
 
@@ -14,7 +14,7 @@ El **Balance**, el **Owing since** y la cuenta de un Customer se definen en `pay
 
 VIP y corregir los datos de un cliente sirven a los mismos jobs. En un negocio con VIP customers, a un cliente marcado como VIP una sola vez se le cobra su VIP price en cada venta en la que es el más bajo, así que el vendedor nunca tiene que acordarse de quién es amigo.
 
-**Cuando** configuro cómo fija sus precios mi negocio, registro el precio de una variedad o entrego un pedido, **quiero** que la app use solo las **Pricing rules** que tiene mi negocio (un **Bulk price** si vendo por cantidad, y un VIP price que fijo por variedad si tengo VIP customers), **para poder** cobrarle a cada cliente exactamente lo que quiero sin escribir un **Special price** a mano, sin ver campos que no me aplican y sin que el precio de nadie cambie de sorpresa. (Lo sirve acá la marca VIP que sigue a VIP customers; definido en pricing-settings.md.)
+**Cuando** configuro cómo fija sus precios mi negocio, registro el precio de un producto o entrego un pedido, **quiero** que la app use solo las **Pricing rules** que tiene mi negocio (un **Bulk price** si vendo por cantidad, y un VIP price que fijo por producto si tengo VIP customers), **para poder** cobrarle a cada cliente exactamente lo que quiero sin escribir un **Special price** a mano, sin ver campos que no me aplican y sin que el precio de nadie cambie de sorpresa. (Lo sirve acá la marca VIP que sigue a VIP customers; definido en pricing-settings.md.)
 
 **Cuando** manejo mi negocio desde el celular, **quiero** mantener al día mis clientes desde el celular, **para poder** dejar de tenerlos en la planilla y tener datos reales cuando lleguen las ventas.
 

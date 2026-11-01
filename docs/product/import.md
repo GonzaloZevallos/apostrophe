@@ -3,7 +3,7 @@
 The one-time load of a business's history from the spreadsheet `Control_de_ventas_y_gastos` (an `.xlsx` export) into that business. The installation's operator runs it on the day the business switches to the app. It is an operator script, not a route or a screen.
 
 It writes:
-- varieties and price history (varieties.md);
+- products and price history (varieties.md);
 - catalog attributes, header and footer (catalog.md);
 - stock entries (stock.md);
 - expense categories and expenses (expenses.md);
@@ -16,21 +16,21 @@ Every imported record is the same data, under the same rules, as if it had been 
 
 ## Jobs
 
-**When** I switch my business from the spreadsheet to the app, **I want** what the sheet already holds (varieties and their price history, catalog setup, stock entries, expenses, and every sale with who still owes for it) loaded into my business once, on the day I stop using the sheet, **so I can** keep selling in the app from the next order with my real prices, stock and debts in place. I don't retype months of rows, and I don't lose track of who owes me.
+**When** I switch my business from the spreadsheet to the app, **I want** what the sheet already holds (products and their price history, catalog setup, stock entries, expenses, and every sale with who still owes for it) loaded into my business once, on the day I stop using the sheet, **so I can** keep selling in the app from the next order with my real prices, stock and debts in place. I don't retype months of rows, and I don't lose track of who owes me.
 
 **When** I register a customer (from Customers, in the middle of a sale, or through the one-time spreadsheet import) and I don't have their phone number, **I want** to save them under their name anyway and add the number later if I ever get it, **so I can** record every sale and every debt against the person who actually owes it, without inventing a number or keeping that person outside the app. (Served here by the optional mapping file; defined in customers.md.)
 
-**When** I set up how my business prices, record a variety's price or hand over an order, **I want** the app to use only the pricing rules my business has, **so I can** charge every customer exactly what I mean to, without anyone's price changing by surprise. (Served here by switching on the rules the sheet uses; defined in pricing-settings.md.)
+**When** I set up how my business prices, record a product's price or hand over an order, **I want** the app to use only the pricing rules my business has, **so I can** charge every customer exactly what I mean to, without anyone's price changing by surprise. (Served here by switching on the rules the sheet uses; defined in pricing-settings.md.)
 
-**When** I open the app between orders or at the end of the day, **I want** to see what I sold today, who owes me and what is running out, and act on it at once (collect from a debtor, open a variety that is running low, fix what a notice tells me), **so I can** get back to the customer without going through Customers and Varieties one by one or doing any arithmetic. (Served here by recording that the business was imported, so Home's after-import notice reaches it; defined in navigation.md and results.md.)
+**When** I open the app between orders or at the end of the day, **I want** to see what I sold today, who owes me and what is running out, and act on it at once (collect from a debtor, open a product that is running low, fix what a notice tells me), **so I can** get back to the customer without going through Customers and Products one by one or doing any arithmetic. (Served here by recording that the business was imported, so Home's after-import notice reaches it; defined in navigation.md and results.md.)
 
 Success criteria:
 
 1. **Look before writing.** A dry run reports everything that would be imported and every problem it finds, and writes nothing. The real run loads everything or nothing. If it is refused, the business stays exactly as it was.
 2. **The seller opens where the sheet left off on what they act on.** After the import, these figures match the sheet's own records:
-   - each variety's current price;
+   - each product's current price;
    - the catalog text;
-   - stock per variety, to the hundredth of a gram;
+   - stock per product, to the hundredth of a gram;
    - each customer's balance and owing since, to the peso.
 
    Any figure that doesn't match is explained in the report. Profit and cash are not expected to match the sheet's Panel, because the sheet got profit wrong. Past Ganancia and Caja come from the app's own rules over the imported rows.
@@ -58,7 +58,7 @@ Success criteria:
 - **Real run**: loads everything or nothing. Any blocking problem leaves the business exactly as it was.
 - **Mismatches**: both runs report every imported row of the sheet's Ventas tab whose sheet Total differs from the app's recomputed sale total, shipping included. The sheet's Total includes shipping, so the two are compared like for like. A mismatch never blocks.
 - **The report**, the same for a dry run and a successful real run:
-  - counts per kind of record: varieties, price entries, catalog attributes, stock entries, expense categories, expenses, customers, sales and payments;
+  - counts per kind of record: products, price entries, catalog attributes, stock entries, expense categories, expenses, customers, sales and payments;
   - the count of customers imported without a phone number;
   - which pricing switches the import turns on (Bulk price, VIP customers), or that it turns none on;
   - every blocking problem, with its sheet and row;
@@ -79,7 +79,7 @@ Success criteria:
 
 ### Eligibility
 
-- The import is refused if the business has any variety, price entry, stock entry, customer, sale, payment or expense. The refusal comes before any sheet check and changes nothing.
+- The import is refused if the business has any product, price entry, stock entry, customer, sale, payment or expense. The refusal comes before any sheet check and changes nothing.
 - These don't count:
   - the business, its name, its users and its invitations;
   - the seeded expense categories, even if renamed or removed;
@@ -97,7 +97,7 @@ Success criteria:
 - **Numbers where a whole number or grams are expected**: how the cell stores a number never matters, only its value.
   - In a whole-number field (the sheet's `% índica`, `Costo total`, `Monto`, `Envío cobrado` and `Precio especial (total)` columns, and the list and bulk price), a number with no fractional part is that whole number: `60.0` is 60. A fractional value is still refused by the owner's rule (`60.5` is not a share).
   - Grams, bulk minimums and low-stock thresholds keep their exact value to the hundredth (`3.5` is 3,5 g).
-- **Numbers where text is expected**: a number in a text cell is read as its text, and then follows that field's rules like any text. This applies to the names of varieties, customers and categories, the sheet's `Detalle`, `Nota` and `Aroma` columns, the header and footer, and the cells with a fixed set of values (the sheet's `Origen`, `Pago` and `Tipo` columns, the sheet's Catálogo tab's shown column).
+- **Numbers where text is expected**: a number in a text cell is read as its text, and then follows that field's rules like any text. This applies to the names of products, customers and categories, the sheet's `Detalle`, `Nota` and `Aroma` columns, the header and footer, and the cells with a fixed set of values (the sheet's `Origen`, `Pago` and `Tipo` columns, the sheet's Catálogo tab's shown column).
   - A whole number reads as its digits, with no decimals and no thousands separator: `100`, `2024`, `1000`.
   - A non-whole number reads with a decimal comma and the fewest decimals that give its exact value, with no thousands separator: `3,5`, `0,25`.
   - A number is never refused only for being a number where text is expected. A numeric value outside a fixed set (e.g. a cell of the sheet's `Origen` column holding `3`) still blocks as unknown.
@@ -122,22 +122,22 @@ Success criteria:
 
 ### Sheet by sheet
 
-- **Varieties and thresholds** (the sheet's Ajustes rows 7–16, thresholds in F7:F16):
-  - These rows are the complete list of varieties. Blank rows are skipped.
+- **Products and thresholds** (the sheet's Ajustes rows 7–16, thresholds in F7:F16):
+  - These rows are the complete list of products. Blank rows are skipped.
   - Two rows with the same name under varieties.md's rule (case and spacing ignored) block.
-  - Every variety named anywhere else (the sheet's Catálogo, the sheet's Entradas, the sheet's Ventas, price history) must match one of them, or the import blocks.
+  - Every product named anywhere else (the sheet's Catálogo, the sheet's Entradas, the sheet's Ventas, price history) must match one of them, or the import blocks.
   - A blank threshold means none. A threshold that isn't above zero with at most two decimals blocks.
-- **Price history** (the sheet's Ajustes from row 37: variety, effective date, list price, bulk price, bulk minimum):
+- **Price history** (the sheet's Ajustes from row 37: product, effective date, list price, bulk price, bulk minimum):
   - one price entry per row, following varieties.md's rules;
-  - two entries for one variety on one date block;
+  - two entries for one product on one date block;
   - a bulk price without a bulk minimum, or the reverse, blocks;
   - a bulk price not below the list price blocks;
   - an entry with a bulk price also gets a VIP price equal to it, which reproduces the sheet's "Amigo" rule. The sheet has no VIP price column.
-- **The sheet's Catálogo** (rows 6–15: variety, shown, emoji, % índica, aroma; B18/B19: header and footer):
+- **The sheet's Catálogo** (rows 6–15: product, shown, emoji, % índica, aroma; B18/B19: header and footer):
   - The sheet's "Sí" means shown and "No" means hidden. Any other value blocks.
   - An emoji cell holding plain text or more than one emoji blocks.
   - A share that isn't a whole number from 0 to 100 blocks. An aroma over 200 characters blocks.
-  - A variety with no sheet's Catálogo row is shown, with no emoji, share or aroma.
+  - A product with no sheet's Catálogo row is shown, with no emoji, share or aroma.
   - B18 and B19 replace the seeded header and footer. A blank cell gives a blank header or footer. More than 500 characters blocks.
 - **The sheet's Entradas** (finished rows only):
   - the sheet's "Compra" → purchase, "Cosecha" → harvest, "Stock inicial" → initial stock, "Ajuste" → adjustment. Any other origin blocks.
@@ -179,7 +179,7 @@ Success criteria:
 
 A finished row blocks if the product's own rules would refuse it if it were recorded today. Examples:
 
-- a variety with no price that day and no special total;
+- a product with no price that day and no special total;
 - grams that aren't above zero with at most two decimals;
 - a future date;
 - a total above $0 with no payment method;
@@ -191,8 +191,8 @@ Also blocking:
 - a required column that can't be found in the sheet's Ventas, the sheet's Entradas or the sheet's Gastos;
 - a filled-in row of the sheet's Ventas tab whose `Total` is empty (the file wasn't recalculated);
 - a date in a text cell (see Reading the file);
-- an unknown variety name, or two rows of the sheet's Ajustes tab 7–16 that are the same name;
-- two price entries for one variety on one date;
+- an unknown product name, or two rows of the sheet's Ajustes tab 7–16 that are the same name;
+- two price entries for one product on one date;
 - an unknown origin or payment value;
 - a category outside A21:A28;
 - a bad value in the sheet's Catálogo tab or a bad threshold;
@@ -240,14 +240,14 @@ From test fixtures, with no telemetry:
 - **Any export (criteria 1, 3)**: a fixture laid out like a Google Sheets export, with no declared size in any worksheet and every number stored as a float, is read in full by the dry run. 100% passing. It holds:
   - whole numbers in the sheet's `% índica` column, prices, costs, amounts, shipping and a special total, all read as whole numbers;
   - decimal grams and a decimal threshold, read to the hundredth;
-  - numbers in text cells (a cell of the sheet's Detalle or Nota column, a variety, customer and category name made of digits, one of them non-whole), read as `100`-style digits or with a decimal comma.
+  - numbers in text cells (a cell of the sheet's Detalle or Nota column, a product, customer and category name made of digits, one of them non-whole), read as `100`-style digits or with a decimal comma.
 
   Every column and every row is found, and none of these is reported as a problem. A `60.5` share is still refused.
 - **Dates in text cells (criteria 1, 3)**: the same fixture with a date in a cell of the sheet's Nota column, its Detalle column and a name cell reports each one, with its sheet and row, as a date where text is expected, with the fix to re-type it as text. Nothing is read from them, and a real run over that file writes 0 rows. 100% passing.
 - **Opens where the sheet left off (criterion 2)**: after importing a fixture, these equal its expected figures, with 0 unexplained differences:
-  - each variety's current price;
+  - each product's current price;
   - the catalog text;
-  - stock per variety, to the hundredth;
+  - stock per product, to the hundredth;
   - each customer's balance and owing since, to the peso.
 
   Ganancia and Caja are not compared with the sheet.
@@ -286,7 +286,7 @@ From test fixtures, with no telemetry:
 - An import screen or route in the app.
 - Importing derived columns, or reproducing the sheet's profit and cash.
 - Importing rows the sheet marks unfinished, or anything they name.
-- Inventing customers, phone numbers, categories or varieties to get an import through.
+- Inventing customers, phone numbers, categories or products to get an import through.
 - Merging differently spelled customer names that have no mapped number.
 - Reading back as text a date the sheet made out of what was typed into a text cell.
 - Grouping several rows into one sale with several lines.
