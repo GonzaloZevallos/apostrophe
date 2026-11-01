@@ -213,7 +213,7 @@ test("an archived variety shows only '‹ Archived', never a flash of '‹ Produ
   expect(seen.filter((word) => word !== '‹ Archived')).toEqual([])
 })
 
-/** Writes the slot for variety 1 once and never clears it: a declaration left behind. */
+/** Writes the slot for product 1 once and never clears it: a declaration left behind. */
 function LeftBehind({ screen: id }: { screen: RecordLabelledScreen }) {
   const write = useContext(BackParentContext)?.write
   useLayoutEffect(() => write?.({ screen: id, param: '1', override: { title: 'Alpha' } }), [write, id])

@@ -494,7 +494,7 @@ test('a bar that repeats an icon is rejected by the rule', () => {
   expect(iconAndTextProblems(container)).toEqual([expect.stringContaining('shares its icon with "Uno"')])
 })
 
-const MISSING_LINE = 'Add a price to a variety so you can sell'
+const MISSING_LINE = 'Add a price to a product so you can sell'
 
 function checklist(pricedDone: boolean): FirstRunAnswer {
   return {

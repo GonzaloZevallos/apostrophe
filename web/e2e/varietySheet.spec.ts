@@ -2,7 +2,7 @@
  * A variety's rename as a sheet on a phone (ADR-0062): its action sits at the bottom of the
  * sheet within the bottom inset, and the page behind stays locked while the sheet or its
  * leave confirmation is on screen, with the scroll position where it was. A direct address to
- * New variety opens it over Varieties. Roles, names, text and URLs only.
+ * New product opens it over Varieties. Roles, names, text and URLs only.
  */
 
 import { VARIETY_NEW, VARIETY, pathTo } from '../src/routes.js'
@@ -11,11 +11,11 @@ import { seedRecords, signUp } from './helpers/seed.js'
 
 test.use({ viewport: { width: 390, height: 844 } })
 
-test('a direct address to New variety opens the sheet over Varieties, focus on the name', async ({ page }) => {
+test('a direct address to New product opens the sheet over Varieties, focus on the name', async ({ page }) => {
   await signUp(page, 'sheet-open')
   await page.goto(VARIETY_NEW)
 
-  const dialog = page.getByRole('dialog', { name: 'New variety' })
+  const dialog = page.getByRole('dialog', { name: 'New product' })
   await expect(dialog).toBeVisible()
   await expect(dialog.getByRole('textbox', { name: /^Name/ })).toBeFocused()
   await expect(dialog.getByRole('button', { name: 'Close' })).toHaveCount(1)
@@ -48,7 +48,7 @@ test('the rename sheet keeps its action at the bottom, and the page stays locked
   expect(startedAt).toBeGreaterThan(0)
   await page.getByRole('button', { name: 'Edit name' }).dispatchEvent('click')
 
-  const dialog = page.getByRole('dialog', { name: 'Rename variety' })
+  const dialog = page.getByRole('dialog', { name: 'Rename product' })
   await expect(dialog).toBeVisible()
   const save = dialog.getByRole('button', { name: 'Save the name' })
   await expect(save).toBeInViewport()
@@ -89,13 +89,13 @@ test('the rename sheet keeps its action at the bottom, and the page stays locked
   expect(Math.abs((await scrollY()) - before)).toBeLessThanOrEqual(2)
 })
 
-test('Back closes the rename sheet first and leaves the variety page where it was', async ({ page }) => {
+test('Back closes the rename sheet first and leaves the product page where it was', async ({ page }) => {
   await signUp(page, 'sheet-back')
   const records = await seedRecords(page, 'Carla Cobrar')
   const address = pathTo(VARIETY, { id: records.variety })
   await page.goto(address)
   await page.getByRole('button', { name: 'Edit name' }).click()
-  const dialog = page.getByRole('dialog', { name: 'Rename variety' })
+  const dialog = page.getByRole('dialog', { name: 'Rename product' })
   await expect(dialog).toBeVisible()
 
   await page.goBack()

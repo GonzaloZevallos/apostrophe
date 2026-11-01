@@ -89,7 +89,7 @@ test('shows both fixed lines, the VIP help whether the switch is on or off', asy
   await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
   expect(screen.getByText(VIP_HELP_LINE)).toBeInTheDocument()
   expect(VIP_HELP_LINE).toBe(
-    'Each variety needs its VIP price: without it, a VIP customer pays like anyone else.',
+    'Each product needs its VIP price: without it, a VIP customer pays like anyone else.',
   )
 })
 

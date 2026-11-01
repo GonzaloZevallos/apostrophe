@@ -430,7 +430,7 @@ test('sale.no_price_that_day opens the flagged line even when it was closed', as
       varietiesCalls += 1
       // Same partner-deletes-the-price race as the test above, but Rosa's own
       // line is no longer the one open when the refusal lands — Clavel's is,
-      // since "Add another variety" closes whatever was open.
+      // since "Add another product" closes whatever was open.
       const rosa = varietiesCalls === 1 ? ROSA : { ...ROSA, current_price: null }
       return jsonResponse(200, [rosa, CLAVEL])
     },
@@ -439,7 +439,7 @@ test('sale.no_price_that_day opens the flagged line even when it was closed', as
 
   await user.selectOptions(screen.getByLabelText('Line 1 product'), '1')
   await user.type(screen.getByLabelText('Line 1 grams'), '2')
-  await user.click(screen.getByRole('button', { name: 'Add another variety' }))
+  await user.click(screen.getByRole('button', { name: 'Add another product' }))
   await user.selectOptions(screen.getByLabelText('Line 2 product'), '3')
   await user.type(screen.getByLabelText('Line 2 grams'), '1')
   await user.click(screen.getByRole('radio', { name: 'Cash' }))
@@ -594,15 +594,15 @@ test('an untouched second line is removed once it closes', async () => {
 
   await user.selectOptions(screen.getByLabelText('Line 1 product'), '1')
   await user.type(screen.getByLabelText('Line 1 grams'), '2')
-  await user.click(screen.getByRole('button', { name: 'Add another variety' }))
+  await user.click(screen.getByRole('button', { name: 'Add another product' }))
 
   // Line 2 opened empty, closed line 1 (now its own row), and — without typing
-  // anything into line 2 — "Add another variety" again must not leave two
+  // anything into line 2 — "Add another product" again must not leave two
   // closed rows plus a third open line: the untouched line 2 is removed rather
   // than kept (plan, "Line editor"), so there is still exactly one closed row.
   expect(screen.getByLabelText('Line 2 product')).toBeInTheDocument()
   expect(screen.getAllByRole('button', { name: /^Line \d/ })).toHaveLength(1)
-  await user.click(screen.getByRole('button', { name: 'Add another variety' }))
+  await user.click(screen.getByRole('button', { name: 'Add another product' }))
 
   expect(screen.getAllByRole('button', { name: /^Line \d/ })).toHaveLength(1)
   expect(screen.getAllByLabelText(/^Line \d+ product/)).toHaveLength(1)
@@ -617,7 +617,7 @@ test('a closed line with bad grams shows its own message and opens on save, with
 
   await user.selectOptions(screen.getByLabelText('Line 1 product'), '1')
   await user.type(screen.getByLabelText('Line 1 grams'), 'abc')
-  await user.click(screen.getByRole('button', { name: 'Add another variety' }))
+  await user.click(screen.getByRole('button', { name: 'Add another product' }))
   await user.selectOptions(screen.getByLabelText('Line 2 product'), '2')
   await user.type(screen.getByLabelText('Line 2 grams'), '1')
   await user.click(screen.getByRole('radio', { name: 'Cash' }))

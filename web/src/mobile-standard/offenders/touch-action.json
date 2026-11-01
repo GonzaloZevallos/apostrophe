@@ -32,7 +32,7 @@
   {
     "screen": "CatalogoAtributos",
     "rule": "touch-action",
-    "target": "button:Archive variety",
+    "target": "button:Archive product",
     "issue": 47
   },
   {
@@ -530,7 +530,7 @@
   {
     "screen": "DescartarVenta",
     "rule": "touch-action",
-    "target": "button:Add another variety",
+    "target": "button:Add another product",
     "issue": 78
   },
   {
@@ -584,7 +584,7 @@
   {
     "screen": "ElegirCliente",
     "rule": "touch-action",
-    "target": "button:Add another variety",
+    "target": "button:Add another product",
     "issue": 78
   },
   {
@@ -1070,7 +1070,7 @@
   {
     "screen": "NuevaVenta",
     "rule": "touch-action",
-    "target": "button:Add another variety",
+    "target": "button:Add another product",
     "issue": 78
   },
   {
@@ -1112,7 +1112,7 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "touch-action",
-    "target": "button:Add another variety",
+    "target": "button:Add another product",
     "issue": 78
   },
   {
@@ -1202,7 +1202,7 @@
   {
     "screen": "NuevaVentaConLinea",
     "rule": "touch-action",
-    "target": "button:Add another variety",
+    "target": "button:Add another product",
     "issue": 78
   },
   {
@@ -1256,7 +1256,7 @@
   {
     "screen": "NuevaVentaConLineaYPago",
     "rule": "touch-action",
-    "target": "button:Add another variety",
+    "target": "button:Add another product",
     "issue": 78
   },
   {
@@ -1310,7 +1310,7 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-action",
-    "target": "button:Add another variety",
+    "target": "button:Add another product",
     "issue": 78
   },
   {
@@ -1856,7 +1856,7 @@
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Archive variety",
+    "target": "button:Archive product",
     "issue": 47
   },
   {
@@ -2012,7 +2012,7 @@
   {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
-    "target": "button:Archive variety",
+    "target": "button:Archive product",
     "issue": 47
   },
   {
@@ -2054,7 +2054,7 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "touch-action",
-    "target": "button:Archive variety",
+    "target": "button:Archive product",
     "issue": 47
   },
   {
@@ -2096,7 +2096,7 @@
   {
     "screen": "VariedadUmbral",
     "rule": "touch-action",
-    "target": "button:Archive variety",
+    "target": "button:Archive product",
     "issue": 47
   },
   {

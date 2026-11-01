@@ -49,11 +49,11 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
 
-  // Add a variety.
+  // Add a product.
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByRole('link', { name: 'New product' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await expectPath(page, VARIETY)
 
@@ -97,7 +97,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expectPath(page, STOCK)
   await expect(page.getByText('Purchase · 60 g')).toBeVisible()
 
-  // Delete it: confirmed first, naming the date, variety and grams ("Antes de borrar").
+  // Delete it: confirmed first, naming the date, product and grams ("Antes de borrar").
   await page.getByRole('button', { name: 'Delete', exact: true }).click()
   await expect(page.getByText('Before deleting')).toBeVisible()
   await expectToast(page, 'Entry deleted', () => page.getByRole('button', { name: 'Yes, delete it' }).click())

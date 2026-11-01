@@ -9,7 +9,7 @@ import { SAMPLES, type LimitedCopy } from './limits.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
-export const VARIETY_TOTAL_NOTE = 'The variety table adds up the sales of the month without shipping.'
+export const VARIETY_TOTAL_NOTE = 'The product table adds up the sales of the month without shipping.'
 export const SINCE_FIRST_RECORD_LABEL =
   'Moved since your first record, not the money you have in cash'
 export const PURCHASES_NOTE = 'Kept apart, added in Stock'
@@ -56,7 +56,7 @@ export const ANALYSIS_TEXT = {
   regalados: ' given away',
   margenPromedio: ' · average margin',
   porcentaje: (percent: number | string) => `${percent}%`,
-  porVariedad: 'By variety',
+  porVariedad: 'By product',
   delMes: '% of the month',
   costo: 'cost ',
   margen: 'margin ',

@@ -3,7 +3,7 @@
  * `web/src/api/fixtures/panel.json`): every figure on every tab, negative
  * Ganancia/Caja, the pending-cost note's placement, no-average, "Nobody owes you",
  * navigation, stock rows, a no-year range across a year boundary, the
- * "Start with your varieties" banner above the figures, and a remount with a
+ * "Start with your products" banner above the figures, and a remount with a
  * different answer never showing the first answer's figures (`gcTime: 0`).
  */
 
@@ -452,7 +452,7 @@ test('stock rows: name, grams, status and days left, in the API\'s own order, wi
 })
 
 for (const theme of ['claro', 'oscuro'] as const) {
-  test(`"Start with your varieties" shows above the panel, which still shows its real figures (${theme})`, async () => {
+  test(`"Start with your products" shows above the panel, which still shows its real figures (${theme})`, async () => {
     chooseTheme(theme)
     stubFetch(PANEL, START)
     const { container } = renderInicio()
@@ -523,7 +523,7 @@ test('shows the fixed pinned-catalog notice while the pin is out of date', async
   expect(notice.closest('a')).toHaveAttribute('href', CATALOG)
 })
 
-test('the stale-catalog notice and the "Start with your varieties" state carry the decorative attention icon; a fresh pin has none', async () => {
+test('the stale-catalog notice and the "Start with your products" state carry the decorative attention icon; a fresh pin has none', async () => {
   stubFetch(PANEL, START, {
     status: { state: 'out_of_date', reason: 'telegram_unreachable', last_published_on: '2026-09-29' },
   })
@@ -573,7 +573,7 @@ const FINISH: OnboardingProgress = {
 }
 
 for (const theme of ['claro', 'oscuro'] as const) {
-  test(`an Onboarding business sees the notice at the top with its count and what is missing, and never Start with your varieties (${theme})`, async () => {
+  test(`an Onboarding business sees the notice at the top with its count and what is missing, and never Start with your products (${theme})`, async () => {
     chooseTheme(theme)
     stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, MID_ONBOARDING)
     renderInicio()
@@ -743,7 +743,7 @@ for (const theme of ['claro', 'oscuro'] as const) {
     const list = await screen.findByRole('list', { name: 'To get started' })
     const steps = within(list).getAllByRole('listitem')
     expect(steps.map((step) => step.textContent)).toEqual([
-      'Add a variety with its priceRequiredDone',
+      'Add a product with its priceRequiredDone',
       'Add what you have todayRequired',
       'Connect the botOptional',
       'Invite a partnerOptionalDone',

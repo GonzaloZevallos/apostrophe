@@ -3,7 +3,7 @@
  * entry"): records a new entry (with today filled in and "Hoy tiene N g" under the
  * variety), lets an adjustment carry negative grams, refuses a purchase with no cost
  * on its own field, confirms before saving an edit, and confirms before deleting,
- * naming the date, variety and grams.
+ * naming the date, product and grams.
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -334,7 +334,7 @@ test('editing an entry confirms before saving', async () => {
   expect(fetch).toHaveBeenCalledWith('/stock/entries/10', expect.objectContaining({ method: 'PUT' }))
 })
 
-test('deleting an entry confirms first, naming the date, variety and grams', async () => {
+test('deleting an entry confirms first, naming the date, product and grams', async () => {
   vi.stubGlobal(
     'fetch',
     vi.fn((input: string | URL | Request) => {
@@ -482,7 +482,7 @@ test("another variety's entries do not stop 'Initial stock' from being preselect
   expect(screen.getByRole('button', { name: 'Initial stock' })).toHaveAttribute('aria-pressed', 'true')
 })
 
-test('from "+ Stock entry" no variety is chosen and Compra is the origin', async () => {
+test('from "+ Stock entry" no product is chosen and Compra is the origin', async () => {
   fakeFor(stockOf([]))
   renderForm(STOCK_ENTRY_NEW)
 

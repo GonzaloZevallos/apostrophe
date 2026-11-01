@@ -1,7 +1,7 @@
 /**
- * New variety, and a variety's rename, low-stock threshold and catalog attributes, as sheets, at the
+ * New product, and a variety's rename, low-stock threshold and catalog attributes, as sheets, at the
  * screen seam: the app's real route table through Testing Library with `fetch` faked. On a phone a
- * direct address to New variety shows the sheet over the Varieties list (an inert, hidden
+ * direct address to New product shows the sheet over the Varieties list (an inert, hidden
  * `BehindPane`); the three inline edits open as in-page sheets with the variety's page itself behind
  * them, so no pane. Each sheet resolves its first focus, shows exactly one Close, and keeps its main
  * action last inside the form's pinned actions (ADR-0062). On a computer none of it is drawn.
@@ -41,7 +41,7 @@ const CATALOG = {
 }
 const VARIETY_ONE = pathTo(VARIETY, { id: 1 })
 
-/** New variety's name field: its label also holds the help line, so it is matched by its start. */
+/** New product's name field: its label also holds the help line, so it is matched by its start. */
 const NAME = { name: /^Name/ }
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -101,7 +101,7 @@ function actionNames(): (string | null)[] {
   )
 }
 
-describe('New variety on a phone', () => {
+describe('New product on a phone', () => {
   test('a direct address shows the sheet over Varieties, focus in the name, one Close, Save last in the form', async () => {
     renderApp({ pathname: VARIETY_NEW }, 'phone')
 
@@ -158,7 +158,7 @@ describe('New variety on a phone', () => {
   })
 })
 
-describe('New variety on a computer', () => {
+describe('New product on a computer', () => {
   test('it is the modal over the panes it always was: no pane of its own, no sheet, no pinned row', async () => {
     renderApp({ pathname: VARIETY_NEW }, 'computer')
 

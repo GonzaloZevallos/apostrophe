@@ -34,7 +34,7 @@ test('lists "+ Cargar gasto", "Take from stock", Gastos and Análisis first, in 
   expect(entries[0]).toHaveTextContent('Category, amount and details')
   expect(entries[1]).toHaveAttribute('href', WITHDRAWAL_NEW)
   expect(entries[2]).toHaveTextContent('By month and by category')
-  expect(entries[3]).toHaveTextContent('Varieties, weeks, months and days')
+  expect(entries[3]).toHaveTextContent('Products, weeks, months and days')
   expect(entries[4]).toHaveTextContent(
     'Business, users, bot, catalog, categories, appearance and your account',
   )

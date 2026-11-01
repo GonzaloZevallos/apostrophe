@@ -93,7 +93,7 @@ const STOCK = {
 
 const ARCHIVED = { ...VARIETY_ROW, id: 2, name: 'Sir Jack', archived: true }
 
-/** The API faked at `fetch`: the session, a sale, a customer and variety 1 with its prices;
+/** The API faked at `fetch`: the session, a sale, a customer and product 1 with its prices;
  * anything else is not found. */
 function fakeApi(): void {
   vi.stubGlobal(

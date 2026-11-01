@@ -38,7 +38,7 @@ test('back goes by history to where the seller came from', async () => {
 
   await user.click(await screen.findByRole('button', { name: '‹ 24K Gold' }))
 
-  expect(await screen.findByText('Variety page')).toBeInTheDocument()
+  expect(await screen.findByText('Product page')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 1 }))
   expect(router.state.historyAction).toBe('POP')
 })
@@ -79,7 +79,7 @@ test('back with no history goes to the variety\'s page', async () => {
 
   await user.click(await screen.findByRole('button', { name: '‹ 24K Gold' }))
 
-  expect(await screen.findByText('Variety page')).toBeInTheDocument()
+  expect(await screen.findByText('Product page')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 1 }))
 })
 

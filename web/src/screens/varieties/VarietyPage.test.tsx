@@ -142,7 +142,7 @@ function renderPage(path: string, overrides: Answers = {}, state: unknown = null
           {
             element: <Shell />,
             children: [
-              { path: relative(VARIETIES), element: <main>Varieties screen</main>, handle: { screen: 'varieties' } },
+              { path: relative(VARIETIES), element: <main>Products screen</main>, handle: { screen: 'varieties' } },
               {
                 path: relative(VARIETY),
                 element: <VarietyRoute render={(varietyId) => <VarietyPage varietyId={varietyId} />} />,
@@ -285,21 +285,21 @@ describe('the icon and text rule', () => {
     }
   })
 
-  test('"Delete variety" is the critical icon + text action with its current word as its name', async () => {
+  test('"Delete product" is the critical icon + text action with its current word as its name', async () => {
     renderPage(VARIETY_ONE, { 'GET /api/products/1': () => json(200, { ...VARIETY_ROW, removal: 'delete' }) })
 
-    const button = await screen.findByRole('button', { name: 'Delete variety' })
+    const button = await screen.findByRole('button', { name: 'Delete product' })
     expect(button).toHaveClass('boton--critico')
     expect(button).not.toHaveClass('boton-icono')
-    expect(button.textContent).toBe('Delete variety')
+    expect(button.textContent).toBe('Delete product')
     expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   })
 
-  test('what the live page keeps as text is only its links and the switch; Archive variety has its icon', async () => {
+  test('what the live page keeps as text is only its links and the switch; Archive product has its icon', async () => {
     renderPage(VARIETY_ONE, { 'GET /api/products/1': () => json(200, { ...VARIETY_ROW, removal: 'archive' }) })
 
     await screen.findByRole('link', { name: '+ Entry' })
-    expect(await screen.findByRole('button', { name: 'Archive variety' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Archive product' })).toBeInTheDocument()
     const problems = iconAndTextProblems(screen.getByRole('main'))
     // The low-stock switch is a switch with its label beside it, no icon and no visible text
     // of its own (the rule's helper reads any text-less button as an icon-only control).
@@ -354,8 +354,8 @@ describe("an archived variety's summary line and its one action", () => {
     const main = screen.getByRole('main')
     const buttons = within(main).getAllByRole('button').map((button) => button.textContent)
     expect(buttons.filter((name) => name !== '')).toEqual(['Restore'])
-    expect(within(main).queryByRole('button', { name: 'Delete variety' })).toBeNull()
-    expect(within(main).queryByRole('button', { name: 'Archive variety' })).toBeNull()
+    expect(within(main).queryByRole('button', { name: 'Delete product' })).toBeNull()
+    expect(within(main).queryByRole('button', { name: 'Archive product' })).toBeNull()
     for (const name of ['+ Entry', 'New price', 'Take from stock']) {
       expect(within(main).queryByRole('link', { name })).toBeNull()
     }
@@ -628,7 +628,7 @@ describe('the openers push a history entry, so Back closes the form', () => {
     await act(() => router.navigate('.', { state }))
 
     expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument()
-    expect(screen.queryByText('Rename variety')).not.toBeInTheDocument()
+    expect(screen.queryByText('Rename product')).not.toBeInTheDocument()
     expect(screen.queryByText(/Próximamente/)).not.toBeInTheDocument()
   })
 })
@@ -641,7 +641,7 @@ describe('renaming from the page', () => {
     await user.click(await screen.findByRole('button', { name: 'Edit name' }))
 
     expect(router.state.location.state).toEqual({ form: 'rename' })
-    expect(await screen.findByText('Rename variety')).toBeInTheDocument()
+    expect(await screen.findByText('Rename product')).toBeInTheDocument()
     expect(screen.getByLabelText('Name')).toHaveValue('24K Gold')
   })
 
@@ -653,21 +653,21 @@ describe('renaming from the page', () => {
     await user.click(await screen.findByRole('button', { name: 'Close' }))
 
     await waitFor(() => expect(router.state.location.state).toBeNull())
-    expect(screen.queryByText('Rename variety')).not.toBeInTheDocument()
+    expect(screen.queryByText('Rename product')).not.toBeInTheDocument()
   })
 
   test('Back closes the form', async () => {
     const user = userEvent.setup()
     const { router } = renderPage(VARIETY_ONE)
     await user.click(await screen.findByRole('button', { name: 'Edit name' }))
-    await screen.findByText('Rename variety')
+    await screen.findByText('Rename product')
 
     await act(() => router.navigate(-1))
 
-    expect(screen.queryByText('Rename variety')).not.toBeInTheDocument()
+    expect(screen.queryByText('Rename product')).not.toBeInTheDocument()
   })
 
-  test('saving renames, closes the form and toasts "Variety saved"', async () => {
+  test('saving renames, closes the form and toasts "Product saved"', async () => {
     const user = userEvent.setup()
     const { fetchMock } = renderPage(VARIETY_ONE, {
       'PATCH /api/products/1': () => json(200, { ...VARIETY_ROW, name: 'Gold' }),
@@ -678,8 +678,8 @@ describe('renaming from the page', () => {
     await user.type(field, 'Gold')
     await user.click(screen.getByRole('button', { name: 'Save the name' }))
 
-    expect(await screen.findByText('Variety saved')).toBeInTheDocument()
-    expect(screen.queryByText('Rename variety')).not.toBeInTheDocument()
+    expect(await screen.findByText('Product saved')).toBeInTheDocument()
+    expect(screen.queryByText('Rename product')).not.toBeInTheDocument()
     expect(writes(fetchMock)).toEqual(['PATCH /api/products/1'])
   })
 
@@ -719,7 +719,7 @@ describe('renaming from the page', () => {
     await user.type(field, 'Otra')
     await user.click(screen.getByRole('button', { name: 'Save the name' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('A variety with that name already exists')
+    expect(await screen.findByRole('alert')).toHaveTextContent('A product with that name already exists')
     expect(screen.getByLabelText(/^Name/)).toHaveValue('Otra')
   })
 })
