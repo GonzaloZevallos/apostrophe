@@ -8,9 +8,10 @@
  */
 
 import { type FormEvent, Fragment, useEffect, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE, post } from '../../api/client'
-import { invalidateResource } from '../../api/keys'
+import { invalidateResource, keys } from '../../api/keys'
+import { listUnits } from '../../api/units'
 import { kindOf, resolveOverride } from '../../api/refusals'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
@@ -38,6 +39,12 @@ export default function VarietyNameForm({ onSaved, onDirtyChange, sheet = false 
   const [error, setError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
   const [sending, setSending] = useState(false)
+  const units = useQuery({ queryKey: keys.units(), queryFn: listUnits })
+  const [chosen, setChosen] = useState('')
+  const [unitError, setUnitError] = useState<string | null>(null)
+  const unitList = units.data ?? []
+  // One unit is preselected; with two or more the seller must choose.
+  const unitId = unitList.length === 1 ? unitList[0]?.id : chosen === '' ? undefined : Number(chosen)
 
   const dirty = name !== ''
   useEffect(() => {
@@ -47,16 +54,22 @@ export default function VarietyNameForm({ onSaved, onDirtyChange, sheet = false 
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
     setError(null)
+    setUnitError(null)
     setOffline(false)
+    if (unitId === undefined && unitList.length > 1) {
+      setUnitError(t('units:errUnitRequired'))
+      return
+    }
     setSending(true)
     try {
-      const saved = await post<Variety>('/api/products', { name })
+      const saved = await post<Variety>('/api/products', { name, unit_id: unitId })
       invalidateResource(queryClient, 'varieties')
       onSaved({ id: saved.id, name: saved.name })
     } catch (caught) {
       if (caught instanceof ApiError) {
         const message = resolveOverride(SAVE_OVERRIDES, caught.code)
-        if (message !== undefined) setError(messageText(t, message))
+        if (caught.code === 'product.unit_required') setUnitError(t('units:errUnitRequired'))
+        else if (message !== undefined) setError(messageText(t, message))
         else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') setError(GENERIC_REFUSAL_MESSAGE)
         else setError(ERROR_GENERICO_MENSAJE)
       } else if (caught instanceof NetworkError) {
@@ -88,6 +101,32 @@ export default function VarietyNameForm({ onSaved, onDirtyChange, sheet = false 
           </span>
         )}
       </label>
+      {unitList.length > 1 && (
+        <label className="campo">
+          <span className="campo__rotulo">{t('units:unitLabel')}</span>
+          <select
+            className="campo__input"
+            value={chosen}
+            aria-required
+            onChange={(event) => {
+              setChosen(event.target.value)
+              setUnitError(null)
+            }}
+          >
+            <option value="">{t('units:unitPlaceholder')}</option>
+            {unitList.map((unit) => (
+              <option key={unit.id} value={unit.id}>
+                {unit.name}
+              </option>
+            ))}
+          </select>
+          {unitError !== null && (
+            <span className="campo__error" role="alert">
+              {unitError}
+            </span>
+          )}
+        </label>
+      )}
       <Actions>
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={sending}>

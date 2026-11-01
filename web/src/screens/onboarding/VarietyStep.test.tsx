@@ -90,6 +90,9 @@ function fakeApi(input: RequestInfo | URL, init?: RequestInit): Promise<Response
   if (key === 'GET /pricing-settings') {
     return Promise.resolve(json({ is_bulk_pricing: false, is_vip_customers: false }))
   }
+  if (key === 'GET /api/units') {
+    return Promise.resolve(json([{ id: 4, name: 'Kilos', label: 'kg', decimals: 2, product_count: 0 }]))
+  }
   if (key === 'POST /api/products') {
     if (nameRefusal !== null) return Promise.resolve(json({ code: nameRefusal }, 422))
     const body = JSON.parse(String(init?.body)) as { name: string }
@@ -195,7 +198,7 @@ test('one primary action saves the variety and then its price', async () => {
   await user.click(screen.getByRole('button', { name: 'Save the variety' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(ONBOARDING_STOCK))
-  expect(bodies['POST /api/products']).toEqual([{ name: 'Mango Bomb' }])
+  expect(bodies['POST /api/products']).toEqual([{ name: 'Mango Bomb', unit_id: 4 }])
   expect(bodies['POST /api/products/1/prices']).toEqual([{ effective_from: '2026-10-03', list_price: 12000 }])
   // The progress is read again between the two writes.
   expect(calls.indexOf('POST /api/products')).toBeLessThan(calls.indexOf('POST /api/products/1/prices'))

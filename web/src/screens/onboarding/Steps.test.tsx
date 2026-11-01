@@ -194,6 +194,7 @@ test('step 1 follows the pricing switches: with both on, the price form offers t
 test('step 1 with no target saves the variety and its price with one action; a refused price keeps what was typed and the retry sends only the price', async () => {
   let refuse = true
   stubFetch(answer(NONE), {
+    'GET /api/units': () => json([{ id: 4, name: 'Kilos', label: 'kg', decimals: 2, product_count: 0 }]),
     'POST /api/products': () => json({ id: 7, name: 'Mango Bomb', current_price: null }, 201),
     'POST /api/products/7/prices': () =>
       refuse ? json({ code: 'variety.price_entry_invalid' }, 422) : json({}),

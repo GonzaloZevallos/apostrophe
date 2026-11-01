@@ -16,6 +16,7 @@ import { flushSync } from 'react-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { useLocation, useNavigate } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE, post } from '../../api/client'
+import { listUnits } from '../../api/units'
 import { invalidateResource } from '../../api/keys'
 import { refreshProgress, type OnboardingTarget } from '../../api/onboarding'
 import type { PricingSettings } from '../../api/pricingSettings'
@@ -87,7 +88,9 @@ export function useVarietyWithPrice({
   async function saveVariety(name: string): Promise<OnboardingTarget | null> {
     let created: OnboardingTarget
     try {
-      const answer = await post<Variety>('/api/products', { name })
+      // A new business has one unit, the default: the first step always names it.
+      const [unit] = await listUnits()
+      const answer = await post<Variety>('/api/products', { name, unit_id: unit?.id })
       created = { id: answer.id, name: answer.name }
     } catch (caught) {
       if (caught instanceof NetworkError) setOffline(true)
