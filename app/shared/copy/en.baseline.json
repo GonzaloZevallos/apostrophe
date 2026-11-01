@@ -33,7 +33,7 @@
   },
   "operator.import.count_varieties": {
     "area": "import",
-    "text": "  Varieties: {count}"
+    "text": "  Products: {count}"
   },
   "operator.import.count_price_entries": {
     "area": "import",
