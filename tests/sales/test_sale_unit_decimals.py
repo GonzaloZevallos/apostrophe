@@ -6,7 +6,7 @@ from collections.abc import Collection
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from sqlalchemy import func, select, text
+from sqlalchemy import event, func, select, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
@@ -110,12 +110,14 @@ def test_decimals_lowered_between_the_first_read_and_the_write_refuse_and_write_
     set_unit_decimals(engine, 2)
     product_id = _product(client)
     real = app.state.sales_units
+    rollbacks: list[int] = []
 
     class LowersAfterTheFirstRead:
         def __init__(self, session: Session, business_id: int) -> None:
             self._session = session
             self._reader = real(session, business_id)
             self._reads = 0
+            event.listen(session, "after_rollback", lambda _session: rollbacks.append(1))
 
         def units_of(self, product_ids: Collection[int]) -> dict[int, Unit]:
             found: dict[int, Unit] = self._reader.units_of(product_ids)
@@ -134,6 +136,8 @@ def test_decimals_lowered_between_the_first_read_and_the_write_refuse_and_write_
     assert refused.status_code == 422
     assert refused.json()["code"] == "quantity.too_many_decimals"
     assert (_count(engine, SaleRow), _count(engine, SaleLineRow)) == (0, 0)
+    # The use case itself undid the write: a rollback ran before the refusal was raised.
+    assert rollbacks
 
 
 def test_a_bulk_minimum_refused_after_the_write_when_the_unit_lost_decimals_stores_nothing(
