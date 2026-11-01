@@ -49,10 +49,17 @@
   --serie5: #b9c2bc;
 
   /* Tipografía */
-  --fuente: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --fuente: 'Geist', system-ui, -apple-system, sans-serif;
   /* cifra-m: la única clase de texto que lee su tamaño de acá (el pie de Nueva venta también) */
   --cifra-m-tamano: 25px;
   --cifra-m-interlineado: 1.1;
+  /* La marca (BrandMark): su tamaño y el de la palabra "apostrophe" junto a ella */
+  --marca-tamano: 24px;
+  --marca-lockup-tamano: 40px;
+  --marca-palabra-tamano: 34px;
+  /* En 246 px (130 % de zoom) el lockup entero tiene que entrar en el ancho útil: 198 px */
+  --marca-lockup-tamano-angosto: 32px;
+  --marca-palabra-tamano-angosto: 26px;
 
   /* Espacio y radios */
   --espacio-xs: 4px;
@@ -128,8 +135,6 @@ body {
   background: var(--papel);
   color: var(--tinta);
   font-family: var(--fuente);
-  /* Las cifras se alinean en columna en las listas. */
-  font-variant-numeric: tabular-nums;
 }
 
 /* Clases de texto — mismos valores que `texto` en tokens.ts */

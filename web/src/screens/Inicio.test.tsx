@@ -1012,3 +1012,67 @@ test('a failed panel read hides the Loading marker even with a hand-off waiting'
   expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
   expect(screen.queryByRole('link', { name: 'Collect from Ana Pérez' })).not.toBeInTheDocument()
 })
+
+/** The header's mark with the clipping box as the observer's root, and what that observer is told. */
+class VisibleObserver implements IntersectionObserver {
+  static roots: (Element | Document | null)[] = []
+  readonly root: Element | Document | null
+  readonly rootMargin = '0px'
+  readonly scrollMargin = '0px'
+  readonly thresholds: readonly number[] = [0]
+  private readonly callback: IntersectionObserverCallback
+  constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
+    this.callback = callback
+    this.root = options?.root ?? null
+    VisibleObserver.roots.push(this.root)
+  }
+  observe(target: Element): void {
+    const box = target.getBoundingClientRect()
+    const seen: IntersectionObserverEntry = {
+      boundingClientRect: box,
+      intersectionRatio: 1,
+      intersectionRect: box,
+      isIntersecting: true,
+      rootBounds: null,
+      target,
+      time: 0,
+    }
+    this.callback([seen], this)
+  }
+  unobserve(): void {}
+  disconnect(): void {}
+  takeRecords(): IntersectionObserverEntry[] {
+    return []
+  }
+}
+
+test('the phone header draws the mark before the business name, hidden from assistive technology when nothing says it is visible', async () => {
+  stubFetch(PANEL)
+  renderInicio()
+  await screen.findByText('You sold today')
+
+  const main = within(screen.getByRole('main'))
+  expect(main.queryByRole('img', { name: 'apostrophe' })).not.toBeInTheDocument()
+  const mark = main.getByAltText('apostrophe')
+  expect(mark).toHaveAttribute('src', '/icons/mark.svg')
+  expect(mark).toHaveAttribute('aria-hidden', 'true')
+  const name = main.getByText('La Huerta')
+  expect(name.compareDocumentPosition(mark) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  // The title stays outside the box that holds the name and the mark.
+  const title = main.getByText('Home', { selector: 'span' })
+  expect(name.parentElement).toBe(mark.parentElement)
+  expect(name.parentElement).not.toContainElement(title)
+})
+
+test('the header mark is an image named "apostrophe" once the observer sees it inside the clipping box', async () => {
+  VisibleObserver.roots = []
+  vi.stubGlobal('IntersectionObserver', VisibleObserver)
+  stubFetch(PANEL)
+  renderInicio()
+  await screen.findByText('You sold today')
+
+  const main = within(screen.getByRole('main'))
+  const mark = main.getByRole('img', { name: 'apostrophe' })
+  expect(mark).not.toHaveAttribute('aria-hidden')
+  expect(VisibleObserver.roots).toContain(main.getByText('La Huerta').parentElement)
+})

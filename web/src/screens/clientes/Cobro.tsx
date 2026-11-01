@@ -45,6 +45,18 @@ import { GENERIC_REFUSAL } from './ClienteForm'
 import { COMMON_TEXT } from '../../copy/common'
 import { PAYMENTS_TEXT } from '../../copy/payments'
 
+/** The "owes you" line with its amount in one box, so a narrow screen never breaks "$" from its digits. */
+function owesLine(balance: string, since: string) {
+  const [before = '', after = ''] = PAYMENTS_TEXT.owesYouSince(balance, since).split(balance)
+  return (
+    <>
+      {before}
+      <span className="cobro__importe cifra-n">{balance}</span>
+      {after}
+    </>
+  )
+}
+
 export interface CobroProps {
   customerId: string
   /** The customer's name and standing, for the line under the title: all from the API. */
@@ -208,7 +220,7 @@ export default function Cobro({
       <span className="cobro__cliente">
         {customer.name}
         {customer.standing === 'owes' && customer.owing_since !== null
-          ? PAYMENTS_TEXT.owesYouSince(formatMoney(customer.balance), formatDateShort(customer.owing_since))
+          ? owesLine(formatMoney(customer.balance), formatDateShort(customer.owing_since))
           : ''}
       </span>
         <form className="formulario" onSubmit={(event) => void onSubmit(event)}>

@@ -10,7 +10,7 @@
 // never thrown: one broken screen must not hide the others. The facts carry `today`.
 //
 // A design capture never touches the network (ADR-0042): its Google Fonts requests are
-// served from the @fontsource packages of FONT_FAMILIES, every other non-file request is aborted. Both
+// served from the self-hosted Geist files (FONT_FAMILIES), every other non-file request is aborted. Both
 // captures run on a paused fake clock (the facts' `today` at noon, Argentina) and are taken
 // only once the page is at rest (ADR-0042, `settle.mjs`): the applied-check passes and, for three
 // frames, nothing is requested, mutated or animating and the layout (control state included) is

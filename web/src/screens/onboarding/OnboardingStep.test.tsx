@@ -99,6 +99,21 @@ test('step 1 has no "Back": "Close" is its only way out', async () => {
   expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
 })
 
+test('the first step opens with the lockup, in the main region', async () => {
+  renderFrame('variety')
+
+  await screen.findByText('Step 1 of 6')
+  const lockup = within(screen.getByRole('main')).getByRole('img', { name: 'apostrophe' })
+  expect(lockup).toHaveTextContent('apostrophe’')
+})
+
+test('no other step shows the brand', async () => {
+  renderFrame('stock')
+
+  await screen.findByText('Step 2 of 6')
+  expect(within(screen.getByRole('main')).queryByRole('img', { name: 'apostrophe' })).not.toBeInTheDocument()
+})
+
 test.each(ORDER.slice(1).map((slug, index) => [slug, index + 1] as const))(
   '"Back" on %s (step %i + 1) opens the step before',
   async (slug, beforeIndex) => {

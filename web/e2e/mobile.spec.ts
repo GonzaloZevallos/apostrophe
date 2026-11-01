@@ -74,6 +74,11 @@ for (const size of SIZES) {
       await inPage.goto(HOME)
       await settle(inPage)
       expect(new URL(inPage.url()).pathname).toBe(HOME)
+      // Home on the phone shows at most one visible brand element: the mark in its header,
+      // never the rail's lockup (display: none on a phone), which the accessibility tree skips.
+      const inMain = await inPage.getByRole('main').getByRole('img', { name: 'apostrophe' }).count()
+      const inRail = await inPage.getByRole('navigation').getByRole('img', { name: 'apostrophe' }).count()
+      expect(inMain + inRail).toBeLessThanOrEqual(1)
 
       const own = OFFENDERS.filter((o) => o.size === size && o.theme === theme)
       expect(diffOffenders(own, actual)).toEqual({ unlisted: [], fixedButListed: [] })
@@ -189,10 +194,23 @@ test.describe('the geometry checkers', () => {
     expect(await rulesOn(browser, BROKEN)).toEqual(
       [
         'autocomplete', 'chrome-at-load', 'chrome-mid-scroll', 'figure-split', 'h-scroll', 'input-font',
-        'input-type', 'inputmode', 'name-overflow', 'overscroll', 'text-size', 'touch-action', 'touch-target',
-        'user-select',
+        'input-type', 'inputmode', 'name-overflow', 'overscroll', 'tabular-figures', 'text-size', 'touch-action',
+        'touch-target', 'user-select',
       ].sort(),
     )
+  })
+
+  test('a figure is reported unless its element draws tabular digits; sentences and dates are not figures', async ({ browser }) => {
+    const found = await violationsOn(
+      browser,
+      `<p>$ 11.000</p>
+       <p style="font-variant-numeric:tabular-nums">$ 22.000</p>
+       <p>12 days</p>
+       <p>Sold $ 33.000 today</p>
+       <p>30/10</p>
+       <p>and 3 g without cost</p>`,
+    )
+    expect(targetsOf(found, 'tabular-figures')).toEqual(['p:$ #.#', 'p:# days'])
   })
 
   test('identical offenders with no identity are one Violation each, by position', async ({ browser }) => {

@@ -1,0 +1,22 @@
+{
+  "source": "mark.svg",
+  "sha256": "7a1c26d0a652079aa9142a58e1a820241a4afeaf1ee6b6b9b10477909f18d64f",
+  "icons": [
+    {
+      "file": "icon-192.png",
+      "size": 192
+    },
+    {
+      "file": "icon-512.png",
+      "size": 512
+    },
+    {
+      "file": "icon-maskable-512.png",
+      "size": 512
+    },
+    {
+      "file": "apple-touch-icon.png",
+      "size": 180
+    }
+  ]
+}

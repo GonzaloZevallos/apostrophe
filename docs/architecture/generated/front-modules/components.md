@@ -17,6 +17,7 @@ subgraph src["src"]
     src_components_BehindPane_tsx["BehindPane.tsx"]
     src_components_BotonLink_tsx["BotonLink.tsx"]
     src_components_Boton_tsx["Boton.tsx"]
+    src_components_BrandMark_tsx["BrandMark.tsx"]
     src_components_ConfirmDialog_tsx["ConfirmDialog.tsx"]
     src_components_ErrorGenerico_tsx["ErrorGenerico.tsx"]
     src_components_GoneNotice_tsx["GoneNotice.tsx"]
@@ -51,6 +52,7 @@ subgraph src["src"]
     src_components_useVisualViewport_ts["useVisualViewport.ts"]
   end
 end
+src_components_AuthPage_tsx-->src_components_BrandMark_tsx
 src_components_AvisoAmbar_tsx-->src_components_Icono_tsx
 src_components_AvisoExito_tsx-->src_components_feedback_ts
 src_components_BotonLink_tsx-->src_components_Boton_tsx

@@ -1,18 +1,27 @@
 // Fonts of a design capture (ADR-0042). The design files load their family from Google
 // Fonts with `display=swap`; a capture must not depend on the network, so the request is
-// answered from the app's own self-hosted packages (@fontsource/*), with
-// `font-display: block`. Pure: no file is read here, `comparisons.mjs` injects the reader.
+// answered from the app's own self-hosted package (@fontsource/geist), with
+// `font-display: block`. The old drawings still name Plus Jakarta Sans in their own CSS, so
+// that family is declared under its own name but filled with the Geist files: the drawing side
+// is drawn in Geist, like the app. The redesign drawings ask for Geist itself. Pure: no file is
+// read here, `comparisons.mjs` injects the reader.
 
 // The closed map of families a capture serves. It is the only place in scripts/design/ that
 // names a font package or a gstatic prefix: a file is served only under the prefix of its own
 // family, and a family that is not a key is never served.
+//
+// `face` is the family the package declares in its own CSS. Plus Jakarta Sans is no longer
+// installed (Geist replaced it in the app): its request is answered from the Geist package, and
+// `fontCss` re-declares each face under the name that was asked.
 export const FONT_FAMILIES = Object.freeze({
   'Plus Jakarta Sans': Object.freeze({
-    package: '@fontsource/plus-jakarta-sans',
+    package: '@fontsource/geist',
+    face: 'Geist',
     prefix: 'https://fonts.gstatic.com/s/plusjakartasans/v1/',
   }),
   Geist: Object.freeze({
     package: '@fontsource/geist',
+    face: 'Geist',
     prefix: 'https://fonts.gstatic.com/s/geist/v1/',
   }),
 })
@@ -62,11 +71,12 @@ export function fontRoute(url) {
 // the network. Every URL must end up under the prefix of this family.
 export function fontCss(family, weights, read) {
   if (!isFamily(family)) throw new Error(`the family ${family} is not served`)
-  const { prefix } = FONT_FAMILIES[family]
+  const { prefix, face } = FONT_FAMILIES[family]
   return weights
     .map((weight) => {
       const css = read(weight)
         .replace(/font-display:\s*swap/g, 'font-display: block')
+        .replace(new RegExp(`font-family:\\s*'${face}'`, 'g'), `font-family: '${family}'`)
         .replace(/url\(\.\/files\/([^)]+)\)/g, `url(${prefix}$1)`)
       for (const [, target] of css.matchAll(/url\(([^)]+)\)/g)) {
         if (!target.startsWith(prefix)) {

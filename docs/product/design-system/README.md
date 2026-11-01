@@ -59,6 +59,14 @@ un solo verde usado con cuentagotas.
 - Rótulos en minúscula, escritos como frases ("Vendiste esta semana").
 - El idioma de la app es el inglés (`docs/product/product-language.md`): "Save", "Owes you", "Choose". Las pantallas de `pantallas/` están dibujadas en castellano y son la referencia de estructura, no de palabras.
 
+## Tipografía: Geist
+
+La tipografía es Geist, en pesos 400, 500, 600 y 700, empaquetada con la app (`@fontsource/geist`, importada sólo en `web/src/main.tsx`): la app no pide ninguna tipografía fuera de la instalación. `--fuente` es `'Geist', system-ui, -apple-system, sans-serif` y es igual en `tokens.css`, `tokens.ts` y `web/src/styles/tokens.css`. La copia de `tokens.css` de esta carpeta conserva su `@import` de Google, ahora para Geist; es documentación y la app nunca la carga. Los dibujos de `pantallas/` siguen pidiendo Plus Jakarta Sans: las capturas de diseño responden ese pedido con los archivos de Geist alojados (`scripts/design/fonts.mjs`, ADR-0042), así que el dibujo y la app se ven en la misma tipografía.
+
+### Cifras tabulares
+
+Una cifra que el ojo recorre en columna, en una fila o en un total lleva dígitos tabulares: una sola regla de `web/src/styles/app.css` pone `font-variant-numeric: tabular-nums` en las clases de cifra (`cifra-xl`, `cifra-l`, `cifra-m`, `cifra-s`, `cifra-n`) y nunca en `html`, `body` ni `:root`. Cubre dinero, cantidades en gramos, porcentajes mostrados como cifra y días restantes. No cubre fechas ni horas, teléfonos, un conteo dentro de una frase ("3 clientes", "y 3 g sin costo") ni texto libre. El chequeo móvil lo verifica en la página renderizada con la regla `tabular-figures`: un elemento visible cuyo texto entero es una cifra y cuyo `font-variant-numeric` calculado no incluye `tabular-nums` falla. Esa regla no tiene archivo de infractores: se arregla poniendo la cifra en su clase, nunca se anota.
+
 ## Accesibilidad — no se negocia
 
 1. Ningún estado se cuenta sólo por color: una señal, flecha o palabra en cada
@@ -196,6 +204,31 @@ cinco de la dueña. Oscuro: variantes más claras de los mismos cinco tonos, ele
 En claro `--serie2` y `--serie5` quedan bajo 3:1 sobre `--superficie` porque son los valores
 de la dueña; no se movieron porque nunca se leen por el color solo: la etiqueta directa
 dice cuál es cuál.
+
+### El logo
+
+La marca es un apóstrofo blanco sobre un cuadrado redondeado verde (`#1e6b47`), igual en
+claro y en oscuro. Tiene una sola fuente: `web/public/icons/mark.svg`. Ningún archivo de
+`web/src` copia su dibujo; la app la dibuja con un `<img>` de ese archivo. El favicon es ese
+SVG (con `icon-192.png` de respaldo) y los PNG (`icon-192`, `icon-512`, `icon-maskable-512` y
+`apple-touch-icon`) los genera `scripts/design/icons.mjs` desde él, sin conexión y sin editarlo
+(`npm --prefix web run icons`). El renderizador anota en `web/public/icons/icons.json` el
+SHA-256 del SVG y el tamaño de cada ícono; `web/src/design/icons.test.ts` falla si el SVG
+cambia y los PNG no se generaron de nuevo. El maskable y el de Apple son a sangre y opacos,
+con el apóstrofo dentro del 80 % central.
+
+### El wordmark
+
+El wordmark es "apostrophe" en minúscula, en Geist 600, con el ’ (U+2019) en `--acento`
+(`#1e6b47` en claro, `#5cc594` en oscuro). Lo dibuja `BrandMark`
+(`web/src/components/BrandMark.tsx`) junto con la marca de `mark.svg`. La marca con el
+wordmark va arriba en Entrar, en las dos pantallas de invitación, en el primer paso del
+Onboarding y sobre "+ Nueva venta" en el riel de la compu. La marca sola va en línea al
+comienzo del encabezado de Inicio en el celular, y solo cuando el nombre del negocio entra
+entero a su lado: si no entran los dos, la marca pasa a una segunda línea recortada, así el
+encabezado no crece ni el nombre pierde un carácter. En ningún otro lugar. No es un control
+(tocarla no hace nada) y su nombre accesible es "apostrophe" en todo negocio, tema e idioma,
+el de prueba incluido.
 
 ## En el celular
 

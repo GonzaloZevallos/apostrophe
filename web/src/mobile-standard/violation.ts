@@ -45,11 +45,21 @@ export const RULE_KINDS = {
   'chrome-shift': 'element',
   'content-shift': 'element',
   'pending-state': 'element',
+  'tabular-figures': 'element',
 } as const satisfies Record<string, RuleKind>
 
 export type Rule = keyof typeof RULE_KINDS
 
-export const RULES = Object.keys(RULE_KINDS).filter(isRule)
+/**
+ * A rule that is fixed and never listed: it has no offenders file, and the loader refuses
+ * an entry for it.
+ */
+export const UNLISTED_RULES: readonly Rule[] = ['tabular-figures']
+
+/** The rules that keep an offenders file: every rule but the unlisted ones. */
+export const RULES = Object.keys(RULE_KINDS)
+  .filter(isRule)
+  .filter((rule) => !UNLISTED_RULES.includes(rule))
 
 export function isRule(value: string): value is Rule {
   return Object.hasOwn(RULE_KINDS, value)

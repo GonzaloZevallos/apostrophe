@@ -29,6 +29,7 @@ import { CATALOG, SETTINGS } from '../routes'
 import { useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useOutletContext } from 'react-router'
+import BrandMark from '../components/BrandMark'
 import InAppLink from '../components/InAppLink'
 import { owedPlace, useReturnToPlace } from '../components/useReturnToPlace'
 import { peekPaymentReturn } from '../paymentReturn'
@@ -80,6 +81,7 @@ export default function Inicio() {
     pinOutOfDate,
   })
   const root = useRef<HTMLElement>(null)
+  const brandBox = useRef<HTMLDivElement>(null)
   // The notices above the panel make the page taller once they answer (pending, not failed: a
   // failure draws none), so the place is applied after them, never against a shorter page.
   const settled = !pinnedCatalog.isPending && !onboardingQuery.isPending && !firstRun.isPending
@@ -92,7 +94,10 @@ export default function Inicio() {
       <div className="cuerpo">
         <div className="inicio__cabecera">
           <div className="inicio__cabecera-titulos">
-            <span className="encabezado__negocio">{me.business_name}</span>
+            <div className="inicio__cabecera-marca" ref={brandBox}>
+              <span className="encabezado__negocio">{me.business_name}</span>
+              <BrandMark variant="mark" clipRoot={brandBox} />
+            </div>
             <span className="encabezado__titulo">{COMMON_TEXT.home}</span>
           </div>
           <InAppLink

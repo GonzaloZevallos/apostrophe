@@ -1,5 +1,6 @@
 export interface FontFamily {
   readonly package: string;
+  readonly face: string;
   readonly prefix: string;
 }
 export type FontFamilyName = 'Plus Jakarta Sans' | 'Geist';

@@ -325,26 +325,26 @@ function VentaDetalleScreen() {
               <div key={`${line.product_id}-${index}`} className="venta-detalle__linea">
                 <div className="venta-detalle__linea-superior">
                   <span className="venta-detalle__variedad">{line.product_name}</span>
-                  <span className="venta-detalle__gramos">{formatGrams(line.quantity)}</span>
+                  <span className="venta-detalle__gramos cifra-s">{formatGrams(line.quantity)}</span>
                 </div>
                 <div className="venta-detalle__linea-inferior">
-                  <span className="venta-detalle__precio">
+                  <span className="venta-detalle__precio cifra-n">
                     {formatMoney(line.price_per_gram)}{SALES_TEXT.perGram}
                   </span>
                   <ReglaInsignia rule={line.pricing_rule} />
-                  <span className="venta-detalle__total">{formatMoney(line.line_total)}</span>
+                  <span className="venta-detalle__total cifra-s">{formatMoney(line.line_total)}</span>
                 </div>
               </div>
             ))}
             <div className="venta-detalle__renglon">
               <span>{SALES_TEXT.shippingCharged}</span>
-              <span className="venta-detalle__renglon-monto">
+              <span className="venta-detalle__renglon-monto cifra-s">
                 {formatMoney(sale.shipping_charged)}
               </span>
             </div>
             <div className="venta-detalle__renglon venta-detalle__renglon--total">
               <span>{SALES_TEXT.total}</span>
-              <span className="venta-detalle__renglon-monto">{formatMoney(sale.total)}</span>
+              <span className="venta-detalle__renglon-monto cifra-s">{formatMoney(sale.total)}</span>
             </div>
           </div>
         </div>

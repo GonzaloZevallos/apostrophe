@@ -9,9 +9,6 @@ import { SAMPLES, type LimitedCopy } from './limits.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
-/** The product's name: a brand, not a translated word, so it has no Spanish twin. */
-export const BRAND_NAME = 'apostrophe'
-
 export const WEAK_PASSWORD_MESSAGE = 'The password needs at least 10 characters'
 export const DEAD_LINK_MESSAGE = 'This link no longer works. Ask whoever sent it for a new one.'
 export const BRAKE_MESSAGE = '5 failed attempts · try again in 15 minutes'

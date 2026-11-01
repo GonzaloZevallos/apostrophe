@@ -10,6 +10,7 @@
     "lint": "oxlint --deny-warnings",
     "test": "vitest run",
     "preview": "vite preview",
+    "icons": "node ../scripts/design/icons.mjs",
     "e2e": "sh scripts/e2e.sh",
     "i18n:baseline": "node scripts/i18n/baseline.mjs",
     "i18n:types": "I18N_TYPES_WRITE=1 vitest run scripts/i18n/resourceTypes.test.ts",
@@ -18,7 +19,7 @@
     "i18n:missing": "I18N_MISSING_REPORT=1 vitest run scripts/i18n/missingKeys.test.ts"
   },
   "dependencies": {
-    "@fontsource/plus-jakarta-sans": "^5.3.0",
+    "@fontsource/geist": "^5.3.0",
     "@tanstack/react-query": "^5.104.1",
     "i18next": "^26.5.10",
     "react": "^19.2.8",
@@ -27,7 +28,6 @@
     "react-router": "^8.4.0"
   },
   "devDependencies": {
-    "@fontsource/geist": "5.3.0",
     "@playwright/test": "^1.63.0",
     "@redocly/cli": "2.72.1",
     "@testing-library/jest-dom": "^7.0.1",
@@ -43,6 +43,7 @@
     "jsdom": "^30.1.1",
     "mermaid": "12.2.0",
     "oxlint": "^1.81.0",
+    "playwright": "^1.63.0",
     "pngjs": "^7.0.0",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",

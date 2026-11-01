@@ -6,7 +6,7 @@
 
 import { LOGIN } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
@@ -115,4 +115,14 @@ test('a successful login clears the whole cache before landing on Inicio', async
       body: JSON.stringify({ email: 'ana@x.com', password: 'secreta123' }),
     }),
   )
+})
+
+test('shows the brand lockup at the top of the screen, named "apostrophe", with the tagline under it', () => {
+  renderEntrar(new QueryClient())
+
+  const main = screen.getByRole('main')
+  const brand = within(main).getByRole('img', { name: 'apostrophe' })
+  expect(brand.querySelector('img')).toHaveAttribute('src', '/icons/mark.svg')
+  expect(brand).toHaveTextContent('apostrophe\u2019')
+  expect(main.querySelector('.auth-page__columna')?.firstElementChild).toContainElement(brand)
 })

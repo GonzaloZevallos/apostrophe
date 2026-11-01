@@ -12,7 +12,7 @@ import { afterAll, beforeAll, describe, expect, it, onTestFinished } from 'vites
 const SCRIPT = resolve(__dirname, '../../../scripts/design/comparisons.mjs')
 const FONT = resolve(
   __dirname,
-  '../../node_modules/@fontsource/plus-jakarta-sans/files/plus-jakarta-sans-latin-400-normal.woff2',
+  '../../node_modules/@fontsource/geist/files/geist-latin-400-normal.woff2',
 )
 
 // The step bound every case runs at (--step-timeout). Measured: one design page load starved of CPU

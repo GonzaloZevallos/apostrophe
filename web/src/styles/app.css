@@ -28,6 +28,17 @@ body {
   overscroll-behavior: none;
 }
 
+/* Tabular figures: the one rule that makes digits tabular, on the
+ * figure classes only (money, grams, percentages and Days left sit in a `cifra*` class).
+ * Never on `html`, `body` or `:root`: text and sentences keep Geist's proportional digits. */
+.cifra-xl,
+.cifra-l,
+.cifra-m,
+.cifra-s,
+.cifra-n {
+  font-variant-numeric: tabular-nums;
+}
+
 /* Visible to a screen reader only — the design's own technique for a label a
  * placeholder already shows visibly (`Clientes.dc.html`'s "Buscar cliente"). */
 .visualmente-oculto {
@@ -56,17 +67,48 @@ body {
   font-family: var(--fuente);
 }
 
-.marca {
+.brand-mark--lockup {
   display: flex;
-  align-items: baseline;
-  gap: 2px;
-  font-size: 34px;
-  font-weight: 700;
+  align-items: center;
+  gap: var(--espacio-sm);
+  font-size: var(--marca-palabra-tamano);
+  font-weight: 600;
   letter-spacing: -0.04em;
+  line-height: 1.2;
 }
 
-.marca__apostrofe {
+.brand-mark--lockup > img {
+  flex: none;
+  width: var(--marca-lockup-tamano);
+  height: var(--marca-lockup-tamano);
+}
+
+.brand-mark__word {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* At 130 % zoom on the smallest phone (246 CSS px) the full lockup is wider than the column. */
+@media (max-width: 300px) {
+  .brand-mark--lockup {
+    font-size: var(--marca-palabra-tamano-angosto);
+  }
+
+  .brand-mark--lockup > img {
+    width: var(--marca-lockup-tamano-angosto);
+    height: var(--marca-lockup-tamano-angosto);
+  }
+}
+
+.brand-mark__apostrophe {
   color: var(--acento);
+}
+
+.brand-mark--mark {
+  display: block;
+  flex: none;
+  width: var(--marca-tamano);
+  height: var(--marca-tamano);
 }
 
 .subtitulo {
@@ -527,6 +569,16 @@ body {
   min-width: 212px;
 }
 
+.riel-lateral > .brand-mark--lockup {
+  padding: 0 14px 18px;
+  font-size: var(--marca-palabra-tamano-angosto);
+}
+
+.riel-lateral > .brand-mark--lockup > img {
+  width: var(--marca-lockup-tamano-angosto);
+  height: var(--marca-lockup-tamano-angosto);
+}
+
 .riel-lateral__item {
   display: flex;
   align-items: center;
@@ -591,6 +643,34 @@ body {
 
 .inicio__cabecera-titulos {
   flex: 1;
+}
+
+/* The business name and the mark share one box a single name line tall. When both do not fit
+ * the mark wraps onto the clipped second line, so the name and the title stay where they are
+ * with no mark at all; CSS decides, nothing is measured. `row-reverse` with `flex-end` draws
+ * the mark before the name, the DOM keeps the name first so it takes the first line. */
+.inicio__cabecera-marca {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  align-items: center;
+  align-content: flex-start;
+  gap: var(--espacio-sm);
+  font-size: 14px;
+  height: 1lh;
+  overflow: hidden;
+}
+
+.inicio__cabecera-marca .encabezado__negocio {
+  flex: 0 0 auto;
+  max-width: 100%;
+}
+
+.inicio__cabecera-marca .brand-mark--mark {
+  height: min(var(--marca-tamano), 1lh);
+  width: auto;
+  aspect-ratio: 1;
 }
 
 .inicio__avatar {
@@ -3511,6 +3591,10 @@ body {
     display: flex;
   }
 
+  .inicio__cabecera-marca .brand-mark--mark {
+    display: none;
+  }
+
   .inicio__avatar {
     display: none;
   }
@@ -3652,45 +3736,45 @@ body {
    * so `cqi` is 1% of the card's content width.
    *
    * k_n = 2500 / W_n, W_n being the width in px at 25 px of the widest formatted figure of
-   * n characters (the built app, Plus Jakarta Sans 600, letter-spacing -0.035em,
+   * n characters (the built app, Geist 600, letter-spacing -0.035em,
    * tabular figures), taken over dot-grouped strings with and without "−" and over grams
    * ("$ 150.000", "−$ 150.000", "$ 1.500.000" ... "−$ 999.999.999", "1.234,55 g"), floored
    * to two decimals: the figure then fills at most the card's content width.
    *
    *   n   8      9       10      11      12      13      14
-   *   W   98     112.125 126.25  133.375 148.5   162.625 176.75
-   *   k   25.51  22.29   19.80   18.74   16.83   15.37   14.14
+   *   W   101    116.125 128.25  136.375 151.5   166.625 178.75
+   *   k   24.75  21.52   19.49   18.33   16.50   15.00   13.98
    *
    * Bound: "−$ 999.999.999", 14 characters (ADR-0048's fixture); a longer one reads 14 and
    * is held by the 17 px floor. The arbiter is `InicioCompu`'s comparison: if "$ 150.000"
    * or any other sample figure leaves 25 px, this rule is wrong. Re-measure when the
    * font or the tracking changes. */
   .panel-periodo--con-cifras [data-largo='8'] {
-    font-size: max(17px, min(25px, 25.51cqi));
+    font-size: max(17px, min(25px, 24.75cqi));
   }
 
   .panel-periodo--con-cifras [data-largo='9'] {
-    font-size: max(17px, min(25px, 22.29cqi));
+    font-size: max(17px, min(25px, 21.52cqi));
   }
 
   .panel-periodo--con-cifras [data-largo='10'] {
-    font-size: max(17px, min(25px, 19.80cqi));
+    font-size: max(17px, min(25px, 19.49cqi));
   }
 
   .panel-periodo--con-cifras [data-largo='11'] {
-    font-size: max(17px, min(25px, 18.74cqi));
+    font-size: max(17px, min(25px, 18.33cqi));
   }
 
   .panel-periodo--con-cifras [data-largo='12'] {
-    font-size: max(17px, min(25px, 16.83cqi));
+    font-size: max(17px, min(25px, 16.50cqi));
   }
 
   .panel-periodo--con-cifras [data-largo='13'] {
-    font-size: max(17px, min(25px, 15.37cqi));
+    font-size: max(17px, min(25px, 15.00cqi));
   }
 
   .panel-periodo--con-cifras [data-largo='14'] {
-    font-size: max(17px, min(25px, 14.14cqi));
+    font-size: max(17px, min(25px, 13.98cqi));
   }
 
   /* `VentasCompu`: title, range and total sit together on one row, the tabs
@@ -5717,6 +5801,11 @@ body {
   color: var(--tinta2);
 }
 
+/* The amount of the "owes you" line is one unbreakable box: "$" never ends a line alone. */
+.cobro__importe {
+  white-space: nowrap;
+}
+
 /* Registrar cobro's form (`Cobro.dc.html`): the amount drawn large, "Todo" a pill, the method
  * a two-part pill (the chosen one bolder as well as lighter-backed), the preview a card. */
 .cobro__monto {
@@ -6145,6 +6234,12 @@ body {
   .bar-inferior__item {
     flex: 1 1 44px;
     min-width: min-content;
+  }
+
+  /* Geist is wider than the face this bar was sized for: a hair of tightening on the labels
+   * keeps the three short items at 44 px beside "Customers" and "Varieties". */
+  .bar-inferior__item > span {
+    letter-spacing: -0.02em;
   }
 }
 
