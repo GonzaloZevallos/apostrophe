@@ -410,10 +410,10 @@ describe('the actions and the sections', () => {
     expect(screen.getByRole('link', { name: 'New price' })).toHaveAttribute('href', pathTo(VARIETY_PRICE_NEW, { id: 1 }))
   })
 
-  test('the page is a detail: "‹ Varieties" and no "+ New sale"', async () => {
+  test('the page is a detail: "‹ Products" and no "+ New sale"', async () => {
     const { router } = renderPage(VARIETY_ONE)
 
-    const back = await screen.findByRole('button', { name: '‹ Varieties' })
+    const back = await screen.findByRole('button', { name: '‹ Products' })
     expect(screen.queryByText(/New sale/)).not.toBeInTheDocument()
     expect(screen.getAllByRole('navigation').length).toBeGreaterThan(0)
     await userEvent.click(back)
@@ -570,7 +570,7 @@ describe('gone and foreign varieties', () => {
     })
 
     expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Back to Varieties' })).toHaveAttribute('href', VARIETIES)
+    expect(screen.getByRole('link', { name: 'Back to Products' })).toHaveAttribute('href', VARIETIES)
   })
 
   test('VarietyRoute: an id that is not a whole number is gone, and the API is never asked', async () => {

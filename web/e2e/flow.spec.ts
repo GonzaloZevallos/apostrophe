@@ -78,7 +78,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByRole('link', { name: '+ Stock entry' }).click()
   await expectPath(page, STOCK_ENTRY_NEW)
   await page.getByLabel('Grams').fill('50')
-  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
+  await page.getByLabel('Product').selectOption({ label: 'Rosa' })
   await page.getByLabel('Total cost').fill('45000')
   await expect(page.getByText('It comes to $ 900 per gram')).toBeVisible()
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())

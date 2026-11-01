@@ -106,7 +106,7 @@ export const SALES_TEXT = {
   createCustomer: 'Create customer',
   lineLabel: (n: string | number, displayName: string | number) => `Line ${n}: ${displayName}`,
   withUnit: (grams: string | number) => `${grams} g`,
-  lineVariety: (n: string | number) => `Line ${n} variety`,
+  lineVariety: (n: string | number) => `Line ${n} product`,
   lineGrams: (n: string | number) => `Line ${n} grams`,
   lineGift: (n: string | number) => `Line ${n} gift`,
   gift: 'Gift',

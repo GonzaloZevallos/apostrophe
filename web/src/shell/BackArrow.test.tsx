@@ -194,7 +194,7 @@ test("from variety A to variety B on the same screen, '‹ A' is gone while B lo
   expect(backs()).toEqual(['‹ Beta'])
 })
 
-test("an archived variety shows only '‹ Archived', never a flash of '‹ Varieties'", async () => {
+test("an archived variety shows only '‹ Archived', never a flash of '‹ Products'", async () => {
   const pending = deferred()
   fakeApi({ 5: pending })
   const seen: string[] = []

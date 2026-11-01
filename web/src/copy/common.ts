@@ -105,7 +105,7 @@ export const COMMON_TEXT = {
   /** @deprecated read `common:gramsSold` with `{ grams }` */
   soldSuffix: ' sold',
   /** @deprecated read `common:variety` */
-  variety: 'Variety',
+  variety: 'Product',
   /** @deprecated read `common:sales` */
   sales: 'Sales',
   /** @deprecated read `common:grams` */
@@ -125,7 +125,7 @@ export const COMMON_TEXT = {
   /** @deprecated read `common:copy` */
   copy: 'Copy',
   /** @deprecated read `common:varieties` */
-  varieties: 'Varieties',
+  varieties: 'Products',
   /** @deprecated read `common:close` */
   close: 'Close',
   /** @deprecated read `common:discardTheChanges` */

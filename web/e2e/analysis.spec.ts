@@ -50,7 +50,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   const todayIso = await page.getByLabel('Date').inputValue()
   await page.getByLabel('Date').fill(firstOfMonth(todayIso, 1))
   await page.getByLabel('Grams').fill('50')
-  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
+  await page.getByLabel('Product').selectOption({ label: 'Rosa' })
   await page.getByLabel('Total cost').fill('20000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 
@@ -157,7 +157,7 @@ async function recordEntry(
   await page.goto(STOCK_ENTRY_NEW)
   await page.getByLabel('Date').fill(entry.date)
   await page.getByLabel('Grams').fill(entry.grams)
-  await page.getByLabel('Variety').selectOption({ label: entry.variety })
+  await page.getByLabel('Product').selectOption({ label: entry.variety })
   await page.getByRole('button', { name: entry.origin, exact: true }).click()
   if (entry.cost !== undefined) await page.getByLabel('Total cost').fill(entry.cost)
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())

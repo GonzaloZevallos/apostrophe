@@ -83,7 +83,7 @@ afterEach(() => {
 test('"Listo" names each step through its nameKey and re-renders it in place on a switch', async () => {
   inRouter(<Listo />, progress(['done', 'pending', 'pending', 'pending', 'pending', 'pending']))
   const name = screen.getByText('Variety with price')
-  const later = screen.getByText('For later — in Varieties')
+  const later = screen.getByText('For later — in Products')
 
   await switchToGerman()
 
