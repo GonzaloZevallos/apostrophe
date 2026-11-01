@@ -123,7 +123,7 @@ as_http = TranslateErrors(
                 WithdrawalDateInFuture,
                 WithdrawalNoLines,
                 WithdrawalQuantityNotPositive,
-                            WithdrawalNoteTooLong,
+                WithdrawalNoteTooLong,
             ),
         ),
     ]
