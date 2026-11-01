@@ -72,3 +72,10 @@ business's screen word; Product is the name of the thing.
   word; a code base that says Variety everywhere would teach the next reader the wrong thing.
 - **Move the front paths to `/products/*`.** The screens are shown with the business's own word, so
   no one word fits the address bar, and docs/adr/0024-a-front-path-may-share-its-first-segment-with-the-api-only-through-an-exact-allowlist-served-to-browser-navigations.md and the design list would change for no gain.
+
+## Amendment (2026-11-01, GH-318 part 13)
+
+docs/adr/0070-the-screen-word-is-always-product-and-no-product-word-setting-exists.md supersedes
+only this ADR's sentence that Variety remains the on-screen word for existing businesses: the screen
+word is always Product / Products for every Business. The rules on columns, front paths and hexagon
+names above still hold.
