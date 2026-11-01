@@ -279,6 +279,8 @@
     { "path": "/settings", "kind": "card", "parent": "/more", "computer_parent": "/" },
     { "path": "/settings/business", "kind": "form", "parent": "/settings" },
     { "path": "/settings/users", "kind": "form", "parent": "/settings" },
+    { "path": "/settings/products", "kind": "form", "parent": "/settings", "note": "No drawing exists for the Products group or the unit form (GH-390); the design system's group frame and sheet are reused." },
+    { "path": "/settings/products/units", "kind": "form", "parent": "/settings/products", "note": "No drawing exists for Units (GH-390); same frame as the other Settings groups." },
     { "path": "/settings/prices", "kind": "form", "parent": "/settings" },
     { "path": "/settings/integrations", "kind": "form", "parent": "/settings" },
     { "path": "/settings/catalog-message", "kind": "form", "parent": "/settings" },
