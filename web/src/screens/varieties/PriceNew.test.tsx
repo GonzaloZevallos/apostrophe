@@ -410,3 +410,24 @@ test('another day counts as typed: leaving asks first', async () => {
 
   expect(await screen.findByText('Discard the price?')).toBeInTheDocument()
 })
+
+test('a bulk minimum finer than the unit shows its sentence and sends nothing; a server refusal shows at form level', async () => {
+  const user = userEvent.setup()
+  const { fetchMock } = await renderOpened(
+    api({ 'POST /api/products/1/prices': () => jsonResponse(422, { code: 'quantity.too_many_decimals' }) }),
+  )
+
+  await user.type(await screen.findByLabelText(/^List price/), '12000')
+  await user.type(screen.getByLabelText(/^Bulk price/), '11000')
+  await user.type(screen.getByLabelText(/^Minimum in grams/), '1.234')
+  await user.click(screen.getByRole('button', { name: 'Save the price' }))
+  expect(await screen.findByText('Up to 2 decimals')).toBeInTheDocument()
+  expect(writes(fetchMock)).toEqual([])
+  expect(screen.getByLabelText(/^Minimum in grams/)).toHaveValue('1.234')
+
+  await user.clear(screen.getByLabelText(/^Minimum in grams/))
+  await user.type(screen.getByLabelText(/^Minimum in grams/), '1.5')
+  await user.click(screen.getByRole('button', { name: 'Save the price' }))
+  expect(await screen.findByText('This quantity has too many decimals for its unit.')).toBeInTheDocument()
+  expect(screen.getByLabelText(/^Minimum in grams/)).toHaveValue('1.5')
+})

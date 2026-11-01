@@ -36,6 +36,7 @@ import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGen
 import { SheetActions } from '../../components/Sheet'
 import SinConexion from '../../components/SinConexion'
 import { parseGrams } from '../../format/parse'
+import { exceedsDecimals, useDecimalsSentence } from '../../format/unitDecimals'
 import { guiltyKeys, keptOptions, preselected } from './goneLines'
 import { REASON_OPTIONS } from './withdrawalReasons'
 import type { Variety } from '../Variedades'
@@ -173,6 +174,7 @@ export default function WithdrawalForm({
   const me = useOutletContext<Me>()
   const queryClient = useQueryClient()
   const { t } = useTranslation()
+  const decimalsSentence = useDecimalsSentence()
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
     queryFn: fetchVarieties,
@@ -308,7 +310,14 @@ export default function WithdrawalForm({
     if (clear) proceed()
   }
 
+  /** What the unit of the line's product allows, when the typed quantity has more decimals. */
+  function finerThanUnit(line: LineState): number | null {
+    const decimals = varieties.find((variety) => String(variety.id) === line.varietyId)?.unit?.decimals
+    return decimals !== undefined && exceedsDecimals(line.grams, decimals) ? decimals : null
+  }
+
   function proceed(): void {
+    if (form.lines.some((line) => finerThanUnit(line) !== null)) return
     if (target === 'new') void save()
     else setConfirmingSave(true)
   }
@@ -362,6 +371,8 @@ export default function WithdrawalForm({
         } else if (isGone(caught.code)) {
           invalidateResource(queryClient, 'stock')
           onGone()
+        } else if (caught.code === 'quantity.too_many_decimals') {
+          setFormError(t('units:quantityRefused'))
         } else if (message !== undefined) {
           setFormError(refusalText(t, message))
         } else {
@@ -472,8 +483,14 @@ export default function WithdrawalForm({
               enterKeyHint={index === form.lines.length - 1 ? 'done' : 'next'}
               value={line.grams}
               onChange={(event) => setLine(line.key, { grams: event.target.value })}
+              aria-invalid={finerThanUnit(line) !== null || undefined}
               required
             />
+            {finerThanUnit(line) !== null && (
+              <span className="campo__error" role="alert">
+                {decimalsSentence(finerThanUnit(line) ?? 2)}
+              </span>
+            )}
             {form.lines.length > 1 && (
               <Boton
                 variant="icon"

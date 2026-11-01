@@ -55,6 +55,7 @@ import { useVisualViewport } from '../../components/useVisualViewport'
 import { formatDateLong, formatDateShort, maxSaleDate } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { parseGrams, parseMoney } from '../../format/parse'
+import { exceedsDecimals, useDecimalsSentence } from '../../format/unitDecimals'
 import {
   type LineValidation,
   type PaymentChoice,
@@ -176,6 +177,7 @@ function NuevaVentaForm() {
   const queryClient = useQueryClient()
   // Save looks unready before the choice on the phone only; the computer draws it as it always did.
   const onPhone = useViewport() === 'phone'
+  const decimalsSentence = useDecimalsSentence()
 
   const initialCustomerId = readNewSaleState(location.state)
 
@@ -347,6 +349,11 @@ function NuevaVentaForm() {
    * variety when something else was typed. A fully blank line never reaches here
    * closed (it is removed instead), so returning `null` here only ever means a
    * line that prices cleanly. */
+  function tooFine(line: LineState): boolean {
+    const decimals = varietyOf(line.varietyId)?.unit?.decimals
+    return decimals !== undefined && exceedsDecimals(line.grams, decimals)
+  }
+
   function combinedLineError(line: LineState): string | null {
     const special = specialPriceErrorFor(line)
     if (special !== null) return special
@@ -355,6 +362,7 @@ function NuevaVentaForm() {
     const gramsTyped = line.grams.trim() !== ''
     const somethingTyped = line.varietyId !== '' || gramsTyped || line.gift || line.specialPrice.trim() !== ''
     if (!parseGrams(line.grams).ok && somethingTyped) return LINE_GRAMS_INVALID
+    if (tooFine(line)) return decimalsSentence(varietyOf(line.varietyId)?.unit?.decimals ?? 2)
     if (line.varietyId === '' && somethingTyped) return LINE_VARIETY_MISSING
     return null
   }
@@ -433,7 +441,7 @@ function NuevaVentaForm() {
   function fieldForError(line: LineState): 'variety' | 'grams' | 'specialPrice' {
     if (specialPriceErrorFor(line) !== null) return 'specialPrice'
     if (noPriceErrorFor(line.key) !== null) return 'variety'
-    if (!parseGrams(line.grams).ok) return 'grams'
+    if (!parseGrams(line.grams).ok || tooFine(line)) return 'grams'
     return 'variety'
   }
 
@@ -522,7 +530,9 @@ function NuevaVentaForm() {
       }
       if (caught instanceof ApiError) {
         const override = resolveOverride(SUBMIT_OVERRIDES, caught.code)
-        if (override !== undefined) {
+        if (caught.code === 'quantity.too_many_decimals') {
+          setFormError(t('units:quantityRefused'))
+        } else if (override !== undefined) {
           if (override.field === 'shipping') setShippingError(override.message)
           else if (override.field === 'note') setNoteError(override.message)
           else if (override.field === 'date') setDateError(override.message)

@@ -235,3 +235,40 @@ test("an edit preselects the product whose id is the entry's product_id", async 
   const field = await screen.findByRole('combobox')
   await waitFor(() => expect(field).toHaveDisplayValue(VARIETIES[1]!.name))
 })
+
+function stubStock(post: () => Response) {
+  const fetchMock = vi.fn((input: string | URL | Request, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input.toString()
+    if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
+    if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
+    if (url === '/stock/entries' && init?.method === 'POST') return Promise.resolve(post())
+    return Promise.resolve(jsonResponse(500, {}))
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  return fetchMock
+}
+
+test('a quantity finer than the unit is turned back with its sentence, keeps the text and sends nothing', async () => {
+  const fetchMock = stubStock(() => jsonResponse(201, {}))
+  renderForm(vi.fn())
+  await screen.findByText('Sir Jack')
+
+  await userEvent.type(screen.getByLabelText('Grams'), '1.5')
+  await userEvent.click(screen.getByRole('button', { name: 'Save the entry' }))
+
+  expect(await screen.findByText('Whole units only')).toBeInTheDocument()
+  expect(screen.getByLabelText('Grams')).toHaveValue('1.5')
+  expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false)
+})
+
+test('a server too-many-decimals answer shows at form level and keeps the typed quantity', async () => {
+  stubStock(() => jsonResponse(422, { code: 'quantity.too_many_decimals' }))
+  renderForm(vi.fn())
+  await screen.findByText('Sir Jack')
+
+  await userEvent.type(screen.getByLabelText('Grams'), '2')
+  await userEvent.click(screen.getByRole('button', { name: 'Save the entry' }))
+
+  expect(await screen.findByRole('alert')).toHaveTextContent('This quantity has too many decimals for its unit.')
+  expect(screen.getByLabelText('Grams')).toHaveValue('2')
+})

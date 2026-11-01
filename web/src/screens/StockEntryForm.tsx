@@ -18,6 +18,7 @@
 import { type FormEvent, Fragment, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { ApiError, NetworkError, UNKNOWN_CODE, get } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import { isGone, resolveOverride, type RefusalCode } from '../api/refusals'
@@ -167,6 +168,7 @@ export default function StockEntryForm({
   // The quantity has more decimals than the product's unit allows (checked here, or answered by the server).
   const [decimalsRefused, setDecimalsRefused] = useState(false)
   const sentence = useDecimalsSentence()
+  const { t } = useTranslation()
   const [offline, setOffline] = useState(false)
   const [sending, setSending] = useState(false)
   const [confirmingSave, setConfirmingSave] = useState(false)
@@ -260,7 +262,7 @@ export default function StockEntryForm({
         return
       }
       if (caught instanceof ApiError && caught.code === 'quantity.too_many_decimals') {
-        setDecimalsRefused(true)
+        setFormError(t('units:quantityRefused'))
       } else if (caught instanceof ApiError) {
         const message = resolveOverride(FIELD_OVERRIDES, caught.code)
         setFormError(message ?? (caught.code !== UNKNOWN_CODE ? GENERIC_REFUSAL : ERROR_GENERICO_MENSAJE))
@@ -384,8 +386,8 @@ export default function StockEntryForm({
                 }}
                 required
               />
-              {decimalsField}
             </label>
+            {decimalsField}
             <div className="campo">
               <div className="origen-pildoras">
                 <span className="pildora pildora--activa pildora--fija">{COMMON_TEXT.initialStock}</span>
@@ -429,8 +431,8 @@ export default function StockEntryForm({
                 }}
                 required
               />
-              {decimalsField}
             </label>
+            {decimalsField}
             <label className="campo">
               <span className="campo__rotulo">{COMMON_TEXT.variety}</span>
               <select

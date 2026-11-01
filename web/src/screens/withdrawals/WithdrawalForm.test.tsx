@@ -243,3 +243,16 @@ test('with two lines the form keeps the icon and text rule: Quitar is icon-only,
   expect(screen.queryByLabelText('Variety 2')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /^Remove variety/ })).not.toBeInTheDocument()
 })
+
+test('a quantity finer than the product unit shows its sentence under the field', async () => {
+  const whole = { id: 1, name: 'Zkittlez', current_price: null, unit: { id: 1, name: 'Pieces', label: 'pc', decimals: 0 } }
+  const fetchMock = renderWithdrawals(
+    [withdrawalNewFor(1)],
+    async () => jsonResponse(404, {}),
+    async () => jsonResponse(200, [whole]),
+  ).fetchMock
+  await userEvent.type(await screen.findByLabelText('Grams 1'), '1.5')
+  expect(await screen.findByText('Whole units only')).toBeInTheDocument()
+  expect(screen.getByLabelText('Grams 1')).toHaveValue('1.5')
+  expect(fetchMock.mock.calls.some(([, init]) => (init as RequestInit | undefined)?.method === 'POST')).toBe(false)
+})

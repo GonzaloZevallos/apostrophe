@@ -116,7 +116,7 @@ export default function PriceForm({
         onGone()
       } else if (caught instanceof ApiError) {
         const mapped = fieldOfCode(caught.code)
-        if (caught.code === 'quantity.too_many_decimals') setErrors({ bulkMinimum: sentence(decimals) })
+        if (caught.code === 'quantity.too_many_decimals') setErrors({ form: t('units:quantityRefused') })
         else if (mapped !== undefined) setErrors({ [mapped.field]: messageText(t, mapped.message) })
         else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') {
           setErrors({ form: GENERIC_REFUSAL_MESSAGE })
