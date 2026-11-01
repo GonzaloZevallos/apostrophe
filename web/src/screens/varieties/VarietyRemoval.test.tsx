@@ -271,7 +271,7 @@ describe('deleting', () => {
 
     expect(await screen.findByRole('button', { name: 'Archive product' })).toBeInTheDocument()
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
-    expect(screen.queryByText(/^Variedad (eliminada|archivada)$/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/^Product (deleted|archived)$/)).not.toBeInTheDocument()
     expect(reads(fetchMock, 'GET /api/products/2')).toBe(2)
   })
 })
@@ -313,7 +313,7 @@ describe('a dropped network or a failure', () => {
     await user.click(screen.getByRole('button', { name: 'Yes, archive it' }))
 
     expect(await screen.findByText(/offline/i)).toBeInTheDocument()
-    expect(screen.queryByText(/^Variedad (eliminada|archivada)$/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/^Product (deleted|archived)$/)).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Blue Dream' })).toBeInTheDocument()
   })
 })
