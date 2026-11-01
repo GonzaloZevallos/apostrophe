@@ -29,8 +29,8 @@ _Avoid_: product, strain, item, SKU
 _In the app_: Variety
 
 **Product**:
-El nombre de lo que vende un Business, en el código y en la API (`/api/products`, `product_id`), cualquiera sea la palabra que el Business use en pantalla. Variety sigue siendo la palabra de pantalla de los Businesses existentes, y los paths del front `/varieties/*` no cambian. Las columnas que referencian a la Variety siguen siendo `variety_id` hasta #75. El dominio y los puertos de los hexágonos que no son el de Products conservan nombres con variety hasta sus propias partes (ADR-0061). Decidido en docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md. Ver Variety.
-_Avoid_: item, SKU, article
+Lo que vende un Business, identificado por su nombre dentro de ese Business; es la única palabra para eso en el código, en la API (`/api/products`, `product_id`) y en pantalla, "Product" / "Products" para todo Business, sin ninguna configuración para otra palabra. Su Stock, sus Stock entries, sus precios, su aviso de Stock bajo y sus Catalog attributes están en su propia página, en la pestaña Products; sin Product history se puede eliminar, y con historial se archiva y restaura. Las columnas siguen siendo `variety_id` hasta #75 y los paths del front `/varieties/*` no cambian (ADR-0061).
+_Avoid_: variety, varieties, strain, item, SKU, article, product word
 
 **Price entry**:
 El List price de una Variety, y opcionalmente un Bulk price con su Bulk minimum, y opcionalmente un VIP price, que rige desde una fecha en adelante. Nunca se edita una vez que se registra: una Price entry posterior la reemplaza desde su propia fecha. Una Price entry equivocada se elimina, nunca se reescribe; una Sale no se ve afectada porque cada Sale line registra el precio al que se vendió. Una regla desactivada al momento de registrar no guarda nada para esa regla. Planned in GH-318 (not yet in the code): lo que cambia junto a esta Price entry se cuenta en el bloque de cierre de abajo. _In the app_: Price (price history).
@@ -386,7 +386,7 @@ La estructura fija de la app para un Business: las pestañas, More, Settings, y 
 _Avoid_: menu, sitemap, routing, shell
 
 **Tab root**:
-Una pantalla a la que se llega directo desde la barra o la barra lateral (Home, Sales, Customers, Varieties, Expenses, Analysis, More); muestra la barra y "+ New sale". Cualquier otra pantalla es una tarjeta o un detalle (con una flecha de regreso a su pantalla madre) o un formulario o una Sheet (con "Close").
+Una pantalla a la que se llega directo desde la barra o la barra lateral (Home, Sales, Customers, Products, Expenses, Analysis, More); muestra la barra y "+ New sale". Cualquier otra pantalla es una tarjeta o un detalle (con una flecha de regreso a su pantalla madre) o un formulario o una Sheet (con "Close").
 _Avoid_: home, main screen, section
 
 **Settings**:
@@ -398,7 +398,7 @@ Cuatro pasos en Home para un Business que existía antes de que saliera el Onboa
 _Avoid_: tour, wizard, setup guide, welcome, Onboarding (that is a brand-new business's first run)
 
 **Onboarding**:
-La configuración paso a paso por la que se guía a un Business recién creado una vez que se acepta su Invitation de Business nuevo, en lugar de la First-run checklist. Tiene dos pasos obligatorios (una Variety con precio para hoy, su Opening stock) y otros opcionales (Catalog header and footer, bot de Telegram, un socio, Expense categories), y cada uno guarda lo que guardan Settings o la página de la Variety. Retoma donde quedó, termina para siempre una vez que se llega a su pantalla de cierre "Done" o un Spreadsheet import carga el Business, y nunca se ofrece en el Business de un User que se sumó ni en uno que existía antes de que saliera.
+La configuración paso a paso por la que se guía a un Business recién creado una vez que se acepta su Invitation de Business nuevo, en lugar de la First-run checklist. Tiene dos pasos obligatorios (un Product con precio para hoy, su Opening stock) y otros opcionales (Catalog header and footer, bot de Telegram, un socio, Expense categories); nunca pregunta cómo se llama lo que vende el Business ni pide una Unit. Retoma donde quedó, termina para siempre al llegar a su pantalla "Done" o cuando un Spreadsheet import carga el Business, y nunca se ofrece en el Business de un User que se sumó ni en uno que existía antes de que saliera.
 _Avoid_: tour, wizard, welcome screen, setup guide
 
 **Theme choice**:
@@ -578,3 +578,15 @@ _Avoid_: logo, title, brand name, Business name
 **Tabular figures**:
 Cifras de ancho fijo que se alinean dígito por dígito, aplicadas a dinero, cantidades, porcentajes mostrados como cifra y Days left mediante las clases de cifra y la del componente de dinero. Nunca se aplican a fechas, horas, Phone numbers, conteos dentro de una oración ni texto libre. Un número va en Tabular figures si el ojo lo recorre en una columna, una fila de cifras o un total. En la app: no tiene palabra propia.
 _Avoid_: monospace, number font, alignment
+
+**Product history**:
+Cualquier Sale line de un Product (los Gifts y los Special prices incluidos), cualquier Stock entry de él (de cualquier origen, un Adjustment de cualquiera de los dos signos incluido) o cualquier línea de Stock withdrawal de él; se calcula en el momento y nunca se guarda. Un Product con historial solo se puede archivar; uno sin historial se puede eliminar para siempre, y sus Price entries, su Low-stock threshold y sus Catalog attributes se van con él.
+_Avoid_: variety history, usage, activity, movements, references
+
+**Archived product**:
+Un Product que quien vende sacó de toda lista y selector (Products, What you have left, New sale, los formularios de Stock entry y de Price entry, el Catalog y el Pinned catalog), mientras que todo registro pasado conserva su nombre y sus cifras tal cual. Conserva reservado su nombre y su marca de Hidden product, se ve y se restaura solo desde Archived, tiene una página de solo lectura y al restaurarlo vuelve exactamente como estaba. En la app: Archived.
+_Avoid_: archived variety, deleted, hidden, inactive, disabled
+
+**Hidden product**:
+Un Product que quien vende eligió dejar fuera del Catalog, sin importar su precio o su Stock; sigue figurando en Products y en todos los selectores. Un Product que queda afuera por falta de precio o de Stock no está oculto, y un Archived product es otra cosa que conserva su marca de Hidden product. En la app: Hidden.
+_Avoid_: hidden variety, inactive, disabled, archived
