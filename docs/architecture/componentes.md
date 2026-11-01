@@ -50,7 +50,7 @@ El diagrama de clases de cada capacidad lo genera [scripts/docs/generate.py](../
 | sales | [sales](../../app/sales/application/ports.py) `Sales` `PriceBook` `CustomerFacts` | [sales](generated/classes/sales.md) |
 | spreadsheet_import | [spreadsheet_import](../../app/spreadsheet_import/application/ports.py) `VarietiesImport` `SalesImport` `UnitsImport` | [spreadsheet_import](generated/classes/spreadsheet_import.md) |
 | stock | [stock](../../app/stock/application/ports.py) `StockEntries` `Withdrawals` `VarietyCatalog` | [stock](generated/classes/stock.md) |
-| units | [units](../../app/units/application/ports.py) `Units` | [units](generated/classes/units.md) |
+| units | [units](../../app/units/application/ports.py) `Units` `UnitUse` (implemented by products; counts a unit's products) · clause builders of type FinerQuantity (sales, stock and products hand one per quantity column to units through `app.state.units_finer_quantities`, composed in `app/main.py`; [sql_units.py](../../app/units/adapters/sql_units.py)) | [units](generated/classes/units.md) |
 | shared | sin puertos de negocio: [transaction.py](../../app/shared/transaction.py) `Transaction` | [shared](generated/classes/shared.md) |
 
 Un ejemplo de punta a punta, con las llamadas en orden, está en [flujos-clave.md](flujos-clave.md).

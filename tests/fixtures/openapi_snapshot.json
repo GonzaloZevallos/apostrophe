@@ -2660,6 +2660,30 @@
         "title": "PricingSettingsBody",
         "type": "object"
       },
+      "ProductCreateIn": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "ProductCreateIn",
+        "type": "object"
+      },
       "ProductDetailOut": {
         "description": "One product's page: also the one removal action it offers, worked out from history\nwhen it is read (`null` for an archived product).",
         "properties": {
@@ -2699,6 +2723,9 @@
               }
             ],
             "title": "Removal"
+          },
+          "unit": {
+            "$ref": "#/components/schemas/app__products__adapters__schemas__UnitOut"
           }
         },
         "required": [
@@ -2706,22 +2733,10 @@
           "name",
           "current_price",
           "archived",
+          "unit",
           "removal"
         ],
         "title": "ProductDetailOut",
-        "type": "object"
-      },
-      "ProductIn": {
-        "properties": {
-          "name": {
-            "title": "Name",
-            "type": "string"
-          }
-        },
-        "required": [
-          "name"
-        ],
-        "title": "ProductIn",
         "type": "object"
       },
       "ProductOut": {
@@ -2747,15 +2762,48 @@
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "unit": {
+            "$ref": "#/components/schemas/app__products__adapters__schemas__UnitOut"
           }
         },
         "required": [
           "id",
           "name",
           "current_price",
-          "archived"
+          "archived",
+          "unit"
         ],
         "title": "ProductOut",
+        "type": "object"
+      },
+      "ProductPatchIn": {
+        "description": "A rename or a unit change, never both: the unit change is one guarded statement\nof its own, so it never shares a transaction with another edit.",
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id"
+          }
+        },
+        "title": "ProductPatchIn",
         "type": "object"
       },
       "ProductRowOut": {
@@ -3776,6 +3824,69 @@
         "title": "ThresholdIn",
         "type": "object"
       },
+      "UnitIn": {
+        "properties": {
+          "decimals": {
+            "title": "Decimals",
+            "type": "integer"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "label",
+          "decimals"
+        ],
+        "title": "UnitIn",
+        "type": "object"
+      },
+      "UnitPatch": {
+        "description": "Every field optional: what is left out stays as it is.",
+        "properties": {
+          "decimals": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decimals"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "UnitPatch",
+        "type": "object"
+      },
       "UserOut": {
         "properties": {
           "email": {
@@ -4174,6 +4285,34 @@
         "title": "DebtorOut",
         "type": "object"
       },
+      "app__products__adapters__schemas__UnitOut": {
+        "properties": {
+          "decimals": {
+            "title": "Decimals",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "label",
+          "decimals"
+        ],
+        "title": "UnitOut",
+        "type": "object"
+      },
       "app__results__adapters__schemas__DebtorOut": {
         "properties": {
           "balance": {
@@ -4201,6 +4340,39 @@
           "owing_since"
         ],
         "title": "DebtorOut",
+        "type": "object"
+      },
+      "app__units__adapters__schemas__UnitOut": {
+        "properties": {
+          "decimals": {
+            "title": "Decimals",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "product_count": {
+            "title": "Product Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "label",
+          "decimals",
+          "product_count"
+        ],
+        "title": "UnitOut",
         "type": "object"
       }
     },
@@ -4346,7 +4518,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ProductIn"
+                "$ref": "#/components/schemas/ProductCreateIn"
               }
             }
           },
@@ -4470,7 +4642,8 @@
         ]
       },
       "patch": {
-        "operationId": "rename_product_api_products__product_id__patch",
+        "description": "Renames the product, or gives it another unit (never both in one request).",
+        "operationId": "patch_product_api_products__product_id__patch",
         "parameters": [
           {
             "in": "path",
@@ -4486,7 +4659,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ProductIn"
+                "$ref": "#/components/schemas/ProductPatchIn"
               }
             }
           },
@@ -4519,7 +4692,7 @@
             "HTTPBearer": []
           }
         ],
-        "summary": "Rename Product",
+        "summary": "Patch Product",
         "tags": [
           "products"
         ]
@@ -4836,6 +5009,175 @@
         "summary": "Restore Product",
         "tags": [
           "products"
+        ]
+      }
+    },
+    "/api/units": {
+      "get": {
+        "operationId": "list_units_api_units_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/app__units__adapters__schemas__UnitOut"
+                  },
+                  "title": "Response List Units Api Units Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Units",
+        "tags": [
+          "units"
+        ]
+      },
+      "post": {
+        "operationId": "add_unit_api_units_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnitIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app__units__adapters__schemas__UnitOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Unit",
+        "tags": [
+          "units"
+        ]
+      }
+    },
+    "/api/units/{unit_id}": {
+      "delete": {
+        "operationId": "remove_unit_api_units__unit_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "unit_id",
+            "required": true,
+            "schema": {
+              "title": "Unit Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Remove Unit",
+        "tags": [
+          "units"
+        ]
+      },
+      "patch": {
+        "operationId": "edit_unit_api_units__unit_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "unit_id",
+            "required": true,
+            "schema": {
+              "title": "Unit Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnitPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app__units__adapters__schemas__UnitOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Edit Unit",
+        "tags": [
+          "units"
         ]
       }
     },

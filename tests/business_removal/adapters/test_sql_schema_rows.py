@@ -166,7 +166,7 @@ def _seed_withdrawal(client: TestClient, variety_id: int) -> None:
             "date": "2026-01-01",
             "lines": [
                 {"product_id": variety_id, "quantity": "5"},
-                {"product_id": variety_id, "quantity": "1.5"},
+                {"product_id": variety_id, "quantity": "1"},
             ],
         },
     )

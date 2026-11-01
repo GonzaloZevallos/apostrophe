@@ -32,6 +32,7 @@ Cada capacidad tiene su página en [docs/product/](product/):
 - [Stock](product/stock.md)
 - [Stored language](product/stored-language.md)
 - [Elección de tema y paleta](product/theme-choice.md)
+- [Units](product/units.md)
 - [Varieties](product/varieties.md)
 
 El contrato de diseño del front está en [el sistema de diseño](product/design-system/).
