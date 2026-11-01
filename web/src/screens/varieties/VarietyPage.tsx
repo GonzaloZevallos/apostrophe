@@ -55,6 +55,7 @@ import type { PriceRow } from './PriceRows'
 import CatalogAttributesForm from './CatalogAttributesForm'
 import RenameForm from './RenameForm'
 import ThresholdForm from './ThresholdForm'
+import VarietyUnitSection from './VarietyUnitSection'
 import VarietyCatalogSection from './VarietyCatalogSection'
 import { readForm, useOpenForm } from './varietyForms'
 import VarietyRemoval from './VarietyRemoval'
@@ -292,6 +293,8 @@ function VarietyPageView({
         )}
 
         {formSheet}
+
+        <VarietyUnitSection varietyId={varietyId} unit={variety.unit} removal={variety.removal} archived={archived} />
 
         {archived ? (
           <>

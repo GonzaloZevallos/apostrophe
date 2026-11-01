@@ -37,12 +37,14 @@ const VARIETY_ONE = pathTo(VARIETY, { id: 1 })
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN }
 
+const UNIT = { id: 4, name: 'Kilos', label: 'kg', decimals: 2 }
 const VARIETY_ROW = {
   id: 1,
   name: '24K Gold',
+  unit: UNIT,
   current_price: { id: 3, effective_from: '2026-09-25', list_price: 11000, bulk_price: 10000, bulk_minimum: 10, vip_price: 9000 },
 }
-const NO_PRICE_ROW = { id: 1, name: '24K Gold', current_price: null }
+const NO_PRICE_ROW = { id: 1, name: '24K Gold', unit: UNIT, current_price: null }
 
 const PRICES = [
   { id: 4, effective_from: '2026-10-01', list_price: 12000, bulk_price: null, bulk_minimum: null, vip_price: null },
@@ -219,7 +221,7 @@ describe('the summary line', () => {
 
 describe("the page's product id against the catalog's product_id", () => {
   const TWO = pathTo(VARIETY, { id: 2 })
-  const TWO_ROW = { id: 2, name: 'Otra', current_price: null }
+  const TWO_ROW = { id: 2, name: 'Otra', unit: UNIT, current_price: null }
 
   function answersFor(two: Answers): Answers {
     return {
@@ -1078,5 +1080,59 @@ describe('In the catalog: the form', () => {
     await screen.findByLabelText('Aroma/flavor')
 
     for (const input of screen.getAllByRole('textbox')) expect(input).not.toHaveAttribute('maxLength')
+  })
+})
+
+describe('the unit of the product', () => {
+  const UNITS = [
+    { ...UNIT, product_count: 1 },
+    { id: 5, name: 'Pieces', label: 'pc', decimals: 0, product_count: 0 },
+  ]
+  const WITH_UNITS = { 'GET /api/units': () => json(200, UNITS) }
+
+  test('a product without history can be given another unit: one PATCH with only the unit id', async () => {
+    const { fetchMock } = renderPage(VARIETY_ONE, {
+      ...WITH_UNITS,
+      'GET /api/products/1': () => json(200, { ...VARIETY_ROW, removal: 'delete' }),
+      'PATCH /api/products/1': () => new Response(null, { status: 204 }),
+    })
+    const select = await screen.findByRole('combobox', { name: 'Unit' })
+    await waitFor(() => expect(within(select).getByRole('option', { name: 'Pieces' })).toBeInTheDocument())
+    await userEvent.selectOptions(select, 'Pieces')
+    await waitFor(() => expect(writes(fetchMock)).toContain('PATCH /api/products/1'))
+    const patch = fetchMock.mock.calls.find(([, init]) => (init as RequestInit | undefined)?.method === 'PATCH')
+    expect(JSON.parse((patch?.[1] as RequestInit).body as string)).toEqual({ unit_id: 5 })
+  })
+
+  test('a refused change shows the field sentence for unit_decimals_in_use', async () => {
+    renderPage(VARIETY_ONE, {
+      ...WITH_UNITS,
+      'GET /api/products/1': () => json(200, { ...VARIETY_ROW, removal: 'delete' }),
+      'PATCH /api/products/1': () => json(409, { code: 'product.unit_decimals_in_use' }),
+    })
+    const select = await screen.findByRole('combobox', { name: 'Unit' })
+    await waitFor(() => expect(within(select).getByRole('option', { name: 'Pieces' })).toBeInTheDocument())
+    await userEvent.selectOptions(select, 'Pieces')
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'This unit allows fewer decimals than the minimums and the Warn below value of this product already use.',
+    )
+  })
+
+  test('with history the unit is read-only and says why', async () => {
+    renderPage(VARIETY_ONE, { ...WITH_UNITS, 'GET /api/products/1': () => json(200, { ...VARIETY_ROW, removal: 'archive' }) })
+    expect(await screen.findByText('It has recorded sales, stock or withdrawals.')).toBeInTheDocument()
+    expect(screen.queryByRole('combobox', { name: 'Unit' })).not.toBeInTheDocument()
+    expect(screen.getByText('Kilos')).toBeInTheDocument()
+  })
+
+  test('an archived product shows the unit read-only with no reason', async () => {
+    renderPage(VARIETY_ONE, {
+      ...WITH_UNITS,
+      'GET /api/products/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
+      'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
+    })
+    expect(await screen.findByText('Kilos')).toBeInTheDocument()
+    expect(screen.queryByRole('combobox', { name: 'Unit' })).not.toBeInTheDocument()
+    expect(screen.queryByText('It has recorded sales, stock or withdrawals.')).not.toBeInTheDocument()
   })
 })
