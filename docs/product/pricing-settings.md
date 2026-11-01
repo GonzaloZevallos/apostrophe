@@ -12,9 +12,9 @@ Lo que hace cada regla lo define la capacidad a cargo, y cada una sigue los inte
 
 ## Jobs
 
-**Cuando** configuro cómo pone precios mi negocio, registro el precio de una variedad o entrego un pedido, **quiero** que la app use solo las Pricing rules que tiene mi negocio (un Bulk price si vendo por cantidad, y un VIP price que fijo por variedad si tengo VIP customers), **para** cobrarle a cada cliente exactamente lo que quiero sin tipear un **Special price** a mano, sin ver campos que no me corresponden y sin que el precio de nadie cambie por sorpresa.
+**Cuando** configuro cómo pone precios mi negocio, registro el precio de un producto o entrego un pedido, **quiero** que la app use solo las Pricing rules que tiene mi negocio (un Bulk price si vendo por cantidad, y un VIP price que fijo por producto si tengo VIP customers), **para** cobrarle a cada cliente exactamente lo que quiero sin tipear un **Special price** a mano, sin ver campos que no me corresponden y sin que el precio de nadie cambie por sorpresa.
 
-La protagonista es quien vende. Afina los jobs de ventas y de variedades; no es un job nuevo. Las configuraciones son raras y deliberadas. El formulario de precio, el formulario de cliente y New sale las siguen.
+La protagonista es quien vende. Afina los jobs de ventas y de productos; no es un job nuevo. Las configuraciones son raras y deliberadas. El formulario de precio, el formulario de cliente y New sale las siguen.
 
 **Cuando** necesito cambiar cómo está configurado mi negocio, **quiero** cada configuración de todo el negocio en un solo lugar, cada una en su propia pantalla corta, **para** cambiarla en pocos toques desde el celular y volver con el cliente. (El job de Settings, navigation.md: lo sirve acá el grupo Prices.)
 
@@ -23,16 +23,16 @@ Sin esto, quienes venden dejan en blanco los campos de Bulk y VIP que no usan, y
 Criterios de éxito:
 
 1. **Solo se ven mis reglas.**
-   - Con una regla desactivada, nada de ella aparece en el formulario de precio, la página de la **Variety**, la marca VIP del formulario de **Customer**, New sale ni el texto del Catalog.
+   - Con una regla desactivada, nada de ella aparece en el formulario de precio, la página de el **Product**, la marca VIP del formulario de **Customer**, New sale ni el texto del Catalog.
    - Una **Sale** recibe precio como si la regla no existiera.
    - Con las dos desactivadas, una Sale recibe precio solo por **List price**. **Gift** y Special price siguen funcionando.
 2. **Mi VIP price, nunca peor que el normal.** A un VIP customer se le cobra el menor de los precios de las reglas que se aplican a la línea:
    - el List price;
    - el Bulk price, cuando Bulk está activado y la línea llega al **Bulk minimum**;
-   - el VIP price de la Variety, cuando VIP está activado y la Price entry de ese día tiene uno.
+   - el VIP price del Product, cuando VIP está activado y la Price entry de ese día tiene uno.
 
-   Una Variety sin VIP price le cobra a un VIP customer como a cualquier otro. La vista previa en vivo muestra el mismo precio antes de guardar.
-3. **El precio de nadie se mueve por sorpresa.** Después del cambio, a cada VIP customer existente se le cobra exactamente lo que se le cobraba antes, por la misma Variety, día y gramos. No cambia el precio, la regla ni el total de ninguna Sale pasada, hagan lo que hagan después los interruptores.
+   Un Product sin VIP price le cobra a un VIP customer como a cualquier otro. La vista previa en vivo muestra el mismo precio antes de guardar.
+3. **El precio de nadie se mueve por sorpresa.** Después del cambio, a cada VIP customer existente se le cobra exactamente lo que se le cobraba antes, por el mismo Product, día y gramos. No cambia el precio, la regla ni el total de ninguna Sale pasada, hagan lo que hagan después los interruptores.
 4. **Cambiar de interruptor no pierde nada.** Desactivar una regla y volver a activarla trae de vuelta cada Bulk price, VIP price y marca VIP guardados. Solo las Sales y las Price entries registradas mientras estaba desactivada quedan sin ella.
 5. **Los Customers nunca ven el VIP price.** El Catalog nunca lo muestra. Su línea de Bulk se muestra solo mientras Bulk price está activado.
 6. **Rápido.** Cada interruptor se cambia en pocos toques desde Settings → Prices. Registrar una Sale sigue llevando menos de un minuto.
@@ -62,14 +62,14 @@ Criterios de éxito:
 ### En pantalla: Settings → Prices
 
 - **Lugar**: un grupo de Settings (navigation.md), después de Users y antes de Integrations.
-- **Ruta**: `/settings/prices`, fijada en `scripts/design/screens.json`. No hay otro acceso: no se llega desde la página de una Variety ni desde el formulario de precio.
+- **Ruta**: `/settings/prices`, fijada en `scripts/design/screens.json`. No hay otro acceso: no se llega desde la página de un Product ni desde el formulario de precio.
 - **Un formulario**:
   - "Close", y una confirmación al salir con cambios sin guardar; un grupo sin tocar se cierra de inmediato;
   - dos interruptores, "Bulk price" y "VIP customers", cada uno marcado como activado o desactivado por palabra o forma y `aria-checked`, nunca solo por color;
   - el botón "Save the prices";
   - si sale bien, el toast "Prices saved", que no lleva datos.
 - **Una línea fija** dice que las Sales pasadas conservan el precio con el que se registraron, y que desactivar una regla no elimina nada.
-- **Una línea de ayuda fija bajo el interruptor VIP**, que se muestra esté activado o desactivado: "Each variety needs its VIP price: without it, a VIP customer pays like anyone else." No hay conteo, ni lista, ni aviso en ningún otro lado.
+- **Una línea de ayuda fija bajo el interruptor VIP**, que se muestra esté activado o desactivado: "Each product needs its VIP price: without it, a VIP customer pays like anyone else." No hay conteo, ni lista, ni aviso en ningún otro lado.
 - **Upkeep**: un guardado que cambia cualquiera de los dos interruptores lo dispara (pinned-catalog.md), porque la línea de Bulk del Catalog depende de Bulk price.
 - **Avisos**: un grupo que ya no existe, la falta de red y los errores del servidor siguen accounts.md.
 
@@ -88,11 +88,11 @@ El **Business export** (accounts.md) guarda los dos interruptores tal como está
 - **Migración (criterio 3)**:
   - los Businesses existentes terminan con los dos interruptores activados;
   - cada Price entry con un Bulk price tiene VIP price = Bulk price;
-  - para cada VIP customer existente, el precio, la regla y el total de una Sale son iguales a lo que eran antes, por la misma Variety, día y gramos: 0 diferencias.
+  - para cada VIP customer existente, el precio, la regla y el total de una Sale son iguales a lo que eran antes, por el mismo Product, día y gramos: 0 diferencias.
 - **Valores por defecto**: un Business abierto con una **Invitation** de Business nuevo tiene los dos interruptores desactivados.
 - **Cambiar de interruptor no pierde nada (criterio 4)**: después de desactivar y volver a activar, cada Bulk price, VIP price y marca VIP guardados se leen como antes, incluido un Customer editado mientras VIP estaba desactivado.
 - **Inmutabilidad del precio guardado (criterio 3)**: después de cualquier cambio de interruptor, el precio, la regla y el total de las líneas existentes no cambian.
-- **Las pantallas siguen los interruptores (criterio 1)**: tests del front muestran, con cada interruptor desactivado, ningún rastro de él en el formulario de precio, la página de la Variety, el formulario, la ficha y la lista de Customers, el badge de Sales, New sale ni el Catalog. Los badges registrados en el detalle de una Sale se mantienen.
+- **Las pantallas siguen los interruptores (criterio 1)**: tests del front muestran, con cada interruptor desactivado, ningún rastro de él en el formulario de precio, la página del Product, el formulario, la ficha y la lista de Customers, el badge de Sales, New sale ni el Catalog. Los badges registrados en el detalle de una Sale se mantienen.
 - **Grupo Prices (criterio 6)**:
   - tests del front cubren "Close", la confirmación de cambios sin guardar, un cierre sin tocar, "Save the prices", "Prices saved", las dos líneas fijas, su lugar y su ruta, y la ausencia de cualquier otro acceso;
   - Prices se abre en 2 toques como máximo desde cualquier **Tab root**;
@@ -108,7 +108,7 @@ El **Business export** (accounts.md) guarda los dos interruptores tal como está
 - Precios promocionales por fecha.
 - El Onboarding, incluido con qué arranca un Business nuevo.
 - Rechazar o avisar en una Sale porque los interruptores cambiaron en medio de la Sale.
-- Un aviso o conteo de Varieties sin VIP price.
+- Un aviso o conteo de Products sin VIP price.
 - Roles o permisos para cambiar los interruptores.
 - Aplicar al tocar, como hace Appearance: los interruptores cambian el precio de cada Sale nueva para cada socio, así que se guardan de forma explícita.
 

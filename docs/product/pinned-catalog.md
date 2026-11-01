@@ -9,7 +9,7 @@ Where its pieces live (navigation.md):
 
 ## Jobs
 
-**When** something changes what my catalog says (a price is recorded or deleted, a variety sells out or comes back, I hide, archive, restore or edit a variety, I change the header or footer, I switch bulk pricing on or off), **I want** the catalog pinned in my business's Telegram chat to update by itself, after I've seen a test copy in my own chat before customers do, **so** my customers never see a stale price or a variety I can't sell, and I never have to remember to copy, paste and pin it again.
+**When** something changes what my catalog says (a price is recorded or deleted, a product sells out or comes back, I hide, archive, restore or edit a product, I change the header or footer, I switch bulk pricing on or off), **I want** the catalog pinned in my business's Telegram chat to update by itself, after I've seen a test copy in my own chat before customers do, **so** my customers never see a stale price or a product I can't sell, and I never have to remember to copy, paste and pin it again.
 
 **When** I connect my bot in Settings → Integrations and tap Test it, **I want** it to tell me, if it fails, in one sentence what I have to fix (the token, my chat not started, or my chat number), **so I can** fix it from my phone, test again and get to publishing the catalog without guessing or asking anyone for help.
 
@@ -19,7 +19,7 @@ This refines the setup step of the first job (the test copy before customers see
 
 **When** I need to change how my business is set up (rename it, bring in a partner, connect or switch the Telegram bot, edit the catalog's header and footer, manage my expense categories, switch to dark, change my password or log out), **I want** every business-wide setting in one place, each in its own short screen, **so I can** change it in a few taps from my phone and get back to the customer, without wondering which screen holds it. (Served here by Integrations: the bot's token, chats, Find my chat and Test it, and a way forward to publish.)
 
-**When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if it never moved and archiving it if it has history, **so** my lists show only what I still sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly as it was if I start selling it again. (Served here by archiving and restoring being upkeep triggers; defined in varieties.md.)
+**When** a product I loaded by mistake, or one I no longer work with, keeps showing in my lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if it never moved and archiving it if it has history, **so** my lists show only what I still sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly as it was if I start selling it again. (Served here by archiving and restoring being upkeep triggers; defined in varieties.md.)
 
 **When** a restyle of a screen like Integrations is up for approval, **I want** a before and after comparison of that screen, captured the same way from the code without and with the change, **so I can** tell that only the intended thing changed, and that what the seller does there (token, chats, Find my chat, Test it, the help lines and reasons, the link to the catalog screen) still reads and works as before, and approve with confidence.
 
@@ -111,7 +111,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
 | Own chat not started, or the seller blocked the bot (403) | "Open your bot in Telegram and tap Start, then test it again." |
 | Own chat not found (400 "chat not found"): a wrong number, or a right number whose chat was never started, which Telegram does not tell apart | "We could not find your chat: check the number and tap Start in your bot." |
 | Telegram down, 429 or no connection | "Telegram did not respond" |
-| Text over Telegram's limit | "It is too long for Telegram: shorten aromas or hide varieties." |
+| Text over Telegram's limit | "It is too long for Telegram: shorten aromas or hide products." |
 | Any other failure | "We could not send you the test: check the token and your chat." |
 
 - **None of Test it's reasons mentions the channel.** Reasons depend on the action, not only on Telegram's answer.
@@ -128,7 +128,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
   - On success it shows the toast "Catalog published".
 - **Failure**:
   - A wrong channel, or a bot that can't post or pin there, fails inline with a fixed reason that never repeats what was typed. A 401, 403 or 400 against the channel reads "The bot cannot post in the channel", as before; Publish has no token reason of its own.
-  - A text over Telegram's limit fails inline with "It is too long for Telegram: shorten aromas or hide varieties." Nothing is sent.
+  - A text over Telegram's limit fails inline with "It is too long for Telegram: shorten aromas or hide products." Nothing is sent.
 
 ### Upkeep (automatic sync)
 
@@ -136,14 +136,14 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
 - **Triggers**:
   - price entries recorded or deleted;
   - catalog attributes, header or footer;
-  - a variety renamed;
-  - a variety archived or restored (varieties.md);
+  - a product renamed;
+  - a product archived or restored (varieties.md);
   - stock entries recorded, edited or deleted;
   - stock withdrawals recorded, edited or deleted;
   - sales recorded or deleted, Undo included;
   - a save of Settings → Prices that changes either pricing switch (pricing-settings.md), since the bulk line depends on Bulk price;
   - the start of a new day in Argentina time, for price entries that come into force that day.
-- **Rule**: the text is rebuilt on a trigger. The pinned message is edited only if the new text differs from the last text published. Topping up a variety already in the catalog, or withdrawing grams that leave it with stock above zero, sends nothing.
+- **Rule**: the text is rebuilt on a trigger. The pinned message is edited only if the new text differs from the last text published. Topping up a product already in the catalog, or withdrawing grams that leave it with stock above zero, sends nothing.
 - **It only ever edits.** Upkeep never posts a new message, even when the old one was deleted by hand.
 - **The triggering save never waits for Telegram**:
   - it answers and shows its own toast on its own terms;
@@ -162,7 +162,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
     - "The bot cannot post in the channel": the bot was removed or isn't an admin, and the seller must fix it in Telegram;
     - "The pinned message is gone: publish it again": the message was deleted by hand;
     - "It still has to be published with the new bot or channel": a token or channel change was tested and saved, but not yet published;
-    - "It is too long for Telegram: shorten aromas or hide varieties.": the text exceeds Telegram's limit.
+    - "It is too long for Telegram: shorten aromas or hide products.": the text exceeds Telegram's limit.
 - **"The last one was on dd/mm"**: shows whenever the current channel chat has been published to. After a token or channel change, it is left out until the first Publish there.
 - **What it reflects**: the result of the last attempt, or the unpublished token or channel change. There is no pending state: while a sync runs, the previous state stays.
 - **Not affected by Test it or Find my chat**: their failures never change the status.
@@ -178,7 +178,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
 - The pin, Test it and Publish use: the header, then "Nothing to offer for now.", then the footer. A blank header or footer is left out.
 - This counts as "Up to date".
 - The catalog screen's own empty state and Copy are unchanged: there is nothing to copy (catalog.md).
-- When a variety qualifies again, upkeep restores the full catalog.
+- When a product qualifies again, upkeep restores the full catalog.
 
 ### Changing the channel or the token
 
@@ -189,7 +189,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
 
 ### The text
 
-- Exactly the catalog text from the one author (ADR-0022), which never includes an archived variety, never carries a VIP price and carries the bulk line only while Bulk price is on (catalog.md).
+- Exactly the catalog text from the one author (ADR-0022), which never includes an archived product, never carries a VIP price and carries the bulk line only while Bulk price is on (catalog.md).
 - `**` markers become real Telegram bold, paired left to right. A final unpaired `**` shows as typed.
 - The test copy and the published copy are identical for the same data.
 - **Length**: measured as Telegram measures it, on the message as sent. Over Telegram's limit it is never split or cut; it is refused, as above.
@@ -223,7 +223,7 @@ Setup (token, chats, Find my chat, first Test it and Publish) is judged by crite
 
 ## Metrics
 
-- **Trigger matrix (criterion 1)**: for every trigger, stock withdrawals, the day change, archiving and restoring a variety and a Prices save included, an edit is attempted exactly when the built text differs from the last one published. A withdrawal that takes a variety's stock to zero or below edits the pin; one that leaves the text unchanged sends nothing. Switching Bulk price on a business with a bulk price in force edits the pin; switching only VIP customers sends nothing, since the text does not change. 100% passing.
+- **Trigger matrix (criterion 1)**: for every trigger, stock withdrawals, the day change, archiving and restoring a product and a Prices save included, an edit is attempted exactly when the built text differs from the last one published. A withdrawal that takes a product's stock to zero or below edits the pin; one that leaves the text unchanged sends nothing. Switching Bulk price on a business with a bulk price in force edits the pin; switching only VIP customers sends nothing, since the text does not change. 100% passing.
 - **One message per chat (criterion 2)**:
   - one post per channel chat, then edits only: 0 new posts while that message exists;
   - a channel or token change gives exactly one new post, and 0 later calls against the old message;

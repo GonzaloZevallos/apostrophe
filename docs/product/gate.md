@@ -54,7 +54,7 @@ Criterios de éxito:
 
 **Cuando** un cambio arregla algunos nodos que fallan en una pantalla y, como resultado, un nodo que falla, no tocado y con el mismo texto enmascarado, cambia su ordinal de target, **quiero** (como el Developer que hace ese cambio, o el revisor que lo aprueba) una regla escrita que deje que el mismo cambio reemplace la clave vieja por la nueva, **para que** arreglar infractores nunca quede bloqueado ni escalado porque el conteo renombró un nodo que nadie tocó.
 
-Antes de esto (GH-297 parte 1), el ordinal de un target (por ejemplo `span:$ #.#.#[2]`) contaba solo los nodos que fallan en la pantalla con el mismo texto enmascarado, en orden de página. Arreglar algunos en Analysis podía renumerar un monto por Variety no tocado, y la clave vieja y la nueva se leían como una entrada quitada más una agregada, algo que las reglas no cubrían.
+Antes de esto (GH-297 parte 1), el ordinal de un target (por ejemplo `span:$ #.#.#[2]`) contaba solo los nodos que fallan en la pantalla con el mismo texto enmascarado, en orden de página. Arreglar algunos en Analysis podía renumerar un monto por Product no tocado, y la clave vieja y la nueva se leían como una entrada quitada más una agregada, algo que las reglas no cubrían.
 
 Criterios de éxito:
 
@@ -168,7 +168,7 @@ El ordinal de un target (`[n]`) cuenta solo los nodos que fallan en la pantalla 
   3. **Sin crecimiento neto.** Para esa pantalla, regla y texto enmascarado, no hay más entradas después del cambio que antes.
   4. **El nodo no se tocó.** El markup propio del nodo renumerado no está en el diff de código del cambio.
 - **Si no, es crecimiento.** Un cambio de clave que no cumple alguna de estas condiciones es una entrada agregada como cualquier otra. Se arregla en el mismo cambio o se escala, nunca se lista.
-- **Registrado.** GH-297 parte 1 (Analysis) es el primer caso: montos por Variety no tocados podían renumerarse cuando la franja de resumen, las filas de costo y el bloque "since the first record" dejaron de fallar. Esos canjes de clave conservan #48 y se listan en los targets movidos del cambio como `clave vieja → clave nueva`.
+- **Registrado.** GH-297 parte 1 (Analysis) es el primer caso: montos por Product no tocados podían renumerarse cuando la franja de resumen, las filas de costo y el bloque "since the first record" dejaron de fallar. Esos canjes de clave conservan #48 y se listan en los targets movidos del cambio como `clave vieja → clave nueva`.
 
 #### Común a los tres
 

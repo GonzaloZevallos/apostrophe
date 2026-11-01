@@ -101,7 +101,7 @@ Criterios de éxito:
     - "Left owing" para una Sale que quedó debiendo;
     - "Nothing to pay" para una Sale cuyo total es $0, saldada sin método y sin nada debido (sales.md).
 
-    La fila no nombra ninguna **Variety** ni gramos: el detalle de la Sale los tiene (sales.md).
+    La fila no nombra ningún **Product** ni gramos: el detalle de la Sale los tiene (sales.md).
   - **Un Payment posterior**: una fila por cada Sale que alcanza, cada una titulada "Payment · <method>" con la sublínea "On account of the sale of dd/mm" y el monto aplicado a esa Sale.
   - **Cualquier parte de un Payment más allá de todas las deudas**: titulada "Payment · <method>" con la sublínea "Credit".
   - Lo que se debe se lee en ámbar. Un "Credit $ X" corrido se lee con el tratamiento neutro/azul, nunca ámbar ni verde.
@@ -177,7 +177,7 @@ Criterios de éxito:
 - **Identidad del Balance (criterio 3)**: Balance = comprado e impago − Payments, al peso, después de cada alta y eliminación de Sales y Payments.
 - **Credit**: después de eliminar una Sale saldada, el Credit se muestra como "Credit", queda fuera de la sección Owed to you, del Total owed y de la cantidad, y se aplica a la próxima Sale que quede debiendo.
 - **Totales de quién debe (criterio 4)**: el Total owed, la cantidad de Sales still owing, la sección "Owed to you" de Customers, el bloque de Home y la marca de Sales son iguales a un cálculo directo sobre las Sales y los Payments. 0 diferencias. La línea de cantidad dice "1 sale owing" para una Sale y "N sales owing" para dos o más, las dos cubiertas por los tests del front.
-- **Cuenta (criterio 5)**: las filas y el Balance corrido coinciden con el Settlement en cada caso de la matriz. Los tests del front muestran la etiqueta "Account · running balance", el título y la sublínea de cada fila ("Sale" sobre "Paid in cash", "Paid by transfer", "Left owing" o, para una Sale de $0, "Nothing to pay"; "Payment · <method>" sobre "On account of the sale of dd/mm" o "Credit"), el monto sobre "balance $ X" sin corte dentro de un monto, y ninguna Variety ni gramos en la fila de una Sale.
+- **Cuenta (criterio 5)**: las filas y el Balance corrido coinciden con el Settlement en cada caso de la matriz. Los tests del front muestran la etiqueta "Account · running balance", el título y la sublínea de cada fila ("Sale" sobre "Paid in cash", "Paid by transfer", "Left owing" o, para una Sale de $0, "Nothing to pay"; "Payment · <method>" sobre "On account of the sale of dd/mm" o "Credit"), el monto sobre "balance $ X" sin corte dentro de un monto, y ningún Product ni gramos en la fila de una Sale.
 - **Fechas conservadas (criterio 6)**: después de cualquier recálculo, la fecha, el monto y el método de cada Payment quedan sin cambios.
 - **Vista previa = guardado (criterios 2, 8)**: la vista previa de Record payment coincide con el Settlement después de guardar. 0 diferencias.
 - **Aislamiento (criterio 7)**: toda ruta de Payment está en el barrido y responde 404 o vacío desde otro Business.
@@ -210,4 +210,4 @@ Criterios de éxito:
 - Restaurar el scroll en cualquier lugar que no sea el cierre de Record payment.
 - Cash y **Profit**: la capacidad results (#7).
 - Actualizaciones en vivo entre socios.
-- Las Varieties o los gramos de una Sale en la cuenta del Customer: el detalle de la Sale los muestra.
+- Los Products o los gramos de una Sale en la cuenta del Customer: el detalle de la Sale los muestra.

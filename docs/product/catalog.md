@@ -1,51 +1,51 @@
 # Catalog
 
-The text that offers today's sellable varieties to a business's customers. It is seen only by its business (ADR-0004). It is built from:
-- each variety's catalog attributes;
+The text that offers today's sellable products to a business's customers. It is seen only by its business (ADR-0004). It is built from:
+- each product's catalog attributes;
 - its current price today (varieties.md);
 - its stock status right now (stock.md);
 - the business's pricing settings (pricing-settings.md), for the bulk line;
 - the business's shown language, for the fixed lines (stored-language.md);
 
-between the business's own header and footer. The pinned catalog (pinned-catalog.md) sends exactly this text through the business's own Telegram bot and keeps it current. Share and Copy stay for sending it by hand, in a form that pastes into any chat app with its line breaks (see Copy and Share). An archived variety (varieties.md) is never part of it.
+between the business's own header and footer. The pinned catalog (pinned-catalog.md) sends exactly this text through the business's own Telegram bot and keeps it current. Share and Copy stay for sending it by hand, in a form that pastes into any chat app with its line breaks (see Copy and Share). An archived product (varieties.md) is never part of it.
 
 Where its pieces live (navigation.md):
-- the catalog screen (`/varieties/catalog`) opens from "Send catalog" on Varieties;
-- a variety's attributes are edited on its page, in "In the catalog";
+- the catalog screen (`/varieties/catalog`) opens from "Send catalog" on Products;
+- a product's attributes are edited on its page, in "In the catalog";
 - the header and footer are edited in Settings → Catalog message (or, until that group exists, in the temporary place reached from the catalog screen; see below).
 
 ## Jobs
 
-**When** a price changes, a variety sells out or I start offering one, **I want to** open the catalog text the app has already built from today's current prices and stock, check it, and share or copy it in one tap, **so I can** send it to my customers myself (by WhatsApp, Telegram or Instagram) without retyping a price or a variety name, and my customers never see a stale price or a variety I can't sell.
+**When** a price changes, a product sells out or I start offering one, **I want to** open the catalog text the app has already built from today's current prices and stock, check it, and share or copy it in one tap, **so I can** send it to my customers myself (by WhatsApp, Telegram or Instagram) without retyping a price or a product name, and my customers never see a stale price or a product I can't sell.
 
 Setting the catalog attributes and the header and footer is the setup step of this same job. Keeping the pinned catalog current on its own (test send, publishing, pinning) is BRIEF.md's Telegram job, served by pinned-catalog.md, which reuses this text as it is.
 
 **When** I want to send today's catalog to a customer or a chat by hand, **I want to** copy it with one tap and paste it anywhere so it reads the way it does on screen, **so I can** send it at once without retyping or fixing anything. (Served by Copy's plain and rich versions and by Share sending Copy's plain version.)
 
-**When** I set up how my business prices, record a variety's price or hand over an order, **I want** the app to use only the pricing rules my business has, **so I can** charge every customer exactly what I mean to without seeing fields that don't apply to me. (Defined in pricing-settings.md: served here by the bulk line following Bulk price and the VIP price never reaching customers.)
+**When** I set up how my business prices, record a product's price or hand over an order, **I want** the app to use only the pricing rules my business has, **so I can** charge every customer exactly what I mean to without seeing fields that don't apply to me. (Defined in pricing-settings.md: served here by the bulk line following Bulk price and the VIP price never reaching customers.)
 
 **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by the catalog screen, at most 2 taps from any tab root.)
 
-**When** a customer asks me what I have or how much something costs, or flower comes in, runs out or gets a new price, **I want** to open one variety and find everything about it on its own page, the list to tell me at a glance what I have, what is running out and what I can't sell, and today's catalog one tap from that list, ready to share from my phone, **so I can** answer the customer, record what came in and send an up-to-date catalog without moving between screens, and my customers never get a stale price or a variety I can't sell. (The navigation job applied to varieties, stock and the catalog, varieties.md: served here by the catalog screen and Share.)
+**When** a customer asks me what I have or how much something costs, or flower comes in, runs out or gets a new price, **I want** to open one product and find everything about it on its own page, the list to tell me at a glance what I have, what is running out and what I can't sell, and today's catalog one tap from that list, ready to share from my phone, **so I can** answer the customer, record what came in and send an up-to-date catalog without moving between screens, and my customers never get a stale price or a product I can't sell. (The navigation job applied to products, stock and the catalog, varieties.md: served here by the catalog screen and Share.)
 
-**When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if it never moved and archiving it if it has history, **so** my lists show only what I still sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly as it was if I start selling it again. (Served here by leaving archived varieties out of the text and of what does not go out; defined in varieties.md.)
+**When** a product I loaded by mistake, or one I no longer work with, keeps showing in my lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if it never moved and archiving it if it has history, **so** my lists show only what I still sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly as it was if I start selling it again. (Served here by leaving archived products out of the text and of what does not go out; defined in varieties.md.)
 
 **When** my business works in a language other than English, **I want** my customers' catalog to speak that language from start to end, including the fixed lines and not just the header and footer I typed, and a business opened in that language to start with its header, footer and expense categories already in it, **so** what customers read is consistent and I have nothing to translate or retype. While my business is in English, nothing I or my customers see changes at all. (Shared with stored-language.md: served here by the fixed lines following the shown language and the header and footer defaults following the stored language at opening.)
 
 Success criteria:
 
 1. **Exact text**: the catalog text follows the spreadsheet's format exactly.
-   - The header, then one block per variety, then the footer.
+   - The header, then one block per product, then the footer.
    - Each block has its emoji and bolded name, the indica/sativa share, the aroma, the list price per gram and the bulk line.
    - The `**bold**` markers stay in the text (`catalog.text` and what the pinned catalog sends; Copy and Share put out the plain version, see below).
    - Money is written as `$11.000`.
    - A line is left out when its data is missing (share, aroma, bulk), and the bulk line also while Bulk price is off.
    - It is tested against a reference set with 0 mismatches.
-2. **Today, only what can be sold**: a variety appears only when it is unarchived, shown, has a current price on today's Argentina date and has stock above zero right now.
-   - Archived, hidden, unpriced, sold-out and never-stocked varieties are out.
+2. **Today, only what can be sold**: a product appears only when it is unarchived, shown, has a current price on today's Argentina date and has stock above zero right now.
+   - Archived, hidden, unpriced, sold-out and never-stocked products are out.
    - Low stock is still in.
-3. **Fast, from the phone**: from Varieties → "Send catalog", a seller shares or copies today's text in a few seconds without typing anything. Share hands the native share sheet exactly Copy's plain version; without a share sheet, Copy remains. A share sheet that never finishes never leaves the screen stuck: Share and Copy stay usable. This includes the phone on the home network over plain http. There is no API call by hand.
-4. **No guessing why**: every unarchived variety that does not go out gives one reason, the first that applies: hidden, no price today, then sold out or no entries. It is told by word, never by color alone.
+3. **Fast, from the phone**: from Products → "Send catalog", a seller shares or copies today's text in a few seconds without typing anything. Share hands the native share sheet exactly Copy's plain version; without a share sheet, Copy remains. A share sheet that never finishes never leaves the screen stuck: Share and Copy stay usable. This includes the phone on the home network over plain http. There is no API call by hand.
+4. **No guessing why**: every unarchived product that does not go out gives one reason, the first that applies: hidden, no price today, then sold out or no entries. It is told by word, never by color alone.
 5. **Businesses never mix** (ADR-0004): attributes, header and footer belong to one business. The text and the list never include another business's data.
 6. **Customers never see the VIP price**: the text never carries it, whatever the switches.
 7. **One language from start to end**: for a business whose shown language is not English, every fixed line of the text (and the pinned catalog's empty line) is in that language, on the catalog screen, Test it, Publish and upkeep alike. A business in English in the same run stays English.
@@ -54,7 +54,7 @@ Success criteria:
 
 ## Behaviour
 
-### Catalog attributes, per variety
+### Catalog attributes, per product
 
 - **Emoji**: optional, exactly one emoji. Plain text or more than one emoji is refused. With none, the name line has no stand-in emoji.
 - **Indica share**: optional whole number from 0 to 100; sativa is the rest. In English it reads "• N% indica / (100−N)% sativa", including the 0 and 100 edges. With none, the line is left out.
@@ -64,11 +64,11 @@ Success criteria:
   - Empty means none, and the line is left out.
   - `*` is allowed (see Bold markers).
 - **Shown**: yes or no.
-  - Yes by default for a new variety.
-  - Yes for every variety that existed when the catalog shipped.
-- **Who can be edited**: every unarchived variety, including ones out for lack of price or stock. An archived variety's attributes are read-only until it is restored, and archiving or restoring keeps them, the shown flag included (varieties.md).
+  - Yes by default for a new product.
+  - Yes for every product that existed when the catalog shipped.
+- **Who can be edited**: every unarchived product, including ones out for lack of price or stock. An archived product's attributes are read-only until it is restored, and archiving or restoring keeps them, the shown flag included (varieties.md).
 - **No side effects**: the attributes never touch prices, stock or sales.
-- **Where**: they are edited only on the variety's own page, in its "In the catalog" section (varieties.md), never on the catalog screen.
+- **Where**: they are edited only on the product's own page, in its "In the catalog" section (varieties.md), never on the catalog screen.
 
 ### Header and footer, per business
 
@@ -85,9 +85,9 @@ Success criteria:
 
 ### Catalog text
 
-- **Layout**: header, then one block per qualifying variety sorted by name, then footer. There is one blank line between sections, and a blank header or footer leaves no extra blank line.
-- **Who qualifies**: a variety that is unarchived, shown, has a current price today in Argentina time and has stock above zero. Low stock qualifies. An archived variety never qualifies, whatever its flag, price or stock.
-- **A variety block** (English wording shown):
+- **Layout**: header, then one block per qualifying product sorted by name, then footer. There is one blank line between sections, and a blank header or footer leaves no extra blank line.
+- **Who qualifies**: a product that is unarchived, shown, has a current price today in Argentina time and has stock above zero. Low stock qualifies. An archived product never qualifies, whatever its flag, price or stock.
+- **A product block** (English wording shown):
   - `<emoji> **<name>**`, or `**<name>**` with no emoji;
   - `• N% indica / M% sativa`, only with a share;
   - `• Aroma/flavor: <aroma>`, only with an aroma;
@@ -108,7 +108,7 @@ Success criteria:
 
 ### Bold markers
 
-- **Allowed everywhere**: a seller may type `**` in the header, the footer, the aroma and the variety name. No field refuses `*`.
+- **Allowed everywhere**: a seller may type `**` in the header, the footer, the aroma and the product name. No field refuses `*`.
 - **Kept as typed in the text**: the catalog text (`catalog.text`, and what the pinned catalog sends) keeps every marker exactly as typed. Nothing is escaped or stripped, including when a name that contains `**` is wrapped in the app's own `**`.
 - **Pairing rule**: whatever renders the text reads `**` markers left to right and pairs them in order.
   - The text between each pair is bold, and that pair's markers are hidden.
@@ -118,8 +118,8 @@ Success criteria:
 ### On screen: the catalog screen
 
 - **Route**: `/varieties/catalog`. The old `/catalogo` redirects there permanently (navigation.md).
-- **Opened from**: "Send catalog" on Varieties, and Home's "Your Telegram catalog is out of date" notice. It is a detail (navigation.md): the bar or sidebar and "‹ Varieties", without "+ New sale".
-- **It always opens**, including when nothing qualifies: it then shows the empty state, and the pinned catalog keeps its own empty message and "Up to date" (pinned-catalog.md). "Send catalog" is disabled, with its reason in words (e.g. "Add a variety with a price and its stock"), only while the first-run checklist shows and nothing qualifies (navigation.md).
+- **Opened from**: "Send catalog" on Products, and Home's "Your Telegram catalog is out of date" notice. It is a detail (navigation.md): the bar or sidebar and "‹ Products", without "+ New sale".
+- **It always opens**, including when nothing qualifies: it then shows the empty state, and the pinned catalog keeps its own empty message and "Up to date" (pinned-catalog.md). "Send catalog" is disabled, with its reason in words (e.g. "Add a product with a price and its stock"), only while the first-run checklist shows and nothing qualifies (navigation.md).
 - **"How it looks in Telegram"**: the text as a customer reads it. It is unchanged by how Copy works.
   - Bold follows the pairing rule above.
   - Every other line, break, blank line, emoji and price is identical to Copy's plain version.
@@ -144,13 +144,13 @@ Success criteria:
   - It works whatever state Share is in, a share that has not finished included.
   - A failure shows a fixed "Could not copy." and no toast. No message carries catalog text, and there is no state telling which version was copied.
 - **The pinned catalog's status and Publish** (pinned-catalog.md): "Up to date" or "Out of date" with its fixed reason, and Publish. When Publish is unavailable, it says why in words and links to where the bot settings are: Settings → Integrations, or the temporary place until that exists.
-- **What does not go out, and why**: every unarchived variety out of today's catalog, by name, each with one reason, the first that applies:
+- **What does not go out, and why**: every unarchived product out of today's catalog, by name, each with one reason, the first that applies:
   1. hidden by the seller ("hidden");
   2. no price today ("no price");
   3. Stock's own words: sold out ("sold out") or no entries ("no entries").
 
-  Every reason is told by word, never by color alone (e.g. "Sir Jack, sold out · Mango Bomb, no price · X, hidden"). The exact wording is design's. Archived varieties are not listed here.
-- **Links**: each variety named in the preview or in what does not go out opens that variety's "In the catalog" section on its page. "Edit header and footer" opens Settings → Catalog message, or the temporary place until that exists.
+  Every reason is told by word, never by color alone (e.g. "Sir Jack, sold out · Mango Bomb, no price · X, hidden"). The exact wording is design's. Archived products are not listed here.
+- **Links**: each product named in the preview or in what does not go out opens that product's "In the catalog" section on its page. "Edit header and footer" opens Settings → Catalog message, or the temporary place until that exists.
 - **The screen itself edits no header, footer or bot setting**: it only links out (navigation.md).
 - **The temporary place** (a deliberate, temporary exception while Settings → Integrations and Catalog message do not exist):
   - it holds the bot settings (token, channel chat, own chat, Test it) and the header and footer, working exactly as before, with no rework;
@@ -158,9 +158,9 @@ Success criteria:
   - it is a form: "Close" goes back by history, and with none to the catalog screen; leaving with unsaved changes asks first;
   - it has no tab, More entry, Settings group or "coming soon" mark, and shows no pin status and no Publish;
   - Settings's own issue retargets both links and removes it. If Settings already exists, it is not built.
-- **Saving attributes** (on the variety's page) or **the header and footer** shows the toast "Catalog saved"; the catalog screen shows the new text the next time it opens. Toasts carry no data.
+- **Saving attributes** (on the product's page) or **the header and footer** shows the toast "Catalog saved"; the catalog screen shows the new text the next time it opens. Toasts carry no data.
 - **Refusals** show inline and keep what was typed. Each carries a code from `contract.json` (ADR-0008) and never repeats the input (ADR-0005).
-- **A variety that is gone** follows accounts.md's "That is gone." rule.
+- **A product that is gone** follows accounts.md's "That is gone." rule.
 
 ### Constraints
 
@@ -211,8 +211,8 @@ Success criteria:
 - **Always opens**: the catalog screen opens with nothing qualifying outside first run, and "Send catalog" is disabled only while the checklist shows and nothing qualifies.
 - **Address**: `/varieties/catalog` opens the catalog screen, also on reload; `/catalogo` answers a permanent redirect to it.
 - **Temporary place**: while Settings's groups do not exist, a front test shows the bot settings and the header and footer save from it, both links open it, it shows no pin status and no Publish, and no tab, More or Settings entry points to it.
-- **No curl (criterion 3)**: the end-to-end front run edits a variety's attributes on its page and the header and footer (in Settings, or the temporary place until it exists), opens Varieties → "Send catalog" and taps Copy. The clipboard's plain entry equals the API's text with paired markers removed.
-- **Speed (criterion 3)**: the screen answers in under 300 ms with a few dozen varieties, and opens in at most 2 taps from any tab root.
+- **No curl (criterion 3)**: the end-to-end front run edits a product's attributes on its page and the header and footer (in Settings, or the temporary place until it exists), opens Products → "Send catalog" and taps Copy. The clipboard's plain entry equals the API's text with paired markers removed.
+- **Speed (criterion 3)**: the screen answers in under 300 ms with a few dozen products, and opens in at most 2 taps from any tab root.
 - **Isolation (criterion 5)**: every catalog route is in the sweep and answers 404 or empty from another business. One business's switches or language never change another's text.
 - **No echo**: no refusal or log line contains the header, footer, aroma or emoji typed; after a full front run, the console and browser storage hold no catalog text.
 - **Design**: `scripts/design/compare.sh` runs before and after for the catalog screen, phone and computer, attached to the PR.
@@ -230,7 +230,7 @@ Success criteria:
 - A time limit on the share sheet, or copying the catalog on its own when sharing fails or does not finish.
 - Adding a title or a link to what Share hands the share sheet, or shortening or rewriting its text for a share target.
 - Making a share target (Telegram's or another app's share extension) finish when it hangs on its own side.
-- A custom variety order.
+- A custom product order.
 - Restoring the default header or footer.
 - Rewriting a business's stored header or footer when its language changes, or backfilling defaults for existing businesses.
 - Translating the seller's own data.
@@ -241,7 +241,7 @@ Success criteria:
 - A toast after sharing.
 - Redesigning the bot settings or the header and footer editing.
 - A VIP price in the catalog, or a separate catalog for VIP customers.
-- Listing archived varieties on the catalog screen.
+- Listing archived products on the catalog screen.
 
 ## Planned in GH-318
 
@@ -254,14 +254,14 @@ Each passage names the ADR that decides it, the part that will deliver it, and t
 Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; delivered by the catalog template part.
 
 - The blocks, the lines and their order between the header and footer will be the business's own, kept per business. A new business will start with name and price, and the header "**CATALOG**".
-- It will replace: "**Layout**: header, then one block per qualifying variety sorted by name, then footer." and the fixed lines "`• Price per gram: <money>`" and "`• From <grams>: <money> each`".
+- It will replace: "**Layout**: header, then one block per qualifying product sorted by name, then footer." and the fixed lines "`• Price per gram: <money>`" and "`• From <grams>: <money> each`".
 
 ### Attributes shown in the catalog
 
 Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; delivered by the categories part.
 
 - The attributes a subcategory defines, for each field whether it shows in the catalog, will take the place of the three fixed ones. Emoji, indica share and aroma will become attributes of the migrated business's one subcategory, with today's catalog text unchanged for it. An archived attribute's line will leave the catalog and its values will be kept. Whether a product is hidden will stay a flag on the product.
-- It will replace: "### Catalog attributes, per variety" (**Emoji**, **Indica share**, **Aroma/flavor**) and "**Shown**: yes or no."
+- It will replace: "### Catalog attributes, per product" (**Emoji**, **Indica share**, **Aroma/flavor**) and "**Shown**: yes or no."
 
 ### Money format
 
@@ -270,12 +270,12 @@ Decided in docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and
 - The catalog's money format will follow the business's currency symbol and money decimals.
 - It will replace: "**Money**: `$` directly followed by the amount, with a dot for thousands (`$11.000`). This is the catalog's own format, not the app's `$ 11.000`." and "Money and grams formats are the same in every language."
 
-### The product word and the unit
+### The unit
 
-Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md and docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md and docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md; delivered by the product word part, the units part and the Product rename on the wire.
+Decided in docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; delivered by the units part.
 
-- The catalog, the bot and the reports will use the seller's product word, shown as typed and never translated, and each product's unit label in place of "g".
-- It will replace: "Whole grams show without decimals; otherwise a decimal comma is used (`2,5 g`)." and, in Out of scope, "A custom variety order."
+- The catalog, the bot and the reports will use each product's unit label in place of "g".
+- It will replace: "Whole grams show without decimals; otherwise a decimal comma is used (`2,5 g`)." and, in Out of scope, "A custom product order."
 
 ### The business day
 
