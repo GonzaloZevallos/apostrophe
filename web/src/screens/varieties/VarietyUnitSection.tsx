@@ -17,7 +17,8 @@ import SinConexion from '../../components/SinConexion'
 
 export interface VarietyUnitSectionProps {
   varietyId: number
-  unit: ProductUnit
+  /** Absent only in a payload without it; the section then draws nothing. */
+  unit: ProductUnit | undefined
   removal: Removal | null
   archived: boolean
 }
@@ -26,6 +27,7 @@ export default function VarietyUnitSection({ varietyId, unit, removal, archived 
   const { t } = useTranslation()
   const locked = removal === 'archive'
   const readOnly = archived || locked
+  if (unit === undefined) return null
   return (
     <section className="variedad-seccion" aria-label={t('units:unitLabel')}>
       {readOnly ? (

@@ -10,7 +10,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../../api/catalog'
 import { VARIETY, VARIETY_PRICE_NEW, pathTo } from '../../routes'
-import { ME, api, jsonResponse, renderVarieties, writes, type FetchImpl } from './renderVarieties'
+import { ME, VARIETY_ROW, api, jsonResponse, renderVarieties, writes, type FetchImpl } from './renderVarieties'
 import { LIMITS } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 
@@ -414,7 +414,11 @@ test('another day counts as typed: leaving asks first', async () => {
 test('a bulk minimum finer than the unit shows its sentence and sends nothing; a server refusal shows at form level', async () => {
   const user = userEvent.setup()
   const { fetchMock } = await renderOpened(
-    api({ 'POST /api/products/1/prices': () => jsonResponse(422, { code: 'quantity.too_many_decimals' }) }),
+    api({
+      'GET /api/products/1': () =>
+        jsonResponse(200, { ...VARIETY_ROW, unit: { id: 1, name: 'grams', label: 'g', decimals: 2 } }),
+      'POST /api/products/1/prices': () => jsonResponse(422, { code: 'quantity.too_many_decimals' }),
+    }),
   )
 
   await user.type(await screen.findByLabelText(/^List price/), '12000')

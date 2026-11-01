@@ -82,8 +82,10 @@ subgraph src["src"]
       src_screens_settings_IntegrationsGroup_tsx["IntegrationsGroup.tsx"]
       src_screens_settings_InvitePartner_tsx["InvitePartner.tsx"]
       src_screens_settings_PricingGroup_tsx["PricingGroup.tsx"]
+      src_screens_settings_ProductsGroup_tsx["ProductsGroup.tsx"]
       src_screens_settings_SettingsGroup_tsx["SettingsGroup.tsx"]
       src_screens_settings_Settings_tsx["Settings.tsx"]
+      src_screens_settings_UnitsGroup_tsx["UnitsGroup.tsx"]
       src_screens_settings_UsersGroup_tsx["UsersGroup.tsx"]
     end
     subgraph src_screens_varieties["varieties"]
@@ -111,6 +113,7 @@ subgraph src["src"]
       src_screens_varieties_VarietyRoute_tsx["VarietyRoute.tsx"]
       src_screens_varieties_VarietyStockSection_tsx["VarietyStockSection.tsx"]
       src_screens_varieties_VarietyThresholdSection_tsx["VarietyThresholdSection.tsx"]
+      src_screens_varieties_VarietyUnitSection_tsx["VarietyUnitSection.tsx"]
       src_screens_varieties_archivedVarieties_ts["archivedVarieties.ts"]
       src_screens_varieties_catalogFormErrors_ts["catalogFormErrors.ts"]
       src_screens_varieties_isStillCurrent_ts["isStillCurrent.ts"]
@@ -304,6 +307,8 @@ src_screens_settings_ExpenseCategoriesGroup_tsx-->src_screens_settings_ExpenseCa
 src_screens_settings_ExpenseCategoriesGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_IntegrationsGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_PricingGroup_tsx-->src_screens_settings_SettingsGroup_tsx
+src_screens_settings_ProductsGroup_tsx-->src_screens_settings_SettingsGroup_tsx
+src_screens_settings_UnitsGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_UsersGroup_tsx-->src_screens_settings_InvitePartner_tsx
 src_screens_settings_UsersGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_varieties_ArchivedIndex_tsx-->src_screens_varieties_ArchivedVarieties_tsx
@@ -353,6 +358,7 @@ src_screens_varieties_VarietyPage_tsx-->src_screens_varieties_VarietyPricesSecti
 src_screens_varieties_VarietyPage_tsx-->src_screens_varieties_VarietyRemoval_tsx
 src_screens_varieties_VarietyPage_tsx-->src_screens_varieties_VarietyStockSection_tsx
 src_screens_varieties_VarietyPage_tsx-->src_screens_varieties_VarietyThresholdSection_tsx
+src_screens_varieties_VarietyPage_tsx-->src_screens_varieties_VarietyUnitSection_tsx
 src_screens_varieties_VarietyPage_tsx-->src_screens_varieties_useRestore_tsx
 src_screens_varieties_VarietyPage_tsx-->src_screens_varieties_varietyForms_ts
 src_screens_varieties_VarietyPricesSection_tsx-->src_screens_varieties_PriceRows_tsx
