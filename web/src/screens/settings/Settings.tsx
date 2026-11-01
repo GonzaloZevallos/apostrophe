@@ -1,5 +1,5 @@
 /**
- * `Settings`, the list of Configuración's eight groups (`Configuracion.dc.html` on the
+ * `Settings`, the list of Configuración's nine groups (`Configuracion.dc.html` on the
  * phone, `ConfiguracionCompu.dc.html` on a computer): a card route, so the bar or the
  * rail shows and "+ Nueva venta" does not. Nothing else is listed (no language, no
  * placeholder): a group that does not exist is not drawn.
@@ -9,6 +9,7 @@
  * (`shell/BackArrow.tsx`): Más on the phone, Inicio on a computer.
  */
 
+import { useTranslation } from 'react-i18next'
 import { useOutletContext } from 'react-router'
 import type { Me } from '../../api/me'
 import Icono, { type NombreIcono } from '../../components/Icono'
@@ -21,14 +22,24 @@ import {
   SETTINGS_CATALOG_MESSAGE,
   SETTINGS_INTEGRATIONS,
   SETTINGS_PRICES,
+  SETTINGS_PRODUCTS,
   SETTINGS_USERS,
 } from '../../routes'
 import { COMMON_TEXT } from '../../copy/common'
 import { INTEGRATIONS_LINK_WORD } from '../../copy/pinnedCatalog'
 
-const GROUPS: readonly { to: string; label: string; icon: NombreIcono }[] = [
+interface Group {
+  to: string
+  label: string
+  icon: NombreIcono
+}
+
+const GROUPS_BEFORE_PRODUCTS: readonly Group[] = [
   { to: SETTINGS_BUSINESS, label: COMMON_TEXT.business, icon: 'negocio' },
   { to: SETTINGS_USERS, label: COMMON_TEXT.users, icon: 'usuarios' },
+]
+
+const GROUPS_AFTER_PRODUCTS: readonly Group[] = [
   { to: SETTINGS_PRICES, label: COMMON_TEXT.prices, icon: 'precio' },
   { to: SETTINGS_INTEGRATIONS, label: INTEGRATIONS_LINK_WORD, icon: 'integraciones' },
   { to: SETTINGS_CATALOG_MESSAGE, label: COMMON_TEXT.catalogMessage, icon: 'mensaje' },
@@ -39,6 +50,12 @@ const GROUPS: readonly { to: string; label: string; icon: NombreIcono }[] = [
 
 export default function Settings() {
   const me = useOutletContext<Me>()
+  const { t } = useTranslation()
+  const groups: readonly Group[] = [
+    ...GROUPS_BEFORE_PRODUCTS,
+    { to: SETTINGS_PRODUCTS, label: t('units:productsTitle'), icon: 'variedades' },
+    ...GROUPS_AFTER_PRODUCTS,
+  ]
 
   return (
     <main className="pantalla">
@@ -48,7 +65,7 @@ export default function Settings() {
           <h1 className="ajustes__titulo">{COMMON_TEXT.settings}</h1>
         </div>
         <nav className="ajustes__lista" aria-label={COMMON_TEXT.settings} data-menu>
-          {GROUPS.map((group) => (
+          {groups.map((group) => (
             <InAppLink key={group.to} to={group.to} className="ajustes__item">
               <span className="ajustes__item-icono">
                 <Icono nombre={group.icon} />

@@ -5,7 +5,7 @@
  * jsdom lays nothing out: the list's back arrow reads the viewport.
  */
 
-import { EXPENSE_CATEGORIES, HOME, MORE, SALES, SETTINGS, SETTINGS_ACCOUNT, SETTINGS_APPEARANCE, SETTINGS_BUSINESS, SETTINGS_CATALOG_MESSAGE, SETTINGS_INTEGRATIONS, SETTINGS_PRICES, SETTINGS_USERS } from '../../routes'
+import { EXPENSE_CATEGORIES, HOME, MORE, SALES, SETTINGS, SETTINGS_ACCOUNT, SETTINGS_APPEARANCE, SETTINGS_BUSINESS, SETTINGS_CATALOG_MESSAGE, SETTINGS_INTEGRATIONS, SETTINGS_PRICES, SETTINGS_PRODUCTS, SETTINGS_USERS } from '../../routes'
 import { inAppState } from '../../components/inAppState'
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -18,6 +18,7 @@ import { router as appRouter } from '../../router'
 const GROUPS = [
   ['Business', SETTINGS_BUSINESS],
   ['Users', SETTINGS_USERS],
+  ['Products', SETTINGS_PRODUCTS],
   ['Prices', SETTINGS_PRICES],
   ['Integrations', SETTINGS_INTEGRATIONS],
   ['Catalog message', SETTINGS_CATALOG_MESSAGE],
@@ -61,7 +62,7 @@ afterEach(() => {
   queryClient.clear()
 })
 
-test('lists exactly the eight groups in order, each a link to its own route', async () => {
+test('lists exactly the nine groups in order, each a link to its own route', async () => {
   stubComputer(false)
   renderApp([SETTINGS])
 

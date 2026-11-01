@@ -69,6 +69,8 @@ export type ScreenId =
   | 'settings'
   | 'settings-business'
   | 'settings-users'
+  | 'settings-products'
+  | 'settings-units'
   | 'settings-prices'
   | 'settings-integrations'
   | 'settings-catalog-message'
@@ -138,6 +140,8 @@ export const ANALYSIS = '/analysis'
 export const SETTINGS = '/settings'
 export const SETTINGS_BUSINESS = '/settings/business'
 export const SETTINGS_USERS = '/settings/users'
+export const SETTINGS_PRODUCTS = '/settings/products'
+export const SETTINGS_UNITS = '/settings/products/units'
 export const SETTINGS_PRICES = '/settings/prices'
 export const SETTINGS_INTEGRATIONS = '/settings/integrations'
 export const SETTINGS_CATALOG_MESSAGE = '/settings/catalog-message'
@@ -332,6 +336,8 @@ export const SCREENS = [
   }),
   screen({ id: 'settings-business', path: SETTINGS_BUSINESS, kind: 'form', titleKey: 'common:business', parent: 'settings' }),
   screen({ id: 'settings-users', path: SETTINGS_USERS, kind: 'form', titleKey: 'common:users', parent: 'settings' }),
+  screen({ id: 'settings-products', path: SETTINGS_PRODUCTS, kind: 'form', titleKey: 'units:productsTitle', parent: 'settings' }),
+  screen({ id: 'settings-units', path: SETTINGS_UNITS, kind: 'form', titleKey: 'units:title', parent: 'settings-products' }),
   screen({ id: 'settings-prices', path: SETTINGS_PRICES, kind: 'form', titleKey: 'common:prices', parent: 'settings' }),
   screen({
     id: 'settings-integrations',
