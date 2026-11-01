@@ -174,5 +174,23 @@
     "themes": [
       "oscuro"
     ]
+  },
+  {
+    "screen": "ZonaHorariaRechazo",
+    "rule": "contrast",
+    "target": "textbox:Search time zones::placeholder",
+    "issue": 46,
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "ZonaHorariaMasInfo",
+    "rule": "contrast",
+    "target": "textbox:Search time zones::placeholder",
+    "issue": 46,
+    "themes": [
+      "oscuro"
+    ]
   }
 ]
