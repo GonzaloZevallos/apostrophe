@@ -139,7 +139,7 @@ test('a marked leaf shows no back, and no placeholder word, until its screen dec
   expect(await screen.findByText('Loading')).toBeInTheDocument()
   expect(backs()).toEqual([])
   expect(screen.queryByText('‹')).not.toBeInTheDocument()
-  expect(screen.queryByText(/Variety$/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/Product$/)).not.toBeInTheDocument()
 
   await act(async () => pending.settle(json({ id: 1, name: '24K Gold', archived: false })))
   expect(await screen.findAllByRole('button', { name: /^‹ / })).toHaveLength(1)
