@@ -13,6 +13,7 @@ import {
   MORE,
   pathTo,
   SETTINGS_ACCOUNT,
+  SETTINGS_UNITS,
   STOCK,
   STOCK_ENTRY,
   VARIETIES,
@@ -140,5 +141,17 @@ export const RECORDS_STATES: readonly WalkState[] = [
     route: SETTINGS_ACCOUNT,
     steps: [{ click: common('common:changePassword') }],
     visible: AUTH_TEXT.currentPassword,
+  },
+  {
+    screen: 'ConfiguracionUnidadNueva',
+    route: SETTINGS_UNITS,
+    steps: [{ click: '+ New unit' }],
+    visible: 'Shown next to quantities.',
+  },
+  {
+    screen: 'ConfiguracionUnidadEditar',
+    route: SETTINGS_UNITS,
+    steps: [{ click: 'Edit' }],
+    visible: 'Shown next to quantities.',
   },
 ]

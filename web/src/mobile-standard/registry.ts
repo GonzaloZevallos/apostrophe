@@ -77,6 +77,8 @@ export const STATE_NAMES: readonly string[] = [
   'ConfiguracionCategoriaRenombrar',
   'ConfiguracionCategoriaConfirmarBorrado',
   'ConfiguracionContrasena',
+  'ConfiguracionUnidadNueva',
+  'ConfiguracionUnidadEditar',
 ]
 
 function asRecord(value: unknown, what: string): Record<string, unknown> {
