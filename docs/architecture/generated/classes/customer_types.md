@@ -20,12 +20,29 @@ classDiagram
   }
   class ports {
   }
+  class router {
+  }
+  class schemas {
+  }
+  class sql_customer_types {
+  }
   class tables {
+  }
+  class vip_type {
   }
   manage_customer_types --> customer_type
   manage_customer_types --> ports
   ports --> customer_type
+  router --> application
+  router --> customer_type
+  router --> ports
+  router --> schemas
+  router --> sql_customer_types
+  schemas --> customer_type
+  sql_customer_types --> customer_type
+  sql_customer_types --> tables
   tables --> customer_type
+  vip_type --> tables
 ```
 
 ## domain
@@ -48,6 +65,7 @@ classDiagram
   class CustomerTypeInUse {
     code : ClassVar~str~
     count : int
+    refusal_fields : dict
   }
   class CustomerTypeName {
     key : str
@@ -99,6 +117,21 @@ classDiagram
 
 ```mermaid
 classDiagram
+  class CustomerTypeIn {
+    icon : str #124; None
+    name : str
+  }
+  class CustomerTypeOut {
+    icon : CustomerTypeIcon
+    id : int
+    is_vip : bool
+    name : str
+    of(customer_type: CustomerType) 'CustomerTypeOut'
+  }
+  class CustomerTypePatchIn {
+    icon : str #124; None
+    name : str #124; None
+  }
   class CustomerTypeRow {
     business_id : Mapped~int~
     icon : Mapped~str~
@@ -106,5 +139,16 @@ classDiagram
     is_vip : Mapped~bool~
     name : Mapped~str~
     name_key : Mapped~str~
+  }
+  class SqlCustomerTypes {
+    add(customer_type: CustomerType) CustomerType
+    by_id(type_id: int) CustomerType #124; None
+    by_key(key: str) CustomerType #124; None
+    delete_unused(type_id: int) bool
+    list() list~CustomerType~
+    save(customer_type: CustomerType) CustomerType
+  }
+  class SqlVipType {
+    id() int #124; None
   }
 ```

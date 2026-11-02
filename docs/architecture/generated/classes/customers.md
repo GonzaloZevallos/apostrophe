@@ -14,6 +14,8 @@ classDiagram
   }
   class customers {
   }
+  class customers_in_type {
+  }
   class domain {
   }
   class errors {
@@ -32,6 +34,7 @@ classDiagram
   }
   class tables {
   }
+  customers_in_type --> tables
   import_port --> customer
   import_port --> manage_customers
   import_port --> sql_customers
@@ -181,5 +184,8 @@ classDiagram
     get(customer_id: int) Customer #124; None
     phone_taken(phone: PhoneNumber) bool
     save(customer: Customer) Customer
+  }
+  class SqlCustomersInType {
+    count(type_id: int) int
   }
 ```
