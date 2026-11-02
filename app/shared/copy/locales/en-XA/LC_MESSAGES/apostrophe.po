@@ -214,3 +214,9 @@ msgstr "⟦Šĥìṗṗìňĝ åňđ ťřåňšṗöřť·~·~·~·~⟧"
 
 msgid "expenses.default_category.other"
 msgstr "⟦Öťĥèř·~⟧"
+
+msgid "payment_methods.default.cash"
+msgstr "⟦Çåšĥ·~⟧"
+
+msgid "payment_methods.default.transfer"
+msgstr "⟦Ťřåňšḟèř·~·⟧"
