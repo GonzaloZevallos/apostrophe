@@ -117,10 +117,12 @@ _Avoid_: comment, description, memo
 **Payment**:
 El dinero que un Customer entrega en una fecha, con uno de los Payment methods del Business, sin Note. Puede ser un On-the-spot payment registrado con su Sale, o un Payment posterior registrado mediante Record payment, que se abre con "Collect" en una fila de deudor de Customers o Home o desde la ficha del Customer. Su fecha, monto y método nunca cambian, y renombrar o archivar su método no lo toca; se elimina y se vuelve a registrar, nunca se edita. _In the app_: Payment.
 _Avoid_: collection, settlement, receipt, abono
+_In the app_: Payment
+
 **Payment method**:
 Una forma en que cobra un Business, de su propia lista ("Cash" y "Transfer" para empezar), con un nombre único, un ícono opcional y un lugar en su orden; cada Payment lleva exactamente uno, y "Owing" nunca es uno. Es solo una etiqueta sobre dinero recibido: nunca cambia ninguna cifra y no tiene nada que ver con la cifra Cash, aunque se llame "Cash". Uno que ya usa algún Payment solo se archiva y se restaura; uno sin uso se elimina. _In the app_: Payment methods, en Settings → Business.
 _Avoid_: payment type, channel, medio de pago, forma de pago, Cash (that is a figure)
-_In the app_: Payment
+_In the app_: Payment methods, en Settings → Business
 
 **Balance**:
 Lo que debe un Customer: lo que compró y no pagó, menos sus Payments; se calcula en el momento. Un Payment posterior siempre salda primero la deuda más antigua. Menor que cero es un Credit. _In the app_: Owes you.
@@ -555,7 +557,6 @@ _Avoid_: tier, segment, group
 **Customer-type price**:
 El precio que paga un Customer type por un Product, una fila que rige desde una fecha. Reemplaza al VIP price en las escrituras nuevas; la Price entry conserva su VIP price tal como está, y los VIP prices guardados y las marcas VIP se quedan en su lugar, congelados con los valores que tienen. Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; a cargo de la parte customer-type prices.
 _Avoid_: tier price, discount
-
 
 **Applied promotion**:
 Una Promotion tal como estaba una Sale cuando se guardó, registrada como filas tipadas que nunca se vuelven a calcular. Decidido en docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; a cargo de la parte promotions-at-sale-time, que también define en qué se diferencia de una Promotion.
