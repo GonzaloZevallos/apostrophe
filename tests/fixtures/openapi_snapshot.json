@@ -985,6 +985,100 @@
         "title": "CustomerPatchIn",
         "type": "object"
       },
+      "CustomerTypeIcon": {
+        "description": "The closed set of neutral icons. The keys are stored values: changing one is a\ndata migration. The front's map is checked against the OpenAPI snapshot.",
+        "enum": [
+          "circle",
+          "star",
+          "heart",
+          "diamond",
+          "flag",
+          "tag",
+          "crown",
+          "bell"
+        ],
+        "title": "CustomerTypeIcon",
+        "type": "string"
+      },
+      "CustomerTypeIn": {
+        "properties": {
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "CustomerTypeIn",
+        "type": "object"
+      },
+      "CustomerTypeOut": {
+        "properties": {
+          "icon": {
+            "$ref": "#/components/schemas/CustomerTypeIcon"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "is_vip": {
+            "title": "Is Vip",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "icon",
+          "is_vip"
+        ],
+        "title": "CustomerTypeOut",
+        "type": "object"
+      },
+      "CustomerTypePatchIn": {
+        "properties": {
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "CustomerTypePatchIn",
+        "type": "object"
+      },
       "DebtorCustomerOut": {
         "properties": {
           "id": {
@@ -4268,6 +4362,175 @@
         "summary": "Get Analysis",
         "tags": [
           "results"
+        ]
+      }
+    },
+    "/api/customer-types": {
+      "get": {
+        "operationId": "list_customer_types_api_customer_types_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerTypeOut"
+                  },
+                  "title": "Response List Customer Types Api Customer Types Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Customer Types",
+        "tags": [
+          "customer-types"
+        ]
+      },
+      "post": {
+        "operationId": "add_customer_type_api_customer_types_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerTypeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerTypeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Customer Type",
+        "tags": [
+          "customer-types"
+        ]
+      }
+    },
+    "/api/customer-types/{type_id}": {
+      "delete": {
+        "operationId": "remove_customer_type_api_customer_types__type_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "type_id",
+            "required": true,
+            "schema": {
+              "title": "Type Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Remove Customer Type",
+        "tags": [
+          "customer-types"
+        ]
+      },
+      "patch": {
+        "operationId": "edit_customer_type_api_customer_types__type_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "type_id",
+            "required": true,
+            "schema": {
+              "title": "Type Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerTypePatchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerTypeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Edit Customer Type",
+        "tags": [
+          "customer-types"
         ]
       }
     },

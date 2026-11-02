@@ -105,6 +105,12 @@ def seed_expenses(client: TestClient) -> dict[str, int]:
     return {"category_id": category_id, "expense_id": expense.json()["id"]}
 
 
+def seed_customer_types(client: TestClient) -> dict[str, int]:
+    created = client.post("/api/customer-types", json={"name": f"{MARKER} customer type"})
+    assert created.status_code == 201, created.text
+    return {"type_id": created.json()["id"]}
+
+
 def seed_sales(client: TestClient) -> dict[str, int]:
     variety = client.post("/api/products", json={"name": f"{MARKER} sales variety"}).json()
     client.post(
@@ -244,6 +250,7 @@ def seed_first_run(client: TestClient) -> dict[str, int]:
 SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_varieties,
     seed_customers,
+    seed_customer_types,
     seed_expenses,
     seed_sales,
     seed_stock,
@@ -263,6 +270,8 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
     },
     ("POST", "/customers"): {"name": "Another customer", "phone": "11 9876-5432"},
     ("PATCH", "/customers/{customer_id}"): {"name": "Renamed"},
+    ("POST", "/api/customer-types"): {"name": "Another customer type", "icon": "heart"},
+    ("PATCH", "/api/customer-types/{type_id}"): {"name": "Renamed type"},
     ("POST", "/expense-categories"): {"name": "Another category"},
     ("PATCH", "/expense-categories/{category_id}"): {"name": "Renamed category"},
     ("POST", "/expenses"): {

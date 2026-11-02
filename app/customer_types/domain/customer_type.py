@@ -63,6 +63,8 @@ class CustomerTypeInUse(ValueError):
     def __init__(self, count: int) -> None:
         super().__init__(f"{count} customers are in the type and it cannot be deleted")
         self.count = count
+        # Read by `TranslateErrors`: the answer carries the count next to the code.
+        self.refusal_fields = {"count": count}
 
 
 class CustomerTypeNotFound(LookupError):
