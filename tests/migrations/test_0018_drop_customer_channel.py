@@ -1,5 +1,5 @@
 """Migration 0018 drops `customer.channel` for good (ADR-0047): through the real
-`upgrade_to_head` from 0017, over the plain sqlite driver and sqlite+libsql (ADR-0016),
+the real migration from 0017 to 0018, over the plain sqlite driver and sqlite+libsql (ADR-0016),
 the column is gone and every other customer column, sale, line and payment row, and every
 debtor's balance, is exactly as it was. The downgrade gives back an empty column."""
 
@@ -13,7 +13,7 @@ from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine
 
 from app.db import make_engine
-from app.migrations.runner import MIGRATIONS_ROOT, upgrade_to_head
+from app.migrations.runner import MIGRATIONS_ROOT
 
 NOW = "2026-01-01 12:00:00"
 
@@ -191,7 +191,7 @@ def _run_upgrade(url: str) -> None:
     assert any(balance > 0 for _, balance in before["balance"])
     assert any(balance < 0 for _, balance in before["balance"])
 
-    upgrade_to_head(engine)
+    _upgrade_to(engine, "0018")
 
     assert _snapshot(engine) == before
     _assert_dropped_and_whole(engine)
@@ -212,7 +212,7 @@ def test_the_downgrade_gives_back_an_empty_nullable_column(tmp_path: Path) -> No
     _upgrade_to(engine, "0017")
     _seed(engine)
     before = _snapshot(engine)
-    upgrade_to_head(engine)
+    _upgrade_to(engine, "0018")
 
     with engine.connect() as connection:
         with connection.begin():

@@ -12,7 +12,7 @@ from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine
 
 from app.db import make_engine
-from app.migrations.runner import MIGRATIONS_ROOT, upgrade_to_head
+from app.migrations.runner import MIGRATIONS_ROOT
 
 NOW = "2026-01-01 12:00:00"
 INDEXES = {
@@ -132,7 +132,7 @@ def _walk(engine: Engine) -> None:
     assert [len(rows) for rows in before.values()] == [6, 18, 6]
     assert all(INDEXES[table] not in names for table, names in _index_names(engine).items())
 
-    upgrade_to_head(engine)
+    _migrate(engine, "up", "0016")
 
     assert _rows(engine) == before
     assert all(INDEXES[table] in names for table, names in _index_names(engine).items())
@@ -149,7 +149,7 @@ def _walk(engine: Engine) -> None:
     assert _rows(engine) == before
     assert all(INDEXES[table] not in names for table, names in _index_names(engine).items())
 
-    upgrade_to_head(engine)
+    _migrate(engine, "up", "0016")
     assert _rows(engine) == before
     assert all(INDEXES[table] in names for table, names in _index_names(engine).items())
 
