@@ -82,5 +82,68 @@ Fuente en `fuente/telefono/`, con el nombre que tendrán en `docs/product/design
 
 `registro-unificado-mapa.dc.html` es el mapa de arriba como dibujo; no es una pantalla.
 
-Sin dibujo nuevo todavía: las versiones oscuras y de compu de estas pantallas (salvo InicioOscuro), y el
-registro de `scripts/design/screens.json` (sigue nombrando Mas y MasOscuro, que desaparecen).
+### Teléfono oscuro
+
+Fuente en `fuente/telefono/`. Se sacan cambiando solo los colores, con los de InicioOscuro; no cambia nada más.
+
+| Archivo | Estado | Qué es |
+|---|---|---|
+| AnalisisOscuro.dc.html | reemplaza | Analisis, teléfono oscuro: mismo dibujo que el claro con los colores oscuros |
+| ClienteFichaOscuro.dc.html | reemplaza | ClienteFicha, teléfono oscuro: mismo dibujo que el claro con los colores oscuros |
+| ClienteFichaPagoOscuro.dc.html | nuevo | ClienteFichaPago, teléfono oscuro: mismo dibujo que el claro con los colores oscuros |
+| ClientesOscuro.dc.html | reemplaza | Clientes, teléfono oscuro: mismo dibujo que el claro con los colores oscuros |
+| CobroElegirClienteOscuro.dc.html | nuevo | CobroElegirCliente, teléfono oscuro: mismo dibujo que el claro con los colores oscuros |
+| CobroOscuro.dc.html | reemplaza | Cobro, teléfono oscuro: mismo dibujo que el claro con los colores oscuros |
+| EntradaStockOscuro.dc.html | nuevo | EntradaStock, teléfono oscuro: mismo dibujo que el claro con los colores oscuros |
+| GastoNuevoOscuro.dc.html | reemplaza | GastoNuevo, teléfono oscuro: mismo dibujo que el claro con los colores oscuros |
+| GastosOscuro.dc.html | nuevo | Gastos, teléfono oscuro: mismo dibujo que el claro con los colores oscuros |
+| NuevaVentaOscuro.dc.html | reemplaza | NuevaVenta, teléfono oscuro: mismo dibujo que el claro con los colores oscuros |
+| PedidoNuevoOscuro.dc.html | nuevo | PedidoNuevo, teléfono oscuro: mismo dibujo que el claro con los colores oscuros |
+| RetiroStockOscuro.dc.html | nuevo | RetiroStock, teléfono oscuro: mismo dibujo que el claro con los colores oscuros |
+| StockOscuro.dc.html | reemplaza | Stock, teléfono oscuro: mismo dibujo que el claro con los colores oscuros |
+| VentaEnCursoOscuro.dc.html | nuevo | VentaEnCurso, teléfono oscuro: mismo dibujo que el claro con los colores oscuros |
+| VentaVuelveOscuro.dc.html | nuevo | VentaVuelve, teléfono oscuro: mismo dibujo que el claro con los colores oscuros |
+
+### Compu
+
+Fuente en `fuente/compu/`, a 1440 × 900 como el resto de las pantallas de compu del rediseño. Cada carga se abre como panel desde la derecha de 480 px, de la misma familia que el de Nueva venta (880 px). Las oscuras de compu también se sacan cambiando solo los colores.
+
+| Archivo | Estado | Qué es |
+|---|---|---|
+| AnalisisCompu.dc.html | reemplaza | Análisis con la tarjeta Gastos ("+ Anotar gasto", "Ver los 7 gastos") |
+| AnalisisCompuOscuro.dc.html | reemplaza | AnalisisCompu con los colores oscuros |
+| ClienteFichaPagoCompu.dc.html | nuevo | Tocar un pago en la ficha: panel con "Borrar este pago" |
+| ClienteFichaPagoCompuOscuro.dc.html | nuevo | ClienteFichaPagoCompu con los colores oscuros |
+| ClientesCompu.dc.html | reemplaza | Clientes con la ficha al lado: "Le pagaron" y ticket corto |
+| ClientesCompuOscuro.dc.html | reemplaza | ClientesCompu con los colores oscuros |
+| CobroCompu.dc.html | reemplaza | Panel "Le pagaron" desde la derecha |
+| CobroCompuOscuro.dc.html | nuevo | CobroCompu con los colores oscuros |
+| CobroElegirClienteCompu.dc.html | nuevo | Panel "Le pagaron" que primero pide el cliente |
+| CobroElegirClienteCompuOscuro.dc.html | nuevo | CobroElegirClienteCompu con los colores oscuros |
+| EntradaStockCompu.dc.html | reemplaza | Panel "Entró mercadería" |
+| EntradaStockCompuOscuro.dc.html | nuevo | EntradaStockCompu con los colores oscuros |
+| GastoNuevoCompu.dc.html | reemplaza | Panel "Nuevo gasto" desde la derecha (480 px) |
+| GastoNuevoCompuOscuro.dc.html | nuevo | GastoNuevoCompu con los colores oscuros |
+| GastosCompu.dc.html | reemplaza | Gastos del mes (ítem Gastos de la barra lateral), con editar y borrar |
+| GastosCompuOscuro.dc.html | nuevo | GastosCompu con los colores oscuros |
+| InicioCompu.dc.html | reemplaza | Hoy: "Por reponer" lleva a "Entró mercadería" |
+| InicioCompuOscuro.dc.html | reemplaza | InicioCompu con los colores oscuros |
+| NuevaVentaCompu.dc.html | reemplaza | Nueva venta con "Otras cosas para anotar" al pie |
+| NuevaVentaCompuOscuro.dc.html | reemplaza | NuevaVentaCompu con los colores oscuros |
+| PedidoNuevoCompu.dc.html | nuevo | Panel "Nuevo pedido" |
+| PedidoNuevoCompuOscuro.dc.html | nuevo | PedidoNuevoCompu con los colores oscuros |
+| RetiroStockCompu.dc.html | nuevo | Panel "Sacaste mercadería" |
+| RetiroStockCompuOscuro.dc.html | nuevo | RetiroStockCompu con los colores oscuros |
+| StockCompu.dc.html | nuevo | Stock (ítem Stock de la barra lateral) con "Entró" y "Sacaste mercadería" |
+| StockCompuOscuro.dc.html | nuevo | StockCompu con los colores oscuros |
+| VentaEnCursoCompu.dc.html | nuevo | Nuevo gasto con la franja "Venta en curso" |
+| VentaEnCursoCompuOscuro.dc.html | nuevo | VentaEnCursoCompu con los colores oscuros |
+| VentaVuelveCompu.dc.html | nuevo | Vuelve la venta, con el aviso "Gasto anotado" |
+| VentaVuelveCompuOscuro.dc.html | nuevo | VentaVuelveCompu con los colores oscuros |
+
+### Se borran de `pantallas/`
+
+- InicioChecklist, InicioImportado e InicioPrimeraVez, en teléfono y en compu (`*.dc.html` y `*Compu.dc.html`): se sacan los avisos de primer uso.
+- Las de compu con el estilo anterior (fondo crema y ventana centrada) quedan reemplazadas por las de arriba: GastoNuevoCompu, EntradaStockCompu, CobroCompu y GastosCompu.
+
+Falta todavía: el registro de `scripts/design/screens.json` sigue nombrando Mas y MasOscuro, que desaparecen.
