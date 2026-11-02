@@ -41,6 +41,7 @@ El diagrama de clases de cada capacidad lo genera [scripts/docs/generate.py](../
 | catalog | [catalog](../../app/catalog/application/ports.py) `CatalogVarieties` `CatalogStock` | [catalog](generated/classes/catalog.md) |
 | customers | [customers](../../app/customers/application/ports.py) `Customers` `Balances` | [customers](generated/classes/customers.md) |
 | expenses | [expenses](../../app/expenses/application/ports.py) `Expenses` `ExpenseCategories` | [expenses](generated/classes/expenses.md) |
+| money_format | sin `ports.py` todavía: solo `adapters/`, porque ningún caso de uso lee el formato; la fila la escribe [opening](../../app/money_format/adapters/opening.py) `MoneyFormatOpening` | [money_format](generated/classes/money_format.md) |
 | onboarding | [onboarding](../../app/onboarding/application/ports.py) `Onboardings` `VarietyFacts` `StockFacts` | [onboarding](generated/classes/onboarding.md) |
 | payments | [payments](../../app/payments/application/ports.py) `Payments` `Ledgers` | [payments](generated/classes/payments.md) |
 | pinned_catalog | [pinned_catalog](../../app/pinned_catalog/application/ports.py) `TelegramApi` `PinSnapshots` `PinRecorder` | [pinned_catalog](generated/classes/pinned_catalog.md) |
