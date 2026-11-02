@@ -11,6 +11,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.customer_types.adapters.tables import CustomerTypeRow
+from app.customer_types.domain.customer_type import CustomerTypeIcon
 from app.customers.adapters.tables import CustomerRow
 from tests.pricing_switches import set_switches
 
@@ -221,3 +222,14 @@ def test_a_patch_with_a_taken_name_and_a_new_icon_changes_nothing(client: TestCl
 
     assert response.status_code == 409
     assert [t["icon"] for t in client.get("/api/customer-types").json()] == ["circle", "circle"]
+
+
+def test_the_api_document_names_the_closed_set_of_icons_on_both_request_bodies(
+    client: TestClient,
+) -> None:
+    schemas = client.get("/openapi.json").json()["components"]["schemas"]
+    keys = {icon.value for icon in CustomerTypeIcon}
+
+    for body in ("CustomerTypeIn", "CustomerTypePatchIn"):
+        variants = schemas[body]["properties"]["icon"]["anyOf"]
+        assert {key for v in variants for key in v.get("enum", [])} == keys
