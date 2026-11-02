@@ -29,7 +29,10 @@ def test_a_name_is_trimmed_and_its_inner_spaces_collapsed() -> None:
 
 
 def test_two_names_differing_only_in_case_or_spaces_are_the_same_name() -> None:
-    assert PaymentMethodName.of("Mercado Pago").name_key == PaymentMethodName.of("mercadopago ").name_key
+    assert (
+        PaymentMethodName.of("Mercado Pago").name_key
+        == PaymentMethodName.of("mercadopago ").name_key
+    )
     assert PaymentMethodName.of("Cash").name_key != PaymentMethodName.of("Transfer").name_key
 
 
@@ -54,7 +57,7 @@ def test_the_icon_set_is_the_six_neutral_ones_and_generic_is_the_default() -> No
         "phone",
         "generic",
     }
-    assert PaymentMethodIcon.DEFAULT is PaymentMethodIcon.GENERIC
+    assert PaymentMethodIcon.DEFAULT.value == "generic"
 
 
 def test_the_last_active_method_cannot_be_archived() -> None:

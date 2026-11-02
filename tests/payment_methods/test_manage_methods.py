@@ -277,9 +277,7 @@ def test_another_business_methods_are_not_found_and_stay_untouched(
     assert _names(methods) == ["Cash", "Transfer"]
 
 
-def test_two_businesses_may_use_the_same_name(
-    methods: SqlPaymentMethods, session: Session
-) -> None:
+def test_two_businesses_may_use_the_same_name(methods: SqlPaymentMethods, session: Session) -> None:
     _seed(methods, session, "Cash")
     _seed(SqlPaymentMethods(session, OTHER), session, "Cash")
 

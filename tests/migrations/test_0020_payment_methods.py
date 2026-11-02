@@ -32,7 +32,9 @@ def test_the_table_is_created_empty_for_a_business_that_already_exists() -> None
 
     with engine.connect() as connection:
         assert connection.execute(text("SELECT count(*) FROM payment_method")).scalar() == 0
-        columns = {c["name"]: c["nullable"] for c in inspect(connection).get_columns("payment_method")}
+        columns = {
+            c["name"]: c["nullable"] for c in inspect(connection).get_columns("payment_method")
+        }
     assert columns == {
         "id": False,
         "business_id": False,

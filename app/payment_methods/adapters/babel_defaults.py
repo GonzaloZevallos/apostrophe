@@ -5,7 +5,11 @@ and "Transfer" with the bank icon. A language with no catalog gets English's.
 
 from __future__ import annotations
 
-from app.payment_methods.domain.method import PaymentMethodIcon, PaymentMethodName, PaymentMethodSeed
+from app.payment_methods.domain.method import (
+    PaymentMethodIcon,
+    PaymentMethodName,
+    PaymentMethodSeed,
+)
 from app.shared.copy import CopyCatalog, required_text
 from app.shared.language import Language
 

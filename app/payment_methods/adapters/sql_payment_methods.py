@@ -144,9 +144,9 @@ class SqlPaymentMethods:
             select(own.c.id.label("id"), nearest_active.c.position.label("position")).select_from(
                 own.join(nearest_active, true())
             ),
-            select(
-                nearest_active.c.id.label("id"), own.c.position.label("position")
-            ).select_from(own.join(nearest_active, true())),
+            select(nearest_active.c.id.label("id"), own.c.position.label("position")).select_from(
+                own.join(nearest_active, true())
+            ),
         ).subquery()
         self._session.execute(
             update(Row)
