@@ -198,6 +198,13 @@ erDiagram
     VARCHAR(60) name_key
     DATETIME archived_at "nullable"
   }
+  withdrawal_reason {
+    INTEGER id PK
+    INTEGER business_id FK
+    VARCHAR(60) name
+    VARCHAR(60) name_key
+    INTEGER position
+  }
   app_user ||--o| reset_link : user_id
   business ||--o{ app_user : business_id
   business ||--o{ catalog_attributes : business_id
@@ -215,6 +222,7 @@ erDiagram
   business ||--o{ stock_withdrawal : business_id
   business ||--o{ stock_withdrawal_line : business_id
   business ||--o{ variety : business_id
+  business ||--o{ withdrawal_reason : business_id
   business ||--o| catalog_header_footer : business_id
   business ||--o| first_run : business_id
   business ||--o| onboarding : business_id

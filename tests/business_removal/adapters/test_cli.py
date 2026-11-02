@@ -73,6 +73,7 @@ EXPORTED_KINDS = (
     "payment",
     "expense_category",
     "expense",
+    "withdrawal_reason",
     "catalog_header_footer",
     "catalog_attributes",
     "onboarding",

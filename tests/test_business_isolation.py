@@ -183,6 +183,12 @@ def seed_stock(client: TestClient) -> dict[str, int]:
     return {"stock_entry_id": entry.json()["id"], "withdrawal_id": withdrawal.json()["id"]}
 
 
+def seed_withdrawal_reasons(client: TestClient) -> dict[str, int]:
+    reason = client.post("/api/withdrawal-reasons", json={"name": f"{MARKER} reason"})
+    assert reason.status_code == 201, reason.text
+    return {"reason_id": reason.json()["id"]}
+
+
 def seed_pinned_catalog(client: TestClient) -> dict[str, int]:
     tested = client.post(
         "/pinned-catalog/test",
@@ -247,6 +253,7 @@ SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_expenses,
     seed_sales,
     seed_stock,
+    seed_withdrawal_reasons,
     seed_catalog,
     seed_pinned_catalog,
     seed_payments,
@@ -306,6 +313,8 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "lines": [{"product_id": 1, "quantity": "2"}],
     },
     ("PUT", "/stock/products/{product_id}/threshold"): {"quantity": "15"},
+    ("POST", "/api/withdrawal-reasons"): {"name": "Another reason"},
+    ("POST", "/api/withdrawal-reasons/{reason_id}/move"): {"direction": "up"},
     ("PUT", "/catalog/products/{product_id}"): {
         "shown": True,
         "emoji": None,

@@ -68,12 +68,12 @@ from app.settings import Settings
 from app.shared.copy import CopyCatalog
 from app.shared.language import BusinessLanguage
 from app.static_spa import FrontNavigation, MissingBuiltFront, ShellPage, SpaStatic, api_segments
+from app.stock.adapters.babel_defaults import BabelReasonDefaults
 from app.stock.adapters.draw_costs import SqlDrawCosts
 from app.stock.adapters.leaving import SqlStockLeaving
 from app.stock.adapters.line_costs import SqlLineCosts
 from app.stock.adapters.onboarding_facts import SqlStockFacts
 from app.stock.adapters.purchases import SqlPurchases
-from app.stock.adapters.babel_defaults import BabelReasonDefaults
 from app.stock.adapters.reasons_opening import WithdrawalReasonsOpening
 from app.stock.adapters.router import reasons_router as stock_reasons_router
 from app.stock.adapters.router import router as stock_router

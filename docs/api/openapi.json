@@ -2981,6 +2981,54 @@
         "title": "ProgressOut",
         "type": "object"
       },
+      "ReasonIn": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "ReasonIn",
+        "type": "object"
+      },
+      "ReasonMoveIn": {
+        "properties": {
+          "direction": {
+            "enum": [
+              "up",
+              "down"
+            ],
+            "title": "Direction",
+            "type": "string"
+          }
+        },
+        "required": [
+          "direction"
+        ],
+        "title": "ReasonMoveIn",
+        "type": "object"
+      },
+      "ReasonOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "ReasonOut",
+        "type": "object"
+      },
       "RecordPaymentOut": {
         "properties": {
           "after": {
@@ -4836,6 +4884,141 @@
         "summary": "Restore Product",
         "tags": [
           "products"
+        ]
+      }
+    },
+    "/api/withdrawal-reasons": {
+      "get": {
+        "operationId": "list_reasons_api_withdrawal_reasons_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReasonOut"
+                  },
+                  "title": "Response List Reasons Api Withdrawal Reasons Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Reasons",
+        "tags": [
+          "stock"
+        ]
+      },
+      "post": {
+        "operationId": "add_reason_api_withdrawal_reasons_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReasonOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Reason",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
+    "/api/withdrawal-reasons/{reason_id}/move": {
+      "post": {
+        "operationId": "move_reason_api_withdrawal_reasons__reason_id__move_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "reason_id",
+            "required": true,
+            "schema": {
+              "title": "Reason Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonMoveIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReasonOut"
+                  },
+                  "title": "Response Move Reason Api Withdrawal Reasons  Reason Id  Move Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Move Reason",
+        "tags": [
+          "stock"
         ]
       }
     },

@@ -52,7 +52,9 @@ def compare(before: Snapshot, after: Snapshot) -> None:
             raise AssertionError(f"table {table!r} is gone")
         new_rows = after[table]
         if len(new_rows) != len(old_rows):
-            raise AssertionError(f"table {table!r} had {len(old_rows)} rows, it has {len(new_rows)}")
+            raise AssertionError(
+                f"table {table!r} had {len(old_rows)} rows, it has {len(new_rows)}"
+            )
         for row_id, old in old_rows.items():
             if row_id not in new_rows:
                 raise AssertionError(f"table {table!r} lost the row {row_id}")
