@@ -76,9 +76,9 @@ Criterios de éxito:
     - toda pertenencia sigue guardada;
     - guardar un Customer nunca la cambia, sin importar lo que mande el pedido;
     - un Customer creado entonces no tiene tipo.
-- **VIP type**: el tipo "VIP" que la actualización creó en cada Business existente (ADR-0059).
+- **VIP type**: el tipo "VIP" que la actualización creó en cada Business existente (ADR-0059), o que la Spreadsheet import crea (abajo).
   - Es el único tipo cuya pertenencia da el VIP price en las Sales nuevas, con la regla de hoy: la Price entry tiene un VIP price y es menor que lo que da cualquier otra regla, y solo mientras Customer types está activado (sales.md, pricing-settings.md).
-  - Lo identifica la actualización, nunca su nombre: renombrarlo o cambiarle el ícono no cambia nada, y un tipo que el vendedor llama "VIP" no da ningún VIP price.
+  - Lo identifica la actualización o la Spreadsheet import, nunca su nombre: renombrarlo o cambiarle el ícono no cambia nada, y un tipo que el vendedor llama "VIP" no da ningún VIP price.
   - Un Customer que entra al VIP type recibe el VIP price desde su próxima Sale; uno que sale deja de recibirlo. Las Sales ya registradas conservan su precio y su Pricing rule (ADR-0003).
   - Sigue las mismas reglas que cualquier tipo: una vez sin Customers se puede eliminar, y desde entonces nadie recibe el VIP price.
   - En la lista de Sales, la insignia VIP de una Sale muestra si el Customer está hoy en el VIP type, no cómo se fijó el precio de esa Sale (sales.md).
@@ -108,7 +108,10 @@ Criterios de éxito:
   - Cada Business existente recibe un tipo "VIP" con un ícono neutro fijo: su VIP type. Lo recibe incluso sin ningún VIP customer, así puede seguir dando el VIP price.
   - Solo los Customers con la marca VIP reciben ese tipo; ningún otro Customer recibe tipo.
   - La marca VIP queda guardada tal cual. El comparador M3 compartido de `tests/migrations/` lo prueba.
-- **Spreadsheet import** (import.md): un VIP de la planilla entra al VIP type de ese Business, que la Spreadsheet import crea si no existe; nunca escribe la marca congelada.
+- **Spreadsheet import** (import.md): un VIP de la planilla entra al VIP type de ese Business; nunca escribe la marca congelada.
+  - Si el Business ya tiene su VIP type, lo usa, se llame como se llame hoy.
+  - Si la planilla tiene al menos un VIP y el Business no tiene VIP type, la Spreadsheet import lo crea con el nombre "VIP" y el ícono neutro fijo.
+  - **Si en ese caso el Business ya tiene un tipo propio del vendedor llamado "VIP"** (sin importar mayúsculas ni espacios), la Spreadsheet import se detiene antes de escribir nada y le dice al Operator, con un texto fijo del Copy module en su terminal, que ese tipo existe y hay que renombrarlo o eliminarlo antes de volver a correrla. Nunca toma el tipo del vendedor como VIP type ni crea el VIP type con otro nombre. No es una **Unfinished row**: es un chequeo sobre el Business, previo a toda escritura, y no nombra ningún Customer ni monto.
 - **Business export** (accounts.md, ADR-0015): sigue el esquema por reflexión, así que los Business exports nuevos y el registro de tablas y columnas de la **Business removal** llevan los Customer types y la pertenencia, y no llevan canal. Los Business exports escritos antes del cambio conservan lo que tenían; nada importa un Business export de vuelta. Las cantidades exportadas siguen siendo iguales a las eliminadas.
 - **Aislamiento (ADR-0004)**:
   - El Business sale de la **Session**.
@@ -198,6 +201,7 @@ Criterios de éxito:
 - **Reglas de los tipos**: tests de la API cubren crear, renombrar y cambiar el ícono; el rechazo de un nombre en blanco, de más de 40 caracteres y repetido sin importar mayúsculas ni espacios (también al renombrar); el rechazo de eliminar un tipo con Customers, que lleva la cantidad; y eliminar un tipo vacío, el VIP type incluido. Cada rechazo tiene su `code` en `contract.json`, verificado por `tests/test_refusal_codes.py`.
 - **Formulario del tipo**: los tests del front muestran que el tipo se elige, se cambia y se quita con "No type"; que el interruptor VIP ya no está; que "Add a customer type" aparece solo sin tipos y lleva a Settings → Prices → Customer types.
 - **La marca congelada**: después de la actualización, ningún camino de escritura (API, Spreadsheet import, apertura de un Business) cambia `customer.vip`, probado.
+- **Spreadsheet import y el VIP type**: tests del import cubren que los VIP de la planilla entran al VIP type existente aunque esté renombrado; que sin VIP type se crea uno; y que sin VIP type y con un tipo del vendedor llamado "VIP" (también " vip ") el import se detiene con su texto fijo y deja 0 filas nuevas en todas las tablas.
 - **Textos**: todo texto nuevo está en el Copy module, `en-XA` está regenerado, y ningún valor por defecto nuevo lleva una palabra de flor.
 - **Sin regresiones**: las suites existentes de customers, payments y navigation pasan sin aflojar ninguna aserción.
 - **Sin curl**: la corrida end-to-end del front agrega, encuentra y edita un Customer, agrega uno sin número, le asigna un tipo, abre Record payment desde "Collect" con el Customer elegido, y abre "New sale to <name>" con ese Customer elegido. (Criterio 4)
@@ -213,6 +217,7 @@ Criterios de éxito:
 - Mostrar el nombre o el ícono del Customer type en las filas de Customers, en Pick a customer o en Sales.
 - Crear un Customer type desde el formulario del Customer, o volver al formulario con el tipo nuevo preelegido.
 - Precios por Customer type (parte customer-type prices, ADR-0059).
+- Que la Spreadsheet import resuelva sola un choque con un tipo del vendedor llamado "VIP" (adoptarlo, renombrarlo o crear el VIP type con otro nombre).
 - Un canal de Customer, o cualquier reemplazo para él; guardar una copia de los valores viejos del canal en cualquier lado.
 - Una pantalla Owed to you aparte; una cifra de deuda tocable en la cabecera de Customers; cualquier filtro u orden de Customers más allá de lo definido acá.
 - Importar de vuelta un Business export viejo.
