@@ -9,7 +9,16 @@ from __future__ import annotations
 from collections.abc import Iterator
 
 import pytest
-from sqlalchemy import Column, Integer, MetaData, Table, UniqueConstraint, insert, text
+from sqlalchemy import (
+    Column,
+    Connection,
+    Integer,
+    MetaData,
+    Table,
+    UniqueConstraint,
+    event,
+    insert,
+)
 from sqlalchemy.orm import Session
 
 from app.db import MoneyFormatMissing, make_engine, money_scale_factor, money_stored_value
@@ -77,11 +86,31 @@ def test_a_stored_value_is_the_hundredths_at_scale_2(session: Session) -> None:
 
 
 def test_the_lookup_searches_the_unique_index_instead_of_scanning(session: Session) -> None:
-    plan = session.execute(
-        text("EXPLAIN QUERY PLAN SELECT scale FROM money_format WHERE business_id = :b"),
-        {"b": 1},
-    ).all()
-    details = " ".join(str(row[-1]) for row in plan)
+    """EXPLAINs the very statement `money_scale_factor` sends, captured off the connection,
+    so the test fails if the helper's own query stops using the unique index."""
+    sent: list[tuple[str, tuple[object, ...]]] = []
+
+    def capture(
+        _conn: Connection,
+        _cursor: object,
+        statement: str,
+        parameters: tuple[object, ...],
+        _context: object,
+        _executemany: bool,
+    ) -> None:
+        sent.append((statement, parameters))
+
+    bind = session.get_bind()
+    event.listen(bind, "before_cursor_execute", capture)
+    try:
+        money_scale_factor(session, 1)
+    finally:
+        event.remove(bind, "before_cursor_execute", capture)
+
+    assert len(sent) == 1
+    statement, parameters = sent[0]
+    plan = session.connection().exec_driver_sql(f"EXPLAIN QUERY PLAN {statement}", parameters)
+    details = " ".join(str(row[-1]) for row in plan.all())
     assert "SEARCH" in details
     assert "USING INDEX" in details
     assert "(business_id=?)" in details
