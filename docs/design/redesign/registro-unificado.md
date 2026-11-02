@@ -55,6 +55,13 @@ botón principal de 54 px.
 - **Tamaños aprobados:** el segmento Catálogo | Stock | Promos pasa a 36 px como Hoy | Análisis; "‹ Clientes"
   en la ficha suma un área de toque de 44 px sin cambiar cómo se ve; el ticket promedio dice
   "Ticket promedio $7.800 · cada 9 días"; la cruz y los chips de Nuevo gasto y del pago pasan a 44 px.
+- **El botón de la hoja de pago dice "Guardar pago · $X"**, igual que "Guardar gasto". Reemplaza "Anotar pago".
+- **En la compu, Stock y Gastos son páginas propias de la barra lateral**, con el mismo contenido que en el teléfono
+  (donde Stock vive dentro de Productos y Gastos dentro de Análisis).
+- **Paneles de carga en la compu:** todos los de 480 px usan la misma cabecera: título de 20 px, cruz de 44 × 44
+  con ícono de 16 px y sin línea bajo el encabezado. El panel de 880 px de Nueva venta queda como está dibujado.
+- **Stock bajo en rojo:** "Por reponer" usa el rojo del teléfono y de Productos (#C0352B claro, #F07A6E oscuro)
+  también en StockCompu.
 
 ## Archivos
 
@@ -110,7 +117,7 @@ Fuente en `fuente/compu/`, a 1440 × 900 como el resto de las pantallas de compu
 
 | Archivo | Estado | Qué es |
 |---|---|---|
-| AnalisisCompu.dc.html | reemplaza | Análisis con la tarjeta Gastos ("+ Anotar gasto", "Ver los 7 gastos") |
+| AnalisisCompu.dc.html | reemplaza | Análisis con la tarjeta Gastos ("+ Anotar gasto", "Ver los 4 gastos") |
 | AnalisisCompuOscuro.dc.html | reemplaza | AnalisisCompu con los colores oscuros |
 | ClienteFichaPagoCompu.dc.html | nuevo | Tocar un pago en la ficha: panel con "Borrar este pago" |
 | ClienteFichaPagoCompuOscuro.dc.html | nuevo | ClienteFichaPagoCompu con los colores oscuros |
