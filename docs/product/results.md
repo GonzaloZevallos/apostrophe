@@ -1,262 +1,261 @@
-# Results
+# Resultados
 
-Whether a business makes money and how much it actually has, over today, this week and this month: the panel on Home. It is read only and seen only by its business (ADR-0004). It reads:
+Si un Business gana plata y cuánta tiene de verdad, hoy, esta semana y este mes: el Panel de Home. Es de solo lectura y lo ve solo su Business (ADR-0004). Lee:
 
-- sales and their totals from sales;
-- cost of goods sold, stock shortfall and the cost of stock withdrawals (promotion and own use) from stock's lots (ADR-0009, ADR-0010);
-- expenses from expenses;
-- purchases from stock;
-- payments, balances and settlement from payments (ADR-0012);
-- stock status and days left from stock.
+- las ventas y sus totales, de sales;
+- el Cost of goods sold, el Stock shortfall y el costo de los Stock withdrawals por Withdrawal reason, de los Lots de stock (ADR-0009, ADR-0010);
+- las Expenses, de expenses;
+- las Purchases, de stock;
+- los Payments, los Balances y el Settlement, de payments (ADR-0012);
+- el Stock status y los Days left, de stock.
 
-It computes nothing those capabilities already compute, beyond adding them up. Its period figures come from the one computation Analysis also reads (ADR-0020): Profit here and profit in Analysis are the same figure. Home also carries the Onboarding's notice (onboarding.md), the first-run checklist and the after-import notice (navigation.md); their place on Home is set here. An archived variety (varieties.md) leaves What you have left and "Start with your varieties", while every period figure keeps it.
+No calcula nada que esas capacidades ya calculen, más allá de sumarlo. Sus cifras por período salen del único cálculo que también lee Analysis (ADR-0020): el Profit de acá y el de Analysis son la misma cifra. Home también lleva el aviso del Onboarding (onboarding.md), la First-run checklist y el aviso posterior a la importación (navigation.md); acá se define su lugar en Home. Una Archived variety (varieties.md) sale de What you have left y de "Start with your varieties", mientras que todas las cifras del período la siguen contando.
 
 ## Jobs
 
-**When** I open the app, or stop between orders or at the end of the day to see how today, this week or this month is going, **I want to** see on one screen what I sold, what it cost me, what I spent, what I earned (Profit), the money that actually moved (Cash), who owes me and what I have left of each variety, **so I can** tell whether I'm making money and how much I actually have, and know whether to restock or chase a debt, without opening Sales, Customers and Varieties one by one or doing any arithmetic myself.
+**Cuando** abro la app, o paro entre pedidos o al final del día para ver cómo va hoy, esta semana o este mes, **quiero** ver en una sola pantalla qué vendí, cuánto me costó, cuánto gasté, cuánto gané (Profit), la plata que realmente se movió (Cash), quién me debe y cuánto me queda de cada Variety, **para** saber si estoy ganando plata y cuánta tengo de verdad, y saber si tengo que reponer o cobrar una deuda, sin abrir Sales, Customers y Varieties una por una ni hacer ninguna cuenta.
 
-Profit and Cash exist nowhere else in the product, and they are why the panel exists. The spreadsheet's Panel got profit wrong: its profit dropped the week flower was bought. Showing debt and stock on the same screen is a convenience on top of that.
+El Profit y el Cash no existen en ningún otro lugar del producto, y son la razón de ser del Panel. El Panel de la planilla calculaba mal la ganancia: bajaba la semana en que se compraba flor. Mostrar la deuda y el stock en la misma pantalla es una comodidad que se suma a eso.
 
-**When** I open the app between orders or at the end of the day, **I want** to see what I sold today, who owes me and what is running out, and act on it at once (collect from a debtor, open a variety that is running low, fix what a notice tells me), **so I can** get back to the customer without going through Customers and Varieties one by one or doing any arithmetic.
+**Cuando** abro la app entre pedidos o al final del día, **quiero** ver qué vendí hoy, quién me debe y qué se está terminando, y actuar enseguida (cobrarle a un deudor, abrir una Variety que está baja, arreglar lo que me dice un aviso), **para** volver al Customer sin pasar por Customers y Varieties una por una ni hacer cuentas.
 
-This refines the panel job above and the navigation job for Today (GH-45); it is not a new job. Its protagonist is the seller, on the phone, with little time; Week and Month are for the weekly or monthly look, Analysis for anything deeper. Before it, the seller went into Customers to collect and into Varieties variety by variety, and set the business up without a guide, often forgetting the bot.
+Este job afina el job del Panel de arriba y el job de navegación para Today (GH-45); no es un job nuevo. Su protagonista es el vendedor, en el teléfono y con poco tiempo. Week y Month son para la mirada semanal o mensual, y Analysis para todo lo más profundo. Antes, el vendedor entraba a Customers para cobrar y a Varieties Variety por Variety, y configuraba el Business sin guía, muchas veces olvidándose del bot.
 
-**When** I take grams out of my own stock without selling them (to share at a party so people get to know the business, or for my own use), **I want** to record them from my phone in a few taps (date, varieties and grams, the reason), **so I can** keep stock right and see in Profit what promoting the business and my own consumption cost me, without recording a sale nobody made or an adjustment that reads as lost flower. (Served here by the Promotion and Own use lines of Week and Month; the withdrawal is defined in stock.md.)
+**Cuando** saco gramos de mi propio stock sin venderlos (para convidar en una fiesta y que la gente conozca el negocio, o para consumo propio), **quiero** registrarlo desde el teléfono en pocos toques (fecha, Varieties y gramos, motivo), **para** mantener bien el stock y ver en el Profit lo que me costó promocionar el negocio y lo que consumí, sin registrar una venta que nadie hizo ni un ajuste que se lee como flor perdida. (Acá lo sirven las líneas de costo por motivo de Week y Month; el retiro se define en stock.md.)
 
-**When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by Today showing what can be acted on today, with "Collect" on each debtor.)
+**Cuando** saco stock sin venderlo, **quiero** archivarlo bajo un motivo con mis propias palabras, **para que** Home y Analysis muestren cuánto me cuesta cada tipo de retiro y cuánto baja mi Profit. (GH-318, motivos de retiro: acá lo sirve una línea de costo por Withdrawal reason en Week y Month, en el orden de la lista del Business; la lista se define en stock.md.)
 
-**When** I have just opened my business and it is still empty, **I want** to be walked through what it needs, one short step at a time, with defaults already filled in, **so I can** record my first sale the same day without hunting through Settings, Varieties and the catalog screen. (Served here by the "Go on to the setup" notice at the top of Home, the only way back into the Onboarding; defined in onboarding.md.)
+**Cuando** llevo el negocio desde el teléfono entre pedidos o en medio de un chat con un Customer, varias veces por día, **quiero** que la app esté ordenada según lo que hago de verdad y con qué frecuencia, **para** volver al Customer en vez de buscar entre menús. (Es el job de navegación, navigation.md. Acá lo sirve Today, que muestra lo que se puede resolver hoy, con "Collect" en cada deudor.)
 
-**When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if it never moved and archiving it if it has history, **so** my lists show only what I still sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly as it was if I start selling it again. (Served here by What you have left leaving archived varieties out while every period figure stays the same; defined in varieties.md.)
+**Cuando** acabo de abrir mi Business y todavía está vacío, **quiero** que me guíen por lo que necesita, un paso corto a la vez y con valores por defecto ya cargados, **para** registrar mi primera venta el mismo día sin buscar entre Settings, Varieties y la pantalla del Catalog. (Acá lo sirve el aviso "Go on to the setup" arriba de Home, el único camino de vuelta al Onboarding; se define en onboarding.md.)
 
-Success criteria:
+**Cuando** una Variety que cargué por error, o una con la que ya no trabajo, sigue apareciendo en mis listas y selectores, **quiero** sacarla desde el teléfono en pocos toques, eliminándola si nunca se movió y archivándola si tiene historial, **para que** mis listas muestren solo lo que todavía vendo, ninguna cifra pasada de ventas, stock, costo o ganancia cambie, y pueda volver a tenerla exactamente como estaba si empiezo a venderla de nuevo. (Acá lo sirve What you have left, que deja afuera las Archived varieties mientras todas las cifras del período siguen iguales; se define en varieties.md.)
 
-1. **A glance, from the phone**: the panel opens, and switching between Today, Week (Monday to Sunday) and Month answers, in under 300 ms with a few hundred sales. Each period shows its date range.
-2. **It never disagrees with the dedicated screens**:
-   - the period's sales total and count equal Sales for the same period;
-   - Owed to you's total, count and oldest date equal the Customers' "Owed to you" section;
-   - each variety's grams, status and days left equal Varieties;
-   - Week's and Month's Profit, cost of goods sold, stock shortfall, Promotion, Own use, expenses and Cash equal Analysis's row for the same week and month.
+Criterios de éxito:
 
-   Any figure that disagrees is a defect.
-3. **Profit and Cash are honest**:
-   - Profit = sales − cost of goods sold − stock shortfall − promotion cost − own-use cost − expenses (CONTEXT.md: Profit).
-   - Cash = payments received − expenses − purchases, each counted on its own date.
-   - They appear side by side under those names, in Week and Month.
-   - A negative figure is shown as it is, never hidden or floored.
-   - Pending cost is flagged, never treated as $0 (ADR-0009). Profit is then worked out over the costed part.
-   - Flower lost to a negative adjustment lowers Profit on the adjustment's date.
-   - Grams withdrawn for promotion or own use lower Profit on the withdrawal's date, each reason on its own line, never folded into cost of goods sold or stock shortfall.
-   - Corrected stock entries and withdrawals show the next time the panel opens: a period has no closing date.
-   - Archiving or restoring a variety moves no figure.
-4. **Who owes and what's left, at a glance**: money owed, each debtor one tap from collecting, and stock per unarchived variety with its status. Status is told by shape and word, never by color alone.
-5. **Businesses never mix** (ADR-0004): every figure comes from the caller's business alone, and the panel route joins the isolation sweep. No figure goes to the console or browser storage.
-6. **Nothing invented, nothing computed in the browser**:
-   - every figure comes from the server;
-   - a period with no activity shows real zeros;
-   - average sale shows nothing when the period has no sales.
-7. **A withdrawal is not a sale**: recording one leaves sales, number of sales, average sale, grams sold, You gave away, cost of goods sold, stock shortfall and Cash exactly as they were.
-8. **Collect in one tap from Today**: "Collect" on each debtor row of the "Owed to you" block opens Record payment with that customer chosen, accessible name "Collect from <name>"; back or "Close" leaves it in one move.
-9. **Today is only what can be acted on**: sold today, then Owed to you, then What you have left; a low variety links to its page; no result figure (Profit, Cash, costs, Expenses, You gave away, Purchases) shows on Today.
-10. **First run follows today's definition**: a brand-new business gets the Onboarding notice; only a business that existed before the Onboarding shipped sees the four-step checklist; an imported business sees the dismissable after-import notice; at most one first-run element shows at a time (navigation.md).
-11. **Every notice leads to its fix**: "Your Telegram catalog is out of date" opens the catalog screen; the business avatar opens Settings.
-12. **Looks as designed**: Home, `InicioOscuro` (Home, dark theme) and `InicioCompu` (Home, computer layout) match `docs/product/design-system/pantallas/`, phone and computer, both themes.
+1. **Un vistazo, desde el teléfono**: el Panel abre, y cambiar entre Today, Week (de lunes a domingo) y Month responde, en menos de 300 ms con unos cientos de ventas. Cada período muestra su rango de fechas.
+2. **Nunca contradice a las pantallas propias**:
+   - el total y la cantidad de ventas del período son iguales a los de Sales para el mismo período;
+   - el total, la cantidad y la fecha más antigua de Owed to you son iguales a los de la sección "Owed to you" de Customers;
+   - los gramos, el estado y los Days left de cada Variety son iguales a los de Varieties;
+   - el Profit, el Cost of goods sold, el Stock shortfall, el costo de cada Withdrawal reason, las Expenses y el Cash de Week y Month son iguales a la fila de Analysis para la misma semana y el mismo mes.
 
-## Behaviour
+   Cualquier cifra que no coincida es un defecto.
+3. **Profit y Cash son honestos**:
+   - Profit = ventas − Cost of goods sold − Stock shortfall − el costo de cada Withdrawal reason − Expenses (CONTEXT.md: Profit).
+   - Cash = Payments recibidos − Expenses − Purchases, cada uno contado en su propia fecha.
+   - Aparecen uno al lado del otro con esos nombres, en Week y Month.
+   - Una cifra negativa se muestra tal cual, nunca se oculta ni se lleva a cero.
+   - El Pending cost se marca, nunca se toma como $0 (ADR-0009). El Profit se calcula entonces sobre la parte con costo.
+   - La flor perdida por un Adjustment negativo baja el Profit en la fecha del Adjustment.
+   - Los gramos retirados bajan el Profit en la fecha del retiro, cada Withdrawal reason en su propia línea, nunca dentro del Cost of goods sold ni del Stock shortfall.
+   - Las Stock entries y los retiros corregidos se ven la próxima vez que se abre el Panel: un período no tiene fecha de cierre.
+   - Archivar o restaurar una Variety no mueve ninguna cifra.
+4. **Quién debe y qué queda, de un vistazo**: la plata adeudada, cada deudor a un toque de cobrarle, y el stock de cada Variety sin archivar con su estado. El estado se dice por forma y palabra, nunca solo por color.
+5. **Los Businesses nunca se mezclan** (ADR-0004): cada cifra sale solo del Business de quien consulta, y la ruta del Panel entra en el barrido de aislamiento. Ninguna cifra va a la consola ni al almacenamiento del navegador.
+6. **Nada inventado, nada calculado en el navegador**:
+   - cada cifra viene del servidor;
+   - un período sin actividad muestra ceros reales;
+   - el Average sale no muestra nada cuando el período no tiene ventas.
+7. **Un retiro no es una venta**: registrar uno deja exactamente como estaban las ventas, la cantidad de ventas, el Average sale, los gramos vendidos, You gave away, el Cost of goods sold, el Stock shortfall y el Cash.
+8. **Cobrar en un toque desde Today**: "Collect" en cada fila de deudor del bloque "Owed to you" abre Record payment con ese Customer elegido, con nombre accesible "Collect from <name>"; volver o "Close" sale con un solo movimiento.
+9. **Today es solo lo que se puede resolver**: lo vendido hoy, después Owed to you, después What you have left; una Variety baja lleva a su página; ninguna cifra de resultado (Profit, Cash, costos, Expenses, You gave away, Purchases) se muestra en Today.
+10. **El primer uso sigue la definición de hoy**: un Business recién creado recibe el aviso del Onboarding; solo un Business que existía antes de que saliera el Onboarding ve la checklist de cuatro pasos; un Business importado ve el aviso posterior a la importación, que se puede descartar; nunca se muestra más de un elemento de primer uso a la vez (navigation.md).
+11. **Cada aviso lleva a su arreglo**: "Your Telegram catalog is out of date" abre la pantalla del Catalog; el avatar del Business abre Settings.
+12. **Como en el diseño**: Home, `InicioOscuro` (Home, tema oscuro) e `InicioCompu` (Home, disposición de computadora) coinciden con `docs/product/design-system/pantallas/`, en teléfono y computadora, en los dos temas.
+13. **Nada cambia para un Business existente** (GH-318, motivos de retiro): ve los mismos costos, Profit y Cash; la única diferencia visible es que la línea "Promotion" ahora dice "Marketing".
 
-### Periods
+## Comportamiento
 
-- Today, Week and Month, in Argentina time, with the same definitions as Sales. There is no Dates.
-  - Week is the Monday-to-Sunday week that contains today.
-  - Month is the current calendar month.
-- The panel opens on Today.
-- **Ranges**: "Today 03/10", "28/09 – 04/10" and "01/10 – 31/10".
-  - Always `dd/mm`, with no month names, even when a week crosses into another month or year.
-  - A range covers the whole period, including days still to come. The figures cover only what has been recorded.
+### Períodos
 
-### Figures per period
+- Today, Week y Month, en hora argentina, con las mismas definiciones que Sales. No hay Dates.
+  - Week es la semana de lunes a domingo que contiene hoy.
+  - Month es el mes calendario en curso.
+- El Panel abre en Today.
+- **Rangos**: "Today 03/10", "28/09 – 04/10" y "01/10 – 31/10".
+  - Siempre `dd/mm`, sin nombres de mes, aunque una semana cruce a otro mes o año.
+  - Un rango cubre el período entero, incluidos los días que faltan. Las cifras cubren solo lo registrado.
 
-Each figure is counted on its own date. Sales, cost of goods sold, stock shortfall, promotion and own-use cost, expenses, Profit and Cash come from the same period computation as Analysis (ADR-0020), never from a second sum. They count every variety, archived ones included.
+### Cifras por período
 
-- **Sales**: the sum of the period's sale totals, shipping included, paid or not. It is the same figure as Sales' total. Its heading follows the tab: "You sold today", "You sold this week" or "You sold this month". Withdrawals are never sales.
-- **Number of sales**: counts sales, not lines.
-- **Average sale**: sales ÷ number of sales, rounded half up to the whole peso. Nothing shows when there are no sales.
-- **Grams sold**: the grams of the period's lines that are not gifts.
-- **Grams gifted** ("You gave away"): the grams of the period's gift lines. Withdrawn grams are never gifted grams.
-- **Cost of goods sold** ("Cost of goods sold"): what the grams of the period's sale lines (gifts included) cost, from their lots as the lots stand now (ADR-0009, ADR-0010). Neither a negative adjustment's cost nor a withdrawal's is part of it.
-- **Stock shortfall** ("Stock shortfall"): what the grams taken out by the period's negative adjustments cost, on the adjustment's date, from their lots as they stand now, oldest first (CONTEXT.md: Stock shortfall). It shows as "Stock shortfall $ X" only when the period has any negative adjustment; otherwise the line is left out. It never includes a withdrawal.
-- **Promotion cost** ("Promotion") and **own-use cost** ("Own use"): what the grams of the period's withdrawals of that reason cost, on the withdrawal's date, from their lots as they stand now, oldest first. Each shows as "Promotion $ X" or "Own use $ X" only when the period has a withdrawal of that reason; otherwise its line is left out.
-- **Expenses** ("Expenses"): the sum of the period's expenses.
-- **Purchases** ("Flower purchases"): the total cost of the period's purchase stock entries.
-- **Ganancia**: sales − cost of goods sold − stock shortfall − promotion cost − own-use cost − expenses.
-  - When any of its cost is pending, it is worked out over the costed part: the sales of pending grams are left out (sales − (sales without shipping − sales of costed grams) − costed cost of goods − costed shortfall − costed promotion cost − costed own-use cost − expenses), with sales of costed grams per line as CONTEXT.md's Margin defines them (line total × costed grams ÷ line grams, half up). The sales figure shown stays the full sales.
-  - It is the same figure Analysis shows as profit for the same week or month.
-  - It takes the design's accent treatment whatever its sign: the accent marks the headline figure, not whether it is good or bad.
-- **Caja**: payments received − expenses − purchases. Payments received are every payment dated in the period, on-the-spot and later ones alike, each on its own payment date. Cash is shown side by side with Profit. A withdrawal never touches it.
+Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el Stock shortfall, el costo de cada Withdrawal reason, las Expenses, el Profit y el Cash salen del mismo cálculo por período que Analysis (ADR-0020), nunca de una segunda suma. Cuentan todas las Varieties, las archivadas incluidas.
 
-### What each tab shows
+- **Ventas**: la suma de los totales de las ventas del período, envío incluido, pagadas o no. Es la misma cifra que el total de Sales. Su título sigue a la pestaña: "You sold today", "You sold this week" o "You sold this month". Los retiros nunca son ventas.
+- **Cantidad de ventas**: cuenta ventas, no líneas.
+- **Average sale**: ventas ÷ cantidad de ventas, redondeado al peso entero con mitad hacia arriba. No se muestra nada cuando no hay ventas.
+- **Gramos vendidos**: los gramos de las líneas del período que no son Gifts.
+- **Gramos regalados** ("You gave away"): los gramos de las líneas de Gift del período. Los gramos retirados nunca son gramos regalados.
+- **Cost of goods sold** ("Cost of goods sold"): lo que cuestan los gramos de las líneas de venta del período (Gifts incluidos), de sus Lots tal como están hoy (ADR-0009, ADR-0010). No incluye el costo de un Adjustment negativo ni el de un retiro.
+- **Stock shortfall** ("Stock shortfall"): lo que cuestan los gramos sacados por los Adjustments negativos del período, en la fecha del Adjustment, de sus Lots tal como están hoy, primero el más antiguo (CONTEXT.md: Stock shortfall). Se muestra como "Stock shortfall $ X" solo cuando el período tiene algún Adjustment negativo; si no, la línea se deja afuera. Nunca incluye un retiro.
+- **Costo de cada Withdrawal reason** (una línea con el nombre del motivo, por ejemplo "Marketing $ X" u "Own use $ X"): lo que cuestan los gramos de los retiros del período con ese motivo, en la fecha del retiro, de sus Lots tal como están hoy, primero el más antiguo. Se muestra solo cuando el período tiene un retiro de ese motivo; si no, su línea se deja afuera. Las líneas siguen el orden de la lista de motivos del Business, y el nombre es el actual del motivo, también para los períodos pasados.
+- **Expenses** ("Expenses"): la suma de las Expenses del período.
+- **Purchases** ("Flower purchases"): el costo total de las Stock entries de origen Purchase del período.
+- **Profit**: ventas − Cost of goods sold − Stock shortfall − el costo de cada Withdrawal reason − Expenses.
+  - Cuando parte de su costo está pendiente, se calcula sobre la parte con costo: las ventas de los gramos pendientes se dejan afuera (ventas − (ventas sin envío − ventas de gramos con costo) − Cost of goods sold con costo − faltante con costo − el costo con costo de cada Withdrawal reason − Expenses), con las ventas de gramos con costo por línea como las define el Margin de CONTEXT.md (total de la línea × gramos con costo ÷ gramos de la línea, con mitad hacia arriba). La cifra de ventas que se muestra sigue siendo la venta completa.
+  - Es la misma cifra que Analysis muestra como Profit para la misma semana o el mismo mes.
+  - Lleva el tratamiento de acento del diseño cualquiera sea su signo: el acento marca la cifra principal, no si es buena o mala.
+- **Cash**: Payments recibidos − Expenses − Purchases. Los Payments recibidos son todos los Payments con fecha en el período, tanto los On-the-spot payments como los posteriores, cada uno en su propia fecha. El Cash se muestra al lado del Profit. Un retiro nunca lo toca.
 
-- **Today** shows what can be acted on today, top to bottom: what was sold today (sales, number of sales, average sale and grams sold), then the "Owed to you" block, then What you have left.
-- **Week and Month** show sales, number of sales, average sale, grams sold, You gave away, Cost of goods sold, Stock shortfall (when the period has one), Promotion and Own use (each when the period has one), Expenses, Flower purchases, Profit and Cash, then the "Owed to you" block and What you have left. Promotion and Own use sit right after Stock shortfall and before Expenses.
-- Profit, Cash, Cost of goods sold, Stock shortfall, Promotion, Own use, Expenses, You gave away and Purchases never show on Today.
+### Qué muestra cada pestaña
+
+- **Today** muestra lo que se puede resolver hoy, de arriba abajo: lo vendido hoy (ventas, cantidad de ventas, Average sale y gramos vendidos), después el bloque "Owed to you", después What you have left.
+- **Week y Month** muestran ventas, cantidad de ventas, Average sale, gramos vendidos, You gave away, Cost of goods sold, Stock shortfall (cuando el período lo tiene), una línea por cada Withdrawal reason con retiros en el período, Expenses, Flower purchases, Profit y Cash, y después el bloque "Owed to you" y What you have left. Las líneas de los motivos van justo después de Stock shortfall y antes de Expenses, en el orden de la lista del Business.
+- El Profit, el Cash, el Cost of goods sold, el Stock shortfall, las líneas de los motivos, las Expenses, You gave away y las Purchases nunca se muestran en Today.
 
 ### Pending cost
 
-- A fixed "includes pending cost" note, with no grams or amounts:
-  - under Cost of goods sold, when any of the period's sale lines has pending grams as the lots stand now;
-  - under Stock shortfall, when any of the period's negative adjustments has pending grams;
-  - under Promotion, when any of the period's promotion withdrawals has pending grams; under Own use, likewise for own use;
-  - under Profit, when any of those applies.
-- Cash never carries it: pending cost is not money that moved.
-- With nothing pending, no figure shows the note.
+- Una nota fija, "includes pending cost", sin gramos ni montos:
+  - debajo de Cost of goods sold, cuando alguna de las líneas de venta del período tiene gramos pendientes tal como están hoy los Lots;
+  - debajo de Stock shortfall, cuando alguno de los Adjustments negativos del período tiene gramos pendientes;
+  - debajo de la línea de cada Withdrawal reason, cuando alguno de los retiros del período con ese motivo tiene gramos pendientes;
+  - debajo de Profit, cuando corresponde cualquiera de las anteriores.
+- El Cash nunca la lleva: el Pending cost no es plata que se movió.
+- Sin nada pendiente, ninguna cifra muestra la nota.
 
-### Negative figures
+### Cifras negativas
 
-- Profit and Cash may go below zero.
-- A negative figure reads with a minus sign before the app's money format: "−$ 4.500".
-- It is shown in the neutral treatment, never red or amber, and is never hidden or floored. The sign tells the state.
-- "Credit" stays reserved for a customer's credit.
+- El Profit y el Cash pueden quedar por debajo de cero.
+- Una cifra negativa se lee con un signo menos antes del formato de dinero de la app: "−$ 4.500".
+- Se muestra con el tratamiento neutro, nunca en rojo ni ámbar, y nunca se oculta ni se lleva a cero. El signo dice el estado.
+- "Credit" queda reservado para el Credit de un Customer.
 
-### Owed to you block
+### Bloque Owed to you
 
-- **Figures**: the total owed, the count of sales still owing ("1 sale owing" or "N sales owing") and the oldest owing-since date, as payments.md defines them.
-- **Teaser**: up to 3 customers with the highest balance above $0. Ties go by owing since (oldest first), then by name. The design may tune the number.
-  - Each row shows the balance in amber and "since dd/mm", and carries "Collect" (accessible name "Collect from <name>"), which opens Record payment with that customer already chosen (payments.md), as an entry in the app's history.
-  - Tapping the rest of the row opens that customer's card.
-- Tapping the block's heading opens Customers, on its Owed to you section.
-- Customers in credit never appear and count in no figure.
-- **Nobody owes**: the block stays and reads a fixed "Nobody owes you", with nothing to tap.
-- **After "Collect"**: Record payment follows payments.md unchanged (a partial payment allowed, a payment above the balance refused inline keeping everything typed, "All" filling the whole balance). Saving or "Close" returns to Home in one move. The toast is payments.md's "Payment saved · still owing $ X", or "Payment saved" when nothing is left owing; it never names the customer. The block refreshes from the API:
-  - the total, the count and the oldest date update;
-  - a debtor still owing stays, with the new balance;
-  - a debtor paid in full leaves, and the teaser refills to 3 by its own order;
-  - with nobody left owing, it reads "Nobody owes you".
+- **Cifras**: el Total owed, la cantidad de Sales still owing ("1 sale owing" o "N sales owing") y la fecha de Owing since más antigua, como las define payments.md.
+- **Avance**: hasta 3 Customers con el Balance más alto por encima de $0. Los empates se ordenan por Owing since (el más antiguo primero) y después por nombre. El diseño puede ajustar el número.
+  - Cada fila muestra el Balance en ámbar y "since dd/mm", y lleva "Collect" (nombre accesible "Collect from <name>"), que abre Record payment con ese Customer ya elegido (payments.md), como una entrada en el historial de la app.
+  - Tocar el resto de la fila abre la ficha de ese Customer.
+- Tocar el título del bloque abre Customers, en su sección Owed to you.
+- Los Customers con Credit nunca aparecen y no cuentan en ninguna cifra.
+- **Nadie debe**: el bloque se queda y dice un fijo "Nobody owes you", sin nada para tocar.
+- **Después de "Collect"**: Record payment sigue payments.md sin cambios (se permite un Payment parcial, un Payment mayor que el Balance se rechaza en línea conservando todo lo tipeado, "All" completa el Balance entero). Guardar o "Close" vuelve a Home en un solo movimiento. El toast es el de payments.md, "Payment saved · still owing $ X", o "Payment saved" cuando no queda nada adeudado; nunca nombra al Customer. El bloque se actualiza desde la API:
+  - el total, la cantidad y la fecha más antigua se actualizan;
+  - un deudor que todavía debe se queda, con el Balance nuevo;
+  - un deudor que pagó todo sale, y el avance se vuelve a completar hasta 3 según su propio orden;
+  - si ya no debe nadie, dice "Nobody owes you".
 
-  Home adds no animation and no rule of its own.
+  Home no agrega ninguna animación ni regla propia.
 
 ### What you have left
 
-- Every unarchived variety, sorted by name, including varieties with no entries. Archived varieties are left out (varieties.md).
-- Each one shows what Varieties shows:
-  - grams;
-  - its status mark, told by shape and word;
-  - days left;
-  - its detail line: "No grams since 30/09", "You are warned below 20 g" or "Add its first entry".
-- A variety that is low links to its page (varieties.md).
-- A variety with no threshold shows no warning line.
-- Low varieties are not moved first; the order is by name.
-- There is no total grams.
+- Cada Variety sin archivar, ordenada por nombre, incluidas las Varieties sin movimientos. Las Archived varieties se dejan afuera (varieties.md).
+- Cada una muestra lo mismo que Varieties:
+  - gramos;
+  - su marca de estado, dicha por forma y palabra;
+  - Days left;
+  - su línea de detalle: "No grams since 30/09", "You are warned below 20 g" o "Add its first entry".
+- Una Variety baja lleva a su página (varieties.md).
+- Una Variety sin umbral no muestra línea de aviso.
+- Las Varieties bajas no se ponen primero; el orden es por nombre.
+- No hay gramos totales.
 
-### On screen (Home; `InicioOscuro`, Home in the dark theme; `InicioCompu`, Home in the computer layout)
+### En pantalla (Home; `InicioOscuro`, Home en el tema oscuro; `InicioCompu`, Home en la disposición de computadora)
 
-- Home is the panel and a tab root (navigation.md), and remains the landing screen after login and after accepting a join invitation. Accepting a new-business invitation lands in the Onboarding instead (onboarding.md).
-- **At its top**: the business's avatar, which opens Settings.
-- **Top to bottom, above the figures**:
-  1. the first-run element of the business, at most one of:
-     - "Go on to the setup", while the Onboarding is not over (onboarding.md): "N of 6 steps" and what is next, not dismissible;
-     - the first-run checklist while it shows (navigation.md), for a business that existed before the Onboarding.
+- Home es el Panel y una Tab root (navigation.md), y sigue siendo la pantalla de llegada después del login y después de aceptar una Invitation para sumarse. Aceptar una Invitation de Business nuevo lleva, en cambio, al Onboarding (onboarding.md).
+- **Arriba de todo**: el avatar del Business, que abre Settings.
+- **De arriba abajo, encima de las cifras**:
+  1. el elemento de primer uso del Business, como máximo uno de:
+     - "Go on to the setup", mientras el Onboarding no terminó (onboarding.md): "N of 6 steps" y lo que sigue, sin poder descartarse;
+     - la First-run checklist mientras se muestra (navigation.md), para un Business que existía antes del Onboarding.
 
-     Once neither applies, "Start with your varieties" takes this place whenever no unarchived variety has a current price today. It never shows together with the Onboarding notice or the checklist;
-  2. "Your Telegram catalog is out of date", while the pinned catalog is out of date (pinned-catalog.md). It opens the catalog screen (catalog.md);
-  3. "Connect the bot so the pinned catalog updates by itself", for a business loaded by the spreadsheet import, until dismissed or the bot is first published (navigation.md);
-  4. the tab's figures, as listed above.
-- First-run state belongs to the business: every user of it, a partner who joined included, sees the same element.
-- Week and Month keep the same notices above their own figures.
-- On a computer, it uses the two-column layout of `InicioCompu` (Home, computer layout), with the same notices in the same order at the top.
-- It follows the light and dark themes, and matches `docs/product/design-system/pantallas/` in both.
-- It is not an action menu:
-  - it records nothing itself and has no toasts of its own;
-  - its one main action is the shell's "+ New sale"; "Collect" on debtor rows is the only other direct action, besides the notices, which only open where their fix is.
-- The figures are read when the panel is opened, with no live updates.
-- A dropped network shows "No connection"; a server error shows the generic retry (accounts.md).
+     Cuando no corresponde ninguno, "Start with your varieties" ocupa este lugar siempre que ninguna Variety sin archivar tenga un Current price hoy. Nunca se muestra junto con el aviso del Onboarding ni con la checklist;
+  2. "Your Telegram catalog is out of date", mientras el Pinned catalog está Out of date (pinned-catalog.md). Abre la pantalla del Catalog (catalog.md);
+  3. "Connect the bot so the pinned catalog updates by itself", para un Business cargado por el Spreadsheet import, hasta que se descarta o se publica el bot por primera vez (navigation.md);
+  4. las cifras de la pestaña, como se listan arriba.
+- El estado de primer uso es del Business: cada User, un socio que se sumó incluido, ve el mismo elemento.
+- Week y Month conservan los mismos avisos encima de sus propias cifras.
+- En una computadora usa la disposición de dos columnas de `InicioCompu` (Home, disposición de computadora), con los mismos avisos en el mismo orden arriba.
+- Sigue los temas claro y oscuro, y coincide con `docs/product/design-system/pantallas/` en los dos.
+- No es un menú de acciones:
+  - no registra nada por sí mismo y no tiene toasts propios;
+  - su única acción principal es el "+ New sale" del marco; "Collect" en las filas de deudor es la única otra acción directa, además de los avisos, que solo abren donde está su arreglo.
+- Las cifras se leen al abrir el Panel, sin actualizaciones en vivo.
+- Una red caída muestra "No connection"; un error del servidor muestra el reintento genérico (accounts.md).
 
-### Constraints
+### Restricciones
 
-- The business comes from the session.
-- The panel route joins the isolation sweep and the gated-route test.
-- Every figure is computed on the server, and so is which first-run element and which notices show, the Onboarding notice's count and what is next, and each checklist step.
-- No figure or name goes to logs, the console or browser storage.
+- El Business sale de la Session.
+- La ruta del Panel entra en el barrido de aislamiento y en la prueba de rutas protegidas.
+- Cada cifra se calcula en el servidor, y también qué elemento de primer uso y qué avisos se muestran, la cuenta y el paso siguiente del aviso del Onboarding, cada paso de la checklist, y qué líneas de motivo se muestran y en qué orden. El navegador nunca ordena ni suma nada.
+- Ninguna cifra ni nombre va a los logs, la consola ni el almacenamiento del navegador.
 
-## Metrics
+## Métricas
 
-- **Speed (criterion 1)**: the panel, and each period switch, answer in under 300 ms with a few hundred sales and a few dozen varieties and customers. Guarded by query plan and statement count, never elapsed time (ADR-0038): the same number of statements on a small seeded business as on a seeded year.
-- **Agreement (criterion 2)**: 0 differences, per period:
-  - sales total and count against Sales;
-  - Owed to you figures against the Customers' "Owed to you" section;
-  - each variety's grams, status, days left and detail against Varieties;
-  - Week's and Month's Profit, cost of goods sold, stock shortfall, Promotion, Own use, expenses and Cash against `GET /analysis`'s row for the same week and month, over a seeded history that includes a negative adjustment with costed grams, one with pending grams, a sale line with pending grams, a costed withdrawal of each reason and a withdrawal with pending grams.
-- **Formulas (criterion 3)**: a matrix, 100% passing, covering:
-  - Profit and Cash;
-  - payments counted on their own date, not the sale's;
-  - a backdated purchase or an edited stock entry moving cost of goods sold and Profit;
-  - a negative adjustment lowering Profit by its costed shortfall on its own date, showing "Stock shortfall $ X", and leaving cost of goods sold and Cash unchanged;
-  - a withdrawal of each reason lowering Profit on its own date, showing its own line, and leaving cost of goods sold, stock shortfall and Cash unchanged;
-  - a period with no negative adjustment showing no Stock shortfall line, and one with no withdrawal of a reason showing no line for it;
-  - pending grams on a sale line leaving their sales out of Profit while "You sold today" keeps the full sales;
-  - pending cost showing the note under Cost of goods sold, Stock shortfall, Promotion, Own use and Profit as defined, and never under Cash;
-  - negative Profit and Cash shown as "−$ X".
-- **Archiving moves nothing (criterion 3)**: every period figure is identical before archiving a variety with history, after archiving and after restoring; the archived variety is absent from What you have left and does not count for "Start with your varieties".
-- **Not a sale (criterion 7)**: after recording a withdrawal, 0 differences in sales, number of sales, average sale, grams sold, You gave away, cost of goods sold, stock shortfall and Cash.
-- **Tabs (criterion 9)**: front tests, phone and computer, show Today with sold today, Owed to you and What you have left only, in that order, and Profit, Cash, Cost of goods sold, Stock shortfall, Promotion, Own use, Expenses, You gave away and Purchases only on Week and Month, Promotion and Own use right after Stock shortfall.
-- **One-tap collect (criterion 8)**: the end-to-end front run, phone and computer viewports, taps "Collect from <name>" on Today, Record payment opens with that customer chosen, a payment is saved, and one back move returns to Home.
-- **Refresh after Collect**: front tests show a partial payment leaving the debtor with the new balance, a full payment removing the row and the teaser refilling to 3 by its order, "Nobody owes you" when nobody is left owing, and both toasts reading as specified with no customer name.
-- **Home's order (criteria 10, 11)**: front tests, phone and computer, show at most one of the Onboarding notice, the checklist or "Start with your varieties" (never two), then the out-of-date notice, then the after-import notice, then the figures; the out-of-date notice opens the catalog screen and the avatar opens Settings.
-- **First run (criterion 10)**: the first-run matrices of navigation.md, 100% passing.
-- **Period edges**: a week that crosses a month and a year, Monday as the first day, and a day boundary in Argentina time. 100% passing.
-- **Debtors teaser (criterion 4)**: ordered by balance, then owing since, then name; credits excluded; "Nobody owes you" when nobody owes; "Collect" with its accessible name on every row. No state is told by color alone, in both themes.
-- **Isolation (criterion 5)**: from another business, the panel route shows none of the first business's figures, Onboarding state or first-run state. After a full front run, the console and browser storage hold no figures or names.
-- **Nothing invented (criterion 6)**:
-  - an empty business shows $ 0 and 0 g, with no average sale and no Stock shortfall, Promotion or Own use line;
-  - every figure on screen equals the API's answer.
-- **Looks as designed (criterion 12)**: `scripts/design/compare.sh` runs before and after for Home, `InicioOscuro` and `InicioCompu`, phone and computer, with the captures attached to the PR and every difference from the design listed.
-- **No curl**: the end-to-end front run opens Home, switches across the three periods, reads Promotion and Own use after recording a withdrawal of each reason, opens Customers from the block's heading, a customer from the teaser, and Record payment from a teaser row's "Collect".
-- **Business measure**, read by the operator from existing records only, never shown in the app: the share of pre-Onboarding businesses that complete the checklist, and the share of imported businesses that publish the catalog.
+- **Velocidad (criterio 1)**: el Panel, y cada cambio de período, responden en menos de 300 ms con unos cientos de ventas y unas decenas de Varieties y Customers. Se cuida con el plan de consulta y la cantidad de sentencias, nunca con el tiempo transcurrido (ADR-0038): la misma cantidad de sentencias en un Business sembrado chico que en un año sembrado, sin importar cuántos Withdrawal reasons tenga.
+- **Acuerdo (criterio 2)**: 0 diferencias, por período:
+  - el total y la cantidad de ventas contra Sales;
+  - las cifras de Owed to you contra la sección "Owed to you" de Customers;
+  - los gramos, el estado, los Days left y el detalle de cada Variety contra Varieties;
+  - el Profit, el Cost of goods sold, el Stock shortfall, el costo de cada Withdrawal reason, las Expenses y el Cash de Week y Month contra la fila de `GET /analysis` para la misma semana y el mismo mes, sobre una historia sembrada que incluye un Adjustment negativo con gramos con costo, uno con gramos pendientes, una línea de venta con gramos pendientes, tres o más motivos (uno renombrado y uno reordenado), un retiro con costo de cada motivo y un retiro con gramos pendientes.
+- **Fórmulas (criterio 3)**: una matriz, 100% de aprobación, que cubre:
+  - el Profit y el Cash;
+  - los Payments contados en su propia fecha, no en la de la venta;
+  - una Purchase con fecha atrasada o una Stock entry editada que mueven el Cost of goods sold y el Profit;
+  - un Adjustment negativo que baja el Profit en su costo con costo en su propia fecha, muestra "Stock shortfall $ X" y deja sin cambios el Cost of goods sold y el Cash;
+  - un retiro de cada motivo que baja el Profit en su propia fecha, muestra su propia línea con el nombre del motivo y deja sin cambios el Cost of goods sold, el Stock shortfall y el Cash;
+  - un período sin Adjustment negativo que no muestra línea de Stock shortfall, y uno sin retiro de un motivo que no muestra línea para ese motivo;
+  - las líneas de los motivos en el orden de la lista del Business, también después de reordenarla, y con el nombre actual después de renombrar un motivo;
+  - gramos pendientes en una línea de venta que dejan sus ventas afuera del Profit mientras "You sold today" conserva la venta completa;
+  - el Pending cost que muestra la nota debajo de Cost of goods sold, de Stock shortfall, de la línea de cada motivo y del Profit como está definido, y nunca debajo del Cash;
+  - Profit y Cash negativos que se muestran como "−$ X".
+- **Nada cambia para un Business existente (criterio 13)**: sobre una historia sembrada, antes y después de la migración de los motivos, cada cifra de Week y Month es idéntica, y la única etiqueta que difiere es "Promotion" → "Marketing".
+- **Archivar no mueve nada (criterio 3)**: cada cifra del período es idéntica antes de archivar una Variety con historial, después de archivarla y después de restaurarla; la Archived variety no aparece en What you have left y no cuenta para "Start with your varieties".
+- **No es una venta (criterio 7)**: después de registrar un retiro, 0 diferencias en ventas, cantidad de ventas, Average sale, gramos vendidos, You gave away, Cost of goods sold, Stock shortfall y Cash.
+- **Pestañas (criterio 9)**: las pruebas del front, en teléfono y computadora, muestran Today solo con lo vendido hoy, Owed to you y What you have left, en ese orden, y el Profit, el Cash, el Cost of goods sold, el Stock shortfall, las líneas de los motivos, las Expenses, You gave away y las Purchases solo en Week y Month, con las líneas de los motivos justo después de Stock shortfall.
+- **Cobrar en un toque (criterio 8)**: la corrida de punta a punta del front, en ventanas de teléfono y de computadora, toca "Collect from <name>" en Today, Record payment abre con ese Customer elegido, se guarda un Payment y un solo movimiento de vuelta regresa a Home.
+- **Actualización después de Collect**: las pruebas del front muestran un Payment parcial que deja al deudor con el Balance nuevo, un Payment total que saca la fila y el avance que se completa hasta 3 según su orden, "Nobody owes you" cuando no queda nadie que deba, y los dos toasts como están especificados, sin nombre de Customer.
+- **El orden de Home (criterios 10, 11)**: las pruebas del front, en teléfono y computadora, muestran como máximo uno entre el aviso del Onboarding, la checklist o "Start with your varieties" (nunca dos), después el aviso de desactualizado, después el aviso posterior a la importación, después las cifras; el aviso de desactualizado abre la pantalla del Catalog y el avatar abre Settings.
+- **Primer uso (criterio 10)**: las matrices de primer uso de navigation.md, 100% de aprobación.
+- **Bordes de período**: una semana que cruza un mes y un año, el lunes como primer día y un cambio de día en hora argentina. 100% de aprobación.
+- **Avance de deudores (criterio 4)**: ordenado por Balance, después por Owing since y después por nombre; los Credits excluidos; "Nobody owes you" cuando nadie debe; "Collect" con su nombre accesible en cada fila. Ningún estado se dice solo por color, en los dos temas.
+- **Aislamiento (criterio 5)**: desde otro Business, la ruta del Panel no muestra ninguna cifra, nombre de motivo, estado de Onboarding ni estado de primer uso del primer Business. Después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen cifras ni nombres.
+- **Nada inventado (criterio 6)**:
+  - un Business vacío muestra $ 0 y 0 g, sin Average sale y sin ninguna línea de Stock shortfall ni de motivo;
+  - cada cifra en pantalla es igual a la respuesta de la API.
+- **Como en el diseño (criterio 12)**: `scripts/design/compare.sh` corre antes y después para Home, `InicioOscuro` e `InicioCompu`, en teléfono y computadora, con las capturas adjuntas al PR y cada diferencia con el diseño listada.
+- **Sin curl**: la corrida de punta a punta del front abre Home, pasa por los tres períodos, lee las líneas de los motivos después de registrar un retiro de cada uno (un motivo agregado por el dueño incluido), abre Customers desde el título del bloque, un Customer desde el avance y Record payment desde el "Collect" de una fila del avance.
+- **Medida de negocio**, que lee el Operator solo a partir de los registros existentes y nunca se muestra en la app: la proporción de Businesses anteriores al Onboarding que completan la checklist, y la proporción de Businesses importados que publican el Catalog.
 
-## Out of scope
+## Fuera de alcance
 
-- Dates or any custom range; comparing with earlier periods; charts.
-- Recording anything from the panel other than through "+ New sale" and "Collect".
-- Live updates between partners.
-- Margins per variety (#8), stock shortfall per variety, and promotion or own-use cost per variety.
-- Pending grams counted on the panel ("and N g without cost"): the panel's note is fixed and carries no grams; Analysis shows the counts.
-- Stock's total grams on the panel.
-- Dismissing the Onboarding notice.
-- Archived varieties on the panel.
-- Putting low varieties first in What you have left.
-- Restyling Record payment to `Cobro.dc.html`: the payments screen's own work.
-- A checklist for a brand-new business: it gets the Onboarding.
+- Dates o cualquier rango a medida; comparar con períodos anteriores; gráficos.
+- Registrar cualquier cosa desde el Panel salvo con "+ New sale" y "Collect".
+- Actualizaciones en vivo entre socios.
+- Márgenes por Variety (#8), Stock shortfall por Variety, y el costo de cada Withdrawal reason por Variety.
+- Gramos pendientes contados en el Panel ("and N g without cost"): la nota del Panel es fija y no lleva gramos; Analysis muestra las cuentas.
+- Los gramos totales del stock en el Panel.
+- Descartar el aviso del Onboarding.
+- Archived varieties en el Panel.
+- Poner primero las Varieties bajas en What you have left.
+- Rediseñar Record payment según `Cobro.dc.html`: es trabajo propio de la pantalla de payments.
+- Una checklist para un Business recién creado: recibe el Onboarding.
+- Mostrar una línea en $0 para un Withdrawal reason sin retiros en el período.
 
-## Planned in GH-318
+## Planificado en GH-318
 
-Not built yet. Until the part named ships, the sections above are what the app does.
+Todavía no está construido. Hasta que salga la parte indicada, las secciones de arriba son lo que hace la app.
 
-Each passage names the ADR that decides it, the part that will deliver it, and the current sentence it will replace. The part that delivers a passage removes it from here and edits Behaviour and Out of scope in the same diff.
+Cada pasaje nombra el ADR que lo decide, la parte que lo va a entregar y la oración actual que va a reemplazar. La parte que entrega un pasaje lo saca de acá y edita Comportamiento y Fuera de alcance en el mismo diff.
 
-### Units: quantities by unit
+### Unidades: cantidades por unidad
 
-Decided in docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; delivered by the units part.
+Decidido en docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; lo entrega la parte de unidades.
 
-- A figure that totals quantities across products will show one amount per unit, each with its label (a `QuantityByUnit`, which the units part creates), because quantities of different units will never be added. This covers the quantity sold, the quantity gifted ("You gave away") and the withdrawal totals.
-- It will replace: "**Grams sold**: the grams of the period's lines that are not gifts." and "**Grams gifted** ("You gave away"): the grams of the period's gift lines. Withdrawn grams are never gifted grams."
+- Una cifra que suma cantidades de varios Products va a mostrar un monto por unidad, cada uno con su etiqueta (un `QuantityByUnit`, que crea la parte de unidades), porque nunca se van a sumar cantidades de unidades distintas. Esto abarca la cantidad vendida, la cantidad regalada ("You gave away") y los totales de retiros.
+- Va a reemplazar: "**Gramos vendidos**: los gramos de las líneas del período que no son Gifts." y "**Gramos regalados** ("You gave away"): los gramos de las líneas de Gift del período. Los gramos retirados nunca son gramos regalados."
+- La etiqueta "Flower purchases" y las cantidades de "What you have left" van a seguir la Product word y la unidad de cada Product.
 
-### Money
+### Plata
 
-Decided in docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; delivered by the money part.
+Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; lo entrega la parte de plata.
 
-- Sales, costs, Profit and Cash will keep their definitions and be worked out from amounts stored at the business's scale; half-up rounding will go through `round_half_up`, which the money part creates in `app/shared/money.py`. Raising a business's money decimals will leave every figure equal in value.
-- It will replace: "**Average sale**: sales ÷ number of sales, rounded half up to the whole peso. Nothing shows when there are no sales."
+- Las ventas, los costos, el Profit y el Cash van a conservar sus definiciones y se van a calcular a partir de montos guardados en la escala del Business; el redondeo con mitad hacia arriba va a pasar por `round_half_up`, que la parte de plata crea en `app/shared/money.py`. Subir los decimales de plata de un Business va a dejar cada cifra con el mismo valor.
+- Va a reemplazar: "**Average sale**: ventas ÷ cantidad de ventas, redondeado al peso entero con mitad hacia arriba. No se muestra nada cuando no hay ventas."
 
-### The business day
+### El día del negocio
 
-Decided in docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; delivered by the time-zone part.
+Decidido en docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; lo entrega la parte de zona horaria.
 
-- Today, Week and Month will follow the business's own time zone.
-- It will replace: "Today, Week and Month, in Argentina time, with the same definitions as Sales. There is no Dates."
-
-### The Marketing cost line
-
-Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; delivered by the withdrawal reasons part.
-
-- The cost line of the withdrawal reason now called "Promotion" will read "Marketing", with the reason's rename (`stock.md`). It will sit where it does today, right after Stock shortfall and before Expenses.
-- It will replace: "**Promotion cost** ("Promotion") and **own-use cost** ("Own use")" and "Promotion and Own use sit right after Stock shortfall and before Expenses.", and in Out of scope "promotion or own-use cost per variety" keeps holding under the new name.
-- The "Flower purchases" label and "What you have left" quantities will follow the product word and the unit of each product.
+- Today, Week y Month van a seguir la zona horaria propia del Business.
+- Va a reemplazar: "Today, Week y Month, en hora argentina, con las mismas definiciones que Sales. No hay Dates."
