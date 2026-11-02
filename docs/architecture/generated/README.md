@@ -8,6 +8,7 @@ A diagram shows only its own package: classes of other packages, and the edges t
 - [classes/accounts.md](classes/accounts.md)
 - [classes/business_removal.md](classes/business_removal.md)
 - [classes/catalog.md](classes/catalog.md)
+- [classes/customer_types.md](classes/customer_types.md)
 - [classes/customers.md](classes/customers.md)
 - [classes/expenses.md](classes/expenses.md)
 - [classes/onboarding.md](classes/onboarding.md)

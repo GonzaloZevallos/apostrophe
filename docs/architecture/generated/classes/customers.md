@@ -164,6 +164,7 @@ classDiagram
   }
   class CustomerRow {
     business_id : Mapped~int~
+    customer_type_id : Mapped~int #124; None~
     id : Mapped~int~
     name : Mapped~str~
     phone : Mapped~str #124; None~
