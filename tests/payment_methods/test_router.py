@@ -46,7 +46,9 @@ def _variety(client: TestClient, price: int = 1_000) -> int:
 
 
 def _customer(client: TestClient) -> int:
-    return int(client.post("/customers", json={"name": "Ana", "phone": "11 2000-0000"}).json()["id"])
+    return int(
+        client.post("/customers", json={"name": "Ana", "phone": "11 2000-0000"}).json()["id"]
+    )
 
 
 def _sale(client: TestClient, variety_id: int, payment: Any, **extra: Any) -> Any:
@@ -232,7 +234,10 @@ def test_a_rename_shows_in_the_sale_the_account_and_the_bill_and_changes_no_paym
     assert later.status_code == 201, later.text
     before = client.get(f"/customers/{customer}/account").json()
 
-    assert client.patch(f"{URL}/{cash}", json={"name": "Efectivo", "icon": "wallet"}).status_code == 200
+    assert (
+        client.patch(f"{URL}/{cash}", json={"name": "Efectivo", "icon": "wallet"}).status_code
+        == 200
+    )
 
     detail = client.get(f"/sales/{sale_id}").json()
     assert detail["payment"] == {
@@ -314,7 +319,10 @@ def test_an_archived_or_foreign_method_in_a_payment_answers_404_and_records_noth
 def _figures(client: TestClient, method_id: int) -> tuple[Any, ...]:
     variety = _variety(client, price=2_000)
     customer = _customer(client)
-    assert _sale(client, variety, {"kind": "method", "payment_method_id": method_id}).status_code == 201
+    assert (
+        _sale(client, variety, {"kind": "method", "payment_method_id": method_id}).status_code
+        == 201
+    )
     _owing_sale(client, variety, customer)
     assert _pay(client, customer, method_id, amount=700).status_code == 201
     panel = client.get("/panel").json()

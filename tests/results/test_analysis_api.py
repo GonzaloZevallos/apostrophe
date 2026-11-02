@@ -54,7 +54,11 @@ def test_a_month_before_the_first_record_is_refused(client: TestClient) -> None:
         json={"product_id": variety_id, "origin": "opening_stock", "quantity": "50"},
     )
     client.post(
-        "/sales", json={"payment": {"kind": "method", "payment_method_id": 1}, "lines": [{"product_id": variety_id, "quantity": "1"}]}
+        "/sales",
+        json={
+            "payment": {"kind": "method", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "1"}],
+        },
     )
 
     response = client.get("/analysis", params={"month": "2026-09"})
@@ -130,7 +134,11 @@ def test_a_backdated_stock_entry_moves_only_the_affected_week_month_and_variety(
         },
     )
     sale = client.post(
-        "/sales", json={"payment": {"kind": "method", "payment_method_id": 1}, "lines": [{"product_id": variety_id, "quantity": "10"}]}
+        "/sales",
+        json={
+            "payment": {"kind": "method", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "10"}],
+        },
     ).json()
     assert sale["lines"][0]["quantity"] == 10.0
 
@@ -225,7 +233,11 @@ def test_a_negative_adjustment_lowers_profit_on_its_date_and_moves_no_variety_ma
         },
     )
     sale = client.post(
-        "/sales", json={"payment": {"kind": "method", "payment_method_id": 1}, "lines": [{"product_id": variety_id, "quantity": "5"}]}
+        "/sales",
+        json={
+            "payment": {"kind": "method", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "5"}],
+        },
     ).json()
 
     before = client.get("/analysis").json()
@@ -326,7 +338,11 @@ def test_one_get_analysis_issues_the_same_number_of_statements_small_or_seeded(
         json={"product_id": variety_id, "origin": "opening_stock", "quantity": "10"},
     )
     client.post(
-        "/sales", json={"payment": {"kind": "method", "payment_method_id": 1}, "lines": [{"product_id": variety_id, "quantity": "1"}]}
+        "/sales",
+        json={
+            "payment": {"kind": "method", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "1"}],
+        },
     )
     client.post(
         "/stock/withdrawals",

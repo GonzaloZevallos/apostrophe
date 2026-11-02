@@ -201,7 +201,10 @@ def test_deleting_an_on_the_spot_payment_is_refused(client: TestClient, engine: 
     variety_id = _priced_variety(client)
     sale = client.post(
         "/sales",
-        json={"payment": {"kind": "method", "payment_method_id": 1}, "lines": [{"product_id": variety_id, "quantity": "1"}]},
+        json={
+            "payment": {"kind": "method", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "1"}],
+        },
     ).json()
     with Session(engine) as session:
         payment_id = session.scalar(select(PaymentRow.id).where(PaymentRow.sale_id == sale["id"]))

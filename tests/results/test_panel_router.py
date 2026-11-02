@@ -898,7 +898,10 @@ def test_an_archived_variety_leaves_the_panel_stock_rows_but_not_the_period_figu
         _entry(client, variety_id, quantity="100", total_cost=None, on="2026-10-01")
         sold = client.post(
             "/sales",
-            json={"payment": {"kind": "method", "payment_method_id": 1}, "lines": [{"product_id": variety_id, "quantity": "10"}]},
+            json={
+                "payment": {"kind": "method", "payment_method_id": 1},
+                "lines": [{"product_id": variety_id, "quantity": "10"}],
+            },
         )
         assert sold.status_code == 201, sold.text
     before = client.get("/panel").json()

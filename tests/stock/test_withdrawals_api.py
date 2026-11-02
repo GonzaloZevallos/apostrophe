@@ -351,7 +351,10 @@ def test_a_sale_line_cost_moves_with_an_earlier_withdrawal_and_every_reader_agre
     _stock_in(client, variety_id, "5", date="2026-09-01", origin="purchase", total_cost=5_000)
     sale = client.post(
         "/sales",
-        json={"payment": {"kind": "method", "payment_method_id": 1}, "lines": [{"product_id": variety_id, "quantity": "5"}]},
+        json={
+            "payment": {"kind": "method", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "5"}],
+        },
     ).json()
 
     def line_cost() -> int:

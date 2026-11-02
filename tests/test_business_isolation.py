@@ -603,7 +603,10 @@ def test_assigning_a_customer_from_another_business_is_refused_the_same_way_as_m
     )
     sale_id = business_b.post(
         "/sales",
-        json={"payment": {"kind": "method", "payment_method_id": 1}, "lines": [{"product_id": variety["id"], "quantity": "1"}]},
+        json={
+            "payment": {"kind": "method", "payment_method_id": 1},
+            "lines": [{"product_id": variety["id"], "quantity": "1"}],
+        },
     ).json()["id"]
     foreign_customer = seeded_b["customer_id"]
 
