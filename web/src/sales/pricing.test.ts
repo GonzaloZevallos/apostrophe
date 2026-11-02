@@ -125,19 +125,19 @@ describe('validateSale', () => {
   })
 
   test('flags Debiendo with no customer', () => {
-    const errors = validateSale({ method: 'owing', hasCustomer: false, lines: [] })
+    const errors = validateSale({ method: { kind: 'owing' }, hasCustomer: false, lines: [] })
     expect(errors).toEqual([
       { field: 'customer', message: 'To leave it owing, pick a customer' },
     ])
   })
 
   test('does not flag Debiendo once a customer is chosen', () => {
-    const errors = validateSale({ method: 'owing', hasCustomer: true, lines: [] })
+    const errors = validateSale({ method: { kind: 'owing' }, hasCustomer: true, lines: [] })
     expect(errors).toEqual([])
   })
 
-  test('does not flag cash or transfer, with or without a customer', () => {
-    expect(validateSale({ method: 'cash', hasCustomer: false, lines: [] })).toEqual([])
+  test('does not flag a method, with or without a customer', () => {
+    expect(validateSale({ method: { kind: 'method', id: 1 }, hasCustomer: false, lines: [] })).toEqual([])
     expect(validateSale({ method: null, hasCustomer: false, lines: [] })).toEqual([])
   })
 })

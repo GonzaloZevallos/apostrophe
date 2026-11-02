@@ -1769,26 +1769,52 @@ body {
   color: var(--critico-texto);
 }
 
-/* `SelectorPago` (plan "Components"; `Componentes.dc.html`'s own demo): the
- * segmented control that replaces the native payment radio fieldset. */
+/* `SelectorPago`: the payment-method chips. One chip per method (icon and name) and, in New
+ * sale, the Owing chip: they wrap onto new lines, never scroll sideways and never cut a name;
+ * each is at least `--alto-tocable` tall. */
 .selector-pago {
   display: flex;
-  gap: 5px;
+  flex-wrap: wrap;
+  gap: var(--espacio-sm);
   background: var(--papel);
-  border-radius: var(--radio-pildora);
+  border-radius: var(--radio-campo);
   padding: var(--espacio-xs);
 }
 
 .selector-pago__opcion {
-  flex: 1;
-  text-align: center;
-  padding: 11px 0;
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-sm);
+  min-height: var(--alto-tocable);
+  min-width: 0;
+  max-width: 100%;
+  padding: 0 var(--espacio-md);
   border: 0;
   border-radius: var(--radio-pildora);
   background: transparent;
   color: var(--tinta2);
   font-size: 14px;
+  text-align: center;
   cursor: pointer;
+}
+
+.selector-pago__nombre {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The list is on its way: the chips' places, drawn as bars (no word, no figure). */
+.selector-pago--cargando {
+  pointer-events: none;
+}
+
+.selector-pago__esqueleto {
+  flex: 1 1 96px;
+  min-height: var(--alto-tocable);
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
 }
 
 .selector-pago__opcion--activa {
@@ -4572,17 +4598,6 @@ body {
     min-width: 0;
   }
 
-  .nueva-venta .selector-pago {
-    flex-wrap: wrap;
-    border-radius: var(--radio-campo);
-  }
-
-  .nueva-venta .selector-pago__opcion {
-    flex: 1 1 auto;
-    min-height: var(--alto-tocable);
-    padding: 0 var(--espacio-md);
-  }
-
   .nueva-venta__pago {
     padding-bottom: var(--espacio-lg);
   }
@@ -5895,13 +5910,12 @@ body {
 }
 
 .cobro__metodo .selector-pago__opcion {
-  min-height: var(--alto-tocable);
   touch-action: manipulation;
-  padding: 0;
   font-size: 15px;
 }
 
-.cobro__metodo .selector-pago__opcion--activa {
+.cobro__metodo .selector-pago__opcion--activa,
+.cobro__metodo .selector-pago__esqueleto {
   background: var(--papel);
 }
 

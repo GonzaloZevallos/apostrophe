@@ -25,9 +25,9 @@ import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
+import { PAYMENT_METHOD_UNAVAILABLE, refreshPaymentMethods } from '../../api/paymentMethods'
 import {
   type PaymentIn,
-  type PaymentMethod,
   type Standing,
   previewPayment,
   recordPayment,
@@ -35,7 +35,8 @@ import {
 import Boton from '../../components/Boton'
 import { SheetActions } from '../../components/Sheet'
 import { useViewport } from '../../shell/useViewport'
-import SegmentedChoice from '../../components/SegmentedChoice'
+import AvisoAmbar from '../../components/AvisoAmbar'
+import SelectorPago from '../../components/SelectorPago'
 import SinConexion from '../../components/SinConexion'
 import { useFlash } from '../../flash/useFlash'
 import { chipDate, formatDateShort } from '../../format/dates'
@@ -43,7 +44,9 @@ import { formatMoney } from '../../format/money'
 import { readMoneyInput } from '../../format/parse'
 import { GENERIC_REFUSAL } from './ClienteForm'
 import { COMMON_TEXT } from '../../copy/common'
+import { PAYMENT_METHODS_TEXT } from '../../copy/paymentMethods'
 import { PAYMENTS_TEXT } from '../../copy/payments'
+import type { PaymentChoice } from '../../sales/pricing'
 
 /** The "owes you" line with its amount in one box, so a narrow screen never breaks "$" from its digits. */
 function owesLine(balance: string, since: string) {
@@ -92,7 +95,7 @@ const AMOUNT_MESSAGES: Partial<Record<PaymentRefusalCode, string>> = {
   'payment.above_balance': PAYMENTS_TEXT.amountOverBalance,
   'payment.amount_invalid': PAYMENTS_TEXT.enterValidAmount,
 }
-const METHOD_REQUIRED_MESSAGE = PAYMENTS_TEXT.chooseCashOrTransfer
+const METHOD_REQUIRED_MESSAGE = PAYMENTS_TEXT.chooseAMethod
 
 /** `code` comes off the wire as a plain `string` (`ApiError.code`): this only
  * narrows it enough to index `AMOUNT_MESSAGES` safely, never asserting it is a
@@ -126,10 +129,11 @@ export default function Cobro({
   // The number the API receives: the field's text is only how it is shown (`formatMoney`).
   const [amount, setAmount] = useState<number | null>(balance)
   const [date, setDate] = useState(today)
-  const [method, setMethod] = useState<PaymentMethod | null>(null)
+  const [method, setMethod] = useState<PaymentChoice | null>(null)
   const [amountError, setAmountError] = useState<string | null>(null)
   const [dateError, setDateError] = useState<string | null>(null)
   const [methodError, setMethodError] = useState<string | null>(null)
+  const [methodUnavailable, setMethodUnavailable] = useState(false)
   const [offline, setOffline] = useState(false)
   const queryClient = useQueryClient()
   const flash = useFlash()
@@ -176,17 +180,18 @@ export default function Cobro({
     setAmountError(null)
     setDateError(null)
     setMethodError(null)
+    setMethodUnavailable(false)
     setOffline(false)
     if (previewAmount === null) {
       setAmountError(PAYMENTS_TEXT.enterValidAmount)
       return
     }
-    if (method === null) {
+    if (method === null || method.kind !== 'method') {
       setMethodError(METHOD_REQUIRED_MESSAGE)
       return
     }
     try {
-      const recorded = await record.mutateAsync({ paid_on: date, amount: previewAmount, method })
+      const recorded = await record.mutateAsync({ paid_on: date, amount: previewAmount, payment_method_id: method.id })
       invalidateResource(queryClient, 'payments')
       flash.armAfterLeaving(
         recorded.after.standing === 'owes'
@@ -197,6 +202,13 @@ export default function Cobro({
     } catch (caught) {
       if (caught instanceof ApiError && isPaymentGone(caught.code)) {
         onGone()
+      } else if (caught instanceof ApiError && caught.code === PAYMENT_METHOD_UNAVAILABLE) {
+        // Typed values stay; the list is read again and a chosen method that is gone is cleared.
+        const fresh = await refreshPaymentMethods(queryClient)
+        setMethod((current) =>
+          current?.kind === 'method' && !fresh.some((item) => item.id === current.id) ? null : current,
+        )
+        setMethodUnavailable(true)
       } else if (caught instanceof ApiError) {
         if (caught.code === 'payment.method_required') setMethodError(METHOD_REQUIRED_MESSAGE)
         else if (caught.code === 'payment.future_date') setDateError(PAYMENTS_TEXT.dateInFuture)
@@ -278,14 +290,13 @@ export default function Cobro({
           )}
 
           <div className="cobro__metodo">
-            <SegmentedChoice
-              options={[
-                { value: 'cash', label: COMMON_TEXT.cashMethod },
-                { value: 'transfer', label: COMMON_TEXT.transfer },
-              ]}
+            <SelectorPago
               value={method}
-              onChange={setMethod}
-              ariaLabel={PAYMENTS_TEXT.method}
+              onChange={(choice) => {
+                setMethod(choice)
+                setMethodUnavailable(false)
+              }}
+              allowOwing={false}
               required
               describedBy={methodError !== null ? methodErrorId : undefined}
             />
@@ -293,6 +304,11 @@ export default function Cobro({
               <span id={methodErrorId} className="campo__error" role="alert">
                 {methodError}
               </span>
+            )}
+            {methodUnavailable && (
+              <AvisoAmbar attention role="alert">
+                {PAYMENT_METHODS_TEXT.errorMethodUnavailable}
+              </AvisoAmbar>
             )}
           </div>
 

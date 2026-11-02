@@ -8,14 +8,14 @@
       "date": "2026-09-14",
       "running_balance": 11000,
       "standing": "owes",
-      "sale": { "id": 10, "total": 11000, "how_paid": "owing" }
+      "sale": { "id": 10, "total": 11000, "how_paid": { "kind": "owing" } }
     },
     {
       "kind": "payment",
       "date": "2026-09-20",
       "running_balance": 6000,
       "standing": "owes",
-      "payment": { "id": 5, "paid_on": "2026-09-20", "amount": 5000, "method": "cash" },
+      "payment": { "id": 5, "paid_on": "2026-09-20", "amount": 5000, "payment_method_id": 1, "name": "Cash", "icon": "coins" },
       "applied_to": { "sale_id": 10, "sale_date": "2026-09-14", "amount": 5000 }
     },
     {
@@ -23,7 +23,7 @@
       "date": "2026-09-25",
       "running_balance": 0,
       "standing": "settled",
-      "payment": { "id": 6, "paid_on": "2026-09-25", "amount": 8000, "method": "transfer" },
+      "payment": { "id": 6, "paid_on": "2026-09-25", "amount": 8000, "payment_method_id": 2, "name": "Transfer", "icon": "bank" },
       "applied_to": { "sale_id": 10, "sale_date": "2026-09-14", "amount": 6000 }
     },
     {
@@ -31,7 +31,7 @@
       "date": "2026-09-25",
       "running_balance": -2000,
       "standing": "credit",
-      "payment": { "id": 6, "paid_on": "2026-09-25", "amount": 8000, "method": "transfer" },
+      "payment": { "id": 6, "paid_on": "2026-09-25", "amount": 8000, "payment_method_id": 2, "name": "Transfer", "icon": "bank" },
       "amount": 2000
     }
   ]

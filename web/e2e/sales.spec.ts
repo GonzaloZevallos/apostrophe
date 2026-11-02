@@ -312,7 +312,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
         customer_id: null,
         shipping_charged: 0,
         note: null,
-        payment: 'cash',
+        payment: { kind: 'method', payment_method_id: 1, name: 'Cash', icon: 'coins' },
         lines: [{ product_id: jazminId, quantity: grams, gift: false, special_price: null }],
       },
     })

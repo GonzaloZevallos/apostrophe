@@ -16,3 +16,8 @@ export const paymentMethodIcons: Record<PaymentMethodIcon, IconoProps> = {
   phone: { nombre: 'phone' },
   generic: { nombre: 'generic' },
 }
+
+/** The icon props for a method's wire key; a key this front does not know draws the generic one. */
+export function iconOfMethod(key: string): IconoProps {
+  return Object.hasOwn(paymentMethodIcons, key) ? paymentMethodIcons[key as PaymentMethodIcon] : paymentMethodIcons.generic
+}

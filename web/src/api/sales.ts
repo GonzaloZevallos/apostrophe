@@ -16,7 +16,15 @@ import type { PricingRule } from '../sales/pricing'
  * "Vuelven N g al stock" (sales.md), never summed here from the lines. */
 export type QuantityOut = number
 
-export type Payment = 'cash' | 'transfer' | 'owing' | 'none'
+/** How a sale was paid, as every read answers it: the method's current name and icon (the
+ * seller's own words, never translated), owing, or none. */
+export type Payment =
+  | { kind: 'method'; payment_method_id: number; name: string; icon: string }
+  | { kind: 'owing' }
+  | { kind: 'none' }
+
+/** What a sale is saved with: a method of the business, owing, or nothing yet. */
+export type PaymentIn = { kind: 'method'; payment_method_id: number } | { kind: 'owing' } | null
 
 export interface SaleCustomer {
   id: number
@@ -64,7 +72,7 @@ export interface SaleDetailLine extends SaleLine {
 /** Where the server's one settlement pass leaves the sale (`BillState`, ADR-0053):
  * a different fact from `Sale['payment']`, which is how the sale was paid, so
  * the two vocabularies stay apart on purpose. */
-export type BillState = 'cash' | 'transfer' | 'paid' | 'owed' | 'none'
+export type BillState = 'method' | 'paid' | 'owed' | 'none'
 
 /** The pricing rules a bill line can show; a VIP or special line reads like a list
  * line, so it has none (`rule: null`). */
@@ -73,6 +81,8 @@ export type BillRule = 'bulk' | 'gift'
 export interface SaleBillPayment {
   state: BillState
   still_owed: number | null
+  /** The method's current name, non-null exactly when `state` is `'method'`. */
+  method_name: string | null
 }
 
 export interface SaleBillLine {
@@ -116,10 +126,10 @@ export const SALE_BILL_LINE_KEYS = [
 export const SALE_BILL_PAYMENT_KEYS = [
   'state',
   'still_owed',
+  'method_name',
 ] as const satisfies readonly (keyof SaleBillPayment)[]
 export const BILL_STATES = [
-  'cash',
-  'transfer',
+  'method',
   'paid',
   'owed',
   'none',

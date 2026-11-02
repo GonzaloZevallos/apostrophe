@@ -53,7 +53,7 @@ async function owingSale(page: Page, customerId: number, varietyId: number): Pro
   const sold = await page.request.post('/sales', {
     data: {
       customer_id: customerId,
-      payment: 'owing',
+      payment: { kind: 'owing' },
       lines: [{ product_id: varietyId, quantity: '1', gift: false, special_price: null }],
     },
   })

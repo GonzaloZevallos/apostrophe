@@ -1,0 +1,5 @@
+[
+  { "id": 1, "name": "Cash", "icon": "coins", "position": 1, "is_used": true },
+  { "id": 2, "name": "Transfer", "icon": "bank", "position": 2, "is_used": true },
+  { "id": 3, "name": "Mercado Pago", "icon": "phone", "position": 3, "is_used": false }
+]

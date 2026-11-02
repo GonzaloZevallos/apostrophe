@@ -4,7 +4,7 @@
   "customer": { "id": 1, "name": "Ana Pérez", "vip": false },
   "shipping_charged": 500,
   "note": null,
-  "payment": "owing",
+  "payment": { "kind": "owing" },
   "total": 11000,
   "lines": [
     {

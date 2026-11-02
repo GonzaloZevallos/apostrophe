@@ -258,7 +258,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
           customer_id: null,
           shipping_charged: 0,
           note: null,
-          payment: 'cash',
+          payment: { kind: 'method', payment_method_id: 1, name: 'Cash', icon: 'coins' },
           lines: [{ product_id: rosaId, quantity: '1', gift: false, special_price: null }],
         },
       })

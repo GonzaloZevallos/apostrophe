@@ -62,3 +62,9 @@ msgstr "⟦Šĥìṗṗìňĝ åňđ ťřåňšṗöřť·~·~·~·~⟧"
 
 msgid "expenses.default_category.other"
 msgstr "⟦Öťĥèř·~⟧"
+
+msgid "payment_methods.default.cash"
+msgstr "⟦Çàšĥ·~⟧"
+
+msgid "payment_methods.default.transfer"
+msgstr "⟦Ťřàňšƒèř·~·~⟧"

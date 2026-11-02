@@ -83,7 +83,7 @@ def _sale(client: TestClient, variety_id: int, payment: str, customer_id: int | 
 def _pay(client: TestClient, customer_id: int, amount: int) -> None:
     response = client.post(
         f"/customers/{customer_id}/payments",
-        json={"paid_on": TODAY.isoformat(), "amount": amount, "method": "cash"},
+        json={"paid_on": TODAY.isoformat(), "amount": amount, "payment_method_id": 1},
     )
     assert response.status_code == 201, response.text
 

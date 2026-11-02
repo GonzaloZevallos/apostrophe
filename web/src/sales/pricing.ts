@@ -217,7 +217,8 @@ export interface LineValidation {
   quote: PriceQuote | null
 }
 
-export type PaymentChoice = 'cash' | 'transfer' | 'owing'
+/** What the seller picked: one of the business's methods (by id) or owing. */
+export type PaymentChoice = { kind: 'method'; id: number } | { kind: 'owing' }
 
 /** The two rules the sale screen checks before saving (sales.md criterion 7):
  * Debiendo needs a customer, and every line that is priced from the day's prices
@@ -238,7 +239,7 @@ export function validateSale(input: {
       })
     }
   }
-  if (input.method === 'owing' && !input.hasCustomer) {
+  if (input.method?.kind === 'owing' && !input.hasCustomer) {
     errors.push({ field: 'customer', message: OWING_HINT })
   }
   return errors

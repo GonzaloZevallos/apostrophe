@@ -9,8 +9,7 @@ describe('the saleBill copy group', () => {
     expect(SALE_BILL_TEXT.shareFailed).toBe("Couldn't share. Tap Copy and paste it into the chat.")
     expect(SALE_BILL_TEXT.copyFailed).toBe("Couldn't copy. Select the text below and copy it by hand.")
     expect(SALE_BILL_TEXT.blockName).toBe('Sale bill')
-    expect(SALE_BILL_TEXT.paidCash).toBe('Paid in cash')
-    expect(SALE_BILL_TEXT.paidTransfer).toBe('Paid by transfer')
+    expect(SALE_BILL_TEXT.paidWith('Mercado Pago')).toBe('Paid · Mercado Pago')
     expect(SALE_BILL_TEXT.paid).toBe('Paid')
     expect(SALE_BILL_TEXT.unit).toBe('g')
   })
@@ -37,8 +36,7 @@ describe('the saleBill copy group', () => {
       SALE_BILL_TEXT.gift('', '', ''),
       SALE_BILL_TEXT.shipping(''),
       SALE_BILL_TEXT.total(''),
-      SALE_BILL_TEXT.paidCash,
-      SALE_BILL_TEXT.paidTransfer,
+      SALE_BILL_TEXT.paidWith(''),
       SALE_BILL_TEXT.paid,
       SALE_BILL_TEXT.stillOwed(''),
       SALE_BILL_TEXT.balance(''),

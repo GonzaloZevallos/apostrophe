@@ -53,7 +53,7 @@ def _seed(client: TestClient) -> int:
         "/sales",
         json={
             "customer_id": customer_id,
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "shipping_charged": 500,
             "lines": [
                 {"product_id": variety["id"], "quantity": "10"},
@@ -65,13 +65,13 @@ def _seed(client: TestClient) -> int:
         "/sales",
         json={
             "customer_id": customer_id,
-            "payment": "cash",
+            "payment": {"kind": "method", "payment_method_id": 1},
             "lines": [{"product_id": variety["id"], "quantity": "2"}],
         },
     )
     unassigned = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety["id"], "quantity": "1"}]},
+        json={"payment": {"kind": "method", "payment_method_id": 1}, "lines": [{"product_id": variety["id"], "quantity": "1"}]},
     ).json()
     assigned = client.put(f"/sales/{unassigned['id']}/customer", json={"customer_id": customer_id})
     assert assigned.status_code == 200, assigned.text
@@ -87,7 +87,7 @@ def _seed(client: TestClient) -> int:
     balance = account["balance"]
     partial = client.post(
         f"/customers/{customer_id}/payments",
-        json={"paid_on": "2026-09-20", "amount": min(1_000, balance), "method": "cash"},
+        json={"paid_on": "2026-09-20", "amount": min(1_000, balance), "payment_method_id": 1},
     )
     assert partial.status_code == 201, partial.text
 

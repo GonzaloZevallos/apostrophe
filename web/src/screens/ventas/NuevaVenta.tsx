@@ -35,9 +35,12 @@ import { useLocation, useNavigate, useOutletContext } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE, get, post } from '../../api/client'
 import type { Customer } from '../../api/customers'
 import { keys } from '../../api/keys'
+import { PAYMENT_METHOD_UNAVAILABLE, refreshPaymentMethods } from '../../api/paymentMethods'
+import type { PaymentIn } from '../../api/sales'
 import type { Me } from '../../api/me'
 import type { PricingSettings as ApiPricingSettings } from '../../api/pricingSettings'
 import { resolveOverride, type RefusalCode } from '../../api/refusals'
+import AvisoAmbar from '../../components/AvisoAmbar'
 import Boton from '../../components/Boton'
 import { SALE, SALES, pathTo } from '../../routes'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
@@ -67,6 +70,7 @@ import {
   toHundredths,
   validateSale,
 } from '../../sales/pricing'
+import { PAYMENT_METHODS_TEXT } from '../../copy/paymentMethods'
 import { OWING_HINT, SALES_TEXT } from '../../copy/sales'
 import type { Variety } from '../Variedades'
 import NuevaVentaCliente from './NuevaVentaCliente'
@@ -135,7 +139,7 @@ interface SaleBody {
   customer_id: number | null
   shipping_charged: number
   note: string | null
-  payment: 'cash' | 'transfer' | 'owing' | null
+  payment: PaymentIn
   lines: LineBody[]
 }
 
@@ -192,6 +196,7 @@ function NuevaVentaForm() {
   const [noteError, setNoteError] = useState<string | null>(null)
   const [dateError, setDateError] = useState<string | null>(null)
   const [paymentError, setPaymentError] = useState<string | null>(null)
+  const [methodUnavailable, setMethodUnavailable] = useState(false)
   const [offline, setOffline] = useState(false)
   const [focusRequest, setFocusRequest] = useState<{
     lineKey: string
@@ -253,7 +258,7 @@ function NuevaVentaForm() {
 
   function chooseCustomer(chosen: Customer | null): void {
     setCustomerOverride(chosen)
-    if (chosen === null && method === 'owing') setMethod(null)
+    if (chosen === null && method?.kind === 'owing') setMethod(null)
   }
 
   function updateLine(key: string, patch: Partial<LineState>): void {
@@ -446,6 +451,7 @@ function NuevaVentaForm() {
     setNoteError(null)
     setDateError(null)
     setPaymentError(null)
+    setMethodUnavailable(false)
     setOffline(false)
 
     const firstInError = lines.find((line) => combinedLineError(line) !== null)
@@ -476,7 +482,7 @@ function NuevaVentaForm() {
       customer_id: customer?.id ?? null,
       shipping_charged: shippingCharged,
       note: note.trim() === '' ? null : note,
-      payment: method,
+      payment: method === null ? null : method.kind === 'owing' ? { kind: 'owing' } : { kind: 'method', payment_method_id: method.id },
       lines: filled.map((line) => {
         const grams = parseGrams(line.grams)
         return {
@@ -518,6 +524,16 @@ function NuevaVentaForm() {
           focusNonceRef.current += 1
           setFocusRequest({ lineKey: flagged.key, field: 'variety', nonce: focusNonceRef.current })
         }
+        return
+      }
+      if (caught instanceof ApiError && caught.code === PAYMENT_METHOD_UNAVAILABLE) {
+        // The method was archived or deleted since the list was read: everything typed stays,
+        // the list is read again, a chosen method that is gone is cleared, and the seller picks.
+        const fresh = await refreshPaymentMethods(queryClient)
+        setMethod((current) =>
+          current?.kind === 'method' && !fresh.some((item) => item.id === current.id) ? null : current,
+        )
+        setMethodUnavailable(true)
         return
       }
       if (caught instanceof ApiError) {
@@ -672,7 +688,10 @@ function NuevaVentaForm() {
             <div className="nueva-venta__pago">
               <SelectorPago
                 value={method}
-                onChange={setMethod}
+                onChange={(choice) => {
+                  setMethod(choice)
+                  setMethodUnavailable(false)
+                }}
                 owingDisabled={customer === null}
                 owingDescription={OWING_HINT}
               />
@@ -680,6 +699,11 @@ function NuevaVentaForm() {
                 <span className="campo__error" role="alert">
                   {paymentError}
                 </span>
+              )}
+              {methodUnavailable && (
+                <AvisoAmbar attention role="alert">
+                  {PAYMENT_METHODS_TEXT.errorMethodUnavailable}
+                </AvisoAmbar>
               )}
             </div>
 

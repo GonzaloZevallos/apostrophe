@@ -225,7 +225,7 @@ def _seed(client: TestClient, sales: int) -> None:
         is_owing = customer is not None and number % 2 == 1
         body: dict[str, object] = {
             "date": (date(2026, 9, 1) + timedelta(days=number % 28)).isoformat(),
-            "payment": "owing" if is_owing else "cash",
+            "payment": {"kind": "owing"} if is_owing else "cash",
             "lines": [
                 {"product_id": variety, "quantity": "2"},
                 {"product_id": variety, "quantity": "1"},
@@ -240,7 +240,7 @@ def _seed(client: TestClient, sales: int) -> None:
     for customer in owing[::3]:
         paid = client.post(
             f"/customers/{customer}/payments",
-            json={"paid_on": "2026-10-01", "amount": 1, "method": "cash"},
+            json={"paid_on": "2026-10-01", "amount": 1, "payment_method_id": 1},
         )
         assert paid.status_code == 201, paid.text
 

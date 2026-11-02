@@ -76,7 +76,7 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
       customer_id: null,
       shipping_charged: 0,
       note: null,
-      payment: 'cash',
+      payment: { kind: 'method', payment_method_id: 1, name: 'Cash', icon: 'coins' },
       lines: [{ product_id: jazmin.id, quantity: '10', gift: false, special_price: null }],
     },
   })

@@ -732,13 +732,13 @@ def _seed_payment(seed_client: TestClient) -> None:
             "date": "2026-01-01",
             "customer_id": customer_id,
             "lines": [{"product_id": variety_id, "quantity": 1, "special_price": 1000}],
-            "payment": "owing",
+            "payment": {"kind": "owing"},
         },
     )
     assert sale_body.status_code == 201, sale_body.text
     payment_body = seed_client.post(
         f"/customers/{customer_id}/payments",
-        json={"paid_on": "2026-01-01", "amount": 1000, "method": "cash"},
+        json={"paid_on": "2026-01-01", "amount": 1000, "payment_method_id": 1},
     )
     assert payment_body.status_code == 201, payment_body.text
 

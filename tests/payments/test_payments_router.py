@@ -37,7 +37,7 @@ def _owing_sale(
         "/sales",
         json={
             "customer_id": customer_id,
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "date": sale_date,
             "lines": [{"product_id": variety_id, "quantity": quantity}],
         },
@@ -71,7 +71,7 @@ def test_record_matches_its_fixture(client: TestClient) -> None:
 
     response = client.post(
         f"/customers/{customer_id}/payments",
-        json={"paid_on": "2026-09-20", "amount": 5_000, "method": "cash"},
+        json={"paid_on": "2026-09-20", "amount": 5_000, "payment_method_id": 1},
     )
 
     assert response.status_code == 201, response.text
@@ -84,7 +84,7 @@ def test_account_matches_its_fixture(client: TestClient) -> None:
     _owing_sale(client, customer_id, variety_id, sale_date="2026-09-14")
     client.post(
         f"/customers/{customer_id}/payments",
-        json={"paid_on": "2026-09-20", "amount": 5_000, "method": "cash"},
+        json={"paid_on": "2026-09-20", "amount": 5_000, "payment_method_id": 1},
     )
 
     response = client.get(f"/customers/{customer_id}/account")
@@ -120,7 +120,7 @@ def test_above_balance_is_refused_on_preview_and_record_with_nothing_leaked(
     )
     record = client.post(
         f"/customers/{customer_id}/payments",
-        json={"paid_on": TODAY, "amount": 999_999, "method": "cash"},
+        json={"paid_on": TODAY, "amount": 999_999, "payment_method_id": 1},
     )
 
     for response in (preview, record):
@@ -137,7 +137,7 @@ def test_future_date_is_refused(client: TestClient) -> None:
 
     response = client.post(
         f"/customers/{customer_id}/payments",
-        json={"paid_on": "2026-12-25", "amount": 1, "method": "cash"},
+        json={"paid_on": "2026-12-25", "amount": 1, "payment_method_id": 1},
     )
 
     assert response.status_code == 422, response.text
@@ -151,7 +151,7 @@ def test_a_non_positive_amount_is_refused(client: TestClient) -> None:
 
     response = client.post(
         f"/customers/{customer_id}/payments",
-        json={"paid_on": TODAY, "amount": 0, "method": "cash"},
+        json={"paid_on": TODAY, "amount": 0, "payment_method_id": 1},
     )
 
     assert response.status_code == 422, response.text
@@ -182,7 +182,7 @@ def test_a_missing_customer_is_404_on_preview_record_and_account(client: TestCli
         client.post("/customers/999999/payments/preview", json={"paid_on": TODAY, "amount": 1}),
         client.post(
             "/customers/999999/payments",
-            json={"paid_on": TODAY, "amount": 1, "method": "cash"},
+            json={"paid_on": TODAY, "amount": 1, "payment_method_id": 1},
         ),
         client.get("/customers/999999/account"),
     ):
@@ -201,7 +201,7 @@ def test_deleting_an_on_the_spot_payment_is_refused(client: TestClient, engine: 
     variety_id = _priced_variety(client)
     sale = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "1"}]},
+        json={"payment": {"kind": "method", "payment_method_id": 1}, "lines": [{"product_id": variety_id, "quantity": "1"}]},
     ).json()
     with Session(engine) as session:
         payment_id = session.scalar(select(PaymentRow.id).where(PaymentRow.sale_id == sale["id"]))
@@ -224,7 +224,7 @@ def test_a_cash_sale_s_payment_never_settles_an_owed_sale(client: TestClient) ->
         "/sales",
         json={
             "customer_id": customer_id,
-            "payment": "cash",
+            "payment": {"kind": "method", "payment_method_id": 1},
             "date": "2026-09-10",
             "lines": [{"product_id": variety_id, "quantity": "1"}],
         },
@@ -248,7 +248,7 @@ def test_preview_answers_exactly_what_recording_would_settle(client: TestClient)
     )
     recorded = client.post(
         f"/customers/{customer_id}/payments",
-        json={"paid_on": "2026-09-20", "amount": 4_000, "method": "cash"},
+        json={"paid_on": "2026-09-20", "amount": 4_000, "payment_method_id": 1},
     )
 
     assert preview.status_code == 200, preview.text
@@ -285,7 +285,7 @@ def test_a_payment_s_fields_are_unchanged_after_a_sale_is_later_deleted(
 
     recorded = client.post(
         f"/customers/{customer_id}/payments",
-        json={"paid_on": "2026-09-15", "amount": 3_000, "method": "transfer"},
+        json={"paid_on": "2026-09-15", "amount": 3_000, "payment_method_id": 2},
     )
     assert recorded.status_code == 201, recorded.text
     payment = recorded.json()["payment"]

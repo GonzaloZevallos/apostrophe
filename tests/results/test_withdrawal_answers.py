@@ -58,7 +58,7 @@ def _sale(client: TestClient, variety_id: int, *, quantity: str, on: str) -> Non
         "/sales",
         json={
             "date": on,
-            "payment": "cash",
+            "payment": {"kind": "method", "payment_method_id": 1},
             "lines": [{"product_id": variety_id, "quantity": quantity}],
         },
     )

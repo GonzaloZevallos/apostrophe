@@ -78,11 +78,9 @@ export const UNDO_WINDOW_MS = 5000
  * derived from `still_owing` or an amount. `none` drops its part of the summary
  * line entirely, replacing `PAYMENT_LABEL` and its own row (plan, "sale-detail"). */
 function paymentSummary(payment: Sale['payment']): string {
-  switch (payment) {
-    case 'cash':
-      return SALES_TEXT.paidInCash
-    case 'transfer':
-      return SALES_TEXT.paidByTransfer
+  switch (payment.kind) {
+    case 'method':
+      return SALES_TEXT.paidWith(payment.name)
     case 'owing':
       return SALES_TEXT.leftOwing
     case 'none':

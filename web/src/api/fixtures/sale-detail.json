@@ -4,7 +4,7 @@
   "customer": { "id": 1, "name": "Ana Pérez", "vip": false },
   "shipping_charged": 500,
   "note": null,
-  "payment": "owing",
+  "payment": { "kind": "owing" },
   "total": 11000,
   "lines": [
     {
@@ -27,7 +27,7 @@
     "lines": [
       { "product": "Flor A", "quantity": 3.5, "amount": 10500, "rule": null, "unit_price": null }
     ],
-    "payment": { "state": "owed", "still_owed": 11000 },
+    "payment": { "state": "owed", "still_owed": 11000, "method_name": null },
     "balance": 11000
   }
 }

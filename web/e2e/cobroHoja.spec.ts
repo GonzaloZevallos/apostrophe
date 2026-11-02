@@ -175,7 +175,7 @@ async function owingCustomers(page: Page, count: number): Promise<void> {
     const sold = await page.request.post('/sales', {
       data: {
         customer_id: customer.id,
-        payment: 'owing',
+        payment: { kind: 'owing' },
         lines: [{ product_id: rosa.id, quantity: '1', gift: false, special_price: null }],
       },
     })
@@ -206,7 +206,7 @@ async function moreSalesFor(page: Page, name: string, count: number): Promise<vo
     const sold = await page.request.post('/sales', {
       data: {
         customer_id: customer.id,
-        payment: 'owing',
+        payment: { kind: 'owing' },
         lines: [{ product_id: rosa.id, quantity: '1', gift: false, special_price: null }],
       },
     })

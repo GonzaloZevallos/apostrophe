@@ -5,22 +5,21 @@
  * over), or both; a sale row is never a later payment.
  */
 
-import type { AccountRow, HowPaid, PaymentMethod } from '../../api/payments'
+import type { AccountRow, HowPaid } from '../../api/payments'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney, formatMoneyMagnitude } from '../../format/money'
 
-export const METHOD_LABEL: Record<PaymentMethod, string> = {
-  cash: CUSTOMERS_TEXT.methodCash,
-  transfer: CUSTOMERS_TEXT.methodTransfer,
-}
-
-/** What a sale row says under "Sale": total, so a new `HowPaid` fails to compile here. */
-const HOW_PAID_SUB: Record<HowPaid, string> = {
-  cash: CUSTOMERS_TEXT.paidInCash,
-  transfer: CUSTOMERS_TEXT.paidByTransfer,
-  owing: CUSTOMERS_TEXT.leftOwing,
-  none: CUSTOMERS_TEXT.nothingToPay,
+/** What a sale row says under "Sale", from how it was paid; the method's name is the seller's own. */
+function howPaidSub(howPaid: HowPaid): string {
+  switch (howPaid.kind) {
+    case 'method':
+      return CUSTOMERS_TEXT.paidWith(howPaid.name)
+    case 'owing':
+      return CUSTOMERS_TEXT.leftOwing
+    case 'none':
+      return CUSTOMERS_TEXT.nothingToPay
+  }
 }
 
 export type BalanceTone = 'debt' | 'credit' | 'neutral'
@@ -38,7 +37,7 @@ export interface LedgerRowView {
 /**
  * Everything one account row says, so the screen picks no copy or colour itself
  * (`payments.md`, "En pantalla: la ficha del cliente"). Reads only `kind`, `how_paid`,
- * `method`, the sale's date and `standing`, never the sign of an amount.
+ * the payment's method name, the sale's date and `standing`, never the sign of an amount.
  */
 export function ledgerRowView(row: AccountRow): LedgerRowView {
   const balance =
@@ -51,12 +50,12 @@ export function ledgerRowView(row: AccountRow): LedgerRowView {
   if (row.kind === 'sale') {
     return {
       title: CUSTOMERS_TEXT.saleTitle,
-      sub: HOW_PAID_SUB[row.sale.how_paid],
+      sub: howPaidSub(row.sale.how_paid),
       own: formatMoney(row.sale.total),
       ...balance,
     }
   }
-  const title = CUSTOMERS_TEXT.paymentTitle(METHOD_LABEL[row.payment.method])
+  const title = CUSTOMERS_TEXT.paymentWith(row.payment.name)
   if (row.kind === 'payment') {
     return {
       title,

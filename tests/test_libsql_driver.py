@@ -135,7 +135,7 @@ def _seed_customer_owing(client: TestClient) -> int:
         "/sales",
         json={
             "customer_id": customer_id,
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "lines": [{"product_id": variety["id"], "quantity": "10"}],
         },
     )

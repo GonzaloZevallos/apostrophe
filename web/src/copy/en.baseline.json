@@ -202,7 +202,7 @@
   {"source":"customers.ts:CUSTOMERS_TEXT.creditAmount","args":["$ 11.000"],"text":"Credit $ 11.000"},
   {"source":"customers.ts:CUSTOMERS_TEXT.creditLabel","args":null,"text":"Credit"},
   {"source":"customers.ts:CUSTOMERS_TEXT.deletePayment","args":null,"text":"Delete payment"},
-  {"source":"customers.ts:CUSTOMERS_TEXT.deletePaymentOf","args":["$ 11.000","cash","28/09"],"text":"Delete the payment of $ 11.000 (cash) from 28/09?"},
+  {"source":"customers.ts:CUSTOMERS_TEXT.deletePaymentOf","args":["$ 11.000","cash","28/09"],"text":"Delete the payment of $ 11.000 · cash from 28/09?"},
   {"source":"customers.ts:CUSTOMERS_TEXT.discardTheCustomer","args":null,"text":"Discard the customer?"},
   {"source":"customers.ts:CUSTOMERS_TEXT.giveItAName","args":null,"text":"Give them a name"},
   {"source":"customers.ts:CUSTOMERS_TEXT.leftOwing","args":null,"text":"Left owing"},

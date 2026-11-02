@@ -33,7 +33,7 @@ const SALE = {
   customer: null,
   shipping_charged: 0,
   note: null,
-  payment: 'cash',
+  payment: { kind: 'method', payment_method_id: 1, name: 'Cash', icon: 'coins' },
   total: 11000,
   still_owing: false,
   total_quantity: 1,

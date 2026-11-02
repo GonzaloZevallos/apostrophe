@@ -22,7 +22,6 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
 export const PAYMENTS_TEXT = {
   owesYouSince: (balance: string | number, owing_since: string | number) => ` · owes you ${balance} since ${owing_since}`,
   all: 'All: ',
-  method: 'Method',
   takenFromOldestDebt: 'Taken from the oldest debt',
   toTheSaleOf: ' to the sale of ',
   stillOwes: 'They still owe ',
@@ -30,7 +29,7 @@ export const PAYMENTS_TEXT = {
   amountOverBalance: 'The amount is more than they owe you.',
   dateInFuture: 'The date cannot be in the future.',
   enterValidAmount: 'Enter a valid amount.',
-  chooseCashOrTransfer: 'Choose cash or transfer.',
+  chooseAMethod: 'Pick a payment method.',
   savedStillOwing: (balance: string): `Payment saved · still owing ${string}` => `Payment saved · still owing ${balance}`,
   saved: 'Payment saved',
 } as const

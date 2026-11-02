@@ -81,7 +81,7 @@ test('shows the total, each line with its lowercase rule badge, shipping, note a
   // that every one of these fields renders, so it overrides just those two,
   // keeping everything else — id, lines, total_quantity — as the real answer's shape.
   vi.mocked(fetch).mockResolvedValue(
-    jsonResponse(200, { ...SALE, note: 'Entregar a la tarde', payment: 'cash' }),
+    jsonResponse(200, { ...SALE, note: 'Entregar a la tarde', payment: { kind: 'method', payment_method_id: 1, name: 'Cash', icon: 'coins' } }),
   )
   renderDetalle()
 
@@ -124,7 +124,7 @@ test('shows the skeleton while the sale is pending, then the sale in its place',
 
 test('a sale with no customer and no payment shows "No customer" and drops the payment part', async () => {
   vi.mocked(fetch).mockResolvedValue(
-    jsonResponse(200, { ...SALE, customer: null, payment: 'none' }),
+    jsonResponse(200, { ...SALE, customer: null, payment: { kind: 'none' } }),
   )
   renderDetalle()
 
@@ -256,7 +256,7 @@ test('Assign customer opens the "Pick a customer" sheet without "No customer"; c
   vi.mocked(fetch).mockImplementation(
     dispatchFetch({
       'GET /sales/10': () =>
-        jsonResponse(200, assigned ? { ...SALE, customer: NICO } : { ...SALE, customer: null, payment: 'none' }),
+        jsonResponse(200, assigned ? { ...SALE, customer: NICO } : { ...SALE, customer: null, payment: { kind: 'none' } }),
       'GET /customers?q=Nico': () => jsonResponse(200, [NICO_SEARCH_RESULT]),
       'PUT /sales/10/customer': () => {
         assigned = true
@@ -291,7 +291,7 @@ test('assigning a customer shows the customer the second GET answers, never the 
     throw new Error('the second GET never started')
   }
   let gets = 0
-  const noCustomer = { ...SALE, customer: null, payment: 'none', bill: { ...SALE.bill, balance: null } }
+  const noCustomer = { ...SALE, customer: null, payment: { kind: 'none' }, bill: { ...SALE.bill, balance: null } }
   vi.mocked(fetch).mockImplementation((input, init) => {
     const url = typeof input === 'string' ? input : input.toString()
     const method = init?.method ?? 'GET'
@@ -337,7 +337,7 @@ test('assigning a customer to a sale someone already assigned shows the fixed me
   vi.mocked(fetch).mockImplementation(
     dispatchFetch({
       'GET /sales/10': () =>
-        jsonResponse(200, assignedAlready ? SALE : { ...SALE, customer: null, payment: 'none' }),
+        jsonResponse(200, assignedAlready ? SALE : { ...SALE, customer: null, payment: { kind: 'none' } }),
       'GET /customers?q=Nico': () => jsonResponse(200, [NICO_SEARCH_RESULT]),
       'PUT /sales/10/customer': () => {
         assignedAlready = true
@@ -359,7 +359,7 @@ test('assigning a customer to a sale someone already assigned shows the fixed me
 test('assigning to a sale a partner deleted meanwhile shows the gone notice on Ventas', async () => {
   vi.mocked(fetch).mockImplementation(
     dispatchFetch({
-      'GET /sales/10': () => jsonResponse(200, { ...SALE, customer: null, payment: 'none' }),
+      'GET /sales/10': () => jsonResponse(200, { ...SALE, customer: null, payment: { kind: 'none' } }),
       'GET /customers?q=Nico': () => jsonResponse(200, [NICO_SEARCH_RESULT]),
       'PUT /sales/10/customer': () => jsonResponse(404, { code: 'sale.not_found' }),
     }),
@@ -377,7 +377,7 @@ test('assigning to a sale a partner deleted meanwhile shows the gone notice on V
 test('assigning a customer a partner deleted meanwhile shows the gone notice on Ventas', async () => {
   vi.mocked(fetch).mockImplementation(
     dispatchFetch({
-      'GET /sales/10': () => jsonResponse(200, { ...SALE, customer: null, payment: 'none' }),
+      'GET /sales/10': () => jsonResponse(200, { ...SALE, customer: null, payment: { kind: 'none' } }),
       'GET /customers?q=Nico': () => jsonResponse(200, [NICO_SEARCH_RESULT]),
       'PUT /sales/10/customer': () => jsonResponse(404, { code: 'sale.customer_not_found' }),
     }),

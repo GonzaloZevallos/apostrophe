@@ -61,3 +61,9 @@ msgstr "de: Shipping and transport"
 
 msgid "expenses.default_category.other"
 msgstr "de: Other"
+
+msgid "payment_methods.default.cash"
+msgstr "de: Cash"
+
+msgid "payment_methods.default.transfer"
+msgstr "de: Transfer"

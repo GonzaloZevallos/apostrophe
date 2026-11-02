@@ -152,7 +152,7 @@ async function chooseNico() {
   await userEvent.click(await screen.findByText('Nico'))
 }
 
-const NO_CUSTOMER = { ...SALE, customer: null, payment: 'none', bill: { ...SALE.bill, balance: null } }
+const NO_CUSTOMER = { ...SALE, customer: null, payment: { kind: 'none' }, bill: { ...SALE.bill, balance: null } }
 const WITH_CUSTOMER = { ...SALE, customer: NICO, bill: { ...SALE.bill, balance: 41000 } }
 
 test('after an assign the copied text ends with the balance of the second GET', async () => {

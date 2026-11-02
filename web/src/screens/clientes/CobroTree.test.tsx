@@ -20,6 +20,8 @@ import { flipViewport, renderWithViewport } from '../../test-viewport'
 import { inAppState } from '../../components/inAppState'
 import { peekPaymentReturn } from '../../paymentReturn'
 
+import { PAYMENT_METHODS_FIXTURE, paymentMethodsResponse } from '../../test/paymentMethods'
+
 const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
 const OWING = { id: 1, name: 'Ana Pérez', phone: '+5491122334455', vip: false, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }
 const SETTLED = { ...OWING, balance: 0, owing_since: null, standing: 'settled' }
@@ -27,11 +29,11 @@ const ACCOUNT = {
   balance: 11000,
   owing_since: '2026-09-14',
   standing: 'owes',
-  rows: [{ kind: 'sale', date: '2026-09-14', running_balance: 11000, standing: 'owes', sale: { id: 10, total: 11000, how_paid: 'owing' } }],
+  rows: [{ kind: 'sale', date: '2026-09-14', running_balance: 11000, standing: 'owes', sale: { id: 10, total: 11000, how_paid: { kind: 'owing' } } }],
 }
 const DEBTORS = { total_owed: 11000, sales_owing_count: 1, debtors: [{ customer: { id: 1, name: 'Ana Pérez' }, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }] }
 const RECORDED = {
-  payment: { id: 5, paid_on: '2026-10-03', amount: 5000, method: 'cash' },
+  payment: { id: 5, paid_on: '2026-10-03', amount: 5000, payment_method_id: 1, name: 'Cash', icon: 'coins' },
   applied_to: [{ sale_id: 10, sale_date: '2026-09-14', amount: 5000 }],
   after: { balance: 6000, owing_since: '2026-09-14', standing: 'owes' },
 }
@@ -48,6 +50,7 @@ type Answers = Record<string, () => Response>
 function renderApp(entries: { pathname: string; state?: unknown }[], viewport: Viewport, answers: Answers = {}) {
   const table: Answers = {
     'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /payment-methods': () => paymentMethodsResponse(),
     'GET /pricing-settings': () => jsonResponse(200, { is_bulk_pricing: true, is_vip_customers: true }),
     'GET /customers': () => jsonResponse(200, [OWING]),
     'GET /customers/1': () => jsonResponse(200, OWING),
@@ -376,7 +379,7 @@ test('a customer answered as settled opens without an error, and the save is ref
   })
 
   const save = await screen.findByRole('button', { name: 'Save' })
-  await userEvent.click(screen.getByRole('radio', { name: 'Cash' }))
+  await userEvent.click(await screen.findByRole('radio', { name: 'Cash' }))
   await userEvent.click(save)
 
   expect(await screen.findByRole('alert')).toBeInTheDocument()
@@ -396,6 +399,7 @@ describe('the form as drawn', () => {
   async function openForm(answers: Answers = {}) {
     const router = renderApp([{ pathname: PAYMENT }], 'phone', answers)
     await screen.findByRole('button', { name: 'Save' })
+    await screen.findByRole('radio', { name: 'Cash' })
     return router
   }
 
@@ -421,7 +425,7 @@ describe('the form as drawn', () => {
     await userEvent.click(screen.getByRole('radio', { name: 'Cash' }))
     await userEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => expect(postedBody('POST /customers/1/payments')).toBeDefined())
-    expect(postedBody('POST /customers/1/payments')).toEqual({ paid_on: '2026-10-03', amount: 5000, method: 'cash' })
+    expect(postedBody('POST /customers/1/payments')).toEqual({ paid_on: '2026-10-03', amount: 5000, payment_method_id: 1 })
   })
 
   test('a zero amount is refused on save, an emptied one shows empty, and "All" brings the balance back', async () => {
@@ -477,12 +481,12 @@ describe('the form as drawn', () => {
     expect(date).toHaveAccessibleDescription(/Today 03\/10.*The date cannot be in the future/)
   })
 
-  test('the method is one radiogroup holding Cash and Transfer, none chosen', async () => {
+  test('the method is one radiogroup holding the business\'s methods and no Owing, none chosen', async () => {
     await openForm()
-    const group = screen.getByRole('radiogroup', { name: 'Method' })
+    const group = screen.getByRole('radiogroup', { name: 'Payment method' })
     expect(group).toHaveAttribute('aria-required', 'true')
     const radios = within(group).getAllByRole('radio')
-    expect(radios.map((radio) => radio.textContent)).toEqual(['Cash', 'Transfer'])
+    expect(radios.map((radio) => radio.textContent)).toEqual(['Cash', 'Transfer', 'Mercado Pago'])
     for (const radio of radios) expect(radio).toHaveAttribute('aria-checked', 'false')
 
     await userEvent.click(screen.getByRole('radio', { name: 'Transfer' }))
@@ -490,9 +494,35 @@ describe('the form as drawn', () => {
     expect(screen.getByRole('radio', { name: 'Cash' })).toHaveAttribute('aria-checked', 'false')
   })
 
+  test('a method archived meanwhile keeps what was typed, refetches the list, clears the choice and shows the notice', async () => {
+    let listCalls = 0
+    await openForm({
+      'GET /payment-methods': () => {
+        listCalls += 1
+        return paymentMethodsResponse(listCalls === 1 ? undefined : PAYMENT_METHODS_FIXTURE.filter((method) => method.id !== 2))
+      },
+      'POST /customers/1/payments': () => jsonResponse(404, { code: 'payment_method.unavailable' }),
+    })
+    const amount = screen.getByLabelText('Amount')
+    await userEvent.clear(amount)
+    await userEvent.type(amount, '4000')
+    await userEvent.click(screen.getByRole('radio', { name: 'Transfer' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    const notice = await screen.findByText("That payment method isn't available any more. Pick another one.")
+    expect(notice.closest('[role="alert"]')?.querySelector('svg')).not.toBeNull()
+    await waitFor(() => expect(screen.queryByRole('radio', { name: 'Transfer' })).not.toBeInTheDocument())
+    expect(screen.getByRole('radio', { name: 'Cash' })).toHaveAttribute('aria-checked', 'false')
+    expect(screen.getByLabelText('Amount')).toHaveValue('$ 4.000')
+    expect(listCalls).toBeGreaterThanOrEqual(2)
+
+    await userEvent.click(screen.getByRole('radio', { name: 'Cash' }))
+    expect(screen.queryByText("That payment method isn't available any more. Pick another one.")).not.toBeInTheDocument()
+  })
+
   test('saving without a method shows the alert, and the group points at it', async () => {
     await openForm()
-    const group = screen.getByRole('radiogroup', { name: 'Method' })
+    const group = screen.getByRole('radiogroup', { name: 'Payment method' })
     expect(group).not.toHaveAttribute('aria-describedby')
 
     await userEvent.click(screen.getByRole('button', { name: 'Save' }))

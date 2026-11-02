@@ -56,7 +56,7 @@ def test_has_records_is_true_for_an_on_the_spot_payment(client: TestClient, engi
         "/sales",
         json={
             "customer_id": customer["id"],
-            "payment": "cash",
+            "payment": {"kind": "method", "payment_method_id": 1},
             "lines": [{"product_id": variety_id, "quantity": "2"}],
         },
     )
@@ -77,7 +77,7 @@ def test_has_records_is_true_for_a_later_payment(client: TestClient, engine: Eng
         "/sales",
         json={
             "customer_id": customer["id"],
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "lines": [{"product_id": variety_id, "quantity": "2"}],
         },
     )
@@ -85,7 +85,7 @@ def test_has_records_is_true_for_a_later_payment(client: TestClient, engine: Eng
 
     paid = client.post(
         f"/customers/{customer['id']}/payments",
-        json={"paid_on": "2026-09-20", "amount": 1, "method": "cash"},
+        json={"paid_on": "2026-09-20", "amount": 1, "payment_method_id": 1},
     )
     assert paid.status_code == 201, paid.text
 

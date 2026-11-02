@@ -68,19 +68,19 @@ def _seed_everything(client: TestClient, owner_email: str) -> dict[str, int]:
     client.put("/catalog/header-footer", json={"header": "removal", "footer": "removal"})
     cash_sale = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety["id"], "quantity": "5"}]},
+        json={"payment": {"kind": "method", "payment_method_id": 1}, "lines": [{"product_id": variety["id"], "quantity": "5"}]},
     ).json()
     client.post(
         "/sales",
         json={
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "customer_id": customer["id"],
             "lines": [{"product_id": variety["id"], "quantity": "5"}],
         },
     )
     client.post(
         f"/customers/{customer['id']}/payments",
-        json={"paid_on": "2026-09-20", "amount": 1_000, "method": "cash"},
+        json={"paid_on": "2026-09-20", "amount": 1_000, "payment_method_id": 1},
     )
     # A failed login against the business's own user: `login_guard` is keyed by email,
     # so this is the row the removal must take along with that user (round-3 Q3's

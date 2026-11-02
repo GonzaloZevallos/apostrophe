@@ -70,7 +70,7 @@ def test_draw_rows_match_get_sale_detail_s_line_cost_for_a_split_line_and_a_gift
     sale = client.post(
         "/sales",
         json={
-            "payment": "cash",
+            "payment": {"kind": "method", "payment_method_id": 1},
             "lines": [
                 {"product_id": split_variety, "quantity": "10"},
                 {"product_id": gift_variety, "quantity": "2", "gift": True},

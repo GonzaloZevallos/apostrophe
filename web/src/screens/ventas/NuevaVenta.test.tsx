@@ -19,6 +19,7 @@ import { queryClient } from '../../queryClient'
 import { router } from '../../router'
 import type { SaleLine } from '../../api/sales'
 import type { Variety } from '../Variedades'
+import { PAYMENT_METHODS_FIXTURE, paymentMethodsResponse } from '../../test/paymentMethods'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 
@@ -37,7 +38,7 @@ function setupFetch(handlers: Record<string, () => Response>): ReturnType<typeof
   const fetchMock = vi.fn((path: string, init?: RequestInit) => {
     const method = init?.method ?? 'GET'
     const key = `${method} ${path}`
-    const handler = handlers[key]
+    const handler = handlers[key] ?? (key === 'GET /payment-methods' ? () => paymentMethodsResponse() : undefined)
     if (handler === undefined) {
       return Promise.reject(new Error(`unexpected request: ${key}`))
     }
@@ -56,6 +57,7 @@ async function openForm(handlers: Record<string, () => Response>): Promise<Retur
   await act(() => router.navigate(SALE_NEW))
   render(<App />)
   await screen.findByText('New sale')
+  await screen.findByRole('radio', { name: 'Cash' })
   // The varieties arrive after the form mounts; a test that picks one straight away
   // races the fetch on a loaded machine, so wait until the first line can offer them.
   if (Object.keys(handlers).some((key) => key.startsWith('GET /api/products'))) {
@@ -372,7 +374,7 @@ test('a refused save keeps everything typed, the message on its field', async ()
   expect(screen.getByText('New sale')).toBeInTheDocument()
 })
 
-test('sale.payment_required shows its own message on "How it was paid", not the generic banner', async () => {
+test('sale.payment_required shows its own message on the payment, not the generic banner', async () => {
   const user = userEvent.setup()
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
@@ -387,6 +389,72 @@ test('sale.payment_required shows its own message on "How it was paid", not the 
   const message = await screen.findByText('Pick how it was paid, or leave the sale owing')
   expect(message.closest('.nueva-venta__pago')).not.toBeNull()
   expect(screen.queryByText('Check the details and try again.')).not.toBeInTheDocument()
+})
+
+test('the sale is posted with the id of the chosen method, or as owing, or with no payment', async () => {
+  const user = userEvent.setup()
+  const posted = (fetchMock: ReturnType<typeof vi.fn>): unknown => {
+    const call = fetchMock.mock.calls.find(
+      ([path, init]) => path === '/sales' && (init as RequestInit | undefined)?.method === 'POST',
+    )
+    return JSON.parse(String(((call ?? [])[1] as RequestInit | undefined)?.body)) as unknown
+  }
+  const fetchMock = await openForm({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'POST /sales': () => jsonResponse(201, { id: 10 }),
+  })
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2')
+  await user.click(screen.getByRole('radio', { name: 'Mercado Pago' }))
+  await user.click(screen.getByRole('button', { name: 'Save sale' }))
+  await waitFor(() => expect(fetchMock.mock.calls.some(([path]) => path === '/sales')).toBe(true))
+  expect(posted(fetchMock)).toMatchObject({ payment: { kind: 'method', payment_method_id: 3 } })
+})
+
+test('a method archived meanwhile keeps what was typed, refetches the list, clears the choice and shows the notice', async () => {
+  const user = userEvent.setup()
+  let listCalls = 0
+  await openForm({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /payment-methods': () => {
+      listCalls += 1
+      return paymentMethodsResponse(listCalls === 1 ? undefined : PAYMENT_METHODS_FIXTURE.filter((method) => method.id !== 2))
+    },
+    'POST /sales': () => jsonResponse(404, { detail: 'gone', code: 'payment_method.unavailable' }),
+  })
+  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2')
+  await user.type(screen.getByLabelText('Note'), 'una nota')
+  await user.click(screen.getByRole('radio', { name: 'Transfer' }))
+  await user.click(screen.getByRole('button', { name: 'Save sale' }))
+
+  const notice = await screen.findByText("That payment method isn't available any more. Pick another one.")
+  expect(notice.closest('[role="alert"]')?.querySelector('svg')).not.toBeNull()
+  await waitFor(() => expect(screen.queryByRole('radio', { name: 'Transfer' })).not.toBeInTheDocument())
+  for (const radio of screen.getAllByRole('radio')) expect(radio).toHaveAttribute('aria-checked', 'false')
+  expect(screen.getByLabelText('Line 1 grams')).toHaveValue('2')
+  expect(screen.getByLabelText('Note')).toHaveValue('una nota')
+  expect(screen.getByText('New sale')).toBeInTheDocument()
+  expect(listCalls).toBeGreaterThanOrEqual(2)
+})
+
+test('removing the customer while Owing is chosen clears the choice', async () => {
+  const user = userEvent.setup()
+  await openForm({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /customers': () => jsonResponse(200, [{ id: 4, name: 'Ana Pérez', phone: null, vip: false, balance: 0, owing_since: null, standing: 'settled' }]),
+  })
+  await user.click(screen.getByRole('button', { name: 'Pick a customer' }))
+  await user.click(await screen.findByText('Ana Pérez'))
+  await user.click(screen.getByRole('radio', { name: 'Owing' }))
+  expect(screen.getByRole('radio', { name: 'Owing' })).toBeChecked()
+  await user.click(screen.getByRole('button', { name: /Ana Pérez/ }))
+  await user.click(await screen.findByRole('button', { name: 'No customer' }))
+  expect(screen.getByRole('radio', { name: 'Owing' })).not.toBeChecked()
+  expect(screen.getByRole('radio', { name: 'Owing' })).toBeDisabled()
 })
 
 test('sale.no_price_that_day refetches prices, and the line then shows its own message', async () => {

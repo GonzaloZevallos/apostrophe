@@ -15,15 +15,18 @@ import { SheetRouterProvider } from '../../components/useSheetStack'
 import { SALE_NEW } from '../../routes'
 import { stubViewport } from '../../test-viewport'
 import NuevaVenta from './NuevaVenta'
+import { paymentMethodsResponse } from '../../test/paymentMethods'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 
 beforeEach(() => {
   vi.stubGlobal(
     'fetch',
-    vi.fn(() =>
+    vi.fn((url: string) =>
       Promise.resolve(
-        new Response('[]', { status: 200, headers: { 'Content-Type': 'application/json' } }),
+        url === '/payment-methods'
+          ? paymentMethodsResponse()
+          : new Response('[]', { status: 200, headers: { 'Content-Type': 'application/json' } }),
       ),
     ),
   )
@@ -59,7 +62,7 @@ test('Save is the secondary button until a payment is chosen, then the primary o
   expect(save).toHaveAttribute('type', 'submit')
   expect(save).toHaveClass('boton--suave')
 
-  await userEvent.click(screen.getByRole('radio', { name: 'Cash' }))
+  await userEvent.click(await screen.findByRole('radio', { name: 'Cash' }))
 
   const after = screen.getByRole('button', { name: 'Save sale' })
   expect(after).toBe(save)

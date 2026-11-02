@@ -117,7 +117,7 @@ def seed_sales(client: TestClient) -> dict[str, int]:
     without_customer = client.post(
         "/sales",
         json={
-            "payment": "cash",
+            "payment": {"kind": "method", "payment_method_id": 1},
             "note": MARKER,
             "lines": [{"product_id": variety["id"], "quantity": "10"}],
         },
@@ -125,7 +125,7 @@ def seed_sales(client: TestClient) -> dict[str, int]:
     client.post(
         "/sales",
         json={
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "customer_id": customer["id"],
             "lines": [{"product_id": variety["id"], "quantity": "10"}],
         },
@@ -211,17 +211,23 @@ def seed_payments(client: TestClient) -> dict[str, int]:
     client.post(
         "/sales",
         json={
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "customer_id": customer_id,
             "lines": [{"product_id": variety["id"], "quantity": "10"}],
         },
     )
     payment = client.post(
         f"/customers/{customer_id}/payments",
-        json={"paid_on": "2026-09-20", "amount": 1_000, "method": "cash"},
+        json={"paid_on": "2026-09-20", "amount": 1_000, "payment_method_id": 1},
     )
     assert payment.status_code == 201, payment.text
     return {"customer_id": customer_id, "payment_id": payment.json()["payment"]["id"]}
+
+
+def seed_payment_methods(client: TestClient) -> dict[str, int]:
+    created = client.post("/api/payment-methods", json={"name": f"{MARKER} method"})
+    assert created.status_code == 201, created.text
+    return {"method_id": created.json()["id"]}
 
 
 def seed_pricing_settings(client: TestClient) -> dict[str, int]:
@@ -250,11 +256,15 @@ SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_catalog,
     seed_pinned_catalog,
     seed_payments,
+    seed_payment_methods,
     seed_pricing_settings,
     seed_first_run,
 ]
 
 BODIES: dict[tuple[str, str], dict[str, Any]] = {
+    ("POST", "/api/payment-methods"): {"name": "Another method"},
+    ("PATCH", "/api/payment-methods/{method_id}"): {"name": "Renamed"},
+    ("POST", "/api/payment-methods/{method_id}/move"): {"direction": "up"},
     ("POST", "/api/products"): {"name": "Another variety"},
     ("PATCH", "/api/products/{product_id}"): {"name": "Renamed"},
     ("POST", "/api/products/{product_id}/prices"): {
@@ -282,7 +292,7 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
     # changes the stored language of whichever business calls it.
     ("PUT", "/business/language"): {"language": "de"},
     ("POST", "/sales"): {
-        "payment": "owing",
+        "payment": {"kind": "owing"},
         "customer_id": 1,
         "lines": [{"product_id": 1, "quantity": "1"}],
     },
@@ -326,7 +336,7 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
     ("POST", "/customers/{customer_id}/payments"): {
         "paid_on": "2026-10-02",
         "amount": 100,
-        "method": "cash",
+        "payment_method_id": 1,
     },
     ("POST", "/onboarding-progress/passes"): {"step": "header_footer", "as": "done"},
     ("PUT", "/pricing-settings"): {"is_bulk_pricing": False, "is_vip_customers": False},
@@ -491,7 +501,7 @@ def seeded_b(business_a: TestClient) -> dict[str, int]:
 
 def _sale_body(*, variety_id: int, customer_id: int) -> dict[str, Any]:
     return {
-        "payment": "owing",
+        "payment": {"kind": "owing"},
         "customer_id": customer_id,
         "lines": [{"product_id": variety_id, "quantity": "1"}],
     }
@@ -593,7 +603,7 @@ def test_assigning_a_customer_from_another_business_is_refused_the_same_way_as_m
     )
     sale_id = business_b.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety["id"], "quantity": "1"}]},
+        json={"payment": {"kind": "method", "payment_method_id": 1}, "lines": [{"product_id": variety["id"], "quantity": "1"}]},
     ).json()["id"]
     foreign_customer = seeded_b["customer_id"]
 
@@ -805,7 +815,7 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
         "/sales",
         json={
             "date": today,
-            "payment": "cash",
+            "payment": {"kind": "method", "payment_method_id": 1},
             "lines": [{"product_id": variety["id"], "quantity": "3", "gift": True}],
         },
     )
@@ -815,14 +825,14 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
         json={
             "date": today,
             "customer_id": customer["id"],
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "lines": [{"product_id": variety["id"], "quantity": "2"}],
         },
     )
     assert owing.status_code == 201, owing.text
     payment = business_a.post(
         f"/customers/{customer['id']}/payments",
-        json={"paid_on": today, "amount": 1_000, "method": "cash"},
+        json={"paid_on": today, "amount": 1_000, "payment_method_id": 1},
     )
     assert payment.status_code == 201, payment.text
     category = business_a.post(

@@ -129,7 +129,7 @@ test("the period's total and count are the sum and the number of sales shown", a
         customer: { id: 5, name: 'Nico', vip: true },
         shipping_charged: 0,
         note: null,
-        payment: 'cash',
+        payment: { kind: 'method', payment_method_id: 1, name: 'Cash', icon: 'coins' },
         total: 6000,
         lines: [
           { product_id: 1, product_name: 'Blue Dream', quantity: 5, pricing_rule: 'list', price_per_gram: 1200, line_total: 6000 },
@@ -141,7 +141,7 @@ test("the period's total and count are the sum and the number of sales shown", a
         customer: null,
         shipping_charged: 0,
         note: null,
-        payment: 'none',
+        payment: { kind: 'none' },
         total: 4000,
         lines: [
           { product_id: 2, product_name: 'OG Kush', quantity: 2, pricing_rule: 'list', price_per_gram: 2000, line_total: 4000 },
@@ -194,7 +194,7 @@ test('a sale with no customer shows "No customer" and no VIP badge', async () =>
         customer: null,
         shipping_charged: 0,
         note: null,
-        payment: 'none',
+        payment: { kind: 'none' },
         total: 1000,
         lines: [
           { product_id: 1, product_name: 'Blue Dream', quantity: 1, pricing_rule: 'list', price_per_gram: 1000, line_total: 1000 },
@@ -221,7 +221,7 @@ test('a sale still owing shows its total in amber with "owes you" under it, from
 
 test('a sale paid in full shows no "owes you" mark', async () => {
   api.mockResolvedValue(
-    jsonResponse(200, [{ ...saleFixture, payment: 'cash', still_owing: false }]),
+    jsonResponse(200, [{ ...saleFixture, payment: { kind: 'method', payment_method_id: 1, name: 'Cash', icon: 'coins' }, still_owing: false }]),
   )
   renderVentas()
 

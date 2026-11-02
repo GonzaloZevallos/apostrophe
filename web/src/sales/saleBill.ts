@@ -42,10 +42,8 @@ function renderLine(line: SaleBillLine, text: BillText): string {
 function paymentLine(bill: SaleBill, text: BillText): string | null {
   const state: BillState = bill.payment.state
   switch (state) {
-    case 'cash':
-      return text.paidCash
-    case 'transfer':
-      return text.paidTransfer
+    case 'method':
+      return text.paidWith(bill.payment.method_name ?? '')
     case 'paid':
       return text.paid
     case 'owed':

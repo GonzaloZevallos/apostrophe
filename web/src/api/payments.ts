@@ -15,9 +15,14 @@ import { queryOptions } from '@tanstack/react-query'
 import { del, get, post } from './client'
 import { keys } from './keys'
 
-export type PaymentMethod = 'cash' | 'transfer'
 export type Standing = 'owes' | 'credit' | 'settled'
-export type HowPaid = 'cash' | 'transfer' | 'owing' | 'none'
+
+/** How a sale was paid, as an account row reads it: the method's current name and icon, or
+ * owing, or nothing (a sale left without either). The name is the seller's own, never translated. */
+export type HowPaid =
+  | { kind: 'method'; payment_method_id: number; name: string; icon: string }
+  | { kind: 'owing' }
+  | { kind: 'none' }
 
 export interface AppliedTo {
   sale_id: number
@@ -35,7 +40,10 @@ export interface Payment {
   id: number
   paid_on: string
   amount: number
-  method: PaymentMethod
+  payment_method_id: number
+  /** The method's current name and icon (seller data, shown as it is). */
+  name: string
+  icon: string
 }
 
 export interface PaymentCandidate {
@@ -44,7 +52,7 @@ export interface PaymentCandidate {
 }
 
 export interface PaymentIn extends PaymentCandidate {
-  method: PaymentMethod | null
+  payment_method_id: number
 }
 
 export interface PaymentPreview {

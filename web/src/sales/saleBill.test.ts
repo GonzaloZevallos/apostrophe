@@ -24,7 +24,7 @@ const bulkBill: SaleBill = {
   shipping_charged: 0,
   total: 31500,
   lines: [{ product: 'Luna', quantity: 3.5, amount: 31500, rule: 'bulk', unit_price: 9000 }],
-  payment: { state: 'cash', still_owed: null },
+  payment: { state: 'method', still_owed: null, method_name: 'Cash' },
   balance: null,
 }
 
@@ -46,7 +46,7 @@ describe('what the text never holds', () => {
       { product: 'Aurora', quantity: 2, amount: 18000, rule: null, unit_price: null },
       { product: 'Mora', quantity: 1, amount: 0, rule: 'gift', unit_price: null },
     ],
-    payment: { state: 'owed', still_owed: 4000 },
+    payment: { state: 'owed', still_owed: 4000, method_name: null },
     balance: -2500,
   }
 

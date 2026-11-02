@@ -56,7 +56,7 @@ def test_a_customer_with_a_sale_left_owing_shows_the_balance_everywhere_they_are
         "/sales",
         json={
             "customer_id": customer["id"],
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "lines": [{"product_id": variety["id"], "quantity": "1"}],
         },
     )
@@ -88,14 +88,14 @@ def test_a_later_payment_lowers_the_balance_everywhere_it_is_read(client: TestCl
         "/sales",
         json={
             "customer_id": customer["id"],
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "lines": [{"product_id": variety["id"], "quantity": "1"}],
         },
     ).json()
 
     payment = client.post(
         f"/customers/{customer['id']}/payments",
-        json={"paid_on": TODAY.isoformat(), "amount": 4_000, "method": "cash"},
+        json={"paid_on": TODAY.isoformat(), "amount": 4_000, "payment_method_id": 1},
     )
     assert payment.status_code == 201, payment.text
 
@@ -109,7 +109,7 @@ def test_a_later_payment_lowers_the_balance_everywhere_it_is_read(client: TestCl
 
     full = client.post(
         f"/customers/{customer['id']}/payments",
-        json={"paid_on": TODAY.isoformat(), "amount": 6_000, "method": "cash"},
+        json={"paid_on": TODAY.isoformat(), "amount": 6_000, "payment_method_id": 1},
     )
     assert full.status_code == 201, full.text
 
@@ -298,13 +298,13 @@ def test_clearing_the_phone_keeps_the_customers_sales_payments_and_balance(
         "/sales",
         json={
             "customer_id": customer["id"],
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "lines": [{"product_id": variety["id"], "quantity": "1"}],
         },
     ).json()
     payment = client.post(
         f"/customers/{customer['id']}/payments",
-        json={"paid_on": TODAY.isoformat(), "amount": 4_000, "method": "cash"},
+        json={"paid_on": TODAY.isoformat(), "amount": 4_000, "payment_method_id": 1},
     ).json()
 
     cleared = client.patch(f"/customers/{customer['id']}", json={"phone": cleared_with})
@@ -455,7 +455,7 @@ def test_a_no_phone_customer_can_be_chosen_for_a_sale_left_owing_and_paid(
         "/sales",
         json={
             "customer_id": customer["id"],
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "lines": [{"product_id": variety["id"], "quantity": "1"}],
         },
     )
@@ -466,7 +466,7 @@ def test_a_no_phone_customer_can_be_chosen_for_a_sale_left_owing_and_paid(
 
     payment = client.post(
         f"/customers/{customer['id']}/payments",
-        json={"paid_on": TODAY.isoformat(), "amount": 10_000, "method": "cash"},
+        json={"paid_on": TODAY.isoformat(), "amount": 10_000, "payment_method_id": 1},
     )
     assert payment.status_code == 201, payment.text
 

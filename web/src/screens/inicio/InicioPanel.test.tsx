@@ -89,7 +89,7 @@ const OWING_ACCOUNT = {
       date: '2026-09-14',
       running_balance: 11000,
       standing: 'owes',
-      sale: { id: 10, total: 11000, how_paid: 'owing' },
+      sale: { id: 10, total: 11000, how_paid: { kind: 'owing' } },
     },
   ],
 }
