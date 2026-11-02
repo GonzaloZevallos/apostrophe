@@ -28,7 +28,7 @@ async function expectActionAtTheBottom(page: Page, action: string): Promise<void
   expect(Math.abs(gap - padding)).toBeLessThanOrEqual(1)
 }
 
-test('a direct address to the new withdrawal opens the sheet over Varieties, focus on the first reason', async ({
+test('a direct address to the new withdrawal opens the sheet over Products, focus on the first reason', async ({
   page,
 }) => {
   await signUp(page, 'withdrawal-new')

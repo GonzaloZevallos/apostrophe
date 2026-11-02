@@ -11,7 +11,7 @@ import { seedRecords, signUp } from './helpers/seed.js'
 
 test.use({ viewport: { width: 390, height: 844 } })
 
-test('a direct address to New product opens the sheet over Varieties, focus on the name', async ({ page }) => {
+test('a direct address to New product opens the sheet over Products, focus on the name', async ({ page }) => {
   await signUp(page, 'sheet-open')
   await page.goto(VARIETY_NEW)
 
