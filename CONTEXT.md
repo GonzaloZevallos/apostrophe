@@ -417,6 +417,10 @@ _Avoid_: friend price, discount, Amigo price
 Cuáles de Bulk price y VIP customers usa un Business: dos interruptores independientes. Una regla desactivada queda oculta y deja de aplicarse a las Sales nuevas, mientras que todo lo guardado para ella se conserva. _In the app_: Prices, en Settings.
 _Avoid_: price config, pricing mode, plan, tariff settings
 
+**Money format**:
+El símbolo de la moneda y los decimales con que un Business muestra su dinero. Todo Business tiene por ahora "$" y 0 decimales. Se guarda en una fila de money_format por Business, junto con la Money scale. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md.
+_Avoid_: currency settings
+
 **Archived variety**:
 Una Variety que el vendedor sacó de toda lista y selector (Varieties, What you have left, New sale, los formularios de Stock entry y de Price entry, el Catalog y el Pinned catalog), mientras que todo registro pasado conserva su nombre y sus cifras tal cual. Archive es la acción que se ofrece para una Variety con historial, pero una Archived variety puede no tener ninguno. Conserva reservado su nombre y su marca de Hidden variety, se ve y se restaura solo desde Archived, tiene una página de solo lectura y al restaurarla vuelve exactamente como estaba. En la app: Archived.
 _Avoid_: deleted, hidden, inactive, disabled
@@ -540,10 +544,6 @@ _Avoid_: locale, region
 **Money scale**:
 Si un Business guarda su dinero en unidades enteras de moneda (0) o en centésimos (2); los Businesses existentes quedan en 0 y los nuevos empiezan en 2. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; a cargo de la parte money.
 _Avoid_: precision, cents mode
-
-**Money format**:
-El símbolo de la moneda y los decimales con que un Business muestra su dinero. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; a cargo de la parte money.
-_Avoid_: currency settings
 
 **Customer type**:
 Un tipo de Customer definido por el vendedor, como máximo uno por Customer, que puede tener su propio precio. Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; a cargo de la parte customer types.

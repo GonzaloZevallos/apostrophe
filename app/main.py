@@ -39,6 +39,7 @@ from app.expenses.adapters.expenses_ledger import SqlExpensesLedger
 from app.expenses.adapters.router import router as expenses_router
 from app.http_errors import Refused
 from app.migrations.runner import upgrade_to_head
+from app.money_format.adapters.opening import MoneyFormatOpening
 from app.onboarding.adapters.first_run_router import router as first_run_router
 from app.onboarding.adapters.opening import OnboardingOpening
 from app.onboarding.adapters.router import router as onboarding_router
@@ -216,6 +217,7 @@ def create_app(
         partial(ExpenseCategoriesOpening, defaults=category_defaults),
         partial(CatalogHeaderFooterOpening, defaults=header_footer_defaults),
         PricingSettingsOpening,
+        MoneyFormatOpening,
         partial(OnboardingOpening, clock=clock),
     )
     # A factory, not an instance (the same shape as `business_opening` above): sales
