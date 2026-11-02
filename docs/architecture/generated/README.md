@@ -11,6 +11,7 @@ A diagram shows only its own package: classes of other packages, and the edges t
 - [classes/customers.md](classes/customers.md)
 - [classes/expenses.md](classes/expenses.md)
 - [classes/onboarding.md](classes/onboarding.md)
+- [classes/payment_methods.md](classes/payment_methods.md)
 - [classes/payments.md](classes/payments.md)
 - [classes/pinned_catalog.md](classes/pinned_catalog.md)
 - [classes/pricing_settings.md](classes/pricing_settings.md)
