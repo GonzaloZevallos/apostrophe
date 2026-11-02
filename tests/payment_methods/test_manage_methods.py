@@ -2,6 +2,7 @@
 in-memory SQLite database (docs/adr/0001). Two businesses are opened by hand."""
 
 from collections.abc import Iterator
+from datetime import UTC, datetime
 
 import pytest
 from sqlalchemy import text
@@ -36,6 +37,7 @@ from app.payment_methods.domain.method import (
     PaymentMethodSeed,
 )
 
+NOW = datetime(2026, 10, 2, 18, 0, tzinfo=UTC)
 MINE = 1
 OTHER = 2
 
@@ -111,7 +113,7 @@ def test_an_archived_method_still_reserves_its_name(
     cash, _ = _seed(methods, session, "Cash", "Transfer")
     transfer = list_methods(methods)[1].id
     assert transfer is not None
-    archive_method(methods, session, cash)
+    archive_method(methods, session, cash, NOW)
 
     with pytest.raises(PaymentMethodNameTaken):
         add_method(methods, session, "cash", PaymentMethodIcon.DEFAULT)
@@ -178,7 +180,7 @@ def test_move_skips_an_archived_method_between_two_active_ones(
     methods: SqlPaymentMethods, session: Session
 ) -> None:
     _, b, c = _seed(methods, session, "A", "B", "C")
-    archive_method(methods, session, b)
+    archive_method(methods, session, b, NOW)
 
     move_method(methods, session, c, Direction.UP)
     assert _names(methods) == ["C", "A"]
@@ -192,7 +194,7 @@ def test_archive_hides_a_method_and_restore_brings_it_back_to_its_old_position(
 ) -> None:
     _, b, _ = _seed(methods, session, "A", "B", "C")
 
-    archive_method(methods, session, b)
+    archive_method(methods, session, b, NOW)
     assert _names(methods) == ["A", "C"]
     assert [m.name.value for m in list_archived_methods(methods)] == ["B"]
     assert get_method(methods, b).archived is True
@@ -206,10 +208,10 @@ def test_the_last_active_method_can_be_neither_archived_nor_deleted(
     methods: SqlPaymentMethods, session: Session
 ) -> None:
     cash, transfer = _seed(methods, session, "Cash", "Transfer")
-    archive_method(methods, session, transfer)
+    archive_method(methods, session, transfer, NOW)
 
     with pytest.raises(LastActivePaymentMethod):
-        archive_method(methods, session, cash)
+        archive_method(methods, session, cash, NOW)
     with pytest.raises(LastActivePaymentMethod):
         delete_method(methods, session, cash)
 
@@ -219,8 +221,8 @@ def test_the_last_active_method_can_be_neither_archived_nor_deleted(
 def test_archiving_twice_is_not_an_error(methods: SqlPaymentMethods, session: Session) -> None:
     cash, _ = _seed(methods, session, "Cash", "Transfer")
 
-    archive_method(methods, session, cash)
-    archive_method(methods, session, cash)
+    archive_method(methods, session, cash, NOW)
+    archive_method(methods, session, cash, NOW)
 
     assert _names(methods) == ["Transfer"]
 
@@ -243,7 +245,7 @@ def test_an_archived_method_can_be_deleted_while_one_active_method_remains(
     methods: SqlPaymentMethods, session: Session
 ) -> None:
     cash, transfer = _seed(methods, session, "Cash", "Transfer")
-    archive_method(methods, session, cash)
+    archive_method(methods, session, cash, NOW)
 
     delete_method(methods, session, cash)
 
@@ -267,7 +269,7 @@ def test_another_business_methods_are_not_found_and_stay_untouched(
     with pytest.raises(PaymentMethodNotFound):
         move_method(methods, session, theirs, Direction.DOWN)
     with pytest.raises(PaymentMethodNotFound):
-        archive_method(methods, session, theirs)
+        archive_method(methods, session, theirs, NOW)
     with pytest.raises(PaymentMethodNotFound):
         restore_method(methods, session, theirs)
     with pytest.raises(PaymentMethodNotFound):

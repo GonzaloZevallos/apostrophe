@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from app.payment_methods.application.ports import Direction, PaymentMethods
 from app.payment_methods.domain.method import (
     PaymentMethod,
@@ -71,8 +73,10 @@ def move_method(
     transaction.commit()
 
 
-def archive_method(methods: PaymentMethods, transaction: Transaction, method_id: int) -> None:
-    methods.archive(method_id)
+def archive_method(
+    methods: PaymentMethods, transaction: Transaction, method_id: int, now: datetime
+) -> None:
+    methods.archive(method_id, now)
     transaction.commit()
 
 

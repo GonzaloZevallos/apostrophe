@@ -2,6 +2,7 @@
 import resolves a method by name without committing (docs/adr/0055)."""
 
 from collections.abc import Iterator
+from datetime import UTC, datetime
 
 import pytest
 from sqlalchemy import text
@@ -21,6 +22,7 @@ from app.shared.copy import CopyCatalog
 from app.shared.language import ENGLISH, BusinessLanguage, Language
 
 BUSINESS = 1
+NOW = datetime(2026, 10, 2, 18, 0, tzinfo=UTC)
 
 
 @pytest.fixture
@@ -100,7 +102,7 @@ def test_the_import_finds_an_archived_method_rather_than_failing_on_its_reserved
         import_port = PaymentMethodsImport(session, BUSINESS)
         old = import_port.ensure_by_name("Old")
         import_port.ensure_by_name("New")
-        archive_method(methods, session, old)
+        archive_method(methods, session, old, NOW)
 
         assert import_port.ensure_by_name("old") == old
 

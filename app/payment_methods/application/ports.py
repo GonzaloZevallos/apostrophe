@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import StrEnum
 from typing import Protocol
 
@@ -43,7 +44,9 @@ class PaymentMethods(Protocol):
         """Swaps the method with its nearest active neighbour; at an edge, nothing."""
         ...
 
-    def archive(self, method_id: int) -> None: ...
+    def archive(self, method_id: int, at: datetime) -> None:
+        """`at` is the instant the method left the list, from the injected clock."""
+        ...
 
     def restore(self, method_id: int) -> None: ...
 

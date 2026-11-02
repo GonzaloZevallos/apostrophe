@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import cast
 
 from sqlalchemy import (
@@ -156,7 +156,7 @@ class SqlPaymentMethods:
         )
         self._session.expire_all()
 
-    def archive(self, method_id: int) -> None:
+    def archive(self, method_id: int, at: datetime) -> None:
         if self._existing(method_id).archived_at is not None:
             return
         statement = (
@@ -167,7 +167,7 @@ class SqlPaymentMethods:
                 Row.archived_at.is_(None),
                 self._active_count() > 1,
             )
-            .values(archived_at=datetime.now(UTC))
+            .values(archived_at=at)
         )
         self._guarded(statement, method_id, self._refuse_archive)
 
