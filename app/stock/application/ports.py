@@ -3,12 +3,15 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Protocol
 
+from app.shared.language import Language
 from app.shared.quantity import Quantity
 from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import StockEntry
 from app.stock.domain.lot_order import SaleLineDraw, WithdrawalLineDraw
 from app.stock.domain.threshold import Threshold
 from app.stock.domain.withdrawal import Withdrawal
+from app.stock.domain.withdrawal_reason import ReasonName
+from app.stock.domain.withdrawal_reason import WithdrawalReason as WithdrawalReasonEntity
 
 
 class StockEntries(Protocol):
@@ -125,4 +128,34 @@ class VarietyCatalog(Protocol):
     def names(self) -> dict[int, str]:
         """Every variety's name of this business by id, for an answer that names the
         varieties of a record's lines."""
+        ...
+
+
+class WithdrawalReasons(Protocol):
+    """The withdrawal reasons of one business (docs/adr/0004): built for it, every
+    statement filters on it, and it never commits — the use case commits once, through
+    `Transaction`. `all` answers the list in order, by `(position, id)`."""
+
+    def all(self) -> list[WithdrawalReasonEntity]: ...
+
+    def get(self, reason_id: int) -> WithdrawalReasonEntity | None: ...
+
+    def add(self, name: ReasonName, position: int) -> WithdrawalReasonEntity:
+        """Writes without committing; raises `ReasonNameTaken` for a name the business
+        already has (the unique constraint is the backstop)."""
+        ...
+
+    def save(self, reason: WithdrawalReasonEntity) -> WithdrawalReasonEntity: ...
+
+    def reorder(self, reason_ids: list[int]) -> None:
+        """Gives each id of this business the position of its index in `reason_ids`."""
+        ...
+
+    def count(self) -> int: ...
+
+
+class ReasonDefaults(Protocol):
+    def for_language(self, language: Language) -> tuple[ReasonName, ...]:
+        """The reasons a business opened in `language` starts with, in order, English
+        for a language the copy has no catalog for."""
         ...

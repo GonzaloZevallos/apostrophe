@@ -14,6 +14,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.db import Base, UtcDateTime
 from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import NOTE_MAX_LENGTH
+from app.stock.domain.withdrawal_reason import NAME_MAX_LENGTH
 
 ORIGIN_MAX_LENGTH = 20
 REASON_MAX_LENGTH = max(len(reason.value) for reason in WithdrawalReason)
@@ -45,6 +46,24 @@ class StockThresholdRow(Base):
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
     variety_id: Mapped[int] = mapped_column(ForeignKey("variety.id"))
     threshold_hundredths: Mapped[int]
+
+
+class WithdrawalReasonRow(Base):
+    """A business's own withdrawal reason (CONTEXT.md: Withdrawal reason). `name_key` is
+    `app.shared.names.name_key(name)`, unique per business; `position` orders the list
+    and is read together with `id`, so a tie from two concurrent adds stays stable."""
+
+    __tablename__ = "withdrawal_reason"
+    __table_args__ = (
+        UniqueConstraint("business_id", "name_key"),
+        UniqueConstraint("business_id", "id"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
+    name: Mapped[str] = mapped_column(String(NAME_MAX_LENGTH))
+    name_key: Mapped[str] = mapped_column(String(NAME_MAX_LENGTH))
+    position: Mapped[int]
 
 
 class StockWithdrawalRow(Base):

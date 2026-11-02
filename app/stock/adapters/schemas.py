@@ -17,6 +17,7 @@ from app.stock.application.read_stock import StockView, VarietyStock
 from app.stock.domain.costing import cost_per_gram
 from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import Origin, StockEntry
+from app.stock.domain.withdrawal_reason import WithdrawalReason as WithdrawalReasonEntity
 
 # The four values `stock_level` (stock-domain) answers; declared here so every
 # subtask that reads or writes a status reads the one literal type, never a bare str.
@@ -191,3 +192,20 @@ def movement_out(movement: Movement) -> MovementOut:
             quantity=movement.quantity.as_decimal(),
         )
     return EntryMovementOut(**EntryOut.of(movement).model_dump())
+
+
+class ReasonIn(BaseModel):
+    name: str
+
+
+class ReasonMoveIn(BaseModel):
+    direction: Literal["up", "down"]
+
+
+class ReasonOut(BaseModel):
+    id: int
+    name: str
+
+    @classmethod
+    def of(cls, reason: WithdrawalReasonEntity) -> "ReasonOut":
+        return cls(id=reason.id, name=reason.name.value)

@@ -15,6 +15,9 @@ from app.stock.adapters.schemas import (
     EntryOut,
     MovementOut,
     ProductStockOut,
+    ReasonIn,
+    ReasonMoveIn,
+    ReasonOut,
     StockOut,
     ThresholdIn,
     WithdrawalIn,
@@ -25,8 +28,9 @@ from app.stock.adapters.sql_draws import SqlDraws
 from app.stock.adapters.sql_stock_entries import SqlStockEntries
 from app.stock.adapters.sql_stock_withdrawals import SqlStockWithdrawals
 from app.stock.adapters.sql_thresholds import SqlThresholds
+from app.stock.adapters.sql_withdrawal_reasons import SqlWithdrawalReasons
 from app.stock.adapters.variety_catalog import SqlVarietyCatalog
-from app.stock.application import manage_entries, manage_withdrawals
+from app.stock.application import manage_entries, manage_reasons, manage_withdrawals
 from app.stock.application import read_stock as read_stock_uc
 from app.stock.application import set_threshold as set_threshold_uc
 from app.stock.application.errors import VarietyArchived as _ArchivedVariety
@@ -39,12 +43,17 @@ from app.stock.domain.errors import (
     EntryNoteTooLong,
     EntryNotFound,
     EntryQuantityInvalid,
+    ReasonCannotMove,
+    ReasonNameBlank,
+    ReasonNameTaken,
+    ReasonNameTooLong,
     WithdrawalDateInFuture,
     WithdrawalNoLines,
     WithdrawalNoteTooLong,
     WithdrawalNotFound,
     WithdrawalQuantityNotPositive,
     WithdrawalQuantityTooPrecise,
+    WithdrawalReasonNotFound,
     WithdrawalReasonRequired,
     WithdrawalVarietyNotFound,
 )
@@ -54,6 +63,9 @@ router = APIRouter(prefix="/stock", tags=["stock"])
 entries_router = APIRouter(prefix="/entries")
 withdrawals_router = APIRouter(prefix="/withdrawals")
 products_router = APIRouter(prefix="/products")
+# Its own prefix, as products' is: the reasons are a list the business owns, not a stock
+# figure (CONTEXT.md: Withdrawal reason).
+reasons_router = APIRouter(prefix="/api/withdrawal-reasons", tags=["stock"])
 
 SessionDep = Annotated[Session, Depends(get_session)]
 TodayDep = Annotated[date, Depends(get_today)]
@@ -76,6 +88,10 @@ def get_withdrawals(session: SessionDep, business_id: CurrentBusinessId) -> SqlS
     return SqlStockWithdrawals(session, business_id)
 
 
+def get_reasons(session: SessionDep, business_id: CurrentBusinessId) -> SqlWithdrawalReasons:
+    return SqlWithdrawalReasons(session, business_id)
+
+
 def get_thresholds(session: SessionDep, business_id: CurrentBusinessId) -> SqlThresholds:
     return SqlThresholds(session, business_id)
 
@@ -85,6 +101,7 @@ CatalogDep = Annotated[SqlVarietyCatalog, Depends(get_catalog)]
 DrawsDep = Annotated[SqlDraws, Depends(get_draws)]
 WithdrawalsDep = Annotated[SqlStockWithdrawals, Depends(get_withdrawals)]
 ThresholdsDep = Annotated[SqlThresholds, Depends(get_thresholds)]
+ReasonsDep = Annotated[SqlWithdrawalReasons, Depends(get_reasons)]
 
 as_http = TranslateErrors(
     [
@@ -96,7 +113,12 @@ as_http = TranslateErrors(
                 ProductArchived,
                 WithdrawalNotFound,
                 WithdrawalVarietyNotFound,
+                WithdrawalReasonNotFound,
             ),
+        ),
+        (
+            409,
+            (ReasonNameTaken, ReasonCannotMove),
         ),
         (
             422,
@@ -115,6 +137,8 @@ as_http = TranslateErrors(
                 WithdrawalQuantityNotPositive,
                 WithdrawalQuantityTooPrecise,
                 WithdrawalNoteTooLong,
+                ReasonNameBlank,
+                ReasonNameTooLong,
             ),
         ),
     ]
@@ -272,6 +296,26 @@ def edit_withdrawal(
 def delete_withdrawal(withdrawal_id: int, withdrawals: WithdrawalsDep, session: SessionDep) -> None:
     with as_http:
         manage_withdrawals.delete_withdrawal(withdrawals, session, withdrawal_id)
+
+
+@reasons_router.get("")
+def list_reasons(reasons: ReasonsDep) -> list[ReasonOut]:
+    return [ReasonOut.of(reason) for reason in manage_reasons.list_reasons(reasons)]
+
+
+@reasons_router.post("", status_code=201)
+def add_reason(body: ReasonIn, reasons: ReasonsDep, session: SessionDep) -> ReasonOut:
+    with as_http:
+        return ReasonOut.of(manage_reasons.add_reason(reasons, session, body.name))
+
+
+@reasons_router.post("/{reason_id}/move")
+def move_reason(
+    reason_id: int, body: ReasonMoveIn, reasons: ReasonsDep, session: SessionDep
+) -> list[ReasonOut]:
+    with as_http:
+        moved = manage_reasons.move_reason(reasons, session, reason_id, body.direction)
+        return [ReasonOut.of(reason) for reason in moved]
 
 
 @router.get("")

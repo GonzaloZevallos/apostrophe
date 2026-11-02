@@ -73,6 +73,9 @@ from app.stock.adapters.leaving import SqlStockLeaving
 from app.stock.adapters.line_costs import SqlLineCosts
 from app.stock.adapters.onboarding_facts import SqlStockFacts
 from app.stock.adapters.purchases import SqlPurchases
+from app.stock.adapters.babel_defaults import BabelReasonDefaults
+from app.stock.adapters.reasons_opening import WithdrawalReasonsOpening
+from app.stock.adapters.router import reasons_router as stock_reasons_router
 from app.stock.adapters.router import router as stock_router
 from app.stock.adapters.stock_figures import SqlStockFigures
 
@@ -212,8 +215,10 @@ def create_app(
     copy_catalog = CopyCatalog(settings.locales_dir)
     category_defaults = BabelCategoryDefaults(copy_catalog)
     header_footer_defaults = BabelHeaderFooterDefaults(copy_catalog)
+    reason_defaults = BabelReasonDefaults(copy_catalog)
     app.state.business_opening = CompositeOpening(
         partial(ExpenseCategoriesOpening, defaults=category_defaults),
+        partial(WithdrawalReasonsOpening, defaults=reason_defaults),
         partial(CatalogHeaderFooterOpening, defaults=header_footer_defaults),
         PricingSettingsOpening,
         partial(OnboardingOpening, clock=clock),
@@ -307,6 +312,7 @@ def create_app(
     app.include_router(expenses_router, dependencies=gated)
     app.include_router(sales_router, dependencies=upkeep_gated)
     app.include_router(stock_router, dependencies=upkeep_gated)
+    app.include_router(stock_reasons_router, dependencies=gated)
     app.include_router(catalog_router, dependencies=upkeep_gated)
     app.include_router(payments_router, dependencies=gated)
     app.include_router(payments_customers_router, dependencies=gated)
