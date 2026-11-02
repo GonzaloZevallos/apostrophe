@@ -118,7 +118,7 @@ classDiagram
 ```mermaid
 classDiagram
   class CustomerTypeIn {
-    icon : str #124; None
+    icon : IconKey #124; None
     name : str
   }
   class CustomerTypeOut {
@@ -129,7 +129,7 @@ classDiagram
     of(customer_type: CustomerType) 'CustomerTypeOut'
   }
   class CustomerTypePatchIn {
-    icon : str #124; None
+    icon : IconKey #124; None
     name : str #124; None
   }
   class CustomerTypeRow {

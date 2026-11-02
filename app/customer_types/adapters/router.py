@@ -74,16 +74,9 @@ def build_router(
         type_id: int, body: CustomerTypePatchIn, types: CustomerTypesDep, session: SessionDep
     ) -> CustomerTypeOut:
         with as_http:
-            # 404 first, before a change is even looked at.
-            stored = manage_customer_types.get_customer_type(types, type_id)
-            if body.name is not None:
-                stored = manage_customer_types.rename_customer_type(
-                    types, session, type_id, body.name
-                )
-            if body.icon is not None:
-                stored = manage_customer_types.change_customer_type_icon(
-                    types, session, type_id, body.icon
-                )
+            stored = manage_customer_types.edit_customer_type(
+                types, session, type_id, body.name, body.icon
+            )
             return CustomerTypeOut.of(stored)
 
     @router.delete("/{type_id}", status_code=204)

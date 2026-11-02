@@ -197,3 +197,27 @@ def test_the_routes_answer_the_same_with_the_switch_on_and_off(
     set_switches(engine, bulk=False, vip=False)
     assert client.get("/api/customer-types").json() == [off, on]
     assert client.delete(f"/api/customer-types/{off['id']}").status_code == 204
+
+
+def test_a_patch_with_a_good_name_and_a_bad_icon_changes_nothing(client: TestClient) -> None:
+    created = _create(client, "Regulars", icon="heart")
+
+    response = client.patch(
+        f"/api/customer-types/{created['id']}", json={"name": "Friends", "icon": "rose"}
+    )
+
+    assert response.status_code == 422
+    assert response.json()["code"] == "customer_type.icon_unknown"
+    assert client.get("/api/customer-types").json() == [created]
+
+
+def test_a_patch_with_a_taken_name_and_a_new_icon_changes_nothing(client: TestClient) -> None:
+    _create(client, "Regulars")
+    second = _create(client, "Friends")
+
+    response = client.patch(
+        f"/api/customer-types/{second['id']}", json={"name": "regulars", "icon": "crown"}
+    )
+
+    assert response.status_code == 409
+    assert [t["icon"] for t in client.get("/api/customer-types").json()] == ["circle", "circle"]

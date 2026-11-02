@@ -1005,6 +1005,16 @@
           "icon": {
             "anyOf": [
               {
+                "enum": [
+                  "circle",
+                  "star",
+                  "heart",
+                  "diamond",
+                  "flag",
+                  "tag",
+                  "crown",
+                  "bell"
+                ],
                 "type": "string"
               },
               {
@@ -1056,6 +1066,16 @@
           "icon": {
             "anyOf": [
               {
+                "enum": [
+                  "circle",
+                  "star",
+                  "heart",
+                  "diamond",
+                  "flag",
+                  "tag",
+                  "crown",
+                  "bell"
+                ],
                 "type": "string"
               },
               {

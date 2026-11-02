@@ -58,6 +58,30 @@ def change_customer_type_icon(
     return stored
 
 
+def edit_customer_type(
+    types: CustomerTypes,
+    transaction: Transaction,
+    type_id: int,
+    raw_name: str | None = None,
+    raw_icon: str | None = None,
+) -> CustomerType:
+    """Renames and/or changes the icon in one commit: every value is checked before
+    anything is written, so a refusal leaves the type as it was."""
+    customer_type = get_customer_type(types, type_id)
+    name = None if raw_name is None else CustomerTypeName(raw_name)
+    icon = None if raw_icon is None else CustomerTypeIcon.of(raw_icon)
+    if name is not None:
+        existing = types.by_key(name.key)
+        if existing is not None and existing.id != type_id:
+            raise NameTaken()
+        customer_type.rename(name)
+    if icon is not None:
+        customer_type.change_icon(icon)
+    stored = types.save(customer_type)
+    transaction.commit()
+    return stored
+
+
 def delete_customer_type(
     types: CustomerTypes, customers: CustomersInType, transaction: Transaction, type_id: int
 ) -> None:
