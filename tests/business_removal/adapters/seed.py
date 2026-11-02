@@ -150,9 +150,16 @@ def seed(db_path: Path, clock: MovableClock | None = None) -> tuple[str, str]:
         )
         assert sale.status_code == 201, sale.text
 
+        method = client.post("/api/payment-methods", json={"name": "Mercado Pago", "icon": "phone"})
+        assert method.status_code == 201, method.text
+
         payment = client.post(
             f"/customers/{customer_id}/payments",
-            json={"paid_on": days.payment.isoformat(), "amount": PAYMENT_AMOUNT, "payment_method_id": 1},
+            json={
+                "paid_on": days.payment.isoformat(),
+                "amount": PAYMENT_AMOUNT,
+                "payment_method_id": method.json()["id"],
+            },
         )
         assert payment.status_code == 201, payment.text
 

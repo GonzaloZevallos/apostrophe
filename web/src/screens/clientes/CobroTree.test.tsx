@@ -50,7 +50,7 @@ type Answers = Record<string, () => Response>
 function renderApp(entries: { pathname: string; state?: unknown }[], viewport: Viewport, answers: Answers = {}) {
   const table: Answers = {
     'GET /auth/me': () => jsonResponse(200, ME),
-    'GET /payment-methods': () => paymentMethodsResponse(),
+    'GET /api/payment-methods': () => paymentMethodsResponse(),
     'GET /pricing-settings': () => jsonResponse(200, { is_bulk_pricing: true, is_vip_customers: true }),
     'GET /customers': () => jsonResponse(200, [OWING]),
     'GET /customers/1': () => jsonResponse(200, OWING),
@@ -497,7 +497,7 @@ describe('the form as drawn', () => {
   test('a method archived meanwhile keeps what was typed, refetches the list, clears the choice and shows the notice', async () => {
     let listCalls = 0
     await openForm({
-      'GET /payment-methods': () => {
+      'GET /api/payment-methods': () => {
         listCalls += 1
         return paymentMethodsResponse(listCalls === 1 ? undefined : PAYMENT_METHODS_FIXTURE.filter((method) => method.id !== 2))
       },

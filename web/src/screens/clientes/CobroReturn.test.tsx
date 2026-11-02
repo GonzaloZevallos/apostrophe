@@ -44,7 +44,7 @@ function jsonResponse(status: number, body: unknown): Response {
 
 const ANSWERS: Record<string, () => Response> = {
   'GET /auth/me': () => jsonResponse(200, ME),
-  'GET /payment-methods': () => paymentMethodsResponse(),
+  'GET /api/payment-methods': () => paymentMethodsResponse(),
   'GET /pricing-settings': () => jsonResponse(200, { is_bulk_pricing: true, is_vip_customers: true }),
   'GET /customers': () => jsonResponse(200, [OWING]),
   'GET /customers/1': () => jsonResponse(200, OWING),

@@ -24,7 +24,7 @@ beforeEach(() => {
     'fetch',
     vi.fn((url: string) =>
       Promise.resolve(
-        url === '/payment-methods'
+        url === '/api/payment-methods'
           ? paymentMethodsResponse()
           : new Response('[]', { status: 200, headers: { 'Content-Type': 'application/json' } }),
       ),

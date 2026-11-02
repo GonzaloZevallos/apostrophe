@@ -38,7 +38,7 @@ function setupFetch(handlers: Record<string, () => Response>): ReturnType<typeof
   const fetchMock = vi.fn((path: string, init?: RequestInit) => {
     const method = init?.method ?? 'GET'
     const key = `${method} ${path}`
-    const handler = handlers[key] ?? (key === 'GET /payment-methods' ? () => paymentMethodsResponse() : undefined)
+    const handler = handlers[key] ?? (key === 'GET /api/payment-methods' ? () => paymentMethodsResponse() : undefined)
     if (handler === undefined) {
       return Promise.reject(new Error(`unexpected request: ${key}`))
     }
@@ -418,7 +418,7 @@ test('a method archived meanwhile keeps what was typed, refetches the list, clea
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
     'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
-    'GET /payment-methods': () => {
+    'GET /api/payment-methods': () => {
       listCalls += 1
       return paymentMethodsResponse(listCalls === 1 ? undefined : PAYMENT_METHODS_FIXTURE.filter((method) => method.id !== 2))
     },

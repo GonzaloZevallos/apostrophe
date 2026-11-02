@@ -27,7 +27,7 @@ from app.payment_methods.domain.method import (
     PaymentMethodRuleBroken,
 )
 
-router = APIRouter(prefix="/payment-methods", tags=["payment-methods"])
+router = APIRouter(prefix="/api/payment-methods", tags=["payment-methods"])
 
 SessionDep = Annotated[Session, Depends(get_session)]
 ClockDep = Annotated[Clock, Depends(get_clock)]

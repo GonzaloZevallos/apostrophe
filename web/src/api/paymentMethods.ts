@@ -1,5 +1,5 @@
 /**
- * The business's payment methods (`GET /payment-methods`): the active ones, in the seller's
+ * The business's payment methods (`GET /api/payment-methods`): the active ones, in the seller's
  * order, each with the icon key `components/paymentMethodIcons.ts` draws. The pickers (New sale,
  * Record payment) read this list; a method that was archived or deleted is simply not in it.
  * Refetched on every mount (`staleTime: 0`) so a change made in Settings, or by a partner, shows
@@ -20,7 +20,7 @@ export interface PaymentMethod {
 }
 
 export function listPaymentMethods(): Promise<PaymentMethod[]> {
-  return get<PaymentMethod[]>('/payment-methods')
+  return get<PaymentMethod[]>('/api/payment-methods')
 }
 
 export function paymentMethodsQuery() {
