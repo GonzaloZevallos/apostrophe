@@ -301,7 +301,13 @@ export type NombreIcono =
   | 'apariencia'
   | 'cuenta'
   | 'hecho'
-  | 'calendario';
+  | 'calendario'
+  | 'wallet'
+  | 'bank'
+  | 'card'
+  | 'coins'
+  | 'phone'
+  | 'generic';
 
 /** Más info: una línea corta con una "i" al final que despliega, en su lugar y debajo de la
  *  línea, la explicación larga (el cómo o el porqué, nunca una consecuencia ni la salida de un

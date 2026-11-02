@@ -57,6 +57,12 @@ export const ICON_NAMES = [
   'cuenta',
   'hecho',
   'calendario',
+  'wallet',
+  'bank',
+  'card',
+  'coins',
+  'phone',
+  'generic',
 ] as const
 
 export type NombreIcono = (typeof ICON_NAMES)[number]
@@ -209,6 +215,24 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
   hecho: <path d="m5 12.5 4.5 4.5L19 7.5" />,
   calendario: (
     <><rect x="3.5" y="5" width="17" height="15.5" rx="2.5" /><path d="M8 3v4" /><path d="M16 3v4" /><path d="M3.5 10h17" /></>
+  ),
+  wallet: (
+    <><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3" /><path d="M4 7.5V17a2.5 2.5 0 0 0 2.5 2.5h12A1.5 1.5 0 0 0 20 18V9.5A1.5 1.5 0 0 0 18.5 8H6.5A2.5 2.5 0 0 1 4 7.5z" /><circle cx="16" cy="13.75" r="1" /></>
+  ),
+  bank: (
+    <><path d="M3.5 9.5 12 4l8.5 5.5z" /><path d="M6 12v5" /><path d="M10 12v5" /><path d="M14 12v5" /><path d="M18 12v5" /><path d="M4 20h16" /></>
+  ),
+  card: (
+    <><rect x="3" y="5.5" width="18" height="13" rx="2.5" /><path d="M3 10h18" /><path d="M7 14.5h3" /></>
+  ),
+  coins: (
+    <><ellipse cx="10" cy="8" rx="6" ry="2.5" /><path d="M4 8v4c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5V8" /><path d="M16 11.2c2.4.3 4 1.2 4 2.3v3.5c0 1.4-2.7 2.5-6 2.5-2.3 0-4.3-.6-5.3-1.4" /></>
+  ),
+  phone: (
+    <><rect x="7" y="3" width="10" height="18" rx="2.5" /><path d="M11 18h2" /></>
+  ),
+  generic: (
+    <><circle cx="12" cy="12" r="8.5" /><path d="M9 12h6" /></>
   ),
 }
 

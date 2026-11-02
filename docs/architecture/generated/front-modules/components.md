@@ -44,6 +44,7 @@ subgraph src["src"]
     src_components_goneExit_ts["goneExit.ts"]
     src_components_inAppState_ts["inAppState.ts"]
     src_components_keyboard_ts["keyboard.ts"]
+    src_components_paymentMethodIcons_ts["paymentMethodIcons.ts"]
     src_components_useBackOr_ts["useBackOr.ts"]
     src_components_useGoneExit_ts["useGoneExit.ts"]
     src_components_useLeaveGuard_ts["useLeaveGuard.ts"]
@@ -77,6 +78,7 @@ src_components_SinConexion_tsx-->src_components_AvisoAmbar_tsx
 src_components_botonVisual_tsx-->src_components_Boton_tsx
 src_components_botonVisual_tsx-->src_components_Icono_tsx
 src_components_goneExit_ts-->src_components_feedback_ts
+src_components_paymentMethodIcons_ts-->src_components_Icono_tsx
 src_components_useGoneExit_ts-->src_components_feedback_ts
 src_components_useGoneExit_ts-->src_components_goneExit_ts
 src_components_useLeaveGuard_ts-->src_components_useSheetStack_ts
