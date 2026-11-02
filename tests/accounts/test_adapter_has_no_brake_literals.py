@@ -54,7 +54,7 @@ def test_the_checker_flags_a_rule_s_number_hardcoded_in_a_snippet() -> None:
 
 
 def test_the_checker_ignores_a_column_width_that_collides_with_a_forbidden_number() -> None:
-    fine = 'kind: Mapped[str] = mapped_column(String(20))\n'
+    fine = "kind: Mapped[str] = mapped_column(String(20))\n"
 
     assert numeric_literals(fine) & FORBIDDEN == set()
 

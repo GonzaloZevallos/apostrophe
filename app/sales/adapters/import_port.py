@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from datetime import date, datetime
-from typing import assert_never
+from typing import Protocol, assert_never
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -22,9 +22,10 @@ from sqlalchemy.orm import Session
 from app.sales.adapters.price_book import PlannedPriceBook, SqlPriceBook
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.adapters.tables import SaleRow
+from app.sales.application.ports import OnTheSpotPayments
 from app.sales.application.record_sale import LineInput, record_sale
 from app.sales.domain.pricing import SaleRuleBroken
-from app.sales.domain.sale import CustomerFact, LineRequest, PaymentMethod, Sale
+from app.sales.domain.sale import CustomerFact, LineRequest, Sale
 from app.shared.pricing_settings import PricingSettings
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.application.ports import Refusal, SaleCheck, SaleCheckInput
@@ -41,18 +42,26 @@ _UNUSED_RECORDED_AT = datetime(1970, 1, 1)
 _CHECK_CUSTOMER_ID = 1
 
 
-def _payment_method(method: OnTheSpotMethod | None) -> PaymentMethod | None:
-    """`method` is already closed to `OnTheSpotMethod | None` by every hop before this
-    one (the plan's invariant), so this is the only place `PaymentMethod` is ever built
-    from an import value, and it can never raise: `assert_never` makes a third sheet
-    word unreachable rather than a `ValueError` at runtime."""
+# The sheet's two words become the names the import looks the business's method up by
+# (ignoring case and spaces); this adapter is the only place a method is found by name
+# to write a payment (docs/adr/0070).
+_SHEET_METHOD_NAMES = {"cash": "Cash", "transfer": "Transfer"}
+
+
+class MethodsByName(Protocol):
+    def ensure_by_name(self, raw_name: str) -> int: ...
+
+
+# Only a "has a method" marker for the checked-only sale, which is never stored.
+_CHECK_METHOD_ID = 1
+
+
+def _sheet_method_name(method: OnTheSpotMethod | None) -> str | None:
     match method:
         case None:
             return None
-        case "cash":
-            return PaymentMethod.CASH
-        case "transfer":
-            return PaymentMethod.TRANSFER
+        case "cash" | "transfer":
+            return _SHEET_METHOD_NAMES[method]
         case _:
             assert_never(method)
 
@@ -60,9 +69,17 @@ def _payment_method(method: OnTheSpotMethod | None) -> PaymentMethod | None:
 class SalesImport:
     """`SalesImport` for one business."""
 
-    def __init__(self, session: Session, business_id: int) -> None:
+    def __init__(
+        self,
+        session: Session,
+        business_id: int,
+        on_the_spot: OnTheSpotPayments,
+        methods: MethodsByName,
+    ) -> None:
         self._session = session
         self._business_id = business_id
+        self._on_the_spot = on_the_spot
+        self._methods = methods
 
     def has_records(self) -> bool:
         statement = (
@@ -109,7 +126,7 @@ class SalesImport:
                             special_price=sale.special_total,
                         )
                     ],
-                    method=_payment_method(sale.method),
+                    payment_method_id=(None if sale.method is None else _CHECK_METHOD_ID),
                     left_owing=sale.left_owing,
                     recorded_at=_UNUSED_RECORDED_AT,
                 )
@@ -129,8 +146,10 @@ class SalesImport:
         transaction: Transaction,
         settings: PricingSettings,
     ) -> int:
+        method_name = _sheet_method_name(sale.method)
         stored = record_sale(
             SqlSales(self._session, self._business_id),
+            self._on_the_spot,
             SqlPriceBook(self._session, self._business_id),
             _FixedVip(sale.vip),
             _FixedSettings(settings),
@@ -148,7 +167,9 @@ class SalesImport:
                     special_price=sale.special_total,
                 )
             ],
-            method=_payment_method(sale.method),
+            payment_method_id=(
+                None if method_name is None else self._methods.ensure_by_name(method_name)
+            ),
             left_owing=sale.left_owing,
             recorded_at=recorded_at,
         )

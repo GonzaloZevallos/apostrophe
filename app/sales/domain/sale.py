@@ -11,10 +11,10 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from datetime import date, datetime
-from enum import StrEnum
 from typing import ClassVar
 
 from app.sales.domain.pricing import PriceQuote, PricingRule, SaleRuleBroken, price_line
+from app.shared.payment_method import PaymentMethodLabel
 from app.shared.pricing_settings import PricingSettings
 from app.shared.quantity import Quantity
 
@@ -95,11 +95,6 @@ class CustomerAlreadyAssigned(SaleRuleBroken):
         super().__init__("the sale already has a customer")
 
 
-class PaymentMethod(StrEnum):
-    CASH = "cash"
-    TRANSFER = "transfer"
-
-
 @dataclass(frozen=True)
 class CustomerFact:
     """What `CustomerFacts.get` answers for a customer who exists in the business."""
@@ -136,9 +131,12 @@ class OnTheSpotPayment:
 
     paid_on: date
     amount: int
-    method: PaymentMethod
+    payment_method_id: int
     customer_id: int | None
     id: int | None = None
+    # The method as a screen reads it, joined whether or not it is archived; set only on a
+    # stored payment that was read back, never by `Sale.record`.
+    method: PaymentMethodLabel | None = None
 
     def __post_init__(self) -> None:
         assert self.amount > 0, "an on-the-spot payment is always for a positive amount"
@@ -211,7 +209,7 @@ class Sale:
         shipping_charged: int,
         note: str | None,
         lines: Sequence[LineRequest],
-        method: PaymentMethod | None,
+        payment_method_id: int | None,
         left_owing: bool,
         recorded_at: datetime,
     ) -> Sale:
@@ -240,7 +238,7 @@ class Sale:
             total=total,
             sale_date=sale_date,
             customer_id=customer_id,
-            method=method,
+            payment_method_id=payment_method_id,
             left_owing=left_owing,
         )
 
@@ -278,14 +276,17 @@ class Sale:
         total: int,
         sale_date: SaleDate,
         customer_id: int | None,
-        method: PaymentMethod | None,
+        payment_method_id: int | None,
         left_owing: bool,
     ) -> OnTheSpotPayment | None:
         if total <= 0:
             return None
-        if method is not None:
+        if payment_method_id is not None:
             return OnTheSpotPayment(
-                paid_on=sale_date, amount=total, method=method, customer_id=customer_id
+                paid_on=sale_date,
+                amount=total,
+                payment_method_id=payment_method_id,
+                customer_id=customer_id,
             )
         if left_owing:
             if customer_id is None:

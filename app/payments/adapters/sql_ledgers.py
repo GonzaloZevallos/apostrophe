@@ -13,10 +13,12 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.customers.adapters.tables import CustomerRow
+from app.payment_methods.adapters.tables import PaymentMethodRow
 from app.payments.adapters.tables import PaymentRow
 from app.payments.application.ports import NamedLedger
-from app.payments.domain.settlement import LaterPaymentEntry, Ledger, OwedSale, PaymentMethod
+from app.payments.domain.settlement import LaterPaymentEntry, Ledger, OwedSale
 from app.sales.adapters.tables import SaleLineRow, SaleRow
+from app.shared.payment_method import PaymentMethodLabel
 
 
 class SqlLedgers:
@@ -62,16 +64,26 @@ class SqlLedgers:
             ).all()
         )
 
-        on_the_spot_methods: dict[int, PaymentMethod] = {}
+        on_the_spot_methods: dict[int, PaymentMethodLabel] = {}
         later_by_customer: dict[int, list[LaterPaymentEntry]] = {}
-        for payment in self._session.scalars(
-            select(PaymentRow).where(
+        # Display reads join the method whether or not it is archived (docs/adr/0070).
+        for payment, method_name, method_icon in self._session.execute(
+            select(PaymentRow, PaymentMethodRow.name, PaymentMethodRow.icon)
+            .join(
+                PaymentMethodRow,
+                (PaymentMethodRow.id == PaymentRow.payment_method_id)
+                & (PaymentMethodRow.business_id == PaymentRow.business_id),
+            )
+            .where(
                 PaymentRow.business_id == self._business_id,
                 PaymentRow.customer_id.in_(ids),
             )
         ):
+            label = PaymentMethodLabel(
+                id=payment.payment_method_id, name=method_name, icon=method_icon
+            )
             if payment.sale_id is not None:
-                on_the_spot_methods[payment.sale_id] = PaymentMethod(payment.method)
+                on_the_spot_methods[payment.sale_id] = label
             else:
                 assert payment.customer_id is not None, "a later payment always names a customer"
                 later_by_customer.setdefault(payment.customer_id, []).append(
@@ -80,7 +92,7 @@ class SqlLedgers:
                         paid_on=payment.paid_on,
                         recorded_at=payment.recorded_at,
                         amount=payment.amount,
-                        method=PaymentMethod(payment.method),
+                        method=label,
                     )
                 )
 

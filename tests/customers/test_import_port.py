@@ -74,9 +74,7 @@ def test_the_normalisation_matrix_all_give_one_key(client: TestClient, engine: E
 # -- check_customer: an invalid number ------------------------------------------------
 
 
-def test_an_invalid_number_is_refused_with_its_own_code(
-    client: TestClient, engine: Engine
-) -> None:
+def test_an_invalid_number_is_refused_with_its_own_code(client: TestClient, engine: Engine) -> None:
     business_id = _business_id_of_email(engine, "uno@example.com")
     port = CustomersImport(Session(engine), business_id)
 

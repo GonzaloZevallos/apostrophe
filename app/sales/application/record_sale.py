@@ -10,11 +10,13 @@ from datetime import date, datetime
 
 from app.sales.application.ports import (
     CustomerFacts,
+    OnTheSpotPayments,
     PriceBook,
     PricingSettingsReader,
     Sales,
 )
-from app.sales.domain.sale import LineRequest, PaymentMethod, Sale, UnknownCustomer, UnknownVariety
+from app.sales.domain.sale import LineRequest, Sale, UnknownCustomer, UnknownVariety
+from app.shared.payment_method import PaymentMethodUnavailable
 from app.shared.quantity import Quantity
 from app.shared.reference import ReferenceRefused
 from app.shared.transaction import Transaction
@@ -33,6 +35,7 @@ class LineInput:
 
 def record_sale(
     sales: Sales,
+    on_the_spot: OnTheSpotPayments,
     price_book: PriceBook,
     customer_facts: CustomerFacts,
     pricing_settings: PricingSettingsReader,
@@ -44,7 +47,7 @@ def record_sale(
     shipping_charged: int,
     note: str | None,
     lines: Sequence[LineInput],
-    method: PaymentMethod | None,
+    payment_method_id: int | None,
     left_owing: bool,
     recorded_at: datetime,
 ) -> Sale:
@@ -66,7 +69,7 @@ def record_sale(
         shipping_charged=shipping_charged,
         note=note,
         lines=requests,
-        method=method,
+        payment_method_id=payment_method_id,
         left_owing=left_owing,
         recorded_at=recorded_at,
     )
@@ -79,6 +82,21 @@ def record_sale(
         if any(price_book.for_variety(r.variety_id, sale_date) is None for r in requests):
             raise UnknownVariety from None
         raise
+    if stored.payment is not None:
+        assert stored.id is not None, "a stored sale has an id"
+        try:
+            on_the_spot.record(
+                stored.id,
+                stored.customer_id,
+                stored.payment.paid_on,
+                stored.payment.amount,
+                stored.payment.payment_method_id,
+                recorded_at,
+            )
+        except PaymentMethodUnavailable:
+            # Nothing is committed: the sale and its lines are discarded with it.
+            transaction.rollback()
+            raise
     transaction.commit()
     return stored
 

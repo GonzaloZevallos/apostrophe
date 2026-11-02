@@ -114,7 +114,7 @@ def _tracked_running_files() -> list[Path]:
 def test_the_scanner_flags_an_age_identity() -> None:
     # Split so this deliberately bad example never reads, in the tracked file itself,
     # as the very shape it exists to catch (see test_no_tracked_file_contains_a_secret).
-    bad = "AGE-SECRET-KEY-1" "QGFVZLHMFCSK6K3WX2FJ9VPXZQJ3P5K8VY6WY8WFVZ8L0X3MQZQS8RJ9NF"
+    bad = "AGE-SECRET-KEY-1QGFVZLHMFCSK6K3WX2FJ9VPXZQJ3P5K8VY6WY8WFVZ8L0X3MQZQS8RJ9NF"
 
     assert "age identity" in find_secrets(bad)
 
@@ -130,12 +130,12 @@ def test_the_scanner_flags_a_jwt_shaped_token() -> None:
 
 def test_the_scanner_flags_a_render_api_key() -> None:
     # Split for the same reason as the age identity example above.
-    bad = "RENDER_API_KEY=rnd_" "abcdefghijklmnopqrstuvwxyz0123456789"
+    bad = "RENDER_API_KEY=rnd_abcdefghijklmnopqrstuvwxyz0123456789"
 
     assert "render api key" in find_secrets(bad)
 
 
-_OPENSSH_HEADER = "-----BEGIN OPENSSH " "PRIVATE KEY-----"
+_OPENSSH_HEADER = "-----BEGIN OPENSSH PRIVATE KEY-----"
 _BASE64_BODY = "b3BlbnNzaC1rZXktdjEAAAAABG5vbmU"
 
 
@@ -193,7 +193,7 @@ def test_the_scanner_still_flags_a_quoted_literal_secret_in_python() -> None:
     # in Python source is always quoted (a bare right-hand side is a reference, never
     # a string value), so this shape must still be caught.
     # Split for the same reason as the age identity example above.
-    bad = "TURSO_AUTH_TOKEN = " '"' "abcdefghijklmnopqrstuvwxyz" '"'
+    bad = 'TURSO_AUTH_TOKEN = "abcdefghijklmnopqrstuvwxyz"'
 
     assert "generic token or secret assignment" in find_secrets(bad, filename="scripts/x.py")
 
@@ -213,9 +213,7 @@ def test_the_object_storage_scanner_flags_an_aws_access_key_id_name() -> None:
 
 
 def test_the_object_storage_scanner_flags_an_aws_secret_access_key_name() -> None:
-    assert "AWS_SECRET_ACCESS_KEY" in find_object_storage_names(
-        "export AWS_SECRET_ACCESS_KEY=x"
-    )
+    assert "AWS_SECRET_ACCESS_KEY" in find_object_storage_names("export AWS_SECRET_ACCESS_KEY=x")
 
 
 def test_the_object_storage_scanner_flags_an_aws_s3_command() -> None:

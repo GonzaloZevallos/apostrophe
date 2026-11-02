@@ -6,10 +6,11 @@ computes a balance.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import date
-from typing import Annotated
+from typing import Annotated, cast
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import CurrentBusinessId
@@ -28,6 +29,7 @@ from app.payments.adapters.sql_ledgers import SqlLedgers
 from app.payments.adapters.sql_payments import SqlPayments
 from app.payments.application.delete_payment import delete_payment as delete_payment_use_case
 from app.payments.application.errors import CustomerNotFound, OnTheSpot, PaymentNotFound
+from app.payments.application.ports import AvailableMethods
 from app.payments.application.record_payment import preview_payment as preview_payment_use_case
 from app.payments.application.record_payment import record_payment as record_payment_use_case
 from app.payments.application.view_accounts import account as account_use_case
@@ -38,6 +40,7 @@ from app.payments.domain.payment import (
     PaymentFutureDate,
     PaymentMethodRequired,
 )
+from app.shared.payment_method import PaymentMethodUnavailable
 
 # Two routers, like `app.sales.adapters.router` and `app.customers.adapters.router`
 # have their own prefixes: payments' own routes under `/payments`, and the two that
@@ -59,12 +62,22 @@ def get_payments(session: SessionDep, business_id: CurrentBusinessId) -> SqlPaym
     return SqlPayments(session, business_id)
 
 
+def get_available_methods(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> AvailableMethods:
+    # Payments never imports `app.payment_methods` (CODING_STANDARDS section 1):
+    # `app/main.py` hangs the real implementation on `app.state.available_methods`.
+    factory = cast(Callable[[Session, int], AvailableMethods], request.app.state.available_methods)
+    return factory(session, business_id)
+
+
+MethodsDep = Annotated[AvailableMethods, Depends(get_available_methods)]
 LedgersDep = Annotated[SqlLedgers, Depends(get_ledgers)]
 PaymentsDep = Annotated[SqlPayments, Depends(get_payments)]
 
 as_http = TranslateErrors(
     [
-        (404, (CustomerNotFound, PaymentNotFound)),
+        (404, (CustomerNotFound, PaymentNotFound, PaymentMethodUnavailable)),
         (409, (OnTheSpot,)),
         (
             422,
@@ -94,6 +107,7 @@ def record_payment(
     body: PaymentIn,
     ledgers: LedgersDep,
     payments: PaymentsDep,
+    methods: MethodsDep,
     session: SessionDep,
     today: TodayDep,
     clock: ClockDep,
@@ -102,11 +116,12 @@ def record_payment(
         recorded = record_payment_use_case(
             ledgers,
             payments,
+            methods,
             session,
             customer_id,
             body.paid_on,
             body.amount,
-            body.method,
+            body.payment_method_id,
             today,
             clock(),
         )

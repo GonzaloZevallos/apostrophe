@@ -10,7 +10,8 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Protocol
 
-from app.payments.domain.settlement import Ledger, PaymentMethod
+from app.payments.domain.settlement import Ledger
+from app.shared.payment_method import PaymentMethodLabel
 
 
 @dataclass(frozen=True)
@@ -52,6 +53,15 @@ class Ledgers(Protocol):
         ...
 
 
+class AvailableMethods(Protocol):
+    """The payment methods a payment can be recorded with (docs/adr/0070), for one
+    business: payments never imports `app.payment_methods`, `app/main.py` wires it."""
+
+    def available(self, payment_method_id: int) -> PaymentMethodLabel | None:
+        """`None` when the method is unknown, archived or another business's."""
+        ...
+
+
 class Payments(Protocol):
     """Later payments of one business (the plan's invariant: payments' repository
     inserts and deletes only `LATER` rows; sales' repository never writes a row
@@ -66,12 +76,14 @@ class Payments(Protocol):
         customer_id: int,
         paid_on: date,
         amount: int,
-        method: PaymentMethod,
+        payment_method_id: int,
         recorded_at: datetime,
     ) -> int:
         """One guarded `INSERT … SELECT`: raises `PaymentAboveBalance` and inserts no
         row when `amount` exceeds the customer's current balance, never a read
-        followed by an unconditional insert. Answers the new row's id."""
+        followed by an unconditional insert. The method is resolved inside the same
+        statement, against the business and `archived_at IS NULL`: when it is not
+        available the statement also inserts no row. Answers the new row's id."""
         ...
 
     def delete_later(self, payment_id: int) -> int:

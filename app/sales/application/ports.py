@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from types import MappingProxyType
 from typing import Protocol
 
@@ -41,6 +41,31 @@ class PricingSettingsReader(Protocol):
     once per save, and that one value prices every line of the save."""
 
     def current(self) -> PricingSettings: ...
+
+
+class OnTheSpotPayments(Protocol):
+    """The one writer of a sale's on-the-spot payment row (docs/adr/0070): sales never
+    writes a `payment` row itself. Built for one business; never commits."""
+
+    def record(
+        self,
+        sale_id: int,
+        customer_id: int | None,
+        paid_on: date,
+        amount: int,
+        payment_method_id: int,
+        recorded_at: datetime,
+    ) -> None:
+        """Resolves the method inside the insert, against the business and
+        `archived_at IS NULL`; raises `PaymentMethodUnavailable` and writes nothing when
+        it is unknown, archived or another business's."""
+        ...
+
+    def remove_for(self, sale_id: int) -> None: ...
+
+    def assign_customer(self, sale_id: int, customer_id: int) -> None:
+        """The sale's payment follows its customer, when it has none yet."""
+        ...
 
 
 class Sales(Protocol):

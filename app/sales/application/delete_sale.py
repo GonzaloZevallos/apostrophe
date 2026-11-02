@@ -6,7 +6,7 @@ from `app.stock` to say what it gave back."""
 from dataclasses import dataclass
 
 from app.sales.application.errors import SaleNotFound
-from app.sales.application.ports import Sales
+from app.sales.application.ports import OnTheSpotPayments, Sales
 from app.shared.quantity import Quantity
 from app.shared.transaction import Transaction
 
@@ -19,7 +19,9 @@ class ReturnedQuantity:
     quantity: Quantity
 
 
-def delete_sale(sales: Sales, transaction: Transaction, sale_id: int) -> list[ReturnedQuantity]:
+def delete_sale(
+    sales: Sales, on_the_spot: OnTheSpotPayments, transaction: Transaction, sale_id: int
+) -> list[ReturnedQuantity]:
     sale = sales.get(sale_id)
     if sale is None:
         raise SaleNotFound()
@@ -28,6 +30,7 @@ def delete_sale(sales: Sales, transaction: Transaction, sale_id: int) -> list[Re
     for line in sale.lines:
         totals[line.variety_id] = totals.get(line.variety_id, Quantity(0)) + line.quantity
 
+    on_the_spot.remove_for(sale_id)
     sales.delete(sale_id)
     transaction.commit()
 

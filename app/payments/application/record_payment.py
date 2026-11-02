@@ -8,10 +8,15 @@ from dataclasses import dataclass
 from datetime import date, datetime
 
 from app.payments.application.errors import CustomerNotFound
-from app.payments.application.ports import Ledgers, Payments
-from app.payments.domain.payment import PaymentCandidate, PaymentMethodRequired
+from app.payments.application.ports import AvailableMethods, Ledgers, Payments
+from app.payments.domain.payment import (
+    PaymentAboveBalance,
+    PaymentCandidate,
+    PaymentMethodRequired,
+)
 from app.payments.domain.payment import settle_candidate as domain_settle_candidate
-from app.payments.domain.settlement import PaymentMethod, Split, Standing
+from app.payments.domain.settlement import Split, Standing
+from app.shared.payment_method import PaymentMethodLabel, PaymentMethodUnavailable
 from app.shared.transaction import Transaction
 
 
@@ -56,18 +61,19 @@ class RecordedPayment:
     id: int
     paid_on: date
     amount: int
-    method: PaymentMethod
+    method: PaymentMethodLabel
     outcome: CandidateOutcome
 
 
 def record_payment(
     ledgers: Ledgers,
     payments: Payments,
+    methods: AvailableMethods,
     transaction: Transaction,
     customer_id: int,
     paid_on: date,
     amount: int,
-    method: PaymentMethod | None,
+    payment_method_id: int | None,
     today: date,
     recorded_at: datetime,
 ) -> RecordedPayment:
@@ -75,12 +81,23 @@ def record_payment(
     commit (the plan's own order): the future date and above-the-balance refusals
     must be answered before a missing method is, so a candidate that could never be
     recorded never gets to complain about its method instead."""
-    outcome = settle_candidate(
-        ledgers, customer_id, PaymentCandidate(paid_on, amount), today
-    )
-    if method is None:
+    outcome = settle_candidate(ledgers, customer_id, PaymentCandidate(paid_on, amount), today)
+    if payment_method_id is None:
         raise PaymentMethodRequired()
-    payment_id = payments.insert_later(customer_id, paid_on, amount, method, recorded_at)
+    try:
+        payment_id = payments.insert_later(
+            customer_id, paid_on, amount, payment_method_id, recorded_at
+        )
+    except PaymentAboveBalance:
+        # The guarded insert wrote no row for one of two reasons; a read in the same
+        # transaction tells which, so an unavailable method never reads as a balance.
+        if methods.available(payment_method_id) is None:
+            raise PaymentMethodUnavailable() from None
+        raise
+    method = methods.available(payment_method_id)
+    if method is None:
+        transaction.rollback()
+        raise PaymentMethodUnavailable()
     transaction.commit()
     return RecordedPayment(
         id=payment_id, paid_on=paid_on, amount=amount, method=method, outcome=outcome

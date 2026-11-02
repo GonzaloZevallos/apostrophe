@@ -4,22 +4,50 @@ rule stays the domain's and its message is a fixed string (ADR-0005). Quantity a
 
 from datetime import date
 from decimal import Decimal
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.products.adapters.schemas import QuantityOut
 from app.sales.application.ports import LineCost, SaleView, SaleViewCustomer, SaleViewLine
 from app.sales.application.view_sales import SaleDetail
 from app.sales.domain.pricing import PricingRule
-from app.sales.domain.sale import PaymentMethod, Sale
+from app.sales.domain.sale import Sale
 from app.sales.domain.sale_bill import BillPayment, BillRule, BillState, SaleBill, SaleBillLine
 
-# "Owing" and "none" are adapter-only words for a sale with no `OnTheSpotPayment`;
-# `PaymentMethod` is still the only declaration of the methods themselves (cash,
-# transfer), never copied here as a string literal.
-PaymentIn = PaymentMethod | Literal["owing"]
-PaymentOut = PaymentMethod | Literal["owing", "none"]
+
+class PaymentWithMethodIn(BaseModel):
+    kind: Literal["method"]
+    payment_method_id: int
+
+
+class PaymentOwingIn(BaseModel):
+    kind: Literal["owing"]
+
+
+# The owing choice is the kind tag of a union, never a string a method's name could equal
+# (docs/adr/0070). `null` stays a $0 sale with no payment.
+PaymentIn = Annotated[PaymentWithMethodIn | PaymentOwingIn, Field(discriminator="kind")]
+
+
+class PaymentMethodOut(BaseModel):
+    kind: Literal["method"] = "method"
+    payment_method_id: int
+    name: str
+    icon: str
+
+
+class PaymentOwingOut(BaseModel):
+    kind: Literal["owing"] = "owing"
+
+
+class PaymentNoneOut(BaseModel):
+    kind: Literal["none"] = "none"
+
+
+PaymentOut = Annotated[
+    PaymentMethodOut | PaymentOwingOut | PaymentNoneOut, Field(discriminator="kind")
+]
 
 # `SaleIn.date` and `SaleOut.date` name the sale's own date; a bare `date` inside
 # either class body would otherwise resolve to the field, not the type (same trap as
@@ -109,10 +137,12 @@ class SaleOut(BaseModel):
         )
 
 
-def _payment_out(sale: Sale) -> PaymentOut:
+def _payment_out(sale: Sale) -> PaymentMethodOut | PaymentOwingOut | PaymentNoneOut:
     if sale.payment is not None:
-        return sale.payment.method
-    return "none" if sale.total <= 0 else "owing"
+        label = sale.payment.method
+        assert label is not None, "a payment read back carries its method"
+        return PaymentMethodOut(payment_method_id=label.id, name=label.name, icon=label.icon)
+    return PaymentNoneOut() if sale.total <= 0 else PaymentOwingOut()
 
 
 class LineCostOut(BaseModel):
@@ -158,10 +188,15 @@ class BillPaymentOut(BaseModel):
 
     state: BillState
     still_owed: int | None
+    method_name: str | None
 
     @classmethod
     def of(cls, payment: BillPayment) -> "BillPaymentOut":
-        return cls(state=payment.state, still_owed=payment.still_owed)
+        return cls(
+            state=payment.state,
+            still_owed=payment.still_owed,
+            method_name=payment.method_name,
+        )
 
 
 class SaleBillLineOut(BaseModel):

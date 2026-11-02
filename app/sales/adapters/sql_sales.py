@@ -10,7 +10,8 @@ the lines and the payment explicitly, before the sale itself."""
 from __future__ import annotations
 
 from collections.abc import Sequence
-from datetime import date, datetime
+from dataclasses import replace
+from datetime import date
 from typing import cast
 
 from sqlalchemy import delete as sa_delete
@@ -21,6 +22,7 @@ from sqlalchemy.sql.elements import ColumnElement
 
 from app.customers.adapters.tables import CustomerRow
 from app.db import flush_or_refuse
+from app.payment_methods.adapters.tables import PaymentMethodRow
 from app.payments.adapters.tables import PaymentRow
 from app.products.adapters.tables import ProductRow
 from app.sales.adapters.tables import SaleLineRow, SaleRow
@@ -29,10 +31,10 @@ from app.sales.domain.pricing import PricingRule
 from app.sales.domain.sale import (
     CustomerAlreadyAssigned,
     OnTheSpotPayment,
-    PaymentMethod,
     Sale,
     SaleLine,
 )
+from app.shared.payment_method import PaymentMethodLabel
 from app.shared.quantity import Quantity
 
 
@@ -56,11 +58,9 @@ class SqlSales:
         for position, line in enumerate(sale.lines):
             self._session.add(self._line_row(row.id, line, position))
 
-        if sale.payment is not None:
-            self._session.add(self._payment_row(row.id, sale.payment, sale.recorded_at))
-
+        # The payment row is written by `OnTheSpotPayments`, never here (docs/adr/0070).
         flush_or_refuse(self._session)
-        return self._assemble(row)
+        return replace(sale, id=row.id)
 
     def get(self, sale_id: int) -> Sale | None:
         row = self._row(sale_id)
@@ -92,26 +92,12 @@ class SqlSales:
         )
         if result.rowcount == 0:
             raise CustomerAlreadyAssigned()
-        self._session.execute(
-            update(PaymentRow)
-            .where(
-                PaymentRow.sale_id == sale_id,
-                PaymentRow.business_id == self._business_id,
-                PaymentRow.customer_id.is_(None),
-            )
-            .values(customer_id=customer_id)
-        )
         self._session.flush()
 
     def delete(self, sale_id: int) -> None:
         self._session.execute(
             sa_delete(SaleLineRow).where(
                 SaleLineRow.sale_id == sale_id, SaleLineRow.business_id == self._business_id
-            )
-        )
-        self._session.execute(
-            sa_delete(PaymentRow).where(
-                PaymentRow.sale_id == sale_id, PaymentRow.business_id == self._business_id
             )
         )
         self._session.execute(
@@ -148,7 +134,9 @@ class SqlSales:
                 PaymentRow.id,
                 PaymentRow.paid_on,
                 PaymentRow.amount,
-                PaymentRow.method,
+                PaymentRow.payment_method_id,
+                PaymentMethodRow.name,
+                PaymentMethodRow.icon,
                 PaymentRow.customer_id,
             )
             .outerjoin(
@@ -159,6 +147,11 @@ class SqlSales:
             .outerjoin(
                 PaymentRow,
                 (PaymentRow.sale_id == SaleRow.id) & (PaymentRow.business_id == self._business_id),
+            )
+            .outerjoin(
+                PaymentMethodRow,
+                (PaymentMethodRow.id == PaymentRow.payment_method_id)
+                & (PaymentMethodRow.business_id == self._business_id),
             )
             .where(SaleRow.business_id == self._business_id)
         )
@@ -175,7 +168,8 @@ class SqlSales:
         for row in rows:
             sale_row = row[0]
             customer_id, customer_name, customer_vip = row[1], row[2], row[3]
-            payment_id, paid_on, amount, method, payment_customer_id = row[4:9]
+            payment_id, paid_on, amount, method_id, method_name, method_icon = row[4:10]
+            payment_customer_id = row[10]
             customer = (
                 None
                 if customer_id is None
@@ -187,7 +181,8 @@ class SqlSales:
                 else OnTheSpotPayment(
                     paid_on=paid_on,
                     amount=amount,
-                    method=PaymentMethod(method),
+                    payment_method_id=method_id,
+                    method=PaymentMethodLabel(id=method_id, name=method_name, icon=method_icon),
                     customer_id=payment_customer_id,
                     id=payment_id,
                 )
@@ -246,24 +241,28 @@ class SqlSales:
         )
         return [row for row in self._session.scalars(statement)]
 
-    def _payment_row(
-        self, sale_id: int, payment: OnTheSpotPayment, recorded_at: datetime
-    ) -> PaymentRow:
-        return PaymentRow(
-            business_id=self._business_id,
-            paid_on=payment.paid_on,
-            amount=payment.amount,
-            method=payment.method.value,
-            customer_id=payment.customer_id,
-            sale_id=sale_id,
-            recorded_at=recorded_at,
+    def _find_payment(self, sale_id: int) -> OnTheSpotPayment | None:
+        statement = (
+            select(PaymentRow, PaymentMethodRow.name, PaymentMethodRow.icon)
+            .join(
+                PaymentMethodRow,
+                (PaymentMethodRow.id == PaymentRow.payment_method_id)
+                & (PaymentMethodRow.business_id == self._business_id),
+            )
+            .where(PaymentRow.sale_id == sale_id, PaymentRow.business_id == self._business_id)
         )
-
-    def _find_payment_row(self, sale_id: int) -> PaymentRow | None:
-        statement = select(PaymentRow).where(
-            PaymentRow.sale_id == sale_id, PaymentRow.business_id == self._business_id
+        found = self._session.execute(statement).first()
+        if found is None:
+            return None
+        row, name, icon = found
+        return OnTheSpotPayment(
+            paid_on=row.paid_on,
+            amount=row.amount,
+            payment_method_id=row.payment_method_id,
+            method=PaymentMethodLabel(id=row.payment_method_id, name=name, icon=icon),
+            customer_id=row.customer_id,
+            id=row.id,
         )
-        return self._session.scalar(statement)
 
     def _line_row(self, sale_id: int, line: SaleLine, position: int) -> SaleLineRow:
         return SaleLineRow(
@@ -279,8 +278,7 @@ class SqlSales:
 
     def _assemble(self, row: SaleRow) -> Sale:
         lines = tuple(_sale_line(r) for r in self._line_rows(row.id))
-        payment_row = self._find_payment_row(row.id)
-        payment = None if payment_row is None else _payment(payment_row)
+        payment = self._find_payment(row.id)
         return Sale(
             date=row.sale_date,
             customer_id=row.customer_id,
@@ -316,15 +314,5 @@ def _sale_line(row: SaleLineRow) -> SaleLine:
         pricing_rule=PricingRule(row.pricing_rule),
         price_per_gram=row.price_per_gram,
         line_total=row.line_total,
-        id=row.id,
-    )
-
-
-def _payment(row: PaymentRow) -> OnTheSpotPayment:
-    return OnTheSpotPayment(
-        paid_on=row.paid_on,
-        amount=row.amount,
-        method=PaymentMethod(row.method),
-        customer_id=row.customer_id,
         id=row.id,
     )

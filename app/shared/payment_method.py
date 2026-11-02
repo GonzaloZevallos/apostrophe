@@ -5,6 +5,7 @@ seller reads, never a figure and never a name to branch on. Payments and sales c
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
 
 @dataclass(frozen=True)
@@ -20,3 +21,14 @@ class PaymentMethodLabel:
             raise ValueError("a payment method label needs a name")
         if not self.icon:
             raise ValueError("a payment method label needs an icon")
+
+
+class PaymentMethodUnavailable(LookupError):
+    """A sale or a payment named a method that cannot take a payment: unknown, archived or
+    another business's. One refusal for all three, so a method id of another business
+    reveals nothing (docs/adr/0070)."""
+
+    code: ClassVar[str] = "payment_method.unavailable"
+
+    def __init__(self) -> None:
+        super().__init__("that payment method is not available")

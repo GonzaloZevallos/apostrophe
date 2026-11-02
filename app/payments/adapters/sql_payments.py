@@ -12,10 +12,10 @@ from sqlalchemy import CursorResult, func, insert, literal, null, select
 from sqlalchemy import delete as sa_delete
 from sqlalchemy.orm import Session
 
+from app.payment_methods.adapters.tables import PaymentMethodRow
 from app.payments.adapters.tables import LATER, PaymentRow
 from app.payments.application.ports import StoredPayment
 from app.payments.domain.payment import PaymentAboveBalance
-from app.payments.domain.settlement import PaymentMethod
 from app.sales.adapters.tables import SaleLineRow, SaleRow
 
 
@@ -37,7 +37,7 @@ class SqlPayments:
         customer_id: int,
         paid_on: date,
         amount: int,
-        method: PaymentMethod,
+        payment_method_id: int,
         recorded_at: datetime,
     ) -> int:
         """One `INSERT … SELECT … WHERE :amount <= bought - paid` (ADR-0012): bought
@@ -87,9 +87,14 @@ class SqlPayments:
             null(),
             literal(paid_on),
             literal(amount),
-            literal(method.value),
+            PaymentMethodRow.id,
             literal(recorded_at),
-        ).where(literal(amount) <= (shipping + line_totals) - paid)
+        ).where(
+            PaymentMethodRow.id == payment_method_id,
+            PaymentMethodRow.business_id == self._business_id,
+            PaymentMethodRow.archived_at.is_(None),
+            literal(amount) <= (shipping + line_totals) - paid,
+        )
 
         statement = (
             insert(PaymentRow)
@@ -100,7 +105,7 @@ class SqlPayments:
                     "sale_id",
                     "paid_on",
                     "amount",
-                    "method",
+                    "payment_method_id",
                     "recorded_at",
                 ],
                 guarded_select,

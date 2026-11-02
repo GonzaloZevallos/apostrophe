@@ -42,6 +42,11 @@ from app.migrations.runner import upgrade_to_head
 from app.onboarding.adapters.first_run_router import router as first_run_router
 from app.onboarding.adapters.opening import OnboardingOpening
 from app.onboarding.adapters.router import router as onboarding_router
+from app.payment_methods.adapters.babel_defaults import BabelPaymentMethodDefaults
+from app.payment_methods.adapters.opening import PaymentMethodsOpening
+from app.payment_methods.adapters.router import router as payment_methods_router
+from app.payment_methods.adapters.sql_payment_methods import SqlPaymentMethods
+from app.payments.adapters.on_the_spot import SqlOnTheSpotPayments
 from app.payments.adapters.payments_ledger import SqlPaymentsLedger
 from app.payments.adapters.results_ports import SqlDebtSummary
 from app.payments.adapters.router import customers_router as payments_customers_router
@@ -217,7 +222,12 @@ def create_app(
         partial(CatalogHeaderFooterOpening, defaults=header_footer_defaults),
         PricingSettingsOpening,
         partial(OnboardingOpening, clock=clock),
+        partial(PaymentMethodsOpening, defaults=BabelPaymentMethodDefaults(copy_catalog)),
     )
+    # Sales writes a sale's payment only through its `OnTheSpotPayments` port, payments
+    # reads a method's availability through its own protocol (docs/adr/0070).
+    app.state.on_the_spot_payments = SqlOnTheSpotPayments
+    app.state.available_methods = SqlPaymentMethods
     # A factory, not an instance (the same shape as `business_opening` above): sales
     # reaches line cost only through its own `LineCosts` port, never `app.stock`
     # directly (CODING_STANDARDS section 1). A dependency under `app/sales/adapters/`
@@ -308,6 +318,7 @@ def create_app(
     app.include_router(sales_router, dependencies=upkeep_gated)
     app.include_router(stock_router, dependencies=upkeep_gated)
     app.include_router(catalog_router, dependencies=upkeep_gated)
+    app.include_router(payment_methods_router, dependencies=gated)
     app.include_router(payments_router, dependencies=gated)
     app.include_router(payments_customers_router, dependencies=gated)
     app.include_router(pinned_catalog_router, dependencies=gated)

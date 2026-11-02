@@ -6,9 +6,9 @@ every rule stays the domain's, and every refusal's message is a fixed string
 from __future__ import annotations
 
 from datetime import date
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.payments.application.record_payment import CandidateOutcome, RecordedPayment
 from app.payments.application.view_accounts import Debtor, Debtors
@@ -17,7 +17,8 @@ from app.payments.domain.account import AccountRow as DomainAccountRow
 from app.payments.domain.account import CreditRow as DomainCreditRow
 from app.payments.domain.account import PaymentRow as DomainPaymentRow
 from app.payments.domain.account import SaleRow as DomainSaleRow
-from app.payments.domain.settlement import PaymentMethod, Split, Standing
+from app.payments.domain.settlement import Split, Standing
+from app.shared.payment_method import PaymentMethodLabel
 
 # A row's own `date` field shadows the `date` type for any field declared after it in
 # the same class body (the same trap `app.sales.adapters.schemas.SaleDate` sidesteps).
@@ -32,7 +33,7 @@ class PaymentPreviewIn(BaseModel):
 class PaymentIn(BaseModel):
     paid_on: PaymentDate
     amount: int
-    method: PaymentMethod | None = None
+    payment_method_id: int | None = None
 
 
 class AppliedToOut(BaseModel):
@@ -69,11 +70,61 @@ class PaymentPreviewOut(BaseModel):
         )
 
 
-class PaymentRefOut(BaseModel):
+class PaymentMethodRefOut(BaseModel):
+    """A method as a payment shows it: the id plus the current name and icon, read fresh
+    whether or not the method is archived."""
+
+    payment_method_id: int
+    name: str
+    icon: str
+
+    @classmethod
+    def of(cls, label: PaymentMethodLabel) -> PaymentMethodRefOut:
+        return cls(payment_method_id=label.id, name=label.name, icon=label.icon)
+
+
+class PaymentRefOut(PaymentMethodRefOut):
     id: int
     paid_on: PaymentDate
     amount: int
-    method: PaymentMethod
+
+    @classmethod
+    def build(
+        cls, payment_id: int, paid_on: date, amount: int, label: PaymentMethodLabel
+    ) -> PaymentRefOut:
+        return cls(
+            id=payment_id,
+            paid_on=paid_on,
+            amount=amount,
+            payment_method_id=label.id,
+            name=label.name,
+            icon=label.icon,
+        )
+
+
+class HowPaidMethodOut(PaymentMethodRefOut):
+    kind: Literal["method"] = "method"
+
+
+class HowPaidOwingOut(BaseModel):
+    kind: Literal["owing"] = "owing"
+
+
+class HowPaidNoneOut(BaseModel):
+    kind: Literal["none"] = "none"
+
+
+HowPaidOut = Annotated[
+    HowPaidMethodOut | HowPaidOwingOut | HowPaidNoneOut, Field(discriminator="kind")
+]
+
+
+def _how_paid_out(how_paid: PaymentMethodLabel | Literal["owing", "none"]) -> HowPaidOut:
+    if isinstance(how_paid, PaymentMethodLabel):
+        return HowPaidMethodOut(
+            payment_method_id=how_paid.id, name=how_paid.name, icon=how_paid.icon
+        )
+    return HowPaidOwingOut() if how_paid == "owing" else HowPaidNoneOut()
 
 
 class RecordPaymentOut(BaseModel):
@@ -84,11 +135,8 @@ class RecordPaymentOut(BaseModel):
     @classmethod
     def of(cls, recorded: RecordedPayment) -> RecordPaymentOut:
         return cls(
-            payment=PaymentRefOut(
-                id=recorded.id,
-                paid_on=recorded.paid_on,
-                amount=recorded.amount,
-                method=recorded.method,
+            payment=PaymentRefOut.build(
+                recorded.id, recorded.paid_on, recorded.amount, recorded.method
             ),
             applied_to=[AppliedToOut.of(split) for split in recorded.outcome.applied_to],
             after=AfterOut.of(recorded.outcome),
@@ -98,7 +146,7 @@ class RecordPaymentOut(BaseModel):
 class SaleRefOut(BaseModel):
     id: int
     total: int
-    how_paid: Literal["cash", "transfer", "owing", "none"]
+    how_paid: HowPaidOut
 
 
 class SaleAccountRowOut(BaseModel):
@@ -136,16 +184,14 @@ def _row_out(row: DomainAccountRow) -> AccountRowOut:
             date=row.date,
             running_balance=row.running_balance,
             standing=row.standing,
-            sale=SaleRefOut(id=row.sale_id, total=row.total, how_paid=row.how_paid),
+            sale=SaleRefOut(id=row.sale_id, total=row.total, how_paid=_how_paid_out(row.how_paid)),
         )
     if isinstance(row, DomainPaymentRow):
         return PaymentAccountRowOut(
             date=row.date,
             running_balance=row.running_balance,
             standing=row.standing,
-            payment=PaymentRefOut(
-                id=row.payment_id, paid_on=row.paid_on, amount=row.amount, method=row.method
-            ),
+            payment=PaymentRefOut.build(row.payment_id, row.paid_on, row.amount, row.method),
             applied_to=AppliedToOut.of(row.applied_to),
         )
     assert isinstance(row, DomainCreditRow), "AccountRow is exactly these three kinds"
@@ -153,9 +199,7 @@ def _row_out(row: DomainAccountRow) -> AccountRowOut:
         date=row.date,
         running_balance=row.running_balance,
         standing=row.standing,
-        payment=PaymentRefOut(
-            id=row.payment_id, paid_on=row.paid_on, amount=row.amount, method=row.method
-        ),
+        payment=PaymentRefOut.build(row.payment_id, row.paid_on, row.amount, row.method),
         amount=row.credit_amount,
     )
 

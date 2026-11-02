@@ -36,7 +36,9 @@ from app.db import make_engine
 from app.expenses.adapters.import_port import ExpensesImport
 from app.migrations.runner import upgrade_to_head
 from app.onboarding.adapters.import_port import OnboardingEnding
+from app.payment_methods.adapters.import_port import PaymentMethodsImport
 from app.payments.adapters.import_port import PaymentsImport
+from app.payments.adapters.on_the_spot import SqlOnTheSpotPayments
 from app.pricing_settings.adapters.import_port import PricingSettingsImport
 from app.products.adapters.import_port import ProductsImport as SqlProductsImport
 from app.sales.adapters.import_port import SalesImport
@@ -137,7 +139,12 @@ def _run(
         catalog = CatalogImport(session, args.business_id)
         expenses = ExpensesImport(session, args.business_id)
         customers = CustomersImport(session, args.business_id)
-        sales = SalesImport(session, args.business_id)
+        sales = SalesImport(
+            session,
+            args.business_id,
+            SqlOnTheSpotPayments(session, args.business_id),
+            PaymentMethodsImport(session, args.business_id),
+        )
         payments = PaymentsImport(session, args.business_id)
         onboarding = OnboardingEnding(session, args.business_id)
         pricing_settings = PricingSettingsImport(session, args.business_id)

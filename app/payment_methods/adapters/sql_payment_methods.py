@@ -10,7 +10,7 @@ from sqlalchemy import (
     Delete,
     Update,
     delete,
-    false,
+    exists,
     func,
     insert,
     literal,
@@ -32,6 +32,8 @@ from app.payment_methods.domain.method import (
     PaymentMethodNameTaken,
     PaymentMethodNotFound,
 )
+from app.payments.adapters.tables import PaymentRow
+from app.shared.payment_method import PaymentMethodLabel
 
 Row = PaymentMethodRow
 
@@ -58,6 +60,17 @@ class SqlPaymentMethods:
     def get(self, method_id: int) -> PaymentMethod | None:
         row = self._row(method_id)
         return None if row is None else _method(row)
+
+    def available(self, payment_method_id: int) -> PaymentMethodLabel | None:
+        """The label of a method a payment can be recorded with: of this business and not
+        archived. Payments and sales each declare this as their own protocol."""
+        statement = select(Row).where(
+            Row.id == payment_method_id,
+            Row.business_id == self._business_id,
+            Row.archived_at.is_(None),
+        )
+        row = self._session.scalar(statement)
+        return None if row is None else _method(row).label()
 
     def add(self, name: PaymentMethodName, icon: PaymentMethodIcon) -> PaymentMethod:
         if self._key_taken(name.name_key):
@@ -197,10 +210,11 @@ class SqlPaymentMethods:
         return bool(self._session.scalar(statement))
 
     def _used_clause(self) -> ColumnElement[bool]:
-        # TODO(switch): `payment.payment_method_id` does not exist before migration 0021;
-        # that subtask makes this `EXISTS (SELECT 1 FROM payment WHERE payment_method_id =
-        # payment_method.id AND business_id = payment_method.business_id)`.
-        return false()
+        # Never stored: whether some payment, an on-the-spot one included, points at the
+        # method right now. The composite foreign key's RESTRICT is the backstop.
+        return exists().where(
+            PaymentRow.payment_method_id == Row.id, PaymentRow.business_id == Row.business_id
+        )
 
     def _active_count(self) -> ColumnElement[int]:
         return (

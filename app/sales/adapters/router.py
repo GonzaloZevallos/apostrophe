@@ -16,6 +16,8 @@ from app.sales.adapters.schemas import (
     AssignCustomerIn,
     DeleteSaleOut,
     LineIn,
+    PaymentOwingIn,
+    PaymentWithMethodIn,
     ReturnedQuantityOut,
     SaleDetailOut,
     SaleIn,
@@ -29,6 +31,7 @@ from app.sales.application.errors import SaleNotFound
 from app.sales.application.ports import (
     BusinessNames,
     LineCosts,
+    OnTheSpotPayments,
     OwingSales,
     PricingSettingsReader,
     SaleView,
@@ -38,10 +41,10 @@ from app.sales.application.record_sale import record_sale as record_sale_use_cas
 from app.sales.domain.pricing import SaleRuleBroken
 from app.sales.domain.sale import (
     CustomerAlreadyAssigned,
-    PaymentMethod,
     UnknownCustomer,
     UnknownVariety,
 )
+from app.shared.payment_method import PaymentMethodUnavailable
 from app.shared.quantity import InvalidQuantity, Quantity
 
 router = APIRouter(prefix="/sales", tags=["sales"])
@@ -74,7 +77,19 @@ def get_line_costs(
     return factory(session, business_id)
 
 
+def get_on_the_spot(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> OnTheSpotPayments:
+    # Sales never writes a `payment` row nor imports `app.payments`: `app/main.py` hangs
+    # payments' `SqlOnTheSpotPayments` on `app.state.on_the_spot_payments` (docs/adr/0070).
+    factory = cast(
+        Callable[[Session, int], OnTheSpotPayments], request.app.state.on_the_spot_payments
+    )
+    return factory(session, business_id)
+
+
 SalesDep = Annotated[SqlSales, Depends(get_sales)]
+OnTheSpotDep = Annotated[OnTheSpotPayments, Depends(get_on_the_spot)]
 PriceBookDep = Annotated[SqlPriceBook, Depends(get_price_book)]
 CustomerFactsDep = Annotated[SqlCustomerFacts, Depends(get_customer_facts)]
 
@@ -113,7 +128,7 @@ BusinessNamesDep = Annotated[BusinessNames, Depends(get_business_names)]
 
 as_http = TranslateErrors(
     [
-        (404, (SaleNotFound, UnknownCustomer, UnknownVariety)),
+        (404, (SaleNotFound, UnknownCustomer, UnknownVariety, PaymentMethodUnavailable)),
         (409, (CustomerAlreadyAssigned,)),
         (422, (SaleRuleBroken, InvalidQuantity)),
     ]
@@ -133,6 +148,7 @@ def _line_input(line: LineIn) -> LineInput:
 def record_sale(
     body: SaleIn,
     sales: SalesDep,
+    on_the_spot: OnTheSpotDep,
     price_book: PriceBookDep,
     customer_facts: CustomerFactsDep,
     pricing_settings: PricingSettingsDep,
@@ -142,9 +158,10 @@ def record_sale(
     clock: ClockDep,
 ) -> SaleOut:
     with as_http:
-        method = body.payment if isinstance(body.payment, PaymentMethod) else None
+        payment = body.payment
         sale = record_sale_use_case(
             sales,
+            on_the_spot,
             price_book,
             customer_facts,
             pricing_settings,
@@ -155,8 +172,10 @@ def record_sale(
             shipping_charged=body.shipping_charged,
             note=body.note,
             lines=[_line_input(line) for line in body.lines],
-            method=method,
-            left_owing=body.payment == "owing",
+            payment_method_id=(
+                payment.payment_method_id if isinstance(payment, PaymentWithMethodIn) else None
+            ),
+            left_owing=isinstance(payment, PaymentOwingIn),
             recorded_at=clock(),
         )
         return _sale_out(sales, owing_sales, sale.id)
@@ -194,11 +213,14 @@ def assign_customer(
     body: AssignCustomerIn,
     sales: SalesDep,
     customer_facts: CustomerFactsDep,
+    on_the_spot: OnTheSpotDep,
     owing_sales: OwingSalesDep,
     session: SessionDep,
 ) -> SaleOut:
     with as_http:
-        sale = assign_customer_use_case(sales, customer_facts, session, sale_id, body.customer_id)
+        sale = assign_customer_use_case(
+            sales, on_the_spot, customer_facts, session, sale_id, body.customer_id
+        )
         return _sale_out(sales, owing_sales, sale.id)
 
 
@@ -223,9 +245,11 @@ def _sale_out(sales: SqlSales, owing_sales: OwingSales, sale_id: int | None) -> 
 
 
 @router.delete("/{sale_id}", status_code=200)
-def delete_sale(sale_id: int, sales: SalesDep, session: SessionDep) -> DeleteSaleOut:
+def delete_sale(
+    sale_id: int, sales: SalesDep, on_the_spot: OnTheSpotDep, session: SessionDep
+) -> DeleteSaleOut:
     with as_http:
-        returned = delete_sale_use_case(sales, session, sale_id)
+        returned = delete_sale_use_case(sales, on_the_spot, session, sale_id)
         return DeleteSaleOut(
             returned=[
                 ReturnedQuantityOut(product_id=r.variety_id, quantity=r.quantity.as_decimal())
