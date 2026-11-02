@@ -1,12 +1,14 @@
 # Pagos
 
-El dinero que un **Customer** entrega, y lo que cada Customer debe por eso: su **Balance**, su **Owing since** y la cuenta de sus **Sales** y **Payments**. Lo ve solo su **Business** (ADR-0004). Lee las Sales y sus **On-the-spot payments** de sales (ADR-0007) y los Customers de customers. **Cash** (#7) cuenta los Payments en sus propias fechas. Qué Sale salda un Payment se calcula en el momento y nunca se guarda, igual que el **Cost of goods sold** (ADR-0009, ADR-0010), mientras que los precios de una Sale quedan congelados (ADR-0003). Quién debe se muestra como la sección Owed to you arriba de Customers y como el bloque "Owed to you" de Home; no hay una pantalla Owed to you aparte.
+El dinero que un **Customer** entrega, y lo que cada Customer debe por eso: su **Balance**, su **Owing since** y la cuenta de sus **Sales** y **Payments**. Lo ve solo su **Business** (ADR-0004). Lee las Sales y sus **On-the-spot payments** de sales (ADR-0007), los Customers de customers y los **Payment methods** del Business de payment-methods.md. **Cash** (#7) cuenta los Payments en sus propias fechas. Qué Sale salda un Payment se calcula en el momento y nunca se guarda, igual que el **Cost of goods sold** (ADR-0009, ADR-0010), mientras que los precios de una Sale quedan congelados (ADR-0003). Quién debe se muestra como la sección Owed to you arriba de Customers y como el bloque "Owed to you" de Home; no hay una pantalla Owed to you aparte.
 
 ## Jobs
 
-**Cuando** un cliente me paga parte o todo lo que debe, en efectivo o por transferencia, el mismo día o semanas después, **quiero** registrarlo desde el celular en pocos toques y ver que su Balance y su "owing since" bajan en el acto, **para** saber siempre quién me debe qué y desde cuándo, y que nada de lo que pagó o todavía debe se pierda ni caiga en la persona equivocada.
+**Cuando** un cliente me paga parte o todo lo que debe, por cualquiera de los medios con que cobra mi negocio, el mismo día o semanas después, **quiero** registrarlo desde el celular en pocos toques y ver que su Balance y su "owing since" bajan en el acto, **para** saber siempre quién me debe qué y desde cuándo, y que nada de lo que pagó o todavía debe se pierda ni caiga en la persona equivocada.
 
 Es el mismo job de "manejar mi negocio desde el celular" que el de cualquier otra capacidad. Reemplaza la única columna pagado/pendiente de la planilla. Saldar una deuda pisaba esa columna, así que no quedaba fecha de pago ni pago parcial.
+
+**Cuando** registro cómo me pagó un cliente, en la venta o después, **quiero** elegir entre las formas en que mi negocio cobra de verdad, **para** que cada Payment diga cómo me pagaron realmente, sin forzarlo en una opción que mi negocio no usa. (El job de payment-methods.md: acá lo sirven los métodos de Record payment y el método que muestra la cuenta del Customer).
 
 **Cuando** manejo mi negocio desde el celular entre pedidos o en medio del chat con un cliente, varias veces por día, **quiero** que la app esté armada según lo que hago de verdad y con qué frecuencia, **para poder** volver con el cliente en lugar de buscar entre menús. (El job de **Navigation**, navigation.md: acá lo sirve "Collect" en cada fila de deudor de Customers y de Home, que abre Record payment con el cliente elegido en 2 toques como máximo.)
 
@@ -29,22 +31,25 @@ Criterios de éxito:
    - Cada Payment dice su fecha, su método y a qué Sale fue.
    - Un Payment equivocado se puede eliminar, y la cuenta y el Balance lo siguen al instante.
 6. **Las fechas de los Payments se conservan**: un Payment conserva su propia fecha y su método, así que Cash (#7) cuenta el dinero el día en que entró, nunca en la fecha de la Sale.
-7. **Los Businesses nunca se mezclan, nada se filtra**: un Payment pertenece a un Customer de su propio Business (ADR-0004). El Customer o el Payment de otro Business no existe (404). Ningún monto ni nombre va a un error, un log, la consola ni el almacenamiento del navegador (ADR-0005).
+7. **Los Businesses nunca se mezclan, nada se filtra**: un Payment pertenece a un Customer de su propio Business y lleva un Payment method de su propio Business (ADR-0004). El Customer, el Payment o el Payment method de otro Business no existe (404). Ningún monto ni nombre va a un error, un log, la consola ni el almacenamiento del navegador (ADR-0005).
 8. **Sin curl, y el navegador no calcula nada**: todo se hace desde el celular. Todo Balance, Owing since y **Settlement** que se muestra sale de la API.
 9. **Nunca perder el lugar**: en el celular, Record payment se abre como una Sheet sobre la pantalla desde la que se abrió (la ficha del Customer, Customers o Home) y se cierra con "Close". Guardar o cerrar deja al vendedor de vuelta en esa pantalla, en la posición de scroll que tenía, con el Balance ya más bajo después de guardar. En la computadora es un modal. Los docs de producto, el dibujo y la app construida coinciden en esto.
+10. **El método es el del negocio**: Record payment ofrece exactamente los Payment methods activos del Business, en su orden, sin ningún paso de más, y todo Payment registrado muestra el nombre actual de su método (payment-methods.md).
 
 ## Comportamiento
 
 ### Payment
 
-- **Campos**: un Customer del mismo Business, una fecha, un monto en pesos enteros mayor que $0 y un método (efectivo o transferencia). No hay **Note**.
+- **Campos**: un Customer del mismo Business, una fecha, un monto en pesos enteros mayor que $0 y un Payment method activo del mismo Business (payment-methods.md). No hay **Note**.
 - **Fecha**: por defecto es hoy, el día del Business en hora argentina. Se permiten días anteriores; una fecha futura se rechaza.
 - **Customer**: obligatorio. El Customer de otro Business no existe (404).
+- **Método**: obligatorio. Un método archivado o eliminado después de abrir el formulario, o uno de otro Business, se rechaza con su código. Todo lo escrito se conserva y la lista de métodos se vuelve a leer.
 - **Por encima del Balance**: un Payment mayor que el Balance actual del Customer se rechaza, así que registrar nunca crea un **Credit**.
   - El Balance actual cuenta todas las Sales del Customer, sea cual sea la fecha del Payment.
   - A un Customer cuyo Balance es $0 o un Credit no se le puede cargar un Payment.
-- **Sin edición**: un Payment no se puede editar. Uno equivocado se elimina y se vuelve a registrar.
+- **Sin edición**: un Payment no se puede editar, tampoco su método. Uno equivocado se elimina y se vuelve a registrar.
 - **Eliminación**: una eliminación definitiva, con confirmación previa. Solo se puede eliminar así un Payment posterior.
+- **Todo método cuenta igual**: todo Payment es dinero recibido, sea cual sea su método. Cuenta en Cash, en el Balance y en el Settlement exactamente como contaban efectivo y transferencia. Un método llamado "Cash" no tiene nada que ver con la cifra Cash.
 
 ### Settlement
 
@@ -61,7 +66,7 @@ Criterios de éxito:
   - Eliminar cualquiera de los dos hace que todo lo posterior se vuelva a calcular.
 - **Eliminar una Sale**: los Payments posteriores que la habían saldado se aplican a la siguiente deuda más vieja del Customer, o pasan a ser un Credit.
 - **Eliminar un Payment**: lo que saldaba vuelve a deberse.
-- **Lo que nunca se mueve**: los precios, las reglas y los totales de línea guardados de una Sale (ADR-0003, ADR-0007), y la fecha, el monto y el método de un Payment. Solo puede cambiar contra qué Sale se muestra un Payment.
+- **Lo que nunca se mueve**: los precios, las reglas y los totales de línea guardados de una Sale (ADR-0003, ADR-0007), y la fecha, el monto y el método de un Payment. Renombrar, reordenar, archivar o eliminar un Payment method nunca cambia a qué método está vinculado un Payment. Solo puede cambiar contra qué Sale se muestra un Payment.
 
 ### Credit
 
@@ -97,19 +102,20 @@ Criterios de éxito:
 - **La cuenta** abre con la etiqueta "Account · running balance" y lista las Sales y los Payments en orden de fecha, con el Balance corrido.
   - Cada fila muestra su fecha, un título con una sublínea debajo, y a la derecha su monto sobre "balance $ X". Un monto nunca se parte entre "$" y su cifra.
   - **Una Sale**: el título "Sale". Su sublínea es una de estas:
-    - "Paid in cash" o "Paid by transfer" para una Sale pagada en el momento, que no tiene fila de Payment propia;
+    - "Paid · <method>" para una Sale pagada en el momento, que no tiene fila de Payment propia, con el ícono y el nombre actuales de su Payment method;
     - "Left owing" para una Sale que quedó debiendo;
     - "Nothing to pay" para una Sale cuyo total es $0, saldada sin método y sin nada debido (sales.md).
 
     La fila no nombra ninguna **Variety** ni gramos: el detalle de la Sale los tiene (sales.md).
   - **Un Payment posterior**: una fila por cada Sale que alcanza, cada una titulada "Payment · <method>" con la sublínea "On account of the sale of dd/mm" y el monto aplicado a esa Sale.
   - **Cualquier parte de un Payment más allá de todas las deudas**: titulada "Payment · <method>" con la sublínea "Credit".
+  - **<method>** es el nombre actual del Payment method, tal como lo escribió el vendedor, junto a su ícono. Un método archivado se muestra con su nombre a secas, sin etiqueta de "archived".
   - Lo que se debe se lee en ámbar. Un "Credit $ X" corrido se lee con el tratamiento neutro/azul, nunca ámbar ni verde.
 - **Balance corrido por debajo de cero**: entre un Payment y una Sale de fecha posterior que ese Payment salda, el Balance corrido pasa a ser menor que cero y esa fila dice "Credit $ X".
   - Es solo la cifra corrida, no un Credit, y no cuenta en ninguna cifra.
   - El Balance propio de la ficha dice "Credit" solo cuando el Balance de hoy es menor que cero.
 - **"Delete payment"** existe solo en los Payments posteriores.
-  - Se confirma con "Delete the $ 15.000 payment (transfer) from 20/09?", "No, keep it / Yes, delete it". La confirmación nombra el Payment, nunca las Sales que cubría.
+  - Se confirma con "Delete the $ 15.000 payment (<method>) from 20/09?", con el nombre actual del método tal como lo escribió el vendedor, y "No, keep it / Yes, delete it". La confirmación nombra el Payment, nunca las Sales que cubría.
   - Después, el toast "Payment deleted", sin datos, y la cuenta y el Balance se refrescan desde la API.
   - Un Payment que ya no existe sigue la regla "That is gone." de accounts.md.
 
@@ -133,7 +139,7 @@ Criterios de éxito:
 - **La Sheet**:
   - "All: $ X" completa el monto con todo el Balance en un toque;
   - la fecha viene completa con hoy;
-  - Cash · Transfer, obligatorio.
+  - el método, obligatorio: los Payment methods activos del Business en el orden del vendedor, un toque cada uno, con ícono y nombre, en el lugar donde antes estaba "Cash · Transfer" y con la misma cantidad de toques. En el celular pasan a la línea siguiente cuando no entran, sin desplazamiento horizontal ni nombres recortados, cada uno de al menos 44 px. Si antes venía preseleccionado uno, ese lugar lo toma el primer método del orden; si no venía ninguno, sigue sin venir. Los archivados nunca se ofrecen.
 - **Antes de guardar**, la vista previa de la API muestra qué Sales salda el Payment ("Taken from the oldest debt") y "They still owe $ X" cuando queda algo.
 - **Después de guardar**:
   - "Payment saved · still owing $ X" cuando queda algo;
@@ -144,17 +150,20 @@ Criterios de éxito:
   - por encima del Balance;
   - fecha futura;
   - monto menor o igual que $0;
-  - falta el método.
+  - falta el método;
+  - el método ya no está disponible (archivado, eliminado o de otro Business); la lista de métodos se vuelve a leer.
 
 ### Restricciones
 
 - `payment` es la tabla de ADR-0007 y lleva `business_id`. El Business sale de la **Session**.
+- Cada Payment se vincula a su Payment method por una columna nueva, completada por la migración a partir del valor de hoy. La columna vieja del método queda congelada con sus valores (ADR-0055) y nada en pantalla la lee.
 - Las rutas de Payment se suman al barrido de aislamiento, al test de rutas con acceso restringido y al test de migración de pertenencia.
 - Los códigos de rechazo van en `contract.json` (ADR-0008):
   - por encima del Balance;
   - fecha futura;
   - monto menor o igual que $0;
   - falta el método;
+  - método archivado, eliminado o de otro Business;
   - eliminar un On-the-spot payment;
   - Customer inexistente;
   - Payment inexistente.
@@ -177,10 +186,10 @@ Criterios de éxito:
 - **Identidad del Balance (criterio 3)**: Balance = comprado e impago − Payments, al peso, después de cada alta y eliminación de Sales y Payments.
 - **Credit**: después de eliminar una Sale saldada, el Credit se muestra como "Credit", queda fuera de la sección Owed to you, del Total owed y de la cantidad, y se aplica a la próxima Sale que quede debiendo.
 - **Totales de quién debe (criterio 4)**: el Total owed, la cantidad de Sales still owing, la sección "Owed to you" de Customers, el bloque de Home y la marca de Sales son iguales a un cálculo directo sobre las Sales y los Payments. 0 diferencias. La línea de cantidad dice "1 sale owing" para una Sale y "N sales owing" para dos o más, las dos cubiertas por los tests del front.
-- **Cuenta (criterio 5)**: las filas y el Balance corrido coinciden con el Settlement en cada caso de la matriz. Los tests del front muestran la etiqueta "Account · running balance", el título y la sublínea de cada fila ("Sale" sobre "Paid in cash", "Paid by transfer", "Left owing" o, para una Sale de $0, "Nothing to pay"; "Payment · <method>" sobre "On account of the sale of dd/mm" o "Credit"), el monto sobre "balance $ X" sin corte dentro de un monto, y ninguna Variety ni gramos en la fila de una Sale.
-- **Fechas conservadas (criterio 6)**: después de cualquier recálculo, la fecha, el monto y el método de cada Payment quedan sin cambios.
+- **Cuenta (criterio 5)**: las filas y el Balance corrido coinciden con el Settlement en cada caso de la matriz. Los tests del front muestran la etiqueta "Account · running balance", el título y la sublínea de cada fila ("Sale" sobre "Paid · <method>", "Left owing" o, para una Sale de $0, "Nothing to pay"; "Payment · <method>" sobre "On account of the sale of dd/mm" o "Credit"), el monto sobre "balance $ X" sin corte dentro de un monto, y ninguna Variety ni gramos en la fila de una Sale.
+- **Fechas conservadas (criterio 6)**: después de cualquier recálculo, la fecha, el monto y el método de cada Payment quedan sin cambios, también después de renombrar, reordenar o archivar su método.
 - **Vista previa = guardado (criterios 2, 8)**: la vista previa de Record payment coincide con el Settlement después de guardar. 0 diferencias.
-- **Aislamiento (criterio 7)**: toda ruta de Payment está en el barrido y responde 404 o vacío desde otro Business.
+- **Aislamiento (criterio 7)**: toda ruta de Payment está en el barrido y responde 404 o vacío desde otro Business, también con el Payment method de otro Business.
 - **Sin eco (criterio 7)**: ningún rechazo ni línea de log contiene un monto ni un nombre. Después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen ninguno.
 - **Sin curl (criterio 8)**: una corrida end-to-end solo a través del front:
   - registra un Payment desde "Collect" en Customers y desde "Collect" en Home;
@@ -196,13 +205,15 @@ Criterios de éxito:
 - **Foco y texto escrito (GH-319)**: un test del front muestra el foco en el primer campo cuando se abre la Sheet del celular; un test de cambio de viewport (de celular a computadora y de vuelta) conserva el monto escrito; los tests de cambios sin guardar de Record payment pasan sin editarse; la lista de infractores del **Mobile check** no nombra ningún estado de Sheet recorrido de Record payment.
 - **Lugar conservado (criterio 9)**: una corrida end-to-end desplaza Customers y Home de modo que la fila de deudor tocada quede debajo de la primera pantalla, después abre Record payment y lo cierra, una vez con "Close" y una vez con un guardado parcial. Cada vez el desplazamiento queda sin cambios y el foco está en el "Collect" tocado. Después de un guardado que salda todo el Balance, el desplazamiento queda sin cambios y el foco está en el título "Owed to you" (o "Nobody owes you").
 - **Acuerdo con el diseño (criterio 9)**: la Design capture de Record payment en el celular muestra que el dibujo y la app construida son los dos una Sheet. La nota de evidencia no deja ninguna diferencia abierta; la manija y el asomo del dibujo son una diferencia conocida, descartada a propósito (ADR-0062).
+- **Métodos del negocio (criterio 10)**: tests del front muestran que Record payment lista exactamente los métodos activos del Business en su orden, sin archivados, con la misma preselección que antes; un método archivado mientras la Sheet está abierta da su rechazo y conserva lo escrito; un Business que solo tiene un método propio registra un Payment de punta a punta. Cash, Balance y Settlement no cambian con métodos renombrados o propios: 0 diferencias.
 
 ## Fuera de alcance
 
 - Reintegros.
 - Una Note en un Payment.
 - Asignar un Payment a una Sale a mano.
-- Eliminar un On-the-spot payment por separado; editar un Payment.
+- Eliminar un On-the-spot payment por separado; editar un Payment, su método incluido.
+- Totales o filtros por Payment method.
 - Una pantalla Owed to you aparte.
 - Record payment como página propia en el celular (la Sheet de pantalla completa queda sobre la pantalla desde la que se abrió).
 - Cerrar tocando afuera en la Sheet de pantalla completa del celular.
@@ -211,3 +222,4 @@ Criterios de éxito:
 - Cash y **Profit**: la capacidad results (#7).
 - Actualizaciones en vivo entre socios.
 - Las Varieties o los gramos de una Sale en la cuenta del Customer: el detalle de la Sale los muestra.
+- Cualquier procesador de tarjetas o proveedor de pagos.

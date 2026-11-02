@@ -115,7 +115,7 @@ _In the app_: Note
 _Avoid_: comment, description, memo
 
 **Payment**:
-El dinero que un Customer entrega en una fecha, en efectivo o por transferencia, sin Note. Puede ser un On-the-spot payment registrado con su Sale, o un Payment posterior registrado mediante Record payment, que se abre con "Collect" en una fila de deudor de Customers o Home o desde la ficha del Customer. Su fecha, monto y método nunca cambian; se elimina y se vuelve a registrar, nunca se edita. _In the app_: Payment.
+El dinero que un Customer entrega en una fecha, con uno de los Payment methods del Business, sin Note. Puede ser un On-the-spot payment registrado con su Sale, o un Payment posterior registrado mediante Record payment, que se abre con "Collect" en una fila de deudor de Customers o Home o desde la ficha del Customer. Su fecha, monto y método nunca cambian, y renombrar o archivar su método no lo toca; se elimina y se vuelve a registrar, nunca se edita. _In the app_: Payment.
 _Avoid_: collection, settlement, receipt, abono
 _In the app_: Payment
 
@@ -268,7 +268,7 @@ El texto propio de un Business que abre y cierra el Catalog, de varias líneas y
 _Avoid_: title, signature, intro, outro
 
 **On-the-spot payment**:
-El Payment registrado junto con una Sale pagada por completo en efectivo o por transferencia. Salda solo esa Sale, nunca una deuda más antigua, y se elimina solo junto con su Sale. _In the app_: Paid in cash / Paid by transfer.
+El Payment registrado junto con una Sale pagada por completo con uno de los Payment methods activos del Business. Salda solo esa Sale, nunca una deuda más antigua, y se elimina solo junto con su Sale. _In the app_: Paid · <method>.
 _Avoid_: cash sale, immediate payment
 
 **Settlement**:
@@ -554,8 +554,8 @@ El precio que paga un Customer type por un Product, una fila que rige desde una 
 _Avoid_: tier price, discount
 
 **Payment method**:
-Una forma de pagar de un Customer, definida por el vendedor. Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; a cargo de la parte payment methods.
-_Avoid_: payment type, channel
+Una forma en que cobra un Business, de su propia lista ("Cash" y "Transfer" para empezar), con un nombre único, un ícono opcional y un lugar en su orden; cada Payment lleva exactamente uno, y "Owing" nunca es uno. Es solo una etiqueta sobre dinero recibido: nunca cambia ninguna cifra y no tiene nada que ver con la cifra Cash, aunque se llame "Cash". Uno que ya usa algún Payment solo se archiva y se restaura; uno sin uso se elimina. _In the app_: Payment methods, en Settings → Business.
+_Avoid_: payment type, channel, medio de pago, forma de pago, Cash (that is a figure)
 
 **Applied promotion**:
 Una Promotion tal como estaba una Sale cuando se guardó, registrada como filas tipadas que nunca se vuelven a calcular. Decidido en docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; a cargo de la parte promotions-at-sale-time, que también define en qué se diferencia de una Promotion.
