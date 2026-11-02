@@ -165,8 +165,13 @@ const WITHDRAWAL_REFUSALS = [
 ] as const
 
 test('every withdrawal refusal the contract lists is covered here, but its gone form', () => {
+  // The reasons list's own refusals (`stock.withdrawal_reason_name_*`, `_cannot_move`,
+  // `_not_found`) belong to the settings screen, not to this form.
   const listed = Object.keys(contract.refusalCodes).filter(
-    (code) => code.startsWith('stock.withdrawal_') && code !== 'stock.withdrawal_not_found',
+    (code) =>
+      code.startsWith('stock.withdrawal_') &&
+      code !== 'stock.withdrawal_not_found' &&
+      (!code.startsWith('stock.withdrawal_reason_') || code === 'stock.withdrawal_reason_required'),
   )
 
   expect(WITHDRAWAL_REFUSALS.map(([code]) => code).sort()).toEqual(listed.sort())
