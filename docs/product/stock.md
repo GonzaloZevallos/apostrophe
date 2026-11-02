@@ -3,7 +3,7 @@
 What comes into a business (stock entries), what goes out of it without a sale (stock
 withdrawals), what it has on hand per product, and what every gram sold, gifted or withdrawn
 cost, taken from the lots it came out of, oldest first. Seen only by its business
-(ADR-0004). Reads sale lines from sales and products from products. Its cost of goods
+(ADR-0004). Reads sale lines from sales and products from the Products capability (varieties.md). Its cost of goods
 sold feeds profit (#7) and margins (#8); the cost of withdrawn grams feeds profit as
 Promotion and Own use, never cost of goods sold or margins. Cost follows the lots
 as they stand and is never frozen (ADR-0009). Stock has no tab of its own: it is shown on
