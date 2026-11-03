@@ -470,6 +470,7 @@ def ensure_vip_type_on(engine: Engine, api: Api) -> int:
     from sqlalchemy import text
     from sqlalchemy.orm import Session
 
+    importlib.import_module("app.tables")  # every table on the metadata, as the app has it
     from app.customer_types.adapters.import_port import VipTypeImport
 
     email = api.call("GET", "/auth/me")["email"]

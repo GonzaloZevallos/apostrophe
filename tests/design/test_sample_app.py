@@ -6,6 +6,7 @@ import importlib.util
 import json
 import os
 import sqlite3
+import subprocess
 import sys
 import threading
 import time
@@ -688,3 +689,63 @@ def test_the_kinds_the_sample_can_write_are_the_account_kinds_of_screens_json() 
     assert len(registry["account_kinds"]) == len(set(registry["account_kinds"]))
     # Every kind is written for at least one account name, and no name has two kinds.
     assert all(sample_app.ACCOUNT_KINDS.values())
+
+
+def test_the_vip_type_is_made_from_a_fresh_interpreter_that_loaded_no_app_module(
+    tmp_path: Path,
+) -> None:
+    # `mobile_seed.py` runs as its own process: it reaches the database through the import
+    # port only, so the helper itself must register every table the port's foreign keys name.
+    sample_app = load_script()
+    url = f"sqlite:///{tmp_path / 'sample.db'}"
+    env = {
+        **{k: v for k, v in os.environ.items() if not k.startswith("APOSTROPHE_")},
+        "APOSTROPHE_SECRET_KEY": "sample-secret",
+        "APOSTROPHE_DATABASE_URL": url,
+        "APOSTROPHE_PUBLIC_URL": "http://127.0.0.1:9",
+    }
+    invite = sample_app.new_business_token(env)
+    app = create_app(
+        Settings("sample-secret", url),
+        engine=make_engine(url),
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
+        clock=MovableClock(NOW),
+    )
+    with TestClient(app) as web:
+        accepted = web.post(
+            f"/invitations/{invite}/accept",
+            json={"email": sample_app.EMAIL, "password": PASSWORD, "business_name": "La Huerta"},
+        )
+        assert accepted.status_code == 201
+
+    program = (
+        "import importlib.util, sys\n"
+        f"spec = importlib.util.spec_from_file_location('sample_app', {str(SCRIPT)!r})\n"
+        "module = importlib.util.module_from_spec(spec)\n"
+        "sys.modules['sample_app'] = module\n"
+        "spec.loader.exec_module(module)\n"
+        "class Api:\n"
+        "    def call(self, method, path, body=None):\n"
+        f"        return {{'email': {sample_app.EMAIL!r}}}\n"
+        "api = Api()\n"
+        "api.database_url = None\n"
+        "http = module.HttpApi('http://unused', sys.argv[1])\n"
+        "http.call = api.call\n"
+        "first = http.ensure_vip_type()\n"
+        "assert http.ensure_vip_type() == first\n"
+        "print(first)\n"
+    )
+    done = subprocess.run(
+        [sys.executable, "-c", program, url],
+        cwd=SCRIPT.parents[2] / "scripts",
+        env={**os.environ},
+        capture_output=True,
+        text=True,
+    )
+
+    assert done.returncode == 0, done.stderr
+    with sqlite3.connect(tmp_path / "sample.db") as conn:
+        rows = conn.execute("SELECT id, name, is_vip FROM customer_type").fetchall()
+    assert rows == [(int(done.stdout), "VIP", 1)]
