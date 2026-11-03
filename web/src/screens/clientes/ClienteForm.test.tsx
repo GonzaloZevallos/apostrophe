@@ -5,7 +5,7 @@
  * (plan, "Gone records").
  */
 
-import { CUSTOMER, CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_NEW, LOGIN, pathTo, SETTINGS_PRICES } from '../../routes'
+import { CUSTOMER, CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_NEW, LOGIN, pathTo, SETTINGS_CUSTOMER_TYPES } from '../../routes'
 import { useGoneNotice } from '../../components/goneExit'
 import { readFeedback } from '../../components/feedback'
 import Notice from '../../components/Notice'
@@ -601,7 +601,7 @@ test('with no types the field is the notice Add a customer type, leading to Sett
   renderForm(CUSTOMER_NEW)
 
   const notice = await screen.findByRole('link', { name: 'Add a customer type' })
-  expect(notice).toHaveAttribute('href', SETTINGS_PRICES)
+  expect(notice).toHaveAttribute('href', SETTINGS_CUSTOMER_TYPES)
   expect(screen.queryByRole('combobox', { name: 'Customer type' })).not.toBeInTheDocument()
 })
 

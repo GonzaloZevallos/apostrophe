@@ -4,6 +4,7 @@ import type { KeysOf } from './keys'
 export type Resources = {
   "brand": typeof import('../copy/locales/en/brand.json')
   "common": typeof import('../copy/locales/en/common.json')
+  "customerTypes": typeof import('../copy/locales/en/customerTypes.json')
   "emptyStates": typeof import('../copy/locales/en/emptyStates.json')
   "refusals": typeof import('../copy/locales/en/refusals.json')
   "shell": typeof import('../copy/locales/en/shell.json')

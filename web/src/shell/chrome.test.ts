@@ -46,6 +46,7 @@ const EXPECTED: Record<ScreenId, readonly [Chrome, Chrome]> = {
   'settings-business': [FORM, FORM],
   'settings-users': [FORM, FORM],
   'settings-prices': [FORM, FORM],
+  'settings-customer-types': [FORM, FORM],
   'settings-integrations': [FORM, FORM],
   'settings-catalog-message': [FORM, FORM],
   'settings-expense-categories': [FORM, FORM],

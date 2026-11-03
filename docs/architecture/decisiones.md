@@ -74,3 +74,5 @@ Un ADR da el motivo de una decisión; lo que el sistema hace hoy se afirma en la
 | [0067](../adr/0067-ci-runs-only-the-suites-a-change-affects-in-shards-with-coverage.md) | la integración continua corre solo las suites que un cambio afecta |  |
 | [0068](../adr/0068-architecture-docs-cite-defined-symbols-checked-by-text.md) | las páginas de arquitectura citan símbolos definidos y una prueba de texto lo comprueba |  |
 | [0069](../adr/0069-un-solo-dueno-del-scroll-al-cambiar-de-pantalla-con-offsets-en-memoria.md) | un solo dueño del scroll al cambiar de pantalla, con los offsets solo en memoria |  |
+| [0070](../adr/0070-the-vip-type-is-the-single-is-vip-row-of-a-business-set-only-by-the-migration-and-the-import-and-never-identified-by-name.md) | el tipo VIP es la única fila is_vip de un Business y nunca se identifica por nombre |  |
+| [0071](../adr/0071-a-refusal-may-carry-named-fields-next-to-its-code.md) | un rechazo puede llevar campos con nombre junto a su código |  |

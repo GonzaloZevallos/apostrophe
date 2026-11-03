@@ -27,7 +27,7 @@ function json(body: unknown): Response {
 function stub(vip: boolean, extra: Record<string, unknown>): void {
   const answers: Record<string, unknown> = {
     'GET /pricing-settings': { is_bulk_pricing: true, is_vip_customers: vip },
-    'GET /customer-types': TYPES,
+    'GET /api/customer-types': TYPES,
     ...extra,
   }
   vi.stubGlobal(

@@ -15,6 +15,7 @@ import {
   MORE,
   pathTo,
   SETTINGS_ACCOUNT,
+  SETTINGS_CUSTOMER_TYPES,
   STOCK,
   STOCK_ENTRY,
   VARIETIES,
@@ -75,7 +76,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
     route: CUSTOMER_NEW,
     steps: [],
     visible: CUSTOMERS_TEXT.typeLabel,
-    reads: [{ path: /^\/customer-types$/, status: 200, body: SAMPLE_TYPES }],
+    reads: [{ path: /^\/api\/customer-types$/, status: 200, body: SAMPLE_TYPES }],
   },
   {
     // A customer in a type, answered by a stub, so the detail page's type line is walked.
@@ -84,7 +85,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
     steps: [],
     visible: 'Wholesale',
     reads: [
-      { path: /^\/customer-types$/, status: 200, body: SAMPLE_TYPES },
+      { path: /^\/api\/customer-types$/, status: 200, body: SAMPLE_TYPES },
       { path: /^\/customers\/\d+$/, status: 200, body: SAMPLE_TYPED_CUSTOMER },
     ],
   },
@@ -178,6 +179,34 @@ export const RECORDS_STATES: readonly WalkState[] = [
     route: EXPENSE_CATEGORIES,
     steps: [{ click: 'Delete' }],
     visible: 'Delete the category?',
+  },
+  {
+    screen: 'ConfiguracionTipoClienteNuevo',
+    route: SETTINGS_CUSTOMER_TYPES,
+    steps: [{ click: '+ Customer type' }],
+    visible: 'New customer type',
+  },
+  {
+    screen: 'ConfiguracionTipoClienteEnUso',
+    route: SETTINGS_CUSTOMER_TYPES,
+    steps: [{ click: 'Delete Regulars' }],
+    visible: '3 customers are in this type. Move them to another type first.',
+    reads: [
+      {
+        path: /^\/api\/customer-types$/,
+        status: 200,
+        body: [{ id: 1, name: 'Regulars', icon: 'circle', is_vip: false }],
+      },
+    ],
+    writes: [
+      { method: 'DELETE', path: /^\/api\/customer-types\/\d+$/, status: 409, body: { code: 'customer_type.in_use', count: 3 } },
+    ],
+  },
+  {
+    screen: 'ConfiguracionTipoClienteLista',
+    route: SETTINGS_CUSTOMER_TYPES,
+    steps: [],
+    visible: 'Customer types',
   },
   {
     screen: 'ConfiguracionContrasena',

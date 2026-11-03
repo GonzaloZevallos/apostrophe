@@ -12,7 +12,7 @@ import Icono from '../../components/Icono'
 import { useCustomerTypes } from '../../api/customerTypes'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { glyphOf } from '../../customerTypes/icons'
-import { SETTINGS_PRICES } from '../../routes'
+import { SETTINGS_CUSTOMER_TYPES } from '../../routes'
 
 export interface CustomerTypeFieldProps {
   /** The chosen type's id as text; `''` is "No type". */
@@ -31,7 +31,7 @@ export default function CustomerTypeField({ value, onChange, error }: CustomerTy
     return (
       <div className="campo">
         <span className="campo__rotulo">{CUSTOMERS_TEXT.typeLabel}</span>
-        <BotonLink variant="notice" to={SETTINGS_PRICES}>
+        <BotonLink variant="notice" to={SETTINGS_CUSTOMER_TYPES}>
           <span className="aviso-onboarding__titulo">
             <span className="aviso-onboarding__texto">{CUSTOMERS_TEXT.typeNotice}</span>
             <Icono nombre="chevron" />

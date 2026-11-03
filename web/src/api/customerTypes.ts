@@ -1,15 +1,25 @@
 /**
- * `GET /customer-types` (`app/customer_types/adapters/schemas.py`): the Business's own
- * customer types, read by the Customer form's picker and the Customer's detail page. The
- * Settings screen that manages them writes through its own module.
+ * The customer types resource, over `api/client.ts` only: `GET/POST /api/customer-types`,
+ * `PATCH/DELETE /api/customer-types/{id}` (`app/customer_types/adapters/schemas.py`). `is_vip` is
+ * read-only: it marks the VIP type the upgrade created and is never sent. The list is read by the
+ * Customer form's picker, the Customer's detail page and the Prices screen (its help line, whether
+ * or not the switch is on).
  */
 
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { get } from './client'
+import { del, get, patch, post } from './client'
 import { keys } from './keys'
 
-/** The closed set of icon keys the API answers; `customerTypes/icons.ts` maps each one. */
-export type CustomerTypeIconKey = 'circle' | 'star' | 'heart' | 'diamond' | 'flag' | 'tag' | 'crown' | 'bell'
+/** The closed set of icon keys; checked against the OpenAPI snapshot by `customerTypeIcons.test.ts`. */
+export type CustomerTypeIconKey =
+  | 'circle'
+  | 'star'
+  | 'heart'
+  | 'diamond'
+  | 'flag'
+  | 'tag'
+  | 'crown'
+  | 'bell'
 
 export interface CustomerType {
   id: number
@@ -18,13 +28,33 @@ export interface CustomerType {
   is_vip: boolean
 }
 
+export interface CustomerTypeIn {
+  name: string
+  icon: CustomerTypeIconKey
+}
+
 export function customerTypesQueryOptions() {
   return queryOptions({
     queryKey: keys.customerTypes(),
-    queryFn: () => get<CustomerType[]>('/customer-types'),
+    queryFn: () => get<CustomerType[]>('/api/customer-types'),
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   })
 }
 
 export function useCustomerTypes() {
   return useQuery(customerTypesQueryOptions())
+}
+
+export function createCustomerType(body: CustomerTypeIn): Promise<CustomerType> {
+  return post<CustomerType>('/api/customer-types', body)
+}
+
+export function editCustomerType(id: number, body: Partial<CustomerTypeIn>): Promise<CustomerType> {
+  return patch<CustomerType>(`/api/customer-types/${encodeURIComponent(String(id))}`, body)
+}
+
+export function deleteCustomerType(id: number): Promise<void> {
+  return del<void>(`/api/customer-types/${encodeURIComponent(String(id))}`)
 }

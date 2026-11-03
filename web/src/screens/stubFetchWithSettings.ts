@@ -1,6 +1,6 @@
 /**
  * Test helper: stands `fetch` in with a mock for every request but `GET /pricing-settings`,
- * which it answers with the switches given (both on by default), and `GET /customer-types`, which
+ * which it answers with the switches given (both on by default), and `GET /api/customer-types`, which
  * it answers with the list given (none by default). For the screens that read the
  * switches beside their own data and whose tests fake only their own requests: the test keeps
  * working against the returned `api` mock, and the screen runs against the real answer.
@@ -20,7 +20,7 @@ export function stubFetchWithSettings(vip = true, bulk = true, customerTypes: re
             headers: { 'Content-Type': 'application/json' },
           }),
         )
-      : input === '/customer-types'
+      : input === '/api/customer-types'
         ? Promise.resolve(
             new Response(JSON.stringify(customerTypes), {
               status: 200,
