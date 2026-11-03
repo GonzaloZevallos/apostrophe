@@ -425,7 +425,14 @@ def seed_0019(connection: Connection) -> None:
                 "user_id": 1,
                 "token_digest": "a" * 64,
                 "created_at": NOW,
-            }
+            },
+            {
+                "id": 2,
+                "business_id": 2,
+                "user_id": 2,
+                "token_digest": "c" * 64,
+                "created_at": NOW,
+            },
         ],
     )
     _insert(
