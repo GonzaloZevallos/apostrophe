@@ -157,7 +157,7 @@ function Reasons() {
 
   const reasons = data ?? []
   return (
-    <SettingsGroup title={COMMON_TEXT.withdrawalReasons} dirty={false}>
+    <SettingsGroup title={COMMON_TEXT.withdrawalReasons} dirty={false} className="motivos-pantalla">
       <>
         <span className="campo__rotulo" data-copy="help">
           {SETTINGS_TEXT.withdrawalReasonsHint}

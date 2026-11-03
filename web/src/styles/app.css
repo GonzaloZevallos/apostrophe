@@ -6461,6 +6461,13 @@ body {
   }
 }
 
+/* Settings → Withdrawal reasons: every button on this screen (its header Close, the rows'
+ * actions, Add, the sheet and the delete confirmation) takes no tap delay or double-tap zoom.
+ * Scoped to the screen's own frame, so no other screen's listed touch-action offender changes. */
+.motivos-pantalla button {
+  touch-action: manipulation;
+}
+
 /* Settings → Withdrawal reasons: a list of rows, each a name over its actions (every control is
  * 44 px or more, 8 px between neighbours), a hairline under every row but the last. */
 .motivos {

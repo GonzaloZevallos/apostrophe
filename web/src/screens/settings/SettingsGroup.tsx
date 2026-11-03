@@ -36,15 +36,17 @@ export interface SettingsGroupProps {
   dirty: boolean
   /** Absent for a frame that is never dirty and so never asks. */
   leave?: LeaveWording
+  /** An extra class on the frame, for a screen that scopes its own rules to it. */
+  className?: string
   children: ReactNode | ((frame: SettingsGroupFrame) => ReactNode)
 }
 
-export default function SettingsGroup({ title, dirty, leave, children }: SettingsGroupProps) {
+export default function SettingsGroup({ title, dirty, leave, className, children }: SettingsGroupProps) {
   const { blocker, disarm } = useLeaveGuard(dirty)
   const close = useBackOr(parentOf('settings-business', useViewport())?.path ?? SETTINGS_PATH)
 
   return (
-    <main className="pantalla ajustes-grupo">
+    <main className={className === undefined ? 'pantalla ajustes-grupo' : `pantalla ajustes-grupo ${className}`}>
       <div className="ajustes-grupo__tarjeta">
         <div className="ajustes-grupo__encabezado">
           <span className="ajustes-grupo__titulo">{title}</span>
