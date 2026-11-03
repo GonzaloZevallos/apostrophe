@@ -48,7 +48,6 @@ export interface NuevaVentaClienteProps {
 const EMPTY_NEW_CUSTOMER: CustomerFieldsValue = {
   name: '',
   phone: '',
-  vip: false,
 }
 
 type Field = 'name' | 'phone' | 'form'
@@ -189,7 +188,6 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
               onChange={setNewCustomer}
               nameError={nameError}
               phoneError={phoneError}
-              showVip={vipCustomers}
             />
             {formError !== null && (
               <span className="campo__error" role="alert">

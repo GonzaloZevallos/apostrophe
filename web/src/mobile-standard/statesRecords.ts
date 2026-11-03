@@ -7,6 +7,7 @@
  */
 
 import {
+  CUSTOMER_NEW,
   CUSTOMERS,
   EXPENSE_CATEGORIES,
   EXPENSES,
@@ -44,6 +45,13 @@ const ENTRY_ROUTE = pathTo(STOCK_ENTRY, { id: 1 })
 const LOW_VARIETY = VARIETY.replace(':id', '{low}')
 
 export const RECORDS_STATES: readonly WalkState[] = [
+  {
+    // The sample Business has no customer types, so the form's type field is the notice.
+    screen: 'ClienteNuevoSinTipos',
+    route: CUSTOMER_NEW,
+    steps: [],
+    visible: CUSTOMERS_TEXT.typeNotice,
+  },
   {
     screen: 'ClientesBusqueda',
     route: CUSTOMERS,
