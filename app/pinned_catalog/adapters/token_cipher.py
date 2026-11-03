@@ -25,9 +25,9 @@ DERIVED_KEY_LENGTH = 32
 
 
 def _derive(secret_key: str, label: bytes) -> bytes:
-    return HKDF(algorithm=hashes.SHA256(), length=DERIVED_KEY_LENGTH, salt=None, info=label).derive(
-        secret_key.encode("utf-8")
-    )
+    return HKDF(
+        algorithm=hashes.SHA256(), length=DERIVED_KEY_LENGTH, salt=None, info=label
+    ).derive(secret_key.encode("utf-8"))
 
 
 class TokenCipher:

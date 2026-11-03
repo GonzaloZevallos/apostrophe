@@ -24,7 +24,9 @@ def get_customers(session: SessionDep, business_id: CurrentBusinessId) -> SqlCus
     return SqlCustomers(session, business_id)
 
 
-def get_balances(request: Request, session: SessionDep, business_id: CurrentBusinessId) -> Balances:
+def get_balances(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> Balances:
     # Customers never imports `app.payments` (CODING_STANDARDS section 1): `app/main.py`
     # hangs the real implementation (`SqlBalances`) on `app.state.balances` as a
     # factory, the same shape `get_line_costs` uses for `line_costs` in sales.

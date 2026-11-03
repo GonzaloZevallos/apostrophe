@@ -113,7 +113,9 @@ def test_cross_counting_includes_refusals_under_an_active_lock(app: FastAPI) -> 
     with peer(app, host) as test_client:
         for _ in range(5):
             test_client.post("/auth/login", json=WRONG)
-        under_lock = [test_client.post("/auth/login", json=WRONG).status_code for _ in range(15)]
+        under_lock = [
+            test_client.post("/auth/login", json=WRONG).status_code for _ in range(15)
+        ]
         probe_c = test_client.post(
             "/auth/login", json={"email": "c@example.com", "password": "x"}
         ).status_code
@@ -206,7 +208,9 @@ def test_a_malformed_email_leaves_no_login_guard_row_and_counts_the_address(
     malformed = "not an email"
     with peer(app, "198.51.100.70") as test_client:
         statuses = [
-            test_client.post("/auth/login", json={"email": malformed, "password": "x"}).status_code
+            test_client.post(
+                "/auth/login", json={"email": malformed, "password": "x"}
+            ).status_code
             for _ in range(20)
         ]
         locked = test_client.post(
