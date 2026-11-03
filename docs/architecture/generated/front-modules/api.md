@@ -40,6 +40,7 @@ src_api_me_ts-->src_api_client_ts
 src_api_me_ts-->src_api_language_ts
 src_api_onboarding_ts-->src_api_client_ts
 src_api_onboarding_ts-->src_api_keys_ts
+src_api_panel_ts-->src_api_analysis_ts
 src_api_panel_ts-->src_api_client_ts
 src_api_panel_ts-->src_api_keys_ts
 src_api_panel_ts-->src_api_stock_ts
