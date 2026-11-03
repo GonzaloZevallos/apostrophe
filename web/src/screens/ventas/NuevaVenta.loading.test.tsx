@@ -12,6 +12,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import methods from '../../api/fixtures/payment-methods.json'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { CUSTOMERS, pathTo, SALE_NEW } from '../../routes'
 import NuevaVenta from './NuevaVenta'
@@ -50,9 +51,11 @@ beforeEach(() => {
       (path: string) =>
         path === '/pricing-settings'
           ? Promise.resolve(jsonResponse({ is_bulk_pricing: true, is_vip_customers: true }))
-          : new Promise<Response>((resolve) => {
-              pending.set(path, (body) => resolve(jsonResponse(body)))
-            }),
+          : path === '/api/payment-methods'
+            ? Promise.resolve(jsonResponse(methods))
+            : new Promise<Response>((resolve) => {
+                pending.set(path, (body) => resolve(jsonResponse(body)))
+              }),
     ),
   )
 })
@@ -80,6 +83,8 @@ async function openAndPriceToday() {
   renderForm()
   answer(`/api/products?on=2026-10-02`, [ROSA_TODAY])
   await screen.findByRole('button', { name: 'Save sale' })
+  // The payment methods list is answered at once; wait for it so the form is settled.
+  await screen.findByRole('radiogroup', { name: 'Payment method' })
 }
 
 function noFigure(element: HTMLElement): void {

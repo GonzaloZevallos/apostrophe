@@ -6,14 +6,16 @@
  */
 
 import { vi, type Mock } from 'vitest'
-import { paymentMethodsResponse } from '../test/paymentMethods'
+import methods from '../api/fixtures/payment-methods.json'
 
 type Api = Mock<(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>>
 
 export function stubFetchWithSettings(vip = true, bulk = true): Api {
   const api: Api = vi.fn()
   vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => {
-    if (input === '/api/payment-methods' && (init?.method ?? 'GET') === 'GET') return Promise.resolve(paymentMethodsResponse())
+    if (input === '/api/payment-methods' && (init?.method ?? 'GET') === 'GET') return Promise.resolve(
+        new Response(JSON.stringify(methods), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+      )
     return input === '/pricing-settings'
       ? Promise.resolve(
           new Response(JSON.stringify({ is_bulk_pricing: bulk, is_vip_customers: vip }), {

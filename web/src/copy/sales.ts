@@ -133,7 +133,7 @@ export const SALES_TEXT = {
   noVariety: 'No variety',
   saleHasCustomer: 'This sale already has a customer.',
   leftOwing: 'left owing',
-  paidWith: (method: string | number) => `Paid · ${method}`,
+  paidWith: CUSTOMERS_TEXT.paidWith,
   deleteSaleConfirm: (money: string | number, day: string | number, grams: string | number) =>
     `Delete the sale of ${money} from ${day}? ${grams} go back to stock.`,
   dates: 'Dates',

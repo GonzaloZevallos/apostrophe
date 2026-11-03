@@ -94,7 +94,7 @@ test('shows the total, each line with its lowercase rule badge, shipping, note a
   expect(screen.getByText('$ 10.500')).toBeInTheDocument()
   expect(screen.getByText('$ 500')).toBeInTheDocument()
   expect(screen.getByText('Entregar a la tarde')).toBeInTheDocument()
-  expect(screen.getByText('3,5 g · Ana Pérez · paid in cash')).toBeInTheDocument()
+  expect(screen.getByText('3,5 g · Ana Pérez · Paid · Cash')).toBeInTheDocument()
 })
 
 test('shows the skeleton while the sale is pending, then the sale in its place', async () => {
@@ -132,10 +132,10 @@ test('a sale with no customer and no payment shows "No customer" and drops the p
 })
 
 test.each([
-  ['cash', 'paid in cash'],
-  ['transfer', 'paid by transfer'],
-  ['owing', 'left owing'],
-] as const)('the summary line reads "%s" as "%s"', async (payment, words) => {
+  [{ kind: 'method', payment_method_id: 1, name: 'Cash', icon: 'coins' }, 'Paid · Cash'],
+  [{ kind: 'method', payment_method_id: 3, name: 'Mercado Pago', icon: 'phone' }, 'Paid · Mercado Pago'],
+  [{ kind: 'owing' }, 'left owing'],
+] as const)('the summary line reads the payment %j as "%s"', async (payment, words) => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...SALE, payment }))
   renderDetalle()
 
