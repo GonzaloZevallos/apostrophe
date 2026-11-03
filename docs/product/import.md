@@ -1,297 +1,307 @@
-# Import
-
-The one-time load of a business's history from the spreadsheet `Control_de_ventas_y_gastos` (an `.xlsx` export) into that business. The installation's operator runs it on the day the business switches to the app. It is an operator script, not a route or a screen.
-
-It writes:
-- varieties and price history (varieties.md);
-- catalog attributes, header and footer (catalog.md);
-- stock entries (stock.md);
-- expense categories and expenses (expenses.md);
-- customers (customers.md);
-- sales with their on-the-spot payments (sales.md);
-- the pricing switches it needs (pricing-settings.md);
-- the end of the business's Onboarding, and the fact that the business was loaded by the import, with when (navigation.md, onboarding.md).
-
-Every imported record is the same data, under the same rules, as if it had been entered by hand. Everything it writes belongs to the target business alone (ADR-0004).
-
 ## Jobs
 
-**When** I switch my business from the spreadsheet to the app, **I want** what the sheet already holds (varieties and their price history, catalog setup, stock entries, expenses, and every sale with who still owes for it) loaded into my business once, on the day I stop using the sheet, **so I can** keep selling in the app from the next order with my real prices, stock and debts in place. I don't retype months of rows, and I don't lose track of who owes me.
+**Cuando** paso mi negocio de la planilla a la app, **quiero** que lo que la planilla ya tiene (las variedades y su historial de precios, la configuración del catálogo, las entradas de stock, los gastos, y cada venta con quién todavía la debe) se cargue en mi negocio una sola vez, el día en que dejo de usar la planilla, **para poder** seguir vendiendo en la app desde el próximo pedido con mis precios, mi stock y mis deudas reales en su lugar. No vuelvo a tipear meses de filas, y no pierdo la cuenta de quién me debe.
 
-**When** I register a customer (from Customers, in the middle of a sale, or through the one-time spreadsheet import) and I don't have their phone number, **I want** to save them under their name anyway and add the number later if I ever get it, **so I can** record every sale and every debt against the person who actually owes it, without inventing a number or keeping that person outside the app. (Served here by the optional mapping file; defined in customers.md.)
+**Cuando** registro a un cliente (desde Customers, en medio de una venta o con la **Spreadsheet import** única) y no tengo su Phone number, **quiero** guardarlo igual con su nombre y agregar el número más adelante si algún día lo consigo, **para poder** registrar cada venta y cada deuda a nombre de la persona que de verdad debe, sin inventar un número ni dejar a esa persona fuera de la app. (Lo sirve acá el archivo opcional de correspondencias; definido en customers.md.)
 
-**When** I set up how my business prices, record a variety's price or hand over an order, **I want** the app to use only the pricing rules my business has, **so I can** charge every customer exactly what I mean to, without anyone's price changing by surprise. (Served here by switching on the rules the sheet uses; defined in pricing-settings.md.)
+**Cuando** configuro cómo pone precios mi negocio, registro el precio de una variedad o entrego un pedido, **quiero** que la app use solo las Pricing rules que tiene mi negocio, **para poder** cobrarle a cada cliente exactamente lo que quiero, sin que el precio de nadie cambie por sorpresa. (Lo sirve acá activar las reglas que usa la planilla y sumar sus VIP al **VIP type**; definido en pricing-settings.md y customers.md.)
 
-**When** I open the app between orders or at the end of the day, **I want** to see what I sold today, who owes me and what is running out, and act on it at once (collect from a debtor, open a variety that is running low, fix what a notice tells me), **so I can** get back to the customer without going through Customers and Varieties one by one or doing any arithmetic. (Served here by recording that the business was imported, so Home's after-import notice reaches it; defined in navigation.md and results.md.)
+**Cuando** abro la app entre pedidos o al final del día, **quiero** ver qué vendí hoy, quién me debe y qué se está terminando, y actuar en el acto (cobrarle a un deudor, abrir una variedad que está baja, arreglar lo que me dice un aviso), **para poder** volver con el cliente sin recorrer Customers y Varieties uno por uno ni hacer cuentas. (Lo sirve acá registrar que el Business fue importado, para que le llegue el aviso de Home posterior a la importación; definido en navigation.md y results.md.)
 
-Success criteria:
+# Import
 
-1. **Look before writing.** A dry run reports everything that would be imported and every problem it finds, and writes nothing. The real run loads everything or nothing. If it is refused, the business stays exactly as it was.
-2. **The seller opens where the sheet left off on what they act on.** After the import, these figures match the sheet's own records:
-   - each variety's current price;
-   - the catalog text;
-   - stock per variety, to the hundredth of a gram;
-   - each customer's balance and owing since, to the peso.
+La carga única del historial de un Business desde la planilla `Control_de_ventas_y_gastos` (una exportación `.xlsx`) en ese Business. La corre el **Operator** de la instalación el día en que el Business pasa a la app. Es un script del Operator, no una ruta ni una pantalla.
 
-   Any figure that doesn't match is explained in the report. Profit and cash are not expected to match the sheet's Panel, because the sheet got profit wrong. Past Ganancia and Caja come from the app's own rules over the imported rows.
-3. **Nothing invented.** The command never guesses a phone number, never imports a row the sheet marked unfinished, and never takes over a derived column (the sheet's Total, Precio x g and Revisar columns). Derived figures are recomputed through the product's rules. Anything it can't trust is reported to the operator, who fixes the file or the mapping and runs it again.
-4. **One business, once, never mixed.** It imports only into one business that has no records yet, and never touches a business that has data. Everything imported belongs to that business alone (ADR-0004). The real sheet and its customers' data never enter the repository.
-5. **A sheet with no phone numbers imports in full.** The run goes through with no mapping file or only part of one. The report says how many customers came in without a number and never repeats a number. A number the mapping does give is still checked, and a malformed one still blocks.
-6. **The sheet's pricing keeps working.** A business whose sheet uses bulk prices or the sheet's "Amigo" rows opens with those rules switched on, so its prices and its VIP customers' next sales come out as the sheet priced them.
-7. **The app knows it was imported.** A successful real run records, in its single commit, that the business was loaded by the import and when, so Home's after-import notice shows for it and for no other business.
+Escribe:
+- Varieties e historial de precios (varieties.md);
+- Catalog attributes, y el Catalog header and footer (catalog.md);
+- Stock entries (stock.md);
+- Expense categories y Expenses (expenses.md);
+- Customers, y la pertenencia de sus VIP al VIP type (customers.md);
+- Sales con sus On-the-spot payments (sales.md);
+- los interruptores de precios que necesita (pricing-settings.md);
+- el fin del Onboarding del Business, y el hecho de que el Business fue cargado por la importación, con cuándo (navigation.md, onboarding.md).
 
-## Behaviour
+Cada registro importado es el mismo dato, bajo las mismas reglas, que si se hubiera cargado a mano. Todo lo que escribe pertenece solo al Business de destino (ADR-0004).
 
-### Who runs it, and how
+Criterios de éxito:
 
-- **Who and when**: an operator script, like `scripts/invite-business.sh`. It runs once per business on switch day, after the business is opened through its new-business invitation and before the seller records anything.
-- **Not an app feature**: it is neither a route nor a screen, and sits outside accounts.md's "no curl" criterion, as `invite-business.sh` does.
-- **Which business**: the operator names the target business on the command line. An unknown business is refused and nothing is written.
-- **Inputs**:
-  - the `.xlsx` export;
-  - optionally, a file mapping customer name → phone number. Leaving it out behaves exactly like giving an empty file;
-  - a dry-run switch.
+1. **Mirar antes de escribir.** Una corrida de prueba (dry run) informa todo lo que se importaría y cada problema que encuentra, y no escribe nada. La corrida real carga todo o nada. Si se rechaza, el Business queda exactamente como estaba.
+2. **El vendedor arranca donde la planilla dejó lo que usa para actuar.** Después de la importación, estas cifras coinciden con los propios registros de la planilla:
+   - el Current price de cada Variety;
+   - el texto del Catalog;
+   - el Stock por Variety, al centésimo de gramo;
+   - el Balance y el Owing since de cada Customer, al peso.
 
-### Dry run and real run
+   Toda cifra que no coincide se explica en el informe. No se espera que el Profit ni el Cash coincidan con el Panel de la planilla, porque la planilla calculaba mal la ganancia. La Ganancia y la Caja pasadas salen de las propias reglas de la app sobre las filas importadas.
+3. **Nada inventado.** El comando nunca adivina un Phone number, nunca importa una fila que la planilla marcó como no terminada, y nunca toma una columna derivada (las columnas `Total`, `Precio x g` y `Revisar` de la planilla). Las cifras derivadas se recalculan con las reglas del producto. Todo lo que no puede dar por bueno se le informa al Operator, que corrige el archivo o la correspondencia y la vuelve a correr.
+4. **Un Business, una vez, sin mezclar.** Importa solo en un Business que todavía no tiene registros, y nunca toca un Business con datos. Todo lo importado pertenece solo a ese Business (ADR-0004). La planilla real y los datos de sus clientes nunca entran al repositorio.
+5. **Una planilla sin números de teléfono se importa completa.** La corrida sale sin archivo de correspondencias o con uno parcial. El informe dice cuántos Customers entraron sin número y nunca repite un número. Un número que la correspondencia sí da se sigue verificando, y uno mal formado sigue bloqueando.
+6. **Los precios de la planilla siguen funcionando.** Un Business cuya planilla usa precios por cantidad o filas `"Amigo"` arranca con esas reglas activadas y con sus VIP en el VIP type, así sus precios y las próximas Sales de sus VIP customers salen como los ponía la planilla.
+7. **La app sabe que fue importado.** Una corrida real exitosa registra, en su único commit, que el Business fue cargado por la importación y cuándo, así el aviso de Home posterior a la importación se muestra para él y para ningún otro Business.
 
-- **Dry run**: runs every check and writes nothing, whatever the outcome. It lists every problem in one pass.
-- **Real run**: loads everything or nothing. Any blocking problem leaves the business exactly as it was.
-- **Mismatches**: both runs report every imported row of the sheet's Ventas tab whose sheet Total differs from the app's recomputed sale total, shipping included. The sheet's Total includes shipping, so the two are compared like for like. A mismatch never blocks.
-- **The report**, the same for a dry run and a successful real run:
-  - counts per kind of record: varieties, price entries, catalog attributes, stock entries, expense categories, expenses, customers, sales and payments;
-  - the count of customers imported without a phone number;
-  - which pricing switches the import turns on (Bulk price, VIP customers), or that it turns none on;
-  - every blocking problem, with its sheet and row;
-  - every row left out as unfinished, with the sheet's own text for it (e.g. `Falta pago`);
-  - every total mismatch, with the sheet's total and the recomputed one;
-  - categories merged by name;
-  - spellings merged into one customer, and the name kept;
-  - unused mapping entries.
-- **What the report may show**: it exists only on the operator's terminal. It may name customers and show amounts. It never repeats a phone number, including a malformed one. Nothing of it goes to logs (ADR-0005).
+## Comportamiento
 
-### Recording the import (navigation.md)
+### Quién la corre, y cómo
 
-- **A successful real run** ends the business's Onboarding (onboarding.md) and records that the business was loaded by the import, with the instant of the run, both inside the import's single commit and through ports the import declares (ADR-0006).
-- **The record holds** the business and that instant only: no personal data, no counts and nothing from the sheet.
-- **It is never cleared or moved**, and nothing else writes it. A refused run and a dry run write neither.
-- **It is not a record for eligibility**: it never makes the import refuse.
-- **Before it existed**: a business imported before this record existed has none, and is not backfilled; it never sees the after-import notice.
+- **Quién y cuándo**: un script del Operator, como `scripts/invite-business.sh`. Corre una vez por Business el día del traspaso, después de que el Business se abre con su Invitation de Business nuevo y antes de que el vendedor registre nada.
+- **No es una función de la app**: no es una ruta ni una pantalla, y queda fuera del criterio "sin curl" de accounts.md, como `invite-business.sh`.
+- **Qué Business**: el Operator nombra el Business de destino en la línea de comandos. Un Business desconocido se rechaza y no se escribe nada.
+- **Entradas**:
+  - la exportación `.xlsx`;
+  - opcionalmente, un archivo que hace corresponder nombre de Customer → Phone number. Dejarlo afuera se comporta exactamente igual que dar un archivo vacío;
+  - un interruptor de corrida de prueba.
 
-### Eligibility
+### Corrida de prueba y corrida real
 
-- The import is refused if the business has any variety, price entry, stock entry, customer, sale, payment or expense. The refusal comes before any sheet check and changes nothing.
-- These don't count:
-  - the business, its name, its users and its invitations;
-  - the seeded expense categories, even if renamed or removed;
-  - the seeded catalog header and footer;
-  - the pricing switches, whatever their state;
-  - the Onboarding's remembered passes and the first-run state (navigation.md).
-- The import overwrites the header and footer. It matches or adds categories, and never renames or removes one.
+- **Corrida de prueba**: corre cada chequeo y no escribe nada, sea cual sea el resultado. Lista cada problema en una sola pasada.
+- **Corrida real**: carga todo o nada. Cualquier problema que bloquea deja el Business exactamente como estaba.
+- **Diferencias**: las dos corridas informan cada fila importada de la pestaña Ventas de la planilla cuyo `Total` difiere del total de la Sale recalculado por la app, envío incluido. El `Total` de la planilla incluye el envío, así que se comparan cosas iguales. Una diferencia nunca bloquea.
+- **El informe**, el mismo para una corrida de prueba y para una corrida real exitosa:
+  - cantidades por tipo de registro: Varieties, Price entries, Catalog attributes, Stock entries, Expense categories, Expenses, Customers, Sales y Payments;
+  - la cantidad de Customers importados sin Phone number;
+  - qué interruptores de precios activa la importación (Bulk price, y el que en pantalla se lee Customer types y que el informe sigue nombrando "VIP customers"), o que no activa ninguno;
+  - cada problema que bloquea, con su hoja y su fila;
+  - cada fila dejada afuera por no terminada, con el propio texto de la planilla (p. ej. `Falta pago`);
+  - cada diferencia de total, con el total de la planilla y el recalculado;
+  - las categorías unidas por nombre;
+  - las grafías unidas en un solo Customer, y el nombre que se conserva;
+  - las entradas de la correspondencia que no se usaron.
+- **Qué puede mostrar el informe**: existe solo en la terminal del Operator. Puede nombrar Customers y mostrar montos. Nunca repite un Phone number, ni siquiera uno mal formado. Nada de él va a los logs (ADR-0005). Todo su texto fijo sale del **Copy module**.
 
-### Reading the file
+### Registrar la importación (navigation.md)
 
-- **Any export**: an `.xlsx` saved by Excel or exported by Google Sheets reads the same.
-  - Titles on row 1 are found whatever size the file declares, including none.
-  - Data rows are read to the last row with data, in the sheet's Ventas tab, its Entradas tab and its Gastos tab and the price history of its Ajustes tab.
-  - Fixed cells and ranges (the sheet's Ajustes and Catálogo tabs) are read at their address whatever size the file declares.
-- **Numbers where a whole number or grams are expected**: how the cell stores a number never matters, only its value.
-  - In a whole-number field (the sheet's `% índica`, `Costo total`, `Monto`, `Envío cobrado` and `Precio especial (total)` columns, and the list and bulk price), a number with no fractional part is that whole number: `60.0` is 60. A fractional value is still refused by the owner's rule (`60.5` is not a share).
-  - Grams, bulk minimums and low-stock thresholds keep their exact value to the hundredth (`3.5` is 3,5 g).
-- **Numbers where text is expected**: a number in a text cell is read as its text, and then follows that field's rules like any text. This applies to the names of varieties, customers and categories, the sheet's `Detalle`, `Nota` and `Aroma` columns, the header and footer, and the cells with a fixed set of values (the sheet's `Origen`, `Pago` and `Tipo` columns, the sheet's Catálogo tab's shown column).
-  - A whole number reads as its digits, with no decimals and no thousands separator: `100`, `2024`, `1000`.
-  - A non-whole number reads with a decimal comma and the fewest decimals that give its exact value, with no thousands separator: `3,5`, `0,25`.
-  - A number is never refused only for being a number where text is expected. A numeric value outside a fixed set (e.g. a cell of the sheet's `Origen` column holding `3`) still blocks as unknown.
-- **Dates where text is expected**: a date in any of those text cells (e.g. a cell of the sheet's `Nota` column typed as `12/10` that the sheet turned into a date) is never read as text, because the file no longer holds what was typed: the day and month may be swapped by the sheet's locale and a year was added.
-  - It blocks, listed with its sheet and row, as a date where text is expected.
-  - The problem tells the operator to re-type the cell as text in the sheet (in Google Sheets, starting it with an apostrophe) and run again.
-  - The dry run lists every such cell in one pass.
-  - Dates in date columns (the sheet's `Fecha` column, the effective date) are read as dates, as always.
-- **The sheet's Ventas tab, its Entradas tab and its Gastos tab**: column titles are on row 1 and data starts on row 2. Columns are found by their title.
-  - **The sheet's Ventas** reads `Fecha`, `Variedad`, `Gramos`, `Pago`, `Cliente`, `Tipo`, `Envío cobrado`, `Precio especial (total)` and `Nota`. It also reads `Total`, only to tell whether a row is finished and to report mismatches.
-  - **The sheet's Entradas** reads `Fecha`, `Variedad`, `Gramos`, `Origen`, `Costo total` and `Nota`, plus `Revisar` to tell whether a row is finished.
-  - **The sheet's Gastos** reads `Fecha`, `Categoría`, `Monto` and `Detalle`, plus `Revisar` to tell whether a row is finished.
-  - The sheet's other formula columns (`Precio x g`, `Rige desde`, `Precio lista`, `Precio por cantidad`, `Cantidad mínima`, `Orden deuda`, `Día`, `Gramos válidos`, `Costo válido`, `Gramos con costo`) are never read. Nothing from the sheet's `Total` or `Revisar` columns is ever stored.
-- **A missing column**: a required column that can't be found blocks the run. The dry run lists every missing column at once.
-- **Finished and unfinished rows**:
-  - **The sheet's Ventas**: a row is finished when its `Total` is a number. Text in `Total` means the row is unfinished: `Falta fecha`, `Falta variedad`, `Faltan gramos`, `Falta pago`, `Falta cliente`, `Sin precio` or any other text. An unfinished row is left out and listed with that text.
-  - **The sheet's Entradas and Gastos tabs**: a row is finished when its `Revisar` is blank. Any text in `Revisar` means the row is unfinished, and it is left out and listed with that text.
-  - A wholly empty row is skipped and not listed.
-  - Unfinished rows never block.
-- **A file that wasn't recalculated**: a sheet's Ventas row with any typed cell filled in, whose `Total` is empty, blocks the run. One message asks the operator to recalculate and save the file. This is the only recalculation check. In the sheet's Entradas and Gastos, anything `Revisar` would flag is also refused by stock.md's and expenses.md's own rules, so it blocks anyway.
-- **An unfinished row adds nothing.** It creates no customer, makes no one VIP, needs no phone number, and doesn't count when choosing which spelling of a customer is kept.
+- **Una corrida real exitosa** termina el Onboarding del Business (onboarding.md) y registra que el Business fue cargado por la importación, con el instante de la corrida, las dos cosas dentro del único commit de la importación y a través de puertos que la importación declara (ADR-0006).
+- **El registro guarda** solo el Business y ese instante: ningún dato personal, ninguna cantidad y nada de la planilla.
+- **Nunca se borra ni se mueve**, y nada más lo escribe. Una corrida rechazada y una corrida de prueba no escriben ninguno de los dos.
+- **No es un registro para la elegibilidad**: nunca hace que la importación se rechace.
+- **Antes de que existiera**: un Business importado antes de que existiera este registro no tiene ninguno, y no se completa hacia atrás; nunca ve el aviso posterior a la importación.
 
-### Sheet by sheet
+### Elegibilidad
 
-- **Varieties and thresholds** (the sheet's Ajustes rows 7–16, thresholds in F7:F16):
-  - These rows are the complete list of varieties. Blank rows are skipped.
-  - Two rows with the same name under varieties.md's rule (case and spacing ignored) block.
-  - Every variety named anywhere else (the sheet's Catálogo, the sheet's Entradas, the sheet's Ventas, price history) must match one of them, or the import blocks.
-  - A blank threshold means none. A threshold that isn't above zero with at most two decimals blocks.
-- **Price history** (the sheet's Ajustes from row 37: variety, effective date, list price, bulk price, bulk minimum):
-  - one price entry per row, following varieties.md's rules;
-  - two entries for one variety on one date block;
-  - a bulk price without a bulk minimum, or the reverse, blocks;
-  - a bulk price not below the list price blocks;
-  - an entry with a bulk price also gets a VIP price equal to it, which reproduces the sheet's "Amigo" rule. The sheet has no VIP price column.
-- **The sheet's Catálogo** (rows 6–15: variety, shown, emoji, % índica, aroma; B18/B19: header and footer):
-  - The sheet's "Sí" means shown and "No" means hidden. Any other value blocks.
-  - An emoji cell holding plain text or more than one emoji blocks.
-  - A share that isn't a whole number from 0 to 100 blocks. An aroma over 200 characters blocks.
-  - A variety with no sheet's Catálogo row is shown, with no emoji, share or aroma.
-  - B18 and B19 replace the seeded header and footer. A blank cell gives a blank header or footer. More than 500 characters blocks.
-- **The sheet's Entradas** (finished rows only):
-  - the sheet's "Compra" → purchase, "Cosecha" → harvest, "Stock inicial" → initial stock, "Ajuste" → adjustment. Any other origin blocks.
-  - Each row follows stock.md's rules as if recorded today: grams, date, cost per origin and note. A row stock.md would refuse blocks.
-- **The sheet's Gastos and categories** (finished rows of the sheet's Gastos; categories in the sheet's Ajustes A21:A28):
-  - Each A21:A28 name is matched to an existing category under expenses.md's name rule. A name with no match is created.
-  - Two A21:A28 names that match each other become one category, and the report says so.
-  - An expense under a category outside A21:A28 blocks.
-  - Each row follows expenses.md's rules: a past or present date, a whole-peso amount above $0, and a non-blank detail of up to 200 characters.
-- **The sheet's Ventas** (finished rows only): one sale with one line per row.
-  - **Shipping and note**: shipping charged comes from the sheet's `Envío cobrado` column. The note follows sales.md's rule.
-  - **The sheet's "Pendiente"**: the sale is left owing.
-  - **The sheet's "Efectivo" / "Transferencia"**: an on-the-spot payment equal to the recomputed total, with that method, on the row's date.
-  - **Any other payment value** blocks.
-  - **A row with a $0 total**: its payment value is ignored and nothing stays owed (sales.md).
+- La importación se rechaza si el Business tiene alguna Variety, Price entry, Stock entry, Customer, Sale, Payment o Expense. El rechazo llega antes de cualquier chequeo de la planilla y no cambia nada.
+- Estos no cuentan:
+  - el Business, su nombre, sus Users y sus Invitations;
+  - las Expense categories sembradas, aunque se hayan renombrado o eliminado;
+  - el Catalog header and footer sembrados;
+  - los interruptores de precios, en cualquier estado;
+  - los Customer types, el VIP type incluido (un tipo sin Customers no es un registro);
+  - los pasos recordados del Onboarding y el estado de primer uso (navigation.md).
+- La importación sobrescribe el header y el footer. Une o agrega categorías, y nunca renombra ni elimina una.
+
+### Leer el archivo
+
+- **Cualquier exportación**: un `.xlsx` guardado por Excel o exportado por Google Sheets se lee igual.
+  - Los títulos de la fila 1 se encuentran sea cual sea el tamaño que declara el archivo, incluso ninguno.
+  - Las filas de datos se leen hasta la última fila con datos, en la pestaña Ventas, la pestaña Entradas y la pestaña Gastos de la planilla, y en el historial de precios de su pestaña Ajustes.
+  - Las celdas y rangos fijos (las pestañas Ajustes y Catálogo de la planilla) se leen en su dirección sea cual sea el tamaño que declara el archivo.
+- **Números donde se espera un número entero o gramos**: nunca importa cómo guarda la celda un número, solo su valor.
+  - En un campo de número entero (las columnas `% índica`, `Costo total`, `Monto`, `Envío cobrado` y `Precio especial (total)` de la planilla, y el precio de lista y por cantidad), un número sin parte fraccionaria es ese número entero: `60.0` es 60. Un valor fraccionario se sigue rechazando por la regla del dueño (`60.5` no es un porcentaje).
+  - Los gramos, los Bulk minimums y los Low-stock thresholds conservan su valor exacto al centésimo (`3.5` es 3,5 g).
+- **Números donde se espera texto**: un número en una celda de texto se lee como su texto, y después sigue las reglas de ese campo como cualquier texto. Esto vale para los nombres de Varieties, Customers y categorías, las columnas `Detalle`, `Nota` y `Aroma` de la planilla, el header y el footer, y las celdas con un conjunto fijo de valores (las columnas `Origen`, `Pago` y `Tipo` de la planilla, y la columna de mostrado de su pestaña Catálogo).
+  - Un número entero se lee como sus dígitos, sin decimales ni separador de miles: `100`, `2024`, `1000`.
+  - Un número no entero se lee con coma decimal y la menor cantidad de decimales que da su valor exacto, sin separador de miles: `3,5`, `0,25`.
+  - Un número nunca se rechaza solo por ser un número donde se espera texto. Un valor numérico fuera de un conjunto fijo (p. ej. una celda de la columna `Origen` con `3`) igual bloquea por desconocido.
+- **Fechas donde se espera texto**: una fecha en cualquiera de esas celdas de texto (p. ej. una celda de la columna `Nota` tipeada como `12/10` que la planilla convirtió en fecha) nunca se lee como texto, porque el archivo ya no guarda lo que se tipeó: el día y el mes pueden estar invertidos por la configuración regional de la planilla y se agregó un año.
+  - Bloquea, listada con su hoja y su fila, como una fecha donde se espera texto.
+  - El problema le dice al Operator que vuelva a tipear la celda como texto en la planilla (en Google Sheets, empezándola con un apóstrofo) y la vuelva a correr.
+  - La corrida de prueba lista todas esas celdas en una sola pasada.
+  - Las fechas en columnas de fecha (la columna `Fecha` de la planilla, la fecha de vigencia) se leen como fechas, como siempre.
+- **Las pestañas Ventas, Entradas y Gastos de la planilla**: los títulos de columna están en la fila 1 y los datos empiezan en la fila 2. Las columnas se encuentran por su título.
+  - **Ventas** lee `Fecha`, `Variedad`, `Gramos`, `Pago`, `Cliente`, `Tipo`, `Envío cobrado`, `Precio especial (total)` y `Nota`. También lee `Total`, solo para saber si una fila está terminada y para informar diferencias.
+  - **Entradas** lee `Fecha`, `Variedad`, `Gramos`, `Origen`, `Costo total` y `Nota`, más `Revisar` para saber si una fila está terminada.
+  - **Gastos** lee `Fecha`, `Categoría`, `Monto` y `Detalle`, más `Revisar` para saber si una fila está terminada.
+  - Las otras columnas de fórmula de la planilla (`Precio x g`, `Rige desde`, `Precio lista`, `Precio por cantidad`, `Cantidad mínima`, `Orden deuda`, `Día`, `Gramos válidos`, `Costo válido`, `Gramos con costo`) nunca se leen. Nada de las columnas `Total` o `Revisar` se guarda nunca.
+- **Una columna que falta**: una columna obligatoria que no se encuentra bloquea la corrida. La corrida de prueba lista todas las columnas que faltan de una vez.
+- **Filas terminadas y no terminadas**:
+  - **Ventas**: una fila está terminada cuando su `Total` es un número. Un texto en `Total` significa que la fila no está terminada: `Falta fecha`, `Falta variedad`, `Faltan gramos`, `Falta pago`, `Falta cliente`, `Sin precio` o cualquier otro texto. Una fila no terminada se deja afuera y se lista con ese texto.
+  - **Entradas y Gastos**: una fila está terminada cuando su `Revisar` está en blanco. Cualquier texto en `Revisar` significa que la fila no está terminada, y se deja afuera y se lista con ese texto.
+  - Una fila completamente vacía se saltea y no se lista.
+  - Las filas no terminadas nunca bloquean.
+- **Un archivo que no se recalculó**: una fila de Ventas con alguna celda tipeada completa y el `Total` vacío bloquea la corrida. Un solo mensaje le pide al Operator que recalcule y guarde el archivo. Es el único chequeo de recálculo. En Entradas y Gastos, todo lo que `Revisar` marcaría también lo rechazan las propias reglas de stock.md y expenses.md, así que igual bloquea.
+- **Una fila no terminada no agrega nada.** No crea ningún Customer, no hace VIP a nadie, no necesita Phone number y no cuenta al elegir qué grafía de un Customer se conserva.
+
+### Hoja por hoja
+
+- **Varieties y umbrales** (filas 7–16 de Ajustes, umbrales en F7:F16):
+  - Estas filas son la lista completa de Varieties. Las filas en blanco se saltean.
+  - Dos filas con el mismo nombre según la regla de varieties.md (sin importar mayúsculas ni espacios) bloquean.
+  - Toda Variety nombrada en cualquier otro lado (Catálogo, Entradas, Ventas, historial de precios) debe coincidir con una de ellas, o la importación bloquea.
+  - Un umbral en blanco significa ninguno. Un umbral que no es mayor que cero con como máximo dos decimales bloquea.
+- **Historial de precios** (Ajustes desde la fila 37: variedad, fecha de vigencia, precio de lista, precio por cantidad, cantidad mínima):
+  - una Price entry por fila, con las reglas de varieties.md;
+  - dos entradas de una Variety en una misma fecha bloquean;
+  - un Bulk price sin Bulk minimum, o al revés, bloquea;
+  - un Bulk price que no es menor que el List price bloquea;
+  - una entrada con Bulk price recibe además un VIP price igual a él, que reproduce la regla `"Amigo"` de la planilla. La planilla no tiene columna de VIP price.
+- **Catálogo** (filas 6–15: variedad, mostrada, emoji, % índica, aroma; B18/B19: header y footer):
+  - El "Sí" de la planilla significa mostrada y "No" significa Hidden variety. Cualquier otro valor bloquea.
+  - Una celda de emoji con texto común o más de un emoji bloquea.
+  - Un Indica share que no es un número entero de 0 a 100 bloquea. Un Aroma de más de 200 caracteres bloquea.
+  - Una Variety sin fila en Catálogo se muestra, sin emoji, porcentaje ni aroma.
+  - B18 y B19 reemplazan el header y el footer sembrados. Una celda en blanco da un header o footer en blanco. Más de 500 caracteres bloquea.
+- **Entradas** (solo filas terminadas):
+  - "Compra" → Purchase, "Cosecha" → Harvest, "Stock inicial" → Opening stock, "Ajuste" → Adjustment. Cualquier otro origen bloquea.
+  - Cada fila sigue las reglas de stock.md como si se registrara hoy: gramos, fecha, costo según el origen y nota. Una fila que stock.md rechazaría bloquea.
+- **Gastos y categorías** (filas terminadas de Gastos; categorías en Ajustes A21:A28):
+  - Cada nombre de A21:A28 se hace coincidir con una categoría existente según la regla de nombres de expenses.md. Un nombre sin coincidencia se crea.
+  - Dos nombres de A21:A28 que coinciden entre sí pasan a ser una sola categoría, y el informe lo dice.
+  - Un gasto bajo una categoría fuera de A21:A28 bloquea.
+  - Cada fila sigue las reglas de expenses.md: una fecha pasada o de hoy, un monto en pesos enteros mayor que $0, y un detalle no en blanco de hasta 200 caracteres.
+- **Ventas** (solo filas terminadas): una Sale con una Sale line por fila.
+  - **Envío y nota**: el Shipping charged sale de la columna `Envío cobrado`. La Note sigue la regla de sales.md.
+  - **El "Pendiente" de la planilla**: la Sale queda debiendo.
+  - **"Efectivo" / "Transferencia"**: un On-the-spot payment igual al total recalculado, con ese método, en la fecha de la fila.
+  - **Cualquier otro valor de pago** bloquea.
+  - **Una fila con total $0**: su valor de pago se ignora y no queda nada adeudado (sales.md).
 
 ### Pricing settings
 
-- **What the import switches on**:
-  - **Bulk price**, when any imported price entry has a bulk price;
-  - **VIP customers**, when any customer is imported as VIP.
-- **Never off**: the import never turns a switch off. A switch already on stays on.
-- **Priced with the switches it will leave**: every row is priced as if the switches already stood as the import will leave them, so a new business's off switches never change how a sheet row is priced.
+- **Qué activa la importación**:
+  - **Bulk price**, cuando alguna Price entry importada tiene Bulk price;
+  - **Customer types** (`is_vip_customers`, que el informe nombra "VIP customers"), cuando algún Customer se importa como VIP.
+- **Nunca apaga**: la importación nunca desactiva un interruptor. Uno que ya estaba activado sigue activado.
+- **Con precio según los interruptores que va a dejar**: cada fila recibe precio como si los interruptores ya estuvieran como los va a dejar la importación, así los interruptores apagados de un Business nuevo nunca cambian cómo se cotiza una fila de la planilla.
 
 ### Pricing rules
 
-- **The sheet's `""` or `"Lista"` type**: list or bulk, by sales.md's lowest-price rule, from the imported price history on the row's date and the row's grams. Never VIP, even for a customer who is VIP elsewhere.
-- **The sheet's `"Amigo"`**: the VIP rule (sales.md), with the VIP price equal to that day's bulk price. The result is that day's bulk price, or the list price when that day has none, as in the sheet. A tie with the bulk price is stored as VIP.
-  - Any customer with at least one finished `"Amigo"` row of the sheet is imported as VIP: it joins the business's VIP type (the customer type the upgrade made, found by its mark and never by its name). The import creates that type, named "VIP", when the business has none. The frozen VIP mark is never written.
-  - **A taken name stops the run.** When the sheet has a VIP customer, the business has no VIP type and another customer type's name is "VIP" (ignoring case and spaces), the run is refused before anything is written, in the dry run and the real run alike. The report names the conflict and the fix (rename or delete that type, then run again), with no customer or amount. It is not an unfinished row. A business that already has its VIP type uses it, whatever it is called now; a sheet with no VIP customer is never checked.
-  - A sheet's `"Amigo"` row with no customer blocks.
-- **The sheet's `"Regalo"`**: a gift. It is charged $0 and its grams still come out of stock. With shipping, the sale's total is the shipping alone, as in the sheet.
-- **Special total** (the sheet's `Precio especial (total)` column): a whole number above $0 makes the line a special price with that total, whatever the type. A sheet's `"Amigo"` row with a special total still makes its customer VIP.
-- **These block**:
-  - a special total on a sheet's `"Regalo"` row;
-  - a special-total cell that isn't a whole number above $0 (zero, negative or text).
-- **What is stored**: always the app's recomputed price, rule and total. A difference from the sheet is reported and never blocks. To keep the sheet's figure, the operator puts it in the special-total cell and runs again.
+- **El tipo `""` o `"Lista"` de la planilla**: list o bulk, por la regla del precio más bajo de sales.md, a partir del historial de precios importado en la fecha de la fila y con los gramos de la fila. Nunca VIP, aunque el Customer sea VIP en otra fila.
+- **El `"Amigo"` de la planilla**: la regla VIP (sales.md), con el VIP price igual al Bulk price de ese día. El resultado es el Bulk price de ese día, o el List price cuando ese día no tiene, como en la planilla. Un empate con el Bulk price se guarda como VIP.
+  - Todo Customer con al menos una fila `"Amigo"` terminada se importa como VIP: entra al VIP type del Business (el Customer type que hizo la actualización, que se encuentra por su marca y nunca por su nombre). La importación crea ese tipo, con el nombre "VIP", cuando el Business no tiene ninguno. La marca VIP congelada nunca se escribe.
+  - **Un nombre ocupado detiene la corrida.** Cuando la planilla tiene un VIP customer, el Business no tiene VIP type y otro Customer type se llama "VIP" (sin importar mayúsculas ni espacios, así que " vip " también), la corrida se rechaza antes de escribir nada, tanto en la corrida de prueba como en la real, que lo vuelve a verificar antes de la primera escritura. El informe, con un texto fijo del Copy module, nombra el conflicto y la solución (renombrar o eliminar ese tipo y volver a correrla), sin ningún Customer ni monto. No es una fila no terminada. Un Business que ya tiene su VIP type lo usa, se llame como se llame hoy; una planilla sin ningún VIP customer nunca se verifica.
+  - Una fila `"Amigo"` sin Customer bloquea.
+- **El `"Regalo"` de la planilla**: un Gift. Se cobra $0 y sus gramos igual salen del Stock. Con envío, el total de la Sale es solo el envío, como en la planilla.
+- **Total especial** (la columna `Precio especial (total)` de la planilla): un número entero mayor que $0 hace de la línea un Special price con ese total, sea cual sea el tipo. Una fila `"Amigo"` con total especial igual hace VIP a su Customer.
+- **Estos bloquean**:
+  - un total especial en una fila `"Regalo"`;
+  - una celda de total especial que no es un número entero mayor que $0 (cero, negativo o texto).
+- **Qué se guarda**: siempre el precio, la regla y el total recalculados por la app. Una diferencia con la planilla se informa y nunca bloquea. Para conservar la cifra de la planilla, el Operator la pone en la celda de total especial y la vuelve a correr.
 
-### What blocks
+### Qué bloquea
 
-A finished row blocks if the product's own rules would refuse it if it were recorded today. Examples:
+Una fila terminada bloquea si las propias reglas del producto la rechazarían al registrarla hoy. Por ejemplo:
 
-- a variety with no price that day and no special total;
-- grams that aren't above zero with at most two decimals;
-- a future date;
-- a total above $0 with no payment method;
-- a purchase with no cost;
-- a note, aroma, header or footer that is too long.
+- una Variety sin precio ese día y sin total especial;
+- gramos que no son mayores que cero con como máximo dos decimales;
+- una fecha futura;
+- un total mayor que $0 sin método de pago;
+- una Purchase sin costo;
+- una nota, un aroma, un header o un footer demasiado largos.
 
-Also blocking:
+También bloquean:
 
-- a required column that can't be found in the sheet's Ventas, the sheet's Entradas or the sheet's Gastos;
-- a filled-in row of the sheet's Ventas tab whose `Total` is empty (the file wasn't recalculated);
-- a date in a text cell (see Reading the file);
-- an unknown variety name, or two rows of the sheet's Ajustes tab 7–16 that are the same name;
-- two price entries for one variety on one date;
-- an unknown origin or payment value;
-- a category outside A21:A28;
-- a bad value in the sheet's Catálogo tab or a bad threshold;
-- a mapped number that doesn't normalise;
-- the sheet's "Pendiente" with no customer, or the sheet's `"Amigo"` with no customer;
-- the sheet's `"Regalo"` with a special total;
-- a special total that isn't a whole number above $0.
+- una columna obligatoria que no se encuentra en Ventas, Entradas o Gastos;
+- una fila completa de Ventas con el `Total` vacío (el archivo no se recalculó);
+- una fecha en una celda de texto (ver Leer el archivo);
+- un nombre de Variety desconocido, o dos filas de Ajustes 7–16 con el mismo nombre;
+- dos Price entries de una Variety en una misma fecha;
+- un origen o un valor de pago desconocidos;
+- una categoría fuera de A21:A28;
+- un valor inválido en Catálogo o un umbral inválido;
+- un número de la correspondencia que no se normaliza;
+- un "Pendiente" sin Customer, o un `"Amigo"` sin Customer;
+- un `"Regalo"` con total especial;
+- un total especial que no es un número entero mayor que $0;
+- un VIP en la planilla con un tipo del vendedor llamado "VIP" y sin VIP type (ver Pricing rules).
 
-Rows the sheet marks unfinished are the one exception: they are left out and listed, and never block. A customer name missing from the mapping never blocks: that customer is imported without a number. How the file stores a cell never blocks on its own, with one exception: a date in a text cell, because what was typed can no longer be told.
+Las filas que la planilla marca como no terminadas son la única excepción: se dejan afuera y se listan, y nunca bloquean. Un nombre de Customer que falta en la correspondencia nunca bloquea: ese Customer se importa sin número. Cómo guarda el archivo una celda nunca bloquea por sí solo, con una excepción: una fecha en una celda de texto, porque ya no se puede saber qué se tipeó.
 
 ### Customers
 
-- **Who becomes a customer**: every name on a finished row of the sheet's Ventas tab, whether or not they ever owed. A name that appears only on unfinished rows creates no customer.
-- **A blank customer cell**: the row becomes a sale without a customer, which is allowed only when nothing stays owed.
-- **Matching names to the mapping**: exact, after trimming and collapsing inner spaces, with no case-folding.
-- **A name with no mapping entry**, or every name when there is no mapping file, is imported without a phone number. It is not a problem and is not listed; the report counts the customers imported without a number.
-- **Numbers**: each mapped number goes through customers.md's normalisation. A number that fails blocks, and the report never repeats it.
-- **One customer per name**: finished rows of the sheet's Ventas whose customer cells are the same after trimming and collapsing inner spaces (exact, case kept) are one customer. An unmapped spelling that differs in any other way is a separate customer; nothing is merged by guess.
-- **Several spellings, one number**: when mapped spellings normalise to the same number, they become one customer, and the report lists them together.
-  - The customer is named after the spelling on their most recent finished row of the sheet's Ventas tab.
-  - If those rows share a date, the lowest row in the sheet wins.
-  - The seller can rename the customer afterwards.
-- **Unused mapping entries**: an entry whose name is on no finished row of the sheet's Ventas tab creates no customer and is reported as unused.
+- **Quién pasa a ser Customer**: cada nombre de una fila terminada de Ventas, haya debido alguna vez o no. Un nombre que aparece solo en filas no terminadas no crea ningún Customer.
+- **Una celda de cliente en blanco**: la fila pasa a ser una Sale without a customer, que se permite solo cuando no queda nada adeudado.
+- **Hacer coincidir nombres con la correspondencia**: exacto, después de recortar y colapsar los espacios internos, sin ignorar mayúsculas.
+- **Un nombre sin entrada en la correspondencia**, o todo nombre cuando no hay archivo de correspondencias, se importa sin Phone number. No es un problema y no se lista; el informe cuenta los Customers importados sin número.
+- **Números**: cada número de la correspondencia pasa por la normalización de customers.md. Uno que falla bloquea, y el informe nunca lo repite.
+- **Un Customer por nombre**: las filas terminadas de Ventas cuyas celdas de cliente son iguales después de recortar y colapsar los espacios internos (exacto, conservando mayúsculas) son un solo Customer. Una grafía sin correspondencia que difiere de cualquier otra forma es otro Customer; nada se une por suposición.
+- **Varias grafías, un número**: cuando grafías con correspondencia se normalizan al mismo número, pasan a ser un solo Customer, y el informe las lista juntas.
+  - El Customer recibe el nombre de la grafía de su fila terminada de Ventas más reciente.
+  - Si esas filas comparten fecha, gana la fila más baja de la planilla.
+  - El vendedor puede renombrar al Customer después.
+- **VIP**: un Customer importado como VIP queda en el VIP type del Business (ver Pricing rules), y ningún otro Customer importado recibe tipo.
+- **Entradas de la correspondencia sin usar**: una entrada cuyo nombre no está en ninguna fila terminada de Ventas no crea ningún Customer y se informa como sin usar.
 
-### Order
+### Orden
 
-- Within the sheet's Entradas, and separately within the sheet's Ventas, rows that share a date are recorded in sheet order, top to bottom. That order is their recording order, so it sets lot order (ADR-0010) and settlement (ADR-0012) on that date.
-- Across dates, the date decides, so an unsorted sheet still lands right.
-- Price-history and expense rows need no tie-break.
+- Dentro de Entradas, y por separado dentro de Ventas, las filas que comparten fecha se registran en el orden de la planilla, de arriba hacia abajo. Ese orden es su orden de registro, así que fija el Lot order (ADR-0010) y el Settlement (ADR-0012) en esa fecha.
+- Entre fechas distintas decide la fecha, así que una planilla desordenada igual queda bien.
+- Las filas del historial de precios y de gastos no necesitan desempate.
 
-### Constraints
+### Restricciones
 
-- **Isolation (ADR-0004)**: every created row carries the target business, and nothing is reachable from another business.
-- **No echo (ADR-0005)**: no customer name, phone number or amount goes to logs. The report exists only on the operator's terminal.
-- **Test data**: tests build their own small `.xlsx` and mapping fixtures, laid out like the real sheet (titles on row 1). The real sheet and real customer data never enter the repository.
+- **Aislamiento (ADR-0004)**: cada fila creada lleva el Business de destino, y nada es accesible desde otro Business.
+- **Sin eco (ADR-0005)**: ningún nombre de Customer, Phone number ni monto va a los logs. El informe existe solo en la terminal del Operator.
+- **Datos de prueba**: los tests arman sus propios fixtures chicos de `.xlsx` y de correspondencia, dispuestos como la planilla real (títulos en la fila 1). La planilla real y los datos reales de los clientes nunca entran al repositorio.
 
-## Metrics
+## Métricas
 
-From test fixtures, with no telemetry:
+A partir de fixtures de test, sin telemetría:
 
-- **Look before writing (criterion 1)**:
-  - a dry run writes 0 rows in every table, whatever the outcome, and changes no switch;
-  - a refused real run writes 0 rows and changes no switch;
-  - the dry run lists every blocking problem of a fixture in one pass, every missing column included.
-- **Any export (criteria 1, 3)**: a fixture laid out like a Google Sheets export, with no declared size in any worksheet and every number stored as a float, is read in full by the dry run. 100% passing. It holds:
-  - whole numbers in the sheet's `% índica` column, prices, costs, amounts, shipping and a special total, all read as whole numbers;
-  - decimal grams and a decimal threshold, read to the hundredth;
-  - numbers in text cells (a cell of the sheet's Detalle or Nota column, a variety, customer and category name made of digits, one of them non-whole), read as `100`-style digits or with a decimal comma.
+- **Mirar antes de escribir (criterio 1)**:
+  - una corrida de prueba escribe 0 filas en todas las tablas, sea cual sea el resultado, y no cambia ningún interruptor;
+  - una corrida real rechazada escribe 0 filas y no cambia ningún interruptor;
+  - la corrida de prueba lista cada problema que bloquea de un fixture en una sola pasada, cada columna que falta incluida.
+- **Cualquier exportación (criterios 1, 3)**: un fixture dispuesto como una exportación de Google Sheets, sin tamaño declarado en ninguna hoja y con cada número guardado como decimal, se lee completo en la corrida de prueba. 100% aprobado. Contiene:
+  - números enteros en la columna `% índica`, en precios, costos, montos, envíos y un total especial, todos leídos como enteros;
+  - gramos decimales y un umbral decimal, leídos al centésimo;
+  - números en celdas de texto (una celda de Detalle o Nota, un nombre de Variety, de Customer y de categoría hechos de dígitos, uno de ellos no entero), leídos como dígitos al estilo `100` o con coma decimal.
 
-  Every column and every row is found, and none of these is reported as a problem. A `60.5` share is still refused.
-- **Dates in text cells (criteria 1, 3)**: the same fixture with a date in a cell of the sheet's Nota column, its Detalle column and a name cell reports each one, with its sheet and row, as a date where text is expected, with the fix to re-type it as text. Nothing is read from them, and a real run over that file writes 0 rows. 100% passing.
-- **Opens where the sheet left off (criterion 2)**: after importing a fixture, these equal its expected figures, with 0 unexplained differences:
-  - each variety's current price;
-  - the catalog text;
-  - stock per variety, to the hundredth;
-  - each customer's balance and owing since, to the peso.
+  Se encuentran todas las columnas y todas las filas, y ninguno de estos se informa como problema. Un porcentaje de `60.5` se sigue rechazando.
+- **Fechas en celdas de texto (criterios 1, 3)**: el mismo fixture con una fecha en una celda de Nota, una de Detalle y una de nombre informa cada una, con su hoja y su fila, como una fecha donde se espera texto, con la solución de volver a tipearla como texto. No se lee nada de ellas, y una corrida real sobre ese archivo escribe 0 filas. 100% aprobado.
+- **Arranca donde la planilla quedó (criterio 2)**: después de importar un fixture, estas cifras son iguales a las esperadas, con 0 diferencias sin explicar:
+  - el Current price de cada Variety;
+  - el texto del Catalog;
+  - el Stock por Variety, al centésimo;
+  - el Balance y el Owing since de cada Customer, al peso.
 
-  Ganancia and Caja are not compared with the sheet.
-- **Recording order (criterion 2)**: a fixture with same-date entries and sales, in unsorted dates, gets its lot order and settlement from date first, then sheet order. 100% passing.
-- **Pricing settings (criterion 6)**: 100% passing.
-  - A fixture with bulk prices and the sheet's "Amigo" rows ends with both switches on and VIP price = bulk price on every entry with a bulk price, and the report lists both switches.
-  - A fixture with neither ends with both off.
-  - A switch already on before the import stays on.
-  - Every row's stored price, rule and total equal what the import stored before pricing settings existed, the sheet's "Amigo" rows included.
-- **Import recorded (criterion 7)**: 100% passing.
-  - A successful real run records the import fact with the run's instant, in the same commit as everything else.
-  - A dry run and a refused real run record nothing.
-  - The record never makes a later eligibility check refuse.
-  - Business removal exports and deletes it, and it is invisible from another business through the isolation sweep.
-- **Nothing invented (criterion 3)**:
-  - a matrix of every blocking case passes 100%, including a missing column and a filled-in row of the sheet's Ventas tab with an empty Total;
-  - the sheet's Ventas rows with text in the sheet's Total column, and the sheet's Entradas and Gastos rows with text in the sheet's Revisar column, are left out and listed with that text, without blocking;
-  - a name, a sheet's `Amigo` or a spelling found only on unfinished rows creates no customer, no VIP and no kept name;
-  - a reference set of total mismatches, with and without shipping and including a sheet's `Regalo` with shipping, is reported and never blocks;
-  - merged categories, merged spellings and unused mapping entries all appear in the report.
-- **One business, once (criterion 4)**:
-  - an import into a business holding any one of the seven kinds of record is refused with 0 rows written, tested for each kind;
-  - a business with only seeded, renamed or removed categories, the seeded header and footer, and either switch state is accepted;
-  - imported rows are invisible from another business through the isolation sweep.
-- **No phone numbers (criterion 5)**: 100% passing.
-  - a fixture with no mapping file imports in full, every customer without a number;
-  - a fixture with a partial mapping imports the unmapped names without a number and the mapped ones with theirs;
-  - the report's count of customers without a number equals the customers stored with none, in the dry run and the real run;
-  - a malformed mapped number still blocks;
-  - unmapped names that are equal after trimming and collapsing spaces become one customer, and ones that differ otherwise stay separate.
-- **No echo**: after a run over a fixture with names, numbers and amounts, no log line contains any of them, and the report never contains a phone number.
+  La Ganancia y la Caja no se comparan con la planilla.
+- **Orden de registro (criterio 2)**: un fixture con entradas y ventas de la misma fecha, en fechas desordenadas, obtiene su Lot order y su Settlement primero por fecha y después por orden de la planilla. 100% aprobado.
+- **Pricing settings (criterio 6)**: 100% aprobado.
+  - Un fixture con precios por cantidad y filas `"Amigo"` termina con los dos interruptores activados y VIP price = Bulk price en cada entrada con Bulk price, y el informe lista los dos interruptores.
+  - Un fixture sin ninguno de los dos termina con los dos apagados.
+  - Un interruptor ya activado antes de la importación sigue activado.
+  - El precio, la regla y el total guardados de cada fila son iguales a lo que guardaba la importación antes de que existieran los pricing settings, las filas `"Amigo"` incluidas.
+- **El VIP type (criterio 6)**: 100% aprobado.
+  - Los VIP de la planilla entran al VIP type existente, aunque esté renombrado.
+  - Sin VIP type, se crea exactamente una fila de VIP type, también cuando el VIP type anterior se había eliminado.
+  - Sin VIP type y con un tipo del vendedor llamado "VIP" (también " vip "), la corrida de prueba y la real se rechazan con su texto fijo y dejan 0 filas nuevas en todas las tablas.
+  - Una planilla sin VIP no hace el chequeo.
+  - Ninguna corrida escribe la marca VIP congelada `customer.vip`, probado con un registro de sentencias.
+- **Importación registrada (criterio 7)**: 100% aprobado.
+  - Una corrida real exitosa registra el hecho de la importación con el instante de la corrida, en el mismo commit que todo lo demás.
+  - Una corrida de prueba y una corrida real rechazada no registran nada.
+  - El registro nunca hace que un chequeo de elegibilidad posterior se rechace.
+  - La Business removal lo exporta y lo elimina, y es invisible desde otro Business en el barrido de aislamiento.
+- **Nada inventado (criterio 3)**:
+  - una matriz de cada caso que bloquea pasa al 100%, incluidas una columna que falta y una fila completa de Ventas con el `Total` vacío;
+  - las filas de Ventas con texto en `Total`, y las de Entradas y Gastos con texto en `Revisar`, se dejan afuera y se listan con ese texto, sin bloquear;
+  - un nombre, un `Amigo` o una grafía que aparece solo en filas no terminadas no crea ningún Customer, ningún VIP ni ningún nombre conservado;
+  - un conjunto de referencia de diferencias de total, con y sin envío e incluido un `Regalo` con envío, se informa y nunca bloquea;
+  - las categorías unidas, las grafías unidas y las entradas de correspondencia sin usar aparecen todas en el informe.
+- **Un Business, una vez (criterio 4)**:
+  - una importación en un Business con cualquiera de los siete tipos de registro se rechaza con 0 filas escritas, probado para cada tipo;
+  - un Business con solo categorías sembradas, renombradas o eliminadas, el header y el footer sembrados, y cualquier estado de los interruptores se acepta;
+  - las filas importadas son invisibles desde otro Business en el barrido de aislamiento.
+- **Sin números de teléfono (criterio 5)**: 100% aprobado.
+  - un fixture sin archivo de correspondencias se importa completo, cada Customer sin número;
+  - un fixture con una correspondencia parcial importa los nombres sin correspondencia sin número y los que la tienen con el suyo;
+  - la cantidad de Customers sin número del informe es igual a los Customers guardados sin ninguno, en la corrida de prueba y en la real;
+  - un número de la correspondencia mal formado sigue bloqueando;
+  - los nombres sin correspondencia que son iguales después de recortar y colapsar espacios pasan a ser un solo Customer, y los que difieren de otra forma quedan separados.
+- **Sin eco**: después de una corrida sobre un fixture con nombres, números y montos, ninguna línea de log contiene ninguno de ellos, y el informe nunca contiene un Phone number.
 
-## Out of scope
+## Fuera de alcance
 
-- Importing into a business that already has records; running it again, resuming or merging.
-- An import screen or route in the app.
-- Importing derived columns, or reproducing the sheet's profit and cash.
-- Importing rows the sheet marks unfinished, or anything they name.
-- Inventing customers, phone numbers, categories or varieties to get an import through.
-- Merging differently spelled customer names that have no mapped number.
-- Reading back as text a date the sheet made out of what was typed into a text cell.
-- Grouping several rows into one sale with several lines.
-- Undoing an import once it is done.
-- How a phone number stored as a number in the mapping is read (#54).
-- A VIP price column in the sheet; turning a pricing switch off.
-- Backfilling the import fact for a business imported before it existed.
+- Importar en un Business que ya tiene registros; volver a correrla, retomarla o unir.
+- Una pantalla o ruta de importación en la app.
+- Importar columnas derivadas, o reproducir la ganancia y la caja de la planilla.
+- Importar filas que la planilla marca como no terminadas, o lo que nombran.
+- Inventar Customers, Phone numbers, categorías o Varieties para que una importación pase.
+- Unir nombres de Customers escritos distinto que no tienen número en la correspondencia.
+- Volver a leer como texto una fecha que la planilla armó a partir de lo que se tipeó en una celda de texto.
+- Agrupar varias filas en una sola Sale con varias líneas.
+- Deshacer una importación una vez hecha.
+- Cómo se lee un Phone number guardado como número en la correspondencia (#54).
+- Una columna de VIP price en la planilla; desactivar un interruptor de precios.
+- Resolver sola un choque con un tipo del vendedor llamado "VIP" (adoptarlo, renombrarlo o crear el VIP type con otro nombre).
+- Completar hacia atrás el hecho de la importación para un Business importado antes de que existiera.
