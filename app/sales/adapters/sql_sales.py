@@ -144,10 +144,10 @@ class SqlSales:
                 (CustomerRow.id == SaleRow.customer_id)
                 & (CustomerRow.business_id == self._business_id),
             )
-            .outerjoin(
-                PaymentRow,
-                (PaymentRow.sale_id == SaleRow.id) & (PaymentRow.business_id == self._business_id),
-            )
+            # Only on the sale: a payment of a sale is the sale's business's, and a
+            # `business_id` here would let the planner pick the method index for `payment`
+            # and probe every payment of the business for each listed sale.
+            .outerjoin(PaymentRow, PaymentRow.sale_id == SaleRow.id)
             .outerjoin(
                 PaymentMethodRow,
                 (PaymentMethodRow.id == PaymentRow.payment_method_id)

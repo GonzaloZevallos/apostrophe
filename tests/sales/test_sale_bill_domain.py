@@ -9,7 +9,6 @@ from __future__ import annotations
 import pytest
 
 from app.sales.domain.pricing import PricingRule
-from app.sales.domain.sale import PaymentMethod
 from app.sales.domain.sale_bill import (
     BillPayment,
     BillState,
@@ -18,9 +17,10 @@ from app.sales.domain.sale_bill import (
     bill_payment,
     bill_rule,
 )
+from app.shared.payment_method import PaymentMethodLabel
 
-CASH = PaymentMethod.CASH
-TRANSFER = PaymentMethod.TRANSFER
+CASH = PaymentMethodLabel(1, "Cash", "coins")
+TRANSFER = PaymentMethodLabel(2, "Mercado Pago", "phone")
 
 # (total, method, has_customer, still_owed, balance, state, bill still_owed, bill balance)
 VALID_ROWS = [
@@ -28,14 +28,14 @@ VALID_ROWS = [
     pytest.param(0, None, True, None, 0, "none", None, None, id="gifts-customer-even"),
     pytest.param(0, None, True, None, 7_000, "none", None, 7_000, id="gifts-customer-owes"),
     pytest.param(0, None, True, None, -3_000, "none", None, -3_000, id="gifts-customer-credit"),
-    pytest.param(10_000, CASH, False, None, 0, "cash", None, None, id="cash"),
-    pytest.param(10_000, TRANSFER, True, None, 0, "transfer", None, None, id="transfer"),
-    pytest.param(10_000, CASH, True, None, 5_000, "cash", None, 5_000, id="cash-owes-elsewhere"),
+    pytest.param(10_000, CASH, False, None, 0, "method", None, None, id="cash"),
+    pytest.param(10_000, TRANSFER, True, None, 0, "method", None, None, id="custom-method"),
+    pytest.param(10_000, CASH, True, None, 5_000, "method", None, 5_000, id="cash-owes-elsewhere"),
     pytest.param(10_000, None, True, 10_000, 10_000, "owed", 10_000, 10_000, id="fully-owed"),
     pytest.param(10_000, None, True, 6_000, 6_000, "owed", 6_000, 6_000, id="partly-owed"),
     pytest.param(10_000, None, True, 0, 0, "paid", None, None, id="paid-by-later-payment"),
     pytest.param(10_000, None, True, 0, -2_000, "paid", None, -2_000, id="paid-by-credit"),
-    pytest.param(10_000, CASH, True, None, -4_000, "cash", None, -4_000, id="credit-on-cash"),
+    pytest.param(10_000, CASH, True, None, -4_000, "method", None, -4_000, id="credit-on-cash"),
 ]
 
 
@@ -45,7 +45,7 @@ VALID_ROWS = [
 )
 def test_the_state_table(
     total: int,
-    method: PaymentMethod | None,
+    method: PaymentMethodLabel | None,
     has_customer: bool,
     owed: int | None,
     balance: int,
@@ -53,7 +53,9 @@ def test_the_state_table(
     bill_owed: int | None,
     bill_bal: int | None,
 ) -> None:
-    assert bill_payment(total, method, has_customer, owed) == BillPayment(state, bill_owed)
+    assert bill_payment(total, method, has_customer, owed) == BillPayment(
+        state, bill_owed, method.name if method is not None else None
+    )
     assert bill_balance(has_customer, balance) == bill_bal
 
 
@@ -69,7 +71,7 @@ RAISING_ROWS = [
 
 @pytest.mark.parametrize(("method", "has_customer", "owed", "rule"), RAISING_ROWS)
 def test_the_inconsistent_rows_raise_a_message_naming_the_rule_and_no_figure(
-    method: PaymentMethod | None, has_customer: bool, owed: int | None, rule: str
+    method: PaymentMethodLabel | None, has_customer: bool, owed: int | None, rule: str
 ) -> None:
     with pytest.raises(SaleBillInconsistent) as raised:
         bill_payment(10_000, method, has_customer, owed)

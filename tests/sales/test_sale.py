@@ -30,7 +30,6 @@ from app.sales.domain.sale import (
     NoteTooLong,
     OnTheSpotPayment,
     OwingWithoutCustomer,
-    PaymentMethod,
     PaymentRequired,
     Sale,
     SaleDateInFuture,
@@ -42,6 +41,8 @@ from app.shared.quantity import Quantity
 BOTH_ON = PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
 TODAY = date(2026, 6, 15)
 RECORDED_AT = datetime(2026, 6, 15, 12, 0, tzinfo=UTC)
+CASH_ID = 1
+TRANSFER_ID = 2
 
 LIST_ONLY = PriceQuote(list_price=1_000)
 WITH_BULK = PriceQuote(list_price=1_000, bulk=BulkQuote(price=700, minimum=Quantity.of(10)))
@@ -74,7 +75,7 @@ def _record(
     shipping_charged: int = 0,
     note: str | None = None,
     lines: list[LineRequest] | None = None,
-    method: PaymentMethod | None = PaymentMethod.CASH,
+    payment_method_id: int | None = CASH_ID,
     left_owing: bool = False,
 ) -> Sale:
     return Sale.record(
@@ -86,7 +87,7 @@ def _record(
         shipping_charged=shipping_charged,
         note=note,
         lines=lines if lines is not None else [_line()],
-        method=method,
+        payment_method_id=payment_method_id,
         left_owing=left_owing,
         recorded_at=RECORDED_AT,
     )
@@ -151,16 +152,16 @@ def test_line_refusals_propagate_from_pricing() -> None:
 
 def test_a_total_above_zero_needs_a_method_or_to_be_left_owing() -> None:
     with pytest.raises(PaymentRequired):
-        _record(method=None, left_owing=False)
+        _record(payment_method_id=None, left_owing=False)
 
 
 def test_owing_without_a_customer_is_refused() -> None:
     with pytest.raises(OwingWithoutCustomer):
-        _record(method=None, left_owing=True, customer_id=None)
+        _record(payment_method_id=None, left_owing=True, customer_id=None)
 
 
 def test_owing_with_a_customer_is_accepted_and_stores_no_payment() -> None:
-    sale = _record(method=None, left_owing=True, customer_id=7)
+    sale = _record(payment_method_id=None, left_owing=True, customer_id=7)
 
     assert sale.payment is None
     assert sale.customer_id == 7
@@ -170,7 +171,7 @@ def test_owing_with_a_customer_is_accepted_and_stores_no_payment() -> None:
 
 
 def test_a_zero_total_sale_has_no_payment_and_ignores_the_method() -> None:
-    sale = _record(lines=[_line(gift=True)], method=PaymentMethod.CASH, shipping_charged=0)
+    sale = _record(lines=[_line(gift=True)], payment_method_id=CASH_ID, shipping_charged=0)
 
     assert sale.total == 0
     assert sale.payment is None
@@ -181,14 +182,14 @@ def test_a_paid_sale_records_a_payment_of_the_full_total_on_the_sale_date() -> N
         sale_date=date(2026, 6, 10),
         lines=[_line(quote=LIST_ONLY, quantity=Quantity.of(2))],
         shipping_charged=100,
-        method=PaymentMethod.TRANSFER,
+        payment_method_id=TRANSFER_ID,
         customer_id=3,
     )
 
     assert sale.payment is not None
     assert sale.payment.amount == sale.total == 2_100
     assert sale.payment.paid_on == date(2026, 6, 10)
-    assert sale.payment.method == PaymentMethod.TRANSFER
+    assert sale.payment.payment_method_id == TRANSFER_ID
     assert sale.payment.customer_id == 3
 
 
@@ -199,7 +200,7 @@ def test_total_is_the_sum_of_the_rounded_lines_plus_shipping_once() -> None:
             _line(variety_id=2, quote=WITH_BULK, quantity=Quantity.of(10)),  # 700 * 10 = 7000
         ],
         shipping_charged=500,
-        method=PaymentMethod.CASH,
+        payment_method_id=CASH_ID,
     )
 
     assert [line.line_total for line in sale.lines] == [1_000, 7_000]
@@ -212,7 +213,7 @@ def test_total_grams_sums_every_line_gifts_included() -> None:
             _line(variety_id=1, quote=LIST_ONLY, quantity=Quantity.of(2)),
             _line(variety_id=2, quote=LIST_ONLY, quantity=Quantity.of("1.5"), gift=True),
         ],
-        method=PaymentMethod.CASH,
+        payment_method_id=CASH_ID,
     )
 
     assert sale.total_quantity == Quantity.of("3.5")
@@ -225,7 +226,7 @@ def test_bulk_minimum_is_measured_per_line_never_summed() -> None:
             _line(variety_id=1, quote=WITH_BULK, quantity=Quantity.of(6)),
             _line(variety_id=1, quote=WITH_BULK, quantity=Quantity.of(6)),
         ],
-        method=PaymentMethod.CASH,
+        payment_method_id=CASH_ID,
     )
 
     assert [line.pricing_rule for line in sale.lines] == [PricingRule.LIST, PricingRule.LIST]
@@ -241,7 +242,7 @@ def test_vip_prices_every_line_at_its_vip_price_even_without_reaching_the_minimu
         customer=VIP,
         customer_id=1,
         lines=[_line(quote=with_vip, quantity=Quantity.of(1))],
-        method=PaymentMethod.CASH,
+        payment_method_id=CASH_ID,
     )
 
     assert sale.lines[0].pricing_rule == PricingRule.VIP
@@ -250,7 +251,7 @@ def test_vip_prices_every_line_at_its_vip_price_even_without_reaching_the_minimu
 def test_special_line_total_never_feeds_back_into_the_total_via_its_rate() -> None:
     sale = _record(
         lines=[_line(special_price=7, quantity=Quantity.of(2))],
-        method=PaymentMethod.CASH,
+        payment_method_id=CASH_ID,
     )
 
     # The stored rate times the grams does not equal the line total; the stored
@@ -265,7 +266,7 @@ def test_special_line_total_never_feeds_back_into_the_total_via_its_rate() -> No
 
 
 def test_assign_customer_sets_it_on_the_sale_and_its_payment() -> None:
-    sale = _record(method=PaymentMethod.CASH, customer_id=None)
+    sale = _record(payment_method_id=CASH_ID, customer_id=None)
 
     sale.assign_customer(9)
 
@@ -275,7 +276,7 @@ def test_assign_customer_sets_it_on_the_sale_and_its_payment() -> None:
 
 
 def test_assign_customer_twice_is_refused_and_never_replaces_the_first() -> None:
-    sale = _record(method=PaymentMethod.CASH, customer_id=None)
+    sale = _record(payment_method_id=CASH_ID, customer_id=None)
     sale.assign_customer(9)
 
     with pytest.raises(CustomerAlreadyAssigned):
@@ -285,7 +286,7 @@ def test_assign_customer_twice_is_refused_and_never_replaces_the_first() -> None
 
 
 def test_assign_customer_on_a_sale_already_recorded_with_one_is_refused() -> None:
-    sale = _record(method=PaymentMethod.CASH, customer_id=5)
+    sale = _record(payment_method_id=CASH_ID, customer_id=5)
 
     with pytest.raises(CustomerAlreadyAssigned):
         sale.assign_customer(9)
@@ -299,7 +300,7 @@ def test_customer_vip_status_is_captured_only_at_recording_time() -> None:
         customer=NOT_VIP,
         customer_id=1,
         lines=[_line(quote=WITH_BULK, quantity=Quantity.of(1))],
-        method=PaymentMethod.CASH,
+        payment_method_id=CASH_ID,
     )
 
     assert priced_as_not_vip.lines[0].pricing_rule == PricingRule.LIST
@@ -309,7 +310,7 @@ def test_customer_vip_status_is_captured_only_at_recording_time() -> None:
 
 def test_assigning_a_customer_never_touches_stored_line_prices() -> None:
     sale = _record(
-        method=PaymentMethod.CASH,
+        payment_method_id=CASH_ID,
         customer_id=None,
         lines=[_line(quote=WITH_BULK, quantity=Quantity.of(1))],
     )
@@ -327,8 +328,8 @@ def test_every_aggregate_refusal_message_carries_no_input_value() -> None:
         (NoLines, lambda: _record(lines=[])),
         (SaleDateInFuture, lambda: _record(sale_date=date(2026, 6, 16))),
         (NegativeShipping, lambda: _record(shipping_charged=-1)),
-        (PaymentRequired, lambda: _record(method=None, left_owing=False)),
-        (OwingWithoutCustomer, lambda: _record(method=None, left_owing=True)),
+        (PaymentRequired, lambda: _record(payment_method_id=None, left_owing=False)),
+        (OwingWithoutCustomer, lambda: _record(payment_method_id=None, left_owing=True)),
     ]
     for exc_type, action in cases:
         with pytest.raises(exc_type) as excinfo:
@@ -352,7 +353,7 @@ def test_sale_line_rejects_a_negative_line_total() -> None:
 
 def test_on_the_spot_payment_rejects_a_non_positive_amount() -> None:
     with pytest.raises(AssertionError):
-        OnTheSpotPayment(paid_on=TODAY, amount=0, method=PaymentMethod.CASH, customer_id=None)
+        OnTheSpotPayment(paid_on=TODAY, amount=0, payment_method_id=CASH_ID, customer_id=None)
 
 
 def test_note_too_long_names_the_fixed_limit_never_the_submitted_note() -> None:

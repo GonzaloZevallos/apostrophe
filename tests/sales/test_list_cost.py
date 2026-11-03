@@ -206,6 +206,8 @@ def _seed(client: TestClient, sales: int) -> None:
     """`sales` sales through the HTTP API: three per customer, every other one left
     owing, every seventh without a customer, spread over September, and a later
     payment for a third of the customers that owe."""
+    # Each business has ids of its own: read its Cash from its own list.
+    cash_id = client.get("/api/payment-methods").json()[0]["id"]
     variety = client.post("/api/products", json={"name": "Lavanda"}).json()["id"]
     priced = client.post(
         f"/api/products/{variety}/prices",
@@ -226,7 +228,7 @@ def _seed(client: TestClient, sales: int) -> None:
         body: dict[str, object] = {
             "date": (date(2026, 9, 1) + timedelta(days=number % 28)).isoformat(),
             "payment": (
-                {"kind": "owing"} if is_owing else {"kind": "method", "payment_method_id": 1}
+                {"kind": "owing"} if is_owing else {"kind": "method", "payment_method_id": cash_id}
             ),
             "lines": [
                 {"product_id": variety, "quantity": "2"},
@@ -242,7 +244,7 @@ def _seed(client: TestClient, sales: int) -> None:
     for customer in owing[::3]:
         paid = client.post(
             f"/customers/{customer}/payments",
-            json={"paid_on": "2026-10-01", "amount": 1, "payment_method_id": 1},
+            json={"paid_on": "2026-10-01", "amount": 1, "payment_method_id": cash_id},
         )
         assert paid.status_code == 201, paid.text
 

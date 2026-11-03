@@ -15,10 +15,12 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.customers.adapters.tables import CustomerRow
+from app.payments.adapters.on_the_spot import SqlOnTheSpotPayments
 from app.products.adapters.tables import ProductRow
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.domain.pricing import PriceQuote, PricingRule
-from app.sales.domain.sale import CustomerAlreadyAssigned, LineRequest, PaymentMethod, Sale
+from app.sales.domain.sale import CustomerAlreadyAssigned, LineRequest, Sale
+from app.shared.payment_method import PaymentMethodLabel
 from app.shared.pricing_settings import PricingSettings
 from app.shared.quantity import Quantity
 
@@ -55,12 +57,46 @@ def _business_id_of_customer(engine: Engine, customer_id: int) -> int:
         return row.business_id
 
 
+CASH_ID = 1  # the first business's Cash: one business is open in these tests
+
+
+class _Sales(SqlSales):
+    """`SqlSales` plus what the `record_sale` use case does after `add`: sales never writes
+    the payment row itself, `OnTheSpotPayments` does (docs/adr/0070)."""
+
+    def __init__(self, session: Session, business_id: int) -> None:
+        super().__init__(session, business_id)
+        self._payments = SqlOnTheSpotPayments(session, business_id)
+
+    def add(self, sale: Sale) -> Sale:
+        stored = super().add(sale)
+        assert stored.id is not None
+        if sale.payment is not None:
+            self._payments.record(
+                stored.id,
+                sale.customer_id,
+                sale.payment.paid_on,
+                sale.payment.amount,
+                sale.payment.payment_method_id,
+                sale.recorded_at,
+            )
+        return stored
+
+    def assign_customer(self, sale_id: int, customer_id: int) -> None:
+        self._payments.assign_customer(sale_id, customer_id)
+        super().assign_customer(sale_id, customer_id)
+
+    def delete(self, sale_id: int) -> None:
+        self._payments.remove_for(sale_id)
+        super().delete(sale_id)
+
+
 def _sale(
     *,
     variety_id: int,
     customer_id: int | None = None,
     sale_date: date = TODAY,
-    method: PaymentMethod | None = PaymentMethod.CASH,
+    payment_method_id: int | None = CASH_ID,
     left_owing: bool = False,
     quantity: Quantity = ONE_GRAM,
 ) -> Sale:
@@ -73,7 +109,7 @@ def _sale(
         shipping_charged=100,
         note="a note",
         lines=[LineRequest(variety_id=variety_id, quantity=quantity, quote=QUOTE)],
-        method=method,
+        payment_method_id=payment_method_id,
         left_owing=left_owing,
         recorded_at=RECORDED_AT,
     )
@@ -85,7 +121,7 @@ def test_add_then_get_round_trips_a_sale_with_its_lines_and_payment(
     variety_id = _variety_id(client)
     customer_id = _customer_id(client)
     business_id = _business_id_of_variety(engine, variety_id)
-    sales = SqlSales(Session(engine), business_id)
+    sales = _Sales(Session(engine), business_id)
     sale = _sale(variety_id=variety_id, customer_id=customer_id)
 
     stored = sales.add(sale)
@@ -106,7 +142,7 @@ def test_add_then_get_round_trips_a_sale_with_its_lines_and_payment(
     assert line.line_total == 1_000
     assert fetched.payment is not None
     assert fetched.payment.amount == fetched.total
-    assert fetched.payment.method == PaymentMethod.CASH
+    assert fetched.payment.method == PaymentMethodLabel(CASH_ID, "Cash", "coins")
     assert fetched.payment.customer_id == customer_id
 
 
@@ -115,7 +151,7 @@ def test_a_sale_without_a_customer_stores_none_and_has_no_payment_customer(
 ) -> None:
     variety_id = _variety_id(client)
     business_id = _business_id_of_variety(engine, variety_id)
-    sales = SqlSales(Session(engine), business_id)
+    sales = _Sales(Session(engine), business_id)
     sale = _sale(variety_id=variety_id, customer_id=None)
 
     stored = sales.add(sale)
@@ -130,7 +166,7 @@ def test_a_sale_without_a_customer_stores_none_and_has_no_payment_customer(
 def test_list_orders_by_sale_date_desc_then_id_desc(client: TestClient, engine: Engine) -> None:
     variety_id = _variety_id(client)
     business_id = _business_id_of_variety(engine, variety_id)
-    sales = SqlSales(Session(engine), business_id)
+    sales = _Sales(Session(engine), business_id)
     first = sales.add(_sale(variety_id=variety_id, sale_date=date(2026, 6, 1)))
     second = sales.add(_sale(variety_id=variety_id, sale_date=date(2026, 6, 10)))
     third = sales.add(_sale(variety_id=variety_id, sale_date=date(2026, 6, 10)))
@@ -145,7 +181,7 @@ def test_list_filters_by_an_inclusive_date_range_and_an_inverted_range_is_empty(
 ) -> None:
     variety_id = _variety_id(client)
     business_id = _business_id_of_variety(engine, variety_id)
-    sales = SqlSales(Session(engine), business_id)
+    sales = _Sales(Session(engine), business_id)
     sales.add(_sale(variety_id=variety_id, sale_date=date(2026, 5, 1)))
     middle = sales.add(_sale(variety_id=variety_id, sale_date=date(2026, 5, 10)))
     sales.add(_sale(variety_id=variety_id, sale_date=date(2026, 5, 20)))
@@ -164,8 +200,8 @@ def test_a_sale_of_another_business_is_not_returned_by_get_or_list(
     business_id = _business_id_of_variety(engine, variety_id)
     other_variety_id = _variety_id(other_client)
     other_business_id = _business_id_of_variety(engine, other_variety_id)
-    sales = SqlSales(Session(engine), business_id)
-    other_sales = SqlSales(Session(engine), other_business_id)
+    sales = _Sales(Session(engine), business_id)
+    other_sales = _Sales(Session(engine), other_business_id)
     sale_id = sales.add(_sale(variety_id=variety_id)).id
     assert sale_id is not None
 
@@ -179,7 +215,7 @@ def test_assign_customer_sets_it_on_the_sale_and_its_payment(
     variety_id = _variety_id(client)
     customer_id = _customer_id(client)
     business_id = _business_id_of_variety(engine, variety_id)
-    sales = SqlSales(Session(engine), business_id)
+    sales = _Sales(Session(engine), business_id)
     sale_id = sales.add(_sale(variety_id=variety_id, customer_id=None)).id
     assert sale_id is not None
 
@@ -199,7 +235,7 @@ def test_assign_customer_a_second_time_is_refused_and_never_replaces_the_first(
     first_customer_id = _customer_id(client, "11 2345-6789")
     second_customer_id = _customer_id(client, "11 9876-5432")
     business_id = _business_id_of_variety(engine, variety_id)
-    sales = SqlSales(Session(engine), business_id)
+    sales = _Sales(Session(engine), business_id)
     sale_id = sales.add(_sale(variety_id=variety_id, customer_id=None)).id
     assert sale_id is not None
     sales.assign_customer(sale_id, first_customer_id)
@@ -221,14 +257,14 @@ def test_assign_customer_from_another_business_does_not_touch_the_sale(
 ) -> None:
     variety_id = _variety_id(client)
     business_id = _business_id_of_variety(engine, variety_id)
-    sales = SqlSales(Session(engine), business_id)
+    sales = _Sales(Session(engine), business_id)
     sale_id = sales.add(_sale(variety_id=variety_id, customer_id=None)).id
     assert sale_id is not None
 
     other_variety_id = _variety_id(other_client)
     other_business_id = _business_id_of_variety(engine, other_variety_id)
     other_customer_id = _customer_id(other_client)
-    other_sales = SqlSales(Session(engine), other_business_id)
+    other_sales = _Sales(Session(engine), other_business_id)
 
     try:
         other_sales.assign_customer(sale_id, other_customer_id)
@@ -249,13 +285,13 @@ def test_delete_from_another_business_does_not_remove_the_sale(
 ) -> None:
     variety_id = _variety_id(client)
     business_id = _business_id_of_variety(engine, variety_id)
-    sales = SqlSales(Session(engine), business_id)
+    sales = _Sales(Session(engine), business_id)
     sale_id = sales.add(_sale(variety_id=variety_id)).id
     assert sale_id is not None
 
     other_variety_id = _variety_id(other_client)
     other_business_id = _business_id_of_variety(engine, other_variety_id)
-    other_sales = SqlSales(Session(engine), other_business_id)
+    other_sales = _Sales(Session(engine), other_business_id)
 
     other_sales.delete(sale_id)
 
@@ -269,7 +305,7 @@ def test_delete_removes_the_sale_its_lines_and_its_payment(
 ) -> None:
     variety_id = _variety_id(client)
     business_id = _business_id_of_variety(engine, variety_id)
-    sales = SqlSales(Session(engine), business_id)
+    sales = _Sales(Session(engine), business_id)
     sale_id = sales.add(_sale(variety_id=variety_id)).id
     assert sale_id is not None
 
@@ -288,7 +324,7 @@ def test_get_view_labels_the_sale_with_the_customer_s_name_vip_and_variety_name(
     variety_id = _variety_id(client)
     customer_id = _customer_id(client)
     business_id = _business_id_of_variety(engine, variety_id)
-    sales = SqlSales(Session(engine), business_id)
+    sales = _Sales(Session(engine), business_id)
     sale_id = sales.add(_sale(variety_id=variety_id, customer_id=customer_id)).id
     assert sale_id is not None
 
@@ -309,7 +345,7 @@ def test_get_view_of_a_sale_with_no_customer_has_no_customer(
 ) -> None:
     variety_id = _variety_id(client)
     business_id = _business_id_of_variety(engine, variety_id)
-    sales = SqlSales(Session(engine), business_id)
+    sales = _Sales(Session(engine), business_id)
     sale_id = sales.add(_sale(variety_id=variety_id, customer_id=None)).id
     assert sale_id is not None
 
@@ -322,7 +358,7 @@ def test_get_view_of_a_sale_with_no_customer_has_no_customer(
 def test_get_view_of_an_unknown_sale_is_none(client: TestClient, engine: Engine) -> None:
     variety_id = _variety_id(client)
     business_id = _business_id_of_variety(engine, variety_id)
-    sales = SqlSales(Session(engine), business_id)
+    sales = _Sales(Session(engine), business_id)
 
     assert sales.get_view(999_999) is None
 
@@ -332,7 +368,7 @@ def test_list_views_orders_the_same_way_as_list_and_carries_every_line(
 ) -> None:
     variety_id = _variety_id(client)
     business_id = _business_id_of_variety(engine, variety_id)
-    sales = SqlSales(Session(engine), business_id)
+    sales = _Sales(Session(engine), business_id)
     first = sales.add(_sale(variety_id=variety_id, sale_date=date(2026, 6, 1))).id
     second = sales.add(_sale(variety_id=variety_id, sale_date=date(2026, 6, 10))).id
 
@@ -349,13 +385,13 @@ def test_a_view_of_another_business_s_sale_is_not_reachable_and_never_leaks_thro
     variety_id = _variety_id(client)
     business_id = _business_id_of_variety(engine, variety_id)
     customer_id = _customer_id(client)
-    sales = SqlSales(Session(engine), business_id)
+    sales = _Sales(Session(engine), business_id)
     sale_id = sales.add(_sale(variety_id=variety_id, customer_id=customer_id)).id
     assert sale_id is not None
 
     other_variety_id = _variety_id(other_client)
     other_business_id = _business_id_of_variety(engine, other_variety_id)
-    other_sales = SqlSales(Session(engine), other_business_id)
+    other_sales = _Sales(Session(engine), other_business_id)
 
     assert other_sales.get_view(sale_id) is None
     assert other_sales.list_views(None, None) == []
@@ -369,7 +405,7 @@ def test_list_views_reads_exactly_two_statements_whatever_the_number_of_sales(
     variety_id = _variety_id(client)
     business_id = _business_id_of_variety(engine, variety_id)
     session = Session(engine)
-    sales = SqlSales(session, business_id)
+    sales = _Sales(session, business_id)
     two_lines = [
         LineRequest(variety_id=variety_id, quantity=ONE_GRAM, quote=QUOTE),
         LineRequest(variety_id=variety_id, quantity=ONE_GRAM, quote=QUOTE),
@@ -385,7 +421,7 @@ def test_list_views_reads_exactly_two_statements_whatever_the_number_of_sales(
                 shipping_charged=0,
                 note=None,
                 lines=two_lines,
-                method=PaymentMethod.CASH,
+                payment_method_id=CASH_ID,
                 left_owing=False,
                 recorded_at=RECORDED_AT,
             )

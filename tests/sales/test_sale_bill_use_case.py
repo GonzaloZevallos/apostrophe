@@ -15,8 +15,9 @@ from app.sales.application.ports import (
 )
 from app.sales.application.sale_bill import sale_bill
 from app.sales.domain.pricing import PricingRule
-from app.sales.domain.sale import OnTheSpotPayment, PaymentMethod, Sale, SaleLine
+from app.sales.domain.sale import OnTheSpotPayment, Sale, SaleLine
 from app.sales.domain.sale_bill import BillPayment, SaleBill, SaleBillLine
+from app.shared.payment_method import PaymentMethodLabel
 from app.shared.quantity import Quantity
 
 SALE_ID = 7
@@ -33,8 +34,11 @@ class FakeNames:
         return self._name
 
 
+CASH = PaymentMethodLabel(1, "Cash", "coins")
+
+
 def _view(
-    *, customer: bool = True, method: PaymentMethod | None = None, shipping: int = 500
+    *, customer: bool = True, method: PaymentMethodLabel | None = None, shipping: int = 500
 ) -> SaleView:
     lines = (
         SaleLine(1, Quantity.of("2.5"), PricingRule.BULK, 3_000, 7_500, id=11),
@@ -50,7 +54,9 @@ def _view(
         lines=lines,
         payment=None
         if method is None
-        else OnTheSpotPayment(date(2026, 6, 1), total, method, CUSTOMER.id if customer else None),
+        else OnTheSpotPayment(
+            date(2026, 6, 1), total, method.id, CUSTOMER.id if customer else None, method=method
+        ),
         recorded_at=datetime(2026, 6, 1, tzinfo=UTC),
         id=SALE_ID,
     )
@@ -86,20 +92,20 @@ def test_a_consistent_owed_sale_gives_the_whole_bill() -> None:
 
 def test_a_sale_without_a_customer_paid_on_the_spot_has_no_balance() -> None:
     bill = sale_bill(
-        _view(customer=False, method=PaymentMethod.CASH),
+        _view(customer=False, method=CASH),
         CustomerSettlement(0, {}),
         FakeNames("Mi Negocio"),
     )
 
     assert bill is not None
-    assert bill.payment == BillPayment("cash", None)
+    assert bill.payment == BillPayment("method", None, "Cash")
     assert bill.balance is None
 
 
 def test_case_2_paid_on_the_spot_yet_owed_gives_no_bill_and_reads_no_name() -> None:
     names = FakeNames("Mi Negocio")
 
-    bill = sale_bill(_view(method=PaymentMethod.CASH), CustomerSettlement(50, {SALE_ID: 50}), names)
+    bill = sale_bill(_view(method=CASH), CustomerSettlement(50, {SALE_ID: 50}), names)
 
     assert bill is None
     assert names.reads == 0
