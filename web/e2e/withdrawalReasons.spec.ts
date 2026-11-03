@@ -47,7 +47,9 @@ test('a seller adds a withdrawal reason, records a withdrawal with it and reads 
   await expect(page.getByRole('button', { name: 'Add reason' })).toBeVisible()
   await page.getByRole('button', { name: 'Add reason' }).click()
   await page.getByLabel('Name', { exact: true }).fill('Gifts')
-  await expectToast(page, 'Reason saved', () => page.getByRole('button', { name: 'Save', exact: true }).click())
+  // The reasons screen's toast is an Aviso, which the e2e toast recorder does not watch; read it on the page.
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
+  await expect(page.getByText('Reason saved')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Move Gifts up' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Move Gifts down' })).toHaveCount(0)
 
