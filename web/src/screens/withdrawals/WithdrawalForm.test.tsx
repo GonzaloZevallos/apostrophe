@@ -9,7 +9,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import contract from '../../api/contract.json'
 import WITHDRAWAL from '../../api/fixtures/withdrawal.json'
-import { VARIETIES as VARIETIES_PATH, WITHDRAWAL_NEW, withdrawalNewFor } from '../../routes'
+import { VARIETIES as VARIETIES_PATH, WITHDRAWAL_EDIT, WITHDRAWAL_NEW, pathTo, withdrawalNewFor } from '../../routes'
 import { REASONS, jsonResponse, renderWithdrawals } from './renderWithdrawals'
 import { LIMITS } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
@@ -129,7 +129,7 @@ test('recording sends the chosen reason by its id', async () => {
 
 test('editing starts on its own reason and lets any reason of the list be picked', async () => {
   const bodies: unknown[] = []
-  renderWithdrawals(['/withdrawals/1/edit'], async (url, init) => {
+  renderWithdrawals([pathTo(WITHDRAWAL_EDIT, { id: 1 })], async (url, init) => {
     if (url === '/stock/withdrawals/1' && init?.method === 'PUT') {
       bodies.push(JSON.parse(String(init.body)))
       return jsonResponse(200, WITHDRAWAL)
@@ -154,7 +154,7 @@ test('editing starts on its own reason and lets any reason of the list be picked
 
 test.each([
   ['recording', [WITHDRAWAL_NEW], 'POST', '/stock/withdrawals'],
-  ['editing', ['/withdrawals/1/edit'], 'PUT', '/stock/withdrawals/1'],
+  ['editing', [pathTo(WITHDRAWAL_EDIT, { id: 1 })], 'PUT', '/stock/withdrawals/1'],
 ] as const)(
   'a reason gone while %s keeps the form open and typed, re-reads the list, clears Reason and says so on it',
   async (_mode, path, method, writeUrl) => {
@@ -349,7 +349,7 @@ test('grams the front cannot read are refused inline without calling the API', a
 })
 
 test('a send that finds the withdrawal gone goes to Variedades with the fixed notice', async () => {
-  const { router } = renderWithdrawals(['/withdrawals/1/edit'], async (url, init) => {
+  const { router } = renderWithdrawals([pathTo(WITHDRAWAL_EDIT, { id: 1 })], async (url, init) => {
     if (url === '/stock/withdrawals/1' && init?.method === 'PUT') {
       return jsonResponse(404, { code: 'stock.withdrawal_not_found' })
     }
