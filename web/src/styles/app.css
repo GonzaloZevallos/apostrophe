@@ -6468,7 +6468,8 @@ body {
   margin-right: 8px;
 }
 
-/* Customer types (Settings → Prices): its list and Sheet buttons, and the icon radios of the form.
+/* Customer types (Settings → Prices): the touch-action of its list and Sheet buttons, and the icon radios of the form.
+ * Their text selection is already off (the pressed-state block); the user-select check names single classes.
  * The wrapper adds no box. Scoped here so the other screens' listed touch-action offenders (the
  * shared `.boton`, the Sheet's Close) stay as the offender files record them. */
 .tipos-cliente {
@@ -6478,8 +6479,6 @@ body {
 .tipos-cliente button,
 .tipos-cliente a {
   touch-action: manipulation;
-  -webkit-user-select: none;
-  user-select: none;
 }
 
 /* Eight icon radios of at least 44x44 px: they wrap instead of squeezing to the row's width. */
@@ -6500,8 +6499,6 @@ body {
 /* The group's own Close sits in the header above the wrapper; only this group's is scoped. */
 .ajustes-grupo:has(.tipos-cliente) .ajustes-grupo__encabezado button {
   touch-action: manipulation;
-  -webkit-user-select: none;
-  user-select: none;
 }
 
 /* "+ Customer type" is the wrapper's direct button: a 44 px target. */
