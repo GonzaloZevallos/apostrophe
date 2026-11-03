@@ -85,6 +85,7 @@ subgraph src["src"]
       src_screens_settings_SettingsGroup_tsx["SettingsGroup.tsx"]
       src_screens_settings_Settings_tsx["Settings.tsx"]
       src_screens_settings_UsersGroup_tsx["UsersGroup.tsx"]
+      src_screens_settings_WithdrawalReasons_tsx["WithdrawalReasons.tsx"]
     end
     subgraph src_screens_varieties["varieties"]
       src_screens_varieties_ArchivedIndex_tsx["ArchivedIndex.tsx"]
@@ -305,6 +306,7 @@ src_screens_settings_IntegrationsGroup_tsx-->src_screens_settings_SettingsGroup_
 src_screens_settings_PricingGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_UsersGroup_tsx-->src_screens_settings_InvitePartner_tsx
 src_screens_settings_UsersGroup_tsx-->src_screens_settings_SettingsGroup_tsx
+src_screens_settings_WithdrawalReasons_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_varieties_ArchivedIndex_tsx-->src_screens_varieties_ArchivedVarieties_tsx
 src_screens_varieties_ArchivedIndex_tsx-->src_screens_varieties_archivedVarieties_ts
 src_screens_varieties_ArchivedIndex_tsx-->src_screens_varieties_varietiesByName_ts
