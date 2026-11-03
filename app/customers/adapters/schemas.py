@@ -55,13 +55,20 @@ class CustomerOut(BaseModel):
     standing: Standing
 
     @classmethod
-    def of(cls, customer: Customer, balance: CustomerBalance = NO_BALANCE) -> "CustomerOut":
+    def of(
+        cls,
+        customer: Customer,
+        balance: CustomerBalance = NO_BALANCE,
+        vip_type_id: int | None = None,
+    ) -> "CustomerOut":
+        """`vip` is membership in the business's VIP type, compared here against the id
+        the request read once (docs/adr/0070); the frozen column is never read."""
         assert customer.id is not None, "only stored customers go out"
         return cls(
             id=customer.id,
             name=customer.name.value,
             phone=customer.phone.value if customer.phone is not None else None,
-            vip=customer.vip,
+            vip=vip_type_id is not None and customer.customer_type_id == vip_type_id,
             customer_type_id=customer.customer_type_id,
             balance=balance.balance,
             owing_since=balance.owing_since,

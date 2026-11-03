@@ -162,12 +162,11 @@ class CustomerName:
 @dataclass
 class Customer:
     """The aggregate root: a name, a phone number and the customer type they are in, or
-    none. `vip` is derived, never stored here: it says whether `customer_type_id` is the
-    business's VIP type, as `SqlCustomers` fills it when it reads (docs/adr/0070)."""
+    none. Whether that type is the business's VIP type is for the readers to compare
+    (docs/adr/0070); the aggregate holds no VIP mark."""
 
     name: CustomerName
     phone: PhoneNumber | None
-    vip: bool = False
     id: int | None = None
     customer_type_id: int | None = None
 

@@ -174,7 +174,6 @@ def test_write_customer_stores_the_customer_type_it_is_given(
     stored = SqlCustomers(session, business_id).get(customer_id)
     assert stored is not None
     assert stored.customer_type_id == vip_type.id
-    assert stored.vip is True
     assert stored.name.value == "Fran Araujo"
     assert stored.phone is not None
     assert stored.phone.value == "+5491123456789"
@@ -190,7 +189,6 @@ def test_write_customer_without_a_type_stores_none(client: TestClient, engine: E
     stored = SqlCustomers(session, business_id).get(customer_id)
     assert stored is not None
     assert stored.customer_type_id is None
-    assert stored.vip is False
 
 
 def test_write_customer_with_no_phone_key_stores_no_phone(

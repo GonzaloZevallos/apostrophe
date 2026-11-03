@@ -57,9 +57,7 @@ classDiagram
   schemas --> manage_customers
   schemas --> ports
   sql_customers --> customer
-  sql_customers --> customer_type_lookup
   sql_customers --> errors
-  sql_customers --> ports
   sql_customers --> tables
   tables --> customer
 ```
@@ -74,7 +72,6 @@ classDiagram
     name
     phone : PhoneNumber #124; None
     sort_key : tuple~str, int~
-    vip : bool
     matches(query: str) bool
   }
   class CustomerName {
@@ -170,7 +167,7 @@ classDiagram
     phone : str #124; None
     standing : Literal
     vip : bool
-    of(customer: Customer, balance: CustomerBalance) 'CustomerOut'
+    of(customer: Customer, balance: CustomerBalance, vip_type_id: int #124; None) 'CustomerOut'
   }
   class CustomerPatchIn {
     customer_type_id : int #124; None
