@@ -5,14 +5,34 @@ comparator). The legacy `reason` column keeps every value; only its nullability 
 from pathlib import Path
 
 import pytest
+from alembic import command
+from alembic.config import Config
 from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError
 
 from app.db import make_engine
+from app.migrations.runner import MIGRATIONS_ROOT
 from tests.migrations.comparator import Snapshot, compare, snapshot, upgrade_to
 
 NOW = "2026-01-01 12:00:00"
+
+
+def _upgrade_as_the_runner_does(engine: Engine, revision: str) -> None:
+    """Rebuilding `stock_withdrawal` drops a table `stock_withdrawal_line` points at, so
+    this runs with foreign keys off and checks them at the end, as `upgrade_to_head`
+    does; the shared `upgrade_to` leaves them on."""
+    with engine.connect() as connection:
+        raw = connection.connection.dbapi_connection
+        assert raw is not None
+        raw.execute("PRAGMA foreign_keys=OFF")
+        config = Config()
+        config.set_main_option("script_location", str(MIGRATIONS_ROOT))
+        config.attributes["connection"] = connection
+        with connection.begin():
+            command.upgrade(config, revision)
+        assert raw.execute("PRAGMA foreign_key_check").fetchone() is None
+        raw.execute("PRAGMA foreign_keys=ON")
 
 
 def _engine_at_0020(tmp_path: Path) -> Engine:
@@ -42,7 +62,16 @@ def _seed_reasons(engine: Engine) -> None:
 
 
 def _withdraw(engine: Engine, withdrawal_id: int, business_id: int, reason: str) -> None:
+    """A withdrawal with two lines of one variety of its business, so the rebuild of
+    `stock_withdrawal` is compared with `stock_withdrawal_line` rows pointing at it."""
     with engine.begin() as connection:
+        connection.execute(
+            text(
+                "INSERT OR IGNORE INTO variety (id, business_id, name, name_key) "
+                "VALUES (:b, :b, 'Variedad', :k)"
+            ),
+            {"b": business_id, "k": f"variedad {business_id}"},
+        )
         connection.execute(
             text(
                 "INSERT INTO stock_withdrawal (id, business_id, reason, withdrawn_on, recorded_at)"
@@ -50,6 +79,21 @@ def _withdraw(engine: Engine, withdrawal_id: int, business_id: int, reason: str)
             ),
             {"i": withdrawal_id, "b": business_id, "r": reason, "now": NOW},
         )
+        for position in (0, 1):
+            connection.execute(
+                text(
+                    "INSERT INTO stock_withdrawal_line "
+                    "(id, business_id, stock_withdrawal_id, variety_id, position, "
+                    "grams_hundredths) VALUES (:id, :b, :w, :b, :p, :g)"
+                ),
+                {
+                    "id": withdrawal_id * 10 + position,
+                    "b": business_id,
+                    "w": withdrawal_id,
+                    "p": position,
+                    "g": 150 + position,
+                },
+            )
 
 
 def _linked(after: Snapshot) -> dict[int, tuple[str, int]]:
@@ -74,10 +118,13 @@ def test_each_withdrawal_links_to_the_reason_of_its_own_business_and_nothing_cha
     _withdraw(engine, 3, 2, "promotion")
     before = snapshot(engine)
 
-    upgrade_to(engine, "0021")
+    _upgrade_as_the_runner_does(engine, "0021")
     after = snapshot(engine)
 
     compare(before, after)
+    # The lines survive the rebuild of their parent: same count, ids and every value.
+    assert len(before["stock_withdrawal_line"]) == 6
+    assert after["stock_withdrawal_line"] == before["stock_withdrawal_line"]
     assert _linked(after) == {1: ("Marketing", 1), 2: ("Own use", 1), 3: ("Marketing", 2)}
     assert {row["reason"] for row in after["stock_withdrawal"].values()} == {
         "promotion",
@@ -102,7 +149,7 @@ def test_a_business_missing_a_seeded_key_gets_it_inserted_at_the_end_never_faili
     _withdraw(engine, 2, 3, "own_use")
     before = snapshot(engine)
 
-    upgrade_to(engine, "0021")
+    _upgrade_as_the_runner_does(engine, "0021")
     after = snapshot(engine)
 
     # `withdrawal_reason` is the one table that grows here, so it is read on its own: the
@@ -127,7 +174,7 @@ def test_a_business_with_all_its_keys_gets_no_extra_reason(tmp_path: Path) -> No
     _seed_reasons(engine)
     _withdraw(engine, 1, 1, "promotion")
 
-    upgrade_to(engine, "0021")
+    _upgrade_as_the_runner_does(engine, "0021")
 
     assert len(snapshot(engine)["withdrawal_reason"]) == 4
     engine.dispose()
@@ -138,7 +185,7 @@ def test_the_new_link_is_required_restricted_and_never_crosses_a_business(
 ) -> None:
     engine = _engine_at_0020(tmp_path)
     _seed_reasons(engine)
-    upgrade_to(engine, "0021")
+    _upgrade_as_the_runner_does(engine, "0021")
     insert = (
         "INSERT INTO stock_withdrawal "
         "(business_id, withdrawal_reason_id, reason, withdrawn_on, recorded_at) "

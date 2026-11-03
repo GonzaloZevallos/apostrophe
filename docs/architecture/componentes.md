@@ -49,7 +49,7 @@ El diagrama de clases de cada capacidad lo genera [scripts/docs/generate.py](../
 | results | [results](../../app/results/application/ports.py) `StockFigures` `SalesLedger` `DebtSummary` `WithdrawalReasons` | [results](generated/classes/results.md) |
 | sales | [sales](../../app/sales/application/ports.py) `Sales` `PriceBook` `CustomerFacts` | [sales](generated/classes/sales.md) |
 | spreadsheet_import | [spreadsheet_import](../../app/spreadsheet_import/application/ports.py) `VarietiesImport` `SalesImport` | [spreadsheet_import](generated/classes/spreadsheet_import.md) |
-| stock | [stock](../../app/stock/application/ports.py) `StockEntries` `Withdrawals` `VarietyCatalog` | [stock](generated/classes/stock.md) |
+| stock | [stock](../../app/stock/application/ports.py) `StockEntries` `Withdrawals` `VarietyCatalog` `WithdrawalReasons` `ReasonDefaults` | [stock](generated/classes/stock.md) |
 | shared | sin puertos de negocio: [transaction.py](../../app/shared/transaction.py) `Transaction` | [shared](generated/classes/shared.md) |
 
 Un ejemplo de punta a punta, con las llamadas en orden, está en [flujos-clave.md](flujos-clave.md).
