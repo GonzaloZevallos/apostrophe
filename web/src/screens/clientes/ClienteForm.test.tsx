@@ -560,7 +560,7 @@ test('a type is set on a new customer and sent as customer_type_id', async () =>
   )
 })
 
-test('editing shows the current type, changes it and clears it with No type', async () => {
+test('editing shows the current type and clears it with No type', async () => {
   api = stubFetchWithSettings(true, true, TYPES)
   api.mockResolvedValueOnce(jsonResponse(200, { id: 7, name: 'Tincho', phone: null, vip: false, customer_type_id: 1 }))
   api.mockResolvedValue(jsonResponse(200, { id: 7, name: 'Tincho', phone: null, vip: false, customer_type_id: null }))
@@ -575,6 +575,25 @@ test('editing shows the current type, changes it and clears it with No type', as
   expect(api).toHaveBeenCalledWith(
     '/customers/7',
     expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', phone: '', customer_type_id: null }) }),
+  )
+})
+
+test('editing changes a customer\'s type from one type to another', async () => {
+  api = stubFetchWithSettings(true, true, TYPES)
+  api.mockResolvedValueOnce(jsonResponse(200, { id: 7, name: 'Tincho', phone: null, vip: false, customer_type_id: 1 }))
+  api.mockResolvedValue(jsonResponse(200, { id: 7, name: 'Tincho', phone: null, vip: true, customer_type_id: 2 }))
+  renderForm(pathTo(CUSTOMER_EDIT, { id: 7 }))
+
+  const field = await screen.findByLabelText('Customer type')
+  await waitFor(() => expect(field).toHaveValue('1'))
+  await userEvent.selectOptions(field, '★ Wholesale')
+  expect(field).toHaveValue('2')
+  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+
+  expect(await screen.findByText('la ficha')).toBeInTheDocument()
+  expect(api).toHaveBeenCalledWith(
+    '/customers/7',
+    expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', phone: '', customer_type_id: 2 }) }),
   )
 })
 

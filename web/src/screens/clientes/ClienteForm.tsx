@@ -58,14 +58,13 @@ export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 
 const TYPE_NOT_FOUND = 'customer_type.not_found'
 
-type Field = 'name' | 'phone' | 'type' | 'form'
+type Field = 'name' | 'phone' | 'form'
 
 const FIELD_OVERRIDES: Partial<Record<RefusalCode, { field: Field; message: string }>> = {
   'customer.name_missing': { field: 'name', message: NAME_REQUIRED },
   'customer.name_too_long': { field: 'name', message: COMMON_TEXT.nameTooLong },
   'customer.phone_invalid': { field: 'phone', message: PHONE_INVALID },
   'customer.phone_taken': { field: 'phone', message: PHONE_TAKEN },
-  'customer_type.not_found': { field: 'type', message: CUSTOMERS_TEXT.typeNotFound },
 }
 
 interface Props {
@@ -209,7 +208,6 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
         if (override !== undefined) {
           if (override.field === 'name') setNameError(override.message)
           else if (override.field === 'phone') setPhoneError(override.message)
-          else if (override.field === 'type') setTypeError(override.message)
           else setFormError(override.message)
         } else if (caught.code !== UNKNOWN_CODE) {
           setFormError(GENERIC_REFUSAL)

@@ -115,6 +115,7 @@ test('the customer card shows the type\'s icon and name only while Customer type
   stub(true, { 'GET /customers/3': FER, 'GET /customers/3/account': ACCOUNT })
   renderAt(pathTo(CUSTOMER, { id: 3 }))
   expect(await screen.findByText('Wholesale')).toBeInTheDocument()
+  expect(screen.getByText('★')).toBeInTheDocument()
   expect(screen.queryByText('VIP')).not.toBeInTheDocument()
 })
 
@@ -123,6 +124,7 @@ test('the customer card hides the type while Customer types is off', async () =>
   renderAt(pathTo(CUSTOMER, { id: 3 }))
   expect(await screen.findByText('Fer')).toBeInTheDocument()
   expect(screen.queryByText('Wholesale')).not.toBeInTheDocument()
+  expect(screen.queryByText('★')).not.toBeInTheDocument()
 })
 
 test('the customer form shows the Customer type field only while Customer types is on', async () => {

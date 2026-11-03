@@ -7,6 +7,7 @@
  */
 
 import {
+  CUSTOMER,
   CUSTOMER_NEW,
   CUSTOMERS,
   EXPENSE_CATEGORIES,
@@ -44,6 +45,22 @@ const ENTRY_ROUTE = pathTo(STOCK_ENTRY, { id: 1 })
 /** The variety the sample app seeds below its stock threshold, by the registry's placeholder. */
 const LOW_VARIETY = VARIETY.replace(':id', '{low}')
 
+const SAMPLE_TYPES = [
+  { id: 1, name: 'Friends', icon: 'heart', is_vip: false },
+  { id: 2, name: 'Wholesale', icon: 'star', is_vip: true },
+]
+
+const SAMPLE_TYPED_CUSTOMER = {
+  id: 1,
+  name: 'Ana Pérez',
+  phone: null,
+  vip: true,
+  customer_type_id: 2,
+  balance: 0,
+  owing_since: null,
+  standing: 'settled',
+}
+
 export const RECORDS_STATES: readonly WalkState[] = [
   {
     // The sample Business has no customer types, so the form's type field is the notice.
@@ -51,6 +68,25 @@ export const RECORDS_STATES: readonly WalkState[] = [
     route: CUSTOMER_NEW,
     steps: [],
     visible: CUSTOMERS_TEXT.typeNotice,
+  },
+  {
+    // Types are answered by a stub (the sample has none), so the select itself is walked.
+    screen: 'ClienteNuevoConTipos',
+    route: CUSTOMER_NEW,
+    steps: [],
+    visible: CUSTOMERS_TEXT.typeLabel,
+    reads: [{ path: /^\/customer-types$/, status: 200, body: SAMPLE_TYPES }],
+  },
+  {
+    // A customer in a type, answered by a stub, so the detail page's type line is walked.
+    screen: 'ClienteFichaConTipo',
+    route: CUSTOMER.replace(':id', '{debtor}'),
+    steps: [],
+    visible: 'Wholesale',
+    reads: [
+      { path: /^\/customer-types$/, status: 200, body: SAMPLE_TYPES },
+      { path: /^\/customers\/\d+$/, status: 200, body: SAMPLE_TYPED_CUSTOMER },
+    ],
   },
   {
     screen: 'ClientesBusqueda',
