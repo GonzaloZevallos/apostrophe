@@ -110,6 +110,7 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
   - debajo de Stock shortfall, cuando alguno de los Adjustments negativos del período tiene gramos pendientes;
   - debajo de la línea de cada Withdrawal reason, cuando alguno de los retiros del período con ese motivo tiene gramos pendientes;
   - debajo de Profit, cuando corresponde cualquiera de las anteriores.
+- **Una línea de motivo toda pendiente**: cuando todos los gramos detrás de la línea de un Withdrawal reason están pendientes, la línea muestra sus gramos sin costo (por ejemplo "1 g without cost") en lugar de una cifra, nunca "$ 0", y lleva la nota. La línea nunca se oculta porque su costo esté pendiente.
 - El Cash nunca la lleva: el Pending cost no es plata que se movió.
 - Sin nada pendiente, ninguna cifra muestra la nota.
 
@@ -166,7 +167,7 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 - El estado de primer uso es del Business: cada User, un socio que se sumó incluido, ve el mismo elemento.
 - Week y Month conservan los mismos avisos encima de sus propias cifras.
 - En una computadora usa la disposición de dos columnas de `InicioCompu` (Home, disposición de computadora), con los mismos avisos en el mismo orden arriba.
-- Sigue los temas claro y oscuro, y coincide con `docs/product/design-system/pantallas/` en los dos.
+- Sigue los temas claro y oscuro, y coincide con `docs/product/design-system/pantallas/` en los dos. Las líneas de los motivos usan la fila de resultado existente (la etiqueta a la izquierda y la cifra a la derecha); no tienen dibujo propio.
 - No es un menú de acciones:
   - no registra nada por sí mismo y no tiene toasts propios;
   - su única acción principal es el "+ New sale" del marco; "Collect" en las filas de deudor es la única otra acción directa, además de los avisos, que solo abren donde está su arreglo.
@@ -177,7 +178,7 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 
 - El Business sale de la Session.
 - La ruta del Panel entra en el barrido de aislamiento y en la prueba de rutas protegidas.
-- Cada cifra se calcula en el servidor, y también qué elemento de primer uso y qué avisos se muestran, la cuenta y el paso siguiente del aviso del Onboarding, cada paso de la checklist, y qué líneas de motivo se muestran y en qué orden. El navegador nunca ordena ni suma nada.
+- Cada cifra se calcula en el servidor, y también qué elemento de primer uso y qué avisos se muestran, la cuenta y el paso siguiente del aviso del Onboarding, cada paso de la checklist, qué líneas de motivo se muestran y en qué orden, y si una línea de motivo está toda pendiente. El navegador nunca ordena ni suma nada.
 - Ninguna cifra ni nombre va a los logs, la consola ni el almacenamiento del navegador.
 
 ## Métricas
@@ -198,6 +199,7 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
   - las líneas de los motivos en el orden de la lista del Business, también después de reordenarla, y con el nombre actual después de renombrar un motivo;
   - gramos pendientes en una línea de venta que dejan sus ventas afuera del Profit mientras "You sold today" conserva la venta completa;
   - el Pending cost que muestra la nota debajo de Cost of goods sold, de Stock shortfall, de la línea de cada motivo y del Profit como está definido, y nunca debajo del Cash;
+  - una línea de motivo toda pendiente que muestra sus gramos sin costo, nunca "$ 0";
   - Profit y Cash negativos que se muestran como "−$ X".
 - **Nada cambia para un Business existente (criterio 13)**: sobre una historia sembrada, antes y después de la migración de los motivos, cada cifra de Week y Month es idéntica, y la única etiqueta que difiere es "Promotion" → "Marketing".
 - **Archivar no mueve nada (criterio 3)**: cada cifra del período es idéntica antes de archivar una Variety con historial, después de archivarla y después de restaurarla; la Archived variety no aparece en What you have left y no cuenta para "Start with your varieties".
@@ -213,7 +215,7 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 - **Nada inventado (criterio 6)**:
   - un Business vacío muestra $ 0 y 0 g, sin Average sale y sin ninguna línea de Stock shortfall ni de motivo;
   - cada cifra en pantalla es igual a la respuesta de la API.
-- **Como en el diseño (criterio 12)**: `scripts/design/compare.sh` corre antes y después para Home, `InicioOscuro` e `InicioCompu`, en teléfono y computadora, con las capturas adjuntas al PR y cada diferencia con el diseño listada.
+- **Como en el diseño (criterio 12)**: `scripts/design/compare.sh` corre antes y después para Home, `InicioOscuro` e `InicioCompu`, en teléfono y computadora, con las capturas adjuntas al PR y cada diferencia con el diseño listada. El registro de pantallas no captura Week ni Month: las líneas de los motivos y su nota se cubren con las pruebas del front y la corrida de teléfono.
 - **Sin curl**: la corrida de punta a punta del front abre Home, pasa por los tres períodos, lee las líneas de los motivos después de registrar un retiro de cada uno (un motivo agregado por el dueño incluido), abre Customers desde el título del bloque, un Customer desde el avance y Record payment desde el "Collect" de una fila del avance.
 - **Medida de negocio**, que lee el Operator solo a partir de los registros existentes y nunca se muestra en la app: la proporción de Businesses anteriores al Onboarding que completan la checklist, y la proporción de Businesses importados que publican el Catalog.
 
@@ -223,7 +225,7 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 - Registrar cualquier cosa desde el Panel salvo con "+ New sale" y "Collect".
 - Actualizaciones en vivo entre socios.
 - Márgenes por Variety (#8), Stock shortfall por Variety, y el costo de cada Withdrawal reason por Variety.
-- Gramos pendientes contados en el Panel ("and N g without cost"): la nota del Panel es fija y no lleva gramos; Analysis muestra las cuentas.
+- Gramos pendientes contados en el Panel ("and N g without cost") para una cifra con parte pendiente: la nota del Panel es fija y no lleva gramos; Analysis muestra las cuentas.
 - Los gramos totales del stock en el Panel.
 - Descartar el aviso del Onboarding.
 - Archived varieties en el Panel.

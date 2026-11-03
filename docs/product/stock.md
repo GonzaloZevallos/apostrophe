@@ -68,21 +68,21 @@ Criterios de éxito:
   - Cada Business recibe los valores por defecto una sola vez. Un motivo por defecto que se elimina nunca se vuelve a crear.
   - Los dos valores por defecto son motivos comunes, sin ningún trato especial.
 - **No es una pérdida**: un Withdrawal reason nunca es una segunda forma de registrar flor perdida. Los gramos que faltan en un conteo físico siguen siendo un Adjustment negativo y se muestran como Stock shortfall.
-- **Nombre**: se recorta, los espacios internos se colapsan, no puede quedar en blanco y admite hasta 60 caracteres. Es único dentro del Business sin importar mayúsculas, minúsculas ni espacios; dos Businesses pueden tener cada uno un motivo con el mismo nombre. Un nombre en blanco, repetido o demasiado largo se rechaza en línea y se conserva lo tipeado.
+- **Nombre**: se recorta, los espacios internos se colapsan, no puede quedar en blanco y admite hasta 60 caracteres. Es único dentro del Business sin importar mayúsculas, minúsculas ni espacios; dos Businesses pueden tener cada uno un motivo con el mismo nombre. Un nombre en blanco, repetido (también uno que un socio acaba de guardar) o demasiado largo se rechaza en línea y se conserva lo tipeado.
 - **Agregar**: un motivo nuevo va al final de la lista.
 - **Renombrar**: el nombre cambia en todos lados, retiros y períodos pasados incluidos. Las cifras no cambian.
 - **Eliminar**: definitivo y confirmado antes. No hay estado archivado.
   - Un motivo sin retiros se puede eliminar.
   - Un motivo con retiros, de cualquier fecha, no se puede eliminar, y la pantalla dice por qué: "It can't be deleted: it still has withdrawals. You can rename it."
   - La lista siempre conserva al menos un motivo. Eliminar el último se rechaza, y la pantalla dice por qué: "It can't be deleted: you need at least one reason."
-- **Orden**: cada fila tiene un botón para subir y otro para bajar, sin arrastrar. La primera fila no tiene subir y la última no tiene bajar. El orden decide las opciones de "Take from stock" y el orden de las líneas de costo en Home y Analysis.
+- **Orden**: cada fila tiene un botón para subir y otro para bajar, sin arrastrar. La primera fila no tiene subir y la última no tiene bajar. Mover intercambia el motivo con su vecino y se aplica enseguida. El orden decide las opciones de "Take from stock" y el orden de las líneas de costo en Home y Analysis.
 - Cualquier User del Business puede editar la lista. No hay roles.
 - Agregar un motivo desde adentro del formulario de retiro queda afuera: la lista se edita solo en Settings.
 
 ### Stock withdrawal (retiro)
 
 - **Campos**: un Withdrawal reason, una fecha, una o más líneas de Variety y gramos, y una nota opcional.
-- **Motivo**: uno de los Withdrawal reasons del Business. Se fija una vez para todo el retiro, nunca por línea. Es obligatorio y no tiene valor por defecto: se elige cada vez, y el formulario nunca preselecciona ninguno. Un motivo de otro Business responde 404. Una fiesta que mezcla dos motivos son dos retiros.
+- **Motivo**: uno de los Withdrawal reasons del Business. Se fija una vez para todo el retiro, nunca por línea. Es obligatorio y no tiene valor por defecto: se elige cada vez, y el formulario nunca preselecciona ninguno. Un motivo de otro Business responde 404, igual que uno que ya no existe. Una fiesta que mezcla dos motivos son dos retiros.
 - **Fecha**: por defecto, hoy en hora argentina. Se permiten días anteriores; una fecha futura se rechaza. Es el día en que los gramos salieron del stock; no hay retiros planificados ni borradores.
 - **Líneas**: cada una es una Variety del Business (cualquier otro id responde 404) y gramos mayores que cero con dos decimales como máximo. La misma Variety puede aparecer en varias líneas, sin fusionarse. Un retiro sin líneas se rechaza.
 - **Archived varieties** (varieties.md, ADR-0032):
@@ -104,7 +104,7 @@ Criterios de éxito:
   - Un Adjustment negativo no es un Lot. Sus gramos salen como los de una venta.
 - **Orden**: los gramos que salen de una Variety (líneas de venta, líneas de Gift, Adjustments negativos y líneas de retiro) se toman primero del Lot más antiguo de esa Variety.
   - Los Lots se ordenan por fecha y después por orden de registro.
-  - Los gramos que salen siguen el mismo orden: por fecha, y después toma primero el que se registró primero.
+  - Los gramos que salen siguen el mismo orden: por fecha, y después toma primero el que se registró primero. El motivo de un retiro nunca cambia ese orden.
   - Una entrada o un retiro registrados tarde o corregidos ocupan su lugar por su propia fecha, sin importar cuándo se tipearon.
 - **Pending cost**: los gramos que salen más allá de todo Lot todavía no tienen costo, nunca $0. Una entrada posterior de cualquier origen los cubre en orden de fecha, caiga donde caiga su fecha.
 - **Costo de una línea**: el costo de cada Draw es un monto en pesos enteros, redondeado una sola vez sobre todo lo que tomó de todos los Lots, nunca Lot por Lot. Los costos tomados de un Lot agotado suman exactamente su costo.
@@ -148,17 +148,25 @@ Criterios de éxito:
   - el costo por gramo antes de guardar ("It comes to $ 8.500 per gram") siempre que haya un costo.
 - **Take from stock**, el formulario de retiro, un formulario (navigation.md): "Close", sin barra, sin "+ New sale", y una confirmación al salir con algo tipeado. Sigue el estándar del teléfono para campos y zonas de toque (#80).
   - Se abre desde More (segundo, después de "+ Add expense"), desde el "Take from stock" secundario de Varieties (junto a "+ Stock entry", en teléfono y computadora), sin Variety elegida, y desde "Take from stock" en la página de una Variety, con esa Variety ya elegida. La página de una Archived variety no ofrece "Take from stock".
-  - motivo (los Withdrawal reasons del Business en el orden de su lista, obligatorio, sin valor por defecto), fecha (con hoy), una o más líneas de Variety y gramos, y nota.
+  - motivo, fecha (con hoy), una o más líneas de Variety y gramos, y nota.
+  - **Reason**: los Withdrawal reasons del Business como opciones para tocar, en el orden de su lista, leídos de la API al abrir el formulario. Ninguno arranca elegido, y "Save the withdrawal" queda desactivado hasta que se elige uno; no se pierde nada de lo tipeado. Si la API igual recibe un retiro sin motivo, lo rechaza con "Pick a reason.".
   - El selector de Variety ofrece solo Varieties sin archivar. Si se abre con una Variety preseleccionada que está archivada o no existe (`/withdrawals/new?variety=<id>`), el formulario abre sin Variety elegida, como si se hubiera abierto sin ninguna; no se registra nada contra esa Variety y no se muestra ningún mensaje por ella.
-  - Editar abre el mismo formulario con el retiro cargado; guardar una edición se confirma antes.
+  - Editar abre el mismo formulario con el retiro cargado y su propio motivo elegido, aunque la lista de motivos todavía se esté cargando; guardar una edición se confirma antes.
   - **Editar un retiro que toca una Variety archivada después**: cada línea así muestra su Variety por nombre como una etiqueta fija, con el selector de Varieties sin archivar al lado. El vendedor puede conservarla (guardar funciona), elegir otra Variety sin archivar o quitar la línea.
   - **Una Variety archivada mientras el formulario está abierto** (la archivó un socio): guardar se rechaza con `variety.archived`, según la regla "That is gone" de accounts.md:
     - el formulario queda abierto y no se borra nada de lo tipeado, incluida la Variety de cada línea culpable, que se sigue mostrando por su nombre;
     - debajo de cada línea culpable se muestra "That is gone.", y la lista de Varieties se actualiza;
     - el formulario no se puede volver a guardar mientras una línea culpable siga nombrando la Variety archivada: el vendedor elige otra Variety o quita la línea, y eso borra su mensaje.
-  - **Un motivo eliminado mientras el formulario está abierto** (lo eliminó un socio): guardar se rechaza según la misma regla "That is gone" de accounts.md. El formulario queda abierto con todo lo tipeado, la lista de motivos se actualiza, Reason queda vacío y el campo muestra "That reason is gone. Pick another."
-- **El detalle de un retiro**, abierto desde su fila: un detalle (navigation.md), con la barra o la barra lateral y un "‹" de regreso a la página de la Variety desde la que se llegó (Varieties cuando no hay historial), y sin "+ New sale". Muestra la fecha, el nombre actual del motivo, cada línea y la nota, con "Edit" y "Delete", también cuando la Variety de una línea está archivada.
-- **Settings → Business → Withdrawal reasons**: una pantalla de Settings (navigation.md) con cada motivo del Business en el orden de su lista. Por fila: el nombre, renombrar, "Delete", y los botones para subir y bajar, con nombres accesibles "Move <name> up" y "Move <name> down". Tiene una forma de agregar un motivo, que va al final. Las negativas (en blanco, repetido, demasiado largo, con retiros, el último) se muestran en línea y conservan lo tipeado. Su aspecto exacto lo decide diseño, con el teléfono primero.
+  - **Un motivo eliminado mientras el formulario está abierto** (lo eliminó un socio): guardar se rechaza con `stock.withdrawal_reason_not_found`, según la misma regla "That is gone" de accounts.md. El formulario queda abierto con todo lo tipeado, la lista de motivos se actualiza, Reason queda vacío y el campo muestra "That reason is gone. Pick another."
+- **El detalle de un retiro**, abierto desde su fila: un detalle (navigation.md), con la barra o la barra lateral y un "‹" de regreso a la página de la Variety desde la que se llegó (Varieties cuando no hay historial), y sin "+ New sale". Muestra la fecha, el nombre actual del motivo ("Reason: Marketing"), cada línea y la nota, con "Edit" y "Delete", también cuando la Variety de una línea está archivada.
+- **Settings → Business → Withdrawal reasons** (`/settings/withdrawal-reasons`):
+  - **Entrada**: una fila "Withdrawal reasons" en el grupo Business de Settings, debajo del nombre del Business, con su ícono, la etiqueta y una flecha, hecha con la fila de entrada común de Settings. La pantalla tiene "Close" y el regreso del teléfono sigue el historial.
+  - **Arriba**: el título y la línea "The reasons you pick when you take stock out without selling it."
+  - **Filas**: cada motivo del Business en el orden de su lista. Por fila: el nombre (cortado con puntos suspensivos si es largo); los botones "Up" y "Down" con texto visible y nombres accesibles "Move <name> up" y "Move <name> down" (la primera fila no tiene "Up" y la última no tiene "Down"); y "Rename" y "Delete", visibles con ícono y texto. Cada botón mide al menos 44×44.
+  - **Agregar y renombrar**: "Add reason", al pie de la lista, abre una Sheet ("Add reason") con un solo campo de nombre y la acción principal fija abajo; "Rename" abre la misma Sheet ("Rename reason") con el nombre ya cargado. "Close", Escape y el gesto de volver la cierran sin guardar nada. Las negativas se muestran en línea dentro de la Sheet y conservan lo tipeado: "Write a name.", "Use 60 characters or fewer." y "You already have a reason with that name.". Al guardar, la lista se vuelve a leer de la API.
+  - **Mover**: se aplica con un toque y la pantalla muestra la lista que responde la API. Mientras se guarda, los botones de mover quedan desactivados. Si falla, dice "The order wasn't saved. Try again."; si el motivo ya no está, la lista se vuelve a leer.
+  - **Eliminar**: "Delete" pregunta "Delete the reason <name>?". Las dos negativas ("It can't be deleted: it still has withdrawals. You can rename it." y "It can't be deleted: you need at least one reason.") se muestran como un aviso en pantalla debajo de la lista, con el Attention icon al lado de la oración, y el dueño sigue en la pantalla.
+  - **Estados**: cargando, con la lista (nunca hay estado vacío: la lista siempre tiene un motivo), sin conexión y error con reintento, con los componentes comunes.
 - **Editar una entrada**: guardar se confirma antes.
 - **Eliminar una entrada**: se confirma con "Before deleting", que nombra la fecha, la Variety y los gramos.
 - **Pending cost**, donde se muestre el costo de una línea:
@@ -166,14 +174,14 @@ Criterios de éxito:
   - la parte con costo más "and N g without cost" para una línea partida;
   - un Gift dice "Gift".
 - **Toasts**: "Entry saved", "Entry deleted", "Warning saved", "Withdrawal saved", "Withdrawal deleted", "Reason saved" y "Reason deleted". Ninguno lleva gramos, montos ni nombres.
-- **Las negativas** se muestran en línea y conservan lo tipeado.
-- **Una entrada, un retiro o un motivo que ya no está** siguen la regla "That is gone." de accounts.md: abrir uno ofrece volver a su pantalla madre ("Back to Varieties" para entradas y retiros); guardar, eliminar o confirmar sobre él muestra "That is gone. The list is up to date."
+- **Las negativas** de los formularios se muestran en línea y conservan lo tipeado.
+- **Una entrada, un retiro o un motivo que ya no está** siguen la regla "That is gone." de accounts.md: abrir uno ofrece volver a su pantalla madre ("Back to Varieties" para entradas y retiros); guardar, eliminar o confirmar sobre él muestra "That is gone. The list is up to date.", y en Withdrawal reasons la lista se vuelve a leer.
 - **Pinned catalog**: registrar, editar o eliminar una entrada o un retiro dispara la Upkeep (pinned-catalog.md). Editar los motivos no la dispara: el Catalog no los muestra.
 
 ### Restricciones
 
 - Cada tabla de stock, de retiro y de Withdrawal reason lleva `business_id`, y se lee solo a través de un repositorio hecho para un único Business. El Business sale de la Session.
-- Cada ruta entra en el barrido de aislamiento, en la prueba de rutas protegidas y en la prueba de migración de pertenencia.
+- Cada ruta entra en el barrido de aislamiento, en la prueba de rutas protegidas y en la prueba de migración de pertenencia. Un motivo de otro Business responde 404 tanto en el path como cuando se usa como motivo de un retiro.
 - La Business removal exporta y elimina los retiros, sus líneas y los Withdrawal reasons mediante la reflexión de esquema de ADR-0015.
 - La migración de los motivos solo agrega la tabla, la columna nueva del retiro y las filas por defecto, y llena la columna nueva a partir del valor viejo; nunca cambia el valor de una columna existente, y el comparador M3 compartido de `tests/migrations/` lo prueba.
 - Las negativas llevan códigos de `contract.json` (ADR-0008) y nunca repiten la nota, los gramos, los montos ni los nombres (ADR-0005). Una Archived variety nombrada por una entrada o una línea de retiro nueva responde el `variety.archived` que ya existe en varieties (tipo `gone`); no hay un código propio de retiros para eso.
@@ -210,7 +218,7 @@ Criterios de éxito:
 - **Velocidad (criterios 6, 7)**: una entrada y un retiro se registran cada uno desde el teléfono en menos de 60 s por el front, y cada formulario abre a 2 toques como máximo desde cualquier Tab root, en ventanas de teléfono y de computadora, nunca con más toques en la computadora. Leer el stock y los costos responde en menos de 300 ms con unas decenas de Varieties.
 - **Pantallas de retiro**: las pruebas del front muestran el marco del formulario y su confirmación al descartar, el marco del detalle, las confirmaciones de edición y de eliminación (esta con el nombre del motivo), "Withdrawal saved" y "Withdrawal deleted", los dos formularios de "That is gone.", las filas de historial distinguidas por palabra y signo, y "All entries" sin ningún retiro.
 - **Sin curl (criterios 6, 7, 13)**: la corrida de punta a punta del front registra una entrada desde Varieties y otra desde la página de una Variety, edita y elimina una desde "All entries", fija y desactiva un umbral en la página de una Variety, registra un retiro desde More y otro desde la página de una Variety, edita y elimina un retiro, y agrega, renombra, reordena y elimina un motivo, una eliminación rechazada incluida.
-- **Como en el diseño**: comparaciones antes y después de `scripts/design/compare.sh` para el formulario de retiro, su detalle, Varieties, la página de una Variety y Settings → Business → Withdrawal reasons, en teléfono y computadora, juzgadas a ojo.
+- **Como en el diseño**: comparaciones antes y después de `scripts/design/compare.sh` para el formulario de retiro, su detalle, Varieties y la página de una Variety, en teléfono y computadora, juzgadas a ojo. Settings → Business → Withdrawal reasons no tiene dibujo: está en el registro de pantallas para el Mobile check, pero no tiene comparación, y se juzga contra este texto y contra el patrón de Expense categories.
 - **Medida de negocio**, que lee el Operator solo a partir de los registros existentes y nunca se muestra en la app: la proporción de Businesses con algún motivo además de los dos por defecto.
 
 ## Fuera de alcance
