@@ -6496,3 +6496,15 @@ body {
   min-height: 44px;
   padding: 0;
 }
+
+/* The group's own Close sits in the header above the wrapper; only this group's is scoped. */
+.ajustes-grupo:has(.tipos-cliente) .ajustes-grupo__encabezado button {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* "+ Customer type" is the wrapper's direct button: a 44 px target. */
+.tipos-cliente > button {
+  min-height: 44px;
+}
