@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import CurrentBusinessId
-from app.customer_types.domain.customer_type import CustomerTypeNotFound as TypeNotFoundRefusal
+from app.customer_types.adapters.refusals import TYPE_NOT_FOUND_CODE
 from app.customers.adapters.customer_type_lookup import SqlCustomerTypeLookup
 from app.customers.adapters.schemas import NO_BALANCE, CustomerIn, CustomerOut, CustomerPatchIn
 from app.customers.adapters.sql_customers import SqlCustomers
@@ -87,7 +87,7 @@ as_http = TranslateErrors(
 def _type_not_found() -> Refused:
     """The 404 for a type that is not this business's, with the code `customer_types`
     owns for it (the use case's own error carries none)."""
-    return Refused(404, "no such customer type", TypeNotFoundRefusal.code)
+    return Refused(404, "no such customer type", TYPE_NOT_FOUND_CODE)
 
 
 @router.get("")
