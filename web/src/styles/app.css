@@ -6509,6 +6509,17 @@ body {
   flex-wrap: wrap;
   gap: 8px;
 }
+/* The text actions of the screen (Move up, Move down, + Add method) are phone targets: the
+ * padding makes the box 44 px, so the link's underline shadow is dropped. */
+.medios-pago .boton--enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alto-tocable);
+  min-width: var(--alto-tocable);
+  padding: 0 var(--espacio-sm);
+  box-shadow: none;
+  font-weight: 600;
+}
 .medios-pago__iconos {
   display: flex;
   flex-wrap: wrap;
