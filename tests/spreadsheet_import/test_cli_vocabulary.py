@@ -25,6 +25,9 @@ from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import BusinessRow
 from app.catalog.adapters.import_port import SHOWN_WORDS
+from app.payment_methods.adapters.tables import PaymentMethodRow
+from app.payments.adapters.tables import PaymentRow
+from app.sales.adapters.tables import SaleRow
 from app.shared.copy import OperatorText
 from app.spreadsheet_import.adapters import layout
 from app.spreadsheet_import.adapters.cli import run
@@ -63,6 +66,23 @@ def _business_id(engine: Engine, name: str = "Primer Negocio") -> int:
         row = session.scalars(select(BusinessRow).where(BusinessRow.name == name)).one()
         assert row.id is not None
         return row.id
+
+
+def _linked_methods(engine: Engine, business_id: int) -> dict[date, tuple[str, str | None]]:
+    """Per sale date, the name of the payment method its payment links to and the frozen
+    `payment.method` column (which a new payment leaves NULL)."""
+    with Session(engine) as session:
+        rows = session.execute(
+            select(SaleRow.sale_date, PaymentMethodRow.name, PaymentRow.method)
+            .join(PaymentRow, PaymentRow.sale_id == SaleRow.id)
+            .join(
+                PaymentMethodRow,
+                (PaymentMethodRow.business_id == PaymentRow.business_id)
+                & (PaymentMethodRow.id == PaymentRow.payment_method_id),
+            )
+            .where(SaleRow.business_id == business_id)
+        ).all()
+    return {sale_date: (name, frozen) for sale_date, name, frozen in rows}
 
 
 def _save(path: Path, workbook: Workbook) -> Path:
@@ -205,11 +225,13 @@ def test_the_whole_vocabulary_dry_runs_clean_and_real_runs_as_import_md_says(
     sales = {sale["date"]: sale for sale in client.get("/sales").json()}
     assert sales["2026-02-01"]["lines"][0]["pricing_rule"] == "list"
     assert sales["2026-02-02"]["lines"][0]["pricing_rule"] == "list"
-    assert sales["2026-02-03"]["payment"] == "owing"
+    assert sales["2026-02-03"]["payment"] == {"kind": "owing"}
     assert sales["2026-02-03"]["lines"][0]["pricing_rule"] == "vip"
-    assert sales["2026-02-04"]["payment"] == "none"
-    paid_methods = {sales["2026-02-01"]["payment"], sales["2026-02-02"]["payment"]}
-    assert paid_methods == {"cash", "transfer"}
+    assert sales["2026-02-04"]["payment"] == {"kind": "none"}
+    linked = _linked_methods(engine, business_id)
+    paid_methods = {linked[date(2026, 2, 1)][0], linked[date(2026, 2, 2)][0]}
+    assert paid_methods == {"Cash", "Transfer"}
+    assert {frozen for _, frozen in linked.values()} == {None}
 
     customers = {c["name"]: c for c in client.get("/customers").json()}
     assert customers[AMIGO_CUSTOMER]["vip"] is True
@@ -345,9 +367,12 @@ def test_pm_s_own_words_dry_run_clean_real_run_stores_cash_transfer_and_one_owin
 
     sales = client.get("/sales").json()
     assert len(sales) == 3
-    methods = {sale["payment"] for sale in sales}
-    assert methods == {"cash", "transfer", "owing"}
-    assert sum(1 for sale in sales if sale["payment"] == "owing") == 1
+    linked = _linked_methods(engine, business_id)
+    assert sorted(name for name, _ in linked.values()) == ["Cash", "Transfer"]
+    assert {frozen for _, frozen in linked.values()} == {None}
+    owing = [sale for sale in sales if sale["payment"] == {"kind": "owing"}]
+    assert len(owing) == 1
+    assert len(sales) == len(linked) + len(owing)
 
 
 def _blocking_pago_workbook(pago_cell: str | None) -> Workbook:

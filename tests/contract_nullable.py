@@ -161,6 +161,7 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
         "bill.lines[].rule": "string",
         "bill.lines[].unit_price": "integer",
         "bill.payment.still_owed": "integer",
+        "bill.payment.method_name": "string",
         "bill.balance": "integer",
     },
     "sale-detail-gift": {
@@ -173,6 +174,7 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
         "bill.lines[].rule": "string",
         "bill.lines[].unit_price": "integer",
         "bill.payment.still_owed": "integer",
+        "bill.payment.method_name": "string",
         "bill.balance": "integer",
     },
     "withdrawal": {

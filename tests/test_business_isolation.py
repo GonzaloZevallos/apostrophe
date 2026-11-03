@@ -601,10 +601,11 @@ def test_assigning_a_customer_from_another_business_is_refused_the_same_way_as_m
         f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 5_000},
     )
+    own_method = business_b.get("/api/payment-methods").json()[0]["id"]
     sale_id = business_b.post(
         "/sales",
         json={
-            "payment": {"kind": "method", "payment_method_id": 1},
+            "payment": {"kind": "method", "payment_method_id": own_method},
             "lines": [{"product_id": variety["id"], "quantity": "1"}],
         },
     ).json()["id"]

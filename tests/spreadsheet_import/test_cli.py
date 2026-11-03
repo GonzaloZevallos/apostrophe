@@ -736,9 +736,11 @@ def _seed_payment(seed_client: TestClient) -> None:
         },
     )
     assert sale_body.status_code == 201, sale_body.text
+    methods = seed_client.get("/api/payment-methods")
+    assert methods.status_code == 200, methods.text
     payment_body = seed_client.post(
         f"/customers/{customer_id}/payments",
-        json={"paid_on": "2026-01-01", "amount": 1000, "payment_method_id": 1},
+        json={"paid_on": "2026-01-01", "amount": 1000, "payment_method_id": methods.json()[0]["id"]},
     )
     assert payment_body.status_code == 201, payment_body.text
 
