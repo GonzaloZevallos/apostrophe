@@ -6460,3 +6460,10 @@ body {
     flex: 1 1 8rem;
   }
 }
+
+/* A customer type's icon sits before its name, never alone (icon and text rule). */
+.tipo-cliente-fila__icono {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-right: 8px;
+}

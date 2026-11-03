@@ -13,6 +13,7 @@ import {
   MORE,
   pathTo,
   SETTINGS_ACCOUNT,
+  SETTINGS_CUSTOMER_TYPES,
   STOCK,
   STOCK_ENTRY,
   VARIETIES,
@@ -134,6 +135,18 @@ export const RECORDS_STATES: readonly WalkState[] = [
     route: EXPENSE_CATEGORIES,
     steps: [{ click: 'Delete' }],
     visible: 'Delete the category?',
+  },
+  {
+    screen: 'ConfiguracionTipoClienteNuevo',
+    route: SETTINGS_CUSTOMER_TYPES,
+    steps: [{ click: '+ Customer type' }],
+    visible: 'New customer type',
+  },
+  {
+    screen: 'ConfiguracionTipoClienteLista',
+    route: SETTINGS_CUSTOMER_TYPES,
+    steps: [],
+    visible: 'Customer types',
   },
   {
     screen: 'ConfiguracionContrasena',
