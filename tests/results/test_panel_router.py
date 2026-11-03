@@ -647,11 +647,15 @@ def test_the_analysis_rows_carry_cost_of_goods_and_shortfall_that_agree_with_the
     }
     assert week_row["shortfall"] == {"amount": 200, "pending_quantity": 1.0, "all_pending": False}
     assert month_row["shortfall"] == {"amount": 0, "pending_quantity": 1.0, "all_pending": True}
-    assert week_row["promotion"] == {"amount": 400, "pending_quantity": 2.0, "all_pending": False}
-    assert month_row["promotion"] == {"amount": 0, "pending_quantity": 2.0, "all_pending": True}
-    assert month_row["own_use"] == {"amount": 300, "pending_quantity": 0.0, "all_pending": False}
-    assert header["promotion"] == month_row["promotion"]
-    assert header["own_use"] == month_row["own_use"]
+    assert [(w["name"], w["amount"], w["pending_quantity"]) for w in week_row["withdrawals"]] == [
+        ("Marketing", 400, 2.0),
+        ("Own use", 300, 0.0),
+    ]
+    assert [(w["name"], w["amount"], w["pending_quantity"]) for w in month_row["withdrawals"]] == [
+        ("Marketing", None, 2.0),
+        ("Own use", 300, 0.0),
+    ]
+    assert header["withdrawals"] == month_row["withdrawals"]
 
     # A past row, worked by hand: the week of 21/09 sold A's 1 g and had no adjustment;
     # September sold 4 g (A's 3 g costed $300, B's 1 g pending) and adjusted A out by $200.
@@ -686,15 +690,14 @@ def test_the_analysis_rows_carry_cost_of_goods_and_shortfall_that_agree_with_the
         "all_pending": False,
     }
     # The row order is the PRD's.
-    assert list(week_row)[:10] == [
+    assert list(week_row)[:9] == [
         "first_day",
         "last_day",
         "sales",
         "quantity",
         "cost_of_goods",
         "shortfall",
-        "promotion",
-        "own_use",
+        "withdrawals",
         "expenses",
         "profit",
     ]
