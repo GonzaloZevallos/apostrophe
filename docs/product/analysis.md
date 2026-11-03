@@ -321,4 +321,4 @@ Decidido en docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-i
 Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; lo entrega la parte de categorías.
 
 - La tabla del mes elegido se va a poder agrupar por categoría y subcategoría, además de por producto.
-- Va a reemplazar: "**Mes elegido**: abre en el mes en curso en hora argentina" y "la pantalla aclara que la tabla de variedades suma las ventas del mes menos el envío".
+- Va a reemplazar: "**Mes elegido**: abre en el mes en curso en hora argentina" y "**Cada día de la semana, de lunes a domingo**: el total de ventas y la cantidad de ventas, según la fecha de cada venta en hora argentina."
