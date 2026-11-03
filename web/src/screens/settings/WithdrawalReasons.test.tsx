@@ -5,7 +5,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -78,6 +78,21 @@ test('a move renders the list the API answers; a failed move says so', async () 
   fail = true
   await userEvent.click(screen.getByRole('button', { name: 'Move Marketing up' }))
   expect(await screen.findByText(SETTINGS_TEXT.reasonMoveFailed)).toBeVisible()
+})
+
+test('a move answered 404 refreshes the list and does not say the order failed', async () => {
+  const served = [...LIST]
+  renderScreen(async (url, init) => {
+    if (url === '/api/withdrawal-reasons/1/move' && init?.method === 'POST') {
+      served.shift() // Another device deleted "Marketing" meanwhile.
+      return refusal(404, 'stock.withdrawal_reason_not_found')
+    }
+    throw new Error(`unexpected ${url}`)
+  }, served)
+  await userEvent.click(await screen.findByRole('button', { name: 'Move Marketing down' }))
+  await waitFor(() => expect(screen.queryByText('Marketing')).toBeNull())
+  expect(screen.getByText('Own use')).toBeVisible()
+  expect(screen.queryByText(SETTINGS_TEXT.reasonMoveFailed)).toBeNull()
 })
 
 test.each([

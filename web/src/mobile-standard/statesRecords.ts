@@ -13,6 +13,7 @@ import {
   MORE,
   pathTo,
   SETTINGS_ACCOUNT,
+  SETTINGS_WITHDRAWAL_REASONS,
   STOCK,
   STOCK_ENTRY,
   VARIETIES,
@@ -21,6 +22,7 @@ import {
 import { AUTH_TEXT } from '../copy/auth.ts'
 import { common } from './copy.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
+import { SETTINGS_TEXT } from '../copy/settings.ts'
 import { STOCK_TEXT } from '../copy/stock.ts'
 import { VARIETIES_TEXT } from '../copy/varieties.ts'
 import type { WalkState } from './states.ts'
@@ -134,6 +136,30 @@ export const RECORDS_STATES: readonly WalkState[] = [
     route: EXPENSE_CATEGORIES,
     steps: [{ click: 'Delete' }],
     visible: 'Delete the category?',
+  },
+  {
+    screen: 'ConfiguracionMotivos',
+    route: SETTINGS_WITHDRAWAL_REASONS,
+    steps: [],
+    visible: SETTINGS_TEXT.addWithdrawalReason,
+  },
+  {
+    screen: 'ConfiguracionMotivoNuevo',
+    route: SETTINGS_WITHDRAWAL_REASONS,
+    steps: [{ click: SETTINGS_TEXT.addWithdrawalReason }],
+    visible: common('common:save'),
+  },
+  {
+    screen: 'ConfiguracionMotivoRenombrar',
+    route: SETTINGS_WITHDRAWAL_REASONS,
+    steps: [{ click: SETTINGS_TEXT.rename }],
+    visible: SETTINGS_TEXT.renameReasonTitle,
+  },
+  {
+    screen: 'ConfiguracionMotivoConfirmarBorrado',
+    route: SETTINGS_WITHDRAWAL_REASONS,
+    steps: [{ click: SETTINGS_TEXT.delete }],
+    visible: common('common:cancel'),
   },
   {
     screen: 'ConfiguracionContrasena',
