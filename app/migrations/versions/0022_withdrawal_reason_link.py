@@ -1,12 +1,12 @@
 """Link every stock withdrawal to its reason (CONTEXT.md: Withdrawal reason).
 
-Revision ID: 0021
-Revises: 0020
+Revision ID: 0022
+Revises: 0021
 
 Each withdrawal's `reason_id` is found from the old `reason` value by the `name_key`
-revision 0020 wrote ('marketing' for 'promotion', 'own use' for 'own_use'), never by a
+revision 0021 wrote ('marketing' for 'promotion', 'own use' for 'own_use'), never by a
 name a user can edit. A business that has withdrawals of a kind but no reason with that
-key (it was opened after 0020 in another language, say) gets that default inserted at
+key (it was opened after 0021 in another language, say) gets that default inserted at
 the end of its list first, so the fill never fails and never leaves a gap. The names and
 keys are literals, not imported from `app`; a test asserts each pair equals
 `app.shared.names.name_key(name)`.
@@ -22,8 +22,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0021"
-down_revision: str | None = "0020"
+revision: str = "0022"
+down_revision: str | None = "0021"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

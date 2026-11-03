@@ -44,9 +44,10 @@ PAYMENT_INDEX = "ix_payment_sale_id"
 LIST_TABLES = ("sale", "sale_line", "payment")
 
 # The statements `GET /sales` emits for a signed-in request: the session's user and
-# business (2), the two list statements (2), then the settlement's three reads (3).
+# business (2), the VIP type (1), the two list statements (2), then the settlement's
+# three reads (3).
 # Pinned so a constant increase fails too, not only one that grows with the data.
-PINNED_STATEMENTS = 7
+PINNED_STATEMENTS = 8
 
 PERIOD = {"date_from": "2026-09-01", "date_to": "2026-09-30"}
 

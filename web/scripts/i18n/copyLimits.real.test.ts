@@ -29,11 +29,11 @@ const emptyStates: CopyModule = {
 describe('the empty-state keys', () => {
   const en = loadBundle('en')
 
-  test('are eleven, each with a limit kind, and the nobodyOwes key is one key', () => {
-    expect(Object.keys(EMPTY_STATE_KEYS)).toHaveLength(11)
+  test('are twelve, each with a limit kind, and the nobodyOwes key is one key', () => {
+    expect(Object.keys(EMPTY_STATE_KEYS)).toHaveLength(12)
     expect(Object.keys(EMPTY_STATE_LIMITS).sort()).toEqual(Object.keys(EMPTY_STATE_KEYS).sort())
     expect(EMPTY_STATE_KEYS.nobodyOwes).toBe('emptyStates:nobodyOwes')
-    expect(new Set(Object.values(EMPTY_STATE_KEYS)).size).toBe(11)
+    expect(new Set(Object.values(EMPTY_STATE_KEYS)).size).toBe(12)
   })
 
   test('fit their limit in the en bundle, and the test locale never judges a limit', () => {

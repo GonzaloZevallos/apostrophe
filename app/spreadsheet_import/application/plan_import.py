@@ -56,6 +56,7 @@ def plan_import(
     catalog: ports.CatalogImport,
     expenses: ports.ExpensesImport,
     customers: ports.CustomersImport,
+    vip_type: ports.VipTypeImport,
     sales: ports.SalesImport,
     payments: ports.PaymentsImport,
     pricing_settings: ports.PricingSettingsImport,
@@ -69,7 +70,7 @@ def plan_import(
     so `adapters/cli.py` — the only caller — passes them in from there; this module
     never imports `adapters` itself (`application/` never imports an adapter)."""
     if has_any_records(varieties, stock, expenses, customers, sales, payments):
-        return _ineligible_plan(business_ref)
+        return _refused_plan(business_ref, "import.business_has_records")
 
     split_result = domain_plan.split(parsed)
 
@@ -146,14 +147,25 @@ def plan_import(
         mapping_sheet=mapping_sheet,
         stored_settings=pricing_settings.current(),
     )
-    return domain_plan.build_plan(split_result, mapping, checks)
+    built = domain_plan.build_plan(split_result, mapping, checks)
+    # After eligibility and the owner checks, once the sheet's customers are known: a VIP
+    # of the sheet joins the VIP type, and with none to join and the name taken, the run
+    # is refused with that alone (docs/adr/0070). No VIP in the sheet, no check.
+    if any(customer.vip for customer in built.customers) and vip_type_name_conflict(vip_type):
+        return _refused_plan(business_ref, "import.vip_type_name_taken")
+    return built
 
 
-# -- Eligibility's own trivial plan: no sheet was read, nothing else to report. -------
+def vip_type_name_conflict(vip_type: ports.VipTypeImport) -> bool:
+    """The business has no VIP type and another type already holds the name 'VIP'."""
+    return not vip_type.has_vip_type() and vip_type.vip_name_taken()
 
 
-def _ineligible_plan(business_ref: SheetRef) -> domain_plan.ImportPlan:
-    problem = CellProblem(business_ref, business_ref.sheet, "import.business_has_records")
+# -- A refusal's own trivial plan: nothing else to report. ----------------------------
+
+
+def _refused_plan(business_ref: SheetRef, kind: str) -> domain_plan.ImportPlan:
+    problem = CellProblem(business_ref, business_ref.sheet, kind)
     return domain_plan.ImportPlan(
         problems=(problem,),
         unfinished=(),

@@ -40,19 +40,33 @@ COMMENT_RUN = (
 PYTEST_RUN = "uv run --no-project pytest -n auto --cov --cov-report= -- $PATHS"
 VITEST_RUN = "npm --prefix web test -- --coverage $VITEST_ARGS"
 E2E_RUN = 'npm --prefix web run e2e -- --shard="$SHARD" $E2E_ARGS'
+CHANGES_RUN = 'uv run --no-project python -m scripts.ci_changes "$EVENT" "$REF" >> "$GITHUB_OUTPUT"'
+VITEST_LIST_RUN = (
+    'if [ -n "$BASE_REF" ]; then npx --prefix web vitest list --root web --changed="$BASE_REF" '
+    '--filesOnly > "$RUNNER_TEMP/vitest-listed.txt"; '
+    'else : > "$RUNNER_TEMP/vitest-listed.txt"; fi'
+)
+EVENT_EXPRESSION = "${{ github.event_name }}"
+REF_EXPRESSION = "${{ github.ref }}"
+BASE_REF_EXPRESSION = "${{ needs.changes.outputs.base_ref }}"
+CANCEL_IN_PROGRESS = (
+    "${{ github.event_name == 'pull_request' || "
+    "(github.event_name == 'push' && startsWith(github.ref, 'refs/heads/agentic-ci/')) }}"
+)
+PUSH_BRANCHES = ["master", "agentic-ci/**"]
 
 # Commands that only CI runs, each with the reason it is not a local check.
 CI_ONLY: dict[str, str] = {
     "npx --prefix web playwright install --with-deps chromium": (
         "the runner needs the root `--with-deps` form of `setup.web-browsers`"
     ),
-    'uv run --no-project python -m scripts.ci_changes "$EVENT" >> "$GITHUB_OUTPUT"': (
-        "the `changes` job: which suites the pull request affects (ADR-0064)"
+    CHANGES_RUN: (
+        "the `changes` job: which suites the pull request or an agentic-ci push affects (ADR-0064)"
     ),
-    (
-        "npx --prefix web vitest list --root web --changed=HEAD^1 --filesOnly > "
-        '"$RUNNER_TEMP/vitest-listed.txt"'
-    ): "vitest's own listing, run by the workflow so no script runs a node tool (ADR-0064 §6)",
+    VITEST_LIST_RUN: (
+        "vitest's own listing from `base_ref`, empty without one; run by the workflow so no script "
+        "runs a node tool (ADR-0064 §6)"
+    ),
     (
         'uv run --no-project python -m scripts.ci_vitest "$RUNNER_TEMP/vitest-listed.txt" '
         '>> "$GITHUB_OUTPUT"'
@@ -108,7 +122,7 @@ COVERAGE = "coverage"
 OUTPUT_PREFIXES = ("needs.changes.outputs.", "steps.vitest-args.outputs.")
 EXPECTED_CONCURRENCY = {
     "group": "ci-${{ github.workflow }}-${{ github.ref }}",
-    "cancel-in-progress": "${{ github.event_name == 'pull_request' }}",
+    "cancel-in-progress": CANCEL_IN_PROGRESS,
 }
 # Functions a GitHub Actions expression may call (the documented set); anything else, such as
 # `length(`, makes GitHub reject the whole workflow file, so no job runs.
@@ -141,7 +155,11 @@ def _load(path: Path) -> Data:
 
 STACK = _load(REPO_ROOT / ".agentic" / "stack.yaml")
 WORKFLOW = _load(REPO_ROOT / ".github" / "workflows" / "ci.yml")
-OUTPUT_NAMES = {line.split("=", 1)[0] for line in render(select(None, REPO_ROOT))} | {"args"}
+# `base_ref` is printed by `ci_changes.main`, after the lines `render` makes.
+OUTPUT_NAMES = {line.split("=", 1)[0] for line in render(select(None, REPO_ROOT))} | {
+    "args",
+    "base_ref",
+}
 
 
 def _steps(job: Data) -> list[Data]:
@@ -223,6 +241,8 @@ def _structure_problems(workflow: Data, ci_names: list[str]) -> list[str]:
             problems.append(f"job {job_id!r} `if:` is not `{expected}`")
 
     problems.extend(_changes_problems(jobs.get("changes")))
+    problems.extend(_vitest_problems(jobs.get("vitest")))
+    problems.extend(_trigger_problems(workflow))
     problems.extend(_coverage_problems(jobs))
     problems.extend(_expression_problems(workflow))
     problems.extend(_browser_problems(workflow))
@@ -258,20 +278,76 @@ def _expression_problems(workflow: Data) -> list[str]:
     ]
 
 
+def _checkouts(job: Data) -> list[Data]:
+    return [
+        step for step in _steps(job) if str(step.get("uses", "")).startswith("actions/checkout")
+    ]
+
+
 def _changes_problems(changes: Data | None) -> list[str]:
     if changes is None:
         return ["there is no `changes` job"]
     problems: list[str] = []
     steps = _steps(changes)
-    checkouts = [step for step in steps if str(step.get("uses", "")).startswith("actions/checkout")]
-    if not any(step.get("with", {}).get("fetch-depth") == 2 for step in checkouts):
-        problems.append("the `changes` checkout does not set fetch-depth: 2")
+    if not any(step.get("with", {}).get("fetch-depth") == 0 for step in _checkouts(changes)):
+        problems.append("the `changes` checkout does not set fetch-depth: 0")
     runners = [step for step in steps if "ci_changes" in str(step.get("run", ""))]
     for step in runners:
-        if "${{" in step["run"] or step.get("env", {}).get("EVENT") != "${{ github.event_name }}":
-            problems.append("the event does not reach ci_changes only through env: EVENT")
+        env = cast("Data", step.get("env", {}))
+        if (
+            "${{" in step["run"]
+            or env.get("EVENT") != EVENT_EXPRESSION
+            or env.get("REF") != REF_EXPRESSION
+        ):
+            problems.append(
+                "the event and ref do not reach ci_changes only through env: EVENT, REF"
+            )
     if not runners:
         problems.append("no step of `changes` runs ci_changes")
+    if changes.get("outputs", {}).get("base_ref") != "${{ steps.select.outputs.base_ref }}":
+        problems.append("the `changes` job does not output base_ref from the select step")
+    return problems
+
+
+def _vitest_problems(vitest: Data | None) -> list[str]:
+    if vitest is None:
+        return ["there is no `vitest` job"]
+    problems: list[str] = []
+    if not any(step.get("with", {}).get("fetch-depth") == 0 for step in _checkouts(vitest)):
+        problems.append("the `vitest` checkout does not set fetch-depth: 0")
+    listing = [step for step in _steps(vitest) if "vitest list" in str(step.get("run", ""))]
+    if not listing:
+        problems.append("no step of `vitest` lists the changed tests")
+    for step in listing:
+        env = cast("Data", step.get("env", {}))
+        if "${{" in step["run"] or env.get("BASE_REF") != BASE_REF_EXPRESSION:
+            problems.append(
+                "the base ref does not reach the vitest listing only through env: BASE_REF"
+            )
+    return problems
+
+
+def _triggers(workflow: Data) -> Data:
+    """The `on:` mapping; YAML 1.1 reads the key `on` as the boolean `True`."""
+    loaded = cast("dict[object, Data]", workflow)
+    return loaded.get("on") or loaded.get(True) or {}
+
+
+def _trigger_problems(workflow: Data) -> list[str]:
+    """What starts the workflow, and that no command names the pull request's parent commit:
+    only `ci_changes` does, which keeps the base one value the `changes` job prints."""
+    problems: list[str] = []
+    triggers = _triggers(workflow)
+    if cast("Data", triggers.get("push", {})).get("branches") != PUSH_BRANCHES:
+        problems.append(f"`on.push.branches` is not {PUSH_BRANCHES}")
+    if "pull_request" not in triggers or triggers["pull_request"] is not None:
+        problems.append("`on.pull_request` is not the bare trigger")
+    for job_id, commands in _runs(workflow).items():
+        problems.extend(
+            f"job {job_id!r} names HEAD^1 in a run; the base is `base_ref`: {command}"
+            for command in commands
+            if "HEAD^1" in command
+        )
     return problems
 
 
@@ -483,18 +559,222 @@ def test_pull_requests_write_on_another_job_is_refused() -> None:
     assert "job 'checks' holds pull-requests: write; only 'coverage' may" in problems
 
 
-def test_the_changes_checkout_without_depth_two_is_refused() -> None:
+def test_the_changes_checkout_without_full_depth_is_refused() -> None:
     workflow = _mutated()
+    workflow["jobs"]["changes"]["steps"][0]["with"]["fetch-depth"] = 2
+    assert "the `changes` checkout does not set fetch-depth: 0" in _problems(workflow)
     del workflow["jobs"]["changes"]["steps"][0]["with"]
-    assert "the `changes` checkout does not set fetch-depth: 2" in _problems(workflow)
+    assert "the `changes` checkout does not set fetch-depth: 0" in _problems(workflow)
 
 
-def test_the_event_inside_run_instead_of_env_is_refused() -> None:
+def test_the_event_or_ref_inside_run_instead_of_env_is_refused() -> None:
+    message = "the event and ref do not reach ci_changes only through env: EVENT, REF"
     workflow = _mutated()
     step = workflow["jobs"]["changes"]["steps"][-1]
     step["run"] = 'uv run --no-project python -m scripts.ci_changes "${{ github.event_name }}"'
+    assert message in _problems(workflow)
+
+    workflow = _mutated()
+    del workflow["jobs"]["changes"]["steps"][-1]["env"]["REF"]
+    assert message in _problems(workflow)
+
+    workflow = _mutated()
+    workflow["jobs"]["changes"]["steps"][-1]["env"]["EVENT"] = "push"
+    assert message in _problems(workflow)
+
+
+def test_a_changes_job_without_the_base_ref_output_is_refused() -> None:
+    workflow = _mutated()
+    del workflow["jobs"]["changes"]["outputs"]["base_ref"]
     problems = _problems(workflow)
-    assert "the event does not reach ci_changes only through env: EVENT" in problems
+    assert "the `changes` job does not output base_ref from the select step" in problems
+
+
+def test_the_vitest_checkout_without_full_depth_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["vitest"]["steps"][0]["with"]["fetch-depth"] = 2
+    assert "the `vitest` checkout does not set fetch-depth: 0" in _problems(workflow)
+
+
+def test_the_base_ref_inside_the_vitest_run_instead_of_env_is_refused() -> None:
+    message = "the base ref does not reach the vitest listing only through env: BASE_REF"
+    workflow = _mutated()
+    step = next(s for s in workflow["jobs"]["vitest"]["steps"] if "vitest list" in s.get("run", ""))
+    step["run"] = step["run"].replace("$BASE_REF", BASE_REF_EXPRESSION)
+    assert message in _problems(workflow)
+
+    workflow = _mutated()
+    step = next(s for s in workflow["jobs"]["vitest"]["steps"] if "vitest list" in s.get("run", ""))
+    del step["env"]
+    assert message in _problems(workflow)
+
+
+def test_head_parent_back_in_a_run_is_refused() -> None:
+    workflow = _mutated()
+    step = next(s for s in workflow["jobs"]["vitest"]["steps"] if "vitest list" in s.get("run", ""))
+    step["run"] = step["run"].replace('"$BASE_REF"', "HEAD^1")
+    assert any(
+        p.startswith("job 'vitest' names HEAD^1 in a run; the base is `base_ref`:")
+        for p in _problems(workflow)
+    )
+
+
+def test_a_push_trigger_without_agentic_ci_is_refused() -> None:
+    message = f"`on.push.branches` is not {PUSH_BRANCHES}"
+    workflow = _mutated()
+    _triggers(workflow)["push"]["branches"] = ["master"]
+    assert message in _problems(workflow)
+    _triggers(workflow)["push"]["branches"] = ["agentic-ci/**", "master"]
+    assert message in _problems(workflow)
+
+
+def test_a_pull_request_trigger_with_a_filter_is_refused() -> None:
+    workflow = _mutated()
+    _triggers(workflow)["pull_request"] = {"branches": ["master"]}
+    assert "`on.pull_request` is not the bare trigger" in _problems(workflow)
+    del _triggers(workflow)["pull_request"]
+    assert "`on.pull_request` is not the bare trigger" in _problems(workflow)
+
+
+def test_the_real_workflow_triggers_on_master_agentic_ci_and_pull_requests() -> None:
+    triggers = _triggers(WORKFLOW)
+    assert triggers["push"]["branches"] == ["master", "agentic-ci/**"]
+    assert triggers["pull_request"] is None
+
+
+# --- the cancellation rule, evaluated from the workflow's own expression --------------------------
+
+_TOKENS = re.compile(r"\s*(?:(\|\||&&|==|\(|\)|,)|'([^']*)'|([A-Za-z_][\w.]*))")
+
+
+def _tokenize(text: str) -> list[tuple[str, str]]:
+    """`(kind, text)` pairs: `op`, `str` or `name`. Anything else is not in the supported subset."""
+    tokens: list[tuple[str, str]] = []
+    position = 0
+    while text[position:].strip():
+        found = _TOKENS.match(text, position)
+        if found is None:
+            raise ValueError(f"unsupported expression text at {text[position:]!r}")
+        operator, literal, name = found.groups()
+        if operator is not None:
+            tokens.append(("op", operator))
+        elif literal is not None:
+            tokens.append(("str", literal))
+        else:
+            tokens.append(("name", name))
+        position = found.end()
+    return tokens
+
+
+class _Expression:
+    """`||`, `&&`, `==`, parentheses, `startsWith(a, b)`, single-quoted strings and the contexts
+    `github.event_name` and `github.ref`; the grammar is one level per operator, loosest first."""
+
+    def __init__(self, text: str, context: dict[str, str]) -> None:
+        self.tokens = _tokenize(text)
+        self.context = context
+        self.position = 0
+
+    def evaluate(self) -> bool | str:
+        value = self._or()
+        if self.position != len(self.tokens):
+            raise ValueError(f"unexpected token {self.tokens[self.position]}")
+        return value
+
+    def _peek(self) -> tuple[str, str] | None:
+        return self.tokens[self.position] if self.position < len(self.tokens) else None
+
+    def _take(self, text: str) -> bool:
+        if self._peek() == ("op", text):
+            self.position += 1
+            return True
+        return False
+
+    def _expect(self, text: str) -> None:
+        if not self._take(text):
+            raise ValueError(f"expected {text!r} at token {self.position}")
+
+    def _or(self) -> bool | str:
+        value = self._and()
+        while self._take("||"):
+            right = self._and()
+            value = value or right
+        return value
+
+    def _and(self) -> bool | str:
+        value = self._equal()
+        while self._take("&&"):
+            right = self._equal()
+            value = value and right
+        return value
+
+    def _equal(self) -> bool | str:
+        value = self._primary()
+        while self._take("=="):
+            value = value == self._primary()
+        return value
+
+    def _primary(self) -> bool | str:
+        token = self._peek()
+        if token is None:
+            raise ValueError("the expression ends early")
+        self.position += 1
+        kind, text = token
+        if (kind, text) == ("op", "("):
+            value = self._or()
+            self._expect(")")
+            return value
+        if kind == "str":
+            return text
+        if kind == "name" and text == "startsWith":
+            self._expect("(")
+            subject = self._or()
+            self._expect(",")
+            prefix = self._or()
+            self._expect(")")
+            return (
+                isinstance(subject, str) and isinstance(prefix, str) and subject.startswith(prefix)
+            )
+        if kind == "name" and text in self.context:
+            return self.context[text]
+        raise ValueError(f"unsupported token {token}")
+
+
+def _cancels(workflow: Data, event: str, ref: str) -> bool:
+    raw = cast("str", workflow["concurrency"]["cancel-in-progress"])
+    inner = re.fullmatch(r"\$\{\{(.*)\}\}", raw.strip(), re.DOTALL)
+    assert inner is not None, raw
+    context = {"github.event_name": event, "github.ref": ref}
+    return _Expression(inner.group(1), context).evaluate() is True
+
+
+@pytest.mark.parametrize(
+    ("event", "ref", "cancels"),
+    [
+        ("push", "refs/heads/master", False),
+        ("pull_request", "refs/pull/1/merge", True),
+        ("push", "refs/heads/agentic-ci/GH-1", True),
+        ("push", "refs/heads/agentic-ci-x", False),
+        ("push", "refs/tags/agentic-ci/x", False),
+    ],
+)
+def test_a_newer_run_cancels_only_for_a_pull_request_or_an_agentic_ci_push(
+    event: str, ref: str, cancels: bool
+) -> None:
+    assert _cancels(WORKFLOW, event, ref) is cancels
+
+
+def test_the_evaluator_refuses_an_expression_outside_its_subset() -> None:
+    for text in ("github.actor == 'x'", "contains(github.ref, 'x')", "github.ref != 'x'", "1 == 1"):
+        with pytest.raises(ValueError):
+            _Expression(text, {"github.event_name": "push", "github.ref": "r"}).evaluate()
+
+
+def test_a_cancellation_rule_that_also_cancels_master_is_refused_by_the_evaluator() -> None:
+    workflow = _mutated()
+    workflow["concurrency"]["cancel-in-progress"] = "${{ github.event_name == 'push' }}"
+    assert _cancels(workflow, "push", "refs/heads/master") is True
+    assert any(p.startswith("concurrency is not") for p in _problems(workflow))
 
 
 def test_a_comment_step_without_the_fork_guard_or_continue_on_error_is_refused() -> None:

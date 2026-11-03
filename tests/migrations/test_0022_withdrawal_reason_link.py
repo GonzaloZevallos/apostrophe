@@ -1,5 +1,5 @@
-"""Migration 0021 links every stock withdrawal to its reason by the `name_key` migration
-0020 wrote, through the real revisions, and changes no value that existed (the shared
+"""Migration 0022 links every stock withdrawal to its reason by the `name_key` migration
+0021 wrote, through the real revisions, and changes no value that existed (the shared
 comparator). The legacy `reason` column keeps every value; only its nullability moves."""
 
 from pathlib import Path
@@ -35,9 +35,9 @@ def _upgrade_as_the_runner_does(engine: Engine, revision: str) -> None:
         raw.execute("PRAGMA foreign_keys=ON")
 
 
-def _engine_at_0020(tmp_path: Path) -> Engine:
+def _engine_at_0021(tmp_path: Path) -> Engine:
     engine = make_engine(f"sqlite:///{tmp_path / 'apostrophe.db'}")
-    upgrade_to(engine, "0020")
+    upgrade_to(engine, "0021")
     with engine.begin() as connection:
         for business_id in (1, 2, 3):
             connection.execute(
@@ -48,7 +48,7 @@ def _engine_at_0020(tmp_path: Path) -> Engine:
 
 
 def _seed_reasons(engine: Engine) -> None:
-    """Revision 0020 ran before the businesses existed, so seed what it would have."""
+    """Revision 0021 ran before the businesses existed, so seed what it would have."""
     with engine.begin() as connection:
         for business_id in (1, 2):
             for name, key, position in (("Marketing", "marketing", 0), ("Own use", "own use", 1)):
@@ -111,14 +111,14 @@ def _linked(after: Snapshot) -> dict[int, tuple[str, int]]:
 def test_each_withdrawal_links_to_the_reason_of_its_own_business_and_nothing_changes(
     tmp_path: Path,
 ) -> None:
-    engine = _engine_at_0020(tmp_path)
+    engine = _engine_at_0021(tmp_path)
     _seed_reasons(engine)
     _withdraw(engine, 1, 1, "promotion")
     _withdraw(engine, 2, 1, "own_use")
     _withdraw(engine, 3, 2, "promotion")
     before = snapshot(engine)
 
-    _upgrade_as_the_runner_does(engine, "0021")
+    _upgrade_as_the_runner_does(engine, "0022")
     after = snapshot(engine)
 
     compare(before, after)
@@ -136,9 +136,9 @@ def test_each_withdrawal_links_to_the_reason_of_its_own_business_and_nothing_cha
 def test_a_business_missing_a_seeded_key_gets_it_inserted_at_the_end_never_failing(
     tmp_path: Path,
 ) -> None:
-    engine = _engine_at_0020(tmp_path)
+    engine = _engine_at_0021(tmp_path)
     with engine.begin() as connection:
-        # Business 3 opened in another language after 0020: neither seeded key, one reason.
+        # Business 3 opened in another language after 0021: neither seeded key, one reason.
         connection.execute(
             text(
                 "INSERT INTO withdrawal_reason (business_id, name, name_key, position) "
@@ -149,7 +149,7 @@ def test_a_business_missing_a_seeded_key_gets_it_inserted_at_the_end_never_faili
     _withdraw(engine, 2, 3, "own_use")
     before = snapshot(engine)
 
-    _upgrade_as_the_runner_does(engine, "0021")
+    _upgrade_as_the_runner_does(engine, "0022")
     after = snapshot(engine)
 
     # `withdrawal_reason` is the one table that grows here, so it is read on its own: the
@@ -170,11 +170,11 @@ def test_a_business_missing_a_seeded_key_gets_it_inserted_at_the_end_never_faili
 
 
 def test_a_business_with_all_its_keys_gets_no_extra_reason(tmp_path: Path) -> None:
-    engine = _engine_at_0020(tmp_path)
+    engine = _engine_at_0021(tmp_path)
     _seed_reasons(engine)
     _withdraw(engine, 1, 1, "promotion")
 
-    _upgrade_as_the_runner_does(engine, "0021")
+    _upgrade_as_the_runner_does(engine, "0022")
 
     assert len(snapshot(engine)["withdrawal_reason"]) == 4
     engine.dispose()
@@ -183,9 +183,9 @@ def test_a_business_with_all_its_keys_gets_no_extra_reason(tmp_path: Path) -> No
 def test_the_new_link_is_required_restricted_and_never_crosses_a_business(
     tmp_path: Path,
 ) -> None:
-    engine = _engine_at_0020(tmp_path)
+    engine = _engine_at_0021(tmp_path)
     _seed_reasons(engine)
-    _upgrade_as_the_runner_does(engine, "0021")
+    _upgrade_as_the_runner_does(engine, "0022")
     insert = (
         "INSERT INTO stock_withdrawal "
         "(business_id, withdrawal_reason_id, reason, withdrawn_on, recorded_at) "

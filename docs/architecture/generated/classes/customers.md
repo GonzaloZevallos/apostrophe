@@ -12,7 +12,11 @@ classDiagram
   }
   class customer {
   }
+  class customer_type_lookup {
+  }
   class customers {
+  }
+  class customers_in_type {
   }
   class domain {
   }
@@ -32,6 +36,7 @@ classDiagram
   }
   class tables {
   }
+  customers_in_type --> tables
   import_port --> customer
   import_port --> manage_customers
   import_port --> sql_customers
@@ -42,6 +47,7 @@ classDiagram
   ports --> customer
   router --> application
   router --> customer
+  router --> customer_type_lookup
   router --> errors
   router --> ports
   router --> schemas
@@ -61,11 +67,11 @@ classDiagram
 ```mermaid
 classDiagram
   class Customer {
+    customer_type_id : int #124; None
     id : int #124; None
     name
     phone : PhoneNumber #124; None
     sort_key : tuple~str, int~
-    vip : bool
     matches(query: str) bool
   }
   class CustomerName {
@@ -109,12 +115,18 @@ classDiagram
     standing : Literal
   }
   class CustomerChanges {
+    customer_type_id : int #124; None #124; Unchanged
     name : str #124; Unchanged
     phone : str #124; None #124; Unchanged
-    vip : bool #124; Unchanged
   }
   class CustomerNotFound {
     code : ClassVar~str~
+  }
+  class CustomerTypeNotFound {
+  }
+  class CustomerTypes {
+    exists(type_id: int) bool
+    vip_type_id() int #124; None
   }
   class Customers {
     add(customer: Customer) Customer
@@ -142,28 +154,30 @@ classDiagram
 ```mermaid
 classDiagram
   class CustomerIn {
+    customer_type_id : int #124; None
     name : str
     phone : str #124; None
-    vip : bool
   }
   class CustomerOut {
     balance : int
+    customer_type_id : int #124; None
     id : int
     name : str
     owing_since : date #124; None
     phone : str #124; None
     standing : Literal
     vip : bool
-    of(customer: Customer, balance: CustomerBalance) 'CustomerOut'
+    of(customer: Customer, balance: CustomerBalance, vip_type_id: int #124; None) 'CustomerOut'
   }
   class CustomerPatchIn {
+    customer_type_id : int #124; None
     name : str #124; None
     phone : str #124; None
-    vip : bool #124; None
     to_changes() CustomerChanges
   }
   class CustomerRow {
     business_id : Mapped~int~
+    customer_type_id : Mapped~int #124; None~
     id : Mapped~int~
     name : Mapped~str~
     phone : Mapped~str #124; None~
@@ -172,7 +186,11 @@ classDiagram
   class CustomersImport {
     check_customer(name: str, phone: str #124; None) CustomerKey #124; CustomerRefusals
     has_records() bool
-    write_customer(name: str, phone_key: str #124; None, vip: bool, transaction: Transaction) int
+    write_customer(name: str, phone_key: str #124; None, customer_type_id: int #124; None, transaction: Transaction) int
+  }
+  class SqlCustomerTypeLookup {
+    exists(type_id: int) bool
+    vip_type_id() int #124; None
   }
   class SqlCustomers {
     add(customer: Customer) Customer
@@ -180,5 +198,8 @@ classDiagram
     get(customer_id: int) Customer #124; None
     phone_taken(phone: PhoneNumber) bool
     save(customer: Customer) Customer
+  }
+  class SqlCustomersInType {
+    count(type_id: int) int
   }
 ```

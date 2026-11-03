@@ -47,13 +47,14 @@ afterEach(async () => {
   await act(() => router.navigate(HOME))
 })
 
-test('Pick a customer shows a VIP customer\'s mark and the new-customer form its VIP field while Clientes VIP is on', async () => {
+test('Pick a customer shows a VIP customer\'s mark and the new-customer form has no VIP field while Clientes VIP is on', async () => {
   const user = await openChooser(true)
   expect(await screen.findByText('VIP')).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'New customer' }))
 
-  expect(await screen.findByRole('switch', { name: 'VIP' })).toBeInTheDocument()
+  expect(await screen.findByLabelText('Name')).toBeInTheDocument()
+  expect(screen.queryByRole('switch', { name: 'VIP' })).not.toBeInTheDocument()
 })
 
 test('Pick a customer shows no VIP mark and the new-customer form no VIP field while Clientes VIP is off', async () => {

@@ -106,6 +106,12 @@ def seed_expenses(client: TestClient) -> dict[str, int]:
     return {"category_id": category_id, "expense_id": expense.json()["id"]}
 
 
+def seed_customer_types(client: TestClient) -> dict[str, int]:
+    created = client.post("/api/customer-types", json={"name": f"{MARKER} customer type"})
+    assert created.status_code == 201, created.text
+    return {"type_id": created.json()["id"]}
+
+
 def seed_sales(client: TestClient) -> dict[str, int]:
     variety = client.post("/api/products", json={"name": f"{MARKER} sales variety"}).json()
     client.post(
@@ -251,6 +257,7 @@ def seed_first_run(client: TestClient) -> dict[str, int]:
 SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_varieties,
     seed_customers,
+    seed_customer_types,
     seed_expenses,
     seed_sales,
     seed_stock,
@@ -269,8 +276,16 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "effective_from": "2026-02-01",
         "list_price": 12_000,
     },
-    ("POST", "/customers"): {"name": "Another customer", "phone": "11 9876-5432"},
-    ("PATCH", "/customers/{customer_id}"): {"name": "Renamed"},
+    # The assign body names a type id (invariant 9): in the sweep it is business A's
+    # seeded type, which business B must not be able to reach through a customer.
+    ("POST", "/customers"): {
+        "name": "Another customer",
+        "phone": "11 9876-5432",
+        "customer_type_id": 1,
+    },
+    ("PATCH", "/customers/{customer_id}"): {"name": "Renamed", "customer_type_id": 1},
+    ("POST", "/api/customer-types"): {"name": "Another customer type", "icon": "heart"},
+    ("PATCH", "/api/customer-types/{type_id}"): {"name": "Renamed type"},
     ("POST", "/expense-categories"): {"name": "Another category"},
     ("PATCH", "/expense-categories/{category_id}"): {"name": "Renamed category"},
     ("POST", "/expenses"): {
@@ -656,6 +671,32 @@ def test_assigning_a_customer_from_another_business_is_refused_the_same_way_as_m
     ).json()
     valid = business_b.put(f"/sales/{sale_id}/customer", json={"customer_id": own_customer["id"]})
     assert valid.status_code == 200, valid.text
+
+
+def test_assigning_a_customer_type_from_another_business_is_refused_the_same_way_as_missing(
+    business_a: TestClient, business_b: TestClient, seeded: dict[str, int]
+) -> None:
+    foreign_type = seeded["type_id"]
+    own_customer = business_b.post(
+        "/customers", json={"name": "B customer 4", "phone": "11 5555-4444"}
+    ).json()
+    url = f"/customers/{own_customer['id']}"
+
+    created = {
+        which: business_b.post("/customers", json={"name": "B new", "customer_type_id": t})
+        for which, t in (("missing", 999_999), ("foreign", foreign_type))
+    }
+    edited = {
+        which: business_b.patch(url, json={"customer_type_id": t})
+        for which, t in (("missing", 999_999), ("foreign", foreign_type))
+    }
+
+    for pair in (created, edited):
+        assert pair["missing"].status_code == 404, pair["missing"].text
+        assert pair["foreign"].status_code == 404, pair["foreign"].text
+        assert pair["missing"].json() == pair["foreign"].json()
+    assert [c["name"] for c in business_b.get("/customers").json()] == ["B customer 4"]
+    assert business_a.get("/api/customer-types").json()[0]["id"] == foreign_type
 
 
 def test_another_business_reads_none_of_the_archived_stock_rows(

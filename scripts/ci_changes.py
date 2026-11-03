@@ -2,11 +2,14 @@
 
 `select(paths, root)` is a pure function over the changed paths and a repository tree. The result
 is the union of every rule that matches a path, and it fails closed: a path that matches no rule,
-a git failure, an empty diff or an event other than `pull_request` selects every suite. Nothing
+a git failure, an empty diff or an event that is neither a pull request nor a push to an
+`agentic-ci/**` branch selects every suite. A pull request diffs from `HEAD^1`; an agentic-ci push
+diffs from its merge-base with `origin/master`. `base_ref` is printed only when a diff from it was
+usable, and an empty `base_ref` always means every suite is selected. Nothing
 here imports or runs a node tool; vitest's guard tests are found the way `affected.py` finds them,
 by importing it. Only `main` runs git, through the `Runner` that `affected.py` defines.
 
-    ci_changes.py <event name>      prints `key=value` lines, for `$GITHUB_OUTPUT`
+    ci_changes.py <event name> <ref>    prints `key=value` lines, for `$GITHUB_OUTPUT`
 """
 
 from __future__ import annotations
@@ -50,6 +53,9 @@ _WATCHED: Final = frozenset({"web", "docs"})
 _TEST_SUFFIXES: Final = (".test.ts", ".test.tsx")
 _SAFE_PATH: Final = re.compile(r"[A-Za-z0-9._/][A-Za-z0-9._/-]*")
 ALL_SHARD: Final = "all"
+AGENTIC_CI_PREFIX: Final = "refs/heads/agentic-ci/"
+PR_BASE: Final = "HEAD^1"
+_OBJECT_ID: Final = re.compile(r"[0-9a-f]{40}|[0-9a-f]{64}")
 
 
 # --- paths that may reach a shell --------------------------------------------------------------
@@ -71,12 +77,37 @@ def _is_plain_path(path: str) -> bool:
 # --- the git side -----------------------------------------------------------------------------
 
 
-def diff_argv(event: str) -> list[str] | None:
-    """The git command that lists a pull request's changed paths; `None` for any other event,
-    whose selection is everything."""
-    if event == "pull_request":
-        return ["git", "diff", "--name-only", "--no-renames", "HEAD^1", "HEAD"]
+def _is_agentic_ci_push(event: str, ref: str) -> bool:
+    return event == "push" and ref.startswith(AGENTIC_CI_PREFIX)
+
+
+def base_argv(event: str, ref: str) -> list[str] | None:
+    """The git command that finds where an `agentic-ci/**` push forked from master; `None` for
+    any other event or ref."""
+    if _is_agentic_ci_push(event, ref):
+        return ["git", "merge-base", "origin/master", "HEAD"]
     return None
+
+
+def diff_argv(event: str, ref: str, base: str) -> list[str] | None:
+    """The git command that lists the changed paths: from `HEAD^1` for a pull request and from
+    `base` for an `agentic-ci/**` push with a non-empty one; `None` for anything else, whose
+    selection is everything."""
+    flags = ["git", "diff", "--name-only", "--no-renames"]
+    if event == "pull_request":
+        return [*flags, PR_BASE, "HEAD"]
+    if _is_agentic_ci_push(event, ref) and base:
+        return [*flags, base, "HEAD"]
+    return None
+
+
+def merge_base_from_git(returncode: int, stdout: str) -> str | None:
+    """The merge-base commit id, or `None` on a failure or anything that is not a full hex id."""
+    lines = stdout.splitlines()
+    first = lines[0].strip() if lines else ""
+    if returncode != 0 or _OBJECT_ID.fullmatch(first) is None:
+        return None
+    return first
 
 
 def paths_from_git(returncode: int, stdout: str) -> list[str] | None:
@@ -793,17 +824,31 @@ def render(selection: Selection) -> list[str]:
 
 
 def main(argv: Sequence[str], run: Runner = run_command, *, root: Path = REPO_ROOT) -> int:
-    """`ci_changes.py <event name>`: runs the diff only for a pull request, and prints the
-    outputs. Anything it cannot diff selects everything."""
-    command = diff_argv(argv[0] if argv else "")
+    """`ci_changes.py <event name> <ref>`: diffs a pull request from `HEAD^1` and an `agentic-ci/**`
+    push from its merge-base with `origin/master`, and prints the outputs and `base_ref`. Anything
+    it cannot diff selects everything and prints an empty `base_ref`."""
+    event = argv[0] if argv else ""
+    ref = argv[1] if len(argv) > 1 else ""
+    base = ""
+    base_command = base_argv(event, ref)
+    if base_command is not None:
+        found = run(base_command, capture=True, cwd=root)
+        base = merge_base_from_git(found.returncode, found.stdout) or ""
+        if not base:
+            print("ci_changes: no usable merge-base -> everything", file=sys.stderr)
+    command = diff_argv(event, ref, base)
     paths: list[str] | None = None
+    base_ref = ""
     if command is not None:
         result = run(command, capture=True, cwd=root)
         paths = paths_from_git(result.returncode, result.stdout)
         if paths is None:
             print("ci_changes: no usable diff -> everything", file=sys.stderr)
+        else:
+            base_ref = PR_BASE if event == "pull_request" else base
     for line in render(select(paths, root)):
         print(line)
+    print(f"base_ref={base_ref}")
     return 0
 
 

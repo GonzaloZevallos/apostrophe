@@ -43,8 +43,14 @@ def _seed_everything(client: TestClient, owner_email: str) -> dict[str, int]:
         f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 11_000},
     )
+    customer_type = client.post("/api/customer-types", json={"name": "Removal type"}).json()
     customer = client.post(
-        "/customers", json={"name": "Removal customer", "phone": "11 2345-6789"}
+        "/customers",
+        json={
+            "name": "Removal customer",
+            "phone": "11 2345-6789",
+            "customer_type_id": customer_type["id"],
+        },
     ).json()
     category = client.post("/expense-categories", json={"name": "Removal category"}).json()
     client.post(
@@ -429,7 +435,7 @@ def test_rows_parses_bool_date_and_naive_datetime_columns(tmp_path: Path) -> Non
         signed = signed_in(client, token)
         set_switches(engine, bulk=False, vip=True, business_name="Types Business")
         customer = signed.post(
-            "/customers", json={"name": "Vip customer", "phone": "11 2345-6789", "vip": True}
+            "/customers", json={"name": "Vip customer", "phone": "11 2345-6789"}
         ).json()
         variety = signed.post("/api/products", json={"name": "Types variety"}).json()
         entry = signed.post(
@@ -449,8 +455,11 @@ def test_rows_parses_bool_date_and_naive_datetime_columns(tmp_path: Path) -> Non
 
         [customer_row] = rows.rows("customer", business.id)
         assert customer_row["id"] == customer["id"]
+        # The frozen mark is read back as a bool and never written: it stays False.
         assert type(customer_row["vip"]) is bool
-        assert customer_row["vip"] is True
+        assert customer_row["vip"] is False
+        [settings_row] = rows.rows("pricing_settings", business.id)
+        assert settings_row["is_vip_customers"] is True
 
         [entry_row] = rows.rows("stock_entry", business.id)
         assert entry_row["id"] == entry["id"]

@@ -59,7 +59,10 @@ from dataclasses import asdict, dataclass
 from datetime import date, timedelta
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol
+
+if TYPE_CHECKING:
+    from sqlalchemy import Engine
 
 REPO = Path(__file__).resolve().parents[2]
 EMAIL = "vos@lahuerta.com"
@@ -155,6 +158,9 @@ def seed(api: Api, today: date) -> Sample:
     # entry (an entry stores nothing for a rule that is off) and gives each bulk-priced
     # variety VIP price = bulk price, as the migration did for existing businesses.
     api.call("PUT", "/pricing-settings", {"is_bulk_pricing": True, "is_vip_customers": True})
+    # The VIP type is made only by the migration and the import (docs/adr/0070), never over
+    # the API, so the seed asks its runner to make it the import's way and then puts Mica in it.
+    vip_type = ensure_vip_type(api)
 
     def variety(name: str, list_price: int, bulk: int | None = None) -> int:
         made: int = api.call("POST", "/api/products", {"name": name})["id"]
@@ -201,13 +207,17 @@ def seed(api: Api, today: date) -> Sample:
     entry(ago(0), gold, "adjustment", "-2", None)
     api.call("PUT", f"/stock/products/{cookies}/threshold", {"quantity": "20"})
 
-    def customer(name: str, phone: str, vip: bool = False) -> int:
-        made: int = api.call("POST", "/customers", {"name": name, "phone": phone, "vip": vip})["id"]
+    def customer(name: str, phone: str, customer_type_id: int | None = None) -> int:
+        made: int = api.call(
+            "POST",
+            "/customers",
+            {"name": name, "phone": phone, "customer_type_id": customer_type_id},
+        )["id"]
         return made
 
     nico = customer("Nico Parra", "11 5555-0101")
     tincho = customer("Tincho Aguirre", "11 5555-0102")
-    mica = customer("Mica Solano", "11 6033-7725", vip=True)
+    mica = customer("Mica Solano", "11 6033-7725", customer_type_id=vip_type)
     lu = customer("Lu Fernández", "11 5555-0104")
 
     def sale(
@@ -443,11 +453,44 @@ def stretch(api: Api, today: date) -> None:
         )
 
 
-class HttpApi:
-    """The seed's `Api` over the running server, keeping its session cookie."""
+def ensure_vip_type(api: Api) -> int:
+    """The id of the signed-in business's VIP type, made if it has none. The runner's `Api`
+    provides `ensure_vip_type()` (it holds the way to the database); one without it cannot seed."""
+    ensure = getattr(api, "ensure_vip_type", None)
+    if not callable(ensure):
+        raise SystemExit("sample-app: this Api cannot make the business's VIP type")
+    made: int = ensure()
+    return made
 
-    def __init__(self, base: str) -> None:
+
+def ensure_vip_type_on(engine: Engine, api: Api) -> int:
+    """The VIP type of the business `api` is signed in to, through the import's own port
+    (`VipTypeImport.ensure_vip_type`, docs/adr/0070) on `engine`'s database."""
+    if str(REPO) not in sys.path:
+        sys.path.insert(0, str(REPO))
+    from sqlalchemy import text
+    from sqlalchemy.orm import Session
+
+    importlib.import_module("app.tables")  # every table on the metadata, as the app has it
+    from app.customer_types.adapters.import_port import VipTypeImport
+
+    email = api.call("GET", "/auth/me")["email"]
+    with Session(engine) as session:
+        business = session.scalar(
+            text("SELECT business_id FROM app_user WHERE email = :email"), {"email": email}
+        )
+        if business is None:
+            raise SystemExit("sample-app: the signed-in account has no business")
+        return VipTypeImport(session, business).ensure_vip_type(session)
+
+
+class HttpApi:
+    """The seed's `Api` over the running server, keeping its session cookie. `database_url`
+    (default: `APOSTROPHE_DATABASE_URL`) is the server's database, where the VIP type is made."""
+
+    def __init__(self, base: str, database_url: str | None = None) -> None:
         self.base = base
+        self.database_url = database_url
         self.jar = http.cookiejar.CookieJar()
         self.opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self.jar))
 
@@ -463,6 +506,20 @@ class HttpApi:
             detail = refused.read().decode(errors="replace")
             raise SystemExit(f"sample-app: {method} {path} -> {refused.code} {detail}") from refused
         return json.loads(raw) if raw else None
+
+    def ensure_vip_type(self) -> int:
+        url = self.database_url or os.environ.get("APOSTROPHE_DATABASE_URL")
+        if url is None:
+            raise SystemExit("sample-app: no database to make the VIP type in")
+        if str(REPO) not in sys.path:
+            sys.path.insert(0, str(REPO))
+        from sqlalchemy import create_engine
+
+        engine = create_engine(url)
+        try:
+            return ensure_vip_type_on(engine, self)
+        finally:
+            engine.dispose()
 
 
 def token_from(url: str) -> str:
@@ -503,7 +560,7 @@ def onboarding_accounts(env: dict[str, str], base: str, today: date) -> dict[str
     accounts: dict[str, Account] = {}
     for name in ONBOARDING_ACCOUNTS:
         account = Account(email=name.replace("_", "-") + "@lahuerta.com", password=PASSWORD)
-        api = HttpApi(base)
+        api = HttpApi(base, env.get("APOSTROPHE_DATABASE_URL"))
         api.call(
             "POST",
             f"/invitations/{new_business_token(env)}/accept",
@@ -563,7 +620,7 @@ def accept_new_business(env: dict[str, str], base: str, name: str) -> tuple[Acco
     """A new business opened the way a new user opens one: the operator's invitation,
     accepted over HTTP. Not signed in yet."""
     account = Account(email=name.replace("_", "-") + "@lahuerta.com", password=PASSWORD)
-    api = HttpApi(base)
+    api = HttpApi(base, env.get("APOSTROPHE_DATABASE_URL"))
     api.call(
         "POST",
         f"/invitations/{new_business_token(env)}/accept",
@@ -848,7 +905,9 @@ def ended_onboarding_accounts(env: dict[str, str], base: str, today: date) -> di
             )
             return account
 
-        accounts[name] = open_ended_account(HttpApi(base), accept_invitation, today)
+        accounts[name] = open_ended_account(
+            HttpApi(base, env.get("APOSTROPHE_DATABASE_URL")), accept_invitation, today
+        )
     return accounts
 
 
@@ -921,7 +980,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         wait_until_up(base, server)
         token = new_business_token(env)
-        api = HttpApi(base)
+        api = HttpApi(base, env.get("APOSTROPHE_DATABASE_URL"))
         api.call(
             "POST",
             f"/invitations/{token}/accept",

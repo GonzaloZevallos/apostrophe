@@ -31,6 +31,8 @@ from app.catalog.adapters.onboarding_facts import SqlCatalogFacts
 from app.catalog.adapters.opening import CatalogHeaderFooterOpening
 from app.catalog.adapters.router import router as catalog_router
 from app.clock import Clock, system_clock
+from app.customer_types.adapters.router import build_router as build_customer_types_router
+from app.customers.adapters.customers_in_type import SqlCustomersInType
 from app.customers.adapters.router import router as customers_router
 from app.db import make_engine
 from app.expenses.adapters.babel_defaults import BabelCategoryDefaults
@@ -154,7 +156,7 @@ async def _refused(request: Request, exc: Exception) -> JSONResponse:
     # Every `Refused` already carries the broken rule's `code` (docs/adr/0008); the
     # front maps it, never `detail`.
     assert isinstance(exc, Refused)
-    content = {"detail": exc.detail, "code": exc.code}
+    content = {"detail": exc.detail, "code": exc.code, **exc.fields}
     return JSONResponse(status_code=exc.status_code, content=content)
 
 
@@ -311,6 +313,11 @@ def create_app(
     app.include_router(language_router, dependencies=gated)
     app.include_router(products_router, dependencies=upkeep_gated)
     app.include_router(customers_router, dependencies=gated)
+    # `customer_types` never imports `customers`: the count of customers in a type
+    # reaches its router from here (the `CustomersInType` port).
+    app.include_router(
+        build_customer_types_router(customers_in_type=SqlCustomersInType), dependencies=gated
+    )
     app.include_router(expenses_router, dependencies=gated)
     app.include_router(sales_router, dependencies=upkeep_gated)
     app.include_router(stock_router, dependencies=upkeep_gated)

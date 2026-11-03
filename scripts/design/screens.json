@@ -280,6 +280,7 @@
     { "path": "/settings/business", "kind": "form", "parent": "/settings" },
     { "path": "/settings/users", "kind": "form", "parent": "/settings" },
     { "path": "/settings/prices", "kind": "form", "parent": "/settings" },
+    { "path": "/settings/prices/customer-types", "kind": "form", "parent": "/settings/prices" },
     { "path": "/settings/integrations", "kind": "form", "parent": "/settings" },
     { "path": "/settings/catalog-message", "kind": "form", "parent": "/settings" },
     { "path": "/settings/expense-categories", "kind": "form", "parent": "/settings" },

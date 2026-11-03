@@ -1,7 +1,7 @@
 """The withdrawal reasons of a business (CONTEXT.md: Withdrawal reason).
 
-Revision ID: 0020
-Revises: 0019
+Revision ID: 0021
+Revises: 0020
 
 Adds the table and gives every business that already exists the two defaults, English
 (an existing business's stored language is English), at positions 0 and 1. The names and
@@ -18,8 +18,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0020"
-down_revision: str | None = "0019"
+revision: str = "0021"
+down_revision: str | None = "0020"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

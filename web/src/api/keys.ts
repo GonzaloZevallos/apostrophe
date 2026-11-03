@@ -11,6 +11,7 @@ export type Resource =
   | 'business'
   | 'varieties'
   | 'customers'
+  | 'customerTypes'
   | 'expenses'
   | 'expenseCategories'
   | 'sales'
@@ -26,6 +27,7 @@ const PREFIX: Record<Resource, string> = {
   business: 'business',
   varieties: 'varieties',
   customers: 'customers',
+  customerTypes: 'customer-types',
   expenses: 'expenses',
   expenseCategories: 'expense-categories',
   sales: 'sales',
@@ -46,6 +48,7 @@ export const keys = {
   varietyPrices: (id: string) => [PREFIX.varieties, id, 'prices'] as const,
   customers: (q: string) => [PREFIX.customers, { q }] as const,
   customer: (id: string) => [PREFIX.customers, id] as const,
+  customerTypes: () => [PREFIX.customerTypes] as const,
   expenses: (month: string) => [PREFIX.expenses, month] as const,
   expenseCategories: () => [PREFIX.expenseCategories] as const,
   // `Nueva venta`'s own prices and customer-by-id fetches (plan, invariants:

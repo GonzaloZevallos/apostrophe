@@ -18,30 +18,6 @@
     "issue": 47
   },
   {
-    "screen": "ClienteEditar",
-    "rule": "autocomplete",
-    "target": "textbox:Name",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteEditar",
-    "rule": "autocomplete",
-    "target": "textbox:Phone",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteNuevo",
-    "rule": "autocomplete",
-    "target": "textbox:Name",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteNuevo",
-    "rule": "autocomplete",
-    "target": "textbox:Phone",
-    "issue": 46
-  },
-  {
     "screen": "DescartarVenta",
     "rule": "autocomplete",
     "target": "combobox:Line # variety",
@@ -578,12 +554,6 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "textbox:Name",
-    "issue": 78
-  },
-  {
-    "screen": "NuevoClienteEnVenta",
-    "rule": "autocomplete",
     "target": "textbox:Note",
     "issue": 78
   },
@@ -591,12 +561,6 @@
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
     "target": "textbox:Line # special price",
-    "issue": 78
-  },
-  {
-    "screen": "NuevoClienteEnVenta",
-    "rule": "autocomplete",
-    "target": "textbox:Phone",
     "issue": 78
   },
   {

@@ -144,6 +144,10 @@ class _ClientApi:
     def get(self, path: str) -> Json:
         return self.call("GET", path)
 
+    def ensure_vip_type(self) -> int:
+        """The VIP type, made the import's way: the API never makes one (docs/adr/0070)."""
+        return int(_load_sample_app().ensure_vip_type_on(self.client.app.state.engine, self))
+
 
 def _seeded(day: date) -> _ClientApi:
     """A signed-in client of a business seeded at `day`, over an in-memory database."""

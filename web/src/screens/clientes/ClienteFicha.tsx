@@ -20,7 +20,7 @@ import { useGoneNotice } from '../../components/goneExit'
 import { ApiError, NetworkError } from '../../api/client'
 import { getCustomer } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
-import { useIsVipCustomers } from '../../api/pricingSettings'
+import CustomerTypeLine from './CustomerTypeLine'
 import {
   type PaymentMethod,
   deletePayment,
@@ -66,7 +66,6 @@ export default function ClienteFicha() {
   const goneShown = useGoneNotice()
   const feedback = readFeedback(location.state) ?? (goneShown ? { kind: 'notice' as const, refusal: GONE_NOTICE } : null)
   const queryClient = useQueryClient()
-  const vipCustomers = useIsVipCustomers()
 
   const [deletedToast, setDeletedToast] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState<
@@ -210,12 +209,7 @@ export default function ClienteFicha() {
               <span>{formatPhone(data.phone)}</span>
             </div>
           )}
-          {vipCustomers && (
-            <div className="campo">
-              <span className="campo__rotulo">{COMMON_TEXT.vip}</span>
-              <span>{data.vip ? CUSTOMERS_TEXT.yes : CUSTOMERS_TEXT.off}</span>
-            </div>
-          )}
+          <CustomerTypeLine typeId={data.customer_type_id} />
         </div>
 
         <section className="cuenta-cliente" aria-labelledby="cuenta-cliente-titulo">

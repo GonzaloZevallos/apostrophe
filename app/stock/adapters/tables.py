@@ -23,7 +23,7 @@ from app.stock.domain.entry import NOTE_MAX_LENGTH
 from app.stock.domain.withdrawal_reason import NAME_MAX_LENGTH
 
 ORIGIN_MAX_LENGTH = 20
-# The frozen `stock_withdrawal.reason` column (migration 0021): nothing reads or writes it
+# The frozen `stock_withdrawal.reason` column (migration 0022): nothing reads or writes it
 # any more, and its check stays as the migration that made it left it.
 LEGACY_REASON_MAX_LENGTH = 9
 

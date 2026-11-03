@@ -30,6 +30,8 @@ subgraph src["src"]
       src_screens_clientes_CustomerCardBehind_tsx["CustomerCardBehind.tsx"]
       src_screens_clientes_CustomerFields_tsx["CustomerFields.tsx"]
       src_screens_clientes_CustomerSearch_ts["CustomerSearch.ts"]
+      src_screens_clientes_CustomerTypeField_tsx["CustomerTypeField.tsx"]
+      src_screens_clientes_CustomerTypeLine_tsx["CustomerTypeLine.tsx"]
       src_screens_clientes_CustomersBehind_tsx["CustomersBehind.tsx"]
       src_screens_clientes_TeDeben_tsx["TeDeben.tsx"]
       src_screens_clientes_accountRows_ts["accountRows.ts"]
@@ -77,6 +79,8 @@ subgraph src["src"]
       src_screens_settings_BusinessGroup_tsx["BusinessGroup.tsx"]
       src_screens_settings_CatalogMessageForm_tsx["CatalogMessageForm.tsx"]
       src_screens_settings_CatalogMessageGroup_tsx["CatalogMessageGroup.tsx"]
+      src_screens_settings_CustomerTypeForm_tsx["CustomerTypeForm.tsx"]
+      src_screens_settings_CustomerTypes_tsx["CustomerTypes.tsx"]
       src_screens_settings_ExpenseCategoriesEditor_tsx["ExpenseCategoriesEditor.tsx"]
       src_screens_settings_ExpenseCategoriesGroup_tsx["ExpenseCategoriesGroup.tsx"]
       src_screens_settings_IntegrationsGroup_tsx["IntegrationsGroup.tsx"]
@@ -86,6 +90,7 @@ subgraph src["src"]
       src_screens_settings_Settings_tsx["Settings.tsx"]
       src_screens_settings_UsersGroup_tsx["UsersGroup.tsx"]
       src_screens_settings_WithdrawalReasons_tsx["WithdrawalReasons.tsx"]
+      src_screens_settings_customerTypeIcons_ts["customerTypeIcons.ts"]
     end
     subgraph src_screens_varieties["varieties"]
       src_screens_varieties_ArchivedIndex_tsx["ArchivedIndex.tsx"]
@@ -207,8 +212,10 @@ src_screens_analisis_CostLines_tsx-->src_screens_analisis_AmountRow_tsx
 src_screens_catalogCopy_ts-->src_screens_telegramPreview_ts
 src_screens_clientes_AccountRowLine_tsx-->src_screens_clientes_accountRows_ts
 src_screens_clientes_ClienteFicha_tsx-->src_screens_clientes_AccountRowLine_tsx
+src_screens_clientes_ClienteFicha_tsx-->src_screens_clientes_CustomerTypeLine_tsx
 src_screens_clientes_ClienteFicha_tsx-->src_screens_clientes_accountRows_ts
 src_screens_clientes_ClienteForm_tsx-->src_screens_clientes_CustomerFields_tsx
+src_screens_clientes_ClienteForm_tsx-->src_screens_clientes_CustomerTypeField_tsx
 src_screens_clientes_ClientesLayout_tsx-->src_screens_clientes_Clientes_tsx
 src_screens_clientes_ClientesLayout_tsx-->src_screens_clientes_CobroPanes_tsx
 src_screens_clientes_ClientesLayout_tsx-->src_screens_clientes_CustomerCardBehind_tsx
@@ -224,6 +231,7 @@ src_screens_clientes_CobroRoute_tsx-->src_screens_clientes_CobroFrame_tsx
 src_screens_clientes_CobroRoute_tsx-->src_screens_clientes_Cobro_tsx
 src_screens_clientes_Cobro_tsx-->src_screens_clientes_ClienteForm_tsx
 src_screens_clientes_CustomerCardBehind_tsx-->src_screens_clientes_AccountRowLine_tsx
+src_screens_clientes_CustomerCardBehind_tsx-->src_screens_clientes_CustomerTypeLine_tsx
 src_screens_clientes_CustomerCardBehind_tsx-->src_screens_clientes_accountRows_ts
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_ClienteFila_tsx
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_CustomerSearch_ts
@@ -300,6 +308,10 @@ src_screens_settings_AppearanceGroup_tsx-->src_screens_settings_SettingsGroup_ts
 src_screens_settings_BusinessGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_CatalogMessageGroup_tsx-->src_screens_settings_CatalogMessageForm_tsx
 src_screens_settings_CatalogMessageGroup_tsx-->src_screens_settings_SettingsGroup_tsx
+src_screens_settings_CustomerTypeForm_tsx-->src_screens_settings_customerTypeIcons_ts
+src_screens_settings_CustomerTypes_tsx-->src_screens_settings_CustomerTypeForm_tsx
+src_screens_settings_CustomerTypes_tsx-->src_screens_settings_SettingsGroup_tsx
+src_screens_settings_CustomerTypes_tsx-->src_screens_settings_customerTypeIcons_ts
 src_screens_settings_ExpenseCategoriesGroup_tsx-->src_screens_settings_ExpenseCategoriesEditor_tsx
 src_screens_settings_ExpenseCategoriesGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_IntegrationsGroup_tsx-->src_screens_settings_SettingsGroup_tsx

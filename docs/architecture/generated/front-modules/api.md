@@ -12,6 +12,7 @@ subgraph src["src"]
     src_api_catalog_ts["catalog.ts"]
     src_api_client_ts["client.ts"]
     src_api_contract_json["contract.json"]
+    src_api_customerTypes_ts["customerTypes.ts"]
     src_api_customers_ts["customers.ts"]
     src_api_expenses_ts["expenses.ts"]
     src_api_firstRun_ts["firstRun.ts"]
@@ -32,6 +33,8 @@ end
 src_api_analysis_ts-->src_api_client_ts
 src_api_catalog_ts-->src_api_client_ts
 src_api_catalog_ts-->src_api_keys_ts
+src_api_customerTypes_ts-->src_api_client_ts
+src_api_customerTypes_ts-->src_api_keys_ts
 src_api_customers_ts-->src_api_client_ts
 src_api_customers_ts-->src_api_payments_ts
 src_api_expenses_ts-->src_api_client_ts

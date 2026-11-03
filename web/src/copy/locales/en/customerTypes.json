@@ -1,0 +1,41 @@
+{
+  "title": "Customer types",
+  "switch": "Customer types",
+  "helpWithVip": "Customers in the VIP type pay the VIP price where a price has one. Other types have no price yet.",
+  "helpNoVip": "Customer types have no price yet.",
+  "entry": "Customer types",
+  "list": {
+    "add": "+ Customer type",
+    "rename": "Rename",
+    "delete": "Delete",
+    "renameLabel": "Rename {{name}}",
+    "deleteLabel": "Delete {{name}}",
+    "loadError": "Couldn't load the customer types. Tap to try again.",
+    "inUse_one": "1 customer is in this type. Move that customer to another type first.",
+    "inUse_other": "{{count}} customers are in this type. Move them to another type first."
+  },
+  "form": {
+    "titleNew": "New customer type",
+    "titleEdit": "Edit customer type",
+    "nameLabel": "Name",
+    "iconLabel": "Icon",
+    "save": "Save",
+    "errorBlank": "Give the type a name.",
+    "errorTooLong": "Use 40 characters or fewer.",
+    "errorDuplicate": "You already have a type with that name.",
+    "errorNotFound": "This type no longer exists. Close this and check the list.",
+    "discardTitle": "Discard the changes?",
+    "discardConfirm": "Discard",
+    "discardKeep": "Keep editing"
+  },
+  "icon": {
+    "circle": "Circle",
+    "star": "Star",
+    "heart": "Heart",
+    "diamond": "Diamond",
+    "flag": "Flag",
+    "tag": "Tag",
+    "crown": "Crown",
+    "bell": "Bell"
+  }
+}

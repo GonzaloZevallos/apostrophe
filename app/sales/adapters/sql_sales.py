@@ -19,6 +19,7 @@ from sqlalchemy.engine import CursorResult
 from sqlalchemy.orm import InstrumentedAttribute, Session
 from sqlalchemy.sql.elements import ColumnElement
 
+from app.customer_types.adapters.vip_type import SqlVipType
 from app.customers.adapters.tables import CustomerRow
 from app.db import flush_or_refuse
 from app.payments.adapters.tables import PaymentRow
@@ -144,7 +145,7 @@ class SqlSales:
                 SaleRow,
                 CustomerRow.id,
                 CustomerRow.name,
-                CustomerRow.vip,
+                CustomerRow.customer_type_id,
                 PaymentRow.id,
                 PaymentRow.paid_on,
                 PaymentRow.amount,
@@ -168,18 +169,23 @@ class SqlSales:
         statement = statement.order_by(SaleRow.sale_date.desc(), SaleRow.id.desc())
 
         rows = self._session.execute(statement).all()
+        vip_type_id = SqlVipType(self._session, self._business_id).id()
         ids = [row[0].id for row in rows]
         lines_by_sale = self._line_views_by_sale(ids)
 
         views = []
         for row in rows:
             sale_row = row[0]
-            customer_id, customer_name, customer_vip = row[1], row[2], row[3]
+            customer_id, customer_name, customer_type_id = row[1], row[2], row[3]
             payment_id, paid_on, amount, method, payment_customer_id = row[4:9]
             customer = (
                 None
                 if customer_id is None
-                else SaleViewCustomer(id=customer_id, name=customer_name, vip=customer_vip)
+                else SaleViewCustomer(
+                    id=customer_id,
+                    name=customer_name,
+                    vip=customer_type_id is not None and customer_type_id == vip_type_id,
+                )
             )
             payment = (
                 None

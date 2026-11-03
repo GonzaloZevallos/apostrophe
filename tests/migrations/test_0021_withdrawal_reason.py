@@ -1,4 +1,4 @@
-"""Migration 0020 gives every existing business the two default withdrawal reasons, once,
+"""Migration 0021 gives every existing business the two default withdrawal reasons, once,
 through the real revisions from 0019, and changes nothing that existed (the shared
 comparator). The seeded names and keys are literals; they equal `name_key` and the
 defaults port's English."""
@@ -57,7 +57,7 @@ def test_every_business_gets_the_two_defaults_and_nothing_that_existed_changes(
 ) -> None:
     engine = _engine_at_0019(tmp_path)
 
-    after = upgrade_and_compare(engine, "0020")
+    after = upgrade_and_compare(engine, "0021")
 
     # business 3 has no withdrawals at all and is seeded all the same
     assert _reasons(after) == {1: DEFAULTS, 2: DEFAULTS, 3: DEFAULTS}
@@ -69,7 +69,7 @@ def test_the_comparator_would_catch_a_migration_that_rewrote_a_withdrawal(
 ) -> None:
     engine = _engine_at_0019(tmp_path)
     before = snapshot(engine)
-    upgrade_to(engine, "0020")
+    upgrade_to(engine, "0021")
     with engine.begin() as connection:
         connection.execute(text("UPDATE stock_withdrawal SET reason = 'own_use' WHERE id = 1"))
 
@@ -91,7 +91,7 @@ def test_the_literals_are_the_defaults_ports_english() -> None:
 
 def test_the_table_keeps_a_name_once_per_business(tmp_path: Path) -> None:
     engine = _engine_at_0019(tmp_path)
-    upgrade_to(engine, "0020")
+    upgrade_to(engine, "0021")
 
     with pytest.raises(IntegrityError), engine.begin() as connection:
         connection.execute(

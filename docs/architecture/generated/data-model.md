@@ -37,6 +37,15 @@ erDiagram
     VARCHAR(60) name
     VARCHAR(16) phone "nullable"
     BOOLEAN vip
+    INTEGER customer_type_id FK "nullable"
+  }
+  customer_type {
+    INTEGER id PK
+    INTEGER business_id FK
+    VARCHAR(40) name
+    VARCHAR(40) name_key
+    VARCHAR(16) icon
+    BOOLEAN is_vip
   }
   expense {
     INTEGER id PK
@@ -210,6 +219,7 @@ erDiagram
   business ||--o{ app_user : business_id
   business ||--o{ catalog_attributes : business_id
   business ||--o{ customer : business_id
+  business ||--o{ customer_type : business_id
   business ||--o{ expense : business_id
   business ||--o{ expense_category : business_id
   business ||--o{ invitation : business_id
@@ -231,6 +241,7 @@ erDiagram
   business ||--o| pricing_settings : business_id
   customer ||--o{ payment : customer_id
   customer ||--o{ sale : customer_id
+  customer_type ||--o{ customer : customer_type_id
   expense_category ||--o{ expense : category_id
   expense_category }o--o{ expense : business_id
   sale ||--o{ payment : sale_id
