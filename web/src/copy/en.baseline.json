@@ -665,7 +665,7 @@
   {"source":"settings.ts:SETTINGS_TEXT.language","args":null,"text":"Language"},
   {"source":"settings.ts:SETTINGS_TEXT.languageGroupName","args":null,"text":"Language"},
   {"source":"settings.ts:SETTINGS_TEXT.light","args":null,"text":"Light"},
-  {"source":"settings.ts:SETTINGS_TEXT.marketingOrOwnUse","args":null,"text":"Marketing or own use"},
+  {"source":"settings.ts:SETTINGS_TEXT.stockOutWithoutSale","args":null,"text":"Stock out without a sale"},
   {"source":"settings.ts:SETTINGS_TEXT.moveDown","args":null,"text":"Down"},
   {"source":"settings.ts:SETTINGS_TEXT.moveReasonDown","args":["Marketing"],"text":"Move Marketing down"},
   {"source":"settings.ts:SETTINGS_TEXT.moveReasonUp","args":["Marketing"],"text":"Move Marketing up"},

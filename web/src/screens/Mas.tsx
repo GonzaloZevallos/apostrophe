@@ -30,7 +30,7 @@ const ITEMS: Item[] = [
     to: WITHDRAWAL_NEW,
     label: COMMON_TEXT.takeFromStock,
     icon: 'salidaStock',
-    detail: SETTINGS_TEXT.marketingOrOwnUse,
+    detail: SETTINGS_TEXT.stockOutWithoutSale,
   },
   { to: EXPENSES, label: COMMON_TEXT.expenses, icon: 'gastos', detail: SETTINGS_TEXT.byMonthAndByCategory },
   {

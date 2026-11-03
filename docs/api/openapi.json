@@ -760,7 +760,7 @@
         "type": "object"
       },
       "CostLineOut": {
-        "description": "A period's stock shortfall, promotion or own-use cost (CONTEXT.md), `null`\nexactly when the period has none of that line's records. `pending` is decided from\nthat line's own pending grams (plan invariant); no grams cross the wire (PM).",
+        "description": "A period's stock shortfall cost (CONTEXT.md), `null`\nexactly when the period has none of that line's records. `pending` is decided from\nthat line's own pending grams (plan invariant); no grams cross the wire (PM).",
         "properties": {
           "amount": {
             "title": "Amount",
@@ -3084,7 +3084,7 @@
         "type": "object"
       },
       "RowCostOut": {
-        "description": "One Análisis cost line (cost of goods, stock shortfall, promotion or own use): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
+        "description": "One Análisis cost line (cost of goods or stock shortfall): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
         "properties": {
           "all_pending": {
             "title": "All Pending",

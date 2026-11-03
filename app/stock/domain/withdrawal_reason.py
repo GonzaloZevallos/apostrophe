@@ -2,8 +2,8 @@
 
 The name follows the shared name rule (`app/shared/names.py`), as an expense category's
 does. "Has withdrawals" is never stored: `check_removable` is handed the fact, read by
-the repository at the moment of the call. Not the `WithdrawalReason` StrEnum of
-`draw_source.py`, which stays until the withdrawals are linked to this list.
+the repository at the moment of the call. Withdrawals link to a reason by its id
+(`Withdrawal.reason_id`).
 """
 
 from __future__ import annotations

@@ -86,7 +86,7 @@ class DebtsOut(BaseModel):
 
 
 class CostLineOut(BaseModel):
-    """A period's stock shortfall, promotion or own-use cost (CONTEXT.md), `null`
+    """A period's stock shortfall cost (CONTEXT.md), `null`
     exactly when the period has none of that line's records. `pending` is decided from
     that line's own pending grams (plan invariant); no grams cross the wire (PM)."""
 
@@ -213,7 +213,7 @@ class AmountWithPendingOut(BaseModel):
 
 
 class RowCostOut(BaseModel):
-    """One Análisis cost line (cost of goods, stock shortfall, promotion or own use): its
+    """One Análisis cost line (cost of goods or stock shortfall): its
     costed `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is
     the domain's answer (`row_cost`) that every gram behind the line is pending, so the
     screen says "N g sin costo" and never "$ 0"."""
