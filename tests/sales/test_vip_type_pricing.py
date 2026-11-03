@@ -4,6 +4,7 @@ the HTTP seam over a real database. Price entry: list 1000, bulk 800 from 10, VI
 called; the frozen `customer.vip` column is never read."""
 
 import itertools
+from typing import Any
 
 from fastapi.testclient import TestClient
 from sqlalchemy import update
@@ -38,7 +39,9 @@ def _customer(client: TestClient, name: str = "Juana") -> int:
     return int(client.post("/customers", json=body).json()["id"])
 
 
-def _sold(client: TestClient, product_id: int, customer_id: int | None, quantity: str) -> dict:
+def _sold(
+    client: TestClient, product_id: int, customer_id: int | None, quantity: str
+) -> dict[str, Any]:
     body: dict[str, object] = {
         "payment": "cash",
         "lines": [{"product_id": product_id, "quantity": quantity}],
@@ -47,11 +50,11 @@ def _sold(client: TestClient, product_id: int, customer_id: int | None, quantity
         body["customer_id"] = customer_id
     created = client.post("/sales", json=body)
     assert created.status_code == 201, created.text
-    sale: dict = created.json()
+    sale: dict[str, Any] = created.json()
     return sale
 
 
-def _rule(sale: dict) -> tuple[str, int]:
+def _rule(sale: dict[str, Any]) -> tuple[str, int]:
     line = sale["lines"][0]
     return line["pricing_rule"], line["price_per_gram"]
 
