@@ -59,7 +59,13 @@ src_copy_onboarding_ts-->src_copy_baselineArgs_ts
 src_copy_onboarding_ts-->src_copy_limits_ts
 src_copy_onboarding_ts-->src_copy_onboarding_ts
 src_copy_onboarding_ts-->src_copy_stock_ts
+src_copy_paymentMethods_ts-->src_copy_baselineArgs_ts
+src_copy_paymentMethods_ts-->src_copy_common_ts
+src_copy_paymentMethods_ts-->src_copy_customers_ts
 src_copy_paymentMethods_ts-->src_copy_limits_ts
+src_copy_paymentMethods_ts-->src_copy_paymentMethods_ts
+src_copy_paymentMethods_ts-->src_copy_stock_ts
+src_copy_paymentMethods_ts-->src_copy_varieties_ts
 src_copy_payments_ts-->src_copy_baselineArgs_ts
 src_copy_payments_ts-->src_copy_limits_ts
 src_copy_payments_ts-->src_copy_payments_ts

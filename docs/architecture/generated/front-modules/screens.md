@@ -81,10 +81,14 @@ subgraph src["src"]
       src_screens_settings_ExpenseCategoriesGroup_tsx["ExpenseCategoriesGroup.tsx"]
       src_screens_settings_IntegrationsGroup_tsx["IntegrationsGroup.tsx"]
       src_screens_settings_InvitePartner_tsx["InvitePartner.tsx"]
+      src_screens_settings_PaymentMethodsArchived_tsx["PaymentMethodsArchived.tsx"]
+      src_screens_settings_PaymentMethodsEntry_tsx["PaymentMethodsEntry.tsx"]
+      src_screens_settings_PaymentMethods_tsx["PaymentMethods.tsx"]
       src_screens_settings_PricingGroup_tsx["PricingGroup.tsx"]
       src_screens_settings_SettingsGroup_tsx["SettingsGroup.tsx"]
       src_screens_settings_Settings_tsx["Settings.tsx"]
       src_screens_settings_UsersGroup_tsx["UsersGroup.tsx"]
+      src_screens_settings_paymentMethodErrors_ts["paymentMethodErrors.ts"]
     end
     subgraph src_screens_varieties["varieties"]
       src_screens_varieties_ArchivedIndex_tsx["ArchivedIndex.tsx"]
@@ -297,12 +301,14 @@ src_screens_priceDeleteNotice_ts-->src_screens_Variedades_tsx
 src_screens_settings_AccountGroup_tsx-->src_screens_CambiarContrasena_tsx
 src_screens_settings_AccountGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_AppearanceGroup_tsx-->src_screens_settings_SettingsGroup_tsx
+src_screens_settings_BusinessGroup_tsx-->src_screens_settings_PaymentMethodsEntry_tsx
 src_screens_settings_BusinessGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_CatalogMessageGroup_tsx-->src_screens_settings_CatalogMessageForm_tsx
 src_screens_settings_CatalogMessageGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_ExpenseCategoriesGroup_tsx-->src_screens_settings_ExpenseCategoriesEditor_tsx
 src_screens_settings_ExpenseCategoriesGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_IntegrationsGroup_tsx-->src_screens_settings_SettingsGroup_tsx
+src_screens_settings_PaymentMethods_tsx-->src_screens_settings_paymentMethodErrors_ts
 src_screens_settings_PricingGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_UsersGroup_tsx-->src_screens_settings_InvitePartner_tsx
 src_screens_settings_UsersGroup_tsx-->src_screens_settings_SettingsGroup_tsx
