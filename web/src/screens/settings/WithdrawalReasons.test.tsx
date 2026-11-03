@@ -90,10 +90,10 @@ test.each([
     throw new Error(`unexpected ${url}`)
   })
   await userEvent.click(await screen.findByRole('button', { name: SETTINGS_TEXT.addWithdrawalReason }))
-  await userEvent.type(screen.getByLabelText(SETTINGS_TEXT.reasonNameLabel), 'Gift')
+  await userEvent.type(screen.getByLabelText('Name'), 'Gift')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
   expect(await screen.findByText(text)).toBeVisible()
-  expect(screen.getByLabelText(SETTINGS_TEXT.reasonNameLabel)).toHaveValue('Gift')
+  expect(screen.getByLabelText('Name')).toHaveValue('Gift')
 })
 
 test('adding and renaming toast "Reason saved" with no name, and deleting toasts "Reason deleted"', async () => {
@@ -104,15 +104,15 @@ test('adding and renaming toast "Reason saved" with no name, and deleting toasts
     throw new Error(`unexpected ${url}`)
   })
   await userEvent.click(await screen.findByRole('button', { name: SETTINGS_TEXT.addWithdrawalReason }))
-  await userEvent.type(screen.getByLabelText(SETTINGS_TEXT.reasonNameLabel), 'Gift')
+  await userEvent.type(screen.getByLabelText('Name'), 'Gift')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
   const saved = await screen.findByRole('status')
   expect(saved).toHaveTextContent(/^Reason saved$/)
 
   const rows = screen.getAllByRole('button', { name: SETTINGS_TEXT.rename })
   await userEvent.click(rows[1]!)
-  await userEvent.clear(screen.getByLabelText(SETTINGS_TEXT.reasonNameLabel))
-  await userEvent.type(screen.getByLabelText(SETTINGS_TEXT.reasonNameLabel), 'Mine')
+  await userEvent.clear(screen.getByLabelText('Name'))
+  await userEvent.type(screen.getByLabelText('Name'), 'Mine')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
   expect(await screen.findByText(SETTINGS_TEXT.reasonSaved)).toBeVisible()
 

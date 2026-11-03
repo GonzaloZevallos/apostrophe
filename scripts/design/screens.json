@@ -283,7 +283,7 @@
     { "path": "/settings/integrations", "kind": "form", "parent": "/settings" },
     { "path": "/settings/catalog-message", "kind": "form", "parent": "/settings" },
     { "path": "/settings/expense-categories", "kind": "form", "parent": "/settings" },
-    { "path": "/settings/withdrawal-reasons", "kind": "card", "parent": "/settings" },
+    { "path": "/settings/withdrawal-reasons", "kind": "form", "parent": "/settings" },
     { "path": "/settings/appearance", "kind": "form", "parent": "/settings" },
     { "path": "/settings/account", "kind": "form", "parent": "/settings" },
     { "path": "/onboarding", "kind": "form", "parent": "/" },

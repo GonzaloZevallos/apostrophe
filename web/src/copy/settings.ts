@@ -138,7 +138,6 @@ export const SETTINGS_TEXT = {
   cannotDeleteLastReason: 'It can\'t be deleted: you need at least one reason.',
   addReasonTitle: 'Add reason',
   renameReasonTitle: 'Rename reason',
-  reasonNameLabel: 'Name',
   reasonNameBlank: 'Write a name.',
   reasonNameTooLong: 'Use 60 characters or fewer.',
   reasonNameDuplicate: 'You already have a reason with that name.',

@@ -1,6 +1,6 @@
 /**
  * `WithdrawalReasons`, Settings → Business → Withdrawal reasons (`docs/product/stock.md`,
- * "Withdrawal reason"): the business's own list, in the order the API answers it. Nothing here
+ * "Withdrawal reason"), a Configuración group framed by `SettingsGroup` (title, "Close"): the business's own list, in the order the API answers it. Nothing here
  * sorts or numbers it. Each row has Rename, Delete and the two move buttons (the first row has
  * no Up, the last no Down). A move renders the list the API answers back; a failed one says
  * so. Add and Rename share one `Sheet`, opened as a history entry (`useSheet`), so the system
@@ -35,6 +35,7 @@ import { SheetStackProvider, useSheet } from '../../components/useSheetStack'
 import { COMMON_TEXT, SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { GENERIC_REFUSAL_MESSAGE, SETTINGS_TEXT } from '../../copy/settings'
 import { useViewport } from '../../shell/useViewport'
+import SettingsGroup from './SettingsGroup'
 
 /** What the form is for: a new reason, or the one being renamed. */
 type Target = 'add' | WithdrawalReasonItem
@@ -156,9 +157,8 @@ function Reasons() {
 
   const reasons = data ?? []
   return (
-    <main className="pantalla">
-      <div className="cuerpo">
-        <h1 className="ajustes__titulo">{COMMON_TEXT.withdrawalReasons}</h1>
+    <SettingsGroup title={COMMON_TEXT.withdrawalReasons} dirty={false}>
+      <>
         <span className="campo__rotulo" data-copy="help">
           {SETTINGS_TEXT.withdrawalReasonsHint}
         </span>
@@ -217,7 +217,6 @@ function Reasons() {
             </Boton>
           </>
         )}
-      </div>
 
       {shownTarget !== null && (
         <ReasonSheet
@@ -251,7 +250,8 @@ function Reasons() {
           <GoneNotice />
         </div>
       )}
-    </main>
+      </>
+    </SettingsGroup>
   )
 }
 
@@ -318,7 +318,7 @@ function ReasonSheet({
       </div>
       <form className="formulario" onSubmit={save}>
         <label className="campo">
-          <span className="campo__rotulo">{SETTINGS_TEXT.reasonNameLabel}</span>
+          <span className="campo__rotulo">{COMMON_TEXT.name}</span>
           <input
             className="campo__input"
             type="text"

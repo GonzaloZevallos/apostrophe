@@ -359,7 +359,7 @@ export const SCREENS = [
   screen({
     id: 'settings-withdrawal-reasons',
     path: SETTINGS_WITHDRAWAL_REASONS,
-    kind: 'card',
+    kind: 'form',
     titleKey: 'common:withdrawalReasons',
     parent: 'settings',
   }),

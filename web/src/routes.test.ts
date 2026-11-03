@@ -106,7 +106,7 @@ const EXPECTED: Record<ScreenId, Expected> = {
     "settings",
     SETTINGS_PLACE,
   ),
-  "settings-withdrawal-reasons": expectation("card", "settings", SETTINGS_PLACE),
+  "settings-withdrawal-reasons": expectation("form", "settings", SETTINGS_PLACE),
   "settings-appearance": expectation("form", "settings", SETTINGS_PLACE),
   "settings-account": expectation("form", "settings", SETTINGS_PLACE),
   // The Onboarding's steps and "Done": forms whose parent is Inicio (onboarding.md).
