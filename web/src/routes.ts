@@ -146,8 +146,8 @@ export const SETTINGS_CATALOG_MESSAGE = '/settings/catalog-message'
 export const EXPENSE_CATEGORIES = '/settings/expense-categories'
 export const SETTINGS_APPEARANCE = '/settings/appearance'
 export const SETTINGS_ACCOUNT = '/settings/account'
-export const SETTINGS_PAYMENT_METHODS = '/settings/payment-methods'
-export const SETTINGS_PAYMENT_METHODS_ARCHIVED = '/settings/payment-methods/archived'
+export const SETTINGS_PAYMENT_METHODS = '/payment-methods'
+export const SETTINGS_PAYMENT_METHODS_ARCHIVED = '/payment-methods/archived'
 
 /** The Onboarding (docs/product/onboarding.md): `/onboarding` resolves to the resume step,
  * each step has its own path, and "Listo" is `/onboarding/done`. The API's own segment is

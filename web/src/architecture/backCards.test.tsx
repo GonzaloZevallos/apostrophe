@@ -76,6 +76,8 @@ const LOADED: Partial<Record<ScreenId, string>> = {
   catalog: 'Sir Jack',
   'varieties-archived': 'Archived',
   withdrawal: 'Zkittlez',
+  'settings-payment-methods': 'Payment methods',
+  'settings-payment-methods-archived': 'Archived methods',
 }
 
 const CATALOG = {
@@ -115,6 +117,8 @@ function fakeApi(): void {
         'GET /api/products': [VARIETY_ROW],
         'GET /api/products?archived=true': [ARCHIVED],
         'GET /catalog': CATALOG,
+        'GET /api/payment-methods': [],
+        'GET /api/payment-methods/archived': [],
         'GET /catalog/archived': [],
       }
       return Promise.resolve(key in answers ? jsonResponse(200, answers[key]) : jsonResponse(404, { detail: 'No existe' }))

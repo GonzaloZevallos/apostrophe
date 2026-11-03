@@ -6,7 +6,11 @@
 
 import { baselineArgs } from './baselineArgs.ts'
 import type * as Self from './paymentMethods.ts'
+import { COMMON_TEXT } from './common.ts'
+import { CUSTOMERS_TEXT } from './customers.ts'
 import type { LimitedCopy } from './limits.ts'
+import { STOCK_TEXT } from './stock.ts'
+import { VARIETIES_TEXT } from './varieties.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
@@ -38,9 +42,9 @@ export const PAYMENT_METHODS_TEXT = {
   /** The screen (list). */
   title: 'Payment methods',
   subtitle: 'The ways you take money. New sale and Record payment offer them in this order.',
-  back: 'Settings',
+  back: COMMON_TEXT.settings,
   add: '+ Add method',
-  archivedRow: 'Archived',
+  archivedRow: COMMON_TEXT.archived,
   moveUp: 'Move up',
   moveDown: 'Move down',
   loading: 'Loading payment methods',
@@ -48,15 +52,15 @@ export const PAYMENT_METHODS_TEXT = {
   retry: 'Try again',
   /** The add / edit Sheet. */
   addTitle: 'New payment method',
-  close: 'Close',
-  save: 'Save',
-  nameLabel: 'Name',
+  close: COMMON_TEXT.close,
+  save: COMMON_TEXT.save,
+  nameLabel: COMMON_TEXT.name,
   iconLabel: 'Icon',
   iconWallet: 'Wallet',
   iconBank: 'Bank',
   iconCard: 'Card',
   iconCoins: 'Coins',
-  iconPhone: 'Phone',
+  iconPhone: CUSTOMERS_TEXT.phone,
   iconGeneric: 'Other',
   iconSelected: 'Selected',
   errorNameEmpty: 'Write a name for this method.',
@@ -64,13 +68,13 @@ export const PAYMENT_METHODS_TEXT = {
   errorNameDuplicate: 'That name is taken, archived methods included. Restore it or pick another.',
   errorSaveFailed: "We couldn't save this method. Try again.",
   discardTitle: 'Discard your changes?',
-  discardKeep: 'No, keep editing',
-  discardConfirm: 'Yes, discard it',
+  discardKeep: COMMON_TEXT.noKeepEditing,
+  discardConfirm: COMMON_TEXT.yesDiscard,
   /** The remove actions. */
   archive: 'Archive',
-  delete: 'Delete',
-  deleteKeep: 'No, keep it',
-  deleteConfirm: 'Yes, delete it',
+  delete: STOCK_TEXT.borrar,
+  deleteKeep: COMMON_TEXT.noKeep,
+  deleteConfirm: COMMON_TEXT.yesDelete,
   deleteBody: "No payment uses it. This can't be undone.",
   errorLastActive: 'This is your only method. Add another one first.',
   errorInUse: 'A payment already uses this method, so it can only be archived.',
@@ -80,7 +84,8 @@ export const PAYMENT_METHODS_TEXT = {
   /** The Archived view. */
   archivedTitle: 'Archived methods',
   archivedBack: 'Payment methods',
-  restore: 'Restore',
+  restore: VARIETIES_TEXT.restaurar,
+  archivedEmpty: 'No archived methods',
   restoreFailed: "We couldn't restore this method. Try again.",
 } as const
 

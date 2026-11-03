@@ -13,6 +13,7 @@ import {
   MORE,
   pathTo,
   SETTINGS_ACCOUNT,
+  SETTINGS_PAYMENT_METHODS,
   STOCK,
   STOCK_ENTRY,
   VARIETIES,
@@ -21,6 +22,7 @@ import {
 import { AUTH_TEXT } from '../copy/auth.ts'
 import { common } from './copy.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
+import { PAYMENT_METHODS_TEXT } from '../copy/paymentMethods.ts'
 import { STOCK_TEXT } from '../copy/stock.ts'
 import { VARIETIES_TEXT } from '../copy/varieties.ts'
 import type { WalkState } from './states.ts'
@@ -44,6 +46,22 @@ const ENTRY_ROUTE = pathTo(STOCK_ENTRY, { id: 1 })
 const LOW_VARIETY = VARIETY.replace(':id', '{low}')
 
 export const RECORDS_STATES: readonly WalkState[] = [
+  {
+    screen: 'MediosPagoHoja',
+    route: SETTINGS_PAYMENT_METHODS,
+    steps: [{ click: PAYMENT_METHODS_TEXT.add }],
+    visible: PAYMENT_METHODS_TEXT.addTitle,
+  },
+  {
+    screen: 'MediosPagoDescartar',
+    route: SETTINGS_PAYMENT_METHODS,
+    steps: [
+      { click: PAYMENT_METHODS_TEXT.add },
+      { fill: { label: PAYMENT_METHODS_TEXT.nameLabel, value: 'Card' } },
+      { click: PAYMENT_METHODS_TEXT.close },
+    ],
+    visible: PAYMENT_METHODS_TEXT.discardTitle,
+  },
   {
     screen: 'ClientesBusqueda',
     route: CUSTOMERS,

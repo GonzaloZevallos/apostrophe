@@ -285,6 +285,8 @@
     { "path": "/settings/expense-categories", "kind": "form", "parent": "/settings" },
     { "path": "/settings/appearance", "kind": "form", "parent": "/settings" },
     { "path": "/settings/account", "kind": "form", "parent": "/settings" },
+    { "path": "/payment-methods", "kind": "card", "parent": "/settings" },
+    { "path": "/payment-methods/archived", "kind": "card", "parent": "/payment-methods" },
     { "path": "/onboarding", "kind": "form", "parent": "/" },
     { "path": "/onboarding/variety", "kind": "form", "parent": "/" },
     { "path": "/onboarding/stock", "kind": "form", "parent": "/" },

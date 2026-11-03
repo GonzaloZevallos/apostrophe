@@ -6,7 +6,6 @@
 
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useTranslation } from 'react-i18next'
 import { NetworkError } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
 import { archivedPaymentMethodsQuery, restorePaymentMethod } from '../../api/paymentMethods'
@@ -15,11 +14,9 @@ import ErrorGenerico from '../../components/ErrorGenerico'
 import Icono from '../../components/Icono'
 import { iconOfMethod } from '../../components/paymentMethodIcons'
 import SinConexion from '../../components/SinConexion'
-import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import { PAYMENT_METHODS_TEXT as T, restoreLabel } from '../../copy/paymentMethods'
 
 export default function PaymentMethodsArchived() {
-  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const query = useQuery(archivedPaymentMethodsQuery())
   const [failed, setFailed] = useState(false)
@@ -55,7 +52,7 @@ export default function PaymentMethodsArchived() {
         )}
         {query.data?.length === 0 && (
           <div className="estado-vacio">
-            <span className="estado-vacio__titulo">{t(EMPTY_STATE_KEYS.archivedMethods)}</span>
+            <span className="estado-vacio__titulo">{T.archivedEmpty}</span>
           </div>
         )}
         {query.data !== undefined && query.data.length > 0 && (

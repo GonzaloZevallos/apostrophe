@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import fixture from '../../api/fixtures/payment-methods.json'
+import { HOME } from '../../routes'
 import PaymentMethods from './PaymentMethods'
 
 type Call = { url: string; method: string; body: unknown }
@@ -25,7 +26,7 @@ function fakeFetch(calls: Call[], methods: unknown = fixture) {
 }
 
 function renderScreen() {
-  const router = createMemoryRouter([{ path: '/', element: <PaymentMethods /> }])
+  const router = createMemoryRouter([{ path: HOME, element: <PaymentMethods /> }])
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
       <RouterProvider router={router} />

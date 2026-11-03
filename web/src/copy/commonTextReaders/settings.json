@@ -1,4 +1,5 @@
 [
+  "web/src/copy/paymentMethods.ts",
   "web/src/copy/settings.ts",
   "web/src/screens/Mas.tsx",
   "web/src/screens/settings/AccountGroup.test.tsx",
