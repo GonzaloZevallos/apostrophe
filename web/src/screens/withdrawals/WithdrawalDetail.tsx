@@ -33,7 +33,6 @@ import { formatDate } from '../../format/dates'
 import { formatGrams } from '../../format/money'
 import { VARIETIES, WITHDRAWAL_EDIT, pathTo } from '../../routes'
 import WithdrawalFacts from './WithdrawalFacts'
-import { REASON_LABEL } from './withdrawalReasons'
 import { COMMON_TEXT } from '../../copy/common'
 import { STOCK_TEXT } from '../../copy/stock'
 
@@ -122,7 +121,7 @@ export default function WithdrawalDetail() {
   const withdrawal = query.data
   const date = formatDate(withdrawal.date, me.today)
   const confirmation = STOCK_TEXT.borrasElRetiroDel(
-    REASON_LABEL[withdrawal.reason],
+    withdrawal.reason_name,
     date,
     formatGrams(withdrawal.total_quantity),
   )

@@ -21,7 +21,7 @@ import {
   withdrawalNewFor,
 } from '../../routes'
 import WithdrawalForm from './WithdrawalForm'
-import { ME, jsonResponse, renderWithdrawals } from './renderWithdrawals'
+import { ME, REASONS, jsonResponse, renderWithdrawals } from './renderWithdrawals'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -171,7 +171,7 @@ test('editing a line on a variety archived since keeps its id and name, also whi
     {
       method: 'PUT',
       body: {
-        reason: 'promotion',
+        reason_id: 1,
         date: '2026-10-02',
         lines: [{ product_id: 1, quantity: '5.5' }],
         note: 'Para la fiesta',
@@ -206,8 +206,8 @@ test('a stale save keeps the guilty line\'s variety and name, says it is gone an
   await userEvent.click(screen.getByRole('button', { name: SUBMIT_NEW }))
   await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
   expect(state.writes.map((write) => write.body)).toEqual([
-    { reason: 'promotion', date: '2026-10-06', lines: [{ product_id: 1, quantity: '2' }] },
-    { reason: 'promotion', date: '2026-10-06', lines: [{ product_id: 2, quantity: '2' }] },
+    { reason_id: 1, date: '2026-10-06', lines: [{ product_id: 1, quantity: '2' }] },
+    { reason_id: 1, date: '2026-10-06', lines: [{ product_id: 2, quantity: '2' }] },
   ])
 })
 
@@ -385,6 +385,7 @@ test('the form never calls onGone on variety.archived', async () => {
     'fetch',
     vi.fn(async (url: string, init?: RequestInit) => {
       if (url === '/api/products') return jsonResponse(200, state.listed)
+      if (url === '/api/withdrawal-reasons') return jsonResponse(200, REASONS)
       return serve(state, url, init)
     }),
   )
