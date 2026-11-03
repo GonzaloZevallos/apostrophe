@@ -20,6 +20,7 @@ import {
   movePaymentMethod,
   archivedPaymentMethodsQuery,
   paymentMethodsQuery,
+  refreshPaymentMethods,
 } from '../../api/paymentMethods'
 import Boton from '../../components/Boton'
 import ConfirmDialog from '../../components/ConfirmDialog'
@@ -141,9 +142,12 @@ export default function PaymentMethods() {
           editing={editing}
           onlyActive={methods.length <= 1}
           onClose={() => setEditing(null)}
-          onSaved={() => {
-            setEditing(null)
+          onSaved={async () => {
+            // The Sheet closes only once the list holds the saved method, so reopening it at
+            // once reads that method and not the entry from before the save.
             reload()
+            await refreshPaymentMethods(queryClient)
+            setEditing(null)
           }}
           onGone={onGone}
         />
@@ -156,7 +160,7 @@ interface MethodSheetProps {
   editing: Editing
   onlyActive: boolean
   onClose: () => void
-  onSaved: () => void
+  onSaved: () => Promise<void>
   onGone: () => void
 }
 
@@ -179,7 +183,7 @@ function MethodSheet({ editing, onlyActive, onClose, onSaved, onGone }: MethodSh
     setSending(true)
     try {
       await action()
-      onSaved()
+      await onSaved()
     } catch (caught) {
       if (caught instanceof NetworkError) setOffline(true)
       else if (caught instanceof ApiError && caught.code === NOT_FOUND_CODE) onGone()

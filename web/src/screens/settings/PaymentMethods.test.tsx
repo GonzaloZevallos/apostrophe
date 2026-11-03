@@ -227,4 +227,28 @@ describe('the management flow', () => {
     expect(screen.queryByRole('textbox', { name: T.nameLabel })).toBeNull()
     await waitFor(() => expect(reads()).toBeGreaterThan(before))
   })
+
+  test('reopening a method right after saving its icon shows the saved icon', async () => {
+    let methods: unknown[] = fixture.map((method) => ({ ...method }))
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const method = init?.method ?? 'GET'
+        const headers = { 'Content-Type': 'application/json' }
+        if (method === 'PATCH') {
+          methods = fixture.map((entry) => (entry.id === 1 ? { ...entry, icon: 'wallet' } : { ...entry }))
+          return new Response(JSON.stringify(methods[0]), { status: 200, headers })
+        }
+        const list = String(input).endsWith('/archived') ? [] : methods
+        return new Response(JSON.stringify(list), { status: 200, headers })
+      }),
+    )
+    renderScreen()
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit Cash' }))
+    await userEvent.click(screen.getByRole('radio', { name: /Wallet/ }))
+    await userEvent.click(screen.getByRole('button', { name: T.save }))
+    await waitFor(() => expect(screen.queryByRole('textbox', { name: T.nameLabel })).toBeNull())
+    await userEvent.click(screen.getByRole('button', { name: 'Edit Cash' }))
+    expect(screen.getByRole('radio', { name: /Wallet/ }).getAttribute('aria-checked')).toBe('true')
+  })
 })
