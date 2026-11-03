@@ -161,13 +161,15 @@ class CustomerName:
 
 @dataclass
 class Customer:
-    """The aggregate root: a name, a phone number and whether they are VIP,
-    and nothing else in this feature (PRD)."""
+    """The aggregate root: a name, a phone number and the customer type they are in, or
+    none. `vip` is derived, never stored here: it says whether `customer_type_id` is the
+    business's VIP type, as `SqlCustomers` fills it when it reads (docs/adr/0070)."""
 
     name: CustomerName
     phone: PhoneNumber | None
     vip: bool = False
     id: int | None = None
+    customer_type_id: int | None = None
 
     def matches(self, query: str) -> bool:
         stripped = query.strip()

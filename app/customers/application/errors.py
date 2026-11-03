@@ -12,6 +12,18 @@ class CustomerNotFound(LookupError):
         super().__init__("no such customer")
 
 
+class CustomerTypeNotFound(LookupError):
+    """The type an assignment names does not exist in this business. Another business's
+    id answers the same, so a type's existence never leaks across businesses.
+
+    It carries no `code` of its own: the refusal code `customer_type.not_found` belongs
+    to `customer_types` (one class per code, `tests/test_refusal_codes.py`), and this
+    hexagon's router answers it with that code at the HTTP edge."""
+
+    def __init__(self) -> None:
+        super().__init__("no such customer type")
+
+
 class PhoneTaken(ValueError):
     code: ClassVar[str] = "customer.phone_taken"
 
@@ -25,5 +37,5 @@ class RequiredFieldCleared(ValueError):
 
     code: ClassVar[str] = "customer.required_field_cleared"
 
-    def __init__(self, field: Literal["name", "vip"]) -> None:
+    def __init__(self, field: Literal["name"]) -> None:
         super().__init__(f"{field} cannot be cleared")

@@ -54,6 +54,19 @@ class Customers(Protocol):
     def phone_taken(self, phone: PhoneNumber, *, other_than: int | None = None) -> bool: ...
 
 
+class CustomerTypes(Protocol):
+    """The customer types of one business, as customers needs them: whether an id is one
+    of this business's, and which one is the VIP type. Implemented in
+    `app/customers/adapters/customer_type_lookup.py` over `customer_types.adapters`;
+    the use cases reach it only through this port."""
+
+    def exists(self, type_id: int) -> bool: ...
+
+    def vip_type_id(self) -> int | None:
+        """The id of the business's VIP type, or `None`. Read once per request."""
+        ...
+
+
 class PricingSettingsReader(Protocol):
     """The business's pricing switches, through the one port customers declares for them
     (docs/adr/0006); the pricing_settings hexagon implements it, wired in `app/main.py`."""
