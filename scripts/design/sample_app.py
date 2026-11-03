@@ -205,6 +205,16 @@ def seed(api: Api, today: date) -> Sample:
         made: int = api.call("POST", "/customers", {"name": name, "phone": phone, "vip": vip})["id"]
         return made
 
+    methods: dict[str, int] = {
+        method["name"].lower(): method["id"] for method in api.call("GET", "/api/payment-methods")
+    }
+
+    def how_paid(choice: str) -> dict[str, object]:
+        """The sale's `payment` as the wire asks for it: a method by id, or owing."""
+        if choice == "owing":
+            return {"kind": "owing"}
+        return {"kind": "method", "payment_method_id": methods[choice]}
+
     nico = customer("Nico Parra", "11 5555-0101")
     tincho = customer("Tincho Aguirre", "11 5555-0102")
     mica = customer("Mica Solano", "11 6033-7725", vip=True)
@@ -226,7 +236,7 @@ def seed(api: Api, today: date) -> Sample:
                 "customer_id": customer_id,
                 "shipping_charged": shipping,
                 "note": note,
-                "payment": payment,
+                "payment": how_paid(payment),
                 "lines": [
                     {
                         "product_id": line.variety,
@@ -284,7 +294,7 @@ def seed(api: Api, today: date) -> Sample:
     api.call(
         "POST",
         f"/customers/{nico}/payments",
-        {"paid_on": ago(2), "amount": 5_000, "method": "cash"},
+        {"paid_on": ago(2), "amount": 5_000, "payment_method_id": methods["cash"]},
     )
 
     def category(name: str) -> int:
@@ -397,6 +407,11 @@ def stretch(api: Api, today: date) -> None:
         "/customers",
         {"name": named("Cliente"), "phone": "11 5555-0199", "channel": None, "vip": False},
     )["id"]
+    cash: int = next(
+        method["id"]
+        for method in api.call("GET", "/api/payment-methods")
+        if method["name"].lower() == "cash"
+    )
     api.call(
         "POST",
         "/sales",
@@ -405,7 +420,7 @@ def stretch(api: Api, today: date) -> None:
             "customer_id": customer,
             "shipping_charged": 0,
             "note": None,
-            "payment": "cash",
+            "payment": {"kind": "method", "payment_method_id": cash},
             "lines": [
                 {"product_id": variety, "quantity": "1", "gift": False, "special_price": None}
             ],
