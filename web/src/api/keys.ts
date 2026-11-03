@@ -91,6 +91,7 @@ export const keys = {
   pricingSettings: () => [PREFIX.pricingSettings] as const,
   // The business's active payment methods, in the seller's order (`api/paymentMethods.ts`).
   paymentMethods: () => [PREFIX.paymentMethods] as const,
+  archivedPaymentMethods: () => [PREFIX.paymentMethods, 'archived'] as const,
   customerAccount: (id: string) => [PREFIX.payments, 'account', id] as const,
   debtors: () => [PREFIX.payments, 'debtors'] as const,
   // "Registrar cobro"'s own preview (plan, "keys.ts"): a dry-run of the settlement,

@@ -32,6 +32,7 @@ import {
   languageName,
 } from '../../copy/settings'
 import SettingsGroup from './SettingsGroup'
+import PaymentMethodsEntry from './PaymentMethodsEntry'
 import { COMMON_TEXT } from '../../copy/common'
 import { useTranslation } from 'react-i18next'
 import { refusalText, type Refusal } from '../../i18n/refusalKeys'
@@ -165,6 +166,7 @@ function BusinessForm({ initialName, language, selectable }: BusinessFormProps) 
         {offline && <SinConexion />}
       </form>
       {selectable.length > 1 && <LanguageControl language={language} selectable={selectable} />}
+      <PaymentMethodsEntry />
     </SettingsGroup>
   )
 }

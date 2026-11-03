@@ -62,6 +62,8 @@ import BusinessGroup from './screens/settings/BusinessGroup'
 import CatalogMessageGroup from './screens/settings/CatalogMessageGroup'
 import ExpenseCategoriesGroup from './screens/settings/ExpenseCategoriesGroup'
 import IntegrationsGroup from './screens/settings/IntegrationsGroup'
+import PaymentMethods from './screens/settings/PaymentMethods'
+import PaymentMethodsArchived from './screens/settings/PaymentMethodsArchived'
 import PricingGroup from './screens/settings/PricingGroup'
 import UsersGroup from './screens/settings/UsersGroup'
 import WithdrawalDetail from './screens/withdrawals/WithdrawalDetail'
@@ -122,6 +124,8 @@ const ELEMENTS: Record<ScreenId, ReactElement> = {
   'settings-expense-categories': <ExpenseCategoriesGroup />,
   'settings-appearance': <AppearanceGroup />,
   'settings-account': <AccountGroup />,
+  'settings-payment-methods': <PaymentMethods />,
+  'settings-payment-methods-archived': <PaymentMethodsArchived />,
   onboarding: <OnboardingEntry />,
   'onboarding-variety': <OnboardingStepRoute slug="variety" />,
   'onboarding-stock': <OnboardingStepRoute slug="stock" />,

@@ -51,6 +51,8 @@ const EXPECTED: Record<ScreenId, readonly [Chrome, Chrome]> = {
   'settings-expense-categories': [FORM, FORM],
   'settings-appearance': [FORM, FORM],
   'settings-account': [FORM, FORM],
+  'settings-payment-methods': [CARD, CARD],
+  'settings-payment-methods-archived': [CARD, CARD],
   onboarding: [FORM, FORM],
   'onboarding-variety': [FORM, FORM],
   'onboarding-stock': [FORM, FORM],

@@ -6474,3 +6474,61 @@ body {
     flex: 1 1 8rem;
   }
 }
+
+/* Settings → Business → Payment methods. Rows wrap, never scroll sideways; targets are 44 px. */
+.medios-pago__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.medios-pago__fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 44px;
+}
+.medios-pago__nombre {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.medios-pago__texto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.medios-pago__mover {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.medios-pago__iconos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.medios-pago__resumen {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+}
+.medios-pago__oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.medios-pago .campo__input,
+.capa .campo__input {
+  font-size: 16px;
+}

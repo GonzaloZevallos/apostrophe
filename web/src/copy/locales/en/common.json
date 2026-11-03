@@ -106,5 +106,7 @@
   "cancel": "Cancel",
   "backArrow": "‹ {{parent}}",
   "offline": "Offline: check your internet and try again.",
-  "genericError": "Something went wrong. Try again."
+  "genericError": "Something went wrong. Try again.",
+  "paymentMethods": "Payment methods",
+  "paymentMethodsArchived": "Archived methods"
 }

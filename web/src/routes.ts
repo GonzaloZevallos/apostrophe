@@ -75,6 +75,8 @@ export type ScreenId =
   | 'settings-expense-categories'
   | 'settings-appearance'
   | 'settings-account'
+  | 'settings-payment-methods'
+  | 'settings-payment-methods-archived'
   | 'onboarding'
   | 'onboarding-variety'
   | 'onboarding-stock'
@@ -144,6 +146,8 @@ export const SETTINGS_CATALOG_MESSAGE = '/settings/catalog-message'
 export const EXPENSE_CATEGORIES = '/settings/expense-categories'
 export const SETTINGS_APPEARANCE = '/settings/appearance'
 export const SETTINGS_ACCOUNT = '/settings/account'
+export const SETTINGS_PAYMENT_METHODS = '/settings/payment-methods'
+export const SETTINGS_PAYMENT_METHODS_ARCHIVED = '/settings/payment-methods/archived'
 
 /** The Onboarding (docs/product/onboarding.md): `/onboarding` resolves to the resume step,
  * each step has its own path, and "Listo" is `/onboarding/done`. The API's own segment is
@@ -362,6 +366,22 @@ export const SCREENS = [
     parent: 'settings',
   }),
   screen({ id: 'settings-account', path: SETTINGS_ACCOUNT, kind: 'form', titleKey: 'common:yourAccount', parent: 'settings' }),
+  // Settings → Business → Payment methods: a detail (the shell draws "‹ Settings"), and its
+  // Archived view one level below it. Their add / edit Sheet is in-page, not a route.
+  screen({
+    id: 'settings-payment-methods',
+    path: SETTINGS_PAYMENT_METHODS,
+    kind: 'card',
+    titleKey: 'common:paymentMethods',
+    parent: 'settings',
+  }),
+  screen({
+    id: 'settings-payment-methods-archived',
+    path: SETTINGS_PAYMENT_METHODS_ARCHIVED,
+    kind: 'card',
+    titleKey: 'common:paymentMethodsArchived',
+    parent: 'settings-payment-methods',
+  }),
 
   // The Onboarding's steps and "Listo" are forms whose parent is Inicio: "Cerrar" and back
   // with no history land there. `router.tsx` draws them in `OnboardingLayout`, the
