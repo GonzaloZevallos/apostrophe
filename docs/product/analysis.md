@@ -1,7 +1,3 @@
-# Análisis
-
-Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada variedad: márgenes por variedad de un mes elegido; ventas, costo de lo vendido, faltante de stock, ganancia y caja de las últimas 8 semanas y los últimos 12 meses; el patrón por día de la semana; los totales desde el primer registro, y los gastos por categoría. Es de solo lectura y lo ve solo su negocio (ADR-0004). Cada cifra que comparte con Resultados (#7) sale del cálculo de #7. El costo de lo vendido, el faltante de stock y el costo de los retiros de stock por Withdrawal reason siguen a los lotes como están hoy (ADR-0009, ADR-0010). Lee ventas, stock (entradas, retiros y la lista de Withdrawal reasons), pagos y gastos. Se llega desde Más en el teléfono y desde la barra lateral en la computadora (navigation.md).
-
 ## Jobs
 
 **Cuando** cierro una semana o un mes, o quiero saber por qué un período anduvo bien o mal, **quiero** ver desde el teléfono qué variedades me dejan plata y cuánta, cómo se movieron las ventas, la ganancia y la caja en las últimas semanas y meses, qué día de la semana vende más y adónde se va la plata de los gastos, **para** decidir qué reponer, a qué cambiarle el precio, qué empujar y en qué dejar de gastar, sin la pestaña Análisis de la planilla y con márgenes sacados del costo real de cada lote.
@@ -38,6 +34,10 @@ Criterios de éxito:
 9. **La computadora no cambia**: la captura de `AnalisisCompu` sale igual que antes de las tarjetas del teléfono.
 10. **Se lee de un vistazo**: en el teléfono cada cifra principal entra en una línea, ningún texto mide menos de 12 px y cada zona de toque, las flechas del mes incluidas, mide al menos 44×44.
 11. **Nada cambia para un negocio existente** (GH-318, motivos de retiro): ve las mismas cifras en cada fila, encabezado y línea desde el primer registro; la única diferencia visible es que "Promotion" ahora dice "Marketing".
+
+# Análisis
+
+Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada variedad: márgenes por variedad de un mes elegido; ventas, costo de lo vendido, faltante de stock, ganancia y caja de las últimas 8 semanas y los últimos 12 meses; el patrón por día de la semana; los totales desde el primer registro, y los gastos por categoría. Es de solo lectura y lo ve solo su negocio (ADR-0004). Cada cifra que comparte con Resultados (#7) sale del cálculo de #7. El costo de lo vendido, el faltante de stock y el costo de los retiros de stock por Withdrawal reason siguen a los lotes como están hoy (ADR-0009, ADR-0010). Lee ventas, stock (entradas, retiros y la lista de Withdrawal reasons), pagos y gastos. Se llega desde Más en el teléfono y desde la barra lateral en la computadora (navigation.md).
 
 ## Comportamiento
 

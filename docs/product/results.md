@@ -1,16 +1,3 @@
-# Resultados
-
-Si un Business gana plata y cuánta tiene de verdad, hoy, esta semana y este mes: el Panel de Home. Es de solo lectura y lo ve solo su Business (ADR-0004). Lee:
-
-- las ventas y sus totales, de sales;
-- el Cost of goods sold, el Stock shortfall y el costo de los Stock withdrawals por Withdrawal reason, de los Lots de stock (ADR-0009, ADR-0010);
-- las Expenses, de expenses;
-- las Purchases, de stock;
-- los Payments, los Balances y el Settlement, de payments (ADR-0012);
-- el Stock status y los Days left, de stock.
-
-No calcula nada que esas capacidades ya calculen, más allá de sumarlo. Sus cifras por período salen del único cálculo que también lee Analysis (ADR-0020): el Profit de acá y el de Analysis son la misma cifra. Home también lleva el aviso del Onboarding (onboarding.md), la First-run checklist y el aviso posterior a la importación (navigation.md); acá se define su lugar en Home. Una Archived variety (varieties.md) sale de What you have left y de "Start with your varieties", mientras que todas las cifras del período la siguen contando.
-
 ## Jobs
 
 **Cuando** abro la app, o paro entre pedidos o al final del día para ver cómo va hoy, esta semana o este mes, **quiero** ver en una sola pantalla qué vendí, cuánto me costó, cuánto gasté, cuánto gané (Profit), la plata que realmente se movió (Cash), quién me debe y cuánto me queda de cada Variety, **para** saber si estoy ganando plata y cuánta tengo de verdad, y saber si tengo que reponer o cobrar una deuda, sin abrir Sales, Customers y Varieties una por una ni hacer ninguna cuenta.
@@ -64,6 +51,19 @@ Criterios de éxito:
 11. **Cada aviso lleva a su arreglo**: "Your Telegram catalog is out of date" abre la pantalla del Catalog; el avatar del Business abre Settings.
 12. **Como en el diseño**: Home, `InicioOscuro` (Home, tema oscuro) e `InicioCompu` (Home, disposición de computadora) coinciden con `docs/product/design-system/pantallas/`, en teléfono y computadora, en los dos temas.
 13. **Nada cambia para un Business existente** (GH-318, motivos de retiro): ve los mismos costos, Profit y Cash; la única diferencia visible es que la línea "Promotion" ahora dice "Marketing".
+
+# Resultados
+
+Si un Business gana plata y cuánta tiene de verdad, hoy, esta semana y este mes: el Panel de Home. Es de solo lectura y lo ve solo su Business (ADR-0004). Lee:
+
+- las ventas y sus totales, de sales;
+- el Cost of goods sold, el Stock shortfall y el costo de los Stock withdrawals por Withdrawal reason, de los Lots de stock (ADR-0009, ADR-0010);
+- las Expenses, de expenses;
+- las Purchases, de stock;
+- los Payments, los Balances y el Settlement, de payments (ADR-0012);
+- el Stock status y los Days left, de stock.
+
+No calcula nada que esas capacidades ya calculen, más allá de sumarlo. Sus cifras por período salen del único cálculo que también lee Analysis (ADR-0020): el Profit de acá y el de Analysis son la misma cifra. Home también lleva el aviso del Onboarding (onboarding.md), la First-run checklist y el aviso posterior a la importación (navigation.md); acá se define su lugar en Home. Una Archived variety (varieties.md) sale de What you have left y de "Start with your varieties", mientras que todas las cifras del período la siguen contando.
 
 ## Comportamiento
 

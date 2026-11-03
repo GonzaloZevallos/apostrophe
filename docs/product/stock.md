@@ -1,7 +1,3 @@
-# Stock
-
-Lo que entra a un Business (Stock entries), lo que sale de él sin una venta (Stock withdrawals), lo que tiene en existencia por Variety, y lo que costó cada gramo vendido, regalado o retirado, tomado de los Lots de los que salió, primero el más antiguo. Lo ve solo su Business (ADR-0004). Lee las Sale lines de sales y las Varieties de varieties. Su Cost of goods sold alimenta el Profit (#7) y los márgenes (#8). El costo de los gramos retirados alimenta el Profit en una línea por Withdrawal reason, nunca el Cost of goods sold ni los márgenes. El costo sigue a los Lots tal como están y nunca se congela (ADR-0009). Stock no tiene pestaña propia: se muestra en Varieties, en la lista y en la página de cada Variety (varieties.md). Contra una Archived variety no se registra nada nuevo, ni una Stock entry ni una línea de retiro (varieties.md, ADR-0032). Los Withdrawal reasons son la lista propia de cada Business, que se edita en Settings → Business → Withdrawal reasons (ADR-0055).
-
 ## Jobs
 
 **Cuando** compro, cosecho o cuento flor, **quiero** registrarlo desde el teléfono en pocos toques (fecha, Variety, gramos, de dónde vino y cuánto costó), **para** saber cuánto tengo de cada Variety, ver que una se está por terminar antes de que un Customer me la pida y saber cuánto me costaron los gramos que vendo o regalo.
@@ -37,6 +33,10 @@ Criterios de éxito:
 12. **Nada cambia para un Business existente** (GH-318, motivos de retiro): ve los mismos retiros, costos, Profit y Cash. El único cambio visible es que "Promotion" ahora dice "Marketing".
 13. **Un motivo propio desde el teléfono**: el dueño agrega un motivo en Settings → Business → Withdrawal reasons. La próxima vez que usa "Take from stock", el motivo nuevo aparece junto a los demás y puede registrar un retiro con él.
 14. **Una línea por motivo**: Home (Week y Month) y Analysis muestran una línea de costo por motivo, en el orden de la lista del Business, y cada una baja el Profit igual que hoy (results.md, analysis.md).
+
+# Stock
+
+Lo que entra a un Business (Stock entries), lo que sale de él sin una venta (Stock withdrawals), lo que tiene en existencia por Variety, y lo que costó cada gramo vendido, regalado o retirado, tomado de los Lots de los que salió, primero el más antiguo. Lo ve solo su Business (ADR-0004). Lee las Sale lines de sales y las Varieties de varieties. Su Cost of goods sold alimenta el Profit (#7) y los márgenes (#8). El costo de los gramos retirados alimenta el Profit en una línea por Withdrawal reason, nunca el Cost of goods sold ni los márgenes. El costo sigue a los Lots tal como están y nunca se congela (ADR-0009). Stock no tiene pestaña propia: se muestra en Varieties, en la lista y en la página de cada Variety (varieties.md). Contra una Archived variety no se registra nada nuevo, ni una Stock entry ni una línea de retiro (varieties.md, ADR-0032). Los Withdrawal reasons son la lista propia de cada Business, que se edita en Settings → Business → Withdrawal reasons (ADR-0055).
 
 ## Comportamiento
 
