@@ -159,16 +159,6 @@
             ],
             "title": "Next"
           },
-          "own_use": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "previous": {
             "anyOf": [
               {
@@ -186,16 +176,6 @@
             },
             "title": "Products",
             "type": "array"
-          },
-          "promotion": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "quantity_gifted": {
             "title": "Quantity Gifted",
@@ -222,6 +202,13 @@
                 "type": "null"
               }
             ]
+          },
+          "withdrawals": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCostOut"
+            },
+            "title": "Withdrawals",
+            "type": "array"
           }
         },
         "required": [
@@ -234,8 +221,7 @@
           "quantity_gifted",
           "average_margin",
           "shortfall",
-          "promotion",
-          "own_use",
+          "withdrawals",
           "products"
         ],
         "title": "AnalysisMonthOut",
@@ -774,7 +760,7 @@
         "type": "object"
       },
       "CostLineOut": {
-        "description": "A period's stock shortfall, promotion or own-use cost (CONTEXT.md), `null`\nexactly when the period has none of that line's records. `pending` is decided from\nthat line's own pending grams (plan invariant); no grams cross the wire (PM).",
+        "description": "A period's stock shortfall cost (CONTEXT.md), `null`\nexactly when the period has none of that line's records. `pending` is decided from\nthat line's own pending grams (plan invariant); no grams cross the wire (PM).",
         "properties": {
           "amount": {
             "title": "Amount",
@@ -1720,28 +1706,8 @@
             "title": "Month",
             "type": "string"
           },
-          "own_use": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "profit": {
             "$ref": "#/components/schemas/AmountWithPendingOut"
-          },
-          "promotion": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "quantity": {
             "title": "Quantity",
@@ -1760,6 +1726,13 @@
                 "type": "null"
               }
             ]
+          },
+          "withdrawals": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCostOut"
+            },
+            "title": "Withdrawals",
+            "type": "array"
           }
         },
         "required": [
@@ -1770,8 +1743,7 @@
           "quantity",
           "cost_of_goods",
           "shortfall",
-          "promotion",
-          "own_use",
+          "withdrawals",
           "expenses",
           "profit",
           "cash"
@@ -2140,16 +2112,6 @@
             "title": "Expenses",
             "type": "integer"
           },
-          "own_use": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/CostLineOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "pending_cost": {
             "title": "Pending Cost",
             "type": "boolean"
@@ -2161,16 +2123,6 @@
           "profit_pending": {
             "title": "Profit Pending",
             "type": "boolean"
-          },
-          "promotion": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/CostLineOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "purchases": {
             "title": "Purchases",
@@ -2206,6 +2158,13 @@
             "format": "date",
             "title": "Start",
             "type": "string"
+          },
+          "withdrawals": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCostOut"
+            },
+            "title": "Withdrawals",
+            "type": "array"
           }
         },
         "required": [
@@ -2219,8 +2178,7 @@
           "cost_of_goods",
           "pending_cost",
           "shortfall",
-          "promotion",
-          "own_use",
+          "withdrawals",
           "expenses",
           "purchases",
           "profit",
@@ -2981,6 +2939,47 @@
         "title": "ProgressOut",
         "type": "object"
       },
+      "ReasonCostOut": {
+        "description": "One withdrawal reason's cost line, in the list order `period_figures` answered\nit: Home's Week, Month and Today and every An\u00e1lisis row serialise it through here\nand nowhere else. `amount` is `null` when every gram is pending, never 0.",
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "pending": {
+            "title": "Pending",
+            "type": "boolean"
+          },
+          "pending_quantity": {
+            "title": "Pending Quantity",
+            "type": "number"
+          },
+          "reason_id": {
+            "title": "Reason Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "reason_id",
+          "name",
+          "amount",
+          "pending",
+          "pending_quantity"
+        ],
+        "title": "ReasonCostOut",
+        "type": "object"
+      },
       "ReasonIn": {
         "properties": {
           "name": {
@@ -3085,7 +3084,7 @@
         "type": "object"
       },
       "RowCostOut": {
-        "description": "One An\u00e1lisis cost line (cost of goods, stock shortfall, promotion or own use): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
+        "description": "One An\u00e1lisis cost line (cost of goods or stock shortfall): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
         "properties": {
           "all_pending": {
             "title": "All Pending",
@@ -3657,28 +3656,8 @@
             "title": "Expenses",
             "type": "integer"
           },
-          "own_use": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "profit": {
             "$ref": "#/components/schemas/AmountWithPendingOut"
-          },
-          "promotion": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "sales": {
             "title": "Sales",
@@ -3693,6 +3672,13 @@
                 "type": "null"
               }
             ]
+          },
+          "withdrawals": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCostOut"
+            },
+            "title": "Withdrawals",
+            "type": "array"
           }
         },
         "required": [
@@ -3701,8 +3687,7 @@
           "profit",
           "cash",
           "shortfall",
-          "promotion",
-          "own_use"
+          "withdrawals"
         ],
         "title": "SinceFirstRecordOut",
         "type": "object"
@@ -3904,28 +3889,8 @@
             "title": "Last Day",
             "type": "string"
           },
-          "own_use": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "profit": {
             "$ref": "#/components/schemas/AmountWithPendingOut"
-          },
-          "promotion": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "quantity": {
             "title": "Quantity",
@@ -3944,6 +3909,13 @@
                 "type": "null"
               }
             ]
+          },
+          "withdrawals": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCostOut"
+            },
+            "title": "Withdrawals",
+            "type": "array"
           }
         },
         "required": [
@@ -3953,8 +3925,7 @@
           "quantity",
           "cost_of_goods",
           "shortfall",
-          "promotion",
-          "own_use",
+          "withdrawals",
           "expenses",
           "profit",
           "cash",
@@ -3992,7 +3963,7 @@
         "type": "object"
       },
       "WithdrawalIn": {
-        "description": "Bare (ADR-0005): `reason` is optional here so a missing one is the domain's\ncoded refusal, not a pydantic error that would echo the input.",
+        "description": "Bare (ADR-0005): `reason_id` is optional here so a missing one is the domain's\ncoded refusal, not a pydantic error that would echo the input.",
         "properties": {
           "date": {
             "anyOf": [
@@ -4024,16 +3995,16 @@
             ],
             "title": "Note"
           },
-          "reason": {
+          "reason_id": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "integer"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Reason"
+            "title": "Reason Id"
           }
         },
         "required": [
@@ -4112,14 +4083,20 @@
             "title": "Quantity",
             "type": "number"
           },
-          "reason": {
-            "$ref": "#/components/schemas/WithdrawalReason"
+          "reason_id": {
+            "title": "Reason Id",
+            "type": "integer"
+          },
+          "reason_name": {
+            "title": "Reason Name",
+            "type": "string"
           }
         },
         "required": [
           "id",
           "date",
-          "reason",
+          "reason_id",
+          "reason_name",
           "quantity"
         ],
         "title": "WithdrawalMovementOut",
@@ -4154,8 +4131,13 @@
             ],
             "title": "Note"
           },
-          "reason": {
-            "$ref": "#/components/schemas/WithdrawalReason"
+          "reason_id": {
+            "title": "Reason Id",
+            "type": "integer"
+          },
+          "reason_name": {
+            "title": "Reason Name",
+            "type": "string"
           },
           "total_quantity": {
             "title": "Total Quantity",
@@ -4164,7 +4146,8 @@
         },
         "required": [
           "id",
-          "reason",
+          "reason_id",
+          "reason_name",
           "date",
           "note",
           "total_quantity",
@@ -4172,15 +4155,6 @@
         ],
         "title": "WithdrawalOut",
         "type": "object"
-      },
-      "WithdrawalReason": {
-        "description": "Why grams were taken out of stock with no sale (CONTEXT.md: Promotion, Own\nuse). The values are what the database stores.",
-        "enum": [
-          "promotion",
-          "own_use"
-        ],
-        "title": "WithdrawalReason",
-        "type": "string"
       },
       "app__payments__adapters__schemas__DebtorOut": {
         "properties": {
@@ -4956,6 +4930,101 @@
           }
         ],
         "summary": "Add Reason",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
+    "/api/withdrawal-reasons/{reason_id}": {
+      "delete": {
+        "operationId": "delete_reason_api_withdrawal_reasons__reason_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "reason_id",
+            "required": true,
+            "schema": {
+              "title": "Reason Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Reason",
+        "tags": [
+          "stock"
+        ]
+      },
+      "patch": {
+        "operationId": "rename_reason_api_withdrawal_reasons__reason_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "reason_id",
+            "required": true,
+            "schema": {
+              "title": "Reason Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReasonOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Rename Reason",
         "tags": [
           "stock"
         ]
