@@ -593,3 +593,86 @@ def test_a_withdrawal_touching_an_archived_variety_can_still_be_read_and_deleted
     assert client.get(f"/stock/withdrawals/{withdrawal['id']}").json() == withdrawal
     assert client.delete(f"/stock/withdrawals/{withdrawal['id']}").status_code == 204
     assert _rows(engine) == (0, 0)
+
+
+def _custom_reason(client: TestClient, name: str = "Regalos") -> int:
+    response = client.post("/api/withdrawal-reasons", json={"name": name})
+    assert response.status_code == 201, response.text
+    return int(response.json()["id"])
+
+
+def test_a_withdrawal_is_recorded_and_edited_under_a_reason_the_business_added(
+    client: TestClient,
+) -> None:
+    variety_id = _variety(client)
+    custom = _custom_reason(client)
+
+    withdrawal = _record(client, variety_id, reason_id=custom)
+    assert (withdrawal["reason_id"], withdrawal["reason_name"]) == (custom, "Regalos")
+    assert "reason" not in withdrawal
+    movement = client.get(f"/stock/products/{variety_id}/movements").json()[0]
+    assert (movement["reason_id"], movement["reason_name"]) == (custom, "Regalos")
+
+    edited = client.put(
+        f"/stock/withdrawals/{withdrawal['id']}",
+        json=_body(variety_id, reason_id=reason_id(client, "Own use")),
+    )
+    assert edited.status_code == 200, edited.text
+    assert (edited.json()["reason_id"], edited.json()["reason_name"]) == (
+        reason_id(client, "Own use"),
+        "Own use",
+    )
+    back = client.put(
+        f"/stock/withdrawals/{withdrawal['id']}", json=_body(variety_id, reason_id=custom)
+    )
+    assert back.json()["reason_name"] == "Regalos"
+    assert client.get(f"/stock/withdrawals/{withdrawal['id']}").json() == back.json()
+
+
+def test_another_business_reason_answers_404_on_record_and_on_edit(
+    client: TestClient, other_client: TestClient, engine: Engine
+) -> None:
+    mine = _variety(client)
+    theirs = reason_id(other_client, "Marketing")
+    withdrawal = _record(client, mine)
+
+    recorded = client.post("/stock/withdrawals", json=_body(mine, reason_id=theirs))
+    edited = client.put(
+        f"/stock/withdrawals/{withdrawal['id']}", json=_body(mine, reason_id=theirs)
+    )
+
+    for refused in (recorded, edited):
+        assert _refusal(refused) == (404, "stock.withdrawal_reason_not_found")
+        assert str(theirs) not in refused.text
+    assert _rows(engine)[0] == 1
+    assert client.get(f"/stock/withdrawals/{withdrawal['id']}").json() == withdrawal
+
+
+def test_an_unknown_reason_answers_404_and_an_edit_leaves_the_withdrawal_as_it_was(
+    client: TestClient, engine: Engine
+) -> None:
+    variety_id = _variety(client)
+    withdrawal = _record(client, variety_id)
+
+    recorded = client.post("/stock/withdrawals", json=_body(variety_id, reason_id=999_999))
+    edited = client.put(
+        f"/stock/withdrawals/{withdrawal['id']}",
+        json=_body(variety_id, reason_id=999_999, lines=[_line(variety_id, "9")]),
+    )
+
+    assert _refusal(recorded) == (404, "stock.withdrawal_reason_not_found")
+    assert _refusal(edited) == (404, "stock.withdrawal_reason_not_found")
+    assert _rows(engine)[0] == 1
+    assert client.get(f"/stock/withdrawals/{withdrawal['id']}").json() == withdrawal
+
+
+def test_a_missing_reason_id_is_still_the_required_refusal(client: TestClient) -> None:
+    variety_id = _variety(client)
+    body = _body(variety_id)
+    del body["reason_id"]
+
+    absent = client.post("/stock/withdrawals", json=body)
+    null = client.post("/stock/withdrawals", json=_body(variety_id, reason_id=None))
+
+    assert _refusal(absent) == (422, "stock.withdrawal_reason_required")
+    assert _refusal(null) == (422, "stock.withdrawal_reason_required")

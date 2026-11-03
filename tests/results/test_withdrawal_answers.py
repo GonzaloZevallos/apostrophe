@@ -386,3 +386,48 @@ def test_a_reordered_reason_reaches_the_panel_and_the_analysis_in_the_new_order(
     assert [line["name"] for line in analysis["weeks"][-1]["withdrawals"]] == order
     assert [line["name"] for line in analysis["month"]["withdrawals"]] == ["Own use", "Marketing"]
     assert [line["name"] for line in analysis["since_first_record"]["withdrawals"]] == order
+
+
+def test_a_renamed_reason_relabels_past_withdrawals_movements_panel_and_analysis(
+    client: TestClient,
+) -> None:
+    _seed_the_history(client)
+    marketing = reason_id(client, "Marketing")
+    variety_id = client.get("/stock").json()["products"][0]["product_id"]
+    movements_before = client.get(f"/stock/products/{variety_id}/movements").json()
+    past = [m["id"] for m in movements_before if m.get("reason_name") == "Marketing"]
+    assert past
+    read_before = client.get(f"/stock/withdrawals/{past[0]}").json()
+    panel_before = client.get("/panel").json()
+    analysis_before = client.get("/analysis").json()
+
+    renamed = client.patch(f"/api/withdrawal-reasons/{marketing}", json={"name": "Publicidad"})
+    assert renamed.status_code == 200, renamed.text
+
+    read_after = client.get(f"/stock/withdrawals/{past[0]}").json()
+    assert read_after["reason_name"] == "Publicidad"
+    assert read_after == read_before | {"reason_name": "Publicidad"}
+    movements_after = client.get(f"/stock/products/{variety_id}/movements").json()
+    assert {m["reason_name"] for m in movements_after if m["kind"] == "withdrawal"} == {
+        "Publicidad",
+        "Own use",
+    }
+    panel_after = client.get("/panel").json()
+    analysis_after = client.get("/analysis").json()
+    for period in ("today", "week", "month"):
+        names = [w["name"] for w in panel_after["periods"][period]["withdrawals"]]
+        assert "Marketing" not in names
+    assert "Publicidad" in [w["name"] for w in panel_after["periods"]["week"]["withdrawals"]]
+    assert "Publicidad" in [w["name"] for w in analysis_after["weeks"][-1]["withdrawals"]]
+    # Only the label moved: relabelling the old answers gives exactly the new ones.
+    assert _relabelled(panel_before) == panel_after
+    assert _relabelled(analysis_before) == analysis_after
+
+
+def _relabelled(answer: object) -> object:
+    """`answer` with every "Marketing" label read as "Publicidad", whatever its depth."""
+    if isinstance(answer, dict):
+        return {key: _relabelled(value) for key, value in answer.items()}
+    if isinstance(answer, list):
+        return [_relabelled(item) for item in answer]
+    return "Publicidad" if answer == "Marketing" else answer
