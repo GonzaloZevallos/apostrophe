@@ -13,11 +13,12 @@ from collections.abc import Iterator
 from contextlib import closing, contextmanager
 from pathlib import Path
 from types import ModuleType
-from typing import Any
+from typing import Any, cast
 
 import openpyxl
 import pytest
 import uvicorn
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.db import make_engine
@@ -49,6 +50,12 @@ class ClientApi:
         response = self.client.request(method, path, json=body)
         assert response.is_success, f"{method} {path}: {response.status_code} {response.text}"
         return response.json() if response.content else None
+
+    def ensure_vip_type(self) -> int:
+        """The VIP type, made the import's way: the API never makes one (docs/adr/0070)."""
+        return int(
+            load_script().ensure_vip_type_on(cast(FastAPI, self.client.app).state.engine, self)
+        )
 
 
 def test_the_sample_business_has_every_state_the_design_shows(client: TestClient) -> None:
@@ -175,7 +182,7 @@ def test_onboarding_accounts_are_isolated_businesses_still_in_onboarding(tmp_pat
     with running_sample(tmp_path) as (sample_app, env, base):
         # La Huerta, as `main()` opens it, seeded and with its own onboarding open.
         token = sample_app.new_business_token(env)
-        huerta = sample_app.HttpApi(base)
+        huerta = sample_app.HttpApi(base, env["APOSTROPHE_DATABASE_URL"])
         huerta.call(
             "POST",
             f"/invitations/{token}/accept",
@@ -224,7 +231,7 @@ def test_a_business_opened_as_an_ended_account_has_its_onboarding_over_beside_la
     tmp_path: Path,
 ) -> None:
     with running_sample(tmp_path) as (sample_app, env, base):
-        huerta = sample_app.HttpApi(base)
+        huerta = sample_app.HttpApi(base, env["APOSTROPHE_DATABASE_URL"])
         huerta.call(
             "POST",
             f"/invitations/{sample_app.new_business_token(env)}/accept",
@@ -252,7 +259,9 @@ def test_a_business_opened_as_an_ended_account_has_its_onboarding_over_beside_la
             )
             return account
 
-        account = sample_app.open_ended_account(sample_app.HttpApi(base), accept_invitation, TODAY)
+        account = sample_app.open_ended_account(
+            sample_app.HttpApi(base, env["APOSTROPHE_DATABASE_URL"]), accept_invitation, TODAY
+        )
 
         ended = sign_in(sample_app, base, account.email, account.password)
         assert ended.call("GET", "/onboarding-progress")["over"] is True
