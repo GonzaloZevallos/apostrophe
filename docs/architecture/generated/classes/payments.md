@@ -20,6 +20,8 @@ classDiagram
   }
   class import_port {
   }
+  class on_the_spot {
+  }
   class payment {
   }
   class payments {
@@ -52,6 +54,7 @@ classDiagram
   delete_payment --> errors
   delete_payment --> ports
   import_port --> tables
+  on_the_spot --> tables
   payment --> settlement
   payments_ledger --> tables
   ports --> settlement
@@ -64,6 +67,7 @@ classDiagram
   router --> delete_payment
   router --> errors
   router --> payment
+  router --> ports
   router --> record_payment
   router --> schemas
   router --> sql_ledgers
@@ -80,7 +84,6 @@ classDiagram
   sql_ledgers --> tables
   sql_payments --> payment
   sql_payments --> ports
-  sql_payments --> settlement
   sql_payments --> tables
   view_accounts --> account
   view_accounts --> errors
@@ -109,7 +112,7 @@ classDiagram
     credit_amount : int
     date : date
     kind : Literal~'credit'~
-    method
+    method : PaymentMethodLabel
     paid_on : date
     payment_id : int
     running_balance : int
@@ -118,7 +121,7 @@ classDiagram
   class LaterPaymentEntry {
     amount : int
     id : int
-    method : PaymentMethod #124; None
+    method : PaymentMethodLabel #124; None
     paid_on : date
     recorded_at : datetime
   }
@@ -129,13 +132,13 @@ classDiagram
   class NewPayment {
     amount : int
     candidate : PaymentCandidate
-    method : PaymentMethod #124; None
+    method : PaymentMethodLabel #124; None
     paid_on : date
   }
   class OwedSale {
     date : date
     id : int
-    on_the_spot_method : PaymentMethod #124; None
+    on_the_spot_method : PaymentMethodLabel #124; None
     paid_on_the_spot : bool
     recorded_at : datetime
     total : int
@@ -153,9 +156,6 @@ classDiagram
   class PaymentFutureDate {
     code : ClassVar~str~
   }
-  class PaymentMethod {
-    name
-  }
   class PaymentMethodRequired {
     code : ClassVar~str~
   }
@@ -164,7 +164,7 @@ classDiagram
     applied_to
     date : date
     kind : Literal~'payment'~
-    method
+    method : PaymentMethodLabel
     paid_on : date
     payment_id : int
     running_balance : int
@@ -177,7 +177,7 @@ classDiagram
   }
   class SaleRow {
     date : date
-    how_paid : Literal
+    how_paid
     kind : Literal~'sale'~
     running_balance : int
     sale_id : int
@@ -201,8 +201,6 @@ classDiagram
     sale_date : date
     sale_id : int
   }
-  CreditRow --> PaymentMethod : method
-  PaymentRow --> PaymentMethod : method
   PaymentRow --> Split : applied_to
 ```
 
@@ -210,6 +208,9 @@ classDiagram
 
 ```mermaid
 classDiagram
+  class AvailableMethods {
+    available(payment_method_id: int) PaymentMethodLabel #124; None
+  }
   class CandidateOutcome {
     applied_to : tuple~Split, ...~
     balance : int
@@ -250,12 +251,12 @@ classDiagram
   class Payments {
     delete_later(payment_id: int) int
     get(payment_id: int) StoredPayment #124; None
-    insert_later(customer_id: int, paid_on: date, amount: int, method: PaymentMethod, recorded_at: datetime) int
+    insert_later(customer_id: int, paid_on: date, amount: int, payment_method_id: int, recorded_at: datetime) int
   }
   class RecordedPayment {
     amount : int
     id : int
-    method : PaymentMethod
+    method : PaymentMethodLabel
     outcome
     paid_on : date
   }
@@ -314,6 +315,15 @@ classDiagram
     total_owed : int
     of(debtors: Debtors) DebtorsOut
   }
+  class HowPaidMethodOut {
+    kind : Literal~'method'~
+  }
+  class HowPaidNoneOut {
+    kind : Literal~'none'~
+  }
+  class HowPaidOwingOut {
+    kind : Literal~'owing'~
+  }
   class PaymentAccountRowOut {
     applied_to
     date : date
@@ -324,8 +334,14 @@ classDiagram
   }
   class PaymentIn {
     amount : int
-    method : PaymentMethod #124; None
     paid_on : date
+    payment_method_id : int #124; None
+  }
+  class PaymentMethodRefOut {
+    icon : str
+    name : str
+    payment_method_id : int
+    of(label: PaymentMethodLabel) PaymentMethodRefOut
   }
   class PaymentPreviewIn {
     amount : int
@@ -339,16 +355,17 @@ classDiagram
   class PaymentRefOut {
     amount : int
     id : int
-    method : PaymentMethod
     paid_on : date
+    build(payment_id: int, paid_on: date, amount: int, label: PaymentMethodLabel) PaymentRefOut
   }
   class PaymentRow {
     amount : Mapped~int~
     business_id : Mapped~int~
     customer_id : Mapped~int #124; None~
     id : Mapped~int~
-    method : Mapped~str~
+    method : Mapped~str #124; None~
     paid_on : Mapped~date~
+    payment_method_id : Mapped~int~
     recorded_at : Mapped~datetime~
     sale_id : Mapped~int #124; None~
   }
@@ -369,7 +386,7 @@ classDiagram
     standing : Literal
   }
   class SaleRefOut {
-    how_paid : Literal~'cash', 'transfer', 'owing', 'none'~
+    how_paid
     id : int
     total : int
   }
@@ -384,6 +401,11 @@ classDiagram
     for_customer(customer_id: int) Ledger #124; None
     for_customers(customer_ids: Collection~int~) Mapping~int, Ledger~
   }
+  class SqlOnTheSpotPayments {
+    assign_customer(sale_id: int, customer_id: int) None
+    record(sale_id: int, customer_id: int #124; None, paid_on: date, amount: int, payment_method_id: int, recorded_at: datetime) None
+    remove_for(sale_id: int) None
+  }
   class SqlOwingSales {
     settlement_of(customer_id: int) CustomerSettlement
     still_owing(customer_ids: Collection~int~) frozenset~int~
@@ -391,16 +413,18 @@ classDiagram
   class SqlPayments {
     delete_later(payment_id: int) int
     get(payment_id: int) StoredPayment #124; None
-    insert_later(customer_id: int, paid_on: date, amount: int, method: PaymentMethod, recorded_at: datetime) int
+    insert_later(customer_id: int, paid_on: date, amount: int, payment_method_id: int, recorded_at: datetime) int
   }
   class SqlPaymentsLedger {
     all() list~PaymentRecord~
   }
   CreditAccountRowOut --> PaymentRefOut : payment
   DebtorOut --> DebtorCustomerOut : customer
+  HowPaidMethodOut --|> PaymentMethodRefOut
   PaymentAccountRowOut --> AppliedToOut : applied_to
   PaymentAccountRowOut --> PaymentRefOut : payment
   PaymentPreviewOut --> AfterOut : after
+  PaymentRefOut --|> PaymentMethodRefOut
   RecordPaymentOut --> AfterOut : after
   RecordPaymentOut --> PaymentRefOut : payment
   SaleAccountRowOut --> SaleRefOut : sale

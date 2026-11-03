@@ -20,7 +20,6 @@ classDiagram
   }
   sale --> pricing
   sale_bill --> pricing
-  sale_bill --> sale
 ```
 
 #### application
@@ -95,6 +94,7 @@ classDiagram
 ```mermaid
 classDiagram
   class BillPayment {
+    method_name : str #124; None
     state : Literal
     still_owed : int #124; None
   }
@@ -149,14 +149,12 @@ classDiagram
     amount : int
     customer_id : int #124; None
     id : int #124; None
-    method
+    method : PaymentMethodLabel #124; None
     paid_on : date
+    payment_method_id : int
   }
   class OwingWithoutCustomer {
     code : ClassVar~str~
-  }
-  class PaymentMethod {
-    name
   }
   class PaymentRequired {
     code : ClassVar~str~
@@ -235,7 +233,6 @@ classDiagram
   NoPriceThatDay --|> SaleRuleBroken
   NonPositiveQuantity --|> SaleRuleBroken
   NoteTooLong --|> SaleRuleBroken
-  OnTheSpotPayment --> PaymentMethod : method
   OwingWithoutCustomer --|> SaleRuleBroken
   PaymentRequired --|> SaleRuleBroken
   SaleBill --> BillPayment : payment
@@ -269,6 +266,11 @@ classDiagram
     quantity : Quantity
     special_price : int #124; None
     variety_id : int
+  }
+  class OnTheSpotPayments {
+    assign_customer(sale_id: int, customer_id: int) None
+    record(sale_id: int, customer_id: int #124; None, paid_on: date, amount: int, payment_method_id: int, recorded_at: datetime) None
+    remove_for(sale_id: int) None
   }
   class OwingSales {
     settlement_of(customer_id: int) CustomerSettlement
@@ -329,6 +331,7 @@ classDiagram
     customer_id : int
   }
   class BillPaymentOut {
+    method_name : str #124; None
     model_config : ConfigDict
     state : Literal
     still_owed : int #124; None
@@ -347,6 +350,28 @@ classDiagram
     product_id : int
     quantity
     special_price : int #124; None
+  }
+  class MethodsByName {
+    ensure_by_name(raw_name: str) int
+  }
+  class PaymentMethodOut {
+    icon : str
+    kind : Literal~'method'~
+    name : str
+    payment_method_id : int
+  }
+  class PaymentNoneOut {
+    kind : Literal~'none'~
+  }
+  class PaymentOwingIn {
+    kind : Literal~'owing'~
+  }
+  class PaymentOwingOut {
+    kind : Literal~'owing'~
+  }
+  class PaymentWithMethodIn {
+    kind : Literal~'method'~
+    payment_method_id : int
   }
   class PlannedPriceBook {
     for_variety(variety_id: int, day: date) VarietyPricing #124; None

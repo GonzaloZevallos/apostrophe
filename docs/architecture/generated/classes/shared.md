@@ -52,6 +52,9 @@ classDiagram
     id : int
     name : str
   }
+  class PaymentMethodUnavailable {
+    code : ClassVar~str~
+  }
   class PricingSettings {
     is_bulk_pricing : bool
     is_vip_customers : bool

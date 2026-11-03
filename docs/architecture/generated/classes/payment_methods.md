@@ -26,6 +26,8 @@ classDiagram
   }
   class ports {
   }
+  class router {
+  }
   class sql_payment_methods {
   }
   class tables {
@@ -40,6 +42,10 @@ classDiagram
   opening --> ports
   opening --> sql_payment_methods
   ports --> method
+  router --> application
+  router --> method
+  router --> ports
+  router --> sql_payment_methods
   sql_payment_methods --> method
   sql_payment_methods --> ports
   sql_payment_methods --> tables
@@ -133,6 +139,24 @@ classDiagram
   class BabelPaymentMethodDefaults {
     for_language(language: Language) tuple~PaymentMethodSeed, ...~
   }
+  class MoveIn {
+    direction : Direction
+  }
+  class PaymentMethodIn {
+    icon : PaymentMethodIcon #124; None
+    name : str
+  }
+  class PaymentMethodOut {
+    icon : str
+    id : int
+    is_used : bool
+    name : str
+    position : int
+  }
+  class PaymentMethodPatch {
+    icon : PaymentMethodIcon #124; None
+    name : str #124; None
+  }
   class PaymentMethodRow {
     archived_at : Mapped~datetime #124; None~
     business_id : Mapped~int~
@@ -151,6 +175,7 @@ classDiagram
   class SqlPaymentMethods {
     add(name: PaymentMethodName, icon: PaymentMethodIcon) PaymentMethod
     archive(method_id: int, at: datetime) None
+    available(payment_method_id: int) PaymentMethodLabel #124; None
     delete(method_id: int) None
     get(method_id: int) PaymentMethod #124; None
     is_used(method_id: int) bool

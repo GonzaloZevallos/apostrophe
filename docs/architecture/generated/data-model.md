@@ -94,7 +94,8 @@ erDiagram
     INTEGER business_id FK
     DATE paid_on
     INTEGER amount
-    VARCHAR(10) method
+    VARCHAR(10) method "nullable"
+    INTEGER payment_method_id FK
     INTEGER customer_id FK "nullable"
     INTEGER sale_id FK "nullable"
     DATETIME recorded_at
@@ -234,6 +235,8 @@ erDiagram
   customer ||--o{ sale : customer_id
   expense_category ||--o{ expense : category_id
   expense_category }o--o{ expense : business_id
+  payment_method ||--o{ payment : payment_method_id
+  payment_method }o--o{ payment : business_id
   sale ||--o{ payment : sale_id
   sale ||--o{ sale_line : sale_id
   stock_withdrawal ||--o{ stock_withdrawal_line : stock_withdrawal_id
