@@ -15,6 +15,7 @@ export type Resource =
   | 'expenseCategories'
   | 'sales'
   | 'stock'
+  | 'withdrawalReasons'
   | 'catalog'
   | 'payments'
   | 'pinnedCatalog'
@@ -29,6 +30,7 @@ const PREFIX: Record<Resource, string> = {
   expenseCategories: 'expense-categories',
   sales: 'sales',
   stock: 'stock',
+  withdrawalReasons: 'withdrawal-reasons',
   catalog: 'catalog',
   payments: 'payments',
   pinnedCatalog: 'pinned-catalog',
@@ -70,6 +72,10 @@ export const keys = {
   stockEntry: (id: string) => [PREFIX.stock, 'entries', id] as const,
   stockMovements: (varietyId: string) => [PREFIX.stock, 'movements', varietyId] as const,
   stockWithdrawal: (id: string) => [PREFIX.stock, 'withdrawals', id] as const,
+  // The business's own list of withdrawal reasons (`GET /api/withdrawal-reasons`): the form's
+  // picker reads it, and the Settings list that adds, renames, moves or removes a reason
+  // invalidates it through `invalidateResource(queryClient, 'withdrawalReasons')`.
+  withdrawalReasons: () => [PREFIX.withdrawalReasons] as const,
   // Named only by `api/catalog.ts` (`catalogQueryOptions`, ADR-0022), which freezes its
   // freshness (`staleTime: 0`, `gcTime: 0`). A stock or varieties write invalidates it
   // through `CROSS_INVALIDATES`; the catalog's own saves set its data directly.
@@ -127,6 +133,8 @@ const CROSS_INVALIDATES: Partial<Record<Resource, Resource[]>> = {
   sales: ['customers', 'payments'],
   customers: ['payments'],
   stock: ['catalog'],
+  // A rename or removal shows in every withdrawal row and detail, which carry the name.
+  withdrawalReasons: ['stock'],
   varieties: ['catalog'],
 }
 

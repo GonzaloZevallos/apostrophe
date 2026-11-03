@@ -74,7 +74,7 @@
   "stock.withdrawal_reason_name_too_long": "refusals:generic",
   "stock.withdrawal_reason_name_taken": "refusals:generic",
   "stock.withdrawal_reason_cannot_move": "refusals:generic",
-  "stock.withdrawal_reason_not_found": "refusals:goneNotice",
+  "stock.withdrawal_reason_not_found": "refusals:withdrawalReasonNotFound",
   "catalog.emoji_invalid": "refusals:generic",
   "catalog.indica_share_invalid": "refusals:generic",
   "catalog.aroma_too_long": "refusals:generic",

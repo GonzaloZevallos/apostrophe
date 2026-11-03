@@ -1,6 +1,7 @@
 {
   "id": 1,
-  "reason": "promotion",
+  "reason_id": 1,
+  "reason_name": "Marketing",
   "date": "2026-10-02",
   "note": "Para la fiesta",
   "total_quantity": 5.5,
