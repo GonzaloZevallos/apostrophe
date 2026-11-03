@@ -137,7 +137,7 @@ export default function CustomerTypeForm({
       </label>
       <div className="campo">
         <span className="campo__rotulo">{t('customerTypes:form.iconLabel')}</span>
-        <div className="selector-pago" role="radiogroup" aria-label={t('customerTypes:form.iconLabel')}>
+        <div className="selector-pago tipo-cliente-iconos" role="radiogroup" aria-label={t('customerTypes:form.iconLabel')}>
           {CUSTOMER_TYPE_ICON_ORDER.map((key) => (
             <button
               key={key}

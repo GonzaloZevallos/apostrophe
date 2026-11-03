@@ -51,6 +51,7 @@ export default function CustomerFields({
             ref={nameRef}
             className="campo__input campo__input--enfoque"
             type="text"
+            autoComplete="off"
             value={value.name}
             onChange={(event) => onChange({ ...value, name: event.target.value })}
             required
@@ -72,6 +73,7 @@ export default function CustomerFields({
             id={phoneId}
             className="campo__input campo__input--enfoque"
             type="tel"
+            autoComplete="off"
             value={value.phone}
             aria-describedby={phoneHintId}
             onChange={(event) => onChange({ ...value, phone: event.target.value })}

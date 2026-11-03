@@ -16,7 +16,7 @@ export default function CustomerTypeLine({ typeId }: { typeId: number | null }) 
   return (
     <div className="campo">
       <span>
-        <span aria-hidden="true">{glyphOf(type.icon)}</span> {type.name}
+        <span aria-hidden="true">{glyphOf(type.icon)}</span> <span>{type.name}</span>
       </span>
     </div>
   )

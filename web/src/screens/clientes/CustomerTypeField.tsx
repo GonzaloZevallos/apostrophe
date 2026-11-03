@@ -49,6 +49,7 @@ export default function CustomerTypeField({ value, onChange, error }: CustomerTy
       <select
         id={selectId}
         className="campo__input"
+        autoComplete="off"
         value={value}
         onChange={(event) => onChange(event.target.value)}
       >

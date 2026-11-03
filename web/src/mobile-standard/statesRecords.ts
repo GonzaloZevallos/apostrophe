@@ -69,6 +69,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
     route: CUSTOMER_NEW,
     steps: [],
     visible: CUSTOMERS_TEXT.typeNotice,
+    reads: [{ path: /^\/api\/customer-types$/, status: 200, body: [] }],
   },
   {
     // Types are answered by a stub (the sample has none), so the select itself is walked.

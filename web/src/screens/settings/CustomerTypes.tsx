@@ -82,6 +82,7 @@ export default function CustomerTypes() {
 
   return (
     <SettingsGroup title={t('customerTypes:title')} dirty={false}>
+      <div className="tipos-cliente">
       {list.isPending && <Loading />}
       {list.isError &&
         (list.error instanceof NetworkError ? (
@@ -164,6 +165,7 @@ export default function CustomerTypes() {
           {computer && discardDialog}
         </Sheet>
       )}
+      </div>
     </SettingsGroup>
   )
 }
