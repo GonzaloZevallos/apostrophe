@@ -24,7 +24,8 @@ from tests.pricing_switches import set_switches
 PRICE = 10_000
 BILL_KEYS = {"business_name", "date", "shipping_charged", "total", "lines", "payment", "balance"}
 LINE_KEYS = {"product", "quantity", "amount", "rule", "unit_price"}
-PAYMENT_KEYS = {"state", "still_owed"}
+PAYMENT_KEYS = {"state", "still_owed", "method_name"}
+CASH, TRANSFER = 1, 2  # the two methods every business starts with (first business: ids 1, 2)
 
 
 def _variety(client: TestClient, name: str = "Lavanda", **prices: int | str) -> int:
@@ -56,9 +57,13 @@ def _sale(
     *,
     gift: bool = False,
 ) -> int:
+    """`payment` is "cash", "transfer", "owing" or None (a $0 sale)."""
     body: dict[str, Any] = {"lines": [{"product_id": variety_id, "quantity": "1", "gift": gift}]}
-    if payment is not None:
-        body["payment"] = payment
+    if payment == "owing":
+        body["payment"] = {"kind": "owing"}
+    elif payment is not None:
+        method_id = {"cash": CASH, "transfer": TRANSFER}[payment]
+        body["payment"] = {"kind": "method", "payment_method_id": method_id}
     if customer_id is not None:
         body["customer_id"] = customer_id
     response = client.post("/sales", json=body)
@@ -69,7 +74,7 @@ def _sale(
 def _pay(client: TestClient, customer_id: int, amount: int) -> None:
     response = client.post(
         f"/customers/{customer_id}/payments",
-        json={"paid_on": TODAY.isoformat(), "amount": amount, "payment_method_id": 1},
+        json={"paid_on": TODAY.isoformat(), "amount": amount, "payment_method_id": CASH},
     )
     assert response.status_code == 201, response.text
 
@@ -148,35 +153,40 @@ def _credit_balance(client: TestClient, v: int) -> int:
     return _sale(client, v, "cash", customer)
 
 
-# (scenario, state, still_owed, balance)
+# (scenario, state, still_owed, balance, method_name)
 ROWS = [
-    pytest.param(_gifts_no_customer, "none", None, None, id="gifts-no-customer"),
-    pytest.param(_gifts_customer_even, "none", None, None, id="gifts-customer-even"),
-    pytest.param(_gifts_customer_owes, "none", None, PRICE, id="gifts-customer-owes"),
-    pytest.param(_cash, "cash", None, None, id="cash"),
-    pytest.param(_transfer, "transfer", None, None, id="transfer"),
-    pytest.param(_cash_owes_elsewhere, "cash", None, PRICE, id="cash-owes-elsewhere"),
-    pytest.param(_fully_owed, "owed", PRICE, PRICE, id="fully-owed"),
-    pytest.param(_partly_owed, "owed", 6_000, 6_000, id="partly-owed"),
-    pytest.param(_paid_later, "paid", None, None, id="paid-by-later-payment"),
-    pytest.param(_paid_by_credit, "paid", None, None, id="paid-by-credit"),
-    pytest.param(_credit_balance, "cash", None, -PRICE, id="credit-balance"),
+    pytest.param(_gifts_no_customer, "none", None, None, None, id="gifts-no-customer"),
+    pytest.param(_gifts_customer_even, "none", None, None, None, id="gifts-customer-even"),
+    pytest.param(_gifts_customer_owes, "none", None, PRICE, None, id="gifts-customer-owes"),
+    pytest.param(_cash, "method", None, None, "Cash", id="cash"),
+    pytest.param(_transfer, "method", None, None, "Transfer", id="transfer"),
+    pytest.param(_cash_owes_elsewhere, "method", None, PRICE, "Cash", id="cash-owes-elsewhere"),
+    pytest.param(_fully_owed, "owed", PRICE, PRICE, None, id="fully-owed"),
+    pytest.param(_partly_owed, "owed", 6_000, 6_000, None, id="partly-owed"),
+    pytest.param(_paid_later, "paid", None, None, None, id="paid-by-later-payment"),
+    pytest.param(_paid_by_credit, "paid", None, None, None, id="paid-by-credit"),
+    pytest.param(_credit_balance, "method", None, -PRICE, "Cash", id="credit-balance"),
 ]
 
 
-@pytest.mark.parametrize(("scenario", "state", "still_owed", "balance"), ROWS)
+@pytest.mark.parametrize(("scenario", "state", "still_owed", "balance", "method_name"), ROWS)
 def test_the_state_table_through_the_api(
     client: TestClient,
     scenario: Scenario,
     state: str,
     still_owed: int | None,
     balance: int | None,
+    method_name: str | None,
 ) -> None:
     sale_id = scenario(client, _variety(client))
 
     bill = _detail(client, sale_id)["bill"]
 
-    assert bill["payment"] == {"state": state, "still_owed": still_owed}
+    assert bill["payment"] == {
+        "state": state,
+        "still_owed": still_owed,
+        "method_name": method_name,
+    }
     assert bill["balance"] == balance
 
 
@@ -189,7 +199,7 @@ def test_a_bulk_line_carries_its_rule_and_unit_price_and_a_gift_its_rule_and_no_
     response = client.post(
         "/sales",
         json={
-            "payment": {"kind": "method", "payment_method_id": 1},
+            "payment": {"kind": "method", "payment_method_id": CASH},
             "shipping_charged": 700,
             "lines": [
                 {"product_id": plain, "quantity": "1.25"},
