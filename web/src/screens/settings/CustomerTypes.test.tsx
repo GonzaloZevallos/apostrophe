@@ -37,7 +37,7 @@ function renderScreen(types: CustomerType[], handler: Handler = () => undefined)
     const body: unknown = init?.body === undefined ? undefined : JSON.parse(String(init.body))
     const answered = handler(method, url, body)
     if (answered !== undefined) return Promise.resolve(answered)
-    if (url === '/customer-types' && method === 'GET') return Promise.resolve(json(200, types))
+    if (url === '/api/customer-types' && method === 'GET') return Promise.resolve(json(200, types))
     return Promise.resolve(json(500, {}))
   })
   vi.stubGlobal('fetch', fetchMock)
@@ -82,7 +82,7 @@ test('shows the empty state when the business has no types', async () => {
 test('creates a type with the default circle icon and refreshes the list', async () => {
   let created: unknown
   const fetchMock = renderScreen([], (method, url, body) => {
-    if (method === 'POST' && url === '/customer-types') {
+    if (method === 'POST' && url === '/api/customer-types') {
       created = body
       return json(201, { id: 3, name: 'Friends', icon: 'circle', is_vip: false })
     }
@@ -96,7 +96,7 @@ test('creates a type with the default circle icon and refreshes the list', async
 
   expect(created).toEqual({ name: 'Friends', icon: 'circle' })
   await vi.waitFor(() => expect(screen.queryByRole('textbox', { name: 'Name' })).not.toBeInTheDocument())
-  expect(fetchMock.mock.calls.filter(([url]) => url === '/customer-types').length).toBeGreaterThan(1)
+  expect(fetchMock.mock.calls.filter(([url]) => url === '/api/customer-types').length).toBeGreaterThan(1)
 })
 
 test('picks another icon and sends its key', async () => {
@@ -135,7 +135,7 @@ test.each([
 test('renames a type through PATCH', async () => {
   let patched: unknown
   renderScreen([REGULARS], (method, url, body) => {
-    if (method === 'PATCH' && url === '/customer-types/2') {
+    if (method === 'PATCH' && url === '/api/customer-types/2') {
       patched = body
       return json(200, { ...REGULARS, name: 'Friends' })
     }
@@ -199,7 +199,7 @@ test.each([
 test('deletes an empty type', async () => {
   let deleted = false
   renderScreen([REGULARS], (method, url) => {
-    if (method === 'DELETE' && url === '/customer-types/2') {
+    if (method === 'DELETE' && url === '/api/customer-types/2') {
       deleted = true
       return new Response(null, { status: 204 })
     }

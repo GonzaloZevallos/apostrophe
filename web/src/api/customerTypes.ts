@@ -1,6 +1,6 @@
 /**
- * The customer types resource, over `api/client.ts` only: `GET/POST /customer-types`,
- * `PATCH/DELETE /customer-types/{id}` (`app/customer_types/adapters/schemas.py`). `is_vip` is
+ * The customer types resource, over `api/client.ts` only: `GET/POST /api/customer-types`,
+ * `PATCH/DELETE /api/customer-types/{id}` (`app/customer_types/adapters/schemas.py`). `is_vip` is
  * read-only: it marks the VIP type the upgrade created and is never sent. The list is what the
  * Prices screen reads to pick its help line, whether or not the switch is on.
  */
@@ -35,7 +35,7 @@ export interface CustomerTypeIn {
 export function customerTypesQueryOptions() {
   return queryOptions({
     queryKey: keys.customerTypes(),
-    queryFn: () => get<CustomerType[]>('/customer-types'),
+    queryFn: () => get<CustomerType[]>('/api/customer-types'),
     staleTime: 0,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
@@ -43,13 +43,13 @@ export function customerTypesQueryOptions() {
 }
 
 export function createCustomerType(body: CustomerTypeIn): Promise<CustomerType> {
-  return post<CustomerType>('/customer-types', body)
+  return post<CustomerType>('/api/customer-types', body)
 }
 
 export function editCustomerType(id: number, body: Partial<CustomerTypeIn>): Promise<CustomerType> {
-  return patch<CustomerType>(`/customer-types/${encodeURIComponent(String(id))}`, body)
+  return patch<CustomerType>(`/api/customer-types/${encodeURIComponent(String(id))}`, body)
 }
 
 export function deleteCustomerType(id: number): Promise<void> {
-  return del<void>(`/customer-types/${encodeURIComponent(String(id))}`)
+  return del<void>(`/api/customer-types/${encodeURIComponent(String(id))}`)
 }

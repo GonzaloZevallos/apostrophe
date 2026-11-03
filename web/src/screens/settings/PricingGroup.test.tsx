@@ -72,7 +72,7 @@ function serving(
     if (init?.method === 'PUT' && url === '/pricing-settings' && put !== undefined) {
       return Promise.resolve(put(JSON.parse(String(init.body)) as PricingSettings))
     }
-    if (url === '/customer-types') return Promise.resolve(jsonResponse(200, customerTypes))
+    if (url === '/api/customer-types') return Promise.resolve(jsonResponse(200, customerTypes))
     return Promise.resolve(jsonResponse(200, settings))
   })
 }
@@ -150,7 +150,7 @@ test('a dropped network shows "Sin conexión" and keeps the switches as set', as
   const fetchMock = vi.fn((url: string, init?: RequestInit) =>
     init?.method === 'PUT' && url === '/pricing-settings'
       ? Promise.reject(new TypeError('Failed to fetch'))
-      : Promise.resolve(jsonResponse(200, url === '/customer-types' ? [] : SETTINGS)),
+      : Promise.resolve(jsonResponse(200, url === '/api/customer-types' ? [] : SETTINGS)),
   )
   renderGroup(fetchMock)
   await screen.findByRole('switch', { name: 'Customer types' })

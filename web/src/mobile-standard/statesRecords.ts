@@ -149,13 +149,13 @@ export const RECORDS_STATES: readonly WalkState[] = [
     visible: '3 customers are in this type. Move them to another type first.',
     reads: [
       {
-        path: /^\/customer-types$/,
+        path: /^\/api\/customer-types$/,
         status: 200,
         body: [{ id: 1, name: 'Regulars', icon: 'circle', is_vip: false }],
       },
     ],
     writes: [
-      { method: 'DELETE', path: /^\/customer-types\/\d+$/, status: 409, body: { code: 'customer_type.in_use', count: 3 } },
+      { method: 'DELETE', path: /^\/api\/customer-types\/\d+$/, status: 409, body: { code: 'customer_type.in_use', count: 3 } },
     ],
   },
   {
