@@ -34,9 +34,7 @@ class WithdrawalWithoutReason(LookupError):
 _LEGACY_NAME_KEY = {DrawSource.PROMOTION: "marketing", DrawSource.OWN_USE: "own use"}
 
 
-def _row_of(
-    variety_id: int, draw: Draw, cost: DrawCost, reason_ids: Mapping[str, int]
-) -> DrawRow:
+def _row_of(variety_id: int, draw: Draw, cost: DrawCost, reason_ids: Mapping[str, int]) -> DrawRow:
     """One `(draw, cost)` pair as a `DrawRow`, its kind told by `draw.source` alone: a
     shortfall or a withdrawal carries no variety, sale or line total."""
     kind: DrawKind

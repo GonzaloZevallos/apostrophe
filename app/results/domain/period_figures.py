@@ -211,9 +211,7 @@ class Buckets:
         """The stock shortfall's costed amount and pending grams in `[start, end]`,
         `None` exactly when no shortfall draw falls in the window."""
         days = [
-            found
-            for d in _days(start, end)
-            if (found := self.shortfall_totals.get(d)) is not None
+            found for d in _days(start, end) if (found := self.shortfall_totals.get(d)) is not None
         ]
         return _line_cost(days)
 
@@ -410,7 +408,7 @@ def scan(
 def totals_between(buckets: Buckets, start: date, end: date) -> PeriodTotals:
     """One `[start, end]` window's figures, read off an already-`scan`ned `Buckets`
     (ADR-0013 amendment GH-70): sales, sales count, grams sold and gifted, cost of
-    goods, stock shortfall, the cost of each withdrawal reason, expenses, purchases, profit and cash — the one
+    goods, stock shortfall, each withdrawal reason, expenses, purchases, profit and cash — the one
     computation Inicio's panel and Análisis's weeks/months/since-first-record all
     read, never a second sum of their own. Profit and cash stay written once, in
     `Buckets.profit`/`Buckets.cash` above."""

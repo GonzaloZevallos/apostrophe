@@ -64,9 +64,7 @@ class CustomerOut(BaseModel):
         )
 
 
-def _required[T](
-    value: T | None, present: bool, field: Literal["name", "vip"]
-) -> T | Unchanged:
+def _required[T](value: T | None, present: bool, field: Literal["name", "vip"]) -> T | Unchanged:
     if not present:
         return UNCHANGED
     if value is None:

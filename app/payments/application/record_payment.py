@@ -75,9 +75,7 @@ def record_payment(
     commit (the plan's own order): the future date and above-the-balance refusals
     must be answered before a missing method is, so a candidate that could never be
     recorded never gets to complain about its method instead."""
-    outcome = settle_candidate(
-        ledgers, customer_id, PaymentCandidate(paid_on, amount), today
-    )
+    outcome = settle_candidate(ledgers, customer_id, PaymentCandidate(paid_on, amount), today)
     if method is None:
         raise PaymentMethodRequired()
     payment_id = payments.insert_later(customer_id, paid_on, amount, method, recorded_at)
