@@ -1,9 +1,13 @@
+from typing import cast
+
+from sqlalchemy import delete as sa_delete
 from sqlalchemy import func, select
+from sqlalchemy.engine import CursorResult
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.stock.adapters.tables import WithdrawalReasonRow
-from app.stock.domain.errors import ReasonNameTaken
+from app.stock.adapters.tables import StockWithdrawalRow, WithdrawalReasonRow
+from app.stock.domain.errors import ReasonHasWithdrawals, ReasonNameTaken
 from app.stock.domain.withdrawal_reason import ReasonName, WithdrawalReason
 
 
@@ -12,8 +16,8 @@ class SqlWithdrawalReasons:
     filters on that business; a reason of another business is, from here, a reason that
     does not exist (docs/adr/0004). Writes flush; the use case commits.
 
-    `IntegrityError` is never let through: it would carry SQL, and the only unique key a
-    write here can break is `(business_id, name_key)`."""
+    `IntegrityError` is never let through: it would carry SQL. The only key a write here
+    can break is `(business_id, name_key)`, or the RESTRICT foreign key of a withdrawal."""
 
     def __init__(self, session: Session, business_id: int) -> None:
         self._session = session
@@ -71,6 +75,40 @@ class SqlWithdrawalReasons:
             .where(WithdrawalReasonRow.business_id == self._business_id)
         )
         return self._session.scalar(statement) or 0
+
+    def has_withdrawals(self, reason_id: int) -> bool:
+        statement = (
+            select(StockWithdrawalRow.id)
+            .where(
+                StockWithdrawalRow.business_id == self._business_id,
+                StockWithdrawalRow.withdrawal_reason_id == reason_id,
+            )
+            .limit(1)
+        )
+        return self._session.scalar(statement) is not None
+
+    def remove(self, reason_id: int) -> bool:
+        """SQLite's single writer lock serialises the count with the delete."""
+        siblings = (
+            select(func.count())
+            .select_from(WithdrawalReasonRow)
+            .where(WithdrawalReasonRow.business_id == self._business_id)
+            .scalar_subquery()
+        )
+        statement = sa_delete(WithdrawalReasonRow).where(
+            WithdrawalReasonRow.business_id == self._business_id,
+            WithdrawalReasonRow.id == reason_id,
+            siblings > 1,
+        )
+        try:
+            # `Session.execute` answers the generic `Result`; a DELETE gives back a
+            # `CursorResult`, which is where `rowcount` lives.
+            result = cast(CursorResult[tuple[object, ...]], self._session.execute(statement))
+            removed = result.rowcount
+            self._session.flush()
+        except IntegrityError:
+            raise ReasonHasWithdrawals() from None
+        return removed == 1
 
     def _row(self, reason_id: int) -> WithdrawalReasonRow | None:
         statement = select(WithdrawalReasonRow).where(

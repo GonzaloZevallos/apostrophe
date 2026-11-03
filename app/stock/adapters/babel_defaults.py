@@ -21,6 +21,4 @@ class BabelReasonDefaults:
 
     def for_language(self, language: Language) -> tuple[ReasonName, ...]:
         translations = self._copy_catalog.translations_or_english(language)
-        return tuple(
-            ReasonName.of(required_text(translations, key)) for key in DEFAULT_REASON_KEYS
-        )
+        return tuple(ReasonName.of(required_text(translations, key)) for key in DEFAULT_REASON_KEYS)

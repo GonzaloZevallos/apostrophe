@@ -5,7 +5,6 @@ from typing import Protocol
 
 from app.shared.language import Language
 from app.shared.quantity import Quantity
-from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import StockEntry
 from app.stock.domain.lot_order import SaleLineDraw, WithdrawalLineDraw
 from app.stock.domain.threshold import Threshold
@@ -58,13 +57,14 @@ class WithdrawalDraws(Protocol):
 @dataclass(frozen=True)
 class WithdrawalMovement:
     """One withdrawal as one variety's history shows it: the withdrawal's own date,
-    recording instant and reason, and that variety's grams summed over its lines in
-    it (the same variety may sit on several lines)."""
+    recording instant and reason (its id and its current name), and that variety's grams
+    summed over its lines in it (the same variety may sit on several lines)."""
 
     withdrawal_id: int
     withdrawn_on: date
     recorded_at: datetime
-    reason: WithdrawalReason
+    reason_id: int
+    reason_name: str
     quantity: Quantity
 
 
@@ -152,6 +152,16 @@ class WithdrawalReasons(Protocol):
         ...
 
     def count(self) -> int: ...
+
+    def has_withdrawals(self, reason_id: int) -> bool:
+        """A withdrawal of any date is filed under this reason of this business."""
+        ...
+
+    def remove(self, reason_id: int) -> bool:
+        """One guarded DELETE: removes the reason only while the business keeps another
+        one, and answers whether it removed it. Writes without committing. Raises
+        `ReasonHasWithdrawals` when the foreign key refuses (the backstop)."""
+        ...
 
 
 class ReasonDefaults(Protocol):

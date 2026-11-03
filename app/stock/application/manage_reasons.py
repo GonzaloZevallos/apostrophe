@@ -2,7 +2,12 @@ from typing import Literal
 
 from app.shared.transaction import Transaction
 from app.stock.application.ports import WithdrawalReasons
-from app.stock.domain.errors import ReasonCannotMove, ReasonNameTaken, WithdrawalReasonNotFound
+from app.stock.domain.errors import (
+    LastReason,
+    ReasonCannotMove,
+    ReasonNameTaken,
+    WithdrawalReasonNotFound,
+)
 from app.stock.domain.withdrawal_reason import ReasonName, WithdrawalReason
 
 Direction = Literal["up", "down"]
@@ -24,6 +29,36 @@ def add_reason(
     reason = reasons.add(name, position)
     transaction.commit()
     return reason
+
+
+def rename_reason(
+    reasons: WithdrawalReasons, transaction: Transaction, reason_id: int, raw_name: str
+) -> WithdrawalReason:
+    """The label changes everywhere at once, past withdrawals included: it is read by id."""
+    reason = reasons.get(reason_id)
+    if reason is None:
+        raise WithdrawalReasonNotFound()
+    reason.rename(ReasonName.of(raw_name))
+    saved = reasons.save(reason)
+    transaction.commit()
+    return saved
+
+
+def delete_reason(reasons: WithdrawalReasons, transaction: Transaction, reason_id: int) -> None:
+    """The domain rule decides first; the guarded DELETE and the RESTRICT foreign key
+    are the backstop for a withdrawal or a delete that landed in between, and a refused
+    statement is read again to say which rule it was."""
+    reason = reasons.get(reason_id)
+    if reason is None:
+        raise WithdrawalReasonNotFound()
+    reason.check_removable(reasons.has_withdrawals(reason_id), reasons.count())
+    if not reasons.remove(reason_id):
+        again = reasons.get(reason_id)
+        if again is None:
+            raise WithdrawalReasonNotFound()
+        again.check_removable(reasons.has_withdrawals(reason_id), reasons.count())
+        raise LastReason()
+    transaction.commit()
 
 
 def move_reason(

@@ -15,7 +15,6 @@ from app.stock.application.manage_withdrawals import Movement, WithdrawalView
 from app.stock.application.ports import WithdrawalMovement
 from app.stock.application.read_stock import StockView, VarietyStock
 from app.stock.domain.costing import cost_per_gram
-from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import Origin, StockEntry
 from app.stock.domain.withdrawal_reason import WithdrawalReason as WithdrawalReasonEntity
 
@@ -124,10 +123,10 @@ class WithdrawalLineIn(BaseModel):
 
 
 class WithdrawalIn(BaseModel):
-    """Bare (ADR-0005): `reason` is optional here so a missing one is the domain's
+    """Bare (ADR-0005): `reason_id` is optional here so a missing one is the domain's
     coded refusal, not a pydantic error that would echo the input."""
 
-    reason: str | None = None
+    reason_id: int | None = None
     date: EntryDate | None = None
     note: str | None = None
     lines: list[WithdrawalLineIn]
@@ -141,7 +140,8 @@ class WithdrawalLineOut(BaseModel):
 
 class WithdrawalOut(BaseModel):
     id: int
-    reason: WithdrawalReason
+    reason_id: int
+    reason_name: str
     date: EntryDate
     note: str | None
     total_quantity: QuantityOut
@@ -153,7 +153,8 @@ class WithdrawalOut(BaseModel):
         assert withdrawal.id is not None, "only stored withdrawals go out"
         return cls(
             id=withdrawal.id,
-            reason=withdrawal.reason,
+            reason_id=withdrawal.reason_id,
+            reason_name=view.reason_name,
             date=withdrawal.withdrawn_on,
             note=withdrawal.note,
             total_quantity=withdrawal.total_quantity.as_decimal(),
@@ -176,7 +177,8 @@ class WithdrawalMovementOut(BaseModel):
     kind: Literal["withdrawal"] = "withdrawal"
     id: int
     date: EntryDate
-    reason: WithdrawalReason
+    reason_id: int
+    reason_name: str
     quantity: QuantityOut
 
 
@@ -188,7 +190,8 @@ def movement_out(movement: Movement) -> MovementOut:
         return WithdrawalMovementOut(
             id=movement.withdrawal_id,
             date=movement.withdrawn_on,
-            reason=movement.reason,
+            reason_id=movement.reason_id,
+            reason_name=movement.reason_name,
             quantity=movement.quantity.as_decimal(),
         )
     return EntryMovementOut(**EntryOut.of(movement).model_dump())

@@ -43,7 +43,9 @@ from app.stock.domain.errors import (
     EntryNoteTooLong,
     EntryNotFound,
     EntryQuantityInvalid,
+    LastReason,
     ReasonCannotMove,
+    ReasonHasWithdrawals,
     ReasonNameBlank,
     ReasonNameTaken,
     ReasonNameTooLong,
@@ -118,7 +120,7 @@ as_http = TranslateErrors(
         ),
         (
             409,
-            (ReasonNameTaken, ReasonCannotMove),
+            (ReasonNameTaken, ReasonCannotMove, ReasonHasWithdrawals, LastReason),
         ),
         (
             422,
@@ -233,6 +235,7 @@ def record_withdrawal(
     body: WithdrawalIn,
     withdrawals: WithdrawalsDep,
     catalog: CatalogDep,
+    reasons: ReasonsDep,
     session: SessionDep,
     today: TodayDep,
     clock: ClockDep,
@@ -242,8 +245,9 @@ def record_withdrawal(
             view = manage_withdrawals.record_withdrawal(
                 withdrawals,
                 catalog,
+                reasons,
                 session,
-                reason=body.reason,
+                reason_id=body.reason_id,
                 withdrawn_on=body.date or today,
                 note=body.note,
                 lines=[(line.product_id, line.quantity) for line in body.lines],
@@ -257,11 +261,11 @@ def record_withdrawal(
 
 @withdrawals_router.get("/{withdrawal_id}")
 def get_withdrawal(
-    withdrawal_id: int, withdrawals: WithdrawalsDep, catalog: CatalogDep
+    withdrawal_id: int, withdrawals: WithdrawalsDep, catalog: CatalogDep, reasons: ReasonsDep
 ) -> WithdrawalOut:
     with as_http:
         return WithdrawalOut.of(
-            manage_withdrawals.read_withdrawal(withdrawals, catalog, withdrawal_id)
+            manage_withdrawals.read_withdrawal(withdrawals, catalog, reasons, withdrawal_id)
         )
 
 
@@ -271,6 +275,7 @@ def edit_withdrawal(
     body: WithdrawalIn,
     withdrawals: WithdrawalsDep,
     catalog: CatalogDep,
+    reasons: ReasonsDep,
     session: SessionDep,
     today: TodayDep,
 ) -> WithdrawalOut:
@@ -279,9 +284,10 @@ def edit_withdrawal(
             view = manage_withdrawals.edit_withdrawal(
                 withdrawals,
                 catalog,
+                reasons,
                 session,
                 withdrawal_id,
-                reason=body.reason,
+                reason_id=body.reason_id,
                 withdrawn_on=body.date or today,
                 note=body.note,
                 lines=[(line.product_id, line.quantity) for line in body.lines],
@@ -307,6 +313,20 @@ def list_reasons(reasons: ReasonsDep) -> list[ReasonOut]:
 def add_reason(body: ReasonIn, reasons: ReasonsDep, session: SessionDep) -> ReasonOut:
     with as_http:
         return ReasonOut.of(manage_reasons.add_reason(reasons, session, body.name))
+
+
+@reasons_router.patch("/{reason_id}")
+def rename_reason(
+    reason_id: int, body: ReasonIn, reasons: ReasonsDep, session: SessionDep
+) -> ReasonOut:
+    with as_http:
+        return ReasonOut.of(manage_reasons.rename_reason(reasons, session, reason_id, body.name))
+
+
+@reasons_router.delete("/{reason_id}", status_code=204)
+def delete_reason(reason_id: int, reasons: ReasonsDep, session: SessionDep) -> None:
+    with as_http:
+        manage_reasons.delete_reason(reasons, session, reason_id)
 
 
 @reasons_router.post("/{reason_id}/move")
