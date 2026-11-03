@@ -162,9 +162,7 @@ def test_check_expense_refuses_a_blank_detail(client: TestClient, engine: Engine
     assert isinstance(result, Refusal)
 
 
-def test_check_expense_refuses_a_detail_over_the_limit(
-    client: TestClient, engine: Engine
-) -> None:
+def test_check_expense_refuses_a_detail_over_the_limit(client: TestClient, engine: Engine) -> None:
     with Session(engine) as session:
         port = ExpensesImport(session, BUSINESS_ID)
 
