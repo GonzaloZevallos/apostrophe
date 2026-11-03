@@ -3963,7 +3963,7 @@
         "type": "object"
       },
       "WithdrawalIn": {
-        "description": "Bare (ADR-0005): `reason` is optional here so a missing one is the domain's\ncoded refusal, not a pydantic error that would echo the input.",
+        "description": "Bare (ADR-0005): `reason_id` is optional here so a missing one is the domain's\ncoded refusal, not a pydantic error that would echo the input.",
         "properties": {
           "date": {
             "anyOf": [
@@ -3995,16 +3995,16 @@
             ],
             "title": "Note"
           },
-          "reason": {
+          "reason_id": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "integer"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Reason"
+            "title": "Reason Id"
           }
         },
         "required": [
@@ -4083,14 +4083,20 @@
             "title": "Quantity",
             "type": "number"
           },
-          "reason": {
-            "$ref": "#/components/schemas/WithdrawalReason"
+          "reason_id": {
+            "title": "Reason Id",
+            "type": "integer"
+          },
+          "reason_name": {
+            "title": "Reason Name",
+            "type": "string"
           }
         },
         "required": [
           "id",
           "date",
-          "reason",
+          "reason_id",
+          "reason_name",
           "quantity"
         ],
         "title": "WithdrawalMovementOut",
@@ -4125,8 +4131,13 @@
             ],
             "title": "Note"
           },
-          "reason": {
-            "$ref": "#/components/schemas/WithdrawalReason"
+          "reason_id": {
+            "title": "Reason Id",
+            "type": "integer"
+          },
+          "reason_name": {
+            "title": "Reason Name",
+            "type": "string"
           },
           "total_quantity": {
             "title": "Total Quantity",
@@ -4135,7 +4146,8 @@
         },
         "required": [
           "id",
-          "reason",
+          "reason_id",
+          "reason_name",
           "date",
           "note",
           "total_quantity",
@@ -4143,15 +4155,6 @@
         ],
         "title": "WithdrawalOut",
         "type": "object"
-      },
-      "WithdrawalReason": {
-        "description": "Why grams were taken out of stock with no sale (CONTEXT.md: Promotion, Own\nuse). The values are what the database stores.",
-        "enum": [
-          "promotion",
-          "own_use"
-        ],
-        "title": "WithdrawalReason",
-        "type": "string"
       },
       "app__payments__adapters__schemas__DebtorOut": {
         "properties": {
@@ -4927,6 +4930,101 @@
           }
         ],
         "summary": "Add Reason",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
+    "/api/withdrawal-reasons/{reason_id}": {
+      "delete": {
+        "operationId": "delete_reason_api_withdrawal_reasons__reason_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "reason_id",
+            "required": true,
+            "schema": {
+              "title": "Reason Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Reason",
+        "tags": [
+          "stock"
+        ]
+      },
+      "patch": {
+        "operationId": "rename_reason_api_withdrawal_reasons__reason_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "reason_id",
+            "required": true,
+            "schema": {
+              "title": "Reason Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReasonOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Rename Reason",
         "tags": [
           "stock"
         ]

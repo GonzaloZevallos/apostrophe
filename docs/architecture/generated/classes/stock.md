@@ -39,7 +39,6 @@ classDiagram
   stock_level --> draw_source
   stock_level --> lot_order
   stock_level --> threshold
-  withdrawal --> draw_source
   withdrawal --> entry
   withdrawal --> errors
   withdrawal_reason --> errors
@@ -137,7 +136,6 @@ classDiagram
   draw_costs --> sql_draws
   draw_costs --> sql_stock_entries
   draw_costs --> sql_stock_withdrawals
-  draw_costs --> sql_withdrawal_reasons
   import_port --> sql_stock_entries
   import_port --> sql_thresholds
   import_port --> tables
@@ -165,70 +163,31 @@ classDiagram
   stock_figures --> sql_stock_entries
   stock_figures --> sql_stock_withdrawals
   stock_figures --> sql_thresholds
-  stock_figures --> sql_withdrawal_reasons
 ```
 
 ## domain
 
-Edges between children are not drawn.
-
-#### allocation
-
 ```mermaid
 classDiagram
+  class Draw {
+    line_total : int #124; None
+    order
+    pricing_rule : str #124; None
+    quantity : Quantity
+    reason_id : int #124; None
+    sale_id : int #124; None
+    source
+    variety_id : int
+    variety_name : str #124; None
+  }
   class DrawCost {
     costed : int #124; None
     lot_draws : tuple~LotDraw, ...~
     pending : Quantity
   }
-  class LotDraw {
-    cost : Fraction
-    lot_ref : int
-    quantity : Quantity
-  }
-```
-
-#### costing
-
-No classes in this layer.
-
-#### draw_source
-
-```mermaid
-classDiagram
   class DrawSource {
     name
   }
-  class WithdrawalReason {
-    name
-  }
-```
-
-#### entry
-
-```mermaid
-classDiagram
-  class Origin {
-    name
-  }
-  class StockEntry {
-    entry_date : date
-    id : int #124; None
-    note : str #124; None
-    origin
-    quantity : Quantity
-    recorded_at : datetime
-    total_cost : int #124; None
-    variety_id : int
-    of(entry_date: date, variety_id: int, origin: Origin, quantity: Quantity, total_cost: int #124; None, note: str #124; None, today: date, recorded_at: datetime, id: int #124; None) StockEntry
-  }
-  StockEntry --> Origin : origin
-```
-
-#### errors
-
-```mermaid
-classDiagram
   class EntryCostInvalid {
     code : ClassVar~str~
   }
@@ -253,11 +212,37 @@ classDiagram
   class LastReason {
     code : ClassVar~str~
   }
+  class Lot {
+    order
+    quantity : Quantity
+    total_cost : int #124; None
+    variety_id : int
+  }
+  class LotDraw {
+    cost : Fraction
+    lot_ref : int
+    quantity : Quantity
+  }
+  class LotOrder {
+    day : date
+    position : int
+    rank : int
+    recorded_at : datetime
+    ref_id : int
+  }
+  class Origin {
+    name
+  }
   class ReasonCannotMove {
     code : ClassVar~str~
   }
   class ReasonHasWithdrawals {
     code : ClassVar~str~
+  }
+  class ReasonName {
+    key : str
+    value : str
+    of(raw: str) ReasonName
   }
   class ReasonNameBlank {
     code : ClassVar~str~
@@ -268,8 +253,67 @@ classDiagram
   class ReasonNameTooLong {
     code : ClassVar~str~
   }
+  class SaleLineDraw {
+    day : date
+    line_total : int
+    position : int
+    pricing_rule : str
+    quantity : Quantity
+    recorded_at : datetime
+    sale_id : int
+    variety_id : int
+    variety_name : str
+  }
+  class StockEntry {
+    entry_date : date
+    id : int #124; None
+    note : str #124; None
+    origin
+    quantity : Quantity
+    recorded_at : datetime
+    total_cost : int #124; None
+    variety_id : int
+    of(entry_date: date, variety_id: int, origin: Origin, quantity: Quantity, total_cost: int #124; None, note: str #124; None, today: date, recorded_at: datetime, id: int #124; None) StockEntry
+  }
+  class StockLevel {
+    days_left : int #124; None
+    quantity : Quantity
+    sold_out_since : date #124; None
+    status : Literal
+  }
+  class Threshold {
+    quantity : Quantity
+    of(quantity: Quantity) Threshold
+  }
+  class ThresholdInvalid {
+    code : ClassVar~str~
+  }
+  class Withdrawal {
+    id : int #124; None
+    lines : tuple~WithdrawalLine, ...~
+    note : str #124; None
+    reason_id : int
+    recorded_at : datetime
+    total_quantity : Quantity
+    withdrawn_on : date
+    of(reason_id: int #124; None, withdrawn_on: date, note: str #124; None, lines: tuple~WithdrawalLine, ...~, today: date, recorded_at: datetime, id: int #124; None) Withdrawal
+  }
   class WithdrawalDateInFuture {
     code : ClassVar~str~
+  }
+  class WithdrawalLine {
+    quantity : Quantity
+    variety_id : int
+    of(variety_id: int, quantity: Decimal #124; int #124; str) WithdrawalLine
+  }
+  class WithdrawalLineDraw {
+    day : date
+    position : int
+    quantity : Quantity
+    reason_id : int
+    recorded_at : datetime
+    variety_id : int
+    withdrawal_id : int
   }
   class WithdrawalNoLines {
     code : ClassVar~str~
@@ -286,6 +330,13 @@ classDiagram
   class WithdrawalQuantityTooPrecise {
     code : ClassVar~str~
   }
+  class WithdrawalReason {
+    id : int
+    name
+    position : int
+    check_removable(has_withdrawals: bool, reason_count: int) None
+    rename(name: ReasonName) None
+  }
   class WithdrawalReasonNotFound {
     code : ClassVar~str~
   }
@@ -295,121 +346,10 @@ classDiagram
   class WithdrawalVarietyNotFound {
     code : ClassVar~str~
   }
-```
-
-#### lot_order
-
-```mermaid
-classDiagram
-  class Draw {
-    line_total : int #124; None
-    order
-    pricing_rule : str #124; None
-    quantity : Quantity
-    sale_id : int #124; None
-    source : DrawSource
-    variety_id : int
-    variety_name : str #124; None
-  }
-  class Lot {
-    order
-    quantity : Quantity
-    total_cost : int #124; None
-    variety_id : int
-  }
-  class LotOrder {
-    day : date
-    position : int
-    rank : int
-    recorded_at : datetime
-    ref_id : int
-  }
-  class SaleLineDraw {
-    day : date
-    line_total : int
-    position : int
-    pricing_rule : str
-    quantity : Quantity
-    recorded_at : datetime
-    sale_id : int
-    variety_id : int
-    variety_name : str
-  }
-  class WithdrawalLineDraw {
-    day : date
-    position : int
-    quantity : Quantity
-    reason : WithdrawalReason
-    recorded_at : datetime
-    variety_id : int
-    withdrawal_id : int
-  }
+  Draw --> DrawSource : source
   Draw --> LotOrder : order
   Lot --> LotOrder : order
-```
-
-#### stock_level
-
-```mermaid
-classDiagram
-  class StockLevel {
-    days_left : int #124; None
-    quantity : Quantity
-    sold_out_since : date #124; None
-    status : Literal
-  }
-```
-
-#### threshold
-
-```mermaid
-classDiagram
-  class Threshold {
-    quantity : Quantity
-    of(quantity: Quantity) Threshold
-  }
-  class ThresholdInvalid {
-    code : ClassVar~str~
-  }
-```
-
-#### withdrawal
-
-```mermaid
-classDiagram
-  class Withdrawal {
-    id : int #124; None
-    lines : tuple~WithdrawalLine, ...~
-    note : str #124; None
-    reason : WithdrawalReason
-    recorded_at : datetime
-    total_quantity : Quantity
-    withdrawn_on : date
-    of(reason: WithdrawalReason #124; str #124; None, withdrawn_on: date, note: str #124; None, lines: tuple~WithdrawalLine, ...~, today: date, recorded_at: datetime, id: int #124; None) Withdrawal
-  }
-  class WithdrawalLine {
-    quantity : Quantity
-    variety_id : int
-    of(variety_id: int, quantity: Decimal #124; int #124; str) WithdrawalLine
-  }
-```
-
-#### withdrawal_reason
-
-```mermaid
-classDiagram
-  class ReasonName {
-    key : str
-    value : str
-    of(raw: str) ReasonName
-  }
-  class WithdrawalReason {
-    id : int
-    name
-    position : int
-    check_removable(has_withdrawals: bool, reason_count: int) None
-    rename(name: ReasonName) None
-  }
+  StockEntry --> Origin : origin
   WithdrawalReason --> ReasonName : name
 ```
 
@@ -467,7 +407,8 @@ classDiagram
   }
   class WithdrawalMovement {
     quantity : Quantity
-    reason : WithdrawalReason
+    reason_id : int
+    reason_name : str
     recorded_at : datetime
     withdrawal_id : int
     withdrawn_on : date
@@ -477,10 +418,13 @@ classDiagram
     all() list~WithdrawalReasonEntity~
     count() int
     get(reason_id: int) WithdrawalReasonEntity #124; None
+    has_withdrawals(reason_id: int) bool
+    remove(reason_id: int) bool
     reorder(reason_ids: list~int~) None
     save(reason: WithdrawalReasonEntity) WithdrawalReasonEntity
   }
   class WithdrawalView {
+    reason_name : str
     variety_names : dict~int, str~
     withdrawal : Withdrawal
   }
@@ -608,6 +552,8 @@ classDiagram
     all() list~WithdrawalReason~
     count() int
     get(reason_id: int) WithdrawalReason #124; None
+    has_withdrawals(reason_id: int) bool
+    remove(reason_id: int) bool
     reorder(reason_ids: list~int~) None
     save(reason: WithdrawalReason) WithdrawalReason
   }
@@ -646,8 +592,9 @@ classDiagram
     business_id : Mapped~int~
     id : Mapped~int~
     note : Mapped~str #124; None~
-    reason : Mapped~str~
+    reason : Mapped~str #124; None~
     recorded_at : Mapped~datetime~
+    withdrawal_reason_id : Mapped~int~
     withdrawn_on : Mapped~date~
   }
   class ThresholdIn {
@@ -657,7 +604,7 @@ classDiagram
     date : EntryDate #124; None
     lines : list~WithdrawalLineIn~
     note : str #124; None
-    reason : str #124; None
+    reason_id : int #124; None
   }
   class WithdrawalLineIn {
     product_id : int
@@ -673,14 +620,16 @@ classDiagram
     id : int
     kind : Literal~'withdrawal'~
     quantity
-    reason : WithdrawalReason
+    reason_id : int
+    reason_name : str
   }
   class WithdrawalOut {
     date : date
     id : int
     lines : list~WithdrawalLineOut~
     note : str #124; None
-    reason : WithdrawalReason
+    reason_id : int
+    reason_name : str
     total_quantity
     of(view: WithdrawalView) 'WithdrawalOut'
   }

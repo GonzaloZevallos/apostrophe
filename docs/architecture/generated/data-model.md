@@ -178,7 +178,8 @@ erDiagram
   stock_withdrawal {
     INTEGER id PK
     INTEGER business_id FK
-    VARCHAR(9) reason
+    INTEGER withdrawal_reason_id FK
+    VARCHAR(9) reason "nullable"
     DATE withdrawn_on
     VARCHAR(200) note "nullable"
     DATETIME recorded_at
@@ -241,4 +242,6 @@ erDiagram
   variety ||--o{ stock_entry : variety_id
   variety ||--o{ stock_threshold : variety_id
   variety ||--o{ stock_withdrawal_line : variety_id
+  withdrawal_reason ||--o{ stock_withdrawal : withdrawal_reason_id
+  withdrawal_reason }o--o{ stock_withdrawal : business_id
 ```
