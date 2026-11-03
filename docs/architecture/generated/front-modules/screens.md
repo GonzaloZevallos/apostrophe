@@ -30,6 +30,8 @@ subgraph src["src"]
       src_screens_clientes_CustomerCardBehind_tsx["CustomerCardBehind.tsx"]
       src_screens_clientes_CustomerFields_tsx["CustomerFields.tsx"]
       src_screens_clientes_CustomerSearch_ts["CustomerSearch.ts"]
+      src_screens_clientes_CustomerTypeField_tsx["CustomerTypeField.tsx"]
+      src_screens_clientes_CustomerTypeLine_tsx["CustomerTypeLine.tsx"]
       src_screens_clientes_CustomersBehind_tsx["CustomersBehind.tsx"]
       src_screens_clientes_TeDeben_tsx["TeDeben.tsx"]
       src_screens_clientes_accountRows_ts["accountRows.ts"]
@@ -208,8 +210,10 @@ src_screens_analisis_CostLines_tsx-->src_screens_analisis_AmountRow_tsx
 src_screens_catalogCopy_ts-->src_screens_telegramPreview_ts
 src_screens_clientes_AccountRowLine_tsx-->src_screens_clientes_accountRows_ts
 src_screens_clientes_ClienteFicha_tsx-->src_screens_clientes_AccountRowLine_tsx
+src_screens_clientes_ClienteFicha_tsx-->src_screens_clientes_CustomerTypeLine_tsx
 src_screens_clientes_ClienteFicha_tsx-->src_screens_clientes_accountRows_ts
 src_screens_clientes_ClienteForm_tsx-->src_screens_clientes_CustomerFields_tsx
+src_screens_clientes_ClienteForm_tsx-->src_screens_clientes_CustomerTypeField_tsx
 src_screens_clientes_ClientesLayout_tsx-->src_screens_clientes_Clientes_tsx
 src_screens_clientes_ClientesLayout_tsx-->src_screens_clientes_CobroPanes_tsx
 src_screens_clientes_ClientesLayout_tsx-->src_screens_clientes_CustomerCardBehind_tsx
@@ -225,6 +229,7 @@ src_screens_clientes_CobroRoute_tsx-->src_screens_clientes_CobroFrame_tsx
 src_screens_clientes_CobroRoute_tsx-->src_screens_clientes_Cobro_tsx
 src_screens_clientes_Cobro_tsx-->src_screens_clientes_ClienteForm_tsx
 src_screens_clientes_CustomerCardBehind_tsx-->src_screens_clientes_AccountRowLine_tsx
+src_screens_clientes_CustomerCardBehind_tsx-->src_screens_clientes_CustomerTypeLine_tsx
 src_screens_clientes_CustomerCardBehind_tsx-->src_screens_clientes_accountRows_ts
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_ClienteFila_tsx
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_CustomerSearch_ts

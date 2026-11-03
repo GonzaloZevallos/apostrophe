@@ -25,6 +25,7 @@ A diagram shows only its own package: classes of other packages, and the edges t
 - [front-modules/api.md](front-modules/api.md)
 - [front-modules/components.md](front-modules/components.md)
 - [front-modules/copy.md](front-modules/copy.md)
+- [front-modules/customerTypes.md](front-modules/customerTypes.md)
 - [front-modules/domain.md](front-modules/domain.md)
 - [front-modules/flash.md](front-modules/flash.md)
 - [front-modules/format.md](front-modules/format.md)

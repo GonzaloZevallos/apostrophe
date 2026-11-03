@@ -13,6 +13,7 @@ subgraph src["src"]
   src_clipboard_ts["clipboard.ts"]
   src_components["components"]
   src_copy["copy"]
+  src_customerTypes["customerTypes"]
   src_domain["domain"]
   src_flash["flash"]
   src_format["format"]
@@ -53,6 +54,8 @@ src_components-->src_sales
 src_components-->src_shell
 src_copy-->src_api
 src_copy-->src_i18n
+src_customerTypes-->src_api
+src_customerTypes-->src_copy
 src_flash-->src_components
 src_format-->src_copy
 src_i18n-->src_api
@@ -77,6 +80,7 @@ src_screens-->src_api
 src_screens-->src_clipboard_ts
 src_screens-->src_components
 src_screens-->src_copy
+src_screens-->src_customerTypes
 src_screens-->src_domain
 src_screens-->src_flash
 src_screens-->src_format
