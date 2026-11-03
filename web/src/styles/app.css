@@ -558,6 +558,7 @@ body {
   align-items: center;
   min-height: var(--alto-tocable);
   margin-block: calc((19px - var(--alto-tocable)) / 2);
+  touch-action: manipulation;
 }
 
 .riel-lateral {

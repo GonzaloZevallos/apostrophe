@@ -88,7 +88,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
     reads: [
       { path: /^\/api\/customer-types$/, status: 200, body: SAMPLE_TYPES },
       { path: /^\/customers\/\d+$/, status: 200, body: SAMPLE_TYPED_CUSTOMER },
-      { path: /^\/customers\/\d+\/account$/, status: 200, body: { rows: [] } },
+      { path: /^\/customers\/\d+\/account$/, status: 200, body: { balance: 0, owing_since: null, standing: 'settled', rows: [] } },
     ],
   },
   {
