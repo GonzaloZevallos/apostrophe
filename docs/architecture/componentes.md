@@ -43,12 +43,12 @@ El diagrama de clases de cada capacidad lo genera [scripts/docs/generate.py](../
 | expenses | [expenses](../../app/expenses/application/ports.py) `Expenses` `ExpenseCategories` | [expenses](generated/classes/expenses.md) |
 | onboarding | [onboarding](../../app/onboarding/application/ports.py) `Onboardings` `VarietyFacts` `StockFacts` | [onboarding](generated/classes/onboarding.md) |
 | payment_methods | [payment_methods](../../app/payment_methods/application/ports.py) `PaymentMethods` `PaymentMethodDefaults` | [payment_methods](generated/classes/payment_methods.md) |
-| payments | [payments](../../app/payments/application/ports.py) `Payments` `Ledgers` | [payments](generated/classes/payments.md) |
+| payments | [payments](../../app/payments/application/ports.py) `Payments` `Ledgers` `AvailableMethods` | [payments](generated/classes/payments.md) |
 | pinned_catalog | [pinned_catalog](../../app/pinned_catalog/application/ports.py) `TelegramApi` `PinSnapshots` `PinRecorder` | [pinned_catalog](generated/classes/pinned_catalog.md) |
 | pricing_settings | [pricing_settings](../../app/pricing_settings/application/ports.py) `PricingSettingsStore` | [pricing_settings](generated/classes/pricing_settings.md) |
 | products | [products](../../app/products/application/ports.py) `Products` `ProductLeaving` | [products](generated/classes/products.md) |
 | results | [results](../../app/results/application/ports.py) `StockFigures` `SalesLedger` `DebtSummary` | [results](generated/classes/results.md) |
-| sales | [sales](../../app/sales/application/ports.py) `Sales` `PriceBook` `CustomerFacts` | [sales](generated/classes/sales.md) |
+| sales | [sales](../../app/sales/application/ports.py) `Sales` `PriceBook` `CustomerFacts` `OnTheSpotPayments` | [sales](generated/classes/sales.md) |
 | spreadsheet_import | [spreadsheet_import](../../app/spreadsheet_import/application/ports.py) `VarietiesImport` `SalesImport` | [spreadsheet_import](generated/classes/spreadsheet_import.md) |
 | stock | [stock](../../app/stock/application/ports.py) `StockEntries` `Withdrawals` `VarietyCatalog` | [stock](generated/classes/stock.md) |
 | shared | sin puertos de negocio: [transaction.py](../../app/shared/transaction.py) `Transaction` | [shared](generated/classes/shared.md) |

@@ -83,6 +83,7 @@ sequenceDiagram
   participant Book as PriceBook
   participant Domain as Sale
   participant Store as Sales
+  participant OnTheSpot as OnTheSpotPayments
   participant Tx as Transaction
   participant Upkeep as run_upkeep_safely
   Browser->>Gate: POST /sales
@@ -93,6 +94,8 @@ sequenceDiagram
   UseCase->>Book: for_variety
   UseCase->>Domain: record
   UseCase->>Store: add
+  UseCase->>OnTheSpot: record
+  Note over UseCase,OnTheSpot: a method that is unknown, archived or another Business's raises PaymentMethodUnavailable: rollback, nothing stored, 404
   UseCase->>Tx: commit
   UseCase-->>Router: the stored Sale
   Router-->>Browser: 201
@@ -111,12 +114,13 @@ sequenceDiagram
 | 6 | [app/sales/application/ports.py](../../app/sales/application/ports.py) | `for_variety` |
 | 7 | [app/sales/domain/sale.py](../../app/sales/domain/sale.py) | `record` |
 | 8 | [app/sales/adapters/sql_sales.py](../../app/sales/adapters/sql_sales.py) | `SqlSales` |
-| 9 | [app/shared/transaction.py](../../app/shared/transaction.py) | `Transaction` |
-| 10 | [app/sales/application/record_sale.py](../../app/sales/application/record_sale.py) | `record_sale` |
-| 11 | [app/sales/adapters/router.py](../../app/sales/adapters/router.py) | `record_sale` |
-| 12 | [app/pinned_catalog/adapters/safe_upkeep.py](../../app/pinned_catalog/adapters/safe_upkeep.py) | `run_upkeep_safely` |
+| 9 | [app/sales/application/ports.py](../../app/sales/application/ports.py) | `OnTheSpotPayments` |
+| 10 | [app/shared/transaction.py](../../app/shared/transaction.py) | `Transaction` |
+| 11 | [app/sales/application/record_sale.py](../../app/sales/application/record_sale.py) | `record_sale` |
+| 12 | [app/sales/adapters/router.py](../../app/sales/adapters/router.py) | `record_sale` |
+| 13 | [app/pinned_catalog/adapters/safe_upkeep.py](../../app/pinned_catalog/adapters/safe_upkeep.py) | `run_upkeep_safely` |
 
-El paso 5 solo ocurre si la venta nombra un Customer. Si el repositorio rechaza una referencia borrada entre tanto, el caso de uso hace `rollback` y vuelve a preguntar antes de rechazar, y esa rama no está dibujada. [app/sales/adapters/sql_sales.py](../../app/sales/adapters/sql_sales.py) `SqlSales` guarda en el paso 8 la venta, sus líneas y el pago en el acto, todos con el id del Business de la sesión. La flecha del paso 3 no es una llamada del handler: es una dependencia del router que FastAPI resuelve antes de entrar a él. La tarea del paso 3 la agrega [app/main.py](../../app/main.py) `upkeep_gated`, la lista de dependencias de los routers de ventas, stock, productos y catálogo; si el pedido es rechazado, la tarea se descarta.
+El paso 5 solo ocurre si la venta nombra un Customer. Si el repositorio rechaza una referencia borrada entre tanto, el caso de uso hace `rollback` y vuelve a preguntar antes de rechazar, y esa rama no está dibujada. [app/sales/adapters/sql_sales.py](../../app/sales/adapters/sql_sales.py) `SqlSales` guarda en el paso 8 la venta y sus líneas, con el id del Business de la sesión; nunca escribe el pago. El paso 9 solo ocurre si la venta tiene un pago en el acto: [app/payments/adapters/on_the_spot.py](../../app/payments/adapters/on_the_spot.py) `SqlOnTheSpotPayments.record` inserta el pago y resuelve el método dentro de la misma sentencia, contra el Business del pedido y `archived_at IS NULL`. Si el método no existe, está archivado o es de otro Business, levanta `PaymentMethodUnavailable`: el caso de uso hace `rollback` (la venta y sus líneas se descartan con él, nada queda guardado) y el pedido responde 404. La flecha del paso 3 no es una llamada del handler: es una dependencia del router que FastAPI resuelve antes de entrar a él. La tarea del paso 3 la agrega [app/main.py](../../app/main.py) `upkeep_gated`, la lista de dependencias de los routers de ventas, stock, productos y catálogo; si el pedido es rechazado, la tarea se descarta.
 
 ## Un movimiento de stock
 
