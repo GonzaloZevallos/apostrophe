@@ -189,7 +189,7 @@ classDiagram
   class CustomersImport {
     check_customer(name: str, phone: str #124; None) CustomerKey #124; CustomerRefusals
     has_records() bool
-    write_customer(name: str, phone_key: str #124; None, vip: bool, transaction: Transaction) int
+    write_customer(name: str, phone_key: str #124; None, customer_type_id: int #124; None, transaction: Transaction) int
   }
   class SqlCustomerTypeLookup {
     exists(type_id: int) bool

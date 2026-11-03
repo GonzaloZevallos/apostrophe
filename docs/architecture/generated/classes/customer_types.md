@@ -16,6 +16,8 @@ classDiagram
   }
   class domain {
   }
+  class import_port {
+  }
   class manage_customer_types {
   }
   class ports {
@@ -32,6 +34,9 @@ classDiagram
   }
   class vip_type {
   }
+  import_port --> customer_type
+  import_port --> tables
+  import_port --> vip_type
   manage_customer_types --> customer_type
   manage_customer_types --> ports
   ports --> customer_type
@@ -153,5 +158,10 @@ classDiagram
   }
   class SqlVipType {
     id() int #124; None
+  }
+  class VipTypeImport {
+    ensure_vip_type(transaction: Transaction) int
+    has_vip_type() bool
+    vip_name_taken() bool
   }
 ```
