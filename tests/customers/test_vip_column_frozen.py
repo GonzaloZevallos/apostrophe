@@ -31,7 +31,9 @@ from tests.spreadsheet_import.test_cli import (
 )
 
 _INSERT = re.compile(r"^\s*INSERT\s+INTO\s+\"?customer\"?\s*\((?P<columns>[^)]*)\)", re.IGNORECASE)
-_UPDATE = re.compile(r"^\s*UPDATE\s+\"?customer\"?\s+SET\s+(?P<rest>.*)$", re.IGNORECASE | re.DOTALL)
+_UPDATE = re.compile(
+    r"^\s*UPDATE\s+\"?customer\"?\s+SET\s+(?P<rest>.*)$", re.IGNORECASE | re.DOTALL
+)
 _NESTED = re.compile(r"\([^()]*\)")
 _ASSIGNS_VIP = re.compile(r"(?:^|,)\s*\"?vip\"?\s*=", re.IGNORECASE)
 
@@ -67,7 +69,7 @@ def statements(engine: Engine) -> Iterator[list[str]]:
 
 
 def test_the_recorder_flags_a_statement_that_writes_the_column() -> None:
-    assert writes_the_vip_column('INSERT INTO customer (business_id, name, vip) VALUES (?, ?, ?)')
+    assert writes_the_vip_column("INSERT INTO customer (business_id, name, vip) VALUES (?, ?, ?)")
     assert writes_the_vip_column("UPDATE customer SET vip=? WHERE customer.id = ?")
     assert not writes_the_vip_column("INSERT INTO customer (business_id, name) VALUES (?, ?)")
     assert not writes_the_vip_column("UPDATE customer SET name=? WHERE customer.id = ?")

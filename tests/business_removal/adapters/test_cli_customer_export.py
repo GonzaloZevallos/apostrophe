@@ -1,8 +1,8 @@
 """The removal command over a migrated, seeded database (ADR-0047): a customer in the
 export carries its name, phone and customer type and no `channel`, and the ids it exports
 are the ids the run deletes. A business with a typed customer is removed and its
-`customer_type` rows are exported and deleted with it. Nothing in `app/business_removal` knows the column: the export
-follows the schema (ADR-0015)."""
+`customer_type` rows are exported and deleted with it. Nothing in
+`app/business_removal` knows the column: the export follows the schema (ADR-0015)."""
 
 from __future__ import annotations
 
