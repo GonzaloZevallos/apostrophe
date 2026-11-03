@@ -167,8 +167,11 @@ def test_the_panel_and_analysis_agree_on_every_withdrawal_figure(client: TestCli
         assert row["expenses"] == panel_period["expenses"]
         assert row["cash"] == panel_period["cash"]
         assert panel_period["withdrawals"] == row["withdrawals"]
-    assert _line(week_row, "Marketing")["pending_quantity"] == 2.0
-    assert _line(month_row, "Own use")["pending_quantity"] == 0.0
+    marketing = _line(week_row, "Marketing")
+    own_use = _line(month_row, "Own use")
+    assert marketing is not None and own_use is not None
+    assert marketing["pending_quantity"] == 2.0
+    assert own_use["pending_quantity"] == 0.0
 
     # The chosen month's header carries the same two lines as the month row, and the
     # month's cost of goods is its varieties' costed cost (A's 5 g sale only).

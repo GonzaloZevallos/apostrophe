@@ -35,7 +35,7 @@ test('shows the date, the reason by word, every line and the note, with the bar 
   renderWithdrawals([VARIETIES_PATH, ONE], serving(WITHDRAWAL))
 
   expect(await screen.findByText('Zkittlez')).toBeInTheDocument()
-  expect(screen.getByText('Promotion')).toBeInTheDocument()
+  expect(screen.getByText('Marketing')).toBeInTheDocument()
   expect(screen.getByText('02/10')).toBeInTheDocument()
   expect(screen.getByText('5,5 g')).toBeInTheDocument()
   expect(screen.getByText('Para la fiesta')).toBeInTheDocument()
@@ -76,7 +76,7 @@ test('Delete names the promotion, the date and the grams; confirming deletes and
   await userEvent.click(await screen.findByRole('button', { name: 'Delete' }))
 
   const dialog = await screen.findByRole('alertdialog', { name: 'Before deleting' })
-  expect(dialog).toHaveTextContent('Delete the promotion from 02/10? 5,5 g go back to stock.')
+  expect(dialog).toHaveTextContent('Delete the Marketing withdrawal from 02/10? 5,5 g go back to stock.')
   await userEvent.click(within(dialog).getByRole('button', { name: 'No, keep it' }))
   expect(deletes).not.toHaveBeenCalled()
 
@@ -96,7 +96,7 @@ test('Delete on an own-use withdrawal says "el consumo propio"', async () => {
   await userEvent.click(await screen.findByRole('button', { name: 'Delete' }))
 
   expect(await screen.findByRole('alertdialog')).toHaveTextContent(
-    'Delete the own use from 02/10? 5,5 g go back to stock.',
+    'Delete the Own use withdrawal from 02/10? 5,5 g go back to stock.',
   )
 })
 
@@ -116,7 +116,7 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Wit
 
   expect(await screen.findByLabelText('Grams 1')).toHaveValue('5.5')
   expect(screen.getByLabelText('Note')).toHaveValue('Para la fiesta')
-  expect(screen.getByRole('button', { name: 'Promotion' })).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.getByRole('button', { name: 'Marketing' })).toHaveAttribute('aria-pressed', 'true')
   await userEvent.clear(screen.getByLabelText('Grams 1'))
   await userEvent.type(screen.getByLabelText('Grams 1'), '6')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))

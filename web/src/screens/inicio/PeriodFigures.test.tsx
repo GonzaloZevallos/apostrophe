@@ -18,7 +18,7 @@ const FIGURE_LABELS = [
   'You gave away',
   'Cost of goods sold',
   'Stock shortfall',
-  'Promotion',
+  'Marketing',
   'Own use',
   'Expenses',
   'Flower purchases',
@@ -51,12 +51,13 @@ test('a withdrawal line the period does not have is no group, never a $ 0 one', 
   expect(figureNames()).toEqual([
     'You gave away',
     'Cost of goods sold',
+    'Marketing',
     'Expenses',
     'Flower purchases',
     'Profit',
     'Cash',
   ])
-  for (const label of ['Stock shortfall', 'Promotion', 'Own use']) {
+  for (const label of ['Stock shortfall', 'Own use']) {
     expect(screen.queryByRole('group', { name: label })).toBeNull()
   }
 })
@@ -65,7 +66,7 @@ test('each pending note sits inside the group it qualifies, and never inside Caj
   render(<PeriodFigures tab="week" period={{ ...WEEK, pending_cost: true }} />)
 
   const note = 'includes pending cost'
-  const withNote = ['Cost of goods sold', 'Stock shortfall', 'Promotion', 'Profit']
+  const withNote = ['Cost of goods sold', 'Stock shortfall', 'Marketing', 'Profit']
   for (const label of FIGURE_LABELS) {
     const group = screen.getByRole('group', { name: label })
     if (withNote.includes(label)) expect(within(group).getByText(note)).toBeInTheDocument()
@@ -110,7 +111,7 @@ test('two instances together: every aria-labelledby resolves to exactly one elem
 
   const groups = screen.getAllByRole('group')
   const ids = groups.map((group) => group.getAttribute('aria-labelledby'))
-  expect(ids).toHaveLength(9 + 6)
+  expect(ids).toHaveLength(9 + 7)
   expect(new Set(ids).size).toBe(ids.length)
   for (const id of ids) {
     expect(id).not.toBeNull()
