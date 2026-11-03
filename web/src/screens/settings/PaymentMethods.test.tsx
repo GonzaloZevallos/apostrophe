@@ -228,17 +228,26 @@ describe('the management flow', () => {
     await waitFor(() => expect(reads()).toBeGreaterThan(before))
   })
 
-  test('reopening a method right after saving its icon shows the saved icon', async () => {
+  test('the Sheet stays open until the list holds the saved icon, so reopening shows it', async () => {
     let methods: unknown[] = fixture.map((method) => ({ ...method }))
+    let saved = false
+    let release: () => void = () => undefined
+    const listRead = new Promise<void>((resolve) => {
+      release = resolve
+    })
     vi.stubGlobal(
       'fetch',
       vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
         const method = init?.method ?? 'GET'
         const headers = { 'Content-Type': 'application/json' }
         if (method === 'PATCH') {
+          saved = true
           methods = fixture.map((entry) => (entry.id === 1 ? { ...entry, icon: 'wallet' } : { ...entry }))
           return new Response(JSON.stringify(methods[0]), { status: 200, headers })
         }
+        // The list read that follows the save answers late: a Sheet that closed before it
+        // would let the next tap read the entry from before the save.
+        if (saved) await listRead
         const list = String(input).endsWith('/archived') ? [] : methods
         return new Response(JSON.stringify(list), { status: 200, headers })
       }),
@@ -247,6 +256,10 @@ describe('the management flow', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Edit Cash' }))
     await userEvent.click(screen.getByRole('radio', { name: /Wallet/ }))
     await userEvent.click(screen.getByRole('button', { name: T.save }))
+    await waitFor(() => expect(saved).toBe(true))
+    // The list has not answered yet: the Sheet is still there, so nothing can be reopened.
+    expect(screen.getByRole('textbox', { name: T.nameLabel })).toBeTruthy()
+    release()
     await waitFor(() => expect(screen.queryByRole('textbox', { name: T.nameLabel })).toBeNull())
     await userEvent.click(screen.getByRole('button', { name: 'Edit Cash' }))
     expect(screen.getByRole('radio', { name: /Wallet/ }).getAttribute('aria-checked')).toBe('true')
