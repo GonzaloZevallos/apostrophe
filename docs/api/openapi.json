@@ -159,16 +159,6 @@
             ],
             "title": "Next"
           },
-          "own_use": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "previous": {
             "anyOf": [
               {
@@ -186,16 +176,6 @@
             },
             "title": "Products",
             "type": "array"
-          },
-          "promotion": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "quantity_gifted": {
             "title": "Quantity Gifted",
@@ -222,6 +202,13 @@
                 "type": "null"
               }
             ]
+          },
+          "withdrawals": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCostOut"
+            },
+            "title": "Withdrawals",
+            "type": "array"
           }
         },
         "required": [
@@ -234,8 +221,7 @@
           "quantity_gifted",
           "average_margin",
           "shortfall",
-          "promotion",
-          "own_use",
+          "withdrawals",
           "products"
         ],
         "title": "AnalysisMonthOut",
@@ -1720,28 +1706,8 @@
             "title": "Month",
             "type": "string"
           },
-          "own_use": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "profit": {
             "$ref": "#/components/schemas/AmountWithPendingOut"
-          },
-          "promotion": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "quantity": {
             "title": "Quantity",
@@ -1760,6 +1726,13 @@
                 "type": "null"
               }
             ]
+          },
+          "withdrawals": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCostOut"
+            },
+            "title": "Withdrawals",
+            "type": "array"
           }
         },
         "required": [
@@ -1770,8 +1743,7 @@
           "quantity",
           "cost_of_goods",
           "shortfall",
-          "promotion",
-          "own_use",
+          "withdrawals",
           "expenses",
           "profit",
           "cash"
@@ -2140,16 +2112,6 @@
             "title": "Expenses",
             "type": "integer"
           },
-          "own_use": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/CostLineOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "pending_cost": {
             "title": "Pending Cost",
             "type": "boolean"
@@ -2161,16 +2123,6 @@
           "profit_pending": {
             "title": "Profit Pending",
             "type": "boolean"
-          },
-          "promotion": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/CostLineOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "purchases": {
             "title": "Purchases",
@@ -2206,6 +2158,13 @@
             "format": "date",
             "title": "Start",
             "type": "string"
+          },
+          "withdrawals": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCostOut"
+            },
+            "title": "Withdrawals",
+            "type": "array"
           }
         },
         "required": [
@@ -2219,8 +2178,7 @@
           "cost_of_goods",
           "pending_cost",
           "shortfall",
-          "promotion",
-          "own_use",
+          "withdrawals",
           "expenses",
           "purchases",
           "profit",
@@ -2981,6 +2939,47 @@
         "title": "ProgressOut",
         "type": "object"
       },
+      "ReasonCostOut": {
+        "description": "One withdrawal reason's cost line, in the list order `period_figures` answered\nit: Home's Week, Month and Today and every Análisis row serialise it through here\nand nowhere else. `amount` is `null` when every gram is pending, never 0.",
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "pending": {
+            "title": "Pending",
+            "type": "boolean"
+          },
+          "pending_quantity": {
+            "title": "Pending Quantity",
+            "type": "number"
+          },
+          "reason_id": {
+            "title": "Reason Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "reason_id",
+          "name",
+          "amount",
+          "pending",
+          "pending_quantity"
+        ],
+        "title": "ReasonCostOut",
+        "type": "object"
+      },
       "ReasonIn": {
         "properties": {
           "name": {
@@ -3657,28 +3656,8 @@
             "title": "Expenses",
             "type": "integer"
           },
-          "own_use": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "profit": {
             "$ref": "#/components/schemas/AmountWithPendingOut"
-          },
-          "promotion": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "sales": {
             "title": "Sales",
@@ -3693,6 +3672,13 @@
                 "type": "null"
               }
             ]
+          },
+          "withdrawals": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCostOut"
+            },
+            "title": "Withdrawals",
+            "type": "array"
           }
         },
         "required": [
@@ -3701,8 +3687,7 @@
           "profit",
           "cash",
           "shortfall",
-          "promotion",
-          "own_use"
+          "withdrawals"
         ],
         "title": "SinceFirstRecordOut",
         "type": "object"
@@ -3904,28 +3889,8 @@
             "title": "Last Day",
             "type": "string"
           },
-          "own_use": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "profit": {
             "$ref": "#/components/schemas/AmountWithPendingOut"
-          },
-          "promotion": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "quantity": {
             "title": "Quantity",
@@ -3944,6 +3909,13 @@
                 "type": "null"
               }
             ]
+          },
+          "withdrawals": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCostOut"
+            },
+            "title": "Withdrawals",
+            "type": "array"
           }
         },
         "required": [
@@ -3953,8 +3925,7 @@
           "quantity",
           "cost_of_goods",
           "shortfall",
-          "promotion",
-          "own_use",
+          "withdrawals",
           "expenses",
           "profit",
           "cash",

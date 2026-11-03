@@ -10,15 +10,13 @@ import type { AnalysisMonthRow, AnalysisWeek, RowCost, VarietyRow } from '../api
 import {
   ANALYSIS_TEXT,
   COST_OF_GOODS_LABEL,
-  OWN_USE_LABEL,
-  PROMOTION_LABEL,
   SHORTFALL_LABEL,
 } from '../copy/analysis'
 import { COMMON_TEXT } from '../copy/common'
 import { formatDateShort, formatMonthLong } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import { BEST_WEEK_MARK } from './analisis/marks'
-import { type AmountParts, amountParts, rowCostParts } from './analisisCost'
+import { type AmountParts, amountParts, reasonCostParts, rowCostParts } from './analisisCost'
 
 /** One line of a card: the words before the figure, the figure (the only span that never
  * wraps; `null` when everything behind it is pending), the words after it, and the pending
@@ -85,8 +83,7 @@ function periodRows(period: Period): CardRow[] {
     plain(formatGrams(period.quantity), `${COMMON_TEXT.grams} `),
     row(`${COST_OF_GOODS_LABEL} `, rowCostParts(period.cost_of_goods)),
     ...optional(SHORTFALL_LABEL, period.shortfall),
-    ...optional(PROMOTION_LABEL, period.promotion),
-    ...optional(OWN_USE_LABEL, period.own_use),
+    ...period.withdrawals.map((line) => row(`${line.name} `, reasonCostParts(line))),
     plain(formatMoney(period.expenses), ANALYSIS_TEXT.gastos),
     row(ANALYSIS_TEXT.ganancia, amountParts(period.profit.amount, period.profit.pending_quantity)),
     plain(formatMoney(period.cash), ANALYSIS_TEXT.caja),

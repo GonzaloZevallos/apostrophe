@@ -192,8 +192,7 @@ function AnalisisContenido({
         <WithdrawalLines
           variant="row"
           shortfall={m.shortfall}
-          promotion={m.promotion}
-          ownUse={m.own_use}
+          withdrawals={m.withdrawals}
         />
       </div>
 
@@ -275,8 +274,7 @@ function AnalisisContenido({
               <WithdrawalLines
                 variant="row"
                 shortfall={data.since_first_record.shortfall}
-                promotion={data.since_first_record.promotion}
-                ownUse={data.since_first_record.own_use}
+                withdrawals={data.since_first_record.withdrawals}
               />
             </div>
           )}

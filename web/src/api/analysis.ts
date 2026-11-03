@@ -32,6 +32,18 @@ export interface RowCost {
   all_pending: boolean
 }
 
+/** One withdrawal reason's cost line (`ReasonCostOut`), in the order the business lists
+ * its reasons: Home's three periods and every Análisis row carry the same shape. `amount`
+ * is `null` when every gram behind the line is pending, never 0; `pending` and
+ * `pending_quantity` are the backend's answer. The front draws it as it comes. */
+export interface ReasonCost {
+  reason_id: number
+  name: string
+  amount: number | null
+  pending: boolean
+  pending_quantity: number
+}
+
 export interface VarietyRow {
   product_id: number
   name: string
@@ -53,8 +65,7 @@ export interface AnalysisMonth {
   quantity_gifted: number
   average_margin: MarginFigure
   shortfall: RowCost | null
-  promotion: RowCost | null
-  own_use: RowCost | null
+  withdrawals: ReasonCost[]
   products: VarietyRow[]
 }
 
@@ -66,8 +77,7 @@ export interface AnalysisWeek {
   expenses: number
   cost_of_goods: RowCost
   shortfall: RowCost | null
-  promotion: RowCost | null
-  own_use: RowCost | null
+  withdrawals: ReasonCost[]
   profit: AmountWithPending
   cash: number
   best: boolean
@@ -82,8 +92,7 @@ export interface AnalysisMonthRow {
   expenses: number
   cost_of_goods: RowCost
   shortfall: RowCost | null
-  promotion: RowCost | null
-  own_use: RowCost | null
+  withdrawals: ReasonCost[]
   profit: AmountWithPending
   cash: number
 }
@@ -101,8 +110,7 @@ export interface SinceFirstRecord {
   profit: AmountWithPending
   cash: number
   shortfall: RowCost | null
-  promotion: RowCost | null
-  own_use: RowCost | null
+  withdrawals: ReasonCost[]
 }
 
 export interface ExpenseCategoryTotal {

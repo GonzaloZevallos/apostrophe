@@ -111,6 +111,8 @@ classDiagram
   }
   class reasons_opening {
   }
+  class results_reasons {
+  }
   class router {
   }
   class schemas {
@@ -135,6 +137,7 @@ classDiagram
   draw_costs --> sql_draws
   draw_costs --> sql_stock_entries
   draw_costs --> sql_stock_withdrawals
+  draw_costs --> sql_withdrawal_reasons
   import_port --> sql_stock_entries
   import_port --> sql_thresholds
   import_port --> tables
@@ -145,6 +148,7 @@ classDiagram
   onboarding_facts --> tables
   purchases --> tables
   reasons_opening --> sql_withdrawal_reasons
+  results_reasons --> sql_withdrawal_reasons
   router --> schemas
   router --> sql_draws
   router --> sql_stock_entries
@@ -161,6 +165,7 @@ classDiagram
   stock_figures --> sql_stock_entries
   stock_figures --> sql_stock_withdrawals
   stock_figures --> sql_thresholds
+  stock_figures --> sql_withdrawal_reasons
 ```
 
 ## domain
@@ -550,6 +555,9 @@ classDiagram
     earliest_entry_day() date #124; None
     purchases() list~PurchaseRecord~
   }
+  class SqlResultsWithdrawalReasons {
+    all() Sequence~ReasonRecord~
+  }
   class SqlStockEntries {
     add(entry: StockEntry) StockEntry
     by_id(entry_id: int) StockEntry #124; None
@@ -685,6 +693,8 @@ classDiagram
   }
   class WithdrawalReasonsOpening {
     opened(business_id: int, language: BusinessLanguage) None
+  }
+  class WithdrawalWithoutReason {
   }
   EntryMovementOut --|> EntryOut
 ```

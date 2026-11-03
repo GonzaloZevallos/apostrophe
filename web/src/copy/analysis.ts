@@ -17,7 +17,7 @@ export const NO_BEST_WEEK_LINE = 'None stood out'
 
 export const COST_OF_GOODS_LABEL = 'Cost of goods sold'
 export const SHORTFALL_LABEL = 'Stock shortfall'
-export const PROMOTION_LABEL = 'Promotion'
+export const PROMOTION_LABEL = 'Marketing'
 export const OWN_USE_LABEL = 'Own use'
 const PENDING_ONLY = `${SAMPLES.grams} without cost`
 const AMOUNT_AND_PENDING = `${SAMPLES.amount} and ${SAMPLES.grams} without cost`
