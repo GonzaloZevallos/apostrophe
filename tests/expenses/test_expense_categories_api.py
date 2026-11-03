@@ -113,10 +113,9 @@ def test_another_businesss_category_id_is_not_found_on_rename_or_remove(
 ) -> None:
     foreign = client.get("/expense-categories").json()[0]["id"]
 
-    assert (
-        other_client.patch(f"/expense-categories/{foreign}", json={"name": "Mina"}).status_code
-        == 404
-    )
+    assert other_client.patch(
+        f"/expense-categories/{foreign}", json={"name": "Mina"}
+    ).status_code == 404
     assert other_client.delete(f"/expense-categories/{foreign}").status_code == 404
 
 

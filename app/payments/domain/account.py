@@ -161,7 +161,9 @@ def account_of(sales: Sequence[OwedSale], payments: Sequence[LaterPaymentEntry])
     running = 0
     for _, delta, entry_row in entries:
         running += delta
-        rows.append(replace(entry_row, running_balance=running, standing=standing_of(running)))
+        rows.append(
+            replace(entry_row, running_balance=running, standing=standing_of(running))
+        )
 
     return Account(
         rows=tuple(rows),

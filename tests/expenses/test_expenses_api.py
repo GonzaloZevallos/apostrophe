@@ -248,7 +248,9 @@ def test_editing_with_another_businesss_category_id_is_not_found(
 
     assert edited.status_code == 404
     view = client.get("/expenses").json()
-    stored = next(e for c in view["categories"] for e in c["expenses"] if e["id"] == expense["id"])
+    stored = next(
+        e for c in view["categories"] for e in c["expenses"] if e["id"] == expense["id"]
+    )
     assert stored["amount"] == expense["amount"]
     assert stored["detail"] == expense["detail"]
     assert stored["category_id"] == expense["category_id"]
