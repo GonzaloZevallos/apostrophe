@@ -73,6 +73,8 @@
   "stock.withdrawal_reason_name_blank": "refusals:generic",
   "stock.withdrawal_reason_name_too_long": "refusals:generic",
   "stock.withdrawal_reason_name_taken": "refusals:generic",
+  "stock.withdrawal_reason_has_withdrawals": "refusals:generic",
+  "stock.withdrawal_reason_last": "refusals:generic",
   "stock.withdrawal_reason_cannot_move": "refusals:generic",
   "stock.withdrawal_reason_not_found": "refusals:withdrawalReasonNotFound",
   "catalog.emoji_invalid": "refusals:generic",

@@ -74,6 +74,8 @@
     "stock.withdrawal_reason_name_blank": { "kind": "refusal" },
     "stock.withdrawal_reason_name_too_long": { "kind": "refusal" },
     "stock.withdrawal_reason_name_taken": { "kind": "refusal" },
+    "stock.withdrawal_reason_has_withdrawals": { "kind": "refusal" },
+    "stock.withdrawal_reason_last": { "kind": "refusal" },
     "stock.withdrawal_reason_cannot_move": { "kind": "refusal" },
     "stock.withdrawal_reason_not_found": { "kind": "gone" },
     "catalog.emoji_invalid": { "kind": "refusal" },

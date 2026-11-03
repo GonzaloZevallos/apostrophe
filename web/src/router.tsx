@@ -64,6 +64,7 @@ import ExpenseCategoriesGroup from './screens/settings/ExpenseCategoriesGroup'
 import IntegrationsGroup from './screens/settings/IntegrationsGroup'
 import PricingGroup from './screens/settings/PricingGroup'
 import UsersGroup from './screens/settings/UsersGroup'
+import WithdrawalReasons from './screens/settings/WithdrawalReasons'
 import WithdrawalDetail from './screens/withdrawals/WithdrawalDetail'
 import WithdrawalFormRoute from './screens/withdrawals/WithdrawalFormRoute'
 import NuevaVenta from './screens/ventas/NuevaVenta'
@@ -120,6 +121,7 @@ const ELEMENTS: Record<ScreenId, ReactElement> = {
   'settings-integrations': <IntegrationsGroup />,
   'settings-catalog-message': <CatalogMessageGroup />,
   'settings-expense-categories': <ExpenseCategoriesGroup />,
+  'settings-withdrawal-reasons': <WithdrawalReasons />,
   'settings-appearance': <AppearanceGroup />,
   'settings-account': <AccountGroup />,
   onboarding: <OnboardingEntry />,

@@ -21,6 +21,9 @@ import { type LanguageTag, type StoredLanguage, sameLanguage } from '../../api/l
 import { LANGUAGE_NOT_SELECTABLE_MESSAGE, kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
 import AvisoExito from '../../components/AvisoExito'
 import Boton from '../../components/Boton'
+import Icono from '../../components/Icono'
+import InAppLink from '../../components/InAppLink'
+import { SETTINGS_WITHDRAWAL_REASONS } from '../../routes'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
@@ -165,6 +168,17 @@ function BusinessForm({ initialName, language, selectable }: BusinessFormProps) 
         {offline && <SinConexion />}
       </form>
       {selectable.length > 1 && <LanguageControl language={language} selectable={selectable} />}
+      <div className="ajustes__lista">
+        <InAppLink to={SETTINGS_WITHDRAWAL_REASONS} className="ajustes__item">
+          <span className="ajustes__item-icono">
+            <Icono nombre="salidaStock" />
+          </span>
+          <span className="ajustes__item-rotulo">{COMMON_TEXT.withdrawalReasons}</span>
+          <span className="ajustes__item-flecha">
+            <Icono nombre="chevron" />
+          </span>
+        </InAppLink>
+      </div>
     </SettingsGroup>
   )
 }

@@ -70,6 +70,9 @@ const { date: D } = FIXTURE
 export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   inviteExpiry: [[D]],
   'SETTINGS_TEXT.nameOf': [['Rosa']],
+  'SETTINGS_TEXT.moveReasonUp': [['Marketing']],
+  'SETTINGS_TEXT.moveReasonDown': [['Marketing']],
+  'SETTINGS_TEXT.deleteReasonConfirm': [['Marketing']],
   languageName: [['en'], ['de'], ['xx']],
 })
 
@@ -123,6 +126,24 @@ export const SETTINGS_TEXT = {
   discardTheInvitation: 'Discard the invitation?',
   language: 'Language',
   languageGroupName: 'Language',
+  withdrawalReasonsHint: 'The reasons you pick when you take stock out without selling it.',
+  addWithdrawalReason: 'Add reason',
+  moveReasonUp: (name: string) => `Move ${name} up`,
+  moveReasonDown: (name: string) => `Move ${name} down`,
+  moveUp: 'Up',
+  moveDown: 'Down',
+  reasonSaved: 'Reason saved',
+  reasonDeleted: 'Reason deleted',
+  cannotDeleteStillHasWithdrawals: 'It can\'t be deleted: it still has withdrawals. You can rename it.',
+  cannotDeleteLastReason: 'It can\'t be deleted: you need at least one reason.',
+  addReasonTitle: 'Add reason',
+  renameReasonTitle: 'Rename reason',
+  reasonNameLabel: 'Name',
+  reasonNameBlank: 'Write a name.',
+  reasonNameTooLong: 'Use 60 characters or fewer.',
+  reasonNameDuplicate: 'You already have a reason with that name.',
+  deleteReasonConfirm: (name: string) => `Delete the reason ${name}?`,
+  reasonMoveFailed: 'The order wasn\'t saved. Try again.',
 } as const
 
 /** Each language's own name, fixed and the same whatever language is shown (invariant 7):
