@@ -43,6 +43,8 @@ from tests.business_removal.adapters.seed import (
     PINNED,
     SALE_NOTE,
     SHIPPING_CHARGED,
+    WITHDRAWAL_NOTE,
+    WITHDRAWAL_REASON,
     accept_invitation,
     build_app,
     row_counts,
@@ -73,6 +75,8 @@ EXPORTED_KINDS = (
     "payment",
     "expense_category",
     "expense",
+    "stock_withdrawal",
+    "stock_withdrawal_line",
     "withdrawal_reason",
     "catalog_header_footer",
     "catalog_attributes",
@@ -248,6 +252,15 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     assert payment["amount"] == PAYMENT_AMOUNT
     assert payment["paid_on"] == days.payment.isoformat()
     assert payment["customer_id"] == {"id": customers[CUSTOMER_NAME]["id"], "name": CUSTOMER_NAME}
+
+    reasons = {record["name"]: record for record in kinds["withdrawal_reason"]}
+    assert set(reasons) == {"Marketing", "Own use", WITHDRAWAL_REASON}
+    [withdrawal] = kinds["stock_withdrawal"]
+    assert withdrawal["note"] == WITHDRAWAL_NOTE
+    assert withdrawal["withdrawal_reason_id"] == {
+        "id": reasons[WITHDRAWAL_REASON]["id"],
+        "name": WITHDRAWAL_REASON,
+    }
 
     categories = {record["name"]: record for record in kinds["expense_category"]}
     expense = kinds["expense"][0]

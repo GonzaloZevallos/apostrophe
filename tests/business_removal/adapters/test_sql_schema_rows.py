@@ -158,11 +158,14 @@ def _seed_join_invitations(
 
 def _seed_withdrawal(client: TestClient, variety_id: int) -> None:
     """A two-line stock withdrawal recorded through its route, so the removal meets both
-    tables with more than one line of one withdrawal."""
+    tables with more than one line of one withdrawal, filed under a reason the business
+    added, so the removal also meets the reason a withdrawal points at."""
+    reason = client.post("/api/withdrawal-reasons", json={"name": "Regalos a clientes"})
+    assert reason.status_code == 201, reason.text
     response = client.post(
         "/stock/withdrawals",
         json={
-            "reason": "promotion",
+            "reason_id": reason.json()["id"],
             "date": "2026-01-01",
             "lines": [
                 {"product_id": variety_id, "quantity": "5"},
@@ -267,6 +270,18 @@ def test_delete_business_empties_every_owned_table_and_leaves_the_other_business
         deleted = rows.delete_business(business.id, order)
         session.commit()
 
+    # The withdrawal and its two lines go before the reason they point at (RESTRICT), and
+    # the reason the business added goes with the two it started with.
+    assert order.index("stock_withdrawal_line") < order.index("stock_withdrawal")
+    assert order.index("stock_withdrawal") < order.index("withdrawal_reason")
+    assert (
+        len(deleted.tables["stock_withdrawal"]),
+        len(deleted.tables["stock_withdrawal_line"]),
+    ) == (
+        1,
+        2,
+    )
+    assert len(deleted.tables["withdrawal_reason"]) == 3
     assert deleted.withheld_counts["invitation"] >= 1
     assert deleted.login_guard_count == 1
     for name in exported_table_names:
