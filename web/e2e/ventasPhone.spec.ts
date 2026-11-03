@@ -15,6 +15,7 @@ import type { Locator, Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { setPriceDate } from './helpers/priceDate.js'
 import { uniqueTag } from './helpers/unique.js'
+import { paidWith } from './helpers/paymentMethod.js'
 
 const TOUCH_TARGET = 44
 const MIN_INPUT_FONT = 16
@@ -76,7 +77,7 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
       customer_id: null,
       shipping_charged: 0,
       note: null,
-      payment: { kind: 'method', payment_method_id: 1, name: 'Cash', icon: 'coins' },
+      payment: await paidWith(page, 'Cash'),
       lines: [{ product_id: jazmin.id, quantity: '10', gift: false, special_price: null }],
     },
   })

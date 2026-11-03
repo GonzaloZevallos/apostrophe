@@ -107,7 +107,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // cobro reaching that sale instead.
   await expect(cardOf(page).getByText('Owes you', { exact: false })).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Record payment' })).toHaveCount(0)
-  await expect(page.getByText('Payment · cash')).toBeVisible()
+  await expect(page.getByText('Payment · Cash')).toBeVisible()
   await expect(page.getByText(`On account of the sale of ${today}`)).toBeVisible()
 
   // Sale 2: 8 g of Rosa, also left owing — $8.000.
@@ -136,11 +136,11 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page.locator('.ficha-deuda', { hasText: /Owes you\s*\$ 5\.000/ })).toBeVisible()
 
   // --- Delete payment: confirmed first, then the debt it had settled returns. ---
-  const transferRow = page.locator('.cuenta-cliente__fila').filter({ hasText: 'transfer' })
+  const transferRow = page.locator('.cuenta-cliente__fila').filter({ hasText: 'Transfer' })
   await expect(transferRow).toContainText('$ 3.000')
   await transferRow.getByRole('button', { name: 'Delete payment' }).click()
   await expect(
-    page.getByText(`Delete the payment of $ 3.000 (transfer) from ${today}?`),
+    page.getByText(`Delete the payment of $ 3.000 · Transfer from ${today}?`),
   ).toBeVisible()
   await expectToast(page, 'Payment deleted', () => page.getByRole('button', { name: 'Yes, delete it' }).click())
   await expect(page.locator('.ficha-deuda', { hasText: /Owes you\s*\$ 8\.000/ })).toBeVisible()
@@ -215,7 +215,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(creditRow.getByRole('button', { name: 'Delete payment' })).toHaveCount(1)
   await creditRow.getByRole('button', { name: 'Delete payment' }).click()
   await expect(
-    page.getByText(`Delete the payment of $ 5.000 (cash) from ${today}?`),
+    page.getByText(`Delete the payment of $ 5.000 · Cash from ${today}?`),
   ).toBeVisible()
   await expectToast(page, 'Payment deleted', () => page.getByRole('button', { name: 'Yes, delete it' }).click())
   await expect(cardOf(page).getByText('Owes you', { exact: false })).toHaveCount(0)

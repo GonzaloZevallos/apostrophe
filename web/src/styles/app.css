@@ -6520,6 +6520,11 @@ body {
   box-shadow: none;
   font-weight: 600;
 }
+/* Every button on the screen, the shell's back arrow and the Sheet's included, takes no tap
+ * delay or double-tap zoom: the phone check lists no touch-action offender for it. */
+body:has(.medios-pago) button {
+  touch-action: manipulation;
+}
 .medios-pago__iconos {
   display: flex;
   flex-wrap: wrap;

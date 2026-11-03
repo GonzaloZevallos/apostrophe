@@ -35,6 +35,7 @@ import { openGastos } from './helpers/openMas.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { uniqueTag } from './helpers/unique.js'
+import { paidWith } from './helpers/paymentMethod.js'
 
 interface PanelPeriod {
   start: string
@@ -258,7 +259,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
           customer_id: null,
           shipping_charged: 0,
           note: null,
-          payment: { kind: 'method', payment_method_id: 1, name: 'Cash', icon: 'coins' },
+          payment: await paidWith(page, 'Cash'),
           lines: [{ product_id: rosaId, quantity: '1', gift: false, special_price: null }],
         },
       })
