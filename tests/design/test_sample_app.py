@@ -80,12 +80,14 @@ def test_the_sample_business_has_every_state_the_design_shows(client: TestClient
     for name in ("week", "month"):
         assert [w["name"] for w in periods[name]["withdrawals"]] == ["Marketing", "Own use"]
     assert [w["pending"] for w in periods["week"]["withdrawals"]] == [False, True]
-    assert client.get(f"/stock/withdrawals/{sample.withdrawal}").json()["reason"] == "promotion"
+    assert (
+        client.get(f"/stock/withdrawals/{sample.withdrawal}").json()["reason_name"] == "Marketing"
+    )
     movements = client.get(f"/stock/products/{sample.low}/movements").json()
     assert len(movements) > 3
-    assert {m["reason"] for m in movements if m["kind"] == "withdrawal"} == {
-        "promotion",
-        "own_use",
+    assert {m["reason_name"] for m in movements if m["kind"] == "withdrawal"} == {
+        "Marketing",
+        "Own use",
     }
     analysis = client.get("/analysis").json()
     since = {w["name"]: w for w in analysis["since_first_record"]["withdrawals"]}

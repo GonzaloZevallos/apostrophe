@@ -54,7 +54,7 @@ _RULE = {
     "special": "Especial",
 }
 _ENTRY_KIND = {"purchase": "Compra", "harvest": "Cosecha", "adjustment": "Ajuste"}
-_WITHDRAWAL_KIND = {"promotion": "Promoción", "own_use": "Consumo propio"}
+_WITHDRAWAL_KIND = {"Marketing": "Promoción", "Own use": "Consumo propio"}
 _MINUS = "\N{MINUS SIGN}"
 _NONE = "—"
 
@@ -251,7 +251,7 @@ def _movements(api: _ClientApi) -> list[str]:
         for move in listed[:3]:
             if move["kind"] == "withdrawal":
                 kind, amount = (
-                    _WITHDRAWAL_KIND[move["reason"]],
+                    _WITHDRAWAL_KIND[move["reason_name"]],
                     f"{_MINUS}{grams(move['quantity'])}",
                 )
             else:

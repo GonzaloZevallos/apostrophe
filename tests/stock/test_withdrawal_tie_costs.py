@@ -9,7 +9,6 @@ from datetime import date, datetime
 
 from app.shared.quantity import Quantity
 from app.stock.domain.allocation import allocate
-from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import Origin, StockEntry
 from app.stock.domain.lot_order import SaleLineDraw, WithdrawalLineDraw, lots_and_draws
 
@@ -34,7 +33,7 @@ def _lot(entry_id: int, quantity: str, total_cost: int) -> StockEntry:
 def _withdrawal_line(
     withdrawal_id: int, position: int, quantity: str, kind: int
 ) -> WithdrawalLineDraw:
-    reason = WithdrawalReason.PROMOTION if kind == 0 else WithdrawalReason.OWN_USE
+    reason_id = 1 if kind == 0 else 2
     return WithdrawalLineDraw(
         variety_id=1,
         day=DAY,
@@ -42,7 +41,7 @@ def _withdrawal_line(
         withdrawal_id=withdrawal_id,
         position=position,
         quantity=Quantity.of(quantity),
-        reason=reason,
+        reason_id=reason_id,
     )
 
 

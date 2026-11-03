@@ -13,9 +13,11 @@ from app.products.adapters.tables import ProductRow
 from app.shared.quantity import Quantity
 from app.stock.adapters.sql_stock_withdrawals import SqlStockWithdrawals
 from app.stock.adapters.tables import StockWithdrawalLineRow
-from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.withdrawal import Withdrawal, WithdrawalLine
 
+# A business's seeded reasons, in the fresh database each test gets: its first two rows.
+MARKETING = 1
+OWN_USE = 2
 AT = datetime(2026, 10, 1, 12, 0, tzinfo=UTC)
 DAY = date(2026, 10, 1)
 TODAY = date(2026, 10, 2)
@@ -34,12 +36,12 @@ def _business_of(engine: Engine, variety_id: int) -> int:
 
 def _withdrawal(
     *lines: tuple[int, str],
-    reason: WithdrawalReason = WithdrawalReason.PROMOTION,
+    reason_id: int = MARKETING,
     withdrawal_id: int | None = None,
     recorded_at: datetime = AT,
 ) -> Withdrawal:
     return Withdrawal.of(
-        reason,
+        reason_id,
         DAY,
         None,
         tuple(WithdrawalLine.of(variety_id, quantity) for variety_id, quantity in lines),
@@ -68,8 +70,8 @@ def test_a_withdrawal_reads_back_with_its_lines_in_the_given_order(
         (second, Quantity.of("2")),
         (first, Quantity.of("3.5")),
     ]
-    assert (read.reason, read.withdrawn_on, read.recorded_at) == (
-        WithdrawalReason.PROMOTION,
+    assert (read.reason_id, read.withdrawn_on, read.recorded_at) == (
+        MARKETING,
         DAY,
         AT,
     )
@@ -92,7 +94,7 @@ def test_a_replace_keeps_id_and_recorded_at_and_reordering_lines_never_trips_the
             _withdrawal(
                 (second, "2"),
                 (first, "1"),
-                reason=WithdrawalReason.OWN_USE,
+                reason_id=OWN_USE,
                 withdrawal_id=stored.id,
                 recorded_at=later,
             )
@@ -102,7 +104,7 @@ def test_a_replace_keeps_id_and_recorded_at_and_reordering_lines_never_trips_the
     assert replaced.id == stored.id
     assert read is not None
     assert read.recorded_at == AT
-    assert read.reason is WithdrawalReason.OWN_USE
+    assert read.reason_id == OWN_USE
     assert [line.variety_id for line in read.lines] == [second, first]
 
 
@@ -167,16 +169,14 @@ def test_for_varieties_answers_one_draw_per_line_and_narrows(
 
     with Session(engine) as session:
         repository = SqlStockWithdrawals(session, business_id)
-        stored = repository.add(
-            _withdrawal((first, "1"), (second, "2"), reason=WithdrawalReason.OWN_USE)
-        )
+        stored = repository.add(_withdrawal((first, "1"), (second, "2"), reason_id=OWN_USE))
 
         everything = repository.for_varieties(None)
         narrowed = repository.for_varieties({second})
 
-    assert [(d.variety_id, d.position, d.quantity, d.reason) for d in everything] == [
-        (first, 0, Quantity.of("1"), WithdrawalReason.OWN_USE),
-        (second, 1, Quantity.of("2"), WithdrawalReason.OWN_USE),
+    assert [(d.variety_id, d.position, d.quantity, d.reason_id) for d in everything] == [
+        (first, 0, Quantity.of("1"), OWN_USE),
+        (second, 1, Quantity.of("2"), OWN_USE),
     ]
     assert [(d.variety_id, d.withdrawal_id, d.day, d.recorded_at) for d in narrowed] == [
         (second, stored.id, DAY, AT)
@@ -197,6 +197,6 @@ def test_movements_of_a_variety_sum_that_variety_grams_per_withdrawal(
 
         movements = repository.movements_of(first)
 
-    assert [(m.reason, m.quantity) for m in movements] == [
-        (WithdrawalReason.PROMOTION, Quantity.of("3.5"))
+    assert [(m.reason_id, m.reason_name, m.quantity) for m in movements] == [
+        (MARKETING, "Marketing", Quantity.of("3.5"))
     ]

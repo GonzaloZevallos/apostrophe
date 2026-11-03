@@ -18,7 +18,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 
 from app.results.domain.periods import periods as compute_periods
-from tests.conftest import PASSWORD, TODAY, MovableClock, signed_in
+from tests.conftest import PASSWORD, TODAY, MovableClock, reason_id, signed_in
 from tests.contract_shapes import assert_matches_fixture
 from tests.fakes.archive import archive_by_hand
 from tests.statement_log import captured_statements
@@ -592,7 +592,7 @@ def _withdraw(client: TestClient, variety_id: int, *, reason: str, quantity: str
     response = client.post(
         "/stock/withdrawals",
         json={
-            "reason": reason,
+            "reason_id": reason_id(client, reason),
             "date": on,
             "lines": [{"product_id": variety_id, "quantity": quantity}],
         },
@@ -616,9 +616,9 @@ def test_the_analysis_rows_carry_cost_of_goods_and_shortfall_that_agree_with_the
     _sale(client, a_id, quantity="3", on=TODAY.isoformat())
     _adjust(client, a_id, quantity="-2", on="2026-09-30")
     _adjust(client, b_id, quantity="-1", on=TODAY.isoformat())
-    _withdraw(client, a_id, reason="promotion", quantity="4", on="2026-09-29")
-    _withdraw(client, b_id, reason="promotion", quantity="2", on=TODAY.isoformat())
-    _withdraw(client, a_id, reason="own_use", quantity="3", on="2026-10-01")
+    _withdraw(client, a_id, reason="Marketing", quantity="4", on="2026-09-29")
+    _withdraw(client, b_id, reason="Marketing", quantity="2", on=TODAY.isoformat())
+    _withdraw(client, a_id, reason="Own use", quantity="3", on="2026-10-01")
 
     panel = client.get("/panel").json()["periods"]
     analysis = client.get("/analysis").json()
@@ -801,7 +801,7 @@ def _seed_small_panel_history(client: TestClient) -> None:
     withdrawal = client.post(
         "/stock/withdrawals",
         json={
-            "reason": "promotion",
+            "reason_id": reason_id(client, "Marketing"),
             "date": day,
             "lines": [{"product_id": variety_id, "quantity": "1"}],
         },
@@ -865,7 +865,7 @@ def _seed_bigger_panel_history(client: TestClient) -> None:
     withdrawal = client.post(
         "/stock/withdrawals",
         json={
-            "reason": "own_use",
+            "reason_id": reason_id(client, "Own use"),
             "date": TODAY.isoformat(),
             "lines": [{"product_id": variety_ids[0], "quantity": "1"}],
         },

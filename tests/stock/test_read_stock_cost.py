@@ -6,6 +6,7 @@ from typing import Any
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 
+from tests.conftest import reason_id
 from tests.fakes.archive import archive_by_hand
 from tests.statement_log import captured_statements
 
@@ -42,7 +43,10 @@ def _sale_and_withdrawal(client: TestClient, variety_id: int) -> None:
     _post(
         client,
         "/stock/withdrawals",
-        {"reason": "own_use", "lines": [{"product_id": variety_id, "quantity": "1"}]},
+        {
+            "reason_id": reason_id(client, "Own use"),
+            "lines": [{"product_id": variety_id, "quantity": "1"}],
+        },
     )
 
 

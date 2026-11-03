@@ -260,12 +260,13 @@ def seed(api: Api, today: date) -> Sample:
     def withdrawal(
         when: str, reason: str, lines: list[tuple[int, str]], note: str | None = None
     ) -> int:
+        reason_ids = {r["name"]: r["id"] for r in api.call("GET", "/api/withdrawal-reasons")}
         made: int = api.call(
             "POST",
             "/stock/withdrawals",
             {
                 "date": when,
-                "reason": reason,
+                "reason_id": reason_ids[reason],
                 "note": note,
                 "lines": [{"product_id": v, "quantity": quantity} for v, quantity in lines],
             },
@@ -277,9 +278,9 @@ def seed(api: Api, today: date) -> Sample:
     # promotion so its "Ver todas" has more than three rows; it stays under its threshold.
     # Sir Jack is already sold out, so the own-use gram taken from it is beyond every lot:
     # pending cost. Today is in this week and this month whatever weekday it runs on.
-    promotion = withdrawal(ago(0), "promotion", [(cookies, "3")], note="Fiesta de Caro")
-    withdrawal(ago(2), "promotion", [(cookies, "2")])
-    withdrawal(ago(0), "own_use", [(cookies, "2"), (jack, "1")])
+    promotion = withdrawal(ago(0), "Marketing", [(cookies, "3")], note="Fiesta de Caro")
+    withdrawal(ago(2), "Marketing", [(cookies, "2")])
+    withdrawal(ago(0), "Own use", [(cookies, "2"), (jack, "1")])
 
     api.call(
         "POST",

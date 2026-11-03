@@ -14,7 +14,7 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 
-from tests.conftest import TODAY
+from tests.conftest import TODAY, reason_id
 from tests.contract_shapes import assert_matches_fixture
 
 HOY = TODAY.isoformat()
@@ -69,7 +69,7 @@ def _withdraw(client: TestClient, variety_id: int, *, reason: str, quantity: str
     response = client.post(
         "/stock/withdrawals",
         json={
-            "reason": reason,
+            "reason_id": reason_id(client, reason),
             "date": on,
             "lines": [{"product_id": variety_id, "quantity": quantity}],
         },
@@ -89,12 +89,12 @@ def _seed_the_history(client: TestClient) -> None:
     a = _variety(client, "A")
     b = _variety(client, "B")
     _entry(client, a, quantity="100", total_cost=10_000, on="2026-09-01")
-    _withdraw(client, a, reason="promotion", quantity="1", on="2026-09-10")
-    _withdraw(client, a, reason="promotion", quantity="4", on="2026-09-29")
+    _withdraw(client, a, reason="Marketing", quantity="1", on="2026-09-10")
+    _withdraw(client, a, reason="Marketing", quantity="4", on="2026-09-29")
     _adjust(client, a, quantity="-2", on="2026-09-30")
-    _withdraw(client, a, reason="own_use", quantity="3", on="2026-10-01")
+    _withdraw(client, a, reason="Own use", quantity="3", on="2026-10-01")
     _sale(client, a, quantity="5", on=HOY)
-    _withdraw(client, b, reason="promotion", quantity="2", on=HOY)
+    _withdraw(client, b, reason="Marketing", quantity="2", on=HOY)
     _adjust(client, b, quantity="-1", on=HOY)
     _sale(client, b, quantity="1", on=HOY)
 
@@ -218,7 +218,7 @@ def test_a_withdrawal_dated_before_every_other_record_starts_the_history(
     client: TestClient,
 ) -> None:
     a = _variety(client, "A")
-    _withdraw(client, a, reason="promotion", quantity="2", on="2026-10-01")
+    _withdraw(client, a, reason="Marketing", quantity="2", on="2026-10-01")
     _entry(client, a, quantity="10", total_cost=1_000, on=HOY)
     _sale(client, a, quantity="1", on=HOY)
 
@@ -256,7 +256,7 @@ def test_a_withdrawal_dated_before_every_other_record_starts_the_history(
 
 def test_a_business_whose_only_record_is_a_withdrawal_has_a_history(client: TestClient) -> None:
     a = _variety(client, "A")
-    _withdraw(client, a, reason="own_use", quantity="3", on=HOY)
+    _withdraw(client, a, reason="Own use", quantity="3", on=HOY)
 
     analysis = client.get("/analysis").json()
     panel = client.get("/panel").json()["periods"]
@@ -299,8 +299,8 @@ def test_a_withdrawal_moves_none_of_the_sale_shortfall_or_cash_figures(
     before_panel = client.get("/panel").json()["periods"]
     before_analysis = client.get("/analysis").json()
 
-    _withdraw(client, a, reason="promotion", quantity="4", on=HOY)
-    _withdraw(client, a, reason="own_use", quantity="60", on=HOY)
+    _withdraw(client, a, reason="Marketing", quantity="4", on=HOY)
+    _withdraw(client, a, reason="Own use", quantity="60", on=HOY)
 
     after_panel = client.get("/panel").json()["periods"]
     after_analysis = client.get("/analysis").json()
@@ -354,7 +354,7 @@ def test_another_business_s_withdrawals_never_reach_the_answers(
     client: TestClient, other_client: TestClient
 ) -> None:
     a = _variety(client, "A")
-    _withdraw(client, a, reason="promotion", quantity="2", on=HOY)
+    _withdraw(client, a, reason="Marketing", quantity="2", on=HOY)
 
     panel = other_client.get("/panel").json()["periods"]
     analysis = other_client.get("/analysis").json()

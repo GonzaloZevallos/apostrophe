@@ -127,7 +127,9 @@ def assert_seed_states(client: TestClient) -> None:
     jack_uses = [
         m for m in movements_of(client, jack) if m["kind"] == "withdrawal" and m["date"] == day
     ]
-    assert [(m["reason"], m["quantity"]) for m in jack_uses] == [("own_use", 1)], "Sir Jack" + HINT
+    assert [(m["reason_name"], m["quantity"]) for m in jack_uses] == [("Own use", 1)], (
+        "Sir Jack" + HINT
+    )
 
     # Promotion is costed, in the week and in the month.
     marketing = by_reason(week["withdrawals"], "Marketing")
@@ -341,13 +343,15 @@ class RewritingApi(ClientApi):
         answer = super().call(method, path, body)
         if method == "POST" and path == "/api/products" and isinstance(body, dict):
             self.ids[body["name"]] = answer["id"]
+        if (method, path) == ("GET", "/api/withdrawal-reasons"):
+            self.ids.update({reason["name"]: reason["id"] for reason in answer})
         return answer
 
 
 def own_use_of(method: str, path: str, body: dict[str, Any], ids: dict[str, int]) -> bool:
     return (
         (method, path) == ("POST", "/stock/withdrawals")
-        and body["reason"] == "own_use"
+        and body["reason_id"] == ids["Own use"]
         and any(line["product_id"] == ids["Sir Jack"] for line in body["lines"])
     )
 
@@ -384,7 +388,7 @@ def jack_gram_to_promotion(
     lines = [line for line in body["lines"] if line["product_id"] != ids["Sir Jack"]]
     promotion = {
         "date": body["date"],
-        "reason": "promotion",
+        "reason_id": ids["Marketing"],
         "note": None,
         "lines": [{"product_id": ids["Sir Jack"], "quantity": "1"}],
     }
