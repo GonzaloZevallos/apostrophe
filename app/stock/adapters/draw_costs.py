@@ -19,6 +19,7 @@ from app.stock.adapters.draw_rows import build_draw_rows
 from app.stock.adapters.sql_draws import SqlDraws
 from app.stock.adapters.sql_stock_entries import SqlStockEntries
 from app.stock.adapters.sql_stock_withdrawals import SqlStockWithdrawals
+from app.stock.adapters.sql_withdrawal_reasons import SqlWithdrawalReasons
 from app.stock.application.history import history
 
 
@@ -27,7 +28,8 @@ class SqlDrawCosts(DrawCosts):
         self._entries = SqlStockEntries(session, business_id)
         self._draws = SqlDraws(session, business_id)
         self._withdrawals = SqlStockWithdrawals(session, business_id)
+        self._reasons = SqlWithdrawalReasons(session, business_id)
 
     def rows(self) -> list[DrawRow]:
         grouped = history(self._entries, self._draws, self._withdrawals, None)
-        return build_draw_rows(grouped)
+        return build_draw_rows(grouped, {r.name.key: r.id for r in self._reasons.all()})

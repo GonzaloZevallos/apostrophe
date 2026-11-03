@@ -70,6 +70,7 @@ from app.shared.language import BusinessLanguage
 from app.static_spa import FrontNavigation, MissingBuiltFront, ShellPage, SpaStatic, api_segments
 from app.stock.adapters.babel_defaults import BabelReasonDefaults
 from app.stock.adapters.draw_costs import SqlDrawCosts
+from app.stock.adapters.results_reasons import SqlResultsWithdrawalReasons
 from app.stock.adapters.leaving import SqlStockLeaving
 from app.stock.adapters.line_costs import SqlLineCosts
 from app.stock.adapters.onboarding_facts import SqlStockFacts
@@ -275,6 +276,7 @@ def create_app(
     # of these (ADR-0013 amendment GH-70): both read `period_figures`'s one
     # computation, never a second sum of their own.
     app.state.draw_costs = SqlDrawCosts
+    app.state.results_withdrawal_reasons = SqlResultsWithdrawalReasons
     app.state.sales_ledger = SqlSalesLedger
     app.state.payments_ledger = SqlPaymentsLedger
     app.state.expenses_ledger = SqlExpensesLedger

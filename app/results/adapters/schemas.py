@@ -24,6 +24,7 @@ from pydantic import BaseModel
 from app.products.adapters.schemas import QuantityOut
 from app.results.application.ports import DebtorRow, StockRow
 from app.results.application.read_panel import CostLineFigures, DebtsSummary, Panel, PeriodFigures
+from app.results.domain.figures import ReasonCost
 from app.stock.adapters.schemas import Status
 
 
@@ -97,6 +98,32 @@ class CostLineOut(BaseModel):
         return None if line is None else cls(amount=line.amount, pending=line.pending)
 
 
+class ReasonCostOut(BaseModel):
+    """One withdrawal reason's cost line, in the list order `period_figures` answered
+    it: Home's Week, Month and Today and every Análisis row serialise it through here
+    and nowhere else. `amount` is `null` when every gram is pending, never 0."""
+
+    reason_id: int
+    name: str
+    amount: int | None
+    pending: bool
+    pending_quantity: QuantityOut
+
+    @classmethod
+    def from_domain(cls, cost: ReasonCost) -> ReasonCostOut:
+        return cls(
+            reason_id=cost.reason_id,
+            name=cost.name,
+            amount=cost.amount,
+            pending=cost.pending,
+            pending_quantity=cost.pending_quantity.as_decimal(),
+        )
+
+
+def reason_costs(costs: tuple[ReasonCost, ...]) -> list[ReasonCostOut]:
+    return [ReasonCostOut.from_domain(cost) for cost in costs]
+
+
 class PeriodOut(BaseModel):
     start: date
     end: date
@@ -108,8 +135,7 @@ class PeriodOut(BaseModel):
     cost_of_goods: int
     pending_cost: bool
     shortfall: CostLineOut | None
-    promotion: CostLineOut | None
-    own_use: CostLineOut | None
+    withdrawals: list[ReasonCostOut]
     expenses: int
     purchases: int
     profit: int
@@ -129,8 +155,7 @@ class PeriodOut(BaseModel):
             cost_of_goods=figures.cost_of_goods,
             pending_cost=figures.pending_cost,
             shortfall=CostLineOut.of(figures.shortfall),
-            promotion=CostLineOut.of(figures.promotion),
-            own_use=CostLineOut.of(figures.own_use),
+            withdrawals=reason_costs(figures.withdrawals),
             expenses=figures.expenses,
             purchases=figures.purchases,
             profit=figures.profit,
@@ -219,8 +244,7 @@ class AnalysisMonthOut(BaseModel):
     quantity_gifted: QuantityOut
     average_margin: MarginOut
     shortfall: RowCostOut | None
-    promotion: RowCostOut | None
-    own_use: RowCostOut | None
+    withdrawals: list[ReasonCostOut]
     products: list[ProductRowOut]
 
 
@@ -231,8 +255,7 @@ class WeekOut(BaseModel):
     quantity: QuantityOut
     cost_of_goods: RowCostOut
     shortfall: RowCostOut | None
-    promotion: RowCostOut | None
-    own_use: RowCostOut | None
+    withdrawals: list[ReasonCostOut]
     expenses: int
     profit: AmountWithPendingOut
     cash: int
@@ -247,8 +270,7 @@ class MonthRowOut(BaseModel):
     quantity: QuantityOut
     cost_of_goods: RowCostOut
     shortfall: RowCostOut | None
-    promotion: RowCostOut | None
-    own_use: RowCostOut | None
+    withdrawals: list[ReasonCostOut]
     expenses: int
     profit: AmountWithPendingOut
     cash: int
@@ -267,8 +289,7 @@ class SinceFirstRecordOut(BaseModel):
     profit: AmountWithPendingOut
     cash: int
     shortfall: RowCostOut | None
-    promotion: RowCostOut | None
-    own_use: RowCostOut | None
+    withdrawals: list[ReasonCostOut]
 
 
 class ExpenseCategoryTotalOut(BaseModel):

@@ -24,10 +24,23 @@ from app.stock.domain.draw_source import DrawSource
 from app.stock.domain.lot_order import Draw, Lot
 
 
-def _row_of(variety_id: int, draw: Draw, cost: DrawCost) -> DrawRow:
+class WithdrawalWithoutReason(LookupError):
+    """A withdrawal's legacy reason finds no reason of the business: a broken read,
+    never silently dropped from Profit."""
+
+
+# Temporary, deleted by `withdrawal-link` (S2b): until a withdrawal carries its own
+# reason id, its legacy value is found by the `name_key` migration 0020 seeded.
+_LEGACY_NAME_KEY = {DrawSource.PROMOTION: "marketing", DrawSource.OWN_USE: "own use"}
+
+
+def _row_of(
+    variety_id: int, draw: Draw, cost: DrawCost, reason_ids: Mapping[str, int]
+) -> DrawRow:
     """One `(draw, cost)` pair as a `DrawRow`, its kind told by `draw.source` alone: a
     shortfall or a withdrawal carries no variety, sale or line total."""
     kind: DrawKind
+    reason_id: int | None = None
     match draw.source:
         case DrawSource.SALE_LINE:
             kind = "gifted" if draw.pricing_rule == PricingRule.GIFT.value else "sold"
@@ -44,13 +57,16 @@ def _row_of(variety_id: int, draw: Draw, cost: DrawCost) -> DrawRow:
             )
         case DrawSource.ADJUSTMENT:
             kind = "shortfall"
-        case DrawSource.PROMOTION:
-            kind = "promotion"
-        case DrawSource.OWN_USE:
-            kind = "own_use"
+        case DrawSource.PROMOTION | DrawSource.OWN_USE:
+            kind = "withdrawal"
+            found = reason_ids.get(_LEGACY_NAME_KEY[draw.source])
+            if found is None:
+                raise WithdrawalWithoutReason(f"no reason for a {draw.source.value} withdrawal")
+            reason_id = found
         case _:
             assert_never(draw.source)
     return DrawRow(
+        reason_id=reason_id,
         kind=kind,
         day=draw.order.day,
         variety_id=None,
@@ -63,7 +79,9 @@ def _row_of(variety_id: int, draw: Draw, cost: DrawCost) -> DrawRow:
     )
 
 
-def build_draw_rows(grouped: Mapping[int, tuple[list[Lot], list[Draw]]]) -> list[DrawRow]:
+def build_draw_rows(
+    grouped: Mapping[int, tuple[list[Lot], list[Draw]]], reason_ids: Mapping[str, int]
+) -> list[DrawRow]:
     """Runs `allocate` once per variety in `grouped` (its own full history, in its own
     order), then turns each `(draw, cost)` pair into one `DrawRow` — a sale line (sold
     or gifted), a shortfall, a promotion or an own use. Never rebuilds or re-sorts
@@ -72,5 +90,5 @@ def build_draw_rows(grouped: Mapping[int, tuple[list[Lot], list[Draw]]]) -> list
     for variety_id, (lots, draws) in grouped.items():
         costs: list[DrawCost] = allocate(lots, draws)
         for draw, cost in zip(draws, costs, strict=True):
-            rows.append(_row_of(variety_id, draw, cost))
+            rows.append(_row_of(variety_id, draw, cost, reason_ids))
     return rows
