@@ -50,8 +50,18 @@ def _entry(client: TestClient, variety_id: int, quantity: str, on: str, **more: 
     return int(_ok(client.post("/stock/entries", json=body), 201)["id"])
 
 
-def _sale(client: TestClient, on: str, lines: list[dict[str, Any]], **more: Any) -> int:
-    body = {"date": on, "lines": lines, **more}
+def _sale(
+    client: TestClient, on: str, lines: list[dict[str, Any]], payment: str, **more: Any
+) -> int:
+    """`payment` is "cash" (the first business's first method, id 1) or "owing"."""
+    body = {
+        "date": on,
+        "lines": lines,
+        "payment": (
+            {"kind": "owing"} if payment == "owing" else {"kind": "method", "payment_method_id": 1}
+        ),
+        **more,
+    }
     return int(_ok(client.post("/sales", json=body), 201)["id"])
 
 

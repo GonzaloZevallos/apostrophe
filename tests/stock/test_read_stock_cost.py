@@ -33,12 +33,18 @@ def _entry(client: TestClient, variety_id: int, quantity: str) -> None:
     )
 
 
+def _cash_id(client: TestClient) -> int:
+    """This business's own "Cash" method id (a second business's is not 1)."""
+    methods = client.get("/api/payment-methods").json()
+    return int(next(method["id"] for method in methods if method["name"] == "Cash"))
+
+
 def _sale_and_withdrawal(client: TestClient, variety_id: int) -> None:
     _post(
         client,
         "/sales",
         {
-            "payment": {"kind": "method", "payment_method_id": 1},
+            "payment": {"kind": "method", "payment_method_id": _cash_id(client)},
             "lines": [{"product_id": variety_id, "quantity": "1"}],
         },
     )

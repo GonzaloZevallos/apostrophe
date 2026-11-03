@@ -4,11 +4,12 @@ wired in `app/main.py` onto `app.state.line_costs`. The list route (`SaleOut`) n
 carries this field and never allocates; that stays covered by `test_sales_router.py`.
 """
 
+import json
 from typing import Any
 
 from fastapi.testclient import TestClient
 
-from tests.contract_shapes import assert_matches_fixture
+from tests.contract_shapes import FIXTURES_DIR, assert_matches_fixture
 
 
 def _variety(client: TestClient, list_price: int = 10_000) -> int:
@@ -37,6 +38,14 @@ def _sale(client: TestClient, variety_id: int, quantity: str = "10") -> int:
     )
     assert response.status_code == 201, response.text
     return int(response.json()["id"])
+
+
+def _with_fixture_payment(body: dict[str, Any], fixture: str) -> dict[str, Any]:
+    """`payment` is a union (`method`, `owing`, `none`) and a fixture file shows one
+    member; the answer's own member is asserted by the caller, then swapped for the
+    fixture's so the rest of the body is still checked key by key."""
+    shown = json.loads((FIXTURES_DIR / f"{fixture}.json").read_text())["payment"]
+    return {**body, "payment": shown}
 
 
 def test_a_fully_costed_line_answers_its_cost_and_no_pending_grams(
@@ -98,7 +107,9 @@ def test_a_gift_line_with_no_lot_behind_it_matches_the_gift_fixture(client: Test
     body = detail.json()
     assert body["customer"] is None
     assert body["lines"][0]["cost"]["costed"] is None
-    assert_matches_fixture(body, "sale-detail-gift")
+    # A gift sale is paid by nothing; the fixture shows one member of the payment union.
+    assert body["payment"] == {"kind": "none"}
+    assert_matches_fixture(_with_fixture_payment(body, "sale-detail-gift"), "sale-detail-gift")
 
 
 def test_list_sales_never_carries_a_cost_field(client: TestClient) -> None:
@@ -195,5 +206,12 @@ def test_a_sale_detail_carries_still_owing_from_settlement(client: TestClient) -
     paid_detail = client.get(f"/sales/{paid['id']}").json()
     assert owing_detail["still_owing"] is True
     assert paid_detail["still_owing"] is False
+    assert owing_detail["payment"] == {"kind": "owing"}
+    assert paid_detail["payment"] == {
+        "kind": "method",
+        "payment_method_id": 1,
+        "name": "Cash",
+        "icon": "coins",
+    }
     assert_matches_fixture(owing_detail, "sale-detail")
-    assert_matches_fixture(paid_detail, "sale-detail")
+    assert_matches_fixture(_with_fixture_payment(paid_detail, "sale-detail"), "sale-detail")

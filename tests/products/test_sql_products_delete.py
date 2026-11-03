@@ -17,6 +17,7 @@ from app.catalog.adapters.sql_attributes import SqlCatalogAttributes
 from app.catalog.domain.attributes import CatalogAttributes
 from app.db import make_engine
 from app.migrations.runner import upgrade_to_head
+from app.payments.adapters.on_the_spot import SqlOnTheSpotPayments
 from app.products.adapters.sql_products import SqlProducts
 from app.products.application import manage_prices, manage_products
 from app.products.application.errors import ProductHasHistory, ProductNotFound
@@ -339,6 +340,7 @@ class _ReadsStaleOnce(SqlProducts):
 def _record_sale(session: Session, price_book: SqlPriceBook, variety_id: int) -> None:
     record_sale(
         SqlSales(session, BUSINESS),
+        SqlOnTheSpotPayments(session, BUSINESS),
         price_book,
         SqlCustomerFacts(session, BUSINESS),
         BothRulesOn(),
@@ -349,7 +351,7 @@ def _record_sale(session: Session, price_book: SqlPriceBook, variety_id: int) ->
         shipping_charged=0,
         note=None,
         lines=[LineInput(variety_id=variety_id, quantity=Quantity.of("1"), gift=True)],
-        method=None,
+        payment_method_id=None,
         left_owing=False,
         recorded_at=NOW,
     )

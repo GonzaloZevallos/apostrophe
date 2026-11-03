@@ -67,6 +67,27 @@ class RefusingSales:
         raise AssertionError("not used")
 
 
+class NoOnTheSpotPayments:
+    """The sale under test is a gift, so no payment is ever written."""
+
+    def record(
+        self,
+        sale_id: int,
+        customer_id: int | None,
+        paid_on: date,
+        amount: int,
+        payment_method_id: int,
+        recorded_at: datetime,
+    ) -> None:
+        raise AssertionError("not used")
+
+    def remove_for(self, sale_id: int) -> None:
+        raise AssertionError("not used")
+
+    def assign_customer(self, sale_id: int, customer_id: int) -> None:
+        raise AssertionError("not used")
+
+
 class AskedAgainPriceBook:
     """Prices the variety when the request first looks it up; `present` is what it answers
     when the use case asks again after the refusal."""
@@ -90,6 +111,7 @@ class NoCustomers:
 def _record_sale(present: bool, transaction: CountingTransaction) -> Sale:
     return record_sale(
         RefusingSales(),
+        NoOnTheSpotPayments(),
         AskedAgainPriceBook(present),
         NoCustomers(),
         BothRulesOn(),
@@ -100,7 +122,7 @@ def _record_sale(present: bool, transaction: CountingTransaction) -> Sale:
         shipping_charged=0,
         note=None,
         lines=[LineInput(variety_id=7, quantity=Quantity.of("1"), gift=True)],
-        method=None,
+        payment_method_id=None,
         left_owing=False,
         recorded_at=NOW,
     )

@@ -69,8 +69,11 @@ def _customer(client: TestClient, name: str = "Juana") -> int:
 
 
 def _sale(client: TestClient, variety_id: int, payment: str, customer_id: int | None) -> int:
+    """`payment` is "owing" or "cash" (the business's first method, id 1)."""
     body: dict[str, object] = {
-        "payment": payment,
+        "payment": (
+            {"kind": "owing"} if payment == "owing" else {"kind": "method", "payment_method_id": 1}
+        ),
         "lines": [{"product_id": variety_id, "quantity": "1"}],
     }
     if customer_id is not None:

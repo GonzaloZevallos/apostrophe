@@ -23,9 +23,9 @@ from app.customers.adapters.tables import CustomerRow
 from app.payments.adapters.sql_payments import SqlPayments
 from app.payments.adapters.tables import PaymentRow
 from app.payments.domain.payment import PaymentAboveBalance
-from app.payments.domain.settlement import PaymentMethod
 
 RECORDED_AT = datetime(2026, 9, 28, 12, 0, tzinfo=UTC)
+CASH_ID = 1  # the first business's first method, Cash
 
 
 def _business_id_of_customer(engine: Engine, customer_id: int) -> int:
@@ -127,7 +127,7 @@ def test_insert_later_refuses_one_above_the_balance_and_adds_no_row(
         payments = SqlPayments(session, business_id)
         try:
             payments.insert_later(
-                customer_id, RECORDED_AT.date(), balance + 1, PaymentMethod.CASH, RECORDED_AT
+                customer_id, RECORDED_AT.date(), balance + 1, CASH_ID, RECORDED_AT
             )
             raised = False
         except PaymentAboveBalance:
@@ -148,9 +148,7 @@ def test_insert_later_accepts_exactly_the_balance(client: TestClient, engine: En
 
     with Session(engine) as session:
         payments = SqlPayments(session, business_id)
-        payments.insert_later(
-            customer_id, RECORDED_AT.date(), balance, PaymentMethod.CASH, RECORDED_AT
-        )
+        payments.insert_later(customer_id, RECORDED_AT.date(), balance, CASH_ID, RECORDED_AT)
         session.commit()
 
     assert _balance(client, customer_id) == 0
@@ -169,9 +167,7 @@ def test_a_stale_read_is_refused_by_the_second_insert(client: TestClient, engine
 
     with Session(engine) as session:
         payments = SqlPayments(session, business_id)
-        payments.insert_later(
-            customer_id, RECORDED_AT.date(), stale_balance, PaymentMethod.CASH, RECORDED_AT
-        )
+        payments.insert_later(customer_id, RECORDED_AT.date(), stale_balance, CASH_ID, RECORDED_AT)
         session.commit()
 
     with Session(engine) as session:
@@ -181,7 +177,7 @@ def test_a_stale_read_is_refused_by_the_second_insert(client: TestClient, engine
                 customer_id,
                 RECORDED_AT.date(),
                 stale_balance,
-                PaymentMethod.CASH,
+                CASH_ID,
                 RECORDED_AT,
             )
             refused = False

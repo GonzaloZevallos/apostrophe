@@ -110,7 +110,12 @@ def test_record_sale_without_a_customer_paid_cash(client: TestClient) -> None:
     assert response.status_code == 201, response.text
     body = response.json()
     assert body["customer"] is None
-    assert body["payment"] == "cash"
+    assert body["payment"] == {
+        "kind": "method",
+        "payment_method_id": 1,
+        "name": "Cash",
+        "icon": "coins",
+    }
     assert body["total"] == 100_000
     assert body["lines"] == [
         {
@@ -212,7 +217,7 @@ def test_record_sale_with_no_payment_field_and_a_zero_total_is_accepted(
     )
 
     assert response.status_code == 201, response.text
-    assert response.json()["payment"] == "none"
+    assert response.json()["payment"] == {"kind": "none"}
 
 
 def test_get_and_list_a_recorded_sale(client: TestClient) -> None:
@@ -374,7 +379,7 @@ def test_a_zero_total_sale_ignores_its_method_and_has_no_payment(client: TestCli
     )
 
     assert response.status_code == 201, response.text
-    assert response.json()["payment"] == "none"
+    assert response.json()["payment"] == {"kind": "none"}
     assert response.json()["total"] == 0
 
 
@@ -392,7 +397,7 @@ def test_a_sale_left_owing_answers_owing_as_its_payment(client: TestClient) -> N
     )
 
     assert response.status_code == 201, response.text
-    assert response.json()["payment"] == "owing"
+    assert response.json()["payment"] == {"kind": "owing"}
 
 
 def test_list_sales_orders_newest_date_first_then_most_recently_recorded(

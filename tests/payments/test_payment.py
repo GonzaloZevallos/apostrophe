@@ -24,12 +24,13 @@ from app.payments.domain.settlement import (
     LaterPaymentEntry,
     Ledger,
     OwedSale,
-    PaymentMethod,
     settle,
 )
+from app.shared.payment_method import PaymentMethodLabel
 
 TODAY = date(2026, 10, 2)
 AT = datetime(2026, 9, 1, 10, 0)
+CASH = PaymentMethodLabel(id=1, name="Cash", icon="coins")
 
 
 def _ledger_owing(total: int) -> Ledger:
@@ -47,7 +48,7 @@ def test_a_new_payment_with_no_method_is_refused() -> None:
 
 
 def test_a_new_payment_with_a_method_is_fine() -> None:
-    payment = NewPayment(paid_on=TODAY, amount=50, method=PaymentMethod.CASH)
+    payment = NewPayment(paid_on=TODAY, amount=50, method=CASH)
 
     assert payment.candidate == PaymentCandidate(paid_on=TODAY, amount=50)
 
@@ -73,7 +74,7 @@ def test_settle_candidate_refuses_any_amount_against_a_credit_or_settled_balance
 
     credit = Ledger(
         (OwedSale(1, date(2026, 9, 1), AT, 100),),
-        (LaterPaymentEntry(1, date(2026, 9, 2), AT, 130, PaymentMethod.CASH),),
+        (LaterPaymentEntry(1, date(2026, 9, 2), AT, 130, CASH),),
     )
     with pytest.raises(PaymentAboveBalance):
         settle_candidate(credit, PaymentCandidate(paid_on=TODAY, amount=1), TODAY)
@@ -104,7 +105,7 @@ def test_settle_candidate_shares_paid_on_with_an_already_recorded_later_payment(
         paid_on=shared_day,
         recorded_at=datetime(2026, 9, 20, 9, 0, tzinfo=UTC),
         amount=20,
-        method=PaymentMethod.CASH,
+        method=CASH,
     )
     ledger = Ledger(
         (OwedSale(1, date(2026, 9, 1), AT, 100),),
@@ -138,7 +139,7 @@ def test_settle_candidate_answers_exactly_what_recording_it_would_settle() -> No
         paid_on=candidate.paid_on,
         recorded_at=datetime(2026, 9, 20, 12, 0),
         amount=candidate.amount,
-        method=PaymentMethod.CASH,
+        method=CASH,
     )
     after_recording = settle(Ledger(ledger.sales, (*ledger.payments, recorded)))
     [stored_settlement] = [p for p in after_recording.payments if p.payment_id == 999]

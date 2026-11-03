@@ -56,6 +56,22 @@ def _entry(
     return int(response.json()["id"])
 
 
+def _cash_id(client: TestClient) -> int:
+    """The id of this business's own "Cash" method (a second business's differs)."""
+    methods = client.get("/api/payment-methods").json()
+    return int(next(method["id"] for method in methods if method["name"] == "Cash"))
+
+
+def _payment_body(client: TestClient, payment: str | None) -> dict[str, Any] | None:
+    """A sale body's `payment`: "cash" is the business's Cash method, "owing" leaves the
+    sale owing, None is a $0 sale."""
+    if payment is None:
+        return None
+    if payment == "owing":
+        return {"kind": "owing"}
+    return {"kind": "method", "payment_method_id": _cash_id(client)}
+
+
 def _sale(
     client: TestClient,
     variety_id: int,
@@ -68,7 +84,7 @@ def _sale(
 ) -> None:
     body: dict[str, Any] = {
         "date": on,
-        "payment": payment,
+        "payment": _payment_body(client, payment),
         "lines": [{"product_id": variety_id, "quantity": quantity, "gift": gift}],
     }
     if customer_id is not None:
