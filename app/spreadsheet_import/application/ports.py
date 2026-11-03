@@ -244,8 +244,33 @@ class CustomersImport(Protocol):
         ...
 
     def write_customer(
-        self, name: str, phone_key: str | None, vip: bool, transaction: Transaction
-    ) -> int: ...
+        self,
+        name: str,
+        phone_key: str | None,
+        customer_type_id: int | None,
+        transaction: Transaction,
+    ) -> int:
+        """Store the customer in the given customer type, or in none. The frozen
+        `customer.vip` mark is never written (docs/adr/0070)."""
+        ...
+
+
+class VipTypeImport(Protocol):
+    """The business's VIP type, which a VIP of the sheet joins (docs/adr/0070). The VIP
+    type is the one marked `is_vip`, never found by its name."""
+
+    def has_vip_type(self) -> bool:
+        """Whether this business has its VIP type."""
+        ...
+
+    def vip_name_taken(self) -> bool:
+        """Whether a type of this business already has the fixed name 'VIP', ignoring
+        case and spaces: creating the VIP type would collide with it."""
+        ...
+
+    def ensure_vip_type(self, transaction: Transaction) -> int:
+        """The id of the VIP type; it is created first when the business has none."""
+        ...
 
 
 class SalesImport(Protocol):

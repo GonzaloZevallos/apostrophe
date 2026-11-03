@@ -9,9 +9,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { getCustomer } from '../../api/customers'
 import { keys } from '../../api/keys'
-import { useIsVipCustomers } from '../../api/pricingSettings'
+import CustomerTypeLine from './CustomerTypeLine'
 import { getAccount } from '../../api/payments'
-import { COMMON_TEXT } from '../../copy/common'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney, formatMoneyMagnitude } from '../../format/money'
@@ -20,7 +19,6 @@ import AccountRowLine from './AccountRowLine'
 import { rowKey } from './accountRows'
 
 export default function CustomerCardBehind({ customerId }: { customerId: string }) {
-  const vipCustomers = useIsVipCustomers()
   const customer = useQuery({
     queryKey: keys.customer(customerId),
     queryFn: () => getCustomer(customerId),
@@ -64,12 +62,7 @@ export default function CustomerCardBehind({ customerId }: { customerId: string 
               <span>{formatPhone(data.phone)}</span>
             </div>
           )}
-          {vipCustomers && (
-            <div className="campo">
-              <span className="campo__rotulo">{COMMON_TEXT.vip}</span>
-              <span>{data.vip ? CUSTOMERS_TEXT.yes : CUSTOMERS_TEXT.off}</span>
-            </div>
-          )}
+          <CustomerTypeLine typeId={data.customer_type_id} />
         </div>
         {account.data !== undefined && (
           <section className="cuenta-cliente">

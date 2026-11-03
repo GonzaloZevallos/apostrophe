@@ -3,6 +3,7 @@
   "name": "Ana Pérez",
   "phone": "+5491122334455",
   "vip": false,
+  "customer_type_id": 2,
   "balance": 15000,
   "owing_since": "2026-09-14",
   "standing": "owes"

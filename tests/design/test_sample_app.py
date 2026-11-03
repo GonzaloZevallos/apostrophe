@@ -6,6 +6,7 @@ import importlib.util
 import json
 import os
 import sqlite3
+import subprocess
 import sys
 import threading
 import time
@@ -13,11 +14,12 @@ from collections.abc import Iterator
 from contextlib import closing, contextmanager
 from pathlib import Path
 from types import ModuleType
-from typing import Any
+from typing import Any, cast
 
 import openpyxl
 import pytest
 import uvicorn
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.db import make_engine
@@ -49,6 +51,12 @@ class ClientApi:
         response = self.client.request(method, path, json=body)
         assert response.is_success, f"{method} {path}: {response.status_code} {response.text}"
         return response.json() if response.content else None
+
+    def ensure_vip_type(self) -> int:
+        """The VIP type, made the import's way: the API never makes one (docs/adr/0070)."""
+        return int(
+            load_script().ensure_vip_type_on(cast(FastAPI, self.client.app).state.engine, self)
+        )
 
 
 def test_the_sample_business_has_every_state_the_design_shows(client: TestClient) -> None:
@@ -175,7 +183,7 @@ def test_onboarding_accounts_are_isolated_businesses_still_in_onboarding(tmp_pat
     with running_sample(tmp_path) as (sample_app, env, base):
         # La Huerta, as `main()` opens it, seeded and with its own onboarding open.
         token = sample_app.new_business_token(env)
-        huerta = sample_app.HttpApi(base)
+        huerta = sample_app.HttpApi(base, env["APOSTROPHE_DATABASE_URL"])
         huerta.call(
             "POST",
             f"/invitations/{token}/accept",
@@ -224,7 +232,7 @@ def test_a_business_opened_as_an_ended_account_has_its_onboarding_over_beside_la
     tmp_path: Path,
 ) -> None:
     with running_sample(tmp_path) as (sample_app, env, base):
-        huerta = sample_app.HttpApi(base)
+        huerta = sample_app.HttpApi(base, env["APOSTROPHE_DATABASE_URL"])
         huerta.call(
             "POST",
             f"/invitations/{sample_app.new_business_token(env)}/accept",
@@ -252,7 +260,9 @@ def test_a_business_opened_as_an_ended_account_has_its_onboarding_over_beside_la
             )
             return account
 
-        account = sample_app.open_ended_account(sample_app.HttpApi(base), accept_invitation, TODAY)
+        account = sample_app.open_ended_account(
+            sample_app.HttpApi(base, env["APOSTROPHE_DATABASE_URL"]), accept_invitation, TODAY
+        )
 
         ended = sign_in(sample_app, base, account.email, account.password)
         assert ended.call("GET", "/onboarding-progress")["over"] is True
@@ -679,3 +689,63 @@ def test_the_kinds_the_sample_can_write_are_the_account_kinds_of_screens_json() 
     assert len(registry["account_kinds"]) == len(set(registry["account_kinds"]))
     # Every kind is written for at least one account name, and no name has two kinds.
     assert all(sample_app.ACCOUNT_KINDS.values())
+
+
+def test_the_vip_type_is_made_from_a_fresh_interpreter_that_loaded_no_app_module(
+    tmp_path: Path,
+) -> None:
+    # `mobile_seed.py` runs as its own process: it reaches the database through the import
+    # port only, so the helper itself must register every table the port's foreign keys name.
+    sample_app = load_script()
+    url = f"sqlite:///{tmp_path / 'sample.db'}"
+    env = {
+        **{k: v for k, v in os.environ.items() if not k.startswith("APOSTROPHE_")},
+        "APOSTROPHE_SECRET_KEY": "sample-secret",
+        "APOSTROPHE_DATABASE_URL": url,
+        "APOSTROPHE_PUBLIC_URL": "http://127.0.0.1:9",
+    }
+    invite = sample_app.new_business_token(env)
+    app = create_app(
+        Settings("sample-secret", url),
+        engine=make_engine(url),
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
+        clock=MovableClock(NOW),
+    )
+    with TestClient(app) as web:
+        accepted = web.post(
+            f"/invitations/{invite}/accept",
+            json={"email": sample_app.EMAIL, "password": PASSWORD, "business_name": "La Huerta"},
+        )
+        assert accepted.status_code == 201
+
+    program = (
+        "import importlib.util, sys\n"
+        f"spec = importlib.util.spec_from_file_location('sample_app', {str(SCRIPT)!r})\n"
+        "module = importlib.util.module_from_spec(spec)\n"
+        "sys.modules['sample_app'] = module\n"
+        "spec.loader.exec_module(module)\n"
+        "class Api:\n"
+        "    def call(self, method, path, body=None):\n"
+        f"        return {{'email': {sample_app.EMAIL!r}}}\n"
+        "api = Api()\n"
+        "api.database_url = None\n"
+        "http = module.HttpApi('http://unused', sys.argv[1])\n"
+        "http.call = api.call\n"
+        "first = http.ensure_vip_type()\n"
+        "assert http.ensure_vip_type() == first\n"
+        "print(first)\n"
+    )
+    done = subprocess.run(
+        [sys.executable, "-c", program, url],
+        cwd=SCRIPT.parents[2] / "scripts",
+        env={**os.environ},
+        capture_output=True,
+        text=True,
+    )
+
+    assert done.returncode == 0, done.stderr
+    with sqlite3.connect(tmp_path / "sample.db") as conn:
+        rows = conn.execute("SELECT id, name, is_vip FROM customer_type").fetchall()
+    assert rows == [(int(done.stdout), "VIP", 1)]

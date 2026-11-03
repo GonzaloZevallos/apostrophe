@@ -70,9 +70,14 @@ _Avoid_: contact, handle, username, identifier
 _In the app_: Phone
 
 **VIP customer**:
-Un Customer que paga el VIP price de una Variety cuando lo tiene y es menor que lo que da cualquier otra regla. Solo en un Business con la opción VIP customers activada; mientras está desactivada, la marca sigue guardada pero ni se muestra ni se aplica. _In the app_: VIP customer.
+Un Customer del VIP type, que paga el VIP price de una Variety cuando lo tiene y es menor que lo que da cualquier otra regla. Solo en un Business con el interruptor Customer types activado; mientras está desactivado, la pertenencia sigue guardada pero ni se muestra ni se aplica. La marca VIP de antes queda congelada, no se lee ni se escribe. _In the app_: VIP customer (la marca VIP).
 _Avoid_: friend, Amigo, preferred customer
 _In the app_: VIP customer
+
+**Customer type**:
+Un grupo de Customers que define el vendedor, con un nombre único en el Business (sin importar mayúsculas ni espacios, hasta 40 caracteres) y un ícono neutro; un Customer está en uno como máximo, o en ninguno. Un Business nuevo arranca sin ninguno, y uno con Customers no se puede eliminar. En esta parte un tipo no tiene precio propio, salvo que la pertenencia al VIP type da el VIP price. _In the app_: Customer type.
+_Avoid_: tier, segment, group, VIP mark
+_In the app_: Customer type
 
 **Sale**:
 Todo lo que un Customer se lleva de una vez: una fecha, como máximo un Customer, el Shipping charged, una Note opcional y una o más Sale lines. Una Sale cuenta en su propia fecha, esté paga o no. Su Customer puede omitirse solo cuando no queda nada adeudado.
@@ -414,7 +419,7 @@ Un precio por gramo opcional en una Price entry, para los VIP customers: un peso
 _Avoid_: friend price, discount, Amigo price
 
 **Pricing settings**:
-Cuáles de Bulk price y VIP customers usa un Business: dos interruptores independientes. Una regla desactivada queda oculta y deja de aplicarse a las Sales nuevas, mientras que todo lo guardado para ella se conserva. _In the app_: Prices, en Settings.
+Cuáles de Bulk price y Customer types usa un Business: dos interruptores independientes. Customer types es el que antes se leía "VIP customers" y gobierna los Customer types y el VIP price. Una regla desactivada queda oculta y deja de aplicarse a las Sales nuevas, mientras que todo lo guardado para ella se conserva. _In the app_: Prices, en Settings.
 _Avoid_: price config, pricing mode, plan, tariff settings
 
 **Archived variety**:
@@ -545,10 +550,6 @@ _Avoid_: precision, cents mode
 El símbolo de la moneda y los decimales con que un Business muestra su dinero. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; a cargo de la parte money.
 _Avoid_: currency settings
 
-**Customer type**:
-Un tipo de Customer definido por el vendedor, como máximo uno por Customer, que puede tener su propio precio. Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; a cargo de la parte customer types.
-_Avoid_: tier, segment, group
-
 **Customer-type price**:
 El precio que paga un Customer type por un Product, una fila que rige desde una fecha. Reemplaza al VIP price en las escrituras nuevas; la Price entry conserva su VIP price tal como está, y los VIP prices guardados y las marcas VIP se quedan en su lugar, congelados con los valores que tienen. Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; a cargo de la parte customer-type prices.
 _Avoid_: tier price, discount
@@ -578,3 +579,7 @@ _Avoid_: logo, title, brand name, Business name
 **Tabular figures**:
 Cifras de ancho fijo que se alinean dígito por dígito, aplicadas a dinero, cantidades, porcentajes mostrados como cifra y Days left mediante las clases de cifra y la del componente de dinero. Nunca se aplican a fechas, horas, Phone numbers, conteos dentro de una oración ni texto libre. Un número va en Tabular figures si el ojo lo recorre en una columna, una fila de cifras o un total. En la app: no tiene palabra propia.
 _Avoid_: monospace, number font, alignment
+
+**VIP type**:
+El Customer type "VIP" que la actualización creó en cada Business existente, con los Customers que tenían la marca VIP. Hasta la parte customer-type prices es el único tipo cuya pertenencia da el VIP price; lo identifica la actualización, nunca su nombre, así que renombrarlo no cambia nada y un tipo del vendedor llamado "VIP" no da ningún precio. En la app: no tiene palabra propia; se ve como un tipo más.
+_Avoid_: VIP mark, VIP flag, default type

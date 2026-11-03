@@ -558,6 +558,7 @@ body {
   align-items: center;
   min-height: var(--alto-tocable);
   margin-block: calc((19px - var(--alto-tocable)) / 2);
+  touch-action: manipulation;
 }
 
 .riel-lateral {
@@ -6459,4 +6460,49 @@ body {
   .campo__fila > .campo__input {
     flex: 1 1 8rem;
   }
+}
+
+/* A customer type's icon sits before its name, never alone (icon and text rule). */
+.tipo-cliente-fila__icono {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+/* Customer types (Settings → Prices): the touch-action of its list and Sheet buttons, and the icon radios of the form.
+ * Their text selection is already off (the pressed-state block); the user-select check names single classes.
+ * The wrapper adds no box. Scoped here so the other screens' listed touch-action offenders (the
+ * shared `.boton`, the Sheet's Close) stay as the offender files record them. */
+.tipos-cliente {
+  display: contents;
+}
+
+.tipos-cliente button,
+.tipos-cliente a {
+  touch-action: manipulation;
+}
+
+/* Eight icon radios of at least 44x44 px: they wrap instead of squeezing to the row's width. */
+.tipo-cliente-iconos {
+  flex-wrap: wrap;
+}
+
+.tipo-cliente-iconos .selector-pago__opcion {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+}
+
+/* The group's own Close sits in the header above the wrapper; only this group's is scoped. */
+.ajustes-grupo:has(.tipos-cliente) .ajustes-grupo__encabezado button {
+  touch-action: manipulation;
+}
+
+/* "+ Customer type" is the wrapper's direct button: a 44 px target. */
+.tipos-cliente > button {
+  min-height: 44px;
 }

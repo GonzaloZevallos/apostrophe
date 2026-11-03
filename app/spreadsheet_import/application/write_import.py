@@ -18,7 +18,10 @@ from datetime import date, datetime, timedelta
 from app.shared.pricing_settings import PricingSettings
 from app.spreadsheet_import.application import ports
 from app.spreadsheet_import.application.no_commit import NoCommit
-from app.spreadsheet_import.application.plan_import import has_any_records
+from app.spreadsheet_import.application.plan_import import (
+    has_any_records,
+    vip_type_name_conflict,
+)
 from app.spreadsheet_import.domain.plan import (
     ByPhone,
     CustomerIdentity,
@@ -70,6 +73,7 @@ def write_import(
     catalog: ports.CatalogImport,
     expenses: ports.ExpensesImport,
     customers: ports.CustomersImport,
+    vip_type: ports.VipTypeImport,
     sales: ports.SalesImport,
     payments: ports.PaymentsImport,
     onboarding: ports.OnboardingEnding,
@@ -81,6 +85,9 @@ def write_import(
         raise WriteImportRefused("import.plan_not_writable")
     if has_any_records(varieties, stock, expenses, customers, sales, payments):
         raise WriteImportRefused("import.business_has_records")
+    wants_vip_type = any(planned.vip for planned in plan.customers)
+    if wants_vip_type and vip_type_name_conflict(vip_type):
+        raise WriteImportRefused("import.vip_type_name_taken")
 
     split_result = split(parsed)
     transaction = NoCommit()
@@ -103,7 +110,8 @@ def write_import(
     catalog.write_header_footer(split_result.header_footer, today, transaction)
     category_ids = _write_categories(split_result.categories, expenses, transaction)
 
-    customer_ids = _write_customers(plan.customers, customers, transaction)
+    vip_type_id = vip_type.ensure_vip_type(transaction) if wants_vip_type else None
+    customer_ids = _write_customers(plan.customers, customers, vip_type_id, transaction)
 
     for entrada_row in plan.entrada_order:
         variety_id = variety_ids[_variety_key(entrada_row.variety, varieties)]
@@ -204,13 +212,14 @@ def _write_categories(
 def _write_customers(
     customers_plan: tuple[PlannedCustomer, ...],
     customers: ports.CustomersImport,
+    vip_type_id: int | None,
     transaction: NoCommit,
 ) -> dict[CustomerIdentity, int]:
     ids: dict[CustomerIdentity, int] = {}
     for planned in customers_plan:
         phone_key = planned.identity.phone_key if isinstance(planned.identity, ByPhone) else None
         ids[planned.identity] = customers.write_customer(
-            planned.kept_name, phone_key, planned.vip, transaction
+            planned.kept_name, phone_key, vip_type_id if planned.vip else None, transaction
         )
     return ids
 

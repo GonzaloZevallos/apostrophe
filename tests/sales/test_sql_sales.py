@@ -361,11 +361,11 @@ def test_a_view_of_another_business_s_sale_is_not_reachable_and_never_leaks_thro
     assert other_sales.list_views(None, None) == []
 
 
-def test_list_views_reads_exactly_two_statements_whatever_the_number_of_sales(
+def test_list_views_reads_exactly_three_statements_whatever_the_number_of_sales(
     client: TestClient, engine: Engine
 ) -> None:
     """Not one statement per sale or per line (docs/adr/0011): four sales, each with
-    two lines, still cost exactly two statements."""
+    two lines, still cost exactly three: the VIP type, then the two list statements."""
     variety_id = _variety_id(client)
     business_id = _business_id_of_variety(engine, variety_id)
     session = Session(engine)
@@ -404,4 +404,4 @@ def test_list_views_reads_exactly_two_statements_whatever_the_number_of_sales(
     finally:
         event.remove(engine, "before_cursor_execute", _record)
 
-    assert len(statements) == 2, statements
+    assert len(statements) == 3, statements

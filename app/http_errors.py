@@ -9,7 +9,7 @@ Every exception a capability registers here carries a `code: ClassVar[str]`
 never derived from the class name, so a refactor does not change the contract.
 """
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from types import TracebackType
 from typing import ClassVar, Protocol, runtime_checkable
 
@@ -21,13 +21,26 @@ class _Coded(Protocol):
     code: ClassVar[str]
 
 
+@runtime_checkable
+class _Detailed(Protocol):
+    refusal_fields: Mapping[str, object]
+
+
 class Refused(HTTPException):
     """An `HTTPException` that also carries the broken rule's `code` (docs/adr/0008).
-    `app.main` answers it as `{"detail": ..., "code": ...}`."""
+    `app.main` answers it as `{"detail": ..., "code": ...}`, plus any `fields` the rule
+    exposes by name (a refusal that says how many, as a customer type still in use)."""
 
-    def __init__(self, status_code: int, detail: str, code: str) -> None:
+    def __init__(
+        self,
+        status_code: int,
+        detail: str,
+        code: str,
+        fields: Mapping[str, object] | None = None,
+    ) -> None:
         super().__init__(status_code=status_code, detail=detail)
         self.code = code
+        self.fields: Mapping[str, object] = {} if fields is None else fields
 
 
 class TranslateErrors:
@@ -54,4 +67,6 @@ class TranslateErrors:
             if isinstance(exc, kinds):
                 coded = exc if isinstance(exc, _Coded) else None
                 code = coded.code if coded is not None else "unknown"
-                raise Refused(status_code=status, detail=str(exc), code=code) from exc
+                fields = exc.refusal_fields if isinstance(exc, _Detailed) else None
+                refusal = Refused(status_code=status, detail=str(exc), code=code, fields=fields)
+                raise refusal from exc

@@ -41,6 +41,10 @@ export interface RegistryScreen {
  * routes. The `states-*` subtasks append their names here, one per line.
  */
 export const STATE_NAMES: readonly string[] = [
+  // Records (`states-records`).
+  'ClienteNuevoSinTipos',
+  'ClienteNuevoConTipos',
+  'ClienteFichaConTipo',
   // Sales and collections (`states-sales`).
   'NuevaVentaConLinea',
   'NuevaVentaConLineaYPago',
@@ -76,6 +80,9 @@ export const STATE_NAMES: readonly string[] = [
   'GastoConfirmarBorrado',
   'ConfiguracionCategoriaRenombrar',
   'ConfiguracionCategoriaConfirmarBorrado',
+  'ConfiguracionTipoClienteNuevo',
+  'ConfiguracionTipoClienteLista',
+  'ConfiguracionTipoClienteEnUso',
   'ConfiguracionContrasena',
 ]
 

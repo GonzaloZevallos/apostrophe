@@ -18,6 +18,7 @@ from tests.conftest import TODAY
 from tests.contract_shapes import assert_matches_fixture
 from tests.fakes.archive import archive_by_hand
 from tests.pricing_switches import set_switches
+from tests.vip_type import make_type, put_in_type
 
 
 def _variety(client: TestClient, list_price: int = 10_000) -> int:
@@ -450,7 +451,7 @@ def test_get_and_list_label_the_sale_with_the_customer_s_current_name_and_vip_fl
         },
     ).json()["id"]
 
-    client.patch(f"/customers/{customer_id}", json={"vip": True})
+    put_in_type(engine, customer_id, make_type(engine, is_vip=True))
 
     got = client.get(f"/sales/{sale_id}").json()
     assert got["customer"] == {"id": customer_id, "name": "Juana", "vip": True}
@@ -459,7 +460,9 @@ def test_get_and_list_label_the_sale_with_the_customer_s_current_name_and_vip_fl
     assert listed[0]["customer"] == {"id": customer_id, "name": "Juana", "vip": True}
 
 
-def test_assigning_a_vip_customer_later_does_not_reprice_the_sale(client: TestClient) -> None:
+def test_assigning_a_vip_customer_later_does_not_reprice_the_sale(
+    client: TestClient, engine: Engine
+) -> None:
     # The variety carries a bulk price, so a repricing bug would visibly change the
     # line's rule (list -> vip) and its price_per_gram; grams stay below the bulk
     # minimum so the sale is recorded at list.
@@ -474,7 +477,7 @@ def test_assigning_a_vip_customer_later_does_not_reprice_the_sale(client: TestCl
     assert before["lines"][0]["pricing_rule"] == "list"
     assert before["lines"][0]["price_per_gram"] == 10_000
 
-    client.patch(f"/customers/{customer_id}", json={"vip": True})
+    put_in_type(engine, customer_id, make_type(engine, is_vip=True))
     response = client.put(f"/sales/{sale_id}/customer", json={"customer_id": customer_id})
 
     assert response.status_code == 200, response.text
@@ -505,7 +508,7 @@ def test_toggling_a_customers_vip_after_the_sale_changes_only_its_vip_badge(
     assert before["lines"][0]["price_per_gram"] == 10_000
     assert before["customer"]["vip"] is False
 
-    client.patch(f"/customers/{customer_id}", json={"vip": True})
+    put_in_type(engine, customer_id, make_type(engine, is_vip=True))
 
     after = client.get(f"/sales/{sale_id}").json()
     assert after["customer"]["vip"] is True
@@ -619,7 +622,7 @@ def test_a_vip_customer_is_stored_as_vip_once_vip_is_switched_on(
     variety_id = _variety_with_bulk(client)
     _vip_price(engine, 7_000)
     customer_id = _customer(client)
-    client.patch(f"/customers/{customer_id}", json={"vip": True})
+    put_in_type(engine, customer_id, make_type(engine, is_vip=True))
     _switches(engine, bulk=True, vip=False)
     assert _line_of(client, variety_id, customer_id)["pricing_rule"] == "bulk"
 

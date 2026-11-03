@@ -63,6 +63,7 @@ import CatalogMessageGroup from './screens/settings/CatalogMessageGroup'
 import ExpenseCategoriesGroup from './screens/settings/ExpenseCategoriesGroup'
 import IntegrationsGroup from './screens/settings/IntegrationsGroup'
 import PricingGroup from './screens/settings/PricingGroup'
+import CustomerTypes from './screens/settings/CustomerTypes'
 import UsersGroup from './screens/settings/UsersGroup'
 import WithdrawalDetail from './screens/withdrawals/WithdrawalDetail'
 import WithdrawalFormRoute from './screens/withdrawals/WithdrawalFormRoute'
@@ -117,6 +118,7 @@ const ELEMENTS: Record<ScreenId, ReactElement> = {
   'settings-business': <BusinessGroup />,
   'settings-users': <UsersGroup />,
   'settings-prices': <PricingGroup />,
+  'settings-customer-types': <CustomerTypes />,
   'settings-integrations': <IntegrationsGroup />,
   'settings-catalog-message': <CatalogMessageGroup />,
   'settings-expense-categories': <ExpenseCategoriesGroup />,
