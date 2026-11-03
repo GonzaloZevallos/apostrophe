@@ -166,7 +166,8 @@ Success criteria:
 
 - **The sheet's `""` or `"Lista"` type**: list or bulk, by sales.md's lowest-price rule, from the imported price history on the row's date and the row's grams. Never VIP, even for a customer who is VIP elsewhere.
 - **The sheet's `"Amigo"`**: the VIP rule (sales.md), with the VIP price equal to that day's bulk price. The result is that day's bulk price, or the list price when that day has none, as in the sheet. A tie with the bulk price is stored as VIP.
-  - Any customer with at least one finished `"Amigo"` row of the sheet is imported as VIP.
+  - Any customer with at least one finished `"Amigo"` row of the sheet is imported as VIP: it joins the business's VIP type (the customer type the upgrade made, found by its mark and never by its name). The import creates that type, named "VIP", when the business has none. The frozen VIP mark is never written.
+  - **A taken name stops the run.** When the sheet has a VIP customer, the business has no VIP type and another customer type's name is "VIP" (ignoring case and spaces), the run is refused before anything is written, in the dry run and the real run alike. The report names the conflict and the fix (rename or delete that type, then run again), with no customer or amount. It is not an unfinished row. A business that already has its VIP type uses it, whatever it is called now; a sheet with no VIP customer is never checked.
   - A sheet's `"Amigo"` row with no customer blocks.
 - **The sheet's `"Regalo"`**: a gift. It is charged $0 and its grams still come out of stock. With shipping, the sale's total is the shipping alone, as in the sheet.
 - **Special total** (the sheet's `Precio especial (total)` column): a whole number above $0 makes the line a special price with that total, whatever the type. A sheet's `"Amigo"` row with a special total still makes its customer VIP.

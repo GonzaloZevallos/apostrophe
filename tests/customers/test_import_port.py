@@ -14,6 +14,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import UserRow
+from app.customer_types.adapters.tables import CustomerTypeRow
 from app.customers.adapters.import_port import CustomersImport
 from app.customers.adapters.sql_customers import SqlCustomers
 from app.spreadsheet_import.application.no_commit import NoCommit
@@ -156,30 +157,39 @@ def test_customer_refusals_with_neither_field_set_is_rejected() -> None:
 # -- write_customer ---------------------------------------------------------------------
 
 
-def test_write_customer_stores_the_vip_flag(client: TestClient, engine: Engine) -> None:
+def test_write_customer_stores_the_customer_type_it_is_given(
+    client: TestClient, engine: Engine
+) -> None:
     business_id = _business_id_of_email(engine, "uno@example.com")
     session = Session(engine)
+    vip_type = CustomerTypeRow(
+        business_id=business_id, name="VIP", name_key="vip", icon="star", is_vip=True
+    )
+    session.add(vip_type)
+    session.flush()
     port = CustomersImport(session, business_id)
 
-    customer_id = port.write_customer("Fran Araujo", "+5491123456789", True, NoCommit())
+    customer_id = port.write_customer("Fran Araujo", "+5491123456789", vip_type.id, NoCommit())
 
     stored = SqlCustomers(session, business_id).get(customer_id)
     assert stored is not None
+    assert stored.customer_type_id == vip_type.id
     assert stored.vip is True
     assert stored.name.value == "Fran Araujo"
     assert stored.phone is not None
     assert stored.phone.value == "+5491123456789"
 
 
-def test_write_customer_without_vip_stores_it_false(client: TestClient, engine: Engine) -> None:
+def test_write_customer_without_a_type_stores_none(client: TestClient, engine: Engine) -> None:
     business_id = _business_id_of_email(engine, "uno@example.com")
     session = Session(engine)
     port = CustomersImport(session, business_id)
 
-    customer_id = port.write_customer("Zoe", "+5491198765432", False, NoCommit())
+    customer_id = port.write_customer("Zoe", "+5491198765432", None, NoCommit())
 
     stored = SqlCustomers(session, business_id).get(customer_id)
     assert stored is not None
+    assert stored.customer_type_id is None
     assert stored.vip is False
 
 
@@ -190,7 +200,7 @@ def test_write_customer_with_no_phone_key_stores_no_phone(
     session = Session(engine)
     port = CustomersImport(session, business_id)
 
-    customer_id = port.write_customer("Sin Numero", None, False, NoCommit())
+    customer_id = port.write_customer("Sin Numero", None, None, NoCommit())
 
     stored = SqlCustomers(session, business_id).get(customer_id)
     assert stored is not None

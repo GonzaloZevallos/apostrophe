@@ -39,7 +39,7 @@ def register_customer(
     _require_existing(types, customer_type_id)
     # While the customer types are off a customer is created with none (docs/adr/0059).
     stored_type = customer_type_id if settings.current().is_vip_customers else None
-    return _register(customers, transaction, name, phone, stored_type, False)
+    return _register(customers, transaction, name, phone, stored_type)
 
 
 def register_imported_customer(
@@ -48,11 +48,11 @@ def register_imported_customer(
     *,
     name: str,
     phone: str | None,
-    vip: bool,
+    customer_type_id: int | None,
 ) -> Customer:
-    """The spreadsheet import's own write. The customer is stored with no type: the
-    import joins a VIP to the VIP type itself, and `vip` is never written (docs/adr/0070)."""
-    return _register(customers, transaction, name, phone, None, vip)
+    """The spreadsheet import's own write. The import hands in the VIP type id of a VIP
+    of the sheet, and the frozen `vip` mark is never written (docs/adr/0070)."""
+    return _register(customers, transaction, name, phone, customer_type_id)
 
 
 def _register(
@@ -61,7 +61,6 @@ def _register(
     name: str,
     phone: str | None,
     customer_type_id: int | None,
-    vip: bool,
 ) -> Customer:
     customer_name = CustomerName.of(name)
     customer_phone = PhoneNumber.optional(phone)
@@ -71,7 +70,6 @@ def _register(
         Customer(
             name=customer_name,
             phone=customer_phone,
-            vip=vip,
             customer_type_id=customer_type_id,
         )
     )

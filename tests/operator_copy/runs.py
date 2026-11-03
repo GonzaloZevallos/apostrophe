@@ -430,8 +430,15 @@ def _full_plan(*, bulk: bool, vip: bool) -> ImportPlan:
     )
 
 
+def _vip_name_taken_plan() -> ImportPlan:
+    """The refusal of a run whose sheet has a VIP while another type holds the name."""
+    problem = CellProblem(SheetRef("Negocio", 0), "Negocio", "import.vip_type_name_taken")
+    return replace(_full_plan(bulk=False, vip=False), problems=(problem,))
+
+
 def _report(capture: Capture, text: OperatorText) -> None:
     for scenario, plan, dry in (
+        ("vip-name-taken", _vip_name_taken_plan(), True),
         ("every-branch-dry", _full_plan(bulk=True, vip=True), True),
         ("every-branch-real", _full_plan(bulk=True, vip=False), False),
         ("one-switch", _full_plan(bulk=False, vip=True), True),
