@@ -84,11 +84,13 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
     },
     "customer": {
         "phone": "string",
+        "customer_type_id": "integer",
         "owing_since": "string",
     },
     "customer-no-phone": {
         # A customer with no phone (ADR-0021): every nullable field is `null` here.
         "phone": "string",
+        "customer_type_id": "integer",
         "owing_since": "string",
     },
     "debtors": {

@@ -1,8 +1,9 @@
 """The HTTP shapes of a customer. Bare: no pydantic length or pattern constraint, so
 every rule stays the domain's and its message is a fixed string (ADR-0005). `PATCH` is
 partial: `model_fields_set` is how `CustomerPatchIn` tells a field left out from a field
-explicitly sent as `null`, which clears `phone` but is refused for `name`
-and `vip`."""
+explicitly sent as `null`, which clears `phone` and `customer_type_id` but is refused
+for `name`. A `vip` in a body is ignored, like any extra field: membership in the VIP
+type is `customer_type_id`'s to say."""
 
 from datetime import date
 from typing import Literal
@@ -18,20 +19,22 @@ from app.customers.domain.customer import Customer
 class CustomerIn(BaseModel):
     name: str
     phone: str | None = None
-    vip: bool = False
+    customer_type_id: int | None = None
 
 
 class CustomerPatchIn(BaseModel):
     name: str | None = None
     phone: str | None = None
-    vip: bool | None = None
+    customer_type_id: int | None = None
 
     def to_changes(self) -> CustomerChanges:
         present = self.model_fields_set
         return CustomerChanges(
             name=_required(self.name, "name" in present, "name"),
             phone=self.phone if "phone" in present else UNCHANGED,
-            vip=_required(self.vip, "vip" in present, "vip"),
+            customer_type_id=(
+                self.customer_type_id if "customer_type_id" in present else UNCHANGED
+            ),
         )
 
 
@@ -46,6 +49,7 @@ class CustomerOut(BaseModel):
     name: str
     phone: str | None
     vip: bool
+    customer_type_id: int | None
     balance: int
     owing_since: date | None
     standing: Standing
@@ -58,13 +62,14 @@ class CustomerOut(BaseModel):
             name=customer.name.value,
             phone=customer.phone.value if customer.phone is not None else None,
             vip=customer.vip,
+            customer_type_id=customer.customer_type_id,
             balance=balance.balance,
             owing_since=balance.owing_since,
             standing=balance.standing,
         )
 
 
-def _required[T](value: T | None, present: bool, field: Literal["name", "vip"]) -> T | Unchanged:
+def _required[T](value: T | None, present: bool, field: Literal["name"]) -> T | Unchanged:
     if not present:
         return UNCHANGED
     if value is None:

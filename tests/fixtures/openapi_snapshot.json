@@ -856,6 +856,17 @@
       },
       "CustomerIn": {
         "properties": {
+          "customer_type_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Type Id"
+          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -870,11 +881,6 @@
               }
             ],
             "title": "Phone"
-          },
-          "vip": {
-            "default": false,
-            "title": "Vip",
-            "type": "boolean"
           }
         },
         "required": [
@@ -888,6 +894,17 @@
           "balance": {
             "title": "Balance",
             "type": "integer"
+          },
+          "customer_type_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Type Id"
           },
           "id": {
             "title": "Id",
@@ -939,6 +956,7 @@
           "name",
           "phone",
           "vip",
+          "customer_type_id",
           "balance",
           "owing_since",
           "standing"
@@ -948,6 +966,17 @@
       },
       "CustomerPatchIn": {
         "properties": {
+          "customer_type_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Type Id"
+          },
           "name": {
             "anyOf": [
               {
@@ -969,17 +998,6 @@
               }
             ],
             "title": "Phone"
-          },
-          "vip": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Vip"
           }
         },
         "title": "CustomerPatchIn",
@@ -3151,7 +3169,7 @@
         "type": "object"
       },
       "RowCostOut": {
-        "description": "One An\u00e1lisis cost line (cost of goods, stock shortfall, promotion or own use): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
+        "description": "One Análisis cost line (cost of goods, stock shortfall, promotion or own use): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
         "properties": {
           "all_pending": {
             "title": "All Pending",
@@ -3344,7 +3362,7 @@
         "type": "object"
       },
       "SaleDetailOut": {
-        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` \u2014 used by the list and by every write \u2014 never\nallocates.",
+        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` — used by the list and by every write — never\nallocates.",
         "properties": {
           "bill": {
             "anyOf": [

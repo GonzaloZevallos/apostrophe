@@ -20,6 +20,8 @@ classDiagram
   }
   class ports {
   }
+  class refusals {
+  }
   class router {
   }
   class schemas {
@@ -33,6 +35,7 @@ classDiagram
   manage_customer_types --> customer_type
   manage_customer_types --> ports
   ports --> customer_type
+  refusals --> customer_type
   router --> application
   router --> customer_type
   router --> ports

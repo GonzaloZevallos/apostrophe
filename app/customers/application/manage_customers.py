@@ -6,8 +6,8 @@ before it gets here (`RequiredFieldCleared`, raised at the HTTP edge, not here).
 from dataclasses import dataclass
 from enum import Enum, auto
 
-from app.customers.application.errors import CustomerNotFound, PhoneTaken
-from app.customers.application.ports import Customers, PricingSettingsReader
+from app.customers.application.errors import CustomerNotFound, CustomerTypeNotFound, PhoneTaken
+from app.customers.application.ports import Customers, CustomerTypes, PricingSettingsReader
 from app.customers.domain.customer import Customer, CustomerName, PhoneNumber
 from app.shared.transaction import Transaction
 
@@ -23,21 +23,23 @@ UNCHANGED = Unchanged.UNCHANGED
 class CustomerChanges:
     name: str | Unchanged = UNCHANGED
     phone: str | None | Unchanged = UNCHANGED
-    vip: bool | Unchanged = UNCHANGED
+    customer_type_id: int | None | Unchanged = UNCHANGED
 
 
 def register_customer(
     customers: Customers,
     settings: PricingSettingsReader,
+    types: CustomerTypes,
     transaction: Transaction,
     *,
     name: str,
     phone: str | None,
-    vip: bool,
+    customer_type_id: int | None,
 ) -> Customer:
-    # While Clientes VIP is off a customer is never created VIP (docs/adr/0034).
-    is_vip = vip and settings.current().is_vip_customers
-    return _register(customers, transaction, name, phone, is_vip)
+    _require_existing(types, customer_type_id)
+    # While the customer types are off a customer is created with none (docs/adr/0059).
+    stored_type = customer_type_id if settings.current().is_vip_customers else None
+    return _register(customers, transaction, name, phone, stored_type, False)
 
 
 def register_imported_customer(
@@ -48,9 +50,9 @@ def register_imported_customer(
     phone: str | None,
     vip: bool,
 ) -> Customer:
-    """The spreadsheet import's own write: it has already switched Clientes VIP on when
-    the sheet has a VIP customer, so the mark is stored as the sheet says."""
-    return _register(customers, transaction, name, phone, vip)
+    """The spreadsheet import's own write. The customer is stored with no type: the
+    import joins a VIP to the VIP type itself, and `vip` is never written (docs/adr/0070)."""
+    return _register(customers, transaction, name, phone, None, vip)
 
 
 def _register(
@@ -58,13 +60,21 @@ def _register(
     transaction: Transaction,
     name: str,
     phone: str | None,
-    is_vip: bool,
+    customer_type_id: int | None,
+    vip: bool,
 ) -> Customer:
     customer_name = CustomerName.of(name)
     customer_phone = PhoneNumber.optional(phone)
     if customer_phone is not None and customers.phone_taken(customer_phone):
         raise PhoneTaken()
-    customer = customers.add(Customer(name=customer_name, phone=customer_phone, vip=is_vip))
+    customer = customers.add(
+        Customer(
+            name=customer_name,
+            phone=customer_phone,
+            vip=vip,
+            customer_type_id=customer_type_id,
+        )
+    )
     transaction.commit()
     return customer
 
@@ -79,6 +89,7 @@ def get_customer(customers: Customers, customer_id: int) -> Customer:
 def edit_customer(
     customers: Customers,
     settings: PricingSettingsReader,
+    types: CustomerTypes,
     transaction: Transaction,
     customer_id: int,
     changes: CustomerChanges,
@@ -94,18 +105,27 @@ def edit_customer(
         if phone is not None and customers.phone_taken(phone, other_than=customer_id):
             raise PhoneTaken()
 
-    # While Clientes VIP is off the stored mark is left as it is, whatever was sent.
-    if isinstance(changes.vip, Unchanged) or not settings.current().is_vip_customers:
-        vip = customer.vip
+    if not isinstance(changes.customer_type_id, Unchanged):
+        _require_existing(types, changes.customer_type_id)
+    # While the customer types are off the stored type is left as it is, whatever was sent.
+    if isinstance(changes.customer_type_id, Unchanged) or not settings.current().is_vip_customers:
+        customer_type_id = customer.customer_type_id
     else:
-        vip = changes.vip
+        customer_type_id = changes.customer_type_id
 
     customer.name = name
     customer.phone = phone
-    customer.vip = vip
+    customer.customer_type_id = customer_type_id
     stored = customers.save(customer)
     transaction.commit()
     return stored
+
+
+def _require_existing(types: CustomerTypes, customer_type_id: int | None) -> None:
+    """A type id that is not one of this business's answers `CustomerTypeNotFound`, the
+    same for an id that never existed and for another business's, switch on or off."""
+    if customer_type_id is not None and not types.exists(customer_type_id):
+        raise CustomerTypeNotFound()
 
 
 def find_customers(customers: Customers, query: str) -> list[Customer]:

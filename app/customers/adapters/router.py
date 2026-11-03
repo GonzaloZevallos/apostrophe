@@ -5,14 +5,21 @@ from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import CurrentBusinessId
+from app.customer_types.adapters.refusals import TYPE_NOT_FOUND_CODE
+from app.customers.adapters.customer_type_lookup import SqlCustomerTypeLookup
 from app.customers.adapters.schemas import NO_BALANCE, CustomerIn, CustomerOut, CustomerPatchIn
 from app.customers.adapters.sql_customers import SqlCustomers
 from app.customers.application import manage_customers
-from app.customers.application.errors import CustomerNotFound, PhoneTaken, RequiredFieldCleared
+from app.customers.application.errors import (
+    CustomerNotFound,
+    CustomerTypeNotFound,
+    PhoneTaken,
+    RequiredFieldCleared,
+)
 from app.customers.application.ports import Balances, PricingSettingsReader
 from app.customers.domain.customer import Customer, CustomerRuleBroken
 from app.db import get_session
-from app.http_errors import TranslateErrors
+from app.http_errors import Refused, TranslateErrors
 
 router = APIRouter(prefix="/customers", tags=["customers"])
 
@@ -20,8 +27,21 @@ router = APIRouter(prefix="/customers", tags=["customers"])
 SessionDep = Annotated[Session, Depends(get_session)]
 
 
-def get_customers(session: SessionDep, business_id: CurrentBusinessId) -> SqlCustomers:
-    return SqlCustomers(session, business_id)
+def get_customer_types(
+    session: SessionDep, business_id: CurrentBusinessId
+) -> SqlCustomerTypeLookup:
+    # One per request (FastAPI caches the dependency): the VIP type id is read once and
+    # shared by `SqlCustomers` and the use cases.
+    return SqlCustomerTypeLookup(session, business_id)
+
+
+CustomerTypesDep = Annotated[SqlCustomerTypeLookup, Depends(get_customer_types)]
+
+
+def get_customers(
+    session: SessionDep, business_id: CurrentBusinessId, types: CustomerTypesDep
+) -> SqlCustomers:
+    return SqlCustomers(session, business_id, types)
 
 
 def get_balances(request: Request, session: SessionDep, business_id: CurrentBusinessId) -> Balances:
@@ -64,6 +84,12 @@ as_http = TranslateErrors(
 )
 
 
+def _type_not_found() -> Refused:
+    """The 404 for a type that is not this business's, with the code `customer_types`
+    owns for it (the use case's own error carries none)."""
+    return Refused(404, "no such customer type", TYPE_NOT_FOUND_CODE)
+
+
 @router.get("")
 def list_customers(
     customers: CustomersDep, balances: BalancesDep, q: str = ""
@@ -78,18 +104,23 @@ def register_customer(
     body: CustomerIn,
     customers: CustomersDep,
     settings: SettingsDep,
+    types: CustomerTypesDep,
     balances: BalancesDep,
     session: SessionDep,
 ) -> CustomerOut:
     with as_http:
-        customer = manage_customers.register_customer(
-            customers,
-            settings,
-            session,
-            name=body.name,
-            phone=body.phone,
-            vip=body.vip,
-        )
+        try:
+            customer = manage_customers.register_customer(
+                customers,
+                settings,
+                types,
+                session,
+                name=body.name,
+                phone=body.phone,
+                customer_type_id=body.customer_type_id,
+            )
+        except CustomerTypeNotFound:
+            raise _type_not_found() from None
         return _out(customer, balances)
 
 
@@ -105,6 +136,7 @@ def edit_customer(
     body: CustomerPatchIn,
     customers: CustomersDep,
     settings: SettingsDep,
+    types: CustomerTypesDep,
     balances: BalancesDep,
     session: SessionDep,
 ) -> CustomerOut:
@@ -112,7 +144,10 @@ def edit_customer(
         # 404 first, before a `null` meant to clear a required field is even looked at.
         manage_customers.get_customer(customers, customer_id)
         changes = body.to_changes()
-        customer = manage_customers.edit_customer(
-            customers, settings, session, customer_id, changes
-        )
+        try:
+            customer = manage_customers.edit_customer(
+                customers, settings, types, session, customer_id, changes
+            )
+        except CustomerTypeNotFound:
+            raise _type_not_found() from None
         return _out(customer, balances)

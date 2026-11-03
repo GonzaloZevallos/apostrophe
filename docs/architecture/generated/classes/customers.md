@@ -12,6 +12,8 @@ classDiagram
   }
   class customer {
   }
+  class customer_type_lookup {
+  }
   class customers {
   }
   class customers_in_type {
@@ -45,6 +47,7 @@ classDiagram
   ports --> customer
   router --> application
   router --> customer
+  router --> customer_type_lookup
   router --> errors
   router --> ports
   router --> schemas
@@ -54,7 +57,9 @@ classDiagram
   schemas --> manage_customers
   schemas --> ports
   sql_customers --> customer
+  sql_customers --> customer_type_lookup
   sql_customers --> errors
+  sql_customers --> ports
   sql_customers --> tables
   tables --> customer
 ```
@@ -64,6 +69,7 @@ classDiagram
 ```mermaid
 classDiagram
   class Customer {
+    customer_type_id : int #124; None
     id : int #124; None
     name
     phone : PhoneNumber #124; None
@@ -112,12 +118,18 @@ classDiagram
     standing : Literal
   }
   class CustomerChanges {
+    customer_type_id : int #124; None #124; Unchanged
     name : str #124; Unchanged
     phone : str #124; None #124; Unchanged
-    vip : bool #124; Unchanged
   }
   class CustomerNotFound {
     code : ClassVar~str~
+  }
+  class CustomerTypeNotFound {
+  }
+  class CustomerTypes {
+    exists(type_id: int) bool
+    vip_type_id() int #124; None
   }
   class Customers {
     add(customer: Customer) Customer
@@ -145,12 +157,13 @@ classDiagram
 ```mermaid
 classDiagram
   class CustomerIn {
+    customer_type_id : int #124; None
     name : str
     phone : str #124; None
-    vip : bool
   }
   class CustomerOut {
     balance : int
+    customer_type_id : int #124; None
     id : int
     name : str
     owing_since : date #124; None
@@ -160,9 +173,9 @@ classDiagram
     of(customer: Customer, balance: CustomerBalance) 'CustomerOut'
   }
   class CustomerPatchIn {
+    customer_type_id : int #124; None
     name : str #124; None
     phone : str #124; None
-    vip : bool #124; None
     to_changes() CustomerChanges
   }
   class CustomerRow {
@@ -177,6 +190,10 @@ classDiagram
     check_customer(name: str, phone: str #124; None) CustomerKey #124; CustomerRefusals
     has_records() bool
     write_customer(name: str, phone_key: str #124; None, vip: bool, transaction: Transaction) int
+  }
+  class SqlCustomerTypeLookup {
+    exists(type_id: int) bool
+    vip_type_id() int #124; None
   }
   class SqlCustomers {
     add(customer: Customer) Customer
