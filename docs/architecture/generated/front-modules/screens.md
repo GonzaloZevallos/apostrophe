@@ -77,6 +77,8 @@ subgraph src["src"]
       src_screens_settings_BusinessGroup_tsx["BusinessGroup.tsx"]
       src_screens_settings_CatalogMessageForm_tsx["CatalogMessageForm.tsx"]
       src_screens_settings_CatalogMessageGroup_tsx["CatalogMessageGroup.tsx"]
+      src_screens_settings_CustomerTypeForm_tsx["CustomerTypeForm.tsx"]
+      src_screens_settings_CustomerTypes_tsx["CustomerTypes.tsx"]
       src_screens_settings_ExpenseCategoriesEditor_tsx["ExpenseCategoriesEditor.tsx"]
       src_screens_settings_ExpenseCategoriesGroup_tsx["ExpenseCategoriesGroup.tsx"]
       src_screens_settings_IntegrationsGroup_tsx["IntegrationsGroup.tsx"]
@@ -85,6 +87,7 @@ subgraph src["src"]
       src_screens_settings_SettingsGroup_tsx["SettingsGroup.tsx"]
       src_screens_settings_Settings_tsx["Settings.tsx"]
       src_screens_settings_UsersGroup_tsx["UsersGroup.tsx"]
+      src_screens_settings_customerTypeIcons_ts["customerTypeIcons.ts"]
     end
     subgraph src_screens_varieties["varieties"]
       src_screens_varieties_ArchivedIndex_tsx["ArchivedIndex.tsx"]
@@ -300,6 +303,10 @@ src_screens_settings_AppearanceGroup_tsx-->src_screens_settings_SettingsGroup_ts
 src_screens_settings_BusinessGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_CatalogMessageGroup_tsx-->src_screens_settings_CatalogMessageForm_tsx
 src_screens_settings_CatalogMessageGroup_tsx-->src_screens_settings_SettingsGroup_tsx
+src_screens_settings_CustomerTypeForm_tsx-->src_screens_settings_customerTypeIcons_ts
+src_screens_settings_CustomerTypes_tsx-->src_screens_settings_CustomerTypeForm_tsx
+src_screens_settings_CustomerTypes_tsx-->src_screens_settings_SettingsGroup_tsx
+src_screens_settings_CustomerTypes_tsx-->src_screens_settings_customerTypeIcons_ts
 src_screens_settings_ExpenseCategoriesGroup_tsx-->src_screens_settings_ExpenseCategoriesEditor_tsx
 src_screens_settings_ExpenseCategoriesGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_IntegrationsGroup_tsx-->src_screens_settings_SettingsGroup_tsx
