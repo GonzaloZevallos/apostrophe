@@ -42,6 +42,7 @@ El diagrama de clases de cada capacidad lo genera [scripts/docs/generate.py](../
 | customers | [customers](../../app/customers/application/ports.py) `Customers` `Balances` | [customers](generated/classes/customers.md) |
 | expenses | [expenses](../../app/expenses/application/ports.py) `Expenses` `ExpenseCategories` | [expenses](generated/classes/expenses.md) |
 | onboarding | [onboarding](../../app/onboarding/application/ports.py) `Onboardings` `VarietyFacts` `StockFacts` | [onboarding](generated/classes/onboarding.md) |
+| payment_methods | [payment_methods](../../app/payment_methods/application/ports.py) `PaymentMethods` `PaymentMethodDefaults` | [payment_methods](generated/classes/payment_methods.md) |
 | payments | [payments](../../app/payments/application/ports.py) `Payments` `Ledgers` | [payments](generated/classes/payments.md) |
 | pinned_catalog | [pinned_catalog](../../app/pinned_catalog/application/ports.py) `TelegramApi` `PinSnapshots` `PinRecorder` | [pinned_catalog](generated/classes/pinned_catalog.md) |
 | pricing_settings | [pricing_settings](../../app/pricing_settings/application/ports.py) `PricingSettingsStore` | [pricing_settings](generated/classes/pricing_settings.md) |
