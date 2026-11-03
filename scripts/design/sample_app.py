@@ -59,7 +59,10 @@ from dataclasses import asdict, dataclass
 from datetime import date, timedelta
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol
+
+if TYPE_CHECKING:
+    from sqlalchemy import Engine
 
 REPO = Path(__file__).resolve().parents[2]
 EMAIL = "vos@lahuerta.com"
@@ -459,7 +462,7 @@ def ensure_vip_type(api: Api) -> int:
     return made
 
 
-def ensure_vip_type_on(engine: Any, api: Api) -> int:
+def ensure_vip_type_on(engine: Engine, api: Api) -> int:
     """The VIP type of the business `api` is signed in to, through the import's own port
     (`VipTypeImport.ensure_vip_type`, docs/adr/0070) on `engine`'s database."""
     if str(REPO) not in sys.path:
