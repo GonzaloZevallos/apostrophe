@@ -94,15 +94,15 @@ Total: $ 32.000
 
 | Fecha | Cliente | Total | Envío cobrado | Te debe | Cómo se pagó |
 | --- | --- | --- | --- | --- | --- |
-| 07/10 | Lu Fernández | $ 28.000 | $ 0 | no | Efectivo |
-| 07/10 | — | $ 36.000 | $ 0 | no | Efectivo |
-| 07/10 | Mica Solano | $ 130.000 | $ 6.000 | no | Transferencia |
+| 07/10 | Lu Fernández | $ 28.000 | $ 0 | no | Cash |
+| 07/10 | — | $ 36.000 | $ 0 | no | Cash |
+| 07/10 | Mica Solano | $ 130.000 | $ 6.000 | no | Transfer |
 | 06/10 | Tincho Aguirre | $ 12.000 | $ 1.000 | sí | Debiendo |
-| 04/10 | — | $ 108.000 | $ 0 | no | Efectivo |
-| 02/10 | — | $ 55.000 | $ 0 | no | Efectivo |
-| 27/09 | Lu Fernández | $ 33.000 | $ 0 | no | Transferencia |
-| 25/09 | Tincho Aguirre | $ 96.000 | $ 0 | no | Efectivo |
-| 18/09 | Nico Parra | $ 14.000 | $ 0 | no | Efectivo |
+| 04/10 | — | $ 108.000 | $ 0 | no | Cash |
+| 02/10 | — | $ 55.000 | $ 0 | no | Cash |
+| 27/09 | Lu Fernández | $ 33.000 | $ 0 | no | Transfer |
+| 25/09 | Tincho Aguirre | $ 96.000 | $ 0 | no | Cash |
+| 18/09 | Nico Parra | $ 14.000 | $ 0 | no | Cash |
 | 18/09 | Nico Parra | $ 25.000 | $ 1.000 | sí | Debiendo |
 
 ### Líneas de venta
@@ -126,13 +126,13 @@ Total: $ 32.000
 
 | Cliente | Fecha | Concepto | Monto | Detalle | Saldo |
 | --- | --- | --- | --- | --- | --- |
-| Lu Fernández | 27/09 | Venta | $ 33.000 | Transferencia | $ 0 |
-| Lu Fernández | 07/10 | Venta | $ 28.000 | Efectivo | $ 0 |
-| Mica Solano | 07/10 | Venta | $ 130.000 | Transferencia | $ 0 |
+| Lu Fernández | 27/09 | Venta | $ 33.000 | Transfer | $ 0 |
+| Lu Fernández | 07/10 | Venta | $ 28.000 | Cash | $ 0 |
+| Mica Solano | 07/10 | Venta | $ 130.000 | Transfer | $ 0 |
 | Nico Parra | 18/09 | Venta | $ 25.000 | Debiendo | $ 25.000 |
-| Nico Parra | 18/09 | Venta | $ 14.000 | Efectivo | $ 25.000 |
-| Nico Parra | 05/10 | Pago | $ 5.000 | Efectivo, a la venta del 18/09 | $ 20.000 |
-| Tincho Aguirre | 25/09 | Venta | $ 96.000 | Efectivo | $ 0 |
+| Nico Parra | 18/09 | Venta | $ 14.000 | Cash | $ 25.000 |
+| Nico Parra | 05/10 | Pago | $ 5.000 | Cash, a la venta del 18/09 | $ 20.000 |
+| Tincho Aguirre | 25/09 | Venta | $ 96.000 | Cash | $ 0 |
 | Tincho Aguirre | 06/10 | Venta | $ 12.000 | Debiendo | $ 12.000 |
 
 ### Análisis · Octubre 2026

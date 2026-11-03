@@ -166,6 +166,8 @@ def test_a_language_without_a_po_misses_every_key(locales: Path) -> None:
         "expenses.default_category.packaging",
         "expenses.default_category.shipping_and_transport",
         "expenses.default_category.other",
+        "payment_methods.default.cash",
+        "payment_methods.default.transfer",
     )
 
 

@@ -5898,7 +5898,7 @@ body {
   opacity: 0;
 }
 
-/* The method: `SegmentedChoice` on the form's own surface, the chosen one on paper. */
+/* The method: the picker on the form's own surface, the chosen one on paper. */
 .cobro__metodo {
   display: flex;
   flex-direction: column;

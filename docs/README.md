@@ -21,6 +21,7 @@ Cada capacidad tiene su página en [docs/product/](product/):
 - [Mobile check](product/mobile-check.md)
 - [Navigation](product/navigation.md)
 - [Onboarding](product/onboarding.md)
+- [Medios de pago](product/payment-methods.md)
 - [Pagos](product/payments.md)
 - [Phone first](product/phone-first.md)
 - [Pinned catalog](product/pinned-catalog.md)
