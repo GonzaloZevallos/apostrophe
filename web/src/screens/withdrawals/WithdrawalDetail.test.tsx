@@ -36,6 +36,7 @@ test('shows the date, the reason by word, every line and the note, with the bar 
 
   expect(await screen.findByText('Zkittlez')).toBeInTheDocument()
   expect(screen.getByText('Marketing')).toBeInTheDocument()
+  expect(screen.queryByText(/Promotion/)).toBeNull()
   expect(screen.getByText('02/10')).toBeInTheDocument()
   expect(screen.getByText('5,5 g')).toBeInTheDocument()
   expect(screen.getByText('Para la fiesta')).toBeInTheDocument()

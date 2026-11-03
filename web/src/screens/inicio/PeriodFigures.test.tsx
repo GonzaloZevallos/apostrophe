@@ -62,6 +62,43 @@ test('a withdrawal line the period does not have is no group, never a $ 0 one', 
   }
 })
 
+test('a reason with no amount reads its grams without cost and keeps its pending note', () => {
+  const pendingOnly = {
+    reason_id: 1,
+    name: 'Marketing',
+    amount: null,
+    pending: true,
+    pending_quantity: 2,
+  }
+  render(<PeriodFigures tab="month" period={{ ...MONTH, withdrawals: [pendingOnly] }} />)
+
+  const group = screen.getByRole('group', { name: 'Marketing' })
+  expect(within(group).getByText('2 g without cost')).toBeInTheDocument()
+  expect(within(group).getByText('includes pending cost')).toBeInTheDocument()
+  expect(within(group).queryByText(/\$/)).toBeNull()
+})
+
+test('the reason lines follow the order the API answers, a renamed or new reason included', () => {
+  const line = (id: number, name: string) => ({
+    reason_id: id,
+    name,
+    amount: 100 * id,
+    pending: false,
+    pending_quantity: 0,
+  })
+  const withdrawals = [line(3, 'Gifts'), line(2, 'Own use'), line(1, 'Marketing')]
+  render(<PeriodFigures tab="week" period={{ ...WEEK, withdrawals }} />)
+
+  const names = screen
+    .getAllByRole('group')
+    .map((node) => document.getElementById(node.getAttribute('aria-labelledby') ?? '')?.textContent)
+  expect(names.filter((name) => ['Gifts', 'Own use', 'Marketing'].includes(name ?? ''))).toEqual([
+    'Gifts',
+    'Own use',
+    'Marketing',
+  ])
+})
+
 test('each pending note sits inside the group it qualifies, and never inside Caja', () => {
   render(<PeriodFigures tab="week" period={{ ...WEEK, pending_cost: true }} />)
 

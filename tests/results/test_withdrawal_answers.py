@@ -154,6 +154,10 @@ def test_the_panel_and_analysis_agree_on_every_withdrawal_figure(client: TestCli
     # - own use $300 (B's wholly pending sale is out of it, as for any pending sale).
     assert week["profit"] == 5_000 - 500 - 200 - 400 - 300
     assert week["profit_pending"] is True
+    # Cash: A's 5 g and B's 1 g sales at $1.000/g, both paid in cash on HOY, no expense
+    # or other payment; the Marketing and Own use withdrawals move no cash.
+    assert week["cash"] == 6_000
+    assert month["cash"] == 6_000
     # October: the same, less the 30/09 shortfall and the 29/09 promotion.
     assert month["profit"] == 5_000 - 500 - 300
     assert month["profit_pending"] is True
@@ -165,7 +169,7 @@ def test_the_panel_and_analysis_agree_on_every_withdrawal_figure(client: TestCli
         assert (row["profit"]["pending_quantity"] > 0) == panel_period["profit_pending"]
         assert row["sales"] == panel_period["sales"]
         assert row["expenses"] == panel_period["expenses"]
-        assert row["cash"] == panel_period["cash"]
+        assert row["cash"] == panel_period["cash"] == 6_000
         assert panel_period["withdrawals"] == row["withdrawals"]
     marketing = _line(week_row, "Marketing")
     own_use = _line(month_row, "Own use")
@@ -363,3 +367,22 @@ def test_another_business_s_withdrawals_never_reach_the_answers(
     assert analysis["since_first_record"] is None
     assert analysis["month"]["withdrawals"] == []
     assert analysis["month"]["withdrawals"] == []
+
+
+def test_a_reordered_reason_reaches_the_panel_and_the_analysis_in_the_new_order(
+    client: TestClient,
+) -> None:
+    _seed_the_history(client)
+    reasons = client.get("/api/withdrawal-reasons").json()
+    marketing = next(r["id"] for r in reasons if r["name"] == "Marketing")
+
+    moved = client.post(f"/api/withdrawal-reasons/{marketing}/move", json={"direction": "down"})
+    assert moved.status_code == 200, moved.text
+
+    panel = client.get("/panel").json()["periods"]
+    analysis = client.get("/analysis").json()
+    order = ["Own use", "Marketing"]
+    assert [line["name"] for line in panel["week"]["withdrawals"]] == order
+    assert [line["name"] for line in analysis["weeks"][-1]["withdrawals"]] == order
+    assert [line["name"] for line in analysis["month"]["withdrawals"]] == ["Own use", "Marketing"]
+    assert [line["name"] for line in analysis["since_first_record"]["withdrawals"]] == order

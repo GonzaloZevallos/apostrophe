@@ -99,7 +99,7 @@ export const SETTINGS_TEXT = {
   saveThePrices: 'Save the prices',
   you: 'you',
   categoryAmountAndDetails: 'Category, amount and details',
-  promotionOrOwnUse: 'Promotion or own use',
+  marketingOrOwnUse: 'Marketing or own use',
   byMonthAndByCategory: 'By month and by category',
   varietiesWeeksMonthsAndDays: 'Varieties, weeks, months and days',
   businessUsersBotCatalogAndMore: 'Business, users, bot, catalog, categories, appearance and your account',

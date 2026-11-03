@@ -133,6 +133,18 @@ describe('weekCard', () => {
     expect(only.rows.map((row) => row.before)).not.toContain('Own use ')
   })
 
+  test('the reason lines follow the order the API answers, whatever the names', () => {
+    const card = weekCard(
+      {
+        ...week,
+        withdrawals: [reason(3, 'Gifts', 50), reason(2, 'Own use', 300), reason(1, 'Marketing', 200)],
+      },
+      false,
+    )
+    const labels = card.rows.map((row) => row.before)
+    expect(labels.slice(2, 5)).toEqual(['Gifts ', 'Own use ', 'Marketing '])
+  })
+
   test('a fully pending cost has no figure, only its grams on the pending line', () => {
     const card = weekCard({ ...week, cost_of_goods: cost(0, 4, true) }, false)
     expect(card.rows[1]).toEqual({

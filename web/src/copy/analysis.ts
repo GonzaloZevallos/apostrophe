@@ -17,7 +17,7 @@ export const NO_BEST_WEEK_LINE = 'None stood out'
 
 export const COST_OF_GOODS_LABEL = 'Cost of goods sold'
 export const SHORTFALL_LABEL = 'Stock shortfall'
-export const PROMOTION_LABEL = 'Marketing'
+export const MARKETING_LABEL = 'Marketing'
 export const OWN_USE_LABEL = 'Own use'
 const PENDING_ONLY = `${SAMPLES.grams} without cost`
 const AMOUNT_AND_PENDING = `${SAMPLES.amount} and ${SAMPLES.grams} without cost`
@@ -30,7 +30,7 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   // The cost lines on the rows, the month header and "Since the first record"
   // (`rowCostParts` / `amountParts`): each label with its longest form, a fully pending one reading
   // only its grams.
-  ...[COST_OF_GOODS_LABEL, SHORTFALL_LABEL, PROMOTION_LABEL, OWN_USE_LABEL].flatMap(
+  ...[COST_OF_GOODS_LABEL, SHORTFALL_LABEL, MARKETING_LABEL, OWN_USE_LABEL].flatMap(
     (label): LimitedCopy[] => [
       { kind: 'help', text: `${label} ${PENDING_ONLY}` },
       { kind: 'help', text: `${label} ${AMOUNT_AND_PENDING}` },
