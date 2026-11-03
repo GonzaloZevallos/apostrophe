@@ -2,10 +2,8 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.customers.adapters.customer_type_lookup import SqlCustomerTypeLookup
 from app.customers.adapters.tables import CustomerRow
 from app.customers.application.errors import PhoneTaken
-from app.customers.application.ports import CustomerTypes
 from app.customers.domain.customer import Customer, CustomerName, PhoneNumber
 
 
@@ -22,30 +20,23 @@ class SqlCustomers:
     can break.
     """
 
-    def __init__(
-        self, session: Session, business_id: int, types: CustomerTypes | None = None
-    ) -> None:
+    def __init__(self, session: Session, business_id: int) -> None:
         self._session = session
         self._business_id = business_id
-        # Where the VIP type id comes from, read at most once per instance: a customer is
-        # VIP when its type is that one (docs/adr/0070). The request hands its own lookup
-        # in so the other readers of the request share the read.
-        self._types = types if types is not None else SqlCustomerTypeLookup(session, business_id)
 
     def add(self, customer: Customer) -> Customer:
         row = self._row_from(customer)
         self._session.add(row)
         self._flush_or_mark_taken()
-        return _customer(row, self._types.vip_type_id())
+        return _customer(row)
 
     def get(self, customer_id: int) -> Customer | None:
         row = self._row(customer_id)
-        return None if row is None else _customer(row, self._types.vip_type_id())
+        return None if row is None else _customer(row)
 
     def all(self) -> list[Customer]:
         statement = select(CustomerRow).where(CustomerRow.business_id == self._business_id)
-        vip_type_id = self._types.vip_type_id()
-        return [_customer(row, vip_type_id) for row in self._session.scalars(statement)]
+        return [_customer(row) for row in self._session.scalars(statement)]
 
     def save(self, customer: Customer) -> Customer:
         assert customer.id is not None, "save takes a customer that was added"
@@ -55,7 +46,7 @@ class SqlCustomers:
         row.phone = customer.phone.value if customer.phone is not None else None
         row.customer_type_id = customer.customer_type_id
         self._flush_or_mark_taken()
-        return _customer(row, self._types.vip_type_id())
+        return _customer(row)
 
     def phone_taken(self, phone: PhoneNumber, *, other_than: int | None = None) -> bool:
         """Called only for a non-`None` phone (the use cases' own rule): a customer
@@ -98,13 +89,10 @@ class SqlCustomers:
             raise PhoneTaken()
 
 
-def _customer(row: CustomerRow, vip_type_id: int | None) -> Customer:
-    """`vip` is membership in the business's VIP type; the frozen `customer.vip` column
-    is never read (docs/adr/0070)."""
+def _customer(row: CustomerRow) -> Customer:
     return Customer(
         name=CustomerName(row.name),
         phone=PhoneNumber(row.phone) if row.phone is not None else None,
-        vip=vip_type_id is not None and row.customer_type_id == vip_type_id,
         id=row.id,
         customer_type_id=row.customer_type_id,
     )

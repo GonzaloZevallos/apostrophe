@@ -75,9 +75,7 @@ def test_the_normalisation_matrix_all_give_one_key(client: TestClient, engine: E
 # -- check_customer: an invalid number ------------------------------------------------
 
 
-def test_an_invalid_number_is_refused_with_its_own_code(
-    client: TestClient, engine: Engine
-) -> None:
+def test_an_invalid_number_is_refused_with_its_own_code(client: TestClient, engine: Engine) -> None:
     business_id = _business_id_of_email(engine, "uno@example.com")
     port = CustomersImport(Session(engine), business_id)
 
@@ -176,7 +174,6 @@ def test_write_customer_stores_the_customer_type_it_is_given(
     stored = SqlCustomers(session, business_id).get(customer_id)
     assert stored is not None
     assert stored.customer_type_id == vip_type.id
-    assert stored.vip is True
     assert stored.name.value == "Fran Araujo"
     assert stored.phone is not None
     assert stored.phone.value == "+5491123456789"
@@ -192,7 +189,6 @@ def test_write_customer_without_a_type_stores_none(client: TestClient, engine: E
     stored = SqlCustomers(session, business_id).get(customer_id)
     assert stored is not None
     assert stored.customer_type_id is None
-    assert stored.vip is False
 
 
 def test_write_customer_with_no_phone_key_stores_no_phone(

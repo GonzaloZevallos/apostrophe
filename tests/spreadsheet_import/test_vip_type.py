@@ -161,13 +161,26 @@ def test_a_deleted_vip_type_is_recreated_as_exactly_one_vip_row(
     tmp_path: Path,
     operator_text_en: OperatorText,
 ) -> None:
-    # A business that had a VIP type and deleted it: no VIP row, no 'VIP' name left.
-    code, _out, err = _import(engine, clock, tmp_path, operator_text_en, dry_run=True)
-    assert code == 0, err
+    # A business that had a VIP type and deleted it: the row exists, then it is gone.
+    with Session(engine) as session:
+        old = CustomerTypeRow(
+            business_id=_business_id(engine),
+            name="VIP",
+            name_key="vip",
+            icon="star",
+            is_vip=True,
+        )
+        session.add(old)
+        session.commit()
+        old_id = old.id
+    assert [row.is_vip for row in _types(engine)] == [True]
+    assert client.delete(f"/api/customer-types/{old_id}").status_code == 204
     assert _types(engine) == []
 
     code, _out, err = _import(engine, clock, tmp_path, operator_text_en)
 
     assert code == 0, err
-    rows = _types(engine)
-    assert [row.is_vip for row in rows] == [True]
+    [recreated] = _types(engine)
+    assert recreated.is_vip is True
+    [customer] = client.get("/customers").json()
+    assert customer["customer_type_id"] == recreated.id

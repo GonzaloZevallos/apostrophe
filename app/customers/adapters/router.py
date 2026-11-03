@@ -31,22 +31,18 @@ def get_customer_types(
     session: SessionDep, business_id: CurrentBusinessId
 ) -> SqlCustomerTypeLookup:
     # One per request (FastAPI caches the dependency): the VIP type id is read once and
-    # shared by `SqlCustomers` and the use cases.
+    # shared by the use cases and the answers.
     return SqlCustomerTypeLookup(session, business_id)
 
 
 CustomerTypesDep = Annotated[SqlCustomerTypeLookup, Depends(get_customer_types)]
 
 
-def get_customers(
-    session: SessionDep, business_id: CurrentBusinessId, types: CustomerTypesDep
-) -> SqlCustomers:
-    return SqlCustomers(session, business_id, types)
+def get_customers(session: SessionDep, business_id: CurrentBusinessId) -> SqlCustomers:
+    return SqlCustomers(session, business_id)
 
 
-def get_balances(
-    request: Request, session: SessionDep, business_id: CurrentBusinessId
-) -> Balances:
+def get_balances(request: Request, session: SessionDep, business_id: CurrentBusinessId) -> Balances:
     # Customers never imports `app.payments` (CODING_STANDARDS section 1): `app/main.py`
     # hangs the real implementation (`SqlBalances`) on `app.state.balances` as a
     # factory, the same shape `get_line_costs` uses for `line_costs` in sales.
@@ -71,10 +67,10 @@ BalancesDep = Annotated[Balances, Depends(get_balances)]
 SettingsDep = Annotated[PricingSettingsReader, Depends(get_pricing_settings)]
 
 
-def _out(customer: Customer, balances: Balances) -> CustomerOut:
+def _out(customer: Customer, balances: Balances, types: SqlCustomerTypeLookup) -> CustomerOut:
     assert customer.id is not None, "only stored customers go out"
     balance = balances.for_customers([customer.id]).get(customer.id, NO_BALANCE)
-    return CustomerOut.of(customer, balance)
+    return CustomerOut.of(customer, balance, types.vip_type_id())
 
 
 as_http = TranslateErrors(
@@ -94,11 +90,16 @@ def _type_not_found() -> Refused:
 
 @router.get("")
 def list_customers(
-    customers: CustomersDep, balances: BalancesDep, q: str = ""
+    customers: CustomersDep, balances: BalancesDep, types: CustomerTypesDep, q: str = ""
 ) -> list[CustomerOut]:
     found = manage_customers.find_customers(customers, q)
     by_id = balances.for_customers([c.id for c in found if c.id is not None])
-    return [CustomerOut.of(c, by_id.get(c.id, NO_BALANCE)) for c in found if c.id is not None]
+    vip_type_id = types.vip_type_id()
+    return [
+        CustomerOut.of(c, by_id.get(c.id, NO_BALANCE), vip_type_id)
+        for c in found
+        if c.id is not None
+    ]
 
 
 @router.post("", status_code=201)
@@ -123,13 +124,15 @@ def register_customer(
             )
         except CustomerTypeNotFound:
             raise _type_not_found() from None
-        return _out(customer, balances)
+        return _out(customer, balances, types)
 
 
 @router.get("/{customer_id}")
-def get_customer(customer_id: int, customers: CustomersDep, balances: BalancesDep) -> CustomerOut:
+def get_customer(
+    customer_id: int, customers: CustomersDep, balances: BalancesDep, types: CustomerTypesDep
+) -> CustomerOut:
     with as_http:
-        return _out(manage_customers.get_customer(customers, customer_id), balances)
+        return _out(manage_customers.get_customer(customers, customer_id), balances, types)
 
 
 @router.patch("/{customer_id}")
@@ -152,4 +155,4 @@ def edit_customer(
             )
         except CustomerTypeNotFound:
             raise _type_not_found() from None
-        return _out(customer, balances)
+        return _out(customer, balances, types)
