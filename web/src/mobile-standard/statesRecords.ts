@@ -22,7 +22,7 @@ import {
 import { AUTH_TEXT } from '../copy/auth.ts'
 import { common } from './copy.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
-import { PAYMENT_METHODS_TEXT } from '../copy/paymentMethods.ts'
+import { PAYMENT_METHODS_TEXT, deleteTitle, rowLabel } from '../copy/paymentMethods.ts'
 import { STOCK_TEXT } from '../copy/stock.ts'
 import { VARIETIES_TEXT } from '../copy/varieties.ts'
 import type { WalkState } from './states.ts'
@@ -45,6 +45,15 @@ const ENTRY_ROUTE = pathTo(STOCK_ENTRY, { id: 1 })
 /** The variety the sample app seeds below its stock threshold, by the registry's placeholder. */
 const LOW_VARIETY = VARIETY.replace(':id', '{low}')
 
+/**
+ * The payment-methods list the edit-Sheet states are read with: the sample app seeds two methods,
+ * both used by a sale, so a method without payments (the one that offers Delete) and a list of one
+ * (the last-active sentence) exist only as stubbed reads.
+ */
+const CASH = { id: 1, name: 'Cash', icon: 'coins', position: 1, is_used: true }
+const TRANSFER = { id: 2, name: 'Transfer', icon: 'bank', position: 2, is_used: false }
+const METHODS_PATH = /^\/api\/payment-methods$/
+
 export const RECORDS_STATES: readonly WalkState[] = [
   {
     screen: 'MediosPagoHoja',
@@ -61,6 +70,26 @@ export const RECORDS_STATES: readonly WalkState[] = [
       { click: PAYMENT_METHODS_TEXT.close },
     ],
     visible: PAYMENT_METHODS_TEXT.discardTitle,
+  },
+  {
+    screen: 'MediosPagoEditar',
+    route: SETTINGS_PAYMENT_METHODS,
+    steps: [{ click: rowLabel('Cash') }],
+    visible: PAYMENT_METHODS_TEXT.archive,
+  },
+  {
+    screen: 'MediosPagoUnico',
+    route: SETTINGS_PAYMENT_METHODS,
+    reads: [{ path: METHODS_PATH, status: 200, body: [CASH] }],
+    steps: [{ click: rowLabel('Cash') }],
+    visible: PAYMENT_METHODS_TEXT.errorLastActive,
+  },
+  {
+    screen: 'MediosPagoBorrar',
+    route: SETTINGS_PAYMENT_METHODS,
+    reads: [{ path: METHODS_PATH, status: 200, body: [CASH, TRANSFER] }],
+    steps: [{ click: rowLabel('Transfer') }, { click: PAYMENT_METHODS_TEXT.delete }],
+    visible: deleteTitle('Transfer'),
   },
   {
     screen: 'ClientesBusqueda',

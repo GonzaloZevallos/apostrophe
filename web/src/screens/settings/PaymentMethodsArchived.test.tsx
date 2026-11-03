@@ -52,7 +52,7 @@ describe('the Archived payment methods view', () => {
   test('says so when nothing is archived', async () => {
     fakeFetch([], [])
     renderScreen()
-    expect(await screen.findByText(PAYMENT_METHODS_TEXT.archivedEmpty)).toBeTruthy()
+    expect(await screen.findByText('No archived methods')).toBeTruthy()
   })
 
   test('a refused restore says it could not be restored', async () => {

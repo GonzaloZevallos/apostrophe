@@ -383,7 +383,6 @@
   {"source":"paymentMethods.ts:PAYMENT_METHODS_TEXT.addTitle","args":null,"text":"New payment method"},
   {"source":"paymentMethods.ts:PAYMENT_METHODS_TEXT.archive","args":null,"text":"Archive"},
   {"source":"paymentMethods.ts:PAYMENT_METHODS_TEXT.archivedBack","args":null,"text":"Payment methods"},
-  {"source":"paymentMethods.ts:PAYMENT_METHODS_TEXT.archivedEmpty","args":null,"text":"No archived methods"},
   {"source":"paymentMethods.ts:PAYMENT_METHODS_TEXT.archivedRow","args":null,"text":"Archived"},
   {"source":"paymentMethods.ts:PAYMENT_METHODS_TEXT.archivedTitle","args":null,"text":"Archived methods"},
   {"source":"paymentMethods.ts:PAYMENT_METHODS_TEXT.back","args":null,"text":"Settings"},

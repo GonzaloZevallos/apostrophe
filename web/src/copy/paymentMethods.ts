@@ -85,7 +85,6 @@ export const PAYMENT_METHODS_TEXT = {
   archivedTitle: 'Archived methods',
   archivedBack: 'Payment methods',
   restore: VARIETIES_TEXT.restaurar,
-  archivedEmpty: 'No archived methods',
   restoreFailed: "We couldn't restore this method. Try again.",
 } as const
 

@@ -18,6 +18,7 @@ import {
   deletePaymentMethod,
   editPaymentMethod,
   movePaymentMethod,
+  archivedPaymentMethodsQuery,
   paymentMethodsQuery,
 } from '../../api/paymentMethods'
 import Boton from '../../components/Boton'
@@ -54,6 +55,7 @@ type Editing = { kind: 'new' } | { kind: 'edit'; method: PaymentMethod }
 export default function PaymentMethods() {
   const queryClient = useQueryClient()
   const query = useQuery(paymentMethodsQuery())
+  const archived = useQuery(archivedPaymentMethodsQuery())
   const [editing, setEditing] = useState<Editing | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
@@ -127,6 +129,7 @@ export default function PaymentMethods() {
         </Boton>
         <InAppLink to={SETTINGS_PAYMENT_METHODS_ARCHIVED} className="ajustes__item">
           <span className="ajustes__item-rotulo">{T.archivedRow}</span>
+          {archived.data !== undefined && <span>{archived.data.length}</span>}
           <span className="ajustes__item-flecha">
             <Icono nombre="chevron" />
           </span>
