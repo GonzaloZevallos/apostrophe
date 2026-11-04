@@ -4,6 +4,8 @@
 # and `smoke`. The loader refuses any other key, so the recorded outcomes below are comments.
 # Guard note: #470 is a closed issue, not a PR, so "#470 merged" cannot be checked as written;
 # the format was read from agentic-system master (b45ab5eb), where #481 and #490 hold it.
+# Checked there: parse_eval_set accepts this file (5 entries, smoke 299); `agentic eval run
+# --dry-run --budget 300` reports 5 runs, estimated 225.00 USD at 45.00 USD per run.
 #
 # Selection (git commands, run in this repository; task documents read-only from the main
 # checkout's `.agentic/tasks/GH-X.md`):
