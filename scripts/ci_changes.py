@@ -4,12 +4,20 @@
 is the union of every rule that matches a path, and it fails closed: a path that matches no rule,
 a git failure, an empty diff or an event that is neither a pull request nor a push to an
 `agentic-ci/**` branch selects every suite. A pull request diffs from `HEAD^1`; an agentic-ci push
-diffs from its merge-base with `origin/master`. `base_ref` is printed only when a diff from it was
-usable, and an empty `base_ref` always means every suite is selected. Nothing
+diffs from its merge-base with `origin/master`. A manual `workflow_dispatch` of master's `ci.yml` at
+a head sha (GH-562) runs this script from master's checkout over the head's tree in `root`: it
+checks that `root` is at the sha and diffs from its merge-base with `origin/master`, like a pull
+request. `base_ref` is printed only when a diff from it was usable, and an empty `base_ref` always
+means every suite is selected. Nothing
 here imports or runs a node tool; vitest's guard tests are found the way `affected.py` finds them,
 by importing it. Only `main` runs git, through the `Runner` that `affected.py` defines.
 
-    ci_changes.py <event name> <ref>    prints `key=value` lines, for `$GITHUB_OUTPUT`
+    ci_changes.py <event name> <ref> [<sha> <root>]    prints `key=value` lines, for `$GITHUB_OUTPUT`
+
+`sha` and `root` are read only for `workflow_dispatch`; there `root` replaces the checkout root, and
+every git call and every read of the tree goes through it. A missing or malformed sha, a ref other
+than `refs/heads/master`, a `root` whose HEAD is not the sha or a failed merge-base or diff selects
+everything with an empty `base_ref`; the script never exits non-zero for these.
 """
 
 from __future__ import annotations
@@ -54,6 +62,7 @@ _TEST_SUFFIXES: Final = (".test.ts", ".test.tsx")
 _SAFE_PATH: Final = re.compile(r"[A-Za-z0-9._/][A-Za-z0-9._/-]*")
 ALL_SHARD: Final = "all"
 AGENTIC_CI_PREFIX: Final = "refs/heads/agentic-ci/"
+MASTER_REF: Final = "refs/heads/master"
 PR_BASE: Final = "HEAD^1"
 _OBJECT_ID: Final = re.compile(r"[0-9a-f]{40}|[0-9a-f]{64}")
 
@@ -81,22 +90,29 @@ def _is_agentic_ci_push(event: str, ref: str) -> bool:
     return event == "push" and ref.startswith(AGENTIC_CI_PREFIX)
 
 
+def _is_master_dispatch(event: str, ref: str) -> bool:
+    return event == "workflow_dispatch" and ref == MASTER_REF
+
+
+HEAD_ARGV: Final = ["git", "rev-parse", "HEAD"]
+
+
 def base_argv(event: str, ref: str) -> list[str] | None:
-    """The git command that finds where an `agentic-ci/**` push forked from master; `None` for
-    any other event or ref."""
-    if _is_agentic_ci_push(event, ref):
+    """The git command that finds where an `agentic-ci/**` push, or a dispatch of master's workflow,
+    forked from master; `None` for any other event or ref."""
+    if _is_agentic_ci_push(event, ref) or _is_master_dispatch(event, ref):
         return ["git", "merge-base", "origin/master", "HEAD"]
     return None
 
 
 def diff_argv(event: str, ref: str, base: str) -> list[str] | None:
     """The git command that lists the changed paths: from `HEAD^1` for a pull request and from
-    `base` for an `agentic-ci/**` push with a non-empty one; `None` for anything else, whose
-    selection is everything."""
+    `base` for an `agentic-ci/**` push or a dispatch at master with a non-empty one; `None` for
+    anything else, whose selection is everything."""
     flags = ["git", "diff", "--name-only", "--no-renames"]
     if event == "pull_request":
         return [*flags, PR_BASE, "HEAD"]
-    if _is_agentic_ci_push(event, ref) and base:
+    if (_is_agentic_ci_push(event, ref) or _is_master_dispatch(event, ref)) and base:
         return [*flags, base, "HEAD"]
     return None
 
@@ -823,14 +839,35 @@ def render(selection: Selection) -> list[str]:
     ]
 
 
+def _dispatch_root(argv: Sequence[str], default: Path) -> Path:
+    """The head's tree of a dispatch: the `root` argument when given, else `default`."""
+    return Path(argv[3]) if len(argv) > 3 and argv[3] else default
+
+
+def _head_matches(sha: str, run: Runner, root: Path) -> bool:
+    found = run(HEAD_ARGV, capture=True, cwd=root)
+    lines = found.stdout.splitlines()
+    return found.returncode == 0 and bool(lines) and lines[0].strip() == sha
+
+
 def main(argv: Sequence[str], run: Runner = run_command, *, root: Path = REPO_ROOT) -> int:
-    """`ci_changes.py <event name> <ref>`: diffs a pull request from `HEAD^1` and an `agentic-ci/**`
-    push from its merge-base with `origin/master`, and prints the outputs and `base_ref`. Anything
-    it cannot diff selects everything and prints an empty `base_ref`."""
+    """`ci_changes.py <event name> <ref> [<sha> <root>]`: diffs a pull request from `HEAD^1`, an
+    `agentic-ci/**` push from its merge-base with `origin/master`, and a dispatch at master from
+    the merge-base of the head in `<root>` (which must be at `<sha>`), and prints the outputs and
+    `base_ref`. Anything it cannot diff selects everything and prints an empty `base_ref`."""
     event = argv[0] if argv else ""
     ref = argv[1] if len(argv) > 1 else ""
     base = ""
-    base_command = base_argv(event, ref)
+    usable = True
+    if event == "workflow_dispatch":
+        root = _dispatch_root(argv, root)
+        sha = argv[2] if len(argv) > 2 else ""
+        usable = _OBJECT_ID.fullmatch(sha) is not None
+        if usable and _is_master_dispatch(event, ref):
+            usable = _head_matches(sha, run, root)
+        if not usable:
+            print("ci_changes: no usable dispatch head -> everything", file=sys.stderr)
+    base_command = base_argv(event, ref) if usable else None
     if base_command is not None:
         found = run(base_command, capture=True, cwd=root)
         base = merge_base_from_git(found.returncode, found.stdout) or ""

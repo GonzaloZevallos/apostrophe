@@ -49,7 +49,25 @@ E2E_RUN = 'npm --prefix web run e2e -- --shard="$SHARD" $E2E_ARGS'
 E2E_GATE_RUN = 'test "$RESULT" = success || { echo "e2e shards: $RESULT"; exit 1; }'
 E2E_GATE_IF = "always() && needs.changes.outputs.e2e == 'true'"
 E2E_GATE_RESULT = "${{ needs.e2e-shard.result }}"
-CHANGES_RUN = 'uv run --no-project python -m scripts.ci_changes "$EVENT" "$REF" >> "$GITHUB_OUTPUT"'
+CHANGES_RUN = (
+    'uv run --no-project python -m scripts.ci_changes "$EVENT" "$REF" "$SHA" "$HEAD_ROOT" '
+    '>> "$GITHUB_OUTPUT"'
+)
+REF_GUARD_RUN = 'test "$EVENT" != workflow_dispatch || test "$REF" = refs/heads/master'
+SHA_CHECK_RUN = (
+    """[[ "$SHA" =~ ^([0-9a-f]{40}|[0-9a-f]{64})$ ]] || """
+    """{ echo "sha is not a full lowercase object id"; exit 1; }"""
+)
+RUN_NAME = "${{ inputs.sha && format('CI at {0}', inputs.sha) || '' }}"
+GROUP = (
+    "ci-${{ github.workflow }}-${{ github.ref }}"
+    "${{ inputs.sha && format('-{0}', inputs.sha) || '' }}"
+)
+SHA_REF = "${{ inputs.sha }}"
+HEAD_ROOT_EXPRESSION = "${{ github.workspace }}/head"
+DISPATCH_ONLY = "github.event_name == 'workflow_dispatch'"
+# The two checkouts of master's own code: no `ref`, so they run master's scripts over the head.
+MASTER_CHECKOUTS = (("changes", 0), ("ci-ok", 0))
 VITEST_LIST_RUN = (
     'if [ -n "$BASE_REF" ]; then npx --prefix web vitest list --root web --changed="$BASE_REF" '
     '--filesOnly > "$RUNNER_TEMP/vitest-listed.txt"; '
@@ -70,8 +88,11 @@ CI_ONLY: dict[str, str] = {
         "the runner needs the root `--with-deps` form of `setup.web-browsers`"
     ),
     CHANGES_RUN: (
-        "the `changes` job: which suites the pull request or an agentic-ci push affects (ADR-0064)"
+        "the `changes` job: which suites the pull request, an agentic-ci push or a dispatched "
+        "head affects (ADR-0064, GH-562)"
     ),
+    REF_GUARD_RUN: "a dispatch counts only at master's own ref (GH-562)",
+    SHA_CHECK_RUN: "a dispatch's sha is a full lowercase object id before it names a ref (GH-562)",
     VITEST_LIST_RUN: (
         "vitest's own listing from `base_ref`, empty without one; run by the workflow so no script "
         "runs a node tool (ADR-0064 §6)"
@@ -136,7 +157,7 @@ E2E_SHARD = "e2e-shard"
 COVERAGE = "coverage"
 OUTPUT_PREFIXES = ("needs.changes.outputs.", "steps.vitest-args.outputs.")
 EXPECTED_CONCURRENCY = {
-    "group": "ci-${{ github.workflow }}-${{ github.ref }}",
+    "group": GROUP,
     "cancel-in-progress": CANCEL_IN_PROGRESS,
 }
 # Functions a GitHub Actions expression may call (the documented set); anything else, such as
@@ -261,6 +282,7 @@ def _structure_problems(
     problems.extend(_e2e_gate_problems(jobs, workflow_checks))
     problems.extend(_judge_problems(jobs))
     problems.extend(_changes_problems(jobs.get("changes")))
+    problems.extend(_dispatch_problems(workflow))
     problems.extend(_vitest_problems(jobs.get("vitest")))
     problems.extend(_trigger_problems(workflow))
     problems.extend(_coverage_problems(jobs))
@@ -357,7 +379,8 @@ def _changes_problems(changes: Data | None) -> list[str]:
         return ["there is no `changes` job"]
     problems: list[str] = []
     steps = _steps(changes)
-    if not any(step.get("with", {}).get("fetch-depth") == 0 for step in _checkouts(changes)):
+    root_checkouts = [step for step in _checkouts(changes) if "if" not in step]
+    if not any(step.get("with", {}).get("fetch-depth") == 0 for step in root_checkouts):
         problems.append("the `changes` checkout does not set fetch-depth: 0")
     runners = [step for step in steps if "ci_changes" in str(step.get("run", ""))]
     for step in runners:
@@ -370,10 +393,66 @@ def _changes_problems(changes: Data | None) -> list[str]:
             problems.append(
                 "the event and ref do not reach ci_changes only through env: EVENT, REF"
             )
+        if "${{" in step["run"] or env.get("SHA") != SHA_REF or (
+            env.get("HEAD_ROOT") != HEAD_ROOT_EXPRESSION
+        ):
+            problems.append(
+                "the sha and head root do not reach ci_changes only through env: SHA, HEAD_ROOT"
+            )
     if not runners:
         problems.append("no step of `changes` runs ci_changes")
     if changes.get("outputs", {}).get("base_ref") != "${{ steps.select.outputs.base_ref }}":
         problems.append("the `changes` job does not output base_ref from the select step")
+    return problems
+
+
+def _dispatch_problems(workflow: Data) -> list[str]:
+    """The dispatch of master's workflow at a head's sha (GH-562): the input, the run title, the
+    guards that come before the head is checked out, and which checkouts carry the sha."""
+    problems: list[str] = []
+    dispatch = _triggers(workflow).get("workflow_dispatch")
+    inputs = cast("Data", dispatch or {}).get("inputs", {})
+    sha = inputs.get("sha")
+    if (
+        set(inputs) != {"sha"}
+        or not isinstance(sha, dict)
+        or sha.get("required") is not True
+        or sha.get("type") != "string"
+    ):
+        problems.append("`on.workflow_dispatch` is not exactly one required string input `sha`")
+    if workflow.get("run-name") != RUN_NAME:
+        problems.append(f"`run-name` is not {RUN_NAME}")
+    jobs: Data = workflow["jobs"]
+    for job_id, job in jobs.items():
+        for index, step in enumerate(_checkouts(job)):
+            ref = cast("Data", step.get("with", {})).get("ref")
+            if (job_id, index) in MASTER_CHECKOUTS or (job_id, index) == ("changes", 1):
+                if (job_id, index) in MASTER_CHECKOUTS and ref is not None:
+                    problems.append(f"the master checkout of {job_id!r} carries a ref ({ref})")
+            elif ref != SHA_REF:
+                problems.append(f"a checkout of {job_id!r} does not carry `ref: {SHA_REF}`")
+    steps = _steps(cast("Data", jobs.get("changes", {"steps": []})))
+    positions = {id(step): number for number, step in enumerate(steps)}
+    guards = [step for step in steps if step.get("run") == REF_GUARD_RUN]
+    checks = [step for step in steps if step.get("run") == SHA_CHECK_RUN]
+    heads = [step for step in _checkouts(jobs.get("changes", {"steps": []})) if "if" in step]
+    if len(guards) != 1 or guards[0].get("env") != {"EVENT": EVENT_EXPRESSION, "REF": REF_EXPRESSION}:
+        problems.append("`changes` has no ref guard with EVENT and REF from env:")
+    if len(checks) != 1 or checks[0].get("if") != DISPATCH_ONLY or checks[0].get("env") != {
+        "SHA": SHA_REF
+    }:
+        problems.append("`changes` has no dispatch-only sha check with SHA from env:")
+    if len(heads) != 1 or heads[0].get("if") != DISPATCH_ONLY or heads[0].get("with") != {
+        "ref": SHA_REF,
+        "path": "head",
+        "fetch-depth": 0,
+    }:
+        problems.append("`changes` has no dispatch-only checkout of the sha under `head/`")
+    elif guards and checks and not (
+        positions[id(guards[0])] < positions[id(heads[0])]
+        and positions[id(checks[0])] < positions[id(heads[0])]
+    ):
+        problems.append("the head is checked out before the ref guard and the sha check")
     return problems
 
 
