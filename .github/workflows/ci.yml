@@ -155,7 +155,7 @@ jobs:
       - run: uv run --no-project python -m scripts.docs.api_breaks
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
-  e2e:
+  e2e-shard:
     needs: changes
     if: needs.changes.outputs.e2e == 'true'
     runs-on: ubuntu-24.04
@@ -188,6 +188,17 @@ jobs:
           name: e2e-test-results-${{ matrix.shard }}
           path: web/test-results/
           retention-days: 14
+  # One check-run named exactly `e2e`, green only when every shard is: the job `ci_covers.web-e2e`
+  # names (the matrix itself reports `e2e-shard (N)`). No checkout, no `uv`, no check (ADR-0067).
+  e2e:
+    needs: [changes, e2e-shard]
+    if: always() && needs.changes.outputs.e2e == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - env:
+          RESULT: ${{ needs.e2e-shard.result }}
+        run: |-
+          test "$RESULT" = success || { echo "e2e shards: $RESULT"; exit 1; }
   # Reported, never gated: a failure here is a warning in ci-ok (ADR-0067).
   coverage:
     needs: [changes, pytest, vitest]
@@ -240,7 +251,7 @@ jobs:
         run: |-
           echo "Coverage failed: no pytest data from $(printf '%s' "$MATRIX" | jq '.include | length') shards (a shard failed before uploading, or none ran)." | tee -a "$GITHUB_STEP_SUMMARY" && exit 1
   ci-ok:
-    needs: [changes, checks, web, docs, pytest, vitest, e2e, coverage]
+    needs: [changes, checks, web, docs, pytest, vitest, e2e-shard, e2e, coverage]
     if: always()
     runs-on: ubuntu-24.04
     steps:

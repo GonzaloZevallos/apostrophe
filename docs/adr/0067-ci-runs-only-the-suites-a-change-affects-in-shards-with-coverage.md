@@ -78,3 +78,33 @@ libre al rebasar.
 - **Verificación.** Nada en el pull request puede ejercer el patrón de rama de GitHub. Después del merge,
   el Operator empuja un head a `agentic-ci/<x>` y comprueba que el CI arranca y que `ci-ok` reporta sobre
   ese head.
+
+## Addendum GH-557 (parte 2): `e2e-shard` y el agregador `e2e`
+
+- **La división y por qué.** El job de matriz que se llamaba `e2e` ahora es `e2e-shard`, con el cuerpo
+  intacto. Una matriz publica un check-run por shard, `e2e-shard (1)`, `e2e-shard (2)` y así, nunca uno
+  llamado `e2e`; antes, `e2e (1)`. GH-453 del sistema agentic compara el nombre del job con los check-runs
+  de forma exacta, así que ninguno de esos nombres puede cubrir un check que agotó el tiempo en local. Un
+  job nuevo `e2e` agrega ese único check-run.
+- **Semántica del agregador.** `e2e` tiene `needs: [changes, e2e-shard]` e
+  `if: always() && needs.changes.outputs.e2e == 'true'`. `always()` hace que corra aunque un shard falle
+  o se cancele, y la bandera `e2e` lo omite cuando el cambio no selecciona ningún spec. Su único paso lee
+  `needs.e2e-shard.result` por `env:` y falla salvo que sea `success`: verde solo si todos los shards lo
+  están. No hace checkout, no usa `uv` y no corre ningún check. `ci-ok` depende de ambos y
+  `scripts/ci_verdict.py` juzga ambos con la bandera `e2e`, de modo que una matriz cancelada con un
+  agregador en rojo se nombra en las dos líneas.
+- **`ci_covers`.** `.agentic/stack.yaml` declara, como última clave,
+  `ci_covers: {web-e2e: {job: e2e, failed: '✘|^\s*\d+ failed\b'}}`. Si `web-e2e` agota el tiempo en
+  local, el sistema difiere a CI cuando el check-run `e2e` está en verde, salvo que la salida local ya
+  contenga una línea que cumpla `failed`. Con `retries: 0`, el reporter de lista imprime cada falla final
+  al terminar el test, por lo que en un timeout actúa la rama `✘`; el resumen `N failed` puede no
+  llegar a imprimirse. La rama `✘` no está anclada a propósito: una coincidencia de más solo rechaza el
+  diferimiento y cuesta una nueva corrida, mientras que una que no se detecta es la dirección insegura.
+  La regex tiene menos de 200 caracteres y ninguna repetición anidada. `tests/test_stack_ci.py` la lee de
+  `stack.yaml`, nunca la copia.
+- **Riesgos conocidos.** (1) Un head que solo toca el backend, o cualquiera cuyo diff no seleccione
+  ningún spec, omite `e2e`: no queda cubierto. (2) "Cubierto" es la selección que `scripts/ci_changes.py`
+  calculó para el diff de ese head, no la suite completa local; es la misma selección que el Gate ya acepta
+  para cada merge. (3) Una corrida cancelada no cubre nada. (4) La clave se lee en la base de la tarea:
+  solo rige para tareas cuya base sea posterior a este merge.
+
