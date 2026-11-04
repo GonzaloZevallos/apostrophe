@@ -92,3 +92,13 @@ posteriores; no se investigó por qué.
 - El sistema agéntico debe conservar el junit, la traza y el mensaje de un `web-e2e` rojo en `full_checks`.
 - El límite de 1500 s del sistema agéntico queda por debajo de los 1665 a 1741 s medidos para `web-e2e` en el nivel
   completo en paralelo.
+
+## CI de la cabeza integrada `ffe667da`
+
+El `full_checks` marcó `pytest` y `e2e` como "sin terminar en 1500 s". La corrida de CI de esa cabeza
+(`gh run view 41784657384`) terminó en verde: `ci-ok` pasó a las 06:33:13Z, 14 min 39 s después del push, con todos
+los trabajos en `success`, incluidos los cuatro de `pytest` y los cuatro de `e2e` (el más largo, `e2e (1)`, tardó
+unos 14 min). Es una sola corrida, no una tasa. No hay un fallo de `pytest` ni de `e2e` que corregir en el
+código; el "sin terminar" es el límite de 1500 s del sistema agéntico, el mismo que ya miden las corridas de
+arriba (1665 a 1741 s para `web-e2e` en el nivel completo local en paralelo). Ese límite no está en este repo y
+`web/playwright.config.ts` no se tocó.
