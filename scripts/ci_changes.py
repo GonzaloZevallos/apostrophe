@@ -12,12 +12,12 @@ means every suite is selected. Nothing
 here imports or runs a node tool; vitest's guard tests are found the way `affected.py` finds them,
 by importing it. Only `main` runs git, through the `Runner` that `affected.py` defines.
 
-    ci_changes.py <event name> <ref> [<sha> <root>]    prints `key=value` lines, for `$GITHUB_OUTPUT`
+    ci_changes.py <event name> <ref> [<sha> <root>]    prints `key=value` lines for `$GITHUB_OUTPUT`
 
-`sha` and `root` are read only for `workflow_dispatch`; there `root` replaces the checkout root, and
-every git call and every read of the tree goes through it. A missing or malformed sha, a ref other
-than `refs/heads/master`, a `root` whose HEAD is not the sha or a failed merge-base or diff selects
-everything with an empty `base_ref`; the script never exits non-zero for these.
+`sha` and `root` are read only for `workflow_dispatch`; there `root` replaces the checkout root,
+and every git call and every read of the tree goes through it. A missing or malformed sha, a
+ref other than `refs/heads/master`, a `root` whose HEAD is not the sha or a failed merge-base or
+diff selects everything with an empty `base_ref`; the script never exits non-zero for these.
 """
 
 from __future__ import annotations

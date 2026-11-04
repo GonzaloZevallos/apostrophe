@@ -393,8 +393,10 @@ def _changes_problems(changes: Data | None) -> list[str]:
             problems.append(
                 "the event and ref do not reach ci_changes only through env: EVENT, REF"
             )
-        if "${{" in step["run"] or env.get("SHA") != SHA_REF or (
-            env.get("HEAD_ROOT") != HEAD_ROOT_EXPRESSION
+        if (
+            "${{" in step["run"]
+            or env.get("SHA") != SHA_REF
+            or (env.get("HEAD_ROOT") != HEAD_ROOT_EXPRESSION)
         ):
             problems.append(
                 "the sha and head root do not reach ci_changes only through env: SHA, HEAD_ROOT"
@@ -436,21 +438,35 @@ def _dispatch_problems(workflow: Data) -> list[str]:
     guards = [step for step in steps if step.get("run") == REF_GUARD_RUN]
     checks = [step for step in steps if step.get("run") == SHA_CHECK_RUN]
     heads = [step for step in _checkouts(jobs.get("changes", {"steps": []})) if "if" in step]
-    if len(guards) != 1 or guards[0].get("env") != {"EVENT": EVENT_EXPRESSION, "REF": REF_EXPRESSION}:
+    if len(guards) != 1 or guards[0].get("env") != {
+        "EVENT": EVENT_EXPRESSION,
+        "REF": REF_EXPRESSION,
+    }:
         problems.append("`changes` has no ref guard with EVENT and REF from env:")
-    if len(checks) != 1 or checks[0].get("if") != DISPATCH_ONLY or checks[0].get("env") != {
-        "SHA": SHA_REF
-    }:
+    if (
+        len(checks) != 1
+        or checks[0].get("if") != DISPATCH_ONLY
+        or checks[0].get("env") != {"SHA": SHA_REF}
+    ):
         problems.append("`changes` has no dispatch-only sha check with SHA from env:")
-    if len(heads) != 1 or heads[0].get("if") != DISPATCH_ONLY or heads[0].get("with") != {
-        "ref": SHA_REF,
-        "path": "head",
-        "fetch-depth": 0,
-    }:
+    if (
+        len(heads) != 1
+        or heads[0].get("if") != DISPATCH_ONLY
+        or heads[0].get("with")
+        != {
+            "ref": SHA_REF,
+            "path": "head",
+            "fetch-depth": 0,
+        }
+    ):
         problems.append("`changes` has no dispatch-only checkout of the sha under `head/`")
-    elif guards and checks and not (
-        positions[id(guards[0])] < positions[id(heads[0])]
-        and positions[id(checks[0])] < positions[id(heads[0])]
+    elif (
+        guards
+        and checks
+        and not (
+            positions[id(guards[0])] < positions[id(heads[0])]
+            and positions[id(checks[0])] < positions[id(heads[0])]
+        )
     ):
         problems.append("the head is checked out before the ref guard and the sha check")
     return problems
@@ -814,8 +830,8 @@ def _tokenize(text: str) -> list[tuple[str, str]]:
 
 
 class _Expression:
-    """`||`, `&&`, `==`, parentheses, `startsWith(a, b)`, single-quoted strings and the contexts
-    `github.event_name` and `github.ref`; the grammar is one level per operator, loosest first."""
+    """`||`, `&&`, `==`, parentheses, `startsWith(a, b)`, `format('{0}…', …)`, single-quoted strings
+    and the contexts given; the grammar is one level per operator, loosest first."""
 
     def __init__(self, text: str, context: dict[str, str]) -> None:
         self.tokens = _tokenize(text)
@@ -882,17 +898,45 @@ class _Expression:
             return (
                 isinstance(subject, str) and isinstance(prefix, str) and subject.startswith(prefix)
             )
+        if kind == "name" and text == "format":
+            self._expect("(")
+            template = self._or()
+            values: list[bool | str] = []
+            while self._take(","):
+                values.append(self._or())
+            self._expect(")")
+            if not isinstance(template, str):
+                raise ValueError("format() takes a string template")
+            return template.format(*values)
         if kind == "name" and text in self.context:
             return self.context[text]
         raise ValueError(f"unsupported token {token}")
 
 
-def _cancels(workflow: Data, event: str, ref: str) -> bool:
+def _context(event: str, ref: str, sha: str = "") -> dict[str, str]:
+    return {
+        "github.event_name": event,
+        "github.ref": ref,
+        "github.workflow": "CI",
+        "inputs.sha": sha,
+    }
+
+
+def _cancels(workflow: Data, event: str, ref: str, sha: str = "") -> bool:
     raw = cast("str", workflow["concurrency"]["cancel-in-progress"])
     inner = re.fullmatch(r"\$\{\{(.*)\}\}", raw.strip(), re.DOTALL)
     assert inner is not None, raw
-    context = {"github.event_name": event, "github.ref": ref}
-    return _Expression(inner.group(1), context).evaluate() is True
+    return _Expression(inner.group(1), _context(event, ref, sha)).evaluate() is True
+
+
+def _interpolate(raw: str, event: str, ref: str, sha: str = "") -> str:
+    """A string with `${{ }}` parts, as GitHub renders it with the contexts given."""
+    context = _context(event, ref, sha)
+    return re.sub(
+        r"\$\{\{(.*?)\}\}",
+        lambda found: str(_Expression(found.group(1), context).evaluate()),
+        raw,
+    )
 
 
 @pytest.mark.parametrize(
@@ -1385,3 +1429,127 @@ def test_a_failed_regex_with_a_nested_unbounded_repetition_is_refused() -> None:
     expected = ["ci_covers.web-e2e.failed has a nested unbounded repetition"]
     assert _failed_regex_problems("(a+)+") == expected
     assert _failed_regex_problems("(x*y)*b") == expected
+
+
+# --- the dispatch of master's workflow at a head's sha (GH-562) -----------------------------------
+
+DISPATCH_SHA = "0123456789abcdef" * 4
+PUSH_CASES = [
+    ("push", "refs/heads/master"),
+    ("pull_request", "refs/pull/1/merge"),
+    ("push", "refs/heads/agentic-ci/GH-1"),
+    ("push", "refs/heads/agentic-ci-x"),
+    ("push", "refs/tags/agentic-ci/x"),
+]
+
+
+def test_the_real_workflow_is_dispatched_with_one_required_sha_input() -> None:
+    dispatch = _triggers(WORKFLOW)["workflow_dispatch"]
+    assert set(dispatch["inputs"]) == {"sha"}
+    assert dispatch["inputs"]["sha"]["required"] is True
+    assert dispatch["inputs"]["sha"]["type"] == "string"
+    assert WORKFLOW["run-name"] == RUN_NAME
+    assert WORKFLOW["concurrency"]["group"] == GROUP
+
+
+@pytest.mark.parametrize(("event", "ref"), PUSH_CASES)
+def test_push_and_pull_request_keep_their_group_and_an_empty_title(event: str, ref: str) -> None:
+    assert _interpolate(WORKFLOW["concurrency"]["group"], event, ref) == f"ci-CI-{ref}"
+    assert _interpolate(WORKFLOW["run-name"], event, ref) == ""
+
+
+def test_a_dispatch_has_its_own_group_a_title_with_the_sha_and_never_cancels() -> None:
+    ref = "refs/heads/master"
+    group = _interpolate(WORKFLOW["concurrency"]["group"], "workflow_dispatch", ref, DISPATCH_SHA)
+    title = _interpolate(WORKFLOW["run-name"], "workflow_dispatch", ref, DISPATCH_SHA)
+    assert group == f"ci-CI-{ref}-{DISPATCH_SHA}"
+    assert title == f"CI at {DISPATCH_SHA}"
+    assert _cancels(WORKFLOW, "workflow_dispatch", ref, DISPATCH_SHA) is False
+
+
+def test_the_real_workflow_has_no_dispatch_problem() -> None:
+    assert _dispatch_problems(WORKFLOW) == []
+
+
+def test_a_dispatch_input_that_is_optional_or_extra_is_refused() -> None:
+    message = "`on.workflow_dispatch` is not exactly one required string input `sha`"
+    workflow = _mutated()
+    _triggers(workflow)["workflow_dispatch"]["inputs"]["sha"]["required"] = False
+    assert message in _problems(workflow)
+
+    workflow = _mutated()
+    _triggers(workflow)["workflow_dispatch"]["inputs"]["more"] = {"type": "string"}
+    assert message in _problems(workflow)
+
+
+def test_a_run_name_or_group_that_drops_the_sha_is_refused() -> None:
+    workflow = _mutated()
+    workflow["run-name"] = "CI"
+    workflow["concurrency"]["group"] = "ci-${{ github.workflow }}-${{ github.ref }}"
+    problems = _problems(workflow)
+    assert f"`run-name` is not {RUN_NAME}" in problems
+    assert any(p.startswith("concurrency is not") for p in problems)
+
+
+def test_a_suite_checkout_without_the_sha_is_refused() -> None:
+    workflow = _mutated()
+    del workflow["jobs"]["pytest"]["steps"][0]["with"]
+    assert f"a checkout of 'pytest' does not carry `ref: {SHA_REF}`" in _problems(workflow)
+
+
+def test_a_master_checkout_with_a_ref_is_refused() -> None:
+    for job in ("changes", "ci-ok"):
+        workflow = _mutated()
+        step = _checkouts(workflow["jobs"][job])[0]
+        step.setdefault("with", {})["ref"] = SHA_REF
+        assert f"the master checkout of {job!r} carries a ref ({SHA_REF})" in _problems(workflow)
+
+
+def test_a_head_checkout_that_runs_on_every_event_or_elsewhere_is_refused() -> None:
+    message = "`changes` has no dispatch-only checkout of the sha under `head/`"
+    workflow = _mutated()
+    del workflow["jobs"]["changes"]["steps"][3]["if"]
+    assert message in _problems(workflow)
+
+    workflow = _mutated()
+    workflow["jobs"]["changes"]["steps"][3]["with"]["path"] = "."
+    assert message in _problems(workflow)
+
+
+def test_a_head_checked_out_before_the_guards_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["changes"]["steps"]
+    steps.insert(1, steps.pop(3))
+    assert "the head is checked out before the ref guard and the sha check" in _problems(workflow)
+
+
+def test_a_ref_guard_or_sha_check_that_changed_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["changes"]["steps"][1]["run"] = 'test "$REF" = refs/heads/master || true'
+    assert "`changes` has no ref guard with EVENT and REF from env:" in _problems(workflow)
+
+    workflow = _mutated()
+    del workflow["jobs"]["changes"]["steps"][2]["if"]
+    assert "`changes` has no dispatch-only sha check with SHA from env:" in _problems(workflow)
+
+    workflow = _mutated()
+    workflow["jobs"]["changes"]["steps"][2]["env"] = {"SHA": "x"}
+    assert "`changes` has no dispatch-only sha check with SHA from env:" in _problems(workflow)
+
+
+def test_the_sha_or_head_root_inside_run_instead_of_env_is_refused() -> None:
+    message = "the sha and head root do not reach ci_changes only through env: SHA, HEAD_ROOT"
+    workflow = _mutated()
+    del workflow["jobs"]["changes"]["steps"][-1]["env"]["SHA"]
+    assert message in _problems(workflow)
+
+    workflow = _mutated()
+    workflow["jobs"]["changes"]["steps"][-1]["env"]["HEAD_ROOT"] = "head"
+    assert message in _problems(workflow)
+
+
+def test_the_evaluator_formats_only_with_its_template() -> None:
+    context = _context("push", "r", "abc")
+    assert _Expression("format('-{0}', inputs.sha)", context).evaluate() == "-abc"
+    with pytest.raises(ValueError):
+        _Expression("format(github.ref == 'r')", context).evaluate()
