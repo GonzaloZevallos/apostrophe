@@ -4,7 +4,7 @@ Bloqueado: falta el pegado del humano en el issue. Sin él no se escribe ninguno
 
 ## Qué falta
 
-Reverificado en la devolución del review (2026-11-04): el issue y el documento de la tarea siguen sin el pegado.
+Reverificado en la segunda devolución del review (2026-11-04): el issue y el documento de la tarea siguen sin el pegado.
 
 Faltan los tres artefactos. Ninguno estaba en el documento de la tarea ni en el issue al momento de escribir este archivo.
 
