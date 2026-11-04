@@ -57,7 +57,7 @@ if [ "$MODE" = offset ]; then
 fi
 case " ${NAMES[*]} " in *" web-e2e "*) ;; *) echo "no web-e2e check" >&2; exit 2 ;; esac
 
-count_runs() { grep -c "^run tree=$TREE mode=$MODE " "$LOG"; }
+count_runs() { grep -c "^run tree=$TREE head=[0-9a-f]* mode=$MODE " "$LOG"; }
 DONE=$(count_runs)
 echo "start tree=$TREE head=$HEAD_SHORT mode=$MODE cap=$CAP logged=$DONE checks=${NAMES[*]// /,} time=$(now)" >>"$LOG"
 
@@ -119,6 +119,12 @@ while [ "$n" -lt "$CAP" ]; do
   [ -n "$SIG" ] || SIG=-
   RUNDIR=$(grep -Eo 'traces in [^ ]+' "$OUT" | tail -n1 | sed 's/traces in //')
   [ -n "$RUNDIR" ] || RUNDIR=-
+  # The state of web/dist at the end of every run, green or red (the brief asks for it at the
+  # failing step or at the end): file count, then the listing of its top and of assets/.
+  {
+    echo "web/dist at the end of run $n ($(now)): $(find "$TOP/web/dist" -type f 2>/dev/null | wc -l) files"
+    ls -la --time-style=full-iso "$TOP/web/dist" "$TOP/web/dist/assets" 2>&1 | head -40
+  } >"${LOG%.log}-dist-$MODE-${HEAD_SHORT}-$n.txt"
   if [ "$E2E_RC" -eq 0 ]; then
     RESULT=green FAILING=-
   else
