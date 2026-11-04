@@ -1,0 +1,13 @@
+start tree=c287d411245eec20db06fe3b171ca229b43a3ca7 head=323ee6c3 mode=offset cap=1 logged=0 checks=tests tests-fast lint types web-types web-lint web-tests web-build web-e2e time=2026-11-04T02:33:57Z
+run tree=c287d411245eec20db06fe3b171ca229b43a3ca7 head=323ee6c3 mode=offset n=1 load_start=4.63,5.00,4.96 load_end=6.97,8.76,12.81 beside=tests,tests-fast,lint,types,web-types,web-lint,web-tests web_build_offset_s=never-started wall_s=1693 e2e_secs=1693 result=green failing=- signature=- run_dir=-
+check tree=c287d411245eec20db06fe3b171ca229b43a3ca7 mode=offset n=1 name=tests rc=1 secs=558
+check tree=c287d411245eec20db06fe3b171ca229b43a3ca7 mode=offset n=1 name=tests-fast rc=0 secs=277
+check tree=c287d411245eec20db06fe3b171ca229b43a3ca7 mode=offset n=1 name=lint rc=1 secs=0
+check tree=c287d411245eec20db06fe3b171ca229b43a3ca7 mode=offset n=1 name=types rc=0 secs=88
+check tree=c287d411245eec20db06fe3b171ca229b43a3ca7 mode=offset n=1 name=web-types rc=0 secs=115
+check tree=c287d411245eec20db06fe3b171ca229b43a3ca7 mode=offset n=1 name=web-lint rc=0 secs=1
+check tree=c287d411245eec20db06fe3b171ca229b43a3ca7 mode=offset n=1 name=web-tests rc=0 secs=649
+check tree=c287d411245eec20db06fe3b171ca229b43a3ca7 mode=offset n=1 name=web-build rc=not-started
+check tree=c287d411245eec20db06fe3b171ca229b43a3ca7 mode=offset n=1 name=web-e2e rc=0 secs=1693
+summary tree=c287d411245eec20db06fe3b171ca229b43a3ca7 head=323ee6c3 mode=offset n=1 red=0 cap=1 time=2026-11-04T03:02:10Z
+start tree=5903c5b39553104d92d149d5f282ea4d7a160cb7 head=e6d47abc mode=offset cap=1 logged=0 checks=tests tests-fast lint types web-types web-lint web-tests web-build web-e2e time=2026-11-04T03:02:44Z

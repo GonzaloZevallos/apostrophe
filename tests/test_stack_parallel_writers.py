@@ -77,8 +77,9 @@ WRITES: dict[str, Entry] = {
     ),
     # web/package.json:11 `test` is `vitest run`, which keeps its cache in node_modules/.vite.
     "web-tests": Entry(frozenset({VITE_CACHE}), frozenset(), "web/package.json:11"),
-    # web/package.json:8 `build` is `tsc -b && vite build`: the buildinfo and web/dist.
-    "web-build": Entry(frozenset({BUILDINFO, DIST}), frozenset(), "web/package.json:8"),
+    # `web-build` (web/package.json:8, `tsc -b && vite build`) has no entry on purpose: it wrote
+    # web/dist beside `web-e2e` and the buildinfo beside `web-types` (GH-543). A check added back
+    # needs an entry, and the writer rules below refuse it while it shares a path.
     # web/package.json:14 `e2e` is `sh scripts/e2e.sh`; web/scripts/e2e.sh:23 runs `npx vite
     # build` (web/dist), and Playwright then serves web/dist from uvicorn (app/main.py:336-347)
     # and writes its run directory (web/scripts/e2e.sh:19).

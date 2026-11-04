@@ -13,13 +13,12 @@ setup:
   web-browsers: npx --prefix web playwright install chromium
 checks:
   tests: uv run --no-project pytest -n 8
-  tests-fast: uv run --no-project pytest -n 4 -p no:cacheprovider tests/architecture tests/migrations tests/test_business_isolation.py tests/test_gated_routes.py tests/test_stack_affected.py tests/test_stack_ci.py
+  tests-fast: uv run --no-project pytest -n 4 -p no:cacheprovider tests/architecture tests/migrations tests/test_business_isolation.py tests/test_gated_routes.py tests/test_stack_affected.py tests/test_stack_ci.py tests/test_stack_parallel_writers.py
   lint: uv run --no-project ruff check .
   types: uv run --no-project mypy app tests scripts
   web-types: npm --prefix web run typecheck
   web-lint: npm --prefix web run lint
   web-tests: npm --prefix web test
-  web-build: npm --prefix web run build
   # web-e2e is back (GH-476, after #428): it is a check of the full tier and of CI's `e2e` job,
   # and it gates the merge through `ci-ok`. It is not in `delivery_checks`.
   web-e2e: npm --prefix web run e2e
@@ -29,14 +28,23 @@ checks:
 # writer (.ruff_cache lint, .mypy_cache types, web/node_modules/.tmp web-types,
 # web/node_modules/.vite web-tests, .pytest_cache tests; web-lint writes nothing), .venv and
 # uv.lock are only read, only `tests` binds ports (from the code; other worktrees' servers hid
-# them in `ss`), and the tests that need `web/dist` use a tmp_path. No shared state found. The
-# 5-serial/5-parallel medians were not taken: the load average was 33-148 from other worktrees the
-# whole time, far over the 2.0 cut-off. Parallel runs (checks in parallel, load 35-60): `tests`
-# took 650 s under `-n auto`, over the 600 s check timeout, so it is capped at `-n 8`: 501 s, the
-# whole gate 501 s, counts equal to alone (pytest 3480 passed; vitest 208 files, 2952 tests).
-# Three load-only reds were found and fixed in the tests' own timing (two in
-# tests/test_e2e_clock.py, one budget in tests/results/test_period_figures.py); then 30 stress
-# iterations of the load-sensitive tests, with the other checks looping at load 57-148, were green.
+# them in `ss`), and the tests that need `web/dist` use a tmp_path. That inventory said "no shared
+# state found"; it was wrong (GH-543, GH-483's `web-e2e` flake): `web-build` (`tsc -b && vite
+# build`) and `web-e2e` (`vite build` in web/scripts/e2e.sh, then Playwright against servers that
+# serve web/dist) both emptied and rewrote web/dist while specs ran, and `web-build` and
+# `web-types` both wrote the `tsc -b` buildinfo. `web-build` is therefore not a local check: no
+# local check is lost, because `web-types` runs the same `tsc -b` over the same tsconfig
+# references and `web-e2e` runs `vite build`; CI's `web` job still runs `npm --prefix web run
+# build`. Every path now has one writer, pinned by tests/test_stack_parallel_writers.py (it is in
+# `tests-fast`); a check added here needs an entry there. Evidence:
+# docs/evidence/GH-543-e2e-flake.md. The 5-serial/5-parallel medians were not taken: the load
+# average was 33-148 from other worktrees the whole time, far over the 2.0 cut-off. Parallel runs
+# (checks in parallel, load 35-60): `tests` took 650 s under `-n auto`, over the 600 s check
+# timeout, so it is capped at `-n 8`: 501 s, the whole gate 501 s, counts equal to alone (pytest
+# 3480 passed; vitest 208 files, 2952 tests). Three load-only reds were found and fixed in the
+# tests' own timing (two in tests/test_e2e_clock.py, one budget in
+# tests/results/test_period_figures.py); then 30 stress iterations of the load-sensitive tests,
+# with the other checks looping at load 57-148, were green.
 # Read at a task's base, like every key here.
 parallel_checks: true
 # `delivery_checks` (agentic-system ADR-0064): the fast tier every subtask delivery and
@@ -58,7 +66,8 @@ parallel_checks: true
 # web diff its affected form took 83.9-90.4 s (loads 41.00 -> 38.37 and 53.46 -> 47.99), and
 # an app-only diff selects nothing, so it reruns in full (180.3 s alone, load 40.89 -> 41.12).
 # `web-e2e` is not here: it runs in the full tier and in CI (GH-476). `web-build` leaves the
-# fast tier too (GH-476); it still runs in CI's `web` job and in the full tier. The shared-state inventory above still holds:
+# fast tier too (GH-476) and, after GH-543, the checks altogether; it still runs in CI's `web` job.
+# The shared-state inventory above holds:
 # `tests-fast` carries `-p no:cacheprovider`, so `.pytest_cache` keeps one writer (`tests`).
 # Read at a task's base, like every key here.
 delivery_checks:
