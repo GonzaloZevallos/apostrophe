@@ -20,7 +20,7 @@ from collections.abc import Iterator
 from dataclasses import replace
 from datetime import date, datetime
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 import pytest
 from fastapi import FastAPI
@@ -32,6 +32,7 @@ from starlette.datastructures import State
 from app.clock import Clock
 from app.db import make_engine
 from app.pinned_catalog.adapters import upkeep_trigger
+from app.pinned_catalog.domain.errors import TelegramUnreachable
 from app.settings import Settings
 from app.shared.language import ENGLISH, Language
 from scripts.stress.squeezed_mobile_app import (
@@ -42,6 +43,7 @@ from scripts.stress.squeezed_mobile_app import (
     squeezed_engine,
 )
 from tests.conftest import PASSWORD, SETTINGS, invite
+from tests.fakes.telegram import FakeTelegram
 
 LOCALES = Path(__file__).resolve().parent / "fixtures" / "locales"
 GERMAN = Language("de")
@@ -172,10 +174,10 @@ def _sign_in(client: TestClient, url: str, now: datetime) -> None:
     client.headers["Authorization"] = f"Bearer {accepted.json()['token']}"
 
 
-def _state(client: TestClient) -> str:
+def _status(client: TestClient) -> dict[str, Any]:
     status = client.get("/pinned-catalog/status").json()["status"]
     assert isinstance(status, dict)
-    return str(status["state"])
+    return cast(dict[str, Any], status)
 
 
 def test_the_real_upkeep_syncs_the_pin_on_a_pool_of_one(squeezed_app: FastAPI) -> None:
@@ -197,21 +199,27 @@ def test_the_real_upkeep_syncs_the_pin_on_a_pool_of_one(squeezed_app: FastAPI) -
             json={"token": TOKEN, "own_chat": "111111", "channel_chat": "@canal"},
         )
         assert client.post("/pinned-catalog/publish").status_code == 200
-        assert _state(client) == "up_to_date"
+        assert _status(client)["state"] == "up_to_date"
+        # The next edit to Telegram fails, so an upkeep that really runs leaves a record the
+        # API shows (`telegram_unreachable`, as in the trigger tests); one that cannot get a
+        # connection leaves the pin as it was.
+        telegram = cast(FakeTelegram, squeezed_app.state.pinned_catalog_telegram.api)
+        telegram.fail_next(TelegramUnreachable())
 
+        # Only the write is squeezed: the status read below needs two connections of its
+        # own (the request's Session and the snapshot's), which says nothing about upkeep.
         squeezed = squeezed_engine(url, {POOL_SIZE: "1", MAX_OVERFLOW: "0", POOL_TIMEOUT: "1"})
         squeezed_app.state.engine = squeezed
         try:
-            changed = client.put(
-                f"/catalog/products/{product['id']}",
-                json={"shown": True, "emoji": None, "indica_share": None, "aroma": "Cítrico"},
-            )
-            assert changed.status_code == 200, changed.text
-
-            assert _state(client) == "up_to_date"
+            # A write that changes the pinned text (a catalog attribute does not), so the
+            # upkeep has an edit to attempt.
+            changed = client.put("/catalog/header-footer", json={"header": "Hola!", "footer": ""})
         finally:
             squeezed_app.state.engine = roomy
             squeezed.dispose()
+        assert changed.status_code == 200, changed.text
+
+        assert _status(client)["reason"] == "telegram_unreachable"
 
 
 def test_the_squeezed_engine_refuses_a_database_that_has_no_pool_to_squeeze() -> None:

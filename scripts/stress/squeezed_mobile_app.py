@@ -20,7 +20,7 @@ import threading
 import traceback
 from collections.abc import Mapping
 from types import TracebackType
-from typing import Any, cast
+from typing import cast
 
 from fastapi import FastAPI
 from sqlalchemy import create_engine, event
@@ -37,6 +37,7 @@ POOL_TIMEOUT = "STRESS_POOL_TIMEOUT"
 DIAGNOSTICS = "STRESS_DIAGNOSTICS"
 
 _STACK_FRAMES = 12
+_HELD_FRAMES = 3
 _OUR_CODE = ("/app/", "/scripts/", "/tests/")
 
 
@@ -54,14 +55,24 @@ def _holder_stack() -> str:
 
 def _watch_pool(engine: Engine) -> None:
     pool = engine.pool
+    guard = threading.Lock()
+    live: dict[int, str] = {}  # connection record -> where it was checked out, until checked in
 
-    def checkout(_dbapi: DBAPIConnection, _record: ConnectionPoolEntry, _proxy: object) -> None:
+    def checkout(_dbapi: DBAPIConnection, record: ConnectionPoolEntry, _proxy: object) -> None:
         out = cast(QueuePool, pool).checkedout()
+        stack = _holder_stack()
+        with guard:
+            others = [held for key, held in live.items() if key != id(record)]
+            live[id(record)] = stack
+        held_by = "; ".join(" > ".join(held.split(" > ")[-_HELD_FRAMES:]) for held in others)
         _say(
-            f"checkout checkedout={out} thread={threading.current_thread().name} {_holder_stack()}"
+            f"checkout checkedout={out} thread={threading.current_thread().name} {stack}"
+            f" | held_by=[{held_by}]"
         )
 
-    def checkin(_dbapi: DBAPIConnection | None, _record: ConnectionPoolEntry) -> None:
+    def checkin(_dbapi: DBAPIConnection | None, record: ConnectionPoolEntry) -> None:
+        with guard:
+            live.pop(id(record), None)
         _say(f"checkin checkedout={cast(QueuePool, pool).checkedout()}")
 
     event.listen(pool, "checkout", checkout)
@@ -69,14 +80,14 @@ def _watch_pool(engine: Engine) -> None:
 
 
 class _CountedLock:
-    def __init__(self, inner: Any, counter: _Waiters) -> None:
+    def __init__(self, inner: threading.Lock, counter: _Waiters) -> None:
         self._inner = inner
         self._counter = counter
 
     def __enter__(self) -> bool:
         self._counter.arrive()
         try:
-            return cast(bool, self._inner.__enter__())
+            return self._inner.__enter__()
         finally:
             self._counter.leave()
 
