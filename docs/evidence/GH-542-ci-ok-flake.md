@@ -262,3 +262,24 @@ base_ref=HEAD^1
 ```
 
 `pytest` se elige (los shards `always`, `areas-1`, `areas-2` y `areas-3`; `tests/test_session_release.py` cae en `always`). **`e2e` NO se elige** para ese diff: la suposición del plan de que el e2e se selecciona es falsa si la corrección toca solo esos tres archivos. Consecuencia: en CI la corrección la cubren `tests/test_session_release.py` y el resto de pytest, y el seed móvil (`stress.sh`) solo corre a mano; el criterio de la sección 7 no se verifica en CI con ese diff.
+
+## 9. Corrección (parte 2, subtarea `fix`)
+
+**Cambio:** `schedule_upkeep` (`app/pinned_catalog/adapters/upkeep_trigger.py`) recibe la `Session` cacheada de la petición (`Depends(get_session)`, el mismo objeto que usan `require_session` y el router) y la tarea de fondo hace `session.close()` antes de `run_upkeep_safely`. Los dos llamadores directos (`app/accounts/adapters/language_router.py:52`, `app/pricing_settings/adapters/router.py:43`) pasan la `Session` que su endpoint ya tiene. Causa quitada: FastAPI cierra una dependencia con `yield` solo después de las tareas de fondo, así que la conexión de la petición seguía tomada durante todo el upkeep (stack de la sección 8: `held_by=[put_pricing_settings:44 > current:28 > _row:20]` mientras `run_upkeep_safely:50` pedía la suya). No se tocó `app/db.py`, ningún `pool_size`/`max_overflow`/`pool_timeout`, ni `ci.yml`.
+
+**Árbol corregido:** `ceab79a27fd6185a8776e158b507bdff3296185d` (`git rev-parse HEAD^{tree}` del commit del cambio). Los tests de abajo se corrieron con el mismo `app/` y `tests/` (solo `stress.log` difería); la salida está en `$TASK_EVIDENCE_DIR/fix-session-release-ceab79a2.txt`. **Ninguna re-ejecución verde de CI se cita como prueba.**
+
+| Prueba | Antes (`cd028283…`, sin corrección) | Después (`ceab79a2…`) |
+|---|---|---|
+| Test A, `PUT /catalog/products/{id}`, `PUT /pricing-settings`, `PUT /business/language` | 3 de 3 rojas, `assert [1] == [0]` | 3 de 3 verdes (`checkedout()` en 0 al empezar el upkeep) |
+| Test A, `POST`/`PATCH /api/products`, y sin cambio (sin upkeep) | verdes | verdes |
+| Test B (upkeep real con pool de 1) | rojo: `assert None == 'telegram_unreachable'` y `pinned catalog sync failed: TimeoutError` | verde |
+| `tests/test_session_release.py` completo | 3 tests rojos de 8 | **8 passed** |
+| `stress.sh squeezed` (pool 2 + 0, 2 s), n = 10 | **3 de 10 rojas** (n=3, 8: `POST /sales -> 500`; n=4: `POST /stock/entries -> 500`; las tres con `TimeoutError`); 7 verdes | **0 de 10 rojas**, 10 verdes (n=1 a 10), `errors=-` en todas; `summary … red=0` |
+| `stress.sh default` (pool 5 + 10, 30 s), n = 30 | 0 de 30 rojas (dato) | 0 de 30 rojas, 30 verdes (dato, no prueba: nunca reprodujo el rojo) |
+
+La afirmación descansa en Test A/B y en la fila `squeezed`; la fila `default` es solo un dato. Las líneas están en `docs/evidence/GH-542/stress.log` (`iter tree=ceab79a2… mode=squeezed n=1..10`, `summary … red=0`; `mode=default n=1..30`, `summary … red=0`).
+
+**Riesgo residual de hilos:** el pico de hilos esperando el lock del negocio en `squeezed` tras la corrección fue de 2 a 5 (`peak_waiters` del log), por debajo de 20; no hay hallazgo para una issue nueva. El upkeep sigue ocupando un hilo de anyio mientras corre.
+
+**Criterio de hecho (punto 7):** `[mobile-setup] › seed the mobile server` ya no depende de que el pool por defecto alcance para el tráfico del seed: ninguna petición con upkeep deja su conexión tomada mientras el upkeep corre, y el seed completo pasa 10 de 10 con un pool de 2 conexiones sin overflow (donde antes fallaba 3 de 10). Límite: con este diff `ci_changes` no elige e2e (sección 8), así que el seed móvil lo verifica `stress.sh` a mano y CI cubre la corrección con `tests/test_session_release.py`.
