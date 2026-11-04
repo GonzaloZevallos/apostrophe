@@ -4,6 +4,8 @@ Bloqueado: falta el pegado del humano en el issue. Sin él no se escribe ninguno
 
 ## Qué falta
 
+Reverificado en la devolución del review (2026-11-04): el issue y el documento de la tarea siguen sin el pegado.
+
 Faltan los tres artefactos. Ninguno estaba en el documento de la tarea ni en el issue al momento de escribir este archivo.
 
 1. **Fila de `gh run list`** del run de `962bffff6a29016e03586d9b3b019aacaba3d071`: run id, `event`, `headBranch`, `headSha` y número de intentos.
