@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 from collections.abc import Sequence
 from pathlib import Path
@@ -1026,3 +1027,163 @@ def test_the_real_tree_selects_everything_for_a_push_and_for_a_fallback_path() -
 
 def test_every_selector_input_exists() -> None:
     assert all((REPO_ROOT / path).is_file() for path in SELECTOR_INPUTS)
+
+
+# --- a manual dispatch of master's ci.yml at a head sha (GH-562, ADR-0067 addendum) -------------
+
+REV_PARSE = ["git", "rev-parse", "HEAD"]
+MERGE_BASE = ["git", "merge-base", "origin/master", "HEAD"]
+HEAD_SHA = "0123456789abcdef" * 4
+BASE_SHA = "f" * 40
+_OBJECT_ID_FULL = re.compile(r"[0-9a-f]{40}|[0-9a-f]{64}")
+
+
+class DispatchRunner:
+    """Answers `rev-parse`, `merge-base` and `diff` by command, and records where each ran."""
+
+    def __init__(
+        self,
+        *,
+        head: CommandResult | None = None,
+        base: CommandResult | None = None,
+        diff: CommandResult | None = None,
+    ) -> None:
+        self.answers = {
+            "rev-parse": head or CommandResult(0, f"{HEAD_SHA}\n"),
+            "merge-base": base or CommandResult(0, f"{BASE_SHA}\n"),
+            "diff": diff or CommandResult(0, "app/catalog/data.py\n"),
+        }
+        self.commands: list[list[str]] = []
+        self.cwds: list[Path] = []
+
+    def __call__(
+        self, command: Sequence[str], *, capture: bool, cwd: Path = REPO_ROOT
+    ) -> CommandResult:
+        self.commands.append(list(command))
+        self.cwds.append(cwd)
+        return self.answers[command[1]]
+
+
+def dispatch(
+    runner: Runner, root: Path, capsys: pytest.CaptureFixture[str], sha: str = HEAD_SHA
+) -> dict[str, str]:
+    assert main(["workflow_dispatch", MASTER_REF, sha, str(root)], runner) == 0
+    return outputs(capsys.readouterr().out.splitlines())
+
+
+def test_a_dispatch_at_master_asks_for_the_merge_base_and_diffs_from_it() -> None:
+    assert base_argv("workflow_dispatch", MASTER_REF) == MERGE_BASE
+    assert diff_argv("workflow_dispatch", MASTER_REF, BASE_SHA) == [*DIFF_FLAGS, BASE_SHA, "HEAD"]
+    assert diff_argv("workflow_dispatch", MASTER_REF, "") is None
+
+
+def test_a_valid_dispatch_diffs_the_head_from_the_merge_base(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    root = make_tree(tmp_path)
+    runner = DispatchRunner()
+
+    printed = dispatch(runner, root, capsys)
+
+    assert runner.commands == [REV_PARSE, MERGE_BASE, [*DIFF_FLAGS, BASE_SHA, "HEAD"]]
+    assert printed["base_ref"] == BASE_SHA
+    assert json.loads(printed["selection"])["selected"] == ["catalog", "sales"]
+    assert printed["pytest"] == "true"
+    assert printed["vitest"] == "false"
+
+
+@pytest.mark.parametrize(
+    ("label", "sha", "runner"),
+    [
+        ("empty sha", "", DispatchRunner()),
+        ("short sha", HEAD_SHA[:7], DispatchRunner()),
+        ("upper-case sha", HEAD_SHA.upper(), DispatchRunner()),
+        ("option as sha", f"--{HEAD_SHA[2:]}", DispatchRunner()),
+        ("head differs", HEAD_SHA, DispatchRunner(head=CommandResult(0, f"{BASE_SHA}\n"))),
+        ("rev-parse fails", HEAD_SHA, DispatchRunner(head=CommandResult(128, ""))),
+        ("merge-base fails", HEAD_SHA, DispatchRunner(base=CommandResult(1, f"{BASE_SHA}\n"))),
+        ("merge-base not hex", HEAD_SHA, DispatchRunner(base=CommandResult(0, "origin\n"))),
+        ("diff fails", HEAD_SHA, DispatchRunner(diff=CommandResult(128, ""))),
+    ],
+)
+def test_a_dispatch_without_a_usable_head_selects_everything_with_no_base_ref(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    label: str,
+    sha: str,
+    runner: DispatchRunner,
+) -> None:
+    root = make_tree(tmp_path)
+    expected = {**outputs(render(select(None, root))), "base_ref": ""}
+
+    printed = dispatch(runner, root, capsys, sha)
+
+    assert printed == expected, label
+    if not _OBJECT_ID_FULL.fullmatch(sha):
+        assert runner.commands == [], label
+
+
+def test_a_dispatch_at_another_ref_selects_everything_without_a_git_call(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    root = make_tree(tmp_path)
+    runner = DispatchRunner()
+
+    assert main(["workflow_dispatch", AGENTIC_REF, HEAD_SHA, str(root)], runner) == 0
+
+    printed = outputs(capsys.readouterr().out.splitlines())
+    assert runner.commands == []
+    assert printed == {**outputs(render(select(None, root))), "base_ref": ""}
+
+
+@pytest.mark.parametrize(
+    ("event", "ref", "expected"),
+    [("pull_request", PR_REF, [[*DIFF_FLAGS, "HEAD^1", "HEAD"]]), ("push", MASTER_REF, [])],
+)
+def test_push_and_pull_request_ignore_the_dispatch_arguments(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    event: str,
+    ref: str,
+    expected: list[list[str]],
+) -> None:
+    root = make_tree(tmp_path)
+    elsewhere = tmp_path / "elsewhere"
+    runner = DispatchRunner(diff=CommandResult(0, "app/catalog/data.py\n"))
+
+    assert main([event, ref, HEAD_SHA, str(elsewhere)], runner, root=root) == 0
+
+    printed = outputs(capsys.readouterr().out.splitlines())
+    assert runner.commands == expected
+    assert runner.cwds == [root] * len(expected)
+    assert not elsewhere.exists()
+    plain = DispatchRunner(diff=CommandResult(0, "app/catalog/data.py\n"))
+    assert main([event, ref], plain, root=root) == 0
+    assert printed == outputs(capsys.readouterr().out.splitlines())
+
+
+def test_a_dispatch_reads_only_the_head_tree_it_is_given(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    tree = make_tree(tmp_path / "head")
+    write(tree, "app/extra/__init__.py")
+    write(tree, "tests/extra/test_extra.py", "def test_extra() -> None: ...\n")
+    write(tree, "web/src/headguard.test.ts", "readFileSync('x')\n")
+    write(tree, "web/e2e/headonly.spec.ts")
+    runner = DispatchRunner(diff=CommandResult(0, "uv.lock\n"))
+
+    printed = dispatch(runner, tree, capsys)
+
+    real = areas(REPO_ROOT)
+    assert "extra" not in real
+    assert not (REPO_ROOT / "web" / "e2e" / "headonly.spec.ts").exists()
+    selection = json.loads(printed["selection"])
+    assert selection["areas"] == ["catalog", "extra", "pinned_catalog", "sales"]
+    assert selection["selected"] == ["catalog", "extra", "pinned_catalog", "sales"]
+    assert "web/src/headguard.test.ts" not in printed["vitest_files"]
+    assert "src/headguard.test.ts" in json.loads(printed["vitest_files"])
+    assert "web/e2e/headonly.spec.ts" in json.loads(printed["e2e_specs"])
+    assert "tests/extra" in printed["pytest_matrix"]
+    assert json.loads(printed["e2e_matrix"]) == [1, 2, 3, 4]
+    assert printed["base_ref"] == BASE_SHA
+    assert runner.cwds == [tree, tree, tree]

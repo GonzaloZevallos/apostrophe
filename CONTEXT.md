@@ -451,8 +451,12 @@ El único ícono, el mismo en todas partes, puesto junto a la oración de un avi
 _Avoid_: warning icon, alert icon, badge, error icon
 
 **Gate**:
-Los controles que todo cambio debe pasar antes de integrarse: pytest, vitest y e2e, corridos como jobs del CI de GitHub; `agentic merge` rechaza un head salvo que cada job listado en `ci:` esté en verde, e2e incluido. En un pull request cada suite corre solo cuando el cambio la afecta, y una suite omitida por no afectada cuenta como pasada; un push a una rama `agentic-ci/**` selecciona sus suites igual que un pull request, contra el merge-base con master; todo push a master las corre todas. Un Gate en rojo debe significar una regresión del producto, nunca que el calendario pasó un vencimiento o un límite de día; un flake es un defecto del Gate con su propio issue, nunca ruido. En la app: no tiene palabra propia.
+Los controles que todo cambio debe pasar antes de integrarse: pytest, vitest y e2e, corridos como jobs del CI de GitHub; `agentic merge` rechaza un head salvo que cada job listado en `ci:` esté en verde, e2e incluido. En un pull request cada suite corre solo cuando el cambio la afecta, y una suite omitida por no afectada cuenta como pasada; un push a una rama `agentic-ci/**` selecciona sus suites igual que un pull request, contra el merge-base con master; un Dispatch de `ci.yml` en un sha corre el workflow de master sobre ese head y selecciona sus suites como un pull request, contra su merge-base con master; todo push a master las corre todas. Un Gate en rojo debe significar una regresión del producto, nunca que el calendario pasó un vencimiento o un límite de día; un flake es un defecto del Gate con su propio issue, nunca ruido. En la app: no tiene palabra propia.
 _Avoid_: pipeline, build, test run
+
+**Dispatch**:
+La corrida manual de `ci.yml` en un sha, que usa el workflow y los scripts de master para juzgar el head de una tarea que toca `.github/`, cuyo propio workflow no es de fiar. Selecciona las suites del head como un pull request, contra su merge-base con master, y solo vale en `refs/heads/master`. Es una vía de entrada al Gate, no un control aparte. Su regla completa vive en docs/adr/0072-una-corrida-manual-de-ci-yml-en-un-sha-juzga-el-head-con-el-workflow-de-master.md. En la app: no tiene palabra propia.
+_Avoid_: re-run, manual run, workflow run
 
 **Tappable notice**:
 Un aviso que el vendedor toca para abrir aquello a lo que apunta, como el "Go on to the setup" de Home. Su oración lleva el significado y es su nombre accesible. Su regla completa vive en `docs/product/icon-and-text-rule.md`.

@@ -1,16 +1,27 @@
 name: CI
 
+# A dispatch is master's workflow judging the head at `sha` (GH-562, ADR-0067 addendum): it is empty for
+# a push or a pull request, which keeps GitHub's default title; for a dispatch the title carries the
+# sha, the one thing the system that dispatches it reads the run by.
+run-name: ${{ inputs.sha && format('CI at {0}', inputs.sha) || '' }}
+
 on:
   push:
     branches: [master, 'agentic-ci/**']
   pull_request:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: The full commit id of the head to judge with master's workflow
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 # A newer push to a pull request or to an `agentic-ci/**` branch cancels the older run; a push to master never does (ADR-0067).
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}${{ inputs.sha && format('-{0}', inputs.sha) || '' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/agentic-ci/')) }}
 
 jobs:
@@ -32,8 +43,26 @@ jobs:
       selection: ${{ steps.select.outputs.selection }}
       base_ref: ${{ steps.select.outputs.base_ref }}
     steps:
+      # A dispatch only counts at master, and its sha is a full lowercase object id before it names a ref.
+      - env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+        run: test "$EVENT" != workflow_dispatch || test "$REF" = refs/heads/master
+      - if: github.event_name == 'workflow_dispatch'
+        env:
+          SHA: ${{ inputs.sha }}
+        run: |-
+          [[ "$SHA" =~ ^([0-9a-f]{40}|[0-9a-f]{64})$ ]] || { echo "sha is not a full lowercase object id"; exit 1; }
+      # The root checkout is master's: its scripts judge the head, so it carries no `ref`. On a dispatch
+      # the head is a second checkout under `head/`, read only through the `root` argument.
       - uses: actions/checkout@v7
         with:
+          fetch-depth: 0
+      - if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.sha }}
+          path: head
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v10.2.0
         with:
@@ -42,11 +71,15 @@ jobs:
         env:
           EVENT: ${{ github.event_name }}
           REF: ${{ github.ref }}
-        run: uv run --no-project python -m scripts.ci_changes "$EVENT" "$REF" >> "$GITHUB_OUTPUT"
+          SHA: ${{ inputs.sha }}
+          HEAD_ROOT: ${{ github.workspace }}/head
+        run: uv run --no-project python -m scripts.ci_changes "$EVENT" "$REF" "$SHA" "$HEAD_ROOT" >> "$GITHUB_OUTPUT"
   checks:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.sha }}
       - uses: astral-sh/setup-uv@v10.2.0
         with:
           version: "0.12.13"
@@ -58,6 +91,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.sha }}
       - uses: actions/setup-node@v7
         with:
           node-version: "24"
@@ -77,6 +112,8 @@ jobs:
       matrix: ${{ fromJSON(needs.changes.outputs.pytest_matrix) }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.sha }}
       - uses: astral-sh/setup-uv@v10.2.0
         with:
           version: "0.12.13"
@@ -99,6 +136,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ inputs.sha }}
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v10.2.0
         with:
@@ -135,6 +173,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ inputs.sha }}
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v10.2.0
         with:
@@ -166,6 +205,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.sha }}
       - uses: astral-sh/setup-uv@v10.2.0
         with:
           version: "0.12.13"
@@ -209,6 +250,8 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.sha }}
       - uses: astral-sh/setup-uv@v10.2.0
         with:
           version: "0.12.13"

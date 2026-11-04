@@ -158,6 +158,17 @@ docs:
 # generator's stale check, the Mermaid render, the offline link check and the OpenAPI
 # breaking-change check (ADR-0066). e2e gates again (#428 fixed the flake).
 ci: [ci-ok]
+# `ci_dispatch` (agentic-system commit 0ca8e14c, PR #476, GH-462): how the system judges a head that
+# touches `.github/` without trusting that head's own workflow. It dispatches the base's
+# `.github/workflows/<workflow>` at the head's sha through the `workflow_dispatch` input named
+# `sha_input`, and reads `ci` from that run. The key is the literal text agentic-system defines
+# (`DISPATCH_KEYS = ("workflow", "sha_input")`) and it requires `ci:`. Here the workflow is master's
+# `ci.yml`, which selects the head's suites against its merge-base with master (ADR-0072, ADR-0067
+# addendum GH-562). The owner's rule holds: no check is skipped before merge; only where it runs
+# changes. Read at a task's base, like every key here.
+ci_dispatch:
+  workflow: ci.yml
+  sha_input: sha
 # `ci_covers` (agentic-system GH-453): when `web-e2e` times out locally, the check defers to CI's
 # `e2e` check-run, matched by exact name; a skipped, missing or pending job never covers. The
 # matrix is `e2e-shard` and reports `e2e-shard (N)`; `e2e` is the aggregator over it, green only
