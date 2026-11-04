@@ -188,3 +188,48 @@ Argumento, de la línea citada y del workflow en `962bffff`:
 - **Archivos candidatos, nombrados contra master** (no es una lista cerrada; la fijará la reproducción): `app/db.py` (`make_engine`, línea 82: el único `create_engine`), `tests/e2e_app.py` (`create_mobile_e2e_app`, línea 148), `scripts/design/sample_app.py` y `scripts/design/mobile_seed.py` (cliente del seed), `web/e2e/mobile.setup.ts` (el test), y el código del endpoint que atiende `PUT /catalog/…`: en master la ruta pasó de `/catalog/varieties/{id}` a `/catalog/products/{product_id}` (commits `2d9345a5`, `6551df97`), así que el router de `app/catalog/adapters/`.
 - Un test de la corrección debe nombrar el mismo error: un seed completo contra un servidor con el pool por defecto, sin `TimeoutError`.
 - Esto es la parte 2 de GH-542. Esta parte no edita ningún test, workflow ni script.
+
+## 8. Reproducción en HEAD sin corrección (parte 2, subtarea `repro`)
+
+**Árbol probado:** `7c5accb734314bf2bc67b618b475a453ab800185` (`git rev-parse HEAD^{tree}` del commit que agrega `tests/test_session_release.py`, `scripts/stress/squeezed_mobile_app.py` y `docs/evidence/GH-542/stress.sh`; ningún archivo de `app/` cambió). Las corridas de abajo se hicieron sobre ese árbol; el commit de esta sección solo agrega este texto y los logs. **Ninguna re-ejecución verde se cita como prueba.**
+
+**Quién captura el engine (grep de `create_app` y de `app/`):** `create_app` hace `app.state.engine = engine or make_engine(...)` y nada más lo guarda. Lo leen en el momento de la llamada: el `lifespan` (`upgrade_to_head`), `get_session` (`app/db.py:97`), `run_upkeep_safely` (`safe_upkeep.py:37`), el router de pinned-catalog (`router.py:64`) y el ticker (apagado en `create_mobile_e2e_app`). Los demás adaptadores reciben `(Session, business_id)` por fábrica. Cambiar `app.state.engine` después de `create_app` es válido, por eso `create_squeezed_mobile_app` y el test B lo hacen y no se agregó ningún parámetro a `app/`.
+
+### Test A (sonda de `checkedout()`), `tests/test_session_release.py`, HEAD sin corrección
+
+Salida completa en `$TASK_EVIDENCE_DIR/repro-testA-HEAD.txt`. La sonda reemplaza a `upkeep_trigger.run_upkeep_safely` y anota `state.engine.pool.checkedout()`:
+
+| Escritura (TestClient, SQLite de archivo) | `checkedout()` al empezar el upkeep | Resultado |
+|---|---|---|
+| `POST /api/products` y `PATCH /api/products/{id}` | `[0, 0]` | verde: el commit del caso de uso libera la conexión |
+| `PUT /catalog/products/{id}` (la ruta del log citado) | `[1]` | **rojo**: `assert [1] == [0]` |
+| `PUT /pricing-settings` con un switch cambiado | `[1]` | **rojo**: `assert [1] == [0]` |
+| `PUT /business/language` `en -> de` (con `de` seleccionable en el test) | `[1]` | **rojo**: `assert [1] == [0]` |
+| `PUT /pricing-settings` y `PUT /business/language` sin cambio | la sonda no se llama (`[]`) | verde |
+
+La Session de la petición sigue teniendo una conexión cuando el upkeep empieza en las rutas que **leen después del commit** (catálogo, switches, idioma); en `POST`/`PATCH` de productos no. La teoría de la sesión queda confirmada para esas rutas y **refutada para la de productos**: la fijación (`fix`) no puede suponer que todas las escrituras con upkeep retienen la conexión.
+
+### Test B (upkeep real con un pool de 1)
+
+`test_the_real_upkeep_syncs_the_pin_on_a_pool_of_one` publica el pin con un pool de 5 y recién antes de la escritura cambia `app.state.engine` por `squeezed_engine(pool_size=1, max_overflow=0, pool_timeout=1)` (firmar y publicar necesitan dos conexiones a la vez por sí mismos; con el pool de 1 desde el inicio falla antes de la escritura, en `/pinned-catalog/test`, sin relación con el upkeep). Escritura: `PUT /catalog/products/{id}`. En HEAD **falla**: el log capturado trae `WARNING apostrophe.pinned_catalog:safe_upkeep.py:52 pinned catalog sync failed: TimeoutError` y `sqlalchemy.exc.TimeoutError: QueuePool limit of size 1 overflow 0 reached, connection timed out, timeout 1.00`, y el estado del pin no vuelve a `up_to_date`.
+
+### Stress (`docs/evidence/GH-542/stress.sh`, log `docs/evidence/GH-542/stress.log`)
+
+Semilla real `scripts/design/mobile_seed.py` por HTTP contra uvicorn, una DB de archivo nueva por iteración.
+
+| Modo | Servidor | n | Resultado, iteración por iteración |
+|---|---|---|---|
+| `squeezed` | `create_squeezed_mobile_app`, pool 2 + 0, espera 2 s, diagnóstico | 10 | **3 de 10 rojas** (n=3, 7, 9): las tres `sample-app: POST /stock/entries -> 500 Internal Server Error` con `TimeoutError` en el log del servidor; 7 verdes (n=1, 2, 4, 5, 6, 8, 10) |
+| `default` | `tests.e2e_app:create_mobile_e2e_app` (pool 5 + 10, 30 s) | 30 | **0 de 30 rojas** (dato, no prueba de nada: no reproduce el rojo de CI) |
+
+- Pico de `checkedout()` en `squeezed`: 2 en las 10 (el tope del pool). **Pico de hilos esperando el lock del negocio:** 1 a 6 según la iteración (máximo 6 en n=2, verde). No llega a 20, por lo que no hay un tema nuevo de hilos (riesgo del plan).
+- Extracto del stack que nombra al titular (`stress-red-squeezed-7c5accb7-3.txt`, checkouts con `checkedout=2`): tres hilos de `run_upkeep_safely:50 > push:177 > snapshot:68` y `push:185 > _push_upkeep:210 > record:38` (el upkeep pidiendo su conexión con el pool lleno) y tres de `require_session:83 > open_session:172 > user:76` (la petición siguiente del seed, que es la que recibe el 500). Lo que **no** muestra el extracto: qué petición anterior tenía la Session abierta; esa pieza la ponen el Test A (la Session de la petición sigue viva cuando empieza el upkeep) y el pico de esperas del lock (los upkeeps se encolan detrás del lock del negocio mientras su Session sigue tomada).
+- Diferencia con el log de CI: allí falló `PUT /catalog/varieties/2` con pool 5 + 10 y 30 s; aquí, con un pool de 2, falla antes (`POST /stock/entries`). Es la misma firma (`QueuePool limit ... reached`) con otro umbral; con el pool por defecto no se reprodujo en 30 corridas.
+
+### Compuerta del plan
+
+Test A rojo en HEAD (3 de las 4 rutas con upkeep) y la fila `squeezed` falla (3 de 10): **la teoría de la sesión no queda refutada**, y la subtarea `fix` puede empezar, con el matiz de arriba: `POST`/`PATCH` de productos ya liberan la conexión.
+
+### Selección de `ci_changes.py`
+
+`uv run --no-project python -m scripts.ci_changes` en este checkout imprime `pytest=true`, `vitest=true`, `e2e=true` (`vitest_all=true`). No se verificó con el diff exacto de la corrección (los tres adaptadores de `app/`): **no probado** más allá de esa salida.
