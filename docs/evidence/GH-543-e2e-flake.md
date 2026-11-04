@@ -95,14 +95,15 @@ posteriores; no se investigó por qué.
 
 ## CI de las cabezas integradas
 
-El `full_checks` marcó `pytest` y `e2e` como "sin terminar en 1500 s" en tres cabezas integradas, y la CI de las
-tres terminó en verde, con todos los trabajos en `success` (cada valor es una corrida, no una tasa):
+El `full_checks` marcó `pytest` y `e2e` como "sin terminar en 1500 s" en cuatro cabezas integradas, y la CI de las
+cuatro terminó en verde, con todos los trabajos en `success` (cada valor es una corrida, no una tasa):
 
 | Cabeza | Corrida de CI | Duración |
 |---|---|---|
 | `ffe667da` | 41784657384 | 14 min 39 s |
 | `eb3d9825` | 41789264831 | unos 15 min |
 | `5d131e83` | 41793734033 | 14 min 16 s |
+| `2ef95565` | 41801735590 | 14 min 35 s |
 
 La causa es de nombres, no de tiempo ni de código: el plan esperaba trabajos de CI llamados `pytest` y `e2e`, y CI
 los reporta como `pytest (areas-N, …)` y `e2e (1)` a `e2e (4)`, así que los nombres exactos nunca se informan y la
