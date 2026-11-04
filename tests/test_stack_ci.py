@@ -87,6 +87,11 @@ CI_ONLY: dict[str, str] = {
     "npx --prefix web playwright install --with-deps chromium": (
         "the runner needs the root `--with-deps` form of `setup.web-browsers`"
     ),
+    "npm --prefix web run build": (
+        "the `web` job's build; not a local check since GH-543: it wrote web/dist beside "
+        "`web-e2e` and the tsc buildinfo beside `web-types`, and those two already run "
+        "`tsc -b` and `vite build`"
+    ),
     CHANGES_RUN: (
         "the `changes` job: which suites the pull request, an agentic-ci push or a dispatched "
         "head affects (ADR-0064, GH-562)"
