@@ -54,7 +54,7 @@ WRITES: dict[str, Entry] = {
     "tests": Entry(
         frozenset({PYTEST_CACHE}), frozenset({VENV, "uv.lock"}), "stack.yaml checks.tests"
     ),
-    # stack.yaml `checks.tests-fast`: the `-p no:cacheprovider` flag keeps `.pytest_cache` to `tests`.
+    # stack.yaml `checks.tests-fast`: `-p no:cacheprovider` keeps `.pytest_cache` to `tests`.
     "tests-fast": Entry(
         frozenset(),
         frozenset({VENV, "uv.lock"}),
@@ -290,7 +290,8 @@ def test_a_tsc_build_without_the_buildinfo_is_refused() -> None:
 def test_pytest_without_the_no_cache_flag_must_declare_its_cache() -> None:
     problems = parallel_writer_problems(_stack(tests="pytest -n 4"), {"tests": QUIET}, {}, {})
     assert problems == [
-        "check 'tests' runs `pytest` without `-p no:cacheprovider` but its entry does not declare .pytest_cache"
+        "check 'tests' runs `pytest` without `-p no:cacheprovider` "
+        "but its entry does not declare .pytest_cache"
     ]
 
 

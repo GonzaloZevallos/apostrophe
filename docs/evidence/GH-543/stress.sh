@@ -10,7 +10,7 @@
 #   tree  the `git rev-parse HEAD^{tree}` the checkout must have; the script refuses any other.
 #   mode  all     every check starts at the same moment.
 #         offset  every check but `web-build` starts at once; `web-build` starts 10 s after
-#                 Playwright prints its first test line (the forced interference of run 1). It
+#                 Playwright prints its first finished-test line (the forced interference of run 1). It
 #                 refuses a tree whose stack.yaml has no `web-build` check.
 #   cap   the most runs of this tree+mode the log may hold. Never raised.
 #   log   append-only. One `start` line per invocation, one `run` line per run, one `check` line
@@ -88,11 +88,14 @@ while [ "$n" -lt "$CAP" ]; do
   done
   OFFSET=-
   if [ "$MODE" = offset ]; then
-    # Playwright's list reporter prints a line per test as it begins when stdout is not a tty.
+    # Playwright's list reporter prints nothing at a test's start when stdout is not a tty (run 1
+    # of the log waited for such a line and never started web-build); the first line it prints is a
+    # finished test's `  ✓  <n> [project] › ...`. The trigger is that line, so `web_build_offset_s`
+    # counts from the first test that finished, a little after the first test started.
     E2E_OUT=$SCRATCH/$n.web-e2e.out
     T_FIRST=
     while [ ! -f "$SCRATCH/$n.web-e2e.rc" ]; do
-      if grep -Eq '^ +[0-9]+ \[[^]]+\] ›' "$E2E_OUT" 2>/dev/null; then T_FIRST=$SECONDS; break; fi
+      if grep -Eq '^ +[✓✘] +[0-9]+ \[[^]]+\] ›' "$E2E_OUT" 2>/dev/null; then T_FIRST=$SECONDS; break; fi
       sleep 1
     done
     if [ -n "$T_FIRST" ]; then
