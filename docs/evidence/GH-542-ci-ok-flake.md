@@ -188,3 +188,98 @@ Argumento, de la línea citada y del workflow en `962bffff`:
 - **Archivos candidatos, nombrados contra master** (no es una lista cerrada; la fijará la reproducción): `app/db.py` (`make_engine`, línea 82: el único `create_engine`), `tests/e2e_app.py` (`create_mobile_e2e_app`, línea 148), `scripts/design/sample_app.py` y `scripts/design/mobile_seed.py` (cliente del seed), `web/e2e/mobile.setup.ts` (el test), y el código del endpoint que atiende `PUT /catalog/…`: en master la ruta pasó de `/catalog/varieties/{id}` a `/catalog/products/{product_id}` (commits `2d9345a5`, `6551df97`), así que el router de `app/catalog/adapters/`.
 - Un test de la corrección debe nombrar el mismo error: un seed completo contra un servidor con el pool por defecto, sin `TimeoutError`.
 - Esto es la parte 2 de GH-542. Esta parte no edita ningún test, workflow ni script.
+
+## 8. Reproducción en HEAD sin corrección (parte 2, subtarea `repro`)
+
+**Árbol probado (test A, test B, `squeezed`):** `cd0282832ace33280032a48bd5245fbbbdefa950` (`git rev-parse HEAD^{tree}` del commit `d564862d`). Las filas anteriores del log (árbol `7c5accb734314bf2bc67b618b475a453ab800185`) tienen el mismo `app/` y quedan en `stress.log` como dato previo, sin diagnóstico de titulares. Ningún archivo de `app/` cambió en esta subtarea. **Ninguna re-ejecución verde se cita como prueba.**
+
+**Quién captura el engine (grep de `create_app` y de `app/`):** `create_app` hace `app.state.engine = engine or make_engine(...)` y nada más lo guarda. Lo leen en el momento de la llamada: el `lifespan` (`upgrade_to_head`), `get_session` (`app/db.py:97`), `run_upkeep_safely` (`safe_upkeep.py:37`), el router de pinned-catalog (`router.py:64`) y el ticker (apagado en `create_mobile_e2e_app`). Los demás adaptadores reciben `(Session, business_id)` por fábrica. Cambiar `app.state.engine` después de `create_app` es válido, por eso `create_squeezed_mobile_app` y el test B lo hacen y no se agregó ningún parámetro a `app/`.
+
+### Test A (sonda de `checkedout()`), `tests/test_session_release.py`, HEAD sin corrección
+
+Corrida sobre el árbol `cd028283…`; la salida completa del archivo de tests quedó en `$TASK_EVIDENCE_DIR/repro-session-release-HEAD.txt` (fuera del repo) y las líneas que importan están pegadas aquí. La sonda reemplaza a `upkeep_trigger.run_upkeep_safely` y anota `state.engine.pool.checkedout()`:
+
+| Escritura (TestClient, SQLite de archivo) | `checkedout()` al empezar el upkeep | Resultado |
+|---|---|---|
+| `POST /api/products` y `PATCH /api/products/{id}` | `[0, 0]` | verde: el commit del caso de uso libera la conexión |
+| `PUT /catalog/products/{id}` (la ruta del log citado) | `[1]` | **rojo**: `assert [1] == [0]` |
+| `PUT /pricing-settings` con un switch cambiado | `[1]` | **rojo**: `assert [1] == [0]` |
+| `PUT /business/language` `en -> de` (con `de` seleccionable en el test) | `[1]` | **rojo**: `assert [1] == [0]` |
+| `PUT /pricing-settings` y `PUT /business/language` sin cambio | la sonda no se llama (`[]`) | verde |
+
+La Session de la petición sigue teniendo una conexión cuando el upkeep empieza en las rutas que **leen después del commit** (catálogo, switches, idioma); en `POST`/`PATCH` de productos no. La teoría de la sesión queda confirmada para esas rutas y **refutada para la de productos**: la fijación (`fix`) no puede suponer que todas las escrituras con upkeep retienen la conexión.
+
+### Test B (upkeep real con un pool de 1)
+
+`test_the_real_upkeep_syncs_the_pin_on_a_pool_of_one` firma, publica el pin y lee su estado con un pool de 5, y cambia `app.state.engine` por `squeezed_engine(pool_size=1, max_overflow=0, pool_timeout=1)` **solo alrededor de** `PUT /catalog/header-footer` (una escritura que cambia el texto del pin y que la sonda del test A muestra con la misma forma que las otras rutas del catálogo); antes pone en `FakeTelegram` un `fail_next(TelegramUnreachable())`. Un upkeep que corre de verdad intenta el edit, falla y deja el registro `telegram_unreachable`, que la API muestra en `GET /pinned-catalog/status`; uno que no consigue conexión no deja nada. La lectura de estado va con el engine amplio (esa ruta usa por sí misma dos conexiones: la Session de la petición y la del snapshot, y con un pool de 1 fallaría aunque el upkeep estuviera bien; así falló la primera versión de este test y se descartó).
+
+Falla en el árbol `cd028283…` por el motivo correcto (salida del run, `$TASK_EVIDENCE_DIR/repro-session-release-HEAD.txt`):
+
+```text
+>           assert _status(client)["reason"] == "telegram_unreachable"
+E           AssertionError: assert None == 'telegram_unreachable'
+WARNING  apostrophe.pinned_catalog:safe_upkeep.py:52 pinned catalog sync failed: TimeoutError
+```
+
+Atribución al pool: no hay un control verde citado. Lo que sostiene que el rojo lo causa el pool es el log de arriba, `WARNING ... pinned catalog sync failed: TimeoutError` en el árbol `cd028283…`, y la sonda del test A (`assert [1] == [0]`). Una corrida de control con un pool mayor se descartó como prueba porque no quedó atada a un árbol con commit ni a una línea de salida.
+
+### Stress (`docs/evidence/GH-542/stress.sh`, log `docs/evidence/GH-542/stress.log`)
+
+Semilla real `scripts/design/mobile_seed.py` por HTTP contra uvicorn, una DB de archivo nueva por iteración.
+
+| Modo | Servidor | n | Resultado, iteración por iteración |
+|---|---|---|---|
+| `squeezed` | `create_squeezed_mobile_app`, pool 2 + 0, espera 2 s, diagnóstico | 10 (árbol `cd028283…`) | **3 de 10 rojas** (n=3, 8: `sample-app: POST /sales -> 500 Internal Server Error`; n=4: `POST /stock/entries -> 500`), las tres con `TimeoutError` en el log del servidor; 7 verdes (n=1, 2, 5, 6, 7, 9, 10). En el árbol anterior `7c5accb7…`: 3 de 10 (n=3, 7, 9, las tres `POST /stock/entries -> 500`) |
+| `default` | `tests.e2e_app:create_mobile_e2e_app` (pool 5 + 10, 30 s) | 30 | **0 de 30 rojas** (dato, no prueba de nada: no reproduce el rojo de CI) |
+
+- Pico de `checkedout()` en `squeezed`: 2 en las 10 (el tope del pool). **Pico de hilos esperando el lock del negocio:** 2 a 6 según la iteración en `cd028283…` (6 en las rojas n=3 y n=8). No llega a 20, por lo que no hay un tema nuevo de hilos (riesgo del plan).
+- **Extracto del stack que nombra al titular** (`stress-red-squeezed-cd028283-4.txt`, checkouts con `checkedout=2`; `held_by` son las conexiones aún sin devolver al momento de cada checkout):
+
+```text
+checkout checkedout=2 ... run_upkeep_safely:50 > push:177 > snapshot:68 | held_by=[put_pricing_settings:44 > current:28 > _row:20]
+checkout checkedout=2 ... run_upkeep_safely:50 > push:185 > _push_upkeep:210 > record:38 | held_by=[put_pricing_settings:44 > current:28 > _row:20]
+checkout checkedout=2 ... require_session:83 > open_session:172 > user:76 | held_by=[run_upkeep_safely:50 > push:177 > snapshot:68]
+```
+
+  Lectura: cuando `run_upkeep_safely` pide su conexión, la que ya está tomada es la de la Session de la petición del `PUT /pricing-settings`, en la lectura posterior al commit (`put_pricing_settings:44`, `store.current()` → `_row`); y la petición siguiente del seed (`require_session`) queda esperando mientras el upkeep tiene las suyas. Es el mismo mecanismo que el test A mide con `checkedout()`. Lo que el extracto no prueba por sí solo: que la Session que figura en `held_by` es la misma petición que programó ese upkeep (el log no trae un id de petición); el test A sí lo muestra, porque ahí hay una sola petición en vuelo.
+- Diferencia con el log de CI: allí falló `PUT /catalog/varieties/2` con pool 5 + 10 y 30 s; aquí, con un pool de 2, falla antes (`POST /stock/entries`). Es la misma firma (`QueuePool limit ... reached`) con otro umbral; con el pool por defecto no se reprodujo en 30 corridas.
+
+### Compuerta del plan
+
+Test A rojo en HEAD (3 de las 4 rutas con upkeep), Test B rojo por el upkeep, y la fila `squeezed` falla (3 de 10 en dos árboles): **la teoría de la sesión no queda refutada**, y la subtarea `fix` puede empezar, con el matiz de arriba: `POST`/`PATCH` de productos ya liberan la conexión.
+
+### Selección de `ci_changes.py` para el diff planeado
+
+Se hizo un clon de este checkout, se tocó (una línea en blanco) cada uno de los tres adaptadores planeados (`app/pinned_catalog/adapters/upkeep_trigger.py`, `app/accounts/adapters/language_router.py`, `app/pricing_settings/adapters/router.py`) en un commit encima de `cd028283…`, y se corrió `python -m scripts.ci_changes pull_request refs/pull/1/merge` (diff `HEAD^1..HEAD`, como un pull request). Salida:
+
+```text
+pytest=true
+vitest=false
+e2e=false
+e2e_shards=0
+e2e_matrix=[]
+base_ref=HEAD^1
+```
+
+`pytest` se elige (los shards `always`, `areas-1`, `areas-2` y `areas-3`; `tests/test_session_release.py` cae en `always`). **`e2e` NO se elige** para ese diff: la suposición del plan de que el e2e se selecciona es falsa si la corrección toca solo esos tres archivos. Consecuencia: en CI la corrección la cubren `tests/test_session_release.py` y el resto de pytest, y el seed móvil (`stress.sh`) solo corre a mano; el criterio de la sección 7 no se verifica en CI con ese diff.
+
+## 9. Corrección (parte 2, subtarea `fix`)
+
+**Cambio:** `schedule_upkeep` (`app/pinned_catalog/adapters/upkeep_trigger.py`) recibe la `Session` cacheada de la petición (`Depends(get_session)`, el mismo objeto que usan `require_session` y el router) y la tarea de fondo hace `session.close()` antes de `run_upkeep_safely`. Los dos llamadores directos (`app/accounts/adapters/language_router.py:52`, `app/pricing_settings/adapters/router.py:43`) pasan la `Session` que su endpoint ya tiene. Causa quitada: FastAPI cierra una dependencia con `yield` solo después de las tareas de fondo, así que la conexión de la petición seguía tomada durante todo el upkeep (stack de la sección 8: `held_by=[put_pricing_settings:44 > current:28 > _row:20]` mientras `run_upkeep_safely:50` pedía la suya). No se tocó `app/db.py`, ningún `pool_size`/`max_overflow`/`pool_timeout`, ni `ci.yml`.
+
+**Árbol corregido:** `ceab79a27fd6185a8776e158b507bdff3296185d` (`git rev-parse 58ad4229^{tree}`, el commit de la corrección; `git diff --stat ceab79a2 HEAD^{tree} -- app tests scripts` queda vacío en el HEAD actual, que solo difiere en `docs/`). Los tests de abajo se corrieron con el mismo `app/` y `tests/` (solo `stress.log` difería); la salida está en `$TASK_EVIDENCE_DIR/fix-session-release-ceab79a2.txt`. **Ninguna re-ejecución verde de CI se cita como prueba.**
+
+| Prueba | Antes (`cd028283…`, sin corrección) | Después (`ceab79a2…`) |
+|---|---|---|
+| Test A, `PUT /catalog/products/{id}`, `PUT /pricing-settings`, `PUT /business/language` | 3 de 3 rojas, `assert [1] == [0]` | 3 de 3 verdes (`checkedout()` en 0 al empezar el upkeep) |
+| Test A, `POST`/`PATCH /api/products`, y sin cambio (sin upkeep) | verdes | verdes |
+| Test B (upkeep real con pool de 1) | rojo: `assert None == 'telegram_unreachable'` y `pinned catalog sync failed: TimeoutError` | verde |
+| `tests/test_session_release.py` completo | 3 tests rojos de 8 | **8 passed** |
+| `stress.sh squeezed` (pool 2 + 0, 2 s), n = 10 | **3 de 10 rojas** (n=3, 8: `POST /sales -> 500`; n=4: `POST /stock/entries -> 500`; las tres con `TimeoutError`); 7 verdes | **0 de 10 rojas**, 10 verdes (n=1 a 10), `errors=-` en todas; `summary … red=0` |
+| `stress.sh default` (pool 5 + 10, 30 s), n = 30 | 0 de 30 rojas (dato) | 0 de 30 rojas, 30 verdes (dato, no prueba: nunca reprodujo el rojo) |
+
+La afirmación descansa en Test A/B y en la fila `squeezed`; la fila `default` es solo un dato. Las líneas están en `docs/evidence/GH-542/stress.log` (`iter tree=ceab79a2… mode=squeezed n=1..10`, `summary … red=0`; `mode=default n=1..30`, `summary … red=0`).
+
+**Riesgo residual de hilos:** el pico de hilos esperando el lock del negocio en `squeezed` tras la corrección fue de 2 a 5 (`peak_waiters` del log), por debajo de 20; no hay hallazgo para una issue nueva. El upkeep sigue ocupando un hilo de anyio mientras corre.
+
+**Criterio de hecho (punto 7):** `[mobile-setup] › seed the mobile server` ya no depende de que el pool por defecto alcance para el tráfico del seed: ninguna petición con upkeep deja su conexión tomada mientras el upkeep corre, y el seed completo pasa 10 de 10 con un pool de 2 conexiones sin overflow (donde antes fallaba 3 de 10). Límite: con este diff `ci_changes` no elige e2e (sección 8), así que el seed móvil lo verifica `stress.sh` a mano y CI cubre la corrección con `tests/test_session_release.py`.

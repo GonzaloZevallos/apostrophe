@@ -1,0 +1,130 @@
+== seed output (tail 40)
+sample-app: POST /stock/entries -> 500 Internal Server Error
+== server log: the first checkouts that reached the pool size (stack names the holder)
+stress: checkout checkedout=2 thread=AnyIO worker thread run_upkeep_safely:50 > push:177 > snapshot:68
+stress: checkout checkedout=2 thread=AnyIO worker thread run_upkeep_safely:50 > push:185 > _push_upkeep:210 > record:38
+stress: checkout checkedout=2 thread=AnyIO worker thread require_session:83 > open_session:172 > user:76
+stress: checkout checkedout=2 thread=AnyIO worker thread run_upkeep_safely:50 > push:185 > _push_upkeep:210 > record:38
+stress: checkout checkedout=2 thread=AnyIO worker thread require_session:83 > open_session:172 > user:76
+stress: checkout checkedout=2 thread=AnyIO worker thread run_upkeep_safely:50 > push:185 > _push_upkeep:210 > record:38
+== server log (tail 120)
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/fastapi/routing.py", line 165, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/fastapi/routing.py", line 151, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/fastapi/routing.py", line 499, in app
+    solved_result = await solve_dependencies(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/fastapi/dependencies/utils.py", line 676, in solve_dependencies
+    solved = await run_in_threadpool(call, **solved_result.values)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/starlette/concurrency.py", line 34, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/anyio/to_thread.py", line 65, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 2706, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 1100, in run
+    result = context.run(func, *args)
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/app/accounts/adapters/deps.py", line 83, in require_session
+    signed_in = None if token is None else open_session(accounts, signer, token, clock())
+                                           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/app/accounts/application/sign_in.py", line 172, in open_session
+    user = accounts.user(claims.user_id)
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/app/accounts/adapters/sql_accounts.py", line 76, in user
+    row = self._session.get(UserRow, user_id)
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 3845, in get
+    return self._get_impl(
+           ~~~~~~~~~~~~~~^
+        entity,
+        ^^^^^^^
+    ...<7 lines>...
+        bind_arguments=bind_arguments,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 4032, in _get_impl
+    return db_load_fn(
+        self,
+    ...<5 lines>...
+        bind_arguments=bind_arguments,
+    )
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/sqlalchemy/orm/loading.py", line 702, in _load_on_pk_identity
+    session.execute(
+    ~~~~~~~~~~~~~~~^
+        q,
+        ^^
+    ...<2 lines>...
+        bind_arguments=bind_arguments,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 2473, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 2350, in _execute_internal
+    conn = self._connection_for_bind(bind)
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 2173, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<sqlalchemy generated _go() wrapper for sqlalchemy.orm.session.SessionTransaction._connection_for_bind>", line 2, in _connection_for_bind
+    return target(fn, self, bind, execution_options)
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/sqlalchemy/orm/state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 1203, in _connection_for_bind
+    conn = bind.connect()
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 3260, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 149, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 3284, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/sqlalchemy/pool/base.py", line 445, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/sqlalchemy/pool/base.py", line 1303, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/sqlalchemy/pool/base.py", line 709, in checkout
+    rec = pool._do_get()
+  File "/home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-570.repro/.venv/lib/python3.13/site-packages/sqlalchemy/pool/impl.py", line 165, in _do_get
+    raise exc.TimeoutError(
+    ...<4 lines>...
+    )
+sqlalchemy.exc.TimeoutError: QueuePool limit of size 2 overflow 0 reached, connection timed out, timeout 2.00 (Background on this error at: https://sqlalche.me/e/21/3o7r)
+INFO:     Shutting down
+INFO:     Waiting for background tasks to complete. (CTRL+C to force quit)
+pinned catalog sync failed: TimeoutError
+stress: checkin checkedout=2
+stress: checkout checkedout=2 thread=AnyIO worker thread run_upkeep_safely:54 > record_unreachable:104 > snapshot:68
+stress: checkin checkedout=2
+stress: checkout checkedout=2 thread=AnyIO worker thread run_upkeep_safely:54 > record_unreachable:105 > record:38
+stress: checkin checkedout=2
+stress: checkin checkedout=1
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3846511]

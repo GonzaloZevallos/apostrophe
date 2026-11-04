@@ -49,7 +49,7 @@ def change_language(
     # Only a changed language can owe the pinned catalog an edit (docs/adr/0014): choosing
     # the stored one schedules nothing.
     if changed:
-        schedule_upkeep(request, background_tasks, business_id)
+        schedule_upkeep(request, background_tasks, business_id, session)
     profile = manage_business.business_profile(accounts, business_id)
     return BusinessLanguageOut(
         language=profile.language,

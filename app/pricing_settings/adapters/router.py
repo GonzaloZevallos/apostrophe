@@ -40,5 +40,5 @@ def put_pricing_settings(
     # Only a changed switch can change the pinned catalog's text (docs/adr/0014): an
     # unchanged save schedules nothing.
     if changed:
-        schedule_upkeep(request, background_tasks, business_id)
+        schedule_upkeep(request, background_tasks, business_id, session)
     return PricingSettingsBody.of(store.current())
