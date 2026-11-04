@@ -116,7 +116,7 @@ def test_the_accounts_cli_prints_no_spanish(
     monkeypatch.setenv("APOSTROPHE_DATABASE_URL", f"sqlite:///{tmp_path / 'apostrophe.db'}")
     monkeypatch.setenv("APOSTROPHE_PUBLIC_URL", "http://192.168.0.10:8000/")
     clock = MovableClock(NOW)
-    # The link's token is random, so the scan would sometimes read a denylisted word in it.
+    # The link's token is random: ~1 run in 940 the scan read a denylisted word in it (GH-527).
     monkeypatch.setattr("app.accounts.application.invitations.new_token", lambda: INVITATION_TOKEN)
 
     codes = [
