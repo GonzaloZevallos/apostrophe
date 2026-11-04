@@ -93,18 +93,20 @@ posteriores; no se investigó por qué.
 - El límite de 1500 s del sistema agéntico queda por debajo de los 1665 a 1741 s medidos para `web-e2e` en el nivel
   completo en paralelo.
 
-## CI de la cabeza integrada `ffe667da`
+## CI de las cabezas integradas
 
-El `full_checks` marcó `pytest` y `e2e` como "sin terminar en 1500 s". La corrida de CI de esa cabeza
-(`gh run view 41784657384`) terminó en verde: `ci-ok` pasó a las 06:33:13Z, 14 min 39 s después del push, con todos
-los trabajos en `success`, incluidos los cuatro de `pytest` y los cuatro de `e2e` (el más largo, `e2e (1)`, tardó
-unos 14 min). Es una sola corrida, no una tasa. No hay un fallo de `pytest` ni de `e2e` que corregir en el
-código; el "sin terminar" es el límite de 1500 s del sistema agéntico, el mismo que ya miden las corridas de
-arriba (1665 a 1741 s para `web-e2e` en el nivel completo local en paralelo). Ese límite no está en este repo y
-`web/playwright.config.ts` no se tocó.
+El `full_checks` marcó `pytest` y `e2e` como "sin terminar en 1500 s" en tres cabezas integradas, y la CI de las
+tres terminó en verde, con todos los trabajos en `success` (cada valor es una corrida, no una tasa):
 
-La decisión humana de la tarea corrige la lectura anterior: el "sin terminar en 1500 s" no fue el límite de tiempo
-de `web-e2e`, sino que el plan esperaba trabajos de CI llamados `pytest` y `e2e`, y CI los reporta como
-`pytest (areas-N, …)` y `e2e (1)` a `e2e (4)` (agentic-system #485). CI también pasó en verde en `eb3d9825`
-(corrida 41789264831). El repo ya nombra solo `ci-ok` en `.agentic/stack.yaml` (`ci: [ci-ok]`); `ci_required` no es una
-clave de este repo.
+| Cabeza | Corrida de CI | Duración |
+|---|---|---|
+| `ffe667da` | 41784657384 | 14 min 39 s |
+| `eb3d9825` | 41789264831 | unos 15 min |
+| `5d131e83` | 41793734033 | 14 min 16 s |
+
+La causa es de nombres, no de tiempo ni de código: el plan esperaba trabajos de CI llamados `pytest` y `e2e`, y CI
+los reporta como `pytest (areas-N, …)` y `e2e (1)` a `e2e (4)`, así que los nombres exactos nunca se informan y la
+espera vence (agentic-system #485). El repo ya nombra solo `ci-ok` en `.agentic/stack.yaml` (`ci: [ci-ok]`);
+`ci_required` no es una clave de este repo. No hay un fallo de `pytest` ni de `e2e` que corregir en el código, y
+`web/playwright.config.ts` no se tocó. Aparte, los 1665 a 1741 s medidos para `web-e2e` en el nivel completo
+local en paralelo (tabla de arriba) son una observación de capacidad, no la causa de este mensaje.
