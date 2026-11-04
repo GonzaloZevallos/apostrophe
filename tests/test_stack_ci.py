@@ -1553,3 +1553,25 @@ def test_the_evaluator_formats_only_with_its_template() -> None:
     assert _Expression("format('-{0}', inputs.sha)", context).evaluate() == "-abc"
     with pytest.raises(ValueError):
         _Expression("format(github.ref == 'r')", context).evaluate()
+
+
+def test_a_ref_guard_without_its_event_or_ref_env_is_refused() -> None:
+    message = "`changes` has no ref guard with EVENT and REF from env:"
+    for name in ("EVENT", "REF"):
+        workflow = _mutated()
+        del workflow["jobs"]["changes"]["steps"][1]["env"][name]
+        assert message in _problems(workflow)
+
+
+def test_a_head_checkout_without_full_depth_is_refused() -> None:
+    workflow = _mutated()
+    del workflow["jobs"]["changes"]["steps"][3]["with"]["fetch-depth"]
+    assert "`changes` has no dispatch-only checkout of the sha under `head/`" in _problems(workflow)
+
+
+def test_a_dispatch_trigger_that_is_missing_is_refused() -> None:
+    workflow = _mutated()
+    del _triggers(workflow)["workflow_dispatch"]
+    assert "`on.workflow_dispatch` is not exactly one required string input `sha`" in _problems(
+        workflow
+    )
