@@ -2,6 +2,8 @@
 # Format: agentic-system's `.agentic/eval-set.yaml` (issue #470, delivered by PRs #481 and #490;
 # loader `agentic/core/measurement/domain/evaluation.py`): `entries: [{issue, base, title, body}]`
 # and `smoke`. The loader refuses any other key, so the recorded outcomes below are comments.
+# Guard note: #470 is a closed issue, not a PR, so "#470 merged" cannot be checked as written;
+# the format was read from agentic-system master (b45ab5eb), where #481 and #490 hold it.
 #
 # Selection (git commands, run in this repository; task documents read-only from the main
 # checkout's `.agentic/tasks/GH-X.md`):
@@ -18,7 +20,7 @@
 # copy/i18n GH-424. Closest-candidate notes: no clean entry is a UI screen change (the closest,
 # GH-334, delivers an architecture check with a 7-line Gastos edit), so the slot uses the
 # fallback entry GH-364. No clean entry is a small app/-only change; GH-385 is clean and
-# backend but a 121-file mechanical rename. No clean entry is mostly web/src/copy; GH-424
+# backend but a 121-file mechanical rename (the plan's fallbacks GH-529/GH-530 are docs-only). No clean entry is mostly web/src/copy; GH-424
 # (i18n keys, 49 files, clean) is the closest.
 #
 # Outcome fields per entry (comments, from the entry's own task document): merged, returns (sum
