@@ -102,3 +102,9 @@ unos 14 min). Es una sola corrida, no una tasa. No hay un fallo de `pytest` ni d
 código; el "sin terminar" es el límite de 1500 s del sistema agéntico, el mismo que ya miden las corridas de
 arriba (1665 a 1741 s para `web-e2e` en el nivel completo local en paralelo). Ese límite no está en este repo y
 `web/playwright.config.ts` no se tocó.
+
+La decisión humana de la tarea corrige la lectura anterior: el "sin terminar en 1500 s" no fue el límite de tiempo
+de `web-e2e`, sino que el plan esperaba trabajos de CI llamados `pytest` y `e2e`, y CI los reporta como
+`pytest (areas-N, …)` y `e2e (1)` a `e2e (4)` (agentic-system #485). CI también pasó en verde en `eb3d9825`
+(corrida 41789264831). El repo ya nombra solo `ci-ok` en `.agentic/stack.yaml` (`ci: [ci-ok]`); `ci_required` no es una
+clave de este repo.
