@@ -12,8 +12,8 @@ escribe "causa reproducida" ni "arreglado". Lo que sí se encontró leyendo el c
 de `parallel_checks: true` escriben la misma ruta (Paso 0b); `tests/test_stack_parallel_writers.py` lo
 fija y `web-build` sale de `checks`.
 
-**Pendiente (no hecho en esta entrega):** las 3 corridas posteriores a la corrección y el resultado de
-la corrida previa 2 (ver la tabla). No hay evidencia posterior a la corrección.
+**Pendiente (no hecho en esta entrega):** las 3 corridas posteriores a la corrección. No hay evidencia
+posterior a la corrección.
 
 ## Paso 0a: qué quedó de la salida de GH-483
 
@@ -58,7 +58,7 @@ Una corrida = todos los comandos de `checks` a la vez. Cargas en promedio de 1, 
 | Corrida | Cabeza | Carga antes | Carga después | Checks junto a `web-e2e` | Resultado | Paso que falló |
 |---|---|---|---|---|---|---|
 | previa 1 (modo `offset`) | `323ee6c3` | 4.63 5.00 4.96 | 6.97 8.76 12.81 | tests, tests-fast, lint, types, web-types, web-lint, web-tests (`web-build` **no arrancó**: el arnés esperaba una línea de inicio de test que el reporter `list` no imprime sin tty) | `web-e2e` verde, 1693 s | ninguno en `web-e2e`; `tests` rojo (el pytest nuevo, esperado) y `lint` rojo (dos líneas largas del test nuevo, corregidas) |
-| previa 2 (modo `offset`, `web-build` 10 s tras la primera línea de test terminado) | `e6d47abc` | 5.xx (ver `stress.log`) | sin terminar al entregar | los 7 anteriores y `web-build` | **no terminó al entregar**; el listado de `web/dist` al arrancar `web-build`: `assets icons index.html manifest.webmanifest sw.js` | n/a |
+| previa 2 (modo `offset`, `web-build` 10 s tras la primera línea de test terminado) | `e6d47abc` | 6.44 8.43 12.55 | 8.98 11.11 16.09 | tests, tests-fast, lint, types, web-types, web-lint, web-tests y `web-build` (arrancó con desfase 10 s; `web/dist` al arrancar: `assets icons index.html manifest.webmanifest sw.js`) | `web-e2e` **verde**, 1728 s, pese a `web-build` reescribiendo `web/dist` durante la corrida; `web-build` verde (142 s); `tests` y `web-tests` rojos | ninguno en `web-e2e` (la interferencia no se manifestó en esta corrida) |
 | posteriores 1-3 | n/a | n/a | n/a | n/a | **no hechas** | n/a |
 
 Un verde es una corrida, no una tasa.
