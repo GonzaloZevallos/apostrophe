@@ -108,3 +108,23 @@ libre al rebasar.
   para cada merge. (3) Una corrida cancelada no cubre nada. (4) La clave se lee en la base de la tarea:
   solo rige para tareas cuya base sea posterior a este merge.
 
+## Addendum GH-562: dispatch de `ci.yml` en el sha de un head
+
+Cita docs/adr/0072-una-corrida-manual-de-ci-yml-en-un-sha-juzga-el-head-con-el-workflow-de-master.md.
+
+- **La entrada `sha`.** `workflow_dispatch` recibe `sha`, obligatoria y de tipo string. El grupo de
+  concurrencia pasa a `ci-<workflow>-<ref>` más `-<sha>` solo si hay `sha`, de modo que dos dispatch de
+  heads distintos no se cancelan; la expresión de cancelación no cambia y para un dispatch siempre es
+  falsa. `run-name` es `CI at <sha>` para un dispatch y vacío para un push o un pull request, que
+  conservan el título por defecto de GitHub. `tests/test_stack_ci.py` evalúa el grupo y el título para los
+  cinco casos de siempre y para un dispatch.
+- **`api_breaks`.** Sigue siendo una comprobación del pull request: en un dispatch no hay cuerpo de PR ni
+  base que comparar, y se omite.
+- **Prueba por etapas, después del merge.** El Operator corre estos cuatro pasos y registra los enlaces en
+  #562. Si alguno falla, se revierte el pull request.
+  1. Un head que toca `.github/` selecciona todo, y `ci-ok` queda en verde.
+  2. Un head que toca solo `app/` (no master) obtiene una selección más estrecha, calculada desde el árbol
+     del head.
+  3. Un dispatch en un ref de rama que no es master queda en rojo.
+  4. Un sha corto queda en rojo.
+
