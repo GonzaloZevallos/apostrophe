@@ -469,6 +469,16 @@ def _dispatch_problems(workflow: Data) -> list[str]:
         )
     ):
         problems.append("the head is checked out before the ref guard and the sha check")
+    roots = [step for step in _checkouts(jobs.get("changes", {"steps": []})) if "if" not in step]
+    if (
+        roots
+        and guards
+        and checks
+        and positions[id(roots[0])] < max(positions[id(guards[0])], positions[id(checks[0])])
+    ):
+        problems.append(
+            "the root checkout of `changes` runs before the ref guard and the sha check"
+        )
     return problems
 
 
@@ -724,9 +734,9 @@ def test_pull_requests_write_on_another_job_is_refused() -> None:
 
 def test_the_changes_checkout_without_full_depth_is_refused() -> None:
     workflow = _mutated()
-    workflow["jobs"]["changes"]["steps"][0]["with"]["fetch-depth"] = 2
+    workflow["jobs"]["changes"]["steps"][2]["with"]["fetch-depth"] = 2
     assert "the `changes` checkout does not set fetch-depth: 0" in _problems(workflow)
-    del workflow["jobs"]["changes"]["steps"][0]["with"]
+    del workflow["jobs"]["changes"]["steps"][2]["with"]
     assert "the `changes` checkout does not set fetch-depth: 0" in _problems(workflow)
 
 
@@ -1525,15 +1535,15 @@ def test_a_head_checked_out_before_the_guards_is_refused() -> None:
 
 def test_a_ref_guard_or_sha_check_that_changed_is_refused() -> None:
     workflow = _mutated()
-    workflow["jobs"]["changes"]["steps"][1]["run"] = 'test "$REF" = refs/heads/master || true'
+    workflow["jobs"]["changes"]["steps"][0]["run"] = 'test "$REF" = refs/heads/master || true'
     assert "`changes` has no ref guard with EVENT and REF from env:" in _problems(workflow)
 
     workflow = _mutated()
-    del workflow["jobs"]["changes"]["steps"][2]["if"]
+    del workflow["jobs"]["changes"]["steps"][1]["if"]
     assert "`changes` has no dispatch-only sha check with SHA from env:" in _problems(workflow)
 
     workflow = _mutated()
-    workflow["jobs"]["changes"]["steps"][2]["env"] = {"SHA": "x"}
+    workflow["jobs"]["changes"]["steps"][1]["env"] = {"SHA": "x"}
     assert "`changes` has no dispatch-only sha check with SHA from env:" in _problems(workflow)
 
 
@@ -1559,7 +1569,7 @@ def test_a_ref_guard_without_its_event_or_ref_env_is_refused() -> None:
     message = "`changes` has no ref guard with EVENT and REF from env:"
     for name in ("EVENT", "REF"):
         workflow = _mutated()
-        del workflow["jobs"]["changes"]["steps"][1]["env"][name]
+        del workflow["jobs"]["changes"]["steps"][0]["env"][name]
         assert message in _problems(workflow)
 
 
@@ -1574,4 +1584,14 @@ def test_a_dispatch_trigger_that_is_missing_is_refused() -> None:
     del _triggers(workflow)["workflow_dispatch"]
     assert "`on.workflow_dispatch` is not exactly one required string input `sha`" in _problems(
         workflow
+    )
+
+
+def test_a_root_checkout_before_the_guards_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["changes"]["steps"]
+    steps.insert(0, steps.pop(2))
+    assert (
+        "the root checkout of `changes` runs before the ref guard and the sha check"
+        in _problems(workflow)
     )

@@ -43,11 +43,6 @@ jobs:
       selection: ${{ steps.select.outputs.selection }}
       base_ref: ${{ steps.select.outputs.base_ref }}
     steps:
-      # The root checkout is master's: its scripts judge the head, so it carries no `ref`. On a dispatch
-      # the head is a second checkout under `head/`, read only through the `root` argument.
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
       # A dispatch only counts at master, and its sha is a full lowercase object id before it names a ref.
       - env:
           EVENT: ${{ github.event_name }}
@@ -58,6 +53,11 @@ jobs:
           SHA: ${{ inputs.sha }}
         run: |-
           [[ "$SHA" =~ ^([0-9a-f]{40}|[0-9a-f]{64})$ ]] || { echo "sha is not a full lowercase object id"; exit 1; }
+      # The root checkout is master's: its scripts judge the head, so it carries no `ref`. On a dispatch
+      # the head is a second checkout under `head/`, read only through the `root` argument.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - if: github.event_name == 'workflow_dispatch'
         uses: actions/checkout@v7
         with:
