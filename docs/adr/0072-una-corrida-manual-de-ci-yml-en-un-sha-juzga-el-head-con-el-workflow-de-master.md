@@ -30,6 +30,12 @@ workflow de master, sin saltarse ningún control; solo cambia dónde corre.
   el diff fallan, `ci_changes.py` selecciona todo e imprime un `base_ref` vacío. Nunca sale con error por
   eso.
 
+- **La clave `ci_dispatch` de `.agentic/stack.yaml`.** Declara `workflow: ci.yml` y `sha_input: sha`, el
+  texto literal que define el sistema agentic (commit `0ca8e14c`, PR #476, GH-462; exige `ci:`). Le dice
+  al sistema qué workflow de la base despachar y con qué entrada llevar el sha del head. Va antes de
+  `ci_covers`, que sigue siendo la última clave. `tests/test_stack_ci.py` la fija y comprueba que
+  `ci.yml` tiene esa entrada.
+
 ## Hallazgos fuera de este repositorio (`outside`)
 
 - **`outside`: la regla del lector.** La frontera de confianza real es el sistema agentic: una corrida

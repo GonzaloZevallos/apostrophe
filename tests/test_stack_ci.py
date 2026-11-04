@@ -1595,3 +1595,43 @@ def test_a_root_checkout_before_the_guards_is_refused() -> None:
         "the root checkout of `changes` runs before the ref guard and the sha check"
         in _problems(workflow)
     )
+
+
+def _dispatch_key_problems(stack: Data, workflow: Data) -> list[str]:
+    """`ci_dispatch` is the literal key of agentic-system (commit 0ca8e14c), before `ci_covers`,
+    and names a workflow file and a `workflow_dispatch` input that exist."""
+    problems: list[str] = []
+    if stack.get("ci_dispatch") != {"workflow": "ci.yml", "sha_input": "sha"}:
+        problems.append("`ci_dispatch` is not workflow: ci.yml, sha_input: sha")
+    keys = list(stack)
+    if "ci_dispatch" in keys and not keys.index("ci") < keys.index("ci_dispatch") < keys.index(
+        "ci_covers"
+    ):
+        problems.append("`ci_dispatch` is not between `ci` and `ci_covers`")
+    inputs = cast("Data", _triggers(workflow).get("workflow_dispatch") or {}).get("inputs", {})
+    if cast("Data", stack.get("ci_dispatch", {})).get("sha_input") not in inputs:
+        problems.append("`ci_dispatch.sha_input` is not an input of `workflow_dispatch`")
+    return problems
+
+
+def test_the_real_dispatch_key_is_the_literal_one_before_ci_covers() -> None:
+    assert _dispatch_key_problems(STACK, WORKFLOW) == []
+    assert (REPO_ROOT / ".github" / "workflows" / STACK["ci_dispatch"]["workflow"]).is_file()
+
+
+def test_a_dispatch_key_that_differs_or_sits_after_ci_covers_is_refused() -> None:
+    stack = copy.deepcopy(STACK)
+    stack["ci_dispatch"]["workflow"] = "other.yml"
+    assert "`ci_dispatch` is not workflow: ci.yml, sha_input: sha" in _dispatch_key_problems(
+        stack, WORKFLOW
+    )
+    stack = {key: value for key, value in STACK.items() if key != "ci_dispatch"}
+    stack["ci_dispatch"] = STACK["ci_dispatch"]
+    assert "`ci_dispatch` is not between `ci` and `ci_covers`" in _dispatch_key_problems(
+        stack, WORKFLOW
+    )
+    stack = copy.deepcopy(STACK)
+    stack["ci_dispatch"]["sha_input"] = "commit"
+    assert "`ci_dispatch.sha_input` is not an input of `workflow_dispatch`" in (
+        _dispatch_key_problems(stack, WORKFLOW)
+    )
