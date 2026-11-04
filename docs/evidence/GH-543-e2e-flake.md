@@ -84,3 +84,11 @@ En las corridas previas solo se guardó el listado al arrancar `web-build` (corr
 el final únicamente en las rojas, y ninguna previa lo fue. Las corridas posteriores no tienen `web-build`:
 `web/dist` tiene un solo escritor, `web-e2e`. `web-tests` salió rojo en la corrida previa 2 y verde en las tres
 posteriores; no se investigó por qué.
+
+## Hallazgos fuera de esta tarea (`outside`)
+
+- Una tarea de seguimiento debe esperar el formulario de "New variety" antes de `getByLabel('Name').fill(...)` en
+  `web/e2e/analysis.spec.ts:191`; esta tarea no puede tocar `web/e2e/` ni `web/src/`.
+- El sistema agéntico debe conservar el junit, la traza y el mensaje de un `web-e2e` rojo en `full_checks`.
+- El límite de 1500 s del sistema agéntico queda por debajo de los 1665 a 1741 s medidos para `web-e2e` en el nivel
+  completo en paralelo.
