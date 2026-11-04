@@ -44,7 +44,7 @@ from tests.spreadsheet_import.test_cli import (
 from tests.spreadsheet_import.test_cli_pricing_settings import _workbook as _priced_workbook
 
 BUSINESS_NAME = "La Huerta"  # the seller's own, seeded by the removal scenarios
-INVITATION_TOKEN = "k3J9x2Q8w1"  # no word of the denylist; the real one is random
+PINNED_INVITATION = "k3J9x2Q8w1"  # the link's random part, fixed: no word of the denylist
 
 
 def spanish_in(text: str, quoted: Iterable[str], denylist: Collection[str]) -> list[str]:
@@ -117,7 +117,7 @@ def test_the_accounts_cli_prints_no_spanish(
     monkeypatch.setenv("APOSTROPHE_PUBLIC_URL", "http://192.168.0.10:8000/")
     clock = MovableClock(NOW)
     # The link's token is random: ~1 run in 940 the scan read a denylisted word in it (GH-527).
-    monkeypatch.setattr("app.accounts.application.invitations.new_token", lambda: INVITATION_TOKEN)
+    monkeypatch.setattr("app.accounts.application.invitations.new_token", lambda: PINNED_INVITATION)
 
     codes = [
         accounts_main(["invite-business"], clock=clock),
@@ -130,7 +130,7 @@ def test_the_accounts_cli_prints_no_spanish(
     captured = capsys.readouterr()
     assert codes == [0, 1, 1, 1]
     printed = captured.out + captured.err
-    assert f"/invitation/{INVITATION_TOKEN}\n" in printed
+    assert f"/invitation/{PINNED_INVITATION}\n" in printed
     assert "Valid once, until" in printed
     assert "no user for that email" in printed
     assert "refused: " in printed
