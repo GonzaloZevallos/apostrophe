@@ -5,8 +5,13 @@ or has a `CI_FORMS` entry whose command is a step of a gated job, never both; a 
 that is not a check, or a value no gated job runs, is refused. Every other `run:` step is a
 `setup` command or a named `CI_ONLY` entry, and every `CI_ONLY` entry is run by some job.
 `ci-ok` needs every other job and runs `if: always()`; the always-on jobs carry no skip `if:`;
-the suites are skipped only by their `changes` flag; the workflow's permissions, concurrency,
-fetch depth, fork guard, hidden-file uploads and output names are pinned.
+the suites are skipped only by their `changes` flag, and the `e2e` aggregator (the one job besides
+the always-on ones that carries `always()`) is pinned apart: it needs `changes` and `e2e-shard`,
+reads only `needs.e2e-shard.result` and runs no checkout, no `uv` and no check;
+every job `ci-ok` needs has a judge in `scripts/ci_verdict.py` (except `changes`);
+`ci_covers.web-e2e` names the aggregator, and its `failed` regex is read from `stack.yaml`;
+the workflow's permissions, concurrency, fetch depth, fork guard, hidden-file uploads and output
+names are pinned.
 When `stack.yaml` has `docs:`, `docs.generate` is a known step that exactly one gated job runs
 and it is in no `checks`, `CI_ONLY` or `CI_FORMS` entry; the system adds the `docs` check, so
 none is declared and no declared command reads the generator's paths.
@@ -25,6 +30,7 @@ import yaml
 
 from scripts.ci_changes import render, select
 from scripts.ci_coverage import MARKER
+from scripts.ci_verdict import ALWAYS_JOBS, CHANGES, SUITES, WARN_JOBS
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -40,6 +46,9 @@ COMMENT_RUN = (
 PYTEST_RUN = "uv run --no-project pytest -n auto --cov --cov-report= -- $PATHS"
 VITEST_RUN = "npm --prefix web test -- --coverage $VITEST_ARGS"
 E2E_RUN = 'npm --prefix web run e2e -- --shard="$SHARD" $E2E_ARGS'
+E2E_GATE_RUN = 'test "$RESULT" = success || { echo "e2e shards: $RESULT"; exit 1; }'
+E2E_GATE_IF = "always() && needs.changes.outputs.e2e == 'true'"
+E2E_GATE_RESULT = "${{ needs.e2e-shard.result }}"
 CHANGES_RUN = 'uv run --no-project python -m scripts.ci_changes "$EVENT" "$REF" >> "$GITHUB_OUTPUT"'
 VITEST_LIST_RUN = (
     'if [ -n "$BASE_REF" ]; then npx --prefix web vitest list --root web --changed="$BASE_REF" '
@@ -93,6 +102,9 @@ CI_ONLY: dict[str, str] = {
         "&& exit 1"
     ): "the coverage job's own failure reason; a warning in ci-ok",
     VERDICT_RUN: "the merge condition: one verdict over every job's result and the `changes` flags",
+    E2E_GATE_RUN: (
+        "the `e2e` aggregator: green only when every `e2e-shard` is; `ci_covers` names it"
+    ),
     (
         'git diff --exit-code -- docs/architecture/generated docs/api && test -z "$(git status '
         '--porcelain --untracked-files=all -- docs/architecture/generated docs/api)"'
@@ -117,7 +129,10 @@ CI_FORMS: dict[str, str] = {
 
 # Jobs that always run: no `if:` other than `always()`.
 NO_SKIP_JOBS = ("changes", "checks", "web", "docs", "coverage", "ci-ok")
-SUITE_JOBS = ("pytest", "vitest", "e2e")
+SUITE_JOBS = ("pytest", "vitest", "e2e-shard")
+# The aggregator over the `e2e-shard` matrix: the one check-run named exactly `e2e` (GH-453).
+E2E_GATE = "e2e"
+E2E_SHARD = "e2e-shard"
 COVERAGE = "coverage"
 OUTPUT_PREFIXES = ("needs.changes.outputs.", "steps.vitest-args.outputs.")
 EXPECTED_CONCURRENCY = {
@@ -207,7 +222,9 @@ def _output_references(workflow: Data) -> set[str]:
     return names
 
 
-def _structure_problems(workflow: Data, ci_names: list[str]) -> list[str]:
+def _structure_problems(
+    workflow: Data, ci_names: list[str], workflow_checks: dict[str, str]
+) -> list[str]:
     """Permissions, concurrency, `if:` rules, fetch depth, the fork guard and the uploads."""
     problems: list[str] = []
     jobs: Data = workflow["jobs"]
@@ -236,10 +253,13 @@ def _structure_problems(workflow: Data, ci_names: list[str]) -> list[str]:
         if job_id in jobs and condition not in (None, "always()"):
             problems.append(f"job {job_id!r} carries a skip `if:` ({condition})")
     for job_id in SUITE_JOBS:
-        expected = f"needs.changes.outputs.{job_id} == 'true'"
+        expected = f"needs.changes.outputs.{SUITES[job_id]} == 'true'"
         if job_id in jobs and jobs[job_id].get("if") != expected:
             problems.append(f"job {job_id!r} `if:` is not `{expected}`")
 
+    problems.extend(_always_problems(jobs))
+    problems.extend(_e2e_gate_problems(jobs, workflow_checks))
+    problems.extend(_judge_problems(jobs))
     problems.extend(_changes_problems(jobs.get("changes")))
     problems.extend(_vitest_problems(jobs.get("vitest")))
     problems.extend(_trigger_problems(workflow))
@@ -247,6 +267,54 @@ def _structure_problems(workflow: Data, ci_names: list[str]) -> list[str]:
     problems.extend(_expression_problems(workflow))
     problems.extend(_browser_problems(workflow))
     return problems
+
+
+def _always_problems(jobs: Data) -> list[str]:
+    """`always()` in a job's `if:` is for the always-on jobs and `E2E_GATE` only."""
+    allowed = {*NO_SKIP_JOBS, E2E_GATE}
+    return [
+        f"job {job_id!r} carries `always()` in its `if:` ({job['if']})"
+        for job_id, job in jobs.items()
+        if "always()" in str(job.get("if", "")) and job_id not in allowed
+    ]
+
+
+def _e2e_gate_problems(jobs: Data, checks: dict[str, str]) -> list[str]:
+    """The aggregator reads one result: no checkout, no matrix, no `uv`, no check command."""
+    gate = cast("Data | None", jobs.get(E2E_GATE))
+    if gate is None:
+        return [f"there is no {E2E_GATE!r} job"]
+    problems: list[str] = []
+    if gate.get("if") != E2E_GATE_IF:
+        problems.append(f"job {E2E_GATE!r} `if:` is not `{E2E_GATE_IF}`")
+    if _needs(gate) != ["changes", E2E_SHARD]:
+        problems.append(f"job {E2E_GATE!r} needs {_needs(gate)}, not ['changes', {E2E_SHARD!r}]")
+    if "strategy" in gate:
+        problems.append(f"job {E2E_GATE!r} has a strategy; it must be one check-run")
+    steps = _steps(gate)
+    if len(steps) != 1:
+        problems.append(f"job {E2E_GATE!r} has {len(steps)} steps, not 1")
+    for step in steps:
+        if "uses" in step:
+            problems.append(f"job {E2E_GATE!r} runs a `uses:` step ({step['uses']})")
+        run = str(step.get("run", "")).strip()
+        if run != E2E_GATE_RUN:
+            problems.append(f"job {E2E_GATE!r} step is not `{E2E_GATE_RUN}`")
+        if "uv" in run.split() or any(command in run for command in checks.values()):
+            problems.append(f"job {E2E_GATE!r} runs `uv` or a check command: {run}")
+        if cast("Data", step.get("env", {})) != {"RESULT": E2E_GATE_RESULT}:
+            problems.append(f"job {E2E_GATE!r} env is not exactly RESULT: {E2E_GATE_RESULT}")
+    return problems
+
+
+def _judge_problems(jobs: Data) -> list[str]:
+    """Every job `ci-ok` needs, but `changes`, has a judge in `scripts/ci_verdict.py`."""
+    judged = {*SUITES, *ALWAYS_JOBS, *WARN_JOBS}
+    return [
+        f"ci-ok needs {job!r}, which scripts/ci_verdict.py does not judge"
+        for job in _needs(jobs.get("ci-ok", {}))
+        if job != CHANGES and job not in judged
+    ]
 
 
 CHROMIUM_RUN = "npx --prefix web playwright install --with-deps chromium"
@@ -470,7 +538,7 @@ def stack_ci_problems(
         if job_id not in gated:
             problems.append(f"job {job_id!r} is not in the needs closure of ci:")
 
-    problems.extend(_structure_problems(workflow, ci_names))
+    problems.extend(_structure_problems(workflow, ci_names, checks))
     problems.extend(
         f"output {name!r} is read but no producer emits it"
         for name in sorted(_output_references(workflow) - OUTPUT_NAMES)
@@ -538,8 +606,8 @@ def test_a_skip_if_on_an_always_on_job_is_refused(job: str) -> None:
 
 def test_a_suite_whose_if_is_not_its_flag_is_refused() -> None:
     workflow = _mutated()
-    workflow["jobs"]["e2e"]["if"] = "needs.changes.outputs.vitest == 'true'"
-    expected = "job 'e2e' `if:` is not `needs.changes.outputs.e2e == 'true'`"
+    workflow["jobs"]["e2e-shard"]["if"] = "needs.changes.outputs.vitest == 'true'"
+    expected = "job 'e2e-shard' `if:` is not `needs.changes.outputs.e2e == 'true'`"
     assert expected in _problems(workflow)
 
 
@@ -797,7 +865,7 @@ def test_a_coverage_upload_without_include_hidden_files_is_refused() -> None:
     assert any("coverage upload" in p and "include-hidden-files" in p for p in problems)
 
 
-@pytest.mark.parametrize("job", ["vitest", "e2e"])
+@pytest.mark.parametrize("job", ["vitest", "e2e-shard"])
 def test_a_browser_suite_without_the_chromium_install_is_refused(job: str) -> None:
     workflow = _mutated()
     workflow["jobs"][job]["steps"] = [
@@ -850,7 +918,8 @@ def test_a_coverage_failure_step_that_does_not_count_the_shards_is_refused() -> 
 
 def test_an_output_name_no_producer_emits_is_refused() -> None:
     workflow = _mutated()
-    workflow["jobs"]["e2e"]["steps"][-2]["env"]["E2E_ARGS"] = "${{ needs.changes.outputs.e2e_arg }}"
+    step = workflow["jobs"]["e2e-shard"]["steps"][-2]
+    step["env"]["E2E_ARGS"] = "${{ needs.changes.outputs.e2e_arg }}"
     assert "output 'e2e_arg' is read but no producer emits it" in _problems(workflow)
 
 
@@ -895,7 +964,7 @@ def test_a_check_with_no_step_and_no_ci_form_is_refused() -> None:
 
 def test_a_check_run_by_two_jobs_is_refused() -> None:
     workflow = _mutated()
-    workflow["jobs"]["e2e"]["steps"].append({"run": STACK["checks"]["types"]})
+    workflow["jobs"]["e2e-shard"]["steps"].append({"run": STACK["checks"]["types"]})
     problems = _problems(workflow)
     assert any("'types'" in p and "2 jobs" in p for p in problems)
 
@@ -964,7 +1033,7 @@ def test_a_docs_generate_no_job_runs_is_refused() -> None:
 
 def test_a_docs_generate_run_by_two_jobs_is_refused() -> None:
     workflow = _mutated()
-    workflow["jobs"]["e2e"]["steps"].append({"run": GENERATE})
+    workflow["jobs"]["e2e-shard"]["steps"].append({"run": GENERATE})
     assert _problems(workflow) == [f"docs.generate ({GENERATE}) is a step of 2 jobs, not 1"]
 
 
@@ -1056,3 +1125,184 @@ def test_the_comment_marker_is_the_one_ci_coverage_writes() -> None:
 @pytest.mark.parametrize("command", sorted(CI_ONLY))
 def test_every_ci_only_entry_has_a_reason(command: str) -> None:
     assert CI_ONLY[command].strip()
+
+
+# --- the e2e aggregator, the judges and ci_covers -------------------------------------------------
+
+
+def _gate_messages(problems: list[str]) -> list[str]:
+    return [problem for problem in problems if f"job {E2E_GATE!r}" in problem]
+
+
+def test_the_e2e_aggregator_is_pinned_as_the_plan_wrote_it() -> None:
+    gate = WORKFLOW["jobs"][E2E_GATE]
+    assert gate["if"] == E2E_GATE_IF
+    assert _needs(gate) == ["changes", E2E_SHARD]
+    assert "strategy" not in gate
+    assert gate["steps"] == [{"env": {"RESULT": E2E_GATE_RESULT}, "run": E2E_GATE_RUN}]
+    assert "strategy" in WORKFLOW["jobs"][E2E_SHARD]
+
+
+def test_an_aggregator_with_another_if_or_needs_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"][E2E_GATE]["if"] = "needs.changes.outputs.e2e == 'true'"
+    workflow["jobs"][E2E_GATE]["needs"] = ["changes"]
+    messages = _gate_messages(_problems(workflow))
+    assert f"job 'e2e' `if:` is not `{E2E_GATE_IF}`" in messages
+    assert "job 'e2e' needs ['changes'], not ['changes', 'e2e-shard']" in messages
+
+
+def test_an_aggregator_with_a_matrix_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"][E2E_GATE]["strategy"] = {"matrix": {"shard": [1]}}
+    assert "job 'e2e' has a strategy; it must be one check-run" in _problems(workflow)
+
+
+def test_an_aggregator_with_a_checkout_or_an_extra_step_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"][E2E_GATE]["steps"].insert(0, {"uses": "actions/checkout@v7"})
+    messages = _gate_messages(_problems(workflow))
+    assert "job 'e2e' has 2 steps, not 1" in messages
+    assert "job 'e2e' runs a `uses:` step (actions/checkout@v7)" in messages
+
+
+def test_an_aggregator_that_runs_uv_or_a_check_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"][E2E_GATE]["steps"][0]["run"] = STACK["checks"]["lint"]
+    messages = _gate_messages(_problems(workflow))
+    assert f"job 'e2e' step is not `{E2E_GATE_RUN}`" in messages
+    assert f"job 'e2e' runs `uv` or a check command: {STACK['checks']['lint']}" in messages
+
+
+def test_an_aggregator_reading_another_result_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"][E2E_GATE]["steps"][0]["env"]["RESULT"] = "${{ needs.changes.result }}"
+    expected = f"job 'e2e' env is not exactly RESULT: {E2E_GATE_RESULT}"
+    assert expected in _problems(workflow)
+
+
+def test_an_always_on_a_job_other_than_the_aggregator_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"][E2E_SHARD]["if"] = "always()"
+    problems = _problems(workflow)
+    assert "job 'e2e-shard' carries `always()` in its `if:` (always())" in problems
+    assert not any(problem.startswith("job 'e2e' carries") for problem in problems)
+
+
+def test_every_job_ci_ok_needs_has_a_judge_or_is_changes() -> None:
+    judged = {*SUITES, *ALWAYS_JOBS, *WARN_JOBS, CHANGES}
+    assert set(_needs(WORKFLOW["jobs"]["ci-ok"])) <= judged
+
+
+def test_a_ci_ok_need_with_no_judge_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["ci-ok"]["needs"].append("deploy-preview")
+    problems = _problems(workflow)
+    assert "ci-ok needs 'deploy-preview', which scripts/ci_verdict.py does not judge" in problems
+
+
+def ci_covers_problems(stack: Data, workflow: Data) -> list[str]:
+    """What keeps `ci_covers.web-e2e` from naming a job that covers it."""
+    entry = cast("Data", stack.get("ci_covers", {})).get("web-e2e")
+    if entry is None:
+        return ["ci_covers has no web-e2e entry"]
+    problems: list[str] = []
+    if "web-e2e" not in stack["checks"]:
+        problems.append("ci_covers.web-e2e is not in checks")
+    if entry.get("job") != E2E_GATE:
+        problems.append(f"ci_covers.web-e2e.job is {entry.get('job')!r}, not {E2E_GATE!r}")
+    if E2E_GATE not in _needs(workflow["jobs"]["ci-ok"]):
+        problems.append(f"{E2E_GATE!r} is not in ci-ok.needs")
+    problems.extend(_failed_regex_problems(str(entry.get("failed", ""))))
+    return problems
+
+
+SHOULD_MATCH = ("  \u2718  12 [mobile] \u203a sales.spec.ts:40:5 \u203a x", "  3 failed")
+SHOULD_NOT_MATCH = (
+    "  \u2713  217 [mobile] \u203a x (1.2s)",
+    "  217 passed (25.3m)",
+    "  1 flaky",
+)
+
+
+# A group with an unbounded repeat inside it that is itself repeated: GH-453's refused shape.
+NESTED_REPEAT = re.compile(r"\([^()]*[+*][^()]*\)[+*{]")
+
+
+def _failed_regex_problems(pattern: str) -> list[str]:
+    if len(pattern) > 200:
+        return [f"ci_covers.web-e2e.failed is {len(pattern)} characters, over 200"]
+    if NESTED_REPEAT.search(pattern):
+        return ["ci_covers.web-e2e.failed has a nested unbounded repetition"]
+    try:
+        compiled = re.compile(pattern)
+    except re.error as error:
+        return [f"ci_covers.web-e2e.failed does not compile: {error}"]
+    problems = [
+        f"ci_covers.web-e2e.failed does not match {line!r}"
+        for line in SHOULD_MATCH
+        if compiled.search(line) is None
+    ]
+    problems.extend(
+        f"ci_covers.web-e2e.failed matches {line!r}"
+        for line in SHOULD_NOT_MATCH
+        if compiled.search(line) is not None
+    )
+    return problems
+
+
+def test_ci_covers_names_the_aggregator_and_its_regex_separates_failures() -> None:
+    assert ci_covers_problems(STACK, WORKFLOW) == []
+
+
+def test_ci_covers_is_the_last_key_of_stack_yaml() -> None:
+    assert list(STACK)[-1] == "ci_covers"
+    assert STACK["ci_covers"]["web-e2e"]["job"] == E2E_GATE
+
+
+def test_a_ci_covers_job_that_is_the_matrix_is_refused() -> None:
+    stack = copy.deepcopy(STACK)
+    stack["ci_covers"]["web-e2e"]["job"] = E2E_SHARD
+    assert ci_covers_problems(stack, WORKFLOW) == [
+        "ci_covers.web-e2e.job is 'e2e-shard', not 'e2e'"
+    ]
+
+
+def test_a_ci_covers_for_a_check_that_is_not_declared_is_refused() -> None:
+    stack = copy.deepcopy(STACK)
+    del stack["checks"]["web-e2e"]
+    assert "ci_covers.web-e2e is not in checks" in ci_covers_problems(stack, WORKFLOW)
+
+
+def test_a_ci_covers_job_outside_ci_ok_needs_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["ci-ok"]["needs"].remove(E2E_GATE)
+    assert "'e2e' is not in ci-ok.needs" in ci_covers_problems(STACK, workflow)
+
+
+def test_a_missing_ci_covers_is_refused() -> None:
+    stack = {key: value for key, value in copy.deepcopy(STACK).items() if key != "ci_covers"}
+    assert ci_covers_problems(stack, WORKFLOW) == ["ci_covers has no web-e2e entry"]
+
+
+def test_a_failed_regex_over_200_characters_or_not_compiling_is_refused() -> None:
+    assert _failed_regex_problems("x" * 201) == [
+        "ci_covers.web-e2e.failed is 201 characters, over 200"
+    ]
+    [problem] = _failed_regex_problems("(unclosed")
+    assert problem.startswith("ci_covers.web-e2e.failed does not compile: ")
+
+
+def test_a_failed_regex_that_misses_a_failure_or_matches_a_pass_is_refused() -> None:
+    assert "ci_covers.web-e2e.failed does not match '  3 failed'" in _failed_regex_problems(
+        "\u2718"
+    )
+    assert "ci_covers.web-e2e.failed matches '  1 flaky'" in _failed_regex_problems(
+        "\u2718|failed|flaky"
+    )
+
+
+def test_a_failed_regex_with_a_nested_unbounded_repetition_is_refused() -> None:
+    expected = ["ci_covers.web-e2e.failed has a nested unbounded repetition"]
+    assert _failed_regex_problems("(a+)+") == expected
+    assert _failed_regex_problems("(x*y)*b") == expected
