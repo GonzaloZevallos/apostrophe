@@ -39,7 +39,7 @@ summary tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=10 red=0 cap
 summary tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=6 red=0 cap=6 time=2026-11-04T19:45:52Z
 ```
 
-Carga de la máquina (`loadavg` de 1 min, 16 CPU, con otras tareas ajenas): `shuffle` 8 a 28; `census` y `full-load` 9 a 26. Las compañías corrieron de verdad: p. ej. `full-load` n=3: `pytest` started=2 finished=1, `mypy` started=295 finished=294, `typecheck` started=7 finished=6, `build` started=7 finished=6, todas con `fastfail=0`. Cada iteración de `census` duró unos 35 s, mucho menos que `pytest`, por eso el `pytest` de esa pata apenas termina una corrida; `mypy`, `typecheck` y `build` sí giraron.
+Carga de la máquina (`loadavg` de 1 min, 16 CPU, con otras tareas ajenas): `shuffle` 8 a 28; `census` y `full-load` 9 a 26. Las compañías corrieron de verdad: p. ej. `full-load` n=3: `pytest` started=2 finished=1, `mypy` started=295 finished=294, `typecheck` started=7 finished=6, `build` started=7 finished=6, todas con `fastfail=0`. Cada iteración de `census` duró unos 35 s, mucho menos que una corrida de `pytest`, `typecheck` o `build`: en la pata `census` esas tres quedaron en `started=1 finished=0` en todas las iteraciones (solo hicieron de carga, ninguna llegó a terminar una corrida) y solo `mypy` terminó corridas (p. ej. n=3: started=28 finished=27). La carga completa, con corridas terminadas de las cuatro, es la de `full-load`.
 
 Rojos: ninguno, así que no hay archivos `stress-red-*.txt` y no hay seed que reproducir dos veces.
 
