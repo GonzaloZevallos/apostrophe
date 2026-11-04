@@ -1225,9 +1225,15 @@ SHOULD_NOT_MATCH = (
 )
 
 
+# A group with an unbounded repeat inside it that is itself repeated: GH-453's refused shape.
+NESTED_REPEAT = re.compile(r"\([^()]*[+*][^()]*\)[+*{]")
+
+
 def _failed_regex_problems(pattern: str) -> list[str]:
     if len(pattern) > 200:
         return [f"ci_covers.web-e2e.failed is {len(pattern)} characters, over 200"]
+    if NESTED_REPEAT.search(pattern):
+        return ["ci_covers.web-e2e.failed has a nested unbounded repetition"]
     try:
         compiled = re.compile(pattern)
     except re.error as error:
@@ -1294,3 +1300,9 @@ def test_a_failed_regex_that_misses_a_failure_or_matches_a_pass_is_refused() -> 
     assert "ci_covers.web-e2e.failed matches '  1 flaky'" in _failed_regex_problems(
         "\u2718|failed|flaky"
     )
+
+
+def test_a_failed_regex_with_a_nested_unbounded_repetition_is_refused() -> None:
+    expected = ["ci_covers.web-e2e.failed has a nested unbounded repetition"]
+    assert _failed_regex_problems("(a+)+") == expected
+    assert _failed_regex_problems("(x*y)*b") == expected
