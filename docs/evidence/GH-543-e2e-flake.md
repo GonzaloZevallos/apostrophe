@@ -121,11 +121,16 @@ payment opened from a scrolled Customers: Close, Back and a save return to its o
 `expectScrolledTo` (`scrollOnNavigate.spec.ts:44`) agotó los 17000 ms esperando que el desplazamiento volviera a
 su posición dentro de 2 px.
 
-Lo que este rojo no es: no es una interferencia por `web/dist` ni por el buildinfo de `tsc -b`, porque en CI cada
-trabajo corre en su propio árbol y `web-build` ya no comparte nada con `web-e2e`; no toca los archivos de esta
+Lo que este rojo no es: no es una interferencia por `web/dist` ni por el buildinfo de `tsc -b`, porque en CI los
+trabajos `web` y `e2e` siempre corrieron en ejecutores separados (el cambio de `stack.yaml` solo afecta al
+`full_checks` local); no toca los archivos de esta
 tarea (solo `.agentic/stack.yaml`, dos pruebas de `tests/` y `docs/evidence/GH-543*`); y no es la misma prueba que
 el rojo local de la corrida posterior a la corrección (`analysis.spec.ts:178`). Es una segunda especificación con
 una espera sobre una posición de desplazamiento, así que se suma a lo ya dicho: la suite de e2e tiene carreras en
 especificaciones que esta tarea no puede corregir (la invariante 5 prohíbe tocar `web/e2e/`). No se reintentó, no
 se omitió y no se aflojó nada. No se reprodujo localmente, así que no se afirma causa: solo que ocurrió una vez, en
 una prueba ajena. Debe tratarse en una tarea aparte sobre `web/e2e/scrollOnNavigate.spec.ts`.
+
+La CI de `daac1a07` (corrida 41860677780) seguía en estado `queued` a los 13 min de crearse, sin haber empezado
+ningún trabajo: el `full_checks` de esa cabeza venció por la espera, no por un fallo observado. Es un dato de una
+corrida, sin resultado todavía.
