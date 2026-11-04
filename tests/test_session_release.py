@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from dataclasses import replace
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import cast
 
@@ -29,6 +29,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.pool import QueuePool
 from starlette.datastructures import State
 
+from app.clock import Clock
 from app.db import make_engine
 from app.pinned_catalog.adapters import upkeep_trigger
 from app.settings import Settings
@@ -41,7 +42,6 @@ from scripts.stress.squeezed_mobile_app import (
     squeezed_engine,
 )
 from tests.conftest import PASSWORD, SETTINGS, invite
-from tests.e2e_app import PINNED_INSTANT
 
 LOCALES = Path(__file__).resolve().parent / "fixtures" / "locales"
 GERMAN = Language("de")
@@ -158,10 +158,10 @@ def squeezed_app(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> FastAPI:
     return create_squeezed_mobile_app()
 
 
-def _sign_in(client: TestClient, url: str) -> None:
+def _sign_in(client: TestClient, url: str, now: datetime) -> None:
     engine = make_engine(url)
     try:
-        token = invite(engine, PINNED_INSTANT)
+        token = invite(engine, now)
     finally:
         engine.dispose()
     accepted = client.post(
@@ -182,7 +182,7 @@ def test_the_real_upkeep_syncs_the_pin_on_a_pool_of_one(squeezed_app: FastAPI) -
     roomy = cast(Engine, squeezed_app.state.engine)
     url = roomy.url.render_as_string(hide_password=False)
     with TestClient(squeezed_app) as client:
-        _sign_in(client, url)
+        _sign_in(client, url, cast(Clock, squeezed_app.state.clock)())
         product = client.post("/api/products", json={"name": "V1"}).json()
         client.post(
             f"/api/products/{product['id']}/prices",
