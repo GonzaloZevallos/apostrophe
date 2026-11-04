@@ -42,3 +42,15 @@ iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=28 result=gree
 iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=29 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
 iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=30 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
 summary tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=30 red=0 cap=30 time=2026-11-04T20:14:44Z
+start tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed cap=10 logged=0 time=2026-11-04T20:42:01Z
+iter tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=1 result=green exit=0 first=- peak_out=2 peak_waiters=4 errors=-
+iter tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=2 result=green exit=0 first=- peak_out=2 peak_waiters=4 errors=-
+iter tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=3 result=red exit=1 first=sample-app:_POST_/sales_->_500_Internal_Server_Error_ peak_out=2 peak_waiters=6 errors=TimeoutError;
+iter tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=4 result=red exit=1 first=sample-app:_POST_/stock/entries_->_500_Internal_Server_Error_ peak_out=2 peak_waiters=5 errors=TimeoutError;
+iter tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=5 result=green exit=0 first=- peak_out=2 peak_waiters=3 errors=-
+iter tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=6 result=green exit=0 first=- peak_out=2 peak_waiters=2 errors=-
+iter tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=7 result=green exit=0 first=- peak_out=2 peak_waiters=3 errors=-
+iter tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=8 result=red exit=1 first=sample-app:_POST_/sales_->_500_Internal_Server_Error_ peak_out=2 peak_waiters=6 errors=TimeoutError;
+iter tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=9 result=green exit=0 first=- peak_out=2 peak_waiters=3 errors=-
+iter tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=10 result=green exit=0 first=- peak_out=2 peak_waiters=4 errors=-
+summary tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=10 red=3 cap=10 time=2026-11-04T20:44:26Z

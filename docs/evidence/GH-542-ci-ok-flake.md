@@ -191,13 +191,13 @@ Argumento, de la línea citada y del workflow en `962bffff`:
 
 ## 8. Reproducción en HEAD sin corrección (parte 2, subtarea `repro`)
 
-**Árbol probado:** `7c5accb734314bf2bc67b618b475a453ab800185` (`git rev-parse HEAD^{tree}` del commit que agrega `tests/test_session_release.py`, `scripts/stress/squeezed_mobile_app.py` y `docs/evidence/GH-542/stress.sh`; ningún archivo de `app/` cambió). Las corridas de abajo se hicieron sobre ese árbol; el commit de esta sección solo agrega este texto y los logs. **Ninguna re-ejecución verde se cita como prueba.**
+**Árbol probado (test A, test B, `squeezed`):** `cd0282832ace33280032a48bd5245fbbbdefa950` (`git rev-parse HEAD^{tree}` del commit `d564862d`). Las filas anteriores del log (árbol `7c5accb734314bf2bc67b618b475a453ab800185`) tienen el mismo `app/` y quedan en `stress.log` como dato previo, sin diagnóstico de titulares. Ningún archivo de `app/` cambió en esta subtarea. **Ninguna re-ejecución verde se cita como prueba.**
 
 **Quién captura el engine (grep de `create_app` y de `app/`):** `create_app` hace `app.state.engine = engine or make_engine(...)` y nada más lo guarda. Lo leen en el momento de la llamada: el `lifespan` (`upgrade_to_head`), `get_session` (`app/db.py:97`), `run_upkeep_safely` (`safe_upkeep.py:37`), el router de pinned-catalog (`router.py:64`) y el ticker (apagado en `create_mobile_e2e_app`). Los demás adaptadores reciben `(Session, business_id)` por fábrica. Cambiar `app.state.engine` después de `create_app` es válido, por eso `create_squeezed_mobile_app` y el test B lo hacen y no se agregó ningún parámetro a `app/`.
 
 ### Test A (sonda de `checkedout()`), `tests/test_session_release.py`, HEAD sin corrección
 
-Salida completa en `$TASK_EVIDENCE_DIR/repro-testA-HEAD.txt`. La sonda reemplaza a `upkeep_trigger.run_upkeep_safely` y anota `state.engine.pool.checkedout()`:
+Corrida sobre el árbol `cd028283…`; la salida completa del archivo de tests quedó en `$TASK_EVIDENCE_DIR/repro-session-release-HEAD.txt` (fuera del repo) y las líneas que importan están pegadas aquí. La sonda reemplaza a `upkeep_trigger.run_upkeep_safely` y anota `state.engine.pool.checkedout()`:
 
 | Escritura (TestClient, SQLite de archivo) | `checkedout()` al empezar el upkeep | Resultado |
 |---|---|---|
@@ -211,7 +211,17 @@ La Session de la petición sigue teniendo una conexión cuando el upkeep empieza
 
 ### Test B (upkeep real con un pool de 1)
 
-`test_the_real_upkeep_syncs_the_pin_on_a_pool_of_one` publica el pin con un pool de 5 y recién antes de la escritura cambia `app.state.engine` por `squeezed_engine(pool_size=1, max_overflow=0, pool_timeout=1)` (firmar y publicar necesitan dos conexiones a la vez por sí mismos; con el pool de 1 desde el inicio falla antes de la escritura, en `/pinned-catalog/test`, sin relación con el upkeep). Escritura: `PUT /catalog/products/{id}`. En HEAD **falla**: el log capturado trae `WARNING apostrophe.pinned_catalog:safe_upkeep.py:52 pinned catalog sync failed: TimeoutError` y `sqlalchemy.exc.TimeoutError: QueuePool limit of size 1 overflow 0 reached, connection timed out, timeout 1.00`, y el estado del pin no vuelve a `up_to_date`.
+`test_the_real_upkeep_syncs_the_pin_on_a_pool_of_one` firma, publica el pin y lee su estado con un pool de 5, y cambia `app.state.engine` por `squeezed_engine(pool_size=1, max_overflow=0, pool_timeout=1)` **solo alrededor de** `PUT /catalog/header-footer` (una escritura que cambia el texto del pin y que la sonda del test A muestra con la misma forma que las otras rutas del catálogo); antes pone en `FakeTelegram` un `fail_next(TelegramUnreachable())`. Un upkeep que corre de verdad intenta el edit, falla y deja el registro `telegram_unreachable`, que la API muestra en `GET /pinned-catalog/status`; uno que no consigue conexión no deja nada. La lectura de estado va con el engine amplio (esa ruta usa por sí misma dos conexiones: la Session de la petición y la del snapshot, y con un pool de 1 fallaría aunque el upkeep estuviera bien; así falló la primera versión de este test y se descartó).
+
+Falla en el árbol `cd028283…` por el motivo correcto (salida del run, `$TASK_EVIDENCE_DIR/repro-session-release-HEAD.txt`):
+
+```text
+>           assert _status(client)["reason"] == "telegram_unreachable"
+E           AssertionError: assert None == 'telegram_unreachable'
+WARNING  apostrophe.pinned_catalog:safe_upkeep.py:52 pinned catalog sync failed: TimeoutError
+```
+
+Control: el mismo test con `POOL_SIZE: "3"` en lugar de `"1"` pasa (corrida local, mismo árbol más esa línea), así que el rojo lo causa el pool, no otra cosa.
 
 ### Stress (`docs/evidence/GH-542/stress.sh`, log `docs/evidence/GH-542/stress.log`)
 
@@ -219,17 +229,36 @@ Semilla real `scripts/design/mobile_seed.py` por HTTP contra uvicorn, una DB de 
 
 | Modo | Servidor | n | Resultado, iteración por iteración |
 |---|---|---|---|
-| `squeezed` | `create_squeezed_mobile_app`, pool 2 + 0, espera 2 s, diagnóstico | 10 | **3 de 10 rojas** (n=3, 7, 9): las tres `sample-app: POST /stock/entries -> 500 Internal Server Error` con `TimeoutError` en el log del servidor; 7 verdes (n=1, 2, 4, 5, 6, 8, 10) |
+| `squeezed` | `create_squeezed_mobile_app`, pool 2 + 0, espera 2 s, diagnóstico | 10 (árbol `cd028283…`) | **3 de 10 rojas** (n=3, 8: `sample-app: POST /sales -> 500 Internal Server Error`; n=4: `POST /stock/entries -> 500`), las tres con `TimeoutError` en el log del servidor; 7 verdes (n=1, 2, 5, 6, 7, 9, 10). En el árbol anterior `7c5accb7…`: 3 de 10 (n=3, 7, 9, las tres `POST /stock/entries -> 500`) |
 | `default` | `tests.e2e_app:create_mobile_e2e_app` (pool 5 + 10, 30 s) | 30 | **0 de 30 rojas** (dato, no prueba de nada: no reproduce el rojo de CI) |
 
-- Pico de `checkedout()` en `squeezed`: 2 en las 10 (el tope del pool). **Pico de hilos esperando el lock del negocio:** 1 a 6 según la iteración (máximo 6 en n=2, verde). No llega a 20, por lo que no hay un tema nuevo de hilos (riesgo del plan).
-- Extracto del stack que nombra al titular (`stress-red-squeezed-7c5accb7-3.txt`, checkouts con `checkedout=2`): tres hilos de `run_upkeep_safely:50 > push:177 > snapshot:68` y `push:185 > _push_upkeep:210 > record:38` (el upkeep pidiendo su conexión con el pool lleno) y tres de `require_session:83 > open_session:172 > user:76` (la petición siguiente del seed, que es la que recibe el 500). Lo que **no** muestra el extracto: qué petición anterior tenía la Session abierta; esa pieza la ponen el Test A (la Session de la petición sigue viva cuando empieza el upkeep) y el pico de esperas del lock (los upkeeps se encolan detrás del lock del negocio mientras su Session sigue tomada).
+- Pico de `checkedout()` en `squeezed`: 2 en las 10 (el tope del pool). **Pico de hilos esperando el lock del negocio:** 2 a 6 según la iteración en `cd028283…` (6 en las rojas n=3 y n=8). No llega a 20, por lo que no hay un tema nuevo de hilos (riesgo del plan).
+- **Extracto del stack que nombra al titular** (`stress-red-squeezed-cd028283-4.txt`, checkouts con `checkedout=2`; `held_by` son las conexiones aún sin devolver al momento de cada checkout):
+
+```text
+checkout checkedout=2 ... run_upkeep_safely:50 > push:177 > snapshot:68 | held_by=[put_pricing_settings:44 > current:28 > _row:20]
+checkout checkedout=2 ... run_upkeep_safely:50 > push:185 > _push_upkeep:210 > record:38 | held_by=[put_pricing_settings:44 > current:28 > _row:20]
+checkout checkedout=2 ... require_session:83 > open_session:172 > user:76 | held_by=[run_upkeep_safely:50 > push:177 > snapshot:68]
+```
+
+  Lectura: cuando `run_upkeep_safely` pide su conexión, la que ya está tomada es la de la Session de la petición del `PUT /pricing-settings`, en la lectura posterior al commit (`put_pricing_settings:44`, `store.current()` → `_row`); y la petición siguiente del seed (`require_session`) queda esperando mientras el upkeep tiene las suyas. Es el mismo mecanismo que el test A mide con `checkedout()`. Lo que el extracto no prueba por sí solo: que la Session que figura en `held_by` es la misma petición que programó ese upkeep (el log no trae un id de petición); el test A sí lo muestra, porque ahí hay una sola petición en vuelo.
 - Diferencia con el log de CI: allí falló `PUT /catalog/varieties/2` con pool 5 + 10 y 30 s; aquí, con un pool de 2, falla antes (`POST /stock/entries`). Es la misma firma (`QueuePool limit ... reached`) con otro umbral; con el pool por defecto no se reprodujo en 30 corridas.
 
 ### Compuerta del plan
 
-Test A rojo en HEAD (3 de las 4 rutas con upkeep) y la fila `squeezed` falla (3 de 10): **la teoría de la sesión no queda refutada**, y la subtarea `fix` puede empezar, con el matiz de arriba: `POST`/`PATCH` de productos ya liberan la conexión.
+Test A rojo en HEAD (3 de las 4 rutas con upkeep), Test B rojo por el upkeep, y la fila `squeezed` falla (3 de 10 en dos árboles): **la teoría de la sesión no queda refutada**, y la subtarea `fix` puede empezar, con el matiz de arriba: `POST`/`PATCH` de productos ya liberan la conexión.
 
-### Selección de `ci_changes.py`
+### Selección de `ci_changes.py` para el diff planeado
 
-`uv run --no-project python -m scripts.ci_changes` en este checkout imprime `pytest=true`, `vitest=true`, `e2e=true` (`vitest_all=true`). No se verificó con el diff exacto de la corrección (los tres adaptadores de `app/`): **no probado** más allá de esa salida.
+Se hizo un clon de este checkout, se tocó (una línea en blanco) cada uno de los tres adaptadores planeados (`app/pinned_catalog/adapters/upkeep_trigger.py`, `app/accounts/adapters/language_router.py`, `app/pricing_settings/adapters/router.py`) en un commit encima de `cd028283…`, y se corrió `python -m scripts.ci_changes pull_request refs/pull/1/merge` (diff `HEAD^1..HEAD`, como un pull request). Salida:
+
+```text
+pytest=true
+vitest=false
+e2e=false
+e2e_shards=0
+e2e_matrix=[]
+base_ref=HEAD^1
+```
+
+`pytest` se elige (los shards `always`, `areas-1`, `areas-2` y `areas-3`; `tests/test_session_release.py` cae en `always`). **`e2e` NO se elige** para ese diff: la suposición del plan de que el e2e se selecciona es falsa si la corrección toca solo esos tres archivos. Consecuencia: en CI la corrección la cubren `tests/test_session_release.py` y el resto de pytest, y el seed móvil (`stress.sh`) solo corre a mano; el criterio de la sección 7 no se verifica en CI con ese diff.
