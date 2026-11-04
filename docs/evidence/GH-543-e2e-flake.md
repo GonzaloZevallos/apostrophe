@@ -112,3 +112,20 @@ espera vence (agentic-system #485). El repo ya nombra solo `ci-ok` en `.agentic/
 `ci_required` no es una clave de este repo. No hay un fallo de `pytest` ni de `e2e` que corregir en el código, y
 `web/playwright.config.ts` no se tocó. Aparte, los 1665 a 1741 s medidos para `web-e2e` en el nivel completo
 local en paralelo (tabla de arriba) son una observación de capacidad, no la causa de este mensaje.
+
+## CI de la cabeza `41005de5`: un rojo en otra especificación
+
+La CI de `41005de5` (corrida 41850973405) terminó en rojo: `ci-ok` falló porque `e2e (3)` falló, con 50 pruebas en
+verde y 1 en rojo (corrida única, no una tasa). La prueba roja es `e2e/scrollOnNavigate.spec.ts:219`, "Record
+payment opened from a scrolled Customers: Close, Back and a save return to its offset" (430 px, `secure-origin`):
+`expectScrolledTo` (`scrollOnNavigate.spec.ts:44`) agotó los 17000 ms esperando que el desplazamiento volviera a
+su posición dentro de 2 px.
+
+Lo que este rojo no es: no es una interferencia por `web/dist` ni por el buildinfo de `tsc -b`, porque en CI cada
+trabajo corre en su propio árbol y `web-build` ya no comparte nada con `web-e2e`; no toca los archivos de esta
+tarea (solo `.agentic/stack.yaml`, dos pruebas de `tests/` y `docs/evidence/GH-543*`); y no es la misma prueba que
+el rojo local de la corrida posterior a la corrección (`analysis.spec.ts:178`). Es una segunda especificación con
+una espera sobre una posición de desplazamiento, así que se suma a lo ya dicho: la suite de e2e tiene carreras en
+especificaciones que esta tarea no puede corregir (la invariante 5 prohíbe tocar `web/e2e/`). No se reintentó, no
+se omitió y no se aflojó nada. No se reprodujo localmente, así que no se afirma causa: solo que ocurrió una vez, en
+una prueba ajena. Debe tratarse en una tarea aparte sobre `web/e2e/scrollOnNavigate.spec.ts`.
