@@ -95,7 +95,7 @@ while [ "$n" -lt "$CAP" ]; do
     E2E_OUT=$SCRATCH/$n.web-e2e.out
     T_FIRST=
     while [ ! -f "$SCRATCH/$n.web-e2e.rc" ]; do
-      if grep -Eq '^ +[✓✘] +[0-9]+ \[[^]]+\] ›' "$E2E_OUT" 2>/dev/null; then T_FIRST=$SECONDS; break; fi
+      if grep -Eq '^ +(✓|✘) +[0-9]+ \[[^]]+\] ›' "$E2E_OUT" 2>/dev/null; then T_FIRST=$SECONDS; break; fi
       sleep 1
     done
     if [ -n "$T_FIRST" ]; then
