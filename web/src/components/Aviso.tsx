@@ -13,6 +13,8 @@ export type SuccessToast =
   | (typeof EXPENSES_TEXT)['expenseDeleted']
   | (typeof SETTINGS_TEXT)['categorySaved']
   | (typeof SETTINGS_TEXT)['categoryDeleted']
+  | (typeof SETTINGS_TEXT)['reasonSaved']
+  | (typeof SETTINGS_TEXT)['reasonDeleted']
 
 export default function Aviso({ texto }: { texto: SuccessToast }) {
   return (

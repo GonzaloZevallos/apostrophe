@@ -37,6 +37,7 @@ from app.results.domain.ledger import (
     ExpenseRecord,
     PaymentRecord,
     PurchaseRecord,
+    ReasonRecord,
     SaleRecord,
 )
 from app.shared.quantity import Quantity
@@ -107,9 +108,18 @@ __all__ = [
     "PaymentsLedger",
     "PurchaseRecord",
     "Purchases",
+    "ReasonRecord",
     "SaleRecord",
     "SalesLedger",
+    "WithdrawalReasons",
 ]
+
+
+class WithdrawalReasons(Protocol):
+    """Every withdrawal reason of one business, in list order (position, then id): the
+    order `period_figures` answers each reason's cost in. Built for one business."""
+
+    def all(self) -> Sequence[ReasonRecord]: ...
 
 
 class DrawCosts(Protocol):

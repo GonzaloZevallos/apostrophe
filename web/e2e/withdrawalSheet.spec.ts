@@ -37,7 +37,7 @@ test('a direct address to the new withdrawal opens the sheet over Varieties, foc
 
   const dialog = page.getByRole('dialog', { name: 'Take from stock' })
   await expect(dialog).toBeVisible()
-  await expect(dialog.getByRole('button', { name: 'Promotion', exact: true })).toBeFocused()
+  await expect(dialog.getByRole('button', { name: 'Marketing', exact: true })).toBeFocused()
   await expect(dialog.getByRole('button', { name: 'Close' })).toBeVisible()
   await expect(page.locator('.behind-pane')).toHaveAttribute('inert', '')
   await expectActionAtTheBottom(page, 'Save the withdrawal')
@@ -52,7 +52,7 @@ test('a direct address to the edit opens the sheet over the withdrawal, on the t
 
   const dialog = page.getByRole('dialog', { name: 'Take from stock' })
   await expect(dialog).toBeVisible()
-  await expect(dialog.getByRole('button', { name: 'Promotion', exact: true })).toBeFocused()
+  await expect(dialog.getByRole('button', { name: 'Marketing', exact: true })).toBeFocused()
   await expect(page.locator('.behind-pane')).toHaveAttribute('inert', '')
   await expectActionAtTheBottom(page, 'Save')
 

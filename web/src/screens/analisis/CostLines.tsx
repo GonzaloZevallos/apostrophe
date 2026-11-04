@@ -4,23 +4,21 @@
  * answers; the phone cards do not use these (they build their rows from `rowCostParts`).
  */
 
-import type { RowCost } from '../../api/analysis'
-import { COST_OF_GOODS_LABEL, OWN_USE_LABEL, PROMOTION_LABEL, SHORTFALL_LABEL } from '../../copy/analysis'
-import { rowCostParts } from '../analisisCost'
+import type { ReasonCost, RowCost } from '../../api/analysis'
+import { COST_OF_GOODS_LABEL, SHORTFALL_LABEL } from '../../copy/analysis'
+import { reasonCostParts, rowCostParts } from '../analisisCost'
 import AmountRow from './AmountRow'
 
-/** Faltante de stock, Promoción and Consumo propio (CONTEXT.md), each apart and each
- * with only its own "y N g sin costo" (or only its grams when all of it is pending).
- * `null` when the period has none of that reason's records: nothing is shown. */
+/** Stock shortfall, then one line per withdrawal reason in the order the API answers,
+ * each apart and each with only its own "and N g without cost" (or only its grams when all
+ * of it is pending). A shortfall of `null` shows nothing. */
 export function WithdrawalLines({
   shortfall,
-  promotion,
-  ownUse,
+  withdrawals,
   variant,
 }: {
   shortfall: RowCost | null
-  promotion: RowCost | null
-  ownUse: RowCost | null
+  withdrawals: ReasonCost[]
   variant: 'compact' | 'row'
 }) {
   return (
@@ -28,12 +26,14 @@ export function WithdrawalLines({
       {shortfall !== null && (
         <AmountRow variant={variant} label={SHORTFALL_LABEL} value={rowCostParts(shortfall)} />
       )}
-      {promotion !== null && (
-        <AmountRow variant={variant} label={PROMOTION_LABEL} value={rowCostParts(promotion)} />
-      )}
-      {ownUse !== null && (
-        <AmountRow variant={variant} label={OWN_USE_LABEL} value={rowCostParts(ownUse)} />
-      )}
+      {withdrawals.map((line) => (
+        <AmountRow
+          key={line.reason_id}
+          variant={variant}
+          label={line.name}
+          value={reasonCostParts(line)}
+        />
+      ))}
     </>
   )
 }
@@ -41,12 +41,11 @@ export function WithdrawalLines({
 export type CostPeriod = {
   cost_of_goods: RowCost
   shortfall: RowCost | null
-  promotion: RowCost | null
-  own_use: RowCost | null
+  withdrawals: ReasonCost[]
 }
 
 /** What a week or month row's sales cost and lost, in the PRD order: Costo de lo
- * vendido always, then Faltante de stock, Promoción and Consumo propio when present. */
+ * vendido always, then the shortfall when present and one line per withdrawal reason. */
 export function RowCostLines({ period }: { period: CostPeriod }) {
   return (
     <>
@@ -58,8 +57,7 @@ export function RowCostLines({ period }: { period: CostPeriod }) {
       <WithdrawalLines
         variant="compact"
         shortfall={period.shortfall}
-        promotion={period.promotion}
-        ownUse={period.own_use}
+        withdrawals={period.withdrawals}
       />
     </>
   )

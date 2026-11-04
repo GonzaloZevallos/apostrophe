@@ -35,6 +35,8 @@ SHIPPING_CHARGED = 98765
 # Midday in Argentina: the one instant every test that does not move its clock uses.
 PINNED = datetime(2026, 10, 3, 15, 0, tzinfo=UTC)
 
+WITHDRAWAL_REASON = "Regalos a clientes"
+WITHDRAWAL_NOTE = "Muestras para la feria"
 LOW_STOCK_THRESHOLD = 15
 CATALOG_HEADER = "Catalogo de La Huerta"
 CATALOG_FOOTER = "Gracias por tu compra"
@@ -90,7 +92,8 @@ def accept_invitation(
 def seed(db_path: Path, clock: MovableClock | None = None) -> tuple[str, str]:
     """Business B (staying) opened first, with a customer of its own; business A
     (leaving, the newest) opened second, with one of everything the export holds:
-    a customer, a variety, a price entry, a stock entry, a sale with a line and a
+    a customer, a variety, a price entry, a stock entry, a withdrawal under a reason the
+    business added, a sale with a line and a
     note, a payment, an expense category and expense, and catalog settings. One
     failed login for the leaving business's email leaves a `login_guard` row, so
     the clean slate can be checked afterwards. Everything is stamped by `clock`
@@ -137,6 +140,18 @@ def seed(db_path: Path, clock: MovableClock | None = None) -> tuple[str, str]:
             },
         )
         assert entry.status_code == 201, entry.text
+
+        reason = client.post("/api/withdrawal-reasons", json={"name": WITHDRAWAL_REASON})
+        assert reason.status_code == 201, reason.text
+        withdrawal = client.post(
+            "/stock/withdrawals",
+            json={
+                "reason_id": reason.json()["id"],
+                "note": WITHDRAWAL_NOTE,
+                "lines": [{"product_id": variety_id, "quantity": 4}],
+            },
+        )
+        assert withdrawal.status_code == 201, withdrawal.text
 
         sale = client.post(
             "/sales",

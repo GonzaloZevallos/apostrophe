@@ -20,6 +20,7 @@ from app.results.adapters.schemas import (
     SinceFirstRecordOut,
     WeekdayOut,
     WeekOut,
+    reason_costs,
 )
 from app.results.domain.figures import (
     AmountWithPending,
@@ -89,8 +90,7 @@ def assemble(today: date, figures: AnalysisFigures) -> AnalysisOut:
             quantity_gifted=month.quantity_gifted.as_decimal(),
             average_margin=_margin(month.average_margin),
             shortfall=_optional(month.shortfall),
-            promotion=_optional(month.promotion),
-            own_use=_optional(month.own_use),
+            withdrawals=reason_costs(month.withdrawals),
             products=[
                 ProductRowOut(
                     product_id=v.variety_id,
@@ -113,8 +113,7 @@ def assemble(today: date, figures: AnalysisFigures) -> AnalysisOut:
                 quantity=w.quantity.as_decimal(),
                 cost_of_goods=_row_cost(w.cost_of_goods),
                 shortfall=_optional(w.shortfall),
-                promotion=_optional(w.promotion),
-                own_use=_optional(w.own_use),
+                withdrawals=reason_costs(w.withdrawals),
                 expenses=w.expenses,
                 profit=_amount_with_pending(w.profit),
                 cash=w.cash,
@@ -131,8 +130,7 @@ def assemble(today: date, figures: AnalysisFigures) -> AnalysisOut:
                 quantity=m.quantity.as_decimal(),
                 cost_of_goods=_row_cost(m.cost_of_goods),
                 shortfall=_optional(m.shortfall),
-                promotion=_optional(m.promotion),
-                own_use=_optional(m.own_use),
+                withdrawals=reason_costs(m.withdrawals),
                 expenses=m.expenses,
                 profit=_amount_with_pending(m.profit),
                 cash=m.cash,
@@ -152,8 +150,7 @@ def assemble(today: date, figures: AnalysisFigures) -> AnalysisOut:
                 profit=_amount_with_pending(since.profit),
                 cash=since.cash,
                 shortfall=_optional(since.shortfall),
-                promotion=_optional(since.promotion),
-                own_use=_optional(since.own_use),
+                withdrawals=reason_costs(since.withdrawals),
             )
         ),
         month_expenses=_breakdown(figures.month_expenses),

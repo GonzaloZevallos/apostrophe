@@ -82,7 +82,7 @@ def _sold_out_since(days: list[date], balances: list[int]) -> date:
 
 def _days_left(quantity: Quantity, draws: list[Draw], today: date) -> int | None:
     """`stock / (grams out in the last 30 days / 30)`, floored to a whole day. Only
-    sale lines and both withdrawal sources pace it: a negative adjustment is a count
+    sale lines and withdrawals pace it: a negative adjustment is a count
     correcting the figure, not grams going out. `None` with nothing to pace from."""
     if quantity.hundredths <= 0:
         return None
@@ -99,7 +99,7 @@ def _days_left(quantity: Quantity, draws: list[Draw], today: date) -> int | None
 
 def _paces(draw: Draw) -> bool:
     match draw.source:
-        case DrawSource.SALE_LINE | DrawSource.PROMOTION | DrawSource.OWN_USE:
+        case DrawSource.SALE_LINE | DrawSource.WITHDRAWAL:
             return True
         case DrawSource.ADJUSTMENT:
             return False

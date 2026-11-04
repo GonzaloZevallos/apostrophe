@@ -120,10 +120,11 @@ export default function WithdrawalDetail() {
 
   const withdrawal = query.data
   const date = formatDate(withdrawal.date, me.today)
-  const confirmation =
-    withdrawal.reason === 'promotion'
-      ? STOCK_TEXT.borrasLaPromocionDel(date, formatGrams(withdrawal.total_quantity))
-      : STOCK_TEXT.borrasElConsumoPropio(date, formatGrams(withdrawal.total_quantity))
+  const confirmation = STOCK_TEXT.borrasElRetiroDel(
+    withdrawal.reason_name,
+    date,
+    formatGrams(withdrawal.total_quantity),
+  )
 
   return (
     <main className="pantalla">

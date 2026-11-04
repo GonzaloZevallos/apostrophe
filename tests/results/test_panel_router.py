@@ -18,7 +18,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 
 from app.results.domain.periods import periods as compute_periods
-from tests.conftest import PASSWORD, TODAY, MovableClock, signed_in
+from tests.conftest import PASSWORD, TODAY, MovableClock, reason_id, signed_in
 from tests.contract_shapes import assert_matches_fixture
 from tests.fakes.archive import archive_by_hand
 from tests.statement_log import captured_statements
@@ -592,7 +592,7 @@ def _withdraw(client: TestClient, variety_id: int, *, reason: str, quantity: str
     response = client.post(
         "/stock/withdrawals",
         json={
-            "reason": reason,
+            "reason_id": reason_id(client, reason),
             "date": on,
             "lines": [{"product_id": variety_id, "quantity": quantity}],
         },
@@ -616,9 +616,9 @@ def test_the_analysis_rows_carry_cost_of_goods_and_shortfall_that_agree_with_the
     _sale(client, a_id, quantity="3", on=TODAY.isoformat())
     _adjust(client, a_id, quantity="-2", on="2026-09-30")
     _adjust(client, b_id, quantity="-1", on=TODAY.isoformat())
-    _withdraw(client, a_id, reason="promotion", quantity="4", on="2026-09-29")
-    _withdraw(client, b_id, reason="promotion", quantity="2", on=TODAY.isoformat())
-    _withdraw(client, a_id, reason="own_use", quantity="3", on="2026-10-01")
+    _withdraw(client, a_id, reason="Marketing", quantity="4", on="2026-09-29")
+    _withdraw(client, b_id, reason="Marketing", quantity="2", on=TODAY.isoformat())
+    _withdraw(client, a_id, reason="Own use", quantity="3", on="2026-10-01")
 
     panel = client.get("/panel").json()["periods"]
     analysis = client.get("/analysis").json()
@@ -647,11 +647,15 @@ def test_the_analysis_rows_carry_cost_of_goods_and_shortfall_that_agree_with_the
     }
     assert week_row["shortfall"] == {"amount": 200, "pending_quantity": 1.0, "all_pending": False}
     assert month_row["shortfall"] == {"amount": 0, "pending_quantity": 1.0, "all_pending": True}
-    assert week_row["promotion"] == {"amount": 400, "pending_quantity": 2.0, "all_pending": False}
-    assert month_row["promotion"] == {"amount": 0, "pending_quantity": 2.0, "all_pending": True}
-    assert month_row["own_use"] == {"amount": 300, "pending_quantity": 0.0, "all_pending": False}
-    assert header["promotion"] == month_row["promotion"]
-    assert header["own_use"] == month_row["own_use"]
+    assert [(w["name"], w["amount"], w["pending_quantity"]) for w in week_row["withdrawals"]] == [
+        ("Marketing", 400, 2.0),
+        ("Own use", 300, 0.0),
+    ]
+    assert [(w["name"], w["amount"], w["pending_quantity"]) for w in month_row["withdrawals"]] == [
+        ("Marketing", None, 2.0),
+        ("Own use", 300, 0.0),
+    ]
+    assert header["withdrawals"] == month_row["withdrawals"]
 
     # A past row, worked by hand: the week of 21/09 sold A's 1 g and had no adjustment;
     # September sold 4 g (A's 3 g costed $300, B's 1 g pending) and adjusted A out by $200.
@@ -686,15 +690,14 @@ def test_the_analysis_rows_carry_cost_of_goods_and_shortfall_that_agree_with_the
         "all_pending": False,
     }
     # The row order is the PRD's.
-    assert list(week_row)[:10] == [
+    assert list(week_row)[:9] == [
         "first_day",
         "last_day",
         "sales",
         "quantity",
         "cost_of_goods",
         "shortfall",
-        "promotion",
-        "own_use",
+        "withdrawals",
         "expenses",
         "profit",
     ]
@@ -798,7 +801,7 @@ def _seed_small_panel_history(client: TestClient) -> None:
     withdrawal = client.post(
         "/stock/withdrawals",
         json={
-            "reason": "promotion",
+            "reason_id": reason_id(client, "Marketing"),
             "date": day,
             "lines": [{"product_id": variety_id, "quantity": "1"}],
         },
@@ -862,7 +865,7 @@ def _seed_bigger_panel_history(client: TestClient) -> None:
     withdrawal = client.post(
         "/stock/withdrawals",
         json={
-            "reason": "own_use",
+            "reason_id": reason_id(client, "Own use"),
             "date": TODAY.isoformat(),
             "lines": [{"product_id": variety_ids[0], "quantity": "1"}],
         },

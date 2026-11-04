@@ -24,10 +24,16 @@ from app.stock.domain.draw_source import DrawSource
 from app.stock.domain.lot_order import Draw, Lot
 
 
+class WithdrawalWithoutReason(LookupError):
+    """A withdrawal draw that carries no reason id: a broken read, never silently
+    dropped from Profit."""
+
+
 def _row_of(variety_id: int, draw: Draw, cost: DrawCost) -> DrawRow:
     """One `(draw, cost)` pair as a `DrawRow`, its kind told by `draw.source` alone: a
     shortfall or a withdrawal carries no variety, sale or line total."""
     kind: DrawKind
+    reason_id: int | None = None
     match draw.source:
         case DrawSource.SALE_LINE:
             kind = "gifted" if draw.pricing_rule == PricingRule.GIFT.value else "sold"
@@ -44,13 +50,15 @@ def _row_of(variety_id: int, draw: Draw, cost: DrawCost) -> DrawRow:
             )
         case DrawSource.ADJUSTMENT:
             kind = "shortfall"
-        case DrawSource.PROMOTION:
-            kind = "promotion"
-        case DrawSource.OWN_USE:
-            kind = "own_use"
+        case DrawSource.WITHDRAWAL:
+            kind = "withdrawal"
+            if draw.reason_id is None:
+                raise WithdrawalWithoutReason("a withdrawal draw carries no reason")
+            reason_id = draw.reason_id
         case _:
             assert_never(draw.source)
     return DrawRow(
+        reason_id=reason_id,
         kind=kind,
         day=draw.order.day,
         variety_id=None,
@@ -66,7 +74,7 @@ def _row_of(variety_id: int, draw: Draw, cost: DrawCost) -> DrawRow:
 def build_draw_rows(grouped: Mapping[int, tuple[list[Lot], list[Draw]]]) -> list[DrawRow]:
     """Runs `allocate` once per variety in `grouped` (its own full history, in its own
     order), then turns each `(draw, cost)` pair into one `DrawRow` — a sale line (sold
-    or gifted), a shortfall, a promotion or an own use. Never rebuilds or re-sorts
+    or gifted), a shortfall or a withdrawal (with its reason id). Never rebuilds or re-sorts
     `draws` itself."""
     rows: list[DrawRow] = []
     for variety_id, (lots, draws) in grouped.items():

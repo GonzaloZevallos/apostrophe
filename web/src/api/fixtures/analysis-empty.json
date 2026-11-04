@@ -11,8 +11,7 @@
     "quantity_gifted": 0.0,
     "average_margin": { "amount": 0, "percent": null, "pending_quantity": 0.0 },
     "shortfall": null,
-    "promotion": null,
-    "own_use": null,
+    "withdrawals": [],
     "products": []
   },
   "weeks": [],

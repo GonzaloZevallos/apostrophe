@@ -70,8 +70,8 @@ Total: $ 32.000
 | Semana | 05/10 – 11/10 | Regalaste | 1 g | no |
 | Semana | 05/10 – 11/10 | Costo de lo vendido | $ 93.000 | no |
 | Semana | 05/10 – 11/10 | Faltante de stock | $ 10.000 | no |
-| Semana | 05/10 – 11/10 | Promoción | $ 35.000 | no |
-| Semana | 05/10 – 11/10 | Consumo propio | $ 14.000 | sí |
+| Semana | 05/10 – 11/10 | Marketing | $ 35.000 | no |
+| Semana | 05/10 – 11/10 | Own use | $ 14.000 | sí |
 | Semana | 05/10 – 11/10 | Gastos | $ 12.500 | no |
 | Semana | 05/10 – 11/10 | Compras de flores | $ 150.000 | no |
 | Semana | 05/10 – 11/10 | Ganancia | $ 41.500 | sí |
@@ -83,8 +83,8 @@ Total: $ 32.000
 | Mes | 01/10 – 31/10 | Regalaste | 1 g | no |
 | Mes | 01/10 – 31/10 | Costo de lo vendido | $ 156.000 | no |
 | Mes | 01/10 – 31/10 | Faltante de stock | $ 10.000 | no |
-| Mes | 01/10 – 31/10 | Promoción | $ 35.000 | no |
-| Mes | 01/10 – 31/10 | Consumo propio | $ 14.000 | sí |
+| Mes | 01/10 – 31/10 | Marketing | $ 35.000 | no |
+| Mes | 01/10 – 31/10 | Own use | $ 14.000 | sí |
 | Mes | 01/10 – 31/10 | Gastos | $ 12.500 | no |
 | Mes | 01/10 – 31/10 | Compras de flores | $ 150.000 | no |
 | Mes | 01/10 – 31/10 | Ganancia | $ 141.500 | sí |
@@ -144,8 +144,8 @@ Total: $ 32.000
 | Regalados | 1 g | no |
 | Margen promedio | 57% | no |
 | Faltante de stock | $ 10.000 | no |
-| Promoción | $ 35.000 | no |
-| Consumo propio | $ 14.000 | y 1 g sin costo |
+| Marketing | $ 35.000 | no |
+| Own use | $ 14.000 | y 1 g sin costo |
 
 ### Análisis · variedades del mes
 
@@ -217,8 +217,8 @@ Total: $ 32.000
 | Semana | 05/10 – 11/10 | Gramos | 19 g | no |
 | Semana | 05/10 – 11/10 | Costo de lo vendido | $ 93.000 | no |
 | Semana | 05/10 – 11/10 | Faltante de stock | $ 10.000 | no |
-| Semana | 05/10 – 11/10 | Promoción | $ 35.000 | no |
-| Semana | 05/10 – 11/10 | Consumo propio | $ 14.000 | y 1 g sin costo |
+| Semana | 05/10 – 11/10 | Marketing | $ 35.000 | no |
+| Semana | 05/10 – 11/10 | Own use | $ 14.000 | y 1 g sin costo |
 | Semana | 05/10 – 11/10 | Gastos | $ 12.500 | no |
 | Semana | 05/10 – 11/10 | Ganancia | $ 41.500 | y 1 g sin costo |
 | Semana | 05/10 – 11/10 | Caja | $ 36.500 | no |
@@ -244,8 +244,8 @@ Total: $ 32.000
 | Mes | 01/10 – 31/10 | Gramos | 33 g | no |
 | Mes | 01/10 – 31/10 | Costo de lo vendido | $ 156.000 | no |
 | Mes | 01/10 – 31/10 | Faltante de stock | $ 10.000 | no |
-| Mes | 01/10 – 31/10 | Promoción | $ 35.000 | no |
-| Mes | 01/10 – 31/10 | Consumo propio | $ 14.000 | y 1 g sin costo |
+| Mes | 01/10 – 31/10 | Marketing | $ 35.000 | no |
+| Mes | 01/10 – 31/10 | Own use | $ 14.000 | y 1 g sin costo |
 | Mes | 01/10 – 31/10 | Gastos | $ 12.500 | no |
 | Mes | 01/10 – 31/10 | Ganancia | $ 141.500 | y 1 g sin costo |
 | Mes | 01/10 – 31/10 | Caja | $ 199.500 | no |
@@ -268,8 +268,8 @@ Total: $ 32.000
 | --- | --- | --- | --- | --- |
 | Desde el primer registro | 28/08 – 07/10 | Ventas | $ 537.000 | no |
 | Desde el primer registro | 28/08 – 07/10 | Faltante de stock | $ 10.000 | no |
-| Desde el primer registro | 28/08 – 07/10 | Promoción | $ 35.000 | no |
-| Desde el primer registro | 28/08 – 07/10 | Consumo propio | $ 14.000 | y 1 g sin costo |
+| Desde el primer registro | 28/08 – 07/10 | Marketing | $ 35.000 | no |
+| Desde el primer registro | 28/08 – 07/10 | Own use | $ 14.000 | y 1 g sin costo |
 | Desde el primer registro | 28/08 – 07/10 | Gastos | $ 12.500 | no |
 | Desde el primer registro | 28/08 – 07/10 | Ganancia | $ 236.500 | y 1 g sin costo |
 | Desde el primer registro | 28/08 – 07/10 | Caja | −$ 537.500 | no |

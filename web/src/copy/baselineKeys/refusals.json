@@ -386,6 +386,9 @@
   "refusals.ts:REFUSAL_TEXT.withdrawal[\"stock.withdrawal_note_too_long\"]": {
     "key": "refusals:withdrawalNoteTooLong"
   },
+  "refusals.ts:REFUSAL_TEXT.withdrawal[\"stock.withdrawal_reason_not_found\"]": {
+    "key": "refusals:withdrawalReasonNotFound"
+  },
   "refusals.ts:REFUSAL_TEXT.withdrawal[\"stock.withdrawal_reason_required\"]": {
     "key": "refusals:withdrawalReasonRequired"
   },

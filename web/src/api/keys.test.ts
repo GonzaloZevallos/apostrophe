@@ -46,6 +46,25 @@ describe('keys', () => {
   })
 })
 
+describe('the withdrawal reasons', () => {
+  test('key under their own prefix', () => {
+    expect(keys.withdrawalReasons()).toEqual(['withdrawal-reasons'])
+  })
+
+  test('a reasons write invalidates the list and the stock rows that carry a reason name', () => {
+    const queryClient = clientWithData()
+    queryClient.setQueryData(keys.withdrawalReasons(), [{ id: 1, name: 'Marketing' }])
+    queryClient.setQueryData(keys.stockWithdrawal('1'), { id: 1 })
+    queryClient.setQueryData(keys.stockMovements('1'), [])
+
+    invalidateResource(queryClient, 'withdrawalReasons')
+
+    expect(isInvalidated(queryClient, keys.withdrawalReasons())).toBe(true)
+    expect(isInvalidated(queryClient, keys.stockWithdrawal('1'))).toBe(true)
+    expect(isInvalidated(queryClient, keys.stockMovements('1'))).toBe(true)
+  })
+})
+
 describe('invalidateResource and the catalog', () => {
   test.each(['stock', 'varieties'] as const)('a %s write also invalidates the catalog', (resource) => {
     const queryClient = clientWithData()

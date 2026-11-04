@@ -215,6 +215,11 @@ def test_the_downgrade_gives_back_an_empty_nullable_column(tmp_path: Path) -> No
     upgrade_to_head(engine)
 
     with engine.connect() as connection:
+        raw = connection.connection.dbapi_connection
+        assert raw is not None
+        # As the upgrade runner does: a downgrade that rebuilds a referenced table needs
+        # foreign keys off before any write.
+        raw.execute("PRAGMA foreign_keys=OFF")
         with connection.begin():
             command.downgrade(_config(connection), "0017")
 

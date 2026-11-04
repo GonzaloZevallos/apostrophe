@@ -59,6 +59,7 @@ from tests.conftest import (
     TODAY,
     MovableClock,
     open_business,
+    reason_id,
     signed_in,
 )
 from tests.fakes.archive import archive_by_hand
@@ -180,13 +181,19 @@ def seed_stock(client: TestClient) -> dict[str, int]:
     withdrawal = client.post(
         "/stock/withdrawals",
         json={
-            "reason": "promotion",
+            "reason_id": reason_id(client, "Marketing"),
             "note": MARKER,
             "lines": [{"product_id": variety["id"], "quantity": "5"}],
         },
     )
     assert withdrawal.status_code == 201, withdrawal.text
     return {"stock_entry_id": entry.json()["id"], "withdrawal_id": withdrawal.json()["id"]}
+
+
+def seed_withdrawal_reasons(client: TestClient) -> dict[str, int]:
+    reason = client.post("/api/withdrawal-reasons", json={"name": f"{MARKER} reason"})
+    assert reason.status_code == 201, reason.text
+    return {"reason_id": reason.json()["id"]}
 
 
 def seed_pinned_catalog(client: TestClient) -> dict[str, int]:
@@ -254,6 +261,7 @@ SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_expenses,
     seed_sales,
     seed_stock,
+    seed_withdrawal_reasons,
     seed_catalog,
     seed_pinned_catalog,
     seed_payments,
@@ -313,14 +321,17 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "quantity": "20",
     },
     ("POST", "/stock/withdrawals"): {
-        "reason": "own_use",
+        "reason_id": 1,
         "lines": [{"product_id": 1, "quantity": "1"}],
     },
     ("PUT", "/stock/withdrawals/{withdrawal_id}"): {
-        "reason": "own_use",
+        "reason_id": 1,
         "lines": [{"product_id": 1, "quantity": "2"}],
     },
     ("PUT", "/stock/products/{product_id}/threshold"): {"quantity": "15"},
+    ("POST", "/api/withdrawal-reasons"): {"name": "Another reason"},
+    ("POST", "/api/withdrawal-reasons/{reason_id}/move"): {"direction": "up"},
+    ("PATCH", "/api/withdrawal-reasons/{reason_id}"): {"name": "Another name"},
     ("PUT", "/catalog/products/{product_id}"): {
         "shown": True,
         "emoji": None,
@@ -546,7 +557,10 @@ def test_a_withdrawal_naming_a_missing_or_foreign_variety_is_refused_the_same_wa
     business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
 ) -> None:
     def body(variety_id: int) -> dict[str, Any]:
-        return {"reason": "promotion", "lines": [{"product_id": variety_id, "quantity": "1"}]}
+        return {
+            "reason_id": reason_id(business_b, "Marketing"),
+            "lines": [{"product_id": variety_id, "quantity": "1"}],
+        }
 
     own_variety = business_b.post("/api/products", json={"name": "B withdrawal variety"}).json()
     own = business_b.post("/stock/withdrawals", json=body(own_variety["id"]))
@@ -566,6 +580,37 @@ def test_a_withdrawal_naming_a_missing_or_foreign_variety_is_refused_the_same_wa
         assert missing.json() == other_business.json()
 
     assert business_b.get(f"/stock/products/{seeded_b['variety_id']}/movements").status_code == 404
+
+
+def test_a_withdrawal_naming_a_missing_or_foreign_reason_is_refused_the_same_way(
+    business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
+) -> None:
+    foreign_reason = reason_id(business_a, "Marketing")
+    own_variety = business_b.post("/api/products", json={"name": "B reason variety"}).json()
+
+    def body(reason: int) -> dict[str, Any]:
+        return {
+            "reason_id": reason,
+            "lines": [{"product_id": own_variety["id"], "quantity": "1"}],
+        }
+
+    own = business_b.post("/stock/withdrawals", json=body(reason_id(business_b, "Marketing")))
+    assert own.status_code == 201, own.text
+    path = f"/stock/withdrawals/{own.json()['id']}"
+
+    sends: list[Callable[[int], Any]] = [
+        lambda reason: business_b.post("/stock/withdrawals", json=body(reason)),
+        lambda reason: business_b.put(path, json=body(reason)),
+    ]
+    for send in sends:
+        missing = send(999_999)
+        other_business = send(foreign_reason)
+
+        assert missing.status_code == 404, missing.text
+        assert other_business.status_code == 404, other_business.text
+        assert missing.json() == other_business.json()
+        assert missing.json()["code"] == "stock.withdrawal_reason_not_found"
+    assert business_b.get(path).json() == own.json()
 
 
 def test_a_body_reference_to_a_missing_or_foreign_customer_is_refused_the_same_way(
@@ -674,6 +719,16 @@ def test_another_business_lists_none_of_its_records(
 
     assert response.status_code == 200
     assert MARKER not in response.text
+
+
+def test_another_business_lists_none_of_the_reasons_seeded_in_the_first(
+    business_a: TestClient, business_b: TestClient, seeded: dict[str, int]
+) -> None:
+    mine = [reason["name"] for reason in business_a.get("/api/withdrawal-reasons").json()]
+    theirs = [reason["name"] for reason in business_b.get("/api/withdrawal-reasons").json()]
+
+    assert f"{MARKER} reason" in mine
+    assert theirs == ["Marketing", "Own use"]
 
 
 def test_business_a_sees_its_own_catalog_seed(
@@ -926,8 +981,7 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
             "cost_of_goods": 0,
             "pending_cost": False,
             "shortfall": None,
-            "promotion": None,
-            "own_use": None,
+            "withdrawals": [],
             "expenses": 0,
             "purchases": 0,
             "profit": 0,
@@ -1032,8 +1086,7 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
             "quantity_gifted": 0.0,
             "average_margin": {"amount": 0, "percent": None, "pending_quantity": 0.0},
             "shortfall": None,
-            "promotion": None,
-            "own_use": None,
+            "withdrawals": [],
             "products": [],
         },
         "weeks": [],

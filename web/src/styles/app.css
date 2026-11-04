@@ -6462,6 +6462,61 @@ body {
   }
 }
 
+/* Settings → Withdrawal reasons: every button on this screen (its header Close, the rows'
+ * actions, Add, the sheet and the delete confirmation) takes no tap delay or double-tap zoom.
+ * Scoped to the screen's own frame, so no other screen's listed touch-action offender changes. */
+.motivos-pantalla button {
+  touch-action: manipulation;
+}
+
+/* Settings → Withdrawal reasons: a list of rows, each a name over its actions (every control is
+ * 44 px or more, 8 px between neighbours), a hairline under every row but the last. */
+.motivos {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.motivo-fila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+  padding: 13px 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+.motivo-fila:last-child {
+  border-bottom: 0;
+}
+
+.motivo-fila__nombre {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.motivo-fila__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.motivo-fila__acciones .boton,
+.motivo-fila__acciones .boton--enlace {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.motivos__aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
 /* A customer type's icon sits before its name, never alone (icon and text rule). */
 .tipo-cliente-fila__icono {
   display: inline-flex;

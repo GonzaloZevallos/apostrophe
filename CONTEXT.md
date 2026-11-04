@@ -194,7 +194,7 @@ _Avoid_: type, tag, label, account, cost center
 _In the app_: Category
 
 **Profit**:
-Las Sales (con el envío incluido, estén pagas o no) menos el Cost of goods sold, el Stock shortfall, el costo de Promotion, el costo de Own use y las Expenses, en un período, cada uno contado en su propia fecha; las Purchases nunca entran. Cuando algún costo está pendiente, se calcula sobre la parte con costo y se marca con "and N g without cost", donde N suma los gramos pendientes vendidos, regalados, sacados por Adjustments negativos y retirados en el período. Puede ser negativo y entonces se muestra con signo menos; en la app: Profit.
+Las Sales (con el envío incluido, estén pagas o no) menos el Cost of goods sold, el Stock shortfall, el costo de cada Withdrawal reason y las Expenses, en un período, cada uno contado en su propia fecha; las Purchases nunca entran. Cuando algún costo está pendiente, se calcula sobre la parte con costo y se marca con "and N g without cost", donde N suma los gramos pendientes vendidos, regalados, sacados por Adjustments negativos y retirados en el período. Puede ser negativo y entonces se muestra con signo menos. _In the app_: Profit.
 _Avoid_: margin, earnings, net
 _In the app_: Profit
 
@@ -321,7 +321,7 @@ Lo que costaron los gramos sacados por Adjustments negativos en un período, en 
 _Avoid_: shrinkage, write-off, loss, merma
 
 **Stock withdrawal**:
-Un registro con fecha de gramos de una o más Varieties sacados del Stock por un solo motivo, Promotion u Own use, con una nota opcional. No se mueve dinero y el Cash no se toca. Sus gramos se costean en su fecha a partir de los Lots, primero el más antiguo, y una parte más allá de todo Lot es Pending cost, nunca $0. El costo se muestra como una línea propia por motivo y baja el Profit; nunca entra en el Margin de una Variety ni en el Cost of goods sold. Se puede editar o eliminar en cualquier momento. _In the app_: Withdrawal, registrado con la acción "Take from stock"; los motivos se leen Promotion y Own use.
+Un registro con fecha de gramos de una o más Varieties sacados del Stock por un solo Withdrawal reason de la lista propia del Business, con una nota opcional. No se mueve dinero y el Cash no se toca; sus gramos se costean en su fecha a partir de los Lots, primero el más antiguo, y una parte más allá de todo Lot es Pending cost, nunca $0. El costo se muestra en una línea propia por Withdrawal reason y baja el Profit, nunca entra en el Margin de una Variety ni en el Cost of goods sold, y el retiro se puede editar o eliminar en cualquier momento. _In the app_: Withdrawal, registrado con la acción "Take from stock".
 _Avoid_: gift (a gift is a sale line at $0 price), shrinkage, write-off
 
 **Publish**:
@@ -337,7 +337,7 @@ El estado del Pinned catalog cuando los Customers no están viendo el Catalog de
 _Avoid_: stale, pending, out of sync, error
 
 **Panel**:
-La vista de una sola pantalla de Home sobre un Business, en hora de Argentina. Today muestra lo que se vendió hoy, lo que se debe y el Stock por Variety. Week y Month suman Cost of goods sold, Stock shortfall, el costo de Promotion y de Own use, Expenses, gramos regalados, Purchases, Profit y Cash; solo lectura, cada cifra viene del servidor. _In the app_: Home (pestañas Today · Week · Month).
+La vista de una sola pantalla de Home sobre un Business, en hora de Argentina. Today muestra lo que se vendió hoy, lo que se debe y el Stock por Variety; Week y Month suman Cost of goods sold, Stock shortfall, el costo de cada Withdrawal reason (en el orden de su lista), Expenses, gramos regalados, Purchases, Profit y Cash. Es de solo lectura y cada cifra viene del servidor. _In the app_: Home (pestañas Today · Week · Month).
 _Avoid_: dashboard, overview, home, summary, Analysis
 
 **Average sale**:
@@ -395,7 +395,7 @@ Una pantalla a la que se llega directo desde la barra o la barra lateral (Home, 
 _Avoid_: home, main screen, section
 
 **Settings**:
-El único lugar que reúne cada configuración de todo el Business, en grupos: Business, Users, Prices, Integrations, Catalog message, Expense categories, Appearance y Your account. La configuración de una sola Variety vive en la Variety, nunca acá, y nada del Operator está acá. _In the app_: Settings.
+El único lugar que reúne cada configuración de todo el Business, en grupos: Business (con sus Withdrawal reasons), Users, Prices, Integrations, Catalog message, Expense categories, Appearance y Your account. La configuración de una sola Variety vive en la Variety, nunca acá, y nada del Operator está acá. _In the app_: Settings.
 _Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group)
 
 **First-run checklist**:
@@ -579,6 +579,10 @@ _Avoid_: logo, title, brand name, Business name
 **Tabular figures**:
 Cifras de ancho fijo que se alinean dígito por dígito, aplicadas a dinero, cantidades, porcentajes mostrados como cifra y Days left mediante las clases de cifra y la del componente de dinero. Nunca se aplican a fechas, horas, Phone numbers, conteos dentro de una oración ni texto libre. Un número va en Tabular figures si el ojo lo recorre en una columna, una fila de cifras o un total. En la app: no tiene palabra propia.
 _Avoid_: monospace, number font, alignment
+
+**Withdrawal reason**:
+Uno de los motivos de la lista propia de un Business bajo el que se registra cada Stock withdrawal, con un nombre único en el Business (sin importar mayúsculas, minúsculas ni espacios, de hasta 60 caracteres) y una posición. Un Business nuevo arranca con "Marketing" y "Own use" en su Stored language, que un cambio de idioma nunca renombra. La lista se edita solo en Settings → Business → Withdrawal reasons, nunca queda vacía, y un motivo con retiros no se puede eliminar; nunca registra flor perdida, que es un Adjustment negativo. _In the app_: Withdrawal reasons (la lista), Reason (en el formulario), y cada motivo por su nombre.
+_Avoid_: category, type, tag, cause, Promotion (old name of one default reason)
 
 **VIP type**:
 El Customer type "VIP" que la actualización creó en cada Business existente, con los Customers que tenían la marca VIP. Hasta la parte customer-type prices es el único tipo cuya pertenencia da el VIP price; lo identifica la actualización, nunca su nombre, así que renombrarlo no cambia nada y un tipo del vendedor llamado "VIP" no da ningún precio. En la app: no tiene palabra propia; se ve como un tipo más.

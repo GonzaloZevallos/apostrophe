@@ -28,6 +28,11 @@ def _migrate(engine: Engine, direction: str, revision: str) -> None:
         config = Config()
         config.set_main_option("script_location", str(MIGRATIONS_ROOT))
         config.attributes["connection"] = connection
+        raw = connection.connection.dbapi_connection
+        assert raw is not None
+        # As the upgrade runner does: a downgrade that rebuilds a referenced table needs
+        # foreign keys off before any write.
+        raw.execute("PRAGMA foreign_keys=OFF")
         with connection.begin():
             if direction == "up":
                 command.upgrade(config, revision)

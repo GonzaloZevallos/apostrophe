@@ -86,20 +86,21 @@ def test_the_sample_business_has_every_state_the_design_shows(client: TestClient
     # variety the comparisons open, which stays under its threshold.
     periods = client.get("/panel").json()["periods"]
     for name in ("week", "month"):
-        assert periods[name]["promotion"] is not None
-        assert periods[name]["own_use"] is not None
-    assert periods["week"]["promotion"]["pending"] is False
-    assert periods["week"]["own_use"]["pending"] is True
-    assert client.get(f"/stock/withdrawals/{sample.withdrawal}").json()["reason"] == "promotion"
+        assert [w["name"] for w in periods[name]["withdrawals"]] == ["Marketing", "Own use"]
+    assert [w["pending"] for w in periods["week"]["withdrawals"]] == [False, True]
+    assert (
+        client.get(f"/stock/withdrawals/{sample.withdrawal}").json()["reason_name"] == "Marketing"
+    )
     movements = client.get(f"/stock/products/{sample.low}/movements").json()
     assert len(movements) > 3
-    assert {m["reason"] for m in movements if m["kind"] == "withdrawal"} == {
-        "promotion",
-        "own_use",
+    assert {m["reason_name"] for m in movements if m["kind"] == "withdrawal"} == {
+        "Marketing",
+        "Own use",
     }
     analysis = client.get("/analysis").json()
-    assert analysis["since_first_record"]["promotion"] is not None
-    assert analysis["since_first_record"]["own_use"]["pending_quantity"] > 0
+    since = {w["name"]: w for w in analysis["since_first_record"]["withdrawals"]}
+    assert since["Marketing"]["amount"] is not None
+    assert since["Own use"]["pending_quantity"] > 0
 
     expenses = client.get("/expenses").json()
     assert expenses["total"] > 0

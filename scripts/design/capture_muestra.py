@@ -54,7 +54,7 @@ _RULE = {
     "special": "Especial",
 }
 _ENTRY_KIND = {"purchase": "Compra", "harvest": "Cosecha", "adjustment": "Ajuste"}
-_WITHDRAWAL_KIND = {"promotion": "Promoción", "own_use": "Consumo propio"}
+_WITHDRAWAL_KIND = {"Marketing": "Promoción", "Own use": "Consumo propio"}
 _MINUS = "\N{MINUS SIGN}"
 _NONE = "—"
 
@@ -255,7 +255,7 @@ def _movements(api: _ClientApi) -> list[str]:
         for move in listed[:3]:
             if move["kind"] == "withdrawal":
                 kind, amount = (
-                    _WITHDRAWAL_KIND[move["reason"]],
+                    _WITHDRAWAL_KIND[move["reason_name"]],
                     f"{_MINUS}{grams(move['quantity'])}",
                 )
             else:
@@ -318,13 +318,11 @@ def _panel(api: _ClientApi) -> list[str]:
             continue
         add("Regalaste", grams(p["quantity_gifted"]))
         add("Costo de lo vendido", money(p["cost_of_goods"]), p["pending_cost"])
-        for field, label in (
-            ("shortfall", "Faltante de stock"),
-            ("promotion", "Promoción"),
-            ("own_use", "Consumo propio"),
-        ):
-            if p[field] is not None:
-                add(label, money(p[field]["amount"]), p[field]["pending"])
+        if p["shortfall"] is not None:
+            add("Faltante de stock", money(p["shortfall"]["amount"]), p["shortfall"]["pending"])
+        for reason in p["withdrawals"]:
+            amount = reason["amount"]
+            add(reason["name"], "—" if amount is None else money(amount), reason["pending"])
         add("Gastos", money(p["expenses"]))
         add("Compras de flores", money(p["purchases"]))
         add("Ganancia", money(p["profit"]), p["profit_pending"])
@@ -402,17 +400,19 @@ def _accounts(api: _ClientApi) -> list[str]:
 
 
 def _cost_rows(add: Any, figures: Json, *, cost_of_goods: bool = False) -> None:
-    fields = [
-        ("shortfall", "Faltante de stock"),
-        ("promotion", "Promoción"),
-        ("own_use", "Consumo propio"),
-    ]
+    fields = [("shortfall", "Faltante de stock")]
     if cost_of_goods:
         fields.insert(0, ("cost_of_goods", "Costo de lo vendido"))
     for field, label in fields:
         if figures.get(field) is not None:
             line = figures[field]
             add(label, row_cost(line), pending_grams(line["pending_quantity"]))
+    for reason in figures["withdrawals"]:
+        if reason["amount"] is None:
+            value = f"{grams(reason['pending_quantity'])} sin costo"
+        else:
+            value = money(reason["amount"])
+        add(reason["name"], value, pending_grams(reason["pending_quantity"]))
 
 
 def _analysis(api: _ClientApi) -> list[str]:

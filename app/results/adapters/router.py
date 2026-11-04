@@ -39,6 +39,7 @@ from app.results.application.ports import (
     Purchases,
     SalesLedger,
     StockFigures,
+    WithdrawalReasons,
 )
 from app.results.application.read_panel import read_panel
 
@@ -97,6 +98,16 @@ def get_purchases(
     return factory(session, business_id)
 
 
+def get_withdrawal_reasons(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> WithdrawalReasons:
+    factory = cast(
+        Callable[[Session, int], WithdrawalReasons], request.app.state.results_withdrawal_reasons
+    )
+    return factory(session, business_id)
+
+
+WithdrawalReasonsDep = Annotated[WithdrawalReasons, Depends(get_withdrawal_reasons)]
 StockFiguresDep = Annotated[StockFigures, Depends(get_stock_figures)]
 DebtSummaryDep = Annotated[DebtSummary, Depends(get_debt_summary)]
 DrawCostsDep = Annotated[DrawCosts, Depends(get_draw_costs)]
@@ -115,8 +126,9 @@ def get_panel(
     expenses: ExpensesLedgerDep,
     purchases: PurchasesDep,
     debts: DebtSummaryDep,
+    reasons: WithdrawalReasonsDep,
 ) -> PanelOut:
-    panel = read_panel(today, stock, sales, payments, expenses, purchases, debts)
+    panel = read_panel(today, stock, sales, payments, expenses, purchases, debts, reasons)
     return PanelOut.of(panel)
 
 
@@ -130,11 +142,12 @@ def get_analysis(
     payments: PaymentsLedgerDep,
     expenses: ExpensesLedgerDep,
     purchases: PurchasesDep,
+    reasons: WithdrawalReasonsDep,
     today: TodayDep,
     month: str | None = None,
 ) -> AnalysisOut:
     with as_http:
         figures = analyse(
-            draw_costs, sales, payments, expenses, purchases, today=today, month=month
+            draw_costs, sales, payments, expenses, purchases, reasons, today=today, month=month
         )
         return assemble(today, figures)

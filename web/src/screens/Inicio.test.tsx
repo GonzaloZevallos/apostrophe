@@ -206,7 +206,7 @@ function figureNames(): string[] {
     'You gave away',
     'Cost of goods sold',
     'Stock shortfall',
-    'Promotion',
+    'Marketing',
     'Own use',
     'Expenses',
     'Flower purchases',
@@ -270,7 +270,7 @@ test('Semana: Stock shortfall shows with no note of its own when its cost isn\'t
   expect(noteIn('Stock shortfall')).toBeNull()
 })
 
-test('Semana: Promotion and Own use follow Stock shortfall and come before Gastos, each with its own note flag', async () => {
+test('Semana: Marketing and Own use follow Stock shortfall and come before Gastos, each with its own note flag', async () => {
   stubFetch(PANEL)
   renderInicio()
   await screen.findByText('You sold today')
@@ -281,19 +281,19 @@ test('Semana: Promotion and Own use follow Stock shortfall and come before Gasto
     'You gave away',
     'Cost of goods sold',
     'Stock shortfall',
-    'Promotion',
+    'Marketing',
     'Own use',
     'Expenses',
   ])
-  const promocion = screen.getByRole('group', { name: 'Promotion' })
-  expect(within(promocion).getByText('$ 2.000')).toBeInTheDocument()
-  expect(noteIn('Promotion')).toBe('includes pending cost')
+  const marketing = screen.getByRole('group', { name: 'Marketing' })
+  expect(within(marketing).getByText('$ 2.000')).toBeInTheDocument()
+  expect(noteIn('Marketing')).toBe('includes pending cost')
   const consumo = screen.getByRole('group', { name: 'Own use' })
   expect(within(consumo).getByText('$ 1.000')).toBeInTheDocument()
   expect(noteIn('Own use')).toBeNull()
 })
 
-test('Hoy and a period with no withdrawal show neither Promotion nor Own use', async () => {
+test('Hoy and a period with no withdrawal show neither Marketing nor Own use', async () => {
   // Today carries a withdrawal of each reason, as it does right after the form's
   // default date is saved: Hoy still hides both lines.
   const withdrawnToday: PanelAnswer = {
@@ -302,20 +302,20 @@ test('Hoy and a period with no withdrawal show neither Promotion nor Own use', a
       ...PANEL.periods,
       today: {
         ...PANEL.periods.today,
-        promotion: { amount: 2000, pending: false },
-        own_use: { amount: 1000, pending: false },
+        withdrawals: [{ reason_id: 1, name: 'Marketing', amount: 2000, pending: false, pending_quantity: 0 }, { reason_id: 2, name: 'Own use', amount: 1000, pending: false, pending_quantity: 0 }],
       },
+      month: { ...PANEL.periods.month, withdrawals: [] },
     },
   }
   stubFetch(withdrawnToday)
   renderInicio()
   await screen.findByText('You sold today')
-  expect(screen.queryByText('Promotion')).not.toBeInTheDocument()
+  expect(screen.queryByText('Marketing')).not.toBeInTheDocument()
   expect(screen.queryByText('Own use')).not.toBeInTheDocument()
 
   screen.getByRole('button', { name: 'Month' }).click()
   await screen.findByText('You sold this month')
-  expect(screen.queryByText('Promotion')).not.toBeInTheDocument()
+  expect(screen.queryByText('Marketing')).not.toBeInTheDocument()
   expect(screen.queryByText('Own use')).not.toBeInTheDocument()
 })
 
@@ -352,8 +352,7 @@ test('no sales shows no average, and the range reads with no year', async () => 
         cost_of_goods: 0,
         pending_cost: false,
         shortfall: null,
-        promotion: null,
-        own_use: null,
+        withdrawals: [],
         expenses: 5000,
         purchases: 0,
         profit: -5000,

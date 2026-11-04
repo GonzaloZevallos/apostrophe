@@ -5,9 +5,11 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
+import pytest
+
 from app.sales.domain.pricing import PricingRule
 from app.shared.quantity import Quantity
-from app.stock.adapters.draw_rows import build_draw_rows
+from app.stock.adapters.draw_rows import WithdrawalWithoutReason, build_draw_rows
 from app.stock.domain.draw_source import DrawSource
 from app.stock.domain.lot_order import (
     SALE_LINE_RANK,
@@ -21,6 +23,8 @@ from app.stock.domain.lot_order import (
 DAY = date(2026, 10, 3)
 NOW = datetime(2026, 10, 3, 12, 0)
 VARIETY = 7
+MARKETING = 11
+OWN_USE = 12
 
 
 def _lot(quantity: str, cost: int) -> Lot:
@@ -28,9 +32,13 @@ def _lot(quantity: str, cost: int) -> Lot:
     return Lot(order, VARIETY, Quantity.of(quantity), cost)
 
 
-def _withdrawal(source: DrawSource, quantity: str) -> Draw:
+def _withdrawal(reason_id: int | None, quantity: str) -> Draw:
     return Draw(
-        LotOrder(DAY, NOW, WITHDRAWAL_LINE_RANK, 1, 0), VARIETY, Quantity.of(quantity), source
+        LotOrder(DAY, NOW, WITHDRAWAL_LINE_RANK, 1, 0),
+        VARIETY,
+        Quantity.of(quantity),
+        DrawSource.WITHDRAWAL,
+        reason_id=reason_id,
     )
 
 
@@ -78,15 +86,17 @@ def test_a_negative_adjustment_is_a_shortfall_with_no_variety_sale_or_total() ->
 
 
 def test_a_withdrawal_line_is_its_reason_s_kind_with_no_variety_sale_or_total() -> None:
-    promotion = _withdrawal(DrawSource.PROMOTION, "2")
-    own_use = _withdrawal(DrawSource.OWN_USE, "3")
+    promotion = _withdrawal(MARKETING, "2")
+    own_use = _withdrawal(OWN_USE, "3")
 
     [promotion_row] = build_draw_rows({VARIETY: ([_lot("10", 10_000)], [promotion])})
     [own_use_row] = build_draw_rows({VARIETY: ([_lot("10", 10_000)], [own_use])})
 
-    assert promotion_row.kind == "promotion"
+    assert promotion_row.kind == "withdrawal"
+    assert promotion_row.reason_id == MARKETING
     assert promotion_row.costed == 2_000
-    assert own_use_row.kind == "own_use"
+    assert own_use_row.kind == "withdrawal"
+    assert own_use_row.reason_id == OWN_USE
     assert own_use_row.costed == 3_000
     for row in (promotion_row, own_use_row):
         assert (row.variety_id, row.variety_name, row.sale_id, row.line_total) == (
@@ -98,9 +108,16 @@ def test_a_withdrawal_line_is_its_reason_s_kind_with_no_variety_sale_or_total() 
 
 
 def test_a_withdrawal_past_every_lot_is_pending_never_costed_zero() -> None:
-    draw = _withdrawal(DrawSource.OWN_USE, "5")
+    draw = _withdrawal(OWN_USE, "5")
 
     [row] = build_draw_rows({VARIETY: ([_lot("3", 3_000)], [draw])})
 
     assert row.costed == 3_000
     assert row.pending == Quantity.of("2")
+
+
+def test_a_withdrawal_with_no_reason_raises_never_dropped() -> None:
+    draw = _withdrawal(None, "2")
+
+    with pytest.raises(WithdrawalWithoutReason, match="no reason"):
+        build_draw_rows({VARIETY: ([_lot("10", 10_000)], [draw])})

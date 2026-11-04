@@ -8,6 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 
+from tests.conftest import reason_id
 from tests.fakes.archive import archive_by_hand
 
 
@@ -47,7 +48,10 @@ def _sale(client: TestClient, variety_id: int, **line: Any) -> int:
 
 def _withdrawal(client: TestClient, variety_id: int, reason: str) -> int:
     # A withdrawal is never refused for lack of stock, so it alone can be the history.
-    body = {"reason": reason, "lines": [{"product_id": variety_id, "quantity": "1"}]}
+    body = {
+        "reason_id": reason_id(client, reason),
+        "lines": [{"product_id": variety_id, "quantity": "1"}],
+    }
     response = client.post("/stock/withdrawals", json=body)
     assert response.status_code == 201, response.text
     withdrawal_id: int = response.json()["id"]
@@ -70,8 +74,8 @@ HISTORY: dict[str, Callable[[TestClient, int], object]] = {
     "opening stock": lambda c, v: _entry(c, v, "opening_stock", "10"),
     "positive adjustment": lambda c, v: _entry(c, v, "adjustment", "3"),
     "negative adjustment": lambda c, v: _entry(c, v, "adjustment", "-3"),
-    "promotion withdrawal": lambda c, v: _withdrawal(c, v, "promotion"),
-    "own use withdrawal": lambda c, v: _withdrawal(c, v, "own_use"),
+    "promotion withdrawal": lambda c, v: _withdrawal(c, v, "Marketing"),
+    "own use withdrawal": lambda c, v: _withdrawal(c, v, "Own use"),
 }
 
 
@@ -137,7 +141,7 @@ def test_deleting_the_last_entry_offers_delete_again(client: TestClient) -> None
 
 def test_deleting_the_last_withdrawal_offers_delete_again(client: TestClient) -> None:
     variety_id = _register(client)
-    withdrawal_id = _withdrawal(client, variety_id, "own_use")
+    withdrawal_id = _withdrawal(client, variety_id, "Own use")
     assert _removal(client, variety_id) == "archive"
 
     assert client.delete(f"/stock/withdrawals/{withdrawal_id}").status_code == 204

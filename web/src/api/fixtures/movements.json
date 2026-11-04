@@ -14,7 +14,8 @@
     "kind": "withdrawal",
     "id": 1,
     "date": "2026-10-01",
-    "reason": "promotion",
+    "reason_id": 1,
+    "reason_name": "Marketing",
     "quantity": 5.5
   }
 ]

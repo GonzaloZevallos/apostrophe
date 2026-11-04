@@ -89,6 +89,7 @@ subgraph src["src"]
       src_screens_settings_SettingsGroup_tsx["SettingsGroup.tsx"]
       src_screens_settings_Settings_tsx["Settings.tsx"]
       src_screens_settings_UsersGroup_tsx["UsersGroup.tsx"]
+      src_screens_settings_WithdrawalReasons_tsx["WithdrawalReasons.tsx"]
       src_screens_settings_customerTypeIcons_ts["customerTypeIcons.ts"]
     end
     subgraph src_screens_varieties["varieties"]
@@ -141,7 +142,6 @@ subgraph src["src"]
       src_screens_withdrawals_WithdrawalFormRoute_tsx["WithdrawalFormRoute.tsx"]
       src_screens_withdrawals_WithdrawalForm_tsx["WithdrawalForm.tsx"]
       src_screens_withdrawals_goneLines_ts["goneLines.ts"]
-      src_screens_withdrawals_withdrawalReasons_ts["withdrawalReasons.ts"]
     end
     src_screens_AnalisisTablas_tsx["AnalisisTablas.tsx"]
     src_screens_AnalisisTarjeta_tsx["AnalisisTarjeta.tsx"]
@@ -193,7 +193,6 @@ src_screens_Catalogo_tsx-->src_screens_telegramPreview_ts
 src_screens_EntradaStock_tsx-->src_screens_StockEntryForm_tsx
 src_screens_EntriesList_tsx-->src_screens_Variedades_tsx
 src_screens_EntriesList_tsx-->src_screens_originLabel_ts
-src_screens_EntriesList_tsx-->src_screens_withdrawals_withdrawalReasons_ts
 src_screens_Gastos_tsx-->src_screens_expenses_ExpenseForm_tsx
 src_screens_Gastos_tsx-->src_screens_expenses_MonthBody_tsx
 src_screens_Inicio_tsx-->src_screens_inicioNotices_ts
@@ -242,6 +241,7 @@ src_screens_expenses_ExpenseNewRoute_tsx-->src_screens_expenses_ExpensesBehind_t
 src_screens_expenses_ExpensesBehind_tsx-->src_screens_expenses_MonthBody_tsx
 src_screens_inicio_InicioFondo_tsx-->src_screens_inicio_InicioPanel_tsx
 src_screens_inicio_InicioPanel_tsx-->src_screens_inicio_PeriodFigures_tsx
+src_screens_inicio_PeriodFigures_tsx-->src_screens_analisisCost_ts
 src_screens_onboarding_BotStep_tsx-->src_screens_onboarding_StepSubmit_tsx
 src_screens_onboarding_BotStep_tsx-->src_screens_onboarding_stepBodies_tsx
 src_screens_onboarding_BotStep_tsx-->src_screens_onboarding_useOnboardingWrite_tsx
@@ -318,6 +318,7 @@ src_screens_settings_IntegrationsGroup_tsx-->src_screens_settings_SettingsGroup_
 src_screens_settings_PricingGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_UsersGroup_tsx-->src_screens_settings_InvitePartner_tsx
 src_screens_settings_UsersGroup_tsx-->src_screens_settings_SettingsGroup_tsx
+src_screens_settings_WithdrawalReasons_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_varieties_ArchivedIndex_tsx-->src_screens_varieties_ArchivedVarieties_tsx
 src_screens_varieties_ArchivedIndex_tsx-->src_screens_varieties_archivedVarieties_ts
 src_screens_varieties_ArchivedIndex_tsx-->src_screens_varieties_varietiesByName_ts
@@ -371,7 +372,6 @@ src_screens_varieties_VarietyPricesSection_tsx-->src_screens_varieties_PriceRows
 src_screens_varieties_VarietyRemoval_tsx-->src_screens_Variedades_tsx
 src_screens_varieties_VarietyRemoval_tsx-->src_screens_varieties_varietiesByName_ts
 src_screens_varieties_VarietyStockSection_tsx-->src_screens_originLabel_ts
-src_screens_varieties_VarietyStockSection_tsx-->src_screens_withdrawals_withdrawalReasons_ts
 src_screens_varieties_VarietyThresholdSection_tsx-->src_screens_Variedades_tsx
 src_screens_varieties_VarietyThresholdSection_tsx-->src_screens_varieties_varietyForms_ts
 src_screens_varieties_archivedVarieties_ts-->src_screens_Variedades_tsx
@@ -394,11 +394,9 @@ src_screens_ventas_VentaDetalle_tsx-->src_screens_ventas_NuevaVenta_tsx
 src_screens_ventas_VentaDetalle_tsx-->src_screens_ventas_SaleBillButton_tsx
 src_screens_withdrawals_WithdrawalDetailBehind_tsx-->src_screens_withdrawals_WithdrawalFacts_tsx
 src_screens_withdrawals_WithdrawalDetail_tsx-->src_screens_withdrawals_WithdrawalFacts_tsx
-src_screens_withdrawals_WithdrawalFacts_tsx-->src_screens_withdrawals_withdrawalReasons_ts
 src_screens_withdrawals_WithdrawalFormRoute_tsx-->src_screens_varieties_VarietiesBehind_tsx
 src_screens_withdrawals_WithdrawalFormRoute_tsx-->src_screens_withdrawals_WithdrawalDetailBehind_tsx
 src_screens_withdrawals_WithdrawalFormRoute_tsx-->src_screens_withdrawals_WithdrawalForm_tsx
 src_screens_withdrawals_WithdrawalForm_tsx-->src_screens_Variedades_tsx
 src_screens_withdrawals_WithdrawalForm_tsx-->src_screens_withdrawals_goneLines_ts
-src_screens_withdrawals_WithdrawalForm_tsx-->src_screens_withdrawals_withdrawalReasons_ts
 ```
