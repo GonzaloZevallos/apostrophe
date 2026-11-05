@@ -14,6 +14,7 @@ The approved design is "Nivel por nivel". It is the contract for the Settings sc
 - **Archive:** refused with its reason while the subtree holds products ("Tiene 12 productos: muévelos o
   archívalos primero"). Archived categories are listed apart, with "Restaurar".
 - **Desktop:** Miller columns with the selected category's detail, and "+ Nueva" in the 480 px panel.
+- **Owner's term (2026-11-05):** a leaf's extra fields are "Campos personalizados" on screen.
 - **Copy is neutral Spanish:** tú in messages, the infinitive on buttons (#317, #328).
 
 ## Files
