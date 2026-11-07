@@ -25,7 +25,7 @@ Las tres corrieron el mismo día argentino (2026-11-07), antes de medianoche, si
 
 219 filas en el registro. Lado `design`: 219 capturados en las tres corridas. Lado `built`: master-1 169, master-2 171, after 172. Filas con las dos imágenes: master-1 169, master-2 171, after 172.
 
-- Unión de las filas con las dos imágenes en las corridas `master`: 172. El conjunto de `after` es igual a esa unión: no falta ninguna fila y no sobra ninguna.
+- Unión de las filas con las dos imágenes en las corridas `master`: 172. El conjunto de `after` es igual a esa unión: no falta ninguna fila y no sobra ninguna. La igualdad se comprobó por nombre de pantalla, fila por fila, no sólo por conteo.
 - Lado `built` que no es igual entre las dos corridas `master` (flaky en master): `ClienteFichaOscuro` capturó en master-1 y no en master-2; `InicioHoy`, `Catalogo` y `CatalogoOscuro` capturaron en master-2 y no en master-1. `after` capturó las cuatro.
 - En `after`, 172 filas son `captured` y 47 `not-captured`, todas por la razón fija `shot: no built screen yet (built)`. Ninguna fila falla por `shot: did not settle`.
 - `VariedadDetalle`, `VariedadDetalleOscuro` y `CatalogoOscuro` quedan `captured` en `after`.
