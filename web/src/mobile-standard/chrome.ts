@@ -74,7 +74,9 @@ export function judgeChrome(expectation: ChromeExpectation, facts: ChromeFacts, 
         want === 'forbidden'
           ? fact.present
           : want === 'expected'
-            ? !facts.modalOpen && (!fact.present || !fact.inView)
+            ? fact.present
+              ? !fact.inView
+              : !facts.modalOpen
             : fact.present && !fact.inView
       if (wrong) found.push({ ...cell, rule: RULE_OF[phase], target: TARGET_OF[element] })
     }

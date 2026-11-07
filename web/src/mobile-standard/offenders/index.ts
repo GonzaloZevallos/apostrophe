@@ -77,8 +77,11 @@ export const FILES: Record<Exclude<Rule, 'tabular-figures'>, unknown> = {
   'pending-state': pendingState,
 }
 
-/** The fixed area map: the only issue numbers an entry may carry (#45–#49, #59, #60, #78). */
-export const AREA_ISSUES: readonly number[] = [45, 46, 47, 48, 49, 59, 60, 78]
+/**
+ * The only issue numbers an entry may carry. An existing entry keeps its area issue; a new
+ * finding cites the open follow-up opened for it (#600 for the chrome rules by screen kind).
+ */
+export const AREA_ISSUES: readonly number[] = [45, 46, 47, 48, 49, 59, 60, 78, 600]
 
 export interface Offender extends Violation {
   issue: number
