@@ -9,3 +9,8 @@ export function assertSelectedNeeds(
   selected: ReadonlyArray<Readonly<Record<string, unknown>>>,
   all: ReadonlyArray<Readonly<Record<string, unknown>>>,
 ): void;
+export const PHONE: readonly [number, number];
+export function viewportsOf(s: Readonly<Record<string, unknown>>): {
+  design: readonly [number, number];
+  built: readonly [number, number];
+};
