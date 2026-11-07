@@ -75,3 +75,14 @@ Salió con **1**, solo por el lado construido de tres filas que no quedaron quie
 ## Lo que esto no cubre
 
 Si otro issue edita un dibujo y su ancho se mueve, el CI no lo ve: solo la próxima corrida completa con `--strict` lo detecta y nombra la fila (ADR-0042, enmienda GH-548).
+
+## Corridas completas de `compare.sh --strict` sobre la rama (segunda ronda)
+
+Dos corridas más, con `scripts/design/compare.sh --strict` sobre un sample fresco cada una, en el mismo worktree:
+
+| cabeza | salida | filas que fallaron | lado |
+|---|---|---|---|
+| `e8c9761a` | 1 | `ClienteFichaOscuro`, `VariedadDetalleOscuro` | construido ("la pantalla no quedó quieta") |
+| `79e131b2` | 1 | `ClienteFichaOscuro`, `VariedadDetalleOscuro`, `CatalogoOscuro`, `VariedadArchivadaOscuro` | construido ("la pantalla no quedó quieta") |
+
+En ninguna corrida falló una fila del lado del diseño: las 37 capturas se toman en las cuatro corridas completas de la rama. Todas las filas que fallan son del lado construido y tienen el mismo mensaje de reposo que ya aparecía en master (corrida 1: `ClienteFicha`; corrida 2: `InicioPrimeraVez`, `Variedades`, `VariedadDetalle`, `Catalogo`, `CatalogoOscuro`); cada una, repetida con `--only` sobre el mismo sample, da `ok`. Es un fallo de reposo del lado construido que existe en master, no lo causa ni lo toca este cambio (`settle.mjs` y `shot.mjs` no están en el diff), y por eso no se consiguió una corrida completa con salida 0. Queda sin cumplir el "sale 0" de una sola corrida; para el Tech Lead, que decida si ese reposo del lado construido necesita su propio issue.
