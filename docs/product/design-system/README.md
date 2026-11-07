@@ -402,6 +402,12 @@ nombran el mismo conjunto, y `tests/test_design_icons.py` falla si difieren o si
 trazo se sale de la regla. Un nombre ya dibujado se reutiliza antes de agregar otro,
 y uno nuevo entra sólo cuando una pantalla lo usa.
 
+## Chips o Selector
+
+A set that can hold an option the app did not ship with, today or under a decision already taken, is chosen with the Selector, never chips. Only fixed sets may be chips.
+
+Un ejemplo de cada clase: Expense categories → Selector (el negocio agrega las suyas); Today · Week · Month → chips (la app los trae y no crecen). Los chips toman sus opciones solo de un Fixed set declarado en `web/src/components/fixedSets.ts`, con un motivo. El Selector está dibujado en [`pantallas/Componentes.dc.html`](pantallas/Componentes.dc.html) y definido en [`docs/product/selector.md`](../selector.md).
+
 ## Reglas de negocio que viven en el código
 
 - **Precios históricos.** Una venta usa el precio que regía el día de la venta,
