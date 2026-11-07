@@ -53,6 +53,7 @@ def _view(
         else OnTheSpotPayment(date(2026, 6, 1), total, method, CUSTOMER.id if customer else None),
         recorded_at=datetime(2026, 6, 1, tzinfo=UTC),
         id=SALE_ID,
+        number=7,
     )
     return SaleView(
         sale=sale,
@@ -71,6 +72,7 @@ def test_a_consistent_owed_sale_gives_the_whole_bill() -> None:
 
     assert bill == SaleBill(
         business_name="Mi Negocio",
+        number=7,
         date=date(2026, 6, 1),
         shipping_charged=500,
         total=10_000,

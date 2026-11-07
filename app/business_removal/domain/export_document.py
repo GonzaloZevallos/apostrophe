@@ -31,12 +31,15 @@ class Business:
     id: int
     name: str
     language: str
+    last_sale_number: int | None = None
 
     def __post_init__(self) -> None:
         if not self.name:
             raise ValueError("a business needs a name")
         if not self.language:
             raise ValueError("a business needs a language")
+        if self.last_sale_number is not None and self.last_sale_number < 0:
+            raise ValueError("a business needs a last sale number of zero or more")
 
 
 class UnresolvableLabel(ValueError):
@@ -53,7 +56,9 @@ def build_document(
     rows: Mapping[str, Sequence[Mapping[str, Any]]],
     exported_at: datetime,
 ) -> dict[str, Any]:
-    """`{"business": {"id", "name", "language"}, "exported_at", "kinds": {table: [records]}}`.
+    """`{"business": {"id", "name", "language"[, "last_sale_number"]}, "exported_at",
+    "kinds": {table: [records]}}`; the counter is in the header whenever the business
+    carries it (docs/adr/0073).
     Every owned table in `schema` becomes a kind, its records sorted by id, with
     `EXCLUDED_COLUMNS` dropped, `business_id` never repeated, foreign keys turned
     into `{"id", "name"}` references and `*_hundredths` integers into two-place
@@ -76,12 +81,15 @@ def build_document(
         ]
         records.sort(key=lambda record: record["id"])
         kinds[table_name] = records
+    header: dict[str, Any] = {
+        "id": business.id,
+        "name": business.name,
+        "language": business.language,
+    }
+    if business.last_sale_number is not None:
+        header["last_sale_number"] = business.last_sale_number
     return {
-        "business": {
-            "id": business.id,
-            "name": business.name,
-            "language": business.language,
-        },
+        "business": header,
         "exported_at": _format_instant(exported_at),
         "kinds": kinds,
     }

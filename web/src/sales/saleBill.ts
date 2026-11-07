@@ -8,7 +8,7 @@
  */
 
 import type { BillRule, BillState, SaleBill, SaleBillLine } from '../api/sales'
-import { SALE_BILL_TEXT } from '../copy/sales'
+import { SALE_BILL_TEXT, SALES_TEXT } from '../copy/sales'
 import { formatDateShort } from '../format/dates'
 import { formatMoney, formatQuantity } from '../format/money'
 import { hundredthsOfApiGrams } from './pricing'
@@ -62,7 +62,12 @@ function balanceLine(balance: number | null, text: BillText): string | null {
 }
 
 export function renderSaleBill(bill: SaleBill, text: BillText = SALE_BILL_TEXT): string {
-  const rows = [text.header(bill.business_name, formatDateShort(bill.date)), '']
+  const header = text.header(
+    bill.business_name,
+    SALES_TEXT.saleNumber(bill.number),
+    formatDateShort(bill.date),
+  )
+  const rows = [header, '']
   for (const line of bill.lines) rows.push(renderLine(line, text))
   if (bill.shipping_charged > 0) rows.push(text.shipping(formatMoney(bill.shipping_charged)))
   rows.push('', text.total(formatMoney(bill.total)))

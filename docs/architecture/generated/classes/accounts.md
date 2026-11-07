@@ -308,6 +308,7 @@ classDiagram
   class BusinessRow {
     id : Mapped~int~
     language : Mapped~str~
+    last_sale_number : Mapped~int~
     name : Mapped~str~
   }
   class ChangePasswordIn {

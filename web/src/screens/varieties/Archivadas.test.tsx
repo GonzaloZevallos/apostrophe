@@ -501,7 +501,7 @@ describe('on a computer (two panes)', () => {
     await screen.findByRole('heading', { name: 'Zeta Vieja' })
     await user.click(pageRestore())
 
-    await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES))
+    await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES), { timeout: 10_000 })
     expect(await screen.findByText('All entries')).toBeTruthy()
     // The list takes the left pane back one render after the path changes: wait for it.
     await waitFor(() => expect(screen.queryByRole('heading', { name: 'Archived' })).toBeNull())

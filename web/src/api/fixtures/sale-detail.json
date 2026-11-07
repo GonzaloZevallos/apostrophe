@@ -1,5 +1,6 @@
 {
   "id": 10,
+  "number": 2,
   "date": "2026-09-14",
   "customer": { "id": 1, "name": "Ana Pérez", "vip": false },
   "shipping_charged": 500,
@@ -21,6 +22,7 @@
   "total_quantity": 3.5,
   "bill": {
     "business_name": "Flores del Sur",
+    "number": 2,
     "date": "2026-09-14",
     "shipping_charged": 500,
     "total": 11000,
