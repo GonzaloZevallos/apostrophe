@@ -40,7 +40,7 @@ import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { panelQuery, type PanelTab } from '../api/panel'
 import ErrorGenerico from '../components/ErrorGenerico'
-import Loading from '../components/Loading'
+import Loading, { LoadingWhile } from '../components/Loading'
 import { AvisoCuerpo } from '../components/AvisoAmbar'
 import SinConexion from '../components/SinConexion'
 import { initialsOf } from '../format/initials'
@@ -89,9 +89,12 @@ export default function Inicio() {
   const ready = panelRead.data !== undefined && !panelRead.isFetching && settled
   useReturnToPlace({ root, ready, fallback: owedPlace })
   const failed = [panelRead, onboardingQuery].find((query) => query.isError)
+  // The first answers are still on their way; a refresh over the panel already shown is not this.
+  const waiting = panelRead.isPending || !settled
 
   return (
     <ContentArea as="main" className="pantalla" ref={root}>
+      <LoadingWhile active={waiting} />
       <div className="cuerpo">
         <div className="inicio__cabecera">
           <div className="inicio__cabecera-titulos">

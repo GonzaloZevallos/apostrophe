@@ -45,6 +45,7 @@ import { CATALOG_SECTION_ID, SETTINGS_CATALOG_MESSAGE, VARIETY, pathTo } from '.
 import { COMMON_TEXT } from '../copy/common'
 import { STOCK_TEXT } from '../copy/stock'
 import ContentArea from '../components/ContentArea'
+import { LoadingWhile } from '../components/Loading'
 
 export const CATALOG_COPIED = CATALOG_TEXT.catalogoCopiado
 export const COPY_FAILED_MESSAGE = CATALOG_TEXT.noSePudoCopiar
@@ -121,6 +122,7 @@ export default function Catalogo() {
 
   return (
     <ContentArea as="main" className="pantalla">
+      <LoadingWhile active={catalogQuery.isPending} />
       <div className="cuerpo">
         <h1 className="encabezado__titulo">{COMMON_TEXT.catalog}</h1>
 

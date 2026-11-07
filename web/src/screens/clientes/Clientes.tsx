@@ -35,6 +35,7 @@ import ClienteFila from './ClienteFila'
 import TeDeben from './TeDeben'
 import { COMMON_TEXT } from '../../copy/common'
 import ContentArea from '../../components/ContentArea'
+import { LoadingWhile } from '../../components/Loading'
 
 export const SEARCH_LABEL = CUSTOMERS_TEXT.searchCustomer
 export const SEARCH_PLACEHOLDER = COMMON_TEXT.phoneOrName
@@ -63,7 +64,7 @@ export default function Clientes() {
     return () => clearTimeout(id)
   }, [query])
 
-  const { data, isPlaceholderData, isFetching, isError, error } = useQuery({
+  const { data, isPending, isPlaceholderData, isFetching, isError, error } = useQuery({
     queryKey: keys.customers(debounced),
     queryFn: () => listCustomers(debounced),
     placeholderData: keepPreviousData,
@@ -84,6 +85,8 @@ export default function Clientes() {
 
   return (
     <ContentArea as="main" className="pantalla" ref={root}>
+      {/* The first answer only: a new search over the list already shown is not the area loading. */}
+      <LoadingWhile active={isPending} />
       <div className="cuerpo">
         <div className="clientes__encabezado">
           <span className="encabezado__titulo">{COMMON_TEXT.customers}</span>

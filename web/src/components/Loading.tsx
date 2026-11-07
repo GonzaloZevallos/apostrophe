@@ -31,6 +31,16 @@ export function LoadingAnuncio() {
   return <div className="cargando__anuncio" role="progressbar" aria-label={t('common:loading')} aria-busy="true" />
 }
 
+/**
+ * Marks the nearest content area busy while `active`, drawing nothing. For a screen that renders
+ * its own `ContentArea`: a hook in the screen would read the owner above it, so the screen puts
+ * this inside its area, on its own pending flag.
+ */
+export function LoadingWhile({ active }: { active: boolean }) {
+  useLoading(active)
+  return null
+}
+
 export default function Loading({ compacto = false }: LoadingProps) {
   const { t } = useTranslation()
   useLoading(!compacto)
