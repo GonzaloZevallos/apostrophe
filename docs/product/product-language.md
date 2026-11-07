@@ -2,7 +2,7 @@
 
 El único idioma en que escribe el producto: inglés. Abarca cada palabra que el producto mismo escribe para que la lea una persona: pantallas, estados, nombres accesibles, mensajes de la API dirigidos a una persona, las líneas que imprimen los scripts del **Operator**, las palabras propias del informe de la **Spreadsheet import** y las líneas fijas del **Catalog** de Telegram. Todo texto del front vive en un solo módulo con claves, el **Copy module**. No cambia ningún comportamiento de ninguna capacidad: pantallas, flujos, rutas, reglas y formatos quedan como los definen sus dueños. Reemplaza la regla de español rioplatense que antes establecían BRIEF.md y la sección de idioma y formatos de accounts.md. Los docs de capacidades y los archivos de diseño nombran cada pantalla, grupo, control y mensaje con ese mismo inglés, así que cada cosa tiene un solo nombre.
 
-Lo que vende un **Business** se llama en el Product language siempre "Product" / "Products", para todo Business; no es un dato de quien vende ni una configuración (varieties.md).
+Lo que vende un **Business** se llama en el Product language siempre "Product" / "Products", para todo Business; no es un dato de quien vende ni una configuración (varieties.md, docs/adr/0074-the-screen-word-is-always-product-and-no-product-word-setting-exists.md).
 
 El Product language no es el idioma de la documentación. La documentación funcional y técnica (`docs/product/` y las definiciones de `CONTEXT.md` incluidas) se escribe en español rioplatense, con identificadores, nombres de clases y nombres UML en inglés: es la **Documentation language**. Que los docs estén en español no cambia ninguna palabra que muestre la app.
 
@@ -92,7 +92,7 @@ Criterios de éxito:
 ### Spreadsheet import
 
 - Reconoce la planilla en español exactamente como hoy: nombres de pestañas, títulos de columna y valores de celda como "Compra", "Efectivo", "Pendiente", "Amigo", "Regalo" y "Sí"/"No" de la planilla, y los textos de **Unfinished row**.
-- Solo las palabras propias del informe están en inglés, y nombran lo que se vende como "product". Los textos de la planilla que cita (títulos como "Variedad" incluidos) quedan como los escribió la planilla.
+- Solo las palabras propias del informe están en inglés, y nombran lo que se vende como "product" (p. ej. "Products: {count}"). Los textos de la planilla que cita (títulos como "Variedad" incluidos) quedan como los escribió la planilla.
 - Cada Expense category coincide por nombre como hoy, así que las categorías en español de una planilla se crean como Expense category junto a los valores por defecto en inglés de un Business nuevo. Esos valores por defecto se pueden quitar mientras no tengan ningún **Expense**.
 
 ### Palabras y formatos juntos
@@ -182,7 +182,7 @@ No hay telemetría. Se leen de los tests y de la revisión.
   - Diferencias de significado halladas al comparar cada archivo con su versión anterior: 0.
   - Por cada archivo traducido o puesto en regla, el PR pega la comparación con su versión anterior: spans idénticos (backticks, destinos de links, `## Jobs`, términos en negrita y palabras de pantalla citadas; en un archivo que ya estaba en español, solo cambian los términos en negrita que pasan de una versión en español a su término en inglés, listados), el multiconjunto de dígitos, los conteos de estructura y cada coincidencia de la lista de palabras prohibidas con su resolución. Objetivo: 0 diferencias sin explicar.
   - Citas de encabezados traducidos que no apuntan al texto nuevo exacto después del cambio, según `rg`. Objetivo: 0; las citas viejas se listan en el PR.
-- **Una sola palabra para lo que se vende (criterio 8).** El barrido permanente de varieties.md (vitest sobre los valores del Copy module en cada Language y en el **Test locale** y sobre los nombres accesibles; pytest con TestClient sobre los mensajes de la API que llegan a una pantalla, las líneas fijas del Catalog y del bot, las etiquetas de informes y la salida del Operator) encuentra 0 apariciones de "variety", "varieties", "variedad" o "variedades" fuera de su lista explícita de excepciones (texto citado de la planilla y datos de quien vende). No depende del calendario ni del orden de los tests.
+- **Una sola palabra para lo que se vende (criterio 8).** El barrido permanente de varieties.md (vitest en `web/src/copy/productWord.test.ts` sobre los valores del Copy module en cada Language y en el **Test locale** y sobre los nombres accesibles; pytest con TestClient en `tests/test_product_word_sweep.py` sobre los mensajes de la API que llegan a una pantalla, las líneas fijas del Catalog y del bot, las etiquetas de informes y la salida del Operator) encuentra 0 apariciones de "variety", "varieties", "variedad" o "variedades" fuera de su lista explícita de excepciones (texto citado de la planilla y datos de quien vende). No depende del calendario ni del orden de los tests.
 - **Pinned catalog.** Un Business publicado cuyo texto cambia solo en sus líneas fijas recibe una edición en el lugar y ningún mensaje nuevo.
 - **Medida de negocio.** Textos en español a los que llega una persona en la app: meta 0. Textos en español hallados después del merge: meta 0. Nombres de pantalla en español con los que se cruza quien lee un doc de capacidad: meta 0. Archivos de `docs/product/` con prosa mezclada entre inglés y español: meta 0.
 
