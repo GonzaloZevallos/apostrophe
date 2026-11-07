@@ -50,6 +50,7 @@ import AccountRowLine from './AccountRowLine'
 import { METHOD_LABEL, deleteRowIndices, rowKey } from './accountRows'
 import { COMMON_TEXT } from '../../copy/common'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
+import ContentArea from '../../components/ContentArea'
 
 function deletePaymentTitle(payment: { amount: number; method: PaymentMethod; paid_on: string }): string {
   return CUSTOMERS_TEXT.deletePaymentOf(formatMoney(payment.amount), METHOD_LABEL[payment.method], formatDateShort(payment.paid_on))
@@ -135,29 +136,29 @@ export default function ClienteFicha() {
     }
     if (error instanceof NetworkError) {
       return (
-        <main className="pantalla">
+        <ContentArea as="main" className="pantalla">
           <div className="cuerpo">
             <SinConexion />
           </div>
-        </main>
+        </ContentArea>
       )
     }
     return (
-      <main className="pantalla">
+      <ContentArea as="main" className="pantalla">
         <div className="cuerpo">
           <ErrorGenerico />
         </div>
-      </main>
+      </ContentArea>
     )
   }
 
   if (isPending || data === undefined) {
     return (
-      <main className="pantalla">
+      <ContentArea as="main" className="pantalla">
         <div className="cuerpo">
           <Loading />
         </div>
-      </main>
+      </ContentArea>
     )
   }
 
@@ -165,7 +166,7 @@ export default function ClienteFicha() {
   const deleteIndices = deleteRowIndices(rows)
 
   return (
-    <main className="pantalla" ref={root}>
+    <ContentArea as="main" className="pantalla" ref={root}>
       <div className="cuerpo">
         <div className="ficha-cliente__encabezado">
           <span className="encabezado__titulo" tabIndex={-1} data-place="card-heading">{data.name}</span>
@@ -254,6 +255,6 @@ export default function ClienteFicha() {
           onCancel={() => setConfirmingDelete(null)}
         />
       )}
-    </main>
+    </ContentArea>
   )
 }

@@ -23,7 +23,16 @@ from tests.pricing_switches import set_switches
 from tests.vip_type import make_type, put_in_type
 
 PRICE = 10_000
-BILL_KEYS = {"business_name", "date", "shipping_charged", "total", "lines", "payment", "balance"}
+BILL_KEYS = {
+    "business_name",
+    "number",
+    "date",
+    "shipping_charged",
+    "total",
+    "lines",
+    "payment",
+    "balance",
+}
 LINE_KEYS = {"product", "quantity", "amount", "rule", "unit_price"}
 PAYMENT_KEYS = {"state", "still_owed"}
 

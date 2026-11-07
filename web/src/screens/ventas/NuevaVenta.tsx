@@ -73,6 +73,7 @@ import NuevaVentaCliente from './NuevaVentaCliente'
 import NuevaVentaLinea, { type LinePreview, type LineState } from './NuevaVentaLinea'
 import { COMMON_TEXT } from '../../copy/common'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
+import ContentArea from '../../components/ContentArea'
 
 export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 export const NO_LINES_MESSAGE = SALES_TEXT.addAtLeastOne
@@ -542,7 +543,7 @@ function NuevaVentaForm() {
   }
 
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <form ref={formRef} className="nueva-venta" onSubmit={onSubmit}>
         <div className="nueva-venta__disposicion">
         <div className="nueva-venta__cuerpo" aria-busy={repricing || opening || undefined}>
@@ -577,7 +578,7 @@ function NuevaVentaForm() {
             <Loading />
           ) : (
             <>
-              {repricing && !customerSheet.isOpen && <LoadingAnuncio />}
+              {repricing && !customerSheet.isOpen && <LoadingAnuncio refresco />}
               {customer === null ? (
                 <Boton variant="secondary" icon="clientes" onClick={customerSheet.open}>
                   {SALES_TEXT.pickCustomer}
@@ -719,6 +720,6 @@ function NuevaVentaForm() {
           />
         </div>
       )}
-    </main>
+    </ContentArea>
   )
 }

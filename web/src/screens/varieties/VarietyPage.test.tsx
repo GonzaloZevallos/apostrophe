@@ -32,6 +32,7 @@ import { iconAndTextProblems } from '../../test/iconAndTextRule'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
+import ContentArea from '../../components/ContentArea'
 
 const VARIETY_ONE = pathTo(VARIETY, { id: 1 })
 
@@ -142,14 +143,14 @@ function renderPage(path: string, overrides: Answers = {}, state: unknown = null
           {
             element: <Shell />,
             children: [
-              { path: relative(VARIETIES), element: <main>Varieties screen</main>, handle: { screen: 'varieties' } },
+              { path: relative(VARIETIES), element: <ContentArea as="main">Varieties screen</ContentArea>, handle: { screen: 'varieties' } },
               {
                 path: relative(VARIETY),
                 element: <VarietyRoute render={(varietyId) => <VarietyPage varietyId={varietyId} />} />,
                 // The handle the app's own route table declares, so the shell draws the same chrome.
                 handle: matchRoutes(appRouter.routes, pathTo(VARIETY, { id: 1 }))?.at(-1)?.route.handle,
               },
-              { path: '*', element: <main>Otra pantalla</main> },
+              { path: '*', element: <ContentArea as="main">Otra pantalla</ContentArea> },
             ],
           },
         ],

@@ -1210,3 +1210,52 @@ def test_another_business_reads_none_of_the_archived_catalog_attributes(
     assert [r["product_id"] for r in business_a.get("/catalog/archived").json()] == [variety["id"]]
 
     assert business_b.get("/catalog/archived").json() == []
+
+
+def _priced_variety(client: TestClient) -> int:
+    variety = client.post("/api/products", json={"name": "Lavanda"}).json()
+    client.post(
+        f"/api/products/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 10_000},
+    )
+    return int(variety["id"])
+
+
+def _sell_one(client: TestClient, variety_id: int) -> dict[str, Any]:
+    response = client.post(
+        "/sales",
+        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "1"}]},
+    )
+    assert response.status_code == 201, response.text
+    return dict(response.json())
+
+
+def test_two_businesses_both_start_at_sale_number_1_and_neither_learns_the_other_s_count(
+    business_a: TestClient, business_b: TestClient
+) -> None:
+    variety_a = _priced_variety(business_a)
+    sales_a = [_sell_one(business_a, variety_a) for _ in range(3)]
+    sale_b = _sell_one(business_b, _priced_variety(business_b))
+
+    # B's sale has the fourth global id and is still B's first sale.
+    assert sale_b["id"] == 4
+    assert sale_b["number"] == 1
+    detail_b = business_b.get(f"/sales/{sale_b['id']}").json()
+    assert detail_b["number"] == 1
+    assert detail_b["bill"]["number"] == 1
+    assert business_a.get(f"/sales/{sales_a[-1]['id']}").json()["number"] == 3
+
+    # The bill carries no sale id: its fields are closed and the number is not the id.
+    assert not {"id", "sale_id"} & detail_b["bill"].keys()
+    assert detail_b["bill"]["number"] != sale_b["id"]
+
+    # B's list holds B's one sale; A's holds A's three. Neither carries the other's.
+    assert [row["number"] for row in business_b.get("/sales").json()] == [1]
+    assert sorted(row["number"] for row in business_a.get("/sales").json()) == [1, 2, 3]
+
+    # B asking for A's sale learns nothing: not found, and no number anywhere in the body.
+    refused = business_b.get(f"/sales/{sales_a[-1]['id']}")
+    assert refused.status_code == 404
+    assert "number" not in refused.text
+    assert business_b.delete(f"/sales/{sales_a[-1]['id']}").status_code == 404
+    assert business_a.get(f"/sales/{sales_a[-1]['id']}").json()["number"] == 3

@@ -53,7 +53,8 @@ import { mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
-import { assertAccountKinds, assertScreens, assertSelectedAccounts, assertSelectedNeeds } from './screens.mjs'
+import { assertAccountKinds, assertScreens, assertSelectedAccounts, assertSelectedNeeds, viewportsOf } from './screens.mjs'
+import { pngCssWidth, sheetHtml } from './sheet.mjs'
 import { FONT_FAMILIES, fontCss, fontRoute } from './fonts.mjs'
 import { pageProbe } from './probe.mjs'
 import {
@@ -155,7 +156,7 @@ if (typeof facts.today !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(facts.today))
 const out = resolve(values.out)
 mkdirSync(out, { recursive: true })
 
-const PHONE = [390, 844]
+const DEVICE_SCALE_FACTOR = 2
 const CAPTURE_INSTANT = new Date(`${facts.today}T12:00:00-03:00`)
 
 // The user a screen signs in as: its `account`'s, else La Huerta's.
@@ -657,20 +658,26 @@ async function captureBuiltIn(context, s, options, ctx) {
   return outcome
 }
 
-async function composeSheet(browser, s, width, design, built, notes, file) {
+// `designWidth` and `builtWidth` are each column's width in CSS pixels. A row with a `design_viewport`
+// is captured wider than its drawing's section (a section's clip is narrower than its viewport), so
+// its design column takes the width its own PNG was shot at; any other row keeps its viewport's width.
+async function composeSheet(browser, s, designWidth, builtWidth, design, built, notes, file) {
   const context = await browser.newContext({ viewport: { width: 1200, height: 800 }, deviceScaleFactor: 1 })
   const page = await context.newPage()
-  const img = (png) => `data:image/png;base64,${png.toString('base64')}`
-  const column = (label, png) =>
-    `<figure><figcaption>${label}</figcaption>${png ? `<img src="${img(png)}">` : '<div class="none">—</div>'}</figure>`
-  await page.setContent(`<!doctype html><meta charset="utf-8"><style>
-    body{margin:0;padding:24px;font:14px system-ui,sans-serif;background:#e7e5e1;color:#231e18;display:inline-block}
-    h1{font-size:18px;margin:0 0 6px} p{margin:0 0 12px;color:#7a4a00;font-weight:600}
-    .row{display:flex;gap:24px;align-items:flex-start} figure{margin:0}
-    figcaption{font-weight:600;margin-bottom:8px} img{display:block;width:${width}px;border:1px solid #9a9085}
-    .none{width:${width}px;height:200px;border:1px dashed #9a9085;display:grid;place-items:center}
-    </style><h1>${s.screen}</h1>${notes.map((n) => `<p>${n}</p>`).join('')}
-    <div class="row">${column(`Diseño · ${designOf(s)}.dc.html${s.section ? ` · ${s.section}` : ''}`, design)}${column(`Construido · ${s.route ?? 'sin ruta'}`, built)}</div>`)
+  const designColumn = s.design_viewport && design ? pngCssWidth(design, DEVICE_SCALE_FACTOR) : designWidth
+  await page.setContent(
+    sheetHtml({
+      screen: s.screen,
+      designFile: designOf(s),
+      section: s.section,
+      route: s.route,
+      notes,
+      designPng: design,
+      builtPng: built,
+      designWidth: designColumn,
+      builtWidth,
+    }),
+  )
   await page.locator('body').screenshot({ path: file })
   await context.close()
 }
@@ -706,20 +713,23 @@ let failed = false
 try {
   for (const s of screens) {
     if (only && !only.has(s.screen)) continue
-    const [width, height] = s.viewport ?? PHONE
-    const options = captureContextOptions({ width, height, url: facts.url })
+    // Each side has its own context options: the design side's size is `design_viewport` when the
+    // row has one, the built side's is always `viewport ?? PHONE` (screens.mjs, `viewportsOf`).
+    const sizes = viewportsOf(s)
+    const designOptions = captureContextOptions({ width: sizes.design[0], height: sizes.design[1], url: facts.url })
+    const builtOptions = captureContextOptions({ width: sizes.built[0], height: sizes.built[1], url: facts.url })
     // A row's side PNGs come only from this run's own buffers: the previous run's are deleted first.
     for (const file of staleFiles(readdirSync(out), [s.screen])) unlinkSync(join(out, file))
-    const ctx = { notes: [], failures: [], census: values.census ? censusOf(options, s) : null }
+    const ctx = { notes: [], failures: [], census: values.census ? censusOf(builtOptions, s) : null }
     const { notes } = ctx
     const entry = { screen: s.screen, file: null, notes, design: null, built: null }
     // What each side recorded: a path only once its PNG write has returned, else a fixed reason.
     const sides = { design: { path: null, reason: null }, built: { path: null, reason: null } }
     try {
-      const design = await attempt('el diseño', 'design', ctx, () => captureDesign(browser, s, options, ctx))
+      const design = await attempt('el diseño', 'design', ctx, () => captureDesign(browser, s, designOptions, ctx))
       let built = { png: null, reason: named('no built screen yet', 'built') }
       if (s.route === null) notes.push('todavía no existe en la app')
-      else built = await attempt('lo construido', 'built', ctx, () => captureBuilt(browser, s, options, ctx))
+      else built = await attempt('lo construido', 'built', ctx, () => captureBuilt(browser, s, builtOptions, ctx))
       sides.design.reason = design.reason
       sides.built.reason = built.reason
       if (design.png) {
@@ -733,7 +743,7 @@ try {
         entry.built = sides.built.path = path
       }
       const file = join(out, `${s.screen}.png`)
-      await composeSheet(browser, s, width, design.png, built.png, notes, file)
+      await composeSheet(browser, s, sizes.design[0], sizes.built[0], design.png, built.png, notes, file)
       entry.file = file
     } catch (error) {
       fail(ctx, `la pantalla falló: ${firstLine(error)}`)

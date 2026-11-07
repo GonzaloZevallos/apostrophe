@@ -523,7 +523,7 @@ El cuarto criterio del dueño: la app nunca fija en el código la forma de traba
 _Avoid_: business-neutral, white label, vertical, preset, template, multi-tenant
 
 **Sale bill**:
-Los datos de una Sale registrada que un vendedor puede compartir con el Customer de esa Sale: nombre del Business, fecha, líneas, Shipping charged, total, estado de Payment y el Balance actual del Customer. Se calculan en el momento a partir del Settlement cuando se lee el detalle de la Sale y nunca se guardan, y el Balance es la cuenta completa del Customer en el momento de compartir. En pantalla se comparte como texto plano con Share o Copy en el detalle de la Sale; En la app: Sale bill (el nombre accesible de su bloque seleccionable), la acción dice Share / Copy.
+Los datos de una Sale registrada que un vendedor puede compartir con el Customer de esa Sale: nombre del Business, Sale number, fecha, líneas, Shipping charged, total, estado de Payment y el Balance actual del Customer. Se calculan en el momento a partir del Settlement cuando se lee el detalle de la Sale y nunca se guardan; el Balance es la cuenta completa del Customer en el momento de compartir. Se comparte como texto plano con Share o Copy en el detalle de la Sale; _In the app_: Sale bill (el nombre accesible de su bloque seleccionable), y la acción dice Share / Copy.
 _Avoid_: invoice, receipt, statement, ticket
 
 **Documentation language**:
@@ -591,3 +591,19 @@ _Avoid_: category, type, tag, cause, Promotion (old name of one default reason)
 **VIP type**:
 El Customer type "VIP" que la actualización creó en cada Business existente, con los Customers que tenían la marca VIP. Hasta la parte customer-type prices es el único tipo cuya pertenencia da el VIP price; lo identifica la actualización, nunca su nombre, así que renombrarlo no cambia nada y un tipo del vendedor llamado "VIP" no da ningún precio. En la app: no tiene palabra propia; se ve como un tipo más.
 _Avoid_: VIP mark, VIP flag, default type
+
+**Sale number**:
+El número correlativo de una Sale dentro de su Business, que se asigna una sola vez al guardarla, en orden de guardado, empezando en 1. Nunca cambia ni se reutiliza, aunque se borre la Sale que lo tenía, y no revela nada de ningún otro Business. Las Sales que ya existían se numeraron una sola vez por fecha y después por orden de registro. _In the app_: Sale #N.
+_Avoid_: order number, invoice number, id, ticket, receipt number
+
+**Selector**:
+El único control para elegir una opción de un Growable set: un campo con etiqueta que en el teléfono abre su lista en una Sheet, como su propia entrada del historial, y en la computadora abre un desplegable con teclado. Tiene búsqueda con más de 8 opciones, nunca reordena las opciones, muestra con la marca "no longer available" una elección que ya no se ofrece, y nunca parece vacío mientras carga. _In the app_: no tiene palabra propia; se ve como la etiqueta de su campo.
+_Avoid_: dropdown, picker, select, chooser, combobox, chips
+
+**Growable set**:
+Un conjunto que puede tener una opción con la que la app no vino, hoy o por una decisión ya tomada, como las Varieties, las Expense categories, los Withdrawal reasons, los Customer types y, con GH-318, los Payment methods. Siempre se elige con el Selector, nunca con chips. En la app: no tiene palabra propia.
+_Avoid_: dynamic list, open set, custom list, user list
+
+**Fixed set**:
+Un conjunto de opciones con el que la app viene y que ninguna decisión tomada deja crecer, como Today · Week · Month. Se declara en `web/src/components/fixedSets.ts` con un motivo no vacío, y es lo único de donde chips, pills, Pestanas y controles de radio toman sus opciones. Ningún conjunto leído de los datos o la configuración de un Business es nunca un Fixed set (docs/adr/0074-fixed-chip-sets-are-a-branded-type-declared-in-one-registry-the-native-select-is-banned-and-the-selector-is-the-only-control-for-a-growable-set.md). En la app: no tiene palabra propia.
+_Avoid_: enum, static list, constant set, hard-coded options

@@ -1,4 +1,5 @@
 [
+  "web/src/components/fixedSets.ts",
   "web/src/copy/inicio.ts",
   "web/src/screens/Inicio.test.tsx",
   "web/src/screens/Inicio.tsx",

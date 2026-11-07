@@ -14,6 +14,7 @@
 
 import { type FormEvent, useEffect, useId, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useLoading } from '../../components/useLoading'
 import { useOutletContext } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE, get } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
@@ -199,6 +200,9 @@ export default function WithdrawalForm({
   const [offline, setOffline] = useState(false)
   const [sending, setSending] = useState(false)
   const [confirmingSave, setConfirmingSave] = useState(false)
+
+  // A new withdrawal draws only its header until both lists answer.
+  useLoading(target === 'new' && (varietiesQuery.isPending || reasonsQuery.isPending))
 
   const dirty = !sameForm(form, initial)
   useEffect(() => {
