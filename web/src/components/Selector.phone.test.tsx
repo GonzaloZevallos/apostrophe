@@ -7,6 +7,7 @@ import { fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { testT } from '../i18n/testing'
 import { stubViewport } from '../test-viewport'
 import { Controlled } from './SelectorTestHost'
 import { numbered, paymentMethodOptions, renderForm, submitSpy } from './selectorTestKit'
@@ -217,6 +218,16 @@ describe('clearing row and empty set', () => {
     await user.click(field())
     expect(screen.queryByRole('button', { name: 'No type' })).not.toBeInTheDocument()
     expect(rowTexts()).toHaveLength(4)
+  })
+
+  test('an optional field takes its clearing wording from the noType key', async () => {
+    const user = userEvent.setup()
+    const noType = testT('common:noType')
+    renderForm(<Controlled {...base} emptyWording={noType} initial="v1" options={numbered(3)} />)
+    await user.click(field())
+    expect(rowTexts()[1]).toBe(noType)
+    await user.click(screen.getByRole('button', { name: noType }))
+    expect(field()).toHaveTextContent(noType)
   })
 
   test('an empty set shows its message as plain text, alone when nothing is set', async () => {

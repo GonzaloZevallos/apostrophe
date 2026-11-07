@@ -20,6 +20,8 @@ afterEach(() => {
   Reflect.deleteProperty(window, 'visualViewport')
 })
 
+const SCROLL_CLASS = 'selector-lista__filas'
+
 const base = { label: 'Category', loading: false, emptySetMessage: 'Nothing yet.' }
 
 function field() {
@@ -164,6 +166,18 @@ describe('search in the dropdown', () => {
     expect(screen.getByText('No results')).toBeInTheDocument()
   })
 
+  test('typing sends the active row back to the first visible one', async () => {
+    const user = userEvent.setup()
+    const options = [...numbered(9), { value: 'x', label: 'Option X' }]
+    renderForm(<Controlled {...base} required options={options} />)
+    await user.click(field())
+    await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}')
+    const search = screen.getByRole('searchbox')
+    expect(search).toHaveAttribute('aria-activedescendant', screen.getByRole('option', { name: 'Option 4' }).id)
+    await user.type(search, 'option')
+    expect(search).toHaveAttribute('aria-activedescendant', screen.getByRole('option', { name: 'Option 1' }).id)
+  })
+
   test('no search at 8 options; the empty set shows its message', async () => {
     const user = userEvent.setup()
     const { unmount } = renderForm(<Controlled {...base} required options={numbered(8)} />)
@@ -222,7 +236,17 @@ describe('the phone list follows the visual viewport', () => {
       fake.dispatchEvent(new Event('resize'))
     })
     expect(frame?.style.getPropertyValue('--vv-alto')).toBe('420px')
-    expect(within(screen.getByRole('dialog')).getAllByRole('group')).toHaveLength(1)
+    const dialog = screen.getByRole('dialog')
+    const rowsContainer = within(dialog).getByRole('group')
+    expect(rowsContainer.className).toContain(SCROLL_CLASS)
+    // Only that element scrolls: not the dialog, the header, the search field nor any row.
+    const carriers = [dialog, ...Array.from(dialog.getElementsByTagName('*'))].filter((element) =>
+      element.classList.contains(SCROLL_CLASS),
+    )
+    expect(carriers).toEqual([rowsContainer])
+    expect(within(dialog).getByRole('searchbox')).not.toBe(rowsContainer)
+    expect(rowsContainer).toContainElement(within(dialog).getByRole('button', { name: 'Option 5' }))
+    expect(rowsContainer).not.toContainElement(within(dialog).getByRole('searchbox'))
     fireEvent.click(screen.getByRole('button', { name: 'Close' }))
   })
 })

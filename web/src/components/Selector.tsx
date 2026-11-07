@@ -308,7 +308,10 @@ export default function Selector(props: SelectorProps) {
       placeholder={t('common:search')}
       aria-activedescendant={computer ? `${ids}-row-${activeIndex}` : undefined}
       value={query}
-      onChange={(event) => setQuery(event.target.value)}
+      onChange={(event) => {
+        setQuery(event.target.value)
+        setActiveKey(null)
+      }}
       onKeyDown={onSearchKeyDown}
       onFocus={() => {
         searchFocused.current = true
