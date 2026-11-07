@@ -15,7 +15,7 @@ Criterios de éxito:
 
 # Payment methods
 
-La lista propia de cada **Business** de las formas en que cobra. Cada **Payment** lleva exactamente uno. Un Payment method es solo una etiqueta sobre dinero recibido: nunca cambia ninguna cifra. Se guarda por Business en su propio hexágono `payment_methods` (ADR-0055), y lo ve solo su Business (ADR-0004). Pagos (`payments.md`) y ventas (`sales.md`) lo leen por su propio protocolo para ofrecer la lista y mostrar el método de cada Payment. El **Sale bill** (`sale-bill.md`) lleva su nombre. La pantalla vive en Settings → Business → Payment methods. No hay paso de Payment methods en el **Onboarding** ni en la **First-run checklist**: todo Business ya arranca con dos métodos, así que nada frena la primera Sale.
+La lista propia de cada **Business** de las formas en que cobra. Cada **Payment** lleva exactamente uno. Un Payment method es solo una etiqueta sobre dinero recibido: nunca cambia ninguna cifra. Se guarda por Business en su propio hexágono `payment_methods` (ADR-0055), y lo ve solo su Business (ADR-0004). Los Payments se vinculan a su método por id, y la columna vieja del método queda congelada (ADR-0070). Pagos (`payments.md`) y ventas (`sales.md`) lo leen por su propio protocolo para ofrecer la lista y mostrar el método de cada Payment. El **Sale bill** (`sale-bill.md`) lleva su nombre. La pantalla vive en Settings → Business → Payment methods. No hay paso de Payment methods en el **Onboarding** ni en la **First-run checklist**: todo Business ya arranca con dos métodos, así que nada frena la primera Sale.
 
 ## Comportamiento
 
@@ -23,7 +23,7 @@ La lista propia de cada **Business** de las formas en que cobra. Cada **Payment*
 
 - Todo Business existente recibe dos métodos con la migración, "Cash" y "Transfer", en ese orden.
 - Un Business nuevo los recibe al abrirse, en su **Stored language** (en inglés hasta #317), igual que las **Expense category** por defecto. Desde entonces son datos propios: un cambio de idioma nunca los renombra.
-- Cada Payment existente queda vinculado al método que corresponde al valor que tiene hoy (efectivo → "Cash", transferencia → "Transfer"). La columna vieja del método queda congelada con su valor (ADR-0055); nada en pantalla la lee.
+- Cada Payment existente queda vinculado al método que corresponde al valor que tiene hoy (efectivo → "Cash", transferencia → "Transfer"). La columna vieja del método queda congelada con su valor, los Payments nuevos la dejan vacía y nada en pantalla la lee (ADR-0070).
 - "Cash" y "Transfer" son filas comunes: se pueden renombrar, reordenar, archivar o eliminar como cualquier otra. Ningún código compara el nombre de un método.
 
 ### Un Payment method
@@ -34,31 +34,34 @@ La lista propia de cada **Business** de las formas en que cobra. Cada **Payment*
   - Único dentro del Business sin importar mayúsculas, minúsculas ni espacios, como una Expense category. Los métodos archivados también cuentan.
   - Es dato del vendedor: se muestra exactamente como se guardó y nunca se traduce.
 - **Ícono**:
-  - Sale de un juego chico y fijo de íconos neutros: billetera, banco, tarjeta, monedas, teléfono y genérico. Ninguno es de un tipo de negocio ni de flor.
+  - Sale de un juego chico y fijo de seis íconos neutros, cada uno con su etiqueta en pantalla: Wallet, Bank, Card, Coins, Phone y Other (el genérico). Ninguno es de un tipo de negocio ni de flor.
   - Un método nuevo lleva el genérico salvo que el vendedor elija otro.
-  - "Cash" arranca con monedas o billetera y "Transfer" con banco. Diseño elige cuál de los dos lleva "Cash".
+  - "Cash" arranca con Coins y "Transfer" con Bank.
   - El nombre siempre se muestra junto al ícono y nunca lo reemplaza. Los métodos nunca se distinguen solo por el ícono (**Icon and text rule**).
 
 ### En pantalla: Settings → Business → Payment methods
 
-- **Un detalle** (navigation.md): se llega desde el grupo Business de Settings, con la flecha de regreso a Settings.
-- **La lista activa**: los métodos activos en el orden del vendedor, cada uno con su ícono y su nombre.
-- **Agregar**: nombre e ícono opcional. Un método nuevo va al final de la lista.
-- **Editar**: renombrar y cambiar el ícono.
+- **La entrada**: una fila "Payment methods" en el grupo Business de Settings, con los nombres activos separados por coma y la cantidad, y un chevron.
+- **Un detalle** (navigation.md, ruta `/payment-methods`): con la flecha de regreso a Settings, un título y una línea de ayuda.
+- **La lista activa**: los métodos activos en el orden del vendedor, cada uno con su ícono y su nombre. En la fila, un nombre largo se corta con puntos suspensivos; en el título de la Sheet nunca se corta.
+- **Agregar**: "+ Add method" abre la Sheet con nombre e ícono opcional. Un método nuevo va al final de la lista.
+- **Editar**: tocar la fila abre la misma Sheet, titulada con el nombre del método, para renombrar y cambiar el ícono. El ícono elegido se marca con un tilde y la palabra oculta "Selected", nunca solo con color. Cerrar con cambios sin guardar pide la confirmación de descarte. Al guardar, la Sheet se cierra recién cuando la lista ya trae el método guardado, así que reabrirla muestra lo guardado.
 - **Reordenar**:
-  - Cada fila lleva "Move up" y "Move down", cada uno con su nombre de texto. No hay arrastrar y soltar.
-  - La primera fila no tiene "Move up" y la última no tiene "Move down". Diseño decide si esos botones se omiten o se deshabilitan.
+  - Cada fila lleva "Move up" y "Move down", cada uno con su texto visible y nombre accesible "Move <name> up" / "Move <name> down". No hay arrastrar y soltar.
+  - La primera fila no tiene "Move up" y la última no tiene "Move down": esos botones se omiten, no se deshabilitan.
   - El orden que fija el vendedor es el que muestran New sale y Record payment.
-- **Eliminar o archivar**:
-  - Un método que ningún Payment usa se elimina para siempre, con confirmación previa.
-  - Un método que algún Payment usa solo se puede archivar. Sale de New sale, de Record payment y de la lista activa.
+- **Eliminar o archivar** (en la Sheet de edición):
+  - Un método que ningún Payment usa ofrece "Delete", que se elimina para siempre con confirmación previa.
+  - Un método que algún Payment usa ofrece solo "Archive", sin confirmación porque se puede restaurar. Sale de New sale, de Record payment y de la lista activa.
   - Si se usa o no se calcula en el momento a partir de los Payments tal como están ahora, On-the-spot payments incluidos, y nunca se guarda. Eliminar la última Sale o el último Payment que lo usaba lo vuelve eliminable.
 - **Archived**:
-  - Una vista dentro de esta pantalla, la única desde donde se ve y se restaura un método archivado.
+  - Una fila "Archived" con la cantidad, debajo de la lista, que lleva a la vista de archivados (ruta `/payment-methods/archived`, con la flecha de regreso a Payment methods). Se muestra siempre; con 0 archivados lleva a "No archived methods".
+  - Es el único lugar desde donde se ve y se restaura un método archivado: cada fila muestra su ícono y su nombre a secas, con "Restore" (nombre accesible "Restore <name>").
   - Restaurar lo devuelve exactamente como estaba, en su lugar anterior del orden.
-  - Mientras está archivado, su nombre sigue reservado, así que restaurarlo nunca choca con un nombre repetido.
-- **El último método activo** no se puede archivar ni eliminar. La pantalla dice por qué en una oración, con el **Attention icon**.
+  - Mientras está archivado, su nombre sigue reservado, así que restaurarlo nunca choca con un nombre repetido. El rechazo por nombre repetido lo dice y sugiere restaurarlo o elegir otro.
+- **El último método activo** no se puede archivar ni eliminar. En lugar de las dos acciones, la Sheet dice por qué en una oración, con el **Attention icon** ("This is your only method. Add another one first.").
 - **Renombrar** corrige la etiqueta del mismo método: todo Payment vinculado a él, pasado y futuro, muestra el nombre nuevo. Un vendedor que quiere un método distinto agrega uno nuevo y archiva el viejo.
+- **Carga y error**: mientras carga, la lista muestra barras con la forma de la lista, sin dígitos ni moneda; un error de carga usa el error compartido de la app. Un método inexistente o de otro Business vuelve a la lista y la lee de nuevo.
 - **Rechazos**: en línea, conservando lo escrito, cada uno con su código en `contract.json` (ADR-0008):
   - nombre vacío;
   - nombre de más de 40 caracteres;
@@ -66,25 +69,27 @@ La lista propia de cada **Business** de las formas en que cobra. Cada **Payment*
   - archivar o eliminar el último método activo;
   - eliminar un método en uso;
   - método inexistente o de otro Business (404).
-- **En el celular**: cada control mide al menos 44 px de alto, todo campo tiene al menos 16 px, nada desborda a 320 px ni con el texto al 130 %, y la pantalla pasa el **Mobile check** sin infractores nuevos.
+- **En el celular**: cada control mide al menos 44 px de alto, todo campo tiene al menos 16 px, el nombre lleva `autocomplete="off"`, nada desborda a 320 px ni con el texto al 130 %, y la pantalla, su Sheet, su confirmación y la vista de archivados pasan el **Mobile check** sin infractores nuevos.
 
 ### Al registrar: New sale y Record payment
 
-- **Los métodos activos** reemplazan las opciones "Paid in cash / Paid by transfer" de hoy, en el mismo lugar y con la misma cantidad de toques.
-  - Van en el orden del vendedor, un toque cada uno, con ícono y nombre.
+- **Los métodos activos** reemplazan las opciones "Cash · Transfer" de antes, en el mismo lugar y con la misma cantidad de toques.
+  - Van en el orden del vendedor, un toque cada uno, con ícono y nombre, en un grupo con nombre accesible "Payment method". El elegido lleva un tilde, nunca solo color.
   - En el celular pasan a la línea siguiente cuando no entran. Nunca hay desplazamiento horizontal ni un nombre recortado, y cada opción mide al menos 44 px.
-- **Preselección**: donde hoy viene preseleccionada una opción, ese lugar lo toma el primer método del orden del vendedor. Donde hoy no viene ninguna, sigue sin venir ninguna. Ningún cambio en el formulario vuelve solo a un método.
-- **Owing** (no pagada) en New sale sigue siendo una opción aparte, después de los métodos, y no es un método. Una Sale que queda debiendo no registra método.
+  - Mientras se lee la lista, se muestran opciones de carga.
+- **Preselección**: ninguna. Igual que antes, cómo se pagó arranca sin elegir, en New sale y en Record payment. Ningún cambio en el formulario vuelve solo a un método.
+- **Owing** (no pagada) en New sale sigue siendo una opción aparte, después de los métodos y sin ícono, y no es un método. Una Sale que queda debiendo no registra método. Record payment no tiene Owing.
 - **Los métodos archivados** nunca se ofrecen.
-- **Un método que ya no está**: si un socio archivó o eliminó un método mientras el formulario estaba abierto, o el método es de otro Business, el guardado se rechaza con su código. Todo lo escrito se conserva y la lista se vuelve a leer.
+- **Un método que ya no está**: si un socio archivó o eliminó un método mientras el formulario estaba abierto, o el método es de otro Business, el guardado se rechaza con su código (404 `PaymentMethodUnavailable`) y no se guarda nada. Todo lo escrito se conserva, la lista se vuelve a leer y un aviso con el Attention icon pide elegir otro método; tocar otro lo limpia.
 
 ### Dónde se muestra el método de un Payment registrado
 
-- Donde hoy se muestra el método de un Payment, se muestra el nombre y el ícono actuales del método:
-  - el detalle de la Sale;
-  - la cuenta del Customer: "Paid · <method>" en lugar de "Paid in cash" / "Paid by transfer", y "Payment · <method>";
-  - la confirmación de "Delete payment";
-  - el Sale bill, "Paid · <method>", que por ser texto plano lleva solo el nombre, nunca el ícono.
+- Donde se muestra el método de un Payment, se muestra el nombre actual del método, tal como lo escribió el vendedor (sin pasar a minúsculas):
+  - el detalle de la Sale: "Paid · <method>";
+  - la cuenta del Customer: "Paid · <method>" bajo una Sale pagada en el momento, y "Payment · <method>" como título de un Payment posterior;
+  - la confirmación de "Delete payment": "Delete the payment of $ 15.000 · <method> from 20/09?";
+  - el Sale bill: "Paid · <method>", texto plano, solo el nombre.
+- En estas lecturas la app muestra el nombre sin el ícono del método; la API igual informa el ícono en el detalle de la Sale y en la cuenta.
 - Ninguna pantalla suma una columna, un filtro ni un total por método.
 - Un método archivado se muestra con su nombre a secas, sin etiqueta de "archived".
 - El método en un Sale bill se lee tal como lo escribió el vendedor y nunca se traduce. Un Sale bill ya compartido es texto que salió de la app y conserva lo que decía.
@@ -102,13 +107,14 @@ La lista propia de cada **Business** de las formas en que cobra. Cada **Payment*
 
 ### Spreadsheet import
 
-- Vincula cada Payment importado al método del Business con ese nombre (efectivo → "Cash", transferencia → "Transfer", sin importar mayúsculas, minúsculas ni espacios), y lo crea si no existe. Sigue corriendo solo en un Business sin registros.
+- Vincula cada Payment importado al método del Business con ese nombre (efectivo → "Cash", transferencia → "Transfer", sin importar mayúsculas, minúsculas ni espacios), y lo crea al final de la lista con el ícono genérico si no existe. Es la única búsqueda por nombre. Sigue corriendo solo en un Business sin registros.
 
 ### Restricciones
 
-- La tabla nueva lleva `business_id` no nulo y se lee solo a través de un repositorio armado para un Business. El método de otro Business responde 404.
-- Toda ruta nueva entra en el barrido de aislamiento y en el test de rutas con acceso restringido.
-- La migración solo agrega tablas, columnas y filas o completa columnas nuevas. Nunca cambia el valor de una columna existente, y el comparador M3 compartido de `tests/migrations/` lo prueba. Su `down_revision` es la revisión anterior de la única cadena lineal, con el número reservado en su brief.
+- La tabla nueva `payment_method` lleva `business_id` no nulo y se lee solo a través de un repositorio armado para un Business. El método de otro Business responde 404.
+- `payment.payment_method_id` es obligatorio y referencia un método del mismo Business (clave foránea compuesta con `business_id`, que impide borrar un método en uso).
+- Las rutas `/api/payment-methods` entran en el barrido de aislamiento y en el test de rutas con acceso restringido.
+- Las migraciones (0020, la tabla; 0021, la columna nueva, las filas iniciales y el relleno) solo agregan tablas, columnas y filas o completan columnas nuevas. Nunca cambian el valor de una columna existente, y el comparador M3 compartido de `tests/migrations/` lo prueba. La vuelta atrás de 0021 se niega una vez que existe algún Payment nuevo.
 - Ningún texto de pantalla nuevo vive fuera del **Copy module**, y ningún valor por defecto nuevo lleva una palabra de flor.
 - Un **Business export** incluye las filas de métodos, y una **Business removal** las borra.
 - Tests: tests de TestClient, el comparador M3 y los de aislamiento.
@@ -118,11 +124,11 @@ La lista propia de cada **Business** de las formas en que cobra. Cada **Payment*
 - **Migración (criterio 3)**:
   - todo Payment existente queda vinculado al método que corresponde a su valor viejo, con 0 sin vincular;
   - el comparador M3 no muestra ningún cambio en ninguna columna existente;
-  - todo Business existente tiene exactamente "Cash" y "Transfer" después de la migración, y un Business recién abierto los tiene desde el principio.
+  - todo Business existente, también uno sin Payments, tiene exactamente "Cash" y "Transfer" después de la migración, y un Business recién abierto los tiene desde el principio.
 - **Orden y oferta (criterio 2)**:
   - tests del front muestran que New sale y Record payment listan exactamente los métodos activos, en el orden de Settings, y nunca uno archivado;
   - el presupuesto de toques (`web/e2e/tapBudget.spec.ts`) pasa sin editarse.
-- **Manejo desde el celular (criterio 1)**: una corrida end-to-end en un viewport de celular agrega un método, lo renombra, le cambia el ícono, lo sube y lo baja, lo archiva, lo restaura y elimina uno sin uso. La pantalla pasa el Mobile check sin infractores nuevos.
+- **Manejo desde el celular (criterio 1)**: una corrida end-to-end en un viewport de celular (`web/e2e/paymentMethods.spec.ts`) agrega un método, lo renombra, le cambia el ícono, lo sube y lo baja, lo archiva, lo restaura y elimina uno sin uso. La pantalla pasa el Mobile check sin infractores nuevos.
 - **Matriz de archivar y eliminar (criterios 1, 3)**: 100 % aprobada. Cubre:
   - eliminar un método sin uso;
   - el rechazo a eliminar uno en uso;
@@ -134,7 +140,7 @@ La lista propia de cada **Business** de las formas en que cobra. Cada **Payment*
   - un nombre de 41 caracteres.
 - **Renombrar (criterio 3)**: después de renombrar, el detalle de la Sale, la fila de la cuenta y el Sale bill muestran el nombre nuevo, y el monto, la fecha y el vínculo del Payment no cambian.
 - **Cifras sin cambios (criterios 3, 4)**: Cash, Balance, Settlement, **Profit** y los totales de Owed to you son idénticos antes y después de la migración, y con métodos renombrados o propios. 0 diferencias.
-- **Assume nothing (criterio 4)**: un Business que archiva o elimina "Cash" y "Transfer" y conserva solo un método propio registra de punta a punta una Sale pagada en el momento y un Payment posterior. Ningún código compara el nombre de un método.
+- **Assume nothing (criterio 4)**: un Business que conserva solo un método propio registra de punta a punta una Sale pagada en el momento y un Payment posterior. Ningún código compara el nombre de un método.
 - **Aislamiento**: toda ruta nueva está en el barrido y en el test de rutas con acceso restringido. El método de otro Business responde 404, también dentro de una Sale o de un Payment.
 - **Rechazos con código**: cada rechazo de esta pantalla y el de un método que ya no está al registrar tienen su código en `contract.json`, verificado por `tests/test_refusal_codes.py`.
 
@@ -146,3 +152,4 @@ La lista propia de cada **Business** de las formas en que cobra. Cada **Payment*
 - Cualquier procesador de tarjetas o proveedor de pagos.
 - Un paso de Payment methods en el Onboarding o en la First-run checklist.
 - Íconos subidos por el vendedor o fuera del juego fijo.
+- El ícono del método en el detalle de la Sale y en la cuenta del Customer, y el pulido de la lista de Settings según el dibujo (tarjeta blanca con filas de 60 px, "+ Add method" como botón de ancho completo, la fila "Archived" solo con uno o más, el error con "Try again"): pulido posible para después.

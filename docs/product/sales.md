@@ -30,7 +30,7 @@ Lo que un cliente se lleva de una vez, con cada línea cotizada con los precios 
 - qué Pricing rules usa el negocio, de las Pricing settings (pricing-settings.md);
 - los **Payment method**s activos del negocio, en su orden, de payment-methods.md.
 
-Los pagos (`payments.md`) saldan lo que una venta deja debiendo y dicen si cada venta sigue debiendo. El stock (`stock.md`) saca los gramos de cada línea de los **Lot**s de su variedad y le da a la línea su **Cost of goods sold**, que sigue a los Lots y nunca queda congelado (ADR-0009). Esta capacidad cubre también las pantallas de ventas: New sale, Sales y el detalle de una venta, en el teléfono y en la computadora, y el Sale bill que se comparte desde el detalle de una venta. Dónde se ubican es navigation.md.
+Los pagos (`payments.md`) saldan lo que una venta deja debiendo y dicen si cada venta sigue debiendo; el On-the-spot payment de una venta lo registra pagos a través del puerto `OnTheSpotPayments` (ADR-0070). El stock (`stock.md`) saca los gramos de cada línea de los **Lot**s de su variedad y le da a la línea su **Cost of goods sold**, que sigue a los Lots y nunca queda congelado (ADR-0009). Esta capacidad cubre también las pantallas de ventas: New sale, Sales y el detalle de una venta, en el teléfono y en la computadora, y el Sale bill que se comparte desde el detalle de una venta. Dónde se ubican es navigation.md.
 
 La protagonista de las historias del teléfono es la vendedora. Los diseños de computadora (`NuevaVentaCompu`, `VentasCompu`) son las mismas historias en una pantalla más grande. Antes del rediseño para teléfono, la vendedora registraba ventas en el teléfono con fricción (bajar para encontrar el botón de guardar, hacer zoom para acertar controles chicos, a veces registrar después de memoria), sin ninguna alternativa fuera de la app.
 
@@ -125,12 +125,12 @@ Criterios de éxito, Sale bill:
   - No queda congelado como el precio, y un cambio en él nunca mueve el precio ni el total de la línea.
 - **Total**: la suma de los totales redondeados de las líneas más el Shipping charged. Las líneas se redondean de a una, nunca como suma.
 - **Shipping charged**: pesos enteros, cero o más, $0 por defecto. Un valor negativo se rechaza.
-- **Cómo se pagó**:
-  - **Pagada entera en el momento, con uno de los Payment methods activos del negocio.** Registra un On-the-spot payment por el total, en la fecha de la venta, vinculado a ese método (ADR-0007, payment-methods.md). Salda solo esta venta (`payments.md`).
+- **Cómo se pagó** (en el cuerpo, `{"kind":"method","payment_method_id"}`, `{"kind":"owing"}` o nada para una venta de $0):
+  - **Pagada entera en el momento, con uno de los Payment methods activos del negocio.** Registra un On-the-spot payment por el total, en la fecha de la venta, vinculado a ese método (ADR-0007, ADR-0070, payment-methods.md). Salda solo esta venta (`payments.md`).
   - **Queda debiendo**: sin medio, y la venta necesita cliente. Los pagos posteriores la saldan empezando por la deuda más vieja (`payments.md`). "Owing" es un estado, nunca un Payment method.
   - **Total de $0**: queda saldada sin medio y sin nada debido. Un medio enviado con ella se ignora y no se guarda.
   - Un total por encima de $0 necesita un medio o "queda debiendo".
-  - Un medio archivado, eliminado o de otro negocio se rechaza.
+  - Un medio archivado, eliminado o de otro negocio se rechaza (404 `PaymentMethodUnavailable`) y no se guarda nada de la venta.
   - No existe el pago parcial en el momento.
 - **Cliente**:
   - Opcional solo cuando no queda nada debiendo.
@@ -149,7 +149,7 @@ Criterios de éxito, Sale bill:
   - Un rango invertido da vacío.
   - Orden: la fecha más nueva primero, después la registrada más recientemente primero.
   - Cada venta dice si sigue debiendo, calculado en vivo por pagos.
-- **Ver una**: fecha, cliente o ninguno, envío, nota, cómo se pagó (el nombre y el ícono actuales de su Payment method, o que quedó debiendo), total, y de cada línea la variedad, los gramos, el precio por gramo guardado, la Pricing rule, el total de la línea y el Cost of goods sold (monto costeado y gramos pendientes). Trae también el Sale bill (abajo), o ninguno.
+- **Ver una**: fecha, cliente o ninguno, envío, nota, cómo se pagó (el id, el nombre y el ícono actuales de su Payment method, que quedó debiendo, o ninguno), total, y de cada línea la variedad, los gramos, el precio por gramo guardado, la Pricing rule, el total de la línea y el Cost of goods sold (monto costeado y gramos pendientes). Trae también el Sale bill (abajo), o ninguno.
 - **Sale bill** (los hechos detrás del texto compartido):
   - El nombre del negocio, la fecha, de cada línea la variedad, la cantidad, el monto y la regla (bulk, gift o ninguna: lista, VIP y Special price se leen todas como ninguna), con el precio unitario en las líneas con Bulk price; el Shipping charged; el total; el estado de pago (pagada en el momento, con el nombre actual de su Payment method; paid; owed; none) con lo que todavía se debe de esta venta; y el Balance del cliente, o ninguno cuando la venta no tiene cliente.
   - El nombre del negocio, los nombres de las variedades y el del Payment method son datos de la vendedora, y viajan exactamente como están guardados: nunca se escapan, se recortan, se traducen ni se reescriben.
@@ -173,11 +173,11 @@ Criterios de éxito, Sale bill:
     - envío negativo;
     - fecha futura;
     - un total por encima de $0 sin medio y sin quedar debiendo;
-    - un medio archivado o eliminado;
+    - un medio archivado, eliminado o de otro negocio;
     - queda debiendo sin cliente;
     - nota demasiado larga;
     - asignar a una venta que ya tiene cliente;
-    - venta, cliente, variedad o Payment method de otro negocio (no existe).
+    - venta, cliente o variedad de otro negocio (no existe).
 - **Aislamiento (ADR-0004)**:
   - El negocio sale de la sesión.
   - Toda tabla de ventas lleva `business_id`.
@@ -198,8 +198,9 @@ Criterios de éxito, Sale bill:
   - una o más líneas. Cada línea tiene variedad, gramos, "Gift" y "Special price" (el total de la línea);
   - el Shipping charged;
   - la nota;
-  - cómo se pagó: los Payment methods activos del negocio, en el orden de la vendedora, cada uno con su ícono y su nombre, y después Owing. Ocupan el lugar y la cantidad de toques de las viejas opciones Cash · Transfer. Los archivados nunca se ofrecen.
-- **Preselección del medio**: donde antes venía preseleccionado Cash, ese lugar lo toma el primer método del orden de la vendedora; donde no venía ninguno, sigue sin venir.
+  - cómo se pagó: un grupo con nombre accesible "Payment method" con los Payment methods activos del negocio, en el orden de la vendedora, cada uno con su ícono y su nombre, y después Owing, sin ícono. Ocupan el lugar y la cantidad de toques de las viejas opciones Cash · Transfer. La opción elegida lleva un tilde, nunca solo color. Los archivados nunca se ofrecen.
+- **Preselección del medio**: ninguna. Igual que antes, cómo se pagó arranca sin elegir.
+- **Esperando los métodos**: mientras se lee la lista, cómo se pagó muestra opciones de carga.
 - **El total de la venta** se muestra con los gramos vendidos y los gramos regalados.
 - **Vista previa en vivo**:
   - Cada línea muestra su precio por gramo, su insignia de regla (lista, Bulk price, VIP, regalo, especial) y su total. El total de la venta se actualiza mientras la vendedora escribe.
@@ -221,7 +222,7 @@ Criterios de éxito, Sale bill:
   - Si sale bien, la app abre el detalle de la venta tal como lo respondió la API, con el aviso "Sale saved".
   - Un rechazo se muestra sobre su campo y conserva todo lo tipeado.
   - Un precio que borró una socia antes de guardar: el guardado se rechaza y la línea muestra el mensaje de sin precio.
-  - Un método que una socia archivó o eliminó antes de guardar: el guardado se rechaza, todo lo tipeado se conserva y las opciones de pago se vuelven a leer.
+  - Un método que una socia archivó o eliminó antes de guardar, o uno de otro negocio: el guardado se rechaza, todo lo tipeado se conserva, las opciones de pago se vuelven a leer y un aviso con el **Attention icon** pide elegir otro método; tocar otro lo limpia.
   - Un precio o las Pricing settings cambiados antes de guardar: el guardado pasa y el detalle muestra lo que se guardó.
   - Un cliente o una variedad que no se encuentran al guardar muestran la línea genérica y conservan el formulario.
 - **Salir**:
@@ -252,7 +253,7 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo.
 - **Cuerpo**: se desplaza entre encabezado y pie, en este orden: el cliente, las líneas, el Shipping charged, la nota y, al final, cómo se pagó. Se desplaza de modo que cómo se pagó, y la línea "To leave it owing, pick a customer" debajo, quedan enteros a la vista por encima del pie; esa línea tiene el margen lateral normal de la pantalla.
 - **Pie**: fijo al alcance del pulgar, por encima del teclado y del indicador de inicio. Contiene el total de la venta, los gramos vendidos y regalados en una línea compacta, y "Save sale". Con el teclado abierto se achica al total y el botón y sigue visible. Su aspecto exacto lo decide diseño.
 - **Una línea**: un único diseño fijo en todo ancho de teléfono de 320 a 430 px y con el texto al 130 %, nunca elegido midiendo la pantalla. Primera fila: la variedad y los gramos. Debajo: "Gift", una fila con interruptor de al menos 44 px de alto, y "Special price". Debajo de eso: el precio por gramo, la insignia de regla y el total de la línea.
-- **Cómo se pagó**: los métodos y Owing pasan a la línea siguiente cuando no entran, sea cual sea su cantidad; nunca hay desplazamiento horizontal ni un nombre de método recortado.
+- **Cómo se pagó**: los métodos y Owing pasan a la línea siguiente cuando no entran, sea cual sea su cantidad; nunca hay desplazamiento horizontal ni un nombre de método recortado: un nombre largo pasa a la línea siguiente dentro de su opción.
 - **Ningún campo desborda ni queda recortado** a 320 px ni con el texto al 130 %.
 - **Objetivos táctiles**: las opciones de pago, "Add another variety" y los botones de diálogo miden al menos 44 px de alto; todo campo tiene al menos 16 px.
 - **Teclados**: gramos `inputmode="decimal"`; pesos (envío, Special price) `inputmode="numeric"`; los campos de una línea llevan `enterkeyhint` para que la tecla de acción del teclado avance entre ellos.
@@ -292,7 +293,7 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo.
 - **Muestra**:
   - el total;
   - de cada línea la variedad, los gramos, el precio por gramo, la insignia de regla y el total de la línea;
-  - el envío, la nota, cómo se pagó (el ícono y el nombre actuales del Payment method; un método archivado, con su nombre a secas, sin etiqueta de "archived"), y el cliente o "No customer".
+  - el envío, la nota, cómo se pagó ("Paid · <method>" con el nombre actual del Payment method tal como lo escribió la vendedora, sin pasar a minúsculas y sin su ícono; un método archivado, con su nombre a secas, sin etiqueta de "archived"), y el cliente o "No customer".
 - **Las insignias de regla registradas** ("VIP", "bulk") muestran siempre lo que se registró, diga lo que diga hoy las Pricing settings. Son historia (ADR-0003).
 - **Compartir el Sale bill** (Share / Copy): ver "Sale bill" abajo.
 - **Assign customer**:
@@ -383,7 +384,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
   - renombrar, reordenar o archivar un Payment method.
 - **Sin sorpresa para los VIP existentes (criterio 19)**: después de la migración, para cada cliente VIP existente, el precio, la regla y el total de una venta son iguales a los de antes, para la misma variedad, día y gramos. 0 diferencias.
 - **Una venta por pedido**: una venta de varias variedades es una venta, con total = líneas redondeadas + envío una vez, por la API y por el formulario. (Criterios 2, 8)
-- **Todo o nada**: una venta rechazada deja 0 filas nuevas en ventas, líneas y pagos. (Criterio 4)
+- **Todo o nada**: una venta rechazada, también por un método que ya no está disponible, deja 0 filas nuevas en ventas, líneas y pagos. (Criterio 4)
 - **Debiendo sin cliente**: 0 guardadas; el dominio lo rechaza y un test lo cubre. (Criterio 4)
 - **Borrar devuelve gramos**: después de borrar una venta, el stock de sus variedades sube exactamente los gramos de sus líneas, y la respuesta los nombra. La confirmación de Delete sale nombra los gramos, y el aviso de Undo dice que vuelven.
 - **Cobertura de aislamiento**: cada ruta de ventas está en el barrido y responde 404 o vacío desde otro negocio, incluidas referencias a un cliente, una variedad o un Payment method de otro negocio. En pantalla, la venta de otro negocio abierta por id muestra "That is gone." (Criterio 5)
@@ -391,7 +392,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
   - ningún cuerpo de rechazo ni línea de log contiene la nota, el nombre de un cliente ni un monto enviado;
   - después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen ninguno.
 - **Tiempo de registro**: la corrida del front registra una venta desde un viewport de teléfono con un cliente existente, uno nuevo (con o sin Phone number) o ninguno (`web/e2e/sales.spec.ts`, `web/e2e/ventasTelefono.spec.ts`), y el presupuesto de toques se cumple (`web/e2e/tapBudget.spec.ts`), sin editarse para los Payment methods; ningún test mide su duración. Registrar responde en menos de 300 ms con unas pocas docenas de variedades y clientes. (Criterios 1, 14)
-- **Payment methods en New sale**: tests del front muestran que las opciones de pago son exactamente los métodos activos del negocio, en su orden, y después Owing; ningún archivado; la misma preselección que antes ocupada por el primer método; sacar el cliente con Owing nunca vuelve solo a un método; un método archivado antes de guardar da su rechazo y conserva el pedido. Un negocio con un solo método propio registra una venta pagada en el momento de punta a punta.
+- **Payment methods en New sale**: tests del front muestran que las opciones de pago son exactamente los métodos activos del negocio, en su orden, y después Owing; ningún archivado; ninguno preseleccionado; sacar el cliente con Owing nunca vuelve solo a un método; un método archivado antes de guardar da su rechazo y conserva el pedido. Un negocio con un solo método propio registra una venta pagada en el momento de punta a punta.
 - **Vista previa = guardado**: (Criterio 6)
   - la vista previa del front pasa la misma matriz de cotización que el dominio, para cada combinación de llaves;
   - la corrida de punta a punta compara la vista previa con el detalle guardado: 0 diferencias.
@@ -427,6 +428,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 
 - Pagos posteriores y parciales, Balances, **Owing since** y Credit: `payments.md`.
 - Manejar la lista de Payment methods: `payment-methods.md`. Totales o filtros de ventas por método.
+- El ícono del método en el detalle de la venta: pulido posible para después.
 - Rechazar una venta por falta de stock: nunca (ADR-0009).
 - Editar una venta: se borra y se registra de nuevo.
 - Pasar una venta de un cliente a otro o sacarle el cliente.
