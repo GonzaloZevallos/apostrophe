@@ -329,7 +329,7 @@ classDiagram
   class CustomersImport {
     check_customer(name: str, phone: str #124; None) CustomerKey #124; CustomerRefusals
     has_records() bool
-    write_customer(name: str, phone_key: str #124; None, vip: bool, transaction: Transaction) int
+    write_customer(name: str, phone_key: str #124; None, customer_type_id: int #124; None, transaction: Transaction) int
   }
   class ExpensesImport {
     category_key(raw: str) str #124; Refusal
@@ -394,6 +394,11 @@ classDiagram
   class VarietyKey {
     key : str
     name : str
+  }
+  class VipTypeImport {
+    ensure_vip_type(transaction: Transaction) int
+    has_vip_type() bool
+    vip_name_taken() bool
   }
   class WriteImportRefused {
     code : str
