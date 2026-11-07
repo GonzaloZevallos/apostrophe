@@ -1,6 +1,6 @@
 /**
  * `VentaDetalle` (`sales.md`, "On screen: Detalle de venta"; `VentaDetalle.dc.html`):
- * the title with the sale's date, the total, a summary line of grams (the API's
+ * the title "Sale #N" with the sale's date under it, the total, a summary line of grams (the API's
  * `total_quantity`, never summed here) · the customer or "Sin cliente" · how it was
  * paid (`paymentSummary`, dropping `payment: 'none'`'s part), each line with its
  * price per gram, `ReglaInsignia` and line total, shipping, a final Total row and
@@ -294,8 +294,9 @@ function VentaDetalleScreen() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <span className="encabezado__titulo">{SALES_TEXT.saleOf(formatDateShort(sale.date))}</span>
+          <span className="encabezado__titulo">{SALES_TEXT.saleNumber(sale.number)}</span>
         </div>
+        <span className="venta-detalle__fecha">{formatDateShort(sale.date)}</span>
 
         {undoAvailable && (
           <div className="venta-guardada" role="status">

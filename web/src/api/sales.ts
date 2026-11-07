@@ -35,6 +35,8 @@ export interface SaleLine {
 
 export interface Sale {
   id: number
+  /** The Sale number: the seller's own count in this business, never the id. */
+  number: number
   date: string
   customer: SaleCustomer | null
   shipping_charged: number
