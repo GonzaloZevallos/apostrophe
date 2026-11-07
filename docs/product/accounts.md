@@ -1,756 +1,791 @@
 # Accounts
 
-Businesses, their users, and how people get in and out:
-- the only way in: an invitation and a login;
-- the way back in: a password change and an operator-issued reset link;
-- the only way out: an operator's command that exports a business and removes it.
+Los Businesses, sus Users, y cómo las personas entran y salen:
+- la única forma de entrar: una Invitation y un login;
+- la forma de volver a entrar: un Password change y un Reset link emitido por el Operator;
+- la única forma de salir: un comando del Operator que exporta un Business y lo elimina.
 
-Every other capability reads one thing from here, the business of the user asking, and serves that business alone (ADR-0004). It also holds the app as a whole:
+Toda otra capacidad lee una sola cosa de acá, el Business del User que pide, y sirve solo a ese Business (ADR-0004). También guarda la app como un todo:
 
-- how it is served, installed and themed, including the theme choice each device remembers, and how the installed shell fills the phone's screen;
-- the phone standard every screen meets at phone widths, and the check that keeps it true;
-- how the installation is published on the internet and backed up (ADR-0016);
-- the feedback rules every screen follows, and the shared states (`Estados`) that draw them;
-- the Business, Users, Appearance and Your account groups of Settings.
+- cómo se sirve, se instala y se tematiza, incluida la Theme choice que recuerda cada dispositivo, y cómo el shell instalado llena la pantalla del teléfono;
+- el estándar del teléfono que cumple cada pantalla en anchos de teléfono, y el control que lo mantiene cierto;
+- cómo se publica la instalación en internet y cómo se respalda (ADR-0016);
+- las reglas de feedback que sigue cada pantalla, y los estados compartidos (`Estados`) que las dibujan;
+- los grupos Business, Users, Appearance y Your account de Settings.
 
-Where every screen sits (tabs, sidebar, More, Settings, the chrome and back rule, routes, first run) is navigation.md. Home, where the app opens, is the panel defined in results.md. The Prices group is pricing-settings.md.
+Dónde está cada pantalla (pestañas, barra lateral, More, Settings, el marco y la regla de vuelta, las rutas, el primer uso) es navigation.md. Home, donde abre la app, es el Panel definido en results.md. El grupo Prices es pricing-settings.md.
 
 ## Jobs
 
-**When** a friend wants to use the app for their own business, **I want** to hand them a link that opens a business of their own, **so I can** add them without seeing or touching anything they will record.
+**Cuando** un amigo quiere usar la app para su propio Business, **quiero** darle un link que le abra un Business propio, **para** sumarlo sin ver ni tocar nada de lo que va a registrar.
 
-**When** I sell together with a partner, **I want** to invite them into my business, **so we** both record sales on the same books.
+**Cuando** vendo junto con un socio, **quiero** invitarlo a mi Business, **para que** los dos registremos ventas en los mismos libros.
 
-**When** I open the app on my phone, **I want** to log in once and stay in, **so I can** record a sale in seconds, while nobody else on the network or who guesses at passwords gets in.
+**Cuando** abro la app en el teléfono, **quiero** iniciar sesión una vez y quedarme adentro, **para** registrar una Sale en segundos, mientras nadie más en la red ni nadie que adivine contraseñas entra.
 
-**When** I know my password but no longer want it (I told it to someone, typed it on a shared device, or think it leaked), **I want** to set a new one myself from the phone in a few taps, **so that** whoever knew the old one is out of my business at once and I keep working on this device without asking anyone.
+**Cuando** sé mi contraseña pero ya no la quiero (se la dije a alguien, la tipeé en un dispositivo compartido o creo que se filtró), **quiero** poner una nueva yo mismo desde el teléfono en pocos toques, **para que** quien conocía la anterior quede afuera de mi Business al instante y yo siga trabajando en este dispositivo sin pedirle nada a nadie.
 
-**When** I've forgotten my password and can't get into my business, **I want** the operator to hand me a link that lets me choose a new password myself, once and within a day, **so I can** get back to my books the same day, while nobody else (the operator included) learns or chooses my password and every device that was signed in as me is signed out.
+**Cuando** me olvidé la contraseña y no puedo entrar a mi Business, **quiero** que el Operator me dé un link que me deje elegir una contraseña nueva yo mismo, una sola vez y dentro del día, **para** volver a mis libros el mismo día, mientras nadie más (el Operator incluido) conoce ni elige mi contraseña y cada dispositivo que tenía mi sesión iniciada queda afuera.
 
-These two refine the "log in once and stay in" job above. The operator's command is the reset job's mechanism, not a job of its own.
+Estos dos refinan el job de "iniciar sesión una vez y quedarme adentro". El comando del Operator es el mecanismo del job de reseteo, no un job propio.
 
-**When** I run my business from my phone (handing over an order, answering a customer on Telegram, paying for something, or catching up at the end of the day), **I want to** get in with the link I was sent and keep my customers, my prices, my stock and my expenses up to date from the phone, **so I can** stop keeping them in the spreadsheet and have real data in place when sales arrive. The computer is the same job on a bigger screen.
+**Cuando** abro la app en el teléfono y tengo que iniciar sesión, **quiero** estar adentro de mi Business en una sola pasada; si no me acuerdo la contraseña, **quiero** saber ahí mismo quién me da un Reset link y qué pedirle, **para** volver a registrar ventas en vez de sentirme bloqueado o volver a la planilla. (GH-521)
 
-**When** I open the app from an invitation link for the first time, come back with a reset link after forgetting my password, log in again on my phone, or land on a screen that is empty, still loading or failing, **I want** one clear screen on my phone that gets me in or tells me in plain words what happened and what to do next, **so I can** get back to my books without asking anyone, guessing, or learning anything about other businesses or users.
+Este refina el job de "iniciar sesión una vez y quedarme adentro" y el de la contraseña olvidada; no es un job nuevo. Su protagonista es el vendedor que vuelve; quien no tiene cuenta es un público secundario, al que solo se le dice que se entra con una Invitation.
 
-This refines the "log in once and stay in", "get in with the link I was sent" and forgotten-password jobs above; it is not a new job. Its protagonist is the seller; the operator's commands stay outside the app.
+**Cuando** manejo mi Business desde el teléfono (entregando un pedido, contestándole a un Customer por Telegram, pagando algo o poniéndome al día al final del día), **quiero** entrar con el link que me mandaron y mantener al día desde el teléfono mis Customers, mis precios, mi Stock y mis Expenses, **para** dejar de llevarlos en la planilla y tener datos reales cuando llegan las ventas. La computadora es el mismo job en una pantalla más grande.
 
-**When** I open the app on my phone or computer, at any hour, **I want** to see it in the Yerba look (greenish paper and green-black ink with one green, or its dark counterpart) matching my phone's light or dark setting without my touching anything, and to be able to force Light or Dark (in Settings → Appearance, navigation.md) and have that stay on that device, **so I** work in a look that was designed and checked for reading figures, states and amounts in both themes, and no state is ever told by color alone.
+**Cuando** abro la app desde un link de Invitation por primera vez, vuelvo con un Reset link después de olvidarme la contraseña, inicio sesión de nuevo en el teléfono, o caigo en una pantalla vacía, cargando o fallando, **quiero** una sola pantalla clara en el teléfono que me haga entrar o me diga en palabras simples qué pasó y qué hacer, **para** volver a mis libros sin preguntarle a nadie, sin adivinar y sin enterarme de nada sobre otros Businesses o Users.
 
-**When** I need to change how my business is set up (rename it, bring in a partner, connect or switch the Telegram bot, edit the catalog's header and footer, manage my expense categories, switch to dark, change my password or log out), **I want** every business-wide setting in one place, each in its own short screen, **so I can** change it in a few taps from my phone and get back to the customer, without wondering which screen holds it. (Served here by Settings's Business, Users, Appearance and Your account; the structure is navigation.md.)
+Este refina los jobs de "iniciar sesión una vez y quedarme adentro", "entrar con el link que me mandaron" y de la contraseña olvidada; no es un job nuevo. Su protagonista es el vendedor; los comandos del Operator quedan fuera de la app.
 
-**When** I open the installed app on my phone between orders or mid-chat with a customer, **I want** it to fill the screen and respond the way a phone app does (nothing hidden under the notch or the home bar, a status bar the colour of the app, no page bounce or pull-to-refresh, no blue flash or stray text selection when I tap, and the field I'm typing in never hidden by the keyboard), **so I can** tap, type and read figures fast and get back to the customer, without the app feeling like a web page in a frame.
+**Cuando** abro la app en el teléfono o la computadora, a cualquier hora, **quiero** verla con el look Yerba (papel verdoso y tinta verde negra con un solo verde, o su contraparte oscura) siguiendo el modo claro u oscuro de mi teléfono sin tocar nada, y poder forzar Light o Dark (en Settings → Appearance, navigation.md) y que quede en ese dispositivo, **para** trabajar con un look diseñado y revisado para leer cifras, estados y montos en ambos temas, sin que ningún estado se diga solo con color.
 
-This refines the "log in once and stay in" job above and criterion 5; it is not a new job. Its protagonist is the seller; the operator and Capacitor are not part of it.
+**Cuando** necesito cambiar cómo está configurado mi Business (renombrarlo, sumar un socio, conectar o cambiar el bot de Telegram, editar el Catalog header and footer, manejar mis Expense categories, pasar a oscuro, cambiar la contraseña o cerrar sesión), **quiero** cada configuración de todo el Business en un solo lugar, cada una en su propia pantalla corta, **para** cambiarla en pocos toques desde el teléfono y volver al Customer, sin preguntarme qué pantalla la tiene. (Lo sirven acá los grupos Business, Users, Appearance y Your account de Settings; la estructura es navigation.md.)
 
-**When** I handle an order, a payment, a stock entry or an expense on my phone, one-handed and mid-chat with a customer, **I want** every screen to behave like a phone app (the bar and header always in reach, controls I can hit with my thumb, the keyboard never hiding what I type, never a blank screen while it loads, text I can read in both themes), **so I can** finish and get back to the customer without zooming, mis-tapping or wondering whether it froze.
+**Cuando** abro la app instalada en el teléfono entre pedidos o en medio de un chat con un Customer, **quiero** que llene la pantalla y responda como una app de teléfono (nada escondido bajo el notch ni la barra de inicio, una barra de estado del color de la app, sin rebote de página ni pull-to-refresh, sin destello azul ni selección de texto suelta al tocar, y el campo en el que escribo nunca tapado por el teclado), **para** tocar, escribir y leer cifras rápido y volver al Customer, sin que la app se sienta como una página web dentro de un marco.
 
-This refines criterion 5 and the installed-shell job above, extending them from the shell to every screen; it is not a new job. Its protagonist is the seller. The builder's half (one written phone rule and a check that fails when a screen breaks it) is how the job is delivered, not a second job. The operator and Capacitor are not part of it.
+Este refina el job de "iniciar sesión una vez y quedarme adentro" y el criterio 5; no es un job nuevo. Su protagonista es el vendedor; el Operator y Capacitor no son parte de él.
 
-**When** a friend stops using the app, or asks to be taken out of it, **I want** to hand them everything the app holds of their business in one file and then remove that business from the installation completely, **so that** they keep their books and their customers' names, phone numbers and balances are no longer held by me or by anyone else on the installation.
-- A business opened by mistake is covered by the same command.
-- The business goes as a whole, every user included.
-- The operator has agreed with every user of the business beforehand; the command does not check it.
+**Cuando** manejo un pedido, un Payment, una Stock entry o una Expense en el teléfono, con una mano y en medio de un chat con un Customer, **quiero** que cada pantalla se comporte como una app de teléfono (la barra y el encabezado siempre a mano, controles que alcanzo con el pulgar, el teclado nunca tapando lo que escribo, nunca una pantalla en blanco mientras carga, texto que puedo leer en ambos temas), **para** terminar y volver al Customer sin hacer zoom, sin tocar mal y sin preguntarme si se colgó.
 
-**When** a seller needs the app away from my home network, **I want** the installation published on the internet over HTTPS, with every business's data copied off the server continuously, encrypted, and proven restorable, **so I can** let sellers work from anywhere without one lost server, disk or leaked backup costing anyone their books or exposing their customers.
+Este refina el criterio 5 y el job del shell instalado, extendiéndolos del shell a cada pantalla; no es un job nuevo. Su protagonista es el vendedor. La mitad del que construye (una regla escrita del teléfono y un control que falla cuando una pantalla la rompe) es cómo se entrega el job, no un segundo job. El Operator y Capacitor no son parte de él.
 
-- The protagonist of this job is the operator of the installation, not a user in the app.
-- For a seller, only two things change: where they can reach the app from, and that it is on HTTPS.
+**Cuando** un amigo deja de usar la app, o pide que lo saquen, **quiero** darle en un solo archivo todo lo que la app tiene de su Business y después eliminar ese Business de la instalación por completo, **para que** conserve sus libros y los nombres, teléfonos y Balances de sus Customers ya no los tenga yo ni nadie más en la instalación.
+- Un Business abierto por error se cubre con el mismo comando.
+- El Business se va entero, con todos sus Users.
+- El Operator lo acordó antes con cada User del Business; el comando no lo verifica.
 
-**When** a backend check goes red on a diff that touches no backend code, **I want** the cookie-security test to give the same result on any day, using only a fixed time it is handed and never the real date or anything else outside the test, **so I can** trust that a red check means a real regression and merge a green one without re-running it.
+**Cuando** un vendedor necesita la app lejos de mi red de casa, **quiero** la instalación publicada en internet por HTTPS, con los datos de cada Business copiados fuera del servidor de forma continua, cifrados y con restauración probada, **para** dejar que los vendedores trabajen desde cualquier lado sin que un servidor, un disco perdido o un backup filtrado le cueste a nadie sus libros ni exponga a sus Customers.
 
-- This refines the "log in once and stay in" job and criterion 14 for the people who merge through the gate (the agentic maintainers and the PM); it is not a seller's job.
-- No product behaviour changes for it: the `Secure` rule and the 30-day session stay as they are.
+- El protagonista de este job es el Operator de la instalación, no un User de la app.
+- Para un vendedor cambian solo dos cosas: desde dónde puede llegar a la app, y que está en HTTPS.
 
-**When** I merge a change and the test suite runs again on a later day, **I want** the gate to give the same verdict whatever the date, and the change's record to say exactly what its evidence proves and what it does not, **so I can** trust a green gate, act on a red one without guessing, and never treat evidence as proof of something it never covered.
+**Cuando** un control del backend se pone en rojo en un diff que no toca código del backend, **quiero** que el test de seguridad de la cookie dé el mismo resultado cualquier día, usando solo una hora fija que se le pasa y nunca la fecha real ni nada fuera del test, **para** confiar en que un control en rojo significa una regresión real y mergear uno en verde sin volver a correrlo.
 
-- The protagonist of this job is the maintainer of the installation, or the reviewer acting for them. The seller is affected only indirectly: a gate that goes red because the date changed holds up every fix they are waiting for.
-- It is served here by the business-removal tests. Every instant in them comes from the movable clock (ADR-0001), so their verdict never depends on the day they run. No behaviour of the app changes.
+- Este refina el job de "iniciar sesión una vez y quedarme adentro" y el criterio 14 para quienes mergean a través del Gate (los mantenedores agénticos y el PM); no es un job del vendedor.
+- No cambia ningún comportamiento del producto: la regla de `Secure` y la Session de 30 días quedan como están.
 
-The navigation job (navigation.md) decides where Business, Users, Appearance and Your account are reached from: Settings.
+**Cuando** mergeo un cambio y la suite de tests vuelve a correr otro día, **quiero** que el Gate dé el mismo veredicto cualquiera sea la fecha, y que el registro del cambio diga exactamente qué prueba su evidencia y qué no, **para** confiar en un Gate en verde, actuar ante uno en rojo sin adivinar y nunca tomar una evidencia como prueba de algo que nunca cubrió.
 
-Success criteria:
+- El protagonista de este job es el mantenedor de la instalación, o el revisor que actúa por él. Al vendedor lo afecta solo indirectamente: un Gate que se pone en rojo porque cambió la fecha frena cada arreglo que está esperando.
+- Lo sirven acá los tests de la Business removal. Cada instante en ellos viene del reloj movible (ADR-0001), así que su veredicto nunca depende del día en que corren. No cambia ningún comportamiento de la app.
 
-1. Nothing of one business is reachable from another, through any route: by id it does not exist (404), in a list it is absent.
-2. Nobody gets in without an invitation; each invitation lets one person in, once, within seven days.
-3. Repeated wrong passwords stop working for a while, and nothing in the answers tells which emails have a user.
-4. No `curl` at any point. From the phone alone, a seller can do everything the backend does, starting with opening or joining a business from the invitation link.
-5. It feels like a phone app.
-   - It sits on the home screen with its own name and icon. On iOS it installs over the home network. On Android it is a home-screen shortcut there, and a full install on the published installation with TLS.
-   - It follows the phone's light or dark setting by default; a Light or Dark chosen on that device wins over the phone.
-   - It says "No connection" when the network drops.
-   - No state told by color alone: a sign, arrow or word on every gain, loss, debt or state; chart series labelled directly.
-   - Installed, it fills the screen and responds like a phone app (criteria 33–36).
-   - Every screen at phone widths (below the 900 px computer breakpoint) meets the phone standard, written in CODING_STANDARDS §10 "Phone" and the design README's "En el celular", and checked by `web/e2e/mobile.spec.ts` (criteria 37–41).
-6. Businesses stay invisible to each other in the browser too.
-   - No business in a URL.
-   - No personal data or money in the console or browser storage. The only thing the browser keeps is the device's theme choice.
-   - The session lives only in the backend's cookie.
-   - Serving the front reaches nothing outside the built app.
-7. Nothing invented: no placeholder figures, and no navigation entry for something that does not exist yet.
-14. **Nothing weakens on the internet.**
-   - A seller logs in and works from any network with the same guarantees as on the home network: ADR-0002, ADR-0004 and ADR-0005.
-   - Over HTTPS the session cookie is `Secure`. This is set in configuration, never guessed from the request.
-   - Plain http on the home network keeps working unchanged.
-15. **Guessing is braked by email and by address.**
-   - One address trying many emails is locked out.
-   - One email tried from many addresses is locked out.
-   - Both locks answer the same, with the same timing.
-   - No client address goes to a log.
-16. **Losing the server is recoverable.**
-    - At worst, under 1 minute of recent work (sales, payments, stock entries) is lost, from Turso's 24-hour write log.
-    - Beyond those 24 hours, the daily encrypted copy is the fallback, and its loss bound is one day.
-    - A drill restores the backup into a scratch target and proves it intact (integrity, row counts, recency), with no effect on the running app.
-17. **Rebuildable from the repository.**
-    - `deploy/README.md` documents every step to stand the installation up from zero.
-    - No secret is in the repository.
+El job de navegación (navigation.md) decide desde dónde se llega a Business, Users, Appearance y Your account: Settings.
 
-Success criteria, the theme:
+Criterios de éxito:
 
-23. **Automatic unless chosen on the device**: a device with no stored choice follows the phone's light or dark setting on every screen, live, and is re-checked when the seller comes back to the app. The owner's decision of 2026-10-29 replaces ADR-0026 on this point (the ADR is not edited). A device that cannot report its setting reads light. One light frame on a dark phone with nothing stored is accepted before the theme applies.
-24. **Light or Dark on request, and it stays**: the dark theme (`InicioOscuro`) shows when `data-tema="oscuro"` is set on `<html>`, which is the resolved theme, not the choice. The choice is made only in Settings → Appearance (Theme: Automatic, Light, Dark; navigation.md) and is stored on the device as `tema` = `claro` or `oscuro`. Automatic is no stored key; any other value or a storage error also reads as Automatic. A stored choice wins over the phone, survives closing the app, reloads and logging out, and shows on every screen of that device, the sign-in screen, the invitation and the reset screens included. An old Dark still opens dark; an old Light (nothing stored) now follows the phone. Another tab or window picks up a change when it next loads.
-25. **The themes keep the Yerba palette**: both themes carry the same tokens with their own values (DESIGN_STANDARDS.md "Palette"); what picks the theme is the rule above. Every rule about state (no state told by color alone: a sign, arrow or word on every gain, loss, debt or state; chart series labelled directly) holds in both.
-26. **One rule, written the same everywhere**: the comment at the top of `web/src/styles/tokens.css`, `docs/product/design-system/tokens.css`, the design-system README and this file all state the same rule.
+1. Nada de un Business se alcanza desde otro, por ninguna ruta: por id no existe (404), en una lista no está.
+2. Nadie entra sin una Invitation; cada Invitation deja entrar a una persona, una vez, dentro de siete días.
+3. Las contraseñas equivocadas repetidas dejan de funcionar por un rato, y nada en las respuestas dice qué emails tienen un User.
+4. Ningún `curl` en ningún momento. Desde el teléfono solo, un vendedor puede hacer todo lo que hace el backend, empezando por abrir o sumarse a un Business desde el link de Invitation.
+5. Se siente como una app de teléfono.
+   - Está en la pantalla de inicio con su propio nombre e ícono. En iOS se instala por la red de casa. En Android ahí es un acceso directo en la pantalla de inicio, y una instalación completa en la instalación publicada con TLS.
+   - Sigue el modo claro u oscuro del teléfono por defecto; un Light o Dark elegido en ese dispositivo gana sobre el teléfono.
+   - Dice "No connection" cuando se cae la red.
+   - Ningún estado dicho solo con color: un signo, flecha o palabra en cada ganancia, pérdida, deuda o estado; las series de los gráficos rotuladas directamente.
+   - Instalada, llena la pantalla y responde como una app de teléfono (criterios 33–36).
+   - Cada pantalla en anchos de teléfono (por debajo del corte de 900 px de la computadora) cumple el estándar del teléfono, escrito en CODING_STANDARDS §10 "Phone" y en el "En el celular" del README de diseño, y controlado por `web/e2e/mobile.spec.ts` (criterios 37–41).
+6. Los Businesses siguen invisibles entre sí también en el navegador.
+   - Ningún Business en una URL.
+   - Ningún dato personal ni dinero en la consola ni en el almacenamiento del navegador. Lo único que guarda el navegador es la Theme choice del dispositivo.
+   - La Session vive solo en la cookie del backend.
+   - Servir el front no alcanza nada fuera de la app construida.
+7. Nada inventado: ninguna cifra de relleno, y ninguna entrada de navegación para algo que todavía no existe.
+14. **Nada se debilita en internet.**
+   - Un vendedor inicia sesión y trabaja desde cualquier red con las mismas garantías que en la red de casa: ADR-0002, ADR-0004 y ADR-0005.
+   - Por HTTPS la cookie de Session es `Secure`. Se fija en la configuración, nunca se adivina a partir del pedido.
+   - El http plano en la red de casa sigue funcionando sin cambios.
+15. **El adivinado se frena por email y por dirección.**
+   - Una dirección que prueba muchos emails queda bloqueada.
+   - Un email probado desde muchas direcciones queda bloqueado.
+   - Ambos bloqueos responden igual, con los mismos tiempos.
+   - Ninguna dirección de cliente va a un log.
+16. **Perder el servidor se recupera.**
+    - En el peor caso se pierde menos de 1 minuto de trabajo reciente (Sales, Payments, Stock entries), gracias al log de escrituras de 24 horas de Turso.
+    - Más allá de esas 24 horas, la copia diaria cifrada es el respaldo, y su pérdida máxima es un día.
+    - Un Restore drill restaura el backup en un destino de prueba y lo prueba íntegro (integridad, conteos de filas, recencia), sin efecto en la app en marcha.
+17. **Reconstruible desde el repositorio.**
+    - `deploy/README.md` documenta cada paso para levantar la instalación desde cero.
+    - Ningún secreto está en el repositorio.
 
-Success criteria, changing and resetting a password:
+Criterios de éxito, el tema:
 
-18. **Change, fast and final.**
-    - From Settings → Your account on the phone, a user with the right current password sets a new one (at least 10 characters) in under a minute.
-    - Every other session of that user is closed at once.
-    - The device that changed it stays signed in.
-    - Partners' sessions are untouched.
-19. **Reset, one command, one link.**
-    - The operator gets a working link from one command, with no database edit.
-    - The seller opens it within 24 hours, sets a new password and lands on Home signed in, with every earlier session of theirs closed.
-    - The link works once.
-    - Unknown, used, expired and retired links all answer the same 404, as invitations do.
-20. **Nobody else knows it.**
-    - The operator never sees or chooses the new password.
-    - No password, token or link appears in a log, an answer, the console or browser storage.
-    - Only a scrypt hash and a token digest are stored (ADR-0002, ADR-0005).
-21. **The brake is not a side door.**
-    - A wrong current password counts as a refused login for both login brakes.
-    - While either lock is active, Change is refused with the same brake message.
-    - Nothing in either flow tells whether an email has a user. The operator's terminal is the exception, because the operator is not a user.
-22. **No curl.** Both flows run entirely from the phone. The operator's command is the only exception, and it sits outside the app as `invite-business.sh` does.
+23. **Automático salvo que se elija en el dispositivo**: un dispositivo sin elección guardada sigue el modo claro u oscuro del teléfono en cada pantalla, en vivo, y se vuelve a revisar cuando el vendedor vuelve a la app. La decisión del dueño del 2026-10-29 reemplaza a ADR-0026 en este punto (el ADR no se edita). Un dispositivo que no puede informar su modo se lee claro. Se acepta un cuadro claro en un teléfono oscuro sin nada guardado antes de que se aplique el tema.
+24. **Light o Dark a pedido, y queda**: el tema oscuro (`InicioOscuro`) se muestra cuando `data-tema="oscuro"` está puesto en `<html>`, que es el tema resuelto, no la elección. La elección se hace solo en Settings → Appearance (Theme: Automatic, Light, Dark; navigation.md) y se guarda en el dispositivo como `tema` = `claro` u `oscuro`. Automatic es no tener clave guardada; cualquier otro valor o un error de almacenamiento también se lee como Automatic. Una elección guardada gana sobre el teléfono, sobrevive a cerrar la app, a recargar y a cerrar sesión, y se muestra en cada pantalla de ese dispositivo, la pantalla de Sign in, la de Invitation y la de reseteo incluidas. Un Dark viejo sigue abriendo oscuro; un Light viejo (nada guardado) ahora sigue al teléfono. Otra pestaña o ventana toma un cambio la próxima vez que carga.
+25. **Los temas conservan la paleta Yerba**: ambos temas llevan los mismos tokens con sus propios valores (DESIGN_STANDARDS.md "Palette"); lo que elige el tema es la regla de arriba. Toda regla sobre estados (ningún estado dicho solo con color: un signo, flecha o palabra en cada ganancia, pérdida, deuda o estado; las series de los gráficos rotuladas directamente) vale en ambos.
+26. **Una regla, escrita igual en todos lados**: el comentario al principio de `web/src/styles/tokens.css`, `docs/product/design-system/tokens.css`, el README del design system y este archivo dicen la misma regla.
 
-Success criteria, the getting-in screens and shared states as redesigned (GH-49):
+Criterios de éxito, cambiar y resetear una contraseña:
 
-27. **Getting in is fast.** From the phone, a seller opens an invitation link, or a reset link, and lands on Home signed in in under a minute, and logs in from the sign-in screen in a few seconds. No step appears that the design does not draw.
-28. **Every state is told by word and shape, never by color alone**: the brake message, "This invitation no longer works", "This link no longer works. Ask whoever sent it for a new one.", "No connection", empty, loading, the generic server-error retry and "That is gone.". All copy in Rioplatense Spanish with vos.
-29. **Phone and computer match the design.** The sign-in screen (`Entrar`), the new-business screen (`NegocioNuevo`), the invitation screen (`Invitacion`), the reset screen and the shared states (`Estados`) match `docs/product/design-system/pantallas/` on both, checked by eye; `scripts/design/compare.sh` runs before and after.
-30. **The look reveals nothing new.**
-    - No screen or state says whether an email has a user, which brake fired or how many attempts are left.
-    - A dead link never says why.
-    - "That is gone." carries no id, name or date.
-    - No personal data or money reaches the console or browser storage.
-31. **Both themes.** These screens follow the theme rule (criteria 23–25), with no token change.
-32. **No behaviour regresses.** Every accounts, navigation and feedback test passes unchanged.
+18. **Change, rápido y definitivo.**
+    - Desde Settings → Your account en el teléfono, un User con la contraseña actual correcta pone una nueva (de al menos 10 caracteres) en menos de un minuto.
+    - Toda otra Session de ese User se cierra al instante.
+    - El dispositivo que la cambió sigue con la sesión iniciada.
+    - Las Sessions de los socios no se tocan.
+19. **Reseteo, un comando, un link.**
+    - El Operator obtiene un link que funciona con un solo comando, sin editar la base de datos.
+    - El vendedor lo abre dentro de 24 horas, pone una contraseña nueva y cae en Home con la sesión iniciada, con cada Session anterior suya cerrada.
+    - El link funciona una sola vez.
+    - Los links desconocidos, usados, vencidos y retirados responden todos el mismo 404, como las Invitations.
+20. **Nadie más la conoce.**
+    - El Operator nunca ve ni elige la contraseña nueva.
+    - Ninguna contraseña, token ni link aparece en un log, una respuesta, la consola ni el almacenamiento del navegador.
+    - Solo se guardan un hash scrypt y un digest del token (ADR-0002, ADR-0005).
+21. **El freno no es una puerta lateral.**
+    - Una contraseña actual incorrecta cuenta como un login rechazado para los dos Login brakes.
+    - Mientras cualquiera de los bloqueos está activo, Change se rechaza con el mismo mensaje del freno.
+    - Nada en ninguno de los dos flujos dice si un email tiene un User. La terminal del Operator es la excepción, porque el Operator no es un User.
+22. **Ningún curl.** Los dos flujos corren enteros desde el teléfono. El comando del Operator es la única excepción, y queda fuera de la app como `invite-business.sh`.
 
-Success criteria, the installed shell:
+Criterios de éxito, las pantallas de entrada y los estados compartidos rediseñados (GH-49):
 
-33. **Nothing under the system areas.**
-    - On an installed phone with a notch and a home bar, in portrait, every screen's content is fully visible and tappable: the tab bar, the header, "+ New sale", sheets and toasts included.
-    - A screen's height follows the visible screen, so nothing jumps or is cut off when the browser's own bars appear or go away.
-    - With the keyboard open, the focused field stays in view.
-34. **The status bar is the app's colour.**
-    - On Android it matches the paper of the theme in force: light `--papel` with no `data-tema`, the dark theme's own paper token with `data-tema="oscuro"`. It changes as soon as the attribute changes.
-    - On Automatic it follows the phone's setting live, because the attribute does. There is no blue band in either theme.
-    - The splash and the manifest's colours are light `--papel`.
-    - On iOS the status bar stays light in both themes, because iOS fixes its style at launch. This is an accepted limitation, not a defect.
-35. **Taps feel like a phone app's.**
-    - Every button, row and bar item shows a pressed state at once.
-    - No Android tap highlight; tapping never selects text on buttons, tabs or the bar.
-    - No overscroll bounce or pull-to-refresh on the page as a whole.
-    - Text inside lists and fields stays selectable where it is today.
-    - The manifest passes the browser's installability check.
-36. **Nothing regresses.**
-    - Every accounts, navigation and feedback test passes unchanged.
-    - The bar still fits at 320 px with text at 130%.
-    - No state is told by colour alone, in either theme; the pressed state uses tokens only, in both themes.
-    - No existing token value changes; only the four new inset tokens are added.
+27. **Entrar es rápido.** Desde el teléfono, un vendedor abre un link de Invitation, o un Reset link, y cae en Home con la sesión iniciada en menos de un minuto, e inicia sesión desde la pantalla de Sign in en pocos segundos. No aparece ningún paso que el diseño no dibuje.
+28. **Cada estado se dice con palabra y forma, nunca solo con color**: el mensaje del freno, "This invitation no longer works", "This link no longer works. Ask whoever sent it for a new one.", "No connection", vacío, cargando, el reintento genérico de error del servidor y "That is gone.". Todos los textos siguen el Product language (inglés, desde el Copy module); el español es solo el Documentation language. (Corregido en GH-521: decía "Rioplatense Spanish with vos", un resto de antes de la decisión del Product language.)
+29. **Teléfono y computadora coinciden con el diseño.** La pantalla de Sign in (`Entrar`), la de Business nuevo (`NegocioNuevo`), la de Invitation (`Invitacion`), la de reseteo y los estados compartidos (`Estados`) coinciden con `docs/product/design-system/pantallas/` en ambos, revisado a ojo; `scripts/design/compare.sh` corre antes y después.
+30. **El look no revela nada nuevo.**
+    - Ninguna pantalla ni estado dice si un email tiene un User, qué freno saltó ni cuántos intentos quedan.
+    - Un link muerto nunca dice por qué.
+    - "That is gone." no lleva id, nombre ni fecha.
+    - Ningún dato personal ni dinero llega a la consola ni al almacenamiento del navegador.
+31. **Ambos temas.** Estas pantallas siguen la regla del tema (criterios 23–25), sin cambiar ningún token.
+32. **Ningún comportamiento retrocede.** Cada test de accounts, navegación y feedback pasa sin cambios.
 
-Success criteria, the phone standard:
+Criterios de éxito, Sign in con el nuevo estilo y "Forgot your password?" (GH-521):
 
-37. **Written once, read from both sides.**
-    - CODING_STANDARDS §10 "Phone" and the design README's "En el celular" state the same eight requirements: chrome, touch, inputs, forms and sheets, layout, gestures, loading and readability.
-    - Each requirement carries the same "checked" or "review" label in both.
-    - Neither contradicts the other, this file's installed-shell rules, ADR-0027, ADR-0028 or ADR-0029.
-    - Where one of those already decides a point, the standard cites it and does not restate it.
-38. **Checked, not trusted.** `web/e2e/mobile.spec.ts` covers every route in `scripts/design/screens.json`, every form and sheet, and the shared `Estados` states.
-    - It runs at 320×568, 375×812, 430×932 and 246×437 (130 %), in both themes.
-    - It fails on every checked defect.
-39. **The list of known offenders can only shrink.**
-    - Each expected failure names the issue that removes it.
-    - A new offender fails the run, and so does a fixed one left on the list.
-    - It grows only by a trade, or by the real cells of a row new to the screens registry (the conditions are in `docs/product/gate.md`).
-40. **Every area PR shows it.** Each area issue's PR (#45–#49, #59, #60, #78) and `scripts/design/compare.sh` attach the check's result. An area issue is not done while its own screens are still on the offender list.
-41. **Nothing regresses for the seller.**
-    - A sale, a payment, a stock entry and an expense are each still recorded from the phone in under 60 s.
-    - The existing accounts, navigation, sales and feedback suites pass unedited.
+42. **Una sola pasada.** Un vendedor que vuelve inicia sesión desde el teléfono en una pasada: email, contraseña, un toque. No hay que hacer scroll ni buscar nada, y el teclado ya está abierto.
+43. **A un toque de saber qué hacer.** Quien se olvidó la contraseña llega a la explicación con un toque y la cierra sabiendo el próximo paso: pedir un Reset link de un solo uso, diciendo con qué email inicia sesión.
+44. **No revela nada.** Nada en la pantalla ni en la Sheet revela si existe un email, un User o un Business. La Sheet es igual para todos y no depende de lo que se tipeó.
+45. **Coincide con el dibujo 25-ingreso** (`Entrar` y `EntrarOscuro`) en la Design capture, claro y oscuro, según el Drawing as guide: no falta ni cambia ningún control, rótulo o ícono que el dibujo muestra. Las líneas en español del dibujo se construyen como su equivalente en inglés (Product language), y eso no cuenta como diferencia.
 
-Success criteria, removing a business:
+Criterios de éxito, el shell instalado:
 
-8. **The file is their books and stands on its own**:
-   - one JSON file holds every recorded fact of the business and opens without the app;
-   - it identifies the business by its name;
-   - it names what each record refers to as well as its id;
-   - it holds no password hash, no stored secret, no invitation and no reset link.
-9. **Named back before anything is lost**: the dry run names the business and counts by kind what would go, writing nothing. The real run asks for the business name typed exactly before it touches anything.
-10. **Nothing deleted until the export is safe**: the delete runs only after the file was written and read back in the same run, and the exported counts equal the deleted counts. Any failure or mismatch deletes nothing.
-11. **Nothing survives**:
-    - no row carrying the business's id is left in any table, including tables added later;
-    - its invitations and its users' reset links, of every status, go too, and so does its users' login-attempt history;
-    - the export is built from the same tables as the delete; invitations and reset links are deleted, never exported.
-12. **Every other business is untouched**: their record counts are the same before and after, and they keep working, are never slowed on purpose and are never told anything.
-13. **No personal data outside the file, and a clean slate**: the terminal and logs show only the business name, the file's path and counts. Afterwards the same email can open a new business with nothing carried over.
-37. **The removal tests give the same verdict on any day.**
-    - Every instant in `tests/business_removal/`, invitations included, comes from the movable clock (ADR-0001). No test there reads the real clock.
-    - The suite gives the same result when the clock is moved to different Argentina days, across a month boundary and a year boundary included.
+33. **Nada bajo las áreas del sistema.**
+    - En un teléfono instalado con notch y barra de inicio, en vertical, el contenido de cada pantalla se ve entero y se puede tocar: la barra de pestañas, el encabezado, "+ New sale", las Sheets y los toasts incluidos.
+    - La altura de una pantalla sigue a la pantalla visible, así que nada salta ni se corta cuando aparecen o se van las barras propias del navegador.
+    - Con el teclado abierto, el campo con foco queda a la vista.
+34. **La barra de estado es del color de la app.**
+    - En Android coincide con el papel del tema vigente: `--papel` claro sin `data-tema`, el token de papel propio del tema oscuro con `data-tema="oscuro"`. Cambia en cuanto cambia el atributo.
+    - En Automatic sigue el modo del teléfono en vivo, porque el atributo lo sigue. No hay franja azul en ningún tema.
+    - El splash y los colores del manifest son `--papel` claro.
+    - En iOS la barra de estado queda clara en ambos temas, porque iOS fija su estilo al arrancar. Es una limitación aceptada, no un defecto.
+35. **Los toques se sienten como en una app de teléfono.**
+    - Cada botón, fila y elemento de la barra muestra un estado presionado al instante.
+    - Sin resaltado de toque de Android; tocar nunca selecciona texto en botones, pestañas ni la barra.
+    - Sin rebote de overscroll ni pull-to-refresh en la página entera.
+    - El texto dentro de listas y campos sigue seleccionable donde lo es hoy.
+    - El manifest pasa el control de instalabilidad del navegador.
+36. **Nada retrocede.**
+    - Cada test de accounts, navegación y feedback pasa sin cambios.
+    - La barra sigue entrando en 320 px con texto al 130%.
+    - Ningún estado se dice solo con color, en ningún tema; el estado presionado usa solo tokens, en ambos temas.
+    - No cambia ningún valor de token existente; solo se agregan los cuatro tokens nuevos de insets.
 
-Success criteria, the cookie-security test (GH-130 follow-up):
+Criterios de éxito, el estándar del teléfono:
 
-37. **Same result on any day.** The cookie-security test uses only a fixed time handed to it through the injected clock (ADR-0001) and gives the same result whatever the real date, earlier or later, with no edit to its fixed time. Nothing in it reads the real clock.
-38. **The rule is still proven.** It keeps asserting that `Secure` is present when HTTPS is configured, absent otherwise, and never inferred from the request's scheme or headers (criterion 14). No assertion is dropped or loosened.
-39. **No product behaviour changes.** The session still lasts 30 days, as a cookie and a token. Product code found reading the real date wrongly is a separate bug item.
-40. **The gate means something.** The full backend tests check is green.
+37. **Escrito una vez, leído desde los dos lados.**
+    - CODING_STANDARDS §10 "Phone" y el "En el celular" del README de diseño dicen los mismos ocho requisitos: marco, toque, entradas, formularios y Sheets, disposición, gestos, carga y legibilidad.
+    - Cada requisito lleva la misma etiqueta "checked" o "review" en ambos.
+    - Ninguno contradice al otro, a las reglas del shell instalado de este archivo, a ADR-0027, ADR-0028 ni ADR-0029.
+    - Donde uno de esos ya decide un punto, el estándar lo cita y no lo repite.
+38. **Controlado, no confiado.** `web/e2e/mobile.spec.ts` cubre cada ruta de `scripts/design/screens.json`, cada formulario y Sheet, y los estados compartidos de `Estados`.
+    - Corre en 320×568, 375×812, 430×932 y 246×437 (130 %), en ambos temas.
+    - Falla ante cada defecto controlado.
+39. **La lista de infractores conocidos solo puede achicarse.**
+    - Cada falla esperada nombra el issue que la saca.
+    - Un infractor nuevo hace fallar la corrida, y también uno arreglado que quedó en la lista.
+    - Crece solo por un canje, o por las celdas reales de una fila nueva en el registro de pantallas (las condiciones están en `docs/product/gate.md`).
+40. **Cada PR de área lo muestra.** El PR de cada issue de área (#45–#49, #59, #60, #78) y `scripts/design/compare.sh` adjuntan el resultado del control. Un issue de área no está terminado mientras sus propias pantallas sigan en la lista de infractores.
+41. **Nada retrocede para el vendedor.**
+    - Una Sale, un Payment, una Stock entry y una Expense se siguen registrando cada uno desde el teléfono en menos de 60 s.
+    - Las suites existentes de accounts, navegación, ventas y feedback pasan sin editar.
 
-## Behaviour
+Criterios de éxito, eliminar un Business:
 
-### Invitations and login
+8. **El archivo es sus libros y se sostiene solo**:
+   - un archivo JSON guarda cada dato registrado del Business y se abre sin la app;
+   - identifica al Business por su nombre;
+   - nombra aquello a lo que se refiere cada registro además de su id;
+   - no guarda ningún hash de contraseña, secreto guardado, Invitation ni Reset link.
+9. **Nombrado antes de perder nada**: la corrida de prueba nombra al Business y cuenta por tipo lo que se iría, sin escribir nada. La corrida real pide el nombre del Business tipeado exacto antes de tocar nada.
+10. **Nada se borra hasta que el export está a salvo**: el borrado corre solo después de que el archivo se escribió y se releyó en la misma corrida, y los conteos exportados son iguales a los borrados. Cualquier falla o diferencia no borra nada.
+11. **Nada sobrevive**:
+    - no queda ninguna fila con el id del Business en ninguna tabla, incluidas las tablas agregadas después;
+    - sus Invitations y los Reset links de sus Users, de cualquier estado, también se van, y lo mismo el historial de intentos de login de sus Users;
+    - el export se arma a partir de las mismas tablas que el borrado; las Invitations y los Reset links se borran, nunca se exportan.
+12. **Todo otro Business queda intacto**: sus conteos de registros son los mismos antes y después, y siguen funcionando, nunca se los frena a propósito y nunca se les avisa nada.
+13. **Ningún dato personal fuera del archivo, y borrón y cuenta nueva**: la terminal y los logs muestran solo el nombre del Business, la ruta del archivo y conteos. Después, el mismo email puede abrir un Business nuevo sin nada arrastrado.
+37. **Los tests de la Business removal dan el mismo veredicto cualquier día.**
+    - Cada instante en `tests/business_removal/`, las Invitations incluidas, viene del reloj movible (ADR-0001). Ningún test ahí lee el reloj real.
+    - La suite da el mismo resultado cuando el reloj se mueve a distintos días de Argentina, cruzando un límite de mes y uno de año incluidos.
 
-- **New-business invitation**: printed by `scripts/invite-business.sh`. Accepting it takes a business name, an email and a password, and opens the business with that user in it.
-- **Join invitation**: any user creates one from the app (`POST /invitations`). Accepting it takes an email and a password and adds the user to the inviting business; a business name sent along is ignored.
-- **Accepting either invitation** signs the person in, as a login does. Accepting a new-business invitation lands in the Onboarding of that business (onboarding.md); accepting a join invitation lands on Home of that business.
-- **Looking up an invitation** tells its kind, the business it leads to (join only) and when it expires. An unknown, used or expired invitation is not found.
-- **Email**: trimmed and lowercased; one user per email across the whole installation.
-- **Password**: at least 10 characters; stored only as a hash.
-- **Login**: email and password answer a session that lasts 30 days, as a cookie and a token. A wrong password and an unknown email get the same answer.
-- **Session cookie**:
-  - It is `Secure` only when HTTPS is configured for the deployment, and never inferred from the request's scheme or headers.
-  - On the home network's plain http it is not `Secure`, as before.
-- **Login brakes**: two, on `/auth/login` and on a password change. The invitation and reset routes have none.
-  - **Per email**: five failures in a row for an email lock it for 15 minutes, even for the right password. A successful login, password change or reset resets that email's count.
-  - **Per address**: 20 failed logins from one client address within 15 minutes lock that address's logins for 15 minutes. A success never resets this count.
-  - **Cross-counting**: every refused attempt counts for both the email and the address, whatever lock is already active. That includes the right password refused under a lock, and a wrong current password on a password change.
-  - **Same answer**:
-    - Both locks answer 429 with the same timing, and the screen shows the same brake message.
-    - Nothing reveals a count, the address or which brake fired.
-  - **Address source**:
-    - By default it is the connection's address.
-    - It is taken from the forwarded-address header only when the request comes from the trusted proxy (Render's, ADR-0016).
-    - The trusted proxy is set in configuration, never guessed.
-    - The same rule holds on the home network and on the published installation.
-  - **Logs**: no client address, email or token is logged.
-  - **Shared addresses**: people sharing one address can together trip the address lock. This is accepted at 20 failures in 15 minutes.
-- `GET /auth/me` answers the user's email and their business's name.
-- Logging out drops the cookie and goes to login. It does not clear the device's theme choice.
+Criterios de éxito, el test de seguridad de la cookie (seguimiento de GH-130):
 
-### Changing a password
+37. **Mismo resultado cualquier día.** El test de seguridad de la cookie usa solo una hora fija que se le pasa por el reloj inyectado (ADR-0001) y da el mismo resultado cualquiera sea la fecha real, anterior o posterior, sin editar su hora fija. Nada en él lee el reloj real.
+38. **La regla sigue probada.** Sigue afirmando que `Secure` está presente cuando HTTPS está configurado, ausente si no, y nunca se infiere del esquema ni de los encabezados del pedido (criterio 14). No se saca ni se afloja ninguna afirmación.
+39. **No cambia ningún comportamiento del producto.** La Session sigue durando 30 días, como una cookie y un token. Código del producto que lea mal la fecha real es un ítem de bug aparte.
+40. **El Gate significa algo.** El control completo de tests del backend está en verde.
 
-- **A gated route.** The user comes from the session. It takes the current password and a new one.
-- **New password**: at least 10 characters, the only rule. A new password equal to the current one is accepted, and still counts as a change.
-- **On success**:
-  - the password hash changes, so every other session of the user closes on its own (ADR-0002);
-  - the acting device gets a fresh session cookie and token in the same answer and stays signed in;
-  - partners' sessions are untouched;
-  - every unused reset link of the user is retired;
-  - the email's brake count is reset and its lock lifted. The address's count is never touched.
-- **A wrong current password** is refused and counts as a refused login for both brakes.
-- **Under either lock**: Change is refused with the login's 429, the same timing and the same brake message, even with the right current password.
+## Comportamiento
 
-### Resetting a forgotten password
+### Invitations y login
 
-- **The command**: `scripts/reset-password.sh <email>`, run by the operator, like `scripts/invite-business.sh`. No database edit by hand.
-  - The email is trimmed and lowercased, as at login.
-  - **An email matching no user**: it prints a plain "no user for that email", writes nothing and retires nothing.
-  - **Otherwise**: it creates a reset link for that user and retires the user's earlier unused one. It prints the link to the terminal only, never to a log.
-  - It says nothing about earlier links, and logs nothing personal.
-  - The operator never sees or chooses the new password.
+- **Invitation de Business nuevo**: la imprime `scripts/invite-business.sh`. Aceptarla toma un nombre de Business, un email y una contraseña, y abre el Business con ese User adentro.
+- **Invitation para sumarse**: cualquier User crea una desde la app (`POST /invitations`). Aceptarla toma un email y una contraseña y suma al User al Business que invita; un nombre de Business mandado junto se ignora.
+- **Aceptar cualquiera de las dos** inicia la sesión de la persona, como un login. Aceptar una Invitation de Business nuevo cae en el Onboarding de ese Business (onboarding.md); aceptar una para sumarse cae en Home de ese Business.
+- **Consultar una Invitation** dice su tipo, el Business al que lleva (solo para sumarse) y cuándo vence. Una Invitation desconocida, usada o vencida no se encuentra.
+- **Email**: sin espacios al borde y en minúsculas; un User por email en toda la instalación.
+- **Contraseña**: al menos 10 caracteres; se guarda solo como hash.
+- **Login**: email y contraseña responden una Session que dura 30 días, como una cookie y un token. Una contraseña equivocada y un email desconocido reciben la misma respuesta.
+- **Cookie de Session**:
+  - Es `Secure` solo cuando HTTPS está configurado para el deploy, y nunca se infiere del esquema ni de los encabezados del pedido.
+  - En el http plano de la red de casa no es `Secure`, como antes.
+- **Login brakes**: dos, en `/auth/login` y en un Password change. Las rutas de Invitation y de reseteo no tienen ninguno.
+  - **Por email**: cinco fallos seguidos de un email lo bloquean por 15 minutos, incluso con la contraseña correcta. Un login, un Password change o un reseteo exitosos reinician el conteo de ese email.
+  - **Por dirección**: 20 logins fallidos desde una dirección de cliente dentro de 15 minutos bloquean los logins de esa dirección por 15 minutos. Un éxito nunca reinicia este conteo.
+  - **Conteo cruzado**: cada intento rechazado cuenta para el email y para la dirección, sea cual sea el bloqueo ya activo. Eso incluye la contraseña correcta rechazada bajo un bloqueo, y una contraseña actual incorrecta en un Password change.
+  - **Misma respuesta**:
+    - Ambos bloqueos responden 429 con los mismos tiempos, y la pantalla muestra el mismo mensaje del freno.
+    - Nada revela un conteo, la dirección ni qué freno saltó.
+  - **Origen de la dirección**:
+    - Por defecto es la dirección de la conexión.
+    - Se toma del encabezado de dirección reenviada solo cuando el pedido viene del proxy de confianza (el de Render, ADR-0016).
+    - El proxy de confianza se fija en la configuración, nunca se adivina.
+    - La misma regla vale en la red de casa y en la instalación publicada.
+  - **Logs**: no se registra ninguna dirección de cliente, email ni token.
+  - **Direcciones compartidas**: personas que comparten una dirección pueden hacer saltar juntas el bloqueo por dirección. Se acepta, con 20 fallos en 15 minutos.
+- `GET /auth/me` responde el email del User y el nombre de su Business.
+- Cerrar sesión borra la cookie y va al login. No borra la Theme choice del dispositivo.
+
+### Cambiar una contraseña
+
+- **Una ruta protegida.** El User sale de la Session. Toma la contraseña actual y una nueva.
+- **Contraseña nueva**: al menos 10 caracteres, la única regla. Una contraseña nueva igual a la actual se acepta, y cuenta igual como cambio.
+- **Si sale bien**:
+  - el hash de la contraseña cambia, así que toda otra Session del User se cierra sola (ADR-0002);
+  - el dispositivo que actúa recibe una cookie y un token de Session nuevos en la misma respuesta y sigue con la sesión iniciada;
+  - las Sessions de los socios no se tocan;
+  - todo Reset link sin usar del User se retira;
+  - el conteo del freno del email se reinicia y su bloqueo se levanta. El conteo de la dirección nunca se toca.
+- **Una contraseña actual incorrecta** se rechaza y cuenta como login rechazado para los dos frenos.
+- **Bajo cualquiera de los bloqueos**: Change se rechaza con el 429 del login, los mismos tiempos y el mismo mensaje del freno, incluso con la contraseña actual correcta.
+
+### Resetear una contraseña olvidada
+
+- **El comando**: `scripts/reset-password.sh <email>`, que corre el Operator, como `scripts/invite-business.sh`. Sin editar la base de datos a mano.
+  - El email se recorta y se pasa a minúsculas, como en el login.
+  - **Un email que no coincide con ningún User**: imprime un simple "no user for that email", no escribe nada y no retira nada.
+  - **Si no**: crea un Reset link para ese User y retira el anterior sin usar. Imprime el link solo en la terminal, nunca en un log.
+  - No dice nada de links anteriores, y no registra nada personal.
+  - El Operator nunca ve ni elige la contraseña nueva.
 - **Reset link**:
-  - it works once and expires 24 hours after it is issued;
-  - only a digest of its token is stored.
-- **One live link per user**:
-  - a new link retires any earlier unused one;
-  - any password change, by Change or by a reset, retires every unused link of the user;
-  - a retired link answers exactly like an unknown, used or expired one: 404.
-- **Opening the link** (looking it up) spends nothing. Only a successful submit uses it. Expiry and retirement still apply while it is only being looked at.
-- **Submitting** takes the new password only.
-  - The rule is at least 10 characters, and a password used before is accepted.
-  - On success, all of these happen:
-    - the password is set;
-    - the link is used;
-    - the user's other unused links are retired;
-    - every session of the user is closed;
-    - this device is signed in and lands on Home;
-    - the email's brake count is reset and its lock lifted, never the address's.
-  - A link that went stale between opening and submitting answers 404.
-- **No brake on the reset routes**: they are open and unbraked, like the invitation routes. A locked email is exactly who the link is for.
+  - funciona una sola vez y vence 24 horas después de emitido;
+  - solo se guarda un digest de su token.
+- **Un solo link vivo por User**:
+  - un link nuevo retira cualquier anterior sin usar;
+  - cualquier cambio de contraseña, por Change o por un reseteo, retira todo link sin usar del User;
+  - un link retirado responde exactamente como uno desconocido, usado o vencido: 404.
+- **Abrir el link** (consultarlo) no lo gasta. Solo un envío exitoso lo usa. El vencimiento y el retiro valen igual mientras solo se lo mira.
+- **Enviar** toma solo la contraseña nueva.
+  - La regla es al menos 10 caracteres, y se acepta una contraseña usada antes.
+  - Si sale bien, pasa todo esto:
+    - se pone la contraseña;
+    - el link queda usado;
+    - se retiran los otros links sin usar del User;
+    - se cierra cada Session del User;
+    - este dispositivo inicia sesión y cae en Home;
+    - el conteo del freno del email se reinicia y su bloqueo se levanta, nunca el de la dirección.
+  - Un link que quedó viejo entre abrirlo y enviarlo responde 404.
+- **Sin freno en las rutas de reseteo**: son abiertas y sin freno, como las rutas de Invitation. Un email bloqueado es justamente para quien es el link.
+- **Cómo se entera el vendedor** de que existe el reseteo: desde "Forgot your password?" en Sign in (ver "Entrar" en La app). La app solo lo explica; pedirlo y emitirlo pasan fuera de la app.
 
 ### Business
 
-- **Reading the business** answers its name and its users. Users are shown by email only, sorted by email.
-- **Renaming the business**:
-  - The name is trimmed, inner spaces are collapsed, it is up to 60 characters and it cannot be blank.
-  - There is no uniqueness check across the installation, since a refusal would reveal another business.
-- Both routes take the business only from the session. They are in `tests/test_gated_routes.py` and the isolation sweep.
-- **Pricing settings**: each business also holds its two pricing switches, defined in pricing-settings.md.
+- **Leer el Business** responde su nombre y sus Users. Los Users se muestran solo por email, ordenados por email.
+- **Renombrar el Business**:
+  - El nombre se recorta, los espacios internos se colapsan, tiene hasta 60 caracteres y no puede estar en blanco.
+  - No hay control de unicidad en la instalación, porque un rechazo revelaría otro Business.
+- Ambas rutas toman el Business solo de la Session. Están en `tests/test_gated_routes.py` y en el barrido de aislamiento.
+- **Pricing settings**: cada Business también guarda sus dos interruptores de precios, definidos en pricing-settings.md.
 
-### Removing a business (operator command)
+### Eliminar un Business (comando del Operator)
 
-- **The command**: a server command run by the operator, like `scripts/invite-business.sh`. No administrator and no entry for it in the app (ADR-0002).
-  - It names the business by the email of any of its users, trimmed and lowercased as at login.
-  - An email matching no user prints a plain "no business for that email" and does nothing, in either mode.
-- **Dry run**:
-  - names the business found;
-  - prints counts by kind: users, customers, varieties, price entries, stock entries, sales, sale lines, payments, expenses, expense categories, catalog settings, and invitations and reset links (deleted only);
-  - writes no file, changes no row, never asks for confirmation.
-- **Real run**:
-  1. Names the business and asks the operator to type its name exactly; it cannot skip this. A wrong name, a cancel or no answer writes nothing and deletes nothing.
-  2. Writes the export file, then reads it back.
-  3. In one transaction, deletes every row of the business across every table discovered from the schema (not a hand-kept list). That includes:
-     - the business and its users;
-     - every invitation and every reset link of its users, whatever their status;
-     - the removed users' emails' login-attempt history.
-  4. Commits and reports success only if the exported counts equal the deleted counts for every exported kind.
-  5. Reports the business name, the file's path, and the counts exported and deleted.
-- **Any failure before the commit** deletes nothing: writing or reading back the file, a count mismatch, or a database busy with other businesses' writes. The operator runs it again.
-  - It also removes the export file the run created, whether it was written fully or only partly, so no file is left behind (ADR-0015). This includes a write that fails after the file was already created on disk, and an interrupted run.
-  - A record created by the leaving business's own users between export and delete makes the counts differ, and the delete is blocked rather than losing it.
-- **Commit outcome unknown**: the commit itself fails in a way that leaves it unknown whether it was applied (for example, the connection to the database drops during the commit).
-  - The commit is one transaction: either every row of the business is gone or every row is still there. There is no partial removal.
-  - The command keeps the export file, since it may be the only copy left of the business's books. It never says "nothing deleted" and never reports success. It exits with a failure status.
-  - It prints: "Commit outcome unknown; export kept at <path>. Run with --dry-run and the same email before anything else." With it: the business name and the counts exported, never counts deleted.
-  - **Checking, then running again**: a rerun is allowed, with no lock or stored marker. The dry run with the same email tells which way it went:
-    - "no business for that email": the removal happened. The kept file is the export to hand over.
-    - The business is named with its counts: nothing was deleted. A real run is then an ordinary run.
-      - It writes a new file under a new name, never overwriting the kept one. Only the newest file is handed over.
-      - The operator deletes the kept, out-of-date file by hand, since it holds personal data. The command never touches a file it did not create in the same run.
-- **Other businesses** keep using the app during the run, are never slowed on purpose and are never told anything.
-- **The export file**:
-  - one JSON file per real run, owner-only permissions, written to the server's file system and never anywhere the app serves;
-  - its name carries the business name (slugified) and the run's date and time; an existing file is never overwritten;
-  - plain values: ISO 8601 dates, whole pesos, grams as decimals with up to two places;
-  - each record names what it refers to (customer, variety, category) as well as its id;
-  - it holds every recorded fact as stored:
-    - the business name and its pricing settings (Bulk price and VIP customers);
-    - users (email and joining date);
-    - customers (name, phone number, VIP);
-    - varieties with their low-stock threshold and catalog attributes;
-    - price entries, with their VIP price;
-    - stock entries (date, variety, grams, origin, total cost, note; a lot is its stock entry, not a separate record);
-    - sales (date, customer, shipping charged, note, how it was paid);
-    - sale lines (variety, grams, stored price per gram, pricing rule, line total);
-    - payments (date, amount, method, customer, and their sale for an on-the-spot payment);
-    - expense categories and expenses;
-    - the catalog header and footer;
-  - it leaves out:
-    - computed figures (balances, owing since, settlement, stock, cost per gram, cost of goods);
-    - password hashes;
-    - any stored secret, such as a Telegram bot token;
-    - invitations and reset links;
-    - login-attempt history.
-- **After removal**:
-  - a session left open by a removed user gets 401 and goes to login;
-  - a new invitation to the same email opens a new business like any other, with a clean login-attempt count and nothing of the old business.
-- **Privacy** (ADR-0005): nothing personal is printed or logged (no emails, names, phone numbers, amounts or file contents). The business name is not personal data and may be printed.
-- **Its tests and the clock** (criterion 37): every instant the removal tests use, an invitation's issue time included, comes from the movable clock (ADR-0001), never from the real one. Ordinary runs pin one Argentina day, and one check moves the clock across a month boundary and a year boundary.
+- **El comando**: un comando del servidor que corre el Operator, como `scripts/invite-business.sh`. Sin administrador y sin entrada para él en la app (ADR-0002).
+  - Nombra al Business por el email de cualquiera de sus Users, recortado y en minúsculas como en el login.
+  - Un email que no coincide con ningún User imprime un simple "no business for that email" y no hace nada, en ninguno de los dos modos.
+- **Corrida de prueba**:
+  - nombra al Business encontrado;
+  - imprime conteos por tipo: users, customers, varieties, price entries, stock entries, sales, sale lines, payments, expenses, expense categories, catalog settings, e invitations y reset links (solo borrados);
+  - no escribe ningún archivo, no cambia ninguna fila, nunca pide confirmación.
+- **Corrida real**:
+  1. Nombra al Business y le pide al Operator que tipee su nombre exacto; no se puede saltear. Un nombre equivocado, una cancelación o ninguna respuesta no escriben ni borran nada.
+  2. Escribe el archivo de export y después lo relee.
+  3. En una sola transacción, borra cada fila del Business en cada tabla descubierta a partir del esquema (no una lista mantenida a mano). Eso incluye:
+     - el Business y sus Users;
+     - cada Invitation y cada Reset link de sus Users, sea cual sea su estado;
+     - el historial de intentos de login de los emails de los Users eliminados.
+  4. Hace commit e informa éxito solo si los conteos exportados son iguales a los borrados para cada tipo exportado.
+  5. Informa el nombre del Business, la ruta del archivo y los conteos exportados y borrados.
+- **Cualquier falla antes del commit** no borra nada: escribir o releer el archivo, una diferencia de conteos, o una base de datos ocupada con escrituras de otros Businesses. El Operator la vuelve a correr.
+  - También elimina el archivo de export que creó la corrida, se haya escrito entero o en parte, así que no queda ningún archivo (ADR-0015). Esto incluye una escritura que falla después de que el archivo ya se creó en disco, y una corrida interrumpida.
+  - Un registro creado por los propios Users del Business que se va entre el export y el borrado hace que los conteos difieran, y el borrado se bloquea en vez de perderlo.
+- **Resultado del commit desconocido**: el commit mismo falla de una forma que deja sin saber si se aplicó (por ejemplo, se cae la conexión con la base durante el commit).
+  - El commit es una transacción: o no queda ninguna fila del Business o siguen estando todas. No hay eliminación parcial.
+  - El comando conserva el archivo de export, porque puede ser la única copia que queda de los libros del Business. Nunca dice "nothing deleted" y nunca informa éxito. Termina con un estado de falla.
+  - Imprime: "Commit outcome unknown; export kept at <path>. Run with --dry-run and the same email before anything else." Junto con eso: el nombre del Business y los conteos exportados, nunca conteos borrados.
+  - **Verificar y volver a correr**: se permite volver a correr, sin bloqueo ni marca guardada. La corrida de prueba con el mismo email dice para qué lado fue:
+    - "no business for that email": la eliminación se hizo. El archivo conservado es el export para entregar.
+    - Se nombra el Business con sus conteos: no se borró nada. Una corrida real es entonces una corrida común.
+      - Escribe un archivo nuevo con un nombre nuevo, sin pisar nunca el conservado. Solo se entrega el archivo más nuevo.
+      - El Operator borra a mano el archivo conservado y desactualizado, porque tiene datos personales. El comando nunca toca un archivo que no creó en la misma corrida.
+- **Los otros Businesses** siguen usando la app durante la corrida, nunca se los frena a propósito y nunca se les avisa nada.
+- **El archivo de export**:
+  - un archivo JSON por corrida real, con permisos solo para el dueño, escrito en el sistema de archivos del servidor y nunca donde la app sirve;
+  - su nombre lleva el nombre del Business (como slug) y la fecha y hora de la corrida; nunca se pisa un archivo existente;
+  - valores simples: fechas ISO 8601, pesos enteros, gramos como decimales de hasta dos lugares;
+  - cada registro nombra aquello a lo que se refiere (customer, variety, category) además de su id;
+  - guarda cada dato registrado tal como está:
+    - el nombre del Business y sus Pricing settings (Bulk price y VIP customers);
+    - users (email y fecha en que se sumaron);
+    - customers (nombre, Phone number, VIP);
+    - varieties con su Low-stock threshold y sus Catalog attributes;
+    - price entries, con su VIP price;
+    - stock entries (fecha, variety, gramos, origen, costo total, nota; un Lot es su Stock entry, no un registro aparte);
+    - sales (fecha, customer, Shipping charged, Note, cómo se pagó);
+    - sale lines (variety, gramos, precio por gramo guardado, Pricing rule, total de la línea);
+    - payments (fecha, monto, método, customer, y su Sale en el caso de un On-the-spot payment);
+    - expense categories y expenses;
+    - el Catalog header and footer;
+  - deja afuera:
+    - cifras calculadas (Balances, Owing since, Settlement, Stock, costo por gramo, Cost of goods sold);
+    - hashes de contraseñas;
+    - cualquier secreto guardado, como un token de bot de Telegram;
+    - Invitations y Reset links;
+    - el historial de intentos de login.
+- **Después de la eliminación**:
+  - una Session que dejó abierta un User eliminado recibe 401 y va al login;
+  - una Invitation nueva al mismo email abre un Business nuevo como cualquier otro, con un conteo de intentos de login limpio y nada del Business anterior.
+- **Privacidad** (ADR-0005): no se imprime ni se registra nada personal (ni emails, nombres, Phone numbers, montos ni contenido del archivo). El nombre del Business no es un dato personal y se puede imprimir.
+- **Sus tests y el reloj** (criterio 37): cada instante que usan los tests de la eliminación, incluida la hora de emisión de una Invitation, viene del reloj movible (ADR-0001), nunca del real. Las corridas comunes fijan un día de Argentina, y un control mueve el reloj cruzando un límite de mes y uno de año.
 
-### The app
+### La app
 
-- **Serving**: the backend serves the built front from `web/dist` on the API's origin and port.
-  - Front paths never collide with API paths.
-  - Nothing outside `web/dist` is reachable.
-  - Front routes are public static files, outside the API's route list. Their paths are in English, with redirects from the old Spanish ones (navigation.md).
-- **Installable, with no offline mode**:
-  - a manifest with name, colors and icons for Android and iOS (its fields are in "The installed shell" below);
-  - a service worker that caches nothing.
-- **Install on the home network**, served over plain http (ADR-0002):
-  - iOS installs through "Add to Home Screen", with no walkthrough;
-  - Android gets a home-screen shortcut, since browsers allow a service worker and the install prompt only on a secure origin;
-  - the app shows no banner or explanation of the difference.
-- **Install on the published installation**, over Render's TLS: Android's own install prompt is offered when the browser makes it available. The manifest and service worker already in place need no further work for it.
-- **No network**: when a request fails because the network dropped, the open app shows "No connection" on any origin. This does not rely on the service worker.
-- **Theme**: the app is Automatic by default: with nothing stored it follows the phone's light or dark setting live, and re-checks it when the person comes back to the app. A Light or Dark stored on that device wins over the phone. The one place a person chooses is Settings → Appearance, Theme: Automatic, Light or Dark (navigation.md).
-  - The rule is one: the attribute on `<html>` carries the resolved theme. No attribute means light, `data-tema="oscuro"` means dark. There is no exception per screen, route or session. The stored value is `claro` or `oscuro`; no key, any other value or a storage error is Automatic.
-  - **The theme choice is remembered per device**:
-    - tapping Automatic, Light or Dark applies it and remembers it at once, with no save, toast or unsaved-changes warning;
-    - the device keeps only the choice: nothing personal, no money, no session and nothing about a business;
-    - it belongs to the device, not to the user or the business; a partner's device and the user's other devices are unaffected;
-    - logging out does not clear it;
-    - a stored Dark shows on every screen of that device, the sign-in screen, the invitation and the reset screens included; a device with nothing stored follows the phone;
-    - the screens before login have no theme control.
-  - Native controls and scrollbars follow the resolved theme: light with no attribute, dark with `data-tema="oscuro"`.
-  - Both themes carry the Yerba tokens, and every state rule holds in both.
-  - The manifest's colours and the splash are static and light. The status bar follows the resolved theme the app shows (`data-tema`, which on Automatic already tracks the phone), not the system's setting directly; on iOS it stays light, because iOS fixes its style at launch.
-  - The font is self-hosted.
-- **Language and formats**: every word on screen in English (product-language.md, which supersedes the earlier Spanish rule). Money `$ 11.000`, a negative amount `−$ 4.500`, grams `3,5 g`, dates `dd/mm`. The catalog text keeps its own Telegram format (`$11.000`, catalog.md).
-- **Getting in** (`Go to sign in`, the new-business screen (`NegocioNuevo`), the invitation screen (`Invitacion`), the reset screen):
-  - **Drawn from the design** in `docs/product/design-system/pantallas/` (GH-49). The drawings carry the app's English product text.
-  - **One centred, phone-width layout** on every viewport, the computer's included; there is no computer-only layout for these screens.
-  - **The sign-in screen** (`Entrar`):
-    - the labels "Email address" and "Password" and the button "Sign in";
-    - a fixed hint under the button that five failed attempts lock the email for 15 minutes, and no count of attempts left;
-    - a wrong password and an unknown email show the same refusal; refusals show inline and keep what was typed.
-  - Either lock shows the brake message. No copy names the address brake, and both locks look and read the same.
-  - A request answered 401 goes to login.
-  - An unknown, used or expired invitation shows "This invitation no longer works".
-  - Opening `/invitation/{token}` or `/reset/{token}` while signed in logs out first, through the backend, then shows the invitation or the reset screen as if signed out. That includes the user's own business's join link, and a reset link for the same user.
-  - **The reset screen** (`/reset/{token}`) reuses the invitation screen's layout (`Invitacion`); it has no design file of its own and is registered in `scripts/design/screens.json` as a signed-out phone screen:
-    - "Choose your new password", one field "New password" (hidden by default, with a reveal) and the button "Save and sign in";
-    - a password under 10 characters shows the same refusal as accepting an invitation and keeps what was typed;
-    - on success it goes to Home, with no toast.
-  - **A dead reset link**: an unknown, used, expired or retired link shows "This link no longer works. Ask whoever sent it for a new one."
-    - It shows both when the link is opened and when a submit answers 404.
-    - It keeps nothing typed and never says why the link is dead.
-    - Its only button goes to the sign-in screen.
-- **Where screens sit**: the bar, the sidebar, More, Settings, the chrome and back rule and the first run are navigation.md. Home is the panel (results.md).
+- **Servir**: el backend sirve el front construido desde `web/dist` en el origen y el puerto de la API.
+  - Las rutas del front nunca chocan con las de la API.
+  - Nada fuera de `web/dist` se alcanza.
+  - Las rutas del front son archivos estáticos públicos, fuera de la lista de rutas de la API. Sus paths están en inglés, con redirecciones desde los viejos en español (navigation.md).
+- **Instalable, sin modo offline**:
+  - un manifest con nombre, colores e íconos para Android e iOS (sus campos están en "El shell instalado" abajo);
+  - un service worker que no cachea nada.
+- **Instalar en la red de casa**, servida por http plano (ADR-0002):
+  - iOS se instala con "Add to Home Screen", sin instructivo;
+  - Android recibe un acceso directo en la pantalla de inicio, porque los navegadores permiten un service worker y el aviso de instalación solo en un origen seguro;
+  - la app no muestra ningún banner ni explicación de la diferencia.
+- **Instalar en la instalación publicada**, sobre el TLS de Render: se ofrece el aviso de instalación propio de Android cuando el navegador lo habilita. El manifest y el service worker que ya están no necesitan más trabajo para eso.
+- **Sin red**: cuando un pedido falla porque se cayó la red, la app abierta muestra "No connection" en cualquier origen. No depende del service worker.
+- **Tema**: la app es Automatic por defecto: sin nada guardado sigue el modo claro u oscuro del teléfono en vivo, y lo vuelve a revisar cuando la persona vuelve a la app. Un Light o Dark guardado en ese dispositivo gana sobre el teléfono. El único lugar donde se elige es Settings → Appearance, Theme: Automatic, Light o Dark (navigation.md).
+  - La regla es una: el atributo en `<html>` lleva el tema resuelto. Sin atributo es claro, `data-tema="oscuro"` es oscuro. No hay excepción por pantalla, ruta ni Session. El valor guardado es `claro` u `oscuro`; sin clave, cualquier otro valor o un error de almacenamiento es Automatic.
+  - **La Theme choice se recuerda por dispositivo**:
+    - tocar Automatic, Light o Dark la aplica y la recuerda al instante, sin guardar, sin toast y sin aviso de cambios sin guardar;
+    - el dispositivo guarda solo la elección: nada personal, nada de dinero, ninguna Session y nada sobre un Business;
+    - es del dispositivo, no del User ni del Business; el dispositivo de un socio y los otros dispositivos del User no se ven afectados;
+    - cerrar sesión no la borra;
+    - un Dark guardado se muestra en cada pantalla de ese dispositivo, la pantalla de Sign in, la de Invitation y la de reseteo incluidas; un dispositivo sin nada guardado sigue al teléfono;
+    - las pantallas anteriores al login no tienen control de tema.
+  - Los controles nativos y las barras de scroll siguen el tema resuelto: claros sin atributo y oscuros con `data-tema="oscuro"`.
+  - Ambos temas llevan los tokens Yerba, y toda regla de estados vale en ambos.
+  - Los colores del manifest y el splash son estáticos y claros. La barra de estado sigue el tema resuelto que muestra la app (`data-tema`, que en Automatic ya sigue al teléfono), no directamente el modo del sistema; en iOS queda clara, porque iOS fija su estilo al arrancar.
+  - La fuente está alojada en la propia app.
+- **Idioma y formatos**: cada palabra en pantalla en inglés (product-language.md, que reemplaza la regla anterior en español). Dinero `$ 11.000`, un monto negativo `−$ 4.500`, gramos `3,5 g`, fechas `dd/mm`. El texto del Catalog conserva su propio formato de Telegram (`$11.000`, catalog.md).
+- **Entrar** (`Go to sign in`, la pantalla de Business nuevo (`NegocioNuevo`), la de Invitation (`Invitacion`), la de reseteo):
+  - **Dibujadas a partir del diseño** en `docs/product/design-system/pantallas/` (GH-49; Sign in rediseñada en GH-521 sobre 25-ingreso). Las líneas en español de los dibujos son una guía de significado; la app las construye como su equivalente en inglés (Product language), desde el Copy module.
+  - **Una sola disposición centrada, de ancho de teléfono**, en todo viewport, el de la computadora incluido; no hay disposición solo para computadora para estas pantallas, ni pulido dedicado para la computadora.
+  - **La pantalla de Sign in** (`Entrar`, claro; `EntrarOscuro`, oscuro), de arriba hacia abajo:
+    - la Yerba mark con el Wordmark (brand.md);
+    - el equivalente en inglés de "Hola de nuevo. Tu negocio, anotado.";
+    - los campos "Email address" y "Password" y el botón "Sign in"; al abrir, el foco está en "Email address", así que en el teléfono el teclado ya está abierto, y todo se ve sin hacer scroll;
+    - un aviso fijo bajo el botón de que cinco intentos fallidos bloquean el email por 15 minutos, sin ningún conteo de intentos restantes;
+    - "Forgot your password?", siempre visible, también después de que el Login brake bloqueó el email; abre la Forgot sheet;
+    - bajo el formulario, una línea de texto plano que dice que se entra con una Invitation de tu Business. No es un link, no hace nada y no es un camino para registrarse.
+    - Una contraseña equivocada y un email desconocido muestran el mismo rechazo; los rechazos se muestran en el lugar y conservan lo tipeado.
+  - **La Forgot sheet**, que abre "Forgot your password?":
+    - es una Sheet: a pantalla completa en el teléfono, con "Close" (o el gesto de volver) como única salida; en la computadora conserva su propio marco;
+    - es texto fijo, igual para todos: sin campos, sin botón de envío, sin datos de contacto y sin mensaje armado para copiar o compartir;
+    - no lee, no muestra y no envía nada de lo tipeado en Sign in; al cerrarla se vuelve a Sign in con lo tipeado intacto, y abrirla o cerrarla no hace ningún pedido;
+    - dice que el Reset link lo da la persona que maneja la app para tu Business (la que te mandó la Invitation), y no llega por email;
+    - dice que le pidas a esa persona un Reset link y le digas con qué email iniciás sesión;
+    - dice que el link funciona una sola vez, por 24 horas, y te deja elegir una contraseña nueva sin la actual;
+    - no usa la palabra "operator" ni nombra ningún canal (WhatsApp, Telegram, un número de teléfono), y no guarda ningún contacto: así sirve a cualquier instalación (Assume nothing);
+    - no dice que un reseteo levanta el bloqueo: un reseteo reinicia solo el conteo del email, nunca el de la dirección, así que esa línea engañaría a quien acaba de quedar bloqueado.
+  - Cualquiera de los bloqueos muestra el mensaje del freno, sin cambios y sin mención de "Forgot your password?". Ningún texto nombra el freno por dirección, y ambos bloqueos se ven y se leen igual.
+  - Un pedido respondido con 401 va al login.
+  - Una Invitation desconocida, usada o vencida muestra "This invitation no longer works".
+  - Abrir `/invitation/{token}` o `/reset/{token}` con la sesión iniciada cierra la sesión primero, por el backend, y después muestra la pantalla de Invitation o de reseteo como si no hubiera sesión. Eso incluye el link para sumarse al propio Business del User, y un Reset link del mismo User.
+  - **La pantalla de reseteo** (`/reset/{token}`) reusa la disposición de la pantalla de Invitation (`Invitacion`); no tiene archivo de diseño propio y está registrada en `scripts/design/screens.json` como pantalla de teléfono sin sesión:
+    - "Choose your new password", un campo "New password" (oculto por defecto, con un botón para mostrarlo) y el botón "Save and sign in";
+    - una contraseña de menos de 10 caracteres muestra el mismo rechazo que al aceptar una Invitation y conserva lo tipeado;
+    - si sale bien va a Home, sin toast.
+  - **Un Reset link muerto**: un link desconocido, usado, vencido o retirado muestra "This link no longer works. Ask whoever sent it for a new one."
+    - Se muestra tanto al abrir el link como cuando un envío responde 404.
+    - No conserva nada de lo tipeado y nunca dice por qué el link está muerto.
+    - Su único botón va a la pantalla de Sign in.
+- **Dónde están las pantallas**: la barra, la barra lateral, More, Settings, el marco y la regla de vuelta y el primer uso son navigation.md. Home es el Panel (results.md).
 
-### The installed shell
+### El shell instalado
 
-How the app fills a phone's screen and responds to touch once installed (criteria 33–36). It changes no screen's own layout and no bar or header behaviour (#59), and it builds no theme choice: the status bar follows whatever sets `data-tema`.
+Cómo la app llena la pantalla de un teléfono y responde al toque una vez instalada (criterios 33–36). No cambia la disposición propia de ninguna pantalla ni el comportamiento de la barra o el encabezado (#59), y no construye ninguna Theme choice: la barra de estado sigue a lo que ponga `data-tema`.
 
-- **Document and viewport**:
-  - the viewport reads `width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content`;
-  - there is no `maximum-scale` and no `user-scalable=no`: pinch-zoom stays allowed;
-  - `mobile-web-app-capable` is set; `apple-mobile-web-app-status-bar-style` is `default`;
-  - on iOS the top inset is handled, so content never sits under the notch;
+- **Documento y viewport**:
+  - el viewport dice `width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content`;
+  - no hay `maximum-scale` ni `user-scalable=no`: el zoom con dos dedos sigue permitido;
+  - `mobile-web-app-capable` está puesto; `apple-mobile-web-app-status-bar-style` es `default`;
+  - en iOS se maneja el inset de arriba, así que el contenido nunca queda bajo el notch;
   - `-webkit-text-size-adjust: 100%`.
-- **Status bar**:
-  - exactly one `theme-color` meta, with no `media` attribute, light `--papel` in the static HTML;
-  - one place sets or removes `data-tema` and updates `theme-color` with it, including at app start, from the theme's paper token, never a copied value;
-  - there is no pair of metas with `prefers-color-scheme`: the system setting reaches the page only through the theme module;
-  - only Android follows it live; iOS keeps the light `default` strip in both themes.
-- **Insets**: four tokens, `--inset-arriba`, `--inset-abajo`, `--inset-izquierda` and `--inset-derecha`, built from `env(safe-area-inset-*)`.
-  - Top and bottom are used by the bar, the header, the fixed "+ New sale", sheets and toasts.
-  - Left and right keep content, the bar, sheets and toasts clear of a side cut-out, so landscape is safe but not designed.
-- **Height**: every height tied to the screen uses `dvh`, `.pantalla`, `.disposicion` and the sheets included.
-- **Gestures and press**:
-  - `overscroll-behavior: none` on `html` and `body`, `contain` on scrolling regions;
-  - `-webkit-tap-highlight-color` transparent; `touch-action: manipulation`;
-  - `user-select: none` on buttons, tabs and the bar; text inside lists and fields stays selectable;
-  - `.boton*`, rows and bar items get an `:active` state built from tokens, in both themes.
-- **Keyboard**: on iOS and Android, when the keyboard opens, the page and every sheet keep the focused field in view and can scroll, so "Save" or "Record payment" is reachable by scrolling.
-  - A save action pinned above the keyboard is not promised; that is each screen's own decision.
-  - The tab bar and "+ New sale" need not stay above the keyboard, since forms and sheets don't show them (navigation.md).
+- **Barra de estado**:
+  - exactamente un meta `theme-color`, sin atributo `media`, con `--papel` claro en el HTML estático;
+  - un solo lugar pone o saca `data-tema` y actualiza `theme-color` con él, también al arrancar la app, a partir del token de papel del tema, nunca de un valor copiado;
+  - no hay un par de metas con `prefers-color-scheme`: el modo del sistema llega a la página solo a través del módulo de tema;
+  - solo Android lo sigue en vivo; iOS mantiene la franja `default` clara en ambos temas.
+- **Insets**: cuatro tokens, `--inset-arriba`, `--inset-abajo`, `--inset-izquierda` y `--inset-derecha`, armados con `env(safe-area-inset-*)`.
+  - Arriba y abajo los usan la barra, el encabezado, el "+ New sale" fijo, las Sheets y los toasts.
+  - Izquierda y derecha mantienen el contenido, la barra, las Sheets y los toasts lejos de un recorte lateral, así que el horizontal es seguro pero no está diseñado.
+- **Altura**: toda altura atada a la pantalla usa `dvh`, `.pantalla`, `.disposicion` y las Sheets incluidas.
+- **Gestos y presión**:
+  - `overscroll-behavior: none` en `html` y `body`, `contain` en las regiones con scroll;
+  - `-webkit-tap-highlight-color` transparente; `touch-action: manipulation`;
+  - `user-select: none` en botones, pestañas y la barra; el texto dentro de listas y campos sigue seleccionable;
+  - `.boton*`, las filas y los elementos de la barra tienen un estado `:active` armado con tokens, en ambos temas.
+- **Teclado**: en iOS y Android, cuando se abre el teclado, la página y cada Sheet mantienen el campo con foco a la vista y pueden hacer scroll, así que "Save" o "Record payment" se alcanzan haciendo scroll.
+  - No se promete una acción de guardar fijada sobre el teclado; es una decisión propia de cada pantalla.
+  - La barra de pestañas y "+ New sale" no tienen que quedar sobre el teclado, porque los formularios y las Sheets no los muestran (navigation.md).
 - **Manifest**:
-  - `id` `"/"` (never changed once shipped), `scope` `"/"`, `lang` `"en"`, `display` `"standalone"`;
-  - `theme_color` and `background_color` light `--papel`, and no `orientation`;
-  - icons: the existing 192 and 512 keep `"purpose": "any"` unchanged;
-  - a maskable 512 keeps today's look (same background and mark colours, full-bleed, the mark inside the safe zone), drawn by design.
-- **Splash**: no `apple-touch-startup-image`; iOS shows its own blank launch screen, accepted. Android's splash comes from the manifest's `background_color` and icon.
-- **Accepted limitations**: on iOS the status strip stays light with dark text above the dark paper in the dark theme; on iOS the launch screen is blank until the app paints.
+  - `id` `"/"` (nunca cambia una vez publicado), `scope` `"/"`, `lang` `"en"`, `display` `"standalone"`;
+  - `theme_color` y `background_color` en `--papel` claro, y sin `orientation`;
+  - íconos: el 192 y el 512 existentes conservan `"purpose": "any"` sin cambios;
+  - un 512 maskable conserva el look de hoy (los mismos colores de fondo y de marca, a sangre, la marca dentro de la zona segura), dibujado por diseño.
+- **Splash**: sin `apple-touch-startup-image`; iOS muestra su propia pantalla de arranque en blanco, aceptado. El splash de Android sale del `background_color` y el ícono del manifest.
+- **Limitaciones aceptadas**: en iOS la franja de estado queda clara con texto oscuro sobre el papel oscuro en el tema oscuro; en iOS la pantalla de arranque está en blanco hasta que la app pinta.
 
-### The phone standard (every screen)
+### El estándar del teléfono (todas las pantallas)
 
-The rule every screen meets at phone widths (criteria 37–41). It is written once, with the same eight requirements and the same "checked" or "review" labels, in two places:
+La regla que cumple cada pantalla en anchos de teléfono (criterios 37–41). Se escribe una sola vez, con los mismos ocho requisitos y las mismas etiquetas "checked" o "review", en dos lugares:
 
 - CODING_STANDARDS §10 "Phone";
-- the design README's "En el celular".
+- el "En el celular" del README de diseño.
 
-This file only says where it applies and how it is kept true. It does not restate the requirements.
+Este archivo solo dice dónde se aplica y cómo se mantiene cierta. No repite los requisitos.
 
-- **Where it applies**: below the 900 px computer breakpoint only. The computer layouts are out of its scope.
-  - Getting-in screens are screens, not sheets, and every rule applies to them.
-  - Confirmations are short dialogs, not sheets.
-- **What it cites, not restates**:
-  - this file's installed shell: the viewport meta, `dvh`, the inset tokens, the `:active` state, the tap highlight and `contain` on scrolling regions;
-  - ADR-0027: a sheet is a history entry;
-  - ADR-0028: New sale pinned to the visual viewport;
-  - ADR-0029: the contrast table.
-- **Viewport meta**: the standard states only the outcome. The focused field stays in view and the submit is reachable by scrolling. Nobody changes the meta outside #77, which ships it with ADR-0028's phone comparison of every screen. Until then, ADR-0028's hook stands.
-- **Exceptions**: an area's product doc may record a deliberate exception. Without one, the standard wins over an area issue. ADRs decide how a rule is implemented.
-- **The check, `web/e2e/mobile.spec.ts`**:
-  - **Setup**: Playwright with isMobile and hasTouch, at 320×568, 375×812, 430×932 and 246×437 (130 %), in light and dark.
-  - **Coverage**:
-    - every route in `scripts/design/screens.json`;
-    - every form and sheet;
-    - the shared `Estados` states: the brake message, both dead-link texts, "No connection", the generic retry, both "That is gone." forms and loading.
+- **Dónde se aplica**: solo por debajo del corte de 900 px de la computadora. Las disposiciones de computadora quedan fuera de su alcance.
+  - Las pantallas de entrada son pantallas, no Sheets, y toda regla se les aplica. La Forgot sheet es una Sheet y se le aplica la regla de las Sheets.
+  - Las confirmaciones son diálogos cortos, no Sheets.
+- **Qué cita, sin repetir**:
+  - el shell instalado de este archivo: el meta viewport, `dvh`, los tokens de inset, el estado `:active`, el resaltado de toque y `contain` en las regiones con scroll;
+  - ADR-0027: una Sheet es una entrada del historial;
+  - ADR-0028: New sale fijado al viewport visual;
+  - ADR-0029: la tabla de contraste.
+- **Meta viewport**: el estándar dice solo el resultado. El campo con foco queda a la vista y el envío se alcanza haciendo scroll. Nadie cambia el meta fuera de #77, que lo entrega con la comparación en teléfono de cada pantalla de ADR-0028. Hasta entonces, vale el hook de ADR-0028.
+- **Excepciones**: el doc de producto de un área puede registrar una excepción deliberada. Sin una, el estándar gana sobre un issue de área. Los ADRs deciden cómo se implementa una regla.
+- **El control, `web/e2e/mobile.spec.ts`**:
+  - **Preparación**: Playwright con isMobile y hasTouch, en 320×568, 375×812, 430×932 y 246×437 (130 %), en claro y oscuro.
+  - **Cobertura**:
+    - cada ruta de `scripts/design/screens.json`;
+    - cada formulario y Sheet, la Forgot sheet incluida;
+    - los estados compartidos de `Estados`: el mensaje del freno, los dos textos de link muerto, "No connection", el reintento genérico, las dos formas de "That is gone." y cargando.
 
-    A front route missing from `screens.json` fails it.
-  - **Fixture**: a 60-character name, and nine-digit figures ("$ 999.999.999", and "−$ 999.999.999" on Profit and Cash).
-  - **Empty states**: the forbidden empty-state wordings while data loads are read from one list in the spec.
-  - **Not automated**: the real keyboard and the real-device pass stay by eye, as the installed shell and ADR-0028 require.
-- **Offender list**:
-  - An entry is one screen, one rule and one issue number.
-  - The run fails on a new offender, on an entry whose screen now passes, and on an entry with no issue number.
-  - There is no network lookup; review checks that the number is a real, open area issue.
-  - The chrome assertions ship enabled, with today's failing screens listed against #59.
-- **Attached**: `scripts/design/compare.sh` output and every area PR attach the check's result.
+    Una ruta del front que falte en `screens.json` lo hace fallar.
+  - **Datos de prueba**: un nombre de 60 caracteres, y cifras de nueve dígitos ("$ 999.999.999", y "−$ 999.999.999" en Profit y Cash).
+  - **Estados vacíos**: las redacciones de estado vacío prohibidas mientras cargan los datos se leen de una sola lista en el spec.
+  - **No automatizado**: el teclado real y la pasada en un dispositivo real siguen a ojo, como piden el shell instalado y ADR-0028.
+- **Lista de infractores**:
+  - Una entrada es una pantalla, una regla y un número de issue.
+  - La corrida falla ante un infractor nuevo, ante una entrada cuya pantalla ahora pasa y ante una entrada sin número de issue.
+  - No hay consulta por red; la revisión verifica que el número sea un issue de área real y abierto.
+  - Las afirmaciones sobre el marco salen activadas, con las pantallas que hoy fallan listadas contra #59.
+- **Adjunto**: la salida de `scripts/design/compare.sh` y cada PR de área adjuntan el resultado del control.
 
-### In Settings: Business, Users, Appearance, Your account
+### En Settings: Business, Users, Appearance, Your account
 
-These groups of Settings (navigation.md) replace the former Business screen, which no longer exists; `/negocio` redirects to Settings. Each is its own subscreen, a form: "Close", and a confirmation when leaving with unsaved changes; an untouched one closes at once. (Prices, between Users and Integrations, is pricing-settings.md.)
+Estos grupos de Settings (navigation.md) reemplazan la vieja pantalla de Business, que ya no existe; `/negocio` redirige a Settings. Cada uno es su propia subpantalla, un formulario: "Close", y una confirmación al salir con cambios sin guardar; uno sin tocar se cierra al instante. (Prices, entre Users e Integrations, es pricing-settings.md.)
 
-- **Business**: rename the business. Toast "Business renamed"; refusals inline, keeping what was typed.
+- **Business**: renombrar el Business. Toast "Business renamed"; rechazos en el lugar, conservando lo tipeado.
 - **Users**:
-  - the users by email, sorted by email, the signed-in one marked "you"; it always lists at least the signed-in user;
-  - "Invite a partner": each tap creates one fresh join link, to copy or share with the phone's share sheet.
-  - **Sharing the join link** follows the same outcome rule as the catalog's Share (catalog.md):
-    - success, or closing the share sheet without sending, shows nothing and changes nothing;
-    - a share sheet waiting to finish never holds the screen: "Invite a partner", sharing again and copying the link are never disabled or held busy by it, and a share that never finishes counts as closing the sheet, with no time limit;
-    - a real failure, a refused second share included, shows the screen's existing fixed failure message and leaves copying the link available; no new message is added;
-    - only the latest share's outcome shows; an earlier one that finishes late shows nothing;
-    - nothing is copied on its own, and no message carries the link.
-- **Appearance**: Light and Dark, the current one marked by word or shape and `aria-checked` or equivalent, never by color alone. A tap applies and remembers the choice on the device (see Theme). It never has unsaved changes, so "Close" always closes at once.
+  - los Users por email, ordenados por email, el que tiene la sesión iniciada marcado "you"; siempre lista al menos al User con la sesión iniciada;
+  - "Invite a partner": cada toque crea un link nuevo para sumarse, para copiar o compartir con el menú de compartir del teléfono.
+  - **Compartir el link para sumarse** sigue la misma regla de resultado que el Share del Catalog (catalog.md):
+    - un éxito, o cerrar el menú de compartir sin enviar, no muestra nada ni cambia nada;
+    - un menú de compartir que espera terminar nunca retiene la pantalla: "Invite a partner", volver a compartir y copiar el link nunca se desactivan ni quedan ocupados por él, y un compartir que nunca termina cuenta como cerrar el menú, sin límite de tiempo;
+    - una falla real, un segundo compartir rechazado incluido, muestra el mensaje fijo de falla que ya tiene la pantalla y deja disponible copiar el link; no se agrega ningún mensaje nuevo;
+    - se muestra solo el resultado del último compartir; uno anterior que termina tarde no muestra nada;
+    - no se copia nada solo, y ningún mensaje lleva el link.
+- **Appearance**: Light y Dark, el actual marcado con palabra o forma y `aria-checked` o equivalente, nunca solo con color. Un toque aplica y recuerda la elección en el dispositivo (ver Tema). Nunca tiene cambios sin guardar, así que "Close" siempre cierra al instante.
 - **Your account**:
-  - "Change password", above "Sign out", opens a sheet:
-    - the fields are "Current password" and "New password";
-    - "New password" is asked once, hidden by default with a reveal, here and on the reset screen;
-    - on success, the toast "Password changed · we signed out your other sessions";
-    - a wrong current password reads "That is not the current password.". "Current password" is cleared and "New password" keeps what was typed;
-    - a password under 10 characters shows the same refusal as accepting an invitation, and a lock shows the login brake message, keeping what was typed;
-  - log out ("Sign out"), which goes to login.
+  - "Change password", arriba de "Sign out", abre una Sheet:
+    - los campos son "Current password" y "New password";
+    - "New password" se pide una sola vez, oculta por defecto con un botón para mostrarla, acá y en la pantalla de reseteo;
+    - si sale bien, el toast "Password changed · we signed out your other sessions";
+    - una contraseña actual incorrecta dice "That is not the current password.". "Current password" se vacía y "New password" conserva lo tipeado;
+    - una contraseña de menos de 10 caracteres muestra el mismo rechazo que al aceptar una Invitation, y un bloqueo muestra el mensaje del Login brake, conservando lo tipeado;
+  - cerrar sesión ("Sign out"), que va al login.
 
-### The published installation (ADR-0016)
+### La instalación publicada (ADR-0016)
 
 - **Hosting**:
-  - Render hosts the app and deploys automatically on every merge to `master`.
-  - Turso (libSQL, `aws-us-east-1`) holds the database, with point-in-time restore over the last 24 hours. ADR-0001's SQLite stands.
-- **Uptime**: UptimeRobot pings the health endpoint every 5 minutes. The health endpoint answers nothing about any business, not even that one exists: no name, id or count.
-- **Daily backup**: a GitHub Actions workflow copies the database every day and encrypts the copy with `age`.
-  - The copy is stored outside Render and Turso.
-  - The decrypting identity is kept outside the repository and both providers.
-- **Secrets**: none in the repository.
-- **`deploy/README.md`** gives every step from zero: Render's service, Turso's setup, the backup workflow and UptimeRobot's monitor.
-  - Render's network boundary and TLS replace binding to `127.0.0.1` behind a reverse proxy.
-- **Restore drill**: a script the operator runs by hand, with no timer and no notification channel.
-  - It restores from Turso's point-in-time restore and from the daily encrypted copy into a scratch target, with no effect on the running app.
-  - Each run reports the integrity check result, row counts and the time of the restored copy's latest change.
-  - Its cadence is set in `deploy/README.md`: once before going live, after any change to how the app or its backup are configured, and monthly.
-- **Publishing is a gate**:
-  - Nobody is given the public address until criteria 14–17 hold.
-  - Sellers may still be invited on the home network meanwhile.
-  - Publishing belongs to the installation as a whole: every business becomes reachable at once, kept apart only by session isolation (ADR-0004).
-- **No admin surface** (ADR-0002):
-  - Brake state, backup health and drill results are read from outside the app: logs, the drill's output and the GitHub Actions run.
-  - Nothing is seen or done from a signed-in session, and the app gains no screen, route or navigation entry for it. Settings holds no operator setting.
+  - Render aloja la app y hace deploy automático en cada merge a `master`.
+  - Turso (libSQL, `aws-us-east-1`) guarda la base de datos, con restauración a un punto en el tiempo sobre las últimas 24 horas. El SQLite de ADR-0001 sigue en pie.
+- **Disponibilidad**: UptimeRobot consulta el endpoint de salud cada 5 minutos. El endpoint de salud no responde nada sobre ningún Business, ni siquiera que existe uno: ni nombre, ni id, ni conteo.
+- **Backup diario**: un workflow de GitHub Actions copia la base de datos cada día y cifra la copia con `age`.
+  - La copia se guarda fuera de Render y de Turso.
+  - La identidad para descifrar se guarda fuera del repositorio y de ambos proveedores.
+- **Secretos**: ninguno en el repositorio.
+- **`deploy/README.md`** da cada paso desde cero: el servicio de Render, la configuración de Turso, el workflow de backup y el monitor de UptimeRobot.
+  - El límite de red y el TLS de Render reemplazan el escuchar en `127.0.0.1` detrás de un reverse proxy.
+- **Restore drill**: un script que el Operator corre a mano, sin temporizador y sin canal de notificación.
+  - Restaura desde la restauración a un punto en el tiempo de Turso y desde la copia diaria cifrada en un destino de prueba, sin efecto en la app en marcha.
+  - Cada corrida informa el resultado del chequeo de integridad, los conteos de filas y la hora del último cambio de la copia restaurada.
+  - Su frecuencia está fijada en `deploy/README.md`: una vez antes de salir en vivo, después de cualquier cambio en cómo se configuran la app o su backup, y mensualmente.
+- **Publicar es un portón**:
+  - A nadie se le da la dirección pública hasta que se cumplan los criterios 14–17.
+  - Mientras tanto se puede seguir invitando vendedores en la red de casa.
+  - Publicar es de la instalación entera: cada Business se vuelve alcanzable a la vez, separado solo por el aislamiento de la Session (ADR-0004).
+- **Sin superficie de administración** (ADR-0002):
+  - El estado del freno, la salud del backup y los resultados del drill se leen desde fuera de la app: los logs, la salida del drill y la corrida de GitHub Actions.
+  - Nada se ve ni se hace desde una Session iniciada, y la app no gana ninguna pantalla, ruta ni entrada de navegación para eso. Settings no tiene ninguna configuración del Operator.
 
-### Constraints
+### Restricciones
 
-- **Change route**: gated. It takes the user and the business only from the session, and joins `tests/test_gated_routes.py` and the isolation sweep.
-- **Reset routes** (looking a link up, submitting a new password): open, like the invitation routes.
-- **Refusal codes**: every refusal carries a code in `contract.json` (ADR-0008) and never repeats the input (ADR-0005). The codes are:
-  - wrong current password;
-  - new password too short;
-  - brake lock;
-  - reset link gone (one code for unknown, used, expired and retired).
-- **Secrets**: passwords are stored only as scrypt hashes and reset tokens only as digests (ADR-0002). No password, hash, token, digest or link appears in logs, answers, the console or browser storage.
-- **Browser storage** holds only the device's theme choice.
-- **Tests of this capability are self-contained**: every time they depend on comes from the injected clock (ADR-0001), never from the real date, so a check gives the same result on any day.
+- **Ruta de Change**: protegida. Toma el User y el Business solo de la Session, y se suma a `tests/test_gated_routes.py` y al barrido de aislamiento.
+- **Rutas de reseteo** (consultar un link, enviar una contraseña nueva): abiertas, como las rutas de Invitation.
+- **Códigos de rechazo**: cada rechazo lleva un código en `contract.json` (ADR-0008) y nunca repite lo ingresado (ADR-0005). Los códigos son:
+  - contraseña actual incorrecta;
+  - contraseña nueva demasiado corta;
+  - bloqueo del freno;
+  - Reset link que ya no está (un solo código para desconocido, usado, vencido y retirado).
+- **Secretos**: las contraseñas se guardan solo como hashes scrypt y los tokens de reseteo solo como digests (ADR-0002). Ninguna contraseña, hash, token, digest ni link aparece en logs, respuestas, la consola ni el almacenamiento del navegador.
+- **El almacenamiento del navegador** guarda solo la Theme choice del dispositivo.
+- **Los tests de esta capacidad son autocontenidos**: todo tiempo del que dependen viene del reloj inyectado (ADR-0001), nunca de la fecha real, así que un control da el mismo resultado cualquier día.
 
-### Feedback, on every screen
+### Feedback, en cada pantalla
 
-These states are drawn by `Estados` (GH-49), restyled from the design with their wording unchanged. Each is checked on the phone and inside every screen's own computer layout (`InicioCompu`, the computer layout of Home; `VentasCompu`, the computer layout of Sales; the two-pane Customers and Varieties), with the same words and shapes. `Estados` draws nothing for a state no capability defines.
+Estos estados los dibuja `Estados` (GH-49), con el estilo del diseño y su redacción sin cambios. Cada uno se revisa en el teléfono y dentro de la disposición de computadora propia de cada pantalla (`InicioCompu`, la disposición de computadora de Home; `VentasCompu`, la de Sales; los dos paneles de Customers y Varieties), con las mismas palabras y formas. `Estados` no dibuja nada para un estado que ninguna capacidad define.
 
-- **Success toasts** are short, fixed and carry no data, with one deliberate exception.
-  - This capability's toasts:
+- **Los toasts de éxito** son cortos, fijos y no llevan datos, con una excepción deliberada.
+  - Los toasts de esta capacidad:
     - "Business renamed";
-    - "Invitation ready", unless the link is shown on the screen;
+    - "Invitation ready", salvo que el link se muestre en la pantalla;
     - "Password changed · we signed out your other sessions".
-  - Choosing a theme shows no toast.
-  - The exception is "Payment saved · still owing $ X" (payments.md). It names what the customer still owes, because seeing that is the point of recording a payment. When nothing is left owing it reads "Payment saved".
-- **No "Undo" on success toasts, with one deliberate exception**: "Sale saved" (sales.md) carries Undo, because recording a sale is the fastest and most frequent entry. It still carries no data. No other success notice gets one.
-- **Loading**: while a screen waits for the server, it shows a loading state whose wording and shape follow the design. It shows no figure, no placeholder amount and no text that could be read as data (criterion 7). At phone widths it also meets the phone standard's loading rule: shaped like the content, `aria-busy`, no false empty state.
-- **Empty states** keep each capability's own fixed wording.
-- **Leaving a form or sheet** with unsaved changes asks before discarding, and an untouched one closes at once (navigation.md). New sale's question is "Discard the sale?" (sales.md).
-- **Refusals** show inline and keep what was typed. The one exception: a wrong current password clears "Current password".
-- **No network** shows "No connection"; a server error shows a generic retry.
-- **A record that is gone** answers 404 whether it was deleted, never existed or belongs to another business (ADR-0004). The app never says who deleted it or that it once existed.
-  - **Saving an edit, confirming a delete or undoing** on a record that is gone:
-    - the form or dialog closes and what was typed is discarded;
-    - the list it came from refreshes;
-    - a fixed notice shows: "That is gone. The list is up to date."
-  - The notice is not a success toast. It has no data, no "Undo" and no retry action, and it is announced like a toast.
-  - Confirming the delete of a record already gone gives the same notice, not the delete's success toast.
-  - **Opening the detail of a record that is gone** (a variety, a customer, an expense, a sale or a stock entry) shows "That is gone." with one button back to its list:
-    - "Back to Varieties" (a variety or a stock entry);
+  - Elegir un tema no muestra toast.
+  - La excepción es "Payment saved · still owing $ X" (payments.md). Nombra lo que el Customer todavía debe, porque ver eso es el sentido de registrar un Payment. Cuando no queda nada adeudado dice "Payment saved".
+- **Sin "Undo" en los toasts de éxito, con una excepción deliberada**: "Sale saved" (sales.md) lleva Undo, porque registrar una Sale es la carga más rápida y frecuente. Igual no lleva datos. Ningún otro aviso de éxito tiene uno.
+- **Cargando**: mientras una pantalla espera al servidor, muestra un estado de carga cuya redacción y forma siguen el diseño. No muestra ninguna cifra, ningún monto de relleno ni texto que pueda leerse como dato (criterio 7). En anchos de teléfono también cumple la regla de carga del estándar del teléfono: con la forma del contenido, `aria-busy`, sin un falso estado vacío.
+- **Los estados vacíos** conservan la redacción fija de cada capacidad.
+- **Salir de un formulario o Sheet** con cambios sin guardar pregunta antes de descartar, y uno sin tocar se cierra al instante (navigation.md). La pregunta de New sale es "Discard the sale?" (sales.md). La Forgot sheet no tiene nada que guardar, así que siempre se cierra al instante.
+- **Los rechazos** se muestran en el lugar y conservan lo tipeado. La única excepción: una contraseña actual incorrecta vacía "Current password".
+- **Sin red** muestra "No connection"; un error del servidor muestra un reintento genérico.
+- **Un registro que ya no está** responde 404 tanto si se borró, como si nunca existió o es de otro Business (ADR-0004). La app nunca dice quién lo borró ni que alguna vez existió.
+  - **Guardar una edición, confirmar un borrado o deshacer** sobre un registro que ya no está:
+    - el formulario o diálogo se cierra y lo tipeado se descarta;
+    - la lista de la que vino se refresca;
+    - se muestra un aviso fijo: "That is gone. The list is up to date."
+  - El aviso no es un toast de éxito. No tiene datos, ni "Undo", ni acción de reintento, y se anuncia como un toast.
+  - Confirmar el borrado de un registro que ya no está da el mismo aviso, no el toast de éxito del borrado.
+  - **Abrir el detalle de un registro que ya no está** (una Variety, un Customer, una Expense, una Sale o una Stock entry) muestra "That is gone." con un botón de vuelta a su lista:
+    - "Back to Varieties" (una Variety o una Stock entry);
     - "Back to Customers";
-    - "Back to Expenses" (the current month);
+    - "Back to Expenses" (el mes actual);
     - "Back to Sales".
 
-    It carries no id, name or date.
-- No state told by color alone: a sign, arrow or word on every gain, loss, debt or state; chart series labelled directly, in either theme.
+    No lleva id, nombre ni fecha.
+- Ningún estado dicho solo con color: un signo, flecha o palabra en cada ganancia, pérdida, deuda o estado; las series de los gráficos rotuladas directamente, en cualquier tema.
 
-## Metrics
+## Métricas
 
-- **No curl (criterion 4)**: an end-to-end run through the front alone passes. It accepts a new-business invitation, renames the business from Settings → Business, creates a join link from Users and accepts it as a second user.
-- **Sharing the join link**: with a stubbed share sheet, in Settings → Users, 100% passing:
-  - a resolve and a cancel show nothing;
-  - a forced failure shows the existing failure message and leaves copying the link;
-  - a share that never settles shows nothing and leaves "Invite a partner", sharing and copying usable, and a second share calls the share sheet again;
-  - a refused second share shows the existing failure message;
-  - an earlier share settling after a newer one shows nothing;
-  - nothing is written to the clipboard by sharing, and no message carries the link.
-- **Isolation (criteria 1, 6)**:
-  - the business routes sit in the isolation sweep and the gated-route test;
-  - serving tests prove no path reaches outside `web/dist`;
-  - after a full run, browser storage holds only the theme choice, and the console and browser storage hold nothing personal or money;
-  - no front URL carries a business id;
-  - a record of another business, opened by id, shows the same "That is gone." as a deleted one.
-- **Phone app (criterion 5)**:
-  - the manifest passes the browser's installability check, run on `localhost`;
-  - installing on a phone is not checked automatically;
-  - both themes render from the tokens;
-  - an offline check shows "No connection";
-  - no state is told by color alone.
-- **Theme (criteria 23–26)**:
-  - Automatic follows the phone: an e2e run with the system emulated in dark (`emulateMedia({ colorScheme: 'dark' })`) and nothing stored sets `data-tema="oscuro"` and `theme-color` equal to the dark `--papel`; an `emulateMedia` flip to light removes the attribute and puts the meta back to #f6f7f5, live;
-  - a stored choice wins: `tema=claro` on a dark phone stays light after a reload; `tema=oscuro` opens dark; an unknown value reads as Automatic;
-  - Settings → Appearance offers Automatic, Light and Dark, in that order; choosing applies at once, with no toast, save button or unsaved-changes warning, and the active option marked by a check plus its word, not by color;
-  - the choice survives a reload and a logout; with Dark stored, the sign-in screen, the invitation and the reset screens show dark;
-  - browser storage holds only the theme choice;
-  - native controls and scrollbars are checked by eye on a dark-system device, light with no attribute and dark with it; no fast test reads them;
-  - the four places that state the rule say the same, and none names `claro` as an attribute value.
-- **Installed shell (criteria 33–36)**:
-  - meta tags, fast test: the viewport has its four parts and no zoom restriction; `mobile-web-app-capable` and the iOS status-bar style `default` are present; exactly one `theme-color`, with no `media`;
-  - manifest, fast test: `id: "/"`, `scope: "/"`, `lang: "en"`, `display: "standalone"`, `theme_color` and `background_color` equal to `--papel`, no `orientation`; 192 and 512 icons `any` and a 512 `maskable` present;
-  - installability: the manifest still passes the browser's installability check on `localhost` with its new fields;
-  - status bar, front test driving `data-tema` directly: `theme-color` is light `--papel` with no attribute, the dark paper token with `oscuro`, light again once the attribute is removed (the system reading reaches the attribute only through the theme module);
-  - static checks: no screen-tied `vh` left in `app.css` (`dvh` instead); the four inset tokens exist, and the bar, the header, "+ New sale", sheets and toasts use them; no existing token value changed apart from the Yerba palette;
-  - regression: the accounts, navigation and feedback suites pass unchanged; the bar fits at 320 px with text at 130 %; the pressed state uses tokens only, in both themes;
-  - by eye, in portrait, on a real iPhone installed over the home network and a real Android phone on the published installation:
-    - criterion 33, with New sale, Record payment and the expense form open with the keyboard;
-    - criterion 35, with the pressed state visible in both themes;
-    - the Android status bar in both themes;
-    - the iOS light strip, with the top inset handled;
-    - the maskable icon on the Android launcher.
-- **Phone standard (criteria 37–41)**: no telemetry; the measures come from the check and from review.
-  - offenders: the number of entries in the offender list, per rule and per issue. It starts at today's count and only goes down, reported in each area PR and in `compare.sh` output. Target: 0 once #45–#49, #59, #60 and #78 close;
-  - check attached: the share of area PRs that attach the mobile check's result. Target: 100%;
-  - written once: a review check that CODING_STANDARDS §10 and the design README list the same eight requirements with the same labels, and contradict none of this file, ADR-0027, ADR-0028 or ADR-0029;
-  - coverage: the spec fails for a route missing from `screens.json`, and a test shows that a wording added to the empty-state list is enforced;
-  - offender rules: tests show the run fails on a new offender, on a fixed entry left listed and on an entry with no issue number;
-  - no regression: the under-60-s recording times (sale, payment, stock entry, expense) and the existing accounts, navigation, sales and feedback suites pass unedited;
-  - by eye: the real-device pass, as for the installed shell and ADR-0028.
-- **Nothing invented (criterion 7)**:
-  - the bar, the sidebar, More and Settings show exactly the entries navigation.md lists;
-  - every figure on Home equals the API's answer, with real zeros for a period with no activity (results.md);
-  - Home shows no notices other than the first-run checklist, "Start with your varieties", the pinned catalog's and the after-import notice.
-- **Password change (criterion 18)**:
-  - after a Change, every earlier token of the user answers 401;
-  - the acting device's fresh token works, and a partner's token in the same business still works;
-  - through the front, from a phone viewport, a Change completes (`web/e2e/passwords.spec.ts`); its duration is not measured by any test.
-- **Reset matrix (criterion 19)**, 100% passing:
-  - a link works once;
-  - it is dead after 24 hours (fake clock);
-  - it is retired by a newer link;
-  - it is retired by a Change and by another completed reset;
-  - opening it twice spends nothing;
-  - opening and submitting answer the same 404 whatever the cause;
-  - a successful reset closes every earlier session.
-- **Password secrecy (criterion 20)**:
-  - no password, token, digest or link appears in any answer, refusal or log line;
-  - after a full front run of both flows, none is in the console or browser storage;
-  - the command's link goes to the terminal only.
-- **Password brakes (criterion 21)**, with a fake clock:
-  - a wrong current password counts for both brakes;
-  - either lock refuses Change with the same 429 and timing as login;
-  - a successful Change or reset resets only the email's count;
-  - the reset routes are never braked.
-- **Reset command (criteria 20, 22)**: an email with no user writes 0 rows and retires 0 links.
-- **No curl for passwords (criterion 22)**: the end-to-end front run:
-  - changes a password from Settings → Your account, after which an old session is signed out and this one stays in;
-  - completes a reset from a printed link through to Home;
-  - sees the dead-link state for a used link.
-- **Getting in, redesigned (criteria 27–32)**:
-  - fast: from a phone viewport, the end-to-end front run accepts an invitation, completes a reset from a printed link and logs in at the sign-in screen, each landing on Home signed in (`web/e2e/passwords.spec.ts`); the duration of the links is not measured by any test;
-  - states: front tests show each fixed text (brake message, both dead-link texts, "No connection", the retry, both "That is gone." forms, loading); shape and color checked by eye in both themes;
-  - loading is not data: a front test shows the loading state holds no digit, currency symbol or placeholder figure;
-  - design:
-    - `scripts/design/compare.sh` runs before and after for the sign-in screen (`Entrar`), the new-business screen (`NegocioNuevo`), the invitation screen (`Invitacion`), `/reset/{token}` and the shared states (`Estados`), with the comparisons attached to the PR;
-    - a by-eye pass at phone and computer viewports covers the getting-in screens and the shared states (`Estados`) inside the computer layouts;
-    - every design-vs-docs wording difference is listed in the PR;
-  - nothing revealed: the same refusal for a wrong password and an unknown email, no attempt count, no brake detail; dead-link and "That is gone." carry no id, name, date or reason;
-  - registry: `scripts/design/screens.json` holds `/reset/{token}` and `compare.sh` measures it;
-  - no regression: the existing suite passes with no test edited to fit the new look.
-- **Nothing survives (criterion 11)**:
-  - after a real run on one of two seeded businesses with one of everything, 0 rows carry its id in any table discovered from the schema;
-  - pending, used and expired invitations all go;
-  - reset links of every status of its users go;
-  - `login_guard` holds nothing for the removed emails;
-  - a table added to the schema later is covered without changing the command, proven by a test.
-- **Export = delete (criteria 8, 11)**:
-  - for every exported kind, the count in the file equals the count deleted;
-  - every stored field listed above is present, the pricing settings and VIP prices included, and every reference carries a name and an id;
-  - no password hash, invitation digest, reset-link digest or secret is in the file;
-  - the dry run counts reset links among what is deleted only.
-- **Others untouched (criterion 12)**: every table's row count for the other business is identical before and after, and it reads all its data afterwards.
-- **Guards (criteria 9, 10)**: 0 rows changed after each of:
-  - a dry run (and no file);
-  - an unknown email;
-  - a wrong name, a cancel or no answer at the prompt (and no file);
-  - a forced failure writing the file, reading it back, at the count check, or during the delete.
-  - After every forced failure before the commit, no export file is left in the export directory. This includes a failure of the real file adapter after the file was created on disk, partway through writing or syncing it.
-- **Commit outcome unknown**: a forced commit failure whose outcome is unknown:
-  - keeps the export file, prints the fixed "Commit outcome unknown" line with the path, never prints "nothing deleted" or success, and exits with a failure status;
-  - a dry run afterwards answers "no business for that email" when the commit was applied, and names the business with unchanged counts when it was not.
-- **File (criterion 8)**: owner-only permissions; an existing file of the same name is never overwritten; the name carries the business name, date and time.
-- **No echo (criterion 13)**: the captured terminal output and logs of both modes hold no email, customer name, phone number or amount, only the business name, the path and counts.
-- **Clean slate (criterion 13)**: after removal, a removed user's token answers 401, and a new-business invitation accepted with the same email opens an empty business with a clean brake count.
-- Removal and password metrics run as fast, self-contained tests.
-- **Removal tests and the date (criterion 37)**:
-  - the removal suite passes on its pinned Argentina day;
-  - one check moves the clock across a month boundary and a year boundary and gives the same verdict on each day. It is never skipped or loosened;
-  - the scan (`tests/architecture/test_no_real_clock.py`) covers every file under `tests/` and `app/` and resolves imports, so an alias or a default that resolves to `datetime.now`, `utcnow`, `date.today` or `time.time` is found too. Its only exceptions are the production clock (`app/clock.py::system_clock`), the composition roots that wire the clock (`app/main.py` and the three CLIs) and the e2e backend (`tests/e2e_app.py`, ADR-0040);
-  - no assertion on elapsed time is added (ADR-0038).
-- **Publishing (criteria 14–17)**: no test reaches the network, Render, Turso or GitHub.
-  - **Brakes (criteria 3, 15)**: tested at the HTTP seam with a fake clock, 100% passing. They cover:
-    - the email brake (5 in a row, 15 minutes);
-    - the address brake (20 within 15 minutes, 15 minutes);
-    - cross-counting, lock refusals included;
-    - a success resetting only the email's count;
-    - the same 429 answer and timing from both locks, disclosing nothing.
-  - **Address source (criterion 15)**: the forwarded header is used only from the configured trusted proxy and ignored from anywhere else.
-  - **Cookie (criteria 14, 37–38)**: `Secure` is present when HTTPS is configured and absent otherwise, and never follows the request's scheme or headers. The test uses only the fixed time it is handed and gives the same result with the real date moved earlier and later, its own fixed time unchanged; its assertions are never fewer.
-  - **No leakage (criteria 14, 15)**:
-    - no log line from the login path contains a client address, email or token;
-    - the health endpoint answers no business name, id or count.
-  - **Rebuildable (criterion 17)**: a check that the repository holds no Turso credential, `age` identity or other secret.
-  - **Drill (criterion 16)**:
-    - Automated: against a local scratch copy, the drill produces integrity, row counts and the latest change.
-    - By hand: the run before going live shows, from the recency field, that the restore is within the under-1-minute bound.
-- **Gate green (criteria 39–40)**: the full backend tests check (`uv run --no-project pytest -n auto`) is green, with passed equal to collected and 0 errors; the existing session-length tests pass unchanged. The PR names the cause of the red, and lists any other test that compares a fixed date with the real date (or says none was found).
+- **Ningún curl (criterio 4)**: pasa una corrida de punta a punta solo por el front. Acepta una Invitation de Business nuevo, renombra el Business desde Settings → Business, crea un link para sumarse desde Users y lo acepta como un segundo User.
+- **Compartir el link para sumarse**: con un menú de compartir simulado, en Settings → Users, 100% pasando:
+  - un resolve y un cancel no muestran nada;
+  - una falla forzada muestra el mensaje de falla existente y deja copiar el link;
+  - un compartir que nunca se resuelve no muestra nada y deja usables "Invite a partner", compartir y copiar, y un segundo compartir vuelve a llamar al menú;
+  - un segundo compartir rechazado muestra el mensaje de falla existente;
+  - un compartir anterior que se resuelve después de uno más nuevo no muestra nada;
+  - compartir no escribe nada en el portapapeles, y ningún mensaje lleva el link.
+- **Aislamiento (criterios 1, 6)**:
+  - las rutas del Business están en el barrido de aislamiento y en el test de rutas protegidas;
+  - los tests de servir prueban que ningún path alcanza algo fuera de `web/dist`;
+  - después de una corrida completa, el almacenamiento del navegador guarda solo la Theme choice, y la consola y el almacenamiento no tienen nada personal ni dinero;
+  - ninguna URL del front lleva un id de Business;
+  - un registro de otro Business, abierto por id, muestra el mismo "That is gone." que uno borrado.
+- **App de teléfono (criterio 5)**:
+  - el manifest pasa el control de instalabilidad del navegador, corrido en `localhost`;
+  - instalar en un teléfono no se controla automáticamente;
+  - ambos temas se dibujan a partir de los tokens;
+  - un control sin red muestra "No connection";
+  - ningún estado se dice solo con color.
+- **Tema (criterios 23–26)**:
+  - Automatic sigue al teléfono: una corrida e2e con el sistema emulado en oscuro (`emulateMedia({ colorScheme: 'dark' })`) y nada guardado pone `data-tema="oscuro"` y `theme-color` igual al `--papel` oscuro; un cambio de `emulateMedia` a claro saca el atributo y devuelve el meta a #f6f7f5, en vivo;
+  - una elección guardada gana: `tema=claro` en un teléfono oscuro sigue claro después de recargar; `tema=oscuro` abre oscuro; un valor desconocido se lee como Automatic;
+  - Settings → Appearance ofrece Automatic, Light y Dark, en ese orden; elegir aplica al instante, sin toast, sin botón de guardar ni aviso de cambios sin guardar, y la opción activa se marca con un tilde más su palabra, no con color;
+  - la elección sobrevive a una recarga y a cerrar sesión; con Dark guardado, la pantalla de Sign in, la de Invitation y la de reseteo se ven oscuras;
+  - el almacenamiento del navegador guarda solo la Theme choice;
+  - los controles nativos y las barras de scroll se revisan a ojo en un dispositivo con el sistema oscuro, claros sin atributo y oscuros con él; ningún test rápido los lee;
+  - los cuatro lugares que dicen la regla dicen lo mismo, y ninguno nombra `claro` como valor del atributo.
+- **Shell instalado (criterios 33–36)**:
+  - metas, test rápido: el viewport tiene sus cuatro partes y ninguna restricción de zoom; `mobile-web-app-capable` y el estilo de barra de estado de iOS `default` están presentes; exactamente un `theme-color`, sin `media`;
+  - manifest, test rápido: `id: "/"`, `scope: "/"`, `lang: "en"`, `display: "standalone"`, `theme_color` y `background_color` iguales a `--papel`, sin `orientation`; íconos 192 y 512 `any` y un 512 `maskable` presentes;
+  - instalabilidad: el manifest sigue pasando el control de instalabilidad del navegador en `localhost` con sus campos nuevos;
+  - barra de estado, test de front que maneja `data-tema` directamente: `theme-color` es `--papel` claro sin atributo, el token de papel oscuro con `oscuro`, y claro de nuevo cuando se saca el atributo (la lectura del sistema llega al atributo solo a través del módulo de tema);
+  - controles estáticos: no queda ningún `vh` atado a la pantalla en `app.css` (en su lugar `dvh`); los cuatro tokens de inset existen, y la barra, el encabezado, "+ New sale", las Sheets y los toasts los usan; ningún valor de token existente cambió salvo la paleta Yerba;
+  - regresión: las suites de accounts, navegación y feedback pasan sin cambios; la barra entra en 320 px con texto al 130 %; el estado presionado usa solo tokens, en ambos temas;
+  - a ojo, en vertical, en un iPhone real instalado por la red de casa y un Android real en la instalación publicada:
+    - el criterio 33, con New sale, Record payment y el formulario de Expense abiertos con el teclado;
+    - el criterio 35, con el estado presionado visible en ambos temas;
+    - la barra de estado de Android en ambos temas;
+    - la franja clara de iOS, con el inset de arriba manejado;
+    - el ícono maskable en el launcher de Android.
+- **Estándar del teléfono (criterios 37–41)**: sin telemetría; las medidas salen del control y de la revisión.
+  - infractores: la cantidad de entradas en la lista de infractores, por regla y por issue. Arranca en el conteo de hoy y solo baja, informada en cada PR de área y en la salida de `compare.sh`. Meta: 0 cuando cierren #45–#49, #59, #60 y #78;
+  - control adjunto: la proporción de PRs de área que adjuntan el resultado del control móvil. Meta: 100%;
+  - escrito una vez: una revisión de que CODING_STANDARDS §10 y el README de diseño listan los mismos ocho requisitos con las mismas etiquetas, y no contradicen nada de este archivo, ADR-0027, ADR-0028 ni ADR-0029;
+  - cobertura: el spec falla con una ruta que falta en `screens.json`, y un test muestra que una redacción agregada a la lista de estados vacíos se hace cumplir;
+  - reglas de infractores: tests muestran que la corrida falla ante un infractor nuevo, ante una entrada arreglada que quedó listada y ante una entrada sin número de issue;
+  - sin regresión: los tiempos de carga de menos de 60 s (Sale, Payment, Stock entry, Expense) y las suites existentes de accounts, navegación, ventas y feedback pasan sin editar;
+  - a ojo: la pasada en dispositivo real, como para el shell instalado y ADR-0028.
+- **Nada inventado (criterio 7)**:
+  - la barra, la barra lateral, More y Settings muestran exactamente las entradas que lista navigation.md;
+  - cada cifra en Home es igual a la respuesta de la API, con ceros reales para un período sin actividad (results.md);
+  - Home no muestra otros avisos que la First-run checklist, "Start with your varieties", el del Pinned catalog y el aviso de después de la importación.
+- **Password change (criterio 18)**:
+  - después de un Change, cada token anterior del User responde 401;
+  - el token nuevo del dispositivo que actúa funciona, y el token de un socio en el mismo Business sigue funcionando;
+  - por el front, desde un viewport de teléfono, un Change se completa (`web/e2e/passwords.spec.ts`); ningún test mide su duración.
+- **Matriz de reseteo (criterio 19)**, 100% pasando:
+  - un link funciona una sola vez;
+  - está muerto después de 24 horas (reloj falso);
+  - lo retira un link más nuevo;
+  - lo retiran un Change y otro reseteo completado;
+  - abrirlo dos veces no lo gasta;
+  - abrir y enviar responden el mismo 404 sea cual sea la causa;
+  - un reseteo exitoso cierra cada Session anterior.
+- **Secreto de la contraseña (criterio 20)**:
+  - ninguna contraseña, token, digest ni link aparece en ninguna respuesta, rechazo ni línea de log;
+  - después de una corrida completa por el front de ambos flujos, ninguno está en la consola ni en el almacenamiento del navegador;
+  - el link del comando va solo a la terminal.
+- **Frenos de contraseña (criterio 21)**, con un reloj falso:
+  - una contraseña actual incorrecta cuenta para los dos frenos;
+  - cualquiera de los bloqueos rechaza Change con el mismo 429 y los mismos tiempos que el login;
+  - un Change o un reseteo exitosos reinician solo el conteo del email;
+  - las rutas de reseteo nunca se frenan.
+- **Comando de reseteo (criterios 20, 22)**: un email sin User escribe 0 filas y retira 0 links.
+- **Ningún curl para contraseñas (criterio 22)**: la corrida de punta a punta por el front:
+  - cambia una contraseña desde Settings → Your account, después de lo cual una Session vieja queda afuera y esta sigue adentro;
+  - completa un reseteo desde un link impreso hasta Home;
+  - ve el estado de link muerto para un link usado.
+- **Entrar, rediseñado (criterios 27–32)**:
+  - rápido: desde un viewport de teléfono, la corrida de punta a punta por el front acepta una Invitation, completa un reseteo desde un link impreso e inicia sesión en la pantalla de Sign in, cayendo cada vez en Home con la sesión iniciada (`web/e2e/passwords.spec.ts`); ningún test mide la duración de los links;
+  - estados: tests de front muestran cada texto fijo (mensaje del freno, los dos textos de link muerto, "No connection", el reintento, las dos formas de "That is gone.", cargando); forma y color revisados a ojo en ambos temas;
+  - cargar no es un dato: un test de front muestra que el estado de carga no tiene ningún dígito, símbolo de moneda ni cifra de relleno;
+  - diseño:
+    - `scripts/design/compare.sh` corre antes y después para la pantalla de Sign in (`Entrar`), la de Business nuevo (`NegocioNuevo`), la de Invitation (`Invitacion`), `/reset/{token}` y los estados compartidos (`Estados`), con las comparaciones adjuntas al PR;
+    - una pasada a ojo en viewports de teléfono y de computadora cubre las pantallas de entrada y los estados compartidos (`Estados`) dentro de las disposiciones de computadora;
+    - cada diferencia de redacción entre el diseño y los docs se lista en el PR;
+  - nada revelado: el mismo rechazo para una contraseña equivocada y un email desconocido, ningún conteo de intentos, ningún detalle del freno; el link muerto y "That is gone." no llevan id, nombre, fecha ni motivo;
+  - registro: `scripts/design/screens.json` tiene `/reset/{token}` y `compare.sh` lo mide;
+  - sin regresión: la suite existente pasa sin editar ningún test para que encaje con el nuevo look.
+- **Sign in con el nuevo estilo y la Forgot sheet (criterios 42–45, GH-521)**:
+  - una sola pasada (42): un e2e en viewports de teléfono (320×568 y 375×812, claro y oscuro) verifica que al abrir Sign in el foco está en "Email address", que "Email address", "Password" y "Sign in" se ven sin scroll, y que la corrida cae en Home con la sesión iniciada;
+  - a un toque (43): un e2e verifica que "Forgot your password?" abre la Forgot sheet con un toque, también con el mensaje del freno visible; un test de front verifica que su texto fijo dice la persona que te mandó la Invitation, el email con el que iniciás sesión, una sola vez, 24 horas y sin la contraseña actual, y que "Close" vuelve a Sign in con lo tipeado intacto;
+  - no revela nada (44): un test de front verifica que el texto de la Forgot sheet es idéntico con el formulario vacío, con un email registrado y con uno desconocido; que abrirla o cerrarla no hace ningún pedido; y que el texto no contiene "operator" ni ningún canal;
+  - diseño (45): una Design capture de `Entrar` y `EntrarOscuro` contra la pantalla construida, en teléfono y computadora, adjunta al PR y juzgada a ojo según el Drawing as guide; `web/e2e/mobile.spec.ts` pasa para Sign in y la Forgot sheet en ambos temas;
+  - sin regresión: las suites existentes de accounts y de los frenos pasan sin editar, y el mensaje del freno no cambia.
+- **Nada sobrevive (criterio 11)**:
+  - después de una corrida real sobre uno de dos Businesses sembrados con uno de cada cosa, 0 filas llevan su id en cualquier tabla descubierta a partir del esquema;
+  - se van las Invitations pendientes, usadas y vencidas;
+  - se van los Reset links de cualquier estado de sus Users;
+  - `login_guard` no guarda nada para los emails eliminados;
+  - una tabla agregada después al esquema queda cubierta sin cambiar el comando, probado por un test.
+- **Export = borrado (criterios 8, 11)**:
+  - para cada tipo exportado, el conteo en el archivo es igual al conteo borrado;
+  - cada campo guardado listado arriba está presente, las Pricing settings y los VIP prices incluidos, y cada referencia lleva un nombre y un id;
+  - no hay ningún hash de contraseña, digest de Invitation, digest de Reset link ni secreto en el archivo;
+  - la corrida de prueba cuenta los Reset links solo entre lo que se borra.
+- **Los otros intactos (criterio 12)**: el conteo de filas de cada tabla del otro Business es idéntico antes y después, y lee todos sus datos después.
+- **Resguardos (criterios 9, 10)**: 0 filas cambiadas después de cada uno de:
+  - una corrida de prueba (y ningún archivo);
+  - un email desconocido;
+  - un nombre equivocado, una cancelación o ninguna respuesta en el pedido (y ningún archivo);
+  - una falla forzada al escribir el archivo, al releerlo, en el control de conteos o durante el borrado.
+  - Después de cada falla forzada antes del commit, no queda ningún archivo de export en el directorio de exports. Esto incluye una falla del adaptador de archivos real después de que el archivo se creó en disco, a mitad de escribirlo o sincronizarlo.
+- **Resultado del commit desconocido**: una falla forzada del commit cuyo resultado se desconoce:
+  - conserva el archivo de export, imprime la línea fija "Commit outcome unknown" con la ruta, nunca imprime "nothing deleted" ni éxito, y termina con un estado de falla;
+  - una corrida de prueba después responde "no business for that email" cuando el commit se aplicó, y nombra el Business con los conteos sin cambios cuando no.
+- **Archivo (criterio 8)**: permisos solo para el dueño; un archivo existente con el mismo nombre nunca se pisa; el nombre lleva el nombre del Business, la fecha y la hora.
+- **Sin eco (criterio 13)**: la salida capturada de la terminal y los logs de ambos modos no tienen ningún email, nombre de Customer, Phone number ni monto, solo el nombre del Business, la ruta y conteos.
+- **Borrón y cuenta nueva (criterio 13)**: después de la eliminación, el token de un User eliminado responde 401, y una Invitation de Business nuevo aceptada con el mismo email abre un Business vacío con un conteo de freno limpio.
+- Las métricas de eliminación y de contraseñas corren como tests rápidos y autocontenidos.
+- **Los tests de eliminación y la fecha (criterio 37)**:
+  - la suite de eliminación pasa en su día de Argentina fijado;
+  - un control mueve el reloj cruzando un límite de mes y uno de año y da el mismo veredicto en cada día. Nunca se saltea ni se afloja;
+  - el escaneo (`tests/architecture/test_no_real_clock.py`) cubre cada archivo bajo `tests/` y `app/` y resuelve imports, así que también encuentra un alias o un valor por defecto que resuelve a `datetime.now`, `utcnow`, `date.today` o `time.time`. Sus únicas excepciones son el reloj de producción (`app/clock.py::system_clock`), las raíces de composición que conectan el reloj (`app/main.py` y los tres CLIs) y el backend de e2e (`tests/e2e_app.py`, ADR-0040);
+  - no se agrega ninguna afirmación sobre tiempo transcurrido (ADR-0038).
+- **Publicación (criterios 14–17)**: ningún test sale a la red, a Render, a Turso ni a GitHub.
+  - **Frenos (criterios 3, 15)**: probados en la costura HTTP con un reloj falso, 100% pasando. Cubren:
+    - el freno por email (5 seguidos, 15 minutos);
+    - el freno por dirección (20 dentro de 15 minutos, 15 minutos);
+    - el conteo cruzado, rechazos bajo bloqueo incluidos;
+    - un éxito que reinicia solo el conteo del email;
+    - la misma respuesta 429 y los mismos tiempos de ambos bloqueos, sin revelar nada.
+  - **Origen de la dirección (criterio 15)**: el encabezado reenviado se usa solo desde el proxy de confianza configurado y se ignora desde cualquier otro lado.
+  - **Cookie (criterios 14, 37–38)**: `Secure` está presente cuando HTTPS está configurado y ausente si no, y nunca sigue al esquema ni a los encabezados del pedido. El test usa solo la hora fija que se le pasa y da el mismo resultado con la fecha real movida antes y después, su propia hora fija sin cambios; sus afirmaciones nunca son menos.
+  - **Sin filtraciones (criterios 14, 15)**:
+    - ninguna línea de log del camino del login contiene una dirección de cliente, un email ni un token;
+    - el endpoint de salud no responde ningún nombre, id ni conteo de Business.
+  - **Reconstruible (criterio 17)**: un control de que el repositorio no guarda ninguna credencial de Turso, identidad de `age` ni otro secreto.
+  - **Drill (criterio 16)**:
+    - Automatizado: contra una copia de prueba local, el drill produce integridad, conteos de filas y el último cambio.
+    - A mano: la corrida antes de salir en vivo muestra, por el campo de recencia, que la restauración está dentro del límite de menos de 1 minuto.
+- **Gate en verde (criterios 39–40)**: el control completo de tests del backend (`uv run --no-project pytest -n auto`) está en verde, con pasados igual a recolectados y 0 errores; los tests existentes de duración de la Session pasan sin cambios. El PR nombra la causa del rojo, y lista cualquier otro test que compare una fecha fija con la fecha real (o dice que no se encontró ninguno).
 
-## Out of scope
+## Fuera de alcance
 
-- Removing one user while the business stays.
-- Sending any email, including the reset link.
-- An in-app way to ask for a reset; the operator always issues it.
-- Telling the user which sessions were closed; closing one session alone.
-- Typing the new password twice.
-- Password rules beyond 10 characters.
-- Braking the reset routes or the invitation routes.
-- The reset command reporting earlier or retired links.
-- Listing past or pending invitations; revoking an invitation.
-- A time limit on sharing the join link, or copying it on its own when sharing fails or does not finish.
-- Exporting a business without removing it (a backup of an active one).
-- Importing an export back.
-- Removing a business from the app.
-- Checking that every user agreed to the removal.
-- Removing the export file from the server after handing it over.
-- Blocking or marking a rerun after a commit whose outcome is unknown; the dry run is the check.
-- Roles within a business.
-- Offline use; an install walkthrough on iOS or Android; Capacitor.
-- A theme control before login; syncing the theme choice per user, per business or across devices.
-- A computer-only layout for the getting-in screens; a design file of its own for the reset screen.
-- Any state drawn in Estados that no capability defines.
-- TLS on the home network, including local certificates: the published installation gets TLS from Render (ADR-0016).
-- Live updates between partners: a list refreshes when it is opened or after a save, not when the other partner changes something.
-- Stopping a guessing run spread across many addresses and many emails at once.
-- A scheduled restore drill; any notification channel to the operator.
-- An admin screen, route or navigation entry, or anything operated from a signed-in session.
-- A per-business publishing flag or staged rollout.
-- The bar's and header's own behaviour (#59), and each screen's own layout, including a save action pinned above the keyboard.
-- Building Settings → Appearance, and whether or where the theme choice is kept: its own issue.
-- A dark splash, and iOS `apple-touch-startup-image` splash images.
-- An iOS status bar that follows the theme live.
-- A landscape-specific design; locking orientation or disabling zoom.
-- A new icon look (a branding change).
-- Fixing each area's screens to meet the phone standard (#45–#49, #59, #60, #78): each area issue does its own.
-- The phone standard on the computer layouts; a large-text 3:1 contrast relaxation; a network lookup of whether an offender's issue is open.
-- Automatic checks of the 8 px gap, the `:active` state, hover dependence and `enterkeyhint` outside New sale's lines: review-only.
-- Changing the viewport meta outside #77.
-- Fixing product code that reads the real date wrongly (its own bug item), and fixing tests that compare a fixed date with the real date but are not red.
-- A general guard, across the product, against date-dependent tests or missing evidence.
-- A before/after pair for #107's change measured on the old tree 90320f8 (optional, never required).
+- Eliminar un User mientras el Business sigue.
+- Enviar cualquier email, el Reset link incluido; un reseteo autoservicio por email (necesita un proveedor de email fuera del presupuesto de hosting gratuito).
+- Una forma dentro de la app de pedir un reseteo; el Operator siempre lo emite. La Forgot sheet solo explica: no envía nada a nadie.
+- Una configuración del contacto del Operator, o nombrar un canal de contacto en pantalla.
+- Cualquier forma nueva de entrar que no sea una Invitation, y cualquier camino de registro.
+- Un mensaje armado para copiar o compartir con el pedido de reseteo.
+- Que el mensaje del freno apunte a "Forgot your password?".
+- Decirle al User qué Sessions se cerraron; cerrar una sola Session.
+- Tipear la contraseña nueva dos veces.
+- Reglas de contraseña más allá de 10 caracteres.
+- Frenar las rutas de reseteo o las de Invitation.
+- Que el comando de reseteo informe links anteriores o retirados.
+- Listar Invitations pasadas o pendientes; revocar una Invitation.
+- Un límite de tiempo para compartir el link para sumarse, o copiarlo solo cuando compartir falla o no termina.
+- Exportar un Business sin eliminarlo (un backup de uno activo).
+- Volver a importar un export.
+- Eliminar un Business desde la app.
+- Verificar que cada User estuvo de acuerdo con la eliminación.
+- Eliminar el archivo de export del servidor después de entregarlo.
+- Bloquear o marcar una nueva corrida después de un commit con resultado desconocido; la corrida de prueba es el control.
+- Roles dentro de un Business.
+- Uso offline; un instructivo de instalación en iOS o Android; Capacitor.
+- Un control de tema antes del login; sincronizar la Theme choice por User, por Business o entre dispositivos.
+- Una disposición solo para computadora para las pantallas de entrada; un archivo de diseño propio para la pantalla de reseteo.
+- Cualquier estado dibujado en Estados que ninguna capacidad defina.
+- TLS en la red de casa, certificados locales incluidos: la instalación publicada recibe TLS de Render (ADR-0016).
+- Actualizaciones en vivo entre socios: una lista se refresca cuando se abre o después de guardar, no cuando el otro socio cambia algo.
+- Frenar una serie de intentos repartida entre muchas direcciones y muchos emails a la vez.
+- Un Restore drill programado; cualquier canal de notificación al Operator.
+- Una pantalla, ruta o entrada de navegación de administración, o cualquier cosa operada desde una Session iniciada.
+- Una marca de publicación por Business o una salida escalonada.
+- El comportamiento propio de la barra y el encabezado (#59), y la disposición propia de cada pantalla, incluida una acción de guardar fijada sobre el teclado.
+- Construir Settings → Appearance, y si o dónde se guarda la Theme choice: su propio issue.
+- Un splash oscuro, e imágenes de splash `apple-touch-startup-image` de iOS.
+- Una barra de estado de iOS que siga al tema en vivo.
+- Un diseño específico para horizontal; bloquear la orientación o desactivar el zoom.
+- Un look nuevo del ícono (un cambio de marca).
+- Arreglar las pantallas de cada área para que cumplan el estándar del teléfono (#45–#49, #59, #60, #78): cada issue de área hace lo suyo.
+- El estándar del teléfono en las disposiciones de computadora; una relajación del contraste 3:1 para texto grande; una consulta por red de si el issue de un infractor está abierto.
+- Controles automáticos del espacio de 8 px, el estado `:active`, la dependencia del hover y `enterkeyhint` fuera de las líneas de New sale: solo revisión.
+- Cambiar el meta viewport fuera de #77.
+- Arreglar código del producto que lee mal la fecha real (su propio ítem de bug), y arreglar tests que comparan una fecha fija con la fecha real pero no están en rojo.
+- Un resguardo general, en todo el producto, contra tests dependientes de la fecha o evidencia faltante.
+- Un par antes/después del cambio de #107 medido sobre el árbol viejo 90320f8 (opcional, nunca requerido).
