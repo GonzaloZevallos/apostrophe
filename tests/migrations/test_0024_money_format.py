@@ -1,4 +1,4 @@
-"""Migration 0020 creates `money_format` and gives every existing business `"$", 0, 0`
+"""Migration 0024 creates `money_format` and gives every existing business `"$", 0, 0`
 (ADR-0058). The shared M3 comparator proves no column that existed before it changed."""
 
 from sqlalchemy import text
@@ -10,7 +10,7 @@ from tests.migrations.m3 import assert_m3
 
 
 def test_it_creates_only_money_format_and_changes_nothing_that_existed() -> None:
-    assert assert_m3("0019", "0020") == frozenset({"money_format"})
+    assert assert_m3("0023", "0024") == frozenset({"money_format"})
 
 
 def test_every_seeded_business_gets_one_symbol_dollar_zero_decimals_zero_scale_row() -> None:
@@ -18,8 +18,9 @@ def test_every_seeded_business_gets_one_symbol_dollar_zero_decimals_zero_scale_r
     upgrade_to(engine, "0019")
     with engine.begin() as connection:
         m3_seed.SEED_INCREMENTS["0019"](connection)
+    upgrade_to(engine, "0023")
 
-    upgrade_to(engine, "0020")
+    upgrade_to(engine, "0024")
 
     with engine.connect() as connection:
         rows = connection.execute(

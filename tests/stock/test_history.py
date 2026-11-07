@@ -18,8 +18,9 @@ from app.stock.adapters.sql_stock_entries import SqlStockEntries
 from app.stock.adapters.sql_stock_withdrawals import SqlStockWithdrawals
 from app.stock.application.history import history
 from app.stock.domain.allocation import allocate
-from app.stock.domain.draw_source import DrawSource, WithdrawalReason
+from app.stock.domain.draw_source import DrawSource
 from app.stock.domain.withdrawal import Withdrawal, WithdrawalLine
+from tests.conftest import reason_id
 
 TODAY = date(2026, 10, 2)
 
@@ -44,12 +45,10 @@ def _business_of(engine: Engine, variety_id: int) -> int:
         return row.business_id
 
 
-def _withdraw(
-    repository: SqlStockWithdrawals, reason: WithdrawalReason, *lines: tuple[int, str]
-) -> None:
+def _withdraw(repository: SqlStockWithdrawals, reason_id: int, *lines: tuple[int, str]) -> None:
     repository.add(
         Withdrawal.of(
-            reason,
+            reason_id,
             TODAY,
             None,
             tuple(WithdrawalLine.of(variety_id, quantity) for variety_id, quantity in lines),
@@ -74,7 +73,7 @@ def test_history_orders_a_sale_line_and_a_withdrawal_line_by_recording_and_costs
 
     with Session(engine) as session:
         withdrawals = SqlStockWithdrawals(session, business_id)
-        _withdraw(withdrawals, WithdrawalReason.OWN_USE, (variety_id, "3"), (other_id, "1"))
+        _withdraw(withdrawals, reason_id(client, "Own use"), (variety_id, "3"), (other_id, "1"))
         grouped = history(
             SqlStockEntries(session, business_id),
             SqlDraws(session, business_id),
@@ -85,7 +84,7 @@ def test_history_orders_a_sale_line_and_a_withdrawal_line_by_recording_and_costs
     lots, draws = grouped[variety_id]
     assert [(d.source, d.quantity) for d in draws] == [
         (DrawSource.SALE_LINE, Quantity.of("4")),
-        (DrawSource.OWN_USE, Quantity.of("3")),
+        (DrawSource.WITHDRAWAL, Quantity.of("3")),
     ]
     # 10 g @ $10 000: the sale takes 4 g ($4 000) and the withdrawal the next 3 g ($3 000).
     assert [(r.costed, r.pending) for r in allocate(lots, draws)] == [
@@ -108,7 +107,7 @@ def test_history_narrowed_to_one_variety_gives_that_variety_the_same_draws_and_c
 
     with Session(engine) as session:
         withdrawals = SqlStockWithdrawals(session, business_id)
-        _withdraw(withdrawals, WithdrawalReason.PROMOTION, (variety_id, "3"), (other_id, "1"))
+        _withdraw(withdrawals, reason_id(client, "Marketing"), (variety_id, "3"), (other_id, "1"))
         entries, draws = SqlStockEntries(session, business_id), SqlDraws(session, business_id)
         everything = history(entries, draws, withdrawals, None)
         narrowed = history(entries, draws, withdrawals, {variety_id})

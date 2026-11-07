@@ -12,7 +12,7 @@ const wordingsOf = (bundle: Bundle, tag: string): string[] =>
   Object.values(EMPTY_STATE_KEYS).map((key) => resolveKey(bundle, key, undefined, tag))
 
 /**
- * The eleven English wordings for every run, plus the run's own eleven when its `tag` is not
+ * The twelve English wordings for every run, plus the run's own twelve when its `tag` is not
  * `en` (a screen that has not switched yet still shows English).
  */
 export function forbiddenWhileLoading(english: Bundle, run: Bundle, tag: string): readonly string[] {

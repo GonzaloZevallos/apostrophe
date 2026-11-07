@@ -116,7 +116,7 @@ sequenceDiagram
 | 11 | [app/sales/adapters/router.py](../../app/sales/adapters/router.py) | `record_sale` |
 | 12 | [app/pinned_catalog/adapters/safe_upkeep.py](../../app/pinned_catalog/adapters/safe_upkeep.py) | `run_upkeep_safely` |
 
-El paso 5 solo ocurre si la venta nombra un Customer. Si el repositorio rechaza una referencia borrada entre tanto, el caso de uso hace `rollback` y vuelve a preguntar antes de rechazar, y esa rama no está dibujada. [app/sales/adapters/sql_sales.py](../../app/sales/adapters/sql_sales.py) `SqlSales` guarda en el paso 8 la venta, sus líneas y el pago en el acto, todos con el id del Business de la sesión. La flecha del paso 3 no es una llamada del handler: es una dependencia del router que FastAPI resuelve antes de entrar a él. La tarea del paso 3 la agrega [app/main.py](../../app/main.py) `upkeep_gated`, la lista de dependencias de los routers de ventas, stock, productos y catálogo; si el pedido es rechazado, la tarea se descarta.
+El paso 5 solo ocurre si la venta nombra un Customer. Si el repositorio rechaza una referencia borrada entre tanto, el caso de uso hace `rollback` y vuelve a preguntar antes de rechazar, y esa rama no está dibujada. [app/sales/adapters/sql_sales.py](../../app/sales/adapters/sql_sales.py) `SqlSales` guarda en el paso 8 la venta, sus líneas y el pago en el acto, todos con el id del Business de la sesión; antes de insertar la venta, y dentro del mismo commit, sube con un solo `UPDATE ... RETURNING` el contador last_sale_number de la fila del Business (una tabla del hexágono de accounts) y el valor devuelto es el número de la venta (docs/adr/0073). La flecha del paso 3 no es una llamada del handler: es una dependencia del router que FastAPI resuelve antes de entrar a él. La tarea del paso 3 la agrega [app/main.py](../../app/main.py) `upkeep_gated`, la lista de dependencias de los routers de ventas, stock, productos y catálogo; si el pedido es rechazado, la tarea se descarta. El paso 12 corre dentro de la tarea que agrega [app/pinned_catalog/adapters/upkeep_trigger.py](../../app/pinned_catalog/adapters/upkeep_trigger.py) `schedule_upkeep`, que antes cierra la sesión de la petición (la que `schedule_upkeep` recibe de [app/db.py](../../app/db.py) `get_session`) para que el upkeep no corra con su conexión tomada.
 
 ## Un movimiento de stock
 
@@ -132,6 +132,7 @@ sequenceDiagram
   participant Entries as StockEntries
   participant Tx as Transaction
   participant Withdrawal as record_withdrawal
+  participant Reasons as WithdrawalReasons
   participant Withdrawals
   participant Read as read_stock
   participant History as business_history
@@ -147,6 +148,7 @@ sequenceDiagram
   Browser->>Router: POST /stock/withdrawals
   Router->>Withdrawal: record_withdrawal
   Withdrawal->>Catalog: exists
+  Withdrawal->>Reasons: get
   Withdrawal->>Withdrawals: add
   Withdrawal->>Tx: commit
   Withdrawal-->>Router: the WithdrawalView
@@ -174,19 +176,20 @@ sequenceDiagram
 | 8 | [app/stock/adapters/router.py](../../app/stock/adapters/router.py) | `record_withdrawal` |
 | 9 | [app/stock/application/manage_withdrawals.py](../../app/stock/application/manage_withdrawals.py) | `record_withdrawal` |
 | 10 | [app/stock/application/ports.py](../../app/stock/application/ports.py) | `exists` |
-| 11 | [app/stock/application/ports.py](../../app/stock/application/ports.py) | `Withdrawals` |
-| 12 | [app/shared/transaction.py](../../app/shared/transaction.py) | `Transaction` |
-| 13 | [app/stock/application/manage_withdrawals.py](../../app/stock/application/manage_withdrawals.py) | `WithdrawalView` |
-| 14 | [app/stock/adapters/router.py](../../app/stock/adapters/router.py) | `record_withdrawal` |
-| 15 | [app/stock/adapters/router.py](../../app/stock/adapters/router.py) | `get_stock` |
-| 16 | [app/stock/application/read_stock.py](../../app/stock/application/read_stock.py) | `read_stock` |
-| 17 | [app/stock/application/history.py](../../app/stock/application/history.py) | `business_history` |
-| 18 | [app/stock/domain/lot_order.py](../../app/stock/domain/lot_order.py) | `lots_and_draws` |
-| 19 | [app/stock/domain/stock_level.py](../../app/stock/domain/stock_level.py) | `stock_level` |
-| 20 | [app/stock/application/read_stock.py](../../app/stock/application/read_stock.py) | `StockView` |
-| 21 | [app/stock/adapters/router.py](../../app/stock/adapters/router.py) | `get_stock` |
+| 11 | [app/stock/application/ports.py](../../app/stock/application/ports.py) | `WithdrawalReasons` |
+| 12 | [app/stock/application/ports.py](../../app/stock/application/ports.py) | `Withdrawals` |
+| 13 | [app/shared/transaction.py](../../app/shared/transaction.py) | `Transaction` |
+| 14 | [app/stock/application/manage_withdrawals.py](../../app/stock/application/manage_withdrawals.py) | `WithdrawalView` |
+| 15 | [app/stock/adapters/router.py](../../app/stock/adapters/router.py) | `record_withdrawal` |
+| 16 | [app/stock/adapters/router.py](../../app/stock/adapters/router.py) | `get_stock` |
+| 17 | [app/stock/application/read_stock.py](../../app/stock/application/read_stock.py) | `read_stock` |
+| 18 | [app/stock/application/history.py](../../app/stock/application/history.py) | `business_history` |
+| 19 | [app/stock/domain/lot_order.py](../../app/stock/domain/lot_order.py) | `lots_and_draws` |
+| 20 | [app/stock/domain/stock_level.py](../../app/stock/domain/stock_level.py) | `stock_level` |
+| 21 | [app/stock/application/read_stock.py](../../app/stock/application/read_stock.py) | `StockView` |
+| 22 | [app/stock/adapters/router.py](../../app/stock/adapters/router.py) | `get_stock` |
 
-En el paso 3, y en el 10 para el retiro, se revisa primero la Variety (404) y recién después las reglas del dominio (422). El paso 18 arma, por Variety, los lotes y los retiros del Stock: fecha primero y después orden de registro, con `rank` para desempatar entre una entrada, una línea de venta y una línea de retiro ([app/stock/domain/lot_order.py](../../app/stock/domain/lot_order.py) `LotOrder`). Los routers de stock también llevan el upkeep de la venta de arriba.
+En el paso 3, y en el 10 para el retiro, se revisa primero la Variety (404), en el 11 el motivo del retiro (404 `stock.withdrawal_reason_not_found`, también si es de otro Business) y recién después las reglas del dominio (422). El paso 19 arma, por Variety, los lotes y los retiros del Stock: fecha primero y después orden de registro, con `rank` para desempatar entre una entrada, una línea de venta y una línea de retiro ([app/stock/domain/lot_order.py](../../app/stock/domain/lot_order.py) `LotOrder`). Los routers de stock también llevan el upkeep de la venta de arriba.
 
 ## Abrir un Business nuevo
 

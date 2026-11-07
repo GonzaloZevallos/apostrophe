@@ -1,26 +1,78 @@
-"""The shared M3 comparator (GH-318 invariant 1): a migration never changes the value of
-a column that existed before it.
+"""The shared M3 comparator: proof that a migration changes no stored value that
+existed before it (GH-318 invariant 1). A migration may add tables, columns and rows;
+it may not alter, delete or reorder what was already there.
 
-`assert_m3(from_revision, to_revision)` builds a database at `from_revision`, fills every
-table through the registered seed increments (`tests/migrations/m3_seed.py`), snapshots
-it, upgrades to `to_revision`, snapshots again and requires every table that existed to
-be byte-for-byte what it was: same DDL, same rows. It returns the names of the tables the
-upgrade created, so the calling migration test can assert on them.
+`snapshot` reads every row of every table, as column -> value, keyed by the table's
+primary key. `changed_values(before, after)` lists every (table, row, column) of
+`before` whose value in `after` differs, plus every table or row that is gone. A table,
+row or column that exists only in `after` is an addition and is never reported. A
+migration test takes a snapshot after seeding the previous revision, upgrades, takes
+another, and asserts `changed_values(before, after) == []`.
 
-A migration part never copies this module: it adds its seed increment to the registry and
-calls `assert_m3`.
+The second half of this module is the seeded comparator of the M3 registry
+(`tests/migrations/m3_seed.py`): `assert_m3(from_revision, to_revision)` builds a database at
+`from_revision`, fills every table through the registered seed increments, snapshots it
+(`snapshot_tables`), upgrades, snapshots again and requires every table that existed to be
+byte-for-byte what it was (`assert_unchanged`): same DDL, same rows. It returns the names of
+the tables the upgrade created. A migration part never copies this module: it adds its seed
+increment to the registry and calls `assert_m3`.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
+from typing import Any
 
 from alembic.config import Config
 from alembic.script import ScriptDirectory
-from sqlalchemy import text
-from sqlalchemy.engine import Connection
+from sqlalchemy import inspect, text
+from sqlalchemy.engine import Connection, Engine
 
 from app.db import make_engine
 from app.migrations.runner import MIGRATIONS_ROOT, upgrade_to
 from tests.migrations import m3_seed
+
+Row = dict[str, Any]
+# table name -> primary-key tuple -> the row as stored
+Snapshot = dict[str, dict[tuple[Any, ...], Row]]
+
+
+def snapshot(engine: Engine) -> Snapshot:
+    inspector = inspect(engine)
+    taken: Snapshot = {}
+    with engine.connect() as connection:
+        for table in sorted(inspector.get_table_names()):
+            if table == "alembic_version":
+                continue
+            key_columns = inspector.get_pk_constraint(table)["constrained_columns"]
+            rows: dict[tuple[Any, ...], Row] = {}
+            for result in connection.execute(text(f'SELECT * FROM "{table}"')).mappings():
+                row = dict(result)
+                rows[tuple(row[column] for column in key_columns)] = row
+            taken[table] = rows
+    return taken
+
+
+def changed_values(before: Snapshot, after: Snapshot) -> list[str]:
+    """One line per value, row or table of `before` that `after` no longer holds as it
+    was; empty when the migration only added."""
+    changes: list[str] = []
+    for table, rows in before.items():
+        if table not in after:
+            changes.append(f"{table}: table gone")
+            continue
+        for key, row in rows.items():
+            kept = after[table].get(key)
+            if kept is None:
+                changes.append(f"{table}{list(key)}: row gone")
+                continue
+            for column, value in row.items():
+                if column not in kept:
+                    changes.append(f"{table}{list(key)}.{column}: column gone")
+                elif kept[column] != value:
+                    changes.append(f"{table}{list(key)}.{column}: {value!r} -> {kept[column]!r}")
+    return changes
+
 
 PLATFORM_BOOKKEEPING = "alembic_version"
 
@@ -31,7 +83,7 @@ class TableSnapshot:
     rows: tuple[tuple[object, ...], ...]
 
 
-def snapshot(connection: Connection) -> dict[str, TableSnapshot]:
+def snapshot_tables(connection: Connection) -> dict[str, TableSnapshot]:
     """Every table but `alembic_version`, with its DDL and all its rows in primary-key
     order (a table keyed by something other than `id` is ordered by its own key)."""
     tables = connection.execute(
@@ -71,21 +123,25 @@ def assert_unchanged(
 
 
 def assert_m3(from_revision: str, to_revision: str) -> frozenset[str]:
+    """Walks the chain from the base: the engine is upgraded to each revision in turn and
+    that revision's seed increment (if any) runs against the schema as it is there, so a
+    later migration's own backfill transforms the seeded rows before the snapshot."""
     engine = make_engine("sqlite://")
-    upgrade_to(engine, from_revision)
-    with engine.begin() as connection:
-        for revision in _chain_up_to(from_revision):
-            increment = m3_seed.SEED_INCREMENTS.get(revision)
-            if increment is not None:
+    for revision in _chain_up_to(from_revision):
+        upgrade_to(engine, revision)
+        increment = m3_seed.SEED_INCREMENTS.get(revision)
+        if increment is not None:
+            with engine.begin() as connection:
                 increment(connection)
-        before = snapshot(connection)
+    with engine.connect() as connection:
+        before = snapshot_tables(connection)
     empty = sorted(name for name, table in before.items() if not table.rows)
     if empty:
         raise AssertionError(f"the seed leaves tables empty at {from_revision}: {empty}")
 
     upgrade_to(engine, to_revision)
     with engine.connect() as connection:
-        after = snapshot(connection)
+        after = snapshot_tables(connection)
     return assert_unchanged(before, after)
 
 

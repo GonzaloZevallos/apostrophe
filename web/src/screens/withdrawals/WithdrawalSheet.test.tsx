@@ -41,7 +41,7 @@ test('a direct address to the new withdrawal shows the sheet over Varieties, foc
 
   const dialog = await screen.findByRole('dialog', { name: COMMON_TEXT.takeFromStock })
   expect(dialog).toHaveAttribute('aria-modal', 'true')
-  await waitFor(() => expect(screen.getByRole('button', { name: 'Promotion' })).toHaveFocus())
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Marketing' })).toHaveFocus())
   expect(screen.getAllByRole('button', { name: COMMON_TEXT.close })).toHaveLength(1)
   expect(within(dialog).getByRole('button', { name: COMMON_TEXT.close })).toBeInTheDocument()
 
@@ -64,7 +64,7 @@ test('a direct address to the edit shows the sheet over the withdrawal, focus on
   renderWithdrawals([EDIT], withdrawalApi())
 
   const dialog = await screen.findByRole('dialog', { name: COMMON_TEXT.takeFromStock })
-  await waitFor(() => expect(screen.getByRole('button', { name: 'Promotion' })).toHaveFocus())
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Marketing' })).toHaveFocus())
   expect(screen.getAllByRole('button', { name: COMMON_TEXT.close })).toHaveLength(1)
   expect(document.querySelector('.sheet__actions')).toContainElement(
     screen.getByRole('button', { name: COMMON_TEXT.save }),
@@ -115,7 +115,7 @@ test('on a computer there is no sheet and no pane', async () => {
   stubViewport('computer')
   renderWithdrawals([WITHDRAWAL_NEW], withdrawalApi())
 
-  await screen.findByRole('button', { name: 'Promotion' })
+  await screen.findByRole('button', { name: 'Marketing' })
   expect(document.querySelector('.sheet')).toBeNull()
   expect(document.querySelector('.behind-pane')).toBeNull()
   expect(document.querySelector('.sheet__actions')).toBeNull()

@@ -21,6 +21,13 @@ INDEXES = {
     "payment": "ix_payment_sale_id",
 }
 TABLES = ("sale", "sale_line", "payment")
+# `sale` is read by the columns it had at this revision: later revisions add some (0023's
+# `number`), and a `SELECT *` would fail on every one.
+SELECTED = {
+    "sale": "id, business_id, sale_date, customer_id, shipping_charged, note, recorded_at",
+    "sale_line": "*",
+    "payment": "*",
+}
 
 
 def _migrate(engine: Engine, direction: str, revision: str) -> None:
@@ -28,6 +35,11 @@ def _migrate(engine: Engine, direction: str, revision: str) -> None:
         config = Config()
         config.set_main_option("script_location", str(MIGRATIONS_ROOT))
         config.attributes["connection"] = connection
+        raw = connection.connection.dbapi_connection
+        assert raw is not None
+        # As the upgrade runner does: a downgrade that rebuilds a referenced table needs
+        # foreign keys off before any write.
+        raw.execute("PRAGMA foreign_keys=OFF")
         with connection.begin():
             if direction == "up":
                 command.upgrade(config, revision)
@@ -112,7 +124,10 @@ def _rows(engine: Engine) -> dict[str, list[tuple[object, ...]]]:
     with engine.connect() as connection:
         return {
             table: [
-                tuple(row) for row in connection.execute(text(f"SELECT * FROM {table} ORDER BY id"))
+                tuple(row)
+                for row in connection.execute(
+                    text(f"SELECT {SELECTED[table]} FROM {table} ORDER BY id")
+                )
             ]
             for table in TABLES
         }

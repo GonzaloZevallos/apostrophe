@@ -24,6 +24,7 @@ import { STEP_COUNT, STEPS, type StepInfo } from './steps'
 import { COMMON_TEXT } from '../../copy/common'
 import { ONBOARDING_TEXT } from '../../copy/onboarding'
 import { CHECKLIST_DONE } from '../../copy/inicio'
+import ContentArea from '../../components/ContentArea'
 
 function plural(n: number, one: string, many: string): string {
   return n === 1 ? `1 ${one}` : `${n} ${many}`
@@ -53,7 +54,7 @@ export default function Listo() {
   }
 
   return (
-    <main className="pantalla onboarding">
+    <ContentArea as="main" className="pantalla onboarding">
       <div className="onboarding__columna">
         <div className="onboarding__cabecera onboarding__cabecera--derecha">
           <Boton
@@ -99,6 +100,6 @@ export default function Listo() {
           </Boton>
         </div>
       </div>
-    </main>
+    </ContentArea>
   )
 }

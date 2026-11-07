@@ -147,17 +147,17 @@ def test_days_left_excludes_negative_adjustments_from_the_pace() -> None:
     assert level.days_left is None
 
 
-def test_days_left_counts_both_withdrawal_sources_as_grams_going_out() -> None:
-    promotion = _draw("5", TODAY, ref_id=1, source=DrawSource.PROMOTION)
-    own_use = _draw("5", TODAY, ref_id=2, source=DrawSource.OWN_USE)
-    level = stock_level([_lot("100", date(2026, 9, 1))], [promotion, own_use], None, TODAY)
+def test_days_left_counts_withdrawals_whatever_their_reason_as_grams_going_out() -> None:
+    first = _draw("5", TODAY, ref_id=1, source=DrawSource.WITHDRAWAL)
+    second = _draw("5", TODAY, ref_id=2, source=DrawSource.WITHDRAWAL)
+    level = stock_level([_lot("100", date(2026, 9, 1))], [first, second], None, TODAY)
 
     # Stock is 90; 10 g out in 30 days: 90 * 30 // 10 = 270.
     assert level.days_left == 270
 
 
 def test_a_variety_with_only_a_withdrawal_is_sold_out_not_no_entries() -> None:
-    withdrawal = _draw("2", date(2026, 9, 20), source=DrawSource.OWN_USE)
+    withdrawal = _draw("2", date(2026, 9, 20), source=DrawSource.WITHDRAWAL)
     level = stock_level([], [withdrawal], None, TODAY)
 
     assert level.status == "sold_out"
@@ -166,7 +166,7 @@ def test_a_variety_with_only_a_withdrawal_is_sold_out_not_no_entries() -> None:
 
 
 def test_sold_out_since_follows_a_withdrawals_date() -> None:
-    withdrawal = _draw("10", date(2026, 9, 25), source=DrawSource.PROMOTION)
+    withdrawal = _draw("10", date(2026, 9, 25), source=DrawSource.WITHDRAWAL)
     level = stock_level([_lot("10", date(2026, 9, 1))], [withdrawal], None, TODAY)
 
     assert level.status == "sold_out"

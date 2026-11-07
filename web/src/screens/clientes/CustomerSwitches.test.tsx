@@ -27,6 +27,7 @@ function json(body: unknown): Response {
 function stub(vip: boolean, extra: Record<string, unknown>): void {
   const answers: Record<string, unknown> = {
     'GET /pricing-settings': { is_bulk_pricing: true, is_vip_customers: vip },
+    'GET /api/customer-types': TYPES,
     ...extra,
   }
   vi.stubGlobal(
@@ -70,10 +71,15 @@ const FER = {
   name: 'Fer',
   phone: '+5491158423310',
   vip: true,
+  customer_type_id: 2,
   balance: 0,
   owing_since: null,
   standing: 'settled',
 }
+const TYPES = [
+  { id: 1, name: 'Friends', icon: 'heart', is_vip: false },
+  { id: 2, name: 'Wholesale', icon: 'star', is_vip: true },
+]
 const SALE = {
   id: 1,
   date: '2026-10-03',
@@ -105,30 +111,35 @@ test('Ventas hides a row\'s VIP badge while Clientes VIP is off', async () => {
   expect(screen.queryByText('VIP')).not.toBeInTheDocument()
 })
 
-test('the customer card shows the VIP line only while Clientes VIP is on', async () => {
+test('the customer card shows the type\'s icon and name only while Customer types is on', async () => {
   stub(true, { 'GET /customers/3': FER, 'GET /customers/3/account': ACCOUNT })
   renderAt(pathTo(CUSTOMER, { id: 3 }))
-  expect(await screen.findByText('VIP')).toBeInTheDocument()
+  expect(await screen.findByText('Wholesale')).toBeInTheDocument()
+  expect(screen.getByText('★')).toBeInTheDocument()
+  expect(screen.queryByText('VIP')).not.toBeInTheDocument()
 })
 
-test('the customer card hides the VIP line while Clientes VIP is off', async () => {
+test('the customer card hides the type while Customer types is off', async () => {
   stub(false, { 'GET /customers/3': FER, 'GET /customers/3/account': ACCOUNT })
   renderAt(pathTo(CUSTOMER, { id: 3 }))
   expect(await screen.findByText('Fer')).toBeInTheDocument()
-  expect(screen.queryByText('VIP')).not.toBeInTheDocument()
+  expect(screen.queryByText('Wholesale')).not.toBeInTheDocument()
+  expect(screen.queryByText('★')).not.toBeInTheDocument()
 })
 
-test('the customer form shows the VIP field only while Clientes VIP is on', async () => {
+test('the customer form shows the Customer type field only while Customer types is on', async () => {
   stub(true, {})
   renderAt(CUSTOMER_NEW)
-  expect(await screen.findByText('VIP')).toBeInTheDocument()
+  expect(await screen.findByLabelText('Customer type')).toBeInTheDocument()
+  expect(screen.queryByRole('switch', { name: 'VIP' })).not.toBeInTheDocument()
 })
 
-test('the customer form has no VIP field while Clientes VIP is off', async () => {
+test('the customer form has no Customer type field while Customer types is off', async () => {
   stub(false, {})
   renderAt(CUSTOMER_NEW)
   expect(await screen.findByText('Name')).toBeInTheDocument()
-  expect(screen.queryByText('VIP')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Customer type')).not.toBeInTheDocument()
+  expect(screen.queryByText('Add a customer type')).not.toBeInTheDocument()
 })
 
 const LIST_FER = { ...FER, id: 3, name: 'Fer', owing_since: null }

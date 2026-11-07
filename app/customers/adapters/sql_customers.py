@@ -44,7 +44,7 @@ class SqlCustomers:
         assert row is not None, "save takes a customer of this business"
         row.name = customer.name.value
         row.phone = customer.phone.value if customer.phone is not None else None
-        row.vip = customer.vip
+        row.customer_type_id = customer.customer_type_id
         self._flush_or_mark_taken()
         return _customer(row)
 
@@ -76,7 +76,7 @@ class SqlCustomers:
             business_id=self._business_id,
             name=customer.name.value,
             phone=customer.phone.value if customer.phone is not None else None,
-            vip=customer.vip,
+            customer_type_id=customer.customer_type_id,
         )
 
     def _flush_or_mark_taken(self) -> None:
@@ -93,6 +93,6 @@ def _customer(row: CustomerRow) -> Customer:
     return Customer(
         name=CustomerName(row.name),
         phone=PhoneNumber(row.phone) if row.phone is not None else None,
-        vip=row.vip,
         id=row.id,
+        customer_type_id=row.customer_type_id,
     )

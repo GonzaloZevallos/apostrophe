@@ -5,8 +5,8 @@ it has today, until the part that routes every amount statement through `app/db.
 money helper moves new businesses to scale 2. The upgrade only creates the table and
 inserts rows; no column that existed before is touched. The downgrade drops the table.
 
-Revision ID: 0020
-Revises: 0019
+Revision ID: 0024
+Revises: 0023
 """
 
 from collections.abc import Sequence
@@ -14,8 +14,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0020"
-down_revision: str | None = "0019"
+revision: str = "0024"
+down_revision: str | None = "0023"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -45,4 +45,12 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    # This is the first write of a chain of downgrades, and SQLite ignores the foreign-key
+    # pragma inside a write transaction: 0023's downgrade rebuilds `sale` and needs the keys
+    # off from the first write of the transaction, so they go off here, before it, as the
+    # runner does, and stay off for the rest of the run. Dropping `money_format` never
+    # needed them on.
+    raw = op.get_bind().connection.dbapi_connection
+    assert raw is not None
+    raw.execute("PRAGMA foreign_keys=OFF")
     op.drop_table("money_format")

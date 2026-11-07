@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
-from tests.conftest import TODAY, MovableClock
+from tests.conftest import TODAY, MovableClock, reason_id
 
 
 def _variety_with_price(client: TestClient, name: str, list_price: int) -> int:
@@ -309,7 +309,7 @@ def _seed_bigger_history(client: TestClient) -> None:
     withdrawal = client.post(
         "/stock/withdrawals",
         json={
-            "reason": "own_use",
+            "reason_id": reason_id(client, "Own use"),
             "date": (TODAY - timedelta(days=7)).isoformat(),
             "lines": [{"product_id": variety_ids[0], "quantity": "1"}],
         },
@@ -330,7 +330,10 @@ def test_one_get_analysis_issues_the_same_number_of_statements_small_or_seeded(
     )
     client.post(
         "/stock/withdrawals",
-        json={"reason": "promotion", "lines": [{"product_id": variety_id, "quantity": "1"}]},
+        json={
+            "reason_id": reason_id(client, "Marketing"),
+            "lines": [{"product_id": variety_id, "quantity": "1"}],
+        },
     )
 
     _seed_bigger_history(other_client)

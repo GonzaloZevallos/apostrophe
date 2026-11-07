@@ -87,6 +87,7 @@
   "users": "Users",
   "catalogMessage": "Catalog message",
   "expenseCategories": "Expense categories",
+  "withdrawalReasons": "Withdrawal reasons",
   "appearance": "Appearance",
   "yourAccount": "Your account",
   "varietyWithPrice": "Variety with price",
@@ -106,5 +107,13 @@
   "cancel": "Cancel",
   "backArrow": "‹ {{parent}}",
   "offline": "Offline: check your internet and try again.",
-  "genericError": "Something went wrong. Try again."
+  "genericError": "Something went wrong. Try again.",
+  "search": "Search",
+  "noResults": "No results",
+  "noLongerAvailable": "no longer available",
+  "selected": "Selected",
+  "optionsOf": "{{name}} options",
+  "paid": "Paid",
+  "paymentMethod": "Payment method",
+  "noType": "No type"
 }

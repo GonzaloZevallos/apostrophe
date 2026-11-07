@@ -11,13 +11,20 @@
       "cost_of_goods": 6000,
       "pending_cost": false,
       "shortfall": null,
-      "promotion": null,
-      "own_use": null,
       "expenses": 0,
       "purchases": 0,
       "profit": 9000,
       "profit_pending": false,
-      "cash": 15000
+      "cash": 15000,
+      "withdrawals": [
+        {
+          "reason_id": 1,
+          "name": "Marketing",
+          "amount": null,
+          "pending": true,
+          "pending_quantity": 1.0
+        }
+      ]
     },
     "week": {
       "start": "2026-09-28",
@@ -29,14 +36,31 @@
       "quantity_gifted": 2.0,
       "cost_of_goods": 18000,
       "pending_cost": false,
-      "shortfall": { "amount": 3000, "pending": true },
-      "promotion": { "amount": 2000, "pending": true },
-      "own_use": { "amount": 1000, "pending": false },
+      "shortfall": {
+        "amount": 3000,
+        "pending": true
+      },
       "expenses": 12000,
       "purchases": 30000,
       "profit": 9000,
       "profit_pending": true,
-      "cash": -12000
+      "cash": -12000,
+      "withdrawals": [
+        {
+          "reason_id": 1,
+          "name": "Marketing",
+          "amount": 2000,
+          "pending": true,
+          "pending_quantity": 3.0
+        },
+        {
+          "reason_id": 2,
+          "name": "Own use",
+          "amount": 1000,
+          "pending": false,
+          "pending_quantity": 0.0
+        }
+      ]
     },
     "month": {
       "start": "2026-10-01",
@@ -49,13 +73,20 @@
       "cost_of_goods": 9000,
       "pending_cost": true,
       "shortfall": null,
-      "promotion": null,
-      "own_use": null,
       "expenses": 5000,
       "purchases": 0,
       "profit": 9000,
       "profit_pending": true,
-      "cash": 15000
+      "cash": 15000,
+      "withdrawals": [
+        {
+          "reason_id": 1,
+          "name": "Marketing",
+          "amount": null,
+          "pending": true,
+          "pending_quantity": 2.0
+        }
+      ]
     }
   },
   "debts": {
@@ -63,7 +94,12 @@
     "sales_owing_count": 4,
     "oldest": "2026-09-14",
     "teaser": [
-      { "customer_id": 1, "name": "Ana Pérez", "balance": 15000, "owing_since": "2026-09-14" }
+      {
+        "customer_id": 1,
+        "name": "Ana Pérez",
+        "balance": 15000,
+        "owing_since": "2026-09-14"
+      }
     ]
   },
   "stock": [

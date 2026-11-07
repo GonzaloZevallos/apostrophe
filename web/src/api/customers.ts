@@ -17,6 +17,7 @@ export interface Customer {
   name: string
   phone: string | null
   vip: boolean
+  customer_type_id: number | null
   balance: number
   owing_since: string | null
   standing: Standing
@@ -25,7 +26,8 @@ export interface Customer {
 export interface CustomerIn {
   name: string
   phone: string | null
-  vip: boolean
+  /** Sent only while Customer types is on; `null` clears the type. */
+  customer_type_id?: number | null
 }
 
 export type CustomerPatchIn = Partial<CustomerIn>

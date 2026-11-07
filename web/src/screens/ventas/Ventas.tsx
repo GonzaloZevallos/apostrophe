@@ -47,6 +47,7 @@ import { useTranslation } from 'react-i18next'
 import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import { useViewport } from '../../shell/useViewport'
 import { COMMON_TEXT } from '../../copy/common'
+import ContentArea from '../../components/ContentArea'
 
 export type Period = 'hoy' | 'semana' | 'mes' | 'fechas'
 
@@ -114,7 +115,7 @@ export default function Ventas() {
   const total = sales.reduce((sum, sale) => sum + sale.total, 0)
 
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <div className="cuerpo">
         <div className="ventas__cabecera">
           <span className="encabezado__titulo">{COMMON_TEXT.sales}</span>
@@ -220,6 +221,6 @@ export default function Ventas() {
           </>
         )}
       </div>
-    </main>
+    </ContentArea>
   )
 }

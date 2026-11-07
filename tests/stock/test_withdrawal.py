@@ -8,7 +8,6 @@ from decimal import Decimal
 import pytest
 
 from app.shared.quantity import Quantity
-from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import NOTE_MAX_LENGTH
 from app.stock.domain.errors import (
     WithdrawalDateInFuture,
@@ -43,7 +42,7 @@ def _line(variety_id: int = 1, quantity: str = "5") -> WithdrawalLine:
 
 def _withdrawal(
     *,
-    reason: WithdrawalReason | str | None = WithdrawalReason.PROMOTION,
+    reason_id: int | None = 1,
     withdrawn_on: date = TODAY,
     note: str | None = None,
     lines: tuple[WithdrawalLine, ...] | None = None,
@@ -52,7 +51,7 @@ def _withdrawal(
     id: int | None = None,
 ) -> Withdrawal:
     return Withdrawal.of(
-        reason,
+        reason_id,
         withdrawn_on,
         note,
         (_line(),) if lines is None else lines,
@@ -65,20 +64,19 @@ def _withdrawal(
 def test_a_withdrawal_dated_today_is_recorded() -> None:
     withdrawal = _withdrawal()
 
-    assert withdrawal.reason is WithdrawalReason.PROMOTION
+    assert withdrawal.reason_id == 1
     assert withdrawal.withdrawn_on == TODAY
     assert withdrawal.recorded_at == RECORDED_AT
     assert withdrawal.id is None
 
 
-def test_the_reason_may_come_as_its_raw_value() -> None:
-    assert _withdrawal(reason="own_use").reason is WithdrawalReason.OWN_USE
+def test_the_reason_is_kept_by_its_id() -> None:
+    assert _withdrawal(reason_id=2).reason_id == 2
 
 
-@pytest.mark.parametrize("raw", [None, "", "gift", "Promotion", " promotion"])
-def test_a_missing_or_unknown_reason_is_refused(raw: str | None) -> None:
+def test_a_missing_reason_is_refused() -> None:
     with pytest.raises(WithdrawalReasonRequired):
-        _withdrawal(reason=raw)
+        _withdrawal(reason_id=None)
 
 
 def test_a_withdrawal_dated_after_today_is_refused() -> None:
@@ -158,7 +156,7 @@ def test_an_edit_keeps_the_id_and_the_moment_it_was_recorded() -> None:
     original = _withdrawal(id=7)
 
     edited = Withdrawal.of(
-        WithdrawalReason.OWN_USE,
+        2,
         TODAY - timedelta(days=1),
         "otra",
         (_line(2, "9"),),
@@ -169,12 +167,12 @@ def test_an_edit_keeps_the_id_and_the_moment_it_was_recorded() -> None:
 
     assert edited.id == 7
     assert edited.recorded_at == RECORDED_AT
-    assert edited.reason is WithdrawalReason.OWN_USE
+    assert edited.reason_id == 2
 
 
 def test_an_edit_runs_the_same_validation() -> None:
     with pytest.raises(WithdrawalNoLines):
-        Withdrawal.of(WithdrawalReason.PROMOTION, TODAY, None, (), TODAY, RECORDED_AT, 7)
+        Withdrawal.of(1, TODAY, None, (), TODAY, RECORDED_AT, 7)
 
 
 def test_every_refusal_carries_its_code() -> None:
@@ -199,7 +197,7 @@ def test_a_refusal_never_repeats_the_input() -> None:
         lambda: _line(quantity="12.3456"),
         lambda: _line(quantity="-7.77"),
         lambda: _line(quantity="grams-abc"),
-        lambda: _withdrawal(reason="reason-xyz"),
+        lambda: _withdrawal(reason_id=None),
         lambda: _withdrawal(withdrawn_on=date(2030, 1, 2)),
         lambda: _withdrawal(lines=()),
         lambda: _withdrawal(lines=(WithdrawalLine(variety_id=4242, quantity=Quantity(-1)),)),

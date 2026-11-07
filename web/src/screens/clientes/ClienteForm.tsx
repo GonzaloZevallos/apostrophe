@@ -37,23 +37,27 @@ import {
   registerCustomer,
 } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
-import { useIsVipCustomers } from '../../api/pricingSettings'
+import { useIsVipCustomers, usePricingSettingsPending } from '../../api/pricingSettings'
 import { isGone, resolveOverride, type RefusalCode } from '../../api/refusals'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { toast } from '../../components/feedback'
 import GoneScreen from '../../components/GoneScreen'
 import SinConexion from '../../components/SinConexion'
-import Loading from '../../components/Loading'
+import Loading, { LoadingWhile } from '../../components/Loading'
 import CustomerFields from './CustomerFields'
+import CustomerTypeField from './CustomerTypeField'
 import { COMMON_TEXT } from '../../copy/common'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
+import ContentArea from '../../components/ContentArea'
 
 export const SAVED_TOAST = 'common:customerSaved'
 export const NAME_REQUIRED = CUSTOMERS_TEXT.giveItAName
 export const PHONE_INVALID = CUSTOMERS_TEXT.notAPhone
 export const PHONE_TAKEN = CUSTOMERS_TEXT.phoneTaken
 export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
+
+const TYPE_NOT_FOUND = 'customer_type.not_found'
 
 type Field = 'name' | 'phone' | 'form'
 
@@ -86,29 +90,29 @@ export default function ClienteForm({ mode }: Props) {
     }
     if (existing.error instanceof NetworkError) {
       return (
-        <main className="pantalla">
+        <ContentArea as="main" className="pantalla">
           <div className="cuerpo">
             <SinConexion />
           </div>
-        </main>
+        </ContentArea>
       )
     }
     return (
-      <main className="pantalla">
+      <ContentArea as="main" className="pantalla">
         <div className="cuerpo">
           <ErrorGenerico />
         </div>
-      </main>
+      </ContentArea>
     )
   }
 
   if (existing.data === undefined) {
     return (
-      <main className="pantalla">
+      <ContentArea as="main" className="pantalla">
         <div className="cuerpo">
           <Loading />
         </div>
-      </main>
+      </ContentArea>
     )
   }
 
@@ -127,19 +131,22 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
   const viewport = useViewport()
   const flash = useFlash()
   const vipCustomers = useIsVipCustomers()
+  const pricingPending = usePricingSettingsPending()
 
+  const initialTypeId = initial?.customer_type_id == null ? '' : String(initial.customer_type_id)
   const [name, setName] = useState(initial?.name ?? '')
   const [phone, setPhone] = useState(initial?.phone ?? '')
-  const [vip, setVip] = useState(initial?.vip ?? false)
+  const [typeId, setTypeId] = useState(initialTypeId)
   const [nameError, setNameError] = useState<string | null>(null)
   const [phoneError, setPhoneError] = useState<string | null>(null)
+  const [typeError, setTypeError] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
 
   const dirty =
     name !== (initial?.name ?? '') ||
     phone !== (initial?.phone ?? '') ||
-    vip !== (initial?.vip ?? false)
+    typeId !== initialTypeId
   const { blocker, disarm } = useLeaveGuard(dirty)
   const parent = parentOf(mode === 'nuevo' ? 'customer-new' : 'customer-edit', viewport)
   const goneExit = useGoneExit(mode === 'nuevo' ? 'customer-new' : 'customer-edit', { id: customerId })
@@ -161,10 +168,15 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
     event.preventDefault()
     setNameError(null)
     setPhoneError(null)
+    setTypeError(null)
     setFormError(null)
     setOffline(false)
     try {
-      const saved = await save.mutateAsync({ name, phone, vip })
+      // The type travels only while Customer types is on: with it off the server ignores it.
+      const body: CustomerIn = vipCustomers
+        ? { name, phone, customer_type_id: typeId === '' ? null : Number(typeId) }
+        : { name, phone }
+      const saved = await save.mutateAsync(body)
       invalidateResource(queryClient, 'customers')
       disarm()
       if (mode === 'nuevo') {
@@ -178,6 +190,13 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
         // The session boundary already cleared the cache and is navigating
         // to Entrar (queryClient.ts's MutationCache.onError); nothing left
         // for this form to show.
+        return
+      }
+      if (caught instanceof ApiError && caught.code === TYPE_NOT_FOUND) {
+        // The type was deleted meanwhile: refresh the picker, drop the stale choice and say so.
+        invalidateResource(queryClient, 'customerTypes')
+        setTypeId('')
+        setTypeError(CUSTOMERS_TEXT.typeNotFound)
         return
       }
       if (caught instanceof ApiError && mode === 'editar' && isGone(caught.code)) {
@@ -227,22 +246,23 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
         )
       }
     >
+      {/* The customer type field is drawn only once the pricing settings say Clientes VIP is on. */}
+      <LoadingWhile active={pricingPending} />
       <div className="encabezado-fila">
         <span className="encabezado__titulo">{title}</span>
         <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={close} />
       </div>
       <form className="formulario" onSubmit={onSubmit}>
         <CustomerFields
-          value={{ name, phone, vip }}
+          value={{ name, phone }}
           onChange={(next) => {
             setName(next.name)
             setPhone(next.phone)
-            setVip(next.vip)
           }}
           nameError={nameError}
           phoneError={phoneError}
-          showVip={vipCustomers}
         />
+        {vipCustomers && <CustomerTypeField value={typeId} onChange={setTypeId} error={typeError} />}
         <SheetActions>
           {formError !== null && (
             <span className="campo__error" role="alert">

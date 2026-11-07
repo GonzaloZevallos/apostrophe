@@ -7,12 +7,16 @@
  */
 
 import {
+  CUSTOMER,
+  CUSTOMER_NEW,
   CUSTOMERS,
   EXPENSE_CATEGORIES,
   EXPENSES,
   MORE,
   pathTo,
   SETTINGS_ACCOUNT,
+  SETTINGS_WITHDRAWAL_REASONS,
+  SETTINGS_CUSTOMER_TYPES,
   STOCK,
   STOCK_ENTRY,
   VARIETIES,
@@ -21,6 +25,7 @@ import {
 import { AUTH_TEXT } from '../copy/auth.ts'
 import { common } from './copy.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
+import { SETTINGS_TEXT } from '../copy/settings.ts'
 import { STOCK_TEXT } from '../copy/stock.ts'
 import { VARIETIES_TEXT } from '../copy/varieties.ts'
 import type { WalkState } from './states.ts'
@@ -43,7 +48,51 @@ const ENTRY_ROUTE = pathTo(STOCK_ENTRY, { id: 1 })
 /** The variety the sample app seeds below its stock threshold, by the registry's placeholder. */
 const LOW_VARIETY = VARIETY.replace(':id', '{low}')
 
+const SAMPLE_TYPES = [
+  { id: 1, name: 'Friends', icon: 'heart', is_vip: false },
+  { id: 2, name: 'Wholesale', icon: 'star', is_vip: true },
+]
+
+const SAMPLE_TYPED_CUSTOMER = {
+  id: 1,
+  name: 'Ana Pérez',
+  phone: null,
+  vip: true,
+  customer_type_id: 2,
+  balance: 0,
+  owing_since: null,
+  standing: 'settled',
+}
+
 export const RECORDS_STATES: readonly WalkState[] = [
+  {
+    // The sample Business has no customer types, so the form's type field is the notice.
+    screen: 'ClienteNuevoSinTipos',
+    route: CUSTOMER_NEW,
+    steps: [],
+    visible: CUSTOMERS_TEXT.typeNotice,
+    reads: [{ path: /^\/api\/customer-types$/, status: 200, body: [] }],
+  },
+  {
+    // Types are answered by a stub (the sample has none), so the select itself is walked.
+    screen: 'ClienteNuevoConTipos',
+    route: CUSTOMER_NEW,
+    steps: [],
+    visible: CUSTOMERS_TEXT.typeLabel,
+    reads: [{ path: /^\/api\/customer-types$/, status: 200, body: SAMPLE_TYPES }],
+  },
+  {
+    // A customer in a type, answered by a stub, so the detail page's type line is walked.
+    screen: 'ClienteFichaConTipo',
+    route: CUSTOMER.replace(':id', '{debtor}'),
+    steps: [],
+    visible: 'Wholesale',
+    reads: [
+      { path: /^\/api\/customer-types$/, status: 200, body: SAMPLE_TYPES },
+      { path: /^\/customers\/\d+$/, status: 200, body: SAMPLE_TYPED_CUSTOMER },
+      { path: /^\/customers\/\d+\/account$/, status: 200, body: { balance: 0, owing_since: null, standing: 'settled', rows: [] } },
+    ],
+  },
   {
     screen: 'ClientesBusqueda',
     route: CUSTOMERS,
@@ -134,6 +183,58 @@ export const RECORDS_STATES: readonly WalkState[] = [
     route: EXPENSE_CATEGORIES,
     steps: [{ click: 'Delete' }],
     visible: 'Delete the category?',
+  },
+  {
+    screen: 'ConfiguracionMotivos',
+    route: SETTINGS_WITHDRAWAL_REASONS,
+    steps: [],
+    visible: SETTINGS_TEXT.addWithdrawalReason,
+  },
+  {
+    screen: 'ConfiguracionMotivoNuevo',
+    route: SETTINGS_WITHDRAWAL_REASONS,
+    steps: [{ click: SETTINGS_TEXT.addWithdrawalReason }],
+    visible: common('common:save'),
+  },
+  {
+    screen: 'ConfiguracionMotivoRenombrar',
+    route: SETTINGS_WITHDRAWAL_REASONS,
+    steps: [{ click: SETTINGS_TEXT.rename }],
+    visible: SETTINGS_TEXT.renameReasonTitle,
+  },
+  {
+    screen: 'ConfiguracionMotivoConfirmarBorrado',
+    route: SETTINGS_WITHDRAWAL_REASONS,
+    steps: [{ click: SETTINGS_TEXT.delete }],
+    visible: common('common:cancel'),
+  },
+  {
+    screen: 'ConfiguracionTipoClienteNuevo',
+    route: SETTINGS_CUSTOMER_TYPES,
+    steps: [{ click: '+ Customer type' }],
+    visible: 'New customer type',
+  },
+  {
+    screen: 'ConfiguracionTipoClienteEnUso',
+    route: SETTINGS_CUSTOMER_TYPES,
+    steps: [{ click: 'Delete Regulars' }],
+    visible: '3 customers are in this type. Move them to another type first.',
+    reads: [
+      {
+        path: /^\/api\/customer-types$/,
+        status: 200,
+        body: [{ id: 1, name: 'Regulars', icon: 'circle', is_vip: false }],
+      },
+    ],
+    writes: [
+      { method: 'DELETE', path: /^\/api\/customer-types\/\d+$/, status: 409, body: { code: 'customer_type.in_use', count: 3 } },
+    ],
+  },
+  {
+    screen: 'ConfiguracionTipoClienteLista',
+    route: SETTINGS_CUSTOMER_TYPES,
+    steps: [],
+    visible: 'Customer types',
   },
   {
     screen: 'ConfiguracionContrasena',

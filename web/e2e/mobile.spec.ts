@@ -11,8 +11,9 @@ import { expect, test, type Browser, type Page } from '@playwright/test'
 import { MOBILE_FACTS_FILE, MOBILE_STATE_FILE, mobileLanguage } from './env.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { collect, GEOMETRY_COLLECTOR, type CellId } from './mobile/collect.js'
+import { runChrome } from './mobile/collectChrome.js'
 import { COLOUR_COLLECTOR } from './mobile/collectColour.js'
-import { LOADING_COLLECTOR, SHIFT_COLLECTOR } from './mobile/collectLoading.js'
+import { LOADING_COLLECTOR, SHIFT_COLLECTOR, WAITING_COLLECTOR } from './mobile/collectLoading.js'
 import { newCell, SIZES, THEMES, type Size, type Theme } from './mobile/cells.js'
 import { guardWrites } from './mobile/network.js'
 import { asScreen } from './mobile/states.js'
@@ -193,7 +194,7 @@ test.describe('the geometry checkers', () => {
   test('a page that breaks each geometry, type and input rule is reported for each', async ({ browser }) => {
     expect(await rulesOn(browser, BROKEN)).toEqual(
       [
-        'autocomplete', 'chrome-at-load', 'chrome-mid-scroll', 'figure-split', 'h-scroll', 'input-font',
+        'autocomplete', 'figure-split', 'h-scroll', 'input-font',
         'input-type', 'inputmode', 'name-overflow', 'overscroll', 'tabular-figures', 'text-size', 'touch-action',
         'touch-target', 'user-select',
       ].sort(),
@@ -274,6 +275,80 @@ test.describe('the geometry checkers', () => {
 
   test('a page that keeps them is not reported', async ({ browser }) => {
     expect(await rulesOn(browser, CLEAN)).toEqual([])
+  })
+})
+
+// The chrome rules judge by the screen's kind: the page reports facts, `judgeChrome` decides.
+const BAR = (style: string, attributes = ''): string =>
+  `<nav class="bar-inferior" ${attributes} style="${style}"><a href="#" style="display:block;height:48px">Inicio</a></nav>`
+const BAR_SHOWN = 'position:fixed;bottom:0;left:0;width:100%'
+const BAR_OFF_SCREEN = 'position:absolute;top:5000px;left:0;width:100%'
+
+test.describe('the chrome rules, by kind', () => {
+  async function chromeOn(browser: Browser, html: string, expectation: 'root' | 'card' | 'form'): Promise<string[]> {
+    const context = await newCell(browser, PROBE_SIZE, 'claro', SIGNED_OUT)
+    const page = await context.newPage()
+    await page.setContent(`<meta name="viewport" content="width=device-width, initial-scale=1"><body style="margin:0">${html}</body>`)
+    const found = await runChrome(page, PROBE_CELL, expectation)
+    await context.close()
+    return found.map((v) => `${v.rule} ${v.target}`)
+  }
+
+  test('a bar pushed off screen on a card is reported at load and mid-scroll', async ({ browser }) => {
+    expect(await chromeOn(browser, BAR(BAR_OFF_SCREEN), 'card')).toEqual([
+      'chrome-at-load chrome:bar',
+      'chrome-mid-scroll chrome:bar',
+    ])
+  })
+
+  test('a bar in view on a card passes, and the same bar on a form is reported', async ({ browser }) => {
+    expect(await chromeOn(browser, BAR(BAR_SHOWN), 'card')).toEqual([])
+    expect(await chromeOn(browser, BAR(BAR_SHOWN), 'form')).toEqual([
+      'chrome-at-load chrome:bar',
+      'chrome-mid-scroll chrome:bar',
+    ])
+  })
+
+  test('an inert bar passes, even where it is forbidden and off screen', async ({ browser }) => {
+    expect(await chromeOn(browser, BAR(BAR_OFF_SCREEN, 'inert'), 'card')).toEqual([])
+    expect(await chromeOn(browser, BAR(BAR_SHOWN, 'inert'), 'form')).toEqual([])
+    expect(await chromeOn(browser, BAR(BAR_SHOWN, 'aria-hidden="true"'), 'form')).toEqual([])
+  })
+
+  const MODALS = {
+    'dialog.showModal()': '<dialog id="m">Sheet</dialog>',
+    'role=dialog aria-modal=true': '<div role="dialog" aria-modal="true" style="position:fixed;top:0;height:200px">Sheet</div>',
+    'role=alertdialog aria-modal=true': '<div role="alertdialog" aria-modal="true" style="position:fixed;top:0;height:200px">Sheet</div>',
+  }
+  for (const [name, modal] of Object.entries(MODALS)) {
+    test(`a bar beneath ${name} passes on a form and on a card, off screen too`, async ({ browser }) => {
+      const open = `${modal}<script>document.getElementById('m')?.showModal()</script>`
+      expect(await chromeOn(browser, BAR(BAR_SHOWN) + open, 'form')).toEqual([])
+      expect(await chromeOn(browser, BAR(BAR_OFF_SCREEN) + open, 'card')).toEqual([])
+    })
+  }
+
+  test('a bar on a form under a role=dialog without aria-modal is reported: it is not covered', async ({ browser }) => {
+    const html = BAR(BAR_SHOWN) + '<div role="dialog" style="position:fixed;top:0;height:200px">Not modal</div>'
+    expect(await chromeOn(browser, html, 'form')).toEqual(['chrome-at-load chrome:bar', 'chrome-mid-scroll chrome:bar'])
+  })
+
+  test('a tab root missing "+ New sale" is reported, one with it in view is not', async ({ browser }) => {
+    const sale = '<a class="boton-nueva-venta" href="#" style="position:fixed;top:10px;left:10px;width:100px;height:48px">Nueva venta</a>'
+    expect(await chromeOn(browser, BAR(BAR_SHOWN), 'root')).toEqual([
+      'chrome-at-load chrome:new-sale',
+      'chrome-mid-scroll chrome:new-sale',
+    ])
+    expect(await chromeOn(browser, BAR(BAR_SHOWN) + sale, 'root')).toEqual([])
+  })
+
+  test('the walk leaves the page where it found it: scrolled to the top', async ({ browser }) => {
+    const context = await newCell(browser, PROBE_SIZE, 'claro', SIGNED_OUT)
+    const page = await context.newPage()
+    await page.setContent('<div style="height:4000px"></div>')
+    await runChrome(page, PROBE_CELL, 'form')
+    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+    await context.close()
   })
 })
 
@@ -371,6 +446,18 @@ test.describe('the colour, loading and shift checkers', () => {
     await context.close()
     return found
   }
+  // The held pass, then a change to the page, then the released pass: what `walkScreen` does with a screen's answers.
+  async function twoPhase(browser: Browser, html: string, change: () => void): Promise<Violation[]> {
+    const context = await newCell(browser, PROBE_SIZE, 'claro', SIGNED_OUT)
+    const page = await context.newPage()
+    await page.setContent(`<meta name="viewport" content="width=device-width, initial-scale=1">${html}`)
+    await page.evaluate((lang) => document.documentElement.setAttribute('lang', lang), mobileLanguage())
+    await collect(page, 'loading', PROBE_CELL, [LOADING_COLLECTOR])
+    await page.evaluate(change)
+    const found = await collect(page, 'released', PROBE_CELL, [WAITING_COLLECTOR])
+    await context.close()
+    return found
+  }
   const rulesOf = (found: Violation[]): string[] => [...new Set(found.map((v) => v.rule))].sort()
 
   test('a faint text, a faint placeholder and a text over a picture are each reported, a legible one is not', async ({ browser }) => {
@@ -406,26 +493,81 @@ test.describe('the colour, loading and shift checkers', () => {
     expect(found.map((v) => v.target)).toEqual(['span:Falta el monto'])
   })
 
-  test('a loading screen with no content area, no aria-busy, an empty-state wording and a figure is reported for each', async ({ browser }) => {
+  test('a loading screen with no content area, an empty-state wording and a figure is reported for each', async ({ browser }) => {
     const found = await onPage(browser, '<p>Nobody owes you.</p>', 'loading')
-    expect(rulesOf(found)).toEqual(['aria-busy', 'blank-while-loading', 'false-empty'])
-    const busy = await onPage(
+    expect(rulesOf(found)).toEqual(['blank-while-loading', 'false-empty'])
+    const figure = await onPage(
       browser,
-      '<main aria-busy="true"><span style="display:block;width:100px;height:20px;background:#ccc"></span><p>$ 0</p></main>',
+      '<main data-content-area><span style="display:block;width:100px;height:20px;background:#ccc"></span><p>$ 0</p></main>',
       'loading',
     )
-    expect(rulesOf(busy)).toEqual(['data-while-loading'])
+    expect(rulesOf(figure)).toEqual(['data-while-loading'])
     const clean = await onPage(
       browser,
-      '<main><div aria-busy="true" role="progressbar" style="width:100px;height:20px;background:#ccc"></div></main>',
+      '<main data-content-area><div role="progressbar" style="width:100px;height:20px;background:#ccc"></div></main>',
       'loading',
     )
     expect(clean).toEqual([])
   })
 
+  test('the held pass measures the topmost content area: the open sheet, not the screen under it', async ({ browser }) => {
+    const drawn = '<span style="display:block;width:100px;height:20px;background:#ccc"></span>'
+    const sheet = (inside: string) => `<div data-content-area role="dialog" aria-modal="true">${inside}</div>`
+    const blank = await onPage(browser, `<main data-content-area>${drawn}<p>$ 0</p></main>${sheet('')}`, 'loading')
+    expect(rulesOf(blank)).toEqual(['blank-while-loading'])
+    const figures = await onPage(browser, `<main data-content-area>${drawn}</main>${sheet(`${drawn}<p>$ 0</p>`)}`, 'loading')
+    expect(rulesOf(figures)).toEqual(['data-while-loading'])
+    // A main nested inside the sheet is not a top-level area: the sheet is the one measured.
+    const inner = await onPage(browser, sheet(`<main data-content-area>${drawn}</main>`), 'loading')
+    expect(inner).toEqual([])
+  })
+
+  const LOADING_AREA = '<main data-content-area aria-busy="true"><p>Cargando</p></main>'
+  const ANSWERED = () => {
+    const area = document.querySelector('[data-content-area]')
+    if (area === null) return
+    area.removeAttribute('aria-busy')
+    area.querySelectorAll('p').forEach((p) => (p.textContent = 'Lista de ventas'))
+  }
+  const SAME = () => undefined
+
+  test('an area that changed when the answers came must have said it was busy, and one that did not change must not have', async ({ browser }) => {
+    expect(await twoPhase(browser, LOADING_AREA, ANSWERED)).toEqual([])
+    expect(await twoPhase(browser, '<main data-content-area><p>Cargando</p></main>', ANSWERED)).toEqual([
+      { ...PROBE_CELL, rule: 'aria-busy', target: '' },
+    ])
+    expect(await twoPhase(browser, '<main data-content-area><p>Inicio</p></main>', SAME)).toEqual([])
+    expect(await twoPhase(browser, LOADING_AREA, SAME)).toEqual([{ ...PROBE_CELL, rule: 'aria-busy', target: '' }])
+  })
+
+  test('an area replaced by another element, or one that only grows more elements, counts as changed', async ({ browser }) => {
+    const replaced = () => {
+      document.querySelector('[data-content-area]')?.replaceWith(Object.assign(document.createElement('main'), { textContent: 'Cargando' }))
+    }
+    const grown = () => {
+      const area = document.querySelector('[data-content-area]')
+      area?.append(Object.assign(document.createElement('div'), { style: 'width:50px;height:20px' }))
+    }
+    expect(rulesOf(await twoPhase(browser, '<main data-content-area><p>Cargando</p></main>', replaced))).toEqual(['aria-busy'])
+    expect(rulesOf(await twoPhase(browser, '<main data-content-area><p>Cargando</p></main>', grown))).toEqual(['aria-busy'])
+    expect(await twoPhase(browser, LOADING_AREA, grown)).toEqual([])
+  })
+
+  test('a busy screen under a sheet that is not busy and changes is reported: the sheet is the area judged', async ({ browser }) => {
+    const html =
+      '<main data-content-area aria-busy="true"><p>Pantalla</p></main>' +
+      '<div data-content-area role="dialog" aria-modal="true"><p>Hoja</p></div>'
+    const sheetAnswered = () => {
+      const text = document.querySelector('[role="dialog"] p')
+      if (text !== null) text.textContent = 'Hoja lista'
+    }
+    expect(await twoPhase(browser, html, sheetAnswered)).toEqual([{ ...PROBE_CELL, rule: 'aria-busy', target: '' }])
+    expect(await twoPhase(browser, html, SAME)).toEqual([])
+  })
+
   test('a loading page whose lang is not the run’s fails with the language reason, not as a violation', async ({ browser }) => {
     const wrong = mobileLanguage() === 'en' ? 'en-XA' : 'en'
-    await expect(onPage(browser, '<main aria-busy="true"><p>Cargando</p></main>', 'loading', wrong)).rejects.toThrow(
+    await expect(onPage(browser, '<main data-content-area><p>Cargando</p></main>', 'loading', wrong)).rejects.toThrow(
       `page lang ${wrong}, run locale ${mobileLanguage()}`,
     )
   })

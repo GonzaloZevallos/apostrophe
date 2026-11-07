@@ -20,7 +20,7 @@ import { useGoneNotice } from '../../components/goneExit'
 import { ApiError, NetworkError } from '../../api/client'
 import { getCustomer } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
-import { useIsVipCustomers } from '../../api/pricingSettings'
+import CustomerTypeLine from './CustomerTypeLine'
 import {
   type PaymentMethod,
   deletePayment,
@@ -50,6 +50,7 @@ import AccountRowLine from './AccountRowLine'
 import { METHOD_LABEL, deleteRowIndices, rowKey } from './accountRows'
 import { COMMON_TEXT } from '../../copy/common'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
+import ContentArea from '../../components/ContentArea'
 
 function deletePaymentTitle(payment: { amount: number; method: PaymentMethod; paid_on: string }): string {
   return CUSTOMERS_TEXT.deletePaymentOf(formatMoney(payment.amount), METHOD_LABEL[payment.method], formatDateShort(payment.paid_on))
@@ -66,7 +67,6 @@ export default function ClienteFicha() {
   const goneShown = useGoneNotice()
   const feedback = readFeedback(location.state) ?? (goneShown ? { kind: 'notice' as const, refusal: GONE_NOTICE } : null)
   const queryClient = useQueryClient()
-  const vipCustomers = useIsVipCustomers()
 
   const [deletedToast, setDeletedToast] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState<
@@ -136,29 +136,29 @@ export default function ClienteFicha() {
     }
     if (error instanceof NetworkError) {
       return (
-        <main className="pantalla">
+        <ContentArea as="main" className="pantalla">
           <div className="cuerpo">
             <SinConexion />
           </div>
-        </main>
+        </ContentArea>
       )
     }
     return (
-      <main className="pantalla">
+      <ContentArea as="main" className="pantalla">
         <div className="cuerpo">
           <ErrorGenerico />
         </div>
-      </main>
+      </ContentArea>
     )
   }
 
   if (isPending || data === undefined) {
     return (
-      <main className="pantalla">
+      <ContentArea as="main" className="pantalla">
         <div className="cuerpo">
           <Loading />
         </div>
-      </main>
+      </ContentArea>
     )
   }
 
@@ -166,7 +166,7 @@ export default function ClienteFicha() {
   const deleteIndices = deleteRowIndices(rows)
 
   return (
-    <main className="pantalla" ref={root}>
+    <ContentArea as="main" className="pantalla" ref={root}>
       <div className="cuerpo">
         <div className="ficha-cliente__encabezado">
           <span className="encabezado__titulo" tabIndex={-1} data-place="card-heading">{data.name}</span>
@@ -210,12 +210,7 @@ export default function ClienteFicha() {
               <span>{formatPhone(data.phone)}</span>
             </div>
           )}
-          {vipCustomers && (
-            <div className="campo">
-              <span className="campo__rotulo">{COMMON_TEXT.vip}</span>
-              <span>{data.vip ? CUSTOMERS_TEXT.yes : CUSTOMERS_TEXT.off}</span>
-            </div>
-          )}
+          <CustomerTypeLine typeId={data.customer_type_id} />
         </div>
 
         <section className="cuenta-cliente" aria-labelledby="cuenta-cliente-titulo">
@@ -260,6 +255,6 @@ export default function ClienteFicha() {
           onCancel={() => setConfirmingDelete(null)}
         />
       )}
-    </main>
+    </ContentArea>
   )
 }

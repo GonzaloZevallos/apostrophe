@@ -14,10 +14,13 @@ class BusinessRef:
     id: int
     name: str
     language: str
+    last_sale_number: int | None = None
 
     def __post_init__(self) -> None:
         if self.id <= 0:
             raise ValueError("a business ref needs a positive id")
+        if self.last_sale_number is not None and self.last_sale_number < 0:
+            raise ValueError("a business ref needs a last sale number of zero or more")
         if not self.name:
             raise ValueError("a business ref needs a name")
         if not self.language:

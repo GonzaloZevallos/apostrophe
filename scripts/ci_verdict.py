@@ -9,7 +9,8 @@ and prints. Lines carry job names and results, nothing else.
 - A gating suite (`SUITES`) passes on `success`; on `skipped` only when its `changes` flag
   is "false". A "true" or missing flag, `failure` and `cancelled` fail.
 - `ALWAYS_JOBS` (checks, web, docs) must be `success`.
-- pytest, vitest and e2e are treated alike: none is parked or warning-only.
+- pytest, vitest, e2e-shard and e2e are treated alike: none is parked or warning-only.
+  `e2e-shard` is the matrix; `e2e` is the aggregator over it (the job `ci_covers` names).
 - `WARN_JOBS` (coverage) pass on `success`; any other result is a warning, except `cancelled`,
   which fails.
 - A job in no map fails by name.
@@ -24,7 +25,12 @@ from pathlib import Path
 from typing import cast
 
 # job id -> the `changes` output flag that says whether the suite had to run.
-SUITES: dict[str, str] = {"pytest": "pytest", "vitest": "vitest", "e2e": "e2e"}
+SUITES: dict[str, str] = {
+    "pytest": "pytest",
+    "vitest": "vitest",
+    "e2e-shard": "e2e",
+    "e2e": "e2e",
+}
 ALWAYS_JOBS = ("checks", "web", "docs")
 WARN_JOBS = ("coverage",)
 CHANGES = "changes"

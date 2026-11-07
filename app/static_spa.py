@@ -157,9 +157,7 @@ LEGACY_FRONT_PATHS: tuple[tuple[str, str], ...] = parse_legacy_front_paths(
 
 class MissingBuiltFront(RuntimeError):
     def __init__(self, directory: Path) -> None:
-        super().__init__(
-            f"{directory} has no index.html; run `npm run build` in web/ first"
-        )
+        super().__init__(f"{directory} has no index.html; run `npm run build` in web/ first")
 
 
 class MalformedBuiltFront(RuntimeError):

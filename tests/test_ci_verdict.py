@@ -20,6 +20,7 @@ def needs(
     flags: dict[str, str] | None = None,
     pytest: str = "success",
     vitest: str = "success",
+    e2e_shard: str = "success",
     e2e: str = "success",
     checks: str = "success",
     web: str = "success",
@@ -32,6 +33,7 @@ def needs(
         "changes": {"result": changes, "outputs": outputs},
         "pytest": {"result": pytest, "outputs": {}},
         "vitest": {"result": vitest, "outputs": {}},
+        "e2e-shard": {"result": e2e_shard, "outputs": {}},
         "e2e": {"result": e2e, "outputs": {}},
         "checks": {"result": checks, "outputs": {}},
         "web": {"result": web, "outputs": {}},
@@ -43,7 +45,7 @@ def needs(
 def test_everything_succeeding_passes_with_one_line_per_job() -> None:
     ok, lines = verdict(needs())
     assert ok
-    assert len(lines) == 8
+    assert len(lines) == 9
     assert not any("warning" in line for line in lines)
 
 
@@ -120,36 +122,52 @@ def test_coverage_cancelled_fails() -> None:
     assert "coverage: cancelled" in lines
 
 
-def test_a_failed_e2e_fails_the_verdict() -> None:
-    ok, lines = verdict(needs(e2e="failure"))
+E2E_JOBS = ["e2e-shard", "e2e"]
+
+
+def _with_e2e(job: str, result: str, flags: dict[str, str] | None = None) -> dict[str, object]:
+    """A `needs` object where only the e2e job `job` has `result`."""
+    given = needs(flags=flags)
+    given[job] = {"result": result, "outputs": {}}
+    return given
+
+
+@pytest.mark.parametrize("job", E2E_JOBS)
+@pytest.mark.parametrize("result", ["failure", "cancelled"])
+def test_a_failed_or_cancelled_e2e_job_fails_the_verdict(job: str, result: str) -> None:
+    ok, lines = verdict(_with_e2e(job, result))
     assert not ok
-    assert "e2e: failure" in lines
+    assert f"{job}: {result}" in lines
 
 
-def test_e2e_skipped_with_a_false_flag_passes() -> None:
+@pytest.mark.parametrize("job", E2E_JOBS)
+def test_an_e2e_job_skipped_with_a_false_flag_passes(job: str) -> None:
     flags = {"pytest": "true", "vitest": "true", "e2e": "false"}
-    ok, lines = verdict(needs(e2e="skipped", flags=flags))
+    ok, lines = verdict(_with_e2e(job, "skipped", flags))
     assert ok
-    assert "e2e: skipped" in lines
+    assert f"{job}: skipped" in lines
 
 
-def test_e2e_skipped_with_a_true_flag_fails() -> None:
-    ok, lines = verdict(needs(e2e="skipped"))
+@pytest.mark.parametrize("job", E2E_JOBS)
+def test_an_e2e_job_skipped_with_a_true_flag_fails(job: str) -> None:
+    ok, lines = verdict(_with_e2e(job, "skipped"))
     assert not ok
-    assert "e2e: skipped but its flag is 'true'" in lines
+    assert f"{job}: skipped but its flag is 'true'" in lines
 
 
-def test_e2e_skipped_with_a_missing_flag_fails() -> None:
+@pytest.mark.parametrize("job", E2E_JOBS)
+def test_an_e2e_job_skipped_with_a_missing_flag_fails(job: str) -> None:
     flags = {"pytest": "true", "vitest": "true"}
-    ok, lines = verdict(needs(e2e="skipped", flags=flags))
+    ok, lines = verdict(_with_e2e(job, "skipped", flags))
     assert not ok
-    assert "e2e: skipped but its flag is missing" in lines
+    assert f"{job}: skipped but its flag is missing" in lines
 
 
-def test_a_cancelled_e2e_fails() -> None:
-    ok, lines = verdict(needs(e2e="cancelled"))
+def test_a_cancelled_shard_and_a_failed_aggregator_are_both_named() -> None:
+    ok, lines = verdict(needs(e2e_shard="cancelled", e2e="failure"))
     assert not ok
-    assert "e2e: cancelled" in lines
+    assert "e2e-shard: cancelled" in lines
+    assert "e2e: failure" in lines
 
 
 def test_a_job_in_no_map_fails_by_name() -> None:
@@ -177,7 +195,7 @@ def test_a_malformed_job_entry_fails_by_name() -> None:
 
 
 def test_the_suites_map_each_job_to_its_changes_flag() -> None:
-    assert SUITES == {"pytest": "pytest", "vitest": "vitest", "e2e": "e2e"}
+    assert SUITES == {"pytest": "pytest", "vitest": "vitest", "e2e-shard": "e2e", "e2e": "e2e"}
 
 
 def test_main_exits_zero_on_a_pass_and_prints_only_names_and_results(

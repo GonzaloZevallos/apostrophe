@@ -24,9 +24,9 @@ describe('refusalKeys.json', () => {
     }
   })
 
-  test('maps every gone code to the gone notice, but the withdrawal line that has words of its own', () => {
+  test('maps every gone code to the gone notice, but the two withdrawal lines that have words of their own', () => {
     const goneCodes = Object.entries(contract.refusalCodes).filter(
-      ([code, { kind }]) => kind === 'gone' && code !== 'stock.withdrawal_variety_not_found',
+      ([code, { kind }]) => kind === 'gone' && code !== 'stock.withdrawal_variety_not_found' && code !== 'stock.withdrawal_reason_not_found',
     )
 
     expect(goneCodes.length).toBeGreaterThan(10)

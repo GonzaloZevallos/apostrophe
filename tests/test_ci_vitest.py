@@ -116,6 +116,18 @@ def test_main_prints_empty_args_for_a_full_run(
     assert capsys.readouterr().out == "args=\n"
 
 
+def test_main_prints_empty_args_for_a_full_run_with_an_empty_listing(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """With no `base_ref` the workflow writes an empty listing, and everything is selected."""
+    path = listing(tmp_path, "")
+    env = {"VITEST_ALL": "true", "VITEST_CHANGED": "false", "VITEST_FILES": "[]"}
+
+    assert main([str(path)], env) == 0
+
+    assert capsys.readouterr().out == "args=\n"
+
+
 def test_main_counts_a_missing_listing_as_empty(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

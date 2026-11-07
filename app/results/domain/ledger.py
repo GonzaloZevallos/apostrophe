@@ -10,7 +10,7 @@ from typing import Literal, assert_never
 
 from app.shared.quantity import Quantity
 
-DrawKind = Literal["sold", "gifted", "shortfall", "promotion", "own_use"]
+DrawKind = Literal["sold", "gifted", "shortfall", "withdrawal"]
 
 
 @dataclass(frozen=True)
@@ -18,7 +18,8 @@ class DrawRow:
     """One draw, already allocated against its lots. `variety_id`, `variety_name`,
     `sale_id` and `line_total` are `None` unless `kind` is `sold` or `gifted`: a
     negative adjustment is never a sale line (CONTEXT.md: Stock shortfall) and a stock
-    withdrawal is never a sale, so neither carries a line total of its own."""
+    withdrawal is never a sale, so neither carries a line total of its own.
+    `reason_id` is the withdrawal reason, present exactly when `kind` is `withdrawal`."""
 
     kind: DrawKind
     day: date
@@ -29,19 +30,32 @@ class DrawRow:
     quantity: Quantity
     costed: int | None
     pending: Quantity
+    reason_id: int | None = None
 
     def __post_init__(self) -> None:
         match self.kind:
             case "sold" | "gifted":
                 if self.variety_id is None or self.sale_id is None or self.line_total is None:
                     raise ValueError("a sale-line draw carries its variety, sale and line total")
-            case "shortfall" | "promotion" | "own_use":
+            case "shortfall" | "withdrawal":
                 if self.variety_id is not None or self.sale_id is not None:
                     raise ValueError("a shortfall or withdrawal draw carries no variety or sale")
                 if self.line_total is not None:
                     raise ValueError("a shortfall or withdrawal draw carries no line total")
             case _:
                 assert_never(self.kind)
+        if (self.kind == "withdrawal") != (self.reason_id is not None):
+            raise ValueError("a withdrawal draw carries its reason, and no other draw does")
+
+
+@dataclass(frozen=True)
+class ReasonRecord:
+    """One withdrawal reason of the business, in the order `WithdrawalReasons` answers
+    it (`position`, then `reason_id`)."""
+
+    reason_id: int
+    name: str
+    position: int
 
 
 @dataclass(frozen=True)

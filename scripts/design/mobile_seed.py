@@ -51,7 +51,7 @@ def main(argv: list[str] | None = None) -> int:
 
     env = dict(os.environ)
     token = sample_app.new_business_token(env)
-    api = sample_app.HttpApi(args.base)
+    api = sample_app.HttpApi(args.base, env.get("APOSTROPHE_DATABASE_URL"))
     api.call(
         "POST",
         f"/invitations/{token}/accept",

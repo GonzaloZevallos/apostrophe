@@ -1,17 +1,28 @@
 name: CI
 
+# A dispatch is master's workflow judging the head at `sha` (GH-562, ADR-0067 addendum): it is empty for
+# a push or a pull request, which keeps GitHub's default title; for a dispatch the title carries the
+# sha, the one thing the system that dispatches it reads the run by.
+run-name: ${{ inputs.sha && format('CI at {0}', inputs.sha) || '' }}
+
 on:
   push:
-    branches: [master]
+    branches: [master, 'agentic-ci/**']
   pull_request:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: The full commit id of the head to judge with master's workflow
+        required: true
+        type: string
 
 permissions:
   contents: read
 
-# A newer push to a pull request cancels the older run; a push to master never does (ADR-0067).
+# A newer push to a pull request or to an `agentic-ci/**` branch cancels the older run; a push to master never does (ADR-0067).
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}${{ inputs.sha && format('-{0}', inputs.sha) || '' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/agentic-ci/')) }}
 
 jobs:
   # Which suites this change affects (ADR-0064). The event reaches the script through env:.
@@ -30,21 +41,45 @@ jobs:
       e2e_matrix: ${{ steps.select.outputs.e2e_matrix }}
       e2e_args: ${{ steps.select.outputs.e2e_args }}
       selection: ${{ steps.select.outputs.selection }}
+      base_ref: ${{ steps.select.outputs.base_ref }}
     steps:
+      # A dispatch only counts at master, and its sha is a full lowercase object id before it names a ref.
+      - env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+        run: test "$EVENT" != workflow_dispatch || test "$REF" = refs/heads/master
+      - if: github.event_name == 'workflow_dispatch'
+        env:
+          SHA: ${{ inputs.sha }}
+        run: |-
+          [[ "$SHA" =~ ^([0-9a-f]{40}|[0-9a-f]{64})$ ]] || { echo "sha is not a full lowercase object id"; exit 1; }
+      # The root checkout is master's: its scripts judge the head, so it carries no `ref`. On a dispatch
+      # the head is a second checkout under `head/`, read only through the `root` argument.
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 2
+          fetch-depth: 0
+      - if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.sha }}
+          path: head
+          fetch-depth: 0
       - uses: astral-sh/setup-uv@v10.2.0
         with:
           version: "0.12.13"
       - id: select
         env:
           EVENT: ${{ github.event_name }}
-        run: uv run --no-project python -m scripts.ci_changes "$EVENT" >> "$GITHUB_OUTPUT"
+          REF: ${{ github.ref }}
+          SHA: ${{ inputs.sha }}
+          HEAD_ROOT: ${{ github.workspace }}/head
+        run: uv run --no-project python -m scripts.ci_changes "$EVENT" "$REF" "$SHA" "$HEAD_ROOT" >> "$GITHUB_OUTPUT"
   checks:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.sha }}
       - uses: astral-sh/setup-uv@v10.2.0
         with:
           version: "0.12.13"
@@ -56,6 +91,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.sha }}
       - uses: actions/setup-node@v7
         with:
           node-version: "24"
@@ -75,6 +112,8 @@ jobs:
       matrix: ${{ fromJSON(needs.changes.outputs.pytest_matrix) }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.sha }}
       - uses: astral-sh/setup-uv@v10.2.0
         with:
           version: "0.12.13"
@@ -97,7 +136,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 2
+          ref: ${{ inputs.sha }}
+          fetch-depth: 0
       - uses: astral-sh/setup-uv@v10.2.0
         with:
           version: "0.12.13"
@@ -109,7 +149,10 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - run: npm --prefix web ci --no-fund --no-audit
       - run: npx --prefix web playwright install --with-deps chromium
-      - run: npx --prefix web vitest list --root web --changed=HEAD^1 --filesOnly > "$RUNNER_TEMP/vitest-listed.txt"
+      - env:
+          BASE_REF: ${{ needs.changes.outputs.base_ref }}
+        run: |-
+          if [ -n "$BASE_REF" ]; then npx --prefix web vitest list --root web --changed="$BASE_REF" --filesOnly > "$RUNNER_TEMP/vitest-listed.txt"; else : > "$RUNNER_TEMP/vitest-listed.txt"; fi
       - id: vitest-args
         env:
           VITEST_ALL: ${{ needs.changes.outputs.vitest_all }}
@@ -130,6 +173,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ inputs.sha }}
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v10.2.0
         with:
@@ -150,7 +194,7 @@ jobs:
       - run: uv run --no-project python -m scripts.docs.api_breaks
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
-  e2e:
+  e2e-shard:
     needs: changes
     if: needs.changes.outputs.e2e == 'true'
     runs-on: ubuntu-24.04
@@ -161,6 +205,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.sha }}
       - uses: astral-sh/setup-uv@v10.2.0
         with:
           version: "0.12.13"
@@ -183,6 +229,17 @@ jobs:
           name: e2e-test-results-${{ matrix.shard }}
           path: web/test-results/
           retention-days: 14
+  # One check-run named exactly `e2e`, green only when every shard is: the job `ci_covers.web-e2e`
+  # names (the matrix itself reports `e2e-shard (N)`). No checkout, no `uv`, no check (ADR-0067).
+  e2e:
+    needs: [changes, e2e-shard]
+    if: always() && needs.changes.outputs.e2e == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - env:
+          RESULT: ${{ needs.e2e-shard.result }}
+        run: |-
+          test "$RESULT" = success || { echo "e2e shards: $RESULT"; exit 1; }
   # Reported, never gated: a failure here is a warning in ci-ok (ADR-0067).
   coverage:
     needs: [changes, pytest, vitest]
@@ -193,6 +250,8 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.sha }}
       - uses: astral-sh/setup-uv@v10.2.0
         with:
           version: "0.12.13"
@@ -235,7 +294,7 @@ jobs:
         run: |-
           echo "Coverage failed: no pytest data from $(printf '%s' "$MATRIX" | jq '.include | length') shards (a shard failed before uploading, or none ran)." | tee -a "$GITHUB_STEP_SUMMARY" && exit 1
   ci-ok:
-    needs: [changes, checks, web, docs, pytest, vitest, e2e, coverage]
+    needs: [changes, checks, web, docs, pytest, vitest, e2e-shard, e2e, coverage]
     if: always()
     runs-on: ubuntu-24.04
     steps:

@@ -5,7 +5,7 @@
  * (plan, "Gone records").
  */
 
-import { CUSTOMER, CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_NEW, LOGIN, pathTo } from '../../routes'
+import { CUSTOMER, CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_NEW, LOGIN, pathTo, SETTINGS_CUSTOMER_TYPES } from '../../routes'
 import { useGoneNotice } from '../../components/goneExit'
 import { readFeedback } from '../../components/feedback'
 import Notice from '../../components/Notice'
@@ -15,7 +15,7 @@ import { StrictMode } from 'react'
 import { inAppState } from '../../components/inAppState'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Link, Outlet, RouterProvider, useLocation } from 'react-router'
 import FlashProvider from '../../flash/FlashProvider'
@@ -146,27 +146,20 @@ test('only Nombre is marked required; Teléfono stays optional', () => {
 test('the form has Nombre required, an optional phone and no Canal field', async () => {
   renderForm(CUSTOMER_NEW)
 
-  expect(await screen.findByRole('switch', { name: 'VIP' })).toBeInTheDocument()
-  expect(screen.getByLabelText('Name')).toBeRequired()
+  expect(await screen.findByLabelText('Name')).toBeRequired()
+  expect(screen.queryByRole('switch', { name: 'VIP' })).not.toBeInTheDocument()
   expect(screen.getByLabelText('Phone')).not.toBeRequired()
   expect(screen.queryByRole('radio')).not.toBeInTheDocument()
   expect(screen.queryByText(/canal|whatsapp|telegram/i)).not.toBeInTheDocument()
 })
 
-test('with Clientes VIP off the form has no VIP field', async () => {
+test('with Customer types off the form has no type field and no notice', async () => {
   api = stubFetchWithSettings(false)
   renderForm(CUSTOMER_NEW)
 
   expect(await screen.findByLabelText('Name')).toBeInTheDocument()
-  expect(screen.queryByRole('switch', { name: 'VIP' })).not.toBeInTheDocument()
-})
-
-test('with Clientes VIP off the form shows no VIP caption either', async () => {
-  api = stubFetchWithSettings(false)
-  renderForm(CUSTOMER_NEW)
-
-  expect(await screen.findByLabelText('Name')).toBeInTheDocument()
-  expect(screen.queryByText('VIP')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Customer type')).not.toBeInTheDocument()
+  expect(screen.queryByText('Add a customer type')).not.toBeInTheDocument()
 })
 
 test('on open the Name field has focus and comes before Phone', async () => {
@@ -181,26 +174,6 @@ test('on open the Name field has focus and comes before Phone', async () => {
   expect(phone).toHaveClass('campo__input--enfoque')
 })
 
-test('the VIP switch toggles, shows Yes or No, and is saved', async () => {
-  api.mockResolvedValue(jsonResponse(201, { id: 11, name: 'Vera', phone: null, vip: true }))
-  renderForm(CUSTOMER_NEW)
-
-  const vip = await screen.findByRole('switch', { name: 'VIP' })
-  expect(vip).not.toBeChecked()
-  expect(screen.getByText('No')).toBeInTheDocument()
-  await userEvent.click(vip)
-  expect(vip).toBeChecked()
-  expect(screen.getByText('Yes')).toBeInTheDocument()
-  await userEvent.type(screen.getByLabelText('Name'), 'Vera')
-  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
-
-  expect(await screen.findByText('la ficha')).toBeInTheDocument()
-  expect(api).toHaveBeenCalledWith(
-    '/customers',
-    expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Vera', phone: '', vip: true }) }),
-  )
-})
-
 test('registering with no phone sends the request and shows the saved toast', async () => {
   api.mockResolvedValue(
     jsonResponse(201, { id: 10, name: 'Sol', phone: null, vip: false }),
@@ -213,7 +186,7 @@ test('registering with no phone sends the request and shows the saved toast', as
   expect(await screen.findByText('Customer saved')).toBeInTheDocument()
   expect(api).toHaveBeenCalledWith(
     '/customers',
-    expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Sol', phone: '', vip: false }) }),
+    expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Sol', phone: '', customer_type_id: null }) }),
   )
 })
 
@@ -234,7 +207,7 @@ test('clearing a phone when editing sends it and shows the saved toast', async (
   expect(await screen.findByText('Customer saved')).toBeInTheDocument()
   expect(api).toHaveBeenCalledWith(
     '/customers/7',
-    expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', phone: '', vip: false }) }),
+    expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', phone: '', customer_type_id: null }) }),
   )
 })
 
@@ -553,4 +526,111 @@ test('the form follows the icon and text rule: its submit and its Cerrar are tex
 
   expect(screen.getByRole('button', { name: 'Save and use' })).toHaveAttribute('type', 'submit')
   expectIconAndTextRule(document.body)
+})
+
+const TYPES = [
+  { id: 1, name: 'Friends', icon: 'heart', is_vip: false },
+  { id: 2, name: 'Wholesale', icon: 'star', is_vip: true },
+]
+
+test('the Customer type field offers No type first, then each type with its icon', async () => {
+  api = stubFetchWithSettings(true, true, TYPES)
+  renderForm(CUSTOMER_NEW)
+
+  const field = await screen.findByLabelText('Customer type')
+  const options = within(field).getAllByRole('option').map((option) => option.textContent)
+  expect(options).toEqual(['No type', '♡ Friends', '★ Wholesale'])
+  expect(field).toHaveValue('')
+  expect(screen.queryByText('Add a customer type')).not.toBeInTheDocument()
+})
+
+test('a type is set on a new customer and sent as customer_type_id', async () => {
+  api = stubFetchWithSettings(true, true, TYPES)
+  api.mockResolvedValue(jsonResponse(201, { id: 12, name: 'Ana', phone: null, vip: false, customer_type_id: 1 }))
+  renderForm(CUSTOMER_NEW)
+
+  await userEvent.type(await screen.findByLabelText('Name'), 'Ana')
+  await userEvent.selectOptions(await screen.findByLabelText('Customer type'), '♡ Friends')
+  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+
+  expect(await screen.findByText('la ficha')).toBeInTheDocument()
+  expect(api).toHaveBeenCalledWith(
+    '/customers',
+    expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Ana', phone: '', customer_type_id: 1 }) }),
+  )
+})
+
+test('editing shows the current type and clears it with No type', async () => {
+  api = stubFetchWithSettings(true, true, TYPES)
+  api.mockResolvedValueOnce(jsonResponse(200, { id: 7, name: 'Tincho', phone: null, vip: false, customer_type_id: 1 }))
+  api.mockResolvedValue(jsonResponse(200, { id: 7, name: 'Tincho', phone: null, vip: false, customer_type_id: null }))
+  renderForm(pathTo(CUSTOMER_EDIT, { id: 7 }))
+
+  const field = await screen.findByLabelText('Customer type')
+  await waitFor(() => expect(field).toHaveValue('1'))
+  await userEvent.selectOptions(field, 'No type')
+  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+
+  expect(await screen.findByText('la ficha')).toBeInTheDocument()
+  expect(api).toHaveBeenCalledWith(
+    '/customers/7',
+    expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', phone: '', customer_type_id: null }) }),
+  )
+})
+
+test('editing changes a customer\'s type from one type to another', async () => {
+  api = stubFetchWithSettings(true, true, TYPES)
+  api.mockResolvedValueOnce(jsonResponse(200, { id: 7, name: 'Tincho', phone: null, vip: false, customer_type_id: 1 }))
+  api.mockResolvedValue(jsonResponse(200, { id: 7, name: 'Tincho', phone: null, vip: true, customer_type_id: 2 }))
+  renderForm(pathTo(CUSTOMER_EDIT, { id: 7 }))
+
+  const field = await screen.findByLabelText('Customer type')
+  await waitFor(() => expect(field).toHaveValue('1'))
+  await userEvent.selectOptions(field, '★ Wholesale')
+  expect(field).toHaveValue('2')
+  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+
+  expect(await screen.findByText('la ficha')).toBeInTheDocument()
+  expect(api).toHaveBeenCalledWith(
+    '/customers/7',
+    expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', phone: '', customer_type_id: 2 }) }),
+  )
+})
+
+test('with no types the field is the notice Add a customer type, leading to Settings Prices', async () => {
+  renderForm(CUSTOMER_NEW)
+
+  const notice = await screen.findByRole('link', { name: 'Add a customer type' })
+  expect(notice).toHaveAttribute('href', SETTINGS_CUSTOMER_TYPES)
+  expect(screen.queryByRole('combobox', { name: 'Customer type' })).not.toBeInTheDocument()
+})
+
+test('with Customer types off the save sends no customer_type_id', async () => {
+  api = stubFetchWithSettings(false, true, TYPES)
+  api.mockResolvedValue(jsonResponse(201, { id: 13, name: 'Zoe', phone: null, vip: false, customer_type_id: null }))
+  renderForm(CUSTOMER_NEW)
+
+  await userEvent.type(await screen.findByLabelText('Name'), 'Zoe')
+  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+
+  expect(await screen.findByText('la ficha')).toBeInTheDocument()
+  expect(api).toHaveBeenCalledWith(
+    '/customers',
+    expect.objectContaining({ body: JSON.stringify({ name: 'Zoe', phone: '' }) }),
+  )
+})
+
+test('a type deleted meanwhile (404 customer_type.not_found) shows the inline error and keeps the form', async () => {
+  api = stubFetchWithSettings(true, true, TYPES)
+  api.mockResolvedValue(jsonResponse(404, { detail: 'gone', code: 'customer_type.not_found' }))
+  renderForm(CUSTOMER_NEW)
+
+  await userEvent.type(await screen.findByLabelText('Name'), 'Ana')
+  await userEvent.selectOptions(await screen.findByLabelText('Customer type'), '★ Wholesale')
+  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+
+  expect(await screen.findByRole('alert')).toHaveTextContent('That type no longer exists. Pick another one.')
+  expect(screen.getByLabelText('Name')).toHaveValue('Ana')
+  expect(screen.getByLabelText('Customer type')).toHaveValue('')
+  expect(screen.queryByText('la ficha')).not.toBeInTheDocument()
 })

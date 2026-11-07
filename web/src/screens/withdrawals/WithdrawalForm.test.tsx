@@ -9,8 +9,8 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import contract from '../../api/contract.json'
 import WITHDRAWAL from '../../api/fixtures/withdrawal.json'
-import { VARIETIES as VARIETIES_PATH, WITHDRAWAL_NEW, withdrawalNewFor } from '../../routes'
-import { jsonResponse, renderWithdrawals } from './renderWithdrawals'
+import { VARIETIES as VARIETIES_PATH, WITHDRAWAL_EDIT, WITHDRAWAL_NEW, pathTo, withdrawalNewFor } from '../../routes'
+import { REASONS, jsonResponse, renderWithdrawals } from './renderWithdrawals'
 import { LIMITS } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 
@@ -66,7 +66,7 @@ test('the reason has no default: saving stays off until one is chosen', async ()
   await userEvent.selectOptions(screen.getByLabelText('Variety 1'), 'Zkittlez')
   await userEvent.type(screen.getByLabelText('Grams 1'), '5')
 
-  const promotion = screen.getByRole('button', { name: 'Promotion' })
+  const promotion = screen.getByRole('button', { name: 'Marketing' })
   const ownUse = screen.getByRole('button', { name: 'Own use' })
   expect(promotion).toHaveAttribute('aria-pressed', 'false')
   expect(ownUse).toHaveAttribute('aria-pressed', 'false')
@@ -76,6 +76,140 @@ test('the reason has no default: saving stays off until one is chosen', async ()
   expect(ownUse).toHaveAttribute('aria-pressed', 'true')
   expect(screen.getByRole('button', { name: 'Save the withdrawal' })).toBeEnabled()
 })
+
+test('offers the business\'s reasons in the order received, none chosen, and Reason is required', async () => {
+  const inOrder = [
+    { id: 7, name: 'Samples' },
+    { id: 3, name: 'Marketing' },
+    { id: 9, name: 'Own use' },
+  ]
+  renderWithdrawals([WITHDRAWAL_NEW], async () => jsonResponse(404, {}), undefined, undefined, async () =>
+    jsonResponse(200, inOrder),
+  )
+  await screen.findByLabelText('Variety 1')
+
+  const reason = screen.getByRole('group', { name: 'Reason' })
+  const buttons = within(reason).getAllByRole('button')
+  expect(buttons.map((button) => button.textContent)).toEqual(['Samples', 'Marketing', 'Own use'])
+  for (const button of buttons) expect(button).toHaveAttribute('aria-pressed', 'false')
+  expect(screen.queryByText(/Promotion/)).not.toBeInTheDocument()
+
+  // Everything else filled in: only the missing reason keeps saving off.
+  await userEvent.selectOptions(screen.getByLabelText('Variety 1'), 'Zkittlez')
+  await userEvent.type(screen.getByLabelText('Grams 1'), '5')
+  expect(screen.getByRole('button', { name: 'Save the withdrawal' })).toBeDisabled()
+  await userEvent.click(within(reason).getByRole('button', { name: 'Samples' }))
+  expect(screen.getByRole('button', { name: 'Save the withdrawal' })).toBeEnabled()
+})
+
+test('recording sends the chosen reason by its id', async () => {
+  const bodies: unknown[] = []
+  renderWithdrawals(
+    [WITHDRAWAL_NEW],
+    async (url, init) => {
+      if (url === '/stock/withdrawals' && init?.method === 'POST') {
+        bodies.push(JSON.parse(String(init.body)))
+        return jsonResponse(201, WITHDRAWAL)
+      }
+      return jsonResponse(404, {})
+    },
+    undefined,
+    undefined,
+    async () => jsonResponse(200, [{ id: 7, name: 'Samples' }, { id: 3, name: 'Marketing' }]),
+  )
+  await userEvent.click(await screen.findByRole('button', { name: 'Samples' }))
+  await userEvent.selectOptions(screen.getByLabelText('Variety 1'), 'Gelato')
+  await userEvent.type(screen.getByLabelText('Grams 1'), '2')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Save the withdrawal' }))
+
+  await waitFor(() => expect(bodies).toHaveLength(1))
+  expect(bodies[0]).toEqual({ reason_id: 7, date: '2026-10-06', lines: [{ product_id: 2, quantity: '2' }] })
+})
+
+test('editing starts on its own reason and lets any reason of the list be picked', async () => {
+  const bodies: unknown[] = []
+  renderWithdrawals([pathTo(WITHDRAWAL_EDIT, { id: 1 })], async (url, init) => {
+    if (url === '/stock/withdrawals/1' && init?.method === 'PUT') {
+      bodies.push(JSON.parse(String(init.body)))
+      return jsonResponse(200, WITHDRAWAL)
+    }
+    if (url === '/stock/withdrawals/1') return jsonResponse(200, { ...WITHDRAWAL, reason_id: 2, reason_name: 'Own use' })
+    return jsonResponse(404, {})
+  })
+
+  const own = await screen.findByRole('button', { name: 'Own use' })
+  expect(own).toHaveAttribute('aria-pressed', 'true')
+  expect(await screen.findByRole('button', { name: 'Marketing' })).toHaveAttribute('aria-pressed', 'false')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Marketing' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+  await userEvent.click(
+    within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Yes, save' }),
+  )
+
+  await waitFor(() => expect(bodies).toHaveLength(1))
+  expect(bodies[0]).toMatchObject({ reason_id: 1 })
+})
+
+test.each([
+  ['recording', [WITHDRAWAL_NEW], 'POST', '/stock/withdrawals'],
+  ['editing', [pathTo(WITHDRAWAL_EDIT, { id: 1 })], 'PUT', '/stock/withdrawals/1'],
+] as const)(
+  'a reason gone while %s keeps the form open and typed, re-reads the list, clears Reason and says so on it',
+  async (_mode, path, method, writeUrl) => {
+    let reasons = REASONS
+    let reasonReads = 0
+    renderWithdrawals(
+      [...path],
+      async (url, init) => {
+        if (url === writeUrl && init?.method === method) {
+          reasons = [{ id: 1, name: 'Marketing' }]
+          return jsonResponse(404, { code: 'stock.withdrawal_reason_not_found' })
+        }
+        if (url === '/stock/withdrawals/1') return jsonResponse(200, { ...WITHDRAWAL, reason_id: 2, reason_name: 'Own use' })
+        return jsonResponse(404, {})
+      },
+      undefined,
+      undefined,
+      async () => {
+        reasonReads += 1
+        return jsonResponse(200, reasons)
+      },
+    )
+    if (method === 'POST') {
+      await userEvent.click(await screen.findByRole('button', { name: 'Own use' }))
+      await userEvent.selectOptions(screen.getByLabelText('Variety 1'), 'Gelato')
+      await userEvent.type(screen.getByLabelText('Grams 1'), '2,5')
+    } else {
+      await screen.findByRole('button', { name: 'Own use' })
+      await userEvent.clear(screen.getByLabelText('Grams 1'))
+      await userEvent.type(screen.getByLabelText('Grams 1'), '2,5')
+    }
+    await userEvent.type(screen.getByLabelText('Note'), 'mía')
+    const readsBefore = reasonReads
+
+    await userEvent.click(screen.getByRole('button', { name: method === 'POST' ? 'Save the withdrawal' : 'Save' }))
+    if (method === 'PUT') {
+      await userEvent.click(
+        within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Yes, save' }),
+      )
+    }
+
+    const reason = screen.getByRole('group', { name: 'Reason' })
+    expect(await within(reason).findByRole('alert')).toHaveTextContent('That reason is gone. Pick another.')
+    await waitFor(() => expect(reasonReads).toBeGreaterThan(readsBefore))
+    await waitFor(() => expect(within(reason).queryByRole('button', { name: 'Own use' })).not.toBeInTheDocument())
+    for (const button of within(reason).getAllByRole('button')) expect(button).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByLabelText('Grams 1')).toHaveValue('2,5')
+    expect(screen.getByLabelText('Note')).toHaveValue(method === 'POST' ? 'mía' : 'Para la fiestamía')
+    expect(screen.getByRole('button', { name: method === 'POST' ? 'Save the withdrawal' : 'Save' })).toBeDisabled()
+
+    await userEvent.click(within(reason).getByRole('button', { name: 'Marketing' }))
+    expect(within(reason).queryByRole('alert')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: method === 'POST' ? 'Save the withdrawal' : 'Save' })).toBeEnabled()
+  },
+)
 
 test('grams ask for the decimal keypad and the date never goes past today', async () => {
   await openFromVariedades()
@@ -103,7 +237,7 @@ test('saves with every line, a trimmed note, then shows "Withdrawal saved" where
     return jsonResponse(404, {})
   })
   await userEvent.click(await screen.findByRole('link', { name: 'Take from stock' }))
-  await userEvent.click(await screen.findByRole('button', { name: 'Promotion' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Marketing' }))
   await userEvent.selectOptions(screen.getByLabelText('Variety 1'), 'Zkittlez')
   await userEvent.type(screen.getByLabelText('Grams 1'), '5,5')
   await userEvent.click(screen.getByRole('button', { name: 'Add another variety' }))
@@ -120,7 +254,7 @@ test('saves with every line, a trimmed note, then shows "Withdrawal saved" where
       url: '/stock/withdrawals',
       method: 'POST',
       body: {
-        reason: 'promotion',
+        reason_id: 1,
         date: '2026-10-06',
         lines: [
           { product_id: 1, quantity: '5.5' },
@@ -155,18 +289,25 @@ test('a refusal shows inline by its code and keeps everything typed', async () =
 })
 
 const WITHDRAWAL_REFUSALS = [
-  ['stock.withdrawal_reason_required', 422, 'Pick the reason: Promotion or Own use'],
+  ['stock.withdrawal_reason_required', 422, 'Pick a reason.'],
   ['stock.withdrawal_date_in_future', 422, 'The date cannot be in the future'],
   ['stock.withdrawal_no_lines', 422, 'Add at least one variety with its grams'],
   ['stock.withdrawal_grams_not_positive', 422, 'Grams have to be more than zero'],
   ['stock.withdrawal_grams_too_precise', 422, 'Grams allow up to two decimals'],
   ['stock.withdrawal_note_too_long', 422, 'The note allows up to 200 characters'],
   ['stock.withdrawal_variety_not_found', 404, 'A variety is gone: pick another'],
+  ['stock.withdrawal_reason_not_found', 404, 'That reason is gone. Pick another.'],
 ] as const
 
 test('every withdrawal refusal the contract lists is covered here, but its gone form', () => {
+  // The reasons list's own refusals (`stock.withdrawal_reason_name_*`, `_cannot_move`) belong
+  // to the settings screen, not to this form.
   const listed = Object.keys(contract.refusalCodes).filter(
-    (code) => code.startsWith('stock.withdrawal_') && code !== 'stock.withdrawal_not_found',
+    (code) =>
+      code.startsWith('stock.withdrawal_') &&
+      code !== 'stock.withdrawal_not_found' &&
+      (!code.startsWith('stock.withdrawal_reason_') || code === 'stock.withdrawal_reason_required' ||
+          code === 'stock.withdrawal_reason_not_found'),
   )
 
   expect(WITHDRAWAL_REFUSALS.map(([code]) => code).sort()).toEqual(listed.sort())
@@ -177,7 +318,7 @@ test.each(WITHDRAWAL_REFUSALS)('%s shows its fixed text inline, naming nothing t
     if (url === '/stock/withdrawals' && init?.method === 'POST') return jsonResponse(status, { code })
     return jsonResponse(404, {})
   })
-  await userEvent.click(await screen.findByRole('button', { name: 'Promotion' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Marketing' }))
   await userEvent.selectOptions(screen.getByLabelText('Variety 1'), 'Gelato')
   await userEvent.type(screen.getByLabelText('Grams 1'), '2,5')
   await userEvent.type(screen.getByLabelText('Note'), 'secreta')
@@ -197,7 +338,7 @@ test('grams the front cannot read are refused inline without calling the API', a
     if (init?.method === 'POST') writes()
     return jsonResponse(404, {})
   })
-  await userEvent.click(await screen.findByRole('button', { name: 'Promotion' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Marketing' }))
   await userEvent.selectOptions(screen.getByLabelText('Variety 1'), 'Zkittlez')
   await userEvent.type(screen.getByLabelText('Grams 1'), '0')
 
@@ -208,7 +349,7 @@ test('grams the front cannot read are refused inline without calling the API', a
 })
 
 test('a send that finds the withdrawal gone goes to Variedades with the fixed notice', async () => {
-  const { router } = renderWithdrawals(['/withdrawals/1/edit'], async (url, init) => {
+  const { router } = renderWithdrawals([pathTo(WITHDRAWAL_EDIT, { id: 1 })], async (url, init) => {
     if (url === '/stock/withdrawals/1' && init?.method === 'PUT') {
       return jsonResponse(404, { code: 'stock.withdrawal_not_found' })
     }

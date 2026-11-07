@@ -1,4 +1,4 @@
-"""A stock withdrawal (CONTEXT.md: Stock withdrawal, Promotion, Own use): grams the
+"""A stock withdrawal (CONTEXT.md: Stock withdrawal, Withdrawal reason): grams the
 business takes out of its own stock with no sale and no customer.
 
 `Withdrawal.of` is the one constructor recording and editing both go through, so the
@@ -14,7 +14,6 @@ from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 
 from app.shared.quantity import HUNDREDTHS_PER_UNIT, Quantity
-from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import NOTE_MAX_LENGTH
 from app.stock.domain.errors import (
     WithdrawalDateInFuture,
@@ -53,7 +52,7 @@ class WithdrawalLine:
 
 @dataclass
 class Withdrawal:
-    reason: WithdrawalReason
+    reason_id: int
     withdrawn_on: date
     note: str | None
     lines: tuple[WithdrawalLine, ...]
@@ -63,7 +62,7 @@ class Withdrawal:
     @classmethod
     def of(
         cls,
-        reason: WithdrawalReason | str | None,
+        reason_id: int | None,
         withdrawn_on: date,
         note: str | None,
         lines: tuple[WithdrawalLine, ...],
@@ -71,10 +70,8 @@ class Withdrawal:
         recorded_at: datetime,
         id: int | None = None,
     ) -> Withdrawal:
-        try:
-            checked_reason = WithdrawalReason(reason or "")
-        except ValueError as exc:
-            raise WithdrawalReasonRequired("a withdrawal needs a reason") from exc
+        if reason_id is None:
+            raise WithdrawalReasonRequired("a withdrawal needs a reason")
         if withdrawn_on > today:
             raise WithdrawalDateInFuture("a withdrawal is not dated after today")
         if not lines:
@@ -83,7 +80,7 @@ class Withdrawal:
         if len(trimmed) > NOTE_MAX_LENGTH:
             raise WithdrawalNoteTooLong(f"a note has at most {NOTE_MAX_LENGTH} characters")
         return cls(
-            reason=checked_reason,
+            reason_id=reason_id,
             withdrawn_on=withdrawn_on,
             note=trimmed or None,
             lines=lines,

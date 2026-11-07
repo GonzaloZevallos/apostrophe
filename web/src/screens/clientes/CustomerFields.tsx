@@ -1,9 +1,8 @@
 import { useEffect, useId, useRef } from 'react'
-import OpcionInterruptor from '../../components/OpcionInterruptor'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { COMMON_TEXT } from '../../copy/common'
 /**
- * The shared "Nombre / Teléfono / VIP" fields (`NuevaVentaCliente.dc.html`,
+ * The shared "Nombre / Teléfono" fields (`NuevaVentaCliente.dc.html`,
  * `ClienteForm.tsx`): split out of `ClienteForm` (plan, "Shape") so the "Nuevo
  * cliente" sub-form inside `NuevaVentaCliente`'s sheet renders exactly the same
  * markup, labels and structure as /clientes/nuevo — one place that knows what a
@@ -19,7 +18,6 @@ import { COMMON_TEXT } from '../../copy/common'
 export interface CustomerFieldsValue {
   name: string
   phone: string
-  vip: boolean
 }
 
 export interface CustomerFieldsProps {
@@ -27,8 +25,6 @@ export interface CustomerFieldsProps {
   onChange: (value: CustomerFieldsValue) => void
   nameError: string | null
   phoneError: string | null
-  /** Clientes VIP is on: the VIP field shows only then, with nothing in its place. */
-  showVip: boolean
 }
 
 export default function CustomerFields({
@@ -36,7 +32,6 @@ export default function CustomerFields({
   onChange,
   nameError,
   phoneError,
-  showVip,
 }: CustomerFieldsProps) {
   const nameRef = useRef<HTMLInputElement>(null)
   const phoneId = useId()
@@ -56,6 +51,7 @@ export default function CustomerFields({
             ref={nameRef}
             className="campo__input campo__input--enfoque"
             type="text"
+            autoComplete="off"
             value={value.name}
             onChange={(event) => onChange({ ...value, name: event.target.value })}
             required
@@ -77,6 +73,7 @@ export default function CustomerFields({
             id={phoneId}
             className="campo__input campo__input--enfoque"
             type="tel"
+            autoComplete="off"
             value={value.phone}
             aria-describedby={phoneHintId}
             onChange={(event) => onChange({ ...value, phone: event.target.value })}
@@ -87,19 +84,6 @@ export default function CustomerFields({
             </span>
           )}
         </div>
-        {showVip && (
-          <div className="campo cliente-fila__vip">
-            <span className="campo__rotulo" aria-hidden="true">
-              {COMMON_TEXT.vip}
-            </span>
-            <OpcionInterruptor
-              label={value.vip ? CUSTOMERS_TEXT.yes : CUSTOMERS_TEXT.off}
-              ariaLabel={COMMON_TEXT.vip}
-              checked={value.vip}
-              onChange={(vip) => onChange({ ...value, vip })}
-            />
-          </div>
-        )}
       </div>
     </>
   )

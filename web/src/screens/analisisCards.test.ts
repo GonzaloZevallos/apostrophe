@@ -6,12 +6,10 @@
 
 import { describe, expect, test } from 'vitest'
 import analysisFixture from '../api/fixtures/analysis.json'
-import type { AnalysisMonthRow, AnalysisWeek, RowCost, VarietyRow } from '../api/analysis'
+import type { AnalysisMonthRow, AnalysisWeek, ReasonCost, RowCost, VarietyRow } from '../api/analysis'
 import {
   ANALYSIS_TEXT,
   COST_OF_GOODS_LABEL,
-  OWN_USE_LABEL,
-  PROMOTION_LABEL,
   SHORTFALL_LABEL,
 } from '../copy/analysis'
 import { COMMON_TEXT } from '../copy/common'
@@ -37,6 +35,10 @@ const variety: VarietyRow = {
   margin: { amount: 70000, percent: 77, pending_quantity: 0 },
 }
 
+function reason(id: number, name: string, amount: number): ReasonCost {
+  return { reason_id: id, name, amount, pending: false, pending_quantity: 0 }
+}
+
 const week: AnalysisWeek = {
   first_day: '2026-09-28',
   last_day: '2026-10-04',
@@ -45,8 +47,7 @@ const week: AnalysisWeek = {
   expenses: 5000,
   cost_of_goods: cost(30000),
   shortfall: null,
-  promotion: null,
-  own_use: null,
+  withdrawals: [],
   profit: { amount: 85000, pending_quantity: 0 },
   cash: 70000,
   best: false,
@@ -111,25 +112,37 @@ describe('weekCard', () => {
     expect(card.mark).toBeUndefined()
   })
 
-  test('shortfall, promotion and own use sit after the cost, only when present', () => {
+  test('shortfall and one line per reason sit after the cost, only when present', () => {
     const card = weekCard(
-      { ...week, shortfall: cost(100), promotion: cost(200), own_use: cost(300) },
+      { ...week, shortfall: cost(100), withdrawals: [reason(1, 'Marketing', 200), reason(2, 'Own use', 300)] },
       false,
     )
     expect(card.rows.map((row) => row.before)).toEqual([
       `${COMMON_TEXT.grams} `,
       `${COST_OF_GOODS_LABEL} `,
       `${SHORTFALL_LABEL} `,
-      `${PROMOTION_LABEL} `,
-      `${OWN_USE_LABEL} `,
+      'Marketing ',
+      'Own use ',
       ANALYSIS_TEXT.gastos,
       ANALYSIS_TEXT.ganancia,
       ANALYSIS_TEXT.caja,
     ])
-    const only = weekCard({ ...week, promotion: cost(200) }, false)
-    expect(only.rows.map((row) => row.before)).toContain(`${PROMOTION_LABEL} `)
+    const only = weekCard({ ...week, withdrawals: [reason(1, 'Marketing', 200)] }, false)
+    expect(only.rows.map((row) => row.before)).toContain('Marketing ')
     expect(only.rows.map((row) => row.before)).not.toContain(`${SHORTFALL_LABEL} `)
-    expect(only.rows.map((row) => row.before)).not.toContain(`${OWN_USE_LABEL} `)
+    expect(only.rows.map((row) => row.before)).not.toContain('Own use ')
+  })
+
+  test('the reason lines follow the order the API answers, whatever the names', () => {
+    const card = weekCard(
+      {
+        ...week,
+        withdrawals: [reason(3, 'Gifts', 50), reason(2, 'Own use', 300), reason(1, 'Marketing', 200)],
+      },
+      false,
+    )
+    const labels = card.rows.map((row) => row.before)
+    expect(labels.slice(2, 5)).toEqual(['Gifts ', 'Own use ', 'Marketing '])
   })
 
   test('a fully pending cost has no figure, only its grams on the pending line', () => {

@@ -11,10 +11,12 @@ export type Resource =
   | 'business'
   | 'varieties'
   | 'customers'
+  | 'customerTypes'
   | 'expenses'
   | 'expenseCategories'
   | 'sales'
   | 'stock'
+  | 'withdrawalReasons'
   | 'catalog'
   | 'payments'
   | 'pinnedCatalog'
@@ -25,10 +27,12 @@ const PREFIX: Record<Resource, string> = {
   business: 'business',
   varieties: 'varieties',
   customers: 'customers',
+  customerTypes: 'customer-types',
   expenses: 'expenses',
   expenseCategories: 'expense-categories',
   sales: 'sales',
   stock: 'stock',
+  withdrawalReasons: 'withdrawal-reasons',
   catalog: 'catalog',
   payments: 'payments',
   pinnedCatalog: 'pinned-catalog',
@@ -44,6 +48,7 @@ export const keys = {
   varietyPrices: (id: string) => [PREFIX.varieties, id, 'prices'] as const,
   customers: (q: string) => [PREFIX.customers, { q }] as const,
   customer: (id: string) => [PREFIX.customers, id] as const,
+  customerTypes: () => [PREFIX.customerTypes] as const,
   expenses: (month: string) => [PREFIX.expenses, month] as const,
   expenseCategories: () => [PREFIX.expenseCategories] as const,
   // `Nueva venta`'s own prices and customer-by-id fetches (plan, invariants:
@@ -70,6 +75,10 @@ export const keys = {
   stockEntry: (id: string) => [PREFIX.stock, 'entries', id] as const,
   stockMovements: (varietyId: string) => [PREFIX.stock, 'movements', varietyId] as const,
   stockWithdrawal: (id: string) => [PREFIX.stock, 'withdrawals', id] as const,
+  // The business's own list of withdrawal reasons (`GET /api/withdrawal-reasons`): the form's
+  // picker reads it, and the Settings list that adds, renames, moves or removes a reason
+  // invalidates it through `invalidateResource(queryClient, 'withdrawalReasons')`.
+  withdrawalReasons: () => [PREFIX.withdrawalReasons] as const,
   // Named only by `api/catalog.ts` (`catalogQueryOptions`, ADR-0022), which freezes its
   // freshness (`staleTime: 0`, `gcTime: 0`). A stock or varieties write invalidates it
   // through `CROSS_INVALIDATES`; the catalog's own saves set its data directly.
@@ -127,6 +136,8 @@ const CROSS_INVALIDATES: Partial<Record<Resource, Resource[]>> = {
   sales: ['customers', 'payments'],
   customers: ['payments'],
   stock: ['catalog'],
+  // A rename or removal shows in every withdrawal row and detail, which carry the name.
+  withdrawalReasons: ['stock'],
   varieties: ['catalog'],
 }
 

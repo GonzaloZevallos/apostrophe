@@ -32,6 +32,7 @@ import { iconAndTextProblems } from '../../test/iconAndTextRule'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
+import ContentArea from '../../components/ContentArea'
 
 const VARIETY_ONE = pathTo(VARIETY, { id: 1 })
 
@@ -142,14 +143,14 @@ function renderPage(path: string, overrides: Answers = {}, state: unknown = null
           {
             element: <Shell />,
             children: [
-              { path: relative(VARIETIES), element: <main>Varieties screen</main>, handle: { screen: 'varieties' } },
+              { path: relative(VARIETIES), element: <ContentArea as="main">Varieties screen</ContentArea>, handle: { screen: 'varieties' } },
               {
                 path: relative(VARIETY),
                 element: <VarietyRoute render={(varietyId) => <VarietyPage varietyId={varietyId} />} />,
                 // The handle the app's own route table declares, so the shell draws the same chrome.
                 handle: matchRoutes(appRouter.routes, pathTo(VARIETY, { id: 1 }))?.at(-1)?.route.handle,
               },
-              { path: '*', element: <main>Otra pantalla</main> },
+              { path: '*', element: <ContentArea as="main">Otra pantalla</ContentArea> },
             ],
           },
         ],
@@ -448,7 +449,7 @@ describe('the actions and the sections', () => {
       'GET /stock/products/1/movements': () =>
         json(200, [
           { ...ENTRIES[0], kind: 'entry' },
-          { kind: 'withdrawal', id: 5, date: '2026-09-25', reason: 'promotion', quantity: 5.5 },
+          { kind: 'withdrawal', id: 5, date: '2026-09-25', reason_id: 7, reason_name: 'Samples', quantity: 5.5 },
           { ...ENTRIES[2], kind: 'entry' },
           { ...ENTRIES[3], kind: 'entry' },
         ]),
@@ -456,7 +457,7 @@ describe('the actions and the sections', () => {
 
     const section = (await screen.findByRole('heading', { name: 'Stock and entries' })).closest('section')
     const inside = within(section as HTMLElement)
-    const reason = await inside.findByText(/Promotion/)
+    const reason = await inside.findByText(/Samples/)
     expect(reason.closest('li')).toHaveTextContent('−5,5 g')
     expect(reason.closest('a')).toHaveAttribute('href', pathTo(WITHDRAWAL, { id: 5 }))
     expect(inside.getByText('10 g')).toBeInTheDocument()

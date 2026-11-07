@@ -93,7 +93,7 @@ test('a sale detail renders VentaDetalle, from the API, under the gated shell', 
 
   render(<App />)
 
-  expect(await screen.findByText('Sale of 14/09')).toBeInTheDocument()
+  expect(await screen.findByText('Sale #2')).toBeInTheDocument()
   expect(await screen.findByText('Flor A')).toBeInTheDocument()
 })
 

@@ -9,10 +9,8 @@ import { COMMON_TEXT } from '../../copy/common'
 import { STOCK_TEXT } from '../../copy/stock'
 import { formatDate } from '../../format/dates'
 import { formatGrams } from '../../format/money'
-import { REASON_OPTIONS } from './withdrawalReasons'
 
 export default function WithdrawalFacts({ withdrawal, today }: { withdrawal: Withdrawal; today: string }) {
-  const reasonWord = REASON_OPTIONS.find((option) => option.value === withdrawal.reason)?.label ?? ''
   return (
     <>
       <div className="encabezado-fila">
@@ -21,7 +19,7 @@ export default function WithdrawalFacts({ withdrawal, today }: { withdrawal: Wit
       <dl className="retiro__datos">
         <div className="retiro__dato">
           <dt className="campo__rotulo">{STOCK_TEXT.motivo}</dt>
-          <dd>{reasonWord}</dd>
+          <dd>{withdrawal.reason_name}</dd>
         </div>
         <div className="retiro__dato">
           <dt className="campo__rotulo">{COMMON_TEXT.date}</dt>

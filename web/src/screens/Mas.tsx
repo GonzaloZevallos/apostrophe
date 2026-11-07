@@ -11,6 +11,7 @@ import Icono, { type NombreIcono } from '../components/Icono'
 import { ANALYSIS, EXPENSES, EXPENSE_NEW, SETTINGS, WITHDRAWAL_NEW } from '../routes'
 import { SETTINGS_TEXT } from '../copy/settings'
 import { COMMON_TEXT } from '../copy/common'
+import ContentArea from '../components/ContentArea'
 
 interface Item {
   to: string
@@ -30,7 +31,7 @@ const ITEMS: Item[] = [
     to: WITHDRAWAL_NEW,
     label: COMMON_TEXT.takeFromStock,
     icon: 'salidaStock',
-    detail: SETTINGS_TEXT.promotionOrOwnUse,
+    detail: SETTINGS_TEXT.stockOutWithoutSale,
   },
   { to: EXPENSES, label: COMMON_TEXT.expenses, icon: 'gastos', detail: SETTINGS_TEXT.byMonthAndByCategory },
   {
@@ -60,7 +61,7 @@ function accessibleName(item: Item): string | undefined {
 
 export default function Mas() {
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <div className="cuerpo">
         <span className="encabezado__titulo">{COMMON_TEXT.more}</span>
         <nav className="mas__lista" aria-label={COMMON_TEXT.more} data-menu>
@@ -87,6 +88,6 @@ export default function Mas() {
           ))}
         </nav>
       </div>
-    </main>
+    </ContentArea>
   )
 }

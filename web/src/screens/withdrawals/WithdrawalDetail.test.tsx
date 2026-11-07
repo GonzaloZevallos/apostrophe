@@ -20,7 +20,8 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-const OWN_USE = { ...WITHDRAWAL, reason: 'own_use', note: null }
+// A name only this business gave: no screen holds it, so it can only come from the API.
+const SAMPLES = { ...WITHDRAWAL, reason_id: 7, reason_name: 'Samples for friends', total_quantity: 12.5, note: null }
 
 function serving(body: unknown, extra?: FetchImpl): FetchImpl {
   return async (url, init) => {
@@ -35,7 +36,8 @@ test('shows the date, the reason by word, every line and the note, with the bar 
   renderWithdrawals([VARIETIES_PATH, ONE], serving(WITHDRAWAL))
 
   expect(await screen.findByText('Zkittlez')).toBeInTheDocument()
-  expect(screen.getByText('Promotion')).toBeInTheDocument()
+  expect(screen.getByText('Marketing')).toBeInTheDocument()
+  expect(screen.queryByText(/Promotion/)).toBeNull()
   expect(screen.getByText('02/10')).toBeInTheDocument()
   expect(screen.getByText('5,5 g')).toBeInTheDocument()
   expect(screen.getByText('Para la fiesta')).toBeInTheDocument()
@@ -61,7 +63,7 @@ test('with no history, back goes to Variedades', async () => {
   await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
 })
 
-test('Delete names the promotion, the date and the grams; confirming deletes and toasts "Withdrawal deleted"', async () => {
+test('Delete names the reason, the date and the grams; confirming deletes and toasts "Withdrawal deleted"', async () => {
   const deletes = vi.fn()
   const { router } = renderWithdrawals(
     [VARIETIES_PATH, ONE],
@@ -76,7 +78,7 @@ test('Delete names the promotion, the date and the grams; confirming deletes and
   await userEvent.click(await screen.findByRole('button', { name: 'Delete' }))
 
   const dialog = await screen.findByRole('alertdialog', { name: 'Before deleting' })
-  expect(dialog).toHaveTextContent('Delete the promotion from 02/10? 5,5 g go back to stock.')
+  expect(dialog).toHaveTextContent('Delete the Marketing withdrawal from 02/10? 5,5 g go back to stock.')
   await userEvent.click(within(dialog).getByRole('button', { name: 'No, keep it' }))
   expect(deletes).not.toHaveBeenCalled()
 
@@ -90,13 +92,16 @@ test('Delete names the promotion, the date and the grams; confirming deletes and
   expect(deletes).toHaveBeenCalledTimes(1)
 })
 
-test('Delete on an own-use withdrawal says "el consumo propio"', async () => {
-  renderWithdrawals([VARIETIES_PATH, ONE], serving(OWN_USE))
+test('shows the reason by the name the API answers, and Delete names it with the grams as the formatter writes them', async () => {
+  renderWithdrawals([VARIETIES_PATH, ONE], serving(SAMPLES))
+
+  expect(await screen.findByText('Samples for friends')).toBeInTheDocument()
+  expect(screen.queryByText('Marketing')).toBeNull()
 
   await userEvent.click(await screen.findByRole('button', { name: 'Delete' }))
 
   expect(await screen.findByRole('alertdialog')).toHaveTextContent(
-    'Delete the own use from 02/10? 5,5 g go back to stock.',
+    'Delete the Samples for friends withdrawal from 02/10? 12,5 g go back to stock.',
   )
 })
 
@@ -116,7 +121,8 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Wit
 
   expect(await screen.findByLabelText('Grams 1')).toHaveValue('5.5')
   expect(screen.getByLabelText('Note')).toHaveValue('Para la fiesta')
-  expect(screen.getByRole('button', { name: 'Promotion' })).toHaveAttribute('aria-pressed', 'true')
+  expect(await screen.findByRole('button', { name: 'Marketing' })).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.getByRole('button', { name: 'Own use' })).toHaveAttribute('aria-pressed', 'false')
   await userEvent.clear(screen.getByLabelText('Grams 1'))
   await userEvent.type(screen.getByLabelText('Grams 1'), '6')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
@@ -133,7 +139,7 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Wit
   expect(router.state.location.pathname).toBe(ONE)
   expect(puts).toEqual([
     {
-      reason: 'promotion',
+      reason_id: 1,
       date: '2026-10-02',
       lines: [{ product_id: 1, quantity: '6' }],
       note: 'Para la fiesta',

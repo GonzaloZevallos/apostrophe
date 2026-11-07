@@ -17,7 +17,7 @@ import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { inAppState } from '../../components/inAppState'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { SETTINGS as SETTINGS_PATH, SETTINGS_PRICES } from '../../routes'
-import PricingGroup, { PAST_SALES_LINE, VIP_HELP_LINE } from './PricingGroup'
+import PricingGroup, { PAST_SALES_LINE } from './PricingGroup'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -63,12 +63,17 @@ function renderGroup(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
   return client
 }
 
-function serving(put?: (body: PricingSettings) => Response) {
+function serving(
+  put?: (body: PricingSettings) => Response,
+  customerTypes: unknown[] = [],
+  settings: PricingSettings = SETTINGS,
+) {
   return vi.fn((url: string, init?: RequestInit) => {
     if (init?.method === 'PUT' && url === '/pricing-settings' && put !== undefined) {
       return Promise.resolve(put(JSON.parse(String(init.body)) as PricingSettings))
     }
-    return Promise.resolve(jsonResponse(200, SETTINGS))
+    if (url === '/api/customer-types') return Promise.resolve(jsonResponse(200, customerTypes))
+    return Promise.resolve(jsonResponse(200, settings))
   })
 }
 
@@ -77,28 +82,46 @@ test('shows the two switches as the server has them, told by aria-checked', asyn
 
   const bulk = await screen.findByRole('switch', { name: 'Bulk price' })
   expect(bulk).toHaveAttribute('aria-checked', 'true')
-  expect(screen.getByRole('switch', { name: 'VIP customers' })).toHaveAttribute('aria-checked', 'false')
+  expect(screen.getByRole('switch', { name: 'Customer types' })).toHaveAttribute('aria-checked', 'false')
 })
 
-test('shows both fixed lines, the VIP help whether the switch is on or off', async () => {
+test('shows the help line whether the switch is on or off, by whether a VIP type exists', async () => {
   renderGroup(serving())
-  await screen.findByRole('switch', { name: 'VIP customers' })
+  await screen.findByRole('switch', { name: 'Customer types' })
 
   expect(screen.getByText(PAST_SALES_LINE)).toBeInTheDocument()
-  expect(screen.getByText(VIP_HELP_LINE)).toBeInTheDocument()
-  await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
-  expect(screen.getByText(VIP_HELP_LINE)).toBeInTheDocument()
-  expect(VIP_HELP_LINE).toBe(
-    'Each variety needs its VIP price: without it, a VIP customer pays like anyone else.',
-  )
+  expect(await screen.findByText('Customer types have no price yet.')).toBeInTheDocument()
+  await userEvent.click(screen.getByRole('switch', { name: 'Customer types' }))
+  expect(screen.getByText('Customer types have no price yet.')).toBeInTheDocument()
+})
+
+test('says the VIP type pays the VIP price when the business has one', async () => {
+  renderGroup(serving(undefined, [{ id: 1, name: 'VIP', icon: 'star', is_vip: true }]))
+
+  expect(
+    await screen.findByText(
+      'Customers in the VIP type pay the VIP price where a price has one. Other types have no price yet.',
+    ),
+  ).toBeInTheDocument()
+})
+
+test('offers the Customer types entry only while the saved switch is on', async () => {
+  renderGroup(serving())
+  await screen.findByRole('switch', { name: 'Customer types' })
+  expect(screen.queryByRole('link', { name: 'Customer types' })).not.toBeInTheDocument()
+})
+
+test('shows the Customer types entry row when the saved switch is on', async () => {
+  renderGroup(serving(undefined, [], { is_bulk_pricing: true, is_vip_customers: true }))
+  expect(await screen.findByRole('link', { name: 'Customer types' })).toBeInTheDocument()
 })
 
 test('saving sends both switches and shows the fixed toast "Prices saved"', async () => {
   const fetchMock = serving((body) => jsonResponse(200, body))
   renderGroup(fetchMock)
-  await screen.findByRole('switch', { name: 'VIP customers' })
+  await screen.findByRole('switch', { name: 'Customer types' })
 
-  await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
+  await userEvent.click(screen.getByRole('switch', { name: 'Customer types' }))
   await userEvent.click(screen.getByRole('switch', { name: 'Bulk price' }))
   await userEvent.click(screen.getByRole('button', { name: 'Save the prices' }))
 
@@ -108,17 +131,17 @@ test('saving sends both switches and shows the fixed toast "Prices saved"', asyn
     is_bulk_pricing: false,
     is_vip_customers: true,
   })
-  expect(screen.getByRole('switch', { name: 'VIP customers' })).toHaveAttribute('aria-checked', 'true')
+  expect(screen.getByRole('switch', { name: 'Customer types' })).toHaveAttribute('aria-checked', 'true')
 })
 
 test('touching a switch again clears the toast', async () => {
   renderGroup(serving((body) => jsonResponse(200, body)))
-  await screen.findByRole('switch', { name: 'VIP customers' })
-  await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
+  await screen.findByRole('switch', { name: 'Customer types' })
+  await userEvent.click(screen.getByRole('switch', { name: 'Customer types' }))
   await userEvent.click(screen.getByRole('button', { name: 'Save the prices' }))
   await screen.findByText('Prices saved')
 
-  await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
+  await userEvent.click(screen.getByRole('switch', { name: 'Customer types' }))
 
   expect(screen.queryByText('Prices saved')).not.toBeInTheDocument()
 })
@@ -127,21 +150,21 @@ test('a dropped network shows "Sin conexión" and keeps the switches as set', as
   const fetchMock = vi.fn((url: string, init?: RequestInit) =>
     init?.method === 'PUT' && url === '/pricing-settings'
       ? Promise.reject(new TypeError('Failed to fetch'))
-      : Promise.resolve(jsonResponse(200, SETTINGS)),
+      : Promise.resolve(jsonResponse(200, url === '/api/customer-types' ? [] : SETTINGS)),
   )
   renderGroup(fetchMock)
-  await screen.findByRole('switch', { name: 'VIP customers' })
+  await screen.findByRole('switch', { name: 'Customer types' })
 
-  await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
+  await userEvent.click(screen.getByRole('switch', { name: 'Customer types' }))
   await userEvent.click(screen.getByRole('button', { name: 'Save the prices' }))
 
   expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
-  expect(screen.getByRole('switch', { name: 'VIP customers' })).toHaveAttribute('aria-checked', 'true')
+  expect(screen.getByRole('switch', { name: 'Customer types' })).toHaveAttribute('aria-checked', 'true')
 })
 
 test('an untouched group closes at once', async () => {
   renderGroup(serving())
-  await screen.findByRole('switch', { name: 'VIP customers' })
+  await screen.findByRole('switch', { name: 'Customer types' })
 
   await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
@@ -150,22 +173,22 @@ test('an untouched group closes at once', async () => {
 
 test('closing with an unsaved switch asks first, and keeping stays on the group', async () => {
   renderGroup(serving())
-  await screen.findByRole('switch', { name: 'VIP customers' })
-  await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
+  await screen.findByRole('switch', { name: 'Customer types' })
+  await userEvent.click(screen.getByRole('switch', { name: 'Customer types' }))
 
   await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('Discard the prices?')).toBeInTheDocument()
   await userEvent.click(screen.getByRole('button', { name: 'No, keep editing' }))
-  expect(screen.getByRole('switch', { name: 'VIP customers' })).toHaveAttribute('aria-checked', 'true')
+  expect(screen.getByRole('switch', { name: 'Customer types' })).toHaveAttribute('aria-checked', 'true')
   expect(screen.queryByText('Lista de grupos')).not.toBeInTheDocument()
 })
 
 test('discarding leaves the group; turning a switch back to its saved value is not a change', async () => {
   renderGroup(serving())
-  await screen.findByRole('switch', { name: 'VIP customers' })
-  await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
-  await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
+  await screen.findByRole('switch', { name: 'Customer types' })
+  await userEvent.click(screen.getByRole('switch', { name: 'Customer types' }))
+  await userEvent.click(screen.getByRole('switch', { name: 'Customer types' }))
   await userEvent.click(screen.getByRole('switch', { name: 'Bulk price' }))
 
   await userEvent.click(screen.getByRole('button', { name: 'Close' }))
@@ -176,8 +199,8 @@ test('discarding leaves the group; turning a switch back to its saved value is n
 
 test('after saving, dirty is measured against what the server accepted, not the query cache', async () => {
   const client = renderGroup(serving((body) => jsonResponse(200, body)))
-  await screen.findByRole('switch', { name: 'VIP customers' })
-  await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
+  await screen.findByRole('switch', { name: 'Customer types' })
+  await userEvent.click(screen.getByRole('switch', { name: 'Customer types' }))
   await userEvent.click(screen.getByRole('button', { name: 'Save the prices' }))
   await screen.findByText('Prices saved')
 

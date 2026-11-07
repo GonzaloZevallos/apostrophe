@@ -82,6 +82,9 @@ msgstr "  {sheet} row {row} [{column}]: {problem}"
 msgid "operator.import.hint_text_is_date"
 msgstr "{kind}: a date where text is expected; re-type the cell as text (in Google Sheets, start it with an apostrophe) and run again"
 
+msgid "operator.import.hint_vip_type_name_taken"
+msgstr "{kind}: a customer type named 'VIP' already exists but is not the VIP type; rename or delete it, then run again"
+
 msgid "operator.import.unfinished_heading"
 msgstr "Left out as unfinished:"
 
@@ -214,3 +217,9 @@ msgstr "Shipping and transport"
 
 msgid "expenses.default_category.other"
 msgstr "Other"
+
+msgid "stock.default_reason.marketing"
+msgstr "Marketing"
+
+msgid "stock.default_reason.own_use"
+msgstr "Own use"

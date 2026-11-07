@@ -9,7 +9,12 @@ from sqlalchemy.engine import Connection
 from app.db import make_engine
 from app.migrations.runner import upgrade_to
 from tests.migrations import m3_seed
-from tests.migrations.m3 import TableSnapshot, assert_m3, assert_unchanged, snapshot
+from tests.migrations.m3 import (
+    TableSnapshot,
+    assert_m3,
+    assert_unchanged,
+    snapshot_tables,
+)
 
 
 @pytest.fixture
@@ -24,9 +29,9 @@ def seeded() -> Iterator[Connection]:
 def _before_and_after(
     connection: Connection, change: str
 ) -> tuple[dict[str, TableSnapshot], dict[str, TableSnapshot]]:
-    before = snapshot(connection)
+    before = snapshot_tables(connection)
     connection.execute(text(change))
-    return before, snapshot(connection)
+    return before, snapshot_tables(connection)
 
 
 def test_the_no_op_upgrade_changes_nothing_and_creates_nothing() -> None:
@@ -34,7 +39,7 @@ def test_the_no_op_upgrade_changes_nothing_and_creates_nothing() -> None:
 
 
 def test_the_snapshot_holds_every_table_but_the_bookkeeping_one(seeded: Connection) -> None:
-    tables = snapshot(seeded)
+    tables = snapshot_tables(seeded)
 
     assert "alembic_version" not in tables
     assert {"business", "login_guard", "login_address_guard", "sale_line"} <= set(tables)

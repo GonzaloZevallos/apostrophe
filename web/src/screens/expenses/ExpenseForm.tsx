@@ -14,6 +14,7 @@
 
 import { type FormEvent, useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useLoading } from '../../components/useLoading'
 import { useOutletContext } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE } from '../../api/client'
 import {
@@ -121,6 +122,8 @@ export default function ExpenseForm({
     onDirtyChange(dirty)
   }, [dirty, onDirtyChange])
 
+  // The form draws only its header until the categories answer.
+  useLoading(categoriesQuery.isPending)
   const categories = categoriesQuery.data ?? []
   const allCategories = [
     ...categories,
