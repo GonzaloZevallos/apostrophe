@@ -86,10 +86,25 @@ function renderForm(
   const router = createMemoryRouter(ROUTES, { initialEntries: entries, initialIndex: entries.length - 1 })
   render(
     <QueryClientProvider client={client}>
-      <RouterProvider router={router} />
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
   return client
+}
+
+/** The Variety field once it has loaded (a busy field is still waiting for its list). */
+async function varietyField(): Promise<HTMLElement> {
+  const field = await screen.findByRole('button', { name: /^Variety/ })
+  await waitFor(() => expect(field).not.toHaveAttribute('aria-busy'))
+  return field
+}
+
+/** Opens the Variety Selector and picks one by its name; the phone list is the default viewport. */
+async function pickVariety(name: string, viewport: 'phone' | 'computer' = 'phone'): Promise<void> {
+  await userEvent.click(await varietyField())
+  await userEvent.click(await screen.findByRole(viewport === 'phone' ? 'button' : 'option', { name }))
 }
 
 type HistoryEntry = string | { pathname: string; state: unknown }
@@ -145,8 +160,7 @@ test('a new entry starts dated today and shows "Hoy tiene N g" once a variety is
 
   expect(screen.getByLabelText('Date')).toHaveValue('2026-10-03')
 
-  await screen.findByRole('option', { name: 'Sir Jack' })
-  await userEvent.selectOptions(screen.getByLabelText('Variety'), 'Sir Jack')
+  await pickVariety('Sir Jack')
 
   expect(await screen.findByText('It has 18,5 g today')).toBeInTheDocument()
 })
@@ -175,7 +189,7 @@ test('records an entry and lands back on the list with the saved toast', async (
   renderForm(STOCK_ENTRY_NEW)
 
   await userEvent.type(screen.getByLabelText('Grams'), '30')
-  await userEvent.selectOptions(await screen.findByLabelText('Variety'), 'Sir Jack')
+  await pickVariety('Sir Jack')
   await userEvent.click(screen.getByRole('button', { name: 'Save the entry' }))
 
   expect(await screen.findByText('la lista de varieties')).toBeInTheDocument()
@@ -208,7 +222,7 @@ test('an adjustment can carry negative grams, sent through to the API as typed',
   renderForm(STOCK_ENTRY_NEW)
 
   await userEvent.type(screen.getByLabelText('Grams'), '-4,5')
-  await userEvent.selectOptions(await screen.findByLabelText('Variety'), 'Sir Jack')
+  await pickVariety('Sir Jack')
   await userEvent.click(screen.getByRole('button', { name: 'Adjustment' }))
   await userEvent.click(screen.getByRole('button', { name: 'Save the entry' }))
 
@@ -275,7 +289,7 @@ test('a purchase refused for missing cost shows the refusal on its own field, ke
   renderForm(STOCK_ENTRY_NEW)
 
   await userEvent.type(screen.getByLabelText('Grams'), '30')
-  await userEvent.selectOptions(await screen.findByLabelText('Variety'), 'Sir Jack')
+  await pickVariety('Sir Jack')
   await userEvent.click(screen.getByRole('button', { name: 'Save the entry' }))
 
   expect(await screen.findByRole('alert')).toHaveTextContent('A purchase needs a total cost')
@@ -456,8 +470,8 @@ test('an entry started from a variety has it chosen and "Initial stock" preselec
   fakeFor(stockOf([]))
   renderForm(`${STOCK_ENTRY_NEW}?variety=3`)
 
-  const select = await screen.findByRole('combobox', { name: /^Variety/ })
-  await waitFor(() => expect(select).toHaveValue('3'))
+  const field = await varietyField()
+  await waitFor(() => expect(field).toHaveTextContent('Sir Jack'))
   expect(screen.getByRole('group', { name: 'Origin' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Initial stock' })).toHaveAttribute('aria-pressed', 'true')
   expect(screen.getByRole('button', { name: 'Purchase' })).toHaveAttribute('aria-pressed', 'false')
@@ -467,8 +481,8 @@ test('an entry started from a variety that already has entries keeps Compra', as
   fakeFor(stockOf([{ id: 1, product_id: 3 }]))
   renderForm(`${STOCK_ENTRY_NEW}?variety=3`)
 
-  const select = await screen.findByRole('combobox', { name: /^Variety/ })
-  await waitFor(() => expect(select).toHaveValue('3'))
+  const field = await varietyField()
+  await waitFor(() => expect(field).toHaveTextContent('Sir Jack'))
   expect(screen.getByRole('button', { name: 'Purchase' })).toHaveAttribute('aria-pressed', 'true')
   expect(screen.getByRole('button', { name: 'Initial stock' })).toHaveAttribute('aria-pressed', 'false')
 })
@@ -477,8 +491,8 @@ test("another variety's entries do not stop 'Initial stock' from being preselect
   fakeFor(stockOf([{ id: 1, product_id: 9 }]))
   renderForm(`${STOCK_ENTRY_NEW}?variety=3`)
 
-  const select = await screen.findByRole('combobox', { name: /^Variety/ })
-  await waitFor(() => expect(select).toHaveValue('3'))
+  const field = await varietyField()
+  await waitFor(() => expect(field).toHaveTextContent('Sir Jack'))
   expect(screen.getByRole('button', { name: 'Initial stock' })).toHaveAttribute('aria-pressed', 'true')
 })
 
@@ -486,7 +500,7 @@ test('from "+ Stock entry" no variety is chosen and Compra is the origin', async
   fakeFor(stockOf([]))
   renderForm(STOCK_ENTRY_NEW)
 
-  expect(await screen.findByRole('combobox', { name: /^Variety/ })).toHaveValue('')
+  expect(await varietyField()).not.toHaveTextContent('Sir Jack')
   expect(screen.getByRole('group', { name: 'Origin' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Purchase' })).toHaveAttribute('aria-pressed', 'true')
 })
@@ -577,7 +591,7 @@ test('a save marks the catalog stale, since stock changes what it says', async (
   renderForm(STOCK_ENTRY_NEW, client)
 
   await userEvent.type(await screen.findByLabelText('Grams'), '30')
-  await userEvent.selectOptions(await screen.findByLabelText('Variety'), 'Sir Jack')
+  await pickVariety('Sir Jack')
   await userEvent.click(screen.getByRole('button', { name: 'Save the entry' }))
   await screen.findByText('la lista de varieties')
   expect(client.getQueryState(catalogQueryOptions().queryKey)?.isInvalidated).toBe(true)
@@ -747,18 +761,21 @@ test('editing an entry of an archived variety shows it as the chosen one, and of
   })
   renderForm(pathTo(STOCK_ENTRY, { id: 10 }))
 
-  const select = await screen.findByRole('combobox', { name: /^Variety/ })
-  await waitFor(() => expect(select).toHaveValue('8'))
-  expect(screen.getByRole('option', { name: 'Vieja' })).toBeInTheDocument()
-  expect(screen.getByRole('option', { name: 'Sir Jack' })).toBeInTheDocument()
-  expect(screen.queryByRole('option', { name: 'Otra archivada' })).not.toBeInTheDocument()
+  const field = await varietyField()
+  expect(field).toHaveTextContent('Vieja')
+  expect(field).toHaveTextContent('no longer available')
+  await userEvent.click(field)
+  const list = within(await screen.findByRole('dialog', { name: 'Variety options' }))
+  expect(list.getByRole('button', { name: 'Sir Jack' })).toBeInTheDocument()
+  expect(list.queryByRole('button', { name: 'Vieja' })).not.toBeInTheDocument()
+  expect(list.queryByRole('button', { name: 'Otra archivada' })).not.toBeInTheDocument()
 })
 
 test('a new entry never asks for the archived varieties', async () => {
   fakeFor(stockOf([]))
   renderForm(STOCK_ENTRY_NEW)
 
-  await screen.findByRole('option', { name: 'Sir Jack' })
+  await varietyField()
   expect(fetch).not.toHaveBeenCalledWith('/api/products?archived=true', expect.anything())
 })
 
@@ -773,8 +790,7 @@ test('the form keeps the icon and text rule, its help lines within their limits'
     }),
   )
   renderForm(STOCK_ENTRY_NEW)
-  await screen.findByRole('option', { name: 'Sir Jack' })
-  await userEvent.selectOptions(screen.getByLabelText('Variety'), 'Sir Jack')
+  await pickVariety('Sir Jack')
   await screen.findByText('It has 18,5 g today')
 
   expect(document.querySelectorAll('[data-copy="help"]').length).toBeGreaterThanOrEqual(2)
