@@ -35,9 +35,16 @@ En esta parte ninguna pantalla lo usa todavía; las partes siguientes de GH-581 
 - Solo las filas hacen scroll (`overflow-y:auto`, `overscroll-behavior:contain`), con el alto tomado del viewport visible, así que toda fila queda alcanzable por encima del teclado.
 - Cada lista abierta es su propia entrada del historial, en el nivel de arriba del formulario desde el que se abrió: el contexto `SheetLevel` de `useSheetStack.ts` (0 por defecto) da el nivel, el Selector llama a `useSheet(level + 1)` y envuelve su lista en `SheetLevel` en `level + 1`; nunca recibe un nivel por prop. Volver y "Close" son la misma acción y cierran exactamente una entrada, nunca el formulario de abajo, también cuando ese formulario está abierto sobre otro.
 
+## Historial
+
+- El nivel de una lista es el `SheetLevel` que la rodea más uno: sin envoltorio es 0, así que la lista es el nivel 1; dentro de un formulario en el nivel 1 es el nivel 2. `NuevaVentaCliente` provee los niveles 1 y 2 alrededor de su selector de cliente y de su creador.
+- Volver y "Close" cierran exactamente una entrada, nunca el formulario de abajo. Un doble toque tampoco saca el formulario: un solo abrir emite a lo sumo un cierre.
+- Límite conocido: una Sheet hermana que use el mismo número de nivel también se lee como abierta junto con la lista. Una prueba lo fija; quien revisa cada cambio de pantalla comprueba el nivel de cada Sheet hermana.
+- Quien usa el Selector no lo re-keya ni lo desmonta mientras su lista está abierta: lo pasa a `loading`. El costo de hacerlo mal es una entrada muerta en el historial: el primer volver no muestra nada.
+
 ## Computadora (900 px o más)
 
-- El campo abre un desplegable: las flechas se mueven, Enter elige y Tab sale.
+- El campo abre un desplegable: las flechas se mueven, Enter elige y Tab sale. Un clic fuera también lo cierra.
 - Escape cierra solo el desplegable; el Escape del formulario no se dispara.
 - La búsqueda funciona igual que en el teléfono. El desplegable nunca toca el historial.
 
@@ -85,9 +92,18 @@ La palabra "varieties" es la palabra de pantalla de hoy; cambia con la parte Pro
 - Nota de prueba de Payment methods, hasta GH-318: los Payment methods todavía no existen. Las pruebas y los dibujos del Selector pueden usar un conjunto de Payment method armado dentro de la prueba o del dibujo, con las claves `Payment method`, `Paid` y `Owing`; ese conjunto nunca se declara en `fixedSets.ts` ni lo lee ninguna pantalla.
 - Una parte que pasa una pantalla al Selector, y solo ella, agrega la entrada de WalkState de esa pantalla, borra las entradas de las listas de infractores que el cambio deja obsoletas y actualiza el dibujo de la pantalla en `pantallas/`. Nunca le quita una capacidad que la pantalla tenía (creación en el lugar, líneas de ayuda, el rechazo ante una línea que ya no existe), los Fixed sets conservan su aspecto y su comportamiento, y le pasa al campo el estado de carga de la consulta que lo alimenta.
 
+## WalkState y chequeo en el teléfono
+
+- El componente no tiene una ruta a la que el recorrido llegue, así que esta parte no agrega ninguna entrada de WalkState ni toca las listas de infractores ni los dibujos de `pantallas/` de ninguna pantalla. Cada pantalla recibe su entrada, su limpieza de infractores y su dibujo en la parte que la pasa al Selector.
+- Hasta que el primer cambio de pantalla (parte 2) corra el chequeo `mobile`, se miran a ojo: las filas y el campo de búsqueda de 44 px, el texto de 16 px, la ausencia de scroll horizontal y que toda fila quede alcanzable por encima del teclado. El PR de la parte 2 adjunta su corrida `mobile`.
+
+## Dueños de `fixedSets.ts`
+
+`fixedSets.ts` y su guarda son de las partes 3 y 5 de GH-581. Nada de lo que entrega el Selector (componente, auxiliar, pruebas, dibujo) importa de ese archivo.
+
 ## Diseño
 
-El Selector está dibujado en `docs/product/design-system/Componentes.dc.html`: el campo cerrado, el campo con "no longer available", el campo cargando, la lista de teléfono con búsqueda y sin ella, No results, el conjunto vacío y el desplegable de computadora. La regla y sus dos ejemplos están en `docs/product/design-system/README.md`.
+El Selector está dibujado en `docs/product/design-system/pantallas/Componentes.dc.html`: el campo cerrado, el campo con "no longer available", el campo cargando, la lista de teléfono con búsqueda y sin ella, No results, el conjunto vacío y el desplegable de computadora. La regla y sus dos ejemplos están en `docs/product/design-system/README.md`.
 
 ## Métricas
 
