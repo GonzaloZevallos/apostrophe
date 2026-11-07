@@ -37,4 +37,4 @@ promise that, so the highest number ever given is stored.
   `PaymentRow`. No port is added: a port would invite a second incrementer.
 - The downgrade of 0023 rebuilds `sale`, so it switches foreign keys off before its first write and
   checks them at the end.
-- Business removal and export read the reflected schema (ADR-0015), so both new columns are exported.
+- Business removal and export read the reflected schema (ADR-0015), so `sale.number` is exported on every sale; the business header is hand-built, so it carries `last_sale_number` explicitly, read with the business.

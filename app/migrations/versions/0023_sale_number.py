@@ -62,11 +62,15 @@ def downgrade() -> None:
     # check below stands in for the enforcement it lost.
     raw = op.get_bind().connection.dbapi_connection
     assert raw is not None
+    was_on = raw.execute("PRAGMA foreign_keys").fetchone()[0]
     raw.execute("PRAGMA foreign_keys=OFF")
-    with op.batch_alter_table("sale", recreate="always") as batch:
-        batch.drop_constraint(op.f("uq_sale_business_id_number"), type_="unique")
-        batch.drop_column("number")
-    # A native `DROP COLUMN`, as in 0018: no table rebuild for `business`.
-    op.drop_column("business", "last_sale_number")
-    if raw.execute("PRAGMA foreign_key_check").fetchall():
-        raise RuntimeError("the downgrade of 0023 left a broken reference")
+    try:
+        with op.batch_alter_table("sale", recreate="always") as batch:
+            batch.drop_constraint(op.f("uq_sale_business_id_number"), type_="unique")
+            batch.drop_column("number")
+        # A native `DROP COLUMN`, as in 0018: no table rebuild for `business`.
+        op.drop_column("business", "last_sale_number")
+        if raw.execute("PRAGMA foreign_key_check").fetchall():
+            raise RuntimeError("the downgrade of 0023 left a broken reference")
+    finally:
+        raw.execute(f"PRAGMA foreign_keys={'ON' if was_on else 'OFF'}")

@@ -1,7 +1,7 @@
 """The Sale number in a business's export (CONTEXT.md: Sale number, docs/adr/0015, 0073):
-the export, which reads the reflected schema, carries `number` on every sale, and the counts
-still reconcile (a run that does not reconcile exits non-zero and deletes nothing). The
-business header is written by hand (id, name, language), so the counter is not in it."""
+the export carries `number` on every sale (the reflected schema) and `last_sale_number` on
+the business header (read with the business), and the counts still reconcile (a run that
+does not reconcile exits non-zero and deletes nothing)."""
 
 from __future__ import annotations
 
@@ -44,6 +44,7 @@ def test_the_export_carries_every_sale_number_and_the_counter_and_reconciles(
 
     assert result == 0
     document = json.loads(next(export_dir.glob("*.json")).read_text())
+    assert document["business"]["last_sale_number"] == counter
     exported = document["kinds"]["sale"]
     assert len(exported) == len(numbers)
     assert sorted(record["number"] for record in exported) == numbers
