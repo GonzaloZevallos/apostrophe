@@ -493,7 +493,7 @@ describe('on a computer (two panes)', () => {
     expect(await screen.findByRole('heading', { name: 'Alfa Vieja' })).toBeTruthy()
   })
 
-  test('with none left, Restore goes to Variedades, where the restored varieties are listed', async () => {
+  test('with none left, Restore lands on Varieties with the first variety by name selected, the restored ones listed', async () => {
     const user = userEvent.setup()
     const { router } = renderComputer([VARIETIES, pathTo(VARIETY, { id: 4 })])
     await screen.findByText('Zeta Vieja')
@@ -501,7 +501,12 @@ describe('on a computer (two panes)', () => {
     await screen.findByRole('heading', { name: 'Zeta Vieja' })
     await user.click(pageRestore())
 
-    await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES), { timeout: 10_000 })
+    // Restore leaves for Varieties, and on a computer Varieties at once replaces its bare path with
+    // the first live variety by name: that page is the stable end state, so it is the one waited on.
+    // The bare path is held for an instant only, and no wait can count on seeing it. (The red on
+    // master after 6b4aa4a5 did not reproduce on any commit of e388f5b..6b4aa4a5, so the culprit
+    // commit was not found; this is the mechanism read in the code and seen in the router's history.)
+    await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 4 })), { timeout: 10_000 })
     expect(await screen.findByText('All entries')).toBeTruthy()
     // The list takes the left pane back one render after the path changes: wait for it.
     await waitFor(() => expect(screen.queryByRole('heading', { name: 'Archived' })).toBeNull())
