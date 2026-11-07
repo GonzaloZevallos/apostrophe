@@ -62,6 +62,25 @@ const PAGES: Record<string, string> = {
   ),
 }
 
+// Pages that depend on how many times they were loaded (GH-601), told by their token like the rest:
+// the first load of a `late-*` token writes the DOM on every tick of the capture's clock, so no frame
+// of it is ever calm; every later load is a calm page. `never` is never calm on any load. Each case
+// uses its own token, so the count of one never reaches another.
+const NEVER_CALM = page(
+  `<div>Nueva venta</div>
+   <script>let ticks = 0
+   setInterval(() => { document.body.dataset.t = String((ticks += 1)) }, 5)</script>`,
+)
+const CALM = page('<div>Nueva venta</div>')
+const loads = new Map<string, number>()
+const pageOf = (token: string): string | undefined => {
+  if (token === 'never') return NEVER_CALM
+  if (!token.startsWith('late-')) return PAGES[token]
+  const count = (loads.get(token) ?? 0) + 1
+  loads.set(token, count)
+  return count === 1 ? NEVER_CALM : CALM
+}
+
 let server: Server
 let dir: string
 let url: string
@@ -79,7 +98,7 @@ beforeAll(async () => {
     } else {
       response.setHeader('content-type', 'text/html')
       // The page is told by its token, the last segment of the route.
-      response.end(PAGES[/[^/]*$/.exec(path)?.[0] ?? ''] ?? page(''))
+      response.end(pageOf(/[^/]*$/.exec(path)?.[0] ?? '') ?? page(''))
     }
   })
   await new Promise<void>((done) => server.listen(0, '127.0.0.1', done))
@@ -95,17 +114,18 @@ type Side = Record<string, unknown> & { sizes_changed?: Array<Record<string, unk
 type Run = { entries: Entry[]; status: number; output: string }
 type Entry = {
   screen: string
+  notes: string[]
   design: string | null
   built: string | null
   census?: { design?: Side; built?: Side }
 }
 
 // Asynchronous on purpose: the page is served by this very process.
-async function run(name: string, only: string, extra: string[]): Promise<Run> {
-  return runWith(name, only, ['--step-timeout', String(CENSUS_STEP_MS), ...extra])
+async function run(name: string, only: string, extra: string[], joinToken = 'j'): Promise<Run> {
+  return runWith(name, only, ['--step-timeout', String(CENSUS_STEP_MS), ...extra], joinToken)
 }
 
-async function runWith(name: string, only: string, extra: string[]): Promise<Run> {
+async function runWith(name: string, only: string, extra: string[], joinToken = 'j'): Promise<Run> {
   const facts = join(dir, `${name}.json`)
   const out = join(dir, name)
   writeFileSync(
@@ -115,7 +135,7 @@ async function runWith(name: string, only: string, extra: string[]): Promise<Run
       url,
       email: 'a@b.co',
       account_kinds: {},
-      ids: { new_business_token: 'n', join_token: 'j', reset_token: 'r' },
+      ids: { new_business_token: 'n', join_token: joinToken, reset_token: 'r' },
     }),
   )
   const child = spawn('node', [SCRIPT, '--facts', facts, '--out', out, '--only', only, '--strict', ...extra], {
@@ -212,6 +232,40 @@ describe('comparisons.mjs --census', () => {
     const { status, output } = await runWith('forced', 'Reset', ['--census', '--step-timeout', '1'])
     expect(status, output).toBe(1)
     expect(output).toContain('lo construido no se pudo capturar')
+  }, CENSUS_TEST_MS)
+
+  // Measured 2026-11-07 (<fill in>): the three cases below.
+  it('captures the built side again from a fresh context when the first load never comes to rest', async () => {
+    const { entries, status, output } = await run('late-a', 'Invitacion', [], 'late-a')
+    expect(status, output).toBe(0)
+    const [entry] = entries as [Entry]
+    expect(entry.built).not.toBeNull()
+    expect(readFileSync(entry.built as string).subarray(1, 4).toString()).toBe('PNG')
+    expect(entry.notes).toEqual(['built: settled on attempt 2 of 3 after unsettled'])
+    expect(output).toContain('retries: 1 rows, 2 attempts')
+  }, CENSUS_TEST_MS)
+
+  it('fails the side with the kinds of all three attempts when it never comes to rest', async () => {
+    const { entries, status, output } = await run('never', 'Invitacion', [], 'never')
+    expect(status, output).toBe(1)
+    const [entry] = entries as [Entry]
+    expect(entry.built).toBeNull()
+    expect(entry.design).not.toBeNull()
+    expect(entry.notes).toEqual([
+      'lo construido no se pudo capturar: la pantalla no quedó quieta (after 3 attempts: unsettled, unsettled, unsettled)',
+    ])
+    expect(output).toContain('retries: 1 rows, 3 attempts')
+  }, CENSUS_TEST_MS)
+
+  it('writes the census of the attempt that passed, with no error or settle miss from the one before', async () => {
+    const { entries, status, output } = await run('late-c', 'Invitacion', ['--census'], 'late-c')
+    expect(status, output).toBe(0)
+    const [entry] = entries as [Entry]
+    expect(entry.built).not.toBeNull()
+    expect(entry.census?.built).toMatchObject({ device_scale_factor: 2, viewport_before: { width: 390 } })
+    expect(entry.census?.built?.census_settle).toBeUndefined()
+    expect(entry.census?.built?.census_error).toBeUndefined()
+    expect(entry.notes).toEqual(['built: settled on attempt 2 of 3 after unsettled'])
   }, CENSUS_TEST_MS)
 
   it.each(['0', 'abc'])('rejects --step-timeout %s before any browser starts', async (value) => {
