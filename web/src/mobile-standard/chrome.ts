@@ -84,7 +84,7 @@ export function judgeChrome(expectation: ChromeExpectation, facts: ChromeFacts, 
   return found
 }
 
-const segmentsOf = (path: string): string[] => path.split('/').filter((segment) => segment !== '')
+const segmentsOf = (path: string): string[] => path.split(/\/+/).filter((segment) => segment !== '')
 const isParameter = (segment: string): boolean => /^(:\w+|\{\w+\})$/.test(segment)
 
 /** The number of literal segments of the row that matches `pathname`, or `null` when it does not. */

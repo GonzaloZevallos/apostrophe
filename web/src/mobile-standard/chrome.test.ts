@@ -7,6 +7,7 @@ import {
   type ChromeExpectation,
   type ChromeFacts,
 } from './chrome.ts'
+import { HOME, MORE, pathTo, SALE, SALE_NEW, STOCK, VARIETY_ENTRIES } from '../routes.ts'
 import { ROUTE_REGISTRY, type RouteRegistryEntry } from './registry.ts'
 import type { CellId } from './targets.ts'
 
@@ -134,16 +135,16 @@ const rows = (...paths: [string, RouteRegistryEntry['kind']][]): RouteRegistryEn
 
 describe('kindAt', () => {
   test('resolves /sales/new to the form, not the /sales/{id} card, in either row order', () => {
-    const form = rows(['/sales/new', 'form'], ['/sales/{id}', 'card'])
-    expect(kindAt('/sales/new', form)).toBe('form')
-    expect(kindAt('/sales/new', [...form].reverse())).toBe('form')
-    expect(kindAt('/sales/12', form)).toBe('card')
+    const form = rows([SALE_NEW, 'form'], [SALE, 'card'])
+    expect(kindAt(SALE_NEW, form)).toBe('form')
+    expect(kindAt(SALE_NEW, [...form].reverse())).toBe('form')
+    expect(kindAt(pathTo(SALE, { id: 12 }), form)).toBe('card')
   })
 
   test('resolves /varieties/entries/x against /varieties/{id}/entries', () => {
-    const list = rows(['/varieties/{id}/entries', 'card'], ['/varieties/entries/{entry}', 'form'])
-    expect(kindAt('/varieties/entries/x', list)).toBe('form')
-    expect(kindAt('/varieties/7/entries', list)).toBe('card')
+    const list = rows([VARIETY_ENTRIES, 'card'], [`${STOCK}/:entry`, 'form'])
+    expect(kindAt(`${STOCK}/x`, list)).toBe('form')
+    expect(kindAt(pathTo(VARIETY_ENTRIES, { id: 7 }), list)).toBe('card')
   })
 
   test('accepts :name parameters as well as {name}', () => {
@@ -151,9 +152,9 @@ describe('kindAt', () => {
   })
 
   test('gives null for a path no row matches, and for a different length', () => {
-    const list = rows(['/sales/{id}', 'card'])
+    const list = rows([SALE, 'card'])
     expect(kindAt('/nowhere', list)).toBeNull()
-    expect(kindAt('/sales/1/extra', list)).toBeNull()
+    expect(kindAt(`${pathTo(SALE, { id: 1 })}/extra`, list)).toBeNull()
   })
 
   test('a tie between two rows throws', () => {
@@ -162,7 +163,7 @@ describe('kindAt', () => {
   })
 
   test('the root path matches only the root row', () => {
-    expect(kindAt('/', rows(['/', 'root'], ['/more', 'root']))).toBe('root')
+    expect(kindAt(HOME, rows([HOME, 'root'], [MORE, 'root']))).toBe('root')
   })
 
   test('over the real registry every row, parameters filled, gives its own kind and never throws', () => {
@@ -174,14 +175,15 @@ describe('kindAt', () => {
 })
 
 describe('expectationFor', () => {
-  const list = rows(['/sales/{id}', 'card'])
+  const list = rows([SALE, 'card'])
+  const sale = pathTo(SALE, { id: 1 })
 
   test('the signedOut flag beats a matching row', () => {
-    expect(expectationFor(true, '/sales/1', list)).toBe('signedOut')
+    expect(expectationFor(true, sale, list)).toBe('signedOut')
   })
 
   test('without the flag it is the row kind, or null when no row matches', () => {
-    expect(expectationFor(false, '/sales/1', list)).toBe('card')
+    expect(expectationFor(false, sale, list)).toBe('card')
     expect(expectationFor(false, '/nowhere', list)).toBeNull()
   })
 
