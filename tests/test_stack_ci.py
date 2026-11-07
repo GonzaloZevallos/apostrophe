@@ -1719,7 +1719,15 @@ NO_TESTS_GUARDS = {
     "vitest": "--passWithNoTests",
 }
 RERUN_RUNNERS = {"web-e2e": "playwright", "web-tests": "vitest"}
-FORBIDDEN_RERUN_FLAGS = ("--lf", "--last-failed", "--reruns")
+FORBIDDEN_RERUN_FLAGS = (
+    "--lf",
+    "--last-failed",
+    "--ff",
+    "--failed-first",
+    "--sw",
+    "--stepwise",
+    "--reruns",
+)
 
 
 def _rerun_form_problems(stack: Data) -> list[str]:
@@ -1787,3 +1795,14 @@ def test_a_rerun_form_that_selects_nothing_and_succeeds_is_accepted() -> None:
         }
     }
     assert _rerun_form_problems(stack) == []
+
+
+def test_a_rerun_form_with_another_pytest_cache_selector_is_refused() -> None:
+    stack = copy.deepcopy(STACK)
+    stack["rerun_checks"] = {
+        "tests": {"command": "uv run pytest --ff --stepwise || [ $? -eq 5 ]", "test_id": "(x)"},
+    }
+    assert _rerun_form_problems(stack) == [
+        "rerun_checks 'tests' uses --ff; no runner cache and no retry flag",
+        "rerun_checks 'tests' uses --stepwise; no runner cache and no retry flag",
+    ]
