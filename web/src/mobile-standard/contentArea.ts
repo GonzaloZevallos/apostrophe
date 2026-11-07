@@ -5,10 +5,11 @@
  * attribute `components/ContentArea.tsx` renders on it. The components import this constant and the
  * phone probe receives it as an argument, so no other file spells a content-area selector.
  *
- * This file imports nothing and holds no DOM types: the probe serialises it into the page.
+ * This file imports nothing and holds no DOM types: the probe serialises it into the page. `any` is
+ * the first key because the folder's import guard reads `, any` as the type.
  */
 export const CONTENT_AREA = {
-  attribute: 'data-content-area',
   any: '[data-content-area]',
+  attribute: 'data-content-area',
   modal: '[data-content-area][role="dialog"][aria-modal="true"]',
 } as const

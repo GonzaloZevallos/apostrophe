@@ -245,8 +245,8 @@ describe('Sheet', () => {
     stubViewport('computer')
     renderSheet({ computer: true, form: <Loading /> })
 
-    const frames = screen.getAllByRole('main')
-    const frame = frames.find((node) => node.classList.contains('cobro-modal'))
+    // The sheet's frame is the main that is not the labelled screen beside it.
+    const frame = screen.getAllByRole('main').find((node) => node !== area())
     expect(frame).toHaveAttribute('aria-busy', 'true')
     expect(frame).toHaveAttribute(CONTENT_AREA.attribute)
     const body = frame?.firstElementChild
