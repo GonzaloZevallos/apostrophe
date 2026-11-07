@@ -20,7 +20,7 @@ import Listo from './Listo'
 import OnboardingLayout from './OnboardingLayout'
 import { OnboardingEntry, OnboardingStepRoute } from './OnboardingRoutes'
 import { DISCARD_QUESTION } from './OnboardingStep'
-import { ONBOARDING_BOT, ONBOARDING_CATALOG_MESSAGE, ONBOARDING_CATEGORIES, ONBOARDING_PARTNER, ONBOARDING_STOCK, ONBOARDING_VARIETY } from '../../routes'
+import { HOME, ONBOARDING_BOT, ONBOARDING_CATALOG_MESSAGE, ONBOARDING_CATEGORIES, ONBOARDING_PARTNER, ONBOARDING_STOCK, ONBOARDING_VARIETY } from '../../routes'
 import { CHECKLIST_DONE } from '../../copy/inicio'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 
@@ -263,7 +263,7 @@ test('step 2 on a clean form: back by history leaves the step at once, with no q
   stubFetch(answer(['done', 'pending', 'pending', 'pending', 'pending', 'pending'], { stock_target: MANGO }), {
     ...STOCK_FORM_READS,
   })
-  const router = renderAt(['/', ONBOARDING_STOCK])
+  const router = renderAt([HOME, ONBOARDING_STOCK])
   await screen.findByText('Mango Bomb')
 
   await act(async () => {
@@ -279,7 +279,7 @@ test('step 2 with grams typed: back by history asks to discard, and keeping them
     ...STOCK_FORM_READS,
   })
   const user = userEvent.setup()
-  const router = renderAt(['/', ONBOARDING_STOCK])
+  const router = renderAt([HOME, ONBOARDING_STOCK])
   await user.type(await screen.findByLabelText('Grams'), '500')
 
   await act(async () => {
