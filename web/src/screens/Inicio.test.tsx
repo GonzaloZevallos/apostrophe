@@ -607,7 +607,7 @@ test('with /first-run answering last, slot 1 stays empty: Arrancá never flashes
   await screen.findByText('You sold today')
 
   expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
-  expect(screen.queryByText('emptyStates:homeVarietiesTitle')).not.toBeInTheDocument()
+  expect(screen.queryByText('Start with your products')).not.toBeInTheDocument()
   release(jsonResponse(200, ONBOARDING_ANSWER))
   expect(await screen.findByText('Go on to the setup')).toBeInTheDocument()
   expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
