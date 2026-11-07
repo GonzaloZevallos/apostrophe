@@ -102,3 +102,5 @@ Cuenta: las corridas completas de la rama son **tres** (la primera, `e8c9761a` y
 ## CI
 
 Las dos corridas de `ci-ok` que figuran como fallidas (cabezas `93516bdc` y `08efdb4f`) fueron canceladas por concurrencia ("Canceling since a higher priority waiting request ... exists"), no por una aserción: la corrida 42391028088 sobre `93516bdc` terminó en éxito.
+
+Decisión humana sobre CI: las dos corridas fallidas de `ci-ok` fueron cancelaciones por concurrencia (defecto registrado como agentic-system #539), no fallos de prueba. La corrida 42394295598 sobre la cabeza `b6f26e01` terminó en éxito con todos los trabajos en verde; la 42393982482 fue cancelada por el nuevo push. Se acepta `b6f26e01` como verde.
