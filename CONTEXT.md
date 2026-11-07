@@ -605,5 +605,5 @@ Un conjunto que puede tener una opción con la que la app no vino, hoy o por una
 _Avoid_: dynamic list, open set, custom list, user list
 
 **Fixed set**:
-Un conjunto de opciones con el que la app viene y que ninguna decisión tomada deja crecer, como Today · Week · Month. Se declara en `web/src/components/fixedSets.ts` con un motivo no vacío, y es lo único de donde chips, pills, Pestanas y controles de radio toman sus opciones. Ningún conjunto leído de los datos o la configuración de un Business es nunca un Fixed set. En la app: no tiene palabra propia.
+Un conjunto de opciones con el que la app viene y que ninguna decisión tomada deja crecer, como Today · Week · Month. Se declara en `web/src/components/fixedSets.ts` con un motivo no vacío, y es lo único de donde chips, pills, Pestanas y controles de radio toman sus opciones. Ningún conjunto leído de los datos o la configuración de un Business es nunca un Fixed set (docs/adr/0074-fixed-chip-sets-are-a-branded-type-declared-in-one-registry-the-native-select-is-banned-and-the-selector-is-the-only-control-for-a-growable-set.md). En la app: no tiene palabra propia.
 _Avoid_: enum, static list, constant set, hard-coded options
