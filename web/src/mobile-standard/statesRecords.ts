@@ -19,6 +19,7 @@ import {
   SETTINGS_CUSTOMER_TYPES,
   STOCK,
   STOCK_ENTRY,
+  STOCK_ENTRY_NEW,
   VARIETIES,
   VARIETY,
 } from '../routes.ts'
@@ -64,7 +65,25 @@ const SAMPLE_TYPED_CUSTOMER = {
   standing: 'settled',
 }
 
+/**
+ * Twelve listed Varieties, one with a 60-character name, so the Variety Selector's list shows
+ * its search and its longest row. Seeded for this state's reads only, never the pinned fixture.
+ */
+const TWELVE_VARIETIES = Array.from({ length: 12 }, (_unused, index) => ({
+  id: 100 + index,
+  name: index === 11 ? 'Una variedad con un nombre larguísimo de sesenta caracteres!!' : `Variedad ${index + 1}`,
+  archived: false,
+  current_price: null,
+}))
+
 export const RECORDS_STATES: readonly WalkState[] = [
+  {
+    screen: 'stock-entry/variety-selector-open',
+    route: STOCK_ENTRY_NEW,
+    steps: [{ click: common('common:variety') }],
+    visible: 'Variedad 1',
+    reads: [{ path: /^\/api\/products$/, status: 200, body: TWELVE_VARIETIES }],
+  },
   {
     // The sample Business has no customer types, so the form's type field is the notice.
     screen: 'ClienteNuevoSinTipos',
