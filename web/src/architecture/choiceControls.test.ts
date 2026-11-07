@@ -23,17 +23,17 @@ test('the real fixedSets.ts imports only copy modules and the NombreIcono type',
 
 test('a file with only copy imports and the exact NombreIcono type import passes', () => {
   const source = [
-    "import { COMMON_TEXT } from '../copy/common'",
+    "import { PERIOD_TEXT } from '../copy/common'",
     "import { CUSTOMER_TYPE_ICON_NAME } from '../copy/readers/customerTypeIcons'",
     "import type { NombreIcono } from './Icono'",
     '',
-    'export const X = COMMON_TEXT',
+    'export const X = PERIOD_TEXT',
   ].join('\n')
   expect(violationsOf(source)).toEqual([])
 })
 
 test('an import from api/ fails with its file:line and says why', () => {
-  const source = "import { COMMON_TEXT } from '../copy/common'\nimport { getBusiness } from '../api/business'\n"
+  const source = "import { PERIOD_TEXT } from '../copy/common'\nimport { getBusiness } from '../api/business'\n"
   const found = fixedSetImportViolations([{ path: PATH, source }])
   expect(found).toEqual([
     {
