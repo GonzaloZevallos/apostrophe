@@ -23,6 +23,7 @@ En esta parte ninguna pantalla lo usa todavía; las partes siguientes de GH-581 
 ## Una elección que no está entre las opciones
 
 - Si quien usa el Selector pasa la elección actual con su nombre (`selected`), el campo muestra ese nombre con la marca "no longer available": la palabra más el Attention icon, nunca solo color. La lista nunca la ofrece. Pasar el nombre es tarea de quien usa el Selector.
+- `selected` se usa solo cuando `selected.value` es igual a `value`; si no coincide, se ignora (un `selected` viejo no se muestra) y el campo sigue las reglas de arriba y de abajo según `options`.
 - Si la elección no está ni en `options` ni en `selected`, el campo muestra la marca sin nombre. Nunca muestra el texto vacío ni un blanco, porque diría que no hay elección cuando el registro tiene una. Es una red de seguridad, no el caso normal.
 - Elegir una opción vigente la reemplaza.
 
@@ -51,7 +52,7 @@ En esta parte ninguna pantalla lo usa todavía; las partes siguientes de GH-581 
 ## Orden, búsqueda y fila para borrar
 
 - El Selector nunca reordena: muestra el orden que recibe, así que el orden propio de un Business (por ejemplo el de sus Withdrawal reasons) es el que ve el vendedor. No fija ninguna regla de orden (Assume nothing).
-- La búsqueda compara solo el nombre (`label`), sin importar mayúsculas ni acentos, solo filtra y conserva el orden. Cuando nada coincide dice "No results".
+- La búsqueda compara solo el nombre (`label`), sin importar mayúsculas ni acentos (`ñ` coincide con `n`: en la búsqueda la ñ no es una letra aparte, es una `n` con tilde), solo filtra y conserva el orden. Cuando nada coincide dice "No results".
 - La fila para borrar va siempre primera y no se filtra con la búsqueda.
 
 ## Reapertura y foco
