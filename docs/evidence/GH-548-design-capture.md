@@ -98,3 +98,7 @@ Se aceptan como evidencia de este issue las tres corridas completas de la rama (
 Cabeza de la rama al registrar la decisión: `4f017f0c`. Corridas completas de la rama aceptadas: la primera (3 filas del lado construido sin reposo), `e8c9761a` y `79e131b2`; todas con salida 1 solo por ese reposo, y ninguna con una fila del lado del diseño fallida.
 
 Cuenta: las corridas completas de la rama son **tres** (la primera, `e8c9761a` y `79e131b2`) y las de master son dos; la decisión humana acepta las que existen.
+
+## CI
+
+Las dos corridas de `ci-ok` que figuran como fallidas (cabezas `93516bdc` y `08efdb4f`) fueron canceladas por concurrencia ("Canceling since a higher priority waiting request ... exists"), no por una aserción: la corrida 42391028088 sobre `93516bdc` terminó en éxito.
