@@ -8,7 +8,7 @@ La computadora también es una situación: el mismo campo se usa con teclado, co
 
 ## Qué es
 
-El Selector es el único control para elegir una opción de un Growable set: un conjunto que puede tener una opción con la que la app no vino, hoy o por una decisión ya tomada (Varieties, Expense categories, Withdrawal reasons, Customer types; y con GH-318, units, time zone, Money format, Product word y Payment methods). Lo opuesto es un Fixed set, declarado en `web/src/components/fixedSets.ts` con un motivo, que puede mostrarse como chips. El componente vive en `web/src/components/Selector.tsx`.
+El Selector es el único control para elegir una opción de un Growable set: un conjunto que puede tener una opción con la que la app no vino, hoy o por una decisión ya tomada (Varieties, Expense categories, Withdrawal reasons, Customer types; y con GH-318, units, time zone, Money format, Product word y Payment methods). Lo opuesto es un Fixed set, declarado en `web/src/components/fixedSets.ts` con un motivo, que puede mostrarse como chips. El componente vive en `web/src/components/Selector.tsx`, y su búsqueda en `web/src/components/selectorSearch.ts`.
 
 En esta parte ninguna pantalla lo usa todavía; las partes siguientes de GH-581 pasan las pantallas al Selector.
 
@@ -17,8 +17,9 @@ En esta parte ninguna pantalla lo usa todavía; las partes siguientes de GH-581 
 - Tiene una etiqueta visible (`label`) y muestra la opción elegida.
 - Cada opción (`options`: `value`, `label`, `glyph` opcional) puede llevar un glifo antes del nombre, decorativo (`aria-hidden`) y que nunca se busca.
 - Campo obligatorio (`required`): no tiene fila para borrar la elección.
-- Campo opcional (`emptyWording`): sin elección muestra su propio texto vacío, y la primera fila de la lista usa el mismo texto y borra la elección.
-- Cargando (`loading`): el campo queda deshabilitado, con `aria-busy="true"` y un esqueleto en lugar del valor, sin texto ni dígitos; la lista no se puede abrir.
+- Campo opcional (`emptyWording`): sin elección muestra su propio texto vacío, y la primera fila de la lista usa el mismo texto y borra la elección (`onChange(null)`).
+- Cargando (`loading`): el campo queda deshabilitado, con `aria-busy="true"` y la barra de esqueleto de la app en lugar del valor, sin texto ni dígitos; la lista no se puede abrir. Si `loading` pasa a verdadero con la lista abierta, la lista se cierra y el foco va al grupo que envuelve el campo.
+- Los nombres largos se cortan con puntos suspensivos; la marca "no longer available" nunca se corta.
 
 ## Una elección que no está entre las opciones
 
@@ -29,30 +30,32 @@ En esta parte ninguna pantalla lo usa todavía; las partes siguientes de GH-581 
 
 ## Teléfono (menos de 900 px)
 
-- El campo abre la lista en el marco compartido de la Sheet: "Close" arriba y sin barra de acciones. El nombre accesible de la lista es "{label} options".
+- El campo abre la lista en el marco compartido de la Sheet: el botón de cerrar arriba (el ícono × de toda Sheet, con nombre accesible "Close"), el `label` del campo como título y sin barra de acciones. El nombre accesible de la lista es "{label} options".
 - Filas de 44 px; la opción actual lleva un check y la palabra accesible "Selected". Los nombres largos se cortan con puntos suspensivos. No hay scroll horizontal.
 - Tocar una opción la elige y cierra la lista: elegir lleva exactamente 2 toques.
-- Con más de 8 opciones, arriba hay un campo de búsqueda fijo que recibe el foco al abrir la lista: `type="search"`, `inputmode="search"`, `autocomplete="off"`, `enterkeyhint="search"`, texto de 16 px y 44 px de alto. Enter nunca envía el formulario de abajo.
-- Solo las filas hacen scroll (`overflow-y:auto`, `overscroll-behavior:contain`), con el alto tomado del viewport visible, así que toda fila queda alcanzable por encima del teclado.
-- Cada lista abierta es su propia entrada del historial, en el nivel de arriba del formulario desde el que se abrió: el contexto `SheetLevel` de `useSheetStack.ts` (0 por defecto) da el nivel, el Selector llama a `useSheet(level + 1)` y envuelve su lista en `SheetLevel` en `level + 1`; nunca recibe un nivel por prop. Volver y "Close" son la misma acción y cierran exactamente una entrada, nunca el formulario de abajo, también cuando ese formulario está abierto sobre otro.
+- Con más de 8 opciones, arriba hay un campo de búsqueda fijo que recibe el foco al abrir la lista: `type="search"`, `inputmode="search"`, `autocomplete="off"`, `enterkeyhint="search"`, texto de 16 px y 44 px de alto. Enter nunca envía el formulario de abajo: lleva el foco a las filas, dentro de la lista. Sin búsqueda, el foco va a la opción actual o, si no hay, a la primera fila.
+- Solo las filas hacen scroll (`overflow-y:auto`, `overscroll-behavior:contain`), con el alto tomado del viewport visible (`useVisualViewport`), así que toda fila queda alcanzable por encima del teclado.
+- Cada lista abierta es su propia entrada del historial, en el nivel de arriba del formulario desde el que se abrió. Volver y "Close" son la misma acción y cierran exactamente una entrada, nunca el formulario de abajo, también cuando ese formulario está abierto sobre otro. El "Close" de la lista nunca abre la confirmación de cambios sin guardar del formulario de abajo.
 
 ## Historial
 
-- El nivel de una lista es el `SheetLevel` que la rodea más uno: sin envoltorio es 0, así que la lista es el nivel 1; dentro de un formulario en el nivel 1 es el nivel 2. `NuevaVentaCliente` provee los niveles 1 y 2 alrededor de su selector de cliente y de su creador.
-- Volver y "Close" cierran exactamente una entrada, nunca el formulario de abajo. Un doble toque tampoco saca el formulario: un solo abrir emite a lo sumo un cierre.
+- El contexto `SheetLevel` de `useSheetStack.ts` (0 por defecto) da el nivel: el Selector llama a `useSheet(level + 1)` y envuelve su lista en `SheetLevel` en `level + 1`; nunca recibe un nivel por prop. Sin envoltorio la lista es el nivel 1; dentro de un formulario en el nivel 1 es el nivel 2. `NuevaVentaCliente` provee los niveles 1 y 2 alrededor de su selector de cliente y de su creador, sin ningún cambio visible.
+- Volver y "Close" cierran exactamente una entrada, nunca el formulario de abajo. Un doble toque, o elegir y tocar "Close" enseguida, tampoco saca el formulario: un solo abrir emite a lo sumo un cierre.
+- Pasar de teléfono a computadora con la lista abierta la cierra una vez; pasar de computadora a teléfono cierra el desplegable. En los dos casos el foco vuelve al campo.
 - Límite conocido: una Sheet hermana que use el mismo número de nivel también se lee como abierta junto con la lista. Una prueba lo fija; quien revisa cada cambio de pantalla comprueba el nivel de cada Sheet hermana.
 - Quien usa el Selector no lo re-keya ni lo desmonta mientras su lista está abierta: lo pasa a `loading`. El costo de hacerlo mal es una entrada muerta en el historial: el primer volver no muestra nada.
 
 ## Computadora (900 px o más)
 
-- El campo abre un desplegable: las flechas se mueven, Enter elige y Tab sale. Un clic fuera también lo cierra.
-- Escape cierra solo el desplegable; el Escape del formulario no se dispara.
+- El campo es un botón con `aria-haspopup="listbox"` y `aria-expanded`. Se abre con un clic o, con el foco en el campo, con flecha arriba o flecha abajo.
+- El desplegable va debajo del campo y se abre hacia arriba cuando abajo no hay lugar. La fila activa empieza en la opción actual o, si no hay, en la primera; las flechas la mueven, Enter elige y Tab sale. Un clic fuera también lo cierra.
+- Escape cierra solo el desplegable y frena el evento; el Escape del formulario no se dispara.
 - La búsqueda funciona igual que en el teléfono. El desplegable nunca toca el historial.
 
 ## Orden, búsqueda y fila para borrar
 
 - El Selector nunca reordena: muestra el orden que recibe, así que el orden propio de un Business (por ejemplo el de sus Withdrawal reasons) es el que ve el vendedor. No fija ninguna regla de orden (Assume nothing).
-- La búsqueda compara solo el nombre (`label`), sin importar mayúsculas ni acentos (`ñ` coincide con `n`: en la búsqueda la ñ no es una letra aparte, es una `n` con tilde), solo filtra y conserva el orden. Cuando nada coincide dice "No results".
+- La búsqueda compara solo el nombre (`label`), sin importar mayúsculas ni acentos (`ñ` coincide con `n`: en la búsqueda la ñ no es una letra aparte, es una `n` con tilde), solo filtra y conserva el orden. El texto buscado es texto plano, nunca un patrón. Cuando nada coincide dice "No results".
 - La fila para borrar va siempre primera y no se filtra con la búsqueda.
 
 ## Reapertura y foco
@@ -74,15 +77,15 @@ En esta parte ninguna pantalla lo usa todavía; las partes siguientes de GH-581 
 
 ## Textos
 
-Todo texto sale del Copy module (`web/src/copy/`), en inglés, con el en-XA generado; se reusan las claves existentes (`close`, `loading`).
+Todo texto sale del Copy module (`web/src/copy/`), en inglés, con el en-XA generado; se reusan las claves existentes (`close`, `loading`, `owing`).
 
-- `common`: Search, No results, no longer available, Selected, `{{label}} options`, Paid, Owing, Payment method, No type. Las últimas cuatro no las muestra el control: sirven a la nota de prueba de Payment methods y a los cambios de pantalla posteriores.
+- `common`: `search` (Search), `noResults` (No results), `noLongerAvailable` (no longer available), `selected` (Selected), `optionsOf` ("{{name}} options", que recibe el `label` del campo), `paid` (Paid), `owing` (Owing), `paymentMethod` (Payment method), `noType` (No type). Las últimas cuatro no las muestra el control: sirven a la nota de prueba de Payment methods y a los cambios de pantalla posteriores.
 - `emptyStates`:
-  - "No varieties yet. Add them in the Varieties tab."
-  - "No categories yet. Add them in Settings → Expense categories."
-  - "No reasons yet. Add them in Settings → Business → Withdrawal reasons."
+  - `selectorNoVarieties`: "No varieties yet. Add them in the Varieties tab."
+  - `selectorNoCategories`: "No categories yet. Add them in Settings → Expense categories."
+  - `selectorNoReasons`: "No reasons yet. Add them in Settings → Business → Withdrawal reasons."
 
-La palabra "varieties" es la palabra de pantalla de hoy; cambia con la parte Product word de GH-318 y el barrido de #330.
+Una prueba comprueba que cada mensaje nombra el lugar con las mismas palabras de pantalla de ese lugar. La palabra "varieties" es la palabra de pantalla de hoy; cambia con la parte Product word de GH-318 y el barrido de #330.
 
 ## Reglas
 
@@ -91,7 +94,7 @@ La palabra "varieties" es la palabra de pantalla de hoy; cambia con la parte Pro
 - Ningún conjunto leído de los datos o la configuración de un Business, Payment methods incluidos, se declara nunca en `fixedSets.ts`, ni siquiera temporalmente.
 - Cualquier selector posterior sobre datos o configuración del Business (GH-318: units, time zone, Money format, Product word, Payment methods) se construye sobre el Selector.
 - Nota de prueba de Payment methods, hasta GH-318: los Payment methods todavía no existen. Las pruebas y los dibujos del Selector pueden usar un conjunto de Payment method armado dentro de la prueba o del dibujo, con las claves `Payment method`, `Paid` y `Owing`; ese conjunto nunca se declara en `fixedSets.ts` ni lo lee ninguna pantalla.
-- Una parte que pasa una pantalla al Selector, y solo ella, agrega la entrada de WalkState de esa pantalla, borra las entradas de las listas de infractores que el cambio deja obsoletas y actualiza el dibujo de la pantalla en `pantallas/`. Nunca le quita una capacidad que la pantalla tenía (creación en el lugar, líneas de ayuda, el rechazo ante una línea que ya no existe), los Fixed sets conservan su aspecto y su comportamiento, y le pasa al campo el estado de carga de la consulta que lo alimenta.
+- Una parte que pasa una pantalla al Selector, y solo ella, agrega la entrada de WalkState de esa pantalla, borra las entradas de las listas de infractores que el cambio deja obsoletas y actualiza el dibujo de la pantalla en `pantallas/`. Nunca le quita una capacidad que la pantalla tenía (creación en el lugar, líneas de ayuda, el rechazo ante una línea que ya no existe), los Fixed sets conservan su aspecto y su comportamiento, y le pasa al campo el estado de carga de la consulta que lo alimenta. Cuando un campo obligatorio queda con el conjunto vacío, esa parte se asegura de que el formulario a medio cargar se conserve o se pueda recuperar.
 
 ## WalkState y chequeo en el teléfono
 
@@ -104,7 +107,7 @@ La palabra "varieties" es la palabra de pantalla de hoy; cambia con la parte Pro
 
 ## Diseño
 
-El Selector está dibujado en `docs/product/design-system/pantallas/Componentes.dc.html`: el campo cerrado, el campo con "no longer available", el campo cargando, la lista de teléfono con búsqueda y sin ella, No results, el conjunto vacío y el desplegable de computadora. La regla y sus dos ejemplos están en `docs/product/design-system/README.md`.
+El Selector está dibujado en el bloque "Selector" de `docs/product/design-system/pantallas/Componentes.dc.html`: el campo cerrado, el campo con "no longer available" con nombre y sin nombre, el campo cargando, la lista de teléfono con búsqueda y sin ella, No results, el conjunto vacío en sus tres variantes y el desplegable de computadora. La regla y sus dos ejemplos están en `docs/product/design-system/README.md`, en "Chips o Selector".
 
 ## Métricas
 
