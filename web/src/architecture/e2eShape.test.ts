@@ -158,11 +158,11 @@ describe('where a run leaves its evidence', () => {
     expect(junitPathOf(cfg)).toBe('test-results/abc1234-20261016T120000Z/junit.xml')
   })
 
-  it('keeps the list reporter beside the junit one', async () => {
+  it('keeps the list reporter beside the junit one, and the json one that feeds the flaky report', async () => {
     const cfg = await loadConfig(undefined)
     const names = (Array.isArray(cfg.reporter) ? cfg.reporter : []).map((entry) =>
       Array.isArray(entry) ? entry[0] : entry,
     )
-    expect(names).toEqual(['list', 'junit'])
+    expect(names).toEqual(['list', 'junit', 'json'])
   })
 })
