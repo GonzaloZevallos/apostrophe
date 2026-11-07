@@ -57,3 +57,7 @@ Ninguna pareja tiene un lado con imagen antes y sin imagen después, así que no
 ## Límite conocido de `growViewport`
 
 La espera del `resize` tiene una cota de 100 consultas a la página, no de tiempo. Si una página nunca recibe el evento, la captura sigue sin dejar una razón de que la espera se agotó; el lado queda capturado igual que antes del arreglo. No hay una prueba en los seams declarados, porque hace falta un navegador real: la evidencia es esta corrida.
+
+## Dónde vive esta evidencia
+
+Esta carpeta es la ruta de la evidencia de GH-491 por decisión del dueño (la tarea no pidió `.agentic/tasks/`); nada de esto va bajo `.agentic/`. La parte 3 lee de aquí.
