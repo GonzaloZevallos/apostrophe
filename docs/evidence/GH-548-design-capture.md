@@ -94,3 +94,5 @@ La salida 0 de una corrida completa sobre la rama no está registrada: las cuatr
 ## Decisión humana (cierra "Qué falta y quién decide")
 
 Se aceptan como evidencia de este issue las cuatro corridas completas de la rama (que salen con 1 solo por el reposo del lado construido), las dos de master y las repeticiones por fila con `--only`, que salen con 0. El fallo intermitente de reposo del lado construido pasó al issue #601, así que este issue no espera una corrida completa que salga con 0. Lo que este issue arregla queda demostrado: las 37 capturas del diseño se toman en todas las corridas completas y las 348 capturas estables dan AE 0 antes y después.
+
+Cabeza de la rama al registrar la decisión: `4f017f0c`. Corridas completas de la rama aceptadas: la primera (3 filas del lado construido sin reposo), `e8c9761a` y `79e131b2`; todas con salida 1 solo por ese reposo, y ninguna con una fila del lado del diseño fallida.
