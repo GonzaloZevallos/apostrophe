@@ -37,13 +37,13 @@ import {
   registerCustomer,
 } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
-import { useIsVipCustomers } from '../../api/pricingSettings'
+import { useIsVipCustomers, usePricingSettingsPending } from '../../api/pricingSettings'
 import { isGone, resolveOverride, type RefusalCode } from '../../api/refusals'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { toast } from '../../components/feedback'
 import GoneScreen from '../../components/GoneScreen'
 import SinConexion from '../../components/SinConexion'
-import Loading from '../../components/Loading'
+import Loading, { LoadingWhile } from '../../components/Loading'
 import CustomerFields from './CustomerFields'
 import CustomerTypeField from './CustomerTypeField'
 import { COMMON_TEXT } from '../../copy/common'
@@ -131,6 +131,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
   const viewport = useViewport()
   const flash = useFlash()
   const vipCustomers = useIsVipCustomers()
+  const pricingPending = usePricingSettingsPending()
 
   const initialTypeId = initial?.customer_type_id == null ? '' : String(initial.customer_type_id)
   const [name, setName] = useState(initial?.name ?? '')
@@ -245,6 +246,8 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
         )
       }
     >
+      {/* The customer type field is drawn only once the pricing settings say Clientes VIP is on. */}
+      <LoadingWhile active={pricingPending} />
       <div className="encabezado-fila">
         <span className="encabezado__titulo">{title}</span>
         <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={close} />
