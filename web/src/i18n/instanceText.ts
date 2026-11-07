@@ -1,7 +1,7 @@
 /**
  * A text read straight from the i18next instance by key, for a holder that is not a component
- * and so cannot call `useTranslation`: a `copy/` reader (`copy/customers.ts`'s
- * `customerTypeIconName`) calls it from a getter that runs in render. It is a pure read: no
+ * and so cannot call `useTranslation`: a `copy/` reader (`CUSTOMER_TYPE_ICON_NAME` in
+ * `copy/readers/customerTypeIcons.ts`) calls it from a getter that runs in render. It is a pure read: no
  * init, no subscription, and it answers in whatever language the instance shows at that moment.
  */
 
