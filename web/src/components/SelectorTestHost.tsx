@@ -18,7 +18,12 @@ export function Controlled({ initial = null, onPick, ...rest }: ControlledProps)
   const [value, setValue] = useState<string | null>(initial)
   return (
     <Selector
-      {...({ ...rest, value, onChange: (next) => { onPick?.(next); setValue(next) } } as SelectorProps)}
+      {...rest}
+      value={value}
+      onChange={(next) => {
+        onPick?.(next)
+        setValue(next)
+      }}
     />
   )
 }
