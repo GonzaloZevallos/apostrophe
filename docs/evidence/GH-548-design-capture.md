@@ -89,7 +89,7 @@ En ninguna corrida falló una fila del lado del diseño: las 37 capturas se toma
 
 ## Qué falta y quién decide
 
-La salida 0 de una corrida completa sobre la rama no está registrada: las tres corridas completas de la rama salieron con 1, todas por el reposo del lado construido, que también falla en master (dos corridas) y que este cambio no toca (`settle.mjs` y `shot.mjs` fuera del diff, invariante 1). Hace falta una decisión humana: abrir un issue aparte para ese reposo (`restAfterShot` y el asentado bajo carga), o aceptar como evidencia las cuatro corridas de la rama, las dos de master y las repeticiones por fila con `--only`, que salen con 0.
+La salida 0 de una corrida completa sobre la rama no está registrada: las tres corridas completas de la rama salieron con 1, todas por el reposo del lado construido, que también falla en master (dos corridas) y que este cambio no toca (`settle.mjs` y `shot.mjs` fuera del diff, invariante 1). Hace falta una decisión humana: abrir un issue aparte para ese reposo (`restAfterShot` y el asentado bajo carga), o aceptar como evidencia las tres corridas de la rama, las dos de master y las repeticiones por fila con `--only`, que salen con 0.
 
 ## Decisión humana (cierra "Qué falta y quién decide")
 
