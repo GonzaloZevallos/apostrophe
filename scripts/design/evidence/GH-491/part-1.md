@@ -53,3 +53,7 @@ Ninguna pareja tiene un lado con imagen antes y sin imagen después, así que no
 - `after.index.json`: índice de la rama en `1634967e`, con cada ruta reducida a su basename.
 - `ae-master-1-after.txt`, `ae-master-2-after.txt`: salida de `ae` de cada `master` contra `after`.
 - Los PNG no están en git. La parte 3 lee la evidencia de esta carpeta.
+
+## Límite conocido de `growViewport`
+
+La espera del `resize` tiene una cota de 100 consultas a la página, no de tiempo. Si una página nunca recibe el evento, la captura sigue sin dejar una razón de que la espera se agotó; el lado queda capturado igual que antes del arreglo. No hay una prueba en los seams declarados, porque hace falta un navegador real: la evidencia es esta corrida.
