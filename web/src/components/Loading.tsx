@@ -14,7 +14,8 @@ import { useLoading } from './useLoading'
  * hidden progressbar a screen announces itself with while those markers are on.
  *
  * The full shape and `LoadingAnuncio` also mark the nearest content area busy while they are drawn
- * (`useLoading`); `compacto` stands for one figure, not for the area, so it does not.
+ * (`useLoading`); `compacto` stands for one figure, not for the area, so it does not. A
+ * `LoadingAnuncio refresco` announces a refresh of content already shown and does not mark it.
  */
 
 /** The marker both components below render while something is loading: the one selector the
@@ -25,9 +26,15 @@ export interface LoadingProps {
   compacto?: boolean
 }
 
-export function LoadingAnuncio() {
+export interface LoadingAnuncioProps {
+  /** Announce only: do not mark the content area busy. For a refresh over content already shown
+   * (a date change that re-fetches prices under `keepPreviousData`), which never marks the area. */
+  refresco?: boolean
+}
+
+export function LoadingAnuncio({ refresco = false }: LoadingAnuncioProps = {}) {
   const { t } = useTranslation()
-  useLoading(true)
+  useLoading(!refresco)
   return <div className="cargando__anuncio" role="progressbar" aria-label={t('common:loading')} aria-busy="true" />
 }
 

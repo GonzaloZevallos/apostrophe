@@ -578,7 +578,7 @@ function NuevaVentaForm() {
             <Loading />
           ) : (
             <>
-              {repricing && !customerSheet.isOpen && <LoadingAnuncio />}
+              {repricing && !customerSheet.isOpen && <LoadingAnuncio refresco />}
               {customer === null ? (
                 <Boton variant="secondary" icon="clientes" onClick={customerSheet.open}>
                   {SALES_TEXT.pickCustomer}
