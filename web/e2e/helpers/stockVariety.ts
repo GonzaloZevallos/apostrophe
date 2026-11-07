@@ -4,7 +4,8 @@
  * dropdown, so the row is looked for in both.
  */
 
-import { expect, type Page } from '@playwright/test'
+import type { Page } from '@playwright/test'
+import { expect } from '../fixtures.js'
 
 export async function pickStockVariety(page: Page, variety: string): Promise<void> {
   await page.getByRole('group', { name: 'Variety', exact: true }).getByRole('button').click()
