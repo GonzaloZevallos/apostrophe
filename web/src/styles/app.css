@@ -3942,6 +3942,7 @@ body {
   min-height: var(--alto-tocable);
   min-width: var(--alto-tocable);
   padding-inline: var(--espacio-sm);
+  box-shadow: none;
   font-size: 14px;
   touch-action: manipulation;
   user-select: none;
