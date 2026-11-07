@@ -82,15 +82,10 @@
   {
     "screen": "InicioPrimeraVez",
     "file": "InicioPrimeraVez.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "InicioPrimeraVez.design.png",
     "built": "InicioPrimeraVez.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: section outside the viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "InicioPrimeraVezCompu",
@@ -103,28 +98,18 @@
   {
     "screen": "InicioPrimeraVezOscuro",
     "file": "InicioPrimeraVezOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "InicioPrimeraVezOscuro.design.png",
     "built": "InicioPrimeraVezOscuro.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: section outside the viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "InicioOnboardingEnCurso",
     "file": "InicioOnboardingEnCurso.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "InicioOnboardingEnCurso.design.png",
     "built": "InicioOnboardingEnCurso.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: section outside the viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "InicioOnboardingEnCursoCompu",
@@ -137,28 +122,18 @@
   {
     "screen": "InicioOnboardingEnCursoOscuro",
     "file": "InicioOnboardingEnCursoOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "InicioOnboardingEnCursoOscuro.design.png",
     "built": "InicioOnboardingEnCursoOscuro.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: section outside the viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "InicioOnboardingCompleto",
     "file": "InicioOnboardingCompleto.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "InicioOnboardingCompleto.design.png",
     "built": "InicioOnboardingCompleto.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: section outside the viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "InicioOnboardingCompletoCompu",
@@ -171,28 +146,18 @@
   {
     "screen": "InicioOnboardingCompletoOscuro",
     "file": "InicioOnboardingCompletoOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "InicioOnboardingCompletoOscuro.design.png",
     "built": "InicioOnboardingCompletoOscuro.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: section outside the viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "InicioChecklist",
     "file": "InicioChecklist.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "InicioChecklist.design.png",
     "built": "InicioChecklist.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: section outside the viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "InicioChecklistCompu",
@@ -205,28 +170,18 @@
   {
     "screen": "InicioChecklistOscuro",
     "file": "InicioChecklistOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "InicioChecklistOscuro.design.png",
     "built": "InicioChecklistOscuro.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: section outside the viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "InicioImportado",
     "file": "InicioImportado.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "InicioImportado.design.png",
     "built": "InicioImportado.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: section outside the viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "InicioImportadoCompu",
@@ -239,15 +194,10 @@
   {
     "screen": "InicioImportadoOscuro",
     "file": "InicioImportadoOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "InicioImportadoOscuro.design.png",
     "built": "InicioImportadoOscuro.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: section outside the viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "Ventas",
@@ -644,15 +594,10 @@
   {
     "screen": "Variedades",
     "file": "Variedades.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "Variedades.design.png",
     "built": "Variedades.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "VariedadesCompu",
@@ -665,15 +610,10 @@
   {
     "screen": "VariedadDetalle",
     "file": "VariedadDetalle.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "VariedadDetalle.design.png",
     "built": "VariedadDetalle.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "Archivadas",
@@ -726,15 +666,10 @@
   {
     "screen": "Catalogo",
     "file": "Catalogo.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "Catalogo.design.png",
     "built": "Catalogo.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "CatalogoCompu",
@@ -947,132 +882,82 @@
   {
     "screen": "OnboardingStock",
     "file": "OnboardingStock.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingStock.design.png",
     "built": "OnboardingStock.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingMensaje",
     "file": "OnboardingMensaje.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingMensaje.design.png",
     "built": "OnboardingMensaje.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingBot",
     "file": "OnboardingBot.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingBot.design.png",
     "built": "OnboardingBot.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingSocio",
     "file": "OnboardingSocio.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingSocio.design.png",
     "built": "OnboardingSocio.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingCategorias",
     "file": "OnboardingCategorias.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingCategorias.design.png",
     "built": "OnboardingCategorias.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingStockOscuro",
     "file": "OnboardingStockOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingStockOscuro.design.png",
     "built": "OnboardingStockOscuro.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingMensajeOscuro",
     "file": "OnboardingMensajeOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingMensajeOscuro.design.png",
     "built": "OnboardingMensajeOscuro.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingBotOscuro",
     "file": "OnboardingBotOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingBotOscuro.design.png",
     "built": "OnboardingBotOscuro.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingSocioOscuro",
     "file": "OnboardingSocioOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingSocioOscuro.design.png",
     "built": "OnboardingSocioOscuro.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingCategoriasOscuro",
     "file": "OnboardingCategoriasOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingCategoriasOscuro.design.png",
     "built": "OnboardingCategoriasOscuro.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingStockCompu",
@@ -1157,93 +1042,58 @@
   {
     "screen": "OnboardingStockTexto130",
     "file": "OnboardingStockTexto130.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingStockTexto130.design.png",
     "built": "OnboardingStockTexto130.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingMensajeTexto130",
     "file": "OnboardingMensajeTexto130.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingMensajeTexto130.design.png",
     "built": "OnboardingMensajeTexto130.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingBotTexto130",
     "file": "OnboardingBotTexto130.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingBotTexto130.design.png",
     "built": "OnboardingBotTexto130.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingSocioTexto130",
     "file": "OnboardingSocioTexto130.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingSocioTexto130.design.png",
     "built": "OnboardingSocioTexto130.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "file": "OnboardingCategoriasTexto130.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingCategoriasTexto130.design.png",
     "built": "OnboardingCategoriasTexto130.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingVariedad",
     "file": "OnboardingVariedad.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingVariedad.design.png",
     "built": "OnboardingVariedad.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingVariedadOscuro",
     "file": "OnboardingVariedadOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingVariedadOscuro.design.png",
     "built": "OnboardingVariedadOscuro.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingVariedadCompu",
@@ -1256,15 +1106,10 @@
   {
     "screen": "OnboardingVariedadTexto130",
     "file": "OnboardingVariedadTexto130.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingVariedadTexto130.design.png",
     "built": "OnboardingVariedadTexto130.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingVariedadCompuOscuro",
@@ -1277,28 +1122,18 @@
   {
     "screen": "OnboardingPrecio",
     "file": "OnboardingPrecio.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingPrecio.design.png",
     "built": "OnboardingPrecio.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingListo",
     "file": "OnboardingListo.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingListo.design.png",
     "built": "OnboardingListo.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingListoCompu",
@@ -1311,15 +1146,10 @@
   {
     "screen": "OnboardingListoOscuro",
     "file": "OnboardingListoOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingListoOscuro.design.png",
     "built": "OnboardingListoOscuro.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: section outside the viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "OnboardingListoCompuOscuro",
@@ -1332,15 +1162,10 @@
   {
     "screen": "OnboardingListoTexto130",
     "file": "OnboardingListoTexto130.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingListoTexto130.design.png",
     "built": "OnboardingListoTexto130.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "EstadosSinConexion",
@@ -1385,15 +1210,10 @@
   {
     "screen": "VariedadDetalleOscuro",
     "file": "VariedadDetalleOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "VariedadDetalleOscuro.design.png",
     "built": "VariedadDetalleOscuro.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "ArchivadasOscuro",
@@ -1414,15 +1234,10 @@
   {
     "screen": "CatalogoOscuro",
     "file": "CatalogoOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "CatalogoOscuro.design.png",
     "built": "CatalogoOscuro.built.png",
-    "capture": "not-captured",
-    "reasons": {
-      "design": "shot: page wider than its viewport (design)"
-    }
+    "capture": "captured"
   },
   {
     "screen": "CatalogoCompuOscuro",

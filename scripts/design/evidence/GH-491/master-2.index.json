@@ -72,10 +72,8 @@
   {
     "screen": "InicioPrimeraVez",
     "file": "InicioPrimeraVez.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "InicioPrimeraVez.design.png",
     "built": "InicioPrimeraVez.built.png"
   },
   {
@@ -88,19 +86,15 @@
   {
     "screen": "InicioPrimeraVezOscuro",
     "file": "InicioPrimeraVezOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "InicioPrimeraVezOscuro.design.png",
     "built": "InicioPrimeraVezOscuro.built.png"
   },
   {
     "screen": "InicioOnboardingEnCurso",
     "file": "InicioOnboardingEnCurso.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "InicioOnboardingEnCurso.design.png",
     "built": "InicioOnboardingEnCurso.built.png"
   },
   {
@@ -113,19 +107,15 @@
   {
     "screen": "InicioOnboardingEnCursoOscuro",
     "file": "InicioOnboardingEnCursoOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "InicioOnboardingEnCursoOscuro.design.png",
     "built": "InicioOnboardingEnCursoOscuro.built.png"
   },
   {
     "screen": "InicioOnboardingCompleto",
     "file": "InicioOnboardingCompleto.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "InicioOnboardingCompleto.design.png",
     "built": "InicioOnboardingCompleto.built.png"
   },
   {
@@ -138,21 +128,16 @@
   {
     "screen": "InicioOnboardingCompletoOscuro",
     "file": "InicioOnboardingCompletoOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "InicioOnboardingCompletoOscuro.design.png",
     "built": "InicioOnboardingCompletoOscuro.built.png"
   },
   {
     "screen": "InicioChecklist",
     "file": "InicioChecklist.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)",
-      "lo construido no se pudo capturar: la pantalla no quedó quieta"
-    ],
-    "design": null,
-    "built": null
+    "notes": [],
+    "design": "InicioChecklist.design.png",
+    "built": "InicioChecklist.built.png"
   },
   {
     "screen": "InicioChecklistCompu",
@@ -164,20 +149,15 @@
   {
     "screen": "InicioChecklistOscuro",
     "file": "InicioChecklistOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)",
-      "lo construido no se pudo capturar: la pantalla no quedó quieta"
-    ],
-    "design": null,
-    "built": null
+    "notes": [],
+    "design": "InicioChecklistOscuro.design.png",
+    "built": "InicioChecklistOscuro.built.png"
   },
   {
     "screen": "InicioImportado",
     "file": "InicioImportado.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "InicioImportado.design.png",
     "built": "InicioImportado.built.png"
   },
   {
@@ -190,10 +170,8 @@
   {
     "screen": "InicioImportadoOscuro",
     "file": "InicioImportadoOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "InicioImportadoOscuro.design.png",
     "built": "InicioImportadoOscuro.built.png"
   },
   {
@@ -374,11 +352,9 @@
   {
     "screen": "ClientesOscuro",
     "file": "ClientesOscuro.png",
-    "notes": [
-      "lo construido no se pudo capturar: la pantalla no quedó quieta"
-    ],
+    "notes": [],
     "design": "ClientesOscuro.design.png",
-    "built": null
+    "built": "ClientesOscuro.built.png"
   },
   {
     "screen": "ClientesCompuOscuro",
@@ -390,9 +366,11 @@
   {
     "screen": "ClienteFichaOscuro",
     "file": "ClienteFichaOscuro.png",
-    "notes": [],
+    "notes": [
+      "lo construido no se pudo capturar: la pantalla no quedó quieta"
+    ],
     "design": "ClienteFichaOscuro.design.png",
-    "built": "ClienteFichaOscuro.built.png"
+    "built": null
   },
   {
     "screen": "CobroOscuro",
@@ -544,10 +522,8 @@
   {
     "screen": "Variedades",
     "file": "Variedades.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "Variedades.design.png",
     "built": "Variedades.built.png"
   },
   {
@@ -560,10 +536,8 @@
   {
     "screen": "VariedadDetalle",
     "file": "VariedadDetalle.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "VariedadDetalle.design.png",
     "built": "VariedadDetalle.built.png"
   },
   {
@@ -611,10 +585,8 @@
   {
     "screen": "Catalogo",
     "file": "Catalogo.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "Catalogo.design.png",
     "built": "Catalogo.built.png"
   },
   {
@@ -802,91 +774,71 @@
   {
     "screen": "OnboardingStock",
     "file": "OnboardingStock.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingStock.design.png",
     "built": "OnboardingStock.built.png"
   },
   {
     "screen": "OnboardingMensaje",
     "file": "OnboardingMensaje.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingMensaje.design.png",
     "built": "OnboardingMensaje.built.png"
   },
   {
     "screen": "OnboardingBot",
     "file": "OnboardingBot.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingBot.design.png",
     "built": "OnboardingBot.built.png"
   },
   {
     "screen": "OnboardingSocio",
     "file": "OnboardingSocio.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingSocio.design.png",
     "built": "OnboardingSocio.built.png"
   },
   {
     "screen": "OnboardingCategorias",
     "file": "OnboardingCategorias.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingCategorias.design.png",
     "built": "OnboardingCategorias.built.png"
   },
   {
     "screen": "OnboardingStockOscuro",
     "file": "OnboardingStockOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingStockOscuro.design.png",
     "built": "OnboardingStockOscuro.built.png"
   },
   {
     "screen": "OnboardingMensajeOscuro",
     "file": "OnboardingMensajeOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingMensajeOscuro.design.png",
     "built": "OnboardingMensajeOscuro.built.png"
   },
   {
     "screen": "OnboardingBotOscuro",
     "file": "OnboardingBotOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingBotOscuro.design.png",
     "built": "OnboardingBotOscuro.built.png"
   },
   {
     "screen": "OnboardingSocioOscuro",
     "file": "OnboardingSocioOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingSocioOscuro.design.png",
     "built": "OnboardingSocioOscuro.built.png"
   },
   {
     "screen": "OnboardingCategoriasOscuro",
     "file": "OnboardingCategoriasOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingCategoriasOscuro.design.png",
     "built": "OnboardingCategoriasOscuro.built.png"
   },
   {
@@ -962,64 +914,50 @@
   {
     "screen": "OnboardingStockTexto130",
     "file": "OnboardingStockTexto130.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingStockTexto130.design.png",
     "built": "OnboardingStockTexto130.built.png"
   },
   {
     "screen": "OnboardingMensajeTexto130",
     "file": "OnboardingMensajeTexto130.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingMensajeTexto130.design.png",
     "built": "OnboardingMensajeTexto130.built.png"
   },
   {
     "screen": "OnboardingBotTexto130",
     "file": "OnboardingBotTexto130.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingBotTexto130.design.png",
     "built": "OnboardingBotTexto130.built.png"
   },
   {
     "screen": "OnboardingSocioTexto130",
     "file": "OnboardingSocioTexto130.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingSocioTexto130.design.png",
     "built": "OnboardingSocioTexto130.built.png"
   },
   {
     "screen": "OnboardingCategoriasTexto130",
     "file": "OnboardingCategoriasTexto130.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingCategoriasTexto130.design.png",
     "built": "OnboardingCategoriasTexto130.built.png"
   },
   {
     "screen": "OnboardingVariedad",
     "file": "OnboardingVariedad.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingVariedad.design.png",
     "built": "OnboardingVariedad.built.png"
   },
   {
     "screen": "OnboardingVariedadOscuro",
     "file": "OnboardingVariedadOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingVariedadOscuro.design.png",
     "built": "OnboardingVariedadOscuro.built.png"
   },
   {
@@ -1032,10 +970,8 @@
   {
     "screen": "OnboardingVariedadTexto130",
     "file": "OnboardingVariedadTexto130.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingVariedadTexto130.design.png",
     "built": "OnboardingVariedadTexto130.built.png"
   },
   {
@@ -1048,19 +984,15 @@
   {
     "screen": "OnboardingPrecio",
     "file": "OnboardingPrecio.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingPrecio.design.png",
     "built": "OnboardingPrecio.built.png"
   },
   {
     "screen": "OnboardingListo",
     "file": "OnboardingListo.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingListo.design.png",
     "built": "OnboardingListo.built.png"
   },
   {
@@ -1073,10 +1005,8 @@
   {
     "screen": "OnboardingListoOscuro",
     "file": "OnboardingListoOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: section outside the viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingListoOscuro.design.png",
     "built": "OnboardingListoOscuro.built.png"
   },
   {
@@ -1089,10 +1019,8 @@
   {
     "screen": "OnboardingListoTexto130",
     "file": "OnboardingListoTexto130.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "OnboardingListoTexto130.design.png",
     "built": "OnboardingListoTexto130.built.png"
   },
   {
@@ -1133,10 +1061,8 @@
   {
     "screen": "VariedadDetalleOscuro",
     "file": "VariedadDetalleOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "VariedadDetalleOscuro.design.png",
     "built": "VariedadDetalleOscuro.built.png"
   },
   {
@@ -1156,10 +1082,8 @@
   {
     "screen": "CatalogoOscuro",
     "file": "CatalogoOscuro.png",
-    "notes": [
-      "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
-    ],
-    "design": null,
+    "notes": [],
+    "design": "CatalogoOscuro.design.png",
     "built": "CatalogoOscuro.built.png"
   },
   {
@@ -1214,20 +1138,16 @@
   {
     "screen": "VariedadArchivada",
     "file": "VariedadArchivada.png",
-    "notes": [
-      "lo construido no se pudo capturar: la pantalla no quedó quieta"
-    ],
+    "notes": [],
     "design": "VariedadArchivada.design.png",
-    "built": null
+    "built": "VariedadArchivada.built.png"
   },
   {
     "screen": "VariedadArchivadaOscuro",
     "file": "VariedadArchivadaOscuro.png",
-    "notes": [
-      "lo construido no se pudo capturar: la pantalla no quedó quieta"
-    ],
+    "notes": [],
     "design": "VariedadArchivadaOscuro.design.png",
-    "built": null
+    "built": "VariedadArchivadaOscuro.built.png"
   },
   {
     "screen": "VariedadArchivadaCompu",

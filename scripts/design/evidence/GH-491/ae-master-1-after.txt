@@ -10,7 +10,7 @@ Reset built: AE 0
 Reset design: AE 0
 ResetOscuro built: AE 0
 ResetOscuro design: AE 0
-InicioHoy built: AE 0
+InicioHoy built: not compared — no reason recorded
 InicioHoy design: AE 0
 InicioOscuro built: AE 0
 InicioOscuro design: AE 0
@@ -19,35 +19,35 @@ InicioHoyCompu design: AE 0
 InicioHoyCompuOscuro built: AE 0
 InicioHoyCompuOscuro design: AE 0
 InicioPrimeraVez built: AE 0
-InicioPrimeraVez design: not compared — shot: section outside the viewport (design)
+InicioPrimeraVez design: AE 0
 InicioPrimeraVezCompu built: AE 0
 InicioPrimeraVezCompu design: AE 0
 InicioPrimeraVezOscuro built: AE 0
-InicioPrimeraVezOscuro design: not compared — shot: section outside the viewport (design)
+InicioPrimeraVezOscuro design: AE 0
 InicioOnboardingEnCurso built: AE 0
-InicioOnboardingEnCurso design: not compared — shot: section outside the viewport (design)
+InicioOnboardingEnCurso design: AE 0
 InicioOnboardingEnCursoCompu built: AE 0
 InicioOnboardingEnCursoCompu design: AE 0
 InicioOnboardingEnCursoOscuro built: AE 0
-InicioOnboardingEnCursoOscuro design: not compared — shot: section outside the viewport (design)
+InicioOnboardingEnCursoOscuro design: AE 0
 InicioOnboardingCompleto built: AE 0
-InicioOnboardingCompleto design: not compared — shot: section outside the viewport (design)
+InicioOnboardingCompleto design: AE 0
 InicioOnboardingCompletoCompu built: AE 0
 InicioOnboardingCompletoCompu design: AE 0
 InicioOnboardingCompletoOscuro built: AE 0
-InicioOnboardingCompletoOscuro design: not compared — shot: section outside the viewport (design)
+InicioOnboardingCompletoOscuro design: AE 0
 InicioChecklist built: AE 0
-InicioChecklist design: not compared — shot: section outside the viewport (design)
+InicioChecklist design: AE 0
 InicioChecklistCompu built: AE 0
 InicioChecklistCompu design: AE 0
 InicioChecklistOscuro built: AE 0
-InicioChecklistOscuro design: not compared — shot: section outside the viewport (design)
+InicioChecklistOscuro design: AE 0
 InicioImportado built: AE 0
-InicioImportado design: not compared — shot: section outside the viewport (design)
+InicioImportado design: AE 0
 InicioImportadoCompu built: AE 0
 InicioImportadoCompu design: AE 0
 InicioImportadoOscuro built: AE 0
-InicioImportadoOscuro design: not compared — shot: section outside the viewport (design)
+InicioImportadoOscuro design: AE 0
 Ventas built: AE 0
 Ventas design: AE 0
 VentasCompu built: AE 0
@@ -147,11 +147,11 @@ VariedadNueva design: AE 0
 VariedadNuevaCompu built: AE 0
 VariedadNuevaCompu design: AE 0
 Variedades built: AE 0
-Variedades design: not compared — shot: page wider than its viewport (design)
+Variedades design: AE 0
 VariedadesCompu built: AE 0
 VariedadesCompu design: AE 0
 VariedadDetalle built: AE 0
-VariedadDetalle design: not compared — shot: page wider than its viewport (design)
+VariedadDetalle design: AE 0
 Archivadas built: AE 0
 Archivadas design: AE 0
 ArchivadasCompu built: AE 0
@@ -164,8 +164,8 @@ GastoNuevo built: AE 0
 GastoNuevo design: AE 0
 GastoNuevoCompu built: AE 0
 GastoNuevoCompu design: AE 0
-Catalogo built: AE 0
-Catalogo design: not compared — shot: page wider than its viewport (design)
+Catalogo built: not compared — no reason recorded
+Catalogo design: AE 0
 CatalogoCompu built: AE 0
 CatalogoCompu design: AE 0
 Analisis built: AE 0
@@ -219,25 +219,25 @@ ConfiguracionCuenta design: AE 0
 ConfiguracionCuentaCompu built: AE 0
 ConfiguracionCuentaCompu design: AE 0
 OnboardingStock built: AE 0
-OnboardingStock design: not compared — shot: page wider than its viewport (design)
+OnboardingStock design: AE 0
 OnboardingMensaje built: AE 0
-OnboardingMensaje design: not compared — shot: page wider than its viewport (design)
+OnboardingMensaje design: AE 0
 OnboardingBot built: AE 0
-OnboardingBot design: not compared — shot: page wider than its viewport (design)
+OnboardingBot design: AE 0
 OnboardingSocio built: AE 0
-OnboardingSocio design: not compared — shot: page wider than its viewport (design)
+OnboardingSocio design: AE 0
 OnboardingCategorias built: AE 0
-OnboardingCategorias design: not compared — shot: page wider than its viewport (design)
+OnboardingCategorias design: AE 0
 OnboardingStockOscuro built: AE 0
-OnboardingStockOscuro design: not compared — shot: page wider than its viewport (design)
+OnboardingStockOscuro design: AE 0
 OnboardingMensajeOscuro built: AE 0
-OnboardingMensajeOscuro design: not compared — shot: page wider than its viewport (design)
+OnboardingMensajeOscuro design: AE 0
 OnboardingBotOscuro built: AE 0
-OnboardingBotOscuro design: not compared — shot: page wider than its viewport (design)
+OnboardingBotOscuro design: AE 0
 OnboardingSocioOscuro built: AE 0
-OnboardingSocioOscuro design: not compared — shot: page wider than its viewport (design)
+OnboardingSocioOscuro design: AE 0
 OnboardingCategoriasOscuro built: AE 0
-OnboardingCategoriasOscuro design: not compared — shot: page wider than its viewport (design)
+OnboardingCategoriasOscuro design: AE 0
 OnboardingStockCompu built: AE 0
 OnboardingStockCompu design: AE 0
 OnboardingMensajeCompu built: AE 0
@@ -259,37 +259,37 @@ OnboardingSocioCompuOscuro design: AE 0
 OnboardingCategoriasCompuOscuro built: AE 0
 OnboardingCategoriasCompuOscuro design: AE 0
 OnboardingStockTexto130 built: AE 0
-OnboardingStockTexto130 design: not compared — shot: page wider than its viewport (design)
+OnboardingStockTexto130 design: AE 0
 OnboardingMensajeTexto130 built: AE 0
-OnboardingMensajeTexto130 design: not compared — shot: page wider than its viewport (design)
+OnboardingMensajeTexto130 design: AE 0
 OnboardingBotTexto130 built: AE 0
-OnboardingBotTexto130 design: not compared — shot: page wider than its viewport (design)
+OnboardingBotTexto130 design: AE 0
 OnboardingSocioTexto130 built: AE 0
-OnboardingSocioTexto130 design: not compared — shot: page wider than its viewport (design)
+OnboardingSocioTexto130 design: AE 0
 OnboardingCategoriasTexto130 built: AE 0
-OnboardingCategoriasTexto130 design: not compared — shot: page wider than its viewport (design)
+OnboardingCategoriasTexto130 design: AE 0
 OnboardingVariedad built: AE 0
-OnboardingVariedad design: not compared — shot: page wider than its viewport (design)
+OnboardingVariedad design: AE 0
 OnboardingVariedadOscuro built: AE 0
-OnboardingVariedadOscuro design: not compared — shot: page wider than its viewport (design)
+OnboardingVariedadOscuro design: AE 0
 OnboardingVariedadCompu built: AE 0
 OnboardingVariedadCompu design: AE 0
 OnboardingVariedadTexto130 built: AE 0
-OnboardingVariedadTexto130 design: not compared — shot: page wider than its viewport (design)
+OnboardingVariedadTexto130 design: AE 0
 OnboardingVariedadCompuOscuro built: AE 0
 OnboardingVariedadCompuOscuro design: AE 0
 OnboardingPrecio built: AE 0
-OnboardingPrecio design: not compared — shot: page wider than its viewport (design)
+OnboardingPrecio design: AE 0
 OnboardingListo built: AE 0
-OnboardingListo design: not compared — shot: page wider than its viewport (design)
+OnboardingListo design: AE 0
 OnboardingListoCompu built: AE 0
 OnboardingListoCompu design: AE 0
 OnboardingListoOscuro built: AE 0
-OnboardingListoOscuro design: not compared — shot: section outside the viewport (design)
+OnboardingListoOscuro design: AE 0
 OnboardingListoCompuOscuro built: AE 0
 OnboardingListoCompuOscuro design: AE 0
 OnboardingListoTexto130 built: AE 0
-OnboardingListoTexto130 design: not compared — shot: page wider than its viewport (design)
+OnboardingListoTexto130 design: AE 0
 EstadosSinConexion built: AE 0
 EstadosSinConexion design: AE 0
 EstadosSinConexionCompu built: AE 0
@@ -301,13 +301,13 @@ EstadosConfirmar design: AE 0
 MasOscuro built: AE 0
 MasOscuro design: AE 0
 VariedadDetalleOscuro built: AE 0
-VariedadDetalleOscuro design: not compared — shot: page wider than its viewport (design)
+VariedadDetalleOscuro design: AE 0
 ArchivadasOscuro built: AE 0
 ArchivadasOscuro design: AE 0
 ArchivadasCompuOscuro built: AE 0
 ArchivadasCompuOscuro design: AE 0
-CatalogoOscuro built: AE 0
-CatalogoOscuro design: not compared — shot: page wider than its viewport (design)
+CatalogoOscuro built: not compared — no reason recorded
+CatalogoOscuro design: AE 0
 CatalogoCompuOscuro built: AE 0
 CatalogoCompuOscuro design: AE 0
 VerTodasOscuro built: AE 0
