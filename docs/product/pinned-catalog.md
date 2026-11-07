@@ -1,300 +1,300 @@
 # Pinned catalog
 
-Each business's own Telegram bot delivers the catalog text (catalog.md) to the business's chat as one pinned message and keeps it in step on its own. The seller sees a test copy in their own chat first. Seen only by its business (ADR-0004). The text comes from the catalog's single author (ADR-0022). This capability sends it and keeps it current. The bot only publishes; it never takes orders.
+El bot de Telegram propio de cada **Business** entrega el texto del **Catalog** (catalog.md) en el chat del Business, en un solo mensaje que deja fijado, y lo mantiene al día por su cuenta. El vendedor ve primero un **Test send** en su propio chat. Lo ve solo su Business (ADR-0004). El texto sale del único autor del Catalog (ADR-0022). Esta capacidad lo envía y lo mantiene al día. El bot solo publica; nunca toma pedidos.
 
-Where its pieces live (navigation.md):
-- the bot settings, Find my chat and Test it are in Settings → Integrations, with a plain link to the catalog screen;
-- the pin's status and Publish are on the catalog screen (catalog.md);
-- Home carries the out-of-date notice.
+Dónde viven sus partes (navigation.md):
+- los **Bot settings**, Find my chat y Test it están en Settings → Integrations, con un enlace simple a la pantalla del Catalog;
+- el estado del **Pinned catalog** y **Publish** están en la pantalla del Catalog (catalog.md);
+- Home lleva el aviso de **Out of date**.
 
 ## Jobs
 
-**When** something changes what my catalog says (a price is recorded or deleted, a variety sells out or comes back, I hide, archive, restore or edit a variety, I change the header or footer, I switch bulk pricing on or off), **I want** the catalog pinned in my business's Telegram chat to update by itself, after I've seen a test copy in my own chat before customers do, **so** my customers never see a stale price or a variety I can't sell, and I never have to remember to copy, paste and pin it again.
+**Cuando** algo cambia lo que dice mi Catalog (se registra o se elimina un precio, una variedad se agota o vuelve, oculto, archivo, restauro o edito una variedad, cambio el header o el footer, activo o desactivo el Bulk price), **quiero** que el Pinned catalog del chat de Telegram de mi negocio se actualice solo, después de haber visto un Test send en mi propio chat antes que los clientes, **para que** mis clientes nunca vean un precio desactualizado ni una variedad que no puedo vender, y yo nunca tenga que acordarme de copiarlo, pegarlo y fijarlo de nuevo.
 
-**When** I connect my bot in Settings → Integrations and tap Test it, **I want** it to tell me, if it fails, in one sentence what I have to fix (the token, my chat not started, or my chat number), **so I can** fix it from my phone, test again and get to publishing the catalog without guessing or asking anyone for help.
+**Cuando** conecto mi bot en Settings → Integrations y toco Test it, **quiero** que, si falla, me diga en una oración qué tengo que arreglar (el token, mi chat sin iniciar o mi número de chat), **para** arreglarlo desde el teléfono, probar de nuevo y llegar a publicar el Catalog sin adivinar ni pedirle ayuda a nadie.
 
-This refines the setup step of the first job (the test copy before customers see it); it is not a new job. It was filed as a bug: Test it blamed the channel for own-chat failures, and the own-chat help line promised something the screen did not do. Before the fix, the seller guessed, checking the token and the number blindly, or asked someone.
+Esto afina el paso de configuración del primer job (el Test send antes de que lo vean los clientes); no es un job nuevo. Se cargó como un bug: Test it le echaba la culpa al canal por fallas del chat propio, y la línea de ayuda del chat propio prometía algo que la pantalla no hacía. Antes del arreglo, el vendedor adivinaba, revisando el token y el número a ciegas, o le pedía ayuda a alguien.
 
-**When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** every business setting in one place, **so I can** never wonder which of several screens holds what I need. (The navigation job, navigation.md: served here by the bot settings in Settings → Integrations.)
+**Cuando** llevo mi negocio desde el teléfono entre pedidos o en medio de un chat con un cliente, varias veces por día, **quiero** cada configuración del negocio en un solo lugar, **para** nunca preguntarme cuál de varias pantallas tiene lo que necesito. (Es el job de navegación, navigation.md: acá lo sirven los Bot settings en Settings → Integrations.)
 
-**When** I need to change how my business is set up (rename it, bring in a partner, connect or switch the Telegram bot, edit the catalog's header and footer, manage my expense categories, switch to dark, change my password or log out), **I want** every business-wide setting in one place, each in its own short screen, **so I can** change it in a few taps from my phone and get back to the customer, without wondering which screen holds it. (Served here by Integrations: the bot's token, chats, Find my chat and Test it, and a way forward to publish.)
+**Cuando** necesito cambiar cómo está configurado mi negocio (cambiarle el nombre, sumar a un socio, conectar o cambiar el bot de Telegram, editar el Catalog header and footer, manejar mis Expense categories, pasar a oscuro, cambiar mi contraseña o cerrar sesión), **quiero** cada configuración de todo el negocio en un solo lugar, cada una en su propia pantalla corta, **para** cambiarla en pocos toques desde el teléfono y volver al cliente, sin preguntarme qué pantalla la tiene. (Acá lo sirve Integrations: el token del bot, los chats, Find my chat y Test it, y un camino para seguir a publicar.)
 
-**When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if it never moved and archiving it if it has history, **so** my lists show only what I still sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly as it was if I start selling it again. (Served here by archiving and restoring being upkeep triggers; defined in varieties.md.)
+**Cuando** una variedad que cargué por error, o una con la que ya no trabajo, sigue apareciendo en mis listas y selectores, **quiero** sacarla desde el teléfono en pocos toques, eliminándola si nunca se movió y archivándola si tiene historial, **para que** mis listas muestren solo lo que todavía vendo, ninguna cifra pasada de ventas, stock, costo o Profit cambie, y pueda volver a tenerla exactamente como estaba si empiezo a venderla de nuevo. (Acá lo sirve que archivar y restaurar disparen la Upkeep; se define en varieties.md.)
 
-**When** a restyle of a screen like Integrations is up for approval, **I want** a before and after comparison of that screen, captured the same way from the code without and with the change, **so I can** tell that only the intended thing changed, and that what the seller does there (token, chats, Find my chat, Test it, the help lines and reasons, the link to the catalog screen) still reads and works as before, and approve with confidence.
+**Cuando** un rediseño de una pantalla como Integrations está para aprobarse, **quiero** una comparación de antes y después de esa pantalla, capturada de la misma forma desde el código sin el cambio y con el cambio, **para** saber que cambió solo lo que se quería cambiar, y que lo que hace el vendedor ahí (token, chats, Find my chat, Test it, las líneas de ayuda y los motivos, el enlace a la pantalla del Catalog) se sigue leyendo y funcionando como antes, y aprobar con confianza.
 
-This refines the "looks as designed" criteria (icon-and-text-rule.md criterion 6, navigation.md's design metric); it is not a new product job. Its protagonist is whoever approves the restyle (the reviewer, and in the end Zeta), not the seller. Its purpose is to find unintended differences, not to judge whether the screen looks good. It came from GH-116's restyle of Integrations, whose approval rested on an "after" capture alone.
+Esto afina los criterios "looks as designed" (icon-and-text-rule.md criterio 6, la métrica de diseño de navigation.md); no es un job de producto nuevo. Su protagonista es quien aprueba el rediseño (el revisor y, al final, Zeta), no el vendedor. Su propósito es encontrar diferencias no buscadas, no juzgar si la pantalla se ve bien. Salió del rediseño de Integrations de GH-116, cuya aprobación se apoyó solo en una captura del "después".
 
-Success criteria:
+Criterios de éxito:
 
-1. **No step of my own**: once a change that affects the catalog is saved, the pin already shows it the next time anyone looks at Telegram. This includes a price entry whose date arrives with nobody saving anything.
-2. **One message, always the same one**: publishing or syncing edits the pinned message in place. The chat never fills with old catalogs. Switching the bot or the channel leaves the previous chat's pin untouched, and the seller is told so.
-3. **What customers read is the catalog**: the same text as the in-app preview and as Test it's test send, with real bold from the same left-to-right `**` pairing (ADR-0022).
-4. **Never surprised by a failure**: the save that triggered a sync (sale, price, stock, withdrawal, catalog edit, archive or restore, pricing settings) always succeeds on its own terms, and the sync happens after it. A stuck pin shows as "Out of date", with a one-line reason, on the catalog screen and on Home.
-5. **Businesses never mix and the token stays secret**: one bot, token, channel chat and own chat per business. The token is never shown again once saved. Nothing about the settings or a sync leaks across businesses (ADR-0004, ADR-0005).
-6. **Done from the phone**: setup, Find my chat and Test it in Integrations, Publish and seeing whether the pin is out of date on the catalog screen all work from the phone, with no API call by hand. From Integrations a plain link leads on to the catalog screen to publish.
-7. **Each cause of a failed Test it has its own fixed reason**, with a concrete action.
-   - An invalid token and an own chat not started each show their own reason.
-   - Telegram's "chat not found" can't tell a wrong number from a chat not started. Its one reason names both fixes, so it never points at the wrong one.
-   - No reason repeats what was typed, and everything typed stays in the form.
-8. **Test it never blames the channel**: no Test it failure says "The bot cannot post in the channel", because Test it does not touch the channel. That reason stays unchanged for Publish and upkeep, with their states and Home's notice.
-9. **The help line tells the truth**: before testing, the own-chat help says to tap Iniciar on the bot and where to get the number, and the screen does what it promises.
-10. **The seller gets to a successful test alone**: with a valid token, the seller goes from a failed Test it to a successful one from the phone, following only the screen's reasons and help.
-11. **A restyle of Integrations changes only what it meant to**:
-    - a restyle is approved on a before and after comparison: phone and computer, light and dark, captured the same way (ADR-0042);
-    - every difference is listed as intended or fixed;
-    - nothing the seller reads or does there changes.
+1. **Ningún paso propio**: una vez guardado un cambio que afecta al Catalog, el Pinned catalog ya lo muestra la próxima vez que alguien mira Telegram. Esto incluye una Price entry cuya fecha llega sin que nadie guarde nada.
+2. **Un mensaje, siempre el mismo**: Publish y la Upkeep editan el Pinned catalog en el lugar. El chat nunca se llena de Catalogs viejos. Cambiar el bot o el canal deja intacto el Pinned catalog del chat anterior, y se le avisa al vendedor.
+3. **Lo que leen los clientes es el Catalog**: el mismo texto que la vista previa de la app y que el Test send de Test it, con negrita real a partir del mismo emparejamiento de `**` de izquierda a derecha (ADR-0022).
+4. **Nunca sorprendido por una falla**: el guardado que disparó la Upkeep (venta, precio, Stock, retiro, edición del Catalog, archivar o restaurar, Pricing settings) siempre tiene éxito por su cuenta, y la Upkeep ocurre después. Un Pinned catalog trabado se muestra como "Out of date", con un motivo de una línea, en la pantalla del Catalog y en Home.
+5. **Los Businesses nunca se mezclan y el token sigue secreto**: un bot, un token, un chat del canal y un chat propio por Business. El token nunca se vuelve a mostrar una vez guardado. Nada de la configuración ni de una Upkeep se filtra entre Businesses (ADR-0004, ADR-0005).
+6. **Hecho desde el teléfono**: la configuración, Find my chat y Test it en Integrations, Publish y ver si el Pinned catalog está Out of date en la pantalla del Catalog funcionan todos desde el teléfono, sin llamar a la API a mano. Desde Integrations, un enlace simple lleva a la pantalla del Catalog para publicar.
+7. **Cada causa de un Test it fallido tiene su propio motivo fijo**, con una acción concreta.
+   - Un token inválido y un chat propio sin iniciar muestran cada uno su propio motivo.
+   - El "chat not found" de Telegram no distingue un número equivocado de un chat sin iniciar. Su único motivo nombra los dos arreglos, así que nunca apunta al equivocado.
+   - Ningún motivo repite lo tipeado, y todo lo tipeado queda en el formulario.
+8. **Test it nunca le echa la culpa al canal**: ninguna falla de Test it dice "The bot cannot post in the channel", porque Test it no toca el canal. Ese motivo queda sin cambios para Publish y la Upkeep, con sus estados y el aviso de Home.
+9. **La línea de ayuda dice la verdad**: antes de probar, la ayuda del chat propio dice que hay que tocar Iniciar en el bot y dónde conseguir el número, y la pantalla hace lo que promete.
+10. **El vendedor llega solo a una prueba exitosa**: con un token válido, el vendedor pasa de un Test it fallido a uno exitoso desde el teléfono, siguiendo solo los motivos y la ayuda de la pantalla.
+11. **Un rediseño de Integrations cambia solo lo que quería cambiar**:
+    - un rediseño se aprueba sobre una comparación de antes y después: teléfono y computadora, claro y oscuro, capturados de la misma forma (ADR-0042);
+    - cada diferencia se lista como buscada o arreglada;
+    - no cambia nada de lo que el vendedor lee o hace ahí.
 
-Setup (token, chats, Find my chat, first Test it and Publish) is judged by criteria 3, 5, 6, 7, 8, 9 and 10. Upkeep is judged by criteria 1, 2, 4 and 8. Upkeep starts only after the first successful Publish. A restyle of Integrations is judged by criterion 11.
+La configuración (token, chats, Find my chat, primer Test it y Publish) se juzga con los criterios 3, 5, 6, 7, 8, 9 y 10. La Upkeep se juzga con los criterios 1, 2, 4 y 8. La Upkeep empieza solo después del primer Publish exitoso. Un rediseño de Integrations se juzga con el criterio 11.
 
-## Behaviour
+## Comportamiento
 
-### Bot settings, per business (Settings → Integrations)
+### Bot settings, por negocio (Settings → Integrations)
 
-- One token, one channel chat and one own chat per business.
-- **Where**: the Integrations group of Settings, a form (navigation.md): "Close", and a confirmation when leaving with something typed and not saved. It is the only place they are seen or changed; the catalog screen no longer holds them, and old paths to them redirect here.
+- Un token, un chat del canal y un chat propio por Business.
+- **Dónde**: el grupo Integrations de Settings, un formulario (navigation.md): "Close", y una confirmación al salir con algo tipeado y sin guardar. Es el único lugar donde se ven o se cambian; la pantalla del Catalog ya no los tiene, y los paths viejos que llevaban a ellos redirigen acá.
 - **Token**:
-  - stored encrypted, keyed from `APOSTROPHE_SECRET_KEY`;
-  - once saved, no route returns it and it is never logged;
-  - on screen: "Saved on dd/mm · not shown again" with **Change**.
-- **Channel chat and own chat**:
-  - free text, checked only for "not blank";
-  - shown in plain text and editable in place;
-  - never sent to logs, the console or browser storage;
-  - each field has a short fixed help line.
-- **The own chat's help line**: "Tap Start in your bot; find your number with @userinfobot." (80 characters at most, GH-97; it dropped "Open your bot in Telegram" and "or tap Find my chat", which the button beside the field already says.) It replaced "Open your chat with the bot and write anything to see it here.", which promised something the screen did not do. The channel chat's help line is unchanged. The longer how (open the bot, tap Iniciar, then Find my chat fills the number, or look it up with @userinfobot) is behind More info ("More info") on that line, closed at every open.
-- **Nothing saved yet**: empty fields and no "Saved" line.
-- **Saved only through Test it**: settings are saved only when a test of the typed values succeeds, so the saved settings have always been tested.
-- **Changing any of the three** re-arms the test gate. The successful Test it that saves the change satisfies it again.
-- **Changing only the own chat** leaves the channel and its pin as they were: upkeep goes on and the status doesn't change.
-- **Link to publish**: a plain link to the catalog screen, where Publish and the pin's status live. It carries no status and always opens the catalog screen. It is the reverse of the catalog screen's link to Integrations shown when Publish is unavailable.
-- **No status here**: Integrations shows no pin status and no Publish; one fact, one place.
+  - se guarda cifrado, con una clave derivada de `APOSTROPHE_SECRET_KEY`;
+  - una vez guardado, ninguna ruta lo devuelve y nunca se registra en logs;
+  - en pantalla: "Saved on dd/mm · not shown again" con **Change**.
+- **Chat del canal y chat propio**:
+  - texto libre, del que solo se revisa que no esté en blanco;
+  - se muestran en texto plano y se editan en el lugar;
+  - nunca van a los logs, la consola ni el almacenamiento del navegador;
+  - cada campo tiene una línea de ayuda corta y fija.
+- **La línea de ayuda del chat propio**: "Tap Start in your bot; find your number with @userinfobot." (80 caracteres como máximo, GH-97; sacó "Open your bot in Telegram" y "or tap Find my chat", que ya dice el botón al lado del campo). Reemplazó a "Open your chat with the bot and write anything to see it here.", que prometía algo que la pantalla no hacía. La línea de ayuda del chat del canal no cambia. El cómo más largo (abrir el bot, tocar Iniciar, después Find my chat completa el número, o buscarlo con @userinfobot) está detrás de More info ("More info") en esa línea, cerrado en cada apertura.
+- **Todavía nada guardado**: campos vacíos y ninguna línea "Saved".
+- **Se guardan solo con Test it**: la configuración se guarda solo cuando una prueba de los valores tipeados tiene éxito, así que la configuración guardada siempre fue probada.
+- **Cambiar cualquiera de los tres** vuelve a exigir un Test send antes de Publish. El Test it exitoso que guarda el cambio vuelve a cumplir ese requisito.
+- **Cambiar solo el chat propio** deja el canal y su Pinned catalog como estaban: la Upkeep sigue y el estado no cambia.
+- **Enlace para publicar**: un enlace simple a la pantalla del Catalog, donde viven Publish y el estado del Pinned catalog. No lleva estado y siempre abre la pantalla del Catalog. Es el inverso del enlace de la pantalla del Catalog a Integrations que se muestra cuando Publish no está disponible.
+- **Acá no hay estado**: Integrations no muestra estado del Pinned catalog ni Publish; un dato, un lugar.
 
-### Find my chat (in Integrations)
+### Find my chat (en Integrations)
 
-- **Where**: a button next to the "Your chat" field.
-- **Token used**: the token Test it would use.
-  - It is the typed token, if the seller tapped Change and typed one.
-  - Otherwise it is the saved one, which never leaves the server and is never shown, logged or returned.
-- **No token of either kind**: the button is disabled and says "Enter the token first" in words, never by color alone.
-- **What it reads**: only the private chats that wrote to the bot.
-  - One private chat counts as one person, whatever the number of messages.
-  - Groups and channels never count.
-  - It never reads or touches the channel chat field.
-- **Exactly one person found**: the field is filled with that chat's number, replacing any number already there, with no confirmation.
-- **Any other outcome**: the field stays as it was.
-- **It saves nothing.** Settings are still saved only by a successful Test it, and the seller can edit the number by hand afterwards.
-- **Filling the field counts as a typed change**: leaving Integrations without saving asks before discarding, like any other change in the group.
-- **It shows only the number**, placed in the field: never a name or a username of anyone who wrote to the bot.
-- **Its reasons** show inline, in the same place as Test it's. Each is fixed text that never repeats what was typed, and what was typed stays.
+- **Dónde**: un botón al lado del campo "Your chat".
+- **Token que usa**: el token que usaría Test it.
+  - Es el token tipeado, si el vendedor tocó Change y tipeó uno.
+  - Si no, es el guardado, que nunca sale del servidor y nunca se muestra, se registra en logs ni se devuelve.
+- **Sin token de ningún tipo**: el botón está desactivado y dice "Enter the token first" con palabras, nunca solo por color.
+- **Qué lee**: solo los chats privados que le escribieron al bot.
+  - Un chat privado cuenta como una persona, sea cual sea la cantidad de mensajes.
+  - Los grupos y los canales nunca cuentan.
+  - Nunca lee ni toca el campo del chat del canal.
+- **Se encuentra exactamente una persona**: el campo se completa con el número de ese chat, reemplazando cualquier número que ya hubiera, sin confirmación.
+- **Cualquier otro resultado**: el campo queda como estaba.
+- **No guarda nada.** La configuración se sigue guardando solo con un Test it exitoso, y el vendedor puede editar el número a mano después.
+- **Completar el campo cuenta como un cambio tipeado**: salir de Integrations sin guardar pregunta antes de descartar, como cualquier otro cambio del grupo.
+- **Muestra solo el número**, puesto en el campo: nunca un nombre ni un nombre de usuario de nadie que le haya escrito al bot.
+- **Sus motivos** se muestran en línea, en el mismo lugar que los de Test it. Cada uno es un texto fijo que nunca repite lo tipeado, y lo tipeado queda.
 
-| Outcome | Reason |
+| Resultado | Motivo |
 |---|---|
-| Nobody has written to the bot | "No messages in your bot yet: open it in Telegram, tap Start and look again." |
-| More than one person wrote privately | "Several people wrote to your bot: find your number with @userinfobot, type it." |
-| Messages can't be read (for example a bot with a webhook), or any other failure | "We cannot read your bot's messages: find your number with @userinfobot, type it." |
-| Invalid token | "The token is not valid: copy it again from @BotFather." |
-| Telegram down, 429 or no connection | "Telegram did not respond" |
+| Nadie le escribió al bot | "No messages in your bot yet: open it in Telegram, tap Start and look again." |
+| Más de una persona escribió en privado | "Several people wrote to your bot: find your number with @userinfobot, type it." |
+| Los mensajes no se pueden leer (por ejemplo, un bot con webhook), o cualquier otra falla | "We cannot read your bot's messages: find your number with @userinfobot, type it." |
+| Token inválido | "The token is not valid: copy it again from @BotFather." |
+| Telegram caído, 429 o sin conexión | "Telegram did not respond" |
 
-- **The app never changes the bot's setup.** It neither asks the seller to change it in Telegram nor changes it itself. An unreadable bot is rare, since the app never sets a webhook, and the manual path through @userinfobot is enough.
+- **La app nunca cambia la configuración del bot.** Ni le pide al vendedor que la cambie en Telegram ni la cambia ella misma. Un bot que no se puede leer es raro, ya que la app nunca configura un webhook, y el camino manual por @userinfobot alcanza.
 
-### Test it (test send, in Integrations)
+### Test it (Test send, en Integrations)
 
-- It tests the values typed on the screen, not the saved ones.
-- It needs the token and the own chat. The channel chat may be blank, and Test it never checks or touches it.
-- **On success**: the typed values are saved, the test counts for the gate, and the toast "Test sent" shows.
-- **On failure**: nothing is saved. A fixed inline reason shows that never repeats what was typed, and everything typed stays.
+- Prueba los valores tipeados en la pantalla, no los guardados.
+- Necesita el token y el chat propio. El chat del canal puede estar en blanco, y Test it nunca lo revisa ni lo toca.
+- **Si tiene éxito**: los valores tipeados se guardan, la prueba cuenta para el requisito de Publish, y se muestra el toast "Test sent".
+- **Si falla**: no se guarda nada. Se muestra un motivo fijo en línea que nunca repite lo tipeado, y todo lo tipeado queda.
 
-| Cause | Reason |
+| Causa | Motivo |
 |---|---|
-| Invalid token (401) | "The token is not valid: copy it again from @BotFather." |
-| Own chat not started, or the seller blocked the bot (403) | "Open your bot in Telegram and tap Start, then test it again." |
-| Own chat not found (400 "chat not found"): a wrong number, or a right number whose chat was never started, which Telegram does not tell apart | "We could not find your chat: check the number and tap Start in your bot." |
-| Telegram down, 429 or no connection | "Telegram did not respond" |
-| Text over Telegram's limit | "It is too long for Telegram: shorten aromas or hide varieties." |
-| Any other failure | "We could not send you the test: check the token and your chat." |
+| Token inválido (401) | "The token is not valid: copy it again from @BotFather." |
+| Chat propio sin iniciar, o el vendedor bloqueó el bot (403) | "Open your bot in Telegram and tap Start, then test it again." |
+| Chat propio no encontrado (400 "chat not found"): un número equivocado, o un número correcto cuyo chat nunca se inició, que Telegram no distingue | "We could not find your chat: check the number and tap Start in your bot." |
+| Telegram caído, 429 o sin conexión | "Telegram did not respond" |
+| Texto por encima del límite de Telegram | "It is too long for Telegram: shorten aromas or hide varieties." |
+| Cualquier otra falla | "We could not send you the test: check the token and your chat." |
 
-- **None of Test it's reasons mentions the channel.** Reasons depend on the action, not only on Telegram's answer.
-- It sends exactly what would be published, the empty-catalog case included.
+- **Ninguno de los motivos de Test it menciona el canal.** Los motivos dependen de la acción, no solo de la respuesta de Telegram.
+- Envía exactamente lo que se publicaría, incluido el caso del Catalog vacío.
 
-### Publish (publish and pin, on the catalog screen)
+### Publish (enviar y fijar, en la pantalla del Catalog)
 
-- **What it needs**: a saved channel chat, and a successful Test it since the token or either chat last changed. Until then it shows as disabled with its reason in words ("Test it first to see how it looks", or that the channel is missing) and a link to Settings → Integrations.
-- **Posting and editing**:
-  - The first Publish to a channel chat posts the message and pins it.
-  - A later Publish edits that same message and pins it again, so a message unpinned by hand is pinned back.
-  - If that message no longer exists (deleted by hand), Publish posts and pins a new one in the same chat. Upkeep then edits the new one.
-  - It always sends, whether or not the text changed.
-  - On success it shows the toast "Catalog published".
-- **Failure**:
-  - A wrong channel, or a bot that can't post or pin there, fails inline with a fixed reason that never repeats what was typed. A 401, 403 or 400 against the channel reads "The bot cannot post in the channel", as before; Publish has no token reason of its own.
-  - A text over Telegram's limit fails inline with "It is too long for Telegram: shorten aromas or hide varieties." Nothing is sent.
+- **Qué necesita**: un chat del canal guardado, y un Test it exitoso desde la última vez que cambió el token o cualquiera de los chats. Hasta entonces se muestra desactivado, con su motivo en palabras ("Test it first to see how it looks", o que falta el canal) y un enlace a Settings → Integrations.
+- **Enviar y editar**:
+  - El primer Publish a un chat del canal envía el mensaje y lo fija.
+  - Un Publish posterior edita ese mismo mensaje y lo vuelve a fijar, así que un mensaje que se desfijó a mano vuelve a quedar fijado.
+  - Si ese mensaje ya no existe (eliminado a mano), Publish envía y fija uno nuevo en el mismo chat. Después la Upkeep edita el nuevo.
+  - Siempre envía, haya cambiado o no el texto.
+  - Al tener éxito muestra el toast "Catalog published".
+- **Falla**:
+  - Un canal equivocado, o un bot que no puede enviar o fijar ahí, falla en línea con un motivo fijo que nunca repite lo tipeado. Un 401, 403 o 400 contra el canal dice "The bot cannot post in the channel", como antes; Publish no tiene un motivo de token propio.
+  - Un texto por encima del límite de Telegram falla en línea con "It is too long for Telegram: shorten aromas or hide varieties." No se envía nada.
 
-### Upkeep (automatic sync)
+### Upkeep (edición automática del Pinned catalog)
 
-- It applies to a channel chat only after the first successful Publish to it.
-- **Triggers**:
-  - price entries recorded or deleted;
-  - catalog attributes, header or footer;
-  - a variety renamed;
-  - a variety archived or restored (varieties.md);
-  - stock entries recorded, edited or deleted;
-  - stock withdrawals recorded, edited or deleted;
-  - sales recorded or deleted, Undo included;
-  - a save of Settings → Prices that changes either pricing switch (pricing-settings.md), since the bulk line depends on Bulk price;
-  - the start of a new day in Argentina time, for price entries that come into force that day.
-- **Rule**: the text is rebuilt on a trigger. The pinned message is edited only if the new text differs from the last text published. Topping up a variety already in the catalog, or withdrawing grams that leave it with stock above zero, sends nothing.
-- **It only ever edits.** Upkeep never posts a new message, even when the old one was deleted by hand.
-- **The triggering save never waits for Telegram**:
-  - it answers and shows its own toast on its own terms;
-  - the sync happens after it;
-  - its toast never mentions the sync;
-  - a failed sync never fails, delays or rolls back that save.
-- **Too long**: a change that makes the text exceed Telegram's limit is still saved. The edit is not sent, and the pin keeps its last text until a later change brings the text back under the limit.
-- **After a token or channel change**: nothing is attempted in the new chat until its first Publish.
+- Se aplica a un chat del canal solo después del primer Publish exitoso a él.
+- **Disparadores**:
+  - Price entries registradas o eliminadas;
+  - Catalog attributes, header o footer;
+  - una Variety renombrada;
+  - una Variety archivada o restaurada (varieties.md);
+  - Stock entries registradas, editadas o eliminadas;
+  - Stock withdrawals registradas, editadas o eliminadas;
+  - Sales registradas o eliminadas, Undo incluido;
+  - un guardado de Settings → Prices que cambia cualquiera de los dos interruptores de Pricing settings (pricing-settings.md), ya que la línea de Bulk price depende de Bulk price;
+  - el comienzo de un nuevo día en hora argentina, para las Price entries que entran en vigencia ese día.
+- **Regla**: el texto se vuelve a armar ante un disparador. El Pinned catalog se edita solo si el texto nuevo difiere del **Last published text**. Reponer una Variety que ya está en el Catalog, o retirar gramos dejándola con Stock mayor que cero, no envía nada.
+- **Solo edita.** La Upkeep nunca envía un mensaje nuevo, ni siquiera cuando el viejo se eliminó a mano.
+- **El guardado que la dispara nunca espera a Telegram**:
+  - responde y muestra su propio toast por su cuenta;
+  - la Upkeep ocurre después;
+  - su toast nunca menciona la Upkeep;
+  - una Upkeep fallida nunca hace fallar, demora ni deshace ese guardado.
+- **Demasiado largo**: un cambio que hace que el texto supere el límite de Telegram igual se guarda. La edición no se envía, y el Pinned catalog conserva su último texto hasta que un cambio posterior vuelva a dejar el texto por debajo del límite.
+- **Después de un cambio de token o de canal**: no se intenta nada en el chat nuevo hasta su primer Publish.
 
-### Status
+### Estado
 
-- **Two states only**:
+- **Solo dos estados**:
   - "Up to date";
-  - "Out of date", with one fixed reason that carries no data:
-    - "Telegram did not respond": retrying will do;
-    - "The bot cannot post in the channel": the bot was removed or isn't an admin, and the seller must fix it in Telegram;
-    - "The pinned message is gone: publish it again": the message was deleted by hand;
-    - "It still has to be published with the new bot or channel": a token or channel change was tested and saved, but not yet published;
-    - "It is too long for Telegram: shorten aromas or hide varieties.": the text exceeds Telegram's limit.
-- **"The last one was on dd/mm"**: shows whenever the current channel chat has been published to. After a token or channel change, it is left out until the first Publish there.
-- **What it reflects**: the result of the last attempt, or the unpublished token or channel change. There is no pending state: while a sync runs, the previous state stays.
-- **Not affected by Test it or Find my chat**: their failures never change the status.
-- **Before the first Publish ever**: no status shows.
-- **Retrying**: a failed sync is retried automatically on the next trigger, or by Publish. There is no retry control.
-- **Where it shows**:
-  - on the catalog screen, next to Publish (catalog.md);
-  - on Home: while the status is "Out of date", the fixed line "Your Telegram catalog is out of date", which opens the catalog screen. It is a notice, not a figure (results.md);
-  - never in Integrations.
+  - "Out of date", con un motivo fijo que no lleva datos:
+    - "Telegram did not respond": alcanza con reintentar;
+    - "The bot cannot post in the channel": sacaron el bot o no es admin, y el vendedor tiene que arreglarlo en Telegram;
+    - "The pinned message is gone: publish it again": el mensaje se eliminó a mano;
+    - "It still has to be published with the new bot or channel": se probó y se guardó un cambio de token o de canal, pero todavía no se publicó;
+    - "It is too long for Telegram: shorten aromas or hide varieties.": el texto supera el límite de Telegram.
+- **"The last one was on dd/mm"**: se muestra siempre que se haya publicado en el chat del canal actual. Después de un cambio de token o de canal, se deja afuera hasta el primer Publish ahí.
+- **Qué refleja**: el resultado del último intento, o el cambio de token o de canal sin publicar. No hay estado pendiente: mientras corre una Upkeep, sigue el estado anterior.
+- **No lo afectan Test it ni Find my chat**: sus fallas nunca cambian el estado.
+- **Antes del primer Publish de todos**: no se muestra ningún estado.
+- **Reintentos**: una Upkeep fallida se reintenta automáticamente con el próximo disparador, o con Publish. No hay control de reintento.
+- **Dónde se muestra**:
+  - en la pantalla del Catalog, junto a Publish (catalog.md);
+  - en Home: mientras el estado es "Out of date", la línea fija "Your Telegram catalog is out of date", que abre la pantalla del Catalog. Es un aviso, no una cifra (results.md);
+  - nunca en Integrations.
 
-### Nothing qualifies
+### Cuando nada califica
 
-- The pin, Test it and Publish use: the header, then "Nothing to offer for now.", then the footer. A blank header or footer is left out.
-- This counts as "Up to date".
-- The catalog screen's own empty state and Copy are unchanged: there is nothing to copy (catalog.md).
-- When a variety qualifies again, upkeep restores the full catalog.
+- El Pinned catalog, Test it y Publish usan: el header, después "Nothing to offer for now.", después el footer. Un header o un footer en blanco se deja afuera.
+- Esto cuenta como "Up to date".
+- El estado vacío propio de la pantalla del Catalog y Copy no cambian: no hay nada para copiar (catalog.md).
+- Cuando una Variety vuelve a calificar, la Upkeep restaura el Catalog completo.
 
-### Changing the channel or the token
+### Cambiar el canal o el token
 
-- The app never edits, unpins or deletes the old pinned message again.
-- After the successful test that saves the change, the status reads "Out of date · It still has to be published with the new bot or channel".
-- The next Publish posts and pins a new message, and "The last one was" restarts from it.
-- Changing either one shows, in Integrations: "The previous pinned message stays as it is; unpin it yourself in Telegram."
+- La app nunca vuelve a editar, desfijar ni eliminar el Pinned catalog anterior.
+- Después de la prueba exitosa que guarda el cambio, el estado dice "Out of date · It still has to be published with the new bot or channel".
+- El próximo Publish envía y fija un mensaje nuevo, y "The last one was" vuelve a empezar desde él.
+- Cambiar cualquiera de los dos muestra, en Integrations: "The previous pinned message stays as it is; unpin it yourself in Telegram."
 
-### The text
+### El texto
 
-- Exactly the catalog text from the one author (ADR-0022), which never includes an archived variety, never carries a VIP price and carries the bulk line only while Bulk price is on (catalog.md).
-- `**` markers become real Telegram bold, paired left to right. A final unpaired `**` shows as typed.
-- The test copy and the published copy are identical for the same data.
-- **Length**: measured as Telegram measures it, on the message as sent. Over Telegram's limit it is never split or cut; it is refused, as above.
+- Exactamente el texto del Catalog del único autor (ADR-0022), que nunca incluye una Archived variety, nunca lleva un VIP price y lleva la línea de Bulk price solo mientras Bulk price está activado (catalog.md).
+- Los marcadores `**` pasan a ser negrita real de Telegram, emparejados de izquierda a derecha. Un `**` final sin pareja se muestra como se tipeó.
+- El Test send y la copia publicada son idénticos para los mismos datos.
+- **Largo**: se mide como lo mide Telegram, sobre el mensaje tal como se envía. Por encima del límite de Telegram nunca se parte ni se corta; se rechaza, como se dijo arriba.
 
-### Restyling Integrations
+### Rediseño de Integrations
 
-- **Comparison**: a restyle of Integrations is approved on a before and after comparison.
-  - "After" is captured from the head that merges.
-  - "Before" is captured from the code without the restyle:
-    - while the restyle is unmerged, the code just before it;
-    - once later changes have landed on the same files, that same merging head with only the restyle's own change undone. The PR shows that undo diff.
-  - If undoing the restyle alone changes more than the restyle did (later changes rely on it), the PR says so and lists the extra differences for Zeta. Nothing more is undone.
-  - Both are taken by the head's own `scripts/design/comparisons.mjs`, from one install, on the same Argentina day, with fonts pinned and `--strict` (ADR-0042).
-  - The PR records the installed `@fontsource/plus-jakarta-sans` version.
-- **Coverage**: phone and computer, light and dark. A missing screen, side or one-sided `null` is a failure, never AE 0.
-- **Measure**: the raw captures are compared by exact AE with `scripts/design/ae.mjs`, never the composed sheet.
-- **Every non-zero difference** is listed in the PR, with its screen and side, as intended by the restyle's brief or fixed. A design-side difference is listed with its reason. A difference the brief and the docs cannot settle goes to Zeta in the PR.
-- **A fix** is CSS only, within the existing tokens; no token value changes. After it, both sides are retaken from the fixed head and compared again.
-- **Nothing the seller reads or does changes**: the token, the chats, Find my chat, Test it, its reasons and help lines, the "unpin it yourself in Telegram" line, the link to the catalog screen, the absence of pin status and Publish, and no state told by color alone.
+- **Comparación**: un rediseño de Integrations se aprueba sobre una comparación de antes y después.
+  - El "después" se captura del head que se integra.
+  - El "antes" se captura del código sin el rediseño:
+    - mientras el rediseño no está integrado, el código justo anterior a él;
+    - una vez que entraron cambios posteriores en los mismos archivos, ese mismo head que se integra con solo el cambio propio del rediseño deshecho. El PR muestra ese diff de deshacer.
+  - Si deshacer solo el rediseño cambia más de lo que cambió el rediseño (cambios posteriores dependen de él), el PR lo dice y lista las diferencias extra para Zeta. No se deshace nada más.
+  - Los dos se toman con el `scripts/design/comparisons.mjs` propio del head, desde una sola instalación, el mismo día de Argentina, con las fuentes fijadas y `--strict` (ADR-0042).
+  - El PR registra la versión instalada de `@fontsource/plus-jakarta-sans`.
+- **Cobertura**: teléfono y computadora, claro y oscuro. Una pantalla, un lado o un `null` de un solo lado que falta es una falla, nunca AE 0.
+- **Medida**: las capturas crudas se comparan por AE exacto con `scripts/design/ae.mjs`, nunca la hoja compuesta.
+- **Cada diferencia distinta de cero** se lista en el PR, con su pantalla y su lado, como buscada por el brief del rediseño o arreglada. Una diferencia del lado del diseño se lista con su motivo. Una diferencia que el brief y los docs no pueden resolver va a Zeta en el PR.
+- **Un arreglo** es solo CSS, dentro de los tokens existentes; ningún valor de token cambia. Después, los dos lados se vuelven a tomar desde el head arreglado y se comparan de nuevo.
+- **No cambia nada de lo que el vendedor lee o hace**: el token, los chats, Find my chat, Test it, sus motivos y líneas de ayuda, la línea "unpin it yourself in Telegram", el enlace a la pantalla del Catalog, la ausencia de estado del Pinned catalog y de Publish, y ningún estado dicho solo por color.
 
-### Constraints
+### Restricciones
 
-- Telegram sits behind a port with a fake adapter in tests. No test reaches the network or uses a real token.
-- Every settings and sync table carries `business_id`, taken from the session.
-- Every route, Find my chat's included, joins the isolation sweep and the gated-route test, and every table route joins the ownership migration test.
-- Refusal codes go in `contract.json` (ADR-0008), one per reason:
-  - Test it's token invalid, own chat not started, own chat not found and generic failure;
-  - Find my chat's no messages, several chats and unreadable messages.
-- No route, error, log line or status reveals another business or its bot (ADR-0004, ADR-0005).
-- The token, the chats, the number found, the text sent and anything Telegram answers never appear in logs, the console or browser storage. Find my chat's answer holds only the number found or a refusal code: never a name, a username, the token or Telegram's own text.
+- Telegram está detrás de un puerto con un adaptador falso en las pruebas. Ninguna prueba llega a la red ni usa un token real.
+- Cada tabla de configuración y de Upkeep lleva `business_id`, tomado de la Session.
+- Cada ruta, incluida la de Find my chat, entra en el barrido de aislamiento y en la prueba de rutas protegidas, y cada ruta de tabla entra en la prueba de migración de pertenencia.
+- Los códigos de negativa van en `contract.json` (ADR-0008), uno por motivo:
+  - token inválido, chat propio sin iniciar, chat propio no encontrado y falla genérica de Test it;
+  - sin mensajes, varios chats y mensajes que no se pueden leer de Find my chat.
+- Ninguna ruta, error, línea de log ni estado revela otro Business o su bot (ADR-0004, ADR-0005).
+- El token, los chats, el número encontrado, el texto enviado y cualquier cosa que responda Telegram nunca aparecen en los logs, la consola ni el almacenamiento del navegador. La respuesta de Find my chat tiene solo el número encontrado o un código de negativa: nunca un nombre, un nombre de usuario, el token ni el texto propio de Telegram.
 
-## Metrics
+## Métricas
 
-- **Trigger matrix (criterion 1)**: for every trigger, stock withdrawals, the day change, archiving and restoring a variety and a Prices save included, an edit is attempted exactly when the built text differs from the last one published. A withdrawal that takes a variety's stock to zero or below edits the pin; one that leaves the text unchanged sends nothing. Switching Bulk price on a business with a bulk price in force edits the pin; switching only VIP customers sends nothing, since the text does not change. 100% passing.
-- **One message per chat (criterion 2)**:
-  - one post per channel chat, then edits only: 0 new posts while that message exists;
-  - a channel or token change gives exactly one new post, and 0 later calls against the old message;
-  - with the message deleted in the fake adapter, upkeep posts nothing and reports "The pinned message is gone: publish it again"; the next Publish posts and pins exactly one new message;
-  - every Publish pins the message it edits.
-- **Text fidelity (criterion 3)**: across catalog.md's reference set plus the empty case, 0 differences:
-  - the source text given to the port equals `GET /catalog`'s text, or the empty-catalog message;
-  - the rendered message (markers paired, then removed) equals the in-app preview;
-  - the test copy equals the published copy.
-- **Too long (criteria 3, 4)**: a text over Telegram's limit is never split or cut, and nothing is sent. Test it and Publish refuse it inline. Upkeep leaves the pin as it was and reports the length reason. The triggering save succeeds. 100% passing.
-- **Resilience (criterion 4)**: with the fake adapter failing:
-  - every triggering save, a withdrawal included, succeeds and answers normally;
-  - the status reads "Out of date" with the right reason on the catalog screen, and Home shows its line, which opens the catalog screen;
-  - the next successful trigger or Publish clears it.
+- **Matriz de disparadores (criterio 1)**: para cada disparador, incluidos los Stock withdrawals, el cambio de día, archivar y restaurar una Variety y un guardado de Prices, se intenta una edición exactamente cuando el texto armado difiere del Last published text. Un retiro que lleva el Stock de una Variety a cero o menos edita el Pinned catalog; uno que deja el texto sin cambios no envía nada. Cambiar Bulk price en un Business con un Bulk price en vigencia edita el Pinned catalog; cambiar solo VIP customers no envía nada, ya que el texto no cambia. 100% de aprobación.
+- **Un mensaje por chat (criterio 2)**:
+  - un envío por chat del canal, después solo ediciones: 0 envíos nuevos mientras existe ese mensaje;
+  - un cambio de canal o de token da exactamente un envío nuevo, y 0 llamadas posteriores contra el mensaje viejo;
+  - con el mensaje eliminado en el adaptador falso, la Upkeep no envía nada e informa "The pinned message is gone: publish it again"; el próximo Publish envía y fija exactamente un mensaje nuevo;
+  - cada Publish fija el mensaje que edita.
+- **Fidelidad del texto (criterio 3)**: en el conjunto de referencia de catalog.md más el caso vacío, 0 diferencias:
+  - el texto fuente que recibe el puerto es igual al texto de `GET /catalog`, o al mensaje del Catalog vacío;
+  - el mensaje mostrado (marcadores emparejados, después quitados) es igual a la vista previa de la app;
+  - el Test send es igual a la copia publicada.
+- **Demasiado largo (criterios 3, 4)**: un texto por encima del límite de Telegram nunca se parte ni se corta, y no se envía nada. Test it y Publish lo rechazan en línea. La Upkeep deja el Pinned catalog como estaba e informa el motivo de largo. El guardado que la dispara tiene éxito. 100% de aprobación.
+- **Resiliencia (criterio 4)**: con el adaptador falso fallando:
+  - cada guardado que dispara la Upkeep, incluido un retiro, tiene éxito y responde normalmente;
+  - el estado dice "Out of date" con el motivo correcto en la pantalla del Catalog, y Home muestra su línea, que abre la pantalla del Catalog;
+  - el próximo disparador exitoso o Publish lo limpia.
 
-  100% passing.
-- **Settings changes (criteria 2, 4)**:
-  - changing only the own chat keeps upkeep running and the status unchanged;
-  - a tested token or channel change reads "It still has to be published with the new bot or channel", with no "The last one was", until Publish.
-- **Unavailable Publish**: with no saved channel or no successful Test it since the last change, the catalog screen shows Publish disabled with its reason in words and a link that opens Integrations.
-- **Integrations**: a front test shows:
-  - the link to the catalog screen, no pin status and no Publish;
-  - empty fields and no "Saved" line with nothing saved;
-  - the "unpin it yourself in Telegram" line after a token or channel change.
-- **Test it's reasons (criterion 7)**: 100% passing.
-  - There is one test per cause: 401; 403 (both "can't initiate conversation" and "blocked by the user"); 400 chat not found, which shows "We could not find your chat: check the number and tap Start in your bot."; Telegram down, 429 or no connection; too long; and any other failure.
-  - Each shows its fixed text, repeats nothing typed, keeps the form and saves nothing.
-- **Test it never blames the channel (criterion 8)**: across every Test it failure, "The bot cannot post in the channel" never appears. Publish and upkeep against the channel still produce it, and their states and Home's notice are unchanged. 100% passing.
-- **Help line (criterion 9)**: a front test shows the new own-chat help line and the unchanged channel help line.
-- **Find my chat**: 100% passing.
-  - Exactly one private chat (with several messages) fills the field and replaces an existing number.
-  - Each of these shows its own reason and leaves the field as it was: no messages, more than one private chat, unreadable messages, another failure, a bad token and Telegram down.
-  - Groups and channels are never counted.
-  - The typed token is used over the saved one.
-  - With no token, the button is disabled with "Enter the token first".
-  - The search saves nothing.
-  - A filled field triggers the unsaved-changes confirmation.
-  - The answer holds only the number or a refusal code.
-- **Secrecy and isolation (criterion 5)**:
-  - after a full front run, the token, the number found and any text from Telegram are in no answer beyond the number placed in the field, and in no log line or browser storage;
-  - every route, Find my chat's included, is in the sweep and the gated-route test, and answers 404 or empty from another business.
+  100% de aprobación.
+- **Cambios de configuración (criterios 2, 4)**:
+  - cambiar solo el chat propio mantiene la Upkeep andando y el estado sin cambios;
+  - un cambio de token o de canal probado dice "It still has to be published with the new bot or channel", sin "The last one was", hasta Publish.
+- **Publish no disponible**: sin un canal guardado o sin un Test it exitoso desde el último cambio, la pantalla del Catalog muestra Publish desactivado con su motivo en palabras y un enlace que abre Integrations.
+- **Integrations**: una prueba del front muestra:
+  - el enlace a la pantalla del Catalog, ningún estado del Pinned catalog y ningún Publish;
+  - campos vacíos y ninguna línea "Saved" sin nada guardado;
+  - la línea "unpin it yourself in Telegram" después de un cambio de token o de canal.
+- **Motivos de Test it (criterio 7)**: 100% de aprobación.
+  - Hay una prueba por causa: 401; 403 (tanto "can't initiate conversation" como "blocked by the user"); 400 chat not found, que muestra "We could not find your chat: check the number and tap Start in your bot."; Telegram caído, 429 o sin conexión; demasiado largo; y cualquier otra falla.
+  - Cada una muestra su texto fijo, no repite nada de lo tipeado, conserva el formulario y no guarda nada.
+- **Test it nunca le echa la culpa al canal (criterio 8)**: en cada falla de Test it, "The bot cannot post in the channel" nunca aparece. Publish y la Upkeep contra el canal lo siguen produciendo, y sus estados y el aviso de Home no cambian. 100% de aprobación.
+- **Línea de ayuda (criterio 9)**: una prueba del front muestra la nueva línea de ayuda del chat propio y la línea de ayuda del canal sin cambios.
+- **Find my chat**: 100% de aprobación.
+  - Exactamente un chat privado (con varios mensajes) completa el campo y reemplaza un número existente.
+  - Cada uno de estos muestra su propio motivo y deja el campo como estaba: sin mensajes, más de un chat privado, mensajes que no se pueden leer, otra falla, un token malo y Telegram caído.
+  - Los grupos y los canales nunca se cuentan.
+  - El token tipeado se usa por sobre el guardado.
+  - Sin token, el botón está desactivado con "Enter the token first".
+  - La búsqueda no guarda nada.
+  - Un campo completado dispara la confirmación de cambios sin guardar.
+  - La respuesta tiene solo el número o un código de negativa.
+- **Secreto y aislamiento (criterio 5)**:
+  - después de una corrida completa del front, el token, el número encontrado y cualquier texto de Telegram no están en ninguna respuesta más allá del número puesto en el campo, ni en ninguna línea de log ni en el almacenamiento del navegador;
+  - cada ruta, incluida la de Find my chat, está en el barrido y en la prueba de rutas protegidas, y responde 404 o vacío desde otro Business.
 
-  0 leaks.
-- **No curl (criteria 6, 10)**: an end-to-end front run, from a phone viewport:
-  - in Settings → Integrations, enters the token, runs Test it with a chat not started, and sees its reason;
-  - fills the own chat with Find my chat and enters the channel chat;
-  - runs Test it successfully;
-  - follows Integrations' link to the catalog screen, sees Publish enabled and runs it;
-  - sees "Up to date" on the catalog screen and no line on Home.
-- **Integrations looks as designed (criterion 11)**, read from the PR, with no telemetry:
-  - before and after captures are attached, with the undo diff that defines "before" when the restyle had already merged; the PR records the script, the single install, the date and the fontsource version;
-  - four sides (phone and computer, light and dark), each with a result in `index.json` and in `ae.mjs`'s output: 0 missing;
-  - `ae.mjs` exits 0, or every non-zero line is matched in the PR to "intended" or to a fix: 0 unlisted, unfixed differences on the head that merges;
-  - the pinned-catalog, navigation, icon-and-text and feedback suites pass with 0 edited tests.
+  0 filtraciones.
+- **Sin curl (criterios 6, 10)**: una corrida de punta a punta del front, desde una ventana de teléfono:
+  - en Settings → Integrations, ingresa el token, corre Test it con un chat sin iniciar y ve su motivo;
+  - completa el chat propio con Find my chat e ingresa el chat del canal;
+  - corre Test it con éxito;
+  - sigue el enlace de Integrations a la pantalla del Catalog, ve Publish activado y lo corre;
+  - ve "Up to date" en la pantalla del Catalog y ninguna línea en Home.
+- **Integrations se ve como en el diseño (criterio 11)**, leído del PR, sin telemetría:
+  - se adjuntan las capturas de antes y después, con el diff de deshacer que define el "antes" cuando el rediseño ya se había integrado; el PR registra el script, la única instalación, la fecha y la versión de fontsource;
+  - cuatro lados (teléfono y computadora, claro y oscuro), cada uno con un resultado en `index.json` y en la salida de `ae.mjs`: 0 faltantes;
+  - `ae.mjs` sale con 0, o cada línea distinta de cero se corresponde en el PR con "buscada" o con un arreglo: 0 diferencias sin listar ni arreglar en el head que se integra;
+  - las suites de pinned-catalog, navigation, icon-and-text y feedback pasan con 0 pruebas editadas.
 
-## Out of scope
+## Fuera de alcance
 
-- Taking orders through the bot.
-- More than one channel per business.
-- Unpinning or deleting old messages.
-- Splitting a long catalog across several messages, or cutting it short.
-- Upkeep posting a new message on its own.
-- A pending state, or a retry control.
-- The pin's status or Publish in Integrations.
-- Checking chat formats.
-- Live updates while a screen is open.
-- A bot shared between businesses.
-- Changing the reasons of the channel, Publish or upkeep.
-- Any check of the channel in Test it or Find my chat.
-- Telling a wrong own-chat number from a chat not started when Telegram answers "chat not found" for both.
-- Changing the bot's setup in Telegram (a webhook, for one), or asking the seller to.
-- Saving a number found by Find my chat without a successful Test it.
-- Showing the names or usernames of people who wrote to the bot, or letting the seller pick among several.
-- A new gate or policy for future restyles; judging whether Integrations looks good; comparing after merge or in design review.
+- Tomar pedidos por el bot.
+- Más de un canal por Business.
+- Desfijar o eliminar mensajes viejos.
+- Partir un Catalog largo en varios mensajes, o cortarlo.
+- Que la Upkeep envíe un mensaje nuevo por su cuenta.
+- Un estado pendiente, o un control de reintento.
+- El estado del Pinned catalog o Publish en Integrations.
+- Revisar el formato de los chats.
+- Actualizaciones en vivo mientras una pantalla está abierta.
+- Un bot compartido entre Businesses.
+- Cambiar los motivos del canal, de Publish o de la Upkeep.
+- Cualquier revisión del canal en Test it o Find my chat.
+- Distinguir un número de chat propio equivocado de un chat sin iniciar cuando Telegram responde "chat not found" para los dos.
+- Cambiar la configuración del bot en Telegram (un webhook, por ejemplo), o pedirle al vendedor que lo haga.
+- Guardar un número encontrado por Find my chat sin un Test it exitoso.
+- Mostrar los nombres o nombres de usuario de las personas que le escribieron al bot, o dejar que el vendedor elija entre varias.
+- Un requisito o una política nueva para rediseños futuros; juzgar si Integrations se ve bien; comparar después del merge o en la revisión de diseño.
