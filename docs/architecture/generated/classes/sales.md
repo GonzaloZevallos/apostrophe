@@ -175,6 +175,7 @@ classDiagram
     id : int #124; None
     lines : tuple~SaleLine, ...~
     note : str #124; None
+    number : int #124; None
     payment : OnTheSpotPayment #124; None
     recorded_at : datetime
     shipping_charged : int
@@ -188,6 +189,7 @@ classDiagram
     business_name : str
     date : date
     lines : tuple~SaleBillLine, ...~
+    number : int
     payment
     shipping_charged : int
     total : int
@@ -296,6 +298,7 @@ classDiagram
   class SaleView {
     customer : SaleViewCustomer #124; None
     lines : tuple~SaleViewLine, ...~
+    number : int
     sale : Sale
   }
   class SaleViewCustomer {
@@ -370,6 +373,7 @@ classDiagram
     date : date
     lines : list~SaleBillLineOut~
     model_config : ConfigDict
+    number : int
     payment
     shipping_charged : int
     total : int
@@ -388,6 +392,7 @@ classDiagram
     id : int
     lines : list~SaleLineDetailOut~
     note : str #124; None
+    number : int
     payment
     shipping_charged : int
     still_owing : bool
@@ -439,6 +444,7 @@ classDiagram
     id : int
     lines : list~SaleLineOut~
     note : str #124; None
+    number : int
     payment
     shipping_charged : int
     still_owing : bool
@@ -450,6 +456,7 @@ classDiagram
     customer_id : Mapped~int #124; None~
     id : Mapped~int~
     note : Mapped~str #124; None~
+    number : Mapped~int~
     recorded_at : Mapped~datetime~
     sale_date : Mapped~date~
     shipping_charged : Mapped~int~

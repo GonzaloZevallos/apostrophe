@@ -3332,7 +3332,7 @@
       },
       "SaleBillOut": {
         "additionalProperties": false,
-        "description": "The facts a seller may share with a sale's customer (CONTEXT.md: Sale bill),\nclosed: no field for the note, the customer, any id, the VIP flag, cost or margin.",
+        "description": "The facts a seller may share with a sale's customer (CONTEXT.md: Sale bill),\nclosed: no field for the note, the customer, any id, the VIP flag, cost or margin. The\nSale number is not an id: it is the seller's own count, the same one the detail shows.",
         "properties": {
           "balance": {
             "anyOf": [
@@ -3361,6 +3361,10 @@
             "title": "Lines",
             "type": "array"
           },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
           "payment": {
             "$ref": "#/components/schemas/BillPaymentOut"
           },
@@ -3375,6 +3379,7 @@
         },
         "required": [
           "business_name",
+          "number",
           "date",
           "shipping_charged",
           "total",
@@ -3458,6 +3463,10 @@
             ],
             "title": "Note"
           },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
           "payment": {
             "anyOf": [
               {
@@ -3492,6 +3501,7 @@
         },
         "required": [
           "id",
+          "number",
           "date",
           "customer",
           "shipping_charged",
@@ -3694,6 +3704,10 @@
             ],
             "title": "Note"
           },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
           "payment": {
             "anyOf": [
               {
@@ -3724,6 +3738,7 @@
         },
         "required": [
           "id",
+          "number",
           "date",
           "customer",
           "shipping_charged",
