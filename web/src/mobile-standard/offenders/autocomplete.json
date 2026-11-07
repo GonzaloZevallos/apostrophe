@@ -662,13 +662,13 @@
   {
     "screen": "VariedadNueva",
     "rule": "autocomplete",
-    "target": "textbox:Name Up to # characters · cannot repeat another vari",
+    "target": "textbox:Name Up to # characters · cannot repeat another prod",
     "issue": 47
   },
   {
     "screen": "VariedadNuevaFormulario",
     "rule": "autocomplete",
-    "target": "textbox:Name Up to # characters · cannot repeat another vari",
+    "target": "textbox:Name Up to # characters · cannot repeat another prod",
     "issue": 47
   },
   {
