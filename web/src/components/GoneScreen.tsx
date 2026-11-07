@@ -9,11 +9,12 @@ import { useTranslation } from 'react-i18next'
 import BotonLink from './BotonLink'
 import { GONE_DETAIL } from '../api/refusals'
 import { refusalText } from '../i18n/refusalKeys'
+import ContentArea from './ContentArea'
 
 export default function GoneScreen({ label, to }: { label: string; to: string }) {
   const { t } = useTranslation()
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <div className="cuerpo">
         <div className="estado-vacio">
           <span className="estado-vacio__titulo">{refusalText(t, GONE_DETAIL)}</span>
@@ -22,6 +23,6 @@ export default function GoneScreen({ label, to }: { label: string; to: string })
           </BotonLink>
         </div>
       </div>
-    </main>
+    </ContentArea>
   )
 }

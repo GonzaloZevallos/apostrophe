@@ -53,6 +53,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { EMPTY_STATE_KEYS } from '../copy/emptyStates'
 import { COMMON_TEXT } from '../copy/common'
+import ContentArea from '../components/ContentArea'
 
 export {
   COST_OF_GOODS_LABEL,
@@ -301,7 +302,7 @@ export default function Analisis() {
   })
 
   return (
-    <main className="pantalla analisis">
+    <ContentArea as="main" className="pantalla analisis">
       <div className="cuerpo">
         <div className="encabezado__fila">
           <span className="encabezado__titulo">{COMMON_TEXT.analysis}</span>
@@ -320,6 +321,6 @@ export default function Analisis() {
           <AnalisisContenido data={query.data} onMonth={setMonth} />
         )}
       </div>
-    </main>
+    </ContentArea>
   )
 }

@@ -41,6 +41,7 @@ import MonthBody from './expenses/MonthBody'
 import { useViewport } from '../shell/useViewport'
 import { FLOWER_NOTICE, EXPENSES_TEXT } from '../copy/expenses'
 import { COMMON_TEXT } from '../copy/common'
+import ContentArea from '../components/ContentArea'
 
 export { FLOWER_NOTICE }
 export const NO_DISCARD_TITLE = COMMON_TEXT.noKeep
@@ -171,7 +172,7 @@ export default function Gastos() {
   }
 
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <div className="cuerpo gastos">
         <div className="gastos__cabecera">
           <span className="encabezado__titulo gastos__titulo">{COMMON_TEXT.expenses}</span>
@@ -273,6 +274,6 @@ export default function Gastos() {
           <GoneNotice />
         </div>
       )}
-    </main>
+    </ContentArea>
   )
 }

@@ -6,6 +6,7 @@
 import { type FormEventHandler, type ReactNode, useState } from 'react'
 import Selector, { type SelectorProps } from './Selector'
 import { SheetLevel } from './useSheetStack'
+import ContentArea from './ContentArea'
 
 type WithoutValue<T> = T extends unknown ? Omit<T, 'value' | 'onChange'> : never
 
@@ -40,11 +41,11 @@ export function Form({
   onSubmit: FormEventHandler<HTMLFormElement>
 }) {
   return (
-    <main>
+    <ContentArea as="main">
       <h1>{title}</h1>
       <form onSubmit={onSubmit}>
         <SheetLevel.Provider value={level}>{children}</SheetLevel.Provider>
       </form>
-    </main>
+    </ContentArea>
   )
 }

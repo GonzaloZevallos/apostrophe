@@ -18,6 +18,7 @@ import Shell from '../../shell/Shell'
 import Gastos from '../Gastos'
 import ExpenseNewRoute from './ExpenseNewRoute'
 import { EXPENSES_TEXT } from '../../copy/expenses'
+import ContentArea from '../../components/ContentArea'
 
 export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en' as ShownLanguage }
 
@@ -49,12 +50,12 @@ export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl) {
                 path: relative(MORE),
                 handle: { screen: 'more' },
                 element: (
-                  <main>
+                  <ContentArea as="main">
                     <span>{EXPENSES_TEXT.moreScreen}</span>
                     <InAppLink to={EXPENSE_NEW}>
                       {EXPENSES_TEXT.addExpenseFromMore}
                     </InAppLink>
-                  </main>
+                  </ContentArea>
                 ),
               },
               { path: relative(EXPENSES), element: <Gastos />, handle: { screen: 'expenses' } },

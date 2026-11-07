@@ -5,16 +5,17 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Link, RouterProvider } from 'react-router'
 import { expect, test } from 'vitest'
 import { useBackOr } from './useBackOr'
+import ContentArea from './ContentArea'
 
 function Child() {
   const back = useBackOr('/padre')
   return (
-    <main>
+    <ContentArea as="main">
       <h1>Hijo</h1>
       <button type="button" onClick={back}>
         Volver
       </button>
-    </main>
+    </ContentArea>
   )
 }
 
@@ -24,12 +25,12 @@ function renderAt(entries: { initialEntries: string[]; initialIndex?: number }) 
       {
         path: HOME,
         element: (
-          <main>
+          <ContentArea as="main">
             <Link to="/hijo" state={inAppState({ pathname: HOME })}>
               Ir marcado
             </Link>
             <Link to="/hijo">Ir sin marca</Link>
-          </main>
+          </ContentArea>
         ),
       },
       { path: '/hijo', element: <Child /> },
