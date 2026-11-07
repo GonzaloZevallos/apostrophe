@@ -10,7 +10,6 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { router as appRouter } from '../router'
-import { COMMON_TEXT } from '../copy/common'
 import { CUSTOMER_NEW, EXPENSE_NEW } from '../routes'
 import { renderWithViewport, stubViewport } from '../test-viewport'
 import { type FetchImpl, jsonResponse, renderExpenses } from './expenses/renderExpenses'
@@ -42,10 +41,10 @@ describe('the new expense', () => {
     }
     renderExpenses([EXPENSE_NEW], api)
 
-    const dialog = await screen.findByRole('dialog', { name: COMMON_TEXT.addExpense })
+    const dialog = await screen.findByRole('dialog', { name: 'Add expense' })
     expect(dialog).toHaveAttribute('aria-busy', 'true')
     release()
-    await waitFor(() => expect(screen.getByRole('dialog', { name: COMMON_TEXT.addExpense })).not.toHaveAttribute('aria-busy'))
+    await waitFor(() => expect(screen.getByRole('dialog', { name: 'Add expense' })).not.toHaveAttribute('aria-busy'))
   })
 })
 
@@ -74,12 +73,12 @@ describe('the new customer', () => {
     )
   }
 
-  const form = () => screen.getByRole('dialog', { name: COMMON_TEXT.newCustomer })
+  const form = () => screen.getByRole('dialog', { name: 'New customer' })
 
   test('the sheet is busy until the pricing settings answer, and clear when the field stays off', async () => {
     renderCustomerNew({ is_bulk_pricing: false, is_vip_customers: false }, true)
 
-    expect(await screen.findByRole('dialog', { name: COMMON_TEXT.newCustomer })).toHaveAttribute('aria-busy', 'true')
+    expect(await screen.findByRole('dialog', { name: 'New customer' })).toHaveAttribute('aria-busy', 'true')
     release()
     await waitFor(() => expect(form()).not.toHaveAttribute('aria-busy'))
   })
@@ -87,7 +86,7 @@ describe('the new customer', () => {
   test('with Clientes VIP on, the sheet is busy while the customer types are on their way', async () => {
     renderCustomerNew({ is_bulk_pricing: false, is_vip_customers: true }, false)
 
-    expect(await screen.findByRole('dialog', { name: COMMON_TEXT.newCustomer })).toHaveAttribute('aria-busy', 'true')
+    expect(await screen.findByRole('dialog', { name: 'New customer' })).toHaveAttribute('aria-busy', 'true')
     release()
     await waitFor(() => expect(form()).not.toHaveAttribute('aria-busy'))
   })
