@@ -130,7 +130,53 @@ export function signatureOf(records, page) {
   return (hash >>> 0).toString(16).padStart(8, '0')
 }
 
-// A side that did not settle (or failed any step) has no capture under any name.
-export function sideOutcome(reason, png) {
-  return reason === null ? { png, failure: null } : { png: null, failure: reason }
+// The closed set of kinds a side's miss can have. It is set where each reason is produced, never
+// read back from reason text. Every kind but `other` is shaped by load: the same page, captured
+// again, can come to rest (ADR-0075).
+export const SETTLE_KINDS = ['unsettled', 'rejected', 'network', 'rest-mismatch', 'rest-unread', 'shot-timeout', 'step-timeout', 'other']
+
+export const isRetryableKind = (kind) => SETTLE_KINDS.includes(kind) && kind !== 'other'
+
+// The kind of what `settle` returned, by equality with its two bare reasons; any other string
+// (the network, the applied-check) is `other` here and the caller sets its own kind.
+export function kindOfSettle(reason) {
+  if (reason === SETTLE_REASON_UNSETTLED) return 'unsettled'
+  if (reason === SETTLE_REASON_REJECTED) return 'rejected'
+  return 'other'
 }
+
+// A side that did not settle (or failed any step) has no capture under any name. A failure carries
+// its kind when the caller gives one; a success carries none.
+export function sideOutcome(reason, png, kind) {
+  if (reason === null) return { png, failure: null }
+  return kind === undefined ? { png: null, failure: reason } : { png: null, failure: reason, kind }
+}
+
+// Most captures of one side (ADR-0075). It counts attempts: no wall-clock wait is added.
+export const CAPTURE_ATTEMPTS = 3
+
+// Captures a side again, whole, while it missed by a retryable kind and its attempt sent no write.
+// `port()` resolves `{ outcome, wrote }`. It does not catch: a thrown capture ends it.
+// Returns the last outcome, the attempts used and the kinds of every miss.
+export async function captureWithRetries(port, { attempts, retryable }) {
+  const kinds = []
+  for (let used = 1; ; used += 1) {
+    const { outcome, wrote } = await port()
+    if (outcome.failure === null) return { outcome, attempts: used, kinds }
+    kinds.push(outcome.kind)
+    if (wrote || !retryable(outcome.kind) || used >= attempts) return { outcome, attempts: used, kinds }
+  }
+}
+
+// What a retry leaves on the sheet, fixed English with no page data: after a pass that followed
+// misses, a note naming the side, the attempt and the kinds; after a side missed every attempt it
+// was given, the suffix of its failure; nothing when the first attempt decided.
+export function retryNote(side, { outcome, attempts, kinds }, max) {
+  if (outcome.failure === null) {
+    return kinds.length ? `${side}: settled on attempt ${attempts} of ${max} after ${kinds.join(', ')}` : ''
+  }
+  return attempts > 1 ? ` (after ${attempts} attempts: ${kinds.join(', ')})` : ''
+}
+
+// The one line every run prints: rows with a side captured more than once, and those sides' attempts.
+export const retrySummary = (rows, attempts) => `retries: ${rows} rows, ${attempts} attempts`
