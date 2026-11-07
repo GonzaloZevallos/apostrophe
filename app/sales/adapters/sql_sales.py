@@ -19,6 +19,7 @@ from sqlalchemy.engine import CursorResult
 from sqlalchemy.orm import InstrumentedAttribute, Session
 from sqlalchemy.sql.elements import ColumnElement
 
+from app.accounts.adapters.tables import BusinessRow
 from app.customer_types.adapters.vip_type import SqlVipType
 from app.customers.adapters.tables import CustomerRow
 from app.db import flush_or_refuse
@@ -43,8 +44,18 @@ class SqlSales:
         self._business_id = business_id
 
     def add(self, sale: Sale) -> Sale:
+        # The only place a Sale number is given (docs/adr/0073): one UPDATE ... RETURNING
+        # on the business's counter, before anything else is written, inside the use
+        # case's single commit. A save that fails rolls the increment back with it.
+        number = self._session.execute(
+            update(BusinessRow)
+            .where(BusinessRow.id == self._business_id)
+            .values(last_sale_number=BusinessRow.last_sale_number + 1)
+            .returning(BusinessRow.last_sale_number)
+        ).scalar_one()
         row = SaleRow(
             business_id=self._business_id,
+            number=number,
             sale_date=sale.date,
             customer_id=sale.customer_id,
             shipping_charged=sale.shipping_charged,
@@ -208,6 +219,7 @@ class SqlSales:
                 payment=payment,
                 recorded_at=sale_row.recorded_at,
                 id=sale_row.id,
+                number=sale_row.number,
             )
             views.append(SaleView(sale=sale, customer=customer, lines=lines))
         return views
@@ -296,6 +308,7 @@ class SqlSales:
             payment=payment,
             recorded_at=row.recorded_at,
             id=row.id,
+            number=row.number,
         )
 
 

@@ -107,6 +107,7 @@ class SaleBillLine:
 @dataclass(frozen=True)
 class SaleBill:
     business_name: str
+    number: int
     date: BillDate
     shipping_charged: int
     total: int
