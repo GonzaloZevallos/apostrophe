@@ -129,7 +129,8 @@ test('while the detail loads the title is empty and nothing reads like a Sale nu
   expect(await screen.findByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
   const main = screen.getByRole('main')
   const body = main.firstElementChild as HTMLElement
-  expect(body).toHaveAttribute('aria-busy', 'true')
+  expect(main).toHaveAttribute('aria-busy', 'true')
+  expect(body).not.toHaveAttribute('aria-busy')
   expect(body.querySelector('.encabezado__titulo')).toBeEmptyDOMElement()
   expect(main.textContent ?? '').not.toMatch(/#|[0-9]|Sale/)
 })

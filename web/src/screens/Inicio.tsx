@@ -53,6 +53,7 @@ import ImportNotice from './inicio/ImportNotice'
 import InicioPanel from './inicio/InicioPanel'
 import OnboardingNotice from './onboarding/OnboardingNotice'
 import { COMMON_TEXT } from '../copy/common'
+import ContentArea from '../components/ContentArea'
 
 export { PINNED_CATALOG_OUT_OF_DATE }
 
@@ -90,7 +91,7 @@ export default function Inicio() {
   const failed = [panelRead, onboardingQuery].find((query) => query.isError)
 
   return (
-    <main className="pantalla" ref={root}>
+    <ContentArea as="main" className="pantalla" ref={root}>
       <div className="cuerpo">
         <div className="inicio__cabecera">
           <div className="inicio__cabecera-titulos">
@@ -141,6 +142,6 @@ export default function Inicio() {
           <InicioPanel panel={panelRead.data} tab={tab} onTab={setTab} today={me.today} />
         )}
       </div>
-    </main>
+    </ContentArea>
   )
 }

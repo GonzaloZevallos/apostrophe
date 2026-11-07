@@ -49,6 +49,7 @@ import CustomerTypeField from './CustomerTypeField'
 import { COMMON_TEXT } from '../../copy/common'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
+import ContentArea from '../../components/ContentArea'
 
 export const SAVED_TOAST = 'common:customerSaved'
 export const NAME_REQUIRED = CUSTOMERS_TEXT.giveItAName
@@ -89,29 +90,29 @@ export default function ClienteForm({ mode }: Props) {
     }
     if (existing.error instanceof NetworkError) {
       return (
-        <main className="pantalla">
+        <ContentArea as="main" className="pantalla">
           <div className="cuerpo">
             <SinConexion />
           </div>
-        </main>
+        </ContentArea>
       )
     }
     return (
-      <main className="pantalla">
+      <ContentArea as="main" className="pantalla">
         <div className="cuerpo">
           <ErrorGenerico />
         </div>
-      </main>
+      </ContentArea>
     )
   }
 
   if (existing.data === undefined) {
     return (
-      <main className="pantalla">
+      <ContentArea as="main" className="pantalla">
         <div className="cuerpo">
           <Loading />
         </div>
-      </main>
+      </ContentArea>
     )
   }
 

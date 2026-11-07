@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { useLoading } from './useLoading'
 /**
  * The "Cargando" state of `Estados`: the design's three skeleton shapes — a short
  * bar, a wider bar and two cards side by side — in the surface color, standing
@@ -11,6 +12,9 @@ import { useTranslation } from 'react-i18next'
  * footer's total during a date change): only the short bar, `aria-hidden`, no role and
  * no text, so it never adds a second progressbar. `LoadingAnuncio` is the one visually
  * hidden progressbar a screen announces itself with while those markers are on.
+ *
+ * The full shape and `LoadingAnuncio` also mark the nearest content area busy while they are drawn
+ * (`useLoading`); `compacto` stands for one figure, not for the area, so it does not.
  */
 
 /** The marker both components below render while something is loading: the one selector the
@@ -23,11 +27,13 @@ export interface LoadingProps {
 
 export function LoadingAnuncio() {
   const { t } = useTranslation()
+  useLoading(true)
   return <div className="cargando__anuncio" role="progressbar" aria-label={t('common:loading')} aria-busy="true" />
 }
 
 export default function Loading({ compacto = false }: LoadingProps) {
   const { t } = useTranslation()
+  useLoading(!compacto)
   if (compacto) {
     return (
       <span className="cargando cargando--compacto" aria-hidden="true">

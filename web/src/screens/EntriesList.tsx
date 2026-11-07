@@ -41,12 +41,13 @@ import { STOCK_TEXT } from '../copy/stock'
 import { EMPTY_STATE_KEYS } from '../copy/emptyStates'
 import { COMMON_TEXT } from '../copy/common'
 import { OUT_OF_DATE_JOINER } from '../copy/pinnedCatalog'
+import ContentArea from '../components/ContentArea'
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <div className="cuerpo">{children}</div>
-    </main>
+    </ContentArea>
   )
 }
 

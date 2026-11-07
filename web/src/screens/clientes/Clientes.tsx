@@ -34,6 +34,7 @@ import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import ClienteFila from './ClienteFila'
 import TeDeben from './TeDeben'
 import { COMMON_TEXT } from '../../copy/common'
+import ContentArea from '../../components/ContentArea'
 
 export const SEARCH_LABEL = CUSTOMERS_TEXT.searchCustomer
 export const SEARCH_PLACEHOLDER = COMMON_TEXT.phoneOrName
@@ -82,7 +83,7 @@ export default function Clientes() {
   })
 
   return (
-    <main className="pantalla" ref={root}>
+    <ContentArea as="main" className="pantalla" ref={root}>
       <div className="cuerpo">
         <div className="clientes__encabezado">
           <span className="encabezado__titulo">{COMMON_TEXT.customers}</span>
@@ -136,6 +137,6 @@ export default function Clientes() {
           </section>
         )}
       </div>
-    </main>
+    </ContentArea>
   )
 }
