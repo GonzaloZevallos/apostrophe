@@ -188,7 +188,7 @@ Criterios de éxito:
   - el selector de Variety de New sale (`sales.md`);
   - el selector de Variety del formulario de Stock entry (`stock.md`);
   - el formulario de Price entry;
-  - el texto del Catalog y la lista "what does not go out" de la pantalla del Catalog (`catalog.md`);
+  - el texto del Catalog y la lista "Lo que no sale" de la pantalla del Catalog (`catalog.md`);
   - el Pinned catalog.
 - **Los registros pasados la conservan, por su nombre a secas, sin etiqueta "Archived" y sin ninguna cifra
   cambiada**: Sales y el detalle de una Sale, la cuenta del Customer, All entries,
@@ -529,8 +529,8 @@ Criterios de éxito:
   diferencias.
 - **Afuera de toda lista y selector (criterio 9)**: tests del front y de la API muestran una Archived
   variety ausente de la lista y la línea de resumen de Varieties, de What you have left, de las opciones de New sale,
-  del formulario de Stock entry y del formulario de precio, del texto del Catalog, de su lista "what does
-  not go out" y del texto del Pinned catalog; el Upkeep edita el Pinned catalog al archivar y
+  del formulario de Stock entry y del formulario de precio, del texto del Catalog, de su lista "Lo que no sale" y
+  del texto del Pinned catalog; el Upkeep edita el Pinned catalog al archivar y
   restaurar exactamente cuando cambia el texto. 100% en verde.
 - **Vuelve entera (criterio 11)**: después de restaurar, los precios, el Stock, las Stock entries, el
   umbral, los Catalog attributes y la marca de Hidden variety (probada oculta y mostrada) son iguales a lo que
@@ -647,7 +647,7 @@ Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split
 - Una subcategoría se va a poder archivar solo cuando no tenga ningún Product sin archivar; una categoría, solo cuando ninguna de sus subcategorías esté sin archivar; la última subcategoría sin archivar del Business, nunca. Restaurar un Product cuya subcategoría está archivada se va a rechazar hasta que se restaure esa subcategoría.
 - Los atributos se van a definir por subcategoría (nombre, tipo, obligatorio o no, se muestra en el Catalog o no). Un atributo para el que ningún Product tenga valor se va a poder eliminar; uno con algún valor solo se va a poder archivar, y se va a conservar cada valor.
 - Pasar un Product a otra subcategoría va a conservar los valores de los atributos que comparten las dos subcategorías y le va a decir a quien vende, antes de confirmar, qué valores pierde el Product. La marca de Hidden variety va a quedar en el Product, nunca como atributo.
-- Va a reemplazar: "sus **Catalog attributes** (`catalog.md`)." en la lista de lo que reúne la página, y los atributos fijos de "### Catalog attributes, por Variety" de catalog.md (citados en la propia sección Planned de `catalog.md`).
+- Va a reemplazar: "sus **Catalog attributes** (`catalog.md`)." en la lista de lo que reúne la página, y los atributos fijos de "### Catalog attributes, por Variety" de catalog.md (citados en la propia sección "Planificado en GH-318" de `catalog.md`).
 
 ### Units y cantidades
 
