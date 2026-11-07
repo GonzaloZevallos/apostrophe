@@ -595,3 +595,15 @@ _Avoid_: VIP mark, VIP flag, default type
 **Sale number**:
 El número correlativo de una Sale dentro de su Business, que se asigna una sola vez al guardarla, en orden de guardado, empezando en 1. Nunca cambia ni se reutiliza, aunque se borre la Sale que lo tenía, y no revela nada de ningún otro Business. Las Sales que ya existían se numeraron una sola vez por fecha y después por orden de registro. _In the app_: Sale #N.
 _Avoid_: order number, invoice number, id, ticket, receipt number
+
+**Selector**:
+El único control para elegir una opción de un Growable set: un campo con etiqueta que en el teléfono abre su lista en una Sheet, como su propia entrada del historial, y en la computadora abre un desplegable con teclado. Tiene búsqueda con más de 8 opciones, nunca reordena las opciones, muestra con la marca "no longer available" una elección que ya no se ofrece, y nunca parece vacío mientras carga. _In the app_: no tiene palabra propia; se ve como la etiqueta de su campo.
+_Avoid_: dropdown, picker, select, chooser, combobox, chips
+
+**Growable set**:
+Un conjunto que puede tener una opción con la que la app no vino, hoy o por una decisión ya tomada, como las Varieties, las Expense categories, los Withdrawal reasons, los Customer types y, con GH-318, los Payment methods. Siempre se elige con el Selector, nunca con chips. En la app: no tiene palabra propia.
+_Avoid_: dynamic list, open set, custom list, user list
+
+**Fixed set**:
+Un conjunto de opciones con el que la app viene y que ninguna decisión tomada deja crecer, como Today · Week · Month. Se declara en `web/src/components/fixedSets.ts` con un motivo no vacío, y es lo único de donde chips, pills, Pestanas y controles de radio toman sus opciones. Ningún conjunto leído de los datos o la configuración de un Business es nunca un Fixed set. En la app: no tiene palabra propia.
+_Avoid_: enum, static list, constant set, hard-coded options
