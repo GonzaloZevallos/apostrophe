@@ -10,6 +10,7 @@ import { afterAll, beforeAll, describe, expect, it, onTestFinished } from 'vites
 // built side is a tiny page served here (a long document, and a layer over the screen); the
 // design side is the real prototype, served from the repo.
 const SCRIPT = resolve(__dirname, '../../../scripts/design/comparisons.mjs')
+const REGISTRY = resolve(__dirname, '../../../scripts/design/screens.json')
 const FONT = resolve(
   __dirname,
   '../../node_modules/@fontsource/geist/files/geist-latin-400-normal.woff2',
@@ -237,7 +238,9 @@ describe('comparisons.mjs exit status and capture', () => {
   const NOT_BUILT = 'shot: no built screen yet (built)'
   const fixture = (name: string): string => {
     const path = join(dir, `${name}.registry.json`)
-    writeFileSync(path, JSON.stringify({ screens: [{ screen: 'Reset', design: 'Invitacion', route: null, path: '/reset/{reset_token}', signed_out: true }] }))
+    const real = JSON.parse(readFileSync(REGISTRY, 'utf-8')) as { screens: Array<{ screen: string }> }
+    const reset = real.screens.find((row) => row.screen === 'Reset')
+    writeFileSync(path, JSON.stringify({ screens: [{ ...reset, route: null }] }))
     return path
   }
 
