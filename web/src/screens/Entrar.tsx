@@ -68,7 +68,7 @@ function SignInForm() {
   useEffect(() => {
     if (!forgot.isOpen) return
     function onKeyDown(pressed: KeyboardEvent): void {
-      if (pressed.code === 'Escape') closeForgot()
+      if (pressed.key === 'Escape') closeForgot()
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
@@ -116,7 +116,7 @@ function SignInForm() {
     <>
       <AuthPage brand inert={forgot.isOpen}>
         <p className="subtitulo">{AUTH_TEXT.tagline}</p>
-        <form className="formulario" onSubmit={onSubmit}>
+        <form className="formulario formulario--entrar" onSubmit={onSubmit}>
           <label className="campo">
             <span className="campo__rotulo">{AUTH_TEXT.emailAddress}</span>
             <input

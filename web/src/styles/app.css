@@ -3932,10 +3932,10 @@ body {
   margin: var(--espacio-xs) 0 0;
 }
 /* "Forgot your password?" (GH-521): right-aligned under the password, a 44 px target at least 8 px
- * from Show and from Sign in (the column's gap is larger), a tap and never a zoom or a selection. */
+ * from Show and from Sign in (the form's 14 px gap, no margin of its own), a tap and never a zoom or
+ * a selection. */
 .auth-page__olvido {
   align-self: flex-end;
-  margin-block: calc(var(--espacio-sm) * -1);
 }
 
 .auth-page__olvido .boton--enlace {
@@ -3953,8 +3953,9 @@ body {
   opacity: 0.6;
 }
 
-.auth-page__columna .boton,
-.auth-page .campo__mostrar .boton--enlace {
+/* Sign in's own form only: the other getting-in screens render as before. */
+.formulario--entrar .boton,
+.formulario--entrar .campo__mostrar .boton--enlace {
   touch-action: manipulation;
   user-select: none;
 }
