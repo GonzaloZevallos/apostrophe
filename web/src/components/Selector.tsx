@@ -319,6 +319,7 @@ export default function Selector(props: SelectorProps) {
             <span className="selector-lista__marca">
               <Icono nombre="hecho" />
             </span>
+            {' '}
             <span className="visualmente-oculto">{t('common:selected')}</span>
           </>
         )}
