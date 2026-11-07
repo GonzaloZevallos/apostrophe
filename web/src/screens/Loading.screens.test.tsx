@@ -119,6 +119,7 @@ const SCREENS: Case[] = [
     element: () => <EntradaStock mode="editar" />,
     route: pathTo(STOCK_ENTRY, { id: 4 }),
     path: STOCK_ENTRY,
+    dataRouter: true,
   },
 ]
 

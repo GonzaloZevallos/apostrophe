@@ -14,6 +14,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { SheetRouterProvider, SheetStackProvider } from '../components/useSheetStack'
 import type { StockEntry } from '../api/stock'
+import { HOME } from '../routes'
 import StockEntryForm, { type StockEntryFormProps } from './StockEntryForm'
 import type { Variety } from './Variedades'
 
@@ -34,7 +35,7 @@ const STOCK_VIEW = { total: 0, products: [], entries: [] }
 function renderInStack(form: ReactNode) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const router = createMemoryRouter([
-    { path: '/', element: <SheetStackProvider>{form}</SheetStackProvider> },
+    { path: HOME, element: <SheetStackProvider>{form}</SheetStackProvider> },
   ])
   render(
     <QueryClientProvider client={client}>

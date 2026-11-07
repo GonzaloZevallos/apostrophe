@@ -166,6 +166,7 @@ subgraph src["src"]
     src_screens_inicioNotices_ts["inicioNotices.ts"]
     src_screens_originLabel_ts["originLabel.ts"]
     src_screens_priceDeleteNotice_ts["priceDeleteNotice.ts"]
+    src_screens_stockEntryChoice_ts["stockEntryChoice.ts"]
     src_screens_telegramPreview_ts["telegramPreview.ts"]
   end
 end
@@ -201,7 +202,7 @@ src_screens_Inicio_tsx-->src_screens_inicio_ImportNotice_tsx
 src_screens_Inicio_tsx-->src_screens_inicio_InicioPanel_tsx
 src_screens_Inicio_tsx-->src_screens_onboarding_OnboardingNotice_tsx
 src_screens_StockEntryForm_tsx-->src_screens_Variedades_tsx
-src_screens_StockEntryForm_tsx-->src_screens_varieties_varietiesByName_ts
+src_screens_StockEntryForm_tsx-->src_screens_stockEntryChoice_ts
 src_screens_Variedades_tsx-->src_screens_varieties_archivedVarieties_ts
 src_screens_Variedades_tsx-->src_screens_varieties_varietiesByName_ts
 src_screens_analisisCards_ts-->src_screens_analisisCost_ts
@@ -319,6 +320,8 @@ src_screens_settings_PricingGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_UsersGroup_tsx-->src_screens_settings_InvitePartner_tsx
 src_screens_settings_UsersGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_WithdrawalReasons_tsx-->src_screens_settings_SettingsGroup_tsx
+src_screens_stockEntryChoice_ts-->src_screens_Variedades_tsx
+src_screens_stockEntryChoice_ts-->src_screens_varieties_varietiesByName_ts
 src_screens_varieties_ArchivedIndex_tsx-->src_screens_varieties_ArchivedVarieties_tsx
 src_screens_varieties_ArchivedIndex_tsx-->src_screens_varieties_archivedVarieties_ts
 src_screens_varieties_ArchivedIndex_tsx-->src_screens_varieties_varietiesByName_ts
@@ -381,7 +384,6 @@ src_screens_varieties_useRestore_tsx-->src_screens_Variedades_tsx
 src_screens_varieties_useRestore_tsx-->src_screens_varieties_restoreLanding_ts
 src_screens_varieties_useSelectedVariety_ts-->src_screens_Variedades_tsx
 src_screens_varieties_useSelectedVariety_ts-->src_screens_varieties_varietiesByName_ts
-src_screens_varieties_varietiesByName_ts-->src_screens_Variedades_tsx
 src_screens_varieties_varietyForms_ts-->src_screens_Variedades_tsx
 src_screens_ventas_NuevaVentaCliente_tsx-->src_screens_clientes_ClienteForm_tsx
 src_screens_ventas_NuevaVentaCliente_tsx-->src_screens_clientes_CustomerFields_tsx
