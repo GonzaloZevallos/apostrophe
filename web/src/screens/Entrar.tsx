@@ -11,7 +11,7 @@
  * refusal — a refusal would blame what the user typed.
  */
 
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE } from '../api/client'
@@ -42,6 +42,12 @@ export default function Entrar() {
   const [sending, setSending] = useState(false)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const emailInput = useRef<HTMLInputElement>(null)
+
+  // The keyboard is open when the screen is: the email takes the focus once, at every width.
+  useEffect(() => {
+    emailInput.current?.focus()
+  }, [])
 
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
@@ -75,6 +81,7 @@ export default function Entrar() {
         <label className="campo">
           <span className="campo__rotulo">{AUTH_TEXT.emailAddress}</span>
           <input
+            ref={emailInput}
             className="campo__input"
             type="email"
             autoComplete="username"

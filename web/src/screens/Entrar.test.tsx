@@ -8,7 +8,8 @@ import { LOGIN } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router'
+import { createMemoryRouter, RouterProvider } from 'react-router'
+import { SheetRouterProvider } from '../components/useSheetStack'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import Entrar, { BRAKE_MESSAGE, CREDENTIALS_WRONG, LOGIN_HINT, RETRY_MESSAGE } from './Entrar'
@@ -20,14 +21,25 @@ function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
-function renderEntrar(queryClient: QueryClient) {
+function renderEntrar(
+  queryClient: QueryClient,
+  initialEntries: (string | { pathname: string; state: unknown })[] = [LOGIN],
+) {
+  const router = createMemoryRouter(
+    [
+      { path: LOGIN, element: <Entrar /> },
+      { path: '*', element: <p>elsewhere</p> },
+    ],
+    { initialEntries },
+  )
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[LOGIN]}>
-        <Entrar />
-      </MemoryRouter>
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
+  return router
 }
 
 beforeEach(() => {
@@ -125,4 +137,10 @@ test('shows the brand lockup at the top of the screen, named "apostrophe", with 
   expect(brand.querySelector('img')).toHaveAttribute('src', '/icons/mark.svg')
   expect(brand).toHaveTextContent('apostrophe\u2019')
   expect(main.querySelector('.auth-page__columna')?.firstElementChild).toContainElement(brand)
+})
+
+test('the email input has the focus when the screen opens', () => {
+  renderEntrar(new QueryClient())
+
+  expect(screen.getByLabelText('Email address')).toHaveFocus()
 })
