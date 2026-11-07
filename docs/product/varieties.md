@@ -647,7 +647,7 @@ Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split
 - Una subcategoría se va a poder archivar solo cuando no tenga ningún Product sin archivar; una categoría, solo cuando ninguna de sus subcategorías esté sin archivar; la última subcategoría sin archivar del Business, nunca. Restaurar un Product cuya subcategoría está archivada se va a rechazar hasta que se restaure esa subcategoría.
 - Los atributos se van a definir por subcategoría (nombre, tipo, obligatorio o no, se muestra en el Catalog o no). Un atributo para el que ningún Product tenga valor se va a poder eliminar; uno con algún valor solo se va a poder archivar, y se va a conservar cada valor.
 - Pasar un Product a otra subcategoría va a conservar los valores de los atributos que comparten las dos subcategorías y le va a decir a quien vende, antes de confirmar, qué valores pierde el Product. La marca de Hidden variety va a quedar en el Product, nunca como atributo.
-- Va a reemplazar: "sus **Catalog attributes** (`catalog.md`)." en la lista de lo que reúne la página, y los atributos fijos de "### Catalog attributes, per variety" de catalog.md (citados en la propia sección Planned de `catalog.md`).
+- Va a reemplazar: "sus **Catalog attributes** (`catalog.md`)." en la lista de lo que reúne la página, y los atributos fijos de "### Catalog attributes, por Variety" de catalog.md (citados en la propia sección Planned de `catalog.md`).
 
 ### Units y cantidades
 
