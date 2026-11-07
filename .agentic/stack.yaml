@@ -190,7 +190,7 @@ ci_dispatch:
 # `retries: 1`, vitest `retry: 1`, all only under `CI`), not here. Validation: #360 gives no
 # command that validates this file; the pins in tests/test_stack_ci.py (`_rerun_form_problems`)
 # are the whole proof: a form added later must name a declared check, carry `command` and
-# `test_id`, use none of `--lf`, `--last-failed`, `--reruns`, and succeed when it selects nothing.
+# `test_id`, use no cache selector (`--lf`, `--ff`, `--sw`, `--last-failed`) nor `--reruns`, and exit 0 on nothing.
 # Read at a task's base, like every key here.
 # `ci_covers` (agentic-system GH-453): when `web-e2e` times out locally, the check defers to CI's
 # `e2e` check-run, matched by exact name; a skipped, missing or pending job never covers. The
