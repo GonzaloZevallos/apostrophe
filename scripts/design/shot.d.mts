@@ -67,6 +67,7 @@ export type Capture = 'captured' | 'not-captured';
 export type SideRecord = { path: string | null; reason?: string | null };
 export type RowCapture = { capture: Capture; reasons?: { design?: string; built?: string } };
 export const CALM_CONTEXT: Readonly<{ reducedMotion: 'reduce' }>;
+export const CAPTURE_SCALE: 2;
 export const CALM_CSS: string;
 export const PROBE_CSS: string;
 export function captureContextOptions(row: { width: number; height: number; url: string }): {

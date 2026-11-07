@@ -74,6 +74,7 @@ import {
 import { applyInPage, gatherInPage, TOLERANCE, unscaled } from './textScale.mjs'
 import { createCensus } from './census.mjs'
 import {
+  CAPTURE_SCALE,
   PROBE_CSS,
   captureContextOptions,
   coversScreen,
@@ -156,7 +157,7 @@ if (typeof facts.today !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(facts.today))
 const out = resolve(values.out)
 mkdirSync(out, { recursive: true })
 
-const DEVICE_SCALE_FACTOR = 2
+const DEVICE_SCALE_FACTOR = CAPTURE_SCALE
 const CAPTURE_INSTANT = new Date(`${facts.today}T12:00:00-03:00`)
 
 // The user a screen signs in as: its `account`'s, else La Huerta's.

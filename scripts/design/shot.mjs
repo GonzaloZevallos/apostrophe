@@ -11,13 +11,15 @@ import { SETTLE_REASON_REJECTED, SETTLE_REASON_UNSETTLED } from './settle.mjs'
 // rule. Only `adoptedStyleSheets` carries it, never a `<style>` node or an attribute, so the
 // probe sees no mutation. Nothing else defines these values.
 export const CALM_CONTEXT = Object.freeze({ reducedMotion: 'reduce' })
+// The device scale factor of every capture context; `comparisons.mjs` reads it for the sheet's column widths.
+export const CAPTURE_SCALE = 2
 export const CALM_CSS =
   '*, *::before, *::after { animation-duration: 0s !important; animation-delay: 0s !important; transition-duration: 0s !important; transition-delay: 0s !important; }'
 export const PROBE_CSS = `*, *::before, *::after { caret-color: transparent !important; }\n${CALM_CSS}`
 
 // The options of one row's design and built contexts: the same for both, whatever the row.
 export function captureContextOptions({ width, height, url }) {
-  return { viewport: { width, height }, deviceScaleFactor: 2, colorScheme: 'light', baseURL: url, ...CALM_CONTEXT }
+  return { viewport: { width, height }, deviceScaleFactor: CAPTURE_SCALE, colorScheme: 'light', baseURL: url, ...CALM_CONTEXT }
 }
 
 // The height the viewport grows to so a tall page fits it: the document's own, same width.
