@@ -465,6 +465,28 @@ const stepKind = (error) => (error?.message === 'timeout' || error?.name === 'Ti
 // Every read, resize and the shot itself run bounded by `withinTimeout`; the settle keeps its own bounds.
 const bounded = (promise) => withinTimeout(Promise.resolve(promise))
 
+// Most reads of the page, one browser round trip each, that wait for the resize event of a growth.
+const RESIZE_POLLS = 100
+
+// Grows the viewport and waits until the page has been told: the resize event reaches the page on
+// a later browser frame than `setViewportSize` returns on, and a page that follows it (the shell's
+// visual-viewport pin writes a `style` on its layout) would otherwise mutate after the settle and
+// the shot, and the frame after the shot would find it moving. The listener goes in before the
+// resize and only sets a flag: no DOM is touched. A page that is never told is not waited on
+// longer than the bound.
+async function growViewport(page, size) {
+  await bounded(
+    page.evaluate(() => {
+      window.__captureResized = false
+      ;(window.visualViewport ?? window).addEventListener('resize', () => { window.__captureResized = true }, { once: true })
+    }),
+  )
+  await bounded(page.setViewportSize(size))
+  for (let polls = 0; polls < RESIZE_POLLS; polls += 1) {
+    if (await bounded(page.evaluate(() => window.__captureResized === true))) return
+  }
+}
+
 // The before and after snapshots of the elements, matched by node identity through their handles.
 async function sizeSnapshot(page, handle) {
   return bounded(page.evaluate(snapshotInPage, handle))
@@ -517,7 +539,7 @@ async function shotSteps(page, { block, ofFirstText, census, side }, handles) {
   if (plan.mode === 'grow') {
     before = await sizeSnapshot(page, beforeHandle)
     if (plan.height !== viewport.height) {
-      await bounded(page.setViewportSize({ width: viewport.width, height: plan.height }))
+      await growViewport(page, { width: viewport.width, height: plan.height })
     }
   }
   const clip = block ? await bounded(sectionClip(block)) : undefined
