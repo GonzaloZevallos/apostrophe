@@ -1,0 +1,222 @@
+/**
+ * The Selector on a computer (>= 900 px): an inline dropdown driven by the keyboard that never
+ * touches the sheet stack. Also the phone list's frame following the visual viewport.
+ */
+
+import { act, fireEvent, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { useState } from 'react'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { stubViewport } from '../test-viewport'
+import { Controlled, numbered, renderForm, submitSpy } from './selectorTestKit'
+
+beforeEach(() => {
+  stubViewport('computer')
+  submitSpy.mockReset()
+})
+afterEach(() => {
+  vi.unstubAllGlobals()
+  Reflect.deleteProperty(window, 'visualViewport')
+})
+
+const base = { label: 'Category', loading: false, emptySetMessage: 'Nothing yet.' }
+
+function field() {
+  return screen.getByRole('button', { name: /^Category/ })
+}
+
+describe('the dropdown', () => {
+  test('opens as a listbox named by its field without touching the stack, and a click picks', async () => {
+    const user = userEvent.setup()
+    const onPick = vi.fn()
+    const { depth } = renderForm(<Controlled {...base} required options={numbered(4)} onPick={onPick} />)
+    expect(field()).toHaveAttribute('aria-haspopup', 'listbox')
+    await user.click(field())
+    expect(field()).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('listbox', { name: 'Category options' })).toBeInTheDocument()
+    expect(depth()).toBe(0)
+    await user.click(screen.getByRole('option', { name: 'Option 3' }))
+    expect(onPick).toHaveBeenCalledExactlyOnceWith('v3')
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+    expect(field()).toHaveTextContent('Option 3')
+    expect(field()).toHaveFocus()
+    expect(depth()).toBe(0)
+  })
+
+  test('arrows move the active row, Enter picks it and submits nothing', async () => {
+    const user = userEvent.setup()
+    const onPick = vi.fn()
+    renderForm(<Controlled {...base} required options={numbered(4)} onPick={onPick} />)
+    await user.click(field())
+    const list = screen.getByRole('listbox')
+    expect(list).toHaveAttribute('aria-activedescendant', screen.getByRole('option', { name: 'Option 1' }).id)
+    await user.keyboard('{ArrowDown}{ArrowDown}')
+    expect(list).toHaveAttribute('aria-activedescendant', screen.getByRole('option', { name: 'Option 3' }).id)
+    await user.keyboard('{ArrowUp}')
+    expect(list).toHaveAttribute('aria-activedescendant', screen.getByRole('option', { name: 'Option 2' }).id)
+    await user.keyboard('{Enter}')
+    expect(onPick).toHaveBeenCalledExactlyOnceWith('v2')
+    expect(submitSpy).not.toHaveBeenCalled()
+    expect(field()).toHaveFocus()
+  })
+
+  test('the arrow keys open it from the field, with the active row on the current option', async () => {
+    const user = userEvent.setup()
+    renderForm(<Controlled {...base} required initial="v3" options={numbered(4)} />)
+    field().focus()
+    await user.keyboard('{ArrowDown}')
+    expect(screen.getByRole('listbox')).toHaveAttribute(
+      'aria-activedescendant',
+      screen.getByRole('option', { name: 'Option 3 Selected' }).id,
+    )
+  })
+
+  test('Escape closes the dropdown only: no document or window keydown listener receives it', async () => {
+    const user = userEvent.setup()
+    const onDocument = vi.fn()
+    const onWindow = vi.fn()
+    document.addEventListener('keydown', onDocument)
+    window.addEventListener('keydown', onWindow)
+    renderForm(<Controlled {...base} required options={numbered(4)} />)
+    await user.click(field())
+    onDocument.mockClear()
+    onWindow.mockClear()
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+    expect(field()).toHaveFocus()
+    expect(onDocument).not.toHaveBeenCalled()
+    expect(onWindow).not.toHaveBeenCalled()
+    document.removeEventListener('keydown', onDocument)
+    window.removeEventListener('keydown', onWindow)
+  })
+
+  test('Tab leaves the dropdown, closing it', async () => {
+    const user = userEvent.setup()
+    renderForm(
+      <>
+        <Controlled {...base} required options={numbered(4)} />
+        <input aria-label="Next field" />
+      </>,
+    )
+    await user.click(field())
+    await user.tab()
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Next field' })).toHaveFocus()
+  })
+
+  test('a press outside closes it without moving focus back', async () => {
+    const user = userEvent.setup()
+    renderForm(
+      <>
+        <Controlled {...base} required options={numbered(4)} />
+        <input aria-label="Next field" />
+      </>,
+    )
+    await user.click(field())
+    await user.click(screen.getByRole('textbox', { name: 'Next field' }))
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Next field' })).toHaveFocus()
+  })
+
+  test('Enter on the field and a pick submit nothing', async () => {
+    const user = userEvent.setup()
+    renderForm(<Controlled {...base} required options={numbered(4)} />)
+    field().focus()
+    await user.keyboard('{Enter}')
+    await user.click(screen.getByRole('option', { name: 'Option 1' }))
+    expect(submitSpy).not.toHaveBeenCalled()
+  })
+
+  test('goes up when the room below the field is smaller than its height', async () => {
+    const style = document.createElement('style')
+    style.textContent = '.selector-desplegable { max-height: 300px; }'
+    document.head.append(style)
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 500 })
+    const user = userEvent.setup()
+    renderForm(<Controlled {...base} required options={numbered(4)} />)
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({ bottom: 400 } as DOMRect)
+    await user.click(field())
+    const box = screen.getByRole('listbox').parentElement
+    expect(box?.className).toContain('selector-desplegable--arriba')
+    style.remove()
+    vi.restoreAllMocks()
+  })
+})
+
+describe('search in the dropdown', () => {
+  test('behaves as on the phone: above 8 only, folds accents, No results, Enter picks the first match', async () => {
+    const user = userEvent.setup()
+    const onPick = vi.fn()
+    const options = [...numbered(9), { value: 'n', label: 'Piña' }]
+    renderForm(<Controlled {...base} required options={options} onPick={onPick} />)
+    await user.click(field())
+    const search = screen.getByRole('searchbox', { name: 'Search' })
+    expect(search).toHaveFocus()
+    await user.type(search, 'PINA')
+    expect(within(screen.getByRole('listbox')).getAllByRole('option')).toHaveLength(1)
+    await user.keyboard('{Enter}')
+    expect(onPick).toHaveBeenCalledExactlyOnceWith('n')
+    expect(submitSpy).not.toHaveBeenCalled()
+    await user.click(field())
+    expect(screen.getByRole('searchbox')).toHaveValue('')
+    await user.type(screen.getByRole('searchbox'), 'zzz')
+    expect(screen.getByText('No results')).toBeInTheDocument()
+  })
+
+  test('no search at 8 options; the empty set shows its message', async () => {
+    const user = userEvent.setup()
+    const { unmount } = renderForm(<Controlled {...base} required options={numbered(8)} />)
+    await user.click(field())
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument()
+    unmount()
+    renderForm(<Controlled {...base} emptyWording="No type" options={[]} />)
+    await user.click(field())
+    expect(screen.getByText('Nothing yet.')).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: 'No type' })).toBeInTheDocument()
+  })
+})
+
+describe('loading', () => {
+  test('turning true while the dropdown is open closes it and focus goes to the wrapper', async () => {
+    const user = userEvent.setup()
+    let setLoading: (loading: boolean) => void = () => undefined
+    function Switching() {
+      const [loading, set] = useState(false)
+      setLoading = set
+      return <Controlled {...base} loading={loading} required options={numbered(4)} />
+    }
+    renderForm(<Switching />)
+    await user.click(field())
+    act(() => setLoading(true))
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+    expect(screen.getByRole('group', { name: 'Category' })).toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Category' })).toBeDisabled()
+  })
+})
+
+describe('the phone list follows the visual viewport', () => {
+  class FakeVisualViewport extends EventTarget {
+    offsetTop = 0
+    height = 700
+    scale = 1
+  }
+
+  test('the frame carries --vv-alto of the mocked height and updates on resize', async () => {
+    stubViewport('phone')
+    const fake = new FakeVisualViewport()
+    Object.defineProperty(window, 'visualViewport', { configurable: true, value: fake })
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 700 })
+    const user = userEvent.setup()
+    renderForm(<Controlled {...base} required options={numbered(20)} />)
+    await user.click(field())
+    const frame = screen.getByRole('dialog').parentElement
+    expect(frame?.style.getPropertyValue('--vv-alto')).toBe('700px')
+    fake.height = 420
+    act(() => {
+      fake.dispatchEvent(new Event('resize'))
+    })
+    expect(frame?.style.getPropertyValue('--vv-alto')).toBe('420px')
+    expect(within(screen.getByRole('dialog')).getAllByRole('group')).toHaveLength(1)
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+  })
+})
