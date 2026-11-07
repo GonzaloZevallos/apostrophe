@@ -503,7 +503,9 @@ describe('on a computer (two panes)', () => {
 
     // Restore leaves for Varieties, and on a computer Varieties at once replaces its bare path with
     // the first live variety by name: that page is the stable end state, so it is the one waited on.
-    // The bare path is held for an instant only, and no wait can count on seeing it.
+    // The bare path is held for an instant only, and no wait can count on seeing it. (The red on
+    // master after 6b4aa4a5 did not reproduce on any commit of e388f5b..6b4aa4a5, so the culprit
+    // commit was not found; this is the mechanism read in the code and seen in the router's history.)
     await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 4 })), { timeout: 10_000 })
     expect(await screen.findByText('All entries')).toBeTruthy()
     // The list takes the left pane back one render after the path changes: wait for it.
