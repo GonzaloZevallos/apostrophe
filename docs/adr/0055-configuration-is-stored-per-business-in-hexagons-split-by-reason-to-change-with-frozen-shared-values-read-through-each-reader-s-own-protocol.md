@@ -89,6 +89,6 @@ where that configuration lives and how code reads it. No code changes here.
 
 ## Amendment (2026-11-01, GH-318 part 13)
 
-docs/adr/0074-the-screen-word-is-always-product-and-no-product-word-setting-exists.md withdraws the
+docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md withdraws the
 planned "Product word" of this ADR: no product word is stored or read, and no "Variety" / "Varieties"
 row is written for an existing business. The rest of this ADR holds.

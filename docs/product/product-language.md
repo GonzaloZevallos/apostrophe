@@ -2,7 +2,7 @@
 
 El único idioma en que escribe el producto: inglés. Abarca cada palabra que el producto mismo escribe para que la lea una persona: pantallas, estados, nombres accesibles, mensajes de la API dirigidos a una persona, las líneas que imprimen los scripts del **Operator**, las palabras propias del informe de la **Spreadsheet import** y las líneas fijas del **Catalog** de Telegram. Todo texto del front vive en un solo módulo con claves, el **Copy module**. No cambia ningún comportamiento de ninguna capacidad: pantallas, flujos, rutas, reglas y formatos quedan como los definen sus dueños. Reemplaza la regla de español rioplatense que antes establecían BRIEF.md y la sección de idioma y formatos de accounts.md. Los docs de capacidades y los archivos de diseño nombran cada pantalla, grupo, control y mensaje con ese mismo inglés, así que cada cosa tiene un solo nombre.
 
-Lo que vende un **Business** se llama en el Product language siempre "Product" / "Products", para todo Business; no es un dato de quien vende ni una configuración (varieties.md, docs/adr/0074-the-screen-word-is-always-product-and-no-product-word-setting-exists.md).
+Lo que vende un **Business** se llama en el Product language siempre "Product" / "Products", para todo Business; no es un dato de quien vende ni una configuración (varieties.md, docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md).
 
 El Product language no es el idioma de la documentación. La documentación funcional y técnica (`docs/product/` y las definiciones de `CONTEXT.md` incluidas) se escribe en español rioplatense, con identificadores, nombres de clases y nombres UML en inglés: es la **Documentation language**. Que los docs estén en español no cambia ninguna palabra que muestre la app.
 

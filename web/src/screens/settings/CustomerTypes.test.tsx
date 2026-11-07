@@ -5,7 +5,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -97,6 +97,17 @@ test('creates a type with the default circle icon and refreshes the list', async
   expect(created).toEqual({ name: 'Friends', icon: 'circle' })
   await vi.waitFor(() => expect(screen.queryByRole('textbox', { name: 'Name' })).not.toBeInTheDocument())
   expect(fetchMock.mock.calls.filter(([url]) => url === '/api/customer-types').length).toBeGreaterThan(1)
+})
+
+test('the icon picker shows all eight icons in order, each with its accessible name', async () => {
+  renderScreen([])
+
+  await userEvent.click(await screen.findByRole('button', { name: '+ Customer type' }))
+
+  const group = screen.getByRole('radiogroup', { name: 'Icon' })
+  expect(within(group).getAllByRole('radio').map((radio) => radio.getAttribute('aria-label'))).toEqual([
+    'Circle', 'Star', 'Heart', 'Diamond', 'Flag', 'Tag', 'Crown', 'Bell',
+  ])
 })
 
 test('picks another icon and sends its key', async () => {

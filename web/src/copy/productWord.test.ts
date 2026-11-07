@@ -1,5 +1,5 @@
 /**
- * The owner-facing word sweep: the screen word is always Product / Products (ADR-0074),
+ * The owner-facing word sweep: the screen word is always Product / Products (ADR-0075),
  * so no resolved copy text says variety or variedad. It reads values, never keys, and
  * never source files: the texts `en.baseline.json` records and every value of
  * `locales/<lang>/*.json`, for each language folder on disk except the test locale.

@@ -1,4 +1,4 @@
-"""The Catalog text is pinned (GH-318, ADR-0074): changing the screen word to Product must
+"""The Catalog text is pinned (GH-318, ADR-0075): changing the screen word to Product must
 not move a byte of what the Catalog says, nor make Upkeep send or edit anything.
 
 Through `TestClient` over `/catalog` and `/pinned-catalog` with the fake Telegram adapter

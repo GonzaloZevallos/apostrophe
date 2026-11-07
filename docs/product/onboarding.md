@@ -2,7 +2,7 @@
 
 La configuración paso a paso por la que se guía a un **Business** recién creado una vez que se acepta su **Invitation** de Business nuevo. Para ese Business ocupa el lugar de la **First-run checklist**. Pide lo que necesita una primera **Sale** (un **Product** con precio para hoy y su **Opening stock**) y ofrece las configuraciones de todo el Business que quien vende recién empieza tendría que salir a buscar (**Catalog header and footer**, el bot de Telegram, un socio, **Expense category**s). Cada paso guarda exactamente lo que guarda su dueño: varieties.md, stock.md, catalog.md, pinned-catalog.md, accounts.md y expenses.md. El Onboarding no tiene ninguna configuración propia; solo recuerda qué pasos opcionales se pasaron. Lo ve solo su Business (ADR-0004). Dónde se ubica está en navigation.md; su aviso de Home sigue el orden de results.md.
 
-El Onboarding nunca pregunta cómo se llama lo que vende el Business: en pantalla es siempre "Product" / "Products" para todo Business (varieties.md, docs/adr/0074-the-screen-word-is-always-product-and-no-product-word-setting-exists.md), y no existe ningún paso "What you sell".
+El Onboarding nunca pregunta cómo se llama lo que vende el Business: en pantalla es siempre "Product" / "Products" para todo Business (varieties.md, docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md), y no existe ningún paso "What you sell".
 
 ## Jobs
 

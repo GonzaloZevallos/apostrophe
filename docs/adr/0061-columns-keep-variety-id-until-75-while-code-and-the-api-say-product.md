@@ -75,7 +75,7 @@ business's screen word; Product is the name of the thing.
 
 ## Amendment (2026-11-01, GH-318 part 13)
 
-docs/adr/0074-the-screen-word-is-always-product-and-no-product-word-setting-exists.md supersedes
+docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md supersedes
 only this ADR's sentence that Variety remains the on-screen word for existing businesses: the screen
 word is always Product / Products for every Business. The rules on columns, front paths and hexagon
 names above still hold.

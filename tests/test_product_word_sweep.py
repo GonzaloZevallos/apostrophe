@@ -1,4 +1,4 @@
-"""The permanent word sweep (GH-318, ADR-0074): no text a person reads says variety or
+"""The permanent word sweep (GH-318, ADR-0075): no text a person reads says variety or
 variedad, whatever the day or the order of the tests.
 
 It scans resolved text, never source files: every message of every language's `.po`

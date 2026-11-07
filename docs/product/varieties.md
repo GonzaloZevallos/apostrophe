@@ -2,7 +2,7 @@
 
 Los **Product**s que vende un **Business** y el historial de precios de cada uno, que ve solo ese Business (ADR-0004). Toda otra capacidad lee los precios de acá: una **Sale** toma el **Current price** de su día, y el **Catalog** muestra el de hoy.
 
-En pantalla, lo que vende un Business se llama siempre "Product" / "Products", igual para todo Business, los existentes incluidos; no hay ninguna configuración, columna ni campo de la API para elegir otra palabra (decisión del dueño del 2026-10-29, registrada en docs/adr/0074-the-screen-word-is-always-product-and-no-product-word-setting-exists.md, que reemplaza solo la oración de pantalla de ADR-0061). El nombre de este archivo, las rutas del front `/varieties/*`, las columnas `variety_id` (hasta #75) y los ids del registro de diseño son identificadores y no cambian (ADR-0061).
+En pantalla, lo que vende un Business se llama siempre "Product" / "Products", igual para todo Business, los existentes incluidos; no hay ninguna configuración, columna ni campo de la API para elegir otra palabra (decisión del dueño del 2026-10-29, registrada en docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md, que reemplaza solo la oración de pantalla de ADR-0061). El nombre de este archivo, las rutas del front `/varieties/*`, las columnas `variety_id` (hasta #75) y los ids del registro de diseño son identificadores y no cambian (ADR-0061).
 
 Products es la única pantalla de un Product. Su lista y la página de cada Product reúnen:
 - los precios del Product (acá);
@@ -142,7 +142,7 @@ Criterios de éxito:
 ## Comportamiento
 
 - **Product**: un nombre, sin espacios al principio ni al final, con los espacios internos colapsados, de hasta 60 caracteres. Renombrarlo conserva sus precios. Los Products se listan por nombre.
-- **La palabra en pantalla**: "Product" / "Products" (y sus compuestos: Product history, Archived product, Hidden product, la pestaña Products), a través del Copy module, igual para todo Business sin importar su **Stored language** ni su historia. No hay ninguna configuración de la palabra, ni en Settings ni en el Onboarding (docs/adr/0074-the-screen-word-is-always-product-and-no-product-word-setting-exists.md).
+- **La palabra en pantalla**: "Product" / "Products" (y sus compuestos: Product history, Archived product, Hidden product, la pestaña Products), a través del Copy module, igual para todo Business sin importar su **Stored language** ni su historia. No hay ninguna configuración de la palabra, ni en Settings ni en el Onboarding (docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md).
   - Los textos visibles de esta capacidad dicen, entre otros: "Products", "New product", "Delete product", "Archive product", "N products · all ok", "Back to Products", "‹ Products", y los toasts "Product saved", "Product deleted", "Product archived" y "Product restored".
   - Lo que no cambia: los datos de quien vende (nombres, Notes, Catalog header and footer guardados, Expense categories), las rutas del front `/varieties/*`, las redirecciones heredadas, los ids del registro de diseño y los identificadores del código (ADR-0061). Las demás palabras de flor (gramos, "g", **Indica share**, **Aroma**, 🌿) quedan para #420 y #390, así que una pantalla puede leer "Product" junto a "g" o "% indica" por ahora; ningún texto nuevo de esta capacidad agrega una.
 - **Price entry**: una fecha de vigencia y un List price por gramo en pesos enteros. Opcionalmente, también tiene:
@@ -474,7 +474,7 @@ Criterios de éxito:
   rechazo propio. Ninguno repite un nombre ni un monto (ADR-0005).
 - **Una fuente por mensaje compartido**: en el front, "Check the grams entered" (que muestran los formularios de precio, de Stock entry y de Stock withdrawal) y el toast "Price saved" se definen cada uno una sola vez y se leen de ahí; ninguna pantalla repite ninguno de los dos como literal propio.
 - **Diseño en el celular (GH-319)**: la rama de celular del formulario de precio, New product y las tres ediciones en línea los dibuja el único `Sheet` compartido; la rama de diálogo `PriceFrame` de ADR-0044 no se edita, y se conservan las claves del registro `VariedadRenombrar`, `VariedadUmbral` y `CatalogoAtributos`.
-- **Sin palabra configurable**: ninguna ruta, campo de esquema ni columna guarda ni sirve una palabra elegida por el Business para lo que vende. La palabra de pantalla vive solo en el Copy module (docs/adr/0074-the-screen-word-is-always-product-and-no-product-word-setting-exists.md).
+- **Sin palabra configurable**: ninguna ruta, campo de esquema ni columna guarda ni sirve una palabra elegida por el Business para lo que vende. La palabra de pantalla vive solo en el Copy module (docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md).
 
 ## Métricas
 
@@ -702,4 +702,4 @@ Decidido en docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-i
 
 Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; lo entregan las partes que construyen cada configuración, cada una sembrando en los Businesses existentes su propio valor por defecto.
 
-- Cada Business existente se va a migrar, sin reescribir ninguna fila guardada, a una categoría y una subcategoría que tengan emoji, Indica share y Aroma como atributos; la Unit "grams" / "g" con 2 decimales; "$" con pesos enteros; y VIP como Customer type. La marca de Hidden product va a quedar en cada Product. Va a poder agregar categorías y subcategorías; no se le va a imponer nada más. La palabra de pantalla no se migra: es "Product" / "Products" para todos y ya rige (docs/adr/0074-the-screen-word-is-always-product-and-no-product-word-setting-exists.md).
+- Cada Business existente se va a migrar, sin reescribir ninguna fila guardada, a una categoría y una subcategoría que tengan emoji, Indica share y Aroma como atributos; la Unit "grams" / "g" con 2 decimales; "$" con pesos enteros; y VIP como Customer type. La marca de Hidden product va a quedar en cada Product. Va a poder agregar categorías y subcategorías; no se le va a imponer nada más. La palabra de pantalla no se migra: es "Product" / "Products" para todos y ya rige (docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md).
