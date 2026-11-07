@@ -178,6 +178,20 @@ ci: [ci-ok]
 ci_dispatch:
   workflow: ci.yml
   sha_input: sha
+# `rerun_checks` (agentic-system ADR-0066, ADR-0082, #360 as merged in 3649b334; GH-563): none is
+# declared, on purpose. The schema is `{<check>: {command, test_id}}`: the system runs `command`
+# verbatim after a failure and reads the failed ids from the first run's output with `test_id`;
+# it substitutes only `{base}` (in `affected_checks`) and no failed-ids token, so a form cannot be
+# handed the tests it should run. The only way left to select "the failed tests" is a cache the
+# runner keeps (pytest `--lf`, Playwright `--last-failed`), and both are refused here: `--lf`
+# would give `.pytest_cache` a second writer, and web/scripts/e2e.sh gives every run a new output
+# directory, so `.last-run.json` is never found again. vitest has no such cache. So a red check
+# reruns whole, as today, and the retry of ONE test happens inside CI (`--reruns 1`,
+# `retries: 1`, vitest `retry: 1`, all only under `CI`), not here. Validation: #360 gives no
+# command that validates this file; the pins in tests/test_stack_ci.py (`_rerun_form_problems`)
+# are the whole proof: a form added later must name a declared check, carry `command` and
+# `test_id`, use none of `--lf`, `--last-failed`, `--reruns`, and succeed when it selects nothing.
+# Read at a task's base, like every key here.
 # `ci_covers` (agentic-system GH-453): when `web-e2e` times out locally, the check defers to CI's
 # `e2e` check-run, matched by exact name; a skipped, missing or pending job never covers. The
 # matrix is `e2e-shard` and reports `e2e-shard (N)`; `e2e` is the aggregator over it, green only
@@ -188,7 +202,9 @@ ci_dispatch:
 # reporter prints each final failure as the test ends, and the `N failed` summary may never print.
 # `✘` is unanchored on purpose: an extra match only refuses the deferral, which costs a rerun and
 # never a wrong merge (an anchor that tolerates colour codes would need the nested repetition the
-# limits forbid). If `retries` ever goes above 0, a retried `✘` also refuses the deferral. "Covered"
+# limits forbid). `retries` is 0 locally and 1 only under `CI` (GH-563), so a local `✘` is still a
+# final failure and a retried test never reaches this output; if a local `retries` ever goes above 0,
+# a retried `✘` also refuses the deferral. "Covered"
 # means the e2e selection CI computed for this head's diff (scripts/ci_changes.py, ADR-0067), not
 # the full local run. Residual: a head whose diff selects no e2e spec skips `e2e`, so it is not
 # covered; a cancelled run does not cover either. Read at a task's base, like every key here.

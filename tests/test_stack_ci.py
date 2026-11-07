@@ -1711,3 +1711,79 @@ def test_a_stack_check_or_addopts_with_reruns_is_refused() -> None:
         "affected_checks 'tests' carries --reruns; a retry is CI only",
         "pyproject.toml addopts carries --reruns; a retry is CI only",
     ]
+
+
+NO_TESTS_GUARDS = {
+    "pytest": "exit 5",
+    "playwright": "--pass-with-no-tests",
+    "vitest": "--passWithNoTests",
+}
+RERUN_RUNNERS = {"web-e2e": "playwright", "web-tests": "vitest"}
+FORBIDDEN_RERUN_FLAGS = ("--lf", "--last-failed", "--reruns")
+
+
+def _rerun_form_problems(stack: Data) -> list[str]:
+    """The `rerun_checks` forms (agentic-system #360: `{command, test_id}` per check, the command
+    run verbatim, no failed-ids token): each names a declared check, carries both keys, selects
+    through no runner cache and no retry flag, and exits 0 on nothing to rerun (GH-563)."""
+    problems: list[str] = []
+    checks = cast("Data", stack.get("checks", {}))
+    for name, form in cast("Data", stack.get("rerun_checks", {})).items():
+        if name not in checks:
+            problems.append(f"rerun_checks {name!r} is not a key of checks")
+        command = str(form.get("command", "")) if isinstance(form, dict) else ""
+        if not command or not isinstance(form.get("test_id"), str):
+            problems.append(f"rerun_checks {name!r} needs a `command` and a `test_id`")
+        problems.extend(
+            f"rerun_checks {name!r} uses {flag}; no runner cache and no retry flag"
+            for flag in FORBIDDEN_RERUN_FLAGS
+            if re.search(rf"{re.escape(flag)}(?![\w-])", command)
+        )
+        runner = RERUN_RUNNERS.get(name, "pytest")
+        guard = NO_TESTS_GUARDS[runner]
+        if guard not in command and not (runner == "pytest" and "$? -eq 5" in command):
+            problems.append(f"rerun_checks {name!r} has no no-tests guard ({guard})")
+    return problems
+
+
+def test_the_real_rerun_checks_forms_are_sound() -> None:
+    assert _rerun_form_problems(STACK) == []
+
+
+def test_a_rerun_form_for_an_unknown_check_or_without_its_keys_is_refused() -> None:
+    stack = copy.deepcopy(STACK)
+    stack["rerun_checks"] = {
+        "nope": {"command": "pytest || [ $? -eq 5 ]", "test_id": "(x)"},
+        "tests": {"command": "uv run --no-project pytest"},
+    }
+    assert _rerun_form_problems(stack) == [
+        "rerun_checks 'nope' is not a key of checks",
+        "rerun_checks 'tests' needs a `command` and a `test_id`",
+        "rerun_checks 'tests' has no no-tests guard (exit 5)",
+    ]
+
+
+def test_a_rerun_form_with_a_cache_or_a_retry_flag_or_no_guard_is_refused() -> None:
+    stack = copy.deepcopy(STACK)
+    stack["rerun_checks"] = {
+        "tests": {"command": "uv run pytest --lf --reruns 1", "test_id": "(x)"},
+        "web-e2e": {"command": "npx playwright test --last-failed", "test_id": "(x)"},
+    }
+    assert _rerun_form_problems(stack) == [
+        "rerun_checks 'tests' uses --lf; no runner cache and no retry flag",
+        "rerun_checks 'tests' uses --reruns; no runner cache and no retry flag",
+        "rerun_checks 'tests' has no no-tests guard (exit 5)",
+        "rerun_checks 'web-e2e' uses --last-failed; no runner cache and no retry flag",
+        "rerun_checks 'web-e2e' has no no-tests guard (--pass-with-no-tests)",
+    ]
+
+
+def test_a_rerun_form_that_selects_nothing_and_succeeds_is_accepted() -> None:
+    stack = copy.deepcopy(STACK)
+    stack["rerun_checks"] = {
+        "web-tests": {
+            "command": "npm --prefix web test -- --passWithNoTests",
+            "test_id": "(x)",
+        }
+    }
+    assert _rerun_form_problems(stack) == []
