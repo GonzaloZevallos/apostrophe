@@ -163,6 +163,14 @@ export function SheetStackProvider({ children }: { children: ReactNode }) {
   return createElement(StackContext.Provider, { value }, children)
 }
 
+/**
+ * The level of the sheet a component is drawn inside: 0 on the form itself, 1 inside the first
+ * sheet over it, 2 inside the second. A control that opens its own sheet (the Selector) uses
+ * `useSheet(useContext(SheetLevel) + 1)` and wraps what it draws in the next level, so it never
+ * takes a level prop and a Selector inside a sheet opens one entry over that sheet.
+ */
+export const SheetLevel = createContext(0)
+
 export interface Sheet {
   isOpen: boolean
   open: () => void
