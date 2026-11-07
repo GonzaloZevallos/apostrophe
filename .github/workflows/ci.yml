@@ -119,7 +119,7 @@ jobs:
           version: "0.12.13"
       - run: uv venv --python 3.13
       - run: uv sync --locked --extra dev
-      - run: uv run --no-project pytest -n auto --reruns 1 --cov --cov-report= -- $PATHS
+      - run: uv run --no-project pytest -n auto --reruns 1 --cov --cov-report= -o junit_family=xunit1 --junitxml="$RUNNER_TEMP/pytest-${{ matrix.shard }}.xml" -- $PATHS
         env:
           COVERAGE_FILE: .coverage.${{ matrix.shard }}
           PATHS: ${{ matrix.paths }}
@@ -127,6 +127,20 @@ jobs:
         with:
           name: coverage-pytest-${{ matrix.shard }}
           path: .coverage.${{ matrix.shard }}
+          include-hidden-files: true
+          retention-days: 14
+      # The flaky report (GH-563): never changes the job's result, so each step runs under always()
+      # and may fail without failing the job.
+      - if: always()
+        continue-on-error: true
+        run: uv run --no-project python -m scripts.ci_flaky extract pytest "$RUNNER_TEMP/pytest-${{ matrix.shard }}.xml" "$RUNNER_TEMP/flaky/flaky-pytest-${{ matrix.shard }}.json"
+      - if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: flaky-pytest-${{ matrix.shard }}
+          path: ${{ runner.temp }}/flaky/flaky-pytest-${{ matrix.shard }}.json
+          if-no-files-found: ignore
           include-hidden-files: true
           retention-days: 14
   vitest:
@@ -167,6 +181,17 @@ jobs:
           name: coverage-vitest
           path: web/coverage/coverage-summary.json
           include-hidden-files: true
+          retention-days: 14
+      - if: always()
+        continue-on-error: true
+        run: uv run --no-project python -m scripts.ci_flaky extract vitest web/test-results/vitest.json "$RUNNER_TEMP/flaky/flaky-vitest.json"
+      - if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: flaky-vitest
+          path: ${{ runner.temp }}/flaky/flaky-vitest.json
+          if-no-files-found: ignore
           retention-days: 14
   docs:
     runs-on: ubuntu-24.04
@@ -228,6 +253,17 @@ jobs:
         with:
           name: e2e-test-results-${{ matrix.shard }}
           path: web/test-results/
+          retention-days: 14
+      - if: always()
+        continue-on-error: true
+        run: uv run --no-project python -m scripts.ci_flaky extract playwright web/test-results/*/results.json "$RUNNER_TEMP/flaky/flaky-playwright-${{ matrix.shard }}.json"
+      - if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: flaky-playwright-${{ matrix.shard }}
+          path: ${{ runner.temp }}/flaky/flaky-playwright-${{ matrix.shard }}.json
+          if-no-files-found: ignore
           retention-days: 14
   # One check-run named exactly `e2e`, green only when every shard is: the job `ci_covers.web-e2e`
   # names (the matrix itself reports `e2e-shard (N)`). No checkout, no `uv`, no check (ADR-0067).
@@ -305,3 +341,14 @@ jobs:
       - env:
           NEEDS: ${{ toJSON(needs) }}
         run: printf '%s' "$NEEDS" | uv run --no-project python scripts/ci_verdict.py
+      # The flaky report (GH-563, agentic-system #464): `agentic-flakes:` lines in this job's log, the
+      # one the stack's `ci:` names. It never changes the verdict above.
+      - if: always()
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: flaky-*
+          path: flaky-data
+      - if: always()
+        continue-on-error: true
+        run: uv run --no-project python -m scripts.ci_flaky report flaky-data

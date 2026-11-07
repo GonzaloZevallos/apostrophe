@@ -75,7 +75,13 @@ export default defineConfig({
   // so a run on a 2-vCPU CI box and on a 16-core one are the same shape.
   workers: 3,
   outputDir: OUTPUT_DIR,
-  reporter: [['list'], ['junit', { outputFile: `${OUTPUT_DIR}/junit.xml` }]],
+  // `json` feeds `scripts/ci_flaky.py` (GH-563): a test that failed and then passed is marked there,
+  // which junit does not say. `junit.xml` stays for `scripts/e2e_failures.py`.
+  reporter: [
+    ['list'],
+    ['junit', { outputFile: `${OUTPUT_DIR}/junit.xml` }],
+    ['json', { outputFile: `${OUTPUT_DIR}/results.json` }],
+  ],
   use: {
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',

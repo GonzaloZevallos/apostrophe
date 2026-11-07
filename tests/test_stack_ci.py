@@ -44,7 +44,10 @@ COMMENT_RUN = (
     """"repos/$REPO/issues/comments/$id" --field body=@coverage-report.md; else gh api --method """
     """POST "repos/$REPO/issues/$PR/comments" --field body=@coverage-report.md; fi"""
 )
-PYTEST_RUN = "uv run --no-project pytest -n auto --reruns 1 --cov --cov-report= -- $PATHS"
+PYTEST_RUN = (
+    "uv run --no-project pytest -n auto --reruns 1 --cov --cov-report= -o junit_family=xunit1 "
+    '--junitxml="$RUNNER_TEMP/pytest-${{ matrix.shard }}.xml" -- $PATHS'
+)
 VITEST_RUN = "npm --prefix web test -- --coverage $VITEST_ARGS"
 E2E_RUN = 'npm --prefix web run e2e -- --shard="$SHARD" $E2E_ARGS'
 E2E_GATE_RUN = 'test "$RESULT" = success || { echo "e2e shards: $RESULT"; exit 1; }'
@@ -142,6 +145,23 @@ CI_ONLY: dict[str, str] = {
         "binary installed only in CI"
     ),
     "uv run --no-project python -m scripts.docs.api_breaks": "needs the base ref and the PR body",
+    (
+        "uv run --no-project python -m scripts.ci_flaky extract pytest "
+        '"$RUNNER_TEMP/pytest-${{ matrix.shard }}.xml" '
+        '"$RUNNER_TEMP/flaky/flaky-pytest-${{ matrix.shard }}.json"'
+    ): "the flaky report of the pytest shard (GH-563); never changes the job's result",
+    (
+        "uv run --no-project python -m scripts.ci_flaky extract vitest "
+        'web/test-results/vitest.json "$RUNNER_TEMP/flaky/flaky-vitest.json"'
+    ): "the flaky report of the vitest run (GH-563); never changes the job's result",
+    (
+        "uv run --no-project python -m scripts.ci_flaky extract playwright "
+        "web/test-results/*/results.json "
+        '"$RUNNER_TEMP/flaky/flaky-playwright-${{ matrix.shard }}.json"'
+    ): "the flaky report of the e2e shard (GH-563); never changes the job's result",
+    "uv run --no-project python -m scripts.ci_flaky report flaky-data": (
+        "prints the `agentic-flakes:` lines agentic-system #464 reads from the `ci-ok` log"
+    ),
 }
 
 # Checks CI runs in another form (shards, coverage, selected specs): check -> the exact `run:`
@@ -1057,7 +1077,11 @@ def test_a_coverage_failure_step_that_does_not_count_the_shards_is_refused() -> 
 
 def test_an_output_name_no_producer_emits_is_refused() -> None:
     workflow = _mutated()
-    step = workflow["jobs"]["e2e-shard"]["steps"][-2]
+    step = next(
+        each
+        for each in workflow["jobs"]["e2e-shard"]["steps"]
+        if str(each.get("run", "")).startswith("npm --prefix web run e2e")
+    )
     step["env"]["E2E_ARGS"] = "${{ needs.changes.outputs.e2e_arg }}"
     assert "output 'e2e_arg' is read but no producer emits it" in _problems(workflow)
 
@@ -1644,7 +1668,11 @@ def test_a_dispatch_key_that_differs_or_sits_after_ci_covers_is_refused() -> Non
 
 
 def _pytest_commands(workflow: Data) -> list[str]:
-    return [command for command in _runs(workflow)["pytest"] if " pytest " in command]
+    return [
+        command
+        for command in _runs(workflow)["pytest"]
+        if " pytest " in command and "scripts.ci_flaky" not in command
+    ]
 
 
 def _rerun_problems(stack: Data, workflow: Data, addopts: str) -> list[str]:
