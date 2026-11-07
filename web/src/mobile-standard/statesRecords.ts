@@ -76,7 +76,43 @@ const TWELVE_VARIETIES = Array.from({ length: 12 }, (_unused, index) => ({
   current_price: null,
 }))
 
+/** Entry 1 pointed at a Variety that is archived: no listed Variety has this id. */
+const ARCHIVED_ENTRY = {
+  id: 1,
+  date: '2026-09-20',
+  product_id: 9999,
+  origin: 'harvest',
+  quantity: 25,
+  total_cost: null,
+  cost_per_gram: null,
+  note: null,
+}
+const ARCHIVED_ENTRY_READ = { path: /^\/stock\/entries\/1$/, status: 200, body: ARCHIVED_ENTRY }
+const ARCHIVED_ONLY = /^\?archived=true$/
+
 export const RECORDS_STATES: readonly WalkState[] = [
+  {
+    screen: 'stock-entry/edit-archived-variety',
+    route: ENTRY_ROUTE,
+    steps: [{ wait: STOCK_TEXT.editarEntrada }],
+    visible: 'Variedad antigua',
+    reads: [
+      ARCHIVED_ENTRY_READ,
+      {
+        path: /^\/api\/products$/,
+        query: ARCHIVED_ONLY,
+        status: 200,
+        body: [{ id: 9999, name: 'Variedad antigua', archived: true, current_price: null }],
+      },
+    ],
+  },
+  {
+    screen: 'stock-entry/edit-archived-variety-failed',
+    route: ENTRY_ROUTE,
+    steps: [{ wait: STOCK_TEXT.editarEntrada }],
+    visible: common('common:genericError'),
+    reads: [ARCHIVED_ENTRY_READ, { path: /^\/api\/products$/, query: ARCHIVED_ONLY, status: 500 }],
+  },
   {
     screen: 'stock-entry/variety-selector-open',
     route: STOCK_ENTRY_NEW,

@@ -46,8 +46,11 @@ export async function guardWrites(context: BrowserContext, stubs: readonly Write
 export async function stubReads(context: BrowserContext, stubs: readonly ReadStub[]): Promise<Undo> {
   const handler = async (route: Route): Promise<void> => {
     const request = route.request()
-    const { pathname } = new URL(request.url())
-    const stub = request.method() === 'GET' && ['fetch', 'xhr'].includes(request.resourceType()) ? stubs.find((s) => s.path.test(pathname)) : undefined
+    const { pathname, search } = new URL(request.url())
+    const stub =
+      request.method() === 'GET' && ['fetch', 'xhr'].includes(request.resourceType())
+        ? stubs.find((s) => s.path.test(pathname) && (s.query === undefined || s.query.test(search)))
+        : undefined
     if (stub === undefined) {
       await route.fallback()
       return

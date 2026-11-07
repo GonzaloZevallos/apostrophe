@@ -67,6 +67,8 @@ export const STATE_NAMES: readonly string[] = [
   'ClientesBusqueda',
   'EntradasTodas',
   'stock-entry/variety-selector-open',
+  'stock-entry/edit-archived-variety',
+  'stock-entry/edit-archived-variety-failed',
   'EntradaStockConfirmarCambios',
   'EntradaStockConfirmarBorrado',
   'PrecioNuevoFormulario',
