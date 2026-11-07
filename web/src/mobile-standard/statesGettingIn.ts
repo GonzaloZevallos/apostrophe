@@ -8,7 +8,7 @@
  */
 
 import { GONE_NOTICE as GONE_NOTICE_REFUSAL } from '../api/refusals.ts'
-import { AUTH_TEXT, BRAKE_MESSAGE, DEAD_LINK_MESSAGE, NOT_USABLE_TITLE } from '../copy/auth.ts'
+import { AUTH_TEXT, BRAKE_MESSAGE, DEAD_LINK_MESSAGE, FORGOT_SHEET_TEXT, NOT_USABLE_TITLE } from '../copy/auth.ts'
 import { SALES_TEXT } from '../copy/sales.ts'
 import { INVITATION, LOGIN, RESET, SALE, SALES } from '../routes.ts'
 import { common, refusal } from './copy.ts'
@@ -34,6 +34,26 @@ export const GETTING_IN_STATES: readonly WalkState[] = [
       { click: AUTH_TEXT.signIn },
     ],
     visible: BRAKE,
+    writes: [{ method: 'POST', path: /^\/auth\/login$/, status: 429, body: { code: 'account.login_locked' } }],
+  },
+  {
+    screen: 'EntrarOlvido',
+    route: LOGIN,
+    signedOut: true,
+    steps: [{ click: AUTH_TEXT.forgotPassword }],
+    visible: FORGOT_SHEET_TEXT.whatToAsk,
+  },
+  {
+    screen: 'EntrarFrenoOlvido',
+    route: LOGIN,
+    signedOut: true,
+    steps: [
+      { fill: { label: AUTH_TEXT.emailAddress, value: '{email}' } },
+      { fill: { label: AUTH_TEXT.password, value: 'equivocada123' } },
+      { click: AUTH_TEXT.signIn },
+      { click: AUTH_TEXT.forgotPassword },
+    ],
+    visible: FORGOT_SHEET_TEXT.whatToAsk,
     writes: [{ method: 'POST', path: /^\/auth\/login$/, status: 429, body: { code: 'account.login_locked' } }],
   },
   { screen: 'InvitacionMuerta', route: INVITATION.replace(':token', NEVER_MINTED), signedOut: true, steps: [], visible: INVITATION_DEAD },

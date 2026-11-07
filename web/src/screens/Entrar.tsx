@@ -14,6 +14,8 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
+import ForgotSheet from './ForgotSheet'
+import { SheetStackProvider, useSheet } from '../components/useSheetStack'
 import { ApiError, NetworkError, UNKNOWN_CODE } from '../api/client'
 import { kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
 import { login } from '../session'
@@ -34,6 +36,14 @@ const LOGIN_OVERRIDES: Partial<Record<RefusalCode, 'locked'>> = {
 }
 
 export default function Entrar() {
+  return (
+    <SheetStackProvider>
+      <SignInForm />
+    </SheetStackProvider>
+  )
+}
+
+function SignInForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -43,11 +53,35 @@ export default function Entrar() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const emailInput = useRef<HTMLInputElement>(null)
+  const forgotTrigger = useRef<HTMLSpanElement>(null)
+  const forgot = useSheet(1)
+  // The focus goes back to the trigger only when the sheet was opened in this mount.
+  const openedHere = useRef(false)
 
   // The keyboard is open when the screen is: the email takes the focus once, at every width.
   useEffect(() => {
     emailInput.current?.focus()
   }, [])
+
+  // Escape closes the sheet, as Close and the system back do.
+  const closeForgot = forgot.close
+  useEffect(() => {
+    if (!forgot.isOpen) return
+    function onKeyDown(pressed: KeyboardEvent): void {
+      if (pressed.code === 'Escape') closeForgot()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [forgot.isOpen, closeForgot])
+
+  const wasOpen = useRef(false)
+  useEffect(() => {
+    if (wasOpen.current && !forgot.isOpen && openedHere.current) {
+      openedHere.current = false
+      forgotTrigger.current?.querySelector('button')?.focus()
+    }
+    wasOpen.current = forgot.isOpen
+  }, [forgot.isOpen])
 
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
@@ -62,7 +96,11 @@ export default function Entrar() {
         setError(CREDENTIALS_WRONG)
       } else if (caught instanceof ApiError && resolveOverride(LOGIN_OVERRIDES, caught.code) === 'locked') {
         setLocked(true)
-      } else if (caught instanceof ApiError && caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') {
+      } else if (
+        caught instanceof ApiError &&
+        caught.code !== UNKNOWN_CODE &&
+        kindOf(caught.code) === 'refusal'
+      ) {
         setError(GENERIC_REFUSAL_MESSAGE)
       } else if (caught instanceof NetworkError) {
         setOffline(true)
@@ -75,41 +113,55 @@ export default function Entrar() {
   }
 
   return (
-    <AuthPage brand>
-      <p className="subtitulo">{AUTH_TEXT.tagline}</p>
-      <form className="formulario" onSubmit={onSubmit}>
-        <label className="campo">
-          <span className="campo__rotulo">{AUTH_TEXT.emailAddress}</span>
-          <input
-            ref={emailInput}
-            className="campo__input"
-            type="email"
-            autoComplete="username"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
+    <>
+      <AuthPage brand inert={forgot.isOpen}>
+        <p className="subtitulo">{AUTH_TEXT.tagline}</p>
+        <form className="formulario" onSubmit={onSubmit}>
+          <label className="campo">
+            <span className="campo__rotulo">{AUTH_TEXT.emailAddress}</span>
+            <input
+              ref={emailInput}
+              className="campo__input"
+              type="email"
+              autoComplete="username"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+            />
+          </label>
+          <PasswordField
+            label={AUTH_TEXT.password}
+            autoComplete="current-password"
+            value={password}
+            onChange={setPassword}
+            error={error}
           />
-        </label>
-        <PasswordField
-          label={AUTH_TEXT.password}
-          autoComplete="current-password"
-          value={password}
-          onChange={setPassword}
-          error={error}
-        />
-        <Boton textOnly="submit" type="submit" disabled={sending}>
-          {AUTH_TEXT.signIn}
-        </Boton>
-        {locked ? (
-          <span className="campo__error" role="alert">
-            {BRAKE_MESSAGE}
+          <span ref={forgotTrigger} className="auth-page__olvido">
+            <Boton
+              variant="link"
+              onClick={() => {
+                openedHere.current = true
+                forgot.open()
+              }}
+            >
+              {AUTH_TEXT.forgotPassword}
+            </Boton>
           </span>
-        ) : (
-          <span className="ayuda-fija">{LOGIN_HINT}</span>
-        )}
-        {offline && <SinConexion />}
-      </form>
-      <div className="pie">{INVITE_ONLY_LINE}</div>
-    </AuthPage>
+          <Boton textOnly="submit" type="submit" disabled={sending}>
+            {AUTH_TEXT.signIn}
+          </Boton>
+          {locked ? (
+            <span className="campo__error" role="alert">
+              {BRAKE_MESSAGE}
+            </span>
+          ) : (
+            <span className="ayuda-fija">{LOGIN_HINT}</span>
+          )}
+          {offline && <SinConexion />}
+        </form>
+        <div className="pie">{INVITE_ONLY_LINE}</div>
+      </AuthPage>
+      {forgot.isOpen && <ForgotSheet onClose={forgot.close} />}
+    </>
   )
 }

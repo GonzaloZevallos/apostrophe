@@ -3931,6 +3931,46 @@ body {
   letter-spacing: -0.03em;
   margin: var(--espacio-xs) 0 0;
 }
+/* "Forgot your password?" (GH-521): right-aligned under the password, a 44 px target at least 8 px
+ * from Show and from Sign in (the column's gap is larger), a tap and never a zoom or a selection. */
+.auth-page__olvido {
+  align-self: flex-end;
+  margin-block: calc(var(--espacio-sm) * -1);
+}
+
+.auth-page__olvido .boton--enlace {
+  min-height: var(--alto-tocable);
+  min-width: var(--alto-tocable);
+  padding-inline: var(--espacio-sm);
+  font-size: 14px;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.auth-page__olvido .boton--enlace:active {
+  opacity: 0.6;
+}
+
+.auth-page__columna .boton,
+.auth-page .campo__mostrar .boton--enlace {
+  touch-action: manipulation;
+  user-select: none;
+}
+
+/* The Forgot sheet's paragraphs: plain text in the ink colour, nothing else. */
+.olvido {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-lg);
+  font-size: 16px;
+  color: var(--tinta);
+}
+
+.olvido p {
+  margin: 0;
+}
+
 /* ===== end auth-layout ===== */
 
 /* A variety's page (VariedadDetalle.dc.html): one summary line, two equal actions and the
