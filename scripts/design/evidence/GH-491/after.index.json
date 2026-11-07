@@ -1,92 +1,92 @@
 [
   {
     "screen": "Entrar",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/Entrar.png",
+    "file": "Entrar.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/Entrar.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/Entrar.built.png",
+    "design": "Entrar.design.png",
+    "built": "Entrar.built.png",
     "capture": "captured"
   },
   {
     "screen": "EntrarOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/EntrarOscuro.png",
+    "file": "EntrarOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/EntrarOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/EntrarOscuro.built.png",
+    "design": "EntrarOscuro.design.png",
+    "built": "EntrarOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "NegocioNuevo",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/NegocioNuevo.png",
+    "file": "NegocioNuevo.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/NegocioNuevo.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/NegocioNuevo.built.png",
+    "design": "NegocioNuevo.design.png",
+    "built": "NegocioNuevo.built.png",
     "capture": "captured"
   },
   {
     "screen": "Invitacion",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/Invitacion.png",
+    "file": "Invitacion.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/Invitacion.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/Invitacion.built.png",
+    "design": "Invitacion.design.png",
+    "built": "Invitacion.built.png",
     "capture": "captured"
   },
   {
     "screen": "Reset",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/Reset.png",
+    "file": "Reset.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/Reset.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/Reset.built.png",
+    "design": "Reset.design.png",
+    "built": "Reset.built.png",
     "capture": "captured"
   },
   {
     "screen": "ResetOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ResetOscuro.png",
+    "file": "ResetOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ResetOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ResetOscuro.built.png",
+    "design": "ResetOscuro.design.png",
+    "built": "ResetOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "InicioHoy",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioHoy.png",
+    "file": "InicioHoy.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioHoy.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioHoy.built.png",
+    "design": "InicioHoy.design.png",
+    "built": "InicioHoy.built.png",
     "capture": "captured"
   },
   {
     "screen": "InicioOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioOscuro.png",
+    "file": "InicioOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioOscuro.built.png",
+    "design": "InicioOscuro.design.png",
+    "built": "InicioOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "InicioHoyCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioHoyCompu.png",
+    "file": "InicioHoyCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioHoyCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioHoyCompu.built.png",
+    "design": "InicioHoyCompu.design.png",
+    "built": "InicioHoyCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "InicioHoyCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioHoyCompuOscuro.png",
+    "file": "InicioHoyCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioHoyCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioHoyCompuOscuro.built.png",
+    "design": "InicioHoyCompuOscuro.design.png",
+    "built": "InicioHoyCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "InicioPrimeraVez",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioPrimeraVez.png",
+    "file": "InicioPrimeraVez.png",
     "notes": [
       "el diseño no se pudo capturar: shot: section outside the viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioPrimeraVez.built.png",
+    "built": "InicioPrimeraVez.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: section outside the viewport (design)"
@@ -94,20 +94,20 @@
   },
   {
     "screen": "InicioPrimeraVezCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioPrimeraVezCompu.png",
+    "file": "InicioPrimeraVezCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioPrimeraVezCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioPrimeraVezCompu.built.png",
+    "design": "InicioPrimeraVezCompu.design.png",
+    "built": "InicioPrimeraVezCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "InicioPrimeraVezOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioPrimeraVezOscuro.png",
+    "file": "InicioPrimeraVezOscuro.png",
     "notes": [
       "el diseño no se pudo capturar: shot: section outside the viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioPrimeraVezOscuro.built.png",
+    "built": "InicioPrimeraVezOscuro.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: section outside the viewport (design)"
@@ -115,12 +115,12 @@
   },
   {
     "screen": "InicioOnboardingEnCurso",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioOnboardingEnCurso.png",
+    "file": "InicioOnboardingEnCurso.png",
     "notes": [
       "el diseño no se pudo capturar: shot: section outside the viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioOnboardingEnCurso.built.png",
+    "built": "InicioOnboardingEnCurso.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: section outside the viewport (design)"
@@ -128,20 +128,20 @@
   },
   {
     "screen": "InicioOnboardingEnCursoCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioOnboardingEnCursoCompu.png",
+    "file": "InicioOnboardingEnCursoCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioOnboardingEnCursoCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioOnboardingEnCursoCompu.built.png",
+    "design": "InicioOnboardingEnCursoCompu.design.png",
+    "built": "InicioOnboardingEnCursoCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "InicioOnboardingEnCursoOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioOnboardingEnCursoOscuro.png",
+    "file": "InicioOnboardingEnCursoOscuro.png",
     "notes": [
       "el diseño no se pudo capturar: shot: section outside the viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioOnboardingEnCursoOscuro.built.png",
+    "built": "InicioOnboardingEnCursoOscuro.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: section outside the viewport (design)"
@@ -149,12 +149,12 @@
   },
   {
     "screen": "InicioOnboardingCompleto",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioOnboardingCompleto.png",
+    "file": "InicioOnboardingCompleto.png",
     "notes": [
       "el diseño no se pudo capturar: shot: section outside the viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioOnboardingCompleto.built.png",
+    "built": "InicioOnboardingCompleto.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: section outside the viewport (design)"
@@ -162,20 +162,20 @@
   },
   {
     "screen": "InicioOnboardingCompletoCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioOnboardingCompletoCompu.png",
+    "file": "InicioOnboardingCompletoCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioOnboardingCompletoCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioOnboardingCompletoCompu.built.png",
+    "design": "InicioOnboardingCompletoCompu.design.png",
+    "built": "InicioOnboardingCompletoCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "InicioOnboardingCompletoOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioOnboardingCompletoOscuro.png",
+    "file": "InicioOnboardingCompletoOscuro.png",
     "notes": [
       "el diseño no se pudo capturar: shot: section outside the viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioOnboardingCompletoOscuro.built.png",
+    "built": "InicioOnboardingCompletoOscuro.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: section outside the viewport (design)"
@@ -183,12 +183,12 @@
   },
   {
     "screen": "InicioChecklist",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioChecklist.png",
+    "file": "InicioChecklist.png",
     "notes": [
       "el diseño no se pudo capturar: shot: section outside the viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioChecklist.built.png",
+    "built": "InicioChecklist.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: section outside the viewport (design)"
@@ -196,20 +196,20 @@
   },
   {
     "screen": "InicioChecklistCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioChecklistCompu.png",
+    "file": "InicioChecklistCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioChecklistCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioChecklistCompu.built.png",
+    "design": "InicioChecklistCompu.design.png",
+    "built": "InicioChecklistCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "InicioChecklistOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioChecklistOscuro.png",
+    "file": "InicioChecklistOscuro.png",
     "notes": [
       "el diseño no se pudo capturar: shot: section outside the viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioChecklistOscuro.built.png",
+    "built": "InicioChecklistOscuro.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: section outside the viewport (design)"
@@ -217,12 +217,12 @@
   },
   {
     "screen": "InicioImportado",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioImportado.png",
+    "file": "InicioImportado.png",
     "notes": [
       "el diseño no se pudo capturar: shot: section outside the viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioImportado.built.png",
+    "built": "InicioImportado.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: section outside the viewport (design)"
@@ -230,20 +230,20 @@
   },
   {
     "screen": "InicioImportadoCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioImportadoCompu.png",
+    "file": "InicioImportadoCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioImportadoCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioImportadoCompu.built.png",
+    "design": "InicioImportadoCompu.design.png",
+    "built": "InicioImportadoCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "InicioImportadoOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioImportadoOscuro.png",
+    "file": "InicioImportadoOscuro.png",
     "notes": [
       "el diseño no se pudo capturar: shot: section outside the viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioImportadoOscuro.built.png",
+    "built": "InicioImportadoOscuro.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: section outside the viewport (design)"
@@ -251,404 +251,404 @@
   },
   {
     "screen": "Ventas",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/Ventas.png",
+    "file": "Ventas.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/Ventas.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/Ventas.built.png",
+    "design": "Ventas.design.png",
+    "built": "Ventas.built.png",
     "capture": "captured"
   },
   {
     "screen": "VentasCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/VentasCompu.png",
+    "file": "VentasCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/VentasCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/VentasCompu.built.png",
+    "design": "VentasCompu.design.png",
+    "built": "VentasCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "NuevaVenta",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/NuevaVenta.png",
+    "file": "NuevaVenta.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/NuevaVenta.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/NuevaVenta.built.png",
+    "design": "NuevaVenta.design.png",
+    "built": "NuevaVenta.built.png",
     "capture": "captured"
   },
   {
     "screen": "NuevaVentaCliente",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/NuevaVentaCliente.png",
+    "file": "NuevaVentaCliente.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/NuevaVentaCliente.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/NuevaVentaCliente.built.png",
+    "design": "NuevaVentaCliente.design.png",
+    "built": "NuevaVentaCliente.built.png",
     "capture": "captured"
   },
   {
     "screen": "NuevaVentaCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/NuevaVentaCompu.png",
+    "file": "NuevaVentaCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/NuevaVentaCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/NuevaVentaCompu.built.png",
+    "design": "NuevaVentaCompu.design.png",
+    "built": "NuevaVentaCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "VentaDetalle",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/VentaDetalle.png",
+    "file": "VentaDetalle.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/VentaDetalle.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/VentaDetalle.built.png",
+    "design": "VentaDetalle.design.png",
+    "built": "VentaDetalle.built.png",
     "capture": "captured"
   },
   {
     "screen": "VentaDetalleCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/VentaDetalleCompu.png",
+    "file": "VentaDetalleCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/VentaDetalleCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/VentaDetalleCompu.built.png",
+    "design": "VentaDetalleCompu.design.png",
+    "built": "VentaDetalleCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "VentasOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/VentasOscuro.png",
+    "file": "VentasOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/VentasOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/VentasOscuro.built.png",
+    "design": "VentasOscuro.design.png",
+    "built": "VentasOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "VentasCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/VentasCompuOscuro.png",
+    "file": "VentasCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/VentasCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/VentasCompuOscuro.built.png",
+    "design": "VentasCompuOscuro.design.png",
+    "built": "VentasCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "NuevaVentaOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/NuevaVentaOscuro.png",
+    "file": "NuevaVentaOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/NuevaVentaOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/NuevaVentaOscuro.built.png",
+    "design": "NuevaVentaOscuro.design.png",
+    "built": "NuevaVentaOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "NuevaVentaClienteOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/NuevaVentaClienteOscuro.png",
+    "file": "NuevaVentaClienteOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/NuevaVentaClienteOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/NuevaVentaClienteOscuro.built.png",
+    "design": "NuevaVentaClienteOscuro.design.png",
+    "built": "NuevaVentaClienteOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "NuevaVentaCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/NuevaVentaCompuOscuro.png",
+    "file": "NuevaVentaCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/NuevaVentaCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/NuevaVentaCompuOscuro.built.png",
+    "design": "NuevaVentaCompuOscuro.design.png",
+    "built": "NuevaVentaCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "VentaDetalleOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/VentaDetalleOscuro.png",
+    "file": "VentaDetalleOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/VentaDetalleOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/VentaDetalleOscuro.built.png",
+    "design": "VentaDetalleOscuro.design.png",
+    "built": "VentaDetalleOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "VentaDetalleCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/VentaDetalleCompuOscuro.png",
+    "file": "VentaDetalleCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/VentaDetalleCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/VentaDetalleCompuOscuro.built.png",
+    "design": "VentaDetalleCompuOscuro.design.png",
+    "built": "VentaDetalleCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "VentaGuardada",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/VentaGuardada.png",
+    "file": "VentaGuardada.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/VentaGuardada.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/VentaGuardada.built.png",
+    "design": "VentaGuardada.design.png",
+    "built": "VentaGuardada.built.png",
     "capture": "captured"
   },
   {
     "screen": "VentaGuardadaOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/VentaGuardadaOscuro.png",
+    "file": "VentaGuardadaOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/VentaGuardadaOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/VentaGuardadaOscuro.built.png",
+    "design": "VentaGuardadaOscuro.design.png",
+    "built": "VentaGuardadaOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "Clientes",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/Clientes.png",
+    "file": "Clientes.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/Clientes.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/Clientes.built.png",
+    "design": "Clientes.design.png",
+    "built": "Clientes.built.png",
     "capture": "captured"
   },
   {
     "screen": "ClientesCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ClientesCompu.png",
+    "file": "ClientesCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ClientesCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ClientesCompu.built.png",
+    "design": "ClientesCompu.design.png",
+    "built": "ClientesCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "ClienteFicha",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ClienteFicha.png",
+    "file": "ClienteFicha.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ClienteFicha.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ClienteFicha.built.png",
+    "design": "ClienteFicha.design.png",
+    "built": "ClienteFicha.built.png",
     "capture": "captured"
   },
   {
     "screen": "ClienteNuevo",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ClienteNuevo.png",
+    "file": "ClienteNuevo.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ClienteNuevo.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ClienteNuevo.built.png",
+    "design": "ClienteNuevo.design.png",
+    "built": "ClienteNuevo.built.png",
     "capture": "captured"
   },
   {
     "screen": "ClienteNuevoCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ClienteNuevoCompu.png",
+    "file": "ClienteNuevoCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ClienteNuevoCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ClienteNuevoCompu.built.png",
+    "design": "ClienteNuevoCompu.design.png",
+    "built": "ClienteNuevoCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "ClienteEditar",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ClienteEditar.png",
+    "file": "ClienteEditar.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ClienteEditar.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ClienteEditar.built.png",
+    "design": "ClienteEditar.design.png",
+    "built": "ClienteEditar.built.png",
     "capture": "captured"
   },
   {
     "screen": "ClienteEditarCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ClienteEditarCompu.png",
+    "file": "ClienteEditarCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ClienteEditarCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ClienteEditarCompu.built.png",
+    "design": "ClienteEditarCompu.design.png",
+    "built": "ClienteEditarCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "Cobro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/Cobro.png",
+    "file": "Cobro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/Cobro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/Cobro.built.png",
+    "design": "Cobro.design.png",
+    "built": "Cobro.built.png",
     "capture": "captured"
   },
   {
     "screen": "CobroCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/CobroCompu.png",
+    "file": "CobroCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/CobroCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/CobroCompu.built.png",
+    "design": "CobroCompu.design.png",
+    "built": "CobroCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "ClientesOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ClientesOscuro.png",
+    "file": "ClientesOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ClientesOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ClientesOscuro.built.png",
+    "design": "ClientesOscuro.design.png",
+    "built": "ClientesOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "ClientesCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ClientesCompuOscuro.png",
+    "file": "ClientesCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ClientesCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ClientesCompuOscuro.built.png",
+    "design": "ClientesCompuOscuro.design.png",
+    "built": "ClientesCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "ClienteFichaOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ClienteFichaOscuro.png",
+    "file": "ClienteFichaOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ClienteFichaOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ClienteFichaOscuro.built.png",
+    "design": "ClienteFichaOscuro.design.png",
+    "built": "ClienteFichaOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "CobroOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/CobroOscuro.png",
+    "file": "CobroOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/CobroOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/CobroOscuro.built.png",
+    "design": "CobroOscuro.design.png",
+    "built": "CobroOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "CobroCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/CobroCompuOscuro.png",
+    "file": "CobroCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/CobroCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/CobroCompuOscuro.built.png",
+    "design": "CobroCompuOscuro.design.png",
+    "built": "CobroCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "EntradaStock",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStock.png",
+    "file": "EntradaStock.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStock.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStock.built.png",
+    "design": "EntradaStock.design.png",
+    "built": "EntradaStock.built.png",
     "capture": "captured"
   },
   {
     "screen": "EntradaStockEditar",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStockEditar.png",
+    "file": "EntradaStockEditar.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStockEditar.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStockEditar.built.png",
+    "design": "EntradaStockEditar.design.png",
+    "built": "EntradaStockEditar.built.png",
     "capture": "captured"
   },
   {
     "screen": "EntradaStockCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStockCompu.png",
+    "file": "EntradaStockCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStockCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStockCompu.built.png",
+    "design": "EntradaStockCompu.design.png",
+    "built": "EntradaStockCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "EntradaStockSinEntradas",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStockSinEntradas.png",
+    "file": "EntradaStockSinEntradas.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStockSinEntradas.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStockSinEntradas.built.png",
+    "design": "EntradaStockSinEntradas.design.png",
+    "built": "EntradaStockSinEntradas.built.png",
     "capture": "captured"
   },
   {
     "screen": "EntradaStockSinEntradasOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStockSinEntradasOscuro.png",
+    "file": "EntradaStockSinEntradasOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStockSinEntradasOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStockSinEntradasOscuro.built.png",
+    "design": "EntradaStockSinEntradasOscuro.design.png",
+    "built": "EntradaStockSinEntradasOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "EntradaStockSinEntradasCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStockSinEntradasCompu.png",
+    "file": "EntradaStockSinEntradasCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStockSinEntradasCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStockSinEntradasCompu.built.png",
+    "design": "EntradaStockSinEntradasCompu.design.png",
+    "built": "EntradaStockSinEntradasCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "EntradaStockSinEntradasCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStockSinEntradasCompuOscuro.png",
+    "file": "EntradaStockSinEntradasCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStockSinEntradasCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/EntradaStockSinEntradasCompuOscuro.built.png",
+    "design": "EntradaStockSinEntradasCompuOscuro.design.png",
+    "built": "EntradaStockSinEntradasCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "TodasLasEntradas",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/TodasLasEntradas.png",
+    "file": "TodasLasEntradas.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/TodasLasEntradas.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/TodasLasEntradas.built.png",
+    "design": "TodasLasEntradas.design.png",
+    "built": "TodasLasEntradas.built.png",
     "capture": "captured"
   },
   {
     "screen": "TodasLasEntradasVariedad",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/TodasLasEntradasVariedad.png",
+    "file": "TodasLasEntradasVariedad.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/TodasLasEntradasVariedad.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/TodasLasEntradasVariedad.built.png",
+    "design": "TodasLasEntradasVariedad.design.png",
+    "built": "TodasLasEntradasVariedad.built.png",
     "capture": "captured"
   },
   {
     "screen": "SacarDelStock",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/SacarDelStock.png",
+    "file": "SacarDelStock.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/SacarDelStock.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/SacarDelStock.built.png",
+    "design": "SacarDelStock.design.png",
+    "built": "SacarDelStock.built.png",
     "capture": "captured"
   },
   {
     "screen": "SacarDelStockCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/SacarDelStockCompu.png",
+    "file": "SacarDelStockCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/SacarDelStockCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/SacarDelStockCompu.built.png",
+    "design": "SacarDelStockCompu.design.png",
+    "built": "SacarDelStockCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "RetiroDetalle",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/RetiroDetalle.png",
+    "file": "RetiroDetalle.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/RetiroDetalle.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/RetiroDetalle.built.png",
+    "design": "RetiroDetalle.design.png",
+    "built": "RetiroDetalle.built.png",
     "capture": "captured"
   },
   {
     "screen": "VerTodas",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/VerTodas.png",
+    "file": "VerTodas.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/VerTodas.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/VerTodas.built.png",
+    "design": "VerTodas.design.png",
+    "built": "VerTodas.built.png",
     "capture": "captured"
   },
   {
     "screen": "PrecioNuevo",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/PrecioNuevo.png",
+    "file": "PrecioNuevo.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/PrecioNuevo.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/PrecioNuevo.built.png",
+    "design": "PrecioNuevo.design.png",
+    "built": "PrecioNuevo.built.png",
     "capture": "captured"
   },
   {
     "screen": "PrecioNuevoCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/PrecioNuevoCompu.png",
+    "file": "PrecioNuevoCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/PrecioNuevoCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/PrecioNuevoCompu.built.png",
+    "design": "PrecioNuevoCompu.design.png",
+    "built": "PrecioNuevoCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "PrecioNuevoOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/PrecioNuevoOscuro.png",
+    "file": "PrecioNuevoOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/PrecioNuevoOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/PrecioNuevoOscuro.built.png",
+    "design": "PrecioNuevoOscuro.design.png",
+    "built": "PrecioNuevoOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "PrecioNuevoCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/PrecioNuevoCompuOscuro.png",
+    "file": "PrecioNuevoCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/PrecioNuevoCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/PrecioNuevoCompuOscuro.built.png",
+    "design": "PrecioNuevoCompuOscuro.design.png",
+    "built": "PrecioNuevoCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "VariedadNueva",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadNueva.png",
+    "file": "VariedadNueva.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadNueva.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadNueva.built.png",
+    "design": "VariedadNueva.design.png",
+    "built": "VariedadNueva.built.png",
     "capture": "captured"
   },
   {
     "screen": "VariedadNuevaCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadNuevaCompu.png",
+    "file": "VariedadNuevaCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadNuevaCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadNuevaCompu.built.png",
+    "design": "VariedadNuevaCompu.design.png",
+    "built": "VariedadNuevaCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "Variedades",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/Variedades.png",
+    "file": "Variedades.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/Variedades.built.png",
+    "built": "Variedades.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -656,20 +656,20 @@
   },
   {
     "screen": "VariedadesCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadesCompu.png",
+    "file": "VariedadesCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadesCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadesCompu.built.png",
+    "design": "VariedadesCompu.design.png",
+    "built": "VariedadesCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "VariedadDetalle",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadDetalle.png",
+    "file": "VariedadDetalle.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadDetalle.built.png",
+    "built": "VariedadDetalle.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -677,60 +677,60 @@
   },
   {
     "screen": "Archivadas",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/Archivadas.png",
+    "file": "Archivadas.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/Archivadas.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/Archivadas.built.png",
+    "design": "Archivadas.design.png",
+    "built": "Archivadas.built.png",
     "capture": "captured"
   },
   {
     "screen": "ArchivadasCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ArchivadasCompu.png",
+    "file": "ArchivadasCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ArchivadasCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ArchivadasCompu.built.png",
+    "design": "ArchivadasCompu.design.png",
+    "built": "ArchivadasCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "Gastos",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/Gastos.png",
+    "file": "Gastos.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/Gastos.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/Gastos.built.png",
+    "design": "Gastos.design.png",
+    "built": "Gastos.built.png",
     "capture": "captured"
   },
   {
     "screen": "GastosCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/GastosCompu.png",
+    "file": "GastosCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/GastosCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/GastosCompu.built.png",
+    "design": "GastosCompu.design.png",
+    "built": "GastosCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "GastoNuevo",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/GastoNuevo.png",
+    "file": "GastoNuevo.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/GastoNuevo.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/GastoNuevo.built.png",
+    "design": "GastoNuevo.design.png",
+    "built": "GastoNuevo.built.png",
     "capture": "captured"
   },
   {
     "screen": "GastoNuevoCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/GastoNuevoCompu.png",
+    "file": "GastoNuevoCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/GastoNuevoCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/GastoNuevoCompu.built.png",
+    "design": "GastoNuevoCompu.design.png",
+    "built": "GastoNuevoCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "Catalogo",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/Catalogo.png",
+    "file": "Catalogo.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/Catalogo.built.png",
+    "built": "Catalogo.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -738,220 +738,220 @@
   },
   {
     "screen": "CatalogoCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/CatalogoCompu.png",
+    "file": "CatalogoCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/CatalogoCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/CatalogoCompu.built.png",
+    "design": "CatalogoCompu.design.png",
+    "built": "CatalogoCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "Analisis",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/Analisis.png",
+    "file": "Analisis.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/Analisis.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/Analisis.built.png",
+    "design": "Analisis.design.png",
+    "built": "Analisis.built.png",
     "capture": "captured"
   },
   {
     "screen": "AnalisisCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/AnalisisCompu.png",
+    "file": "AnalisisCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/AnalisisCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/AnalisisCompu.built.png",
+    "design": "AnalisisCompu.design.png",
+    "built": "AnalisisCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "AnalisisOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/AnalisisOscuro.png",
+    "file": "AnalisisOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/AnalisisOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/AnalisisOscuro.built.png",
+    "design": "AnalisisOscuro.design.png",
+    "built": "AnalisisOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "AnalisisCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/AnalisisCompuOscuro.png",
+    "file": "AnalisisCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/AnalisisCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/AnalisisCompuOscuro.built.png",
+    "design": "AnalisisCompuOscuro.design.png",
+    "built": "AnalisisCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "Mas",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/Mas.png",
+    "file": "Mas.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/Mas.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/Mas.built.png",
+    "design": "Mas.design.png",
+    "built": "Mas.built.png",
     "capture": "captured"
   },
   {
     "screen": "Configuracion",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/Configuracion.png",
+    "file": "Configuracion.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/Configuracion.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/Configuracion.built.png",
+    "design": "Configuracion.design.png",
+    "built": "Configuracion.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCompu.png",
+    "file": "ConfiguracionCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCompu.built.png",
+    "design": "ConfiguracionCompu.design.png",
+    "built": "ConfiguracionCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionNegocio",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionNegocio.png",
+    "file": "ConfiguracionNegocio.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionNegocio.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionNegocio.built.png",
+    "design": "ConfiguracionNegocio.design.png",
+    "built": "ConfiguracionNegocio.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionNegocioCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionNegocioCompu.png",
+    "file": "ConfiguracionNegocioCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionNegocioCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionNegocioCompu.built.png",
+    "design": "ConfiguracionNegocioCompu.design.png",
+    "built": "ConfiguracionNegocioCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionUsuarios",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionUsuarios.png",
+    "file": "ConfiguracionUsuarios.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionUsuarios.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionUsuarios.built.png",
+    "design": "ConfiguracionUsuarios.design.png",
+    "built": "ConfiguracionUsuarios.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionUsuariosCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionUsuariosCompu.png",
+    "file": "ConfiguracionUsuariosCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionUsuariosCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionUsuariosCompu.built.png",
+    "design": "ConfiguracionUsuariosCompu.design.png",
+    "built": "ConfiguracionUsuariosCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionPrecios",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionPrecios.png",
+    "file": "ConfiguracionPrecios.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionPrecios.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionPrecios.built.png",
+    "design": "ConfiguracionPrecios.design.png",
+    "built": "ConfiguracionPrecios.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionPreciosCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionPreciosCompu.png",
+    "file": "ConfiguracionPreciosCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionPreciosCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionPreciosCompu.built.png",
+    "design": "ConfiguracionPreciosCompu.design.png",
+    "built": "ConfiguracionPreciosCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionIntegraciones",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionIntegraciones.png",
+    "file": "ConfiguracionIntegraciones.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionIntegraciones.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionIntegraciones.built.png",
+    "design": "ConfiguracionIntegraciones.design.png",
+    "built": "ConfiguracionIntegraciones.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionIntegracionesCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionIntegracionesCompu.png",
+    "file": "ConfiguracionIntegracionesCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionIntegracionesCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionIntegracionesCompu.built.png",
+    "design": "ConfiguracionIntegracionesCompu.design.png",
+    "built": "ConfiguracionIntegracionesCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionIntegracionesOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionIntegracionesOscuro.png",
+    "file": "ConfiguracionIntegracionesOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionIntegracionesOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionIntegracionesOscuro.built.png",
+    "design": "ConfiguracionIntegracionesOscuro.design.png",
+    "built": "ConfiguracionIntegracionesOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionIntegracionesCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionIntegracionesCompuOscuro.png",
+    "file": "ConfiguracionIntegracionesCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionIntegracionesCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionIntegracionesCompuOscuro.built.png",
+    "design": "ConfiguracionIntegracionesCompuOscuro.design.png",
+    "built": "ConfiguracionIntegracionesCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionMensaje",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionMensaje.png",
+    "file": "ConfiguracionMensaje.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionMensaje.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionMensaje.built.png",
+    "design": "ConfiguracionMensaje.design.png",
+    "built": "ConfiguracionMensaje.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionMensajeCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionMensajeCompu.png",
+    "file": "ConfiguracionMensajeCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionMensajeCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionMensajeCompu.built.png",
+    "design": "ConfiguracionMensajeCompu.design.png",
+    "built": "ConfiguracionMensajeCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionCategorias",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCategorias.png",
+    "file": "ConfiguracionCategorias.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCategorias.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCategorias.built.png",
+    "design": "ConfiguracionCategorias.design.png",
+    "built": "ConfiguracionCategorias.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionCategoriasCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCategoriasCompu.png",
+    "file": "ConfiguracionCategoriasCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCategoriasCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCategoriasCompu.built.png",
+    "design": "ConfiguracionCategoriasCompu.design.png",
+    "built": "ConfiguracionCategoriasCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionApariencia",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionApariencia.png",
+    "file": "ConfiguracionApariencia.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionApariencia.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionApariencia.built.png",
+    "design": "ConfiguracionApariencia.design.png",
+    "built": "ConfiguracionApariencia.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionAparienciaCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionAparienciaCompu.png",
+    "file": "ConfiguracionAparienciaCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionAparienciaCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionAparienciaCompu.built.png",
+    "design": "ConfiguracionAparienciaCompu.design.png",
+    "built": "ConfiguracionAparienciaCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionCuenta",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCuenta.png",
+    "file": "ConfiguracionCuenta.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCuenta.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCuenta.built.png",
+    "design": "ConfiguracionCuenta.design.png",
+    "built": "ConfiguracionCuenta.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionCuentaCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCuentaCompu.png",
+    "file": "ConfiguracionCuentaCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCuentaCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCuentaCompu.built.png",
+    "design": "ConfiguracionCuentaCompu.design.png",
+    "built": "ConfiguracionCuentaCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "OnboardingStock",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingStock.png",
+    "file": "OnboardingStock.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingStock.built.png",
+    "built": "OnboardingStock.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -959,12 +959,12 @@
   },
   {
     "screen": "OnboardingMensaje",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingMensaje.png",
+    "file": "OnboardingMensaje.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingMensaje.built.png",
+    "built": "OnboardingMensaje.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -972,12 +972,12 @@
   },
   {
     "screen": "OnboardingBot",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingBot.png",
+    "file": "OnboardingBot.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingBot.built.png",
+    "built": "OnboardingBot.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -985,12 +985,12 @@
   },
   {
     "screen": "OnboardingSocio",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingSocio.png",
+    "file": "OnboardingSocio.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingSocio.built.png",
+    "built": "OnboardingSocio.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -998,12 +998,12 @@
   },
   {
     "screen": "OnboardingCategorias",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingCategorias.png",
+    "file": "OnboardingCategorias.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingCategorias.built.png",
+    "built": "OnboardingCategorias.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -1011,12 +1011,12 @@
   },
   {
     "screen": "OnboardingStockOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingStockOscuro.png",
+    "file": "OnboardingStockOscuro.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingStockOscuro.built.png",
+    "built": "OnboardingStockOscuro.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -1024,12 +1024,12 @@
   },
   {
     "screen": "OnboardingMensajeOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingMensajeOscuro.png",
+    "file": "OnboardingMensajeOscuro.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingMensajeOscuro.built.png",
+    "built": "OnboardingMensajeOscuro.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -1037,12 +1037,12 @@
   },
   {
     "screen": "OnboardingBotOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingBotOscuro.png",
+    "file": "OnboardingBotOscuro.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingBotOscuro.built.png",
+    "built": "OnboardingBotOscuro.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -1050,12 +1050,12 @@
   },
   {
     "screen": "OnboardingSocioOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingSocioOscuro.png",
+    "file": "OnboardingSocioOscuro.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingSocioOscuro.built.png",
+    "built": "OnboardingSocioOscuro.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -1063,12 +1063,12 @@
   },
   {
     "screen": "OnboardingCategoriasOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingCategoriasOscuro.png",
+    "file": "OnboardingCategoriasOscuro.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingCategoriasOscuro.built.png",
+    "built": "OnboardingCategoriasOscuro.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -1076,92 +1076,92 @@
   },
   {
     "screen": "OnboardingStockCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingStockCompu.png",
+    "file": "OnboardingStockCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingStockCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingStockCompu.built.png",
+    "design": "OnboardingStockCompu.design.png",
+    "built": "OnboardingStockCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "OnboardingMensajeCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingMensajeCompu.png",
+    "file": "OnboardingMensajeCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingMensajeCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingMensajeCompu.built.png",
+    "design": "OnboardingMensajeCompu.design.png",
+    "built": "OnboardingMensajeCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "OnboardingBotCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingBotCompu.png",
+    "file": "OnboardingBotCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingBotCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingBotCompu.built.png",
+    "design": "OnboardingBotCompu.design.png",
+    "built": "OnboardingBotCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "OnboardingSocioCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingSocioCompu.png",
+    "file": "OnboardingSocioCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingSocioCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingSocioCompu.built.png",
+    "design": "OnboardingSocioCompu.design.png",
+    "built": "OnboardingSocioCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "OnboardingCategoriasCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingCategoriasCompu.png",
+    "file": "OnboardingCategoriasCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingCategoriasCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingCategoriasCompu.built.png",
+    "design": "OnboardingCategoriasCompu.design.png",
+    "built": "OnboardingCategoriasCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "OnboardingStockCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingStockCompuOscuro.png",
+    "file": "OnboardingStockCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingStockCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingStockCompuOscuro.built.png",
+    "design": "OnboardingStockCompuOscuro.design.png",
+    "built": "OnboardingStockCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "OnboardingMensajeCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingMensajeCompuOscuro.png",
+    "file": "OnboardingMensajeCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingMensajeCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingMensajeCompuOscuro.built.png",
+    "design": "OnboardingMensajeCompuOscuro.design.png",
+    "built": "OnboardingMensajeCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "OnboardingBotCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingBotCompuOscuro.png",
+    "file": "OnboardingBotCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingBotCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingBotCompuOscuro.built.png",
+    "design": "OnboardingBotCompuOscuro.design.png",
+    "built": "OnboardingBotCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "OnboardingSocioCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingSocioCompuOscuro.png",
+    "file": "OnboardingSocioCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingSocioCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingSocioCompuOscuro.built.png",
+    "design": "OnboardingSocioCompuOscuro.design.png",
+    "built": "OnboardingSocioCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "OnboardingCategoriasCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingCategoriasCompuOscuro.png",
+    "file": "OnboardingCategoriasCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingCategoriasCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingCategoriasCompuOscuro.built.png",
+    "design": "OnboardingCategoriasCompuOscuro.design.png",
+    "built": "OnboardingCategoriasCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "OnboardingStockTexto130",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingStockTexto130.png",
+    "file": "OnboardingStockTexto130.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingStockTexto130.built.png",
+    "built": "OnboardingStockTexto130.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -1169,12 +1169,12 @@
   },
   {
     "screen": "OnboardingMensajeTexto130",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingMensajeTexto130.png",
+    "file": "OnboardingMensajeTexto130.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingMensajeTexto130.built.png",
+    "built": "OnboardingMensajeTexto130.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -1182,12 +1182,12 @@
   },
   {
     "screen": "OnboardingBotTexto130",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingBotTexto130.png",
+    "file": "OnboardingBotTexto130.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingBotTexto130.built.png",
+    "built": "OnboardingBotTexto130.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -1195,12 +1195,12 @@
   },
   {
     "screen": "OnboardingSocioTexto130",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingSocioTexto130.png",
+    "file": "OnboardingSocioTexto130.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingSocioTexto130.built.png",
+    "built": "OnboardingSocioTexto130.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -1208,12 +1208,12 @@
   },
   {
     "screen": "OnboardingCategoriasTexto130",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingCategoriasTexto130.png",
+    "file": "OnboardingCategoriasTexto130.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingCategoriasTexto130.built.png",
+    "built": "OnboardingCategoriasTexto130.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -1221,12 +1221,12 @@
   },
   {
     "screen": "OnboardingVariedad",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingVariedad.png",
+    "file": "OnboardingVariedad.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingVariedad.built.png",
+    "built": "OnboardingVariedad.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -1234,12 +1234,12 @@
   },
   {
     "screen": "OnboardingVariedadOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingVariedadOscuro.png",
+    "file": "OnboardingVariedadOscuro.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingVariedadOscuro.built.png",
+    "built": "OnboardingVariedadOscuro.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -1247,20 +1247,20 @@
   },
   {
     "screen": "OnboardingVariedadCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingVariedadCompu.png",
+    "file": "OnboardingVariedadCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingVariedadCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingVariedadCompu.built.png",
+    "design": "OnboardingVariedadCompu.design.png",
+    "built": "OnboardingVariedadCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "OnboardingVariedadTexto130",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingVariedadTexto130.png",
+    "file": "OnboardingVariedadTexto130.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingVariedadTexto130.built.png",
+    "built": "OnboardingVariedadTexto130.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -1268,20 +1268,20 @@
   },
   {
     "screen": "OnboardingVariedadCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingVariedadCompuOscuro.png",
+    "file": "OnboardingVariedadCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingVariedadCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingVariedadCompuOscuro.built.png",
+    "design": "OnboardingVariedadCompuOscuro.design.png",
+    "built": "OnboardingVariedadCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "OnboardingPrecio",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingPrecio.png",
+    "file": "OnboardingPrecio.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingPrecio.built.png",
+    "built": "OnboardingPrecio.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -1289,12 +1289,12 @@
   },
   {
     "screen": "OnboardingListo",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingListo.png",
+    "file": "OnboardingListo.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingListo.built.png",
+    "built": "OnboardingListo.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -1302,20 +1302,20 @@
   },
   {
     "screen": "OnboardingListoCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingListoCompu.png",
+    "file": "OnboardingListoCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingListoCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingListoCompu.built.png",
+    "design": "OnboardingListoCompu.design.png",
+    "built": "OnboardingListoCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "OnboardingListoOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingListoOscuro.png",
+    "file": "OnboardingListoOscuro.png",
     "notes": [
       "el diseño no se pudo capturar: shot: section outside the viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingListoOscuro.built.png",
+    "built": "OnboardingListoOscuro.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: section outside the viewport (design)"
@@ -1323,20 +1323,20 @@
   },
   {
     "screen": "OnboardingListoCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingListoCompuOscuro.png",
+    "file": "OnboardingListoCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingListoCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingListoCompuOscuro.built.png",
+    "design": "OnboardingListoCompuOscuro.design.png",
+    "built": "OnboardingListoCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "OnboardingListoTexto130",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingListoTexto130.png",
+    "file": "OnboardingListoTexto130.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingListoTexto130.built.png",
+    "built": "OnboardingListoTexto130.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -1344,52 +1344,52 @@
   },
   {
     "screen": "EstadosSinConexion",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/EstadosSinConexion.png",
+    "file": "EstadosSinConexion.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/EstadosSinConexion.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/EstadosSinConexion.built.png",
+    "design": "EstadosSinConexion.design.png",
+    "built": "EstadosSinConexion.built.png",
     "capture": "captured"
   },
   {
     "screen": "EstadosSinConexionCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/EstadosSinConexionCompu.png",
+    "file": "EstadosSinConexionCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/EstadosSinConexionCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/EstadosSinConexionCompu.built.png",
+    "design": "EstadosSinConexionCompu.design.png",
+    "built": "EstadosSinConexionCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "EstadosGone",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/EstadosGone.png",
+    "file": "EstadosGone.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/EstadosGone.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/EstadosGone.built.png",
+    "design": "EstadosGone.design.png",
+    "built": "EstadosGone.built.png",
     "capture": "captured"
   },
   {
     "screen": "EstadosConfirmar",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/EstadosConfirmar.png",
+    "file": "EstadosConfirmar.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/EstadosConfirmar.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/EstadosConfirmar.built.png",
+    "design": "EstadosConfirmar.design.png",
+    "built": "EstadosConfirmar.built.png",
     "capture": "captured"
   },
   {
     "screen": "MasOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/MasOscuro.png",
+    "file": "MasOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/MasOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/MasOscuro.built.png",
+    "design": "MasOscuro.design.png",
+    "built": "MasOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "VariedadDetalleOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadDetalleOscuro.png",
+    "file": "VariedadDetalleOscuro.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadDetalleOscuro.built.png",
+    "built": "VariedadDetalleOscuro.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -1397,28 +1397,28 @@
   },
   {
     "screen": "ArchivadasOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ArchivadasOscuro.png",
+    "file": "ArchivadasOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ArchivadasOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ArchivadasOscuro.built.png",
+    "design": "ArchivadasOscuro.design.png",
+    "built": "ArchivadasOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "ArchivadasCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ArchivadasCompuOscuro.png",
+    "file": "ArchivadasCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ArchivadasCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ArchivadasCompuOscuro.built.png",
+    "design": "ArchivadasCompuOscuro.design.png",
+    "built": "ArchivadasCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "CatalogoOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/CatalogoOscuro.png",
+    "file": "CatalogoOscuro.png",
     "notes": [
       "el diseño no se pudo capturar: shot: page wider than its viewport (design)"
     ],
     "design": null,
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/CatalogoOscuro.built.png",
+    "built": "CatalogoOscuro.built.png",
     "capture": "not-captured",
     "reasons": {
       "design": "shot: page wider than its viewport (design)"
@@ -1426,147 +1426,147 @@
   },
   {
     "screen": "CatalogoCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/CatalogoCompuOscuro.png",
+    "file": "CatalogoCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/CatalogoCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/CatalogoCompuOscuro.built.png",
+    "design": "CatalogoCompuOscuro.design.png",
+    "built": "CatalogoCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "VerTodasOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/VerTodasOscuro.png",
+    "file": "VerTodasOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/VerTodasOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/VerTodasOscuro.built.png",
+    "design": "VerTodasOscuro.design.png",
+    "built": "VerTodasOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "TodasLasEntradasOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/TodasLasEntradasOscuro.png",
+    "file": "TodasLasEntradasOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/TodasLasEntradasOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/TodasLasEntradasOscuro.built.png",
+    "design": "TodasLasEntradasOscuro.design.png",
+    "built": "TodasLasEntradasOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "TodasLasEntradasVariedadOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/TodasLasEntradasVariedadOscuro.png",
+    "file": "TodasLasEntradasVariedadOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/TodasLasEntradasVariedadOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/TodasLasEntradasVariedadOscuro.built.png",
+    "design": "TodasLasEntradasVariedadOscuro.design.png",
+    "built": "TodasLasEntradasVariedadOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "RetiroDetalleOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/RetiroDetalleOscuro.png",
+    "file": "RetiroDetalleOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/RetiroDetalleOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/RetiroDetalleOscuro.built.png",
+    "design": "RetiroDetalleOscuro.design.png",
+    "built": "RetiroDetalleOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "EstadosSinConexionOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/EstadosSinConexionOscuro.png",
+    "file": "EstadosSinConexionOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/EstadosSinConexionOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/EstadosSinConexionOscuro.built.png",
+    "design": "EstadosSinConexionOscuro.design.png",
+    "built": "EstadosSinConexionOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "EstadosSinConexionCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/EstadosSinConexionCompuOscuro.png",
+    "file": "EstadosSinConexionCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/EstadosSinConexionCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/EstadosSinConexionCompuOscuro.built.png",
+    "design": "EstadosSinConexionCompuOscuro.design.png",
+    "built": "EstadosSinConexionCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "VariedadArchivada",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadArchivada.png",
+    "file": "VariedadArchivada.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadArchivada.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadArchivada.built.png",
+    "design": "VariedadArchivada.design.png",
+    "built": "VariedadArchivada.built.png",
     "capture": "captured"
   },
   {
     "screen": "VariedadArchivadaOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadArchivadaOscuro.png",
+    "file": "VariedadArchivadaOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadArchivadaOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadArchivadaOscuro.built.png",
+    "design": "VariedadArchivadaOscuro.design.png",
+    "built": "VariedadArchivadaOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "VariedadArchivadaCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadArchivadaCompu.png",
+    "file": "VariedadArchivadaCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadArchivadaCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadArchivadaCompu.built.png",
+    "design": "VariedadArchivadaCompu.design.png",
+    "built": "VariedadArchivadaCompu.built.png",
     "capture": "captured"
   },
   {
     "screen": "VariedadArchivadaCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadArchivadaCompuOscuro.png",
+    "file": "VariedadArchivadaCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadArchivadaCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/VariedadArchivadaCompuOscuro.built.png",
+    "design": "VariedadArchivadaCompuOscuro.design.png",
+    "built": "VariedadArchivadaCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "InicioHoyCompu960",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioHoyCompu960.png",
+    "file": "InicioHoyCompu960.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioHoyCompu960.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioHoyCompu960.built.png",
+    "design": "InicioHoyCompu960.design.png",
+    "built": "InicioHoyCompu960.built.png",
     "capture": "captured"
   },
   {
     "screen": "InicioHoyCompu960Texto130",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioHoyCompu960Texto130.png",
+    "file": "InicioHoyCompu960Texto130.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioHoyCompu960Texto130.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioHoyCompu960Texto130.built.png",
+    "design": "InicioHoyCompu960Texto130.design.png",
+    "built": "InicioHoyCompu960Texto130.built.png",
     "capture": "captured"
   },
   {
     "screen": "InicioHoyCompuTexto130",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioHoyCompuTexto130.png",
+    "file": "InicioHoyCompuTexto130.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioHoyCompuTexto130.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioHoyCompuTexto130.built.png",
+    "design": "InicioHoyCompuTexto130.design.png",
+    "built": "InicioHoyCompuTexto130.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionOscuro.png",
+    "file": "ConfiguracionOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionOscuro.built.png",
+    "design": "ConfiguracionOscuro.design.png",
+    "built": "ConfiguracionOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "ConfiguracionCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCompuOscuro.png",
+    "file": "ConfiguracionCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCompuOscuro.built.png",
+    "design": "ConfiguracionCompuOscuro.design.png",
+    "built": "ConfiguracionCompuOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "GastoNuevoOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/GastoNuevoOscuro.png",
+    "file": "GastoNuevoOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/GastoNuevoOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe/GH-491/after2/GastoNuevoOscuro.built.png",
+    "design": "GastoNuevoOscuro.design.png",
+    "built": "GastoNuevoOscuro.built.png",
     "capture": "captured"
   },
   {
     "screen": "InicioEditar",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioEditar.png",
+    "file": "InicioEditar.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioEditar.design.png",
+    "design": "InicioEditar.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1575,11 +1575,11 @@
   },
   {
     "screen": "InicioEditarOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioEditarOscuro.png",
+    "file": "InicioEditarOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/InicioEditarOscuro.design.png",
+    "design": "InicioEditarOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1588,11 +1588,11 @@
   },
   {
     "screen": "WidgetCatalogo",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/WidgetCatalogo.png",
+    "file": "WidgetCatalogo.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/WidgetCatalogo.design.png",
+    "design": "WidgetCatalogo.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1601,11 +1601,11 @@
   },
   {
     "screen": "WidgetCatalogoOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/WidgetCatalogoOscuro.png",
+    "file": "WidgetCatalogoOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/WidgetCatalogoOscuro.design.png",
+    "design": "WidgetCatalogoOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1614,11 +1614,11 @@
   },
   {
     "screen": "WidgetPaso2",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/WidgetPaso2.png",
+    "file": "WidgetPaso2.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/WidgetPaso2.design.png",
+    "design": "WidgetPaso2.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1627,11 +1627,11 @@
   },
   {
     "screen": "WidgetPaso2Oscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/WidgetPaso2Oscuro.png",
+    "file": "WidgetPaso2Oscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/WidgetPaso2Oscuro.design.png",
+    "design": "WidgetPaso2Oscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1640,11 +1640,11 @@
   },
   {
     "screen": "WidgetPaso5",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/WidgetPaso5.png",
+    "file": "WidgetPaso5.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/WidgetPaso5.design.png",
+    "design": "WidgetPaso5.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1653,11 +1653,11 @@
   },
   {
     "screen": "WidgetPaso5Oscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/WidgetPaso5Oscuro.png",
+    "file": "WidgetPaso5Oscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/WidgetPaso5Oscuro.design.png",
+    "design": "WidgetPaso5Oscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1666,11 +1666,11 @@
   },
   {
     "screen": "WidgetTema",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/WidgetTema.png",
+    "file": "WidgetTema.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/WidgetTema.design.png",
+    "design": "WidgetTema.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1679,11 +1679,11 @@
   },
   {
     "screen": "WidgetTemaOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/WidgetTemaOscuro.png",
+    "file": "WidgetTemaOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/WidgetTemaOscuro.design.png",
+    "design": "WidgetTemaOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1692,11 +1692,11 @@
   },
   {
     "screen": "Pedidos",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/Pedidos.png",
+    "file": "Pedidos.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/Pedidos.design.png",
+    "design": "Pedidos.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1705,11 +1705,11 @@
   },
   {
     "screen": "PedidosOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/PedidosOscuro.png",
+    "file": "PedidosOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/PedidosOscuro.design.png",
+    "design": "PedidosOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1718,11 +1718,11 @@
   },
   {
     "screen": "PedidosCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/PedidosCompu.png",
+    "file": "PedidosCompu.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/PedidosCompu.design.png",
+    "design": "PedidosCompu.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1731,11 +1731,11 @@
   },
   {
     "screen": "PedidosCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/PedidosCompuOscuro.png",
+    "file": "PedidosCompuOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/PedidosCompuOscuro.design.png",
+    "design": "PedidosCompuOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1744,11 +1744,11 @@
   },
   {
     "screen": "PedidosVista",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/PedidosVista.png",
+    "file": "PedidosVista.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/PedidosVista.design.png",
+    "design": "PedidosVista.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1757,11 +1757,11 @@
   },
   {
     "screen": "PedidosVistaOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/PedidosVistaOscuro.png",
+    "file": "PedidosVistaOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/PedidosVistaOscuro.design.png",
+    "design": "PedidosVistaOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1770,11 +1770,11 @@
   },
   {
     "screen": "PedidosArmarVista",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/PedidosArmarVista.png",
+    "file": "PedidosArmarVista.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/PedidosArmarVista.design.png",
+    "design": "PedidosArmarVista.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1783,11 +1783,11 @@
   },
   {
     "screen": "PedidosArmarVistaOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/PedidosArmarVistaOscuro.png",
+    "file": "PedidosArmarVistaOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/PedidosArmarVistaOscuro.design.png",
+    "design": "PedidosArmarVistaOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1796,11 +1796,11 @@
   },
   {
     "screen": "PedidoDetalle",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/PedidoDetalle.png",
+    "file": "PedidoDetalle.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/PedidoDetalle.design.png",
+    "design": "PedidoDetalle.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1809,11 +1809,11 @@
   },
   {
     "screen": "PedidoDetalleOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/PedidoDetalleOscuro.png",
+    "file": "PedidoDetalleOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/PedidoDetalleOscuro.design.png",
+    "design": "PedidoDetalleOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1822,11 +1822,11 @@
   },
   {
     "screen": "Productos",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/Productos.png",
+    "file": "Productos.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/Productos.design.png",
+    "design": "Productos.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1835,11 +1835,11 @@
   },
   {
     "screen": "ProductosOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ProductosOscuro.png",
+    "file": "ProductosOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ProductosOscuro.design.png",
+    "design": "ProductosOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1848,11 +1848,11 @@
   },
   {
     "screen": "ProductosCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ProductosCompu.png",
+    "file": "ProductosCompu.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ProductosCompu.design.png",
+    "design": "ProductosCompu.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1861,11 +1861,11 @@
   },
   {
     "screen": "ProductosCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ProductosCompuOscuro.png",
+    "file": "ProductosCompuOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ProductosCompuOscuro.design.png",
+    "design": "ProductosCompuOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1874,11 +1874,11 @@
   },
   {
     "screen": "ProductoDetalle",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ProductoDetalle.png",
+    "file": "ProductoDetalle.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ProductoDetalle.design.png",
+    "design": "ProductoDetalle.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1887,11 +1887,11 @@
   },
   {
     "screen": "ProductoDetalleOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ProductoDetalleOscuro.png",
+    "file": "ProductoDetalleOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ProductoDetalleOscuro.design.png",
+    "design": "ProductoDetalleOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1900,11 +1900,11 @@
   },
   {
     "screen": "Stock",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/Stock.png",
+    "file": "Stock.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/Stock.design.png",
+    "design": "Stock.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1913,11 +1913,11 @@
   },
   {
     "screen": "StockOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/StockOscuro.png",
+    "file": "StockOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/StockOscuro.design.png",
+    "design": "StockOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1926,11 +1926,11 @@
   },
   {
     "screen": "PromocionNueva",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/PromocionNueva.png",
+    "file": "PromocionNueva.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/PromocionNueva.design.png",
+    "design": "PromocionNueva.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1939,11 +1939,11 @@
   },
   {
     "screen": "PromocionNuevaOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/PromocionNuevaOscuro.png",
+    "file": "PromocionNuevaOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/PromocionNuevaOscuro.design.png",
+    "design": "PromocionNuevaOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1952,11 +1952,11 @@
   },
   {
     "screen": "TiendaTelegram",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/TiendaTelegram.png",
+    "file": "TiendaTelegram.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/TiendaTelegram.design.png",
+    "design": "TiendaTelegram.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1965,11 +1965,11 @@
   },
   {
     "screen": "TiendaTelegramOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/TiendaTelegramOscuro.png",
+    "file": "TiendaTelegramOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/TiendaTelegramOscuro.design.png",
+    "design": "TiendaTelegramOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1978,11 +1978,11 @@
   },
   {
     "screen": "ConfiguracionBuscar",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionBuscar.png",
+    "file": "ConfiguracionBuscar.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionBuscar.design.png",
+    "design": "ConfiguracionBuscar.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -1991,11 +1991,11 @@
   },
   {
     "screen": "ConfiguracionBuscarOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionBuscarOscuro.png",
+    "file": "ConfiguracionBuscarOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionBuscarOscuro.design.png",
+    "design": "ConfiguracionBuscarOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -2004,11 +2004,11 @@
   },
   {
     "screen": "ConfiguracionCobros",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCobros.png",
+    "file": "ConfiguracionCobros.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCobros.design.png",
+    "design": "ConfiguracionCobros.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -2017,11 +2017,11 @@
   },
   {
     "screen": "ConfiguracionCobrosOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCobrosOscuro.png",
+    "file": "ConfiguracionCobrosOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionCobrosOscuro.design.png",
+    "design": "ConfiguracionCobrosOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -2030,11 +2030,11 @@
   },
   {
     "screen": "ConfiguracionEstados",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionEstados.png",
+    "file": "ConfiguracionEstados.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionEstados.design.png",
+    "design": "ConfiguracionEstados.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -2043,11 +2043,11 @@
   },
   {
     "screen": "ConfiguracionEstadosOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionEstadosOscuro.png",
+    "file": "ConfiguracionEstadosOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionEstadosOscuro.design.png",
+    "design": "ConfiguracionEstadosOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -2056,11 +2056,11 @@
   },
   {
     "screen": "ConfiguracionEstadosCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionEstadosCompu.png",
+    "file": "ConfiguracionEstadosCompu.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionEstadosCompu.design.png",
+    "design": "ConfiguracionEstadosCompu.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -2069,11 +2069,11 @@
   },
   {
     "screen": "ConfiguracionEstadosCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionEstadosCompuOscuro.png",
+    "file": "ConfiguracionEstadosCompuOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionEstadosCompuOscuro.design.png",
+    "design": "ConfiguracionEstadosCompuOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -2082,11 +2082,11 @@
   },
   {
     "screen": "ConfiguracionEstadoPaso",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionEstadoPaso.png",
+    "file": "ConfiguracionEstadoPaso.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionEstadoPaso.design.png",
+    "design": "ConfiguracionEstadoPaso.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -2095,11 +2095,11 @@
   },
   {
     "screen": "ConfiguracionEstadoPasoOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionEstadoPasoOscuro.png",
+    "file": "ConfiguracionEstadoPasoOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/ConfiguracionEstadoPasoOscuro.design.png",
+    "design": "ConfiguracionEstadoPasoOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -2108,11 +2108,11 @@
   },
   {
     "screen": "Marca",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/Marca.png",
+    "file": "Marca.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/Marca.design.png",
+    "design": "Marca.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -2121,11 +2121,11 @@
   },
   {
     "screen": "Onboarding",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/Onboarding.png",
+    "file": "Onboarding.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/Onboarding.design.png",
+    "design": "Onboarding.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -2134,11 +2134,11 @@
   },
   {
     "screen": "OnboardingOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingOscuro.png",
+    "file": "OnboardingOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingOscuro.design.png",
+    "design": "OnboardingOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -2147,11 +2147,11 @@
   },
   {
     "screen": "OnboardingCompu",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingCompu.png",
+    "file": "OnboardingCompu.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingCompu.design.png",
+    "design": "OnboardingCompu.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
@@ -2160,11 +2160,11 @@
   },
   {
     "screen": "OnboardingCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingCompuOscuro.png",
+    "file": "OnboardingCompuOscuro.png",
     "notes": [
       "todavía no existe en la app"
     ],
-    "design": "/home/zeta/.cache/apostrophe/GH-491/after2/OnboardingCompuOscuro.design.png",
+    "design": "OnboardingCompuOscuro.design.png",
     "built": null,
     "capture": "not-captured",
     "reasons": {
