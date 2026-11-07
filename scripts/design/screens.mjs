@@ -57,7 +57,8 @@ export const PHONE = [390, 844]
 
 // The size of each side's browser context. The built side is `viewport ?? PHONE`, as it has always
 // been. The design side is `design_viewport` when the row has one (a drawing whose own width is not
-// the row's viewport), else the same size as the built side; `design_viewport` is read here and nowhere else.
+// the row's viewport), else the same size as the built side. `design_viewport` is read in three places: the
+// guard above, here (the contexts' sizes), and `composeSheet` (comparisons.mjs), which asks only whether it is set.
 /**
  * @param {Readonly<Record<string, unknown>>} s
  * @returns {{ design: readonly [number, number], built: readonly [number, number] }}
