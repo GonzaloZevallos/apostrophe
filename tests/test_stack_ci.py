@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import copy
 import re
+import tomllib
 from pathlib import Path
 from typing import Any, cast
 
@@ -43,7 +44,7 @@ COMMENT_RUN = (
     """"repos/$REPO/issues/comments/$id" --field body=@coverage-report.md; else gh api --method """
     """POST "repos/$REPO/issues/$PR/comments" --field body=@coverage-report.md; fi"""
 )
-PYTEST_RUN = "uv run --no-project pytest -n auto --cov --cov-report= -- $PATHS"
+PYTEST_RUN = "uv run --no-project pytest -n auto --reruns 1 --cov --cov-report= -- $PATHS"
 VITEST_RUN = "npm --prefix web test -- --coverage $VITEST_ARGS"
 E2E_RUN = 'npm --prefix web run e2e -- --shard="$SHARD" $E2E_ARGS'
 E2E_GATE_RUN = 'test "$RESULT" = success || { echo "e2e shards: $RESULT"; exit 1; }'
@@ -1640,3 +1641,73 @@ def test_a_dispatch_key_that_differs_or_sits_after_ci_covers_is_refused() -> Non
     assert "`ci_dispatch.sha_input` is not an input of `workflow_dispatch`" in (
         _dispatch_key_problems(stack, WORKFLOW)
     )
+
+
+def _pytest_commands(workflow: Data) -> list[str]:
+    return [command for command in _runs(workflow)["pytest"] if " pytest " in command]
+
+
+def _rerun_problems(stack: Data, workflow: Data, addopts: str) -> list[str]:
+    """One retry for a failed pytest test, only in CI (GH-563): the `pytest` job carries
+    `--reruns 1` on its command line; no declared check and no `addopts` does."""
+    problems: list[str] = []
+    commands = _pytest_commands(workflow)
+    if len(commands) != 1 or " --reruns 1 " not in f" {commands[0]} ":
+        problems.append("the `pytest` job's command does not carry `--reruns 1`")
+    for key in ("checks", "affected_checks"):
+        problems.extend(
+            f"{key} {name!r} carries --reruns; a retry is CI only"
+            for name, command in cast("Data", stack.get(key, {})).items()
+            if "--reruns" in str(command)
+        )
+    if "--reruns" in addopts:
+        problems.append("pyproject.toml addopts carries --reruns; a retry is CI only")
+    return problems
+
+
+def _addopts() -> str:
+    text = (REPO_ROOT / "pyproject.toml").read_text()
+    pytest_options = tomllib.loads(text)["tool"]["pytest"]["ini_options"]
+    return str(pytest_options.get("addopts", ""))
+
+
+def test_pytest_retries_once_in_ci_only() -> None:
+    assert _rerun_problems(STACK, WORKFLOW, _addopts()) == []
+
+
+def test_pytest_rerunfailures_is_a_dev_dependency() -> None:
+    text = (REPO_ROOT / "pyproject.toml").read_text()
+    dev = tomllib.loads(text)["project"]["optional-dependencies"]["dev"]
+    assert any(str(item).startswith("pytest-rerunfailures") for item in dev)
+
+
+def test_a_pytest_job_without_reruns_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["pytest"]["steps"]
+    for step in steps:
+        if " pytest " in str(step.get("run", "")):
+            step["run"] = step["run"].replace(" --reruns 1", "")
+    assert _rerun_problems(STACK, workflow, "-q") == [
+        "the `pytest` job's command does not carry `--reruns 1`"
+    ]
+
+
+def test_a_pytest_job_that_retries_twice_is_refused() -> None:
+    workflow = _mutated()
+    for step in workflow["jobs"]["pytest"]["steps"]:
+        if " pytest " in str(step.get("run", "")):
+            step["run"] = step["run"].replace("--reruns 1", "--reruns 2")
+    assert _rerun_problems(STACK, workflow, "-q") == [
+        "the `pytest` job's command does not carry `--reruns 1`"
+    ]
+
+
+def test_a_stack_check_or_addopts_with_reruns_is_refused() -> None:
+    stack = copy.deepcopy(STACK)
+    stack["checks"]["tests"] += " --reruns 1"
+    stack["affected_checks"] = {"tests": "uv run --no-project pytest --reruns=1"}
+    assert _rerun_problems(stack, WORKFLOW, "-q --reruns 1") == [
+        "checks 'tests' carries --reruns; a retry is CI only",
+        "affected_checks 'tests' carries --reruns; a retry is CI only",
+        "pyproject.toml addopts carries --reruns; a retry is CI only",
+    ]

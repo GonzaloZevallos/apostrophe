@@ -21,6 +21,7 @@ dev = [
     "pytest",
     "pytest-xdist",
     "pytest-cov",
+    "pytest-rerunfailures",
     "httpx2",
     "ruff",
     "mypy",

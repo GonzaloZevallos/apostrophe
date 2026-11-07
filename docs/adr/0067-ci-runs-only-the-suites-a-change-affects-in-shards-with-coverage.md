@@ -102,6 +102,9 @@ libre al rebasar.
   diferimiento y cuesta una nueva corrida, mientras que una que no se detecta es la dirección insegura.
   La regex tiene menos de 200 caracteres y ninguna repetición anidada. `tests/test_stack_ci.py` la lee de
   `stack.yaml`, nunca la copia.
+  *Adenda (2026-11-07, GH-563).* `retries` vale 1 solo bajo `CI` (ADR-0040, adenda). Un `web-e2e`
+  local sigue con 0, por lo que un `✘` en la salida local sigue siendo una falla final y
+  `ci_covers.web-e2e.failed` no cambia.
 - **Riesgos conocidos.** (1) Un head que solo toca el backend, o cualquiera cuyo diff no seleccione
   ningún spec, omite `e2e`: no queda cubierto. (2) "Cubierto" es la selección que `scripts/ci_changes.py`
   calculó para el diff de ese head, no la suite completa local; es la misma selección que el Gate ya acepta

@@ -49,10 +49,15 @@ function specFiles(): string[] {
   return readdirSync(E2E_DIR).filter((name) => name.endsWith('.spec.ts'))
 }
 
-async function loadConfig(outputDir: string | undefined): Promise<PlaywrightTestConfig> {
+async function loadConfig(
+  outputDir: string | undefined,
+  ci?: string,
+): Promise<PlaywrightTestConfig> {
   vi.resetModules()
   if (outputDir === undefined) vi.stubEnv(OUTPUT_DIR_VARIABLE, undefined)
   else vi.stubEnv(OUTPUT_DIR_VARIABLE, outputDir)
+  if (ci === undefined) vi.stubEnv('CI', undefined)
+  else vi.stubEnv('CI', ci)
   const loaded = await import('../../playwright.config')
   return loaded.default
 }
@@ -128,9 +133,15 @@ describe('the projects of the e2e run', () => {
     expect(config.use?.screenshot).toBe('only-on-failure')
   })
 
-  it('keeps the load settings: three workers, no retries', () => {
+  it('keeps the load settings: three workers, and no retries with CI unset', async () => {
     expect(config.workers).toBe(3)
-    expect(config.retries).toBe(0)
+    const local = await loadConfig(undefined, undefined)
+    expect(local.retries).toBe(0)
+  })
+
+  it('retries a failed test exactly once when CI is set (GH-563, ADR-0040)', async () => {
+    const ci = await loadConfig(undefined, 'true')
+    expect(ci.retries).toBe(1)
   })
 })
 

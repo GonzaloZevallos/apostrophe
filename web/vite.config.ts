@@ -45,6 +45,9 @@ export default defineConfig({
     // measured under load. Both ceilings are set only here and there: a call site
     // never sets its own shorter one.
     testTimeout: 40_000,
+    // One retry per failed test in CI, none locally (GH-563). Set at the root so the `unit` and
+    // `census` projects inherit it: a real drift fails twice and stays red.
+    retry: process.env.CI ? 1 : 0,
     // `web/e2e/` is Playwright's own suite (`playwright.config.ts`'s `testDir`),
     // run by the `web-e2e` check; vitest's defaults would otherwise also try to
     // run `flow.spec.ts` as a unit test and collide with Playwright's `test`.

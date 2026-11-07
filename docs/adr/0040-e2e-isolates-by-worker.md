@@ -347,3 +347,19 @@ A toast with no product timer (the history-state `Notice`, "Customer saved") kee
 - The same text shown again while one toast is still on screen (`showNow` twice on one location: `Gastos`, `EntriesList`, `PriceRows`) writes the same text to the same element, so there is no mutation and the recorder holds one entry. `toastRecorder.spec.ts` pins that behaviour with a toast fed to the page (the app path itself is not driven). A spec that needs the second one asserts what follows it.
 - Toasts the recorder cannot see (`.aviso-toast` category toasts, `.venta-guardada`) stay on page text and keep the old race.
 - `expectToast` proves the toast was shown after the action, not that it was shown for the action: a different toast with the same text from another source in the window would pass.
+
+## Addendum (2026-11-07, GH-563): one retry in CI
+
+This addendum supersedes the `retries: 0` sentences above; they stay as history.
+
+- In CI (`CI` set), `retries` is 1 for every suite, and a test that fails twice leaves its job red.
+  Locally it stays 0, so a `✘` in a local run is still a final failure.
+- `timeout` is per attempt. In CI the worst test therefore takes 2×160 s = 320 s, and
+  `sales.spec.ts` takes 2×240 s = 480 s.
+- A retry runs on a new worker, which gets a fresh worker-scoped backend and database
+  (`web/e2e/fixtures.ts`).
+- The three `describe.serial` groups retry as a whole, the one exception to "alone":
+  `web/e2e/navigation.spec.ts:69`, `web/e2e/scrollOnNavigate.spec.ts:97` and
+  `web/e2e/barFit.spec.ts:171`.
+
+Shard headroom: measured in GH-563 (c).
