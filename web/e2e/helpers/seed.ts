@@ -24,7 +24,6 @@ import { expectPath } from './url.js'
 import { expectToast } from './toast.js'
 import { fillSaleLine } from './sale.js'
 import { leaveOnboarding } from './signup.js'
-import { pickStockVariety } from './stockVariety.js'
 import { uniqueTag } from './unique.js'
 
 export const PASSWORD = 'correcthorsebattery'
@@ -96,3 +95,5 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
 
   return { variety, customer, sale, entry, withdrawal, customerName }
 }
+
+import { pickStockVariety } from './stockVariety.js'

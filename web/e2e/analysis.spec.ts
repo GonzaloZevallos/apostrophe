@@ -20,7 +20,6 @@ import { watchConsole } from './console.js'
 import { openGastos, openMas } from './helpers/openMas.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { setPriceDate } from './helpers/priceDate.js'
-import { pickStockVariety } from './helpers/stockVariety.js'
 import { uniqueTag } from './helpers/unique.js'
 
 test('a seller opens Análisis from Más, moves back a month and reads each section', async ({
@@ -470,3 +469,5 @@ async function tallerMoves(page: Page): Promise<string[]> {
   const moved = before.filter((place, index) => place !== after[index])
   return outgrown ? [...moved, 'documento-mas-alto-que-la-ventana'] : moved
 }
+
+import { pickStockVariety } from './helpers/stockVariety.js'

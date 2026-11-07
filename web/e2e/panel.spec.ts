@@ -34,7 +34,6 @@ import { watchConsole } from './console.js'
 import { openGastos } from './helpers/openMas.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
-import { pickStockVariety } from './helpers/stockVariety.js'
 import { uniqueTag } from './helpers/unique.js'
 
 interface PanelPeriod {
@@ -400,3 +399,5 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expectOnlyTheThemeStored(page)
   expect(consoleMessages).toEqual([])
 })
+
+import { pickStockVariety } from './helpers/stockVariety.js'

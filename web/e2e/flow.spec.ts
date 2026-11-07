@@ -21,7 +21,6 @@ import { expect, test, withToastRecorder } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openGastos } from './helpers/openMas.js'
-import { pickStockVariety } from './helpers/stockVariety.js'
 import { uniqueTag } from './helpers/unique.js'
 
 const PASSWORD = 'correcthorsebattery'
@@ -209,3 +208,5 @@ test('a seller does everything the backend offers today, from the front alone', 
 
   expect(consoleMessages).toEqual([])
 })
+
+import { pickStockVariety } from './helpers/stockVariety.js'

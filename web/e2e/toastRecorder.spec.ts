@@ -15,7 +15,6 @@ import { expect, test } from './fixtures.js'
 import { DOCUMENT_CHANGED, DOCUMENT_CHANGED_AT_MARK, NO_RECORDER, expectToast } from './helpers/toast.js'
 import { expectPath } from './helpers/url.js'
 import { signUpNewBusiness } from './helpers/signup.js'
-import { pickStockVariety } from './helpers/stockVariety.js'
 import { uniqueTag } from './helpers/unique.js'
 
 async function addToast(page: Page, text: string, options: { remove: boolean }): Promise<void> {
@@ -163,3 +162,5 @@ test('real screens: a flash toast, a toast on its own timer and the card\'s hist
   // No product timer on this one (history state): the page check stays next to the recorder's.
   await expect(page.getByText('Customer saved')).toBeVisible()
 })
+
+import { pickStockVariety } from './helpers/stockVariety.js'

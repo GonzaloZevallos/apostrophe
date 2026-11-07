@@ -14,7 +14,6 @@ import { ANALYSIS, HOME, VARIETIES, WITHDRAWAL_NEW } from '../src/routes.js'
 import { watchConsole } from './console.js'
 import { openMas } from './helpers/openMas.js'
 import { signUpNewBusiness } from './helpers/signup.js'
-import { pickStockVariety } from './helpers/stockVariety.js'
 import { uniqueTag } from './helpers/unique.js'
 
 test('a seller records, edits and deletes withdrawals and reads Marketing and Own use', async ({
@@ -119,3 +118,5 @@ test('a seller records, edits and deletes withdrawals and reads Marketing and Ow
 
   expect(consoleMessages).toEqual([])
 })
+
+import { pickStockVariety } from './helpers/stockVariety.js'

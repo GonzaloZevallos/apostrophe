@@ -37,7 +37,6 @@ import { e2eBaseUrl } from './env.js'
 import { newBusinessInvitationUrl } from './backend.js'
 import { leaveOnboarding } from './helpers/signup.js'
 import { CATALOG, STOCK_ENTRY_NEW, VARIETIES } from '../src/routes.js'
-import { pickStockVariety } from './helpers/stockVariety.js'
 import { uniqueTag } from './helpers/unique.js'
 
 const PASSWORD = 'correcthorsebattery'
@@ -127,3 +126,5 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
   )
   expect(copied).toEqual([EXPECTED_PLAIN_TEXT])
 })
+
+import { pickStockVariety } from './helpers/stockVariety.js'

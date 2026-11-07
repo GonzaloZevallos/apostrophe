@@ -23,7 +23,6 @@ import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openCatalog } from './helpers/openMas.js'
-import { pickStockVariety } from './helpers/stockVariety.js'
 import { uniqueTag } from './helpers/unique.js'
 
 // What Copiar and Compartir must hand out for the data below, written by hand: the header's
@@ -131,3 +130,5 @@ test('a seller edits a variety, the header and footer, then copies and shares to
 
   expect(consoleMessages).toEqual([])
 })
+
+import { pickStockVariety } from './helpers/stockVariety.js'
