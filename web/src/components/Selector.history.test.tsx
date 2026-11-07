@@ -8,7 +8,8 @@ import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { flipViewport, stubViewport } from '../test-viewport'
-import { Controlled, numbered, renderForm, submitSpy } from './selectorTestKit'
+import { Controlled } from './SelectorTestHost'
+import { numbered, renderForm, submitSpy } from './selectorTestKit'
 import { SheetLevel, useSheet } from './useSheetStack'
 
 beforeEach(() => {
@@ -192,16 +193,21 @@ describe('resize with the list open', () => {
 describe('a host that remounts the Selector with its list open', () => {
   test('draws no list, and the two backs reach the form and then the earlier route', async () => {
     const user = userEvent.setup()
-    let remount: () => void = () => undefined
     function Remounting() {
       const [key, setKey] = useState(0)
-      remount = () => setKey((current) => current + 1)
-      return <Controlled key={key} {...base} label="Category" options={numbered(3)} />
+      return (
+        <>
+          <button type="button" onClick={() => setKey((current) => current + 1)}>
+            Remount
+          </button>
+          <Controlled key={key} {...base} label="Category" options={numbered(3)} />
+        </>
+      )
     }
     const { depth, router } = renderForm(<Remounting />)
     await user.click(fieldOf('Category'))
     expect(depth()).toBe(1)
-    act(() => remount())
+    fireEvent.click(screen.getByRole('button', { name: 'Remount' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     await act(async () => {
       await router.navigate(-1)

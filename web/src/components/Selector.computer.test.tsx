@@ -8,7 +8,8 @@ import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { stubViewport } from '../test-viewport'
-import { Controlled, numbered, renderForm, submitSpy } from './selectorTestKit'
+import { Controlled } from './SelectorTestHost'
+import { numbered, renderForm, submitSpy } from './selectorTestKit'
 
 beforeEach(() => {
   stubViewport('computer')
@@ -179,15 +180,20 @@ describe('search in the dropdown', () => {
 describe('loading', () => {
   test('turning true while the dropdown is open closes it and focus goes to the wrapper', async () => {
     const user = userEvent.setup()
-    let setLoading: (loading: boolean) => void = () => undefined
     function Switching() {
-      const [loading, set] = useState(false)
-      setLoading = set
-      return <Controlled {...base} loading={loading} required options={numbered(4)} />
+      const [loading, setLoading] = useState(false)
+      return (
+        <>
+          <button type="button" onClick={() => setLoading(true)}>
+            Start loading
+          </button>
+          <Controlled {...base} loading={loading} required options={numbered(4)} />
+        </>
+      )
     }
     renderForm(<Switching />)
     await user.click(field())
-    act(() => setLoading(true))
+    fireEvent.click(screen.getByRole('button', { name: 'Start loading' }))
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
     expect(screen.getByRole('group', { name: 'Category' })).toHaveFocus()
     expect(screen.getByRole('button', { name: 'Category' })).toBeDisabled()

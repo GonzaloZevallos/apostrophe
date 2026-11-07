@@ -5061,7 +5061,8 @@ body {
     .selector-pago__opcion,
     .gastos__mes-boton,
     .encabezado__volver,
-    .historial-fila__borrar
+    .historial-fila__borrar,
+    .selector-lista__fila
   ):active:not(:disabled):not([aria-disabled='true']) {
   transform: scale(0.98);
   background-color: var(--superficie);
@@ -5091,6 +5092,7 @@ body {
     .ajustes-tema__opcion,
     .ajustes-tema__opcion--activa,
     .inicio__avatar,
+    .selector__campo,
     /* a whole-block control; nothing tappable may be nested in it (it would scale with it). */
     .aviso-onboarding
   ):active:not(:disabled):not([aria-disabled='true']) {
@@ -5105,7 +5107,8 @@ body {
     .bar-inferior__item--activo,
     .pestanas__opcion--activa,
     .variedad-fila--activa,
-    .selector-pago__opcion--activa
+    .selector-pago__opcion--activa,
+    .selector-lista__fila--activa
   ):active:not(:disabled):not([aria-disabled='true']) {
   background-color: var(--linea);
 }
@@ -5142,7 +5145,9 @@ body {
     .gastos__mes-boton,
     .encabezado__volver,
     .historial-fila__borrar,
-    .fila-stock--enlace
+    .fila-stock--enlace,
+    .selector__campo,
+    .selector-lista__fila
   ) {
   -webkit-user-select: none;
   user-select: none;
@@ -6628,7 +6633,7 @@ body {
   flex: none;
   align-items: center;
   gap: var(--espacio-xs);
-  color: var(--deuda);
+  color: var(--tinta2);
   font-size: 15px;
   white-space: nowrap;
 }
@@ -6661,7 +6666,7 @@ body {
 
 .selector-lista__buscar {
   position: sticky;
-  top: 0;
+  top: var(--inset-arriba);
   flex: none;
   height: var(--alto-tocable);
   box-sizing: border-box;
@@ -6701,7 +6706,6 @@ body {
   touch-action: manipulation;
 }
 
-.selector-lista__fila:active,
 .selector-lista__fila--activa {
   background: var(--superficie);
 }

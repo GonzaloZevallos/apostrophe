@@ -3,12 +3,13 @@
  * its rows, search, clearing row, empty set, the `selected` mark and loading.
  */
 
-import { act, screen, within } from '@testing-library/react'
+import { fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { stubViewport } from '../test-viewport'
-import { Controlled, numbered, paymentMethodOptions, renderForm, submitSpy } from './selectorTestKit'
+import { Controlled } from './SelectorTestHost'
+import { numbered, paymentMethodOptions, renderForm, submitSpy } from './selectorTestKit'
 
 beforeEach(() => {
   stubViewport('phone')
@@ -158,16 +159,21 @@ describe('search', () => {
 
   test('the options dropping from 9 to 8 clear the query and move focus to the first row', async () => {
     const user = userEvent.setup()
-    let setCount: (count: number) => void = () => undefined
     function Shrinking() {
-      const [count, set] = useState(9)
-      setCount = set
-      return <Controlled {...base} required options={numbered(count)} />
+      const [count, setCount] = useState(9)
+      return (
+        <>
+          <button type="button" onClick={() => setCount(8)}>
+            Drop one
+          </button>
+          <Controlled {...base} required options={numbered(count)} />
+        </>
+      )
     }
     renderForm(<Shrinking />)
     await user.click(field())
     await user.type(screen.getByRole('searchbox'), 'Option 1')
-    act(() => setCount(8))
+    fireEvent.click(screen.getByRole('button', { name: 'Drop one' }))
     expect(screen.queryByRole('searchbox')).not.toBeInTheDocument()
     expect(rowTexts()).toHaveLength(9)
     expect(screen.getByRole('button', { name: 'Option 1' })).toHaveFocus()
@@ -175,15 +181,20 @@ describe('search', () => {
 
   test('the current option removed while the list is open leaves the list without its row', async () => {
     const user = userEvent.setup()
-    let setOptions: (count: number) => void = () => undefined
     function Changing() {
-      const [count, set] = useState(3)
-      setOptions = set
-      return <Controlled {...base} required initial="v3" options={numbered(count)} />
+      const [count, setCount] = useState(3)
+      return (
+        <>
+          <button type="button" onClick={() => setCount(2)}>
+            Remove one
+          </button>
+          <Controlled {...base} required initial="v3" options={numbered(count)} />
+        </>
+      )
     }
     renderForm(<Changing />)
     await user.click(field())
-    act(() => setOptions(2))
+    fireEvent.click(screen.getByRole('button', { name: 'Remove one' }))
     expect(screen.queryByRole('button', { name: /Option 3/ })).not.toBeInTheDocument()
     expect(field()).toHaveTextContent('no longer available')
   })
@@ -273,16 +284,21 @@ describe('the field', () => {
 
   test('loading turning true while the list is open closes it and focus goes to the wrapper', async () => {
     const user = userEvent.setup()
-    let setLoading: (loading: boolean) => void = () => undefined
     function Switching() {
-      const [loading, set] = useState(false)
-      setLoading = set
-      return <Controlled {...base} loading={loading} required options={numbered(3)} />
+      const [loading, setLoading] = useState(false)
+      return (
+        <>
+          <button type="button" onClick={() => setLoading(true)}>
+            Start loading
+          </button>
+          <Controlled {...base} loading={loading} required options={numbered(3)} />
+        </>
+      )
     }
     const { depth } = renderForm(<Switching />)
     await user.click(field())
     expect(depth()).toBe(1)
-    act(() => setLoading(true))
+    fireEvent.click(screen.getByRole('button', { name: 'Start loading' }))
     await vi.waitFor(() => expect(depth()).toBe(0))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.getByRole('group', { name: 'Category' })).toHaveFocus()

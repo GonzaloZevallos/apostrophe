@@ -4,9 +4,9 @@
  * into a pattern, so a name or a query holding `.*+?()[]` means those characters and nothing else.
  */
 
-/** Lower case, then NFD, then every combining mark removed. */
+/** Lower case (`toLowerCase`: the locale ban keeps `toLocale*` out), then NFD, then every combining mark removed. */
 export function foldForSearch(text: string): string {
-  return text.toLocaleLowerCase('en').normalize('NFD').replace(/\p{M}/gu, '')
+  return text.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '')
 }
 
 /** Whether `label` holds the trimmed `query`; an empty query matches every label. */

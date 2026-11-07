@@ -79,11 +79,11 @@ export default function Selector(props: SelectorProps) {
 
   const [mine, setMine] = useState(false)
   const [dropdown, setDropdown] = useState(false)
-  const [flip, setFlip] = useState(false)
+  const [wasOpen, setWasOpen] = useState(sheet.isOpen)
+  const [focusTick, setFocusTick] = useState(0)
   const [query, setQuery] = useState('')
   const [activeKey, setActiveKey] = useState<string | null>(null)
   const closing = useRef(false)
-  const wasOpen = useRef(false)
   const searchFocused = useRef(false)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const fieldRef = useRef<HTMLButtonElement>(null)
@@ -138,40 +138,53 @@ export default function Selector(props: SelectorProps) {
   }
 
   // The entry going from open to closed, whoever closed it (a pick, Close, the system back),
-  // is the only thing that ends this Selector's own open state.
-  useLayoutEffect(() => {
-    const was = wasOpen.current
-    wasOpen.current = sheet.isOpen
-    if (!was || sheet.isOpen) return
-    closing.current = false
-    setQuery('')
-    if (mine) {
-      setMine(false)
-      focusField()
-    }
-  })
-
-  // What closes an open list or dropdown without the user asking: `loading`, a resize.
-  useLayoutEffect(() => {
-    if (listOpen && (loading || computer)) closeList()
-    if (dropdown && (loading || !computer)) {
-      setDropdown(false)
+  // is the only thing that ends this Selector's own open state. Adjusted while rendering, so no
+  // frame draws a list for an entry that is gone; the focus goes back in `focusTick`'s effect.
+  if (wasOpen !== sheet.isOpen) {
+    setWasOpen(sheet.isOpen)
+    if (wasOpen) {
       setQuery('')
-      focusField()
+      if (mine) {
+        setMine(false)
+        setFocusTick((tick) => tick + 1)
+      }
     }
+  }
+  // A dropdown does not outlive `loading` or the phone layout.
+  if (dropdown && (loading || !computer)) {
+    setDropdown(false)
+    setQuery('')
+    setFocusTick((tick) => tick + 1)
+  }
+  // Search goes away when the options drop to the limit, and its query with it.
+  if (!showSearch && query !== '') setQuery('')
+
+  const latest = useRef({ focusField, closeList, closeDropdown })
+  useLayoutEffect(() => {
+    latest.current = { focusField, closeList, closeDropdown }
   })
 
-  // Search goes away when the options drop to the limit: the query clears, and focus that was in
-  // the field moves to the rows instead of falling to the page.
   useLayoutEffect(() => {
-    if (showSearch) return
-    if (query !== '') setQuery('')
-    if (!searchFocused.current) return
+    if (!sheet.isOpen) closing.current = false
+  }, [sheet.isOpen])
+
+  useLayoutEffect(() => {
+    if (focusTick > 0) latest.current.focusField()
+  }, [focusTick])
+
+  // What closes an open list without the user asking: `loading`, a resize to the computer.
+  useLayoutEffect(() => {
+    if (listOpen && (loading || computer)) latest.current.closeList()
+  }, [listOpen, loading, computer])
+
+  // Focus that was in the search field moves to the rows instead of falling to the page.
+  useLayoutEffect(() => {
+    if (showSearch || !searchFocused.current) return
     searchFocused.current = false
     const rows = rowsRef.current
     const target = computer ? rows : rows?.querySelector<HTMLElement>('button')
     target?.focus({ preventScroll: true })
-  })
+  }, [showSearch, computer])
 
   // A dropdown that just opened takes focus, and goes up when there is no room under the field.
   useLayoutEffect(() => {
@@ -180,7 +193,8 @@ export default function Selector(props: SelectorProps) {
     const field = fieldRef.current
     if (box !== null && field !== null) {
       const max = parseFloat(getComputedStyle(box).maxHeight)
-      setFlip(Number.isFinite(max) && window.innerHeight - field.getBoundingClientRect().bottom < max)
+      const up = Number.isFinite(max) && window.innerHeight - field.getBoundingClientRect().bottom < max
+      box.classList.toggle('selector-desplegable--arriba', up)
     }
     ;(searchRef.current ?? rowsRef.current)?.focus({ preventScroll: true })
   }, [dropdown])
@@ -191,7 +205,7 @@ export default function Selector(props: SelectorProps) {
     function onPointerDown(event: PointerEvent): void {
       const wrapper = wrapperRef.current
       if (wrapper !== null && event.target instanceof Node && !wrapper.contains(event.target)) {
-        closeDropdown(false)
+        latest.current.closeDropdown(false)
       }
     }
     document.addEventListener('pointerdown', onPointerDown)
@@ -331,17 +345,19 @@ export default function Selector(props: SelectorProps) {
     const isCurrent = item.value !== null && item.value === value
     if (computer) {
       return (
-        <div
+        <button
           key={item.key}
           id={`${ids}-row-${index}`}
+          type="button"
           role="option"
           aria-selected={isCurrent}
-          className={`selector-lista__fila${index === activeIndex ? ' selector-lista__fila--activa' : ''}`}
+          className={index === activeIndex ? 'selector-lista__fila selector-lista__fila--activa' : 'selector-lista__fila'}
+          tabIndex={-1}
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => pick(item.value)}
         >
           {rowBody(item, isCurrent)}
-        </div>
+        </button>
       )
     }
     return (
@@ -430,7 +446,7 @@ export default function Selector(props: SelectorProps) {
           {computer && dropdown && (
             <div
               ref={dropdownRef}
-              className={`selector-desplegable${flip ? ' selector-desplegable--arriba' : ''}`}
+              className="selector-desplegable"
               onKeyDown={onDropdownKeyDown}
               onBlur={(event) => {
                 const next = event.relatedTarget
