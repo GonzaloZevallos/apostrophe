@@ -7,7 +7,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider, type RouteObject } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
@@ -19,6 +19,7 @@ import { PUBLISH_LINE } from './BotStep'
 import Listo from './Listo'
 import OnboardingLayout from './OnboardingLayout'
 import { OnboardingEntry, OnboardingStepRoute } from './OnboardingRoutes'
+import { DISCARD_QUESTION } from './OnboardingStep'
 import { ONBOARDING_BOT, ONBOARDING_CATALOG_MESSAGE, ONBOARDING_CATEGORIES, ONBOARDING_PARTNER, ONBOARDING_STOCK, ONBOARDING_VARIETY } from '../../routes'
 import { CHECKLIST_DONE } from '../../copy/inicio'
 import { SheetRouterProvider } from '../../components/useSheetStack'
@@ -88,7 +89,7 @@ function stubFetch(read: OnboardingProgress, extra: Record<string, Handler>): vo
   )
 }
 
-function renderAt(path: string) {
+function renderAt(path: string | string[]) {
   const routes: RouteObject[] = [
     {
       element: <Outlet context={ME} />,
@@ -109,7 +110,8 @@ function renderAt(path: string) {
       ],
     },
   ]
-  const router = createMemoryRouter(routes, { initialEntries: [path] })
+  const entries = typeof path === 'string' ? [path] : path
+  const router = createMemoryRouter(routes, { initialEntries: entries, initialIndex: entries.length - 1 })
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
       <SheetRouterProvider router={router}>
@@ -255,6 +257,40 @@ test('step 2 saves the opening stock of the stock target through the owner, then
   await user.click(screen.getByRole('button', { name: 'Continue' }))
   expect(await screen.findByRole('heading', { name: 'How your catalog looks' })).toBeInTheDocument()
   expect(calls).toContain('POST /onboarding-progress/advance')
+})
+
+test('step 2 on a clean form: back by history leaves the step at once, with no question', async () => {
+  stubFetch(answer(['done', 'pending', 'pending', 'pending', 'pending', 'pending'], { stock_target: MANGO }), {
+    ...STOCK_FORM_READS,
+  })
+  const router = renderAt(['/', ONBOARDING_STOCK])
+  await screen.findByText('Mango Bomb')
+
+  await act(async () => {
+    await router.navigate(-1)
+  })
+
+  expect(await screen.findByText('pantalla inicio')).toBeInTheDocument()
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+})
+
+test('step 2 with grams typed: back by history asks to discard, and keeping them stays on the step with the grams', async () => {
+  stubFetch(answer(['done', 'pending', 'pending', 'pending', 'pending', 'pending'], { stock_target: MANGO }), {
+    ...STOCK_FORM_READS,
+  })
+  const user = userEvent.setup()
+  const router = renderAt(['/', ONBOARDING_STOCK])
+  await user.type(await screen.findByLabelText('Grams'), '500')
+
+  await act(async () => {
+    await router.navigate(-1)
+  })
+
+  expect(await screen.findByRole('alertdialog')).toHaveTextContent(DISCARD_QUESTION)
+  await user.click(screen.getByRole('button', { name: 'No, keep typing' }))
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  expect(screen.getByLabelText('Grams')).toHaveValue('500')
+  expect(screen.queryByText('pantalla inicio')).not.toBeInTheDocument()
 })
 
 test('step 2 names the variety and asks only grams and the optional cost: no Variedad select, no Nota, no date input', async () => {

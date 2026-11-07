@@ -13,6 +13,7 @@ import { StrictMode } from 'react'
 import { createMemoryRouter, Outlet, RouterProvider, useLocation } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../api/catalog'
+import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { SHOWN_EN } from '../test/shownLanguage'
 import { useGoneNotice } from '../components/goneExit'
@@ -833,7 +834,7 @@ function fakeVarieties(listed: unknown, extra: Record<string, () => Response> = 
 }
 
 /** The form in the real route map, with the router in hand to press "back" on. */
-function renderApp(entries: string[]) {
+function renderApp(entries: HistoryEntry[]) {
   const router = createMemoryRouter(ROUTES, { initialEntries: entries, initialIndex: entries.length - 1 })
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
@@ -967,4 +968,182 @@ test('on the computer Escape with the dropdown open closes only the dropdown', a
   await waitFor(() => expect(screen.queryByRole('listbox')).toBeNull())
   expect(screen.getByLabelText('Grams')).toBeInTheDocument()
   expect(screen.queryByRole('alertdialog')).toBeNull()
+})
+
+function entryOf(productId: number, extra: Record<string, unknown> = {}) {
+  return {
+    id: 10,
+    date: '2026-09-20',
+    product_id: productId,
+    origin: 'harvest',
+    quantity: 25,
+    total_cost: null,
+    cost_per_gram: null,
+    note: null,
+    ...extra,
+  }
+}
+
+const VIEJA = { id: 8, name: 'Vieja', archived: true, current_price: null }
+
+function storedBody(): string {
+  const put = vi.mocked(fetch).mock.calls.find(([, init]) => init?.method === 'PUT')
+  return String(put?.[1]?.body)
+}
+
+test('a negative Adjustment is typed with a minus and a cost on it is refused on its own, naming why', async () => {
+  fakeVarieties(VARIETIES, {
+    'POST /stock/entries': () => jsonResponse(422, { detail: 'x', code: 'stock.cost_on_negative_adjustment' }),
+  })
+  renderForm(STOCK_ENTRY_NEW)
+
+  await userEvent.type(screen.getByLabelText('Grams'), '-4,5')
+  await pickVariety('Sir Jack')
+  await userEvent.click(screen.getByRole('button', { name: 'Adjustment' }))
+  await userEvent.type(screen.getByLabelText(/^Total cost/), '1000')
+  await userEvent.click(screen.getByRole('button', { name: 'Save the entry' }))
+
+  expect(await screen.findByText('A negative adjustment carries no cost')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Adjustment' })).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('with the archived name still loading the field is busy and saving the edit still sends the stored Variety', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: string | URL | Request, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input.toString()
+      if (url === '/api/products?archived=true') return new Promise<Response>(() => undefined)
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, stockOf([])))
+      if (url === '/stock/entries/10' && init?.method === 'PUT') return Promise.resolve(jsonResponse(200, {}))
+      if (url === '/stock/entries/10') return Promise.resolve(jsonResponse(200, entryOf(8)))
+      return Promise.resolve(jsonResponse(500, {}))
+    }),
+  )
+  renderForm(pathTo(STOCK_ENTRY, { id: 10 }))
+
+  expect(await screen.findByRole('button', { name: /^Variety/ })).toHaveAttribute('aria-busy', 'true')
+  await userEvent.type(await screen.findByLabelText('Grams'), '1')
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Yes, save' }))
+
+  await waitFor(() => expect(storedBody()).toContain('"product_id":8'))
+})
+
+test('after a failed archived read the retry names the stored Variety with the "no longer available" mark', async () => {
+  let archivedReads = 0
+  fakeVarieties(VARIETIES, {
+    'GET /stock/entries/10': () => jsonResponse(200, entryOf(8)),
+    'GET /api/products?archived=true': () => {
+      archivedReads += 1
+      return archivedReads === 1 ? jsonResponse(500, {}) : jsonResponse(200, [VIEJA])
+    },
+  })
+  renderForm(pathTo(STOCK_ENTRY, { id: 10 }))
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Something went wrong. Try again.' }))
+
+  const field = await screen.findByRole('button', { name: /^Variety/ })
+  await waitFor(() => expect(field).toHaveTextContent('Vieja'))
+  expect(field).toHaveTextContent('no longer available')
+  expect(screen.queryByRole('button', { name: 'Something went wrong. Try again.' })).toBeNull()
+})
+
+test('an edit of an archived Variety, mark shown, saves the stored product_id', async () => {
+  fakeVarieties(VARIETIES, {
+    'GET /stock/entries/10': () => jsonResponse(200, entryOf(8)),
+    'GET /api/products?archived=true': () => jsonResponse(200, [VIEJA]),
+    'PUT /stock/entries/10': () => jsonResponse(200, {}),
+  })
+  renderForm(pathTo(STOCK_ENTRY, { id: 10 }))
+
+  expect(await varietyField()).toHaveTextContent('no longer available')
+  await userEvent.type(screen.getByLabelText('Grams'), '1')
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Yes, save' }))
+
+  await waitFor(() => expect(storedBody()).toContain('"product_id":8'))
+})
+
+test.each([['phone' as const], ['computer' as const]])(
+  'a refetch of the Varieties while the %s list is open keeps the list and its search text',
+  async (viewport) => {
+    stubViewport(viewport)
+    fakeVarieties(MANY)
+    const { client } = renderApp([STOCK_ENTRY_NEW])
+
+    await userEvent.click(await varietyField())
+    const list = viewport === 'phone' ? await screen.findByRole('dialog', { name: 'Variety options' }) : document.body
+    await userEvent.type(within(list).getByRole('searchbox'), '07')
+    const reads = () => vi.mocked(fetch).mock.calls.filter(([url]) => url === '/api/products').length
+    const before = reads()
+
+    await act(async () => {
+      await client.refetchQueries({ queryKey: keys.varieties() })
+    })
+
+    expect(reads()).toBeGreaterThan(before)
+    const kept = viewport === 'phone' ? screen.getByRole('dialog', { name: 'Variety options' }) : document.body
+    expect(within(kept).getByRole('searchbox')).toHaveValue('07')
+    expect(within(kept).getByRole(viewport === 'phone' ? 'button' : 'option', { name: 'Cepa 07' })).toBeInTheDocument()
+    expect(screen.queryByText('That is gone. The list is up to date.')).toBeNull()
+  },
+)
+
+const EDIT_PATH_STATE = (): HistoryEntry[] => [
+  VARIETIES_PATH,
+  STOCK,
+  { pathname: ENTRY_PATH, state: inAppState({ pathname: STOCK }) },
+]
+
+test('EntradaStock edit, clean: back goes to All entries with no question', async () => {
+  fakeVarieties(VARIETIES, { 'GET /stock/entries/10': () => jsonResponse(200, entryOf(3)) })
+  const { router } = renderApp(EDIT_PATH_STATE())
+  await varietyField()
+
+  await act(async () => {
+    await router.navigate(-1)
+  })
+
+  expect(await screen.findByText('todas las entradas')).toBeInTheDocument()
+  expect(screen.queryByRole('alertdialog')).toBeNull()
+})
+
+test('EntradaStock edit, dirty: back asks to discard the changes and keeping them stays on the form', async () => {
+  fakeVarieties(VARIETIES, { 'GET /stock/entries/10': () => jsonResponse(200, entryOf(3)) })
+  const { router } = renderApp(EDIT_PATH_STATE())
+  await varietyField()
+  await userEvent.type(screen.getByLabelText('Grams'), '1')
+
+  await act(async () => {
+    await router.navigate(-1)
+  })
+
+  expect(await screen.findByRole('alertdialog')).toHaveTextContent('Discard the changes?')
+  await userEvent.click(screen.getByRole('button', { name: 'No, keep entering' }))
+  expect(screen.queryByRole('alertdialog')).toBeNull()
+  expect(screen.getByLabelText('Grams')).toHaveValue('251')
+})
+
+test('EntradaStock edit with the list open: back closes only the list, the next back asks to discard', async () => {
+  fakeVarieties(MANY.concat([{ id: 3, name: 'Sir Jack', archived: false, current_price: null }]), {
+    'GET /stock/entries/10': () => jsonResponse(200, entryOf(3)),
+  })
+  const { router } = renderApp(EDIT_PATH_STATE())
+  await userEvent.type(await screen.findByLabelText('Grams'), '1')
+  await userEvent.click(await varietyField())
+  expect(await screen.findByRole('dialog', { name: 'Variety options' })).toBeInTheDocument()
+
+  await act(async () => {
+    await router.navigate(-1)
+  })
+  await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Variety options' })).toBeNull())
+  expect(screen.getByLabelText('Grams')).toHaveValue('251')
+  expect(router.state.location.pathname).toBe(ENTRY_PATH)
+  expect(screen.queryByRole('alertdialog')).toBeNull()
+
+  await act(async () => {
+    await router.navigate(-1)
+  })
+  expect(await screen.findByRole('alertdialog')).toHaveTextContent('Discard the changes?')
 })
