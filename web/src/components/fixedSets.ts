@@ -17,7 +17,7 @@
  */
 
 import { COMMON_TEXT } from '../copy/common'
-import { CUSTOMER_TYPE_ICON_NAME } from '../copy/customers'
+import { CUSTOMER_TYPE_ICON_NAME } from '../copy/readers/customerTypeIcons'
 import { SALES_TEXT } from '../copy/sales'
 import { SETTINGS_TEXT } from '../copy/settings'
 import type { NombreIcono } from './Icono'

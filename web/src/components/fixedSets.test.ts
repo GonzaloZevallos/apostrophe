@@ -5,7 +5,6 @@
  */
 
 import { afterEach, expect, test } from 'vitest'
-import i18n from '../i18n'
 import { restoreEnglish, switchToMarkers } from '../i18n/switchFixture'
 import { SALES_TEXT } from '../copy/sales'
 import { SETTINGS_TEXT } from '../copy/settings'
@@ -97,7 +96,6 @@ test('a language switch moves the icon names and leaves the period and theme wor
     SETTINGS_TEXT.dark,
   ])
   for (const option of CUSTOMER_TYPE_ICON_SET) {
-    expect(option.label()).toBe(i18n.t(`customerTypes:icon.${option.value}`))
     expect(option.label()).toBe(`de:customerTypes.icon.${option.value}`)
   }
 })

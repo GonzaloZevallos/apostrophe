@@ -9,7 +9,6 @@ import { baselineArgs, FIXTURE } from './baselineArgs.ts'
 import type * as Self from './customers.ts'
 import { SAMPLES, type LimitedCopy } from './limits.ts'
 import { SHELL_TEXT } from './shell.ts'
-import { instanceText } from '../i18n/instanceText.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
@@ -17,24 +16,6 @@ export const LANGUAGE: 'es' | 'en' = 'en'
 export const EVERYONE = 'Everyone · A–Z'
 
 export const LONG_REFUSALS: readonly string[] = []
-
-/** The icon keys of `customerTypes:icon.*`; `fixedSets.ts` types its set with them. */
-export type CustomerTypeIconName = 'circle' | 'star' | 'heart' | 'diamond' | 'flag' | 'tag' | 'crown' | 'bell'
-
-/**
- * The accessible name of each customer-type icon, a getter per key: it reads the language
- * shown at the moment it is called, so it is called in render, never at load.
- */
-export const CUSTOMER_TYPE_ICON_NAME: Readonly<Record<CustomerTypeIconName, () => string>> = {
-  circle: () => instanceText('customerTypes:icon.circle'),
-  star: () => instanceText('customerTypes:icon.star'),
-  heart: () => instanceText('customerTypes:icon.heart'),
-  diamond: () => instanceText('customerTypes:icon.diamond'),
-  flag: () => instanceText('customerTypes:icon.flag'),
-  tag: () => instanceText('customerTypes:icon.tag'),
-  crown: () => instanceText('customerTypes:icon.crown'),
-  bell: () => instanceText('customerTypes:icon.bell'),
-}
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const CUSTOMERS_TEXT = {
@@ -104,12 +85,4 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'CUSTOMERS_TEXT.onAccountOf': [[D]],
   'CUSTOMERS_TEXT.creditAmount': [[M]],
   'CUSTOMERS_TEXT.balanceAmount': [[M]],
-  'CUSTOMER_TYPE_ICON_NAME.circle': [[]],
-  'CUSTOMER_TYPE_ICON_NAME.star': [[]],
-  'CUSTOMER_TYPE_ICON_NAME.heart': [[]],
-  'CUSTOMER_TYPE_ICON_NAME.diamond': [[]],
-  'CUSTOMER_TYPE_ICON_NAME.flag': [[]],
-  'CUSTOMER_TYPE_ICON_NAME.tag': [[]],
-  'CUSTOMER_TYPE_ICON_NAME.crown': [[]],
-  'CUSTOMER_TYPE_ICON_NAME.bell': [[]],
 })
