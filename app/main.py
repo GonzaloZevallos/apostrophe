@@ -31,6 +31,8 @@ from app.catalog.adapters.onboarding_facts import SqlCatalogFacts
 from app.catalog.adapters.opening import CatalogHeaderFooterOpening
 from app.catalog.adapters.router import router as catalog_router
 from app.clock import Clock, system_clock
+from app.customer_types.adapters.router import build_router as build_customer_types_router
+from app.customers.adapters.customers_in_type import SqlCustomersInType
 from app.customers.adapters.router import router as customers_router
 from app.db import make_engine
 from app.expenses.adapters.babel_defaults import BabelCategoryDefaults
@@ -68,11 +70,15 @@ from app.settings import Settings
 from app.shared.copy import CopyCatalog
 from app.shared.language import BusinessLanguage
 from app.static_spa import FrontNavigation, MissingBuiltFront, ShellPage, SpaStatic, api_segments
+from app.stock.adapters.babel_defaults import BabelReasonDefaults
 from app.stock.adapters.draw_costs import SqlDrawCosts
 from app.stock.adapters.leaving import SqlStockLeaving
 from app.stock.adapters.line_costs import SqlLineCosts
 from app.stock.adapters.onboarding_facts import SqlStockFacts
 from app.stock.adapters.purchases import SqlPurchases
+from app.stock.adapters.reasons_opening import WithdrawalReasonsOpening
+from app.stock.adapters.results_reasons import SqlResultsWithdrawalReasons
+from app.stock.adapters.router import reasons_router as stock_reasons_router
 from app.stock.adapters.router import router as stock_router
 from app.stock.adapters.stock_figures import SqlStockFigures
 
@@ -150,7 +156,7 @@ async def _refused(request: Request, exc: Exception) -> JSONResponse:
     # Every `Refused` already carries the broken rule's `code` (docs/adr/0008); the
     # front maps it, never `detail`.
     assert isinstance(exc, Refused)
-    content = {"detail": exc.detail, "code": exc.code}
+    content = {"detail": exc.detail, "code": exc.code, **exc.fields}
     return JSONResponse(status_code=exc.status_code, content=content)
 
 
@@ -212,8 +218,10 @@ def create_app(
     copy_catalog = CopyCatalog(settings.locales_dir)
     category_defaults = BabelCategoryDefaults(copy_catalog)
     header_footer_defaults = BabelHeaderFooterDefaults(copy_catalog)
+    reason_defaults = BabelReasonDefaults(copy_catalog)
     app.state.business_opening = CompositeOpening(
         partial(ExpenseCategoriesOpening, defaults=category_defaults),
+        partial(WithdrawalReasonsOpening, defaults=reason_defaults),
         partial(CatalogHeaderFooterOpening, defaults=header_footer_defaults),
         PricingSettingsOpening,
         partial(OnboardingOpening, clock=clock),
@@ -270,6 +278,7 @@ def create_app(
     # of these (ADR-0013 amendment GH-70): both read `period_figures`'s one
     # computation, never a second sum of their own.
     app.state.draw_costs = SqlDrawCosts
+    app.state.results_withdrawal_reasons = SqlResultsWithdrawalReasons
     app.state.sales_ledger = SqlSalesLedger
     app.state.payments_ledger = SqlPaymentsLedger
     app.state.expenses_ledger = SqlExpensesLedger
@@ -304,9 +313,15 @@ def create_app(
     app.include_router(language_router, dependencies=gated)
     app.include_router(products_router, dependencies=upkeep_gated)
     app.include_router(customers_router, dependencies=gated)
+    # `customer_types` never imports `customers`: the count of customers in a type
+    # reaches its router from here (the `CustomersInType` port).
+    app.include_router(
+        build_customer_types_router(customers_in_type=SqlCustomersInType), dependencies=gated
+    )
     app.include_router(expenses_router, dependencies=gated)
     app.include_router(sales_router, dependencies=upkeep_gated)
     app.include_router(stock_router, dependencies=upkeep_gated)
+    app.include_router(stock_reasons_router, dependencies=gated)
     app.include_router(catalog_router, dependencies=upkeep_gated)
     app.include_router(payments_router, dependencies=gated)
     app.include_router(payments_customers_router, dependencies=gated)

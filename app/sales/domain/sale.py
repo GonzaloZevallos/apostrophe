@@ -176,6 +176,8 @@ class Sale:
     payment: OnTheSpotPayment | None
     recorded_at: datetime
     id: int | None = None
+    # The Sale number (CONTEXT.md): `None` before saving, like `id`; given by the store.
+    number: int | None = None
 
     @property
     def total(self) -> int:

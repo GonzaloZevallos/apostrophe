@@ -66,9 +66,14 @@ _Avoid_: contact, handle, username, identifier
 _In the app_: Phone
 
 **VIP customer**:
-Un Customer que paga el VIP price de un Product cuando lo tiene y es menor que lo que da cualquier otra regla. Solo en un Business con la opción VIP customers activada; mientras está desactivada, la marca sigue guardada pero ni se muestra ni se aplica. _In the app_: VIP customer.
+Un Customer del VIP type, que paga el VIP price de un Product cuando lo tiene y es menor que lo que da cualquier otra regla. Solo en un Business con el interruptor Customer types activado; mientras está desactivado, la pertenencia sigue guardada pero ni se muestra ni se aplica. La marca VIP de antes queda congelada, no se lee ni se escribe. _In the app_: VIP customer (la marca VIP).
 _Avoid_: friend, Amigo, preferred customer
 _In the app_: VIP customer
+
+**Customer type**:
+Un grupo de Customers que define el vendedor, con un nombre único en el Business (sin importar mayúsculas ni espacios, hasta 40 caracteres) y un ícono neutro; un Customer está en uno como máximo, o en ninguno. Un Business nuevo arranca sin ninguno, y uno con Customers no se puede eliminar. En esta parte un tipo no tiene precio propio, salvo que la pertenencia al VIP type da el VIP price. _In the app_: Customer type.
+_Avoid_: tier, segment, group, VIP mark
+_In the app_: Customer type
 
 **Sale**:
 Todo lo que un Customer se lleva de una vez: una fecha, como máximo un Customer, el Shipping charged, una Note opcional y una o más Sale lines. Una Sale cuenta en su propia fecha, esté paga o no. Su Customer puede omitirse solo cuando no queda nada adeudado.
@@ -185,7 +190,7 @@ _Avoid_: type, tag, label, account, cost center
 _In the app_: Category
 
 **Profit**:
-Las Sales (con el envío incluido, estén pagas o no) menos el Cost of goods sold, el Stock shortfall, el costo de Promotion, el costo de Own use y las Expenses, en un período, cada uno contado en su propia fecha; las Purchases nunca entran. Cuando algún costo está pendiente, se calcula sobre la parte con costo y se marca con "and N g without cost", donde N suma los gramos pendientes vendidos, regalados, sacados por Adjustments negativos y retirados en el período. Puede ser negativo y entonces se muestra con signo menos; en la app: Profit.
+Las Sales (con el envío incluido, estén pagas o no) menos el Cost of goods sold, el Stock shortfall, el costo de cada Withdrawal reason y las Expenses, en un período, cada uno contado en su propia fecha; las Purchases nunca entran. Cuando algún costo está pendiente, se calcula sobre la parte con costo y se marca con "and N g without cost", donde N suma los gramos pendientes vendidos, regalados, sacados por Adjustments negativos y retirados en el período. Puede ser negativo y entonces se muestra con signo menos. _In the app_: Profit.
 _Avoid_: margin, earnings, net
 _In the app_: Profit
 
@@ -308,7 +313,7 @@ Lo que costaron los gramos sacados por Adjustments negativos en un período, en 
 _Avoid_: shrinkage, write-off, loss, merma
 
 **Stock withdrawal**:
-Un registro con fecha de gramos de uno o más Products sacados del Stock por un solo motivo, Promotion u Own use, con una nota opcional. No se mueve dinero y el Cash no se toca. Sus gramos se costean en su fecha a partir de los Lots, primero el más antiguo, y una parte más allá de todo Lot es Pending cost, nunca $0. El costo se muestra como una línea propia por motivo y baja el Profit; nunca entra en el Margin de un Product ni en el Cost of goods sold. Se puede editar o eliminar en cualquier momento. _In the app_: Withdrawal, registrado con la acción "Take from stock"; los motivos se leen Promotion y Own use.
+Un registro con fecha de gramos de uno o más Products sacados del Stock por un solo Withdrawal reason de la lista propia del Business, con una nota opcional. No se mueve dinero y el Cash no se toca; sus gramos se costean en su fecha a partir de los Lots, primero el más antiguo, y una parte más allá de todo Lot es Pending cost, nunca $0. El costo se muestra en una línea propia por Withdrawal reason y baja el Profit, nunca entra en el Margin de un Product ni en el Cost of goods sold, y el retiro se puede editar o eliminar en cualquier momento. _In the app_: Withdrawal, registrado con la acción "Take from stock".
 _Avoid_: gift (a gift is a sale line at $0 price), shrinkage, write-off
 
 **Publish**:
@@ -324,7 +329,7 @@ El estado del Pinned catalog cuando los Customers no están viendo el Catalog de
 _Avoid_: stale, pending, out of sync, error
 
 **Panel**:
-La vista de una sola pantalla de Home sobre un Business, en hora de Argentina. Today muestra lo que se vendió hoy, lo que se debe y el Stock por Product. Week y Month suman Cost of goods sold, Stock shortfall, el costo de Promotion y de Own use, Expenses, gramos regalados, Purchases, Profit y Cash; solo lectura, cada cifra viene del servidor. _In the app_: Home (pestañas Today · Week · Month).
+La vista de una sola pantalla de Home sobre un Business, en hora de Argentina. Today muestra lo que se vendió hoy, lo que se debe y el Stock por Product; Week y Month suman Cost of goods sold, Stock shortfall, el costo de cada Withdrawal reason (en el orden de su lista), Expenses, gramos regalados, Purchases, Profit y Cash. Es de solo lectura y cada cifra viene del servidor. _In the app_: Home (pestañas Today · Week · Month).
 _Avoid_: dashboard, overview, home, summary, Analysis
 
 **Average sale**:
@@ -382,7 +387,7 @@ Una pantalla a la que se llega directo desde la barra o la barra lateral (Home, 
 _Avoid_: home, main screen, section
 
 **Settings**:
-El único lugar que reúne cada configuración de todo el Business, en grupos: Business, Users, Prices, Integrations, Catalog message, Expense categories, Appearance y Your account. La configuración de un solo Product vive en el Product, nunca acá, y nada del Operator está acá. _In the app_: Settings.
+El único lugar que reúne cada configuración de todo el Business, en grupos: Business (con sus Withdrawal reasons), Users, Prices, Integrations, Catalog message, Expense categories, Appearance y Your account. La configuración de un solo Product vive en el Product, nunca acá, y nada del Operator está acá. _In the app_: Settings.
 _Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group)
 
 **First-run checklist**:
@@ -406,7 +411,7 @@ Un precio por gramo opcional en una Price entry, para los VIP customers: un peso
 _Avoid_: friend price, discount, Amigo price
 
 **Pricing settings**:
-Cuáles de Bulk price y VIP customers usa un Business: dos interruptores independientes. Una regla desactivada queda oculta y deja de aplicarse a las Sales nuevas, mientras que todo lo guardado para ella se conserva. _In the app_: Prices, en Settings.
+Cuáles de Bulk price y Customer types usa un Business: dos interruptores independientes. Customer types es el que antes se leía "VIP customers" y gobierna los Customer types y el VIP price. Una regla desactivada queda oculta y deja de aplicarse a las Sales nuevas, mientras que todo lo guardado para ella se conserva. _In the app_: Prices, en Settings.
 _Avoid_: price config, pricing mode, plan, tariff settings
 
 **Promotion**:
@@ -430,8 +435,12 @@ El único ícono, el mismo en todas partes, puesto junto a la oración de un avi
 _Avoid_: warning icon, alert icon, badge, error icon
 
 **Gate**:
-Los controles que todo cambio debe pasar antes de integrarse: pytest, vitest y e2e, corridos como jobs del CI de GitHub; `agentic merge` rechaza un head salvo que cada job listado en `ci:` esté en verde, e2e incluido. En un pull request cada suite corre solo cuando el cambio la afecta, y una suite omitida por no afectada cuenta como pasada; todo push a master las corre todas. Un Gate en rojo debe significar una regresión del producto, nunca que el calendario pasó un vencimiento o un límite de día; un flake es un defecto del Gate con su propio issue, nunca ruido. En la app: no tiene palabra propia.
+Los controles que todo cambio debe pasar antes de integrarse: pytest, vitest y e2e, corridos como jobs del CI de GitHub; `agentic merge` rechaza un head salvo que cada job listado en `ci:` esté en verde, e2e incluido. En un pull request cada suite corre solo cuando el cambio la afecta, y una suite omitida por no afectada cuenta como pasada; un push a una rama `agentic-ci/**` selecciona sus suites igual que un pull request, contra el merge-base con master; un Dispatch de `ci.yml` en un sha corre el workflow de master sobre ese head y selecciona sus suites como un pull request, contra su merge-base con master; todo push a master las corre todas. Un Gate en rojo debe significar una regresión del producto, nunca que el calendario pasó un vencimiento o un límite de día; un flake es un defecto del Gate con su propio issue, nunca ruido. En la app: no tiene palabra propia.
 _Avoid_: pipeline, build, test run
+
+**Dispatch**:
+La corrida manual de `ci.yml` en un sha, que usa el workflow y los scripts de master para juzgar el head de una tarea que toca `.github/`, cuyo propio workflow no es de fiar. Selecciona las suites del head como un pull request, contra su merge-base con master, y solo vale en `refs/heads/master`. Es una vía de entrada al Gate, no un control aparte. Su regla completa vive en docs/adr/0072-una-corrida-manual-de-ci-yml-en-un-sha-juzga-el-head-con-el-workflow-de-master.md. En la app: no tiene palabra propia.
+_Avoid_: re-run, manual run, workflow run
 
 **Tappable notice**:
 Un aviso que el vendedor toca para abrir aquello a lo que apunta, como el "Go on to the setup" de Home. Su oración lleva el significado y es su nombre accesible. Su regla completa vive en `docs/product/icon-and-text-rule.md`.
@@ -498,7 +507,7 @@ El cuarto criterio del dueño: la app nunca fija en el código la forma de traba
 _Avoid_: business-neutral, white label, vertical, preset, template, multi-tenant
 
 **Sale bill**:
-Los datos de una Sale registrada que un vendedor puede compartir con el Customer de esa Sale: nombre del Business, fecha, líneas, Shipping charged, total, estado de Payment y el Balance actual del Customer. Se calculan en el momento a partir del Settlement cuando se lee el detalle de la Sale y nunca se guardan, y el Balance es la cuenta completa del Customer en el momento de compartir. En pantalla se comparte como texto plano con Share o Copy en el detalle de la Sale; En la app: Sale bill (el nombre accesible de su bloque seleccionable), la acción dice Share / Copy.
+Los datos de una Sale registrada que un vendedor puede compartir con el Customer de esa Sale: nombre del Business, Sale number, fecha, líneas, Shipping charged, total, estado de Payment y el Balance actual del Customer. Se calculan en el momento a partir del Settlement cuando se lee el detalle de la Sale y nunca se guardan; el Balance es la cuenta completa del Customer en el momento de compartir. Se comparte como texto plano con Share o Copy en el detalle de la Sale; _In the app_: Sale bill (el nombre accesible de su bloque seleccionable), y la acción dice Share / Copy.
 _Avoid_: invoice, receipt, statement, ticket
 
 **Documentation language**:
@@ -528,10 +537,6 @@ _Avoid_: precision, cents mode
 **Money format**:
 El símbolo de la moneda y los decimales con que un Business muestra su dinero. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; a cargo de la parte money.
 _Avoid_: currency settings
-
-**Customer type**:
-Un tipo de Customer definido por el vendedor, como máximo uno por Customer, que puede tener su propio precio. Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; a cargo de la parte customer types.
-_Avoid_: tier, segment, group
 
 **Customer-type price**:
 El precio que paga un Customer type por un Product, una fila que rige desde una fecha. Reemplaza al VIP price en las escrituras nuevas; la Price entry conserva su VIP price tal como está, y los VIP prices guardados y las marcas VIP se quedan en su lugar, congelados con los valores que tienen. Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; a cargo de la parte customer-type prices.
@@ -570,3 +575,27 @@ _Avoid_: archived variety, deleted, hidden, inactive, disabled
 **Hidden product**:
 Un Product que quien vende eligió dejar fuera del Catalog, sin importar su precio o su Stock; sigue figurando en Products y en todos los selectores. Un Product que queda afuera por falta de precio o de Stock no está oculto, y un Archived product es otra cosa que conserva su marca de Hidden product. En la app: Hidden.
 _Avoid_: hidden variety, inactive, disabled, archived
+
+**Withdrawal reason**:
+Uno de los motivos de la lista propia de un Business bajo el que se registra cada Stock withdrawal, con un nombre único en el Business (sin importar mayúsculas, minúsculas ni espacios, de hasta 60 caracteres) y una posición. Un Business nuevo arranca con "Marketing" y "Own use" en su Stored language, que un cambio de idioma nunca renombra. La lista se edita solo en Settings → Business → Withdrawal reasons, nunca queda vacía, y un motivo con retiros no se puede eliminar; nunca registra flor perdida, que es un Adjustment negativo. _In the app_: Withdrawal reasons (la lista), Reason (en el formulario), y cada motivo por su nombre.
+_Avoid_: category, type, tag, cause, Promotion (old name of one default reason)
+
+**VIP type**:
+El Customer type "VIP" que la actualización creó en cada Business existente, con los Customers que tenían la marca VIP. Hasta la parte customer-type prices es el único tipo cuya pertenencia da el VIP price; lo identifica la actualización, nunca su nombre, así que renombrarlo no cambia nada y un tipo del vendedor llamado "VIP" no da ningún precio. En la app: no tiene palabra propia; se ve como un tipo más.
+_Avoid_: VIP mark, VIP flag, default type
+
+**Sale number**:
+El número correlativo de una Sale dentro de su Business, que se asigna una sola vez al guardarla, en orden de guardado, empezando en 1. Nunca cambia ni se reutiliza, aunque se borre la Sale que lo tenía, y no revela nada de ningún otro Business. Las Sales que ya existían se numeraron una sola vez por fecha y después por orden de registro. _In the app_: Sale #N.
+_Avoid_: order number, invoice number, id, ticket, receipt number
+
+**Selector**:
+El único control para elegir una opción de un Growable set: un campo con etiqueta que en el teléfono abre su lista en una Sheet, como su propia entrada del historial, y en la computadora abre un desplegable con teclado. Tiene búsqueda con más de 8 opciones, nunca reordena las opciones, muestra con la marca "no longer available" una elección que ya no se ofrece, y nunca parece vacío mientras carga. _In the app_: no tiene palabra propia; se ve como la etiqueta de su campo.
+_Avoid_: dropdown, picker, select, chooser, combobox, chips
+
+**Growable set**:
+Un conjunto que puede tener una opción con la que la app no vino, hoy o por una decisión ya tomada, como los Products, las Expense categories, los Withdrawal reasons, los Customer types y, con GH-318, los Payment methods. Siempre se elige con el Selector, nunca con chips. En la app: no tiene palabra propia.
+_Avoid_: dynamic list, open set, custom list, user list
+
+**Fixed set**:
+Un conjunto de opciones con el que la app viene y que ninguna decisión tomada deja crecer, como Today · Week · Month. Se declara en `web/src/components/fixedSets.ts` con un motivo no vacío, y es lo único de donde chips, pills, Pestanas y controles de radio toman sus opciones. Ningún conjunto leído de los datos o la configuración de un Business es nunca un Fixed set. En la app: no tiene palabra propia.
+_Avoid_: enum, static list, constant set, hard-coded options

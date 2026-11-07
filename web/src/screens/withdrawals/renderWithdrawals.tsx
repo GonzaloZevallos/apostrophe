@@ -33,6 +33,12 @@ export const VARIETIES = [
   { id: 2, name: 'Gelato', current_price: null },
 ]
 
+/** The business's reasons as `GET /api/withdrawal-reasons` answers them, in its order. */
+export const REASONS = [
+  { id: 1, name: 'Marketing' },
+  { id: 2, name: 'Own use' },
+]
+
 export const STOCK = { total: 0, products: [], entries: [] }
 
 /** Answers the reads every screen here makes; `rest` answers the rest (writes, the withdrawal). */
@@ -40,22 +46,25 @@ export function withReads(
   rest: FetchImpl,
   varieties?: () => Promise<Response>,
   stock: unknown = STOCK,
+  reasons?: () => Promise<Response>,
 ): FetchImpl {
   return async (url, init) => {
+    if (url === '/api/withdrawal-reasons') return reasons === undefined ? jsonResponse(200, REASONS) : reasons()
     if (url === '/api/products') return varieties === undefined ? jsonResponse(200, VARIETIES) : varieties()
     if (url === '/stock') return jsonResponse(200, stock)
     return rest(url, init)
   }
 }
 
-/** `varieties` answers `GET /api/products` when a test needs the list to change over time; `stock` is what `GET /stock` holds. */
+/** `varieties` answers `GET /api/products` when a test needs the list to change over time; `stock` is what `GET /stock` holds; `reasons` answers `GET /api/withdrawal-reasons` the same way. */
 export function renderWithdrawals(
   initialEntries: string[],
   fetchImpl: FetchImpl,
   varieties?: () => Promise<Response>,
   stock?: unknown,
+  reasons?: () => Promise<Response>,
 ) {
-  const fetchMock = vi.fn(withReads(fetchImpl, varieties, stock))
+  const fetchMock = vi.fn(withReads(fetchImpl, varieties, stock, reasons))
   vi.stubGlobal('fetch', fetchMock)
   const router = createMemoryRouter(
     [

@@ -83,6 +83,9 @@ msgstr "⟦  {sheet} řöŵ {row} [{column}]: {problem}·~·~·⟧"
 msgid "operator.import.hint_text_is_date"
 msgstr "⟦{kind}: å đåťè ŵĥèřè ťèẋť ìš èẋṗèçťèđ; řè-ťýṗè ťĥè çèłł åš ťèẋť (ìň Ĝööĝłè Šĥèèťš, šťåřť ìť ŵìťĥ åň åṗöšťřöṗĥè) åňđ řûň åĝåìň·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~⟧"
 
+msgid "operator.import.hint_vip_type_name_taken"
+msgstr "⟦{kind}: å çûšťöṁèř ťýṗè ňåṁèđ 'ṼÌṖ' åłřèåđý èẋìšťš ƀûť ìš ňöť ťĥè ṼÌṖ ťýṗè; řèňåṁè öř đèłèťè ìť, ťĥèň řûň åĝåìň·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·~·⟧"
+
 msgid "operator.import.unfinished_heading"
 msgstr "⟦Ŀèḟť öûť åš ûňḟìňìšĥèđ:·~·~·~·~·⟧"
 
@@ -214,3 +217,9 @@ msgstr "⟦Šĥìṗṗìňĝ åňđ ťřåňšṗöřť·~·~·~·~⟧"
 
 msgid "expenses.default_category.other"
 msgstr "⟦Öťĥèř·~⟧"
+
+msgid "stock.default_reason.marketing"
+msgstr "⟦Ṁåřķèťìňĝ·~·~⟧"
+
+msgid "stock.default_reason.own_use"
+msgstr "⟦Öŵň ûšè·~·⟧"

@@ -16,18 +16,11 @@ import type { PanelPeriod, PanelTab } from '../../api/panel'
 import { salesCount } from '../../format/counts'
 import { formatGrams, formatMoney, formatSignedMoney } from '../../format/money'
 import { COMMON_TEXT } from '../../copy/common'
-import { SHORTFALL_LABEL, PROMOTION_LABEL, OWN_USE_LABEL, COST_OF_GOODS_LABEL } from '../../copy/analysis'
+import { SHORTFALL_LABEL, COST_OF_GOODS_LABEL } from '../../copy/analysis'
+import { reasonCostParts } from '../analisisCost'
 import { INICIO_TEXT } from '../../copy/inicio'
 
 const PENDING_NOTE = INICIO_TEXT.pendingCostNote
-
-/** Faltante de stock, then Promoción and Consumo propio, each on its own line and only
- * when the period has one (`null` otherwise), right before Gastos. */
-const COST_LINES: Array<{ key: 'shortfall' | 'promotion' | 'own_use'; label: string }> = [
-  { key: 'shortfall', label: SHORTFALL_LABEL },
-  { key: 'promotion', label: PROMOTION_LABEL },
-  { key: 'own_use', label: OWN_USE_LABEL },
-]
 
 /** Shortest and longest formatted figure the computer's card fits at a scaled size
  * (`app.css`, "Long figures"). */
@@ -56,13 +49,26 @@ interface ListFigure {
   pending: boolean
 }
 
-/** The seven list figures in results.md's order. A withdrawal line the period does not
- * have (`null`) is no entry: never a `$ 0` figure. */
+/** The list figures in results.md's order: the stock shortfall when the period has one
+ * (`null` otherwise), then one line per withdrawal reason exactly as the API answers
+ * them, right before Gastos. A fully pending reason has no amount, so it reads as its
+ * grams without cost, never `$ 0`. */
 function listFigures(period: PanelPeriod): ListFigure[] {
-  const costLines = COST_LINES.flatMap(({ key, label }) => {
-    const line = period[key]
-    return line === null ? [] : [{ key, label, value: formatMoney(line.amount), pending: line.pending }]
+  const shortfall = period.shortfall
+  const shortfallLines: ListFigure[] =
+    shortfall === null
+      ? []
+      : [{ key: 'shortfall', label: SHORTFALL_LABEL, value: formatMoney(shortfall.amount), pending: shortfall.pending }]
+  const reasonLines: ListFigure[] = period.withdrawals.map((line) => {
+    const { amount, marker } = reasonCostParts(line)
+    return {
+      key: `reason-${line.reason_id}`,
+      label: line.name,
+      value: amount ?? marker,
+      pending: line.pending,
+    }
   })
+  const costLines = [...shortfallLines, ...reasonLines]
   return [
     { key: 'gifted', label: INICIO_TEXT.regalaste, value: formatGrams(period.quantity_gifted), pending: false },
     {

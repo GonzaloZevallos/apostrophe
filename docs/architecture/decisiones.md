@@ -74,4 +74,8 @@ Un ADR da el motivo de una decisión; lo que el sistema hace hoy se afirma en la
 | [0067](../adr/0067-ci-runs-only-the-suites-a-change-affects-in-shards-with-coverage.md) | la integración continua corre solo las suites que un cambio afecta |  |
 | [0068](../adr/0068-architecture-docs-cite-defined-symbols-checked-by-text.md) | las páginas de arquitectura citan símbolos definidos y una prueba de texto lo comprueba |  |
 | [0069](../adr/0069-un-solo-dueno-del-scroll-al-cambiar-de-pantalla-con-offsets-en-memoria.md) | un solo dueño del scroll al cambiar de pantalla, con los offsets solo en memoria |  |
-| [0070](../adr/0070-the-screen-word-is-always-product-and-no-product-word-setting-exists.md) | la palabra en pantalla es siempre Product y no existe ningún ajuste de palabra |  |
+| [0070](../adr/0070-the-vip-type-is-the-single-is-vip-row-of-a-business-set-only-by-the-migration-and-the-import-and-never-identified-by-name.md) | el tipo VIP es la única fila is_vip de un Business y nunca se identifica por nombre |  |
+| [0071](../adr/0071-a-refusal-may-carry-named-fields-next-to-its-code.md) | un rechazo puede llevar campos con nombre junto a su código |  |
+| [0072](../adr/0072-una-corrida-manual-de-ci-yml-en-un-sha-juzga-el-head-con-el-workflow-de-master.md) | una corrida manual de `ci.yml` en un sha juzga el head con el workflow de master |  |
+| [0073](../adr/0073-a-sale-number-is-a-counter-on-the-business-raised-only-by-the-sale-insert.md) | el número de una venta es un contador del Business que solo sube el alta de la venta |  |
+| [0074](../adr/0074-the-screen-word-is-always-product-and-no-product-word-setting-exists.md) | la palabra en pantalla es siempre Product y no existe ningún ajuste de palabra |  |

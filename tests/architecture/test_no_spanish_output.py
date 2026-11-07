@@ -44,6 +44,7 @@ from tests.spreadsheet_import.test_cli import (
 from tests.spreadsheet_import.test_cli_pricing_settings import _workbook as _priced_workbook
 
 BUSINESS_NAME = "La Huerta"  # the seller's own, seeded by the removal scenarios
+PINNED_INVITATION = "k3J9x2Q8w1"  # the link's random part, fixed: no word of the denylist
 
 
 def spanish_in(text: str, quoted: Iterable[str], denylist: Collection[str]) -> list[str]:
@@ -99,6 +100,12 @@ def test_english_output_passes() -> None:
     assert spanish_in("Valid once, until 2026-10-21 09:00 UTC.", (), DENYLIST) == []
 
 
+def test_a_denylisted_word_inside_a_random_link_token_is_seen() -> None:
+    # Why the accounts scenario pins its token: a real one (URL-safe base64) holds a denylisted
+    # word, between two non-letters, in about one of a thousand links (GH-475, GH-527).
+    assert spanish_in("http://host/invitation/ab-poR-9", (), DENYLIST) == ["poR"]
+
+
 # --- the accounts CLI --------------------------------------------------------------------
 
 
@@ -109,6 +116,8 @@ def test_the_accounts_cli_prints_no_spanish(
     monkeypatch.setenv("APOSTROPHE_DATABASE_URL", f"sqlite:///{tmp_path / 'apostrophe.db'}")
     monkeypatch.setenv("APOSTROPHE_PUBLIC_URL", "http://192.168.0.10:8000/")
     clock = MovableClock(NOW)
+    # The link's token is random: ~1 run in 940 the scan read a denylisted word in it (GH-527).
+    monkeypatch.setattr("app.accounts.application.invitations.new_token", lambda: PINNED_INVITATION)
 
     codes = [
         accounts_main(["invite-business"], clock=clock),
@@ -121,6 +130,7 @@ def test_the_accounts_cli_prints_no_spanish(
     captured = capsys.readouterr()
     assert codes == [0, 1, 1, 1]
     printed = captured.out + captured.err
+    assert f"/invitation/{PINNED_INVITATION}\n" in printed
     assert "Valid once, until" in printed
     assert "no user for that email" in printed
     assert "refused: " in printed

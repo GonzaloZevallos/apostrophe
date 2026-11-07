@@ -56,11 +56,15 @@ class CustomersImport:
         return CustomerKey(phone_key=normalised.value if normalised is not None else None)
 
     def write_customer(
-        self, name: str, phone_key: str | None, vip: bool, transaction: Transaction
+        self,
+        name: str,
+        phone_key: str | None,
+        customer_type_id: int | None,
+        transaction: Transaction,
     ) -> int:
         customers = SqlCustomers(self._session, self._business_id)
         customer = register_imported_customer(
-            customers, transaction, name=name, phone=phone_key, vip=vip
+            customers, transaction, name=name, phone=phone_key, customer_type_id=customer_type_id
         )
         assert customer.id is not None, "register_imported_customer stores the customer and its id"
         return customer.id

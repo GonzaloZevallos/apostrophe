@@ -96,7 +96,7 @@ Success criteria, the Onboarding restyle's evidence (GH-164 follow-up) (numbered
 Success criteria, reviewing GH-141's change to Analysis:
 
 6. **Current captures of Analysis.** The PR has before and after captures of Analysis on phone and computer, in light and dark.
-   - "After" is the head that merges the change; "before" is that same head with only GH-141's change undone (docs/product/pinned-catalog.md's "Restyling Integrations" rule), with the undo diff in the PR.
+   - "After" is the head that merges the change; "before" is that same head with only GH-141's change undone (docs/product/pinned-catalog.md's "Rediseño de Integrations" rule), with the undo diff in the PR.
    - If undoing GH-141 alone changes more than GH-141 did, the PR says so and lists the extra differences for Zeta; nothing more is undone.
    - Both sides come from head's `comparisons.mjs --strict`, one install, one Argentina day, fonts pinned (ADR-0042). The PR records the fontsource version.
 7. **Every other screen compared, every difference explained.** `ae.mjs` runs over the raw captures of every other screen in the registry, with its output attached. AE 0 is expected; every non-zero line is accounted for (see Behaviour). A missing side, a one-sided `null` or an unreadable capture is a failure, never AE 0.

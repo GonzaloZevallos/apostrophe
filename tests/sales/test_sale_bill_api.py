@@ -20,9 +20,19 @@ from app.payments.adapters.settlements import SqlOwingSales
 from app.sales.application.ports import CustomerSettlement, OwingSales
 from tests.conftest import TODAY
 from tests.pricing_switches import set_switches
+from tests.vip_type import make_type, put_in_type
 
 PRICE = 10_000
-BILL_KEYS = {"business_name", "date", "shipping_charged", "total", "lines", "payment", "balance"}
+BILL_KEYS = {
+    "business_name",
+    "number",
+    "date",
+    "shipping_charged",
+    "total",
+    "lines",
+    "payment",
+    "balance",
+}
 LINE_KEYS = {"product", "quantity", "amount", "rule", "unit_price"}
 PAYMENT_KEYS = {"state", "still_owed"}
 
@@ -40,12 +50,14 @@ def _variety(client: TestClient, name: str = "Lavanda", **prices: int | str) -> 
 _phones = iter(range(1000, 9999))
 
 
-def _customer(client: TestClient, name: str = "Juana", vip: bool = False) -> int:
-    response = client.post(
-        "/customers", json={"name": name, "phone": f"11 {next(_phones)}-0000", "vip": vip}
-    )
+def _customer(client: TestClient, name: str = "Juana", *, vip_in: Engine | None = None) -> int:
+    """`vip_in` is the engine to put the customer in the business's VIP type through."""
+    response = client.post("/customers", json={"name": name, "phone": f"11 {next(_phones)}-0000"})
     assert response.status_code == 201, response.text
-    return int(response.json()["id"])
+    customer_id = int(response.json()["id"])
+    if vip_in is not None:
+        put_in_type(vip_in, customer_id, make_type(vip_in, is_vip=True))
+    return customer_id
 
 
 def _sale(
@@ -232,7 +244,7 @@ def _strings(value: object) -> list[str]:
 def test_the_bill_leaks_nothing_internal(client: TestClient, engine: Engine) -> None:
     set_switches(engine, bulk=False, vip=True)
     flowers = _variety(client, "Lavanda", vip_price=9_000)
-    customer = _customer(client, "Marta Quispe", vip=True)
+    customer = _customer(client, "Marta Quispe", vip_in=engine)
     note = "nota privada zzz"
     response = client.post(
         "/sales",

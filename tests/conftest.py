@@ -64,6 +64,13 @@ def signed_in(client: TestClient, token: str) -> TestClient:
     return client
 
 
+def reason_id(client: TestClient, name: str) -> int:
+    """The id of the signed-in business's withdrawal reason called `name` ("Marketing"
+    and "Own use" are the two every business starts with)."""
+    listed = client.get("/api/withdrawal-reasons").json()
+    return int(next(reason["id"] for reason in listed if reason["name"] == name))
+
+
 @pytest.fixture
 def clock() -> MovableClock:
     return MovableClock(NOW)

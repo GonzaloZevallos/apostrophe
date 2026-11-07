@@ -21,9 +21,10 @@ from app.results.application.ports import (
     SalesLedger,
     StockFigures,
     StockRow,
+    WithdrawalReasons,
 )
 from app.results.domain.arithmetic import average_sale
-from app.results.domain.figures import RowCost
+from app.results.domain.figures import ReasonCost, RowCost
 from app.results.domain.period_figures import scan, totals_between
 from app.results.domain.periods import Period, periods
 from app.results.domain.sorting import oldest, sorted_by_name, teaser
@@ -32,9 +33,10 @@ from app.shared.quantity import Quantity
 
 @dataclass(frozen=True)
 class CostLineFigures:
-    """The panel's own shape for a cost line (stock shortfall, promotion, own use): an
-    amount and one pending flag, decided from that line's own pending grams (plan
-    invariant) — no grams cross the wire (PM)."""
+    """The panel's own shape for the stock shortfall line: an amount and one pending
+    flag, decided from that line's own pending grams (plan invariant) — no grams cross
+    the wire (PM). A withdrawal reason's line is a `ReasonCost`, passed through as it
+    is."""
 
     amount: int
     pending: bool
@@ -51,8 +53,7 @@ class PeriodFigures:
     cost_of_goods: int
     pending_cost: bool
     shortfall: CostLineFigures | None
-    promotion: CostLineFigures | None
-    own_use: CostLineFigures | None
+    withdrawals: tuple[ReasonCost, ...]
     expenses: int
     purchases: int
     profit: int
@@ -93,6 +94,7 @@ def read_panel(
     expenses: ExpensesLedger,
     purchases: Purchases,
     debts: DebtSummary,
+    reasons: WithdrawalReasons,
 ) -> Panel:
     the_periods = periods(today)
     stock_answer = stock.read(today)
@@ -103,6 +105,7 @@ def read_panel(
         expenses=expenses.all(),
         purchases=purchases.purchases(),
         earliest_entry_day=purchases.earliest_entry_day(),
+        reasons=reasons.all(),
     )
 
     def figures_for(period: Period) -> PeriodFigures:
@@ -117,8 +120,7 @@ def read_panel(
             cost_of_goods=totals.cost_of_goods.costed,
             pending_cost=totals.cost_of_goods.pending_quantity.hundredths > 0,
             shortfall=_cost_line(totals.shortfall),
-            promotion=_cost_line(totals.promotion),
-            own_use=_cost_line(totals.own_use),
+            withdrawals=totals.withdrawals,
             expenses=totals.expenses,
             purchases=totals.purchases,
             profit=totals.profit.amount,

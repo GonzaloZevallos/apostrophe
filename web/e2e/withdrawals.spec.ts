@@ -1,7 +1,7 @@
 /**
  * Stock withdrawals' own end-to-end run (PRD metric "No curl"): a seller records a
  * withdrawal from Más and one from a variety's page, edits one and deletes one, and reads
- * Promotion and Own use on Inicio (Semana and Mes, never Hoy) and on Análisis,
+ * Marketing and Own use on Inicio (Semana and Mes, never Hoy) and on Análisis,
  * through the built front alone, against the real backend.
  *
  * Rosa's only lot is 50 g for $ 20.000 ($ 400 the gram), so each line's cost is its grams
@@ -16,7 +16,7 @@ import { openMas } from './helpers/openMas.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { uniqueTag } from './helpers/unique.js'
 
-test('a seller records, edits and deletes withdrawals and reads Promotion and Own use', async ({
+test('a seller records, edits and deletes withdrawals and reads Marketing and Own use', async ({
   page,
 }) => {
   const consoleMessages: string[] = []
@@ -46,7 +46,7 @@ test('a seller records, edits and deletes withdrawals and reads Promotion and Ow
   await page.getByLabel('Product 1', { exact: true }).selectOption({ label: 'Rosa' })
   await page.getByLabel('Grams 1', { exact: true }).fill('5')
   await expect(page.getByRole('button', { name: 'Save the withdrawal' })).toBeDisabled()
-  await page.getByRole('button', { name: 'Promotion', exact: true }).click()
+  await page.getByRole('button', { name: 'Marketing', exact: true }).click()
   await expectToast(page, 'Withdrawal saved', () => page.getByRole('button', { name: 'Save the withdrawal' }).click())
 
   // From the variety's page: an own use of 2 g, with the variety already chosen.
@@ -66,7 +66,7 @@ test('a seller records, edits and deletes withdrawals and reads Promotion and Ow
   await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Take from stock/ }).click()
   await page.getByLabel('Product 1', { exact: true }).selectOption({ label: 'Rosa' })
   await page.getByLabel('Grams 1', { exact: true }).fill('1')
-  await page.getByRole('button', { name: 'Promotion', exact: true }).click()
+  await page.getByRole('button', { name: 'Marketing', exact: true }).click()
   await expectToast(page, 'Withdrawal saved', () => page.getByRole('button', { name: 'Save the withdrawal' }).click())
 
   // Delete it from its detail, after "Before deleting".
@@ -92,7 +92,7 @@ test('a seller records, edits and deletes withdrawals and reads Promotion and Ow
   // Inicio: Hoy shows neither line; Semana and Mes show both, at lot cost.
   await page.goto(HOME)
   await expect(page.getByText('You sold today')).toBeVisible()
-  await expect(page.getByText('Promotion')).toHaveCount(0)
+  await expect(page.getByText('Marketing')).toHaveCount(0)
   await expect(page.getByText('Own use')).toHaveCount(0)
   for (const [tab, heading] of [
     ['Week', 'You sold this week'],
@@ -100,7 +100,7 @@ test('a seller records, edits and deletes withdrawals and reads Promotion and Ow
   ] as const) {
     await page.getByRole('button', { name: tab, exact: true }).click()
     await expect(page.getByText(heading)).toBeVisible()
-    const promotion = page.getByRole('group', { name: 'Promotion', exact: true })
+    const promotion = page.getByRole('group', { name: 'Marketing', exact: true })
     await expect(promotion).toContainText('$ 1.600')
     const ownUse = page.getByRole('group', { name: 'Own use', exact: true })
     await expect(ownUse).toContainText('$ 800')
@@ -113,7 +113,7 @@ test('a seller records, edits and deletes withdrawals and reads Promotion and Ow
   await openMas(page)
   await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Analysis/ }).click()
   await expect(page).toHaveURL((url) => url.pathname === ANALYSIS)
-  await expect(page.getByText('Promotion $ 1.600').first()).toBeVisible()
+  await expect(page.getByText('Marketing $ 1.600').first()).toBeVisible()
   await expect(page.getByText('Own use $ 800').first()).toBeVisible()
 
   expect(consoleMessages).toEqual([])

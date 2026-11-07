@@ -18,7 +18,7 @@ const FIGURE_LABELS = [
   'You gave away',
   'Cost of goods sold',
   'Stock shortfall',
-  'Promotion',
+  'Marketing',
   'Own use',
   'Expenses',
   'Flower purchases',
@@ -51,21 +51,59 @@ test('a withdrawal line the period does not have is no group, never a $ 0 one', 
   expect(figureNames()).toEqual([
     'You gave away',
     'Cost of goods sold',
+    'Marketing',
     'Expenses',
     'Flower purchases',
     'Profit',
     'Cash',
   ])
-  for (const label of ['Stock shortfall', 'Promotion', 'Own use']) {
+  for (const label of ['Stock shortfall', 'Own use']) {
     expect(screen.queryByRole('group', { name: label })).toBeNull()
   }
+})
+
+test('a reason with no amount reads its grams without cost and keeps its pending note', () => {
+  const pendingOnly = {
+    reason_id: 1,
+    name: 'Marketing',
+    amount: null,
+    pending: true,
+    pending_quantity: 2,
+  }
+  render(<PeriodFigures tab="month" period={{ ...MONTH, withdrawals: [pendingOnly] }} />)
+
+  const group = screen.getByRole('group', { name: 'Marketing' })
+  expect(within(group).getByText('2 g without cost')).toBeInTheDocument()
+  expect(within(group).getByText('includes pending cost')).toBeInTheDocument()
+  expect(within(group).queryByText(/\$/)).toBeNull()
+})
+
+test('the reason lines follow the order the API answers, a renamed or new reason included', () => {
+  const line = (id: number, name: string) => ({
+    reason_id: id,
+    name,
+    amount: 100 * id,
+    pending: false,
+    pending_quantity: 0,
+  })
+  const withdrawals = [line(3, 'Gifts'), line(2, 'Own use'), line(1, 'Marketing')]
+  render(<PeriodFigures tab="week" period={{ ...WEEK, withdrawals }} />)
+
+  const names = screen
+    .getAllByRole('group')
+    .map((node) => document.getElementById(node.getAttribute('aria-labelledby') ?? '')?.textContent)
+  expect(names.filter((name) => ['Gifts', 'Own use', 'Marketing'].includes(name ?? ''))).toEqual([
+    'Gifts',
+    'Own use',
+    'Marketing',
+  ])
 })
 
 test('each pending note sits inside the group it qualifies, and never inside Caja', () => {
   render(<PeriodFigures tab="week" period={{ ...WEEK, pending_cost: true }} />)
 
   const note = 'includes pending cost'
-  const withNote = ['Cost of goods sold', 'Stock shortfall', 'Promotion', 'Profit']
+  const withNote = ['Cost of goods sold', 'Stock shortfall', 'Marketing', 'Profit']
   for (const label of FIGURE_LABELS) {
     const group = screen.getByRole('group', { name: label })
     if (withNote.includes(label)) expect(within(group).getByText(note)).toBeInTheDocument()
@@ -110,7 +148,7 @@ test('two instances together: every aria-labelledby resolves to exactly one elem
 
   const groups = screen.getAllByRole('group')
   const ids = groups.map((group) => group.getAttribute('aria-labelledby'))
-  expect(ids).toHaveLength(9 + 6)
+  expect(ids).toHaveLength(9 + 7)
   expect(new Set(ids).size).toBe(ids.length)
   for (const id of ids) {
     expect(id).not.toBeNull()

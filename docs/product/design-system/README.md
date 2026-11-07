@@ -248,7 +248,12 @@ ADR-0048 ya decidieron un punto, acá se cita y no se repite. El documento de pr
 1. **Chrome.**
    - Chequeado: la barra inferior, el encabezado y "+ Nueva venta" están dentro de la
      pantalla al cargar y después de scrollear hasta la mitad (`chrome-at-load`,
-     `chrome-mid-scroll`).
+     `chrome-mid-scroll`). Qué tipo lleva qué chrome: una raíz de pestaña tiene la barra y
+     "+ Nueva venta"; una ficha o detalle tiene la barra y no "+ Nueva venta"; un formulario
+     o una pantalla de ingreso no tiene ninguno; el encabezado está donde la pantalla lo
+     tenga. Una hoja o confirmación se juzga por la pantalla que tiene debajo, y el chrome
+     tapado (dentro de `[inert]` o `[aria-hidden="true"]`, o debajo de un diálogo modal
+     abierto) pasa; el chrome prohibido que está presente y sin tapar se informa.
    - Revisión: la barra y el encabezado son fijos; el contenido tiene relleno para que nada
      quede detrás. Las zonas seguras y `dvh` son las del shell instalado (accounts.md): las
      variables `--inset-*`, y nunca `100vh`.
@@ -329,8 +334,9 @@ chequeo. Un paso que no llega a su pantalla se informa como `unreachable`, nunca
 
 **La lista de infractores.** Lo que la app incumple hoy se lista, nunca se saltea:
 `web/src/mobile-standard/offenders/<regla>.json`, un archivo por regla, cada entrada una
-pantalla, una regla, un elemento y un issue (uno de área del mapa fijo #45-#49, #59, #60,
-#78), con `sizes` y `themes` opcionales. Sólo puede achicarse: la corrida falla ante un
+pantalla, una regla, un elemento y un issue (los números permitidos son `AREA_ISSUES`, en
+`web/src/mobile-standard/offenders/index.ts`: una entrada existente conserva su issue de
+área, y un hallazgo nuevo cita el seguimiento abierto para él), con `sizes` y `themes` opcionales. Sólo puede achicarse: la corrida falla ante un
 infractor nuevo, ante una entrada cuya celda ya pasa y ante una entrada sin número de issue
 válido. Sólo crece por un canje o por las celdas reales de una fila nueva del registro de
 pantallas (las condiciones están en `docs/product/gate.md`). No consulta ninguna red; quien revisa comprueba que el número sea un issue de área
@@ -338,7 +344,7 @@ real y abierto. Un issue de área no está terminado mientras sus pantallas siga
 Vale sólo para el dato y la fecha fijos (ADR-0048); cambiar cualquiera de los dos es
 cambiar las listas, en el mismo diff.
 
-**Se adjunta.** Todo PR de un área (#45-#49, #59, #60, #78) adjunta el resultado del
+**Se adjunta.** Todo PR de un área (uno cuyo issue esté en `AREA_ISSUES`) adjunta el resultado del
 chequeo: el proyecto `mobile` de `npm --prefix web run e2e` y los conteos de infractores
 que imprime `scripts/design/compare.sh` (con `COMPARE_MOBILE=1` corre también el chequeo).
 El teclado real y la prueba en un celular real siguen siendo a ojo (accounts.md, ADR-0028).
@@ -401,6 +407,12 @@ propone el suyo. Nunca emoji como ícono de interfaz. Cada ícono se nombra por 
 nombran el mismo conjunto, y `tests/test_design_icons.py` falla si difieren o si un
 trazo se sale de la regla. Un nombre ya dibujado se reutiliza antes de agregar otro,
 y uno nuevo entra sólo cuando una pantalla lo usa.
+
+## Chips o Selector
+
+A set that can hold an option the app did not ship with, today or under a decision already taken, is chosen with the Selector, never chips. Only fixed sets may be chips.
+
+Un ejemplo de cada clase: Expense categories → Selector (el negocio agrega las suyas); Today · Week · Month → chips (la app los trae y no crecen). Los chips toman sus opciones solo de un Fixed set declarado en `web/src/components/fixedSets.ts`, con un motivo. El Selector está dibujado en [`pantallas/Componentes.dc.html`](pantallas/Componentes.dc.html) y definido en [`docs/product/selector.md`](../selector.md).
 
 ## Reglas de negocio que viven en el código
 

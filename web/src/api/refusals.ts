@@ -165,9 +165,10 @@ export const VARIETY_REFUSAL_TEXT: Partial<Record<RefusalCode, Refusal>> = {
 
 /** Fixed Spanish text for each coded refusal of a stock withdrawal (`stock.md`,
  * "Stock withdrawal"): the rule that was broken, never the note, the grams or an id
- * (ADR-0005). `stock.withdrawal_not_found` and `stock.withdrawal_variety_not_found`
- * are the two 404 codes: the form dispatches the first as a gone withdrawal and
- * answers the second on its lines, since the withdrawal itself still has somewhere to go. */
+ * (ADR-0005). `stock.withdrawal_not_found`, `stock.withdrawal_variety_not_found` and
+ * `stock.withdrawal_reason_not_found` are the 404 codes: the form dispatches the first as a
+ * gone withdrawal and answers the others on a line and on the Reason field, since the
+ * withdrawal itself still has somewhere to go. */
 export const WITHDRAWAL_REFUSAL_MESSAGES: Record<
   | 'stock.withdrawal_reason_required'
   | 'stock.withdrawal_date_in_future'
@@ -175,7 +176,8 @@ export const WITHDRAWAL_REFUSAL_MESSAGES: Record<
   | 'stock.withdrawal_grams_not_positive'
   | 'stock.withdrawal_grams_too_precise'
   | 'stock.withdrawal_note_too_long'
-  | 'stock.withdrawal_variety_not_found',
+  | 'stock.withdrawal_variety_not_found'
+  | 'stock.withdrawal_reason_not_found',
   Refusal
 > = {
   'stock.withdrawal_reason_required': { key: REFUSAL_KEY['stock.withdrawal_reason_required'] },
@@ -185,4 +187,5 @@ export const WITHDRAWAL_REFUSAL_MESSAGES: Record<
   'stock.withdrawal_grams_too_precise': { key: REFUSAL_KEY['stock.withdrawal_grams_too_precise'] },
   'stock.withdrawal_note_too_long': { key: REFUSAL_KEY['stock.withdrawal_note_too_long'] },
   'stock.withdrawal_variety_not_found': { key: REFUSAL_KEY['stock.withdrawal_variety_not_found'] },
+  'stock.withdrawal_reason_not_found': { key: REFUSAL_KEY['stock.withdrawal_reason_not_found'] },
 }

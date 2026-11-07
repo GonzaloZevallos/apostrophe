@@ -4,7 +4,8 @@ read one, and read a variety's movements (its entries and withdrawals mixed).
 A withdrawal is never refused for lack of stock, nor because its grams were already
 drawn from lots (ADR-0009): the lots after it are worked out again on the next read.
 Checks run in this order: the withdrawal (404), every line's variety (404, a missing one
-before an archived one), then the domain rules (422), so a foreign variety never reaches
+before an archived one), the reason (404, one of another Business included), then the
+domain rules (422), so a foreign variety never reaches
 the grams, date or reason rules.
 Each use case that writes commits once, at its end, through `Transaction`
 (CODING_STANDARDS section 9).
@@ -23,12 +24,16 @@ from app.stock.application.ports import (
     StockEntries,
     VarietyCatalog,
     WithdrawalMovement,
+    WithdrawalReasons,
     Withdrawals,
 )
 from app.stock.application.variety_use import require_usable
-from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import StockEntry
-from app.stock.domain.errors import WithdrawalNotFound, WithdrawalVarietyNotFound
+from app.stock.domain.errors import (
+    WithdrawalNotFound,
+    WithdrawalReasonNotFound,
+    WithdrawalVarietyNotFound,
+)
 from app.stock.domain.withdrawal import Withdrawal, WithdrawalLine
 
 # A line as the request carries it: the variety and its grams, not yet validated.
@@ -37,10 +42,12 @@ LineInput = tuple[int, Decimal]
 
 @dataclass(frozen=True)
 class WithdrawalView:
-    """A withdrawal with the name of each line's variety, for the answer."""
+    """A withdrawal with the name of each line's variety and its reason's current name,
+    for the answer."""
 
     withdrawal: Withdrawal
     variety_names: dict[int, str]
+    reason_name: str
 
 
 Movement = StockEntry | WithdrawalMovement
@@ -48,7 +55,8 @@ Movement = StockEntry | WithdrawalMovement
 
 def _built(
     catalog: VarietyCatalog,
-    reason: WithdrawalReason | str | None,
+    reasons: WithdrawalReasons,
+    reason_id: int | None,
     withdrawn_on: date,
     note: str | None,
     lines: Sequence[LineInput],
@@ -65,8 +73,10 @@ def _built(
             raise WithdrawalVarietyNotFound()
     for variety_id in distinct:
         require_usable(catalog, variety_id, keeps=variety_id in kept)
+    if reason_id is not None and reasons.get(reason_id) is None:
+        raise WithdrawalReasonNotFound()
     return Withdrawal.of(
-        reason,
+        reason_id,
         withdrawn_on,
         note,
         tuple(WithdrawalLine.of(variety_id, quantity) for variety_id, quantity in lines),
@@ -76,10 +86,16 @@ def _built(
     )
 
 
-def _viewed(catalog: VarietyCatalog, withdrawal: Withdrawal) -> WithdrawalView:
+def _viewed(
+    catalog: VarietyCatalog, reasons: WithdrawalReasons, withdrawal: Withdrawal
+) -> WithdrawalView:
     names = catalog.names()
+    reason = reasons.get(withdrawal.reason_id)
+    assert reason is not None, "a stored withdrawal's reason exists (RESTRICT foreign key)"
     return WithdrawalView(
-        withdrawal, {line.variety_id: names[line.variety_id] for line in withdrawal.lines}
+        withdrawal,
+        {line.variety_id: names[line.variety_id] for line in withdrawal.lines},
+        reason.name.value,
     )
 
 
@@ -93,28 +109,32 @@ def _stored(withdrawals: Withdrawals, withdrawal_id: int) -> Withdrawal:
 def record_withdrawal(
     withdrawals: Withdrawals,
     catalog: VarietyCatalog,
+    reasons: WithdrawalReasons,
     transaction: Transaction,
     *,
-    reason: str | None,
+    reason_id: int | None,
     withdrawn_on: date,
     note: str | None,
     lines: Sequence[LineInput],
     today: date,
     now: datetime,
 ) -> WithdrawalView:
-    withdrawal = _built(catalog, reason, withdrawn_on, note, lines, today, now, None, frozenset())
+    withdrawal = _built(
+        catalog, reasons, reason_id, withdrawn_on, note, lines, today, now, None, frozenset()
+    )
     stored = withdrawals.add(withdrawal)
     transaction.commit()
-    return _viewed(catalog, stored)
+    return _viewed(catalog, reasons, stored)
 
 
 def edit_withdrawal(
     withdrawals: Withdrawals,
     catalog: VarietyCatalog,
+    reasons: WithdrawalReasons,
     transaction: Transaction,
     withdrawal_id: int,
     *,
-    reason: str | None,
+    reason_id: int | None,
     withdrawn_on: date,
     note: str | None,
     lines: Sequence[LineInput],
@@ -125,7 +145,8 @@ def edit_withdrawal(
     existing = _stored(withdrawals, withdrawal_id)
     updated = _built(
         catalog,
-        reason,
+        reasons,
+        reason_id,
         withdrawn_on,
         note,
         lines,
@@ -136,7 +157,7 @@ def edit_withdrawal(
     )
     stored = withdrawals.replace(updated)
     transaction.commit()
-    return _viewed(catalog, stored)
+    return _viewed(catalog, reasons, stored)
 
 
 def delete_withdrawal(
@@ -149,9 +170,12 @@ def delete_withdrawal(
 
 
 def read_withdrawal(
-    withdrawals: Withdrawals, catalog: VarietyCatalog, withdrawal_id: int
+    withdrawals: Withdrawals,
+    catalog: VarietyCatalog,
+    reasons: WithdrawalReasons,
+    withdrawal_id: int,
 ) -> WithdrawalView:
-    return _viewed(catalog, _stored(withdrawals, withdrawal_id))
+    return _viewed(catalog, reasons, _stored(withdrawals, withdrawal_id))
 
 
 def _newest_first(movement: Movement) -> tuple[int, float, int, int]:

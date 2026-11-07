@@ -57,7 +57,12 @@ export interface StockEntryInput {
   note?: string
 }
 
-export type WithdrawalReason = 'promotion' | 'own_use'
+/** One entry of the business's own list of withdrawal reasons (`GET /api/withdrawal-reasons`),
+ * in the order the business keeps it. */
+export interface WithdrawalReasonItem {
+  id: number
+  name: string
+}
 
 export interface WithdrawalLine {
   product_id: number
@@ -68,7 +73,9 @@ export interface WithdrawalLine {
 /** `GET/POST/PUT /stock/withdrawals…`'s answer; matches `fixtures/withdrawal.json`. */
 export interface Withdrawal {
   id: number
-  reason: WithdrawalReason
+  reason_id: number
+  /** The reason's current name: a rename shows on every withdrawal at once. */
+  reason_name: string
   date: string
   note: string | null
   total_quantity: number
@@ -80,9 +87,9 @@ export interface WithdrawalLineInput {
   quantity: string
 }
 
-/** `reason` stays optional on the wire: a missing one is the backend's own coded refusal. */
+/** `reason_id` stays optional on the wire: a missing one is the backend's own coded refusal. */
 export interface WithdrawalInput {
-  reason?: WithdrawalReason
+  reason_id?: number
   date?: string
   note?: string
   lines: WithdrawalLineInput[]
@@ -96,7 +103,8 @@ export interface WithdrawalMovement {
   kind: 'withdrawal'
   id: number
   date: string
-  reason: WithdrawalReason
+  reason_id: number
+  reason_name: string
   quantity: number
 }
 
@@ -141,6 +149,11 @@ export function setThreshold(varietyId: number, quantity: number | null): Promis
 
 export function readMovements(varietyId: string): Promise<Movement[]> {
   return get<Movement[]>(`/stock/products/${varietyId}/movements`)
+}
+
+/** `GET /api/withdrawal-reasons`: the business's reasons, in the order it keeps them. */
+export function readWithdrawalReasons(): Promise<WithdrawalReasonItem[]> {
+  return get<WithdrawalReasonItem[]>('/api/withdrawal-reasons')
 }
 
 export function getWithdrawal(id: string): Promise<Withdrawal> {

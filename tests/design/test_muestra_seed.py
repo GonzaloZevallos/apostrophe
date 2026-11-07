@@ -95,6 +95,11 @@ def varieties_by_name(client: TestClient) -> dict[str, int]:
     return {v["name"]: v["id"] for v in client.get("/api/products").json()}
 
 
+def by_reason(lines: list[dict[str, Any]], name: str) -> dict[str, Any]:
+    """The withdrawal line of the reason called `name`, among a period's `withdrawals`."""
+    return next(line for line in lines if line["name"] == name)
+
+
 def movements_of(client: TestClient, variety_id: int) -> list[dict[str, Any]]:
     answer: list[dict[str, Any]] = client.get(f"/stock/products/{variety_id}/movements").json()
     return answer
@@ -113,21 +118,27 @@ def assert_seed_states(client: TestClient) -> None:
     week, month = analysis["weeks"][-1], analysis["months"][-1]
 
     # Own use: Sir Jack's gram goes beyond every lot, so only it is pending.
-    own_use = {"amount": OWN_USE_AMOUNT, "pending_quantity": 1, "all_pending": False}
-    assert week["own_use"] == own_use, "own use" + HINT
-    assert periods["week"]["own_use"] == {"amount": OWN_USE_AMOUNT, "pending": True}, HINT
+    own_use = by_reason(week["withdrawals"], "Own use")
+    assert (own_use["amount"], own_use["pending_quantity"]) == (OWN_USE_AMOUNT, 1), "own use" + HINT
+    panel_own_use = by_reason(periods["week"]["withdrawals"], "Own use")
+    assert (panel_own_use["amount"], panel_own_use["pending"]) == (OWN_USE_AMOUNT, True), HINT
     stock = {row["product_id"]: row["status"] for row in client.get("/stock").json()["products"]}
     assert stock[jack] == "sold_out", "Sir Jack sold out" + HINT
     jack_uses = [
         m for m in movements_of(client, jack) if m["kind"] == "withdrawal" and m["date"] == day
     ]
-    assert [(m["reason"], m["quantity"]) for m in jack_uses] == [("own_use", 1)], "Sir Jack" + HINT
+    assert [(m["reason_name"], m["quantity"]) for m in jack_uses] == [("Own use", 1)], (
+        "Sir Jack" + HINT
+    )
 
     # Promotion is costed, in the week and in the month.
-    assert week["promotion"]["pending_quantity"] == 0, "promotion week" + HINT
-    assert analysis["month"]["promotion"]["pending_quantity"] == 0, "promotion month" + HINT
+    marketing = by_reason(week["withdrawals"], "Marketing")
+    assert marketing["pending_quantity"] == 0, "marketing week" + HINT
+    month_marketing = by_reason(analysis["month"]["withdrawals"], "Marketing")
+    assert month_marketing["pending_quantity"] == 0, "marketing month" + HINT
     for name in ("week", "month"):
-        assert periods[name]["promotion"]["pending"] is False, f"promotion {name}" + HINT
+        line = by_reason(periods[name]["withdrawals"], "Marketing")
+        assert line["pending"] is False, f"marketing {name}" + HINT
 
     # The shortfall is 24K Gold's costed 2 g adjustment, and nobody else's.
     for where in (analysis["month"], analysis["since_first_record"]):
@@ -261,8 +272,12 @@ def test_the_panel_and_the_analysis_agree_on_the_current_week_and_month(
         assert row["cost_of_goods"]["amount"] == panel["cost_of_goods"]
         assert (row["cost_of_goods"]["pending_quantity"] > 0) == panel["pending_cost"]
         assert amounts(row["shortfall"]) == amounts(panel["shortfall"])
-        assert amounts(row["promotion"]) == amounts(panel["promotion"])
-        assert amounts(row["own_use"]) == amounts(panel["own_use"])
+        assert [amounts(line) for line in row["withdrawals"]] == [
+            amounts(line) for line in panel["withdrawals"]
+        ]
+        assert [line["name"] for line in row["withdrawals"]] == [
+            line["name"] for line in panel["withdrawals"]
+        ]
         assert row["expenses"] == panel["expenses"]
         assert row["cash"] == panel["cash"]
 
@@ -328,13 +343,15 @@ class RewritingApi(ClientApi):
         answer = super().call(method, path, body)
         if method == "POST" and path == "/api/products" and isinstance(body, dict):
             self.ids[body["name"]] = answer["id"]
+        if (method, path) == ("GET", "/api/withdrawal-reasons"):
+            self.ids.update({reason["name"]: reason["id"] for reason in answer})
         return answer
 
 
 def own_use_of(method: str, path: str, body: dict[str, Any], ids: dict[str, int]) -> bool:
     return (
         (method, path) == ("POST", "/stock/withdrawals")
-        and body["reason"] == "own_use"
+        and body["reason_id"] == ids["Own use"]
         and any(line["product_id"] == ids["Sir Jack"] for line in body["lines"])
     )
 
@@ -371,7 +388,7 @@ def jack_gram_to_promotion(
     lines = [line for line in body["lines"] if line["product_id"] != ids["Sir Jack"]]
     promotion = {
         "date": body["date"],
-        "reason": "promotion",
+        "reason_id": ids["Marketing"],
         "note": None,
         "lines": [{"product_id": ids["Sir Jack"], "quantity": "1"}],
     }

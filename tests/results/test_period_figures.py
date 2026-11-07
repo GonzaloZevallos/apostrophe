@@ -4,16 +4,22 @@ variety-identity (docs/product/analysis.md's metrics)."""
 
 import time
 from datetime import date, timedelta
-from typing import Literal
+from typing import Literal, Protocol
 
 import pytest
 
-from app.results.domain.figures import AmountWithPending, AnalysisFigures, CostFigure, RowCost
+from app.results.domain.figures import (
+    AmountWithPending,
+    AnalysisFigures,
+    CostFigure,
+    ReasonCost,
+)
 from app.results.domain.ledger import (
     DrawRow,
     ExpenseRecord,
     PaymentRecord,
     PurchaseRecord,
+    ReasonRecord,
     SaleRecord,
 )
 from app.results.domain.period_figures import Buckets, period_figures, scan, totals_between
@@ -22,6 +28,26 @@ from app.shared.quantity import Quantity
 
 TODAY = date(2026, 10, 4)  # a Sunday
 MONTH = Month.containing(TODAY)
+
+MARKETING = 1
+OWN_USE = 2
+REASONS = [ReasonRecord(MARKETING, "Marketing", 0), ReasonRecord(OWN_USE, "Own use", 1)]
+_NAMES = {MARKETING: "Marketing", OWN_USE: "Own use"}
+
+
+class _HasWithdrawals(Protocol):
+    @property
+    def withdrawals(self) -> tuple[ReasonCost, ...]: ...
+
+
+def _reason(figure: _HasWithdrawals, reason_id: int) -> ReasonCost | None:
+    """The cost line of one reason in a figure's `withdrawals`, `None` when absent."""
+    return next((c for c in figure.withdrawals if c.reason_id == reason_id), None)
+
+
+def _cost(reason_id: int, amount: int | None, pending: str) -> ReasonCost:
+    quantity = Quantity.of(pending)
+    return ReasonCost(reason_id, _NAMES[reason_id], amount, quantity, quantity.is_positive)
 
 
 def _figures(
@@ -44,6 +70,7 @@ def _figures(
         expenses=expenses or [],
         purchases=purchases or [],
         earliest_entry_day=earliest_entry_day,
+        reasons=REASONS,
     )
 
 
@@ -117,7 +144,8 @@ def _withdrawal(
     pending: str,
 ) -> DrawRow:
     return DrawRow(
-        kind=kind,
+        kind="withdrawal",
+        reason_id=MARKETING if kind == "promotion" else OWN_USE,
         day=day,
         variety_id=None,
         variety_name=None,
@@ -141,6 +169,7 @@ def _scan(
         expenses=[],
         purchases=[],
         earliest_entry_day=earliest_entry_day,
+        reasons=REASONS,
     )
 
 
@@ -167,7 +196,8 @@ def test_a_withdrawal_draw_with_a_sale_or_a_line_total_is_rejected() -> None:
     for sale_id, line_total in ((1, None), (None, 1_000)):
         with pytest.raises(ValueError, match="no variety or sale|no line total"):
             DrawRow(
-                kind="promotion",
+                kind="withdrawal",
+                reason_id=MARKETING,
                 day=TODAY,
                 variety_id=None,
                 variety_name=None,
@@ -626,11 +656,11 @@ def test_a_promotion_and_an_own_use_each_lower_profit_by_their_costed_amount_on_
     on_today = totals_between(buckets, TODAY, TODAY)
 
     assert on_yesterday.profit.amount == -600
-    assert on_yesterday.promotion == RowCost(600, Quantity.of("0"), False)
-    assert on_yesterday.own_use is None
+    assert _reason(on_yesterday, MARKETING) == _cost(MARKETING, 600, "0")
+    assert _reason(on_yesterday, OWN_USE) is None
     assert on_today.profit.amount == 10_000 - 3_000 - 300
-    assert on_today.own_use == RowCost(300, Quantity.of("0"), False)
-    assert on_today.promotion is None
+    assert _reason(on_today, OWN_USE) == _cost(OWN_USE, 300, "0")
+    assert _reason(on_today, MARKETING) is None
 
 
 def test_a_withdrawal_leaves_cost_of_goods_shortfall_sales_and_grams_sold_untouched() -> None:
@@ -700,7 +730,7 @@ def test_a_pending_only_withdrawal_gives_profit_a_pending_count_and_cost_of_good
     totals = totals_between(buckets, TODAY, TODAY)
 
     assert totals.profit == AmountWithPending(0, Quantity.of("4"))
-    assert totals.promotion == RowCost(0, Quantity.of("4"), True)
+    assert _reason(totals, MARKETING) == _cost(MARKETING, None, "4")
     assert totals.cost_of_goods == CostFigure(0, Quantity.of("0"))
 
 
@@ -721,10 +751,8 @@ def test_each_reason_counts_only_its_own_pending_grams_and_profit_adds_every_one
 
     totals = totals_between(buckets, TODAY, TODAY)
 
-    assert totals.promotion is not None
-    assert totals.promotion.pending_quantity == Quantity.of("4")
-    assert totals.own_use is not None
-    assert totals.own_use.pending_quantity == Quantity.of("2")
+    assert _reason(totals, MARKETING) == _cost(MARKETING, None, "4")
+    assert _reason(totals, OWN_USE) == _cost(OWN_USE, None, "2")
     assert totals.profit.pending_quantity == Quantity.of("7")
 
 
@@ -753,14 +781,15 @@ def test_a_window_with_no_withdrawal_of_a_reason_answers_none_for_it() -> None:
 
     totals = totals_between(buckets, TODAY, TODAY)
 
-    assert totals.promotion is None
-    assert totals.own_use is None
+    assert _reason(totals, MARKETING) is None
+    assert _reason(totals, OWN_USE) is None
 
 
 def test_a_withdrawal_draw_with_only_a_variety_is_rejected() -> None:
     with pytest.raises(ValueError, match="no variety or sale"):
         DrawRow(
-            kind="own_use",
+            kind="withdrawal",
+            reason_id=OWN_USE,
             day=TODAY,
             variety_id=1,
             variety_name=None,
@@ -779,8 +808,8 @@ def test_the_month_header_shows_each_reason_only_when_present_with_its_own_pendi
     promotion = _withdrawal(kind="promotion", day=TODAY, quantity="2", costed=600, pending="1")
     figures = _figures(draws=[promotion], earliest_entry_day=TODAY)
 
-    assert figures.month.promotion == RowCost(600, Quantity.of("1"), False)
-    assert figures.month.own_use is None
+    assert _reason(figures.month, MARKETING) == _cost(MARKETING, 600, "1")
+    assert _reason(figures.month, OWN_USE) is None
 
 
 def test_a_week_and_a_month_row_carry_the_lines_and_profit_equals_totals_between() -> None:
@@ -794,11 +823,10 @@ def test_a_week_and_a_month_row_carry_the_lines_and_profit_equals_totals_between
     week_totals = totals_between(buckets, week.first_day, week.last_day)
     month_totals = totals_between(buckets, month_row.first_day, month_row.last_day)
 
-    assert week.promotion == RowCost(600, Quantity.of("0"), False)
-    assert week.own_use == RowCost(0, Quantity.of("3"), True)
+    assert _reason(week, MARKETING) == _cost(MARKETING, 600, "0")
+    assert _reason(week, OWN_USE) == _cost(OWN_USE, None, "3")
     assert week.profit == week_totals.profit == AmountWithPending(-600, Quantity.of("3"))
-    assert month_row.promotion == week.promotion
-    assert month_row.own_use == week.own_use
+    assert month_row.withdrawals == week.withdrawals
     assert month_row.profit == month_totals.profit
 
 
@@ -812,8 +840,8 @@ def test_since_the_first_record_carries_both_lines() -> None:
 
     assert figures.first_record == earlier
     assert figures.since_first_record is not None
-    assert figures.since_first_record.promotion == RowCost(100, Quantity.of("0"), False)
-    assert figures.since_first_record.own_use == RowCost(300, Quantity.of("0"), False)
+    assert _reason(figures.since_first_record, MARKETING) == _cost(MARKETING, 100, "0")
+    assert _reason(figures.since_first_record, OWN_USE) == _cost(OWN_USE, 300, "0")
     assert figures.since_first_record.profit == AmountWithPending(-400, Quantity.of("0"))
 
 
@@ -875,6 +903,82 @@ def test_a_week_with_7_g_sold_2_g_promoted_and_1_g_own_use_pending_reads_exactly
     )
 
     [week] = [w for w in figures.weeks if w.first_day <= TODAY <= w.last_day]
-    assert week.promotion == RowCost(0, Quantity.of("2"), True)
-    assert week.own_use == RowCost(0, Quantity.of("1"), True)
+    assert _reason(week, MARKETING) == _cost(MARKETING, None, "2")
+    assert _reason(week, OWN_USE) == _cost(OWN_USE, None, "1")
     assert week.profit.pending_quantity == Quantity.of("10")
+
+
+# --- One cost line per reason, in list order (the `withdrawals` seam) ---
+
+
+def _filed(reason_id: int, quantity: str, costed: int | None, pending: str) -> DrawRow:
+    return DrawRow(
+        kind="withdrawal",
+        reason_id=reason_id,
+        day=TODAY,
+        variety_id=None,
+        variety_name=None,
+        sale_id=None,
+        line_total=None,
+        quantity=Quantity.of(quantity),
+        costed=costed,
+        pending=Quantity.of(pending),
+    )
+
+
+def test_withdrawals_answer_the_reasons_in_list_order_renamed_and_without_empty_ones() -> None:
+    # Three reasons: Own use first (reordered), Marketing renamed in the database to
+    # "Ads", and a third with no withdrawal in the window.
+    reasons = [
+        ReasonRecord(OWN_USE, "Own use", 0),
+        ReasonRecord(MARKETING, "Ads", 1),
+        ReasonRecord(3, "Samples", 2),
+    ]
+    draws = [
+        _filed(MARKETING, "2", 600, "0"),
+        _filed(OWN_USE, "3", None, "3"),
+        _filed(MARKETING, "1", 100, "0"),
+    ]
+    buckets, _ = scan(draws, [], [], [], [], TODAY, reasons)
+
+    assert buckets.withdrawals(TODAY, TODAY) == (
+        ReasonCost(OWN_USE, "Own use", None, Quantity.of("3"), True),
+        ReasonCost(MARKETING, "Ads", 700, Quantity.of("0"), False),
+    )
+    assert buckets.withdrawals(YESTERDAY, YESTERDAY) == ()
+    assert buckets.profit(TODAY, TODAY) == AmountWithPending(-700, Quantity.of("3"))
+
+
+def test_a_withdrawal_under_a_reason_missing_from_the_list_is_refused_not_dropped() -> None:
+    buckets, _ = scan([_filed(9, "1", 100, "0")], [], [], [], [], TODAY, REASONS)
+
+    with pytest.raises(ValueError, match="unknown reason"):
+        buckets.withdrawals(TODAY, TODAY)
+
+
+def test_a_withdrawal_draw_needs_a_reason_and_no_other_draw_has_one() -> None:
+    with pytest.raises(ValueError, match="carries its reason"):
+        DrawRow(
+            kind="withdrawal",
+            day=TODAY,
+            variety_id=None,
+            variety_name=None,
+            sale_id=None,
+            line_total=None,
+            quantity=Quantity.of("1"),
+            costed=100,
+            pending=Quantity.of("0"),
+        )
+    with pytest.raises(ValueError, match="carries its reason"):
+        DrawRow(
+            kind="shortfall",
+            reason_id=MARKETING,
+            day=TODAY,
+            variety_id=None,
+            variety_name=None,
+            sale_id=None,
+            line_total=None,
+            quantity=Quantity.of("1"),
+            costed=100,
+            pending=Quantity.of("0"),
+        )

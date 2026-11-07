@@ -45,8 +45,6 @@ import { useViewport } from '../shell/useViewport'
 import {
   COST_OF_GOODS_LABEL,
   NO_BEST_WEEK_LINE,
-  OWN_USE_LABEL,
-  PROMOTION_LABEL,
   PURCHASES_NOTE,
   SHORTFALL_LABEL,
   SINCE_FIRST_RECORD_LABEL,
@@ -59,8 +57,6 @@ import { COMMON_TEXT } from '../copy/common'
 export {
   COST_OF_GOODS_LABEL,
   NO_BEST_WEEK_LINE,
-  OWN_USE_LABEL,
-  PROMOTION_LABEL,
   PURCHASES_NOTE,
   SHORTFALL_LABEL,
   SINCE_FIRST_RECORD_LABEL,
@@ -192,8 +188,7 @@ function AnalisisContenido({
         <WithdrawalLines
           variant="row"
           shortfall={m.shortfall}
-          promotion={m.promotion}
-          ownUse={m.own_use}
+          withdrawals={m.withdrawals}
         />
       </div>
 
@@ -275,8 +270,7 @@ function AnalisisContenido({
               <WithdrawalLines
                 variant="row"
                 shortfall={data.since_first_record.shortfall}
-                promotion={data.since_first_record.promotion}
-                ownUse={data.since_first_record.own_use}
+                withdrawals={data.since_first_record.withdrawals}
               />
             </div>
           )}

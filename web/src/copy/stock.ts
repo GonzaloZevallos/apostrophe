@@ -58,8 +58,7 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'STOCK_TEXT.variedad0': [['2']],
   'STOCK_TEXT.gramos0': [['2']],
   'STOCK_TEXT.quitarVariedad0': [['2']],
-  'STOCK_TEXT.borrasLaPromocionDel': [[D, G]],
-  'STOCK_TEXT.borrasElConsumoPropio': [[D, G]],
+  'STOCK_TEXT.borrasElRetiroDel': [['Marketing', D, G]],
 })
 
 /** Every text a person reads in this area that is not a named message above, by key. */
@@ -110,7 +109,6 @@ export const STOCK_TEXT = {
   unaCompraNecesitaUn: 'A purchase needs a total cost',
   unAjusteNegativoNo: 'A negative adjustment carries no cost',
   retiroEliminado: 'Withdrawal deleted',
-  borrasLaPromocionDel: (date: string | number, total_grams: string | number) => `Delete the promotion from ${date}? ${total_grams} go back to stock.`,
-  borrasElConsumoPropio: (date: string | number, total_grams: string | number) => `Delete the own use from ${date}? ${total_grams} go back to stock.`,
+  borrasElRetiroDel: (reason: string | number, date: string | number, total_grams: string | number) => `Delete the ${reason} withdrawal from ${date}? ${total_grams} go back to stock.`,
   retiroGuardado: 'Withdrawal saved',
 } as const

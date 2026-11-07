@@ -228,6 +228,8 @@ export const COMMON_TEXT = {
   catalogMessage: 'Catalog message',
   /** @deprecated read `common:expenseCategories` */
   expenseCategories: 'Expense categories',
+  /** @deprecated read `common:withdrawalReasons` */
+  withdrawalReasons: 'Withdrawal reasons',
   /** @deprecated read `common:appearance` */
   appearance: 'Appearance',
   /** @deprecated read `common:yourAccount` */

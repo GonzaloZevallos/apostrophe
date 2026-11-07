@@ -99,6 +99,10 @@
     "area": "import",
     "text": "{kind}: a date where text is expected; re-type the cell as text (in Google Sheets, start it with an apostrophe) and run again"
   },
+  "operator.import.hint_vip_type_name_taken": {
+    "area": "import",
+    "text": "{kind}: a customer type named 'VIP' already exists but is not the VIP type; rename or delete it, then run again"
+  },
   "operator.import.unfinished_heading": {
     "area": "import",
     "text": "Left out as unfinished:"

@@ -14,6 +14,8 @@
 
 **Cuando** registré una venta, o un cliente me pregunta después qué se llevó o cuánto me debe, **quiero** mandarle en un toque el **Sale bill** de esa venta en texto plano y corto (sus líneas, el envío, el total, cómo pagó, lo que todavía debe de esa venta y su **Balance** de ahora), **para** contestarle en nuestro chat sin volver a tipear ni sacar cuentas, y que el cliente vea los mismos números que veo yo. (La historia dice "el chat" y no nombra ningún canal, por **Assume nothing**).
 
+**Cuando** le comparto un Sale bill a un cliente, o más tarde necesito señalar esa venta exacta en nuestro chat, **quiero** que la venta lleve un número corto propio de mi negocio, **para** que los dos nombremos la misma venta sin confusión, y que el número nunca revele cuántas ventas tiene ningún otro negocio. (El **Sale number**; mostrarlo, no buscar por él).
+
 **Cuando** un cliente me paga parte o todo lo que me debe, en efectivo o por transferencia, el mismo día o semanas después, **quiero** registrarlo desde el teléfono en pocos toques y ver que su Balance y su "owing since" bajan en el acto, **para** saber siempre quién me debe qué y desde cuándo, y que nada de lo que pagó o todavía debe se pierda ni caiga en la persona equivocada. (Acá lo sirve la marca "owes you" en Sales; definido en `payments.md`).
 
 **Cuando** doy de alta un cliente (desde Customers, en medio de una venta o con la **Spreadsheet import** única) y no tengo su **Phone number**, **quiero** guardarlo igual con su nombre y agregar el número más adelante si algún día lo consigo, **para** registrar cada venta y cada deuda a nombre de la persona que de verdad debe, sin inventar un número ni dejar a esa persona fuera de la app. (Acá lo sirve "New customer" de Pick a customer; definido en `customers.md`).
@@ -32,6 +34,8 @@ Los pagos (`payments.md`) saldan lo que una venta deja debiendo y dicen si cada 
 La protagonista de las historias del teléfono es la vendedora. Los diseños de computadora (`NuevaVentaCompu`, `VentasCompu`) son las mismas historias en una pantalla más grande. Antes del rediseño para teléfono, la vendedora registraba ventas en el teléfono con fricción (bajar para encontrar el botón de guardar, hacer zoom para acertar controles chicos, a veces registrar después de memoria), sin ninguna alternativa fuera de la app.
 
 El Sale bill sirve en dos momentos: justo después de guardar, con el cliente todavía esperando en el chat (el principal), y más tarde, cuando el cliente pregunta y la vendedora abre el detalle de esa venta. Supuesto sobre hoy: la vendedora vuelve a tipear el pedido y el total, o manda una captura, y saca el Balance a mano.
+
+El Sale number existe porque hoy una venta se señala por su fecha y su cliente ("la venta del 12/10 a Ana"), y eso falla cuando un cliente tiene dos ventas el mismo día o cuando la venta no tiene cliente y solo una nota. El `sale.id` interno es global a toda la instalación, así que mostrarlo revelaría el volumen de otros negocios. Conciliar transferencias con ventas no es el motivo: un pago salda la deuda más vieja (Settlement), nunca una venta puntual.
 
 Criterios de éxito, registro (API):
 
@@ -63,7 +67,7 @@ Criterios de éxito, en pantalla:
    - Cualquier otro rechazo vuelve con su código, se muestra sobre su campo y todo lo tipeado se conserva.
    - Una venta rechazada nunca pierde el pedido.
 8. **Un pedido es una venta en pantalla**: un formulario, un total y el Shipping charged una vez.
-9. **Deshacer en un toque**: una venta guardada por error se deshace en un toque desde el aviso "Sale saved", y no queda nada de ella: ni líneas, ni **On-the-spot payment**, y no aparece en ninguna lista.
+9. **Deshacer en un toque**: una venta guardada por error se deshace en un toque desde el aviso "Sale saved", y no queda nada de ella: ni líneas, ni **On-the-spot payment**, y no aparece en ninguna lista. Su Sale number no se vuelve a usar.
 10. **Un vistazo entre pedidos**: pasar entre Today, Week (de lunes a domingo) y Month, o elegir Dates, responde lo bastante rápido como para mirarlo en medio de un chat.
 11. **Encontrar y corregir**: cualquier venta del período se puede encontrar y abrir. En su detalle, a una venta sin cliente se le puede dar uno (una vez, nunca cambiarlo), y una venta equivocada se puede borrar. Corregir una venta es exactamente esas dos cosas.
 
@@ -82,11 +86,27 @@ Criterios de éxito, Sale bill:
 22. **No se filtra nada privado.** Ni la nota, ni el nombre del cliente, ni las palabras VIP, special o list, ni ids ni links; una línea VIP o con Special price se lee como una línea de lista. El Sale bill no agrega formato propio, y los nombres que tipeó la vendedora (el del negocio y los de sus productos) salen exactamente como se tipearon. Evidencia: el test de filtraciones.
 23. **Se cumple Assume nothing.** Cada palabra fija y la unidad salen del **Copy module**; la unidad es una sola entrada, "g" por defecto, hasta #318. Evidencia: con la unidad puesta en "u", el texto dice "3,5 u" y "/u".
 
+Criterios de éxito, Sale number:
+
+24. **Propio y desde 1.** La primera venta que registra un negocio es Sale #1, y cada venta nueva recibe el número siguiente de ese negocio solamente.
+25. **El mismo número en los dos lugares.** El número aparece en el detalle de la venta y en el Sale bill compartido, y es el mismo en los dos.
+26. **No revela nada de otro negocio.** Nada de lo que agrega esta parte (en pantalla, en el texto compartido, en un error; el Sale bill no lleva links) deja que un negocio sepa cuántas ventas tiene otro, ni que existe.
+27. **El historial también tiene número.** Las ventas que existían antes de esta parte quedan numeradas, y la siguiente venta nueva sigue desde ahí.
+
 ## Comportamiento
 
 - **Venta**:
-  - Tiene una fecha, a lo sumo un cliente, el Shipping charged, una nota opcional, cómo se pagó y una o más líneas.
+  - Tiene un Sale number, una fecha, a lo sumo un cliente, el Shipping charged, una nota opcional, cómo se pagó y una o más líneas.
   - Una venta sin líneas se rechaza.
+- **Sale number**:
+  - Se asigna una sola vez, al guardar la venta, en el orden en que se guardan; empieza en 1 en cada negocio.
+  - Nunca cambia: ni al asignar un cliente después a una venta sin cliente, ni por ninguna otra cosa. Una venta con fecha anterior recibe igual el número siguiente.
+  - Nunca se reutiliza ni se reasigna. Borrar una venta, también con Undo desde "Sale saved", deja un hueco, y los huecos se permiten. El número siguiente sigue siempre al número más alto que el negocio asignó alguna vez, aunque la venta que lo tenía se haya borrado.
+  - Un guardado que falla, por cualquier motivo, no consume número; solo lo toma una venta que de verdad queda registrada.
+  - Dos ventas guardadas en el mismo momento en un negocio nunca comparten número.
+  - Las ventas que existían antes de esta parte se numeraron una sola vez, por negocio, por fecha, después por momento de registro y después por id; las cargadas por una Spreadsheet import incluidas. Esa numeración solo agregó una columna.
+  - Una Spreadsheet import corrida después entra en un negocio sin registros y numera sus ventas una vez, por fecha y después por orden de registro, siguiendo al número más alto que el negocio haya asignado alguna vez. La siguiente venta cargada a mano sigue desde el más alto. En pantalla, las ventas importadas se ven igual que las cargadas a mano.
+  - El `sale.id` sigue siendo interno y nunca se muestra en pantalla ni en el Sale bill.
 - **Fecha**:
   - Por defecto es hoy, el día del negocio en hora de Argentina.
   - No puede ser posterior a hoy. Se permiten fechas anteriores.
@@ -136,7 +156,7 @@ Criterios de éxito, Sale bill:
 - **Asignar un cliente después**:
   - Solo a una venta que no tiene, y solo un cliente del mismo negocio.
   - Una venta que ya tiene cliente se rechaza.
-  - Las líneas guardadas nunca se vuelven a cotizar.
+  - Las líneas guardadas nunca se vuelven a cotizar, y el Sale number no cambia.
 - **Nota**:
   - Opcional. Se recorta y admite hasta 200 caracteres; vacía después de recortar significa que no hay.
   - No es única y nunca se busca, se loguea ni se repite en errores.
@@ -145,17 +165,18 @@ Criterios de éxito, Sale bill:
   - Un rango invertido da vacío.
   - Orden: la fecha más nueva primero, después la registrada más recientemente primero.
   - Cada venta dice si sigue debiendo, calculado en vivo por pagos.
-- **Ver una**: fecha, cliente o ninguno, envío, nota, cómo se pagó, total, y de cada línea el producto, los gramos, el precio por gramo guardado, la Pricing rule, el total de la línea y el Cost of goods sold (monto costeado y gramos pendientes). Trae también el Sale bill (abajo), o ninguno.
+  - No muestra el Sale number.
+- **Ver una**: el Sale number, fecha, cliente o ninguno, envío, nota, cómo se pagó, total, y de cada línea el producto, los gramos, el precio por gramo guardado, la Pricing rule, el total de la línea y el Cost of goods sold (monto costeado y gramos pendientes). Trae también el Sale bill (abajo), o ninguno.
 - **Sale bill** (los hechos detrás del texto compartido):
-  - El nombre del negocio, la fecha, de cada línea el producto, la cantidad, el monto y la regla (bulk, gift o ninguna: lista, VIP y Special price se leen todas como ninguna), con el precio unitario en las líneas con Bulk price; el Shipping charged; el total; el estado de pago (cash, transfer, paid, owed, none) con lo que todavía se debe de esta venta; y el Balance del cliente, o ninguno cuando la venta no tiene cliente.
+  - El nombre del negocio, el Sale number, la fecha, de cada línea el producto, la cantidad, el monto y la regla (bulk, gift o ninguna: lista, VIP y Special price se leen todas como ninguna), con el precio unitario en las líneas con Bulk price; el Shipping charged; el total; el estado de pago (cash, transfer, paid, owed, none) con lo que todavía se debe de esta venta; y el Balance del cliente, o ninguno cuando la venta no tiene cliente.
   - El nombre del negocio y los nombres de los productos son datos de la vendedora, y viajan exactamente como están guardados: nunca se escapan, se recortan ni se reescriben.
   - El estado de pago, lo que todavía se debe y el Balance salen de la única pasada de Settlement detrás del "still owing" del detalle, en la misma respuesta; nada vuelve a calcular el Settlement en otro lado.
   - El Balance es la cuenta entera del cliente al momento de leer el detalle, no en la fecha de la venta.
-  - Es cerrado: no tiene campo para la nota, el nombre o el id del cliente, ningún id de venta o de línea, la marca VIP, una Pricing rule que no sea bulk o gift, costo, margen ni link. El negocio sale solo de la sesión.
+  - Es cerrado: no tiene campo para la nota, el nombre o el id del cliente, ningún id de venta o de línea, la marca VIP, una Pricing rule que no sea bulk o gift, costo, margen ni link. El Sale number no es un id: es el número propio del negocio. El negocio sale solo de la sesión.
   - Cuando no se puede calcular, el detalle responde sin Sale bill y el resto del detalle no se ve afectado; el error nombra la regla incumplida y ninguna venta, cliente ni monto.
   - No se guarda ni se loguea nada de él.
 - **Borrar**:
-  - Un borrado definitivo, líneas y On-the-spot payment incluidos; no queda nada para listar ni restaurar.
+  - Un borrado definitivo, líneas y On-the-spot payment incluidos; no queda nada para listar ni restaurar. Su Sale number queda como hueco y nunca se vuelve a usar.
   - Sus gramos vuelven al stock y caen de nuevo en los Lots por fecha (ADR-0009). La respuesta dice los gramos devueltos por producto.
   - Los pagos posteriores que la habían saldado pasan a la siguiente deuda más vieja del cliente, o quedan como **Credit** (`payments.md`).
 - **Rechazos** (ADR-0005, ADR-0008):
@@ -176,6 +197,7 @@ Criterios de éxito, Sale bill:
 - **Aislamiento (ADR-0004)**:
   - El negocio sale de la sesión.
   - Toda tabla de ventas lleva `business_id`.
+  - El Sale number es propio de cada negocio: dos negocios empiezan los dos en 1, y ni el número, ni el texto compartido, ni un error dejan que uno sepa cuántas ventas tiene otro.
   - La venta de otro negocio responde 404 al leer, asignar y borrar.
   - Las listas no muestran ninguna venta de otro negocio.
   - Las rutas están en `tests/test_business_isolation.py`.
@@ -194,6 +216,7 @@ Criterios de éxito, Sale bill:
   - el Shipping charged;
   - la nota;
   - cómo se pagó: Cash · Transfer · Owing.
+- **No hay campo de Sale number**: el número lo asigna la app al guardar, nunca lo tipea la vendedora.
 - **El total de la venta** se muestra con los gramos vendidos y los gramos regalados.
 - **Vista previa en vivo**:
   - Cada línea muestra su precio por gramo, su insignia de regla (lista, Bulk price, VIP, regalo, especial) y su total. El total de la venta se actualiza mientras la vendedora escribe.
@@ -231,7 +254,7 @@ Criterios de éxito, Sale bill:
   - Cerrar la hoja solo vuelve al formulario.
 - **"Sale saved"** (`Estados`):
   - Lleva **Undo** y ningún monto ni nombre. Se anuncia como un toast y dura unos pocos segundos fijos.
-  - Undo borra la venta sin confirmación, después muestra "Sale deleted · the grams go back to stock" y vuelve a Sales.
+  - Undo borra la venta sin confirmación, después muestra "Sale deleted · the grams go back to stock" y vuelve a Sales. Su Sale number queda como hueco, sin ningún aviso agregado.
   - Si la venta ya no existe, Undo muestra "That is gone. The list is up to date."
   - Una vez que el aviso se fue, la forma de deshacer es "Delete sale".
   - Nunca contiene el botón Share/Copy; ese vive en el detalle de la venta.
@@ -266,6 +289,7 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo.
   - una insignia VIP, solo mientras VIP customers está encendido;
   - sus productos y gramos;
   - su total. Una venta que sigue debiendo, las pagadas en parte incluidas, muestra su total en ámbar con "owes you" debajo, tal como lo responde la API.
+  - No muestra el Sale number.
 - **La insignia VIP muestra el estado VIP actual del cliente**, no cómo se cotizó la venta.
   - La insignia de regla de cada línea en el detalle es el registro de cómo se cotizó.
   - Un cliente que deja de ser VIP pierde la insignia en ventas pasadas, mientras sus líneas siguen diciendo "VIP". Eso no es volver a cotizar (ADR-0003).
@@ -277,11 +301,13 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo.
   - la pestaña elegida se marca con algo más que el color;
   - los dos campos de fecha de Dates tienen al menos 16 px y al menos 44 px de alto y nunca desbordan a 320 px ni con el texto al 130 %.
 
-### En pantalla: Sale of <date> (`VentaDetalle`, el detalle de la venta)
+### En pantalla: Sale #N (`VentaDetalle`, el detalle de la venta)
 
 - **Un detalle** (navigation.md): la barra o la barra lateral y "‹ Sales", sin "+ New sale".
-- **Carga**: mientras carga la venta, muestra el estado de carga compartido (accounts.md, `Estados`), nunca una página en blanco.
+- **Título**: "Sale #N", del Copy module, en el encabezado del detalle, con "‹ Sales" como camino de vuelta. Sin ceros a la izquierda, sin prefijo y sin separador de miles: la primera venta se lee "Sale #1". Es texto plano que se puede seleccionar y copiar: no es un botón ni una insignia, y el color no lleva su significado. Igual en claro y en oscuro. En la computadora va en el mismo lugar, sin pulido dedicado (Phone first). La palabra "Venta" del dibujo cede ante el Product language (Drawing as guide).
+- **Carga**: mientras carga la venta, muestra el estado de carga compartido (accounts.md, `Estados`), nunca una página en blanco. El título queda vacío: nunca un número de relleno ni "Sale #0".
 - **Muestra**:
+  - la fecha de la venta, debajo del título, como dd/mm, sin año;
   - el total;
   - de cada línea el producto, los gramos, el precio por gramo, la insignia de regla y el total de la línea;
   - el envío, la nota, cómo se pagó, y el cliente o "No customer".
@@ -292,14 +318,14 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo.
   - El gesto de volver del sistema con su hoja abierta hace lo que hace el "Close" propio de la hoja: cierra solo la hoja y no pregunta nada.
   - Si sale bien, el aviso "Customer assigned".
   - Si alguien asignó uno antes, "This sale already has a customer." y el detalle se actualiza.
-  - Después de asignar, el detalle se vuelve a leer del servidor, para que el Sale bill traiga el Balance del cliente recién asignado; nada arma el detalle a mano en el front.
+  - Después de asignar, el detalle se vuelve a leer del servidor, para que el Sale bill traiga el Balance del cliente recién asignado; nada arma el detalle a mano en el front. El Sale number no cambia.
 - **Delete sale**:
   - En el teléfono, el control y los botones de su confirmación miden al menos 44 px de alto.
   - Se confirma con `Before deleting`, que nombra la fecha, el monto y el total de gramos de sus líneas que vuelven al stock, regalos incluidos. Por ejemplo: "Delete the $ 11.000 sale from 02/10? 4 g go back to stock." Los botones son "No, keep it / Yes, delete it".
   - Después, el aviso "Sale deleted" y de vuelta a Sales.
   - El texto nunca menciona deuda ni Credit; la cuenta del cliente muestra el efecto después (`payments.md`).
 - **Una venta que ya no existe** sigue accounts.md:
-  - abrirla muestra "That is gone." con "Back to Sales";
+  - abrirla muestra "That is gone." con "Back to Sales", sin ningún número;
   - asignar, borrar o deshacer muestra "That is gone. The list is up to date."
 - No van nombres, notas ni montos a la consola ni al almacenamiento del navegador, y ningún id de negocio aparece en una URL.
 
@@ -308,7 +334,7 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo.
 Un Sale bill corto en texto plano de una venta, que la vendedora le manda al cliente en un toque. Solo hechos, nunca una factura.
 
 **El texto**, en orden (las palabras fijas son las de la app, en inglés):
-1. El nombre del negocio, y en una línea nueva la fecha como dd/mm, sin año. Una línea en blanco.
+1. El nombre del negocio, y en una línea nueva `Sale #N · dd/mm` (el Sale number y la fecha, sin año). Una línea en blanco.
 2. Una línea por cada línea de la venta:
    - lista, VIP o Special price: `{product} {quantity} {unit} · {amount}`;
    - Bulk price: `{product} {quantity} {unit} · bulk price {unitPrice}/{unit} · {amount}`;
@@ -322,13 +348,16 @@ Un Sale bill corto en texto plano de una venta, que la vendedora le manda al cli
 
 El Balance es la cuenta entera del cliente al momento de compartir, no en la fecha de la venta; para una venta compartida más tarde los dos pueden diferir, y es a propósito.
 
+**El Sale number** del Sale bill es siempre el mismo que el del título del detalle, de la misma respuesta.
+
 **Formatos**:
 - Las cantidades se formatean a partir de centésimos enteros, nunca de un float: separadores argentinos, sin ceros finales (0,01 · 0,1 · 1,05 · 3,5 · 1.000). La forma en que la app ya muestra los gramos se lee exactamente igual que antes.
 - La plata se lee `$ 11.000`, nunca con el formato del **Catalog**.
+- El Sale number se lee sin ceros a la izquierda, sin prefijo y sin separador de miles.
 
-**La entrada de unidad**: la unidad es una sola entrada con clave del Copy module, "g", hasta que #318 la haga configurable. Cada palabra fija del Sale bill vive en el Copy module (grupo `saleBill`); ningún módulo del Sale bill tiene un literal "g" ni llama al formateador de gramos.
+**La entrada de unidad**: la unidad es una sola entrada con clave del Copy module, "g", hasta que #318 la haga configurable. Cada palabra fija del Sale bill vive en el Copy module (grupo `saleBill`), "Sale #N" incluido; ningún módulo del Sale bill tiene un literal "g" ni llama al formateador de gramos.
 
-**Nunca en el Sale bill**: la nota, el nombre del cliente, las palabras VIP, special o list, ids ni links.
+**Nunca en el Sale bill**: la nota, el nombre del cliente, las palabras VIP, special o list, ids (el `sale.id` incluido) ni links.
 
 **Sin formato propio**: ninguna palabra fija, separador ni formato del Sale bill lleva `*`, `_` ni comilla invertida. El texto que tipeó la vendedora (el nombre del negocio y los de los productos) sale exactamente como se tipeó, esos caracteres incluidos: nunca se escapa, se recorta ni se reemplaza, para que el cliente lea el mismo nombre que ve la vendedora. Cómo lo muestra una app de chat es asunto del chat; escapar para una app fijaría un canal (Assume nothing).
 
@@ -374,7 +403,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
   - registrar o borrar un pago.
 - **Sin sorpresa para los VIP existentes (criterio 19)**: después de la migración, para cada cliente VIP existente, el precio, la regla y el total de una venta son iguales a los de antes, para el mismo producto, día y gramos. 0 diferencias.
 - **Una venta por pedido**: una venta de varios productos es una venta, con total = líneas redondeadas + envío una vez, por la API y por el formulario. (Criterios 2, 8)
-- **Todo o nada**: una venta rechazada deja 0 filas nuevas en ventas, líneas y pagos. (Criterio 4)
+- **Todo o nada**: una venta rechazada deja 0 filas nuevas en ventas, líneas y pagos, y no consume Sale number. (Criterio 4)
 - **Debiendo sin cliente**: 0 guardadas; el dominio lo rechaza y un test lo cubre. (Criterio 4)
 - **Borrar devuelve gramos**: después de borrar una venta, el stock de sus productos sube exactamente los gramos de sus líneas, y la respuesta los nombra. La confirmación de Delete sale nombra los gramos, y el aviso de Undo dice que vuelven.
 - **Cobertura de aislamiento**: cada ruta de ventas está en el barrido y responde 404 o vacío desde otro negocio, incluidas referencias a un cliente o un producto de otro negocio. En pantalla, la venta de otro negocio abierta por id muestra "That is gone." (Criterio 5)
@@ -398,20 +427,25 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
   - la marca "owes you" coincide con el Settlement de la API;
   - la lista responde en menos de 300 ms con unos pocos cientos de ventas: lo verifica `tests/sales/test_list_cost.py` con el plan de consulta de las sentencias de la lista (se buscan los índices, no se recorre ninguna tabla) y la cantidad de sentencias con 30 y 300 ventas, nunca por tiempo (docs/adr/0038).
 - **Corregir**: la corrida de punta a punta asigna un cliente a una venta que no tenía (Assign customer desaparece) y borra una venta con su confirmación. (Criterio 11)
-- **Sin desbordes en el teléfono (criterio 12)**: tests del front a 320, 375 y 430 px y con el texto al 130 %, para New sale, Sales y el detalle de la venta, muestran que nada queda recortado ni desborda en horizontal, "Special price", el envío y los campos de Dates incluidos; las pestañas de Sales cubiertas en una fila y de a dos.
+- **Sin desbordes en el teléfono (criterio 12)**: tests del front a 320, 375 y 430 px y con el texto al 130 %, para New sale, Sales y el detalle de la venta, muestran que nada queda recortado ni desborda en horizontal, "Special price", el envío, los campos de Dates y el título "Sale #N" incluidos; las pestañas de Sales cubiertas en una fila y de a dos.
 - **Guardar a mano (criterio 12)**: en esos anchos, el total del pie y "Save sale" se ven al cargar; el encabezado se queda mientras el cuerpo se desplaza; con un teclado simulado el pie sigue visible; las opciones de pago y la ayuda de Owing (con margen lateral) se desplazan enteras por encima del pie.
 - **Objetivos y campos (criterio 13)**: todo elemento interactivo de las tres pantallas, botones de diálogo incluidos, mide al menos 44 px de alto; todo campo tiene un tamaño de letra calculado de al menos 16 px; los gramos llevan `inputmode="decimal"`, los pesos `"numeric"`, y los campos de una línea `enterkeyhint`.
 - **Nunca en blanco (criterio 14)**: tests del front muestran el estado de carga compartido en el detalle, la lista de Sales, la espera de precios de New sale (al abrir y al cambiar la fecha) y los resultados de Pick a customer, sin ningún dígito, símbolo de moneda ni cifra de relleno.
 - **Cambio de fecha**: un test del front muestra que todo lo tipeado se conserva, las líneas muestran carga, y después cada línea se vuelve a cotizar.
 - **Guarda del volver (criterio 15)**: tests del front usan el gesto de volver del sistema: pregunta "Discard the sale?" con la condición de Close; "No, keep entering" conserva el formulario y el siguiente volver vuelve a preguntar; un formulario sin tocar se cierra en el acto; con Pick a customer, New customer o Assign customer abiertos, volver cierra solo la hoja de arriba como su propio "Close", la venta o el detalle de abajo quedan intactos y "Discard the sale?" nunca aparece.
 - **Sin regresiones (criterio 16)**: los tests existentes de ventas y de navegación pasan sin editarlos; la matriz de cotización y "vista previa = guardado" siguen en 0 diferencias; `NuevaVentaCompu` y `VentasCompu` no cambian.
-- **Juego de referencia del Sale bill (criterio 21)**: `saleBill.cases.json`, con los textos esperados escritos a mano contra esta definición, nunca generados; 0 diferencias. Casos: con y sin línea con Bulk price; una línea VIP y una con Special price que se leen como líneas de lista; un regalo; una venta de $0 solo de regalos con Balance distinto de cero; efectivo, transferencia, pagada después, debiendo en parte, debiendo entera; un Balance, un Credit y un Balance de exactamente $0; sin cliente; con y sin envío; una línea y varias líneas; cantidades 0,01, 0,1, 1,05 y 1000; un producto cuyo nombre tiene `*`, `_` y una comilla invertida, mostrado sin cambios.
+- **Juego de referencia del Sale bill (criterio 21)**: `saleBill.cases.json`, con los textos esperados escritos a mano contra esta definición, nunca generados; 0 diferencias. Casos: con y sin línea con Bulk price; una línea VIP y una con Special price que se leen como líneas de lista; un regalo; una venta de $0 solo de regalos con Balance distinto de cero; efectivo, transferencia, pagada después, debiendo en parte, debiendo entera; un Balance, un Credit y un Balance de exactamente $0; sin cliente; con y sin envío; una línea y varias líneas; cantidades 0,01, 0,1, 1,05 y 1000; un producto cuyo nombre tiene `*`, `_` y una comilla invertida, mostrado sin cambios; Sale #1 y un Sale number de cuatro cifras sin separador de miles, en la línea `Sale #N · dd/mm`.
 - **Formato de cantidades (criterio 21)**: `formatQuantity` da 1 → "0,01", 10 → "0,1", 105 → "1,05", 350 → "3,5", 100000 → "1.000" a partir de centésimos enteros; los tests existentes de `formatGrams` pasan sin editarlos.
-- **Test de filtraciones del Sale bill (criterio 22)**: con nombres de negocio y de productos sin `*`, `_` ni comillas invertidas, ningún texto de los casos contiene la nota, el nombre del cliente, "VIP", "special", "list", un id, "http", `*`, `_` ni una comilla invertida; el esquema del Sale bill en la API es cerrado y no tiene ningún campo así.
-- **Contrato cumplido**: un vitest lee los esquemas `SaleBillOut` de `tests/fixtures/openapi_snapshot.json` y verifica que sus nombres de propiedad y sus enums son iguales a las listas de claves del front; el front y la API nunca se separan.
+- **Test de filtraciones del Sale bill (criterio 22)**: con nombres de negocio y de productos sin `*`, `_` ni comillas invertidas, ningún texto de los casos contiene la nota, el nombre del cliente, "VIP", "special", "list", un id (el `sale.id` incluido), "http", `*`, `_` ni una comilla invertida; el esquema del Sale bill en la API es cerrado y no tiene ningún campo así.
+- **Contrato cumplido**: un vitest lee los esquemas `SaleBillOut` de `tests/fixtures/openapi_snapshot.json` y verifica que sus nombres de propiedad y sus enums son iguales a las listas de claves del front, el Sale number incluido; el front y la API nunca se separan.
 - **Unidad y palabras del Copy module (criterio 23)**: con la entrada de unidad puesta en "u", el texto dice "3,5 u" y "/u"; una guarda no encuentra ningún literal "g" ni llamada a `formatGrams` en ningún fuente `saleBill*`; `en-XA` está regenerado y los tests de vigencia de textos pasan.
 - **Un toque (criterio 20)**: tests del front (fetch simulado) muestran que Share llama a compartir con el texto del Sale bill; con `isSecureContext=false`, `execCommand('copy')` se llama de forma sincrónica justo después del clic y aparece el aviso "Bill copied"; cancelar no muestra nada; si compartir falla aparece su línea con el ícono de atención y la etiqueta pasa a Copy; si copiar falla aparece su línea y el bloque seleccionable; `bill` nulo oculta el botón; cargando conserva la etiqueta, deshabilitado y ocupado, sin dígitos ni `$`. El proyecto móvil recorre el detalle de la venta por su fila del registro, cargado y retenido, y pasa sin ningún infractor nuevo. No se agrega ningún `WalkState` para los estados de copia fallida ni de carga: un estado nuevo en la ruta de la venta trae los infractores que esa ruta ya tiene bajo un nombre de pantalla nuevo, y las listas de infractores no pueden aceptarlo (`gate.md`). Los dos estados los cubren los tests del front de arriba.
 - **El Sale bill no deja rastro**: después de los tests del front, la consola y el almacenamiento del navegador no tienen nada del Sale bill.
+- **Sale number, propio y desde 1 (criterios 24, 26)**: test de aislamiento con dos negocios: los dos registran su primera venta como Sale #1 y siguen 2, 3… cada uno por su lado, intercalando guardados entre los dos; ni el detalle, ni el Sale bill, ni un rechazo de uno contienen nada que dependa de la cantidad de ventas del otro, y la venta de otro negocio sigue en 404. En `tests/test_business_isolation.py`.
+- **Sale number, nunca reutilizado (criterio 24)**: borrar una venta del medio deja un hueco; borrar la de número más alto (por Delete sale y por Undo) y registrar otra da el número siguiente, nunca el borrado; un guardado rechazado no consume número; dos guardados simultáneos en un negocio reciben números distintos. Editar la fecha no aplica (no se edita); asignar un cliente después no cambia el número.
+- **Sale number, el mismo en los dos lugares (criterio 25)**: un test del front muestra que el título del detalle y la línea `Sale #N · dd/mm` del Sale bill llevan el mismo número para la misma venta; el título es texto seleccionable, no un botón; mientras carga, el título queda vacío y no aparece ningún `#`, dígito ni "Sale".
+- **Sale number, historial (criterio 27)**: test de la migración: en una base con ventas de dos negocios, cada negocio queda numerado desde 1 por (fecha, momento de registro, id), con un empate de fecha y momento resuelto por id; la migración solo agrega una columna; la siguiente venta nueva de cada negocio sigue al número más alto. Una Spreadsheet import en un negocio vacío numera por fecha y orden de registro.
+- **Design capture**: el detalle de la venta en el teléfono muestra "Sale #N" en el lugar dibujado, en claro y en oscuro (`docs/product/design-capture.md`). Cualquier otra diferencia con el dibujo es un hallazgo aparte.
 
 ## Fuera de alcance
 
@@ -429,6 +463,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - Otras reglas VIP (un porcentaje sobre lista); promociones de precio por fecha.
 - Rechazar o avisar en una venta porque las Pricing settings cambiaron en medio de la venta.
 - Para el Sale bill: un año en la fecha; un paso de vista previa; un estado de "ya compartido"; un recibo de pago; elegir un canal o enviar desde la app; una factura; escapar o reescribir los nombres que tipeó la vendedora para el formato de alguna app de chat; hacer configurable la unidad (#318); cualquier otro idioma (#317).
+- Para el Sale number: buscar o filtrar ventas por número; mostrarlo en Sales, en la historia del cliente, en Home o en Analysis; el resto del rediseño del detalle de la venta (#530) y la línea "por Telegram" del dibujo (un hallazgo aparte, y un canal choca con Assume nothing); el `sale.id` global que ya lleva el camino del detalle (`/sales/{sale_id}`), un hallazgo aparte con su propio issue.
 
 ## Planeado en GH-318
 

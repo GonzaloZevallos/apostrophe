@@ -1,0 +1,229 @@
+# Evaluation set: five merged apostrophe tasks re-run from their pinned base (GH-564).
+# Format: agentic-system's `.agentic/eval-set.yaml` (issue #470, delivered by PRs #481 and #490;
+# loader `agentic/core/measurement/domain/evaluation.py`): `entries: [{issue, base, title, body}]`
+# and `smoke`. The loader refuses any other key, so the recorded outcomes below are comments.
+# Guard note: #470 is a closed issue, not a PR, so "#470 merged" cannot be checked as written;
+# the format was read from agentic-system master (b45ab5eb), where #481 and #490 hold it.
+# Checked there: parse_eval_set accepts this file (5 entries, smoke 299); `agentic eval run
+# --dry-run --budget 300` reports 5 runs, estimated 225.00 USD at 45.00 USD per run.
+#
+# Selection (git commands, run in this repository; task documents read-only from the main
+# checkout's `.agentic/tasks/GH-X.md`):
+#   git log --merges --first-parent master --since=2026-10-20 --format='%H %P %s'
+#   git merge-base <merge>^1 <merge>^2                      # clean when equal to <merge>^1
+#   git log --first-parent --merges <merge>^1..<merge>^2    # clean when no merge of master
+#   git rev-parse <merge>^1                                 # base of a clean entry
+#   git rev-list --first-parent <merge>^2 ^<merge>^1 | tail -1   # fallback: base is its parent
+# Only `Merge pull request #N from GonzaloZevallos/agentic/GH-X` merges are candidates; squash
+# merges and GH-480 (reverted by #532) are skipped. No pick names another pick as a prerequisite
+# (each document's `Blocked by:` line names #384, #388 or #422, none of them an entry).
+#
+# Slots: bug fix GH-299, UI screen GH-364, domain/backend GH-385, data migration GH-405,
+# copy/i18n GH-424. Closest-candidate notes: no clean entry is a UI screen change (the closest,
+# GH-334, delivers an architecture check with a 7-line Gastos edit), so the slot uses the
+# fallback entry GH-364. No clean entry is a small app/-only change; GH-385 is clean and
+# backend but a 121-file mechanical rename (the plan's fallbacks GH-529/GH-530 are docs-only). No clean entry is mostly web/src/copy; GH-424
+# (i18n keys, 49 files, clean) is the closest.
+#
+# Outcome fields per entry (comments, from the entry's own task document): merged, returns (sum
+# of `returns:`), cost_usd (as written), cycle_time_hours (sum of run ended_at - started_at,
+# rounded to 0.1 h; every run of every entry carries both timestamps), wall_hours
+# (closed_at - earliest started_at, includes time paused on a human, not comparable to cycle).
+#
+# Cost, clean entries (the aggregate and the per-arm figure leave out fallback entries):
+#   GH-299 3.1681 USD + GH-385 16.6138 USD + GH-405 132.5939 USD + GH-424 21.5101 USD = 173.8859 USD per arm
+#   (4 entries, 43.4715 USD per task)
+#   the request's "about 45 USD per task, about 225 USD per arm": 4 x 45 = 180 USD,
+#   difference -6.1141 USD; per task -1.5285 USD; 5 x 45 = 225 USD.
+# Cost, fallback entries (baseline_includes_master_absorption: true, outside the aggregate):
+#   GH-364 17.2799 USD = 17.2799 USD
+#   (all five recorded: 191.1658 USD, difference to 225 USD: -33.8342 USD)
+# `agentic eval run --budget` estimates 45 USD x entries x arms, the request's own figure.
+
+entries:
+  # GH-299 (bug fix, type: bug): PR #336, merge 6770dbbc4ac2ae35e2f9a872005cced44b1b4fdf, clean.
+  # source: .agentic/tasks/GH-299.md, sha256 42f1153d1819e2f6c1a187e4cb4c0d11dcb780ad580119aeda7fd25bc3370200 (at reading time).
+  # base = <merge>^1; merge-base with master equals it, no merge of master in the branch.
+  # merged: true, returns: 0, cost_usd: 3.1681, cycle_time_hours: 0.7, wall_hours: 1.1 (closed_at 2026-10-23T10:17:02.434+00:00).
+  - issue: 299
+    base: 2365d0db24b412e719fb1c94d337a508317aade7
+    title: 'Follow-up of #192: open important findings'
+    body: |-
+      <!-- agentic:followup task=GH-192 lineage=1 -->
+      Open `important` findings left on the approved head of GH-192:
+
+      - `web/src/mobile-standard/offenders/touch-target.json` (spec-behaviour): Item 7's standing condition 'every control >= 44 px' fails on head because the skip links are 19 px high; the plan has to decide whether GH-192 or #49 owns this.
+      - `web/src/mobile-standard/offenders/touch-target.json:846` (spec-behaviour): The integrated head still lists the Onboarding skip links ('button:Saltar', 'button:Saltar el resto') as touch-target offenders, so PM's standing item-7 condition 'controls are at least 44 px' is still unmet; the plan has to decide whether GH-192 or #49 owns it.
+  # GH-364 (UI screen, type: feature): PR #433, merge b25a7a4941f10337ea012ea403bb96d0a787c71f, fallback.
+  # source: .agentic/tasks/GH-364.md, sha256 4de0d2eb0cb9abaa3e9e0bd9eecf7903276190de1ed82e8cf7a5e9f1788308f6 (at reading time).
+  # baseline_includes_master_absorption: true (not a loader key, so a comment). Fallback base:
+  # parent of the earliest first-parent commit of the branch; <merge>^1 is 8adcf2c74e70aa098c9106f3681b55c9a93a0ce1,
+  # merge-base with master is fbc4fdc032b9ad43bd152beba87e69508d664125, not <merge>^1. Master-merge shas in the branch: none.
+  # Outcome is non-reproducible: left out of the aggregate cost sum and the per-arm figure.
+  # merged: true, returns: 0, cost_usd: 17.2799, cycle_time_hours: 2.5, wall_hours: 4.2 (closed_at 2026-10-26T03:02:21.333+00:00).
+  - issue: 364
+    base: fbc4fdc032b9ad43bd152beba87e69508d664125
+    title: Copiar copies the catalog so it pastes into Telegram with its line breaks
+    body: |-
+      #### Feature (owner, 2026-10-25)
+
+      **This is a change to the catalog's definition, and the owner asks for it.** Today `docs/product/catalog.md` says **Copiar** copies the raw catalog text with its `**` markers, and the app does exactly that. The owner wants that definition changed: what **Copiar** puts on the clipboard must paste right into Telegram, one of the owner's main channels, without breaking WhatsApp or plain text.
+
+      #### Why (evidence from the owner's iPhone)
+
+      **How it happens.** The owner taps **Copiar** in the app (over the HTTPS tunnel, so `navigator.clipboard.writeText`), then pastes into a Telegram chat's message box on iPhone. The owner's screenshot of the box after the paste shows:
+
+      - The variety name shows **bold**, with no asterisks: `👑 **Sir Jack**` in `catalog.text` became bold "Sir Jack".
+      - Every **single** line break became a space. The block reads as one run: `👑 Sir Jack • 30% indica / 70% sativa • Aroma/flavor: incienso, madera y limón • Price per gram: $14.000 • From 10 g: $13.000 each`.
+      - Every **blank line**, between blocks and before the footer, became a single line break.
+
+      That is exactly Markdown paragraph semantics. Telegram iOS parses Markdown in pasted plain text: `**…**` turns into a bold entity, and a lone `\n` is a soft break, so it collapses to a space. The trigger is the `**` that `app/catalog/domain/text.py` `_name_line` puts around each name. Confirm this by reproducing the parse, and rule out other causes with a text that has no `**`.
+
+      **Other targets.** The owner sees the problem only in Telegram. WhatsApp and the rest paste fine.
+
+      #### What done looks like
+
+      1. Copied with **Copiar** and pasted into Telegram's message box on iPhone, the catalog keeps every line break the screen shows, one line per bullet, with blocks separated as on screen.
+      2. It still reads right in WhatsApp and in a plain-text target. Don't fix Telegram by breaking the others.
+      3. **Bold names are preferred but not required.** If they can survive in Telegram without breaking (2), keep them, for example with a rich clipboard entry (`text/html` with `<b>` and `<br>`) next to `text/plain`. If not, drop the `**` from what is copied. PM decides and updates `docs/product/catalog.md` with the new definition of what **Copiar** copies.
+      4. A test pins the copied payload's shape, meaning the MIME types and the line breaks. The change must come with a statement of why the result survives Telegram's paste parsing.
+      5. The catalog's content, the server's `catalog.text` for other uses, and the pinned catalog the bot sends stay as they are, unless PM decides the same change naturally belongs there too.
+  # GH-385 (domain / backend change, type: platform_enhancement): PR #474, merge 7578f51cbd8b9c628b5f268122503a6d48ff2fb7, clean.
+  # source: .agentic/tasks/GH-385.md, sha256 bd5835b55957d427ff03512ca7d49b0140cc4dd78e5232ac015836e073cfddf8 (at reading time).
+  # base = <merge>^1; merge-base with master equals it, no merge of master in the branch.
+  # merged: true, returns: 0, cost_usd: 16.6138, cycle_time_hours: 1.0, wall_hours: 1.7 (closed_at 2026-10-28T10:20:04.094+00:00).
+  - issue: 385
+    base: 76cd62659fc10995334f1ab5bdc256c008169623
+    title: Rename Grams to Quantity in Python (wire unchanged)
+    body: |-
+      Blocked by: #384
+
+      Mechanical rename with no behaviour change.
+      - app/shared/grams.py becomes app/shared/quantity.py: Grams becomes Quantity, and InvalidGrams becomes InvalidQuantity with code quantity.invalid. The at-most-two-decimals check stays as the storage limit.
+      - Rename domain, application and adapter names across stock, sales, results, varieties, catalog and spreadsheet_import.
+      - JSON field names and database columns are unchanged: the adapter schemas map grams to quantity.
+      - Every existing test passes, changed only in imports and names.
+
+      #### Invariants
+
+      1. A migration never changes the value of a column that existed before it; it only adds tables, columns and rows or fills new columns, and the shared M3 comparator in tests/migrations/ proves it.
+      2. Every new table carries a non-null business_id, is read only through a repository built for one business, and a record of another business answers 404; every new route joins the isolation sweep and the gated-routes test.
+      3. A column referencing variety.id is named variety_id (or ends in _variety_id); its domain attribute, port parameter and API field say product_id/Product, mapped only in the adapter.
+      4. No code asks for today or a business day through BUSINESS_TIMEZONE, a literal zone name or datetime.now; it goes through get_today in accounts/adapters/deps.py or business_day(instant, zone) in app/shared/calendar.py.
+      5. A stored quantity is a whole number of hundredths whatever the unit; the unit's decimals only validate input and decide display.
+      6. A figure that sums quantities across products groups them by unit (QuantityByUnit); two quantities of different units are never added.
+      7. Money on the wire is the value in currency units, parsed as Decimal through the one money schema type, never float; no request carries decimals or a scale.
+      8. A use case never reads the stored money scale; the scale is applied only inside an adapter's SQL statement, through the one money adapter helper.
+      9. An amount is held only in a typed integer column declared through money_column(); never in a JSON, Text or String column.
+      10. Half-up rounding of an amount goes through round_half_up in app/shared/money.py; no literal // 100, round( or whole-peso assumption elsewhere.
+      11. A migration's down_revision is the previous revision of the one linear chain, and its number is the one reserved in its brief.
+      12. No new screen text sits outside the copy module, and no flower word (variety, gram, g, indica, sativa, aroma, strain, 🌿) appears in a new default.
+
+      Part 2 of 37 of GH-318. The plan and its interview are in `.agentic/tasks/GH-318.md`; the original task branch `agentic/GH-318` is context for reading, nothing to bring in.
+
+      <!-- agentic-split: GH-318 part 2 -->
+  # GH-405 (data migration, type: feature): PR #565, merge 5b500312a9761676b891653632af949523dc808f, clean.
+  # source: .agentic/tasks/GH-405.md, sha256 4170710fe04899ba66268fcdc82f51ed579d901c90502ea35742966d722b8a83 (at reading time).
+  # base = <merge>^1; merge-base with master equals it, no merge of master in the branch.
+  # merged: true, returns: 8, cost_usd: 132.5939, cycle_time_hours: 15.3, wall_hours: 24.5 (closed_at 2026-11-03T19:32:25.626+00:00).
+  - issue: 405
+    base: 691dc41036e1cbe9fd745d9f0350063af25a9966
+    title: Customer types and membership
+    body: |-
+      Blocked by: #388
+
+      New customer_types hexagon with customer_type: business_id, name, icon.
+      - Add a nullable customer.customer_type_id.
+      - Migration: each business with VIP customers gets a "VIP" type, and only vip = 1 customers get its id.
+      - customer.vip is frozen: kept, allowlisted, no longer read.
+      - pricing_settings.is_vip_customers now means customer types are switched on.
+
+      Screens:
+      - Customer form: a "Customer type" field.
+      - Settings → Prices → Customer types.
+
+      Tests:
+      - TestClient tests, the M3 comparator and isolation.
+
+      ##### Invariants
+
+      1. A migration never changes the value of a column that existed before it; it only adds tables, columns and rows or fills new columns, and the shared M3 comparator in tests/migrations/ proves it.
+      2. Every new table carries a non-null business_id, is read only through a repository built for one business, and a record of another business answers 404; every new route joins the isolation sweep and the gated-routes test.
+      3. A column referencing variety.id is named variety_id (or ends in _variety_id); its domain attribute, port parameter and API field say product_id/Product, mapped only in the adapter.
+      4. No code asks for today or a business day through BUSINESS_TIMEZONE, a literal zone name or datetime.now; it goes through get_today in accounts/adapters/deps.py or business_day(instant, zone) in app/shared/calendar.py.
+      5. A stored quantity is a whole number of hundredths whatever the unit; the unit's decimals only validate input and decide display.
+      6. A figure that sums quantities across products groups them by unit (QuantityByUnit); two quantities of different units are never added.
+      7. Money on the wire is the value in currency units, parsed as Decimal through the one money schema type, never float; no request carries decimals or a scale.
+      8. A use case never reads the stored money scale; the scale is applied only inside an adapter's SQL statement, through the one money adapter helper.
+      9. An amount is held only in a typed integer column declared through money_column(); never in a JSON, Text or String column.
+      10. Half-up rounding of an amount goes through round_half_up in app/shared/money.py; no literal // 100, round( or whole-peso assumption elsewhere.
+      11. A migration's down_revision is the previous revision of the one linear chain, and its number is the one reserved in its brief.
+      12. No new screen text sits outside the copy module, and no flower word (variety, gram, g, indica, sativa, aroma, strain, 🌿) appears in a new default.
+
+      Part 22 of 37 of GH-318. The plan and its interview are in `.agentic/tasks/GH-318.md`; the original task branch `agentic/GH-318` is context for reading, nothing to bring in.
+
+      <!-- agentic-split: GH-318 part 22 -->
+  # GH-424 (copy / i18n change, type: platform_enhancement): PR #449, merge 4f6327b8068faad5e6932909b82edf17c73375d5, clean.
+  # source: .agentic/tasks/GH-424.md, sha256 f3a152eb756466d35d75bd1c5cc40a8e506164300349cbd663db5af626e2b52c (at reading time).
+  # base = <merge>^1; merge-base with master equals it, no merge of master in the branch.
+  # merged: true, returns: 1, cost_usd: 21.5101, cycle_time_hours: 1.0, wall_hours: 1.3 (closed_at 2026-10-27T10:35:53.568+00:00).
+  - issue: 424
+    base: ae408a8bff1753d13b0305f34c8711e4e1141b91
+    title: 'Front i18n: refusals onto keys with a flat code map, checked in every locale'
+    body: |-
+      Blocked by: #422
+
+      This part uses the resolver from the seam part to move refusal texts onto i18next keys. English refusals read exactly as today, and the front never renders a response's `detail`.
+
+      **1. `web/src/copy/locales/en/refusals.json`**
+      - Flat, named keys: `generic`, `goneNotice`, `goneDetail`, `nameArchived`, `hasHistory`, `pinnedNotReady`, the `probarlo*` and `lookup*` texts, `languageNotSelectable`, `vipPriceNotBelowList`, `pinReason.<reason>`, the withdrawal messages, and so on.
+      - Values stay byte-equal to today's.
+      - Every entry is mapped in `baselineKeys/refusals.json`.
+      - Generate `en-XA`, then run `i18n:types`.
+
+      **2. `web/src/copy/refusalKeys.json`**
+      - Hand-edited and flat: `{"<code>": "refusals:<key>"}`, one entry per `contract.json` code, mirroring today's `REFUSAL_BY_CODE`.
+      - Gone codes map to `refusals:goneNotice`.
+      - No code is an i18next path.
+
+      **3. `web/src/api/refusals.ts`**
+      - `REFUSAL_KEY: Record<RefusalCode, RefusalKey>` is built from the JSON through an `isKeyOf` type guard in `i18n/`, with no cast.
+      - `GONE_NOTICE`, `PINNED_CATALOG_REASON_LABEL`, `PINNED_CATALOG_REFUSAL_OVERRIDES`, `WITHDRAWAL_REFUSAL_MESSAGES` and `VARIETY_REFUSAL_TEXT` hold keys.
+      - `kindOf` and `resolveOverride` are unchanged.
+      - Delete `copy/refusals.ts`; its `LONG_REFUSALS` become keys.
+
+      **4. Readers resolve keys at render**
+      - Refusal display, `PinnedCatalogBot`, the withdrawal and variety forms, and the gone screens.
+      - `feedback.ts` compares the gone `notice` as the key.
+      - The PR lists the hand edits.
+
+      **5. Vitest**
+      - The key set of `refusalKeys.json` equals the code set of `contract.json`.
+      - Every value resolves to a string in `en`.
+
+      **6. `tests/test_refusal_codes.py`**
+      - Stop parsing `refusals.ts`.
+      - Read `contract.json`, `refusalKeys.json` and every `web/src/copy/locales/<tag>/refusals.json`, `en-XA` included.
+      - Assert that the code sets are equal, and that each value walks to a `str` in every locale.
+      - Rewrite the negative self-tests on fixture JSON: a missing code, an extra code, a missing leaf and an object leaf.
+      - Keep the English and no-input checks, reading `en/refusals.json`.
+      - `mypy --strict` and `ruff` stay clean.
+
+      **Done when:** every refusal reads through a key, English is unchanged, and the gate is green.
+
+      #### Invariants
+
+      1. No module under web/src/ outside web/src/i18n/ imports the i18next instance (main.tsx's side-effect import excepted); a helper takes `t` from its caller or returns a key, and nothing calls t() at module top level.
+      2. Every moved English text renders equal to its en.baseline.json entry through its baselineKeys/<ns>.json mapping; baseline_exceptions.json stays [].
+      3. Only the components part writes common.json; the refusals part writes refusals.json and refusalKeys.json; the empty-states part writes emptyStates.json; en-XA files come only from the pseudo script and resources.generated.d.ts only from `npm run i18n:types`.
+      4. A file that reads COMMON_TEXT is listed in exactly one commonTextReaders/<area>.json, chosen by the area owning its directory.
+      5. No front code renders a response's `detail`; no refusal code is used as an i18next path.
+      6. copyProblems never reads en-XA and fails on a key missing in en.
+      7. Formats, routes, API field names, error codes and database names do not change; mobile-check offender lists do not grow.
+
+      Part 3 of 5 of GH-378. The plan and its interview are in `.agentic/tasks/GH-378.md`; the original task branch `agentic/GH-378` is context for reading, nothing to bring in.
+
+      <!-- agentic-split: GH-378 part 3 -->
+
+# The smoke task: the cheapest clean entry, bug fix GH-299.
+smoke: 299

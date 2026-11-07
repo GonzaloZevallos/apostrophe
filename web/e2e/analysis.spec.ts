@@ -175,7 +175,7 @@ async function recordWithdrawal(
   await expectToast(page, 'Withdrawal saved', () => page.getByRole('button', { name: 'Save the withdrawal' }).click())
 }
 
-test('Análisis reads Cost of goods sold, Stock shortfall, Promotion and Own use, fully and partly pending', async ({
+test('Análisis reads Cost of goods sold, Stock shortfall, Marketing and Own use, fully and partly pending', async ({
   page,
 }, testInfo) => {
   const consoleMessages: string[] = []
@@ -212,7 +212,7 @@ test('Análisis reads Cost of goods sold, Stock shortfall, Promotion and Own use
     cost: '10000',
   })
   await recordEntry(page, { date: today, grams: '-1', variety: 'Rosa', origin: 'Adjustment' })
-  await recordWithdrawal(page, { date: lastMonth, grams: '2', variety: 'Rosa', reason: 'Promotion' })
+  await recordWithdrawal(page, { date: lastMonth, grams: '2', variety: 'Rosa', reason: 'Marketing' })
   await recordWithdrawal(page, { date: today, grams: '1', variety: 'Rosa', reason: 'Own use' })
 
   await page.goto(SALE_NEW)
@@ -247,7 +247,7 @@ test('Análisis reads Cost of goods sold, Stock shortfall, Promotion and Own use
   await expect(weekCosts.last()).toContainText('Own use 1 g without cost')
   await expect(weekCosts.first()).not.toContainText('Stock shortfall')
   // A past month, fully pending promotion; only the current month has the shortfall.
-  await expect(monthCosts.filter({ hasText: 'Promotion 2 g without cost' })).toHaveCount(1)
+  await expect(monthCosts.filter({ hasText: 'Marketing 2 g without cost' })).toHaveCount(1)
   await expect(monthCosts.filter({ hasText: 'Stock shortfall 1 g without cost' })).toHaveCount(1)
   await expect(monthCosts.last()).toContainText('Stock shortfall 1 g without cost')
 
@@ -257,7 +257,7 @@ test('Análisis reads Cost of goods sold, Stock shortfall, Promotion and Own use
   await expect(header).toContainText('Own use 1 g without cost')
   const since = page.locator('.analisis__historico')
   await expect(since).toContainText('Stock shortfall 1 g without cost')
-  await expect(since).toContainText('Promotion 2 g without cost')
+  await expect(since).toContainText('Marketing 2 g without cost')
   await expect(since).toContainText('Own use 1 g without cost')
 
   // Never a pending cost read as a zero, anywhere a cost line is drawn.
@@ -270,7 +270,7 @@ test('Análisis reads Cost of goods sold, Stock shortfall, Promotion and Own use
   const phoneWeeks = page.locator('.analisis__semanas > .analisis__tarjeta')
   await expect(phoneWeeks.filter({ hasText: 'Cost of goods sold $ 10.000 and 5 g without cost' })).toHaveCount(1)
   await expect(phoneWeeks.last()).toContainText('Stock shortfall 1 g without cost')
-  await expect(page.locator('.analisis__meses > .analisis__tarjeta').filter({ hasText: 'Promotion 2 g without cost' })).toHaveCount(1)
+  await expect(page.locator('.analisis__meses > .analisis__tarjeta').filter({ hasText: 'Marketing 2 g without cost' })).toHaveCount(1)
 
   // Screenshots for the PR: header, the rows and the since-the-first-record block, per
   // viewport and theme.

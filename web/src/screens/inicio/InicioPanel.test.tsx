@@ -31,7 +31,7 @@ const RESULT_LABELS = [
   'Cash',
   'Cost of goods sold',
   'Stock shortfall',
-  'Promotion',
+  'Marketing',
   'Own use',
   'Expenses',
   'You gave away',
@@ -219,8 +219,7 @@ test('Hoy hides the withdrawal lines too, even when today carries one', async ()
       today: {
         ...PANEL.periods.today,
         shortfall: { amount: 3000, pending: false },
-        promotion: { amount: 2000, pending: false },
-        own_use: { amount: 1000, pending: false },
+        withdrawals: [{ reason_id: 1, name: 'Marketing', amount: 2000, pending: false, pending_quantity: 0 }, { reason_id: 2, name: 'Own use', amount: 1000, pending: false, pending_quantity: 0 }],
       },
     },
   }
@@ -230,7 +229,7 @@ test('Hoy hides the withdrawal lines too, even when today carries one', async ()
   for (const label of RESULT_LABELS) expect(screen.queryByText(label)).not.toBeInTheDocument()
 })
 
-test('Semana and Mes keep every result figure, Promotion and Own use right after Stock shortfall', async () => {
+test('Semana and Mes keep every result figure, Marketing and Own use right after Stock shortfall', async () => {
   renderInicio()
   await screen.findByText('You sold today')
 
@@ -243,7 +242,7 @@ test('Semana and Mes keep every result figure, Promotion and Own use right after
     'You gave away',
     'Cost of goods sold',
     'Stock shortfall',
-    'Promotion',
+    'Marketing',
     'Own use',
     'Expenses',
     'Flower purchases',

@@ -11,6 +11,7 @@ import { expect, test, type Browser, type Page } from '@playwright/test'
 import { MOBILE_FACTS_FILE, MOBILE_STATE_FILE, mobileLanguage } from './env.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { collect, GEOMETRY_COLLECTOR, type CellId } from './mobile/collect.js'
+import { runChrome } from './mobile/collectChrome.js'
 import { COLOUR_COLLECTOR } from './mobile/collectColour.js'
 import { LOADING_COLLECTOR, SHIFT_COLLECTOR } from './mobile/collectLoading.js'
 import { newCell, SIZES, THEMES, type Size, type Theme } from './mobile/cells.js'
@@ -193,7 +194,7 @@ test.describe('the geometry checkers', () => {
   test('a page that breaks each geometry, type and input rule is reported for each', async ({ browser }) => {
     expect(await rulesOn(browser, BROKEN)).toEqual(
       [
-        'autocomplete', 'chrome-at-load', 'chrome-mid-scroll', 'figure-split', 'h-scroll', 'input-font',
+        'autocomplete', 'figure-split', 'h-scroll', 'input-font',
         'input-type', 'inputmode', 'name-overflow', 'overscroll', 'tabular-figures', 'text-size', 'touch-action',
         'touch-target', 'user-select',
       ].sort(),
@@ -274,6 +275,80 @@ test.describe('the geometry checkers', () => {
 
   test('a page that keeps them is not reported', async ({ browser }) => {
     expect(await rulesOn(browser, CLEAN)).toEqual([])
+  })
+})
+
+// The chrome rules judge by the screen's kind: the page reports facts, `judgeChrome` decides.
+const BAR = (style: string, attributes = ''): string =>
+  `<nav class="bar-inferior" ${attributes} style="${style}"><a href="#" style="display:block;height:48px">Inicio</a></nav>`
+const BAR_SHOWN = 'position:fixed;bottom:0;left:0;width:100%'
+const BAR_OFF_SCREEN = 'position:absolute;top:5000px;left:0;width:100%'
+
+test.describe('the chrome rules, by kind', () => {
+  async function chromeOn(browser: Browser, html: string, expectation: 'root' | 'card' | 'form'): Promise<string[]> {
+    const context = await newCell(browser, PROBE_SIZE, 'claro', SIGNED_OUT)
+    const page = await context.newPage()
+    await page.setContent(`<meta name="viewport" content="width=device-width, initial-scale=1"><body style="margin:0">${html}</body>`)
+    const found = await runChrome(page, PROBE_CELL, expectation)
+    await context.close()
+    return found.map((v) => `${v.rule} ${v.target}`)
+  }
+
+  test('a bar pushed off screen on a card is reported at load and mid-scroll', async ({ browser }) => {
+    expect(await chromeOn(browser, BAR(BAR_OFF_SCREEN), 'card')).toEqual([
+      'chrome-at-load chrome:bar',
+      'chrome-mid-scroll chrome:bar',
+    ])
+  })
+
+  test('a bar in view on a card passes, and the same bar on a form is reported', async ({ browser }) => {
+    expect(await chromeOn(browser, BAR(BAR_SHOWN), 'card')).toEqual([])
+    expect(await chromeOn(browser, BAR(BAR_SHOWN), 'form')).toEqual([
+      'chrome-at-load chrome:bar',
+      'chrome-mid-scroll chrome:bar',
+    ])
+  })
+
+  test('an inert bar passes, even where it is forbidden and off screen', async ({ browser }) => {
+    expect(await chromeOn(browser, BAR(BAR_OFF_SCREEN, 'inert'), 'card')).toEqual([])
+    expect(await chromeOn(browser, BAR(BAR_SHOWN, 'inert'), 'form')).toEqual([])
+    expect(await chromeOn(browser, BAR(BAR_SHOWN, 'aria-hidden="true"'), 'form')).toEqual([])
+  })
+
+  const MODALS = {
+    'dialog.showModal()': '<dialog id="m">Sheet</dialog>',
+    'role=dialog aria-modal=true': '<div role="dialog" aria-modal="true" style="position:fixed;top:0;height:200px">Sheet</div>',
+    'role=alertdialog aria-modal=true': '<div role="alertdialog" aria-modal="true" style="position:fixed;top:0;height:200px">Sheet</div>',
+  }
+  for (const [name, modal] of Object.entries(MODALS)) {
+    test(`a bar beneath ${name} passes on a form and on a card, off screen too`, async ({ browser }) => {
+      const open = `${modal}<script>document.getElementById('m')?.showModal()</script>`
+      expect(await chromeOn(browser, BAR(BAR_SHOWN) + open, 'form')).toEqual([])
+      expect(await chromeOn(browser, BAR(BAR_OFF_SCREEN) + open, 'card')).toEqual([])
+    })
+  }
+
+  test('a bar on a form under a role=dialog without aria-modal is reported: it is not covered', async ({ browser }) => {
+    const html = BAR(BAR_SHOWN) + '<div role="dialog" style="position:fixed;top:0;height:200px">Not modal</div>'
+    expect(await chromeOn(browser, html, 'form')).toEqual(['chrome-at-load chrome:bar', 'chrome-mid-scroll chrome:bar'])
+  })
+
+  test('a tab root missing "+ New sale" is reported, one with it in view is not', async ({ browser }) => {
+    const sale = '<a class="boton-nueva-venta" href="#" style="position:fixed;top:10px;left:10px;width:100px;height:48px">Nueva venta</a>'
+    expect(await chromeOn(browser, BAR(BAR_SHOWN), 'root')).toEqual([
+      'chrome-at-load chrome:new-sale',
+      'chrome-mid-scroll chrome:new-sale',
+    ])
+    expect(await chromeOn(browser, BAR(BAR_SHOWN) + sale, 'root')).toEqual([])
+  })
+
+  test('the walk leaves the page where it found it: scrolled to the top', async ({ browser }) => {
+    const context = await newCell(browser, PROBE_SIZE, 'claro', SIGNED_OUT)
+    const page = await context.newPage()
+    await page.setContent('<div style="height:4000px"></div>')
+    await runChrome(page, PROBE_CELL, 'form')
+    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+    await context.close()
   })
 })
 

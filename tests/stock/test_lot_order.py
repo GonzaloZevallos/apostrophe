@@ -9,7 +9,7 @@ import pytest
 
 from app.shared.quantity import Quantity
 from app.stock.domain.allocation import allocate
-from app.stock.domain.draw_source import DrawSource, WithdrawalReason
+from app.stock.domain.draw_source import DrawSource
 from app.stock.domain.entry import Origin, StockEntry
 from app.stock.domain.lot_order import (
     WITHDRAWAL_LINE_RANK,
@@ -157,7 +157,7 @@ def _withdrawal_line(
     withdrawal_id: int,
     position: int,
     quantity: str,
-    reason: WithdrawalReason = WithdrawalReason.PROMOTION,
+    reason_id: int = 1,
 ) -> WithdrawalLineDraw:
     return WithdrawalLineDraw(
         variety_id=1,
@@ -166,7 +166,7 @@ def _withdrawal_line(
         withdrawal_id=withdrawal_id,
         position=position,
         quantity=Quantity.of(quantity),
-        reason=reason,
+        reason_id=reason_id,
     )
 
 
@@ -178,16 +178,16 @@ def test_an_exact_tie_orders_adjustment_then_sale_line_then_withdrawal_lines_by_
     sale_draw = SaleLineDraw(
         variety_id=1, day=DAY, recorded_at=AT, sale_id=7, position=0, quantity=Quantity.of("1")
     )
-    second_line = _withdrawal_line(1, 1, "1", WithdrawalReason.OWN_USE)
-    first_line = _withdrawal_line(1, 0, "1", WithdrawalReason.PROMOTION)
+    second_line = _withdrawal_line(1, 1, "1", 2)
+    first_line = _withdrawal_line(1, 0, "1", 1)
 
     lots, draws = lots_and_draws([adjustment, lot], [sale_draw], [second_line, first_line])[1]
 
     assert [draw.source for draw in draws] == [
         DrawSource.ADJUSTMENT,
         DrawSource.SALE_LINE,
-        DrawSource.PROMOTION,
-        DrawSource.OWN_USE,
+        DrawSource.WITHDRAWAL,
+        DrawSource.WITHDRAWAL,
     ]
     assert [draw.order.rank for draw in draws] == [0, 1, WITHDRAWAL_LINE_RANK, WITHDRAWAL_LINE_RANK]
     assert WITHDRAWAL_LINE_RANK == 2
@@ -221,7 +221,7 @@ def test_total_pending_equals_negative_stock_with_a_withdrawal_involved() -> Non
     sale_draw = SaleLineDraw(
         variety_id=1, day=DAY, recorded_at=AT, sale_id=7, position=0, quantity=Quantity.of("3")
     )
-    line = _withdrawal_line(1, 0, "5", WithdrawalReason.OWN_USE)
+    line = _withdrawal_line(1, 0, "5", 2)
 
     lots, draws = lots_and_draws([lot], [sale_draw], [line])[1]
     pending = sum(cost.pending.hundredths for cost in allocate(lots, draws))
@@ -234,7 +234,8 @@ def test_a_withdrawal_draw_carries_no_sale_data() -> None:
     _, draws = lots_and_draws([], [], [_withdrawal_line(3, 0, "2")])[1]
 
     [draw] = draws
-    assert draw.source is DrawSource.PROMOTION
+    assert draw.source is DrawSource.WITHDRAWAL
+    assert draw.reason_id == 1
     assert (draw.sale_id, draw.line_total, draw.pricing_rule, draw.variety_name) == (
         None,
         None,

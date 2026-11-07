@@ -1,425 +1,264 @@
-# Stock
-
-What comes into a business (stock entries), what goes out of it without a sale (stock
-withdrawals), what it has on hand per product, and what every gram sold, gifted or withdrawn
-cost, taken from the lots it came out of, oldest first. Seen only by its business
-(ADR-0004). Reads sale lines from sales and products from the Products capability (varieties.md). Its cost of goods
-sold feeds profit (#7) and margins (#8); the cost of withdrawn grams feeds profit as
-Promotion and Own use, never cost of goods sold or margins. Cost follows the lots
-as they stand and is never frozen (ADR-0009). Stock has no tab of its own: it is shown on
-Products, in the list and on each product's page (varieties.md). Nothing new is recorded
-against an archived product, neither a stock entry nor a withdrawal line (varieties.md,
-ADR-0032).
-
 ## Jobs
 
-**When** I buy, harvest or count flower, **I want** to record it from my phone in a few
-taps (date, product, grams, where it came from, what it cost), **so I can** know what I
-have of each product, see one running out before a customer asks for it, and know what
-the grams I sell or gift cost me.
+**Cuando** compro, cosecho o cuento flor, **quiero** registrarlo desde el teléfono en pocos toques (fecha, Product, gramos, de dónde vino y cuánto costó), **para** saber cuánto tengo de cada Product, ver que uno se está por terminar antes de que un Customer me lo pida y saber cuánto me costaron los gramos que vendo o regalo.
 
-**When** I take grams out of my own stock without selling them (to share at a party so
-people get to know the business, or for my own use), **I want** to record them from my
-phone in a few taps (date, products and grams, the reason), **so I can** keep stock right
-and see in Profit what promoting the business and my own consumption cost me, without
-recording a sale nobody made or an adjustment that reads as lost flower.
+**Cuando** saco gramos de mi propio stock sin venderlos (para convidar en una fiesta y que la gente conozca el negocio, o para consumo propio), **quiero** registrarlo desde el teléfono en pocos toques (fecha, Products y gramos, motivo), **para** mantener bien el stock y ver en el Profit lo que me costó promocionar el negocio y lo que consumí, sin registrar una venta que nadie hizo ni un ajuste que se lee como flor perdida.
 
-This refines BRIEF.md's stock job and its results job; it is not a new top-level job.
-Before it, the seller recorded such grams as a sale without a customer made of gift lines
-(a sale nobody made), as a negative adjustment (lost flower, counted as shortfall), or not
-at all (stock drifted until the next count corrected it as shortfall).
+Este job afina el job de stock y el de resultados de BRIEF.md; no es un job nuevo. Antes, el vendedor registraba esos gramos como una Sale without a customer hecha de líneas de Gift (una venta que nadie hizo), como un Adjustment negativo (flor perdida, contada como faltante) o directamente no los registraba (el stock se iba corriendo hasta que el próximo conteo lo corregía como faltante).
 
-**When** I run my business from my phone, **I want to** keep my stock up to date from the
-phone, **so I can** stop keeping it in the spreadsheet's stock tab.
+**Cuando** saco stock sin venderlo, **quiero** archivarlo bajo un motivo con mis propias palabras, **para que** Home y Analysis muestren cuánto me cuesta cada tipo de retiro y cuánto baja mi Profit. (GH-318, motivos de retiro. Afina el job anterior para cualquier Business: los motivos dejan de ser fijos en el código y pasan a ser la lista propia del Business, de acuerdo con el criterio 4, "Assume nothing". Antes, un retiro que no encajaba se metía en el motivo fijo más parecido, o no se registraba, y su línea de costo mezclaba cosas distintas.)
 
-**When** I run my business from my phone between orders or mid-chat with a customer,
-several times a day, **I want** the app laid out around what I actually do and how often,
-**so I can** get back to the customer instead of hunting through menus. (The navigation
-job, navigation.md: served here by "+ Stock entry" and "Take from stock" on
-Products, at most 2 taps from any tab root, and a product's stock on its own page.)
+**Cuando** llevo el negocio desde el teléfono, **quiero** mantener el stock al día desde el teléfono, **para** dejar de llevarlo en la pestaña de stock de la planilla.
 
-**When** a product I loaded by mistake, or one I no longer work with, keeps showing in my
-lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if
-it never moved and archiving it if it has history, **so** my lists show only what I still
-sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly
-as it was if I start selling it again. (Served here by refusing new entries and withdrawal
-lines on an archived product while existing ones stay editable; defined in varieties.md.)
+**Cuando** llevo el negocio desde el teléfono entre pedidos o en medio de un chat con un Customer, varias veces por día, **quiero** que la app esté ordenada según lo que hago de verdad y con qué frecuencia, **para** volver al Customer en vez de buscar entre menús. (Es el job de navegación, navigation.md. Acá lo sirven "+ Stock entry" y "Take from stock" en Products, a 2 toques como máximo desde cualquier Tab root, y el stock de un Product en su propia página.)
 
-Success criteria:
+**Cuando** un Product que cargué por error, o uno con el que ya no trabajo, sigue apareciendo en mis listas y selectores, **quiero** sacarlo desde el teléfono en pocos toques, eliminándolo si nunca se movió y archivándolo si tiene historial, **para que** mis listas muestren solo lo que todavía vendo, ninguna cifra pasada de ventas, stock, costo o Profit cambie, y pueda volver a tenerlo exactamente como estaba si empiezo a venderlo de nuevo. (Acá lo sirve rechazar Stock entries y líneas de retiro nuevas sobre un Archived product, mientras las que ya existen siguen editables; se define en varieties.md.)
 
-1. **Exact stock**: a product's stock always equals its entries minus the grams sold,
-   gifted or withdrawn, exact to the hundredth, with no drift or rounding. It holds
-   straight after an entry or a withdrawal is recorded, edited or deleted, and after a
-   sale is recorded or deleted.
-2. **A count corrects it**: the seller weighs what is on hand and records the difference
-   as an adjustment, plus or minus. Afterwards the stock shown equals the count. The app
-   never reconciles itself.
-3. **Traceable, bounded cost**: every sale or gift line and every withdrawal line knows
-   which lot or lots its grams came from, oldest first, and what they cost.
-   - Across all draws, the cost taken from a lot never exceeds the lot's cost.
-   - Once a lot is used up, the costs taken from it add up to exactly its cost.
-   - Grams with no lot behind them are pending, never $0.
-4. **Visible status, no surprises**: Products (the list and each product's page) says on
-   its own, by shape and word and never by color alone, when a product is sold out or
-   below its threshold, so the seller never finds out partway through a sale. A product
-   with no threshold still shows sold out. Days left at the pace of the last 30 days sits
-   next to each product's grams.
-5. **Clean start**: a fresh business records its opening stock as ordinary
-   `opening stock` entries before its first sale. A business bringing real history moves
-   it through the spreadsheet import (#11). There is no date rule between opening stock
-   and sales.
-6. **From the phone**: an entry is recorded from the phone in under a minute, and
-   everything here is done with no API call by hand.
-7. **Withdrawals, fast from the phone**: a withdrawal is recorded in under a minute; its
-   form opens in at most 2 taps from any tab root, and on a computer in no more taps than
-   on the phone.
-8. **Withdrawals keep stock right**: once a withdrawal is recorded, edited or deleted, the
-   change shows at once in the product's stock, status, days left and history, and in the
-   lots after it. Pending grams are pending, never $0.
-9. **A withdrawal is not a sale and not a loss**: sales count, sales total, average sale,
-   Sales, every customer's history and Cash stay exactly as they were, and stock
-   shortfall never includes a withdrawal. Its cost shows only as Promotion or Consumo
-   propio (results.md, analysis.md).
-10. **Businesses never mix** (ADR-0004), for withdrawals as for entries.
-11. **Nothing new on an archived product, nothing past locked**: a new stock entry or
-    withdrawal line naming an archived product is refused as gone, through the API and
-    the forms alike. An entry or withdrawal that already names a product archived since
-    stays editable and deletable, keeping that product. A form left open while a partner
-    archives a product loses nothing typed.
+Criterios de éxito:
 
-## Behaviour
+1. **Stock exacto**: el stock de un Product siempre es igual a sus Stock entries menos los gramos vendidos, regalados o retirados, exacto al centésimo, sin corrimientos ni redondeos. Se cumple apenas se registra, edita o elimina una Stock entry o un retiro, y apenas se registra o elimina una Sale.
+2. **Un conteo lo corrige**: el vendedor pesa lo que tiene y registra la diferencia como un Adjustment, en más o en menos. Después, el stock que se muestra es igual al conteo. La app nunca se concilia sola.
+3. **Costo rastreable y acotado**: cada línea de venta o de Gift y cada línea de retiro sabe de qué Lot o Lots salieron sus gramos, primero el más antiguo, y cuánto costaron.
+   - Sumando todos los Draws, el costo tomado de un Lot nunca supera el costo del Lot.
+   - Una vez agotado un Lot, los costos tomados de él suman exactamente su costo.
+   - Los gramos sin Lot detrás están pendientes, nunca en $0.
+4. **Estado visible, sin sorpresas**: Products (la lista y la página de cada Product) dice por sí sola, por forma y palabra y nunca solo por color, cuándo un Product está agotado o por debajo de su umbral, para que el vendedor nunca se entere en medio de una venta. Un Product sin umbral igual muestra agotado. Al lado de los gramos de cada Product van los Days left al ritmo de los últimos 30 días.
+5. **Arranque limpio**: un Business nuevo registra su stock inicial como Stock entries comunes de origen `opening stock` antes de su primera venta. Un Business que trae historial real lo pasa con el Spreadsheet import (#11). No hay regla de fechas entre el stock inicial y las ventas.
+6. **Desde el teléfono**: una Stock entry se registra desde el teléfono en menos de un minuto, y todo lo de acá se hace sin llamar a la API a mano.
+7. **Retiros, rápidos desde el teléfono**: un retiro se registra en menos de un minuto. Su formulario abre a 2 toques como máximo desde cualquier Tab root, y en la computadora nunca con más toques que en el teléfono.
+8. **Los retiros mantienen bien el stock**: una vez que se registra, edita o elimina un retiro, el cambio se ve enseguida en el stock del Product, su estado, sus Days left y su historial, y en los Lots posteriores. Los gramos pendientes están pendientes, nunca en $0.
+9. **Un retiro no es una venta ni una pérdida**: la cantidad de ventas, el total de ventas, el Average sale, Sales, el historial de cada Customer y el Cash quedan exactamente como estaban, y el Stock shortfall nunca incluye un retiro. Su costo se muestra solo en la línea de su Withdrawal reason (results.md, analysis.md).
+10. **Los Businesses nunca se mezclan** (ADR-0004), ni en los retiros ni en sus motivos ni en las Stock entries.
+11. **Nada nuevo sobre un Archived product, nada pasado bloqueado**: una Stock entry o una línea de retiro nueva que nombra un Archived product se rechaza como que ya no está, tanto por la API como por los formularios. Una Stock entry o un retiro que ya nombra un Product archivado después sigue siendo editable y eliminable, y lo conserva. Un formulario abierto mientras un socio archiva un Product no pierde nada de lo tipeado.
+12. **Nada cambia para un Business existente** (GH-318, motivos de retiro): ve los mismos retiros, costos, Profit y Cash. El único cambio visible es que "Promotion" ahora dice "Marketing".
+13. **Un motivo propio desde el teléfono**: el dueño agrega un motivo en Settings → Business → Withdrawal reasons. La próxima vez que usa "Take from stock", el motivo nuevo aparece junto a los demás y puede registrar un retiro con él.
+14. **Una línea por motivo**: Home (Week y Month) y Analysis muestran una línea de costo por motivo, en el orden de la lista del Business, y cada una baja el Profit igual que hoy (results.md, analysis.md).
+
+# Stock
+
+Lo que entra a un **Business** (**Stock entries**), lo que sale de él sin una venta (**Stock withdrawals**), lo que tiene en existencia por **Product**, y lo que costó cada gramo vendido, regalado o retirado, tomado de los **Lots** de los que salió, primero el más antiguo. Lo ve solo su Business (ADR-0004). Lee las **Sale lines** de sales y los Products de varieties. Su **Cost of goods sold** alimenta el **Profit** (#7) y los márgenes (#8). El costo de los gramos retirados alimenta el Profit en una línea por **Withdrawal reason**, nunca el Cost of goods sold ni los márgenes. El costo sigue a los Lots tal como están y nunca se congela (ADR-0009). Stock no tiene pestaña propia: se muestra en Products, en la lista y en la página de cada Product (varieties.md). Contra un **Archived product** no se registra nada nuevo, ni una Stock entry ni una línea de retiro (varieties.md, ADR-0032). Los Withdrawal reasons son la lista propia de cada Business, que se edita en Settings → Business → Withdrawal reasons (ADR-0055).
+
+## Comportamiento
 
 ### Stock entry
 
-- **Fields**: a date, a product, grams, an origin, an optional total cost and an optional
-  note.
-- **Date**: defaults to today in Argentina time. Earlier days are allowed; a future date
-  is refused.
-- **Product**: must be one of the business's own. Any other id answers 404.
-- **Archived products**: a new entry naming an archived product is refused as gone
-  (`variety.archived`, 404). An edit may keep the archived product the entry already has,
-  but can never move the entry onto a different archived one (varieties.md).
-- **Grams**: up to two decimals, never zero.
-  - Above zero for purchase, harvest and opening stock.
-  - An adjustment may be positive or negative.
-- **Origin**: purchase, harvest, opening stock or adjustment.
-  - Opening stock has no limit per product: it is an ordinary origin.
-- **Total cost**: whole pesos.
-  - Required and above $0 for a purchase.
-  - Optional for harvest, opening stock and a positive adjustment; above $0 when given.
-  - Refused on a negative adjustment.
-- **Note**: optional. It is trimmed, holds up to 200 characters, and empty means none. It
-  is never logged, searched or repeated in errors.
-- **Edit**: every field, the product included, with the same validation as when
-  recording. It is confirmed before saving.
-- **Delete**: a hard delete, confirmed first.
-- **Consumed entries**: neither an edit nor a delete is ever refused because the entry's
-  grams were already used (ADR-0009). Grams it no longer covers come out of the next lot,
-  or become pending cost and negative stock.
+- **Campos**: una fecha, un Product, gramos, un origen, un costo total opcional y una nota opcional.
+- **Fecha**: por defecto, hoy en hora argentina. Se permiten días anteriores; una fecha futura se rechaza.
+- **Product**: tiene que ser uno del propio Business. Cualquier otro id responde 404.
+- **Archived products**: una Stock entry nueva que nombra un Archived product se rechaza como que ya no está (`variety.archived`, 404). Una edición puede conservar el Archived product que la Stock entry ya tiene, pero nunca puede pasar la Stock entry a otro Archived product distinto (varieties.md).
+- **Gramos**: hasta dos decimales, nunca cero.
+  - Mayores que cero para Purchase, Harvest y Opening stock.
+  - Un Adjustment puede ser positivo o negativo.
+- **Origen**: Purchase, Harvest, Opening stock o Adjustment.
+  - Opening stock no tiene límite por Product: es un origen común.
+- **Costo total**: en pesos enteros.
+  - Obligatorio y mayor que $0 para una Purchase.
+  - Opcional para Harvest, Opening stock y un Adjustment positivo; mayor que $0 cuando se da.
+  - Se rechaza en un Adjustment negativo.
+- **Nota**: opcional. Se recorta, admite hasta 200 caracteres, y vacía significa que no hay. Nunca se registra en logs, ni se busca, ni se repite en errores.
+- **Edición**: todos los campos, el Product incluido, con la misma validación que al registrar. Se confirma antes de guardar.
+- **Eliminación**: definitiva, confirmada antes.
+- **Stock entries ya consumidas**: ni una edición ni una eliminación se rechazan nunca porque los gramos de la Stock entry ya se hayan usado (ADR-0009). Los gramos que deja de cubrir salen del Lot siguiente, o pasan a ser Pending cost y stock negativo.
 
-### Stock withdrawal (withdrawal)
+### Withdrawal reasons (motivos de retiro)
 
-- **Fields**: one reason, a date, one or more lines of product and grams, and an optional
-  note.
-- **Reason**: Promotion (to make the business known) or Own use (the seller's own
-  consumption). Set once for the whole withdrawal, never per line. Required, with no
-  default: it is chosen every time. A party that mixes both reasons is two withdrawals.
-- **Date**: defaults to today in Argentina time. Earlier days are allowed; a future date
-  is refused. It is the day the grams left stock; there are no planned or draft
-  withdrawals.
-- **Lines**: each a product of the business (any other id answers 404) and grams above
-  zero with at most two decimals. The same product may appear in several lines, with no
-  merging. A withdrawal with no lines is refused.
+- **La lista**: cada Business tiene su propia lista de Withdrawal reasons, cada uno con un nombre y una posición.
+- **Valores por defecto**: un Business nuevo arranca con "Marketing" y "Own use" en su Stored language, tomados por el puerto `BusinessDefaults` como las Expense categories. Un cambio de idioma nunca los renombra: son datos propios del vendedor.
+  - Cada Business existente recibió los mismos dos, en inglés, al actualizarse la app. Cada retiro existente quedó atado al motivo que le corresponde: el que era Promotion, a "Marketing"; el que era Own use, a "Own use". Ningún retiro cambió de motivo y no se reescribió ningún valor guardado; la columna vieja del motivo queda congelada.
+  - Cada Business recibe los valores por defecto una sola vez. Un motivo por defecto que se elimina nunca se vuelve a crear.
+  - Los dos valores por defecto son motivos comunes, sin ningún trato especial.
+- **No es una pérdida**: un Withdrawal reason nunca es una segunda forma de registrar flor perdida. Los gramos que faltan en un conteo físico siguen siendo un Adjustment negativo y se muestran como Stock shortfall.
+- **Nombre**: se recorta, los espacios internos se colapsan, no puede quedar en blanco y admite hasta 60 caracteres. Es único dentro del Business sin importar mayúsculas, minúsculas ni espacios; dos Businesses pueden tener cada uno un motivo con el mismo nombre. Un nombre en blanco, repetido (también uno que un socio acaba de guardar) o demasiado largo se rechaza en línea y se conserva lo tipeado.
+- **Agregar**: un motivo nuevo va al final de la lista.
+- **Renombrar**: el nombre cambia en todos lados, retiros y períodos pasados incluidos. Las cifras no cambian.
+- **Eliminar**: definitivo y confirmado antes. No hay estado archivado.
+  - Un motivo sin retiros se puede eliminar.
+  - Un motivo con retiros, de cualquier fecha, no se puede eliminar, y la pantalla dice por qué: "It can't be deleted: it still has withdrawals. You can rename it."
+  - La lista siempre conserva al menos un motivo. Eliminar el último se rechaza, y la pantalla dice por qué: "It can't be deleted: you need at least one reason."
+- **Orden**: cada fila tiene un botón para subir y otro para bajar, sin arrastrar. La primera fila no tiene subir y la última no tiene bajar. Mover intercambia el motivo con su vecino y se aplica enseguida. El orden decide las opciones de "Take from stock" y el orden de las líneas de costo en Home y Analysis.
+- Cualquier User del Business puede editar la lista. No hay roles.
+- Agregar un motivo desde adentro del formulario de retiro queda afuera: la lista se edita solo en Settings.
+
+### Stock withdrawal (retiro)
+
+- **Campos**: un Withdrawal reason, una fecha, una o más líneas de Product y gramos, y una nota opcional.
+- **Motivo**: uno de los Withdrawal reasons del Business. Se fija una vez para todo el retiro, nunca por línea. Es obligatorio y no tiene valor por defecto: se elige cada vez, y el formulario nunca preselecciona ninguno. Un motivo de otro Business responde 404, igual que uno que ya no existe. Una fiesta que mezcla dos motivos son dos retiros.
+- **Fecha**: por defecto, hoy en hora argentina. Se permiten días anteriores; una fecha futura se rechaza. Es el día en que los gramos salieron del stock; no hay retiros planificados ni borradores.
+- **Líneas**: cada una es un Product del Business (cualquier otro id responde 404) y gramos mayores que cero con dos decimales como máximo. El mismo Product puede aparecer en varias líneas, sin fusionarse. Un retiro sin líneas se rechaza.
 - **Archived products** (varieties.md, ADR-0032):
-  - a new withdrawal with any line naming an archived product is refused whole as gone
-    (`variety.archived`, 404, kind `gone`); nothing is recorded;
-  - an edit is refused the same way when a line names an archived product the stored
-    withdrawal did not already have on one of its lines (a line added onto it, or a
-    line's product changed to it);
-  - an edit that keeps a product the withdrawal already had, archived since, is accepted,
-    and every other field (date, reason, grams, note, other lines) edits as usual;
-  - opening, editing and deleting a withdrawal that touches an archived product always
-    work (ADR-0009).
-- **Note**: optional, trimmed, up to 200 characters; empty means none. Never logged,
-  searched or repeated in errors.
-- **Never refused for lack of stock** (ADR-0009). Stock may go negative and then shows
-  as sold out.
-- **No money moves**: Cash is untouched. A withdrawal is never a sale: it is in no sales
-  count, sales total, average sale, Sales or customer's history.
-- **Edit**: every field (date, reason, lines, note) with the same validation as when
-  recording. Saving is confirmed first. The lots after it are worked out again.
-- **Delete**: a hard delete, confirmed with "Before deleting", naming the reason, date
-  and total grams: "Delete the promotion from 03/10? 5 g go back to stock." or
-  "Delete the own use from 03/10? 5 g go back to stock.", with "No, keep it / Yes,
-  borralo". Its grams return to stock and land back on lots by date.
-- Neither an edit nor a delete is refused because the withdrawal's grams were already
-  drawn from lots (ADR-0009).
+  - un retiro nuevo con alguna línea que nombra un Archived product se rechaza entero como que ya no está (`variety.archived`, 404, tipo `gone`); no se registra nada;
+  - una edición se rechaza igual cuando una línea nombra un Archived product que el retiro guardado no tenía ya en alguna de sus líneas (una línea agregada sobre él, o una línea cuyo Product se cambió a él);
+  - una edición que conserva un Product que el retiro ya tenía, archivado después, se acepta, y todos los demás campos (fecha, motivo, gramos, nota, otras líneas) se editan como siempre;
+  - abrir, editar y eliminar un retiro que toca un Archived product siempre funciona (ADR-0009).
+- **Nota**: opcional, recortada, de hasta 200 caracteres; vacía significa que no hay. Nunca se registra en logs, ni se busca, ni se repite en errores.
+- **Nunca se rechaza por falta de stock** (ADR-0009). El stock puede quedar negativo y entonces se muestra agotado.
+- **No se mueve dinero**: el Cash no se toca. Un retiro nunca es una venta: no está en ninguna cantidad de ventas, total de ventas, Average sale, Sales ni historial de Customer.
+- **Edición**: todos los campos (fecha, motivo, líneas, nota), con la misma validación que al registrar. El motivo se puede cambiar a cualquier motivo de la lista. Guardar se confirma antes. Los Lots posteriores se vuelven a calcular.
+- **Eliminación**: definitiva, confirmada con "Before deleting", que nombra el motivo por su propio nombre, la fecha y los gramos totales, por ejemplo "Delete the Marketing withdrawal from 03/10? 5 g go back to stock.", con "No, keep it / Yes, borralo". Sus gramos vuelven al stock y se reubican en los Lots por fecha.
+- Ni una edición ni una eliminación se rechazan porque los gramos del retiro ya se hayan tomado de los Lots (ADR-0009).
 
-### Lots and cost of goods sold (ADR-0009)
+### Lots y Cost of goods sold (ADR-0009)
 
-- **Lots**: every positive entry is a lot. Its cost per gram is the total cost over its
-  grams.
-  - With no recorded cost, the lot costs $0.
-  - A negative adjustment is not a lot. Its grams go out like a sale's.
-- **Order**: grams going out of a product (sale lines, gift lines, negative adjustments
-  and withdrawal lines) take from the oldest lot of that product first.
-  - Lots are ordered by date, then by recording order.
-  - Grams going out follow the same order: by date, then the one recorded first draws
-    first.
-  - A late or corrected entry or withdrawal takes its place by its own date, whenever it
-    was typed in.
-- **Pending cost**: grams going out beyond every lot have no cost yet, never $0. A later
-  entry of any origin covers them in date order, wherever its date falls.
-- **Line cost**: each draw's cost is a whole-peso amount, rounded once over everything it
-  took from every lot, never lot by lot. A used-up lot's drawn costs sum to exactly its
-  cost.
-- **Where each draw's cost goes**: a sale or gift line's cost is cost of goods sold; a
-  negative adjustment's is stock shortfall; a withdrawal line's is promotion cost or
-  own-use cost, by its withdrawal's reason. A withdrawal's cost never enters cost of goods
-  sold, stock shortfall or any product's margin.
-- **Never frozen**: costs are always computed from the entries, withdrawals and sales as
-  they stand now.
-  - Any change to them shows in every affected cost the next time it is read.
-  - There is no time bound and no closed period.
-  - Only that product's costs move: never a sale's prices, line totals, payments or
-    balances (ADR-0003, ADR-0007), and never other products' costs.
-- **Overselling**: recording a sale, gift or withdrawal is never refused because of
-  stock.
+- **Lots**: cada Stock entry positiva es un Lot. Su costo por gramo es el costo total sobre sus gramos.
+  - Sin costo registrado, el Lot cuesta $0.
+  - Un Adjustment negativo no es un Lot. Sus gramos salen como los de una venta.
+- **Orden**: los gramos que salen de un Product (líneas de venta, líneas de Gift, Adjustments negativos y líneas de retiro) se toman primero del Lot más antiguo de ese Product.
+  - Los Lots se ordenan por fecha y después por orden de registro.
+  - Los gramos que salen siguen el mismo orden: por fecha, y después toma primero el que se registró primero. El motivo de un retiro nunca cambia ese orden.
+  - Una Stock entry o un retiro registrados tarde o corregidos ocupan su lugar por su propia fecha, sin importar cuándo se tipearon.
+- **Pending cost**: los gramos que salen más allá de todo Lot todavía no tienen costo, nunca $0. Una Stock entry posterior de cualquier origen los cubre en orden de fecha, caiga donde caiga su fecha.
+- **Costo de una línea**: el costo de cada Draw es un monto en pesos enteros, redondeado una sola vez sobre todo lo que tomó de todos los Lots, nunca Lot por Lot. Los costos tomados de un Lot agotado suman exactamente su costo.
+- **Adónde va el costo de cada Draw**: el de una línea de venta o de Gift es Cost of goods sold; el de un Adjustment negativo es Stock shortfall; el de una línea de retiro es el costo del Withdrawal reason de su retiro. El costo de un retiro nunca entra en el Cost of goods sold, el Stock shortfall ni el Margin de ningún Product.
+- **Nunca se congela**: los costos siempre se calculan a partir de las Stock entries, los retiros y las ventas tal como están ahora.
+  - Cualquier cambio en ellos se ve en cada costo afectado la próxima vez que se lee.
+  - No hay límite de tiempo ni períodos cerrados.
+  - Solo se mueven los costos de ese Product: nunca los precios de una venta, los totales de línea, los Payments ni los Balances (ADR-0003, ADR-0007), ni los costos de otros Products.
+- **Sobreventa**: registrar una venta, un Gift o un retiro nunca se rechaza por el stock.
 
-### Stock, status and days left
+### Stock, estado y Days left
 
-- **Stock** for a product: the sum of its entries' grams, signed, minus the grams of its
-  sale lines (gifts included) and of its withdrawal lines. It can be negative, and is
-  always shown as a figure.
-- **Status**: checked in this order, and the first that fits applies.
-  1. **No entries**: nothing has moved for the product: no stock entry, no sale or gift
-     and no withdrawal. Its stock is exactly 0.
-  2. **Sold out**: stock ≤ 0. This includes a product with sales, gifts or withdrawals but
-     no stock entry, and one whose entries net to 0 (ADR-0009: overselling shows sold out
-     at once). It shows the date of the movement (a withdrawal included) after which
-     stock has stayed at or below 0 ("No grams since 30/09"), and for a product with
-     no entries that is the day of its first sale, gift or withdrawal.
-  3. **Low**: stock > 0 and under the product's low-stock threshold.
-  4. **Ok**: otherwise.
-- **Low-stock threshold**: optional, per product, above zero, up to two decimals. It is
-  set or turned off on the product's page, in "Low stock warning". With none, a product
-  is never low, but it can still be sold out.
-- **Days left**: stock ÷ (grams sold, gifted or withdrawn in the last 30 days, today
-  included, ÷ 30), rounded down to whole days. Nothing shows when stock ≤ 0 or when no
-  grams went out in those 30 days.
-- **Total**: the sum of every product's stock. The API answers it; no screen shows it.
+- **Stock** de un Product: la suma de los gramos de sus Stock entries, con signo, menos los gramos de sus líneas de venta (Gifts incluidos) y de sus líneas de retiro. Puede ser negativo, y siempre se muestra como cifra.
+- **Estado**: se revisa en este orden, y vale el primero que corresponda.
+  1. **Sin movimientos**: no se movió nada del Product: ninguna Stock entry, ninguna venta ni Gift y ningún retiro. Su stock es exactamente 0.
+  2. **Agotado**: stock ≤ 0. Incluye un Product con ventas, Gifts o retiros pero sin Stock entry, y uno cuyas Stock entries suman 0 (ADR-0009: la sobreventa se muestra agotado enseguida). Muestra la fecha del movimiento (un retiro incluido) después del cual el stock quedó en 0 o menos ("No grams since 30/09"); para un Product sin Stock entries, es el día de su primera venta, Gift o retiro.
+  3. **Bajo**: stock > 0 y por debajo del Low-stock threshold del Product.
+  4. **Ok**: en cualquier otro caso.
+- **Low-stock threshold**: opcional, por Product, mayor que cero, con hasta dos decimales. Se fija o se desactiva en la página del Product, en "Low stock warning". Sin umbral, un Product nunca está bajo, pero igual puede estar agotado.
+- **Days left**: stock ÷ (gramos vendidos, regalados o retirados en los últimos 30 días, hoy incluido, ÷ 30), redondeado hacia abajo a días enteros. No se muestra nada cuando el stock es ≤ 0 o cuando no salió ningún gramo en esos 30 días.
+- **Total**: la suma del stock de todos los Products. La API lo responde; ninguna pantalla lo muestra.
 
-### On screen (in Products)
+### En pantalla (en Products y Settings)
 
-- **No Stock tab.** Stock lives in Products (varieties.md, navigation.md); the old
-  Stock path redirects there.
-- **Per product**, on Products' list and at the top of its page: its grams, its status
-  mark and its detail ("No grams since 30/09", "You are warned below 20 g", "At the pace of
-  the last 30 days", "Add its first entry" only for no entries), plus days
-  left.
-- **Status marks** (`MarcaEstado`): told by shape and word, never by color alone.
-  - square = sold out, as the inverted chip, not red;
-  - filled circle = low;
-  - empty circle = ok.
-- **"Stock and entries"** on a product's page: its last 3 movements (entries and
-  withdrawals) and "See all" for all of that product's movements, newest date first,
-  then most recently recorded first.
-  - A withdrawal row shows its date, "Promotion" or "Own use", and that product's
-    grams in it with a minus sign (e.g. "−5 g"): going out is told by word and sign,
-    never by color. A withdrawal touching several products shows on each one's page.
-- **"All entries"**, at the foot of Products: a detail ("‹ Products") with
-  every entry of the business, with date, product, origin, grams, total cost and cost per
-  gram, newest date first, then most recently recorded first. Each can be edited or
-  deleted. It lists entries only, never withdrawals; there is no business-wide list of
-  withdrawals.
-  - Its empty state: "No stock entries · Enter your initial stock or a purchase".
-- **New entry** (`EntradaStock`), a form (navigation.md): "Close", and a
-  confirmation when leaving with something typed.
-  - Opened from "+ Stock entry" on Products (the seller chooses the product) or
-    from "+ Entry" on a product's page (that product already chosen, and "Stock
-    inicial" preselected as the origin when the product has no entries yet).
-  - date (filled with today), grams, and product with "It has N g today";
-  - origin: Purchase · Harvest · Initial stock · Adjustment;
-  - total cost, with "Required for a purchase";
-  - note;
-  - the cost per gram before saving ("It comes to $ 8.500 per gram") whenever there is a
-    cost.
-- **Take from stock**, the withdrawal form, a form (navigation.md): "Close", no bar, no
-  "+ New sale", and a confirmation when leaving with something typed. It follows the
-  phone standard for inputs and targets (#80).
-  - Opened from More (second, after "+ Add expense"), from the secondary "Take from
-    stock" on Products (next to "+ Stock entry", phone and computer), with no
-    product chosen, and from "Take from stock" on a product's page, with that product
-    already chosen. An archived product's page offers no "Take from stock".
-  - reason (Promotion · Own use, required, no default), date (filled with today),
-    one or more lines of product and grams, and note.
-  - The product picker offers unarchived products only. Opened with a product
-    preselected that is archived or unknown (`/withdrawals/new?variety=<id>`), the form
-    opens with no product chosen, as if opened with none; nothing is recorded against
-    that product and no message is shown for it.
-  - Editing opens the same form with the withdrawal filled in; saving an edit is
-    confirmed first.
-  - **Editing a withdrawal that touches a product archived since**: each such line shows
-    its product by name as a fixed label, with the picker of unarchived products next
-    to it. The seller may keep it (saving succeeds), choose an unarchived product
-    instead, or remove the line.
-  - **A product archived while the form is open** (a partner archived it): saving is
-    refused with `variety.archived`, following accounts.md's "That is gone" rule:
-    - the form stays open and nothing typed is cleared, each guilty line's product
-      included, still shown by its name;
-    - "That is gone." shows under each guilty line, and the product list refreshes;
-    - the form cannot be saved again while a guilty line still names the archived
-      product: the seller chooses another product for it or removes the line, which
-      clears its message.
-- **A withdrawal's detail**, opened from its row: a detail (navigation.md), with the bar
-  or sidebar and a "‹" back to the product's page it came from (Products when there is
-  no history), and no "+ New sale". It shows the date, the reason, every line and the
-  note, with "Edit" and "Delete", also when a line's product is archived.
-- **Editing an entry**: saving is confirmed first.
-- **Deleting an entry**: confirmed with "Before deleting", naming the date, product and
-  grams.
-- **Pending cost**, wherever a line's cost shows:
-  - "Pending cost" when none of the line is costed;
-  - the costed part plus "and N g without cost" for a split line;
-  - a gift reads "Gift".
-- **Toasts**: "Entry saved", "Entry deleted", "Warning saved", "Withdrawal
-  saved" and "Withdrawal deleted". None carries grams or amounts.
-- **Refusals** show inline and keep what was typed.
-- **An entry or withdrawal that is gone** follows accounts.md's "That is gone." rule:
-  opening it offers "Back to Products"; saving, deleting or confirming on it shows
-  "That is gone. The list is up to date."
-- **Pinned catalog**: recording, editing or deleting an entry or a withdrawal is an
-  upkeep trigger (pinned-catalog.md).
+- **No hay pestaña Stock.** El stock vive en Products (varieties.md, navigation.md); el path viejo de Stock redirige ahí.
+- **Por Product**, en la lista de Products y arriba de su página: sus gramos, su marca de estado y su detalle ("No grams since 30/09", "You are warned below 20 g", "At the pace of the last 30 days", y "Add its first entry" solo cuando no tiene movimientos), más los Days left.
+- **Marcas de estado** (`MarcaEstado`): se distinguen por forma y palabra, nunca solo por color.
+  - cuadrado = agotado, como el chip invertido, no rojo;
+  - círculo lleno = bajo;
+  - círculo vacío = ok.
+- **"Stock and entries"** en la página de un Product: sus últimos 3 movimientos (Stock entries y retiros) y "See all" para todos los movimientos de ese Product, la fecha más reciente primero y después el registrado más recientemente primero.
+  - Una fila de retiro muestra su fecha, el nombre actual de su Withdrawal reason y los gramos de ese Product en él con signo menos (por ejemplo "−5 g"): la salida se dice con palabra y signo, nunca con color. Un retiro que toca varios Products se muestra en la página de cada uno.
+- **"All entries"**, al pie de Products: un detalle ("‹ Products") con cada Stock entry del Business, con fecha, Product, origen, gramos, costo total y costo por gramo, la fecha más reciente primero y después la registrada más recientemente primero. Cada una se puede editar o eliminar. Lista solo Stock entries, nunca retiros; no hay una lista de retiros de todo el Business.
+  - Su estado vacío: "No stock entries · Enter your initial stock or a purchase".
+- **Stock entry nueva** (`EntradaStock`), un formulario (navigation.md): "Close", y una confirmación al salir con algo tipeado.
+  - Se abre desde "+ Stock entry" en Products (el vendedor elige el Product) o desde "+ Entry" en la página de un Product (con ese Product ya elegido, y con "Initial stock" preseleccionado como origen cuando el Product todavía no tiene Stock entries).
+  - fecha (con hoy), gramos, y Product con "It has N g today";
+  - origen: Purchase · Harvest · Initial stock · Adjustment;
+  - costo total, con "Required for a purchase";
+  - nota;
+  - el costo por gramo antes de guardar ("It comes to $ 8.500 per gram") siempre que haya un costo.
+- **Take from stock**, el formulario de retiro, un formulario (navigation.md): "Close", sin barra, sin "+ New sale", y una confirmación al salir con algo tipeado. Sigue el estándar del teléfono para campos y zonas de toque (#80).
+  - Se abre desde More (segundo, después de "+ Add expense"), desde el "Take from stock" secundario de Products (junto a "+ Stock entry", en teléfono y computadora), sin Product elegido, y desde "Take from stock" en la página de un Product, con ese Product ya elegido. La página de un Archived product no ofrece "Take from stock".
+  - motivo, fecha (con hoy), una o más líneas de Product y gramos, y nota.
+  - **Reason**: los Withdrawal reasons del Business como opciones para tocar, en el orden de su lista, leídos de la API al abrir el formulario. Ninguno arranca elegido, y "Save the withdrawal" queda desactivado hasta que se elige uno; no se pierde nada de lo tipeado. Si la API igual recibe un retiro sin motivo, lo rechaza con "Pick a reason.".
+  - El selector de Product ofrece solo Products sin archivar. Si se abre con un Product preseleccionado que está archivado o no existe (`/withdrawals/new?variety=<id>`), el formulario abre sin Product elegido, como si se hubiera abierto sin ninguna; no se registra nada contra ese Product y no se muestra ningún mensaje por él.
+  - Editar abre el mismo formulario con el retiro cargado y su propio motivo elegido, aunque la lista de motivos todavía se esté cargando; guardar una edición se confirma antes.
+  - **Editar un retiro que toca un Product archivado después**: cada línea así muestra su Product por nombre como una etiqueta fija, con el selector de Products sin archivar al lado. El vendedor puede conservarlo (guardar funciona), elegir otro Product sin archivar o quitar la línea.
+  - **Un Product archivado mientras el formulario está abierto** (lo archivó un socio): guardar se rechaza con `variety.archived`, según la regla "That is gone" de accounts.md:
+    - el formulario queda abierto y no se borra nada de lo tipeado, incluido el Product de cada línea culpable, que se sigue mostrando por su nombre;
+    - debajo de cada línea culpable se muestra "That is gone.", y la lista de Products se actualiza;
+    - el formulario no se puede volver a guardar mientras una línea culpable siga nombrando el Product archivado: el vendedor elige otro Product o quita la línea, y eso borra su mensaje.
+  - **Un motivo eliminado mientras el formulario está abierto** (lo eliminó un socio): guardar se rechaza con `stock.withdrawal_reason_not_found`, según la misma regla "That is gone" de accounts.md. El formulario queda abierto con todo lo tipeado, la lista de motivos se actualiza, Reason queda vacío y el campo muestra "That reason is gone. Pick another."
+- **El detalle de un retiro**, abierto desde su fila: un detalle (navigation.md), con la barra o la barra lateral y un "‹" de regreso a la página del Product desde la que se llegó (Products cuando no hay historial), y sin "+ New sale". Muestra la fecha, el nombre actual del motivo ("Reason: Marketing"), cada línea y la nota, con "Edit" y "Delete", también cuando el Product de una línea está archivado.
+- **Settings → Business → Withdrawal reasons** (`/settings/withdrawal-reasons`):
+  - **Entrada**: una fila "Withdrawal reasons" en el grupo Business de Settings, debajo del nombre del Business, con su ícono, la etiqueta y una flecha, hecha con la fila de entrada común de Settings. La pantalla tiene "Close" y el regreso del teléfono sigue el historial.
+  - **Arriba**: el título y la línea "The reasons you pick when you take stock out without selling it."
+  - **Filas**: cada motivo del Business en el orden de su lista. Por fila: el nombre (cortado con puntos suspensivos si es largo); los botones "Up" y "Down" con texto visible y nombres accesibles "Move <name> up" y "Move <name> down" (la primera fila no tiene "Up" y la última no tiene "Down"); y "Rename" y "Delete", visibles con ícono y texto. Cada botón mide al menos 44×44.
+  - **Agregar y renombrar**: "Add reason", al pie de la lista, abre una Sheet ("Add reason") con un solo campo de nombre y la acción principal fija abajo; "Rename" abre la misma Sheet ("Rename reason") con el nombre ya cargado. "Close", Escape y el gesto de volver la cierran sin guardar nada. Las negativas se muestran en línea dentro de la Sheet y conservan lo tipeado: "Write a name.", "Use 60 characters or fewer." y "You already have a reason with that name.". Al guardar, la lista se vuelve a leer de la API.
+  - **Mover**: se aplica con un toque y la pantalla muestra la lista que responde la API. Mientras se guarda, los botones de mover quedan desactivados. Si falla, dice "The order wasn't saved. Try again."; si el motivo ya no está, la lista se vuelve a leer.
+  - **Eliminar**: "Delete" pregunta "Delete the reason <name>?". Las dos negativas ("It can't be deleted: it still has withdrawals. You can rename it." y "It can't be deleted: you need at least one reason.") se muestran como un aviso en pantalla debajo de la lista, con el Attention icon al lado de la oración, y el dueño sigue en la pantalla.
+  - **Estados**: cargando, con la lista (nunca hay estado vacío: la lista siempre tiene un motivo), sin conexión y error con reintento, con los componentes comunes.
+- **Editar una Stock entry**: guardar se confirma antes.
+- **Eliminar una Stock entry**: se confirma con "Before deleting", que nombra la fecha, el Product y los gramos.
+- **Pending cost**, donde se muestre el costo de una línea:
+  - "Pending cost" cuando no hay ninguna parte de la línea con costo;
+  - la parte con costo más "and N g without cost" para una línea partida;
+  - un Gift dice "Gift".
+- **Toasts**: "Entry saved", "Entry deleted", "Warning saved", "Withdrawal saved", "Withdrawal deleted", "Reason saved" y "Reason deleted". Ninguno lleva gramos, montos ni nombres.
+- **Las negativas** de los formularios se muestran en línea y conservan lo tipeado.
+- **Una Stock entry, un retiro o un motivo que ya no está** siguen la regla "That is gone." de accounts.md: abrir uno ofrece volver a su pantalla madre ("Back to Products" para Stock entries y retiros); guardar, eliminar o confirmar sobre él muestra "That is gone. The list is up to date.", y en Withdrawal reasons la lista se vuelve a leer.
+- **Pinned catalog**: registrar, editar o eliminar una Stock entry o un retiro dispara la Upkeep (pinned-catalog.md). Editar los motivos no la dispara: el Catalog no los muestra.
 
-### Constraints
+### Restricciones
 
-- Every stock and withdrawal table carries `business_id`. The business comes from the
-  session.
-- Every route joins the isolation sweep, the gated-route test and the ownership migration
-  test.
-- Business removal exports and deletes withdrawals and their lines through ADR-0015's
-  schema reflection.
-- Refusals carry codes from `contract.json` (ADR-0008) and never repeat the note, grams,
-  amounts or names (ADR-0005). An archived product named by a new entry or withdrawal
-  line answers products' existing `variety.archived` (kind `gone`); there is no
-  withdrawal-specific code for it.
-- No note, grams or amount goes to logs, the console or browser storage.
-- Copy is in Rioplatense Spanish with vos.
+- Cada tabla de stock, de retiro y de Withdrawal reason lleva `business_id`, y se lee solo a través de un repositorio hecho para un único Business. El Business sale de la Session.
+- Cada ruta entra en el barrido de aislamiento, en la prueba de rutas protegidas y en la prueba de migración de pertenencia. Un motivo de otro Business responde 404 tanto en el path como cuando se usa como motivo de un retiro.
+- La Business removal exporta y elimina los retiros, sus líneas y los Withdrawal reasons mediante la reflexión de esquema de ADR-0015.
+- La migración de los motivos solo agrega la tabla, la columna nueva del retiro y las filas por defecto, y llena la columna nueva a partir del valor viejo; nunca cambia el valor de una columna existente, y el comparador M3 compartido de `tests/migrations/` lo prueba.
+- Las negativas llevan códigos de `contract.json` (ADR-0008) y nunca repiten la nota, los gramos, los montos ni los nombres (ADR-0005). Un Archived product nombrado por una Stock entry o una línea de retiro nueva responde el `variety.archived` que ya existe en varieties (tipo `gone`); no hay un código propio de retiros para eso.
+- Ninguna nota, gramo, monto ni nombre de motivo va a los logs, la consola ni el almacenamiento del navegador.
+- Todo texto nuevo de pantalla sale del Copy module, en el Product language; los motivos por defecto no llevan ninguna palabra de flor.
 
-## Metrics
+## Métricas
 
-- **Exact stock (criteria 1, 8)**: after each kind of operation (record, edit or delete
-  an entry or a withdrawal; record or delete a sale), stock equals in minus out to the
-  hundredth. 100% passing.
-- **Count corrects (criterion 2)**: stock N plus an adjustment of (count − N) reads count,
-  for both signs.
-- **Lot conservation (criterion 3)**: for every lot, the grams drawn are ≤ its grams and
-  the cost drawn is ≤ its cost, and both are equal once the lot is used up, withdrawals
-  included. One draw spanning lots is rounded once. Pending grams are never costed $0.
-- **Recompute (criteria 3, 8)**: a backdated, edited or deleted entry or withdrawal moves
-  costs in that product only. Prices, line totals, payments and other products stay
-  unchanged. 100% passing.
-- **Oversell (criterion 3)**: a sale or a withdrawal beyond stock is recorded. Stock reads
-  negative and the status reads sold out.
-- **Status (criterion 4)**: the matrix of nothing moved (no entries), sales without
-  entries (sold out), a withdrawal only (not "no entries"), entries netting to 0 (sold
-  out), low, ok and no threshold, plus days left counting withdrawn grams and "No grams
-  since" following a withdrawal's date: 100%. No status is told by color alone.
-- **Entry from a product**: an entry started from a product's page comes with that
-  product chosen, and with "Initial stock" preselected only when it has no entries.
-- **Not a sale, not a loss (criterion 9)**: after recording a withdrawal, 0 differences in
-  sales total and count, average sale, Sales, every customer's balance and account,
-  Cash, stock shortfall, and every product's margin and grams sold or gifted.
-- **Withdrawal validation matrix**: grams at or below zero, more than two decimals, a
-  future date, a missing reason, no lines, a note over 200 characters and another
-  business's product each give their own coded refusal, which never repeats the input.
-- **Archived products, API (criterion 11)**: through HTTP, 100% passing:
-  - a new withdrawal with a line on an archived product answers 404 `variety.archived`
-    and writes 0 rows;
-  - an edit adding a line onto, or moving a line onto, an archived product the stored
-    withdrawal did not have answers the same and changes nothing;
-  - an edit keeping a product the withdrawal already had, archived since, is accepted,
-    with its grams, date, reason and note changed as sent;
-  - opening and deleting a withdrawal that touches an archived product work;
-  - the same matrix for stock entries (new refused, kept accepted, moved onto another
-    archived refused).
-- **Archived products, form (criterion 11)**: Testing Library tests, 100% passing:
-  - `/withdrawals/new?variety=<archived id>` opens with no product chosen;
-  - editing a withdrawal with a line on a product archived since shows that product's
-    name as a fixed label and saves while keeping it;
-  - a save refused with `variety.archived` keeps the form open with every field, the
-    guilty line's product and its name included, shows "That is gone." under that
-    line, and keeps save disabled until another product is chosen or the line is
-    removed. No test asserts the guilty line's product field is emptied.
-- **Isolation (criterion 10)**: every stock and withdrawal route sits in the sweep and
-  answers 404 or empty from another business, including a reference to another business's
-  product.
-- **No echo**: no refusal or log contains the note, grams or amounts. After a full front
-  run, the console and browser storage hold none of them.
-- **Speed (criteria 6, 7)**: an entry and a withdrawal are each recorded from the phone in
-  under 60 s through the front, and each form opens in at most 2 taps from any tab root,
-  on phone and computer viewports, never more on the computer. Reading stock and costs
-  answers in under 300 ms with a few dozen products.
-- **Withdrawal screens**: front tests show the form's chrome and its discard
-  confirmation, the detail's chrome, the edit and delete confirmations, "Withdrawal saved"
-  and "Withdrawal deleted", both "That is gone." forms, history rows told apart by word
-  and sign, and "All entries" holding no withdrawal.
-- **No curl (criteria 6, 7)**: the end-to-end front run records an entry from Products
-  and one from a product's page, edits and deletes one from "All entries", sets
-  and turns off a threshold on a product's page, records a withdrawal from More and one
-  from a product's page, and edits and deletes a withdrawal.
-- **Looks as designed**: before and after comparisons from `scripts/design/compare.sh`
-  for the withdrawal form, its detail, Products and a product's page, phone and
-  computer, judged by eye.
+- **Stock exacto (criterios 1, 8)**: después de cada tipo de operación (registrar, editar o eliminar una Stock entry o un retiro; registrar o eliminar una venta), el stock es igual a lo que entró menos lo que salió, al centésimo. 100% de aprobación.
+- **El conteo corrige (criterio 2)**: un stock N más un Adjustment de (conteo − N) da el conteo, con los dos signos.
+- **Conservación de los Lots (criterio 3)**: para cada Lot, los gramos tomados son ≤ sus gramos y el costo tomado es ≤ su costo, y los dos son iguales una vez agotado el Lot, retiros incluidos. Un Draw que abarca varios Lots se redondea una sola vez. Los gramos pendientes nunca se costean en $0.
+- **Recálculo (criterios 3, 8)**: una Stock entry o un retiro con fecha atrasada, editados o eliminados mueven los costos solo de ese Product. Los precios, los totales de línea, los Payments y los demás Products no cambian. 100% de aprobación.
+- **Sobreventa (criterio 3)**: una venta o un retiro que supera el stock se registra. El stock queda negativo y el estado dice agotado.
+- **Estado (criterio 4)**: la matriz de nada movido (sin movimientos), ventas sin Stock entries (agotado), solo un retiro (no "sin movimientos"), Stock entries que suman 0 (agotado), bajo, ok y sin umbral, más Days left contando los gramos retirados y "No grams since" siguiendo la fecha de un retiro: 100%. Ningún estado se dice solo por color.
+- **Stock entry desde un Product**: una Stock entry empezada desde la página de un Product llega con ese Product elegido, y con "Initial stock" preseleccionado solo cuando no tiene Stock entries.
+- **Ni venta ni pérdida (criterio 9)**: después de registrar un retiro de cualquier motivo, 0 diferencias en el total y la cantidad de ventas, el Average sale, Sales, el Balance y la cuenta de cada Customer, el Cash, el Stock shortfall, y el Margin y los gramos vendidos o regalados de cada Product.
+- **Matriz de validación de retiros**: gramos en cero o menos, más de dos decimales, una fecha futura, un motivo faltante, un motivo de otro Business, ninguna línea, una nota de más de 200 caracteres y un Product de otro Business dan cada uno su propia negativa con código, que nunca repite lo ingresado.
+- **Archived products, API (criterio 11)**: por HTTP, 100% de aprobación:
+  - un retiro nuevo con una línea sobre un Archived product responde 404 `variety.archived` y escribe 0 filas;
+  - una edición que agrega una línea sobre un Archived product que el retiro guardado no tenía, o que mueve una línea a él, responde lo mismo y no cambia nada;
+  - una edición que conserva un Product que el retiro ya tenía, archivado después, se acepta, con sus gramos, fecha, motivo y nota cambiados como se enviaron;
+  - abrir y eliminar un retiro que toca un Archived product funcionan;
+  - la misma matriz para Stock entries (nueva rechazada, conservada aceptada, movida a otra archivada rechazada).
+- **Archived products, formulario (criterio 11)**: pruebas de Testing Library, 100% de aprobación:
+  - `/withdrawals/new?variety=<id archivado>` abre sin Product elegido;
+  - editar un retiro con una línea sobre un Product archivado después muestra el nombre de ese Product como etiqueta fija y guarda conservándolo;
+  - un guardado rechazado con `variety.archived` deja el formulario abierto con cada campo, incluidos el Product de la línea culpable y su nombre, muestra "That is gone." debajo de esa línea y deja guardar deshabilitado hasta que se elija otro Product o se quite la línea. Ninguna prueba afirma que el campo de Product de la línea culpable se vacía.
+- **M1, nada cambia para un Business existente (criterio 12)**: el comparador M3 no muestra ningún cambio en ninguna columna que existía antes de la migración. Sobre una historia sembrada, cada retiro, el costo de cada motivo, el Profit y el Cash dan lo mismo antes y después, en Home y en Analysis: 0 diferencias. La única etiqueta que difiere es "Promotion" → "Marketing".
+- **M2, un motivo propio desde el teléfono (criterio 13)**: la corrida de punta a punta del front, en tamaño teléfono, entra a Settings → Business → Withdrawal reasons y agrega un motivo. Después abre "Take from stock", encuentra el motivo nuevo al final de la lista sin nada preseleccionado, registra un retiro con él y lee su línea de costo en Week de Home.
+- **M3, una línea por motivo (criterio 14)**: la métrica de acuerdo de results.md y analysis.md, sobre una historia con tres o más motivos, uno renombrado, uno reordenado y uno con gramos pendientes.
+- **M4, reglas de la lista**: pruebas con TestClient de agregar, renombrar, subir, bajar y eliminar; de un nombre en blanco, uno repetido sin importar mayúsculas ni espacios y uno de más de 60 caracteres; de eliminar un motivo con retiros y de eliminar el último. 100% de aprobación. Las pruebas del front cubren las negativas, los toasts, los nombres accesibles de los botones de mover y un motivo que ya no está mientras el formulario de retiro está abierto.
+- **Aislamiento (criterio 10)**: cada ruta de stock, de retiro y de motivos está en el barrido y responde 404 o vacío desde otro Business, incluida una referencia a un Product o a un motivo de otro Business.
+- **Sin eco**: ninguna negativa ni log contiene la nota, los gramos, los montos ni el nombre de un motivo. Después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen ninguno de ellos.
+- **Velocidad (criterios 6, 7)**: una Stock entry y un retiro se registran cada uno desde el teléfono en menos de 60 s por el front, y cada formulario abre a 2 toques como máximo desde cualquier Tab root, en ventanas de teléfono y de computadora, nunca con más toques en la computadora. Leer el stock y los costos responde en menos de 300 ms con unas decenas de Products.
+- **Pantallas de retiro**: las pruebas del front muestran el marco del formulario y su confirmación al descartar, el marco del detalle, las confirmaciones de edición y de eliminación (esta con el nombre del motivo), "Withdrawal saved" y "Withdrawal deleted", los dos formularios de "That is gone.", las filas de historial distinguidas por palabra y signo, y "All entries" sin ningún retiro.
+- **Sin curl (criterios 6, 7, 13)**: la corrida de punta a punta del front registra una Stock entry desde Products y otra desde la página de un Product, edita y elimina una desde "All entries", fija y desactiva un umbral en la página de un Product, registra un retiro desde More y otro desde la página de un Product, edita y elimina un retiro, y agrega, renombra, reordena y elimina un motivo, una eliminación rechazada incluida.
+- **Como en el diseño**: comparaciones antes y después de `scripts/design/compare.sh` para el formulario de retiro, su detalle, Products y la página de un Product, en teléfono y computadora, juzgadas a ojo. Settings → Business → Withdrawal reasons no tiene dibujo: está en el registro de pantallas para el Mobile check, pero no tiene comparación, y se juzga contra este texto y contra el patrón de Expense categories.
+- **Medida de negocio**, que lee el Operator solo a partir de los registros existentes y nunca se muestra en la app: la proporción de Businesses con algún motivo además de los dos por defecto.
 
-## Out of scope
+## Fuera de alcance
 
-- How results (#7) and margins (#8) present pending cost, a negative adjustment's draw
-  and a withdrawal's cost: results.md and analysis.md.
-- Reconstructing lots from the spreadsheet: that is the import (#11).
-- A date rule between opening stock and sales.
-- Spreading cultivation inputs over harvests: those are expenses.
-- Live updates between partners; edit history of an entry or a withdrawal.
-- Notifications outside the app.
-- A Stock tab, or total grams on screen.
-- A business-wide list of withdrawals; a per-product breakdown of promotion or own-use
-  cost.
-- Planned or draft withdrawals; splitting one withdrawal across two reasons.
-- Who attended a party or how many tried; tying a promotion to later sales; money spent
-  on a party (an expense).
-- Recording a new entry or withdrawal line against an archived product, by any path;
-  offering archived products in the entry or withdrawal pickers.
+- Cómo los resultados (#7) y los márgenes (#8) presentan el Pending cost, el Draw de un Adjustment negativo y el costo de un retiro: results.md y analysis.md.
+- Reconstruir los Lots desde la planilla: es tarea del Spreadsheet import (#11).
+- Una regla de fechas entre el Opening stock y las ventas.
+- Repartir los insumos de cultivo entre las Harvests: son Expenses.
+- Actualizaciones en vivo entre socios; historial de ediciones de una Stock entry o de un retiro.
+- Notificaciones fuera de la app.
+- Una pestaña Stock, o los gramos totales en pantalla.
+- Una lista de retiros de todo el Business; un desglose por Product del costo de cada motivo.
+- Retiros planificados o borradores; partir un retiro entre dos motivos.
+- Quiénes fueron a una fiesta o cuántos probaron; atar un retiro a ventas posteriores; la plata gastada en una fiesta (es una Expense).
+- Registrar una Stock entry o una línea de retiro nueva contra un Archived product, por cualquier camino; ofrecer Archived products en los selectores de Stock entry o de retiro.
+- Un estado archivado para los Withdrawal reasons; pasar retiros pasados a otro motivo en bloque; ordenar los motivos arrastrando; agregar un motivo desde el formulario de retiro; roles o permisos sobre la lista.
+- Renombrar los términos del glosario Promotion y Own use: queda para las partes dueñas de Promotion y de Applied promotion.
 
-## Planned in GH-318
+## Planificado en GH-318
 
-Not built yet. Until the part named ships, the sections above are what the app does.
+Todavía no está construido. Hasta que salga la parte indicada, las secciones de arriba son lo que hace la app.
 
-Each passage names the ADR that decides it, the part that will deliver it, and the current sentence it will replace. The part that delivers a passage removes it from here and edits Behaviour and Out of scope in the same diff.
+Cada pasaje nombra el ADR que lo decide, la parte que lo va a entregar y la oración actual que va a reemplazar. La parte que entrega un pasaje lo saca de acá y edita Comportamiento y Fuera de alcance en el mismo diff.
 
-### Units
+### Unidades
 
-Decided in docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; delivered by the units part.
+Decidido en docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; lo entrega la parte de unidades.
 
-- Entries, withdrawals, the threshold and every stock figure will be in the product's own unit, stored as a whole number of hundredths. Withdrawal and gift totals will show one amount per unit, each with its label, and will never be added across units.
-- It will replace: "one or more lines of product and grams" and "grams above zero with at most two decimals".
+- Las Stock entries, los retiros, el umbral y cada cifra de stock van a estar en la unidad propia del Product, guardados como un número entero de centésimos. Los totales de retiros y de Gifts van a mostrar un monto por unidad, cada uno con su etiqueta, y nunca se van a sumar entre unidades.
+- Va a reemplazar: "una o más líneas de Product y gramos" y "gramos mayores que cero con dos decimales como máximo".
 
-### The withdrawal reasons and the Marketing rename
+### El día del negocio
 
-Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; delivered by the withdrawal reasons part.
+Decidido en docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; lo entrega la parte de zona horaria.
 
-- Withdrawal reasons will be the business's own list. A new business will start with "Marketing" and "Own use". The reason now called "Promotion" will be called "Marketing", on screen, in the glossary and in its cost line on Home and Analysis. This will be the only change an existing business sees; no stored withdrawal will be rewritten.
-- The rename will come before any applied-promotion code (docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; `sales.md`), so "promotion" will always mean the sale-side offer afterwards.
-- It will replace: "**Reason**: Promotion (to make the business known) or Own use (the seller's own consumption)." and, in Out of scope, "a per-product breakdown of promotion or own-use cost" and "tying a promotion to later sales".
+- Va a reemplazar: "**Fecha**: por defecto, hoy en hora argentina." en la Stock entry y en el retiro.
 
-### The business day
+### Plata
 
-Decided in docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; delivered by the time-zone part.
+Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; lo entrega la parte de plata.
 
-- It will replace: "**Date**: defaults to today in Argentina time." in the entry and in the withdrawal.
-
-### Money
-
-Decided in docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; delivered by the money part.
-
-- A lot's cost and the cost figures will be stored at the business's money scale and cross the wire in currency units; half-up rounding of a cost allocation will go through `round_half_up`, which the money part creates in `app/shared/money.py` (ADR-0058).
-- It will replace: "**Total cost**: whole pesos." and "Its cost per gram is the total cost over its grams." (the allocation rounds through the one helper).
+- El costo de un Lot y las cifras de costo se van a guardar en la escala de plata del Business y van a viajar en unidades de moneda. El redondeo con mitad hacia arriba de la asignación de un costo va a pasar por `round_half_up`, que la parte de plata crea en `app/shared/money.py` (ADR-0058).
+- Va a reemplazar: "**Costo total**: en pesos enteros." y "Su costo por gramo es el costo total sobre sus gramos." (la asignación redondea con el único helper).

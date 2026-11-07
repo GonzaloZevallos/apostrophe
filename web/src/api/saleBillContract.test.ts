@@ -67,6 +67,12 @@ test('the sale detail carries the bill', () => {
   expect(propertyNames('SaleDetailOut')).toContain('bill')
 })
 
+test('the sale detail and the bill carry the Sale number, and the bill carries no id', () => {
+  expect(propertyNames('SaleDetailOut')).toContain('number')
+  expect(propertyNames('SaleBillOut')).toContain('number')
+  expect(propertyNames('SaleBillOut')).not.toContain('id')
+})
+
 test('a front list that drifted from the snapshot is rejected', () => {
   expect(sameSet([...SALE_BILL_KEYS, 'note'], propertyNames('SaleBillOut'))).toBe(false)
   expect(sameSet(SALE_BILL_KEYS.slice(1), propertyNames('SaleBillOut'))).toBe(false)

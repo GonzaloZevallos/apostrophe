@@ -448,7 +448,7 @@ describe('the actions and the sections', () => {
       'GET /stock/products/1/movements': () =>
         json(200, [
           { ...ENTRIES[0], kind: 'entry' },
-          { kind: 'withdrawal', id: 5, date: '2026-09-25', reason: 'promotion', quantity: 5.5 },
+          { kind: 'withdrawal', id: 5, date: '2026-09-25', reason_id: 7, reason_name: 'Samples', quantity: 5.5 },
           { ...ENTRIES[2], kind: 'entry' },
           { ...ENTRIES[3], kind: 'entry' },
         ]),
@@ -456,7 +456,7 @@ describe('the actions and the sections', () => {
 
     const section = (await screen.findByRole('heading', { name: 'Stock and entries' })).closest('section')
     const inside = within(section as HTMLElement)
-    const reason = await inside.findByText(/Promotion/)
+    const reason = await inside.findByText(/Samples/)
     expect(reason.closest('li')).toHaveTextContent('−5,5 g')
     expect(reason.closest('a')).toHaveAttribute('href', pathTo(WITHDRAWAL, { id: 5 }))
     expect(inside.getByText('10 g')).toBeInTheDocument()

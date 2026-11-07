@@ -645,7 +645,11 @@ def test_a_real_duplicate_phone_is_refused_by_its_own_clean_code(
     raced = False
 
     def _racing_write_customer(
-        self: CustomersImport, name: str, phone_key: str | None, vip: bool, transaction: Transaction
+        self: CustomersImport,
+        name: str,
+        phone_key: str | None,
+        customer_type_id: int | None,
+        transaction: Transaction,
     ) -> int:
         nonlocal raced
         if not raced:
@@ -653,7 +657,7 @@ def test_a_real_duplicate_phone_is_refused_by_its_own_clean_code(
             with Session(engine) as racer:
                 racer.add(CustomerRow(business_id=business_id, name="Otro", phone=phone_key))
                 racer.commit()
-        return original(self, name, phone_key, vip, transaction)
+        return original(self, name, phone_key, customer_type_id, transaction)
 
     monkeypatch.setattr(CustomersImport, "write_customer", _racing_write_customer)
     xlsx = _save_workbook(_workbook(), tmp_path)

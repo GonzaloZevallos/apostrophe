@@ -6,8 +6,8 @@
 
 import { baselineArgs, FIXTURE } from './baselineArgs.ts'
 import type * as Self from './settings.ts'
-import { SAMPLES, type LimitedCopy } from './limits'
-import { STOCK_TEXT } from './stock'
+import { SAMPLES, type LimitedCopy } from './limits.ts'
+import { STOCK_TEXT } from './stock.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
@@ -70,6 +70,9 @@ const { date: D } = FIXTURE
 export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   inviteExpiry: [[D]],
   'SETTINGS_TEXT.nameOf': [['Rosa']],
+  'SETTINGS_TEXT.moveReasonUp': [['Marketing']],
+  'SETTINGS_TEXT.moveReasonDown': [['Marketing']],
+  'SETTINGS_TEXT.deleteReasonConfirm': [['Marketing']],
   languageName: [['en'], ['de'], ['xx']],
 })
 
@@ -95,11 +98,10 @@ export const SETTINGS_TEXT = {
   findMyChat: 'Find my chat',
   testIt: 'Test it',
   goToCatalog: 'Go to the catalog',
-  vipCustomers: 'VIP customers',
   saveThePrices: 'Save the prices',
   you: 'you',
   categoryAmountAndDetails: 'Category, amount and details',
-  promotionOrOwnUse: 'Promotion or own use',
+  stockOutWithoutSale: 'Stock out without a sale',
   byMonthAndByCategory: 'By month and by category',
   varietiesWeeksMonthsAndDays: 'Products, weeks, months and days',
   businessUsersBotCatalogAndMore: 'Business, users, bot, catalog, categories, appearance and your account',
@@ -118,11 +120,27 @@ export const SETTINGS_TEXT = {
   testSent: 'Test sent',
   invitationReady: 'Invitation ready',
   pastSalesKeepTheirPrice: 'Sales already made keep the price they were recorded with. Turning an option off deletes nothing.',
-  eachVarietyNeedsItsVipPrice: 'Each product needs its VIP price: without it, a VIP customer pays like anyone else.',
   discardThePrices: 'Discard the prices?',
   discardTheInvitation: 'Discard the invitation?',
   language: 'Language',
   languageGroupName: 'Language',
+  withdrawalReasonsHint: 'The reasons you pick when you take stock out without selling it.',
+  addWithdrawalReason: 'Add reason',
+  moveReasonUp: (name: string) => `Move ${name} up`,
+  moveReasonDown: (name: string) => `Move ${name} down`,
+  moveUp: 'Up',
+  moveDown: 'Down',
+  reasonSaved: 'Reason saved',
+  reasonDeleted: 'Reason deleted',
+  cannotDeleteStillHasWithdrawals: 'It can\'t be deleted: it still has withdrawals. You can rename it.',
+  cannotDeleteLastReason: 'It can\'t be deleted: you need at least one reason.',
+  addReasonTitle: 'Add reason',
+  renameReasonTitle: 'Rename reason',
+  reasonNameBlank: 'Write a name.',
+  reasonNameTooLong: 'Use 60 characters or fewer.',
+  reasonNameDuplicate: 'You already have a reason with that name.',
+  deleteReasonConfirm: (name: string) => `Delete the reason ${name}?`,
+  reasonMoveFailed: 'The order wasn\'t saved. Try again.',
 } as const
 
 /** Each language's own name, fixed and the same whatever language is shown (invariant 7):

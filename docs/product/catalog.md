@@ -1,284 +1,284 @@
 # Catalog
 
-The text that offers today's sellable products to a business's customers. It is seen only by its business (ADR-0004). It is built from:
-- each product's catalog attributes;
-- its current price today (varieties.md);
-- its stock status right now (stock.md);
-- the business's pricing settings (pricing-settings.md), for the bulk line;
-- the business's shown language, for the fixed lines (stored-language.md);
+El texto que les ofrece a los Customers de un negocio los Products que se pueden vender hoy. Lo ve solo su **Business** (ADR-0004). Se arma a partir de:
+- los **Catalog attributes** de cada **Product**;
+- su **Current price** hoy (varieties.md);
+- su **Stock status** en este momento (stock.md);
+- las **Pricing settings** del Business (pricing-settings.md), para la línea de Bulk price;
+- el **Shown language** del Business, para las líneas fijas (stored-language.md);
 
-between the business's own header and footer. The pinned catalog (pinned-catalog.md) sends exactly this text through the business's own Telegram bot and keeps it current. Share and Copy stay for sending it by hand, in a form that pastes into any chat app with its line breaks (see Copy and Share). An archived product (varieties.md) is never part of it.
+entre el **Catalog header and footer** propios del Business. El **Pinned catalog** (pinned-catalog.md) envía exactamente este texto por el bot de Telegram propio del Business y lo mantiene al día. Share y Copy quedan para enviarlo a mano, en una forma que se pega en cualquier app de chat con sus saltos de línea (ver Copy y Share). Un **Archived product** (varieties.md) nunca forma parte de él.
 
-Where its pieces live (navigation.md):
-- the catalog screen (`/varieties/catalog`) opens from "Send catalog" on Products;
-- a product's attributes are edited on its page, in "In the catalog";
-- the header and footer are edited in Settings → Catalog message (or, until that group exists, in the temporary place reached from the catalog screen; see below).
+Dónde viven sus partes (navigation.md):
+- la pantalla del **Catalog** (`/varieties/catalog`) se abre desde "Send catalog" en Products;
+- los atributos de un Product se editan en su página, en "In the catalog";
+- el header y el footer se editan en Settings → Catalog message (o, hasta que exista ese grupo, en el lugar provisorio al que se llega desde la pantalla del Catalog; ver más abajo).
 
 ## Jobs
 
-**When** a price changes, a product sells out or I start offering one, **I want to** open the catalog text the app has already built from today's current prices and stock, check it, and share or copy it in one tap, **so I can** send it to my customers myself (by WhatsApp, Telegram or Instagram) without retyping a price or a product name, and my customers never see a stale price or a product I can't sell.
+**Cuando** cambia un precio, se agota un producto o empiezo a ofrecer uno, **quiero** abrir el texto del Catalog que la app ya armó a partir de los Current prices y el stock de hoy, revisarlo, y compartirlo o copiarlo con un toque, **para** mandárselo yo mismo a mis clientes (por WhatsApp, Telegram o Instagram) sin volver a tipear un precio ni el nombre de un producto, y que mis clientes nunca vean un precio desactualizado ni un producto que no puedo vender.
 
-Setting the catalog attributes and the header and footer is the setup step of this same job. Keeping the pinned catalog current on its own (test send, publishing, pinning) is BRIEF.md's Telegram job, served by pinned-catalog.md, which reuses this text as it is.
+Configurar los Catalog attributes y el Catalog header and footer es el paso de configuración de este mismo job. Mantener el Pinned catalog al día por sí solo (Test send, Publish, fijarlo) es el job de Telegram de BRIEF.md, que sirve pinned-catalog.md, que reutiliza este texto tal cual.
 
-**When** I want to send today's catalog to a customer or a chat by hand, **I want to** copy it with one tap and paste it anywhere so it reads the way it does on screen, **so I can** send it at once without retyping or fixing anything. (Served by Copy's plain and rich versions and by Share sending Copy's plain version.)
+**Cuando** quiero mandarle el Catalog de hoy a mano a un cliente o a un chat, **quiero** copiarlo con un toque y pegarlo en cualquier lado para que se lea como en pantalla, **para** mandarlo enseguida sin volver a tipear ni corregir nada. (Lo sirven las versiones plana y enriquecida de Copy y Share, que envía la versión plana de Copy.)
 
-**When** I set up how my business prices, record a product's price or hand over an order, **I want** the app to use only the pricing rules my business has, **so I can** charge every customer exactly what I mean to without seeing fields that don't apply to me. (Defined in pricing-settings.md: served here by the bulk line following Bulk price and the VIP price never reaching customers.)
+**Cuando** configuro cómo cobra mi negocio, registro el precio de un producto o entrego un pedido, **quiero** que la app use solo las Pricing rules que tiene mi negocio, **para** cobrarle a cada cliente exactamente lo que quiero cobrar sin ver campos que no me corresponden. (Se define en pricing-settings.md: acá lo sirven la línea de Bulk price, que sigue a Bulk price, y que el VIP price nunca llega a los clientes.)
 
-**When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by the catalog screen, at most 2 taps from any tab root.)
+**Cuando** llevo mi negocio desde el teléfono entre pedidos o en medio de un chat con un cliente, varias veces por día, **quiero** que la app esté ordenada según lo que hago de verdad y con qué frecuencia, **para** volver al cliente en vez de buscar entre menús. (Es el job de navegación, navigation.md: acá lo sirve la pantalla del Catalog, a 2 toques como máximo desde cualquier Tab root.)
 
-**When** a customer asks me what I have or how much something costs, or flower comes in, runs out or gets a new price, **I want** to open one product and find everything about it on its own page, the list to tell me at a glance what I have, what is running out and what I can't sell, and today's catalog one tap from that list, ready to share from my phone, **so I can** answer the customer, record what came in and send an up-to-date catalog without moving between screens, and my customers never get a stale price or a product I can't sell. (The navigation job applied to products, stock and the catalog, varieties.md: served here by the catalog screen and Share.)
+**Cuando** un cliente me pregunta qué tengo o cuánto sale algo, o entra flor, se termina o cambia de precio, **quiero** abrir un producto y encontrar todo sobre él en su propia página, que la lista me diga de un vistazo qué tengo, qué se está por terminar y qué no puedo vender, y tener el Catalog de hoy a un toque de esa lista, listo para compartir desde el teléfono, **para** contestarle al cliente, registrar lo que entró y mandar un Catalog al día sin moverme entre pantallas, y que mis clientes nunca reciban un precio desactualizado ni un producto que no puedo vender. (El job de navegación aplicado a los Products, el stock y el Catalog, varieties.md: acá lo sirven la pantalla del Catalog y Share.)
 
-**When** a product I loaded by mistake, or one I no longer work with, keeps showing in my lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if it never moved and archiving it if it has history, **so** my lists show only what I still sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly as it was if I start selling it again. (Served here by leaving archived products out of the text and of what does not go out; defined in varieties.md.)
+**Cuando** un producto que cargué por error, o uno con el que ya no trabajo, sigue apareciendo en mis listas y selectores, **quiero** sacarlo desde el teléfono en pocos toques, eliminándolo si nunca se movió y archivándolo si tiene historial, **para que** mis listas muestren solo lo que todavía vendo, ninguna cifra pasada de ventas, stock, costo o Profit cambie, y pueda volver a tenerlo exactamente como estaba si empiezo a venderlo de nuevo. (Acá lo sirve dejar los Archived products fuera del texto y de lo que no sale; se define en varieties.md.)
 
-**When** my business works in a language other than English, **I want** my customers' catalog to speak that language from start to end, including the fixed lines and not just the header and footer I typed, and a business opened in that language to start with its header, footer and expense categories already in it, **so** what customers read is consistent and I have nothing to translate or retype. While my business is in English, nothing I or my customers see changes at all. (Shared with stored-language.md: served here by the fixed lines following the shown language and the header and footer defaults following the stored language at opening.)
+**Cuando** mi negocio trabaja en un idioma que no es el inglés, **quiero** que el Catalog de mis clientes hable ese idioma de punta a punta, incluidas las líneas fijas y no solo el header y el footer que tipeé, y que un negocio abierto en ese idioma arranque con su header, su footer y sus Expense categories ya en él, **para que** lo que leen los clientes sea coherente y yo no tenga nada que traducir ni volver a tipear. Mientras mi negocio está en inglés, no cambia absolutamente nada de lo que vemos yo o mis clientes. (Compartido con stored-language.md: acá lo sirven las líneas fijas, que siguen al Shown language, y los valores por defecto del header y el footer, que siguen al Stored language al abrirse.)
 
-Success criteria:
+Criterios de éxito:
 
-1. **Exact text**: the catalog text follows the spreadsheet's format exactly.
-   - The header, then one block per product, then the footer.
-   - Each block has its emoji and bolded name, the indica/sativa share, the aroma, the list price per gram and the bulk line.
-   - The `**bold**` markers stay in the text (`catalog.text` and what the pinned catalog sends; Copy and Share put out the plain version, see below).
-   - Money is written as `$11.000`.
-   - A line is left out when its data is missing (share, aroma, bulk), and the bulk line also while Bulk price is off.
-   - It is tested against a reference set with 0 mismatches.
-2. **Today, only what can be sold**: a product appears only when it is unarchived, shown, has a current price on today's Argentina date and has stock above zero right now.
-   - Archived, hidden, unpriced, sold-out and never-stocked products are out.
-   - Low stock is still in.
-3. **Fast, from the phone**: from Products → "Send catalog", a seller shares or copies today's text in a few seconds without typing anything. Share hands the native share sheet exactly Copy's plain version; without a share sheet, Copy remains. A share sheet that never finishes never leaves the screen stuck: Share and Copy stay usable. This includes the phone on the home network over plain http. There is no API call by hand.
-4. **No guessing why**: every unarchived product that does not go out gives one reason, the first that applies: hidden, no price today, then sold out or no entries. It is told by word, never by color alone.
-5. **Businesses never mix** (ADR-0004): attributes, header and footer belong to one business. The text and the list never include another business's data.
-6. **Customers never see the VIP price**: the text never carries it, whatever the switches.
-7. **One language from start to end**: for a business whose shown language is not English, every fixed line of the text (and the pinned catalog's empty line) is in that language, on the catalog screen, Test it, Publish and upkeep alike. A business in English in the same run stays English.
-8. **English unchanged**: for a business in English, the text and the new-business header and footer are byte-identical to the frozen baseline (`en.baseline.json`). Money and grams formats are the same in every language.
-9. **Pastes as shown, anywhere**: copied with Copy and pasted into Telegram's message box on iPhone, the catalog keeps every line break and blank line the screen shows (one line per bullet, blocks separated as on screen) and shows no literal `**`. The same copy still reads right in WhatsApp and in a plain-text target, with no regression, and the seller sends the paste without editing it. Telegram, WhatsApp and plain text are all first-class targets; fixing one never justifies breaking another.
+1. **Texto exacto**: el texto del Catalog sigue exactamente el formato de la planilla.
+   - El header, después un bloque por Product, después el footer.
+   - Cada bloque tiene su emoji y su nombre en negrita, el Indica share, el Aroma, el List price por gramo y la línea de Bulk price.
+   - Los marcadores `**bold**` quedan en el texto (`catalog.text` y lo que envía el Pinned catalog; Copy y Share sacan la versión plana, ver más abajo).
+   - La plata se escribe como `$11.000`.
+   - Una línea se deja afuera cuando le falta su dato (Indica share, Aroma, Bulk price), y la línea de Bulk price también mientras Bulk price está desactivado.
+   - Se prueba contra un conjunto de referencia con 0 diferencias.
+2. **Hoy, solo lo que se puede vender**: un Product aparece solo cuando no está archivado, se muestra, tiene un Current price en la fecha de hoy en Argentina y tiene Stock mayor que cero en este momento.
+   - Los Products archivados, ocultos, sin precio, agotados y que nunca tuvieron Stock quedan afuera.
+   - El Stock bajo sigue adentro.
+3. **Rápido, desde el teléfono**: desde Products → "Send catalog", el vendedor comparte o copia el texto de hoy en unos segundos sin tipear nada. Share le pasa a la hoja nativa de compartir exactamente la versión plana de Copy; sin hoja de compartir, queda Copy. Una hoja de compartir que nunca termina nunca deja la pantalla trabada: Share y Copy siguen usables. Esto incluye el teléfono en la red de la casa por http plano. No hay ninguna llamada a la API a mano.
+4. **Sin adivinar por qué**: cada Product sin archivar que no sale da un motivo, el primero que corresponda: oculto, sin precio hoy, después agotado o sin movimientos. Se dice con palabra, nunca solo por color.
+5. **Los Businesses nunca se mezclan** (ADR-0004): los atributos, el header y el footer pertenecen a un solo Business. El texto y la lista nunca incluyen datos de otro Business.
+6. **Los clientes nunca ven el VIP price**: el texto nunca lo lleva, sean cuales sean los interruptores.
+7. **Un solo idioma de punta a punta**: para un Business cuyo Shown language no es el inglés, cada línea fija del texto (y la línea vacía del Pinned catalog) está en ese idioma, en la pantalla del Catalog, Test it, Publish y la Upkeep por igual. Un Business en inglés en la misma corrida sigue en inglés.
+8. **El inglés sin cambios**: para un Business en inglés, el texto y el header y el footer de un Business nuevo son idénticos byte a byte a la línea de base congelada (`en.baseline.json`). Los formatos de plata y de gramos son los mismos en todos los idiomas.
+9. **Se pega como se ve, en cualquier lado**: copiado con Copy y pegado en la caja de mensaje de Telegram en iPhone, el Catalog conserva cada salto de línea y cada línea en blanco que muestra la pantalla (una línea por viñeta, bloques separados como en pantalla) y no muestra ningún `**` literal. La misma copia se sigue leyendo bien en WhatsApp y en un destino de texto plano, sin regresión, y el vendedor envía lo pegado sin editarlo. Telegram, WhatsApp y el texto plano son todos destinos de primera; arreglar uno nunca justifica romper otro.
 
-## Behaviour
+## Comportamiento
 
-### Catalog attributes, per product
+### Catalog attributes, por Product
 
-- **Emoji**: optional, exactly one emoji. Plain text or more than one emoji is refused. With none, the name line has no stand-in emoji.
-- **Indica share**: optional whole number from 0 to 100; sativa is the rest. In English it reads "• N% indica / (100−N)% sativa", including the 0 and 100 edges. With none, the line is left out.
-- **Aroma/flavor**: optional.
-  - It is trimmed, and every run of whitespace, line breaks included, collapses to one space.
-  - It holds up to 200 characters.
-  - Empty means none, and the line is left out.
-  - `*` is allowed (see Bold markers).
-- **Shown**: yes or no.
-  - Yes by default for a new product.
-  - Yes for every product that existed when the catalog shipped.
-- **Who can be edited**: every unarchived product, including ones out for lack of price or stock. An archived product's attributes are read-only until it is restored, and archiving or restoring keeps them, the shown flag included (varieties.md).
-- **No side effects**: the attributes never touch prices, stock or sales.
-- **Where**: they are edited only on the product's own page, in its "In the catalog" section (varieties.md), never on the catalog screen.
+- **Emoji**: opcional, exactamente un emoji. Texto común o más de un emoji se rechaza. Sin ninguno, la línea del nombre no lleva un emoji de reemplazo.
+- **Indica share**: número entero opcional de 0 a 100; el resto es sativa. En inglés se lee "• N% indica / (100−N)% sativa", incluidos los extremos 0 y 100. Sin ninguno, la línea se deja afuera.
+- **Aroma/flavor**: opcional.
+  - Se recorta, y cada tramo de espacios en blanco, saltos de línea incluidos, se colapsa en un solo espacio.
+  - Admite hasta 200 caracteres.
+  - Vacío significa que no hay, y la línea se deja afuera.
+  - Se permite `*` (ver Marcadores de negrita).
+- **Se muestra**: sí o no.
+  - Sí por defecto para un Product nuevo.
+  - Sí para cada Product que existía cuando salió el Catalog.
+- **Cuáles se pueden editar**: todo Product sin archivar, incluidos los que quedan afuera por falta de precio o de Stock. Los atributos de un Archived product son de solo lectura hasta que se restaura, y archivarlo o restaurarlo los conserva, incluida la marca de si se muestra (varieties.md).
+- **Sin efectos colaterales**: los atributos nunca tocan precios, Stock ni Sales.
+- **Dónde**: se editan solo en la página propia del Product, en su sección "In the catalog" (varieties.md), nunca en la pantalla del Catalog.
 
-### Header and footer, per business
+### Catalog header and footer, por negocio
 
-- **Shape**: free multi-line text, up to 500 characters each. Inner line breaks are kept; leading and trailing blank lines are trimmed.
-- **Blank**: allowed. A blank header or footer is left out of the text.
-- **Defaults**: a new business is opened with a default header and footer in its stored language at opening (stored-language.md), stored as its own data.
-  - In English they are header "🌿 **CATALOG** 🌿" and footer "📩 Questions and orders by private message.", byte-identical to the baseline.
-  - A stored language is never the test locale, so defaults are never written in `en-XA`, even while the operator's forced language is on.
-  - A later language change never rewrites them: from opening they are the seller's own data, never translated.
-  - A business that existed when the catalog shipped received the English defaults once, on upgrade; every business that existed before this change keeps exactly what it stored, with no backfill.
-  - There is no "restore default".
-- **Where**: they are edited only in Settings → Catalog message (navigation.md).
-  - **Temporary exception**: until that group exists, they are edited, exactly as before, in the temporary place reached only from the catalog screen (see On screen). It is removed when Settings ships.
+- **Forma**: texto libre de varias líneas, de hasta 500 caracteres cada uno. Los saltos de línea internos se conservan; las líneas en blanco del principio y del final se recortan.
+- **En blanco**: se permite. Un header o un footer en blanco se deja afuera del texto.
+- **Valores por defecto**: un Business nuevo se abre con un header y un footer por defecto en su Stored language al abrirse (stored-language.md), guardados como datos propios.
+  - En inglés son el header "🌿 **CATALOG** 🌿" y el footer "📩 Questions and orders by private message.", idénticos byte a byte a la línea de base.
+  - Un Stored language nunca es el Test locale, así que los valores por defecto nunca se escriben en `en-XA`, ni siquiera mientras está activada la Forced language del Operator.
+  - Un cambio de idioma posterior nunca los reescribe: desde la apertura son datos propios del vendedor, nunca traducidos.
+  - Un Business que existía cuando salió el Catalog recibió los valores por defecto en inglés una sola vez, al actualizarse; cada Business que existía antes de este cambio conserva exactamente lo que guardó, sin completar nada hacia atrás.
+  - No hay "restore default".
+- **Dónde**: se editan solo en Settings → Catalog message (navigation.md).
+  - **Excepción provisoria**: hasta que exista ese grupo, se editan, exactamente como antes, en el lugar provisorio al que se llega solo desde la pantalla del Catalog (ver En pantalla). Se quita cuando salga Settings.
 
-### Catalog text
+### El texto del Catalog
 
-- **Layout**: header, then one block per qualifying product sorted by name, then footer. There is one blank line between sections, and a blank header or footer leaves no extra blank line.
-- **Who qualifies**: a product that is unarchived, shown, has a current price today in Argentina time and has stock above zero. Low stock qualifies. An archived product never qualifies, whatever its flag, price or stock.
-- **A product block** (English wording shown):
-  - `<emoji> **<name>**`, or `**<name>**` with no emoji;
-  - `• N% indica / M% sativa`, only with a share;
-  - `• Aroma/flavor: <aroma>`, only with an aroma;
-  - `• Price per gram: <money>`, the list price per gram;
-  - `• From <grams>: <money> each`, the bulk minimum in grams and the bulk price each. It shows only when the current price has a bulk price and Bulk price is on. Whole grams show without decimals; otherwise a decimal comma is used (`2,5 g`).
-- **Fixed lines and language**:
-  - The fixed lines are the share line, the aroma/flavor line, the price per gram line, the bulk line, and the pinned catalog's empty line "Nothing to offer for now." (pinned-catalog.md).
-  - They come from the copy module in the business's shown language: the operator's forced language when one is set, otherwise the stored language (stored-language.md). The language is worked out when the text is built, on every open of the catalog screen and by every Test it, Publish and upkeep run.
-  - When a line shows, and the data it carries, do not depend on the language.
-  - The seller's own data is never translated: names, emoji, aroma, header and footer stay as stored.
-  - Money and grams formats are the same in every language.
-  - In English every fixed line is byte-identical to the baseline `en.baseline.json`.
-- **VIP price**: never in the text, whatever the switches (pricing-settings.md).
-- **Money**: `$` directly followed by the amount, with a dot for thousands (`$11.000`). This is the catalog's own format, not the app's `$ 11.000`.
-- **Stock in the text**: none. It never mentions grams, stock or low stock.
-- **Freshness**: the text is computed on every open from the data, the pricing settings and the shown language as they stand. Nothing is stored, and the screen does not update itself while open. A save of Prices that changes either switch, and a change of the stored language, trigger the pinned catalog's upkeep (pinned-catalog.md, stored-language.md).
-- **Nothing qualifies**: there is no text, and the screen says nothing is in the catalog today. The pinned catalog sends its own empty message instead (pinned-catalog.md).
+- **Disposición**: el header, después un bloque por cada Product que califica, ordenados por nombre, después el footer. Hay una línea en blanco entre secciones, y un header o un footer en blanco no deja una línea en blanco de más.
+- **Cuáles califican**: un Product sin archivar, que se muestra, que tiene un Current price hoy en hora argentina y que tiene Stock mayor que cero. El Stock bajo califica. Un Archived product nunca califica, sean cuales sean su marca, su precio o su Stock.
+- **Un bloque de Product** (se muestra la redacción en inglés):
+  - `<emoji> **<name>**`, o `**<name>**` sin emoji;
+  - `• N% indica / M% sativa`, solo con Indica share;
+  - `• Aroma/flavor: <aroma>`, solo con Aroma;
+  - `• Price per gram: <money>`, el List price por gramo;
+  - `• From <grams>: <money> each`, el Bulk minimum en gramos y el Bulk price de cada gramo. Se muestra solo cuando el Current price tiene Bulk price y Bulk price está activado. Los gramos enteros se muestran sin decimales; si no, se usa coma decimal (`2,5 g`).
+- **Líneas fijas e idioma**:
+  - Las líneas fijas son la línea del Indica share, la línea de Aroma/flavor, la línea de precio por gramo, la línea de Bulk price y la línea vacía del Pinned catalog "Nothing to offer for now." (pinned-catalog.md).
+  - Salen del Copy module en el Shown language del Business: la Forced language del Operator cuando hay una, si no el Stored language (stored-language.md). El idioma se calcula al armar el texto, en cada apertura de la pantalla del Catalog y en cada corrida de Test it, Publish y la Upkeep.
+  - Cuándo se muestra una línea, y el dato que lleva, no dependen del idioma.
+  - Los datos propios del vendedor nunca se traducen: los nombres, los emoji, el Aroma, el header y el footer quedan como se guardaron.
+  - Los formatos de plata y de gramos son los mismos en todos los idiomas.
+  - En inglés, cada línea fija es idéntica byte a byte a la línea de base `en.baseline.json`.
+- **VIP price**: nunca está en el texto, sean cuales sean los interruptores (pricing-settings.md).
+- **Plata**: `$` seguido directamente del monto, con punto para los miles (`$11.000`). Es el formato propio del Catalog, no el `$ 11.000` de la app.
+- **Stock en el texto**: ninguno. Nunca menciona gramos, Stock ni Stock bajo.
+- **Frescura**: el texto se calcula en cada apertura a partir de los datos, las Pricing settings y el Shown language tal como están. No se guarda nada, y la pantalla no se actualiza sola mientras está abierta. Un guardado de Prices que cambia cualquiera de los dos interruptores, y un cambio del Stored language, disparan la Upkeep del Pinned catalog (pinned-catalog.md, stored-language.md).
+- **Cuando nada califica**: no hay texto, y la pantalla dice que hoy no hay nada en el Catalog. El Pinned catalog envía en cambio su propio mensaje vacío (pinned-catalog.md).
 
-### Bold markers
+### Marcadores de negrita
 
-- **Allowed everywhere**: a seller may type `**` in the header, the footer, the aroma and the product name. No field refuses `*`.
-- **Kept as typed in the text**: the catalog text (`catalog.text`, and what the pinned catalog sends) keeps every marker exactly as typed. Nothing is escaped or stripped, including when a name that contains `**` is wrapped in the app's own `**`.
-- **Pairing rule**: whatever renders the text reads `**` markers left to right and pairs them in order.
-  - The text between each pair is bold, and that pair's markers are hidden.
-  - A final unpaired `**` shows as typed.
-  - This holds for the preview here, for the Telegram bot (pinned-catalog.md), and for what Copy and Share put out: paired markers are removed from Copy's plain version and become bold in its rich version; an unpaired final `**` stays as typed in both.
+- **Permitidos en todos lados**: el vendedor puede tipear `**` en el header, el footer, el Aroma y el nombre del Product. Ningún campo rechaza `*`.
+- **Se conservan en el texto como se tipearon**: el texto del Catalog (`catalog.text`, y lo que envía el Pinned catalog) conserva cada marcador exactamente como se tipeó. No se escapa ni se quita nada, tampoco cuando un nombre que contiene `**` queda envuelto en los `**` propios de la app.
+- **Regla de emparejamiento**: lo que sea que muestre el texto lee los marcadores `**` de izquierda a derecha y los empareja en orden.
+  - El texto entre cada par va en negrita, y los marcadores de ese par se ocultan.
+  - Un `**` final sin pareja se muestra como se tipeó.
+  - Esto vale para la vista previa de acá, para el bot de Telegram (pinned-catalog.md) y para lo que sacan Copy y Share: los marcadores emparejados se quitan de la versión plana de Copy y pasan a negrita en su versión enriquecida; un `**` final sin pareja queda como se tipeó en las dos.
 
-### On screen: the catalog screen
+### En pantalla: la pantalla del Catalog
 
-- **Route**: `/varieties/catalog`. The old `/catalogo` redirects there permanently (navigation.md).
-- **Opened from**: "Send catalog" on Products, and Home's "Your Telegram catalog is out of date" notice. It is a detail (navigation.md): the bar or sidebar and "‹ Products", without "+ New sale".
-- **It always opens**, including when nothing qualifies: it then shows the empty state, and the pinned catalog keeps its own empty message and "Up to date" (pinned-catalog.md). "Send catalog" is disabled, with its reason in words (e.g. "Add a product with a price and its stock"), only while the first-run checklist shows and nothing qualifies (navigation.md).
-- **"How it looks in Telegram"**: the text as a customer reads it. It is unchanged by how Copy works.
-  - Bold follows the pairing rule above.
-  - Every other line, break, blank line, emoji and price is identical to Copy's plain version.
-  - It shows the empty state when nothing qualifies.
-- **Share**, the main action:
-  - it opens the device's native share sheet with exactly Copy's plain version: no paired `**`, every line break and blank line kept. Share has no rich version of its own;
-  - where the browser offers no share sheet, it is not shown, and Copy remains;
-  - success, or closing the share sheet without sending, shows nothing and changes nothing: the share sheet is its own feedback, and there is no toast;
-  - a real failure (not the seller cancelling) shows the fixed "Could not share." and leaves Copy available;
-  - a share sheet waiting to finish never holds the screen: Share and Copy are never disabled or held busy by it, so a sheet that never finishes (it spins, or it was closed without the browser telling the app) never leaves the screen stuck;
-  - a share that never finishes counts as closing the sheet without sending: it shows nothing and changes nothing. There is no time limit;
-  - tapping Share again while an earlier share has not finished starts a new share with the same text. If the browser refuses it, that is a real failure ("Could not share.", Copy available). Only the latest share's outcome shows; an earlier one that finishes late shows nothing;
-  - nothing is ever copied on its own when sharing fails or does not finish: Copy stays on screen for the seller to tap;
-  - neither message carries any of the catalog text, a name or an amount.
-- **Copy**, the fallback, puts the catalog on the clipboard so it pastes into any chat app as the preview shows it:
-  - **Plain version**, always present: the catalog text with every paired `**` removed, every line break and blank line kept. It never carries a paired `**`. Every plain-text target reads it.
-  - **Rich version**, a bonus where the browser allows it: the plain version plus bold between paired markers (the app's around names and the seller's own alike), with real line breaks and blank lines. The seller's text is put in as text, never read as markup: a `<`, `>` or `&` pastes as typed. Bold never outranks pasting right in every target: if the rich version cannot be shown to survive Telegram's paste on iPhone with every line break intact, Copy puts only the plain version.
-  - An unpaired final `**` stays as typed in both versions.
-  - It no longer copies the raw text with its `**` markers: the pinned catalog still sends that text, through Telegram's API, not through a paste.
-  - On success it shows the toast "Catalog copied", whichever versions went to the clipboard.
-  - It works from the phone over the home network's plain http, with at least the plain version; where the rich version cannot be written, the plain one alone is a success.
-  - It works whatever state Share is in, a share that has not finished included.
-  - A failure shows a fixed "Could not copy." and no toast. No message carries catalog text, and there is no state telling which version was copied.
-- **The pinned catalog's status and Publish** (pinned-catalog.md): "Up to date" or "Out of date" with its fixed reason, and Publish. When Publish is unavailable, it says why in words and links to where the bot settings are: Settings → Integrations, or the temporary place until that exists.
-- **What does not go out, and why**: every unarchived product out of today's catalog, by name, each with one reason, the first that applies:
-  1. hidden by the seller ("hidden");
-  2. no price today ("no price");
-  3. Stock's own words: sold out ("sold out") or no entries ("no entries").
+- **Ruta**: `/varieties/catalog`. El viejo `/catalogo` redirige ahí de forma permanente (navigation.md).
+- **Se abre desde**: "Send catalog" en Products, y el aviso "Your Telegram catalog is out of date" de Home. Es un detalle (navigation.md): la barra o la barra lateral y "‹ Products", sin "+ New sale".
+- **Siempre se abre**, también cuando nada califica: muestra entonces el estado vacío, y el Pinned catalog conserva su propio mensaje vacío y "Up to date" (pinned-catalog.md). "Send catalog" está desactivado, con su motivo en palabras (p. ej. "Add a product with a price and its stock"), solo mientras se muestra la First-run checklist y nada califica (navigation.md).
+- **"How it looks in Telegram"**: el texto como lo lee un cliente. No cambia por cómo funciona Copy.
+  - La negrita sigue la regla de emparejamiento de arriba.
+  - Cada otra línea, salto, línea en blanco, emoji y precio es idéntico a la versión plana de Copy.
+  - Muestra el estado vacío cuando nada califica.
+- **Share**, la acción principal:
+  - abre la hoja nativa de compartir del dispositivo con exactamente la versión plana de Copy: sin `**` emparejados, con cada salto de línea y cada línea en blanco. Share no tiene una versión enriquecida propia;
+  - donde el navegador no ofrece hoja de compartir, no se muestra, y queda Copy;
+  - el éxito, o cerrar la hoja de compartir sin enviar, no muestra nada ni cambia nada: la hoja de compartir es su propia respuesta, y no hay toast;
+  - una falla real (no que el vendedor cancele) muestra el fijo "Could not share." y deja Copy disponible;
+  - una hoja de compartir que espera terminar nunca retiene la pantalla: Share y Copy nunca se desactivan ni quedan ocupados por ella, así que una hoja que nunca termina (gira, o se cerró sin que el navegador le avise a la app) nunca deja la pantalla trabada;
+  - un compartir que nunca termina cuenta como cerrar la hoja sin enviar: no muestra nada ni cambia nada. No hay límite de tiempo;
+  - tocar Share otra vez mientras un compartir anterior no terminó empieza un compartir nuevo con el mismo texto. Si el navegador lo rechaza, es una falla real ("Could not share.", Copy disponible). Solo se muestra el resultado del último compartir; uno anterior que termina tarde no muestra nada;
+  - nunca se copia nada por su cuenta cuando compartir falla o no termina: Copy sigue en pantalla para que el vendedor lo toque;
+  - ninguno de los dos mensajes lleva nada del texto del Catalog, ni un nombre ni un monto.
+- **Copy**, la alternativa, pone el Catalog en el portapapeles para que se pegue en cualquier app de chat como lo muestra la vista previa:
+  - **Versión plana**, siempre presente: el texto del Catalog con cada `**` emparejado quitado, y cada salto de línea y cada línea en blanco conservados. Nunca lleva un `**` emparejado. La lee todo destino de texto plano.
+  - **Versión enriquecida**, un extra donde el navegador lo permite: la versión plana más negrita entre marcadores emparejados (los de la app alrededor de los nombres y los propios del vendedor por igual), con saltos de línea y líneas en blanco reales. El texto del vendedor se pone como texto, nunca se lee como marcado: un `<`, `>` o `&` se pega como se tipeó. La negrita nunca pesa más que pegarse bien en todo destino: si no se puede mostrar que la versión enriquecida sobrevive al pegado de Telegram en iPhone con cada salto de línea intacto, Copy pone solo la versión plana.
+  - Un `**` final sin pareja queda como se tipeó en las dos versiones.
+  - Ya no copia el texto crudo con sus marcadores `**`: el Pinned catalog sigue enviando ese texto, por la API de Telegram, no por un pegado.
+  - Al tener éxito muestra el toast "Catalog copied", sean cuales sean las versiones que fueron al portapapeles.
+  - Funciona desde el teléfono por el http plano de la red de la casa, con al menos la versión plana; donde no se puede escribir la versión enriquecida, la plana sola es un éxito.
+  - Funciona en cualquier estado en que esté Share, incluido un compartir que no terminó.
+  - Una falla muestra un "Could not copy." fijo y ningún toast. Ningún mensaje lleva texto del Catalog, y no hay ningún estado que diga qué versión se copió.
+- **El estado del Pinned catalog y Publish** (pinned-catalog.md): "Up to date" u "Out of date" con su motivo fijo, y Publish. Cuando Publish no está disponible, dice por qué en palabras y enlaza a donde están los Bot settings: Settings → Integrations, o el lugar provisorio hasta que exista.
+- **Lo que no sale, y por qué**: cada Product sin archivar que queda fuera del Catalog de hoy, por nombre, cada uno con un motivo, el primero que corresponda:
+  1. oculto por el vendedor ("hidden");
+  2. sin precio hoy ("no price");
+  3. las propias palabras del Stock: agotado ("sold out") o sin movimientos ("no entries").
 
-  Every reason is told by word, never by color alone (e.g. "Sir Jack, sold out · Mango Bomb, no price · X, hidden"). The exact wording is design's. Archived products are not listed here.
-- **Links**: each product named in the preview or in what does not go out opens that product's "In the catalog" section on its page. "Edit header and footer" opens Settings → Catalog message, or the temporary place until that exists.
-- **The screen itself edits no header, footer or bot setting**: it only links out (navigation.md).
-- **The temporary place** (a deliberate, temporary exception while Settings → Integrations and Catalog message do not exist):
-  - it holds the bot settings (token, channel chat, own chat, Test it) and the header and footer, working exactly as before, with no rework;
-  - it is reached only from the catalog screen, by "Edit header and footer" and Publish's "unavailable" link;
-  - it is a form: "Close" goes back by history, and with none to the catalog screen; leaving with unsaved changes asks first;
-  - it has no tab, More entry, Settings group or "coming soon" mark, and shows no pin status and no Publish;
-  - Settings's own issue retargets both links and removes it. If Settings already exists, it is not built.
-- **Saving attributes** (on the product's page) or **the header and footer** shows the toast "Catalog saved"; the catalog screen shows the new text the next time it opens. Toasts carry no data.
-- **Refusals** show inline and keep what was typed. Each carries a code from `contract.json` (ADR-0008) and never repeats the input (ADR-0005).
-- **A product that is gone** follows accounts.md's "That is gone." rule.
+  Cada motivo se dice con palabra, nunca solo por color (p. ej. "Sir Jack, sold out · Mango Bomb, no price · X, hidden"). La redacción exacta es de diseño. Los Archived products no se listan acá.
+- **Enlaces**: cada Product nombrado en la vista previa o en lo que no sale abre la sección "In the catalog" de ese Product en su página. "Edit header and footer" abre Settings → Catalog message, o el lugar provisorio hasta que exista.
+- **La pantalla en sí no edita ningún header, footer ni dato de los Bot settings**: solo enlaza afuera (navigation.md).
+- **El lugar provisorio** (una excepción deliberada y provisoria mientras no existan Settings → Integrations y Catalog message):
+  - tiene los Bot settings (token, chat del canal, chat propio, Test it) y el header y el footer, funcionando exactamente como antes, sin rehacer nada;
+  - se llega solo desde la pantalla del Catalog, por "Edit header and footer" y el enlace "unavailable" de Publish;
+  - es un formulario: "Close" vuelve por el historial, y sin historial a la pantalla del Catalog; salir con cambios sin guardar pregunta antes;
+  - no tiene pestaña, acceso en More, grupo en Settings ni marca de "coming soon", y no muestra estado del Pinned catalog ni Publish;
+  - el propio issue de Settings redirige los dos enlaces y lo quita. Si Settings ya existe, no se construye.
+- **Guardar los atributos** (en la página del Product) o **el header y el footer** muestra el toast "Catalog saved"; la pantalla del Catalog muestra el texto nuevo la próxima vez que se abre. Los toasts no llevan datos.
+- **Las negativas** se muestran en línea y conservan lo tipeado. Cada una lleva un código de `contract.json` (ADR-0008) y nunca repite lo ingresado (ADR-0005).
+- **Un Product que ya no está** sigue la regla "That is gone." de accounts.md.
 
-### Constraints
+### Restricciones
 
-- Every catalog table carries `business_id`, and the business comes from the session.
-- Every route joins the isolation sweep, the gated-route test and the ownership migration test.
-- No header, footer, aroma or catalog text goes to logs, the console or browser storage.
-- Copy's plain and rich versions are built on the front from the API's text with the same pairing rule the preview uses; the server's `catalog.text` does not change for them.
-- **Language**:
-  - The catalog domain imports no translation library. The fixed lines reach it as a plain `CatalogWords` value through `CatalogWordsSource`, a port in the catalog's application layer.
-  - The business's language reaches the catalog only through `CatalogLanguage`, implemented in the catalog's own adapter over accounts. That adapter is the only place the forced override is applied.
-  - Upkeep reads the language in its own session, after the triggering commit.
-  - No route, query or body names a business or a language, and no request input selects `en-XA`.
+- Cada tabla del Catalog lleva `business_id`, y el Business sale de la Session.
+- Cada ruta entra en el barrido de aislamiento, en la prueba de rutas protegidas y en la prueba de migración de pertenencia.
+- Ningún header, footer, Aroma ni texto del Catalog va a los logs, la consola ni el almacenamiento del navegador.
+- Las versiones plana y enriquecida de Copy se arman en el front a partir del texto de la API con la misma regla de emparejamiento que usa la vista previa; el `catalog.text` del servidor no cambia por ellas.
+- **Idioma**:
+  - El dominio del Catalog no importa ninguna biblioteca de traducción. Las líneas fijas le llegan como un valor `CatalogWords` simple a través de `CatalogWordsSource`, un puerto en la capa de aplicación del Catalog.
+  - El idioma del Business le llega al Catalog solo a través de `CatalogLanguage`, implementado en el adaptador propio del Catalog sobre accounts. Ese adaptador es el único lugar donde se aplica el reemplazo forzado.
+  - La Upkeep lee el idioma en su propia sesión, después del commit que la dispara.
+  - Ninguna ruta, consulta ni cuerpo nombra un Business o un idioma, y ningún dato de una solicitud elige `en-XA`.
 
-## Metrics
+## Métricas
 
-- **Exact text (criterion 1)**: the reference set covers:
-  - emoji or none;
-  - share at 0, 50 and 100, or none;
-  - aroma or none;
-  - bulk or none, with a whole and a fractional bulk minimum;
-  - a bulk price with Bulk price on and off;
-  - amounts with thousands;
-  - a blank header and a blank footer;
-  - a seller's own `**` in the header, the aroma and a name, including an unpaired one.
+- **Texto exacto (criterio 1)**: el conjunto de referencia cubre:
+  - emoji o ninguno;
+  - Indica share en 0, 50 y 100, o ninguno;
+  - Aroma o ninguno;
+  - Bulk price o ninguno, con un Bulk minimum entero y uno fraccionario;
+  - un Bulk price con Bulk price activado y desactivado;
+  - montos con miles;
+  - un header en blanco y un footer en blanco;
+  - `**` propios del vendedor en el header, el Aroma y un nombre, incluido uno sin pareja.
 
-  0 mismatches.
-- **No VIP price (criterion 6)**: across the reference set, with entries carrying a VIP price and every combination of switches, the VIP price never appears in the text. 100% passing.
-- **Bold pairing**: the preview, with markers removed, equals Copy's plain version. Bold falls between pairs read left to right, and an unpaired final `**` shows as typed. 100% passing.
-- **Copy payload shape (criterion 9)**: with a stubbed clipboard, across the reference set:
-  - the plain entry (`text/plain`) equals the API's text with paired markers removed, byte for byte, with the same line breaks and blank lines and no paired `**`;
-  - when the rich entry is present, it is `text/html`, carries one line break per line of the plain version, bolds only between paired markers, and renders a seller-typed `<b>` or `&` as text;
-  - with rich copy unavailable (plain http), only the plain entry is written and the toast still reads "Catalog copied".
+  0 diferencias.
+- **Sin VIP price (criterio 6)**: en todo el conjunto de referencia, con Price entries que llevan VIP price y cada combinación de interruptores, el VIP price nunca aparece en el texto. 100% de aprobación.
+- **Emparejamiento de negrita**: la vista previa, con los marcadores quitados, es igual a la versión plana de Copy. La negrita cae entre pares leídos de izquierda a derecha, y un `**` final sin pareja se muestra como se tipeó. 100% de aprobación.
+- **Forma de lo que pone Copy (criterio 9)**: con un portapapeles simulado, en todo el conjunto de referencia:
+  - la parte plana (`text/plain`) es igual al texto de la API con los marcadores emparejados quitados, byte a byte, con los mismos saltos de línea y líneas en blanco y sin ningún `**` emparejado;
+  - cuando está la parte enriquecida, es `text/html`, lleva un salto de línea por cada línea de la versión plana, pone negrita solo entre marcadores emparejados, y muestra como texto un `<b>` o un `&` que tipeó el vendedor;
+  - sin copia enriquecida disponible (http plano), se escribe solo la parte plana y el toast igual dice "Catalog copied".
 
-  100% passing.
-- **Survives Telegram's paste (criterion 9)**: the PR carries a written statement of why the result survives Telegram iOS's paste parsing. It reproduces the collapse (Markdown in pasted plain text: `**…**` to bold, a lone line break to a space), rules out other causes with a text with no `**`, and covers a text with an unpaired `**`. A case that still collapses is a finding brought back, never a new rule.
-- **Pastes as shown (criterion 9)**: before merge, the owner taps Copy on the iPhone and pastes into a Telegram chat, a WhatsApp chat and a plain-text note. Every line break and blank line matches the preview, no `**` shows, and nothing needs editing. The result is recorded on the PR.
-- **Share = Copy's plain version (criterion 3)**: with a stubbed share sheet, 100% passing:
-  - Share hands exactly Copy's plain version, as text only;
-  - with none available, Share is not shown and Copy works;
-  - a resolve and a cancel show nothing;
-  - a forced failure shows "Could not share." and leaves Copy;
-  - a share that never settles shows nothing, leaves Share enabled and Copy working, and a second tap calls the share sheet again with the same text;
-  - a refused second call shows "Could not share." and leaves Copy;
-  - an earlier share settling after a newer tap shows nothing;
-  - nothing is written to the clipboard by Share in any outcome;
-  - no message holds catalog text.
-- **Share on the iPhone (criterion 3)**: before merge, the owner shares from the iPhone over the HTTPS link to a Telegram contact, a WhatsApp contact and a note; where the sheet spins, they close it and confirm Share and Copy both still work. The result is recorded on the PR, and a sheet that hangs only for some payload is a finding brought back, never a change to the payload.
-- **Always opens**: the catalog screen opens with nothing qualifying outside first run, and "Send catalog" is disabled only while the checklist shows and nothing qualifies.
-- **Address**: `/varieties/catalog` opens the catalog screen, also on reload; `/catalogo` answers a permanent redirect to it.
-- **Temporary place**: while Settings's groups do not exist, a front test shows the bot settings and the header and footer save from it, both links open it, it shows no pin status and no Publish, and no tab, More or Settings entry points to it.
-- **No curl (criterion 3)**: the end-to-end front run edits a product's attributes on its page and the header and footer (in Settings, or the temporary place until it exists), opens Products → "Send catalog" and taps Copy. The clipboard's plain entry equals the API's text with paired markers removed.
-- **Speed (criterion 3)**: the screen answers in under 300 ms with a few dozen products, and opens in at most 2 taps from any tab root.
-- **Isolation (criterion 5)**: every catalog route is in the sweep and answers 404 or empty from another business. One business's switches or language never change another's text.
-- **No echo**: no refusal or log line contains the header, footer, aroma or emoji typed; after a full front run, the console and browser storage hold no catalog text.
-- **Design**: `scripts/design/compare.sh` runs before and after for the catalog screen, phone and computer, attached to the PR.
-- **English unchanged (criterion 8)**: every moved fixed line and the header and footer defaults render in English exactly as `en.baseline.json`; the reference set plus the empty case shows 0 differences from before the move.
-- **Follows the language (criterion 7)**: with a fixture `de` (`selectable_languages=("en","de")`), a business stored as `de` gets `de`'s fixed lines from `GET /catalog`, Test it, Publish and the Ticker's start-of-day run, while a business in `en` in the same run stays byte-identical to the baseline. Domain unit tests build `CatalogWords` by hand. 100% passing.
-- **No leftover English**: under the forced `en-XA`, the catalog text, the pinned empty text and the defaults rendered from the defaults source contain, after removing `⟦…⟧` segments, stored data and money/grams tokens, 0 letters; a planted literal fails the check.
+  100% de aprobación.
+- **Sobrevive al pegado de Telegram (criterio 9)**: el PR lleva una explicación escrita de por qué el resultado sobrevive al análisis del pegado de Telegram iOS. Reproduce el colapso (Markdown en texto plano pegado: `**…**` a negrita, un salto de línea solo a un espacio), descarta otras causas con un texto sin `**`, y cubre un texto con un `**` sin pareja. Un caso que todavía colapsa es un hallazgo que se devuelve, nunca una regla nueva.
+- **Se pega como se ve (criterio 9)**: antes del merge, el dueño toca Copy en el iPhone y pega en un chat de Telegram, un chat de WhatsApp y una nota de texto plano. Cada salto de línea y cada línea en blanco coinciden con la vista previa, no se ve ningún `**`, y no hay nada que editar. El resultado se registra en el PR.
+- **Share = la versión plana de Copy (criterio 3)**: con una hoja de compartir simulada, 100% de aprobación:
+  - Share pasa exactamente la versión plana de Copy, solo como texto;
+  - sin ninguna disponible, Share no se muestra y Copy funciona;
+  - una resolución y una cancelación no muestran nada;
+  - una falla forzada muestra "Could not share." y deja Copy;
+  - un compartir que nunca se resuelve no muestra nada, deja Share activado y Copy funcionando, y un segundo toque vuelve a llamar a la hoja de compartir con el mismo texto;
+  - una segunda llamada rechazada muestra "Could not share." y deja Copy;
+  - un compartir anterior que se resuelve después de un toque más nuevo no muestra nada;
+  - Share no escribe nada en el portapapeles en ningún resultado;
+  - ningún mensaje lleva texto del Catalog.
+- **Share en el iPhone (criterio 3)**: antes del merge, el dueño comparte desde el iPhone por el link HTTPS a un contacto de Telegram, un contacto de WhatsApp y una nota; donde la hoja gira, la cierra y confirma que Share y Copy siguen funcionando. El resultado se registra en el PR, y una hoja que se cuelga solo con cierto contenido es un hallazgo que se devuelve, nunca un cambio en el contenido.
+- **Siempre se abre**: la pantalla del Catalog se abre sin nada que califique fuera del primer uso, y "Send catalog" está desactivado solo mientras se muestra la First-run checklist y nada califica.
+- **Dirección**: `/varieties/catalog` abre la pantalla del Catalog, también al recargar; `/catalogo` responde una redirección permanente a ella.
+- **Lugar provisorio**: mientras no existan los grupos de Settings, una prueba del front muestra que los Bot settings y el header y el footer se guardan desde ahí, que los dos enlaces lo abren, que no muestra estado del Pinned catalog ni Publish, y que ninguna pestaña, More ni Settings lleva a él.
+- **Sin curl (criterio 3)**: la corrida de punta a punta del front edita los atributos de un Product en su página y el header y el footer (en Settings, o en el lugar provisorio hasta que exista), abre Products → "Send catalog" y toca Copy. La parte plana del portapapeles es igual al texto de la API con los marcadores emparejados quitados.
+- **Velocidad (criterio 3)**: la pantalla responde en menos de 300 ms con unas decenas de Products, y se abre a 2 toques como máximo desde cualquier Tab root.
+- **Aislamiento (criterio 5)**: cada ruta del Catalog está en el barrido y responde 404 o vacío desde otro Business. Los interruptores o el idioma de un Business nunca cambian el texto de otro.
+- **Sin eco**: ninguna negativa ni línea de log contiene el header, el footer, el Aroma ni el emoji tipeados; después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen ningún texto del Catalog.
+- **Diseño**: `scripts/design/compare.sh` corre antes y después para la pantalla del Catalog, en teléfono y computadora, adjunto al PR.
+- **El inglés sin cambios (criterio 8)**: cada línea fija movida y los valores por defecto del header y el footer se muestran en inglés exactamente como en `en.baseline.json`; el conjunto de referencia más el caso vacío muestra 0 diferencias con lo de antes de la mudanza.
+- **Sigue al idioma (criterio 7)**: con un `de` de prueba (`selectable_languages=("en","de")`), un Business guardado como `de` recibe las líneas fijas de `de` desde `GET /catalog`, Test it, Publish y la corrida de comienzo del día del Ticker, mientras que un Business en `en` en la misma corrida sigue idéntico byte a byte a la línea de base. Las pruebas unitarias del dominio arman `CatalogWords` a mano. 100% de aprobación.
+- **Sin inglés sobrante**: con el `en-XA` forzado, el texto del Catalog, el texto vacío del Pinned catalog y los valores por defecto que muestra la fuente de valores por defecto contienen, después de quitar los segmentos `⟦…⟧`, los datos guardados y los tokens de plata y gramos, 0 letras; un literal plantado hace fallar el control.
 
-## Out of scope
+## Fuera de alcance
 
-- The Telegram bot (test send, publishing, pinning, token and chats): pinned-catalog.md.
-- Removing the `**` markers from the server's `catalog.text` or from what the pinned catalog sends.
-- Changing the preview "How it looks in Telegram".
-- A rich version for Share.
-- New feedback states or wording for Copy or Share, or telling the seller which version was copied.
-- A time limit on the share sheet, or copying the catalog on its own when sharing fails or does not finish.
-- Adding a title or a link to what Share hands the share sheet, or shortening or rewriting its text for a share target.
-- Making a share target (Telegram's or another app's share extension) finish when it hangs on its own side.
-- A custom product order.
-- Restoring the default header or footer.
-- Rewriting a business's stored header or footer when its language changes, or backfilling defaults for existing businesses.
-- Translating the seller's own data.
-- Stock figures in the text.
-- Escaping or refusing a seller's own `**` markers.
-- Live updates between partners while the screen is open.
-- Editing catalog attributes or the header and footer from the catalog screen itself: it links to where they are edited.
-- A toast after sharing.
-- Redesigning the bot settings or the header and footer editing.
-- A VIP price in the catalog, or a separate catalog for VIP customers.
-- Listing archived products on the catalog screen.
+- El bot de Telegram (Test send, Publish, fijar, token y chats): pinned-catalog.md.
+- Quitar los marcadores `**` del `catalog.text` del servidor o de lo que envía el Pinned catalog.
+- Cambiar la vista previa "How it looks in Telegram".
+- Una versión enriquecida para Share.
+- Estados de respuesta o redacciones nuevas para Copy o Share, o decirle al vendedor qué versión se copió.
+- Un límite de tiempo para la hoja de compartir, o copiar el Catalog por su cuenta cuando compartir falla o no termina.
+- Agregar un título o un link a lo que Share le pasa a la hoja de compartir, o acortar o reescribir su texto para un destino.
+- Hacer que un destino de compartir (la extensión para compartir de Telegram o de otra app) termine cuando se cuelga de su lado.
+- Un orden propio de Products.
+- Restaurar el header o el footer por defecto.
+- Reescribir el header o el footer guardados de un Business cuando cambia su idioma, o completar valores por defecto para Businesses existentes.
+- Traducir los datos propios del vendedor.
+- Cifras de Stock en el texto.
+- Escapar o rechazar los marcadores `**` propios del vendedor.
+- Actualizaciones en vivo entre socios mientras la pantalla está abierta.
+- Editar los Catalog attributes o el header y el footer desde la propia pantalla del Catalog: enlaza a donde se editan.
+- Un toast después de compartir.
+- Rediseñar los Bot settings o la edición del header y el footer.
+- Un VIP price en el Catalog, o un Catalog aparte para los VIP customers.
+- Listar Archived products en la pantalla del Catalog.
 
-## Planned in GH-318
+## Planificado en GH-318
 
-Not built yet. Until the part named ships, the sections above are what the app does.
+Todavía no está construido. Hasta que salga la parte indicada, las secciones de arriba son lo que hace la app.
 
-Each passage names the ADR that decides it, the part that will deliver it, and the current sentence it will replace. The part that delivers a passage removes it from here and edits Behaviour and Out of scope in the same diff.
+Cada pasaje nombra el ADR que lo decide, la parte que lo va a entregar y la oración actual que va a reemplazar. La parte que entrega un pasaje lo saca de acá y edita Comportamiento y Fuera de alcance en el mismo diff.
 
-### The catalog template
+### La plantilla del Catalog
 
-Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; delivered by the catalog template part.
+Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; lo entrega la parte de plantilla del Catalog.
 
-- The blocks, the lines and their order between the header and footer will be the business's own, kept per business. A new business will start with name and price, and the header "**CATALOG**".
-- It will replace: "**Layout**: header, then one block per qualifying product sorted by name, then footer." and the fixed lines "`• Price per gram: <money>`" and "`• From <grams>: <money> each`".
+- Los bloques, las líneas y su orden entre el header y el footer van a ser propios del Business, guardados por Business. Un Business nuevo va a arrancar con nombre y precio, y el header "**CATALOG**".
+- Va a reemplazar: "**Disposición**: el header, después un bloque por cada Product que califica, ordenados por nombre, después el footer." y las líneas fijas "`• Price per gram: <money>`" y "`• From <grams>: <money> each`".
 
-### Attributes shown in the catalog
+### Atributos que se muestran en el Catalog
 
-Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; delivered by the categories part.
+Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; lo entrega la parte de categorías.
 
-- The attributes a subcategory defines, for each field whether it shows in the catalog, will take the place of the three fixed ones. Emoji, indica share and aroma will become attributes of the migrated business's one subcategory, with today's catalog text unchanged for it. An archived attribute's line will leave the catalog and its values will be kept. Whether a product is hidden will stay a flag on the product.
-- It will replace: "### Catalog attributes, per product" (**Emoji**, **Indica share**, **Aroma/flavor**) and "**Shown**: yes or no."
+- Los atributos que define una subcategoría, con, para cada campo, si se muestra en el Catalog, van a ocupar el lugar de los tres fijos. El emoji, el Indica share y el Aroma van a pasar a ser atributos de la única subcategoría del Business migrado, con el texto del Catalog de hoy sin cambios para él. La línea de un atributo archivado va a salir del Catalog y sus valores se van a conservar. Si un Product está oculto va a seguir siendo una marca del Product.
+- Va a reemplazar: "### Catalog attributes, por Product" (**Emoji**, **Indica share**, **Aroma/flavor**) y "**Se muestra**: sí o no."
 
-### Money format
+### Formato de la plata
 
-Decided in docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; delivered by the money part.
+Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; lo entrega la parte de plata.
 
-- The catalog's money format will follow the business's currency symbol and money decimals.
-- It will replace: "**Money**: `$` directly followed by the amount, with a dot for thousands (`$11.000`). This is the catalog's own format, not the app's `$ 11.000`." and "Money and grams formats are the same in every language."
+- El formato de plata del Catalog va a seguir el símbolo de moneda y los decimales de plata del Business.
+- Va a reemplazar: "**Plata**: `$` seguido directamente del monto, con punto para los miles (`$11.000`). Es el formato propio del Catalog, no el `$ 11.000` de la app." y "Los formatos de plata y de gramos son los mismos en todos los idiomas."
 
-### The unit
+### La Unit
 
-Decided in docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; delivered by the units part.
+Decidido en docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; lo entrega la parte de unidades.
 
-- The catalog, the bot and the reports will use each product's unit label in place of "g".
-- It will replace: "Whole grams show without decimals; otherwise a decimal comma is used (`2,5 g`)." and, in Out of scope, "A custom product order."
+- El Catalog, el bot y los reportes van a usar la etiqueta de la Unit de cada Product en lugar de "g".
+- Va a reemplazar: "Los gramos enteros se muestran sin decimales; si no, se usa coma decimal (`2,5 g`)." y, en Fuera de alcance, "Un orden propio de Products."
 
-### The business day
+### El día del negocio
 
-Decided in docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; delivered by the time-zone part.
+Decidido en docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; lo entrega la parte de zona horaria.
 
-- It will replace: "has a current price today in Argentina time".
+- Va a reemplazar: "tiene un Current price hoy en hora argentina".

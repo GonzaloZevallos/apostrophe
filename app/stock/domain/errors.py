@@ -74,3 +74,46 @@ class WithdrawalVarietyNotFound(LookupError):
 
     def __init__(self) -> None:
         super().__init__("no such variety for a stock withdrawal")
+
+
+class ReasonNameBlank(ValueError):
+    code: ClassVar[str] = "stock.withdrawal_reason_name_blank"
+
+
+class ReasonNameTooLong(ValueError):
+    code: ClassVar[str] = "stock.withdrawal_reason_name_too_long"
+
+
+class ReasonNameTaken(ValueError):
+    code: ClassVar[str] = "stock.withdrawal_reason_name_taken"
+
+    def __init__(self) -> None:
+        super().__init__("another reason of the business already has that name")
+
+
+class ReasonHasWithdrawals(ValueError):
+    code: ClassVar[str] = "stock.withdrawal_reason_has_withdrawals"
+
+    def __init__(self) -> None:
+        super().__init__("the reason still has withdrawals and cannot be removed")
+
+
+class LastReason(ValueError):
+    code: ClassVar[str] = "stock.withdrawal_reason_last"
+
+    def __init__(self) -> None:
+        super().__init__("a business keeps at least one reason, so the last cannot be removed")
+
+
+class ReasonCannotMove(ValueError):
+    code: ClassVar[str] = "stock.withdrawal_reason_cannot_move"
+
+    def __init__(self) -> None:
+        super().__init__("the reason is already at that edge of the list")
+
+
+class WithdrawalReasonNotFound(LookupError):
+    code: ClassVar[str] = "stock.withdrawal_reason_not_found"
+
+    def __init__(self) -> None:
+        super().__init__("no such withdrawal reason")

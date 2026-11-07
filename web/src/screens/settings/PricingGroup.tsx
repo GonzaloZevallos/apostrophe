@@ -16,6 +16,8 @@
 
 import { type FormEvent, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
+import { customerTypesQueryOptions } from '../../api/customerTypes'
 import { ApiError, NetworkError, UNKNOWN_CODE } from '../../api/client'
 import {
   type PricingSettings,
@@ -29,7 +31,10 @@ import Boton from '../../components/Boton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import Loading from '../../components/Loading'
 import OpcionInterruptor from '../../components/OpcionInterruptor'
+import Icono from '../../components/Icono'
+import InAppLink from '../../components/InAppLink'
 import SinConexion from '../../components/SinConexion'
+import { SETTINGS_CUSTOMER_TYPES } from '../../routes'
 import { GENERIC_REFUSAL_MESSAGE, PRICES_SAVED, SETTINGS_TEXT } from '../../copy/settings'
 import SettingsGroup from './SettingsGroup'
 import { COMMON_TEXT } from '../../copy/common'
@@ -38,8 +43,6 @@ const TITLE = COMMON_TEXT.prices
 
 export const PAST_SALES_LINE =
   SETTINGS_TEXT.pastSalesKeepTheirPrice
-export const VIP_HELP_LINE =
-  SETTINGS_TEXT.eachVarietyNeedsItsVipPrice
 
 const LEAVE = {
   question: SETTINGS_TEXT.discardThePrices,
@@ -63,6 +66,9 @@ export default function PricingGroup() {
 }
 
 function PricingForm({ initial }: { initial: PricingSettings }) {
+  const { t } = useTranslation()
+  const customerTypes = useQuery(customerTypesQueryOptions())
+  const hasVipType = customerTypes.data?.some((type) => type.is_vip) === true
   const queryClient = useQueryClient()
   const [accepted, setAccepted] = useState(initial)
   const [bulk, setBulk] = useState(initial.is_bulk_pricing)
@@ -124,14 +130,26 @@ function PricingForm({ initial }: { initial: PricingSettings }) {
           }}
         />
         <OpcionInterruptor
-          label={SETTINGS_TEXT.vipCustomers}
+          label={t('customerTypes:switch')}
           checked={vip}
           onChange={(next) => {
             setVip(next)
             clearFeedback()
           }}
         />
-        <span className="campo__ayuda">{VIP_HELP_LINE}</span>
+        <span className="campo__ayuda">
+          {t(hasVipType ? 'customerTypes:helpWithVip' : 'customerTypes:helpNoVip')}
+        </span>
+        {accepted.is_vip_customers && (
+          <nav className="ajustes__lista" aria-label={t('customerTypes:entry')}>
+            <InAppLink to={SETTINGS_CUSTOMER_TYPES} className="ajustes__item">
+              <span className="ajustes__item-rotulo">{t('customerTypes:entry')}</span>
+              <span className="ajustes__item-flecha">
+                <Icono nombre="chevron" />
+              </span>
+            </InAppLink>
+          </nav>
+        )}
         <span className="campo__ayuda">{PAST_SALES_LINE}</span>
         {genericError !== null && (
           <span className="campo__error" role="alert">
