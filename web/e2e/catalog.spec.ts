@@ -23,6 +23,7 @@ import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openCatalog } from './helpers/openMas.js'
+import { pickStockVariety } from './helpers/stockVariety.js'
 import { uniqueTag } from './helpers/unique.js'
 
 // What Copiar and Compartir must hand out for the data below, written by hand: the header's
@@ -70,7 +71,7 @@ test('a seller edits a variety, the header and footer, then copies and shares to
 
   await page.goto(STOCK_ENTRY_NEW)
   await page.getByLabel('Grams').fill('50')
-  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
+  await pickStockVariety(page, 'Rosa')
   await page.getByLabel('Total cost').fill('45000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 

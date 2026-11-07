@@ -24,6 +24,7 @@ import { expectPath } from './url.js'
 import { expectToast } from './toast.js'
 import { fillSaleLine } from './sale.js'
 import { leaveOnboarding } from './signup.js'
+import { pickStockVariety } from './stockVariety.js'
 import { uniqueTag } from './unique.js'
 
 export const PASSWORD = 'correcthorsebattery'
@@ -78,7 +79,7 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
 
   await page.goto(STOCK_ENTRY_NEW)
   await page.getByLabel('Grams').fill('50')
-  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
+  await pickStockVariety(page, 'Rosa')
   await page.getByLabel('Total cost').fill('45000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
   await page.goto(STOCK)

@@ -14,6 +14,7 @@ import { ANALYSIS, HOME, VARIETIES, WITHDRAWAL_NEW } from '../src/routes.js'
 import { watchConsole } from './console.js'
 import { openMas } from './helpers/openMas.js'
 import { signUpNewBusiness } from './helpers/signup.js'
+import { pickStockVariety } from './helpers/stockVariety.js'
 import { uniqueTag } from './helpers/unique.js'
 
 test('a seller records, edits and deletes withdrawals and reads Marketing and Own use', async ({
@@ -34,7 +35,7 @@ test('a seller records, edits and deletes withdrawals and reads Marketing and Ow
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: '+ Stock entry' }).click()
   await page.getByLabel('Grams').fill('50')
-  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
+  await pickStockVariety(page, 'Rosa')
   await page.getByLabel('Total cost').fill('20000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 

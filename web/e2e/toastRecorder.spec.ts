@@ -15,6 +15,7 @@ import { expect, test } from './fixtures.js'
 import { DOCUMENT_CHANGED, DOCUMENT_CHANGED_AT_MARK, NO_RECORDER, expectToast } from './helpers/toast.js'
 import { expectPath } from './helpers/url.js'
 import { signUpNewBusiness } from './helpers/signup.js'
+import { pickStockVariety } from './helpers/stockVariety.js'
 import { uniqueTag } from './helpers/unique.js'
 
 async function addToast(page: Page, text: string, options: { remove: boolean }): Promise<void> {
@@ -141,7 +142,7 @@ test('real screens: a flash toast, a toast on its own timer and the card\'s hist
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: '+ Stock entry' }).click()
   await page.getByLabel('Grams').fill('50')
-  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
+  await pickStockVariety(page, 'Rosa')
   await page.getByLabel('Total cost').fill('20000')
   // FlashProvider: 2.5 s on the flash toast.
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())

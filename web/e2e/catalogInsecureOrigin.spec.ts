@@ -37,6 +37,7 @@ import { e2eBaseUrl } from './env.js'
 import { newBusinessInvitationUrl } from './backend.js'
 import { leaveOnboarding } from './helpers/signup.js'
 import { CATALOG, STOCK_ENTRY_NEW, VARIETIES } from '../src/routes.js'
+import { pickStockVariety } from './helpers/stockVariety.js'
 import { uniqueTag } from './helpers/unique.js'
 
 const PASSWORD = 'correcthorsebattery'
@@ -109,7 +110,7 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
 
   await page.goto(`${INSECURE_ORIGIN}${STOCK_ENTRY_NEW}`)
   await page.getByLabel('Grams').fill('50')
-  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
+  await pickStockVariety(page, 'Rosa')
   await page.getByLabel('Total cost').fill('45000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 
