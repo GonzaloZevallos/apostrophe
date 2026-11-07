@@ -34,6 +34,7 @@ import { parseMoney, parseSignedGrams } from '../format/parse'
 import type { Variety } from './Variedades'
 import { varietiesByName } from './varieties/varietiesByName'
 import Boton from '../components/Boton'
+import { STOCK_ENTRY_ORIGINS } from '../components/fixedSets'
 import {
   COST_REQUIRED_HELP,
   GRAMS_INVALID,
@@ -49,13 +50,6 @@ export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 export const COST_REQUIRED = STOCK_TEXT.unaCompraNecesitaUn
 export const COST_ON_NEGATIVE = STOCK_TEXT.unAjusteNegativoNo
 export const DATE_IN_FUTURE = COMMON_TEXT.dateCannotBeFuture
-
-const ORIGIN_OPTIONS: { value: Origin; label: string }[] = [
-  { value: 'purchase', label: COMMON_TEXT.purchase },
-  { value: 'harvest', label: COMMON_TEXT.harvest },
-  { value: 'opening_stock', label: COMMON_TEXT.initialStock },
-  { value: 'adjustment', label: COMMON_TEXT.adjustment },
-]
 
 const FIELD_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'stock.cost_required': COST_REQUIRED,
@@ -429,7 +423,7 @@ export default function StockEntryForm({
               <fieldset className="campo">
                 <legend className="campo__rotulo">{STOCK_TEXT.origen}</legend>
                 <div className="origen-pildoras">
-                  {ORIGIN_OPTIONS.map((option) => (
+                  {STOCK_ENTRY_ORIGINS.map((option) => (
                     <button
                       key={option.value}
                       type="button"
@@ -437,7 +431,7 @@ export default function StockEntryForm({
                       aria-pressed={origin === option.value}
                       onClick={() => setOrigin(option.value)}
                     >
-                      {option.label}
+                      {option.label()}
                     </button>
                   ))}
                 </div>
