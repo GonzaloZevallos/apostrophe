@@ -7,7 +7,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { StrictMode } from 'react'
 import { createMemoryRouter, Outlet, RouterProvider, useLocation } from 'react-router'
@@ -779,4 +779,18 @@ test('the form keeps the icon and text rule, its help lines within their limits'
 
   expect(document.querySelectorAll('[data-copy="help"]').length).toBeGreaterThanOrEqual(2)
   expectIconAndTextRule(document.body, { limits: LIMITS, optionClasses: ['pildora'] })
+})
+
+test('the origin chips: four buttons in order, one pressed, with the pill classes they always had', async () => {
+  fakeFor(stockOf([]))
+  renderForm(STOCK_ENTRY_NEW)
+
+  const group = await screen.findByRole('group', { name: 'Origin' })
+  const chips = within(group).getAllByRole('button')
+  expect(chips.map((chip) => chip.textContent)).toEqual(['Purchase', 'Harvest', 'Initial stock', 'Adjustment'])
+  expect(chips.map((chip) => chip.getAttribute('aria-pressed'))).toEqual(['true', 'false', 'false', 'false'])
+  expect(chips.map((chip) => chip.className)).toEqual(['pildora pildora--activa', 'pildora', 'pildora', 'pildora'])
+
+  await userEvent.click(within(group).getByRole('button', { name: 'Harvest' }))
+  expect(chips.map((chip) => chip.getAttribute('aria-pressed'))).toEqual(['false', 'true', 'false', 'false'])
 })
