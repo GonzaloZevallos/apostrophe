@@ -810,3 +810,161 @@ test('the origin chips: four buttons in order, one pressed, with the pill classe
   await userEvent.click(within(group).getByRole('button', { name: 'Harvest' }))
   expect(chips.map((chip) => chip.getAttribute('aria-pressed'))).toEqual(['false', 'true', 'false', 'false'])
 })
+
+const MANY = Array.from({ length: 12 }, (_unused, index) => ({
+  id: 20 + index,
+  name: `Cepa ${String(index + 1).padStart(2, '0')}`,
+  archived: false,
+  current_price: null,
+}))
+
+function fakeVarieties(listed: unknown, extra: Record<string, () => Response> = {}) {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: string | URL | Request, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input.toString()
+      const hit = extra[`${init?.method ?? 'GET'} ${url}`]
+      if (hit !== undefined) return Promise.resolve(hit())
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, listed))
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, stockOf([])))
+      return Promise.resolve(jsonResponse(500, {}))
+    }),
+  )
+}
+
+/** The form in the real route map, with the router in hand to press "back" on. */
+function renderApp(entries: string[]) {
+  const router = createMemoryRouter(ROUTES, { initialEntries: entries, initialIndex: entries.length - 1 })
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  render(
+    <QueryClientProvider client={client}>
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
+    </QueryClientProvider>,
+  )
+  return { router, client }
+}
+
+async function openFromVarietyPage() {
+  const app = renderApp([pathTo(VARIETY, { id: 3 })])
+  await userEvent.click(await screen.findByRole('link', { name: 'Abrir la entrada' }))
+  return app
+}
+
+test('with 12 Varieties the field is a Selector: search narrows it and no select or extra pressed button is there', async () => {
+  fakeVarieties(MANY)
+  renderForm(STOCK_ENTRY_NEW)
+
+  const field = await varietyField()
+  expect(document.querySelector('select')).toBeNull()
+  expect(screen.queryByRole('combobox')).toBeNull()
+  const pressed = screen.getAllByRole('button').filter((button) => button.hasAttribute('aria-pressed'))
+  expect(pressed.map((button) => button.textContent)).toEqual(['Purchase', 'Harvest', 'Initial stock', 'Adjustment'])
+
+  await userEvent.click(field)
+  const list = within(await screen.findByRole('dialog', { name: 'Variety options' }))
+  await userEvent.type(list.getByRole('searchbox'), '07')
+  expect(list.queryByRole('button', { name: 'Cepa 08' })).toBeNull()
+  await userEvent.click(list.getByRole('button', { name: 'Cepa 07' }))
+  expect(field).toHaveTextContent('Cepa 07')
+})
+
+test('while the Varieties load the field is busy and says nothing about an empty list; an empty load names the Varieties tab', async () => {
+  let release: (response: Response) => void = () => undefined
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: string | URL | Request) => {
+      const url = typeof input === 'string' ? input : input.toString()
+      if (url === '/api/products') return new Promise<Response>((resolve) => (release = resolve))
+      return Promise.resolve(jsonResponse(200, STOCK_VIEW))
+    }),
+  )
+  renderForm(STOCK_ENTRY_NEW)
+
+  const field = await screen.findByRole('button', { name: /^Variety/ })
+  expect(field).toHaveAttribute('aria-busy', 'true')
+  expect(screen.queryByText(/No varieties yet/)).toBeNull()
+
+  await act(async () => release(jsonResponse(200, [])))
+  await waitFor(() => expect(field).not.toHaveAttribute('aria-busy'))
+  await userEvent.click(field)
+  expect(await screen.findByText('No varieties yet. Add them in the Varieties tab.')).toBeInTheDocument()
+})
+
+test('an edited entry whose archived name cannot be read shows the failure and a retry, and still saves its stored Variety', async () => {
+  fakeVarieties(VARIETIES, {
+    'GET /stock/entries/10': () =>
+      jsonResponse(200, {
+        id: 10,
+        date: '2026-09-20',
+        product_id: 8,
+        origin: 'harvest',
+        quantity: 25,
+        total_cost: null,
+        cost_per_gram: null,
+        note: null,
+      }),
+    'GET /api/products?archived=true': () => jsonResponse(500, {}),
+    'PUT /stock/entries/10': () => jsonResponse(200, {}),
+  })
+  renderForm(pathTo(STOCK_ENTRY, { id: 10 }))
+
+  expect(await screen.findByRole('button', { name: 'Something went wrong. Try again.' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /^Variety/ })).toBeNull()
+  await userEvent.type(screen.getByLabelText('Grams'), '1')
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Yes, save' }))
+  await waitFor(() =>
+    expect(fetch).toHaveBeenCalledWith(
+      '/stock/entries/10',
+      expect.objectContaining({ body: expect.stringContaining('"product_id":8') }),
+    ),
+  )
+})
+
+test('back with the list open closes only the list and keeps what was typed; the second back asks to discard', async () => {
+  fakeVarieties(MANY)
+  const { router } = await openFromVarietyPage()
+
+  await userEvent.type(await screen.findByLabelText('Grams'), '12')
+  await userEvent.click(await varietyField())
+  expect(await screen.findByRole('dialog', { name: 'Variety options' })).toBeInTheDocument()
+  expect(router.state.location.state).toMatchObject({ sheet: 1 })
+
+  await act(async () => {
+    await router.navigate(-1)
+  })
+  await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Variety options' })).toBeNull())
+  expect(screen.getByLabelText('Grams')).toHaveValue('12')
+  expect(router.state.location.pathname).toBe(STOCK_ENTRY_NEW)
+
+  await act(async () => {
+    await router.navigate(-1)
+  })
+  expect(await screen.findByRole('alertdialog')).toHaveTextContent('Discard the entry?')
+})
+
+test('back on a clean form goes to the Variety page', async () => {
+  fakeVarieties(MANY)
+  const { router } = await openFromVarietyPage()
+  await varietyField()
+
+  await act(async () => {
+    await router.navigate(-1)
+  })
+  expect(await screen.findByText('la página de la variety')).toBeInTheDocument()
+})
+
+test('on the computer Escape with the dropdown open closes only the dropdown', async () => {
+  stubViewport('computer')
+  fakeVarieties(MANY)
+  renderForm(STOCK_ENTRY_NEW)
+
+  await userEvent.click(await varietyField())
+  expect(await screen.findByRole('listbox', { name: 'Variety options' })).toBeInTheDocument()
+  await userEvent.keyboard('{Escape}')
+  await waitFor(() => expect(screen.queryByRole('listbox')).toBeNull())
+  expect(screen.getByLabelText('Grams')).toBeInTheDocument()
+  expect(screen.queryByRole('alertdialog')).toBeNull()
+})
