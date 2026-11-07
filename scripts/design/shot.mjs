@@ -3,6 +3,23 @@
 // and read their answers. Nothing here carries page text: only paths, ordinals, sizes, counts
 // and booleans.
 
+import { SETTLE_REASON_REJECTED, SETTLE_REASON_UNSETTLED } from './settle.mjs'
+
+// The calm page of every capture, phone and desktop, both sides (GH-491). `CALM_CONTEXT` goes into
+// the options of each context (`captureContextOptions`); `CALM_CSS` zeroes every animation and
+// transition; `PROBE_CSS` is the one rule sheet the probe adopts: the caret rule plus the calm
+// rule. Only `adoptedStyleSheets` carries it, never a `<style>` node or an attribute, so the
+// probe sees no mutation. Nothing else defines these values.
+export const CALM_CONTEXT = Object.freeze({ reducedMotion: 'reduce' })
+export const CALM_CSS =
+  '*, *::before, *::after { animation-duration: 0s !important; animation-delay: 0s !important; transition-duration: 0s !important; transition-delay: 0s !important; }'
+export const PROBE_CSS = `*, *::before, *::after { caret-color: transparent !important; }\n${CALM_CSS}`
+
+// The options of one row's design and built contexts: the same for both, whatever the row.
+export function captureContextOptions({ width, height, url }) {
+  return { viewport: { width, height }, deviceScaleFactor: 2, colorScheme: 'light', baseURL: url, ...CALM_CONTEXT }
+}
+
 // The height the viewport grows to so a tall page fits it: the document's own, same width.
 // Null when the document already fits.
 export function grownHeight(metrics, viewport) {
@@ -101,8 +118,46 @@ export function planShot(metrics, fixedElements, viewport) {
 }
 
 // The fixed English reasons of a shot that cannot be taken. Each names the side (`design` or
-// `built`) and nothing else: no page text, no number, no error text.
-const named = (what, side) => `shot: ${what} (${side})`
+// `built`) and nothing else: no page text, no number, no error text. `what` comes from this closed
+// table and `named` is the only place a `shot:` line is built: any other `what` is a bug.
+const WHATS = new Set([
+  'layer frame outside the viewport',
+  "a layer's content is scrolled",
+  'page wider than its viewport',
+  'page taller than its viewport',
+  'section outside the viewport',
+  'the page changed when the viewport grew',
+  'the viewport changed during the shot',
+  'timed out taking the shot',
+  'could not take the shot',
+  'no built screen yet',
+  'did not settle',
+])
+const SIDES = ['design', 'built']
+
+export function named(what, side) {
+  if (!WHATS.has(what) || !SIDES.includes(side)) throw new Error('shot: a reason outside the fixed table')
+  return `shot: ${what} (${side})`
+}
+
+// The fixed reason a failed side records in `index.json`, by exact membership and never by prefix:
+// a line of the table for this side stays as it is; the settle's two reasons are `did not settle`;
+// anything else, page text and error text included, is `could not take the shot`.
+export function shotReason(failure, side) {
+  if ([...WHATS].some((what) => failure === named(what, side))) return failure
+  if (failure === SETTLE_REASON_UNSETTLED || failure === SETTLE_REASON_REJECTED) return named('did not settle', side)
+  return named('could not take the shot', side)
+}
+
+// Whether a row has both PNGs, and why a side has none. Each side is `{ path, reason }`; a side's
+// reason is kept only when its path is null. The only place `capture` is computed.
+export function rowCapture({ design, built }) {
+  const reasons = {}
+  if (design.path === null && design.reason) reasons.design = design.reason
+  if (built.path === null && built.reason) reasons.built = built.reason
+  const capture = design.path !== null && built.path !== null ? 'captured' : 'not-captured'
+  return Object.keys(reasons).length ? { capture, reasons } : { capture }
+}
 
 // A layer's frame must lie inside the viewport and nothing inside it may be scrolled. A list that
 // scrolls inside the layer by design, shown at its top, passes. `containers` is every element inside
