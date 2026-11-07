@@ -116,7 +116,7 @@ test('while the detail loads the button is there, disabled and busy, with no dig
   expect(button).toHaveAttribute('aria-busy', 'true')
   const body = button.closest('.cuerpo') as HTMLElement
   expect(body.closest('main')?.textContent ?? '').not.toMatch(/[0-9$]/)
-  expect(body).toHaveAttribute('aria-busy', 'true')
+  expect(body.closest('main')).toHaveAttribute('aria-busy', 'true')
 })
 
 test('the title and the first line of the bill after the business name show the same number', async () => {

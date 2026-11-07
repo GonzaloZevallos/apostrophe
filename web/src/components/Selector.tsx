@@ -31,6 +31,7 @@ import Boton from './Boton'
 import Icono from './Icono'
 import { matchesQuery } from './selectorSearch'
 import Sheet from './Sheet'
+import { useLoading } from './useLoading'
 import { SheetLevel, useSheet } from './useSheetStack'
 
 export interface SelectorOption {
@@ -70,6 +71,8 @@ export default function Selector(props: SelectorProps) {
   const { options, value, onChange, label, selected, loading, emptySetMessage } = props
   const emptyWording = props.required === true ? null : props.emptyWording
   const { t } = useTranslation()
+  // Its skeleton stands where the value will be: the area is waiting while it shows.
+  useLoading(loading)
   const computer = useViewport() === 'computer'
   const level = useContext(SheetLevel)
   const sheet = useSheet(level + 1)

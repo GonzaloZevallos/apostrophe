@@ -7,6 +7,7 @@ import { HOME } from '../routes'
 import LeaveConfirm from './LeaveConfirm'
 import { useLeaveGuard } from './useLeaveGuard'
 import { SheetRouterProvider, SheetStackProvider, useSheet } from './useSheetStack'
+import ContentArea from './ContentArea'
 
 let latest: { closeAll: () => void } | null = null
 
@@ -20,7 +21,7 @@ function Screen({ startDirty }: { startDirty: boolean }) {
     latest = { closeAll }
   }, [closeAll])
   return (
-    <main>
+    <ContentArea as="main">
       <h1>Formulario</h1>
       <button type="button" onClick={() => setDirty(true)}>
         Escribir
@@ -54,7 +55,7 @@ function Screen({ startDirty }: { startDirty: boolean }) {
           discardLabel="Yes, discard it"
         />
       )}
-    </main>
+    </ContentArea>
   )
 }
 

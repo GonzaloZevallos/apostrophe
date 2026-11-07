@@ -18,6 +18,7 @@ import FlashProvider from '../../flash/FlashProvider'
 import { VARIETIES, VARIETY, pathTo, relative } from '../../routes'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
+import ContentArea from '../../components/ContentArea'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN }
 const GONE_TEXT = 'That is gone. The list is up to date.'
@@ -99,7 +100,7 @@ function renderPage({ removal = 'archive', grams = 12, overrides = {}, list, com
           </QueryClientProvider>
         ),
         children: [
-          { path: relative(VARIETIES), element: <main>Varieties screen</main> },
+          { path: relative(VARIETIES), element: <ContentArea as="main">Varieties screen</ContentArea> },
           {
             path: relative(VARIETY),
             element: <VarietyRoute render={(varietyId) => <VarietyPage varietyId={varietyId} />} />,

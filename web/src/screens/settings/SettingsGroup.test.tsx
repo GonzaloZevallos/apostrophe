@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Link, RouterProvider, useNavigate } from 'react-router'
 import { expect, test } from 'vitest'
 import SettingsGroup from './SettingsGroup'
+import ContentArea from '../../components/ContentArea'
 
 const LEAVE = {
   question: 'Discard the name?',
@@ -48,12 +49,12 @@ function renderGroup(options: { dirty: boolean; inApp: boolean }) {
       {
         path: SETTINGS,
         element: (
-          <main>
+          <ContentArea as="main">
             <h1>Lista</h1>
             <Link to={SETTINGS_BUSINESS} state={inAppState({ pathname: SETTINGS })}>
               Abrir
             </Link>
-          </main>
+          </ContentArea>
         ),
       },
       { path: SETTINGS_BUSINESS, element: <Group dirty={options.dirty} /> },
