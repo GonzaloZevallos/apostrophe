@@ -37,6 +37,8 @@ subgraph src["src"]
     src_components_ReglaInsignia_tsx["ReglaInsignia.tsx"]
     src_components_SegmentedChoice_tsx["SegmentedChoice.tsx"]
     src_components_SelectorPago_tsx["SelectorPago.tsx"]
+    src_components_SelectorTestHost_tsx["SelectorTestHost.tsx"]
+    src_components_Selector_tsx["Selector.tsx"]
     src_components_Sheet_tsx["Sheet.tsx"]
     src_components_SinConexion_tsx["SinConexion.tsx"]
     src_components_botonVisual_tsx["botonVisual.tsx"]
@@ -44,6 +46,8 @@ subgraph src["src"]
     src_components_goneExit_ts["goneExit.ts"]
     src_components_inAppState_ts["inAppState.ts"]
     src_components_keyboard_ts["keyboard.ts"]
+    src_components_selectorSearch_ts["selectorSearch.ts"]
+    src_components_selectorTestKit_tsx["selectorTestKit.tsx"]
     src_components_useBackOr_ts["useBackOr.ts"]
     src_components_useGoneExit_ts["useGoneExit.ts"]
     src_components_useLeaveGuard_ts["useLeaveGuard.ts"]
@@ -72,11 +76,21 @@ src_components_PasswordField_tsx-->src_components_Boton_tsx
 src_components_Pestanas_tsx-->src_components_botonVisual_tsx
 src_components_ReglaInsignia_tsx-->src_components_Insignia_tsx
 src_components_SelectorPago_tsx-->src_components_SegmentedChoice_tsx
+src_components_SelectorTestHost_tsx-->src_components_Selector_tsx
+src_components_SelectorTestHost_tsx-->src_components_useSheetStack_ts
+src_components_Selector_tsx-->src_components_Boton_tsx
+src_components_Selector_tsx-->src_components_Icono_tsx
+src_components_Selector_tsx-->src_components_Sheet_tsx
+src_components_Selector_tsx-->src_components_selectorSearch_ts
+src_components_Selector_tsx-->src_components_useSheetStack_ts
 src_components_Sheet_tsx-->src_components_useVisualViewport_ts
 src_components_SinConexion_tsx-->src_components_AvisoAmbar_tsx
 src_components_botonVisual_tsx-->src_components_Boton_tsx
 src_components_botonVisual_tsx-->src_components_Icono_tsx
 src_components_goneExit_ts-->src_components_feedback_ts
+src_components_selectorTestKit_tsx-->src_components_SelectorTestHost_tsx
+src_components_selectorTestKit_tsx-->src_components_Selector_tsx
+src_components_selectorTestKit_tsx-->src_components_useSheetStack_ts
 src_components_useGoneExit_ts-->src_components_feedback_ts
 src_components_useGoneExit_ts-->src_components_goneExit_ts
 src_components_useLeaveGuard_ts-->src_components_useSheetStack_ts
