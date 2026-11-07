@@ -2047,8 +2047,6 @@ body {
 /* The sale's date, directly under the "Sale #N" title (sales.md, "Detalle de venta"). */
 .venta-detalle__fecha {
   display: block;
-  font-size: 14px;
-  color: var(--tinta2);
 }
 
 .venta-detalle__encabezado-lineas {

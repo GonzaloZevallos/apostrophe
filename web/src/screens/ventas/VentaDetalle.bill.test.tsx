@@ -120,7 +120,7 @@ test('while the detail loads the button is there, disabled and busy, with no dig
 })
 
 test('the title and the first line of the bill after the business name show the same number', async () => {
-  const share = vi.fn(() => Promise.resolve())
+  const share = vi.fn((_data: { text: string }) => Promise.resolve())
   Object.defineProperty(navigator, 'share', { value: share, configurable: true })
   vi.mocked(fetch).mockResolvedValue(
     jsonResponse(200, { ...SALE, number: 77, bill: { ...SALE.bill, number: 77 } }),
@@ -130,8 +130,8 @@ test('the title and the first line of the bill after the business name show the 
   expect(await screen.findByText('Sale #77')).toBeInTheDocument()
   await userEvent.click(await readyButton('Share'))
 
-  const [sent] = share.mock.calls[0] as unknown as [{ text: string }]
-  expect(sent.text.split('\n')[1]).toBe('Sale #77 · 14/09')
+  const sent = share.mock.calls[0]?.[0]
+  expect(sent?.text.split('\n')[1]).toBe('Sale #77 · 14/09')
 })
 
 test('a 404 still takes the not-found path, with no button', async () => {

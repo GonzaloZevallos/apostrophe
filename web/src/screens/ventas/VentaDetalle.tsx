@@ -296,7 +296,7 @@ function VentaDetalleScreen() {
         <div className="encabezado__fila">
           <span className="encabezado__titulo">{SALES_TEXT.saleNumber(sale.number)}</span>
         </div>
-        <span className="venta-detalle__fecha">{formatDateShort(sale.date)}</span>
+        <span className="rotulo venta-detalle__fecha">{formatDateShort(sale.date)}</span>
 
         {undoAvailable && (
           <div className="venta-guardada" role="status">
