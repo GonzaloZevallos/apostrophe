@@ -216,6 +216,7 @@ Criterios de éxito, Sale number:
   - el Shipping charged;
   - la nota;
   - cómo se pagó: Cash · Transfer · Owing.
+- **No hay campo de Sale number**: el número lo asigna la app al guardar, nunca lo tipea la vendedora.
 - **El total de la venta** se muestra con los gramos vendidos y los gramos regalados.
 - **Vista previa en vivo**:
   - Cada línea muestra su precio por gramo, su insignia de regla (lista, Bulk price, VIP, regalo, especial) y su total. El total de la venta se actualiza mientras la vendedora escribe.
@@ -253,7 +254,7 @@ Criterios de éxito, Sale number:
   - Cerrar la hoja solo vuelve al formulario.
 - **"Sale saved"** (`Estados`):
   - Lleva **Undo** y ningún monto ni nombre. Se anuncia como un toast y dura unos pocos segundos fijos.
-  - Undo borra la venta sin confirmación, después muestra "Sale deleted · the grams go back to stock" y vuelve a Sales. Su Sale number queda como hueco.
+  - Undo borra la venta sin confirmación, después muestra "Sale deleted · the grams go back to stock" y vuelve a Sales. Su Sale number queda como hueco, sin ningún aviso agregado.
   - Si la venta ya no existe, Undo muestra "That is gone. The list is up to date."
   - Una vez que el aviso se fue, la forma de deshacer es "Delete sale".
   - Nunca contiene el botón Share/Copy; ese vive en el detalle de la venta.
@@ -303,10 +304,10 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo.
 ### En pantalla: Sale #N (`VentaDetalle`, el detalle de la venta)
 
 - **Un detalle** (navigation.md): la barra o la barra lateral y "‹ Sales", sin "+ New sale".
-- **Título**: "Sale #N", del Copy module, en el encabezado del detalle junto a la flecha de regreso. Sin ceros a la izquierda, sin prefijo y sin separador de miles: la primera venta se lee "Sale #1". Es texto plano que se puede seleccionar y copiar: no es un botón ni una insignia, y el color no lleva su significado. Igual en claro y en oscuro. En la computadora va en el mismo lugar, sin pulido dedicado (Phone first). La palabra "Venta" del dibujo cede ante el Product language (Drawing as guide).
-- **Carga**: mientras carga la venta, muestra el estado de carga compartido (accounts.md, `Estados`), nunca una página en blanco.
+- **Título**: "Sale #N", del Copy module, en el encabezado del detalle, con "‹ Sales" como camino de vuelta. Sin ceros a la izquierda, sin prefijo y sin separador de miles: la primera venta se lee "Sale #1". Es texto plano que se puede seleccionar y copiar: no es un botón ni una insignia, y el color no lleva su significado. Igual en claro y en oscuro. En la computadora va en el mismo lugar, sin pulido dedicado (Phone first). La palabra "Venta" del dibujo cede ante el Product language (Drawing as guide).
+- **Carga**: mientras carga la venta, muestra el estado de carga compartido (accounts.md, `Estados`), nunca una página en blanco. El título queda vacío: nunca un número de relleno ni "Sale #0".
 - **Muestra**:
-  - la fecha de la venta, debajo del título;
+  - la fecha de la venta, debajo del título, como dd/mm, sin año;
   - el total;
   - de cada línea la variedad, los gramos, el precio por gramo, la insignia de regla y el total de la línea;
   - el envío, la nota, cómo se pagó, y el cliente o "No customer".
@@ -324,7 +325,7 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo.
   - Después, el aviso "Sale deleted" y de vuelta a Sales.
   - El texto nunca menciona deuda ni Credit; la cuenta del cliente muestra el efecto después (`payments.md`).
 - **Una venta que ya no existe** sigue accounts.md:
-  - abrirla muestra "That is gone." con "Back to Sales";
+  - abrirla muestra "That is gone." con "Back to Sales", sin ningún número;
   - asignar, borrar o deshacer muestra "That is gone. The list is up to date."
 - No van nombres, notas ni montos a la consola ni al almacenamiento del navegador, y ningún id de negocio aparece en una URL.
 
@@ -442,7 +443,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - **El Sale bill no deja rastro**: después de los tests del front, la consola y el almacenamiento del navegador no tienen nada del Sale bill.
 - **Sale number, propio y desde 1 (criterios 24, 26)**: test de aislamiento con dos negocios: los dos registran su primera venta como Sale #1 y siguen 2, 3… cada uno por su lado, intercalando guardados entre los dos; ni el detalle, ni el Sale bill, ni un rechazo de uno contienen nada que dependa de la cantidad de ventas del otro, y la venta de otro negocio sigue en 404. En `tests/test_business_isolation.py`.
 - **Sale number, nunca reutilizado (criterio 24)**: borrar una venta del medio deja un hueco; borrar la de número más alto (por Delete sale y por Undo) y registrar otra da el número siguiente, nunca el borrado; un guardado rechazado no consume número; dos guardados simultáneos en un negocio reciben números distintos. Editar la fecha no aplica (no se edita); asignar un cliente después no cambia el número.
-- **Sale number, el mismo en los dos lugares (criterio 25)**: un test del front muestra que el título del detalle y la línea `Sale #N · dd/mm` del Sale bill llevan el mismo número para la misma venta; el título es texto seleccionable, no un botón.
+- **Sale number, el mismo en los dos lugares (criterio 25)**: un test del front muestra que el título del detalle y la línea `Sale #N · dd/mm` del Sale bill llevan el mismo número para la misma venta; el título es texto seleccionable, no un botón; mientras carga, el título queda vacío y no aparece ningún `#`, dígito ni "Sale".
 - **Sale number, historial (criterio 27)**: test de la migración: en una base con ventas de dos negocios, cada negocio queda numerado desde 1 por (fecha, momento de registro, id), con un empate de fecha y momento resuelto por id; la migración solo agrega una columna; la siguiente venta nueva de cada negocio sigue al número más alto. Una Spreadsheet import en un negocio vacío numera por fecha y orden de registro.
 - **Design capture**: el detalle de la venta en el teléfono muestra "Sale #N" en el lugar dibujado, en claro y en oscuro (`docs/product/design-capture.md`). Cualquier otra diferencia con el dibujo es un hallazgo aparte.
 
