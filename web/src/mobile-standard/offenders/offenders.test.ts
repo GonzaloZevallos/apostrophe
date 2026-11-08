@@ -201,7 +201,7 @@ describe('the offender files', () => {
 
 /**
  * The rows new to the screens registry whose real cells came in with the change that added
- * them (`docs/product/gate.md`, "A new registry row brings its cells"). Each states the
+ * them (`docs/product/gate.md`, "Una fila nueva del registro trae sus celdas"). Each states the
  * fault its entries observed. When an area issue removes a screen's last entry, its name goes.
  */
 const NEW_ROW_SCREENS = ['InicioChecklist', 'InicioImportado']
