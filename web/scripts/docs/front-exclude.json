@@ -8,6 +8,7 @@
   "^src/format/breakpoints\\.ts$",
   "^src/i18n/keyShape\\.ts$",
   "^src/i18n/parity\\.ts$",
+  "^src/i18n/step\\.ts$",
   "^src/i18n/testing\\.ts$",
   "^src/screens/withdrawals/renderWithdrawals\\.tsx$",
   "^src/screens/varieties/renderVarieties\\.tsx$",
