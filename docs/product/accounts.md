@@ -397,7 +397,7 @@ Criterios de éxito, el test de seguridad de la cookie (seguimiento de GH-130):
   - Los colores del manifest y la pantalla de carga son estáticos y claros. La barra de estado sigue al tema resuelto que muestra la app (`data-tema`, que en Automatic ya sigue al teléfono), no directamente a la configuración del sistema; en iOS queda clara, porque iOS fija su estilo al arrancar.
   - La fuente se sirve desde la propia app.
 - **Idioma y formatos**: cada palabra en pantalla en inglés (product-language.md, que reemplaza la regla anterior en español). El dinero `$ 11.000`, un monto negativo `−$ 4.500`, los gramos `3,5 g`, las fechas `dd/mm`. El texto del Catalog conserva su propio formato de Telegram (`$11.000`, catalog.md).
-- **Entrar** (`Go to sign in`, la pantalla de Business nuevo (`NegocioNuevo`), la de Invitation (`Invitacion`), la de reseteo):
+- **Entrar** (la pantalla de inicio de sesión (`Entrar`), la de Business nuevo (`NegocioNuevo`), la de Invitation (`Invitacion`), la de reseteo):
   - **Dibujadas a partir del diseño** en `docs/product/design-system/pantallas/` (GH-49; Sign in rediseñada en GH-521 sobre 25-ingreso). Los dibujos llevan el texto del producto en inglés de la app; las líneas en español de los dibujos son una guía de significado.
   - **Una sola disposición centrada, del ancho de un teléfono**, en todo viewport, el de la computadora incluido; no hay una disposición solo para computadora en estas pantallas.
   - **La pantalla de Sign in** (`Entrar`, claro; `EntrarOscuro`, oscuro), de arriba hacia abajo:
@@ -411,7 +411,7 @@ Criterios de éxito, el test de seguridad de la cookie (seguimiento de GH-130):
     - al pie de la pantalla, la línea de texto plano "You can only get in with an invitation from your business.". No es un link, no hace nada y no es un camino para registrarse.
     - Email, Password, "Forgot your password?" y "Sign in" se ven sin hacer scroll en un teléfono.
     - Una contraseña equivocada y un email desconocido muestran el mismo rechazo ("Wrong email or password"), en el lugar, conservando lo tipeado.
-    - Diferencias con el dibujo, declaradas en el PR y aceptadas: el blanco de toque de 44 px de "Forgot your password?" en lugar del link de 13 px dibujado, el botón Show de "Password" y el aviso fijo del freno, que el dibujo no muestra.
+    - Diferencias con el dibujo, declaradas en el PR y aceptadas: el blanco de toque de 44 px de "Forgot your password?" en lugar del link de 13 px dibujado, el botón Show de "Password" y el aviso fijo del freno, que el dibujo no muestra. También se aceptan, porque se siguen leyendo como el dibujo 25-ingreso: el lockup compartido en una sola fila (marca al lado del Wordmark) en lugar de la marca apilada sobre el Wordmark, la columna que arranca arriba en lugar de centrada en vertical, y la línea de la Invitation al pie de la pantalla en lugar de justo debajo del botón.
   - **La Forgot sheet**, que abre "Forgot your password?":
     - es una Sheet, dibujada por el componente compartido: a pantalla completa en el teléfono, con "Close" arriba como única salida, igual que el gesto de volver (es una entrada del historial, ADR-0027); en la computadora conserva su propio marco de diálogo, donde Escape también la cierra; no tiene acción principal abajo;
     - su título es "Forgot your password?"; al abrirse, el foco va a "Close";
@@ -698,7 +698,7 @@ Estos estados los dibuja `Estados` (GH-49), con el estilo renovado a partir del 
   - registro: `scripts/design/screens.json` tiene `/reset/{token}` y `compare.sh` la mide;
   - sin regresión: la suite existente pasa sin editar ningún test para que se ajuste al aspecto nuevo.
 - **Sign in con el nuevo estilo y la Forgot sheet (criterios 42–45, GH-521)**:
-  - una sola pasada (42): un e2e en viewports de teléfono (320×568 y 375×812, claro y oscuro) verifica que al abrir Sign in el foco está en "Email address", que "Email address", "Password" y "Sign in" se ven sin scroll, y que la corrida cae en Home con la sesión iniciada;
+  - una sola pasada (42): un e2e en viewports de teléfono (320×568 y 375×812, claro y oscuro) verifica que al abrir Sign in el foco está en "Email address", que "Email address", "Password", "Forgot your password?" y "Sign in" se ven sin scroll, y que la corrida cae en Home con la sesión iniciada;
   - a un toque (43): un e2e verifica que "Forgot your password?" abre la Forgot sheet con un toque, también con el mensaje del freno visible, y que volver la cierra con lo tipeado intacto; un test de front verifica que su texto fijo dice la persona que te mandó la Invitation, el email con el que inicias sesión, una sola vez, 24 horas y sin la contraseña actual, y que "Close", Escape y volver regresan a Sign in con lo tipeado intacto y el foco en "Forgot your password?";
   - no revela nada (44): un test de front verifica que el texto de la Forgot sheet es idéntico con el formulario vacío, con un email registrado, con uno desconocido y con el bloqueo activo; que abrirla o cerrarla no hace ningún pedido; y que el texto no contiene "operator" ni ningún canal;
   - diseño (45): una Design capture de `Entrar` y `EntrarOscuro` contra la pantalla construida, en teléfono y computadora, adjunta al PR y juzgada a ojo según el Drawing as guide; `web/e2e/mobile.spec.ts` pasa para Sign in, `EntrarOlvido` y `EntrarFrenoOlvido` en ambos temas, sin infractores nuevos;
