@@ -6612,12 +6612,14 @@ body {
 .selector__valor {
   display: flex;
   flex: 1;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--espacio-sm);
+  gap: var(--espacio-xs) var(--espacio-sm);
   min-width: 0;
 }
 
 .selector__texto {
+  max-width: 100%;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -6677,6 +6679,13 @@ body {
   color: var(--tinta);
   font: inherit;
   font-size: 16px;
+}
+
+/* The default placeholder grey fails contrast on the dark surface: the same ink as the
+ * secondary text, which holds on both themes. */
+.selector-lista__buscar::placeholder {
+  color: var(--tinta2);
+  opacity: 1;
 }
 
 .selector-lista__filas {
