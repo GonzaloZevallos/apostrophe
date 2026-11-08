@@ -361,7 +361,7 @@ stays disabled while it refreshes, and the capture waits for it.
    by Playwright's `style` writes. This, and not the hops, is what closes the finding.
 > Superseded by ADR-0052 on rule 5 only: how the shot is taken is decided there. The rule above is kept as written.
 
-> Extended by ADR-0075 on rules 6 and 7: a side that misses for load is captured again whole, from a fresh context, unless it wrote. No check is loosened; the rules above are kept as written.
+> Extended by ADR-0076 on rules 6 and 7: a side that misses for load is captured again whole, from a fresh context, unless it wrote. No check is loosened; the rules above are kept as written.
 6. **A frame after the shot, with no clock advance.** The PNG is kept only if that frame is calm and
    its hash equals the last settled frame's; otherwise the side is `null`, no PNG is written and the
    sheet shows "—".

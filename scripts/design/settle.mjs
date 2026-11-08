@@ -132,7 +132,7 @@ export function signatureOf(records, page) {
 
 // The closed set of kinds a side's miss can have. It is set where each reason is produced, never
 // read back from reason text. Every kind but `other` is shaped by load: the same page, captured
-// again, can come to rest (ADR-0075).
+// again, can come to rest (ADR-0076).
 export const SETTLE_KINDS = ['unsettled', 'rejected', 'network', 'rest-mismatch', 'rest-unread', 'shot-timeout', 'step-timeout', 'other']
 
 export const isRetryableKind = (kind) => SETTLE_KINDS.includes(kind) && kind !== 'other'
@@ -152,7 +152,7 @@ export function sideOutcome(reason, png, kind) {
   return kind === undefined ? { png: null, failure: reason } : { png: null, failure: reason, kind }
 }
 
-// Most captures of one side (ADR-0075). It counts attempts: no wall-clock wait is added.
+// Most captures of one side (ADR-0076). It counts attempts: no wall-clock wait is added.
 export const CAPTURE_ATTEMPTS = 3
 
 // Captures a side again, whole, while it missed by a retryable kind and its attempt sent no write.

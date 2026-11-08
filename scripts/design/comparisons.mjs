@@ -681,7 +681,7 @@ const censusSide = (options, ofFirstText) =>
   })
 
 // The capture of one side, whole, again while it missed for load and its attempt sent no write
-// (`settle.mjs`, ADR-0075). `capture(census, probe)` is one attempt, in its own context and with its
+// (`settle.mjs`, ADR-0076). `capture(census, probe)` is one attempt, in its own context and with its
 // own census (`makeCensus()`, or none); the row keeps the last attempt's. What the side could not do
 // is a failure of the screen, not a throw, and that side has no PNG under any name. A pass after a
 // miss is a note, never a failure; a side that missed every attempt keeps its failure and the kinds

@@ -106,4 +106,4 @@ the build, and a starved page load takes 8 to 20 s.
 
 Date: 2026-10-27.
 
-> Extended by ADR-0075: a side that misses for load, `shot-timeout` and the rest-after-shot misses included, is captured again whole from a fresh context unless it wrote. The shot method above is unchanged.
+> Extended by ADR-0076: a side that misses for load, `shot-timeout` and the rest-after-shot misses included, is captured again whole from a fresh context unless it wrote. The shot method above is unchanged.
