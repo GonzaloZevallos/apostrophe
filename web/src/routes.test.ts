@@ -622,6 +622,14 @@ const NULL_ROUTE_CEILING: Readonly<Record<string, number>> = Object.freeze({
   OnboardingOscuro: 418,
   OnboardingCompu: 418,
   OnboardingCompuOscuro: 418,
+  NuevaVentaProductos: 496,
+  NuevaVentaProductosOscuro: 496,
+  NuevaVentaPromocion: 416,
+  NuevaVentaPromocionOscuro: 416,
+  NuevaVentaPromocionQuitada: 416,
+  NuevaVentaPromocionQuitadaOscuro: 416,
+  NuevaVentaCobrar: 496,
+  NuevaVentaCobrarOscuro: 496,
 });
 
 /** What is wrong with the routes of these entries: a null route that is not on the ceiling, or a
