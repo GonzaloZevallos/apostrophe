@@ -1,0 +1,7 @@
+// expect: t-outside-function@5
+import { t } from 'i18next'
+export class Card {
+  static {
+    register(t('a'))
+  }
+}

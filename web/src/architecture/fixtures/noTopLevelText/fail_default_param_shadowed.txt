@@ -1,0 +1,4 @@
+// expect: t-outside-function@2
+export function show(t: (key: string) => string, label = t('a')) {
+  return label
+}
