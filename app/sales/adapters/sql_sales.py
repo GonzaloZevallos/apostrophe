@@ -134,8 +134,9 @@ class SqlSales:
         date_to: date | None = None,
     ) -> Sequence[SaleView]:
         """`SaleViews` (docs/adr/0011): two statements whatever the number of sales.
-        The first joins the sale to its customer and its payment, both filtered on
-        this business in their `ON` clause as well as the sale's own `WHERE`; the
+        The first joins the sale to its customer (filtered on this business in its `ON`
+        clause), its payment (on the sale only, see below) and the payment's method
+        (filtered on this business), all under the sale's own `WHERE`; the
         second joins every listed sale's lines to their variety, the same way."""
         statement = (
             select(
