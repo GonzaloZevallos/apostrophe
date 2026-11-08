@@ -101,3 +101,7 @@ Cuando esos dos defectos se arreglen, hay que repetir la corrida completa y actu
 - `part2-p2.index.json`: índice de la corrida de todo el registro (171 `captured`, 48 `not-captured`), con cada ruta reducida a su basename.
 - `part2-p2-sizes.index.json`: índice de las 12 filas a 320x568, 375x812 y 430x932.
 - `ae-part1-part2.txt`: salida de `ae` de la parte 1 contra esta corrida.
+
+## Estado en `0f96db32`
+
+Revisado de nuevo sobre `0f96db32`: `take-shot.mjs` no cambió desde la corrida (`git diff 1f94db75 HEAD -- scripts/design/take-shot.mjs scripts/design/shot.mjs scripts/design/stitch.mjs` vacío), así que los dos criterios abiertos de arriba siguen abiertos y los números de esta corrida siguen siendo los vigentes. Esta evidencia no se puede cerrar sin el arreglo de la ruta de scroll.
