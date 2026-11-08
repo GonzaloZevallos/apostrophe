@@ -14,7 +14,7 @@ from datetime import date, datetime
 from sqlalchemy import ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.db import Base, UtcDateTime
+from app.db import Base, UtcDateTime, money_column
 
 PAYMENT_METHOD_MAX_LENGTH = 10
 
@@ -26,7 +26,7 @@ class PaymentRow(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
     paid_on: Mapped[date]
-    amount: Mapped[int]
+    amount: Mapped[int] = money_column()
     method: Mapped[str] = mapped_column(String(PAYMENT_METHOD_MAX_LENGTH))
     customer_id: Mapped[int | None] = mapped_column(ForeignKey("customer.id"))
     sale_id: Mapped[int | None] = mapped_column(ForeignKey("sale.id"))

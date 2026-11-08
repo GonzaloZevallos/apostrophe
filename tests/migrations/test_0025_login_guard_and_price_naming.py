@@ -1,9 +1,9 @@
-"""Migration 0024 (CODING_STANDARDS §11, docs/adr/0076): the guard tables get a surrogate
+"""Migration 0025 (CODING_STANDARDS §11, docs/adr/0076): the guard tables get a surrogate
 `id`, `locked_until` / `window_start` / `effective_from` become `unlocks_at` /
 `window_started_at` / `effective_on`, and the customer phone constraint takes its
 convention name. Run through the real revisions on a seeded file database: every row
 survives under its new name, the guard brake answers and counts as before, no old name
-is left anywhere in the schema, and the walk down restores the 0023 schema exactly."""
+is left anywhere in the schema, and the walk down restores the 0024 schema exactly."""
 
 from __future__ import annotations
 
@@ -60,7 +60,7 @@ def _migrate(engine: Engine, direction: str, revision: str) -> None:
 
 
 def _seed(engine: Engine) -> None:
-    """At 0023, with the 0023 names."""
+    """At 0024, with the 0024 names."""
     with engine.begin() as connection:
         connection.execute(
             text("INSERT INTO business (id, name, language) VALUES (1, 'Uno', 'en')")
@@ -120,21 +120,21 @@ def _count(engine: Engine, table: str) -> int:
 
 
 @pytest.fixture
-def at_0023(tmp_path: Path) -> Engine:
+def at_0024(tmp_path: Path) -> Engine:
     engine = make_engine(f"sqlite:///{tmp_path / 'before.db'}")
-    upgrade_to(engine, "0023")
+    upgrade_to(engine, "0024")
     _seed(engine)
     return engine
 
 
 @pytest.fixture
-def at_0024(at_0023: Engine) -> Engine:
-    _migrate(at_0023, "up", "0024")
-    return at_0023
+def at_0025(at_0024: Engine) -> Engine:
+    _migrate(at_0024, "up", "0025")
+    return at_0024
 
 
-def test_every_row_survives_under_its_new_names(at_0023: Engine) -> None:
-    counts = {table: _count(at_0023, table) for table in SEEDED_TABLES}
+def test_every_row_survives_under_its_new_names(at_0024: Engine) -> None:
+    counts = {table: _count(at_0024, table) for table in SEEDED_TABLES}
     assert counts == {
         "login_guard": 2,
         "login_address_guard": 2,
@@ -142,38 +142,38 @@ def test_every_row_survives_under_its_new_names(at_0023: Engine) -> None:
         "customer": 2,
     }
 
-    _migrate(at_0023, "up", "0024")
+    _migrate(at_0024, "up", "0025")
 
-    assert {table: _count(at_0023, table) for table in SEEDED_TABLES} == counts
-    assert _rows(at_0023, "SELECT email, failures, unlocks_at FROM login_guard") == {
+    assert {table: _count(at_0024, table) for table in SEEDED_TABLES} == counts
+    assert _rows(at_0024, "SELECT email, failures, unlocks_at FROM login_guard") == {
         (LOCKED_EMAIL, 2, EMAIL_LOCK_UNTIL),
         (PLAIN_EMAIL, 3, None),
     }
     assert _rows(
-        at_0023,
+        at_0024,
         "SELECT address_digest, failures, window_started_at, unlocks_at FROM login_address_guard",
     ) == {
         (EXPIRED_DIGEST, 4, EXPIRED_WINDOW, None),
         (ACTIVE_DIGEST, 2, ACTIVE_WINDOW, ADDRESS_LOCK_UNTIL),
     }
-    assert _rows(at_0023, "SELECT id, effective_on, list_price FROM price_entry") == {
+    assert _rows(at_0024, "SELECT id, effective_on, list_price FROM price_entry") == {
         (1, "2026-01-01", 100),
         (2, "2026-02-01", 200),
     }
-    assert _rows(at_0023, "SELECT id, name, phone FROM customer") == {
+    assert _rows(at_0024, "SELECT id, name, phone FROM customer") == {
         (1, "Con Telefono", "+5491123456789"),
         (2, "Sin", None),
     }
 
 
-def test_the_guard_ids_are_distinct_and_cover_one_to_n(at_0024: Engine) -> None:
+def test_the_guard_ids_are_distinct_and_cover_one_to_n(at_0025: Engine) -> None:
     for table in ("login_guard", "login_address_guard"):
-        ids = sorted(row[0] for row in _rows(at_0024, f"SELECT id FROM {table}"))
+        ids = sorted(row[0] for row in _rows(at_0025, f"SELECT id FROM {table}"))
         assert ids == [1, 2]
 
 
-def test_login_locks_answers_as_the_seeded_rows_say(at_0024: Engine) -> None:
-    with Session(at_0024) as session:
+def test_login_locks_answers_as_the_seeded_rows_say(at_0025: Engine) -> None:
+    with Session(at_0025) as session:
         accounts = SqlAccounts(session)
 
         locked = accounts.login_locks(Email(LOCKED_EMAIL), ACTIVE_DIGEST)
@@ -187,8 +187,8 @@ def test_login_locks_answers_as_the_seeded_rows_say(at_0024: Engine) -> None:
     assert (unknown.email_locked_until, unknown.address_locked_until) == (None, None)
 
 
-def test_the_email_count_continues_the_stored_one(at_0024: Engine) -> None:
-    with Session(at_0024) as session:
+def test_the_email_count_continues_the_stored_one(at_0025: Engine) -> None:
+    with Session(at_0025) as session:
         accounts = SqlAccounts(session)
 
         assert accounts.count_email_failure(Email(PLAIN_EMAIL), NOW) == 4
@@ -196,12 +196,12 @@ def test_the_email_count_continues_the_stored_one(at_0024: Engine) -> None:
         assert accounts.count_email_failure(Email("nuevo@example.com"), NOW) == 1
         session.commit()
 
-    assert _count(at_0024, "login_guard") == 3
+    assert _count(at_0025, "login_guard") == 3
 
 
-def test_an_active_address_window_increments_and_an_expired_one_restarts(at_0024: Engine) -> None:
+def test_an_active_address_window_increments_and_an_expired_one_restarts(at_0025: Engine) -> None:
     cutoff = NOW - timedelta(minutes=15)
-    with Session(at_0024) as session:
+    with Session(at_0025) as session:
         accounts = SqlAccounts(session)
 
         assert accounts.count_address_failure(ACTIVE_DIGEST, NOW, cutoff) == 3
@@ -209,21 +209,21 @@ def test_an_active_address_window_increments_and_an_expired_one_restarts(at_0024
         session.commit()
 
     windows = dict(
-        _rows(at_0024, "SELECT address_digest, window_started_at FROM login_address_guard")
+        _rows(at_0025, "SELECT address_digest, window_started_at FROM login_address_guard")
     )
     assert windows[ACTIVE_DIGEST] == ACTIVE_WINDOW
     assert windows[EXPIRED_DIGEST].startswith("2026-10-02 18:00:00")
 
 
-def test_a_second_row_for_one_email_or_address_is_refused(at_0024: Engine) -> None:
+def test_a_second_row_for_one_email_or_address_is_refused(at_0025: Engine) -> None:
     with pytest.raises(IntegrityError, match="login_guard.email"):
-        with at_0024.begin() as connection:
+        with at_0025.begin() as connection:
             connection.execute(
                 text("INSERT INTO login_guard (email, failures) VALUES (:e, 1)"),
                 {"e": LOCKED_EMAIL},
             )
     with pytest.raises(IntegrityError, match="login_address_guard.address_digest"):
-        with at_0024.begin() as connection:
+        with at_0025.begin() as connection:
             connection.execute(
                 text(
                     "INSERT INTO login_address_guard (address_digest, failures, window_started_at) "
@@ -233,8 +233,8 @@ def test_a_second_row_for_one_email_or_address_is_refused(at_0024: Engine) -> No
             )
 
 
-def test_no_reflected_name_carries_an_old_token(at_0024: Engine) -> None:
-    inspector = inspect(at_0024)
+def test_no_reflected_name_carries_an_old_token(at_0025: Engine) -> None:
+    inspector = inspect(at_0025)
     names: list[str] = []
     for table in inspector.get_table_names():
         names.append(table)
@@ -282,17 +282,17 @@ def _shape(engine: Engine) -> dict[str, dict[str, Any]]:
     }
 
 
-def test_the_walk_down_restores_the_0023_schema_and_rows_exactly(
-    at_0023: Engine, tmp_path: Path
+def test_the_walk_down_restores_the_0024_schema_and_rows_exactly(
+    at_0024: Engine, tmp_path: Path
 ) -> None:
     straight = make_engine(f"sqlite:///{tmp_path / 'straight.db'}")
-    upgrade_to(straight, "0023")
+    upgrade_to(straight, "0024")
     _seed(straight)
 
-    _migrate(at_0023, "up", "0024")
-    _migrate(at_0023, "down", "0023")
+    _migrate(at_0024, "up", "0025")
+    _migrate(at_0024, "down", "0024")
 
-    assert _shape(at_0023) == _shape(straight)
+    assert _shape(at_0024) == _shape(straight)
     for table in SEEDED_TABLES:
-        assert _rows(at_0023, f"SELECT * FROM {table}") == _rows(straight, f"SELECT * FROM {table}")
-    assert _rows(at_0023, "SELECT version_num FROM alembic_version") == {("0023",)}
+        assert _rows(at_0024, f"SELECT * FROM {table}") == _rows(straight, f"SELECT * FROM {table}")
+    assert _rows(at_0024, "SELECT version_num FROM alembic_version") == {("0024",)}

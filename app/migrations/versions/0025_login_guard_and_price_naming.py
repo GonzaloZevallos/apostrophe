@@ -1,8 +1,8 @@
 """Database naming (CODING_STANDARDS §11, docs/adr/0076): the login guard tables get a
 surrogate `id`, and four names are fixed.
 
-Revision ID: 0024
-Revises: 0023
+Revision ID: 0025
+Revises: 0024
 
 `login_guard` and `login_address_guard` get an integer primary key `id` and stay keyed by
 `email` / `address_digest` through a unique constraint, the upsert's conflict target.
@@ -13,7 +13,7 @@ constraint, and `uq_customer_business_phone` becomes `uq_customer_business_id_ph
 SQLite cannot give a table a new primary key in place, so each guard table is rebuilt by
 copying it (the ids are assigned by SQLite and carry no meaning or order); the other two
 tables go through batch mode. Each rebuild compares the row count before and after, and
-refuses with the table name only: never row data. The downgrade restores the 0023 schema,
+refuses with the table name only: never row data. The downgrade restores the 0024 schema,
 names included. The runner has foreign keys off while it runs.
 """
 
@@ -23,8 +23,8 @@ from contextlib import contextmanager
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0024"
-down_revision: str | None = "0023"
+revision: str = "0025"
+down_revision: str | None = "0024"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -80,7 +80,7 @@ def _copy_into_new(
     op.rename_table(new_table, table)
 
 
-def _create_login_guard_0024(name: str) -> None:
+def _create_login_guard_0025(name: str) -> None:
     op.create_table(
         name,
         sa.Column("id", sa.Integer(), nullable=False),
@@ -92,7 +92,7 @@ def _create_login_guard_0024(name: str) -> None:
     )
 
 
-def _create_login_guard_0023(name: str) -> None:
+def _create_login_guard_0024(name: str) -> None:
     op.create_table(
         name,
         sa.Column("email", sa.String(length=254), nullable=False),
@@ -102,7 +102,7 @@ def _create_login_guard_0023(name: str) -> None:
     )
 
 
-def _create_login_address_guard_0024(name: str) -> None:
+def _create_login_address_guard_0025(name: str) -> None:
     op.create_table(
         name,
         sa.Column("id", sa.Integer(), nullable=False),
@@ -115,7 +115,7 @@ def _create_login_address_guard_0024(name: str) -> None:
     )
 
 
-def _create_login_address_guard_0023(name: str) -> None:
+def _create_login_address_guard_0024(name: str) -> None:
     op.create_table(
         name,
         sa.Column("address_digest", sa.String(length=64), nullable=False),
@@ -129,13 +129,13 @@ def _create_login_address_guard_0023(name: str) -> None:
 def _upgrade() -> None:
     _copy_into_new(
         "login_guard",
-        _create_login_guard_0024,
+        _create_login_guard_0025,
         "email, failures, unlocks_at",
         "email, failures, locked_until",
     )
     _copy_into_new(
         "login_address_guard",
-        _create_login_address_guard_0024,
+        _create_login_address_guard_0025,
         "address_digest, failures, window_started_at, unlocks_at",
         "address_digest, failures, window_start, locked_until",
     )
@@ -191,13 +191,13 @@ def _downgrade() -> None:
 
     _copy_into_new(
         "login_address_guard",
-        _create_login_address_guard_0023,
+        _create_login_address_guard_0024,
         "address_digest, failures, window_start, locked_until",
         "address_digest, failures, window_started_at, unlocks_at",
     )
     _copy_into_new(
         "login_guard",
-        _create_login_guard_0023,
+        _create_login_guard_0024,
         "email, failures, locked_until",
         "email, failures, unlocks_at",
     )

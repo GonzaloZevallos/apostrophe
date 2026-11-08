@@ -2,7 +2,7 @@
  * `GatedLayout` at the screen seam: `GET /auth/me` is the gated branch's one query
  * (plan, "Session"). A dropped network shows "Sin conexión" instead of a blank page
  * that never recovers; a server error shows the generic retry, never a refusal
- * (`accounts.md`, "No network" / "Feedback"). A successful `me` renders whatever is
+ * (`accounts.md`, "Sin red" / "Avisos en cada pantalla"). A successful `me` renders whatever is
  * nested under it.
  */
 

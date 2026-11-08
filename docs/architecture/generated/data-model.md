@@ -91,6 +91,13 @@ erDiagram
     INTEGER failures
     DATETIME unlocks_at "nullable"
   }
+  money_format {
+    INTEGER id PK
+    INTEGER business_id FK
+    VARCHAR symbol
+    INTEGER decimals
+    INTEGER scale
+  }
   onboarding {
     INTEGER id PK
     INTEGER business_id FK
@@ -240,6 +247,7 @@ erDiagram
   business ||--o{ withdrawal_reason : business_id
   business ||--o| catalog_header_footer : business_id
   business ||--o| first_run : business_id
+  business ||--o| money_format : business_id
   business ||--o| onboarding : business_id
   business ||--o| pinned_catalog : business_id
   business ||--o| pricing_settings : business_id

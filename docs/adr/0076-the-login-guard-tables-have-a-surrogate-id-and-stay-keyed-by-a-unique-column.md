@@ -16,7 +16,7 @@ Part 1 of the database naming work (#75, CODING_STANDARDS §11).
 - Both guard tables get a surrogate `id` primary key (`pk_login_guard`, `pk_login_address_guard`). The ids carry no meaning and no order, and nothing reads them.
 - They stay keyed by `email` / `address_digest` through a unique constraint (`uq_login_guard_email`, `uq_login_address_guard_address_digest`). That constraint is the conflict target of the one atomic `INSERT ... ON CONFLICT DO UPDATE ... RETURNING` every count is written with (ADR-0002). Guard rows are read with a select on that column, never by primary key.
 - `locked_until` is `unlocks_at` in both tables, `window_start` is `window_started_at`, `price_entry.effective_from` is `effective_on`, and `uq_customer_business_phone` is `uq_customer_business_id_phone`. The domain, ports, schemas and the API keep their names; only the table classes and their repository adapters know the stored names.
-- Migration 0024 rebuilds the tables by copying every row, compares the row count before and after, and refuses with the table name only. Its downgrade restores the 0023 schema, names included.
+- Migration 0025 rebuilds the tables by copying every row, compares the row count before and after, and refuses with the table name only. Its downgrade restores the 0024 schema, names included.
 
 ## Consequences
 
