@@ -109,7 +109,7 @@ test('once the prices arrive the loading state gives way to the form', async () 
 test('a date change keeps what was typed and shows compact bars where prices were, then reprices', async () => {
   const user = userEvent.setup()
   await openAndPriceToday()
-  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.selectOptions(screen.getByLabelText('Line 1 product'), '1')
   await user.type(screen.getByLabelText('Line 1 grams'), '2')
   await user.type(screen.getByLabelText('Shipping'), '00')
   expect(screen.getAllByText('$ 2.000').length).toBeGreaterThanOrEqual(1)
@@ -118,7 +118,7 @@ test('a date change keeps what was typed and shows compact bars where prices wer
 
   // Everything typed is still there, and the form never went blank.
   expect(screen.getByLabelText('Line 1 grams')).toHaveValue('2')
-  expect(screen.getByLabelText('Line 1 variety')).toHaveValue('1')
+  expect(screen.getByLabelText('Line 1 product')).toHaveValue('1')
   expect(screen.getByLabelText('Shipping')).toHaveValue('000')
   // Exactly one progressbar, the visually hidden announcer; the figures wait behind bars.
   expect(screen.getAllByRole('progressbar')).toHaveLength(1)

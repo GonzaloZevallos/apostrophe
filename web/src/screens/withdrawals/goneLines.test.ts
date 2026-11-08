@@ -40,7 +40,7 @@ test('guiltyKeys: every line of a duplicated variety is guilty together', () => 
   expect(guiltyKeys(lines, new Set(['1']), new Set())).toEqual(new Set([0, 2]))
 })
 
-test('guiltyKeys: an empty list makes every chosen line guilty, and a line with no variety never', () => {
+test('guiltyKeys: an empty list makes every chosen line guilty, and a line with no product never', () => {
   const lines = [
     { key: 0, varietyId: '1' },
     { key: 1, varietyId: '' },
@@ -86,7 +86,7 @@ test('lineChoice: a missing name gives no selected, never the id', () => {
   expect(lineChoice({ key: 0, varietyId: '3', varietyName: '' }, LISTED).selected).toBeUndefined()
 })
 
-test('lineChoice: a line with no Variety has no selected', () => {
+test('lineChoice: a line with no product has no selected', () => {
   expect(lineChoice({ key: 0, varietyId: '', varietyName: '' }, LISTED).selected).toBeUndefined()
 })
 

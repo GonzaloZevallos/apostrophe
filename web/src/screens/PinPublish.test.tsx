@@ -93,7 +93,7 @@ test.each([
   ['bot_cannot_post', 'The bot cannot post in the channel'],
   ['message_gone', 'The pinned message is gone: publish it again'],
   ['missing_publish', 'It still has to be published with the new bot or channel'],
-  ['too_long', 'It is too long for Telegram: shorten aromas or hide varieties.'],
+  ['too_long', 'It is too long for Telegram: shorten aromas or hide products.'],
 ] as const)(
   'Out of date for %s reads its reason, shows no link and keeps Publish enabled',
   async (reason, text) => {

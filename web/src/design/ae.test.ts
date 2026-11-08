@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { PNG } from 'pngjs'
 import { afterEach, describe, expect, it } from 'vitest'
-import { ae, box, compareIndexes, decode } from '../../../scripts/design/ae.mjs'
+import { ae, box, compareIndexes, decode, type IndexEntry } from '../../../scripts/design/ae.mjs'
 
 type Image = { width: number; height: number; data: Uint8Array }
 
@@ -86,10 +86,16 @@ describe('decode', () => {
 })
 
 describe('compareIndexes', () => {
-  const entry = (screen: string, built: string | null, design: string | null) => ({
+  const entry = (
+    screen: string,
+    built: string | null,
+    design: string | null,
+    reasons?: { design?: string; built?: string },
+  ): IndexEntry => ({
     screen,
     built,
     design,
+    ...(reasons ? { capture: 'not-captured' as const, reasons } : {}),
   })
   // Paths name an image; `load` answers from this table, like decode would from a file.
   const images: Record<string, Image> = {
@@ -127,15 +133,99 @@ describe('compareIndexes', () => {
     const after = [entry('Inicio', null, 'a/design')]
     const result = compareIndexes(before, after, null, load)
     expect(result.failed).toBe(true)
-    expect(result.lines).toContain('Inicio built: FAIL no capture in after')
+    expect(result.lines).toContain('Inicio built: FAIL not compared — no reason recorded')
     expect(result.lines).toContain('Inicio design: AE 0')
   })
 
-  it('reports a null on both sides and does not fail on it', () => {
+  it('reports a null on both sides of an old index and does not fail on it', () => {
     const none = [entry('Pronto', null, 'a/design')]
     const result = compareIndexes(none, none, null, load)
     expect(result.failed).toBe(false)
-    expect(result.lines).toContain('Pronto built: no capture on either side')
+    expect(result.lines).toContain('Pronto built: not compared — no reason recorded')
+  })
+
+  describe('a side that was not captured', () => {
+    const gone = 'shot: no built screen yet (built)'
+    const unsettled = 'shot: did not settle (built)'
+
+    it('fails a side that had an image before and has none after, with the reason of after', () => {
+      const before = [entry('Inicio', 'a/built', 'a/design')]
+      const after = [entry('Inicio', null, 'a/design', { built: unsettled })]
+      const result = compareIndexes(before, after, null, load)
+      expect(result.failed).toBe(true)
+      expect(result.lines).toContain('Inicio built: FAIL not compared — shot: did not settle (built)')
+    })
+
+    it('fails that side whatever the after index says: capture captured, or reasons that do not fit', () => {
+      const before = [entry('Inicio', 'a/built', 'a/design')]
+      const lying = [{ screen: 'Inicio', built: null, design: 'a/design', capture: 'captured' as const }]
+      expect(compareIndexes(before, lying, null, load).failed).toBe(true)
+      const wrongSide = [entry('Inicio', null, 'a/design', { built: 'shot: did not settle (design)' })]
+      const result = compareIndexes(before, wrongSide, null, load)
+      expect(result.failed).toBe(true)
+      expect(result.lines).toContain('Inicio built: FAIL not compared — no reason recorded')
+    })
+
+    it('does not fail a side with no image before and one after, and takes the reason of before', () => {
+      const before = [entry('Inicio', null, 'a/design', { built: gone })]
+      const after = [entry('Inicio', 'a/built', 'a/design')]
+      const result = compareIndexes(before, after, null, load)
+      expect(result.failed).toBe(false)
+      expect(result.lines).toContain('Inicio built: not compared — shot: no built screen yet (built)')
+      expect(result.lines).toContain('Inicio design: AE 0')
+    })
+
+    it('does not fail a side with none on either side, and prefers the reason of after', () => {
+      const before = [entry('Inicio', null, 'a/design', { built: gone })]
+      const after = [entry('Inicio', null, 'a/design', { built: unsettled })]
+      const result = compareIndexes(before, after, null, load)
+      expect(result.failed).toBe(false)
+      expect(result.lines).toContain('Inicio built: not compared — shot: did not settle (built)')
+      expect(compareIndexes(before, [entry('Inicio', null, 'a/design')], null, load).lines).toContain(
+        'Inicio built: not compared — shot: no built screen yet (built)',
+      )
+    })
+
+    it('prints no reason recorded for a reason with page text, a number or another side', () => {
+      const poisons = [
+        'shot: Cobrar 4500 (built)',
+        'shot: did not settle (design)',
+        'timeout en {"click":"Cobrar"}',
+        'shot: could not take the shot (built) extra',
+        '',
+      ]
+      for (const reason of poisons) {
+        const none = [entry('Inicio', null, 'a/design', { built: reason })]
+        const result = compareIndexes(none, none, null, load)
+        expect(result.lines).toContain('Inicio built: not compared — no reason recorded')
+        expect(result.lines.join('\n')).not.toContain(reason === '' ? 'shot:' : reason)
+      }
+    })
+
+    it('never prints AE 0 on a not-compared line', () => {
+      const cases: Array<[IndexEntry[], IndexEntry[]]> = [
+        [[entry('A', 'a/built', 'a/design')], [entry('A', null, 'a/design', { built: unsettled })]],
+        [[entry('A', null, 'a/design', { built: gone })], [entry('A', 'a/built', 'a/design')]],
+        [[entry('A', null, null, { built: gone, design: unsettled })], [entry('A', null, null)]],
+      ]
+      for (const [before, after] of cases) {
+        const lines = compareIndexes(before, after, null, load).lines.filter((line) => line.includes('not compared'))
+        expect(lines.length).toBeGreaterThan(0)
+        for (const line of lines) expect(line).not.toContain('AE 0')
+      }
+    })
+
+    it('fails an entry missing from one index and from both', () => {
+      const one = [entry('Inicio', null, null, { built: gone, design: unsettled })]
+      expect(compareIndexes(one, [], null, load)).toEqual({
+        lines: ['Inicio: FAIL missing in after'],
+        failed: true,
+      })
+      expect(compareIndexes([], one, null, load).lines).toEqual(['Inicio: FAIL missing in before'])
+      const neither = compareIndexes([], [], new Set(['Inicio']), load)
+      expect(neither.failed).toBe(true)
+      expect(neither.lines).toEqual(['Inicio: FAIL in neither index'])
+    })
   })
 
   it('fails a size mismatch and an unreadable image, and prints the AE of a changed one', () => {
@@ -235,7 +325,7 @@ describe('ae.mjs as a command', () => {
     const size = run(output(image(2, 2)), output(image(3, 3)))
     expect(size.stdout).toBe('Inicio built: FAIL different dimensions\nInicio design: AE 0\n')
     const gone = run(output(image(2, 2)), output(null))
-    expect(gone.stdout).toBe('Inicio built: FAIL no capture in after\nInicio design: AE 0\n')
+    expect(gone.stdout).toBe('Inicio built: FAIL not compared — no reason recorded\nInicio design: AE 0\n')
   })
 
   it('--box adds the box of a differing side, coordinates only', () => {

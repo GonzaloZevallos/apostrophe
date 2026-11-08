@@ -3,7 +3,7 @@
  * entry"): records a new entry (with today filled in and "Hoy tiene N g" under the
  * variety), lets an adjustment carry negative grams, refuses a purchase with no cost
  * on its own field, confirms before saving an edit, and confirms before deleting,
- * naming the date, variety and grams.
+ * naming the date, product and grams.
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -97,7 +97,7 @@ function renderForm(
 
 /** The Variety field once it has loaded (a busy field is still waiting for its list). */
 async function varietyField(): Promise<HTMLElement> {
-  const field = await screen.findByRole('button', { name: /^Variety/ })
+  const field = await screen.findByRole('button', { name: /^Product/ })
   await waitFor(() => expect(field).not.toHaveAttribute('aria-busy'))
   return field
 }
@@ -349,7 +349,7 @@ test('editing an entry confirms before saving', async () => {
   expect(fetch).toHaveBeenCalledWith('/stock/entries/10', expect.objectContaining({ method: 'PUT' }))
 })
 
-test('deleting an entry confirms first, naming the date, variety and grams', async () => {
+test('deleting an entry confirms first, naming the date, product and grams', async () => {
   vi.stubGlobal(
     'fetch',
     vi.fn((input: string | URL | Request) => {
@@ -497,7 +497,7 @@ test("another variety's entries do not stop 'Initial stock' from being preselect
   expect(screen.getByRole('button', { name: 'Initial stock' })).toHaveAttribute('aria-pressed', 'true')
 })
 
-test('from "+ Stock entry" no variety is chosen and Compra is the origin', async () => {
+test('from "+ Stock entry" no product is chosen and Compra is the origin', async () => {
   fakeFor(stockOf([]))
   renderForm(STOCK_ENTRY_NEW)
 
@@ -563,14 +563,14 @@ test('a save goes back by history too, and says "Entry saved" there', async () =
   expect(await screen.findByText('Entry saved')).toBeInTheDocument()
 })
 
-test('a missing or foreign entry shows "That is gone." with "Back to Varieties"', async () => {
+test('a missing or foreign entry shows "That is gone." with "Back to Products"', async () => {
   fakeFor(stockOf([]), {
     'GET /stock/entries/99': () => jsonResponse(404, { code: 'stock.entry_not_found', detail: 'x' }),
   })
   renderForm(pathTo(STOCK_ENTRY, { id: 99 }))
 
   expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Back to Varieties' })).toHaveAttribute('href', VARIETIES_PATH)
+  expect(screen.getByRole('link', { name: 'Back to Products' })).toHaveAttribute('href', VARIETIES_PATH)
 })
 
 test('a save marks the catalog stale, since stock changes what it says', async () => {
@@ -766,7 +766,7 @@ test('editing an entry of an archived variety shows it as the chosen one, and of
   expect(field).toHaveTextContent('Vieja')
   expect(field).toHaveTextContent('no longer available')
   await userEvent.click(field)
-  const list = within(await screen.findByRole('dialog', { name: 'Variety options' }))
+  const list = within(await screen.findByRole('dialog', { name: 'Product options' }))
   expect(list.getByRole('button', { name: 'Sir Jack' })).toBeInTheDocument()
   expect(list.queryByRole('button', { name: 'Vieja' })).not.toBeInTheDocument()
   expect(list.queryByRole('button', { name: 'Otra archivada' })).not.toBeInTheDocument()
@@ -864,7 +864,7 @@ test('with 12 Varieties the field is a Selector: search narrows it and no select
   expect(pressed.map((button) => button.textContent)).toEqual(['Purchase', 'Harvest', 'Initial stock', 'Adjustment'])
 
   await userEvent.click(field)
-  const list = within(await screen.findByRole('dialog', { name: 'Variety options' }))
+  const list = within(await screen.findByRole('dialog', { name: 'Product options' }))
   await userEvent.type(list.getByRole('searchbox'), '07')
   expect(list.queryByRole('button', { name: 'Cepa 08' })).toBeNull()
   await userEvent.click(list.getByRole('button', { name: 'Cepa 07' }))
@@ -883,14 +883,14 @@ test('while the Varieties load the field is busy and says nothing about an empty
   )
   renderForm(STOCK_ENTRY_NEW)
 
-  const field = await screen.findByRole('button', { name: /^Variety/ })
+  const field = await screen.findByRole('button', { name: /^Product/ })
   expect(field).toHaveAttribute('aria-busy', 'true')
   expect(screen.queryByText(/No varieties yet/)).toBeNull()
 
   await act(async () => release(jsonResponse(200, [])))
   await waitFor(() => expect(field).not.toHaveAttribute('aria-busy'))
   await userEvent.click(field)
-  expect(await screen.findByText('No varieties yet. Add them in the Varieties tab.')).toBeInTheDocument()
+  expect(await screen.findByText('No products yet. Add them in the Products tab.')).toBeInTheDocument()
 })
 
 test('an edited entry whose archived name cannot be read shows the failure and a retry, and still saves its stored Variety', async () => {
@@ -912,7 +912,7 @@ test('an edited entry whose archived name cannot be read shows the failure and a
   renderForm(pathTo(STOCK_ENTRY, { id: 10 }))
 
   expect(await screen.findByRole('button', { name: 'Something went wrong. Try again.' })).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: /^Variety/ })).toBeNull()
+  expect(screen.queryByRole('button', { name: /^Product/ })).toBeNull()
   await userEvent.type(screen.getByLabelText('Grams'), '1')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Yes, save' }))
@@ -930,13 +930,13 @@ test('back with the list open closes only the list and keeps what was typed; the
 
   await userEvent.type(await screen.findByLabelText('Grams'), '12')
   await userEvent.click(await varietyField())
-  expect(await screen.findByRole('dialog', { name: 'Variety options' })).toBeInTheDocument()
+  expect(await screen.findByRole('dialog', { name: 'Product options' })).toBeInTheDocument()
   expect(router.state.location.state).toMatchObject({ sheet: 1 })
 
   await act(async () => {
     await router.navigate(-1)
   })
-  await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Variety options' })).toBeNull())
+  await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Product options' })).toBeNull())
   expect(screen.getByLabelText('Grams')).toHaveValue('12')
   expect(router.state.location.pathname).toBe(STOCK_ENTRY_NEW)
 
@@ -963,7 +963,7 @@ test('on the computer Escape with the dropdown open closes only the dropdown', a
   renderForm(STOCK_ENTRY_NEW)
 
   await userEvent.click(await varietyField())
-  expect(await screen.findByRole('listbox', { name: 'Variety options' })).toBeInTheDocument()
+  expect(await screen.findByRole('listbox', { name: 'Product options' })).toBeInTheDocument()
   await userEvent.keyboard('{Escape}')
   await waitFor(() => expect(screen.queryByRole('listbox')).toBeNull())
   expect(screen.getByLabelText('Grams')).toBeInTheDocument()
@@ -1022,7 +1022,7 @@ test('with the archived name still loading the field is busy and saving the edit
   )
   renderForm(pathTo(STOCK_ENTRY, { id: 10 }))
 
-  expect(await screen.findByRole('button', { name: /^Variety/ })).toHaveAttribute('aria-busy', 'true')
+  expect(await screen.findByRole('button', { name: /^Product/ })).toHaveAttribute('aria-busy', 'true')
   await userEvent.type(await screen.findByLabelText('Grams'), '1')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Yes, save' }))
@@ -1043,7 +1043,7 @@ test('after a failed archived read the retry names the stored Variety with the "
 
   await userEvent.click(await screen.findByRole('button', { name: 'Something went wrong. Try again.' }))
 
-  const field = await screen.findByRole('button', { name: /^Variety/ })
+  const field = await screen.findByRole('button', { name: /^Product/ })
   await waitFor(() => expect(field).toHaveTextContent('Vieja'))
   expect(field).toHaveTextContent('no longer available')
   expect(screen.queryByRole('button', { name: 'Something went wrong. Try again.' })).toBeNull()
@@ -1073,7 +1073,7 @@ test.each([['phone' as const], ['computer' as const]])(
     const { client } = renderApp([STOCK_ENTRY_NEW])
 
     await userEvent.click(await varietyField())
-    const list = viewport === 'phone' ? await screen.findByRole('dialog', { name: 'Variety options' }) : document.body
+    const list = viewport === 'phone' ? await screen.findByRole('dialog', { name: 'Product options' }) : document.body
     await userEvent.type(within(list).getByRole('searchbox'), '07')
     const reads = () => vi.mocked(fetch).mock.calls.filter(([url]) => url === '/api/products').length
     const before = reads()
@@ -1083,7 +1083,7 @@ test.each([['phone' as const], ['computer' as const]])(
     })
 
     expect(reads()).toBeGreaterThan(before)
-    const kept = viewport === 'phone' ? screen.getByRole('dialog', { name: 'Variety options' }) : document.body
+    const kept = viewport === 'phone' ? screen.getByRole('dialog', { name: 'Product options' }) : document.body
     expect(within(kept).getByRole('searchbox')).toHaveValue('07')
     expect(within(kept).getByRole(viewport === 'phone' ? 'button' : 'option', { name: 'Cepa 07' })).toBeInTheDocument()
     expect(screen.queryByText('That is gone. The list is up to date.')).toBeNull()
@@ -1132,12 +1132,12 @@ test('EntradaStock edit with the list open: back closes only the list, the next 
   const { router } = renderApp(EDIT_PATH_STATE())
   await userEvent.type(await screen.findByLabelText('Grams'), '1')
   await userEvent.click(await varietyField())
-  expect(await screen.findByRole('dialog', { name: 'Variety options' })).toBeInTheDocument()
+  expect(await screen.findByRole('dialog', { name: 'Product options' })).toBeInTheDocument()
 
   await act(async () => {
     await router.navigate(-1)
   })
-  await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Variety options' })).toBeNull())
+  await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Product options' })).toBeNull())
   expect(screen.getByLabelText('Grams')).toHaveValue('251')
   expect(router.state.location.pathname).toBe(ENTRY_PATH)
   expect(screen.queryByRole('alertdialog')).toBeNull()

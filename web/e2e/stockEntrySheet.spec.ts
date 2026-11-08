@@ -27,7 +27,7 @@ async function expectActionAtTheBottom(page: Page, dialogName: string, action: s
   expect(Math.abs(gap - padding)).toBeLessThanOrEqual(1)
 }
 
-test('a direct address to the new entry opens the sheet over Varieties, focus in Date', async ({ page }) => {
+test('a direct address to the new entry opens the sheet over Products, focus in Date', async ({ page }) => {
   await signUp(page, 'sheet-new')
   await seedRecords(page, 'Carla Cobrar')
   await page.goto(STOCK_ENTRY_NEW)

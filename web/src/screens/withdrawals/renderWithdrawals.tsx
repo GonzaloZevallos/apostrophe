@@ -122,7 +122,7 @@ async function loadedField(name: RegExp): Promise<HTMLElement> {
 
 /** The line's Variety field; a single line is "Variety", several are "Variety 1", "Variety 2". */
 export function varietyField(position: number): Promise<HTMLElement> {
-  return loadedField(position === 1 ? /^Variety(?! [2-9])/ : new RegExp(`^Variety ${position}`))
+  return loadedField(position === 1 ? /^Product(?! [2-9])/ : new RegExp(`^Product ${position}`))
 }
 
 export function reasonField(): Promise<HTMLElement> {

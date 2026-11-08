@@ -85,13 +85,13 @@ afterEach(() => {
 
 test('"Listo" names each step through its nameKey and re-renders it in place on a switch', async () => {
   inRouter(<Listo />, progress(['done', 'pending', 'pending', 'pending', 'pending', 'pending']))
-  const name = screen.getByText('Variety with price')
-  const later = screen.getByText('For later — in Varieties')
+  const name = screen.getByText('Product with price')
+  const later = screen.getByText('For later — in Products')
 
   await switchToGerman()
 
   expect(screen.getByText('de:varietyWithPrice')).toBe(name)
-  expect(screen.queryByText('Variety with price')).not.toBeInTheDocument()
+  expect(screen.queryByText('Product with price')).not.toBeInTheDocument()
   expect(screen.getByText('de:telegramBot')).toBeInTheDocument()
   // The "for later" line wraps a key label (`later` of the stock step) in English words.
   expect(later).toHaveTextContent('For later — in de:varieties')

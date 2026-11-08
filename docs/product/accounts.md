@@ -303,7 +303,7 @@ Success criteria, the cookie-security test (GH-130 follow-up):
   - An email matching no user prints a plain "no business for that email" and does nothing, in either mode.
 - **Dry run**:
   - names the business found;
-  - prints counts by kind: users, customers, varieties, price entries, stock entries, sales, sale lines, payments, expenses, expense categories, catalog settings, and invitations and reset links (deleted only);
+  - prints counts by kind: users, customers, products, price entries, stock entries, sales, sale lines, payments, expenses, expense categories, catalog settings, and invitations and reset links (deleted only);
   - writes no file, changes no row, never asks for confirmation.
 - **Real run**:
   1. Names the business and asks the operator to type its name exactly; it cannot skip this. A wrong name, a cancel or no answer writes nothing and deletes nothing.
@@ -331,16 +331,16 @@ Success criteria, the cookie-security test (GH-130 follow-up):
   - one JSON file per real run, owner-only permissions, written to the server's file system and never anywhere the app serves;
   - its name carries the business name (slugified) and the run's date and time; an existing file is never overwritten;
   - plain values: ISO 8601 dates, whole pesos, grams as decimals with up to two places;
-  - each record names what it refers to (customer, variety, category) as well as its id;
+  - each record names what it refers to (customer, product, category) as well as its id;
   - it holds every recorded fact as stored:
     - the business name and its pricing settings (Bulk price and VIP customers);
     - users (email and joining date);
     - customers (name, phone number, VIP);
-    - varieties with their low-stock threshold and catalog attributes;
+    - products with their low-stock threshold and catalog attributes;
     - price entries, with their VIP price;
-    - stock entries (date, variety, grams, origin, total cost, note; a lot is its stock entry, not a separate record);
+    - stock entries (date, product, grams, origin, total cost, note; a lot is its stock entry, not a separate record);
     - sales (date, customer, shipping charged, note, how it was paid);
-    - sale lines (variety, grams, stored price per gram, pricing rule, line total);
+    - sale lines (product, grams, stored price per gram, pricing rule, line total);
     - payments (date, amount, method, customer, and their sale for an on-the-spot payment);
     - expense categories and expenses;
     - the catalog header and footer;
@@ -541,7 +541,7 @@ These groups of Settings (navigation.md) replace the former Business screen, whi
 
 ### Feedback, on every screen
 
-These states are drawn by `Estados` (GH-49), restyled from the design with their wording unchanged. Each is checked on the phone and inside every screen's own computer layout (`InicioCompu`, the computer layout of Home; `VentasCompu`, the computer layout of Sales; the two-pane Customers and Varieties), with the same words and shapes. `Estados` draws nothing for a state no capability defines.
+These states are drawn by `Estados` (GH-49), restyled from the design with their wording unchanged. Each is checked on the phone and inside every screen's own computer layout (`InicioCompu`, the computer layout of Home; `VentasCompu`, the computer layout of Sales; the two-pane Customers and Products), with the same words and shapes. `Estados` draws nothing for a state no capability defines.
 
 - **Success toasts** are short, fixed and carry no data, with one deliberate exception.
   - This capability's toasts:
@@ -563,8 +563,8 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
     - a fixed notice shows: "That is gone. The list is up to date."
   - The notice is not a success toast. It has no data, no "Undo" and no retry action, and it is announced like a toast.
   - Confirming the delete of a record already gone gives the same notice, not the delete's success toast.
-  - **Opening the detail of a record that is gone** (a variety, a customer, an expense, a sale or a stock entry) shows "That is gone." with one button back to its list:
-    - "Back to Varieties" (a variety or a stock entry);
+  - **Opening the detail of a record that is gone** (a product, a customer, an expense, a sale or a stock entry) shows "That is gone." with one button back to its list:
+    - "Back to Products" (a product or a stock entry);
     - "Back to Customers";
     - "Back to Expenses" (the current month);
     - "Back to Sales".
@@ -626,7 +626,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - **Nothing invented (criterion 7)**:
   - the bar, the sidebar, More and Settings show exactly the entries navigation.md lists;
   - every figure on Home equals the API's answer, with real zeros for a period with no activity (results.md);
-  - Home shows no notices other than the first-run checklist, "Start with your varieties", the pinned catalog's and the after-import notice.
+  - Home shows no notices other than the first-run checklist, "Start with your products", the pinned catalog's and the after-import notice.
 - **Password change (criterion 18)**:
   - after a Change, every earlier token of the user answers 401;
   - the acting device's fresh token works, and a partner's token in the same business still works;

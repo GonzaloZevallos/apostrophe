@@ -296,11 +296,11 @@ test('a refusal shows inline by its code and keeps everything typed', async () =
 const WITHDRAWAL_REFUSALS = [
   ['stock.withdrawal_reason_required', 422, 'Pick a reason.'],
   ['stock.withdrawal_date_in_future', 422, 'The date cannot be in the future'],
-  ['stock.withdrawal_no_lines', 422, 'Add at least one variety with its grams'],
+  ['stock.withdrawal_no_lines', 422, 'Add at least one product with its grams'],
   ['stock.withdrawal_grams_not_positive', 422, 'Grams have to be more than zero'],
   ['stock.withdrawal_grams_too_precise', 422, 'Grams allow up to two decimals'],
   ['stock.withdrawal_note_too_long', 422, 'The note allows up to 200 characters'],
-  ['stock.withdrawal_variety_not_found', 404, 'A variety is gone: pick another'],
+  ['stock.withdrawal_variety_not_found', 404, 'A product is gone: pick another'],
   ['stock.withdrawal_reason_not_found', 404, 'That reason is gone. Pick another.'],
 ] as const
 
@@ -380,18 +380,18 @@ test('with two lines the form keeps the icon and text rule: Quitar is icon-only,
   await pickVariety(1, 'Gelato')
   await pickVariety(2, 'Zkittlez')
 
-  const quitar = screen.getByRole('button', { name: 'Remove variety 1' })
+  const quitar = screen.getByRole('button', { name: 'Remove product 1' })
   expect(quitar).toHaveClass('boton-icono')
   expect(quitar).toHaveTextContent('')
   expect(quitar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  expect(screen.getByRole('button', { name: 'Remove variety 2' })).toHaveClass('boton-icono')
+  expect(screen.getByRole('button', { name: 'Remove product 2' })).toHaveClass('boton-icono')
 
-  const agregar = screen.getByRole('button', { name: 'Add another variety' })
+  const agregar = screen.getByRole('button', { name: 'Add another product' })
   expect(agregar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS, optionClasses: ['pildora'] })
 
   await userEvent.click(quitar)
-  expect(screen.queryByRole('button', { name: /^Variety 2/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /^Product 2/ })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /^Remove variety/ })).not.toBeInTheDocument()
 })
 
@@ -432,7 +432,7 @@ test('with 12 Varieties and 12 reasons both fields are Selectors, found by typin
   expect(reason).toHaveTextContent('Motivo 09')
 
   await userEvent.click(await varietyField(1))
-  const varieties = within(await screen.findByRole('dialog', { name: 'Variety options' }))
+  const varieties = within(await screen.findByRole('dialog', { name: 'Product options' }))
   await userEvent.type(varieties.getByRole('searchbox'), '07')
   await userEvent.click(varieties.getByRole('button', { name: 'Cepa 07' }))
   expect(await varietyField(1)).toHaveTextContent('Cepa 07')
@@ -440,7 +440,7 @@ test('with 12 Varieties and 12 reasons both fields are Selectors, found by typin
 
 test.each([
   ['reasons', /^Reason/],
-  ['Varieties', /^Variety/],
+  ['Varieties', /^Product/],
 ] as const)('while the %s load the field is busy with no empty wording, and an untouched edit is clean', async (which, name) => {
   let release: (response: Response) => void = () => undefined
   const pending = () => new Promise<Response>((resolve) => (release = resolve))
@@ -461,7 +461,7 @@ test.each([
 
 test.each([
   ['reasons', 'No reasons yet. Add them in Settings → Business → Withdrawal reasons.'],
-  ['Varieties', 'No varieties yet. Add them in the Varieties tab.'],
+  ['Varieties', 'No products yet. Add them in the Products tab.'],
 ] as const)('an empty successful load of the %s names the place where they are made', async (which, wording) => {
   renderWithdrawals(
     [WITHDRAWAL_NEW],
@@ -492,7 +492,7 @@ test('editing while the reasons load keeps the stored reason, and shows it once 
 test('a focus refetch with the list open keeps it open with its search text', async () => {
   renderMany([WITHDRAWAL_NEW])
   await userEvent.click(await varietyField(1))
-  const list = within(await screen.findByRole('dialog', { name: 'Variety options' }))
+  const list = within(await screen.findByRole('dialog', { name: 'Product options' }))
   await userEvent.type(list.getByRole('searchbox'), '07')
 
   act(() => {
@@ -500,7 +500,7 @@ test('a focus refetch with the list open keeps it open with its search text', as
   })
   await new Promise((resolve) => setTimeout(resolve, 50))
 
-  expect(screen.getByRole('dialog', { name: 'Variety options' })).toBeInTheDocument()
+  expect(screen.getByRole('dialog', { name: 'Product options' })).toBeInTheDocument()
   expect(list.getByRole('searchbox')).toHaveValue('07')
 })
 

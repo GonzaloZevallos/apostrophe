@@ -1,6 +1,6 @@
 /**
  * The withdrawal form and a variety that is archived (`stock.md`, "Take from stock"): a
- * preselected archived variety, a stored line on a variety archived since, and a variety a
+ * preselected archived variety, a stored line on a product archived since, and a variety a
  * partner archives while the form is open. `fetch` is faked at the network with one mutable
  * world per test; the list of varieties changes over time inside it.
  */
@@ -105,13 +105,13 @@ function lineOf(position: number): HTMLElement {
 
 /** The line's Variety Selector field: "Variety" alone on one line, "Variety 1", "Variety 2" on several. */
 function variety(position: number): HTMLElement {
-  return screen.getByRole('button', { name: position === 1 ? /^Variety(?! [2-9])/ : new RegExp(`^Variety ${position}`) })
+  return screen.getByRole('button', { name: position === 1 ? /^Product(?! [2-9])/ : new RegExp(`^Product ${position}`) })
 }
 
 /** The names the open Variety list offers, then closes it. */
 async function offered(position: number): Promise<string[]> {
   await userEvent.click(await varietyField(position))
-  const list = within(await screen.findByRole('dialog', { name: /^Variety.* options$/ }))
+  const list = within(await screen.findByRole('dialog', { name: /^Product.* options$/ }))
   const names = list.getAllByRole('button').map((button) => button.textContent ?? '')
   await userEvent.click(list.getByRole('button', { name: 'Close' }))
   return names
@@ -138,7 +138,7 @@ function archiveEvent(): void {
 test.each([
   ['archived', 1],
   ['unknown', 99],
-])('a new withdrawal opened with an %s variety preselected opens with no variety chosen and nothing dirty', async (_kind, id) => {
+])('a new withdrawal opened with an %s variety preselected opens with no product chosen and nothing dirty', async (_kind, id) => {
   const state = world([GELATO])
   const { router } = render_([withdrawalNewFor(id)], state)
 
@@ -153,13 +153,13 @@ test.each([
   expect(state.writes).toEqual([])
 })
 
-test('editing a line on a variety archived since keeps its id and name, also while the list is pending', async () => {
+test('editing a line on a product archived since keeps its id and name, also while the list is pending', async () => {
   const state = world([GELATO])
   state.listGate = gate()
   const { router } = render_([pathTo(WITHDRAWAL_EDIT, { id: 1 })], state)
 
   // while the list is pending the stored line is kept, the field busy
-  expect(await screen.findByRole('button', { name: /^Variety/ })).toHaveAttribute('aria-busy', 'true')
+  expect(await screen.findByRole('button', { name: /^Product/ })).toHaveAttribute('aria-busy', 'true')
   expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
 
   await act(async () => {
@@ -234,7 +234,7 @@ test('removing the guilty line clears its message and frees the save; the health
   expect(within(lineOf(2)).queryByText(GONE)).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: SUBMIT_NEW })).toBeDisabled()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Remove variety 1' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Remove product 1' }))
 
   expect(screen.queryByText(GONE)).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: SUBMIT_NEW })).toBeEnabled()

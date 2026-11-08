@@ -18,12 +18,12 @@ export async function pickSelectorOption(page: Page, label: string, option: stri
 }
 
 export async function pickStockVariety(page: Page, variety: string): Promise<void> {
-  await pickSelectorOption(page, 'Variety', variety)
+  await pickSelectorOption(page, 'Product', variety)
 }
 
 /** The first line's Variety and the Reason of the Take from stock form. */
 export async function pickWithdrawalVariety(page: Page, variety: string): Promise<void> {
-  await pickSelectorOption(page, 'Variety', variety)
+  await pickSelectorOption(page, 'Product', variety)
 }
 
 export async function pickWithdrawalReason(page: Page, reason: string): Promise<void> {

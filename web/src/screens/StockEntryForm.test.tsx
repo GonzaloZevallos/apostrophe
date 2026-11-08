@@ -99,7 +99,7 @@ test('with a fixed variety and origin it posts the opening stock and offers no o
   expect(screen.queryByRole('button', { name: 'Purchase' })).not.toBeInTheDocument()
   // The variety is named, not chosen.
   expect(await screen.findByText('Sir Jack')).toBeInTheDocument()
-  expect(screen.queryByLabelText('Variety')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Product')).not.toBeInTheDocument()
   expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
 
   await userEvent.type(screen.getByLabelText('Grams'), '30')
@@ -174,7 +174,7 @@ test('without the locked props the form is the owner\'s whole form', async () =>
   renderInStack(<StockEntryForm mode="nuevo" today="2026-10-03" onSaved={vi.fn()} />)
 
   expect(await screen.findByLabelText('Date')).toHaveValue('2026-10-03')
-  await waitFor(() => expect(screen.getByRole('button', { name: /^Variety/ })).toBeEnabled())
+  await waitFor(() => expect(screen.getByRole('button', { name: /^Product/ })).toBeEnabled())
   expect(screen.getByLabelText('Note')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Purchase' })).toBeInTheDocument()
   expect(screen.getByText('Required for a purchase')).toBeInTheDocument()
@@ -243,6 +243,6 @@ test("an edit preselects the product whose id is the entry's product_id", async 
   )
   renderInStack(<StockEntryForm mode="editar" initial={entry} today="2026-10-03" onSaved={vi.fn()} />)
 
-  const field = await screen.findByRole('button', { name: /^Variety/ })
+  const field = await screen.findByRole('button', { name: /^Product/ })
   await waitFor(() => expect(field).toHaveTextContent(VARIETIES[1]!.name))
 })

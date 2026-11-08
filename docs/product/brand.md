@@ -35,7 +35,7 @@ La identidad del producto Apostrophe: la Yerba mark, el Wordmark, la tipografía
 | Sign in, las dos pantallas de aceptación de Invitation (Business nuevo y sumarse a un Business), primer paso del Onboarding | Yerba mark con Wordmark, arriba |
 | Barra lateral de la computadora (`InicioCompu`) | Yerba mark y Wordmark arriba, sobre "+ New sale", sin rediseño |
 
-La marca aparece en esos lugares y en ningún otro: ni en los demás Tab roots (Sales, Customers, Varieties, More), ni en tarjetas, detalles, Sheets, los pasos del Onboarding después del primero o Reset.
+La marca aparece en esos lugares y en ningún otro: ni en los demás Tab roots (Sales, Customers, Products, More), ni en tarjetas, detalles, Sheets, los pasos del Onboarding después del primero o Reset.
 
 **Encabezado de Home en el teléfono**
 
@@ -50,7 +50,7 @@ La marca aparece en esos lugares y en ningún otro: ni en los demás Tab roots (
 
 - Muestran la Yerba mark con el Wordmark arriba, nunca las dos formas a la vez. En Sign in reemplazan al texto "apostrophe’" anterior, en el mismo lugar.
 - Las dos pantallas de aceptación de Invitation la muestran: la que abre un Business nuevo y la que suma a una persona a un Business que ya existe. También la muestra el aviso de un link de Invitation que ya no sirve. Las pantallas que solo esperan o fallan (cargando, sin conexión, error) no la muestran.
-- En el Onboarding va solo en su primer paso (la Variety), el que abre un Business recién creado, cada vez que se muestra ese paso, también al retomar. Va arriba de la cabecera del paso: "Atrás" y "Close" bajan un poco pero nunca se ocultan. Los demás pasos no la muestran, y no hay una pantalla de bienvenida propia.
+- En el Onboarding va solo en su primer paso (el Product), el que abre un Business recién creado, cada vez que se muestra ese paso, también al retomar. Va arriba de la cabecera del paso: "Atrás" y "Close" bajan un poco pero nunca se ocultan. Los demás pasos no la muestran, y no hay una pantalla de bienvenida propia.
 
 **Barra lateral de la computadora**
 
@@ -58,7 +58,7 @@ La marca aparece en esos lugares y en ningún otro: ni en los demás Tab roots (
 
 **Marca fija**
 
-- La marca es fija para toda la instalación: la misma en cada Business, cada tema y cada idioma. Ninguna configuración la renombra ni la oculta, tampoco la futura Product word (GH-318) ni los Selectable languages (#317). El nombre accesible es "apostrophe" en todo idioma: el Test locale copia `brand.wordmark` y `brand.mark.label` tal cual, sin pseudolocalizarlos.
+- La marca es fija para toda la instalación: la misma en cada Business, cada tema y cada idioma. Ninguna configuración la renombra ni la oculta, tampoco los Selectable languages (#317). El nombre accesible es "apostrophe" en todo idioma: el Test locale copia `brand.wordmark` y `brand.mark.label` tal cual, sin pseudolocalizarlos.
 - La marca aparece solo dentro de la app, ante el vendedor y sus Users. Nunca en el Catalog, el Pinned catalog, los valores por defecto del Catalog header and footer, el Sale bill ni ningún texto de Telegram; esos valores por defecto quedan como están.
 
 ## Tipografía

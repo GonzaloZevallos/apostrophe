@@ -36,9 +36,9 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
 
   // A priced variety.
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByRole('link', { name: 'New product' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('900')
@@ -187,9 +187,9 @@ test('Análisis reads Cost of goods sold, Stock shortfall, Marketing and Own use
 
   for (const name of ['Rosa', 'Lirio']) {
     await page.goto(VARIETIES)
-    await page.getByRole('link', { name: 'New variety' }).click()
+    await page.getByRole('link', { name: 'New product' }).click()
     await page.getByLabel('Name').fill(name)
-    await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+    await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   }
   await page.goto(STOCK_ENTRY_NEW)
   const today = await page.getByLabel('Date').inputValue()
@@ -315,9 +315,9 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
   const longName = `Variedad ${'Larguísimo'.repeat(6)}`.slice(0, 60)
   expect(longName).toHaveLength(60)
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByRole('link', { name: 'New product' }).click()
   await page.getByLabel('Name').fill(longName)
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Variedad Larguísimo/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('900000')

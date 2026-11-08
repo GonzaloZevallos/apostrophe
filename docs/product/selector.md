@@ -8,7 +8,7 @@ La computadora también es una situación: el mismo campo se usa con teclado, co
 
 ## Qué es
 
-El Selector es el único control para elegir una opción de un Growable set: un conjunto que puede tener una opción con la que la app no vino, hoy o por una decisión ya tomada (Varieties, Expense categories, Withdrawal reasons, Customer types; y con GH-318, units, time zone, Money format, Product word y Payment methods). Lo opuesto es un Fixed set, declarado en `web/src/components/fixedSets.ts` con un motivo, que puede mostrarse como chips. El componente vive en `web/src/components/Selector.tsx`, y su búsqueda en `web/src/components/selectorSearch.ts`.
+El Selector es el único control para elegir una opción de un Growable set: un conjunto que puede tener una opción con la que la app no vino, hoy o por una decisión ya tomada (Products, Expense categories, Withdrawal reasons, Customer types; y con GH-318, units, time zone, Money format y Payment methods). Lo opuesto es un Fixed set, declarado en `web/src/components/fixedSets.ts` con un motivo, que puede mostrarse como chips. El componente vive en `web/src/components/Selector.tsx`, y su búsqueda en `web/src/components/selectorSearch.ts`.
 
 Las partes de GH-581 pasan las pantallas al Selector. Desde la parte 3 lo usan el formulario de Stock entry (`EntradaStock`, para la Variety) y el de Take from stock (para el Withdrawal reason y la Variety de cada línea), como describe stock.md.
 
@@ -81,18 +81,18 @@ Todo texto sale del Copy module (`web/src/copy/`), en inglés, con el en-XA gene
 
 - `common`: `search` (Search), `noResults` (No results), `noLongerAvailable` (no longer available), `selected` (Selected), `optionsOf` ("{{name}} options", que recibe el `label` del campo), `paid` (Paid), `owing` (Owing), `paymentMethod` (Payment method), `noType` (No type). Las últimas cuatro no las muestra el control: sirven a la nota de prueba de Payment methods y a los cambios de pantalla posteriores.
 - `emptyStates`:
-  - `selectorNoVarieties`: "No varieties yet. Add them in the Varieties tab."
+  - `selectorNoVarieties`: "No products yet. Add them in the Products tab."
   - `selectorNoCategories`: "No categories yet. Add them in Settings → Expense categories."
   - `selectorNoReasons`: "No reasons yet. Add them in Settings → Business → Withdrawal reasons."
 
-Una prueba comprueba que cada mensaje nombra el lugar con las mismas palabras de pantalla de ese lugar. La palabra "varieties" es la palabra de pantalla de hoy; cambia con la parte Product word de GH-318 y el barrido de #330.
+Una prueba comprueba que cada mensaje nombra el lugar con las mismas palabras de pantalla de ese lugar. Lo que vende un Business se llama siempre "Product" / "Products" en pantalla, sin ninguna palabra configurable (varieties.md); la clave `selectorNoVarieties` es un identificador y conserva su nombre.
 
 ## Reglas
 
 - Un conjunto que puede tener una opción con la que la app no vino, hoy o por una decisión ya tomada, se elige con el Selector, nunca con chips. Solo los Fixed sets pueden ser chips. Ejemplos: Expense categories → Selector; Today · Week · Month → chips.
 - Chips, pills, Pestanas y controles `role="radio"` toman sus opciones solo de un Fixed set declarado en `fixedSets.ts`, con un motivo no vacío. `fixedSets.ts` importa solo de `web/src/copy/` y del tipo `IconName`. Una `FixedOption` tiene solo `value`, un getter de copy `label` y un `IconName` opcional; el estado en tiempo de ejecución vive en una capa aparte por `value`.
 - Ningún conjunto leído de los datos o la configuración de un Business, Payment methods incluidos, se declara nunca en `fixedSets.ts`, ni siquiera temporalmente.
-- Cualquier selector posterior sobre datos o configuración del Business (GH-318: units, time zone, Money format, Product word, Payment methods) se construye sobre el Selector.
+- Cualquier selector posterior sobre datos o configuración del Business (GH-318: units, time zone, Money format, Payment methods) se construye sobre el Selector.
 - Nota de prueba de Payment methods, hasta GH-318: los Payment methods todavía no existen. Las pruebas y los dibujos del Selector pueden usar un conjunto de Payment method armado dentro de la prueba o del dibujo, con las claves `Payment method`, `Paid` y `Owing`; ese conjunto nunca se declara en `fixedSets.ts` ni lo lee ninguna pantalla.
 - Una parte que pasa una pantalla al Selector, y solo ella, agrega la entrada de WalkState de esa pantalla, borra las entradas de las listas de infractores que el cambio deja obsoletas y actualiza el dibujo de la pantalla en `pantallas/`. Nunca le quita una capacidad que la pantalla tenía (creación en el lugar, líneas de ayuda, el rechazo ante una línea que ya no existe), los Fixed sets conservan su aspecto y su comportamiento, y le pasa al campo el estado de carga de la consulta que lo alimenta. Cuando un campo obligatorio queda con el conjunto vacío, esa parte se asegura de que el formulario a medio cargar se conserve o se pueda recuperar.
 
@@ -121,5 +121,6 @@ Cada criterio de éxito se mide con una prueba de vitest y Testing Library, a tr
 6. Conjunto vacío: el mensaje, y la fila para borrar arriba cuando hay una elección en un campo opcional; ninguna fila para borrar en un campo obligatorio.
 7. Teclado de computadora: flechas, Enter y un Escape que no llega al formulario.
 8. Se conserva el orden recibido, la búsqueda empieza vacía al reabrir y el foco vuelve al campo.
+9. El mensaje de conjunto vacío de Products, como todo valor del Copy module, no dice "variety"/"varieties": lo controla el barrido permanente de varieties.md (`web/src/copy/productWord.test.ts`).
 
 El resultado del trabajo (una Sale registrada desde el teléfono en menos de un minuto) se mide en las partes que pasan cada pantalla al Selector, no en esta.
