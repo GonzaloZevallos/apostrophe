@@ -24,6 +24,7 @@ import GoneScreen from '../../components/GoneScreen'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
+import { SheetStackProvider } from '../../components/useSheetStack'
 import { useBackOr } from '../../components/useBackOr'
 import { useGoneExit } from '../../components/useGoneExit'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
@@ -42,7 +43,16 @@ function stillFocusable(element: Element | null): element is HTMLElement {
   return element instanceof HTMLElement && element !== document.body && element.isConnected
 }
 
+/** The Payment method Selector opens its list as a history entry, so the route has a sheet stack. */
 export default function CobroRoute() {
+  return (
+    <SheetStackProvider>
+      <CobroHost />
+    </SheetStackProvider>
+  )
+}
+
+function CobroHost() {
   const { id } = useParams<{ id: string }>()
   const customerId = id ?? ''
   const me = useOutletContext<Me>()

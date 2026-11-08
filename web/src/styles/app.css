@@ -224,6 +224,13 @@ body {
   color: var(--deuda);
 }
 
+/* A field's own refusal (`FieldRefusal`): the Attention icon beside the sentence. */
+.campo__error:has(> .aviso-ambar__icono) {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-xs);
+}
+
 /* The customer form's focus state (`NuevaVentaCliente.dc.html`): a heavy inset ring on
  * the focused field. Only `CustomerFields` carries the class; the outline stays (made
  * transparent, so forced-colors still draws it) and is never removed. */
@@ -5944,26 +5951,11 @@ body {
   opacity: 0;
 }
 
-/* The method: `SegmentedChoice` on the form's own surface, the chosen one on paper. */
+/* The method: the Payment method Selector and, under it, its refusal. */
 .cobro__metodo {
   display: flex;
   flex-direction: column;
   gap: var(--espacio-xs);
-}
-
-.cobro__metodo > .selector-pago {
-  background: var(--superficie);
-}
-
-.cobro__metodo .selector-pago__opcion {
-  min-height: var(--alto-tocable);
-  touch-action: manipulation;
-  padding: 0;
-  font-size: 15px;
-}
-
-.cobro__metodo .selector-pago__opcion--activa {
-  background: var(--papel);
 }
 
 .cobro__resumen {

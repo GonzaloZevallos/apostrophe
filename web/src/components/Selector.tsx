@@ -43,31 +43,55 @@ export interface SelectorOption {
   glyph?: string
 }
 
-export type SelectorProps = {
-  options: readonly SelectorOption[]
+type SelectorBase = {
   value: string | null
   onChange: (value: string | null) => void
   /** The field's visible label. */
   label: string
   /** The current choice when it is not in `options`: shown with the mark, never offered. */
   selected?: { value: string; label: string }
-  /** The caller keeps this true until the options loaded successfully. */
-  loading: boolean
-  /** One line of plain text, shown when `options` is empty. */
-  emptySetMessage: string
   /** Receives the field's `<button>`, for a caller that focuses it or scrolls it into view. */
   fieldRef?: Ref<HTMLButtonElement>
   /** Names the group, the field and the list where `label` would; the visible label stays `label`. */
   accessibleName?: string
+  /** The id of the text that describes the field (its refusal): the field's `aria-describedby`. */
+  describedBy?: string
   /**
    * Where the phone's list is drawn instead of beside the field. A screen that needs what is beneath
    * the open list covered (`inert`) draws the list outside that part and says where here.
    */
   listHost?: HTMLElement | null
+}
+
+/** A list read from the business's data: it can be empty and it can be loading. */
+type SelectorFed = {
+  builtIn?: never
+  options: readonly SelectorOption[]
+  /** The caller keeps this true until the options loaded successfully. */
+  loading: boolean
+  /** One line of plain text, shown when `options` is empty. */
+  emptySetMessage: string
 } & (
   | { required: true; emptyWording?: never; /** Shown in the value area while empty; never a row. */ placeholder?: string }
   | { required?: false; emptyWording: string; placeholder?: never }
 )
+
+/**
+ * A list that is part of the app and has no query behind it (the Payment methods until GH-318): it
+ * always has its options, is never loading, is never empty and has no clearing row, so it has no
+ * `loading` and no empty-set message to give.
+ */
+type SelectorBuiltIn = {
+  builtIn: true
+  required: true
+  placeholder?: string
+  options: readonly [SelectorOption, ...SelectorOption[]]
+  loading?: never
+  emptySetMessage?: never
+  emptyWording?: never
+}
+
+export type SelectorProps = SelectorBase & (SelectorFed | SelectorBuiltIn)
 
 /** Above this many options the list has a search field. */
 const SEARCH_ABOVE = 8
@@ -93,7 +117,9 @@ function inListHost(host: HTMLElement | null | undefined, list: ReactNode): Reac
 }
 
 export default function Selector(props: SelectorProps) {
-  const { options, value, onChange, label, selected, loading, emptySetMessage } = props
+  const { options, value, onChange, label, selected } = props
+  const loading = props.builtIn === true ? false : props.loading
+  const emptySetMessage = props.builtIn === true ? null : props.emptySetMessage
   const emptyWording = props.required === true ? null : props.emptyWording
   const placeholder = props.required === true ? props.placeholder : undefined
   const name = props.accessibleName ?? label
@@ -475,6 +501,7 @@ export default function Selector(props: SelectorProps) {
             disabled={loading}
             aria-busy={loading ? 'true' : undefined}
             aria-labelledby={loading ? nameId : `${nameId} ${valueId}`}
+            aria-describedby={props.describedBy}
             aria-haspopup={computer ? 'listbox' : 'dialog'}
             aria-expanded={computer ? dropdown : shown}
             onClick={openField}

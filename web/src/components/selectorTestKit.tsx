@@ -5,7 +5,8 @@
  * note in `docs/product/selector.md`).
  */
 
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
+import type { UserEvent } from '@testing-library/user-event'
 import type { ReactNode } from 'react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { vi } from 'vitest'
@@ -60,4 +61,14 @@ export function renderForm(ui: ReactNode, { level = 0 }: { level?: number } = {}
     </SheetRouterProvider>,
   )
   return { router, depth: () => sheetDepth(router.state.location.state), ...view }
+}
+
+/**
+ * Chooses a Payment method the way a person does: opens the "Payment method" field, then picks the
+ * option, in the computer's dropdown (`option`) or the phone's list (a button in the list).
+ */
+export async function choosePaymentMethod(user: Pick<UserEvent, 'click'>, method: 'Cash' | 'Transfer'): Promise<void> {
+  await user.click(await screen.findByRole('button', { name: /^Payment method/ }))
+  const option = screen.queryByRole('option', { name: method }) ?? (await screen.findByRole('button', { name: method }))
+  await user.click(option)
 }
