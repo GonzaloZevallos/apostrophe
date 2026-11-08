@@ -6,6 +6,8 @@
 
 **Cuando** configuro cómo pone precios mi negocio, registro el precio de un producto o entrego un pedido, **quiero** que la app use solo las Pricing rules que tiene mi negocio, **para poder** cobrarle a cada cliente exactamente lo que quiero, sin que el precio de nadie cambie por sorpresa. (Lo sirve acá activar las reglas que usa la planilla y sumar sus VIP al **VIP type**; definido en pricing-settings.md y customers.md.)
 
+**Cuando** registro cómo me pagó un cliente, en la venta o después, **quiero** elegir entre las formas en que mi negocio cobra de verdad, **para** que cada Payment diga cómo me pagaron realmente, sin forzarlo en una opción que mi negocio no usa. (Lo sirve acá vincular cada pago importado a un **Payment method** del Business por su nombre; definido en payment-methods.md.)
+
 **Cuando** abro la app entre pedidos o al final del día, **quiero** ver qué vendí hoy, quién me debe y qué se está terminando, y actuar en el acto (cobrarle a un deudor, abrir un producto que está bajo, arreglar lo que me dice un aviso), **para poder** volver con el cliente sin recorrer Customers y Products uno por uno ni hacer cuentas. (Lo sirve acá registrar que el Business fue importado, para que le llegue el aviso de Home posterior a la importación; definido en navigation.md y results.md.)
 
 # Import
@@ -18,7 +20,7 @@ Escribe:
 - Stock entries (stock.md);
 - Expense categories y Expenses (expenses.md);
 - Customers, y la pertenencia de sus VIP al VIP type (customers.md);
-- Sales con sus On-the-spot payments (sales.md);
+- Sales con sus On-the-spot payments (sales.md), cada uno vinculado a un Payment method del Business, y el método cuando falta (payment-methods.md);
 - los interruptores de precios que necesita (pricing-settings.md);
 - el fin del Onboarding del Business, y el hecho de que el Business fue cargado por la importación, con cuándo (navigation.md, onboarding.md).
 
@@ -86,8 +88,9 @@ Criterios de éxito:
   - el Catalog header and footer sembrados;
   - los interruptores de precios, en cualquier estado;
   - los Customer types, el VIP type incluido (un tipo sin Customers no es un registro);
+  - los Payment methods, los sembrados "Cash" y "Transfer" o los agregados, aunque se hayan renombrado, reordenado, archivado o eliminado (un método sin Payments no es un registro);
   - los pasos recordados del Onboarding y el estado de primer uso (navigation.md).
-- La importación sobrescribe el header y el footer. Une o agrega categorías, y nunca renombra ni elimina una.
+- La importación sobrescribe el header y el footer. Une o agrega categorías, y nunca renombra ni elimina una. Usa o agrega Payment methods, y nunca renombra, reordena, archiva ni elimina uno.
 
 ### Leer el archivo
 
@@ -151,7 +154,10 @@ Criterios de éxito:
 - **Ventas** (solo filas terminadas): una Sale con una Sale line por fila.
   - **Envío y nota**: el Shipping charged sale de la columna `Envío cobrado`. La Note sigue la regla de sales.md.
   - **El "Pendiente" de la planilla**: la Sale queda debiendo.
-  - **"Efectivo" / "Transferencia"**: un On-the-spot payment igual al total recalculado, con ese método, en la fecha de la fila.
+  - **"Efectivo" / "Transferencia"**: un On-the-spot payment igual al total recalculado, en la fecha de la fila, vinculado al Payment method del Business llamado "Cash" o "Transfer" respectivamente (payment-methods.md).
+    - El método se busca por nombre, sin importar mayúsculas, minúsculas ni espacios, entre todos los del Business, archivados incluidos. Es la única búsqueda de un método por nombre en todo el producto.
+    - Si el Business no tiene un método con ese nombre (porque lo renombró o lo eliminó), la importación lo crea al final de la lista, con el ícono genérico. Un método que ya existe se usa tal como está.
+    - Nada de esto bloquea, y la corrida de prueba no crea ningún método.
   - **Cualquier otro valor de pago** bloquea.
   - **Una fila con total $0**: su valor de pago se ignora y no queda nada adeudado (sales.md).
 
@@ -204,7 +210,7 @@ También bloquean:
 - un total especial que no es un número entero mayor que $0;
 - un VIP en la planilla con un tipo del vendedor llamado "VIP" y sin VIP type (ver Pricing rules).
 
-Las filas que la planilla marca como no terminadas son la única excepción: se dejan afuera y se listan, y nunca bloquean. Un nombre de Customer que falta en la correspondencia nunca bloquea: ese Customer se importa sin número. Cómo guarda el archivo una celda nunca bloquea por sí solo, con una excepción: una fecha en una celda de texto, porque ya no se puede saber qué se tipeó.
+Las filas que la planilla marca como no terminadas son la única excepción: se dejan afuera y se listan, y nunca bloquean. Un nombre de Customer que falta en la correspondencia nunca bloquea: ese Customer se importa sin número. Un Payment method que falta nunca bloquea: se crea. Cómo guarda el archivo una celda nunca bloquea por sí solo, con una excepción: una fecha en una celda de texto, porque ya no se puede saber qué se tipeó.
 
 ### Customers
 
@@ -229,8 +235,9 @@ Las filas que la planilla marca como no terminadas son la única excepción: se 
 
 ### Restricciones
 
-- **Aislamiento (ADR-0004)**: cada fila creada lleva el Business de destino, y nada es accesible desde otro Business.
+- **Aislamiento (ADR-0004)**: cada fila creada lleva el Business de destino, y nada es accesible desde otro Business. Un Payment method se busca y se crea solo dentro del Business de destino.
 - **Sin eco (ADR-0005)**: ningún nombre de Customer, Phone number ni monto va a los logs. El informe existe solo en la terminal del Operator.
+- **Un solo commit**: la búsqueda o creación de un Payment method nunca hace commit por su cuenta; entra en el único commit de la corrida real.
 - **Datos de prueba**: los tests arman sus propios fixtures chicos de `.xlsx` y de correspondencia, dispuestos como la planilla real (títulos en la fila 1). La planilla real y los datos reales de los clientes nunca entran al repositorio.
 
 ## Métricas
@@ -267,6 +274,10 @@ A partir de fixtures de test, sin telemetría:
   - Sin VIP type y con un tipo del vendedor llamado "VIP" (también " vip "), la corrida de prueba y la real se rechazan con su texto fijo y dejan 0 filas nuevas en todas las tablas.
   - Una planilla sin VIP no hace el chequeo.
   - Ninguna corrida escribe la marca VIP congelada `customer.vip`, probado con un registro de sentencias.
+- **Payment methods**: 100% aprobado.
+  - Los pagos importados quedan vinculados a los métodos "Cash" y "Transfer" del Business, sin importar mayúsculas ni espacios.
+  - Un Business que renombró o eliminó uno de ellos recibe un método nuevo con ese nombre, al final de la lista y con el ícono genérico, y ningún método existente cambia.
+  - Ningún pago importado queda sin método.
 - **Importación registrada (criterio 7)**: 100% aprobado.
   - Una corrida real exitosa registra el hecho de la importación con el instante de la corrida, en el mismo commit que todo lo demás.
   - Una corrida de prueba y una corrida real rechazada no registran nada.
@@ -280,7 +291,7 @@ A partir de fixtures de test, sin telemetría:
   - las categorías unidas, las grafías unidas y las entradas de correspondencia sin usar aparecen todas en el informe.
 - **Un Business, una vez (criterio 4)**:
   - una importación en un Business con cualquiera de los siete tipos de registro se rechaza con 0 filas escritas, probado para cada tipo;
-  - un Business con solo categorías sembradas, renombradas o eliminadas, el header y el footer sembrados, y cualquier estado de los interruptores se acepta;
+  - un Business con solo categorías sembradas, renombradas o eliminadas, el header y el footer sembrados, Payment methods en cualquier estado y cualquier estado de los interruptores se acepta;
   - las filas importadas son invisibles desde otro Business en el barrido de aislamiento.
 - **Sin números de teléfono (criterio 5)**: 100% aprobado.
   - un fixture sin archivo de correspondencias se importa completo, cada Customer sin número;
@@ -305,3 +316,4 @@ A partir de fixtures de test, sin telemetría:
 - Una columna de VIP price en la planilla; desactivar un interruptor de precios.
 - Resolver sola un choque con un tipo del vendedor llamado "VIP" (adoptarlo, renombrarlo o crear el VIP type con otro nombre).
 - Completar hacia atrás el hecho de la importación para un Business importado antes de que existiera.
+- Valores de pago de la planilla distintos de "Efectivo", "Transferencia" y "Pendiente", o elegir el ícono o el lugar de un método creado por la importación.
