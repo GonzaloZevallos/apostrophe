@@ -20,8 +20,9 @@ import {
   pathTo,
   withdrawalNewFor,
 } from '../../routes'
+import { SheetRouterProvider, SheetStackProvider } from '../../components/useSheetStack'
 import WithdrawalForm from './WithdrawalForm'
-import { ME, REASONS, jsonResponse, renderWithdrawals } from './renderWithdrawals'
+import { ME, REASONS, jsonResponse, pickReason, pickVariety, renderWithdrawals, varietyField } from './renderWithdrawals'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -97,13 +98,23 @@ function render_(entries: string[], state: World) {
 }
 
 function lineOf(position: number): HTMLElement {
-  const fieldset = screen.getByLabelText(`Variety ${position}`).closest('fieldset')
+  const fieldset = variety(position).closest('fieldset')
   if (fieldset === null) throw new Error('a line is a fieldset')
   return fieldset
 }
 
-function variety(position: number): HTMLSelectElement {
-  return screen.getByLabelText(`Variety ${position}`) as HTMLSelectElement
+/** The line's Variety Selector field: "Variety" alone on one line, "Variety 1", "Variety 2" on several. */
+function variety(position: number): HTMLElement {
+  return screen.getByRole('button', { name: position === 1 ? /^Variety(?! [2-9])/ : new RegExp(`^Variety ${position}`) })
+}
+
+/** The names the open Variety list offers, then closes it. */
+async function offered(position: number): Promise<string[]> {
+  await userEvent.click(await varietyField(position))
+  const list = within(await screen.findByRole('dialog', { name: /^Variety.* options$/ }))
+  const names = list.getAllByRole('button').map((button) => button.textContent ?? '')
+  await userEvent.click(list.getByRole('button', { name: 'Close' }))
+  return names
 }
 
 const SUBMIT_NEW = 'Save the withdrawal'
@@ -113,7 +124,7 @@ async function fillNew(names: string[]) {
   await pickReason('Marketing')
   for (const [index, name] of names.entries()) {
     if (index > 0) await userEvent.click(screen.getByRole('button', { name: 'Add another variety' }))
-    await userEvent.selectOptions(await screen.findByLabelText(`Variety ${index + 1}`), name)
+    await pickVariety(index + 1, name)
     await userEvent.type(screen.getByLabelText(`Grams ${index + 1}`), '2')
   }
 }
@@ -131,7 +142,7 @@ test.each([
   const state = world([GELATO])
   const { router } = render_([withdrawalNewFor(id)], state)
 
-  expect(await varietyField(1)).toHaveValue('')
+  expect(await varietyField(1)).not.toHaveTextContent(/Gelato|Zkittlez/)
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: SUBMIT_NEW })).toBeDisabled()
 
@@ -147,19 +158,20 @@ test('editing a line on a variety archived since keeps its id and name, also whi
   state.listGate = gate()
   const { router } = render_([pathTo(WITHDRAWAL_EDIT, { id: 1 })], state)
 
-  const select = await varietyField(1)
-  expect(select).toHaveValue('1')
-  expect(select).toHaveDisplayValue('Zkittlez')
+  // while the list is pending the stored line is kept, the field busy
+  expect(await screen.findByRole('button', { name: /^Variety/ })).toHaveAttribute('aria-busy', 'true')
   expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
 
   await act(async () => {
     state.listGate?.release()
   })
   await waitFor(() => expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled())
-  expect(variety(1)).toHaveValue('1')
-  expect(variety(1)).toHaveDisplayValue('Zkittlez')
-  // the picker beside it still offers the unarchived ones
-  expect(within(variety(1)).getByRole('option', { name: 'Gelato' })).toBeEnabled()
+  expect(variety(1)).toHaveTextContent('Zkittlez')
+  // the stored name shows with the mark and is never offered; the unarchived ones are
+  expect(variety(1)).toHaveTextContent('no longer available')
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  expect(await offered(1)).toEqual(expect.arrayContaining(['Gelato']))
+  expect(await offered(1)).not.toContain('Zkittlez')
 
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
   await userEvent.click(
@@ -189,8 +201,7 @@ test('a stale save keeps the guilty line\'s variety and name, says it is gone an
   await userEvent.click(screen.getByRole('button', { name: SUBMIT_NEW }))
 
   expect(await within(lineOf(1)).findByText(GONE)).toBeInTheDocument()
-  expect(variety(1)).toHaveValue('1')
-  expect(variety(1)).toHaveDisplayValue('Zkittlez')
+  expect(variety(1)).toHaveTextContent('Zkittlez')
   expect(screen.getByLabelText('Grams 1')).toHaveValue('2')
   expect(screen.getByRole('button', { name: SUBMIT_NEW })).toBeDisabled()
   expect(router.state.location.pathname).toBe(WITHDRAWAL_NEW)
@@ -200,7 +211,7 @@ test('a stale save keeps the guilty line\'s variety and name, says it is gone an
   expect(state.writes).toHaveLength(1)
 
   // choosing another variety clears the message and frees the save
-  await userEvent.selectOptions(variety(1), 'Gelato')
+  await pickVariety(1, 'Gelato')
   expect(within(lineOf(1)).queryByText(GONE)).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: SUBMIT_NEW })).toBeEnabled()
   await userEvent.click(screen.getByRole('button', { name: SUBMIT_NEW }))
@@ -221,13 +232,11 @@ test('removing the guilty line clears its message and frees the save; the health
 
   expect(await within(lineOf(1)).findByText(GONE)).toBeInTheDocument()
   expect(within(lineOf(2)).queryByText(GONE)).not.toBeInTheDocument()
-  expect(variety(2)).toHaveValue('2')
   expect(screen.getByRole('button', { name: SUBMIT_NEW })).toBeDisabled()
 
   await userEvent.click(screen.getByRole('button', { name: 'Remove variety 1' }))
 
   expect(screen.queryByText(GONE)).not.toBeInTheDocument()
-  expect(variety(1)).toHaveValue('2')
   expect(screen.getByRole('button', { name: SUBMIT_NEW })).toBeEnabled()
 })
 
@@ -239,15 +248,16 @@ test('the list changing twice before the save still leaves the guilty line named
   // a partner archives Zkittlez; a focus refetch brings the list without it
   state.listed = [GELATO]
   archiveEvent()
-  await waitFor(() => expect(within(variety(1)).getByRole('option', { name: 'Gelato' })).toBeInTheDocument())
-  expect(variety(1)).toHaveDisplayValue('Zkittlez')
+  await waitFor(() => expect(variety(1)).toHaveTextContent('no longer available'))
+  expect(variety(1)).toHaveTextContent('Zkittlez')
+  expect(screen.queryByText(GONE)).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: SUBMIT_NEW })).toBeEnabled()
   state.archiveOnNextWrite = []
 
   await userEvent.click(screen.getByRole('button', { name: SUBMIT_NEW }))
 
   expect(await within(lineOf(1)).findByText(GONE)).toBeInTheDocument()
-  expect(variety(1)).toHaveValue('1')
-  expect(variety(1)).toHaveDisplayValue('Zkittlez')
+  expect(variety(1)).toHaveTextContent('Zkittlez')
 })
 
 /** An edit of withdrawal 1 (stored line: Zkittlez, archived since) plus two added lines. */
@@ -260,7 +270,7 @@ async function editWithTwoAddedLines(state: World) {
     [3, 'Gorilla'],
   ] as const) {
     await userEvent.click(screen.getByRole('button', { name: 'Add another variety' }))
-    await userEvent.selectOptions(await screen.findByLabelText(`Variety ${position}`), name)
+    await pickVariety(position, name)
     await userEvent.type(screen.getByLabelText(`Grams ${position}`), '1')
   }
 }
@@ -287,8 +297,8 @@ test('a failed refetch marks only the non-stored lines and a tap re-checks the l
   await waitFor(() => expect(within(lineOf(2)).getByText(GONE)).toBeInTheDocument())
   expect(within(lineOf(3)).getByText(GONE)).toBeInTheDocument()
   expect(within(lineOf(1)).queryByText(GONE)).not.toBeInTheDocument()
-  expect(variety(1)).toHaveDisplayValue('Zkittlez')
-  expect(variety(3)).toHaveDisplayValue('Gorilla')
+  expect(variety(1)).toHaveTextContent('Zkittlez')
+  expect(variety(3)).toHaveTextContent('Gorilla')
   expect(state.writes).toHaveLength(1)
 
   // the list still fails: the tap sends nothing and the marks stay
@@ -304,8 +314,7 @@ test('a failed refetch marks only the non-stored lines and a tap re-checks the l
   await tapSave()
   await waitFor(() => expect(within(lineOf(2)).queryByText(GONE)).not.toBeInTheDocument())
   expect(within(lineOf(3)).getByText(GONE)).toBeInTheDocument()
-  expect(variety(3)).toHaveValue('3')
-  expect(variety(3)).toHaveDisplayValue('Gorilla')
+  expect(variety(3)).toHaveTextContent('Gorilla')
   expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
   expect(state.writes).toHaveLength(1)
 })
@@ -356,7 +365,6 @@ test('a refetch that still lists every variety shows the generic line and leaves
 
   expect(await screen.findByRole('alert')).toHaveTextContent(GENERIC)
   expect(screen.queryByText(GONE)).not.toBeInTheDocument()
-  expect(variety(1)).toHaveValue('1')
   expect(screen.getByRole('button', { name: SUBMIT_NEW })).toBeEnabled()
 })
 
@@ -397,13 +405,15 @@ test('the form never calls onGone on variety.archived', async () => {
         {
           path: HOME,
           element: (
-            <WithdrawalForm
-              target="new"
-              onDone={vi.fn()}
-              onCancel={vi.fn()}
-              onDirtyChange={vi.fn()}
-              onGone={onGone}
-            />
+            <SheetStackProvider>
+              <WithdrawalForm
+                target="new"
+                onDone={vi.fn()}
+                onCancel={vi.fn()}
+                onDirtyChange={vi.fn()}
+                onGone={onGone}
+              />
+            </SheetStackProvider>
           ),
         },
       ],
@@ -411,7 +421,9 @@ test('the form never calls onGone on variety.archived', async () => {
   ])
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-      <RouterProvider router={router} />
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
   await fillNew(['Zkittlez'])
