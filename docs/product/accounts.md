@@ -397,26 +397,34 @@ Criterios de éxito, el test de seguridad de la cookie (seguimiento de GH-130):
   - Los colores del manifest y el splash son estáticos y claros. La barra de estado sigue el tema resuelto que muestra la app (`data-tema`, que en Automatic ya sigue al teléfono), no directamente el modo del sistema; en iOS queda clara, porque iOS fija su estilo al arrancar.
   - La fuente está alojada en la propia app.
 - **Idioma y formatos**: cada palabra en pantalla en inglés (product-language.md, que reemplaza la regla anterior en español). Dinero `$ 11.000`, un monto negativo `−$ 4.500`, gramos `3,5 g`, fechas `dd/mm`. El texto del Catalog conserva su propio formato de Telegram (`$11.000`, catalog.md).
-- **Entrar** (`Go to sign in`, la pantalla de Business nuevo (`NegocioNuevo`), la de Invitation (`Invitacion`), la de reseteo):
+- **Entrar** (la pantalla de Sign in (`Entrar`), la de Business nuevo (`NegocioNuevo`), la de Invitation (`Invitacion`), la de reseteo):
   - **Dibujadas a partir del diseño** en `docs/product/design-system/pantallas/` (GH-49; Sign in rediseñada en GH-521 sobre 25-ingreso). Las líneas en español de los dibujos son una guía de significado; la app las construye como su equivalente en inglés (Product language), desde el Copy module.
   - **Una sola disposición centrada, de ancho de teléfono**, en todo viewport, el de la computadora incluido; no hay disposición solo para computadora para estas pantallas, ni pulido dedicado para la computadora.
   - **La pantalla de Sign in** (`Entrar`, claro; `EntrarOscuro`, oscuro), de arriba hacia abajo:
-    - la Yerba mark con el Wordmark (brand.md);
-    - el equivalente en inglés de "Hola de nuevo. Tu negocio, anotado.";
-    - los campos "Email address" y "Password" y el botón "Sign in"; al abrir, el foco está en "Email address", así que en el teléfono el teclado ya está abierto, y todo se ve sin hacer scroll;
-    - un aviso fijo bajo el botón de que cinco intentos fallidos bloquean el email por 15 minutos, sin ningún conteo de intentos restantes;
-    - "Forgot your password?", siempre visible, también después de que el Login brake bloqueó el email; abre la Forgot sheet;
-    - bajo el formulario, una línea de texto plano que dice que se entra con una Invitation de tu Business. No es un link, no hace nada y no es un camino para registrarse.
-    - Una contraseña equivocada y un email desconocido muestran el mismo rechazo; los rechazos se muestran en el lugar y conservan lo tipeado.
+    - la Yerba mark con el Wordmark, el lockup compartido de las pantallas de entrada (brand.md);
+    - "Welcome back. Your business, noted.", el equivalente en inglés de "Hola de nuevo. Tu negocio, anotado.";
+    - el campo "Email address"; al abrir, el foco está ahí, en todo ancho, así que en el teléfono el teclado ya está abierto;
+    - el campo "Password", oculto por defecto y con su botón Show (ADR-0025); su lugar de rechazo debajo;
+    - "Forgot your password?", alineado a la derecha justo debajo de "Password" y arriba del botón, como en el dibujo; siempre visible, también después de que el Login brake bloqueó el email; abre la Forgot sheet. Es un botón con forma de link y un blanco de toque de al menos 44 px;
+    - el botón "Sign in", a todo el ancho; mientras envía queda desactivado y no envía dos veces;
+    - el aviso fijo "After 5 failed attempts, the email is blocked for 15 minutes", sin ningún conteo de intentos restantes; con un bloqueo activo, el mensaje del freno ocupa su mismo lugar;
+    - al pie de la pantalla, la línea de texto plano "You can only get in with an invitation from your business.". No es un link, no hace nada y no es un camino para registrarse.
+    - Email, Password, "Forgot your password?" y "Sign in" se ven sin hacer scroll en un teléfono.
+    - Una contraseña equivocada y un email desconocido muestran el mismo rechazo ("Wrong email or password"), en el lugar, conservando lo tipeado.
+    - Diferencias con el dibujo, declaradas en el PR y aceptadas: el blanco de toque de 44 px de "Forgot your password?" en lugar del link de 13 px dibujado, el botón Show de "Password" y el aviso fijo del freno, que el dibujo no muestra.
   - **La Forgot sheet**, que abre "Forgot your password?":
-    - es una Sheet: a pantalla completa en el teléfono, con "Close" (o el gesto de volver) como única salida; en la computadora conserva su propio marco;
+    - es una Sheet, dibujada por el componente compartido: a pantalla completa en el teléfono, con "Close" arriba como única salida, igual que el gesto de volver (es una entrada del historial, ADR-0027); en la computadora conserva su propio marco de diálogo, donde Escape también la cierra; no tiene acción principal abajo;
+    - su título es "Forgot your password?"; al abrirse, el foco va a "Close";
     - es texto fijo, igual para todos: sin campos, sin botón de envío, sin datos de contacto y sin mensaje armado para copiar o compartir;
-    - no lee, no muestra y no envía nada de lo tipeado en Sign in; al cerrarla se vuelve a Sign in con lo tipeado intacto, y abrirla o cerrarla no hace ningún pedido;
-    - dice que el Reset link lo da la persona que maneja la app para tu Business (la que te mandó la Invitation), y no llega por email;
-    - dice que le pidas a esa persona un Reset link y le digas con qué email iniciás sesión;
-    - dice que el link funciona una sola vez, por 24 horas, y te deja elegir una contraseña nueva sin la actual;
+    - no lee, no muestra y no envía nada de lo tipeado en Sign in; abrirla o cerrarla no hace ningún pedido;
+    - mientras está abierta, Sign in queda inerte; al cerrarla se vuelve a Sign in con lo tipeado, el rechazo o el mensaje del freno intactos, y el foco vuelve a "Forgot your password?";
+    - dice, en este orden, tres párrafos:
+      - que el Reset link lo da la persona que maneja la app para tu Business (la que te mandó la Invitation), y no llega por email;
+      - que le pidas a esa persona un Reset link y le digas con qué email iniciás sesión;
+      - que el link funciona una sola vez, por 24 horas, y te deja elegir una contraseña nueva sin saber la actual;
     - no usa la palabra "operator" ni nombra ningún canal (WhatsApp, Telegram, un número de teléfono), y no guarda ningún contacto: así sirve a cualquier instalación (Assume nothing);
-    - no dice que un reseteo levanta el bloqueo: un reseteo reinicia solo el conteo del email, nunca el de la dirección, así que esa línea engañaría a quien acaba de quedar bloqueado.
+    - no dice que un reseteo levanta el bloqueo: un reseteo reinicia solo el conteo del email, nunca el de la dirección, así que esa línea engañaría a quien acaba de quedar bloqueado;
+    - no tiene dibujo propio, así que la Design capture no la compara.
   - Cualquiera de los bloqueos muestra el mensaje del freno, sin cambios y sin mención de "Forgot your password?". Ningún texto nombra el freno por dirección, y ambos bloqueos se ven y se leen igual.
   - Un pedido respondido con 401 va al login.
   - Una Invitation desconocida, usada o vencida muestra "This invitation no longer works".
@@ -489,7 +497,7 @@ Este archivo solo dice dónde se aplica y cómo se mantiene cierta. No repite lo
   - **Preparación**: Playwright con isMobile y hasTouch, en 320×568, 375×812, 430×932 y 246×437 (130 %), en claro y oscuro.
   - **Cobertura**:
     - cada ruta de `scripts/design/screens.json`;
-    - cada formulario y Sheet, la Forgot sheet incluida;
+    - cada formulario y Sheet, la Forgot sheet incluida, recorrida sin bloqueo (`EntrarOlvido`) y con el mensaje del freno visible (`EntrarFrenoOlvido`);
     - los estados compartidos de `Estados`: el mensaje del freno, los dos textos de link muerto, "No connection", el reintento genérico, las dos formas de "That is gone." y cargando.
 
     Una ruta del front que falte en `screens.json` lo hace fallar.
@@ -691,9 +699,9 @@ Estos estados los dibuja `Estados` (GH-49), con el estilo del diseño y su redac
   - sin regresión: la suite existente pasa sin editar ningún test para que encaje con el nuevo look.
 - **Sign in con el nuevo estilo y la Forgot sheet (criterios 42–45, GH-521)**:
   - una sola pasada (42): un e2e en viewports de teléfono (320×568 y 375×812, claro y oscuro) verifica que al abrir Sign in el foco está en "Email address", que "Email address", "Password" y "Sign in" se ven sin scroll, y que la corrida cae en Home con la sesión iniciada;
-  - a un toque (43): un e2e verifica que "Forgot your password?" abre la Forgot sheet con un toque, también con el mensaje del freno visible; un test de front verifica que su texto fijo dice la persona que te mandó la Invitation, el email con el que iniciás sesión, una sola vez, 24 horas y sin la contraseña actual, y que "Close" vuelve a Sign in con lo tipeado intacto;
-  - no revela nada (44): un test de front verifica que el texto de la Forgot sheet es idéntico con el formulario vacío, con un email registrado y con uno desconocido; que abrirla o cerrarla no hace ningún pedido; y que el texto no contiene "operator" ni ningún canal;
-  - diseño (45): una Design capture de `Entrar` y `EntrarOscuro` contra la pantalla construida, en teléfono y computadora, adjunta al PR y juzgada a ojo según el Drawing as guide; `web/e2e/mobile.spec.ts` pasa para Sign in y la Forgot sheet en ambos temas;
+  - a un toque (43): un e2e verifica que "Forgot your password?" abre la Forgot sheet con un toque, también con el mensaje del freno visible, y que volver la cierra con lo tipeado intacto; un test de front verifica que su texto fijo dice la persona que te mandó la Invitation, el email con el que iniciás sesión, una sola vez, 24 horas y sin la contraseña actual, y que "Close", Escape y volver regresan a Sign in con lo tipeado intacto y el foco en "Forgot your password?";
+  - no revela nada (44): un test de front verifica que el texto de la Forgot sheet es idéntico con el formulario vacío, con un email registrado, con uno desconocido y con el bloqueo activo; que abrirla o cerrarla no hace ningún pedido; y que el texto no contiene "operator" ni ningún canal;
+  - diseño (45): una Design capture de `Entrar` y `EntrarOscuro` contra la pantalla construida, en teléfono y computadora, adjunta al PR y juzgada a ojo según el Drawing as guide; `web/e2e/mobile.spec.ts` pasa para Sign in, `EntrarOlvido` y `EntrarFrenoOlvido` en ambos temas, sin infractores nuevos;
   - sin regresión: las suites existentes de accounts y de los frenos pasan sin editar, y el mensaje del freno no cambia.
 - **Nada sobrevive (criterio 11)**:
   - después de una corrida real sobre uno de dos Businesses sembrados con uno de cada cosa, 0 filas llevan su id en cualquier tabla descubierta a partir del esquema;
@@ -768,7 +776,7 @@ Estos estados los dibuja `Estados` (GH-49), con el estilo del diseño y su redac
 - Roles dentro de un Business.
 - Uso offline; un instructivo de instalación en iOS o Android; Capacitor.
 - Un control de tema antes del login; sincronizar la Theme choice por User, por Business o entre dispositivos.
-- Una disposición solo para computadora para las pantallas de entrada; un archivo de diseño propio para la pantalla de reseteo.
+- Una disposición solo para computadora para las pantallas de entrada; un archivo de diseño propio para la pantalla de reseteo o para la Forgot sheet.
 - Cualquier estado dibujado en Estados que ninguna capacidad defina.
 - TLS en la red de casa, certificados locales incluidos: la instalación publicada recibe TLS de Render (ADR-0016).
 - Actualizaciones en vivo entre socios: una lista se refresca cuando se abre o después de guardar, no cuando el otro socio cambia algo.
