@@ -14,7 +14,7 @@ from datetime import date, datetime
 from sqlalchemy import ForeignKey, Index, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.db import Base, UtcDateTime
+from app.db import Base, UtcDateTime, money_column
 from app.sales.domain.sale import NOTE_MAX_LENGTH
 
 PRICING_RULE_MAX_LENGTH = 10
@@ -34,7 +34,7 @@ class SaleRow(Base):
     number: Mapped[int]
     sale_date: Mapped[date]
     customer_id: Mapped[int | None] = mapped_column(ForeignKey("customer.id"))
-    shipping_charged: Mapped[int]
+    shipping_charged: Mapped[int] = money_column()
     note: Mapped[str | None] = mapped_column(String(NOTE_MAX_LENGTH))
     recorded_at: Mapped[datetime] = mapped_column(UtcDateTime)
 
@@ -49,6 +49,6 @@ class SaleLineRow(Base):
     variety_id: Mapped[int] = mapped_column(ForeignKey("variety.id"))
     grams_hundredths: Mapped[int]
     pricing_rule: Mapped[str] = mapped_column(String(PRICING_RULE_MAX_LENGTH))
-    price_per_gram: Mapped[int]
-    line_total: Mapped[int]
+    price_per_gram: Mapped[int] = money_column()
+    line_total: Mapped[int] = money_column()
     position: Mapped[int]

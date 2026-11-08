@@ -36,9 +36,9 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
 
   // A priced variety.
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByRole('link', { name: 'New product' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('900')
@@ -50,7 +50,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   const todayIso = await page.getByLabel('Date').inputValue()
   await page.getByLabel('Date').fill(firstOfMonth(todayIso, 1))
   await page.getByLabel('Grams').fill('50')
-  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
+  await pickStockVariety(page, 'Rosa')
   await page.getByLabel('Total cost').fill('20000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 
@@ -157,7 +157,7 @@ async function recordEntry(
   await page.goto(STOCK_ENTRY_NEW)
   await page.getByLabel('Date').fill(entry.date)
   await page.getByLabel('Grams').fill(entry.grams)
-  await page.getByLabel('Variety').selectOption({ label: entry.variety })
+  await pickStockVariety(page, entry.variety)
   await page.getByRole('button', { name: entry.origin, exact: true }).click()
   if (entry.cost !== undefined) await page.getByLabel('Total cost').fill(entry.cost)
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
@@ -169,9 +169,9 @@ async function recordWithdrawal(
 ): Promise<void> {
   await page.goto(WITHDRAWAL_NEW)
   await page.getByLabel('Date').fill(withdrawal.date)
-  await page.getByLabel('Variety 1', { exact: true }).selectOption({ label: withdrawal.variety })
+  await pickWithdrawalVariety(page, withdrawal.variety)
   await page.getByLabel('Grams 1', { exact: true }).fill(withdrawal.grams)
-  await page.getByRole('button', { name: withdrawal.reason, exact: true }).click()
+  await pickWithdrawalReason(page, withdrawal.reason)
   await expectToast(page, 'Withdrawal saved', () => page.getByRole('button', { name: 'Save the withdrawal' }).click())
 }
 
@@ -187,9 +187,9 @@ test('Análisis reads Cost of goods sold, Stock shortfall, Marketing and Own use
 
   for (const name of ['Rosa', 'Lirio']) {
     await page.goto(VARIETIES)
-    await page.getByRole('link', { name: 'New variety' }).click()
+    await page.getByRole('link', { name: 'New product' }).click()
     await page.getByLabel('Name').fill(name)
-    await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+    await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   }
   await page.goto(STOCK_ENTRY_NEW)
   const today = await page.getByLabel('Date').inputValue()
@@ -315,9 +315,9 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
   const longName = `Variedad ${'Larguísimo'.repeat(6)}`.slice(0, 60)
   expect(longName).toHaveLength(60)
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByRole('link', { name: 'New product' }).click()
   await page.getByLabel('Name').fill(longName)
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Variedad Larguísimo/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('900000')
@@ -469,3 +469,5 @@ async function tallerMoves(page: Page): Promise<string[]> {
   const moved = before.filter((place, index) => place !== after[index])
   return outgrown ? [...moved, 'documento-mas-alto-que-la-ventana'] : moved
 }
+
+import { pickStockVariety, pickWithdrawalReason, pickWithdrawalVariety } from './helpers/stockVariety.js'

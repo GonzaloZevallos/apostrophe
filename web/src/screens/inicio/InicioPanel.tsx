@@ -1,5 +1,5 @@
 /**
- * The panel's body (`docs/product/results.md`, "What each tab shows"): the Hoy · Semana ·
+ * The panel's body (`docs/product/results.md`, "Qué muestra cada pestaña"): the Hoy · Semana ·
  * Mes switch and what each tab draws, each figure straight from `GET /panel`
  * (`PanelAnswer`). Nothing here computes, sorts or sign-tests an amount: ranges go through
  * `formatDateShort` only, Ganancia and Caja through `formatSignedMoney`.

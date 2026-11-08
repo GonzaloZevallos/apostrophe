@@ -72,7 +72,7 @@ afterEach(() => {
 })
 
 describe('on a computer', () => {
-  test('a direct link opens the form as a dialog over the list and the variety page, both inert and aria-hidden', async () => {
+  test('a direct link opens the form as a dialog over the list and the product page, both inert and aria-hidden', async () => {
     renderApp([NEW_PATH], 'computer')
 
     const dialog = await screen.findByRole('dialog', { name: 'New price' })
@@ -142,7 +142,7 @@ describe('leaving an untouched form', () => {
     }],
     ['a click on the backdrop', async (user: ReturnType<typeof userEvent.setup>) => user.click(backdrop())],
     ['Close', async (user: ReturnType<typeof userEvent.setup>) => user.click(screen.getByRole('button', { name: 'Close' }))],
-  ])('%s lands on the variety page at once, a direct link included', async (_name, gesture) => {
+  ])('%s lands on the product page at once, a direct link included', async (_name, gesture) => {
     const warn = vi.spyOn(console, 'warn')
     const user = userEvent.setup()
     const { router } = renderApp([NEW_PATH], 'computer')
@@ -228,7 +228,7 @@ describe('leaving a form with something typed', () => {
     expect(screen.getByText('New price', { selector: '.gasto-form__titulo' })).toHaveFocus()
   })
 
-  test('"Yes, discard it" lands on the variety page', async () => {
+  test('"Yes, discard it" lands on the product page', async () => {
     const user = userEvent.setup()
     const { router } = renderApp([NEW_PATH], 'computer')
     await user.type(await screen.findByLabelText(/^List price/), '12000')

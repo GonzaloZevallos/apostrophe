@@ -26,6 +26,7 @@ import { HOME } from '../../routes'
 import { SHOWN_EN } from '../../test/shownLanguage'
 import Listo from './Listo'
 import OnboardingStep from './OnboardingStep'
+import { SheetRouterProvider } from '../../components/useSheetStack'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
 const ORDER: StepSlug[] = ['variety', 'stock', 'header_footer', 'bot', 'partner', 'categories']
@@ -56,7 +57,9 @@ function inRouter(element: React.ReactNode, answer: OnboardingProgress) {
   )
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <RouterProvider router={router} />
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
 }
@@ -82,13 +85,13 @@ afterEach(() => {
 
 test('"Listo" names each step through its nameKey and re-renders it in place on a switch', async () => {
   inRouter(<Listo />, progress(['done', 'pending', 'pending', 'pending', 'pending', 'pending']))
-  const name = screen.getByText('Variety with price')
-  const later = screen.getByText('For later — in Varieties')
+  const name = screen.getByText('Product with price')
+  const later = screen.getByText('For later — in Products')
 
   await switchToGerman()
 
   expect(screen.getByText('de:varietyWithPrice')).toBe(name)
-  expect(screen.queryByText('Variety with price')).not.toBeInTheDocument()
+  expect(screen.queryByText('Product with price')).not.toBeInTheDocument()
   expect(screen.getByText('de:telegramBot')).toBeInTheDocument()
   // The "for later" line wraps a key label (`later` of the stock step) in English words.
   expect(later).toHaveTextContent('For later — in de:varieties')

@@ -2,6 +2,8 @@
 
 El único idioma en que escribe el producto: inglés. Abarca cada palabra que el producto mismo escribe para que la lea una persona: pantallas, estados, nombres accesibles, mensajes de la API dirigidos a una persona, las líneas que imprimen los scripts del **Operator**, las palabras propias del informe de la **Spreadsheet import** y las líneas fijas del **Catalog** de Telegram. Todo texto del front vive en un solo módulo con claves, el **Copy module**. No cambia ningún comportamiento de ninguna capacidad: pantallas, flujos, rutas, reglas y formatos quedan como los definen sus dueños. Reemplaza la regla de español rioplatense que antes establecían BRIEF.md y la sección de idioma y formatos de accounts.md. Los docs de capacidades y los archivos de diseño nombran cada pantalla, grupo, control y mensaje con ese mismo inglés, así que cada cosa tiene un solo nombre.
 
+Lo que vende un **Business** se llama en el Product language siempre "Product" / "Products", para todo Business; no es un dato de quien vende ni una configuración (varieties.md, docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md).
+
 El Product language no es el idioma de la documentación. La documentación funcional y técnica (`docs/product/` y las definiciones de `CONTEXT.md` incluidas) se escribe en español rioplatense, con identificadores, nombres de clases y nombres UML en inglés: es la **Documentation language**. Que los docs estén en español no cambia ninguna palabra que muestre la app.
 
 ## Jobs
@@ -15,6 +17,8 @@ El Product language no es el idioma de la documentación. La documentación func
 **Cuando** el PM, un agente del sistema de desarrollo o yo abrimos un archivo de capacidad o el glosario para leerlo o cambiarlo, **quiero** todo `docs/product/` y las definiciones de `CONTEXT.md` en un solo idioma, español rioplatense, con cada identificador, ruta, nombre de campo, valor de enum, clave de copy, término del glosario, palabra de pantalla y link tal como está, **para** que el texto en español escrito desde agentic-system #399 caiga en archivos que ya están en español y no se rompa nada de lo que lee el tooling.
 
 **Cuando** yo (el dueño, o el PM o un agente que trabaja para mí) necesito comprobar lo que el producto decide sobre ventas, pagos, clientes o el **Sale bill**, **quiero** leer `sales.md`, `payments.md`, `customers.md` y `sale-bill.md` en español rioplatense, con los términos del glosario, los identificadores y las palabras de pantalla exactamente como están, **para** decidir o verificar una regla sin traducir mentalmente y sin una traducción que cambie lo que la regla dice. (Afina el cuarto job para los archivos donde se definen las ventas, las deudas y los pagos, GH-463 parte 2; no es un trabajo nuevo).
+
+**Cuando** trabajo en la app desde el celular, venda lo que venda, **quiero** que llame "products" a lo que vendo, **para** que la app se ajuste a mi negocio sin que yo traduzca sus palabras ni le elija una. (Se define en varieties.md; lo sirve acá la palabra única "Product" / "Products" del Copy module y el barrido de palabras que la protege.)
 
 - La protagonista del primer job es la vendedora o el vendedor, en los mismos momentos que en cualquier otra capacidad. El protagonista del segundo es el dueño y mantenedor (Zeta).
 - Los lectores principales del tercero son el mantenedor o el agente que construye y prueba una pantalla a partir de su doc de capacidad, incluido el agente que escribe tests (un test que busca un nombre en español falla contra la app en inglés). Le sigue quien revisa y compara un archivo de diseño con la app construida, sobre todo mediante la **Design capture**. Quienes venden no leen los docs.
@@ -38,13 +42,14 @@ Criterios de éxito:
    - Los textos de seguridad (el mensaje del **Login brake**, los textos de link muerto, el aviso de registro que ya no existe) no revelan nada nuevo.
    - Ningún estado se comunica solo por color, y los límites de largo del **Icon and text rule** se cumplen.
 4. **Un solo lugar para las palabras.** Cada texto que muestra el front, nombres accesibles incluidos, vive en el Copy module, y ninguna pantalla tiene un texto propio. No hay biblioteca de traducción ni selector de idioma.
-5. **Los datos de quien vende no se tocan.** Nada de lo que tipeó quien vende ni de lo que guardó el **Business** se reescribe.
+5. **Los datos de quien vende no se tocan.** Nada de lo que tipeó quien vende ni de lo que guardó el Business se reescribe.
 6. **Docs y archivos de diseño nombran las cosas como la app.**
    - Una búsqueda de revisión en los docs de capacidades no encuentra ningún nombre en español para una pantalla, grupo, control o mensaje.
    - Ningún archivo de diseño muestra una etiqueta de producto en español.
    - Ningún doc tiene una nota de precedencia que diga cuál de dos nombres gana.
    - Cada nombre en inglés que usa un doc remite a un término del glosario o a una clave de copy.
 7. **Documentación en español.** Cada archivo de `docs/product/` (salvo los archivos de tokens de `docs/product/design-system/` y el código) y cada definición de `CONTEXT.md` se leen en español. Los identificadores, rutas, campos, valores de enum, claves de copy, nombres de clases, nombres UML, términos del glosario, palabras de pantalla y citas de ADR siguen en inglés, sin que cambie el significado de ninguna regla, cifra, límite, ejemplo ni decisión.
+8. **Una sola palabra para lo que se vende.** Ningún texto del producto (pantallas, nombres accesibles, mensajes de la API que llegan a una pantalla, salida de los scripts del Operator, líneas fijas del Catalog y del bot, etiquetas de informes) dice "variety"/"varieties", ni "variedad"/"variedades" en ninguna entrada del Copy module; dice "Product" / "Products". El texto citado de la planilla y los datos de quien vende quedan afuera.
 
 ## Comportamiento
 
@@ -58,15 +63,17 @@ Criterios de éxito:
   - los motivos de "Test it" (**Test send**) y de "Find my chat" (**Own chat lookup**).
 - **Fiel, sin reformular.** Ningún mensaje gana ni pierde información. El inglés no tiene voseo, así que el registro es un inglés llano en segunda persona.
 - **Idioma del documento HTML.** `<html lang="en">`, y el `lang` del manifest es `"en"`. El `id` y el `scope` del manifest no cambian nunca (accounts.md).
+- **La palabra para lo que se vende.** Donde un texto del producto nombraba lo que vende un Business como "Variety" / "Varieties", dice "Product" / "Products", para todo Business, los existentes incluidos, sin ninguna acción de su parte. No hay configuración, columna ni campo de la API para otra palabra. El "producto" / "productos" en español llega con #317.
 
 ### Qué no cambia nunca
 
-- **Datos de quien vende**: los nombres de cada **Variety**, Customer y **Expense category**, la **Note**, el **Aroma**, el emoji y el **Catalog header and footer** que guardó un Business.
-  - Cada Business existente conserva todo lo guardado, incluidos los valores por defecto en español que recibió.
+- **Datos de quien vende**: los nombres de cada **Product**, Customer y **Expense category**, la **Note**, el **Aroma**, el emoji y el **Catalog header and footer** que guardó un Business.
+  - Cada Business existente conserva todo lo guardado, incluidos los valores por defecto en español que recibió y cualquier "variety" que haya tipeado.
   - No se migra nada.
 - **Datos de ejemplo y de fixtures** (los nombres y cifras del Business de ejemplo): son datos de quien vende y quedan como están.
 - **Formatos**: todos los formatos numéricos y de fecha, en la app y en el Catalog.
 - **Redirecciones heredadas**: cada redirección heredada en español (ADR-0024, ADR-0033, `app/legacy_front_paths.json`) funciona exactamente como hoy, sin agregar ni quitar ninguna fila.
+- **Identificadores**: las rutas del front `/varieties/*`, las columnas `variety_id`, los identificadores del código y los ids del registro de diseño no cambian con la palabra de pantalla (ADR-0061).
 
 ### Valores por defecto de un Business abierto después de este cambio
 
@@ -80,11 +87,12 @@ Criterios de éxito:
 - Cuando nada califica, el **Pinned catalog** muestra su Catalog header and footer con "Nothing to offer for now." en el medio.
 - **Nada de lo ya publicado se reescribe en lote.** Un Pinned catalog ya publicado toma las líneas fijas en inglés en su próximo disparo de **Upkeep**, a más tardar en el control del siguiente día de Argentina. Es la edición en el lugar de siempre, nunca un mensaje nuevo (pinned-catalog.md).
 - Un Catalog header and footer guardado en español puede quedar junto a las líneas fijas en inglés hasta que quien vende lo edite. Es intencional.
+- Las líneas fijas del Catalog no llevan ninguna palabra para lo que se vende, así que el cambio a "Product" no cambia el texto publicado; si alguna vez lo cambiara, rige la misma edición en el lugar.
 
 ### Spreadsheet import
 
 - Reconoce la planilla en español exactamente como hoy: nombres de pestañas, títulos de columna y valores de celda como "Compra", "Efectivo", "Pendiente", "Amigo", "Regalo" y "Sí"/"No" de la planilla, y los textos de **Unfinished row**.
-- Solo las palabras propias del informe están en inglés. Los textos de la planilla que cita quedan como los escribió la planilla.
+- Solo las palabras propias del informe están en inglés, y nombran lo que se vende como "product" (p. ej. "Products: {count}"). Los textos de la planilla que cita (títulos como "Variedad" incluidos) quedan como los escribió la planilla.
 - Cada Expense category coincide por nombre como hoy, así que las categorías en español de una planilla se crean como Expense category junto a los valores por defecto en inglés de un Business nuevo. Esos valores por defecto se pueden quitar mientras no tengan ningún **Expense**.
 
 ### Palabras y formatos juntos
@@ -128,7 +136,7 @@ Criterios de éxito:
 - **Glosario y copy difieren.** El doc usa el string de copy de la pantalla que describe, sin nota. Los dos pueden ser correctos en pantallas distintas ("Owes you", "Account / Owes").
 - **Sin notas de precedencia.** Ningún doc dice cuál de dos nombres gana; hay uno solo.
 - **Nada que la app no muestre.** Si un nombre no tiene palabra del glosario ni clave de copy, la app no lo muestra. El doc describe la cosa en español llano, con los términos del glosario, y no cita ninguna etiqueta. Una etiqueta de ese tipo en un archivo de diseño es una anotación, no texto de producto.
-- **Términos del glosario en la prosa.** Toda oración que establece una regla, cifra, límite o decisión sobre un concepto del glosario usa el término en inglés tal como está escrito, en **negrita** en su primera mención en cada archivo y sin formato después. En la narración (jobs, ejemplos, la descripción de quien vende) solo se admiten los sustantivos negocio (Business), cliente (Customer), venta (Sale), pago (Payment), variedad (Variety) y stock (Stock), cada uno para su único término, y "precio" como palabra corriente, nunca por un término de precio en particular. No se usa ninguna otra versión en español de un término ni ninguna palabra de una lista `_Avoid_`. Las palabras corrientes que no nombran un concepto del glosario tal como está definido (pantalla, planilla, ruta, idioma en el sentido de una lengua) se traducen con normalidad.
+- **Términos del glosario en la prosa.** Toda oración que establece una regla, cifra, límite o decisión sobre un concepto del glosario usa el término en inglés tal como está escrito, en **negrita** en su primera mención en cada archivo y sin formato después. En la narración (jobs, ejemplos, la descripción de quien vende) solo se admiten los sustantivos negocio (Business), cliente (Customer), venta (Sale), pago (Payment), producto (Product) y stock (Stock), cada uno para su único término, y "precio" como palabra corriente, nunca por un término de precio en particular. No se usa ninguna otra versión en español de un término ni ninguna palabra de una lista `_Avoid_` ("variedad" incluida). Las palabras corrientes que no nombran un concepto del glosario tal como está definido (pantalla, planilla, ruta, idioma en el sentido de una lengua) se traducen con normalidad.
 - **Archivos que ya estaban en español.** Un doc de capacidad escrito en español antes de que existiera la regla de términos del glosario se pone en regla sin cambiar su significado: cada versión en español de un concepto del glosario pasa a su término en inglés, y ningún encabezado lleva inglés entre paréntesis (un encabezado puede ser el término del glosario solo).
 - **Texto de producto en los archivos de diseño.** Una etiqueta de un archivo de diseño es texto de producto cuando la app construida la muestra, y es el inglés de la app. Las anotaciones que describen un dibujo, la prosa del README de diseño y `dominio.ts` pueden quedar en español.
 - **Ids del registro.** La prosa nombra una pantalla en inglés ("el grupo Prices de Settings"). Un id del registro (`ConfiguracionPrecios`, `NegocioNuevo`, `Invitacion`…) aparece en formato de código solo donde la oración apunta a un archivo de diseño o a una fila del registro. Los ids no cambian nunca.
@@ -174,6 +182,7 @@ No hay telemetría. Se leen de los tests y de la revisión.
   - Diferencias de significado halladas al comparar cada archivo con su versión anterior: 0.
   - Por cada archivo traducido o puesto en regla, el PR pega la comparación con su versión anterior: spans idénticos (backticks, destinos de links, `## Jobs`, términos en negrita y palabras de pantalla citadas; en un archivo que ya estaba en español, solo cambian los términos en negrita que pasan de una versión en español a su término en inglés, listados), el multiconjunto de dígitos, los conteos de estructura y cada coincidencia de la lista de palabras prohibidas con su resolución. Objetivo: 0 diferencias sin explicar.
   - Citas de encabezados traducidos que no apuntan al texto nuevo exacto después del cambio, según `rg`. Objetivo: 0; las citas viejas se listan en el PR.
+- **Una sola palabra para lo que se vende (criterio 8).** El barrido permanente de varieties.md (vitest en `web/src/copy/productWord.test.ts` sobre los valores del Copy module en cada Language y en el **Test locale** y sobre los nombres accesibles; pytest con TestClient en `tests/test_product_word_sweep.py` sobre los mensajes de la API que llegan a una pantalla, las líneas fijas del Catalog y del bot, las etiquetas de informes y la salida del Operator) encuentra 0 apariciones de "variety", "varieties", "variedad" o "variedades" fuera de su lista explícita de excepciones (texto citado de la planilla y datos de quien vende). No depende del calendario ni del orden de los tests.
 - **Pinned catalog.** Un Business publicado cuyo texto cambia solo en sus líneas fijas recibe una edición en el lugar y ningún mensaje nuevo.
 - **Medida de negocio.** Textos en español a los que llega una persona en la app: meta 0. Textos en español hallados después del merge: meta 0. Nombres de pantalla en español con los que se cruza quien lee un doc de capacidad: meta 0. Archivos de `docs/product/` con prosa mezclada entre inglés y español: meta 0.
 
@@ -189,3 +198,4 @@ No hay telemetría. Se leen de los tests y de la revisión.
 - Renombrar ids del registro.
 - Traducir los ADRs existentes, que quedan como fueron escritos.
 - Recrear un encabezado para que coincida con una cita vieja de un ADR.
+- Una palabra configurable para lo que vende un Business.

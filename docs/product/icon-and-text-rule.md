@@ -69,7 +69,7 @@ The two lists are closed. Adding to either changes this file and the README, nev
 
 - The bar, the sidebar, More and Settings's list of groups always show icon + text.
 - Entry rows (More, Settings's groups) and action rows get a leading icon.
-- Record rows keep their layout and state marks: customers, sales, varieties, stock entries, withdrawals, expenses, price entries and the account's rows, with `MarcaEstado`, amber "owes you" and "Credit". Actions on record rows follow the lists above.
+- Record rows keep their layout and state marks: customers, sales, products, stock entries, withdrawals, expenses, price entries and the account's rows, with `MarcaEstado`, amber "owes you" and "Credit". Actions on record rows follow the lists above.
 - Within one menu (More, Settings's groups, the bar, the sidebar), no two entries share an icon.
 
 ### Icons
@@ -107,7 +107,7 @@ The two lists are closed. Adding to either changes this file and the README, nev
 - One attention icon, the same everywhere and decorative, sits next to the sentence of every notice or status that asks the seller to act or says something failed:
   - Home's "Your Telegram catalog is out of date";
   - "Out of date" with its reason;
-  - "Start with your varieties";
+  - "Start with your products";
   - the after-import "Connect the bot…";
   - "No connection";
   - the generic server-error retry.

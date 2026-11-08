@@ -1,19 +1,19 @@
 ## Jobs
 
-**Cuando** paso mi negocio de la planilla a la app, **quiero** que lo que la planilla ya tiene (las variedades y su historial de precios, la configuración del catálogo, las entradas de stock, los gastos, y cada venta con quién todavía la debe) se cargue en mi negocio una sola vez, el día en que dejo de usar la planilla, **para poder** seguir vendiendo en la app desde el próximo pedido con mis precios, mi stock y mis deudas reales en su lugar. No vuelvo a tipear meses de filas, y no pierdo la cuenta de quién me debe.
+**Cuando** paso mi negocio de la planilla a la app, **quiero** que lo que la planilla ya tiene (los productos y su historial de precios, la configuración del catálogo, las entradas de stock, los gastos, y cada venta con quién todavía la debe) se cargue en mi negocio una sola vez, el día en que dejo de usar la planilla, **para poder** seguir vendiendo en la app desde el próximo pedido con mis precios, mi stock y mis deudas reales en su lugar. No vuelvo a tipear meses de filas, y no pierdo la cuenta de quién me debe.
 
 **Cuando** registro a un cliente (desde Customers, en medio de una venta o con la **Spreadsheet import** única) y no tengo su Phone number, **quiero** guardarlo igual con su nombre y agregar el número más adelante si algún día lo consigo, **para poder** registrar cada venta y cada deuda a nombre de la persona que de verdad debe, sin inventar un número ni dejar a esa persona fuera de la app. (Lo sirve acá el archivo opcional de correspondencias; definido en customers.md.)
 
-**Cuando** configuro cómo pone precios mi negocio, registro el precio de una variedad o entrego un pedido, **quiero** que la app use solo las Pricing rules que tiene mi negocio, **para poder** cobrarle a cada cliente exactamente lo que quiero, sin que el precio de nadie cambie por sorpresa. (Lo sirve acá activar las reglas que usa la planilla y sumar sus VIP al **VIP type**; definido en pricing-settings.md y customers.md.)
+**Cuando** configuro cómo pone precios mi negocio, registro el precio de un producto o entrego un pedido, **quiero** que la app use solo las Pricing rules que tiene mi negocio, **para poder** cobrarle a cada cliente exactamente lo que quiero, sin que el precio de nadie cambie por sorpresa. (Lo sirve acá activar las reglas que usa la planilla y sumar sus VIP al **VIP type**; definido en pricing-settings.md y customers.md.)
 
-**Cuando** abro la app entre pedidos o al final del día, **quiero** ver qué vendí hoy, quién me debe y qué se está terminando, y actuar en el acto (cobrarle a un deudor, abrir una variedad que está baja, arreglar lo que me dice un aviso), **para poder** volver con el cliente sin recorrer Customers y Varieties uno por uno ni hacer cuentas. (Lo sirve acá registrar que el Business fue importado, para que le llegue el aviso de Home posterior a la importación; definido en navigation.md y results.md.)
+**Cuando** abro la app entre pedidos o al final del día, **quiero** ver qué vendí hoy, quién me debe y qué se está terminando, y actuar en el acto (cobrarle a un deudor, abrir un producto que está bajo, arreglar lo que me dice un aviso), **para poder** volver con el cliente sin recorrer Customers y Products uno por uno ni hacer cuentas. (Lo sirve acá registrar que el Business fue importado, para que le llegue el aviso de Home posterior a la importación; definido en navigation.md y results.md.)
 
 # Import
 
 La carga única del historial de un Business desde la planilla `Control_de_ventas_y_gastos` (una exportación `.xlsx`) en ese Business. La corre el **Operator** de la instalación el día en que el Business pasa a la app. Es un script del Operator, no una ruta ni una pantalla.
 
 Escribe:
-- Varieties e historial de precios (varieties.md);
+- Products e historial de precios (varieties.md);
 - Catalog attributes, y el Catalog header and footer (catalog.md);
 - Stock entries (stock.md);
 - Expense categories y Expenses (expenses.md);
@@ -28,9 +28,9 @@ Criterios de éxito:
 
 1. **Mirar antes de escribir.** Una corrida de prueba (dry run) informa todo lo que se importaría y cada problema que encuentra, y no escribe nada. La corrida real carga todo o nada. Si se rechaza, el Business queda exactamente como estaba.
 2. **El vendedor arranca donde la planilla dejó lo que usa para actuar.** Después de la importación, estas cifras coinciden con los propios registros de la planilla:
-   - el Current price de cada Variety;
+   - el Current price de cada Product;
    - el texto del Catalog;
-   - el Stock por Variety, al centésimo de gramo;
+   - el Stock por Product, al centésimo de gramo;
    - el Balance y el Owing since de cada Customer, al peso.
 
    Toda cifra que no coincide se explica en el informe. No se espera que el Profit ni el Cash coincidan con el Panel de la planilla, porque la planilla calculaba mal la ganancia. La Ganancia y la Caja pasadas salen de las propias reglas de la app sobre las filas importadas.
@@ -58,7 +58,7 @@ Criterios de éxito:
 - **Corrida real**: carga todo o nada. Cualquier problema que bloquea deja el Business exactamente como estaba.
 - **Diferencias**: las dos corridas informan cada fila importada de la pestaña Ventas de la planilla cuyo `Total` difiere del total de la Sale recalculado por la app, envío incluido. El `Total` de la planilla incluye el envío, así que se comparan cosas iguales. Una diferencia nunca bloquea.
 - **El informe**, el mismo para una corrida de prueba y para una corrida real exitosa:
-  - cantidades por tipo de registro: Varieties, Price entries, Catalog attributes, Stock entries, Expense categories, Expenses, Customers, Sales y Payments;
+  - cantidades por tipo de registro: Products, Price entries, Catalog attributes, Stock entries, Expense categories, Expenses, Customers, Sales y Payments;
   - la cantidad de Customers importados sin Phone number;
   - qué interruptores de precios activa la importación (Bulk price, y el que en pantalla se lee Customer types y que el informe sigue nombrando "VIP customers"), o que no activa ninguno;
   - cada problema que bloquea, con su hoja y su fila;
@@ -79,7 +79,7 @@ Criterios de éxito:
 
 ### Elegibilidad
 
-- La importación se rechaza si el Business tiene alguna Variety, Price entry, Stock entry, Customer, Sale, Payment o Expense. El rechazo llega antes de cualquier chequeo de la planilla y no cambia nada.
+- La importación se rechaza si el Business tiene algún Product, Price entry, Stock entry, Customer, Sale, Payment o Expense. El rechazo llega antes de cualquier chequeo de la planilla y no cambia nada.
 - Estos no cuentan:
   - el Business, su nombre, sus Users y sus Invitations;
   - las Expense categories sembradas, aunque se hayan renombrado o eliminado;
@@ -98,7 +98,7 @@ Criterios de éxito:
 - **Números donde se espera un número entero o gramos**: nunca importa cómo guarda la celda un número, solo su valor.
   - En un campo de número entero (las columnas `% índica`, `Costo total`, `Monto`, `Envío cobrado` y `Precio especial (total)` de la planilla, y el precio de lista y por cantidad), un número sin parte fraccionaria es ese número entero: `60.0` es 60. Un valor fraccionario se sigue rechazando por la regla del dueño (`60.5` no es un porcentaje).
   - Los gramos, los Bulk minimums y los Low-stock thresholds conservan su valor exacto al centésimo (`3.5` es 3,5 g).
-- **Números donde se espera texto**: un número en una celda de texto se lee como su texto, y después sigue las reglas de ese campo como cualquier texto. Esto vale para los nombres de Varieties, Customers y categorías, las columnas `Detalle`, `Nota` y `Aroma` de la planilla, el header y el footer, y las celdas con un conjunto fijo de valores (las columnas `Origen`, `Pago` y `Tipo` de la planilla, y la columna de mostrado de su pestaña Catálogo).
+- **Números donde se espera texto**: un número en una celda de texto se lee como su texto, y después sigue las reglas de ese campo como cualquier texto. Esto vale para los nombres de Products, Customers y categorías, las columnas `Detalle`, `Nota` y `Aroma` de la planilla, el header y el footer, y las celdas con un conjunto fijo de valores (las columnas `Origen`, `Pago` y `Tipo` de la planilla, y la columna de mostrado de su pestaña Catálogo).
   - Un número entero se lee como sus dígitos, sin decimales ni separador de miles: `100`, `2024`, `1000`.
   - Un número no entero se lee con coma decimal y la menor cantidad de decimales que da su valor exacto, sin separador de miles: `3,5`, `0,25`.
   - Un número nunca se rechaza solo por ser un número donde se espera texto. Un valor numérico fuera de un conjunto fijo (p. ej. una celda de la columna `Origen` con `3`) igual bloquea por desconocido.
@@ -123,22 +123,22 @@ Criterios de éxito:
 
 ### Hoja por hoja
 
-- **Varieties y umbrales** (filas 7–16 de Ajustes, umbrales en F7:F16):
-  - Estas filas son la lista completa de Varieties. Las filas en blanco se saltean.
+- **Products y umbrales** (filas 7–16 de Ajustes, umbrales en F7:F16):
+  - Estas filas son la lista completa de Products. Las filas en blanco se saltean.
   - Dos filas con el mismo nombre según la regla de varieties.md (sin importar mayúsculas ni espacios) bloquean.
-  - Toda Variety nombrada en cualquier otro lado (Catálogo, Entradas, Ventas, historial de precios) debe coincidir con una de ellas, o la importación bloquea.
+  - Todo Product nombrado en cualquier otro lado (Catálogo, Entradas, Ventas, historial de precios) debe coincidir con una de ellas, o la importación bloquea.
   - Un umbral en blanco significa ninguno. Un umbral que no es mayor que cero con como máximo dos decimales bloquea.
-- **Historial de precios** (Ajustes desde la fila 37: variedad, fecha de vigencia, precio de lista, precio por cantidad, cantidad mínima):
+- **Historial de precios** (Ajustes desde la fila 37: producto, fecha de vigencia, precio de lista, precio por cantidad, cantidad mínima):
   - una Price entry por fila, con las reglas de varieties.md;
-  - dos entradas de una Variety en una misma fecha bloquean;
+  - dos entradas de un Product en una misma fecha bloquean;
   - un Bulk price sin Bulk minimum, o al revés, bloquea;
   - un Bulk price que no es menor que el List price bloquea;
   - una entrada con Bulk price recibe además un VIP price igual a él, que reproduce la regla `"Amigo"` de la planilla. La planilla no tiene columna de VIP price.
-- **Catálogo** (filas 6–15: variedad, mostrada, emoji, % índica, aroma; B18/B19: header y footer):
-  - El "Sí" de la planilla significa mostrada y "No" significa Hidden variety. Cualquier otro valor bloquea.
+- **Catálogo** (filas 6–15: producto, mostrada, emoji, % índica, aroma; B18/B19: header y footer):
+  - El "Sí" de la planilla significa mostrada y "No" significa Hidden product. Cualquier otro valor bloquea.
   - Una celda de emoji con texto común o más de un emoji bloquea.
   - Un Indica share que no es un número entero de 0 a 100 bloquea. Un Aroma de más de 200 caracteres bloquea.
-  - Una Variety sin fila en Catálogo se muestra, sin emoji, porcentaje ni aroma.
+  - Un Product sin fila en Catálogo se muestra, sin emoji, porcentaje ni aroma.
   - B18 y B19 reemplazan el header y el footer sembrados. Una celda en blanco da un header o footer en blanco. Más de 500 caracteres bloquea.
 - **Entradas** (solo filas terminadas):
   - "Compra" → Purchase, "Cosecha" → Harvest, "Stock inicial" → Opening stock, "Ajuste" → Adjustment. Cualquier otro origen bloquea.
@@ -181,7 +181,7 @@ Criterios de éxito:
 
 Una fila terminada bloquea si las propias reglas del producto la rechazarían al registrarla hoy. Por ejemplo:
 
-- una Variety sin precio ese día y sin total especial;
+- un Product sin precio ese día y sin total especial;
 - gramos que no son mayores que cero con como máximo dos decimales;
 - una fecha futura;
 - un total mayor que $0 sin método de pago;
@@ -193,8 +193,8 @@ También bloquean:
 - una columna obligatoria que no se encuentra en Ventas, Entradas o Gastos;
 - una fila completa de Ventas con el `Total` vacío (el archivo no se recalculó);
 - una fecha en una celda de texto (ver Leer el archivo);
-- un nombre de Variety desconocido, o dos filas de Ajustes 7–16 con el mismo nombre;
-- dos Price entries de una Variety en una misma fecha;
+- un nombre de Product desconocido, o dos filas de Ajustes 7–16 con el mismo nombre;
+- dos Price entries de un Product en una misma fecha;
 - un origen o un valor de pago desconocidos;
 - una categoría fuera de A21:A28;
 - un valor inválido en Catálogo o un umbral inválido;
@@ -244,14 +244,14 @@ A partir de fixtures de test, sin telemetría:
 - **Cualquier exportación (criterios 1, 3)**: un fixture dispuesto como una exportación de Google Sheets, sin tamaño declarado en ninguna hoja y con cada número guardado como decimal, se lee completo en la corrida de prueba. 100% aprobado. Contiene:
   - números enteros en la columna `% índica`, en precios, costos, montos, envíos y un total especial, todos leídos como enteros;
   - gramos decimales y un umbral decimal, leídos al centésimo;
-  - números en celdas de texto (una celda de Detalle o Nota, un nombre de Variety, de Customer y de categoría hechos de dígitos, uno de ellos no entero), leídos como dígitos al estilo `100` o con coma decimal.
+  - números en celdas de texto (una celda de Detalle o Nota, un nombre de Product, de Customer y de categoría hechos de dígitos, uno de ellos no entero), leídos como dígitos al estilo `100` o con coma decimal.
 
   Se encuentran todas las columnas y todas las filas, y ninguno de estos se informa como problema. Un porcentaje de `60.5` se sigue rechazando.
 - **Fechas en celdas de texto (criterios 1, 3)**: el mismo fixture con una fecha en una celda de Nota, una de Detalle y una de nombre informa cada una, con su hoja y su fila, como una fecha donde se espera texto, con la solución de volver a tipearla como texto. No se lee nada de ellas, y una corrida real sobre ese archivo escribe 0 filas. 100% aprobado.
 - **Arranca donde la planilla quedó (criterio 2)**: después de importar un fixture, estas cifras son iguales a las esperadas, con 0 diferencias sin explicar:
-  - el Current price de cada Variety;
+  - el Current price de cada Product;
   - el texto del Catalog;
-  - el Stock por Variety, al centésimo;
+  - el Stock por Product, al centésimo;
   - el Balance y el Owing since de cada Customer, al peso.
 
   La Ganancia y la Caja no se comparan con la planilla.
@@ -296,7 +296,7 @@ A partir de fixtures de test, sin telemetría:
 - Una pantalla o ruta de importación en la app.
 - Importar columnas derivadas, o reproducir la ganancia y la caja de la planilla.
 - Importar filas que la planilla marca como no terminadas, o lo que nombran.
-- Inventar Customers, Phone numbers, categorías o Varieties para que una importación pase.
+- Inventar Customers, Phone numbers, categorías o Products para que una importación pase.
 - Unir nombres de Customers escritos distinto que no tienen número en la correspondencia.
 - Volver a leer como texto una fecha que la planilla armó a partir de lo que se tipeó en una celda de texto.
 - Agrupar varias filas en una sola Sale con varias líneas.

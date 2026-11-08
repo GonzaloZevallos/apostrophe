@@ -31,6 +31,8 @@ export interface WriteStub {
 export interface ReadStub {
   /** Matched against the request's path. */
   path: RegExp
+  /** Matched against the request's query string (`?archived=true`) when given; any query matches when absent. */
+  query?: RegExp
   status: number
   body?: unknown
 }

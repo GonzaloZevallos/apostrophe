@@ -2,81 +2,81 @@
 
 ## Jobs
 
-- When my business works in a language other than English, I want to set that language once for the whole business, so that every screen and the pinned catalog's fixed lines follow it. Then I run the business without translating in my head, and customers never see a catalog that mixes languages.
-- When my business works in a language other than English, I want my customers' catalog to speak that language from start to end, including the fixed lines and not just the header and footer I typed. I also want a business opened in that language to start with its header, footer and expense categories already in it. That way what customers read is consistent and I have nothing to translate or retype. While my business is in English, nothing I or my customers see changes at all.
+- Cuando mi negocio trabaja en un idioma que no es el inglés, quiero configurar ese idioma una sola vez para todo el negocio, para que cada pantalla y las líneas fijas del **Pinned catalog** lo sigan. Así llevo el negocio sin traducir mentalmente, y los clientes nunca ven un **Catalog** que mezcla idiomas.
+- Cuando mi negocio trabaja en un idioma que no es el inglés, quiero que el Catalog de mis clientes hable ese idioma de principio a fin, incluidas las líneas fijas y no solo el **Catalog header and footer** que tipeé. También quiero que un negocio abierto en ese idioma arranque con su Catalog header and footer y sus **Expense categories** ya en ese idioma. Así lo que leen los clientes es coherente y no tengo nada que traducir ni volver a tipear. Mientras mi negocio está en inglés, no cambia absolutamente nada de lo que vemos yo o mis clientes.
 
-## What it is
+## Qué es
 
-Every business has exactly one stored language, a **Language** tag. The words in other languages arrive with #317. Until then English is the only **Selectable language**, the language control does not show, and nothing visible changes for anyone.
+Todo **Business** tiene exactamente un **Stored language**, una etiqueta de **Language**. Las palabras en otros idiomas llegan con #317. Hasta entonces el inglés es el único **Selectable language**, el control de idioma no se muestra y no cambia nada visible para nadie.
 
-The language covers the app's own texts only (**Product language**): screens, and the catalog's fixed lines that customers read. It never touches the seller's own data: variety names, aroma, notes, expense categories, and the catalog header and footer stay exactly as stored. Number and date formats stay Argentine, and the catalog's money and grams formats (`$11.000`, `2,5 g`) are the same in every language.
+El Stored language cubre solo los textos propios de la app (**Product language**): las pantallas, y las líneas fijas del Catalog que leen los clientes. Nunca toca los datos propios de quien vende: los nombres de los Products, el Aroma, las notas, las Expense categories y el Catalog header and footer quedan exactamente como se guardaron. Los formatos de números y fechas siguen siendo argentinos, y los formatos de dinero y gramos del Catalog (`$11.000`, `2,5 g`) son los mismos en todos los idiomas.
 
-## Stored and shown language
+## Stored language y Shown language
 
-- A business that existed before this capability has English, stored explicitly.
-- Only a user's choice changes the stored language. Nothing else does, including a change to the selectable list.
-- **Shown language:** a screen is shown in the operator's forced language when one is set, and in the stored language otherwise. The front renders by the shown language.
-- The language control reads and shows the stored language, never the forced one.
-- A business whose stored language has dropped off the selectable list keeps it, and its screens still follow the rule above. The operator keeps the list consistent with the copy that exists, so no rule ever replaces or changes a stored language.
-- **Missing copy shows English.** Any text missing in the shown language, up to that language's whole copy file, shows its English text (the gettext fallback, language.md). This never changes the stored language and never makes an output fail.
+- Un Business que existía antes de esta capacidad tiene inglés, guardado de forma explícita.
+- Solo la elección de un **User** cambia el Stored language. Nada más lo hace, ni siquiera un cambio en la lista de Selectable languages.
+- **Shown language:** una pantalla se muestra en el **Forced language** del **Operator** cuando hay uno puesto, y en el Stored language si no. El front dibuja según el Shown language.
+- El control de idioma lee y muestra el Stored language, nunca el forzado.
+- Un Business cuyo Stored language salió de la lista de Selectable languages lo conserva, y sus pantallas siguen la regla de arriba. El Operator mantiene la lista coherente con los textos que existen, así que ninguna regla reemplaza ni cambia nunca un Stored language.
+- **Los textos faltantes se muestran en inglés.** Cualquier texto que falte en el Shown language, hasta el archivo de textos completo de ese idioma, muestra su texto en inglés (el respaldo de gettext, language.md). Esto nunca cambia el Stored language ni hace fallar una salida.
 
-## Changing the language
+## Cambiar el Stored language
 
-- Any user of the business may change it; there are no roles.
-- The control is in Settings → Business, and only when more than one language is selectable.
-- Each language is named in its own language ("English", "Deutsch"), the same whatever the shown language.
-- The control marks the stored language as current, even when it is off the selectable list, and offers only selectable languages to switch to.
-- A choice saves at once, with no Save step. The next render follows the new language.
-- After switching away from a language that is no longer selectable, the user cannot switch back until it is selectable again.
+- Cualquier User del Business puede cambiarlo; no hay roles.
+- El control está en **Settings** → Business, y solo cuando hay más de un Selectable language.
+- Cada idioma se nombra en su propio idioma ("English", "Deutsch"), igual sea cual sea el Shown language.
+- El control marca el Stored language como actual, incluso cuando está fuera de la lista de Selectable languages, y ofrece para cambiar solo Selectable languages.
+- Una elección se guarda al instante, sin paso de guardar. El siguiente dibujado sigue al idioma nuevo.
+- Después de cambiar desde un idioma que ya no es seleccionable, el User no puede volver a él hasta que vuelva a ser seleccionable.
 
-## Refusal
+## Rechazo
 
-- A value that is not selectable is refused with `business.language_not_selectable`.
-- The test locale `en-XA` is never selectable, and no request can select it. Only the operator's forced language shows it, and that overrides what is shown, never what is stored.
-- The refusal can only come from a stale screen.
-- The user sees a plain sentence from the copy module, chosen by the code and never taken from the response's detail: "That language isn't available for your business." It never names the test locale or gives a reason.
-- The stored language stays as it was. The control marks it as current again and offers only the languages selectable now.
+- Un valor que no es seleccionable se rechaza con `business.language_not_selectable`.
+- El **Test locale** `en-XA` nunca es seleccionable, y ninguna solicitud puede seleccionarlo. Solo lo muestra el Forced language del Operator, y eso reemplaza lo que se muestra, nunca lo que está guardado.
+- El rechazo solo puede venir de una pantalla desactualizada.
+- El User ve una oración simple del **Copy module**, elegida por el código y nunca tomada del detalle de la respuesta: "That language isn't available for your business." Nunca nombra el Test locale ni da un motivo.
+- El Stored language queda como estaba. El control vuelve a marcarlo como actual y ofrece solo los idiomas seleccionables en ese momento.
 
-## Catalog and pinned catalog
+## Catalog y Pinned catalog
 
-- **Fixed lines follow the shown language.** The catalog's fixed lines are the share line, "Aroma/flavor", "Price per gram", the "From … each" bulk line and the empty line "Nothing to offer for now." (catalog.md). They come in the business's shown language, worked out at the moment each output runs: the catalog screen, Test it, Publish and upkeep (including the start-of-day run). In English they are byte-identical to the baseline `en.baseline.json`.
-- **The catalog reads the language through its own port.** The catalog's own adapter over accounts is the only place it reads a business's language, and the only place the forced override is applied for it. Upkeep reads the language in its own session, after the triggering commit.
-- **A language without copy never stops the catalog.** If the shown language has no copy at all (its copy file removed), the catalog screen, Test it, Publish and upkeep all build the full catalog with English fixed lines. The stored language stays as it is, no error reaches the seller and no new Out of date reason is added. Upkeep follows its usual rule and edits only when the text differs. Once the copy is back, the next upkeep, at the latest the start-of-day run, restores that language's lines. Customers are never left on stale prices because copy is missing.
-- A language change triggers **Upkeep**. Upkeep edits the pinned message in place only when the catalog text differs from the **Last published text** of the current bot and channel chat, and never posts or pins.
-- At most one edit is sent per change.
-- Nothing is sent when the chosen language is the one already stored, when the text comes out identical, or when the business has no pinned catalog.
-- A failed edit shows **Out of date** with the reason that fits from the existing fixed list (no new reason), and the language change still stands.
-- A language change is not a change to the **Bot settings**, so it requires no new **Test send**. A test sent before a change and a publish after it may differ in language; each shows the catalog as it stands at its moment.
-- **Forced language:** while the operator has it on, the catalog screen, Test it, Publish and upkeep all use `en-XA`. Switching it on or off adds no trigger of its own: the next upkeep picks it up, at the latest the start-of-day run.
+- **Las líneas fijas siguen al Shown language.** Las líneas fijas del Catalog son la línea de compartir, "Aroma/flavor", "Price per gram", la línea "From … each" del Bulk price y la línea vacía "Nothing to offer for now." (catalog.md). Salen en el Shown language del Business, calculado en el momento en que corre cada salida: la pantalla del Catalog, Test it, Publish y el Upkeep (incluida la corrida del comienzo del día). En inglés son idénticas byte a byte a la base `en.baseline.json`.
+- **El Catalog lee el idioma a través de su propio puerto.** El adaptador propio del Catalog sobre accounts es el único lugar donde lee el idioma de un Business, y el único lugar donde se le aplica el reemplazo forzado. El Upkeep lee el idioma en su propia sesión, después del commit que lo dispara.
+- **Un idioma sin textos nunca frena el Catalog.** Si el Shown language no tiene ningún texto (se quitó su archivo de textos), la pantalla del Catalog, Test it, Publish y el Upkeep arman todos el Catalog completo con las líneas fijas en inglés. El Stored language queda como está, ningún error llega a quien vende y no se agrega ningún motivo nuevo de Out of date. El Upkeep sigue su regla habitual y edita solo cuando el texto difiere. Una vez que vuelven los textos, el próximo Upkeep, a más tardar la corrida del comienzo del día, restaura las líneas de ese idioma. Los clientes nunca quedan con precios viejos por falta de textos.
+- Un cambio de idioma dispara el **Upkeep**. El Upkeep edita el Pinned catalog en el lugar solo cuando el texto del Catalog difiere del **Last published text** del bot y del chat del canal actuales, y nunca envía ni fija.
+- Se envía como máximo una edición por cambio.
+- No se envía nada cuando el idioma elegido es el que ya está guardado, cuando el texto sale idéntico o cuando el Business no tiene Pinned catalog.
+- Una edición fallida muestra **Out of date** con el motivo que corresponda de la lista fija existente (ningún motivo nuevo), y el cambio de idioma sigue en pie.
+- Un cambio de idioma no es un cambio de los **Bot settings**, así que no exige un nuevo **Test send**. Un Test send hecho antes de un cambio y un Publish después pueden diferir en el idioma; cada uno muestra el Catalog tal como está en su momento.
+- **Forced language:** mientras el Operator lo tiene activado, la pantalla del Catalog, Test it, Publish y el Upkeep usan todos `en-XA`. Activarlo o desactivarlo no agrega ningún disparador propio: el próximo Upkeep lo toma, a más tardar la corrida del comienzo del día.
 
-## New business
+## Business nuevo
 
-- A business opened by a new-business invitation starts in the accepting phone's language (`Accept-Language`), among the selectable languages, or in English when none matches.
-- This is the only time the phone's language is read. Afterwards only the stored language counts.
-- A business joined through an invitation keeps its own language.
-- **Defaults in the stored language:** the new business is opened with the default catalog header and footer and the four default expense categories in its stored language, taken through the `BusinessDefaults` port (catalog.md, expenses.md).
-  - They are stored as the business's own data. A later language change never rewrites them, and the seller edits them in Settings as before.
-  - They follow the stored language, never the shown one, so they are never written in `en-XA`, even while the forced language is on.
-  - Any default missing in that language is written in English. The opening never fails for lack of copy.
-  - In English they are byte-identical to the baseline.
-  - Businesses that existed before the defaults followed the language keep what they stored, with no backfill.
+- Un Business abierto con una **Invitation** de Business nuevo arranca en el idioma del teléfono que la acepta (`Accept-Language`), entre los Selectable languages, o en inglés cuando ninguno coincide.
+- Esta es la única vez que se lee el idioma del teléfono. Después solo cuenta el Stored language.
+- Un Business al que alguien se suma con una Invitation conserva su propio idioma.
+- **Valores por defecto en el Stored language:** el Business nuevo se abre con el Catalog header and footer por defecto y las cuatro Expense categories por defecto en su Stored language, tomados a través del puerto `BusinessDefaults` (catalog.md, expenses.md).
+  - Se guardan como datos propios del Business. Un cambio de idioma posterior nunca los reescribe, y quien vende los edita en Settings como antes.
+  - Siguen al Stored language, nunca al Shown language, así que nunca se escriben en `en-XA`, ni siquiera mientras el Forced language está activado.
+  - Cualquier valor por defecto que falte en ese idioma se escribe en inglés. La apertura nunca falla por falta de textos.
+  - En inglés son idénticos byte a byte a la base.
+  - Los Businesses que existían antes de que los valores por defecto siguieran al idioma conservan lo que guardaron, sin carga retroactiva.
 
-## Isolation and export
+## Aislamiento y export
 
-- The business always comes from the session. No request names a business, and no answer reveals another business's language or that it exists.
-- The route that changes the language is gated by the session and belongs to the cross-business isolation checks.
-- The stored language is part of the **Business export**.
+- El Business siempre sale de la **Session**. Ninguna solicitud nombra un Business, y ninguna respuesta revela el idioma de otro Business ni que existe.
+- La ruta que cambia el idioma está protegida por la Session y forma parte de los controles de aislamiento entre Businesses.
+- El Stored language forma parte del **Business export**.
 
-## Metrics
+## Métricas
 
-The installation runs locally with no telemetry. Each metric is a figure the tests assert.
+La instalación corre localmente sin telemetría. Cada métrica es una cifra que afirman los tests.
 
-- **English kept:** existing businesses with `en` stored explicitly after the migration: 100%. Rows with no stored language: 0.
-- **One-action change:** user actions from choosing a language in Settings → Business to the change being stored: 1, with no Save step.
-- **Catalog quiet:** new posts or pins caused by a language change: 0. In-place edits per language change: at most 1. Edits on an unchanged choice or an identical text: 0. Language changes undone by a failed edit: 0.
-- **Phone read once:** new businesses whose stored language matches the accepting phone's best selectable match, or English with no match: 100%. Reads of the phone's language outside accepting a new-business invitation: 0.
-- **Test locale unreachable:** requests accepted that store `en-XA`: 0.
-- **Catalog follows the language:** with a fixture `de` (`selectable_languages=("en","de")`), a business stored as `de` gets `de`'s fixed lines from `GET /catalog`, Test it, Publish and the start-of-day run; an `en` business in the same run is byte-identical to the baseline. A change from `en` to `de` on a business with a pin gives exactly 1 edit with `de` lines. 100% passing.
-- **Missing copy falls back:** a business whose stored language has no copy file gets the full catalog with English fixed lines from `GET /catalog`, Test it, Publish and upkeep, and a new business opened in it gets the English defaults. Failed outputs, status changes to Out of date or changed stored languages caused by the missing copy: 0.
-- **Defaults follow the stored language:** a business opened in `de` stores `de`'s header, footer and four categories; after a language change they are unchanged; businesses opened under the forced `en-XA` with defaults in `en-XA`: 0; rows changed in existing businesses: 0.
-- **No leftover English:** under the forced `en-XA`, the catalog text, the pinned empty text and the defaults rendered from the defaults source leave 0 letters after removing `⟦…⟧` segments, stored data and money/grams tokens; a planted literal fails the check.
+- **Inglés conservado:** Businesses existentes con `en` guardado de forma explícita después de la migración: 100%. Filas sin Stored language: 0.
+- **Cambio en una acción:** acciones del User desde elegir un idioma en Settings → Business hasta que el cambio queda guardado: 1, sin paso de guardar.
+- **Catalog en silencio:** envíos o fijaciones nuevos causados por un cambio de idioma: 0. Ediciones en el lugar por cambio de idioma: como máximo 1. Ediciones ante una elección sin cambios o un texto idéntico: 0. Cambios de idioma deshechos por una edición fallida: 0.
+- **Teléfono leído una vez:** Businesses nuevos cuyo Stored language coincide con la mejor coincidencia seleccionable del teléfono que acepta, o inglés sin coincidencia: 100%. Lecturas del idioma del teléfono fuera de la aceptación de una Invitation de Business nuevo: 0.
+- **Test locale inalcanzable:** solicitudes aceptadas que guardan `en-XA`: 0.
+- **El Catalog sigue al idioma:** con un `de` de prueba (`selectable_languages=("en","de")`), un Business guardado como `de` recibe las líneas fijas de `de` desde `GET /catalog`, Test it, Publish y la corrida del comienzo del día; un Business `en` en la misma corrida es idéntico byte a byte a la base. Un cambio de `en` a `de` en un Business con Pinned catalog da exactamente 1 edición con las líneas de `de`. 100% pasando.
+- **Los textos faltantes caen al inglés:** un Business cuyo Stored language no tiene archivo de textos recibe el Catalog completo con las líneas fijas en inglés desde `GET /catalog`, Test it, Publish y el Upkeep, y un Business nuevo abierto en él recibe los valores por defecto en inglés. Salidas fallidas, cambios de estado a Out of date o Stored languages cambiados por los textos faltantes: 0.
+- **Los valores por defecto siguen al Stored language:** un Business abierto en `de` guarda el Catalog header and footer y las cuatro categorías de `de`; después de un cambio de idioma quedan sin cambios; Businesses abiertos bajo el `en-XA` forzado con valores por defecto en `en-XA`: 0; filas cambiadas en Businesses existentes: 0.
+- **Ningún inglés sobrante:** bajo el `en-XA` forzado, el texto del Catalog, el texto vacío del Pinned catalog y los valores por defecto armados desde su fuente dejan 0 letras después de quitar los segmentos `⟦…⟧`, los datos guardados y los tokens de dinero y gramos; un literal plantado hace fallar el control.

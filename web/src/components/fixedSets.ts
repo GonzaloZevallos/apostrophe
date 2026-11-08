@@ -46,6 +46,7 @@ function fixedSet<const T extends string>(
 const PERIODS_REASON = 'fixed view: periods'
 const THEME_REASON = 'fixed set: theme choice'
 const ICONS_REASON = 'fixed set: the neutral icon set ships with the app'
+const ORIGINS_REASON = 'fixed set: Stock entry origins'
 
 /** Home's period tabs. */
 export const HOME_PERIODS = fixedSet(PERIODS_REASON, [
@@ -81,10 +82,19 @@ export const CUSTOMER_TYPE_ICON_SET = fixedSet(ICONS_REASON, [
   { value: 'bell', icon: 'campana', label: CUSTOMER_TYPE_ICON_NAME.bell },
 ])
 
+/** The origin pills of a Stock entry. */
+export const STOCK_ENTRY_ORIGINS = fixedSet(ORIGINS_REASON, [
+  { value: 'purchase', label: () => COMMON_TEXT.purchase },
+  { value: 'harvest', label: () => COMMON_TEXT.harvest },
+  { value: 'opening_stock', label: () => COMMON_TEXT.initialStock },
+  { value: 'adjustment', label: () => COMMON_TEXT.adjustment },
+])
+
 /** Every declared set and the reason it is fixed, readable in one place. */
 export const FIXED_SETS = {
   HOME_PERIODS: PERIODS_REASON,
   SALES_PERIODS: PERIODS_REASON,
   THEME_CHOICES: THEME_REASON,
   CUSTOMER_TYPE_ICON_SET: ICONS_REASON,
+  STOCK_ENTRY_ORIGINS: ORIGINS_REASON,
 } as const

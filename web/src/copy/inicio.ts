@@ -16,14 +16,14 @@ export const CHECKLIST_TITLE = 'To get started'
 export const CHECKLIST_REQUIRED = 'Required'
 export const CHECKLIST_OPTIONAL = 'Optional'
 export const CHECKLIST_DONE = COMMON_TEXT.done
-export const STEP_PRICED_VARIETY = 'Add a variety with its price'
+export const STEP_PRICED_VARIETY = 'Add a product with its price'
 export const STEP_STOCK_ENTRY = 'Add what you have today'
 export const STEP_PUBLISHED = 'Connect the bot'
 export const STEP_SECOND_USER = 'Invite a partner'
 export const IMPORT_NOTICE = 'Connect the bot so the pinned catalog updates by itself'
 export const IMPORT_NOTICE_DISMISS = 'Dismiss notice'
 /** The line under "+ Nueva venta" while the checklist shows and no variety has a price. */
-export const NUEVA_VENTA_MISSING = 'Add a price to a variety so you can sell'
+export const NUEVA_VENTA_MISSING = 'Add a price to a product so you can sell'
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'notice', text: PINNED_CATALOG_OUT_OF_DATE },

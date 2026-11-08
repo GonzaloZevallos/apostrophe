@@ -12,7 +12,7 @@ export const LANGUAGE: 'es' | 'en' = 'en'
 
 export const DISCARD_DETAIL = 'What you typed is lost: nothing has been saved yet.'
 /** For a step that has already saved part of its work: the variety is kept, the price typed is not. */
-export const PARTLY_SAVED_DETAIL = 'The variety is already saved; the price you typed is lost.'
+export const PARTLY_SAVED_DETAIL = 'The product is already saved; the price you typed is lost.'
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: DISCARD_DETAIL },
@@ -35,7 +35,7 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const ONBOARDING_TEXT = {
   continue: 'Continue',
-  varietyWithPriceLower: 'variety with price',
+  varietyWithPriceLower: 'product with price',
   initialStockLower: 'initial stock',
   partnerLower: 'partner',
   varietyOne: STOCK_TEXT.varietyOne,
@@ -54,19 +54,19 @@ export const ONBOARDING_TEXT = {
   skipTheRest: 'Skip the rest',
   anotherToAddNow: 'Have another to add now? Each one takes its name, its price and its initial stock.',
   withTodaysPriceAndStock: 'With today\'s price and its initial stock',
-  firstAddAVariety: 'First add a variety with today\'s price.',
-  addAVariety: 'Add a variety',
-  varietyNamed: (name: string | number) => `Variety: ${name}`,
-  saveTheVariety: 'Save the variety',
-  publishItFromVarieties: 'Whenever you like, publish it from Varieties → Send catalog',
+  firstAddAVariety: 'First add a product with today\'s price.',
+  addAVariety: 'Add a product',
+  varietyNamed: (name: string | number) => `Product: ${name}`,
+  saveTheVariety: 'Save the product',
+  publishItFromVarieties: 'Whenever you like, publish it from Products → Send catalog',
   forLaterIn: (later: string | number) => `For later — in ${later}`,
   doneWith: (detail: string | number) => `Done · ${detail}`,
   goOnToTheSetup: 'Go on to the setup',
   discardWhatYouTyped: 'Discard what you typed?',
   createTheLink: 'Create the link',
-  addYourFirstVariety: 'Add your first variety',
-  toSellEachVarietyNeeds: 'To sell, each variety needs a name and today\'s price.',
-  withoutStockItCannotBeSold: 'Without stock it can\'t be sold: tell us how many grams you have of this variety.',
+  addYourFirstVariety: 'Add your first product',
+  toSellEachVarietyNeeds: 'To sell, each product needs a name and today\'s price.',
+  withoutStockItCannotBeSold: 'Without stock it can\'t be sold: tell us how many grams you have of this product.',
   howYourCatalogLooks: 'How your catalog looks',
   headerAndFooterGoOnEveryCatalog: 'The header and footer go on every catalog you send. They already have a text: leave it as is or change it.',
   catalogMessageLower: 'catalog message',
