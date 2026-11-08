@@ -114,12 +114,30 @@ class MoneyFormat:
             raise ValueError("the money decimals must be a whole number from 0 to 2")
 
 
-def round_half_up(value: Fraction, money_format: MoneyFormat) -> Money:
-    """An exact amount in currency units, rounded half up (away from zero on a tie) to the
-    format's decimals, in integer arithmetic only."""
-    places = 10**money_format.decimals
+def _round_half_up(value: Fraction, decimals: int) -> int:
+    """An exact amount in currency units as signed hundredths, rounded half up (away from
+    zero on a tie) to `decimals`, in integer arithmetic only."""
+    places: int = 10**decimals
     scaled = value * places
     numerator, denominator = scaled.numerator, scaled.denominator
     rounded, _ = divmod(2 * abs(numerator) + denominator, 2 * denominator)
     signed = -rounded if numerator < 0 else rounded
-    return Money(signed * 10 ** (MAX_DECIMALS - money_format.decimals))
+    to_hundredths: int = 10 ** (MAX_DECIMALS - decimals)
+    return signed * to_hundredths
+
+
+def round_half_up(value: Fraction, money_format: MoneyFormat) -> Money:
+    """An exact amount in currency units, rounded half up (away from zero on a tie) to the
+    format's decimals, in integer arithmetic only."""
+    return Money(_round_half_up(value, money_format.decimals))
+
+
+def round_half_up_to_units(value: Fraction) -> int:
+    """An exact amount in currency units, rounded half up (away from zero on a tie) to the
+    whole unit, as a whole-unit int.
+
+    It exists because today's domain amounts are whole-unit ints and carry no
+    `MoneyFormat`; the part that turns those amounts into `Money` replaces its callers.
+    Until then the two shapes coexist and no use case reads the money scale."""
+    units, _ = divmod(_round_half_up(value, 0), HUNDREDTHS_PER_UNIT)
+    return units

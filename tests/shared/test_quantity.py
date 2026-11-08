@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from decimal import Decimal
+from fractions import Fraction
 
 import pytest
 
@@ -49,3 +50,8 @@ def test_grams_may_be_negative_and_add_up_exactly() -> None:
 
     assert total == Quantity.of("-0.2")
     assert not total.is_positive
+
+
+def test_units_is_the_exact_fraction_of_a_unit() -> None:
+    assert Quantity(350).units == Fraction(7, 2)
+    assert Quantity(-5).units == Fraction(-1, 20)
