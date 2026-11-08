@@ -7,7 +7,7 @@
  */
 
 import { describe, expect, test } from 'vitest'
-import { findTopLevelText, type TopLevelFinding } from './noTopLevelText'
+import { findTopLevelText, I18N_EXCEPTION, type TopLevelFinding } from './noTopLevelText'
 
 const fixtures = import.meta.glob('./fixtures/noTopLevelText/*.txt', {
   query: '?raw',
@@ -115,5 +115,22 @@ describe('src/i18n/ is the one place that imports locale files', () => {
   test('the other two rules still apply inside i18n/', () => {
     const read = entries.find(({ name }) => name === 'fail_resource_calls')?.source ?? ''
     expect(findTopLevelText('web/src/i18n/resources.ts', read)).toHaveLength(5)
+  })
+})
+
+describe('the named exception for i18n/', () => {
+  const alias = 'export const testT = i18n.t\n'
+
+  test('it is one constant with a reason, applying only to its path', () => {
+    expect(I18N_EXCEPTION.reason.length).toBeGreaterThan(20)
+    expect(findTopLevelText(`web/${I18N_EXCEPTION.path}`, alias)).toEqual([])
+    expect(findTopLevelText('web/src/i18n/other.ts', alias)).toEqual([{ line: 1, rule: 't-outside-function' }])
+    expect(findTopLevelText('web/src/screens/testing.ts', alias)).toEqual([{ line: 1, rule: 't-outside-function' }])
+  })
+
+  test('it lets alone only the t rule: a resource read in the same file is still a finding', () => {
+    expect(findTopLevelText(I18N_EXCEPTION.path, 'export const s = i18n.store\n')).toEqual([
+      { line: 1, rule: 'resource-read' },
+    ])
   })
 })
