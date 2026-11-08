@@ -100,6 +100,11 @@ Lo que entra a un **Business** (**Stock entries**), lo que sale de él sin una v
 - **Nunca se rechaza por falta de stock** (ADR-0009). El stock puede quedar negativo y entonces se muestra agotado.
 - **No se mueve dinero**: el Cash no se toca. Un retiro nunca es una venta: no está en ninguna cantidad de ventas, total de ventas, Average sale, Sales ni historial de Customer.
 - **Edición**: todos los campos (fecha, motivo, líneas, nota), con la misma validación que al registrar. El motivo se puede cambiar a cualquier motivo de la lista. Guardar se confirma antes. Los Lots posteriores se vuelven a calcular.
+- **Elegir en el formulario** (GH-581, parte 3): el motivo y la Variety de cada línea se eligen con el Selector (selector.md).
+  - Una línea guardada cuya Variety se archivó después muestra el nombre guardado con la marca "no longer available"; esa Variety no se ofrece y guardar la conserva.
+  - "That is gone." bajo una línea (con role=alert) aparece solo cuando guardar se rechaza con `variety.archived`: la línea conserva su Variety por nombre con la marca y guardar queda apagado hasta elegir otra Variety de la lista o quitar la línea. Recargar la lista nunca marca una línea ni bloquea guardar por sí solo.
+  - Un motivo eliminado mientras tanto (`stock.withdrawal_reason_not_found`) vacía el campo, vuelve a leer la lista y dice "That reason is gone. Pick another."; todo lo demás tipeado queda.
+  - Al editar, el campo del motivo está ocupado hasta que llega la lista; el motivo guardado sigue elegido y aparece entonces. Con la lista vacía, el Selector dice dónde crear las opciones ("No reasons yet. Add them in Settings → Business → Withdrawal reasons."; las Varieties, "No varieties yet. Add them in the Varieties tab."), nunca mientras carga.
 - **Eliminación**: definitiva, confirmada con "Before deleting", que nombra el motivo por su propio nombre, la fecha y los gramos totales, por ejemplo "Delete the Marketing withdrawal from 03/10? 5 g go back to stock.", con "No, keep it / Yes, borralo". Sus gramos vuelven al stock y se reubican en los Lots por fecha.
 - Ni una edición ni una eliminación se rechazan porque los gramos del retiro ya se hayan tomado de los Lots (ADR-0009).
 
