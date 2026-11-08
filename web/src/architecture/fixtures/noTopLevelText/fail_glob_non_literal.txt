@@ -1,0 +1,3 @@
+// expect: locale-import@3
+const pattern = '../copy/locales/*.json'
+export const all = import.meta.glob(pattern)

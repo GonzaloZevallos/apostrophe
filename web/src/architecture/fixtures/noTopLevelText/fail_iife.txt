@@ -1,0 +1,5 @@
+// expect: t-outside-function@4
+import { t } from 'i18next'
+;(() => {
+  register(t('a'))
+})()
