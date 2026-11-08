@@ -90,7 +90,7 @@ Criterios de éxito:
 11. **Las capturas offline conservan sus fuentes.** Una fila que deja la app offline se captura con las fuentes propias de la página aplicadas, y el chequeo de aplicadas corre sobre ella exactamente como sobre cualquier otra fila.
 12. **Alcanzar cada fila no le cuesta nada al vendedor.** Hacer que una fila alcance su pantalla cambia sólo los pasos de esa fila, los datos de muestra y las herramientas de captura bajo `scripts/design/`, más los dos tests del registro dentro de sus seams declarados. Ninguna pantalla, copy, doc de capacidad ni la carga de fuentes propia de la app cambia.
 
-Criterios de éxito, la evidencia del restyle del Onboarding (seguimiento de GH-164) (numerados aparte; Metrics los cita como "Onboarding criterion N", y el "criterion N" a secas allí es la lista de arriba).
+Criterios de éxito, la evidencia del restyle del Onboarding (seguimiento de GH-164) (numerados aparte; Métricas los cita como "Onboarding criterion N", y el "criterion N" a secas allí es la lista de arriba).
 
 6. **Cada pantalla del Onboarding cubierta.** Cada uno de los seis pasos y "Done" tiene capturas para los viewports de teléfono y de computadora, en claro y oscuro, más una captura de teléfono a 320 px con texto al 130 %, sólo en claro, todo de una corrida `--strict` que sale con exit 0. Una pantalla faltante, un lado faltante o un `null` de un solo lado es una falla, nunca un pase.
 7. **Un par antes/después del restyle.** "Antes" es el código sin el cambio de GH-164 (una vez fusionado, la cabeza fusionada con sólo ese cambio deshecho, el diff del deshacer en el PR); "después" es la cabeza que se fusiona. Los dos salen del `comparisons.mjs` de la propia cabeza, una instalación, el mismo día argentino, fuentes fijadas, y se comparan como capturas crudas por AE exacto con `ae.mjs`. El PR registra la versión instalada de `@fontsource/plus-jakarta-sans`.
@@ -108,34 +108,34 @@ Criterios de éxito, revisar el cambio de GH-141 a Analysis:
 8. **La edición del guard se declara, no se afloja.** El seam del plan para `muestra` nombra `tests/design/test_muestra_screens.py` y `tests/design/muestra_guard.py`, sólo para ese plan, y el guard conserva todo lo que chequeaba antes.
 9. **Nada de lo que ve un vendedor cambia** más allá de la intención decidida de GH-141: docs/product/analysis.md y la enmienda de GH-141 al ADR-0020 se mantienen, y pasan todas las suites.
 
-Criterios de éxito, capturas bajo carga (numerados aparte; Metrics los cita como "Load criterion N"):
+Criterios de éxito, capturas bajo carga (numerados aparte; Métricas los cita como "Load criterion N"):
 
 6. **Aceptada bajo carga.** Un antes/después capturado mientras la máquina lleva carga ajena es evidencia válida. Ningún invariante de plan ni regla de evidencia pide una máquina ociosa, y nada se registra como "unsatisfiable" ni como excepción.
 7. **La carga no cambia el resultado.** Un commit capturado bajo carga y capturado en reposo da AE 0 exacto en cada captura cruda, lado diseño y lado construido. Si la carga cambia los píxeles de una captura, eso es un defecto de captura, que se arregla en la captura, nunca pidiendo una máquina ociosa y nunca aflojando la comparación.
 8. **El Gate no se toca.** La captura sigue siendo evidencia de revisión juzgada a ojo y nunca es un paso del Gate. No se agrega ningún chequeo de tiempo transcurrido (ADR-0038).
 9. **Nada de lo que ve un vendedor cambia.** Ninguna pantalla, copy, route ni regla de producto cambia. Pasan todas las suites sin ningún test aflojado.
 
-Criterios de éxito, la captura de Home Today (seguimiento de GH-45) (numerados aparte; Metrics los cita como "Today criterion N"):
+Criterios de éxito, la captura de Home Today (seguimiento de GH-45) (numerados aparte; Métricas los cita como "Today criterion N"):
 
 1. **La captura dice la verdad.** En el lado diseño, `InicioHoyCompu` se compara con su propia sección nombrada, el frame Today, no con todo `InicioCompu.dc.html`. En el lado construido muestra la app tal como abre, en Today. Una diferencia no cero ahí es una diferencia real.
 2. **Cada fila de Home contabilizada.** El PR audita a ojo cada otra fila `Inicio*`. Cada arreglo sólo de declaración se hace en la misma tarea, cada otro arreglo es un issue de seguimiento enlazado, y nada de lo que se encuentra queda sin explicar.
 3. **Nada aflojado, nada que vea un vendedor.** Sólo cambian `screens.json`, los dos tests del registro (dentro de sus seams declarados, cada uno conservando todos sus guards) y el único caption del frame Today de `InicioCompu.dc.html`. Ninguna pantalla, copy que lee un vendedor ni regla de capacidad cambia, el script de captura no se toca y ningún paso de captura entra al Gate.
 
-Criterios de éxito, capturas en reposo (numerados aparte; Metrics los cita como "Rest criterion N"):
+Criterios de éxito, capturas en reposo (numerados aparte; Métricas los cita como "Rest criterion N"):
 
 1. **Repetible.** Cinco corridas `--strict` del registro entero por commit, sin `--only`, cada una sobre una muestra nueva y el mismo día argentino, cada una comparada con la primera por `ae.mjs`, dan AE 0 en cada fila y lado, `VariedadesCompu built` incluida. Base y cabeza, ambas capturadas con las herramientas de la cabeza, dan AE 0 en cada fila que el cambio no tocó. Las corridas en la máquina compartida cargada cuentan; nunca se exige una máquina ociosa.
 2. **El estado en reposo.** Lo que se captura es el estado en que la pantalla queda en reposo una vez que nada sigue cambiando: ningún cambio animado en curso, ningún request pendiente (una relectura en segundo plano incluida) y ningún control todavía deshabilitado u ocupado mientras espera. Para el switch "Low stock warning" del producto abierto en VariedadesCompu, eso es el switch habilitado, encendido o apagado según el umbral guardado de la muestra, nunca dibujado deshabilitado a mitad de una relectura.
 3. **Nunca a medio dibujar.** Una pantalla que no llegó al reposo cuando se captura falla su fila bajo `--strict`. Nunca se acepta como un pase.
 4. **Nada aflojado, nada que vea un vendedor cambia.** No hay tolerancia de píxeles. Ninguna fila se excusa, se saltea ni se lista como falla conocida. El comportamiento propio de la app (sus cambios animados, un control deshabilitado mientras corre una relectura), las pantallas y el copy no se cambian para que la captura pase. La captura sigue siendo evidencia de revisión y nunca pasa a ser un paso del Gate.
 
-Criterios de éxito, la evidencia de primera vez y de Today de Home (seguimiento de GH-45) (numerados aparte; Metrics los cita como "First-run criterion N"):
+Criterios de éxito, la evidencia de primera vez y de Today de Home (seguimiento de GH-45) (numerados aparte; Métricas los cita como "First-run criterion N"):
 
 1. **Cada elemento de primera vez tiene un dibujo y filas de registro.** `pantallas/` dibuja el checklist de primera vez con sus marcas "Done" y el aviso posterior a la Spreadsheet import, y cada uno tiene filas de registro que lo alcanzan como lo ve un vendedor, capturando su sección entera.
 2. **Today se compara como Today.** `InicioHoyCompu` e `InicioHoyCompuOscuro` recortan a una sección que contiene sólo Today, nunca una que también dibuje Week.
 3. **Todo el registro en verde, nada que vea un vendedor cambia.** Una corrida `--strict` de todo el registro sin `--only` sale con exit 0, sin fila quitada, salteada ni excusada. Ninguna regla, pantalla, route ni copy de la app de ningún doc de capacidad cambia. Los únicos tests editados son los dos tests del registro dentro de sus seams declarados y `tests/design/test_sample_app.py`, seam declarado de este plan, sólo extendido; todo otro test pasa sin editar.
 4. **Las diferencias se listan.** Donde un dibujo y los docs difieren en redacción o en lo que se muestra (docs/product/navigation.md para el checklist y el aviso posterior a la Spreadsheet import, docs/product/results.md para el orden de Home), el PR lista cada diferencia.
 
-Criterios de éxito, la evidencia del restyle de Home (seguimiento de GH-272) (numerados aparte; Metrics los cita como "Home criterion N"):
+Criterios de éxito, la evidencia del restyle de Home (seguimiento de GH-272) (numerados aparte; Métricas los cita como "Home criterion N"):
 
 1. **Coincidencia exacta en cinco pantallas.** `Inicio` (Home), `InicioOscuro` (Home, tema oscuro), `InicioHoy` (Home en la pestaña Today), `InicioHoyCompu` (Home en la pestaña Today, layout de computadora) e `InicioHoyCompuOscuro` (lo mismo, tema oscuro) muestran cada una AE 0 exacto, lado diseño y lado construido, en una salida de `ae.mjs` adjunta al PR. "Casi cero" no pasa; un lado faltante, un `null` de un solo lado o una captura ilegible es una falla, nunca AE 0.
 2. **Cada línea de `InicioCompu` contabilizada.** Cada línea AE de `InicioCompu` (Home, layout de computadora) e `InicioCompuOscuro` se lista con su pantalla y lado, cada una en 0 o con un motivo de una línea que el PM aceptó en el PR, diciendo que la diferencia la prevé GH-272 o viene del propio archivo de diseño. Un motivo que no nombra causa ("ruido de render") no se acepta; una línea sin motivo aceptado es un desajuste.
@@ -143,7 +143,7 @@ Criterios de éxito, la evidencia del restyle de Home (seguimiento de GH-272) (n
 4. **Invariante 12 cubierto.** El bloque Coverage lleva un resultado de una línea para el invariante 12, movido de "Not touched" a cubierto y apuntando a la evidencia del PR, y el finding de `web/src/styles/app.css:3098` se cierra con él.
 5. **Nada aflojado, nada nuevo que vea un vendedor.** Ningún archivo de diseño se edita; todo arreglo lleva la construcción al diseño dentro de lo que GH-272 restyló en Home y no cambia ningún copy, comportamiento, cifra ni route; ningún paso de captura entra al Gate.
 
-Criterios de éxito, la evidencia del método de captura (GH-301 parte 3) (numerados aparte; Metrics los cita como "Shot criterion N"):
+Criterios de éxito, la evidencia del método de captura (GH-301 parte 3) (numerados aparte; Métricas los cita como "Shot criterion N"):
 
 1. **Repetible, criterio (a).** Para la cabeza y para la base (el commit más temprano anterior al commit de app fijado cuya app muestra cada etiqueta que hoy clickea el registro, capturado con el `scripts/design` de la cabeza como overlay), cinco corridas `--strict` del registro entero cada una, sin `--only`, cada una sobre una muestra nueva, las diez en un día argentino y cada una con exit 0; `ae.mjs` comparando la corrida 1 con las corridas 2 a 5 de cada lado muestra 0 líneas no cero, ningún lado faltante y ningún `null` de un solo lado. Cualquier otra cosa se informa como defecto, nunca se disimula ni se vuelve a correr hasta que pase.
 2. **Viejo contra nuevo, criterio (d).** La corrida 1 de la cabeza se compara con la corrida del censo de la parte 1 (riesgo 6 del ADR-0052), retomada sobre el commit de app recién fijado y en el mismo día argentino que las diez corridas, con `ae.mjs --box`. Cada fila y lado que difiere tiene un PNG lado a lado commiteado bajo `docs/evidence/GH-301/` y una línea en la tabla de veredictos que lo enlaza. Ninguna línea la causa sólo la fecha de la semilla.
@@ -153,7 +153,7 @@ Criterios de éxito, la evidencia del método de captura (GH-301 parte 3) (numer
 6. **Nada más se mueve.** Sólo cambian `docs/evidence/GH-301-shot-method.md` y los PNG lado a lado bajo `docs/evidence/GH-301/`; nada bajo `app/` ni la parte de producto de `web/src/`, ninguna fila de registro, y nada en el Gate, el CI ni `.agentic/stack.yaml`. Lo que la captura registra e imprime no lleva texto de página, nombres, montos ni datos de píxeles; las imágenes commiteadas muestran sólo el negocio de muestra.
 7. **Cada lado tiene una imagen.** Ningún lado se registra como falla conocida: los cuatro lados que nombra el riesgo 1 del ADR-0052 (`Inicio` diseño y construido, `Gastos` construido, `VariedadesCompu` construido) producen cada uno una imagen real antes de que se cierren los findings de GH-273.
 
-Criterios de éxito, la captura de teléfono (GH-491) (numerados aparte; Metrics los cita como "Phone criterion N"):
+Criterios de éxito, la captura de teléfono (GH-491) (numerados aparte; Métricas los cita como "Phone criterion N"):
 
 1. **Viewport real.** Una fila de teléfono se saca en su viewport real, sin agrandarlo nunca, de los dos lados.
 2. **Sin evidencia falsa.** Un lado que la herramienta no puede capturar queda `not-captured` con su razón; `ae.mjs` lo dice "not compared", nunca AE 0 ni un pase.
