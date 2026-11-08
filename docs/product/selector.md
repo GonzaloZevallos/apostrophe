@@ -17,10 +17,14 @@ Las partes de GH-581 pasan las pantallas al Selector. Desde la parte 3 lo usan e
 
 - Tiene una etiqueta visible (`label`) y muestra la opción elegida.
 - Cada opción (`options`: `value`, `label`, `glyph` opcional) puede llevar un glifo antes del nombre, decorativo (`aria-hidden`) y que nunca se busca.
-- Campo obligatorio (`required`): no tiene fila para borrar la elección.
+- Campo obligatorio (`required`): no tiene fila para borrar la elección. Puede llevar un `placeholder` opcional: el texto que muestra el área del valor mientras no hay elección y no está cargando. Nunca es una fila de la lista, nunca se puede elegir y nunca se busca. Un campo opcional no acepta `placeholder` (no compila).
 - Campo opcional (`emptyWording`): sin elección muestra su propio texto vacío, y la primera fila de la lista usa el mismo texto y borra la elección (`onChange(null)`).
-- Cargando (`loading`): el campo queda deshabilitado, con `aria-busy="true"` y la barra de esqueleto de la app en lugar del valor, sin texto ni dígitos; la lista no se puede abrir. Si `loading` pasa a verdadero con la lista abierta, la lista se cierra y el foco va al grupo que envuelve el campo.
+- Cargando (`loading`): el campo queda deshabilitado, con `aria-busy="true"` y la barra de esqueleto de la app en lugar del valor, sin texto ni dígitos (tampoco el `placeholder`); la lista no se puede abrir. Si `loading` pasa a verdadero con la lista abierta, la lista se cierra y el foco va al grupo que envuelve el campo.
 - Los nombres largos se cortan con puntos suspensivos; la marca "no longer available" nunca se corta.
+- Props opcionales para la pantalla que lo usa, todas compatibles con los usos anteriores:
+  - `accessibleName`: nombra el grupo, el campo (seguido del valor, como siempre) y la lista donde nombraría `label`; la etiqueta visible y el título visible de la Sheet siguen siendo `label`. Sirve cuando el nombre accesible tiene que ser más preciso que la etiqueta, como "Line 1 product" con la etiqueta "Product".
+  - `fieldRef`: recibe el `<button>` del campo, para que la pantalla le dé el foco o lo traiga a la vista; es el mismo botón que usa el Selector.
+  - `listHost`: el elemento donde se dibuja la lista del teléfono en lugar de al lado del campo. Lo usa una pantalla que deja `inert` lo que la lista tapa y necesita la lista fuera de esa parte.
 
 ## Una elección que no está entre las opciones
 
@@ -31,7 +35,7 @@ Las partes de GH-581 pasan las pantallas al Selector. Desde la parte 3 lo usan e
 
 ## Teléfono (menos de 900 px)
 
-- El campo abre la lista en el marco compartido de la Sheet: el botón de cerrar arriba (el ícono × de toda Sheet, con nombre accesible "Close"), el `label` del campo como título y sin barra de acciones. El nombre accesible de la lista es "{label} options".
+- El campo abre la lista en el marco compartido de la Sheet: el botón de cerrar arriba (el ícono × de toda Sheet, con nombre accesible "Close"), el `label` del campo como título y sin barra de acciones. El nombre accesible de la lista es "{name} options", con el `accessibleName` del campo o, si no tiene, su `label`.
 - Filas de 44 px; la opción actual lleva un check y la palabra accesible "Selected". Los nombres largos se cortan con puntos suspensivos. No hay scroll horizontal.
 - Tocar una opción la elige y cierra la lista: elegir lleva exactamente 2 toques.
 - Con más de 8 opciones, arriba hay un campo de búsqueda fijo que recibe el foco al abrir la lista: `type="search"`, `inputmode="search"`, `autocomplete="off"`, `enterkeyhint="search"`, texto de 16 px y 44 px de alto. Enter nunca envía el formulario de abajo: lleva el foco a las filas, dentro de la lista. Sin búsqueda, el foco va a la opción actual o, si no hay, a la primera fila.
@@ -41,7 +45,7 @@ Las partes de GH-581 pasan las pantallas al Selector. Desde la parte 3 lo usan e
 ## Historial
 
 - El contexto `SheetLevel` de `useSheetStack.ts` (0 por defecto) da el nivel: el Selector llama a `useSheet(level + 1)` y envuelve su lista en `SheetLevel` en `level + 1`; nunca recibe un nivel por prop. Sin envoltorio la lista es el nivel 1; dentro de un formulario en el nivel 1 es el nivel 2. `NuevaVentaCliente` provee los niveles 1 y 2 alrededor de su selector de cliente y de su creador, sin ningún cambio visible.
-- En New sale, la lista de productos de una línea es el nivel 1 sobre el formulario, dentro del `SheetStackProvider` de `NuevaVenta`. Comparte el número de nivel con Pick a customer (`NuevaVentaCliente`), pero las dos nunca están abiertas a la vez.
+- En New sale, la lista de productos de una línea es el nivel 1 sobre el formulario, dentro del `SheetStackProvider` de `NuevaVenta`. Comparte el número de nivel con Pick a customer (`NuevaVentaCliente`), pero las dos nunca están abiertas a la vez: New sale monta Pick a customer solo cuando la vendedora lo pidió.
 - Volver y "Close" cierran exactamente una entrada, nunca el formulario de abajo. Un doble toque, o elegir y tocar "Close" enseguida, tampoco saca el formulario: un solo abrir emite a lo sumo un cierre.
 - Pasar de teléfono a computadora con la lista abierta la cierra una vez; pasar de computadora a teléfono cierra el desplegable. En los dos casos el foco vuelve al campo.
 - Límite conocido: una Sheet hermana que use el mismo número de nivel también se lee como abierta junto con la lista. Una prueba lo fija; quien revisa cada cambio de pantalla comprueba el nivel de cada Sheet hermana.
@@ -79,9 +83,9 @@ Las partes de GH-581 pasan las pantallas al Selector. Desde la parte 3 lo usan e
 
 ## Textos
 
-Todo texto sale del Copy module (`web/src/copy/`), en inglés, con el en-XA generado; se reusan las claves existentes (`close`, `loading`, `owing`).
+Todo texto sale del Copy module (`web/src/copy/`), en inglés, con el en-XA generado; se reusan las claves existentes (`close`, `loading`, `owing`). El `placeholder` y el `accessibleName` que pasa una pantalla también salen del Copy module.
 
-- `common`: `search` (Search), `noResults` (No results), `noLongerAvailable` (no longer available), `selected` (Selected), `optionsOf` ("{{name}} options", que recibe el `label` del campo), `paid` (Paid), `owing` (Owing), `paymentMethod` (Payment method), `noType` (No type). Las últimas cuatro no las muestra el control: sirven a la nota de prueba de Payment methods y a los cambios de pantalla posteriores.
+- `common`: `search` (Search), `noResults` (No results), `noLongerAvailable` (no longer available), `selected` (Selected), `optionsOf` ("{{name}} options", que recibe el `accessibleName` del campo o, si no tiene, su `label`), `paid` (Paid), `owing` (Owing), `paymentMethod` (Payment method), `noType` (No type). Las últimas cuatro no las muestra el control: sirven a la nota de prueba de Payment methods y a los cambios de pantalla posteriores.
 - `emptyStates`:
   - `selectorNoVarieties`: "No products yet. Add them in the Products tab." Lo usan Stock entry, Take from stock y cada línea de New sale.
   - `selectorNoCategories`: "No categories yet. Add them in Settings → Expense categories."
@@ -97,6 +101,7 @@ Una prueba comprueba que cada mensaje nombra el lugar con las mismas palabras de
 - Cualquier selector posterior sobre datos o configuración del Business (GH-318: units, time zone, Money format, Payment methods) se construye sobre el Selector.
 - Nota de prueba de Payment methods, hasta GH-318: los Payment methods todavía no existen. Las pruebas y los dibujos del Selector pueden usar un conjunto de Payment method armado dentro de la prueba o del dibujo, con las claves `Payment method`, `Paid` y `Owing`; ese conjunto nunca se declara en `fixedSets.ts` ni lo lee ninguna pantalla.
 - Una parte que pasa una pantalla al Selector, y solo ella, agrega la entrada de WalkState de esa pantalla, borra las entradas de las listas de infractores que el cambio deja obsoletas y actualiza el dibujo de la pantalla en `pantallas/`. Nunca le quita una capacidad que la pantalla tenía (creación en el lugar, líneas de ayuda, el rechazo ante una línea que ya no existe), los Fixed sets conservan su aspecto y su comportamiento, y le pasa al campo el estado de carga de la consulta que lo alimenta. Cuando un campo obligatorio queda con el conjunto vacío, esa parte se asegura de que el formulario a medio cargar se conserve o se pueda recuperar.
+- Un cambio genérico del componente (como las props opcionales `accessibleName`, `fieldRef`, `placeholder` y `listHost` de la parte 4) no es un cambio de pantalla: no agrega WalkState, no toca infractores ni dibujos.
 
 ## WalkState y chequeo en el teléfono
 
@@ -109,7 +114,7 @@ Una prueba comprueba que cada mensaje nombra el lugar con las mismas palabras de
 
 ## Diseño
 
-El Selector está dibujado en el bloque "Selector" de `docs/product/design-system/pantallas/Componentes.dc.html`: el campo cerrado, el campo con "no longer available" con nombre y sin nombre, el campo cargando, la lista de teléfono con búsqueda y sin ella, No results, el conjunto vacío en sus tres variantes y el desplegable de computadora. La regla y sus dos ejemplos están en `docs/product/design-system/README.md`, en "Chips o Selector". Cada pantalla pasada al Selector lo muestra en su propio dibujo de `pantallas/`, New sale incluido.
+El Selector está dibujado en el bloque "Selector" de `docs/product/design-system/pantallas/Componentes.dc.html`: el campo cerrado, el campo con "no longer available" con nombre y sin nombre, el campo cargando, la lista de teléfono con búsqueda y sin ella, No results, el conjunto vacío en sus tres variantes y el desplegable de computadora. La regla y sus dos ejemplos están en `docs/product/design-system/README.md`, en "Chips o Selector". Cada pantalla pasada al Selector lo muestra en su propio dibujo de `pantallas/`, New sale incluido (el campo cerrado; la lista abierta la juzga el chequeo `mobile`).
 
 ## Métricas
 
@@ -124,5 +129,6 @@ Cada criterio de éxito se mide con una prueba de vitest y Testing Library, a tr
 7. Teclado de computadora: flechas, Enter y un Escape que no llega al formulario.
 8. Se conserva el orden recibido, la búsqueda empieza vacía al reabrir y el foco vuelve al campo.
 9. El mensaje de conjunto vacío de Products, como todo valor del Copy module, no dice "variety"/"varieties": lo controla el barrido permanente de varieties.md (`web/src/copy/productWord.test.ts`).
+10. Props opcionales (`Selector.phone.test.tsx`, `Selector.computer.test.tsx`): el `fieldRef` de quien lo usa recibe el `<button>` del campo y le da el foco; con `accessibleName`, el nombre del campo empieza con él y contiene el valor, la etiqueta visible sigue siendo `label` y la lista se llama "{accessibleName} options"; con `placeholder` y sin elección, el campo lo muestra y ninguna fila de la lista lo tiene; mientras carga, el `placeholder` no se muestra.
 
 El resultado del trabajo (una Sale registrada desde el teléfono en menos de un minuto) se mide en las partes que pasan cada pantalla al Selector, no en esta. Para la línea de New sale lo miden los criterios 28 a 32 de sales.md y su presupuesto de toques (`web/e2e/tapBudget.spec.ts`).
