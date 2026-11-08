@@ -1,8 +1,8 @@
 /**
  * Collecting from Hoy, phone and computer, against the real backend through the built front
- * (results.md, "Te deben block"): a seller taps "Collect from <name>" on the debtor's row, saves a
- * payment in Registrar cobro, and is back on Inicio in one move, with the block refreshed from
- * the API and the toast not naming the customer. "Close" returns in one move too.
+ * (results.md, "Bloque Owed to you"): a seller taps "Collect from <name>" on the debtor's row,
+ * saves a payment in Registrar cobro, and is back on Inicio in one move, with the block
+ * refreshed from the API and the toast not naming the customer. "Close" returns in one move too.
  *
  * "In one move" is read from the browser's own history: a single `page.goBack()` from Inicio
  * after the round trip leaves the app's own history, not Registrar cobro again.

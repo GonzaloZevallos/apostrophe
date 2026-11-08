@@ -1,4 +1,4 @@
-"""A calendar month in Argentina time (docs/product/expenses.md: Monthly view).
+"""A calendar month in Argentina time (docs/product/expenses.md: Vista mensual).
 
 `Month` itself now lives in `app/shared/calendar.py` (ADR-0020), shared with Análisis
 and Results: this module keeps expenses' own contract unchanged by translating its

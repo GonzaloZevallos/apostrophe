@@ -1,5 +1,5 @@
 /**
- * The panel's period block (`docs/product/results.md`, "What each tab shows"): the
+ * The panel's period block (`docs/product/results.md`, "Qué muestra cada pestaña"): the
  * "Vendiste..." headline and, on Semana and Mes only, the result figures. One DOM serves
  * the phone and the computer: the wrappers `.panel-periodo` and `.panel-cifras` and each
  * list figure's `.panel-lista__item` add no box below 900 px (`app.css`), so the phone
