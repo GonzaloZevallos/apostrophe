@@ -98,12 +98,12 @@ Una prueba comprueba que cada mensaje nombra el lugar con las mismas palabras de
 
 ## WalkState y chequeo en el teléfono
 
-- El componente no tiene una ruta a la que el recorrido llegue, así que esta parte no agrega ninguna entrada de WalkState ni toca las listas de infractores ni los dibujos de `pantallas/` de ninguna pantalla. Cada pantalla recibe su entrada, su limpieza de infractores y su dibujo en la parte que la pasa al Selector.
-- Hasta que el primer cambio de pantalla (parte 2) corra el chequeo `mobile`, se miran a ojo: las filas y el campo de búsqueda de 44 px, el texto de 16 px, la ausencia de scroll horizontal y que toda fila quede alcanzable por encima del teclado. El PR de la parte 2 adjunta su corrida `mobile`.
+- El componente no tiene una ruta a la que el recorrido llegue, así que el componente por sí solo no agrega ninguna entrada de WalkState ni toca las listas de infractores ni los dibujos de `pantallas/` de ninguna pantalla. Cada pantalla recibe su entrada, su limpieza de infractores y su dibujo en la parte que la pasa al Selector.
+- Desde la parte 3, el chequeo `mobile` recorre listas del Selector abiertas en el teléfono: `stock-entry/variety-selector-open` (12 Products, con búsqueda) y `withdrawal/reason-selector-open`. Ahí se controlan las filas y el campo de búsqueda de 44 px, el texto de 16 px, la ausencia de scroll horizontal y que toda fila quede alcanzable por encima del teclado.
 
 ## Dueños de `fixedSets.ts`
 
-`fixedSets.ts` y su guarda son de las partes 3 y 5 de GH-581. Nada de lo que entrega el Selector (componente, auxiliar, pruebas, dibujo) importa de ese archivo.
+`fixedSets.ts` y su guarda son de las partes 3 y 5 de GH-581. La parte 3 declaró ahí solo `STOCK_ENTRY_ORIGINS` ("fixed set: Stock entry origins"). Nada de lo que entrega el Selector (componente, auxiliar, pruebas, dibujo) importa de ese archivo.
 
 ## Diseño
 
