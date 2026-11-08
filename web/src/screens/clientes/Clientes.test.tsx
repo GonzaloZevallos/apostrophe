@@ -24,6 +24,7 @@ import type { InitialEntry } from 'react-router'
 import FlashProvider from '../../flash/FlashProvider'
 import ClienteFicha from './ClienteFicha'
 import { SAVED_TOAST } from './ClienteForm'
+import { SheetRouterProvider } from '../../components/useSheetStack'
 import CobroRoute from './CobroRoute'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
@@ -469,7 +470,9 @@ function renderApp(entries: string[] = [CUSTOMERS]) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
   return router

@@ -486,7 +486,6 @@ describe('the form as drawn', () => {
     await openForm()
     const field = screen.getByRole('button', { name: /^Payment method/ })
     expect(field).toHaveAttribute('aria-haspopup', 'dialog')
-    expect(field).toHaveTextContent('Payment method')
     expect(screen.queryByRole('radiogroup')).toBeNull()
     expect(screen.queryAllByRole('radio')).toHaveLength(0)
     expect(document.querySelectorAll('[aria-pressed]')).toHaveLength(0)

@@ -1042,10 +1042,10 @@ test('a resize across 900 px between opening and leaving does not change where t
   fakeGonePayment()
   stubViewport('phone')
   const { router } = renderGone([HOME, CUSTOMERS, { pathname: PAYMENT, state: inAppState({ pathname: CUSTOMERS }) }])
-  await screen.findByRole('button', { name: /^Payment method/ })
+  await choosePaymentMethod(userEvent, 'Cash')
   stubViewport('computer')
 
-  await saveTheGonePayment()
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText('la lista')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('POP')
