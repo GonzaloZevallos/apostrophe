@@ -1,6 +1,6 @@
 /**
- * `navigator.onLine` plus the `online`/`offline` events (`accounts.md`, "No
- * network"): "Sin conexión" does not depend on the service worker and holds on any
+ * `navigator.onLine` plus the `online`/`offline` events (`accounts.md`, "Sin red"):
+ * "Sin conexión" does not depend on the service worker and holds on any
  * origin. A dropped request (`NetworkError`, `api/client.ts`) is the other half —
  * screens that make their own request check that themselves — this hook is the
  * proactive half, true the instant the browser itself says the network is gone.

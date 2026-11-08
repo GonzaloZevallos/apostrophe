@@ -230,3 +230,15 @@ def _assert_the_rounded_total_conserves_the_lots_cost(
     total_draw_quantity = sum(draw.quantity.hundredths for draw in draws)
     if total_draw_quantity >= total_lot_quantity:
         assert costed_total == priced_total
+
+
+def test_a_draw_whose_cumulative_cost_lands_on_half_rounds_up_and_just_below_stays_down() -> None:
+    # 10 g for $25: 1 g costs 2.5, half up to 3; the next gram ends at 5 exactly, so it
+    # is costed 2 (the telescoping difference), never rounded on its own.
+    [first, second] = allocate([_lot(1, "10", 25)], [_draw(1, "1", position=0), _draw(2, "1")])
+    assert first.costed == 3
+    assert second.costed == 2
+
+    # 10 g for $24: 1 g costs 2.4, just below the tie, down to 2.
+    [just_below] = allocate([_lot(1, "10", 24)], [_draw(1, "1")])
+    assert just_below.costed == 2

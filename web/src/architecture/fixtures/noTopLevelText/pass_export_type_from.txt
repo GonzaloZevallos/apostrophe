@@ -1,0 +1,2 @@
+// expect: none
+export type { default as Common } from '../copy/locales/en/common.json'

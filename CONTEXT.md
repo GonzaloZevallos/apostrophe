@@ -414,6 +414,10 @@ _Avoid_: friend price, discount, Amigo price
 Cuáles de Bulk price y Customer types usa un Business: dos interruptores independientes. Customer types es el que antes se leía "VIP customers" y gobierna los Customer types y el VIP price. Una regla desactivada queda oculta y deja de aplicarse a las Sales nuevas, mientras que todo lo guardado para ella se conserva. _In the app_: Prices, en Settings.
 _Avoid_: price config, pricing mode, plan, tariff settings
 
+**Money format**:
+El símbolo de la moneda y los decimales con que un Business muestra su dinero. Todo Business tiene por ahora "$" y 0 decimales. Se guarda en una fila de money_format por Business, junto con la Money scale. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md.
+_Avoid_: currency settings
+
 **Promotion**:
 Una Stock withdrawal para dar a conocer el Business, p. ej. gramos compartidos en una fiesta para que los prueben varias personas. Su costo es lo que costaron los gramos sacados de sus Lots tal como están hoy, y se muestra como una línea propia que baja el Profit. _In the app_: Promotion.
 _Avoid_: gift (a gift is a sale line, to someone, inside a sale), sample, freebie, promo
@@ -447,7 +451,7 @@ Un aviso que el vendedor toca para abrir aquello a lo que apunta, como el "Go on
 _Avoid_: banner, card button, row, callout, alert
 
 **Design capture**:
-La captura lado a lado del archivo de diseño de una pantalla y la app construida, adjunta a un PR como evidencia de revisión y juzgada a ojo contra el Drawing as guide. Nunca es un paso del Gate. Su regla completa vive en `docs/product/design-capture.md`.
+La captura lado a lado del archivo de diseño de una pantalla y la app construida, adjunta a un PR como evidencia de revisión y juzgada a ojo contra el Drawing as guide. Nunca es un paso del Gate. En el teléfono la captura se toma en el viewport real del teléfono, sin agrandarlo nunca (scroll y unión); una pantalla que la herramienta no puede capturar queda not-captured y se informa como "not compared", nunca como AE 0 ni como un pase, y nunca bloquea. Su regla completa vive en `docs/product/design-capture.md`.
 _Avoid_: screenshot test, visual regression test, snapshot, gate step
 
 **Product language**:
@@ -533,10 +537,6 @@ _Avoid_: locale, region
 **Money scale**:
 Si un Business guarda su dinero en unidades enteras de moneda (0) o en centésimos (2); los Businesses existentes quedan en 0 y los nuevos empiezan en 2. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; a cargo de la parte money.
 _Avoid_: precision, cents mode
-
-**Money format**:
-El símbolo de la moneda y los decimales con que un Business muestra su dinero. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; a cargo de la parte money.
-_Avoid_: currency settings
 
 **Customer-type price**:
 El precio que paga un Customer type por un Product, una fila que rige desde una fecha. Reemplaza al VIP price en las escrituras nuevas; la Price entry conserva su VIP price tal como está, y los VIP prices guardados y las marcas VIP se quedan en su lugar, congelados con los valores que tienen. Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; a cargo de la parte customer-type prices.

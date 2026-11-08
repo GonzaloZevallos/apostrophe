@@ -168,9 +168,7 @@ def remove_business(
         rows = {name: schema_rows.rows(name, business.id) for name in owned}
         now = _naive_utc(clock())
         document = build_document(
-            Business(
-                business.id, business.name, business.language, business.last_sale_number
-            ),
+            Business(business.id, business.name, business.language, business.last_sale_number),
             schema,
             rows,
             now,

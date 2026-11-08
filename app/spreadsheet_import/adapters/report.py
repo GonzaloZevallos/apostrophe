@@ -12,7 +12,7 @@ from app.shared.copy import OperatorText
 from app.spreadsheet_import.domain.plan import ImportPlan
 
 # The problem kinds whose cause isn't the cell's value but how the file stores it
-# (GH-55; import.md "What blocks"): a fixed hint keyed on `kind` alone, never the cell's
+# (GH-55; import.md "Qué bloquea"): a fixed hint keyed on `kind` alone, never the cell's
 # own value.
 _HINT_KEYS: dict[str, str] = {
     "text_is_date": "operator.import.hint_text_is_date",

@@ -188,6 +188,10 @@ jobs:
       - run: npm --prefix web ci --no-fund --no-audit
       - run: uv run --no-project python -m scripts.docs.generate
       - run: git diff --exit-code -- docs/architecture/generated docs/api && test -z "$(git status --porcelain --untracked-files=all -- docs/architecture/generated docs/api)"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/downloads
+          key: docs-ci-tools-${{ runner.os }}-${{ hashFiles('scripts/docs/install-ci-tools.sh') }}
       - run: bash scripts/docs/install-ci-tools.sh
       - run: bash scripts/docs/ci-mermaid-render.sh
       - run: lychee --offline --no-progress docs/architecture docs/api/README.md

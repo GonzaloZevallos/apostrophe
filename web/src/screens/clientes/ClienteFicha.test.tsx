@@ -922,8 +922,8 @@ test('after a save the sheet is not in history: back from the card goes to what 
   await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
 })
 
-// The gone exit of "Record payment" (navigation.md, "A gone exit is the same move as
-// Cerrar"): its registered parent is Clientes.
+// The gone exit of "Record payment" (navigation.md, "Salir porque el registro ya no existe es el
+// mismo movimiento que "Close""): its registered parent is Clientes.
 type HistoryEntry = string | { pathname: string; state: unknown }
 
 function ListWithNotice() {
