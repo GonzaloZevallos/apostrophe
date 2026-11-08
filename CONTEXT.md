@@ -341,7 +341,7 @@ La persona que maneja la instalación desde afuera de la app. Ejecuta scripts/in
 _Avoid_: admin, administrator, superuser, owner, PM
 
 **Business export**:
-Un archivo JSON con cada dato registrado de un Business tal como está guardado, cada registro con el nombre de aquello a lo que se refiere, sin ninguna cifra calculada, hash de contraseña, secreto ni Invitation. Se escribe solo como primer paso de la Business removal.
+Un archivo JSON con cada dato registrado de un Business tal como está guardado, cada registro con el nombre de aquello a lo que se refiere, sin ninguna cifra calculada, hash de contraseña, secreto ni Invitation. Sus montos van a la Money scale del Business, con `money {scale, decimals}` al lado para leerlos. Se escribe solo como primer paso de la Business removal.
 _Avoid_: backup, dump, archive
 
 **Business removal**:
@@ -535,8 +535,8 @@ La zona que decide cuándo empieza y termina el día de un Business; a todo Busi
 _Avoid_: locale, region
 
 **Money scale**:
-Si un Business guarda su dinero en unidades enteras de moneda (0) o en centésimos (2); los Businesses existentes quedan en 0 y los nuevos empiezan en 2. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; a cargo de la parte money.
-_Avoid_: precision, cents mode
+Si un Business guarda su dinero en unidades enteras de moneda (0) o en centésimos (2): los Businesses que ya existían quedan en 0 y los nuevos empiezan en 2. Es un dato de guardado, no de pantalla, que se aplica solo dentro del SQL del adaptador mediante el único helper de dinero; ningún caso de uso la lee y ningún pedido la lleva. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md.
+_Avoid_: precision, cents mode, decimals
 
 **Customer-type price**:
 El precio que paga un Customer type por un Product, una fila que rige desde una fecha. Reemplaza al VIP price en las escrituras nuevas; la Price entry conserva su VIP price tal como está, y los VIP prices guardados y las marcas VIP se quedan en su lugar, congelados con los valores que tienen. Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; a cargo de la parte customer-type prices.
