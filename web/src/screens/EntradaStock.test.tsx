@@ -616,7 +616,8 @@ test('Cerrar with something typed asks before discarding, and leaving is refused
   expect(await screen.findByText('la página de la variety')).toBeInTheDocument()
 })
 
-// The gone exit (navigation.md, "A gone exit is the same move as Cerrar").
+// The gone exit (navigation.md, "Salir porque el registro ya no existe es el mismo movimiento
+// que "Close"").
 const ENTRY_10 = {
   id: 10,
   date: '2026-09-20',

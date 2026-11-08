@@ -402,7 +402,8 @@ test('after editing from the card, the save goes back by history: no second card
   expect(router.state.location.pathname).toBe(CUSTOMERS)
 })
 
-// The gone exit (navigation.md, "A gone exit is the same move as Cerrar").
+// The gone exit (navigation.md, "Salir porque el registro ya no existe es el mismo movimiento
+// que "Close"").
 type HistoryEntry = string | { pathname: string; state: unknown }
 
 function fakeGoneCustomer() {
