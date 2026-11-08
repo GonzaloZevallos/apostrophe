@@ -4,12 +4,13 @@
  * sends and toasts, and a refusal that keeps what was typed (`stock.md`, "Take from stock").
  */
 
-import { screen, waitFor, within } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, expect, test, vi } from 'vitest'
+import { afterEach, describe, expect, test, vi } from 'vitest'
+import { stubViewport } from '../../test-viewport'
 import contract from '../../api/contract.json'
 import WITHDRAWAL from '../../api/fixtures/withdrawal.json'
-import { VARIETIES as VARIETIES_PATH, WITHDRAWAL_EDIT, WITHDRAWAL_NEW, pathTo, withdrawalNewFor } from '../../routes'
+import { VARIETIES as VARIETIES_PATH, WITHDRAWAL as WITHDRAWAL_PATH, WITHDRAWAL_EDIT, WITHDRAWAL_NEW, pathTo, withdrawalNewFor } from '../../routes'
 import { REASONS, jsonResponse, pickReason, pickVariety, reasonField, renderWithdrawals, varietyField } from './renderWithdrawals'
 import { LIMITS } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
@@ -389,4 +390,177 @@ test('with two lines the form keeps the icon and text rule: Quitar is icon-only,
   await userEvent.click(quitar)
   expect(screen.queryByRole('button', { name: /^Variety 2/ })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /^Remove variety/ })).not.toBeInTheDocument()
+})
+
+const MANY_VARIETIES = Array.from({ length: 12 }, (_unused, index) => ({
+  id: 100 + index,
+  name: `Cepa ${String(index + 1).padStart(2, '0')}`,
+  current_price: null,
+}))
+const MANY_REASONS = Array.from({ length: 12 }, (_unused, index) => ({
+  id: 200 + index,
+  name: `Motivo ${String(index + 1).padStart(2, '0')}`,
+}))
+
+function renderMany(entries: string[], rest: Parameters<typeof renderWithdrawals>[1] = async () => jsonResponse(404, {})) {
+  return renderWithdrawals(
+    entries,
+    rest,
+    async () => jsonResponse(200, MANY_VARIETIES),
+    undefined,
+    async () => jsonResponse(200, MANY_REASONS),
+  )
+}
+
+test('with 12 Varieties and 12 reasons both fields are Selectors, found by typing, with no select, pressed button or radio group', async () => {
+  renderMany([WITHDRAWAL_NEW])
+  const reason = await reasonField()
+  await varietyField(1)
+
+  expect(document.querySelector('select')).toBeNull()
+  expect(screen.queryByRole('radiogroup')).toBeNull()
+  expect(screen.getAllByRole('button').filter((button) => button.hasAttribute('aria-pressed'))).toEqual([])
+
+  await userEvent.click(reason)
+  const reasons = within(await screen.findByRole('dialog', { name: 'Reason options' }))
+  await userEvent.type(reasons.getByRole('searchbox'), '09')
+  expect(reasons.queryByRole('button', { name: 'Motivo 08' })).toBeNull()
+  await userEvent.click(reasons.getByRole('button', { name: 'Motivo 09' }))
+  expect(reason).toHaveTextContent('Motivo 09')
+
+  await userEvent.click(await varietyField(1))
+  const varieties = within(await screen.findByRole('dialog', { name: 'Variety options' }))
+  await userEvent.type(varieties.getByRole('searchbox'), '07')
+  await userEvent.click(varieties.getByRole('button', { name: 'Cepa 07' }))
+  expect(await varietyField(1)).toHaveTextContent('Cepa 07')
+})
+
+test.each([
+  ['reasons', /^Reason/],
+  ['Varieties', /^Variety/],
+] as const)('while the %s load the field is busy with no empty wording, and an untouched edit is clean', async (which, name) => {
+  let release: (response: Response) => void = () => undefined
+  const pending = () => new Promise<Response>((resolve) => (release = resolve))
+  renderWithdrawals(
+    [pathTo(WITHDRAWAL_EDIT, { id: 1 })],
+    async (url) => (url === '/stock/withdrawals/1' ? jsonResponse(200, WITHDRAWAL) : jsonResponse(404, {})),
+    which === 'Varieties' ? pending : undefined,
+    undefined,
+    which === 'reasons' ? pending : undefined,
+  )
+
+  expect(await screen.findByRole('button', { name })).toHaveAttribute('aria-busy', 'true')
+  expect(screen.queryByText(/No reasons yet|No varieties yet/)).toBeNull()
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
+  expect(screen.queryByRole('alertdialog')).toBeNull()
+  release(jsonResponse(200, []))
+})
+
+test.each([
+  ['reasons', 'No reasons yet. Add them in Settings → Business → Withdrawal reasons.'],
+  ['Varieties', 'No varieties yet. Add them in the Varieties tab.'],
+] as const)('an empty successful load of the %s names the place where they are made', async (which, wording) => {
+  renderWithdrawals(
+    [WITHDRAWAL_NEW],
+    async () => jsonResponse(404, {}),
+    async () => jsonResponse(200, which === 'Varieties' ? [] : [{ id: 1, name: 'Zkittlez', current_price: null }]),
+    undefined,
+    async () => jsonResponse(200, which === 'reasons' ? [] : REASONS),
+  )
+  await userEvent.click(which === 'reasons' ? await reasonField() : await varietyField(1))
+  expect(await screen.findByText(wording)).toBeInTheDocument()
+})
+
+test('editing while the reasons load keeps the stored reason, and shows it once they arrive', async () => {
+  let release: (response: Response) => void = () => undefined
+  renderWithdrawals(
+    [pathTo(WITHDRAWAL_EDIT, { id: 1 })],
+    async (url) => (url === '/stock/withdrawals/1' ? jsonResponse(200, WITHDRAWAL) : jsonResponse(404, {})),
+    undefined,
+    undefined,
+    () => new Promise<Response>((resolve) => (release = resolve)),
+  )
+
+  expect(await screen.findByRole('button', { name: /^Reason/ })).toHaveAttribute('aria-busy', 'true')
+  release(jsonResponse(200, REASONS))
+  expect(await reasonField()).toHaveTextContent('Marketing')
+})
+
+test('a focus refetch with the list open keeps it open with its search text', async () => {
+  renderMany([WITHDRAWAL_NEW])
+  await userEvent.click(await varietyField(1))
+  const list = within(await screen.findByRole('dialog', { name: 'Variety options' }))
+  await userEvent.type(list.getByRole('searchbox'), '07')
+
+  act(() => {
+    window.dispatchEvent(new Event('visibilitychange'))
+  })
+  await new Promise((resolve) => setTimeout(resolve, 50))
+
+  expect(screen.getByRole('dialog', { name: 'Variety options' })).toBeInTheDocument()
+  expect(list.getByRole('searchbox')).toHaveValue('07')
+})
+
+const EDIT_PATH = pathTo(WITHDRAWAL_EDIT, { id: 1 })
+const DETAIL_PATH = pathTo(WITHDRAWAL_PATH, { id: 1 })
+
+describe.each([
+  ['new', [VARIETIES_PATH, WITHDRAWAL_NEW], VARIETIES_PATH, WITHDRAWAL_NEW],
+  ['edit', [VARIETIES_PATH, DETAIL_PATH, EDIT_PATH], DETAIL_PATH, EDIT_PATH],
+] as const)('WithdrawalFormRoute %s in the real router', (mode, entries, parent, here) => {
+  const served = async (url: string) =>
+    url === '/stock/withdrawals/1' ? jsonResponse(200, WITHDRAWAL) : jsonResponse(404, {})
+
+  async function back(router: { navigate: (delta: number) => Promise<void> }) {
+    await act(async () => {
+      await router.navigate(-1)
+    })
+  }
+
+  test('a clean form: back goes to the parent with no question', async () => {
+    const { router } = renderMany([...entries], served)
+    await reasonField()
+    await back(router)
+    await waitFor(() => expect(router.state.location.pathname).toBe(parent))
+    expect(screen.queryByRole('alertdialog')).toBeNull()
+  })
+
+  test('a dirty form: back raises LeaveConfirm', async () => {
+    const { router } = renderMany([...entries], served)
+    await userEvent.type(await screen.findByLabelText('Note'), '!')
+    await back(router)
+    expect(await screen.findByRole('alertdialog')).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe(here)
+  })
+
+  test('with the list open back closes only the list and keeps what was typed; a second back asks', async () => {
+    const { router } = renderMany([...entries], served)
+    await userEvent.type(await screen.findByLabelText('Note'), '!')
+    await userEvent.click(await reasonField())
+    expect(await screen.findByRole('dialog', { name: 'Reason options' })).toBeInTheDocument()
+    expect(router.state.location.state).toMatchObject({ sheet: 1 })
+
+    await back(router)
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Reason options' })).toBeNull())
+    expect(router.state.location.pathname).toBe(here)
+    expect(screen.getByLabelText('Note')).toHaveValue(mode === 'new' ? '!' : 'Para la fiesta!')
+    expect(screen.queryByRole('alertdialog')).toBeNull()
+
+    await back(router)
+    expect(await screen.findByRole('alertdialog')).toBeInTheDocument()
+  })
+
+  test('on the computer Escape with the dropdown open closes only the dropdown', async () => {
+    stubViewport('computer')
+    const { router } = renderMany([...entries], served)
+    await userEvent.click(await reasonField())
+    expect(await screen.findByRole('listbox', { name: 'Reason options' })).toBeInTheDocument()
+
+    await userEvent.keyboard('{Escape}')
+
+    await waitFor(() => expect(screen.queryByRole('listbox')).toBeNull())
+    expect(router.state.location.pathname).toBe(here)
+    expect(screen.queryByRole('alertdialog')).toBeNull()
+    expect(screen.getByLabelText('Note')).toBeInTheDocument()
+  })
 })
