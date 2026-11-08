@@ -134,7 +134,6 @@ subgraph src["src"]
       src_screens_ventas_SaleBillButton_tsx["SaleBillButton.tsx"]
       src_screens_ventas_VentaDetalle_tsx["VentaDetalle.tsx"]
       src_screens_ventas_Ventas_tsx["Ventas.tsx"]
-      src_screens_ventas_lineProduct_ts["lineProduct.ts"]
     end
     subgraph src_screens_withdrawals["withdrawals"]
       src_screens_withdrawals_WithdrawalDetailBehind_tsx["WithdrawalDetailBehind.tsx"]
