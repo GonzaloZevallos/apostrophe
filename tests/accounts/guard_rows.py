@@ -1,5 +1,5 @@
 """Reads of the login guard rows by their unique column, never by primary key: the `id`
-carries no meaning (docs/adr/0076)."""
+carries no meaning (docs/adr/0077)."""
 
 from __future__ import annotations
 

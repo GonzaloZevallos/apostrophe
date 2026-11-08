@@ -63,7 +63,7 @@ class LoginGuardRow(Base):
 
     # Keyed by the email tried, known or not, so the brake never tells which exist: the
     # `id` carries no meaning, the UNIQUE on `email` is the upsert's conflict target
-    # (docs/adr/0076).
+    # (docs/adr/0077).
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(String(EMAIL_MAX_LENGTH), unique=True)
     failures: Mapped[int]
@@ -78,7 +78,7 @@ class LoginAddressGuardRow(Base):
     # `login_guard`, it decides who is let in rather than belonging to a business, so
     # it carries no `business_id` (tests/migrations/test_business_ownership.py).
     # The `id` carries no meaning; the UNIQUE on `address_digest` is the upsert's
-    # conflict target (docs/adr/0076).
+    # conflict target (docs/adr/0077).
     id: Mapped[int] = mapped_column(primary_key=True)
     address_digest: Mapped[str] = mapped_column(String(64), unique=True)
     failures: Mapped[int]

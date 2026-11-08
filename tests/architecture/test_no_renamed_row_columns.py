@@ -1,5 +1,5 @@
 """The columns #75 renamed stay out of the code that talks to the database by name
-(CODING_STANDARDS §11, docs/adr/0076): the domain and the API keep `locked_until`,
+(CODING_STANDARDS §11, docs/adr/0077): the domain and the API keep `locked_until`,
 `window_start` and `effective_from`; the adapters and the removal use the stored names.
 
 (a) no string dict key and no keyword argument spells an old name under

@@ -93,7 +93,7 @@ def test_expense_to_expense_category_fk_reflects_as_one_composite_key() -> None:
 
 
 def test_a_locked_email_of_a_removed_business_s_user_is_counted_and_deleted() -> None:
-    """`login_guard` now has an `id` but still no `business_id` (docs/adr/0076), so the
+    """`login_guard` now has an `id` but still no `business_id` (docs/adr/0077), so the
     removal reaches it by the emails `app_user`'s delete returned, never by `id`."""
     engine = make_engine("sqlite://")
     upgrade_to_head(engine)
