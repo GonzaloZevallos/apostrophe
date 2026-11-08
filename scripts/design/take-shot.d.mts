@@ -29,6 +29,7 @@ export function verifyAfterShot(
   png: Buffer,
   side: Side,
 ): Promise<SideOutcome<Buffer>>;
+export function sectionBox(block: Locator): Promise<Clip & { right: number; bottom: number }>;
 export function sectionClip(block: Locator): Promise<Clip>;
 export const bounded: <T>(promise: Promise<T> | T) => Promise<T>;
 export function growViewport(page: Page, size: Viewport): Promise<void>;

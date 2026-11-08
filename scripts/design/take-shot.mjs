@@ -252,11 +252,11 @@ export async function verifyAfterShot(page, s, label, png, side) {
 }
 
 // A section is cropped to its parent block. When a direct child sticks out of that block
-// (a fixed-width card inside a padded column), the crop is the union of the block and its
-// children, in page coordinates, so no line of the section is cut. Always a box, whole pixels
-// outward, as `locator.screenshot()` rounds its own. Read before the final settle, so that the
-// screenshot is the very next call after it.
-export async function sectionClip(block) {
+// (a fixed-width card inside a padded column), the box is the union of the block and its
+// children, in page coordinates, so no line of the section is cut. Not rounded: the grow path
+// rounds it in `sectionClip` and the scroll path leaves that to `scrollPlan`. Read before the final
+// settle, so that the screenshot is the very next call after it.
+export async function sectionBox(block) {
   return block.evaluate((el) => {
     const box = (e) => {
       const r = e.getBoundingClientRect()
@@ -269,10 +269,16 @@ export async function sectionClip(block) {
     const top = Math.min(...all.map((b) => b.top))
     const right = Math.max(...all.map((b) => b.right))
     const bottom = Math.max(...all.map((b) => b.bottom))
-    const x = Math.floor(left)
-    const y = Math.floor(top)
-    return { x, y, width: Math.ceil(right) - x, height: Math.ceil(bottom) - y }
+    return { x: left, y: top, width: right - left, height: bottom - top, right, bottom }
   })
+}
+
+// The grow path's crop: that box, a whole pixel outward on every side, as `locator.screenshot()` rounds its own.
+export async function sectionClip(block) {
+  const box = await sectionBox(block)
+  const x = Math.floor(box.x)
+  const y = Math.floor(box.y)
+  return { x, y, width: Math.ceil(box.right) - x, height: Math.ceil(box.bottom) - y }
 }
 
 // Playwright's `caret: 'hide'` sets and restores a `style` attribute on the page's text inputs,
@@ -426,7 +432,7 @@ async function scrollShot(page, { block, ofFirstText, census, side }, handles) {
   let last = await scrollSettled(page, 0, ofFirstText)
   if (last) return refused(last)
   settledViewport.set(page, page.viewportSize())
-  const clip = block ? await bounded(sectionClip(block)) : undefined
+  const clip = block ? await bounded(sectionBox(block)) : undefined
   const dpr = await bounded(page.evaluate(() => window.devicePixelRatio))
   const top = await readFrame(page, 0, handles, null)
   const metrics = await bounded(page.evaluate(readMetrics))
