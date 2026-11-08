@@ -315,7 +315,7 @@ Criterios de éxito, el test de seguridad de la cookie (seguimiento de GH-130):
   - Un email que no coincide con ningún User imprime un simple "no business for that email" y no hace nada, en ninguno de los dos modos.
 - **Corrida de prueba**:
   - nombra al Business encontrado;
-  - imprime conteos por tipo: users, customers, varieties, price entries, stock entries, sales, sale lines, payments, expenses, expense categories, catalog settings, e invitations y reset links (solo borrados);
+  - imprime conteos por tipo: users, customers, products, price entries, stock entries, sales, sale lines, payments, expenses, expense categories, catalog settings, e invitations y reset links (solo borrados);
   - no escribe ningún archivo, no cambia ninguna fila, nunca pide confirmación.
 - **Corrida real**:
   1. Nombra al Business y le pide al Operator que tipee su nombre exacto; no se puede saltear. Un nombre equivocado, una cancelación o ninguna respuesta no escriben ni borran nada.
@@ -343,16 +343,16 @@ Criterios de éxito, el test de seguridad de la cookie (seguimiento de GH-130):
   - un archivo JSON por corrida real, con permisos solo para el dueño, escrito en el sistema de archivos del servidor y nunca donde la app sirve;
   - su nombre lleva el nombre del Business (como slug) y la fecha y hora de la corrida; nunca se pisa un archivo existente;
   - valores simples: fechas ISO 8601, pesos enteros, gramos como decimales de hasta dos lugares;
-  - cada registro nombra aquello a lo que se refiere (customer, variety, category) además de su id;
+  - cada registro nombra aquello a lo que se refiere (customer, product, category) además de su id;
   - guarda cada dato registrado tal como está:
     - el nombre del Business y sus Pricing settings (Bulk price y VIP customers);
     - users (email y fecha en que se sumaron);
     - customers (nombre, Phone number, VIP);
-    - varieties con su Low-stock threshold y sus Catalog attributes;
+    - products con su Low-stock threshold y sus Catalog attributes;
     - price entries, con su VIP price;
-    - stock entries (fecha, variety, gramos, origen, costo total, nota; un Lot es su Stock entry, no un registro aparte);
+    - stock entries (fecha, product, gramos, origen, costo total, nota; un Lot es su Stock entry, no un registro aparte);
     - sales (fecha, customer, Shipping charged, Note, cómo se pagó);
-    - sale lines (variety, gramos, precio por gramo guardado, Pricing rule, total de la línea);
+    - sale lines (product, gramos, precio por gramo guardado, Pricing rule, total de la línea);
     - payments (fecha, monto, método, customer, y su Sale en el caso de un On-the-spot payment);
     - expense categories y expenses;
     - el Catalog header and footer;
@@ -566,7 +566,7 @@ Estos grupos de Settings (navigation.md) reemplazan la vieja pantalla de Busines
 
 ### Feedback, en cada pantalla
 
-Estos estados los dibuja `Estados` (GH-49), con el estilo del diseño y su redacción sin cambios. Cada uno se revisa en el teléfono y dentro de la disposición de computadora propia de cada pantalla (`InicioCompu`, la disposición de computadora de Home; `VentasCompu`, la de Sales; los dos paneles de Customers y Varieties), con las mismas palabras y formas. `Estados` no dibuja nada para un estado que ninguna capacidad define.
+Estos estados los dibuja `Estados` (GH-49), con el estilo del diseño y su redacción sin cambios. Cada uno se revisa en el teléfono y dentro de la disposición de computadora propia de cada pantalla (`InicioCompu`, la disposición de computadora de Home; `VentasCompu`, la de Sales; los dos paneles de Customers y Products), con las mismas palabras y formas. `Estados` no dibuja nada para un estado que ninguna capacidad define.
 
 - **Los toasts de éxito** son cortos, fijos y no llevan datos, con una excepción deliberada.
   - Los toasts de esta capacidad:
@@ -588,8 +588,8 @@ Estos estados los dibuja `Estados` (GH-49), con el estilo del diseño y su redac
     - se muestra un aviso fijo: "That is gone. The list is up to date."
   - El aviso no es un toast de éxito. No tiene datos, ni "Undo", ni acción de reintento, y se anuncia como un toast.
   - Confirmar el borrado de un registro que ya no está da el mismo aviso, no el toast de éxito del borrado.
-  - **Abrir el detalle de un registro que ya no está** (una Variety, un Customer, una Expense, una Sale o una Stock entry) muestra "That is gone." con un botón de vuelta a su lista:
-    - "Back to Varieties" (una Variety o una Stock entry);
+  - **Abrir el detalle de un registro que ya no está** (una Product, un Customer, una Expense, una Sale o una Stock entry) muestra "That is gone." con un botón de vuelta a su lista:
+    - "Back to Products" (una Product o una Stock entry);
     - "Back to Customers";
     - "Back to Expenses" (el mes actual);
     - "Back to Sales".
@@ -651,7 +651,7 @@ Estos estados los dibuja `Estados` (GH-49), con el estilo del diseño y su redac
 - **Nada inventado (criterio 7)**:
   - la barra, la barra lateral, More y Settings muestran exactamente las entradas que lista navigation.md;
   - cada cifra en Home es igual a la respuesta de la API, con ceros reales para un período sin actividad (results.md);
-  - Home no muestra otros avisos que la First-run checklist, "Start with your varieties", el del Pinned catalog y el aviso de después de la importación.
+  - Home no muestra otros avisos que la First-run checklist, "Start with your products", el del Pinned catalog y el aviso de después de la importación.
 - **Password change (criterio 18)**:
   - después de un Change, cada token anterior del User responde 401;
   - el token nuevo del dispositivo que actúa funciona, y el token de un socio en el mismo Business sigue funcionando;

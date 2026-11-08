@@ -11,6 +11,7 @@
 
 import type { ReactNode } from 'react'
 import BrandMark from './BrandMark'
+import ContentArea from './ContentArea'
 
 export default function AuthPage({
   brand = false,
@@ -31,7 +32,7 @@ export default function AuthPage({
   children?: ReactNode
 }) {
   return (
-    <main className="pantalla auth-page" inert={inert}>
+    <ContentArea as="main" className="pantalla auth-page" inert={inert}>
       <div className="auth-page__columna">
         {brand && <BrandMark variant="lockup" />}
         {title !== undefined && (
@@ -43,6 +44,6 @@ export default function AuthPage({
         )}
         {children}
       </div>
-    </main>
+    </ContentArea>
   )
 }

@@ -2044,6 +2044,11 @@ body {
   color: var(--tinta2);
 }
 
+/* The sale's date, directly under the "Sale #N" title (sales.md, "Detalle de venta"). */
+.venta-detalle__fecha {
+  display: block;
+}
+
 .venta-detalle__encabezado-lineas {
   display: block;
   font-size: 14px;
@@ -5098,7 +5103,8 @@ body {
     .selector-pago__opcion,
     .gastos__mes-boton,
     .encabezado__volver,
-    .historial-fila__borrar
+    .historial-fila__borrar,
+    .selector-lista__fila
   ):active:not(:disabled):not([aria-disabled='true']) {
   transform: scale(0.98);
   background-color: var(--superficie);
@@ -5128,6 +5134,7 @@ body {
     .ajustes-tema__opcion,
     .ajustes-tema__opcion--activa,
     .inicio__avatar,
+    .selector__campo,
     /* a whole-block control; nothing tappable may be nested in it (it would scale with it). */
     .aviso-onboarding
   ):active:not(:disabled):not([aria-disabled='true']) {
@@ -5142,7 +5149,8 @@ body {
     .bar-inferior__item--activo,
     .pestanas__opcion--activa,
     .variedad-fila--activa,
-    .selector-pago__opcion--activa
+    .selector-pago__opcion--activa,
+    .selector-lista__fila--activa
   ):active:not(:disabled):not([aria-disabled='true']) {
   background-color: var(--linea);
 }
@@ -5179,7 +5187,9 @@ body {
     .gastos__mes-boton,
     .encabezado__volver,
     .historial-fila__borrar,
-    .fila-stock--enlace
+    .fila-stock--enlace,
+    .selector__campo,
+    .selector-lista__fila
   ) {
   -webkit-user-select: none;
   user-select: none;
@@ -6603,3 +6613,192 @@ body {
 .tipos-cliente > button {
   min-height: 44px;
 }
+
+/* ===== Selector ===== */
+/* `Selector` (`docs/product/selector.md`): a field that opens a list on the phone (the shared
+ * `Sheet`) and a dropdown on a computer. Tokens only. Rows are 44 px, one line cut by an ellipsis;
+ * the rows are the only scroll region, so every row stays reachable above the keyboard. */
+.selector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+  min-width: 0;
+}
+
+.selector__control {
+  position: relative;
+}
+
+.selector__campo {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+  width: 100%;
+  min-height: var(--alto-boton);
+  box-sizing: border-box;
+  padding: 0 var(--espacio-lg);
+  border: 0;
+  border-radius: var(--radio-campo);
+  background: var(--superficie);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 17px;
+  text-align: left;
+  touch-action: manipulation;
+}
+
+.selector__campo:disabled {
+  cursor: default;
+}
+
+.selector__valor {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--espacio-sm);
+  min-width: 0;
+}
+
+.selector__texto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selector__glifo {
+  flex: none;
+}
+
+.selector__marca {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--espacio-xs);
+  color: var(--tinta2);
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.selector__esqueleto {
+  display: block;
+}
+
+.selector__chevron {
+  display: inline-flex;
+  flex: none;
+  color: var(--tinta2);
+}
+
+.selector-lista {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--papel);
+}
+
+.selector-lista__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  padding: calc(var(--espacio-lg) + var(--inset-arriba)) 0 var(--espacio-sm);
+}
+
+.selector-lista__buscar {
+  position: sticky;
+  top: var(--inset-arriba);
+  flex: none;
+  height: var(--alto-tocable);
+  box-sizing: border-box;
+  padding: 0 var(--espacio-lg);
+  border: 0;
+  border-radius: var(--radio-campo);
+  background: var(--superficie);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 16px;
+}
+
+.selector-lista__filas {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.selector-lista__fila {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--espacio-sm);
+  width: 100%;
+  height: var(--alto-tocable);
+  box-sizing: border-box;
+  padding: 0 var(--espacio-lg);
+  border: 0;
+  background: transparent;
+  color: var(--tinta);
+  font: inherit;
+  text-align: left;
+  touch-action: manipulation;
+}
+
+.selector-lista__fila--activa {
+  background: var(--superficie);
+}
+
+.selector-lista__nombre {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selector-lista__marca {
+  display: inline-flex;
+  flex: none;
+  color: var(--acento);
+}
+
+.selector-lista__mensaje {
+  margin: 0;
+  padding: var(--espacio-md) var(--espacio-lg);
+  color: var(--tinta2);
+  font-size: 15px;
+}
+
+@media (max-width: 899.98px) {
+  /* The list owns the body's scrolling: its rows scroll, nothing around them does. */
+  .sheet__body:has(> .selector-lista) {
+    overflow: hidden;
+  }
+}
+
+@media (min-width: 900px) {
+  .selector-desplegable {
+    position: absolute;
+    z-index: 10;
+    top: calc(100% + var(--espacio-xs));
+    right: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(var(--alto-tocable) * 7);
+    overflow: hidden;
+    border-radius: var(--radio-campo);
+    background: var(--papel);
+    box-shadow: 0 0 0 1px var(--linea);
+  }
+
+  .selector-desplegable--arriba {
+    top: auto;
+    bottom: calc(100% + var(--espacio-xs));
+  }
+}
+/* ===== end Selector ===== */

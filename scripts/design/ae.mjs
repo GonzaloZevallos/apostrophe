@@ -96,15 +96,32 @@ const loadFile = (path) => {
   }
 }
 
-// One side of one screen: a line and whether it is a failure.
-function compareSide(screen, side, beforePath, afterPath, load, withBox) {
+// A recorded reason is printed only when it is one of `named()`'s lines (fixed English, no digit, no
+// page text) and names the side being compared; anything else is as if nothing was recorded.
+const REASON = /^shot: [a-z' -]+ \((design|built)\)$/
+const NO_REASON = 'no reason recorded'
+
+// The reason of the first entry given that has a valid one for this side.
+function reasonOf(side, entries) {
+  for (const entry of entries) {
+    const reason = entry?.reasons?.[side]
+    if (typeof reason === 'string' && REASON.test(reason) && reason.endsWith(`(${side})`)) return reason
+  }
+  return NO_REASON
+}
+
+// One side of one screen: a line and whether it is a failure. `was` and `now` are the index entries.
+function compareSide(screen, side, was, now, load, withBox) {
   const label = `${screen} ${side}`
+  const beforePath = was[side] ?? null
+  const afterPath = now[side] ?? null
+  // No image to compare. A side that had one before and has none now is a regression and fails,
+  // whatever the index says; any other is only not compared. Never an AE line.
   if (beforePath === null && afterPath === null) {
-    return { line: `${label}: no capture on either side`, failed: false }
+    return { line: `${label}: not compared — ${reasonOf(side, [now, was])}`, failed: false }
   }
-  if (beforePath === null || afterPath === null) {
-    return { line: `${label}: FAIL no capture in ${beforePath === null ? 'before' : 'after'}`, failed: true }
-  }
+  if (beforePath === null) return { line: `${label}: not compared — ${reasonOf(side, [was])}`, failed: false }
+  if (afterPath === null) return { line: `${label}: FAIL not compared — ${reasonOf(side, [now])}`, failed: true }
   const before = load(beforePath)
   const after = load(afterPath)
   if (!before.ok || !after.ok) return { line: `${label}: FAIL unreadable image`, failed: true }
@@ -142,7 +159,7 @@ export function compareIndexes(before, after, only, load, withBox = false) {
       continue
     }
     for (const side of SIDES) {
-      const result = compareSide(screen, side, was[side] ?? null, now[side] ?? null, load, withBox)
+      const result = compareSide(screen, side, was, now, load, withBox)
       lines.push(result.line)
       if (result.failed) failed = true
     }

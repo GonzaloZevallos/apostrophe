@@ -42,13 +42,14 @@ import WithdrawalDetailBehind from './WithdrawalDetailBehind'
 import WithdrawalForm, { type WithdrawalTarget } from './WithdrawalForm'
 import { COMMON_TEXT } from '../../copy/common'
 import { STOCK_TEXT } from '../../copy/stock'
+import ContentArea from '../../components/ContentArea'
 
 
 function Frame({ children }: { children: ReactNode }) {
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <div className="cuerpo">{children}</div>
-    </main>
+    </ContentArea>
   )
 }
 

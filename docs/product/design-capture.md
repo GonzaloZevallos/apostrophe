@@ -49,7 +49,7 @@ Lo que garantiza la fuente de diseño que está en master (qué versión, cómo 
 **When** I review a design capture, base against head or one run against another, **I want** every screen captured in the state it comes to rest in, with no switch or other element caught partway through a change (an animation, a background refresh, a control still disabled while it waits), **so I can** read AE 0 as "nothing changed" and any non-zero line as a real difference, and approve without rerunning, explaining a difference away, or carrying an open finding into the next task.
 
 - Same protagonist as the jobs above; it refines the captures-under-load job and is not a new product job. The trigger is a non-zero AE line on a screen the PR did not touch. The seller is affected only indirectly.
-- Before it (GH-45's evidence and GH-261's runs): `VariedadesCompu built: AE 2888`, the open variety's "Low stock warning" switch caught grey in some runs and black in others. ADR-0042's GH-261 amendment read it as an unsettled CSS transition; it was the switch drawn disabled while the page re-read stock in the background, and enabled once that read ended. Reviewers reran, or listed the line as unexplained.
+- Before it (GH-45's evidence and GH-261's runs): `VariedadesCompu built: AE 2888`, the open product's "Low stock warning" switch caught grey in some runs and black in others. ADR-0042's GH-261 amendment read it as an unsettled CSS transition; it was the switch drawn disabled while the page re-read stock in the background, and enabled once that read ended. Reviewers reran, or listed the line as unexplained.
 
 **When** I review a change that touches Home and I look at its design capture before approving it, **I want** every first-run element Home can show (the Onboarding notice, the first-run checklist with its "Done" marks, the after-import notice) and the Today tab on the computer each captured on its own and compared against a drawing of exactly that, **so I can** approve or reject from the PR's evidence alone, without checking those states by hand on a business I set up myself, and without reading Week's figures into a comparison of Today.
 
@@ -77,8 +77,8 @@ Success criteria:
 3. **Registry, tests and plan agree.** The change needs no recorded exception and no test edited outside a declared seam.
 4. **Nothing a seller sees changes.** docs/product/onboarding.md, docs/product/navigation.md and every screen read and behave as before, and every test passes. The only edited tests are the two registry tests; the only other edited files are design tooling (`scripts/design/screens.json`, `scripts/design/screens.mjs`, `scripts/design/sample_app.py`, `scripts/design/comparisons.mjs`); no file under `app/` or `web/src/` changes beyond those two tests.
 5. **No test loosened.** A changed registry or enforcement test keeps everything it guarded and states the corrected rule.
-6. **Every row tells the truth about its record.** A row's declared path names the same sample record its route and steps reach and capture. The light `VariedadArchivada` row names Sir Jack (`{sold_out}`), an archived variety reached from Archived. A dark twin's own declaration matches its own capture; it need not show the light row's record.
-7. **The registry, its tests and docs/product/navigation.md agree on the archived variety's page** and its parent "‹ Archived", with no recorded exception and no loosened test.
+6. **Every row tells the truth about its record.** A row's declared path names the same sample record its route and steps reach and capture. The light `VariedadArchivada` row names Sir Jack (`{sold_out}`), an archived product reached from Archived. A dark twin's own declaration matches its own capture; it need not show the light row's record.
+7. **The registry, its tests and docs/product/navigation.md agree on the archived product's page** and its parent "‹ Archived", with no recorded exception and no loosened test.
 8. **Truthfulness costs the seller nothing.** Fixing a row's declaration changes no capability doc, nothing under `app/`, and nothing under `web/src/` but `web/src/design/screens.test.ts` within its declared seam. No row's steps change to make it truthful.
 9. **A wrong record never passes unnoticed again.** An entry whose path names a record different from the one its route names fails the registry test in the diff that introduces it.
 10. **The whole registry runs green.** One `--strict` call over the whole registry, with no `--only`, exits 0. No row is removed, skipped, excused or listed as a known failure to get there.
@@ -96,7 +96,7 @@ Success criteria, the Onboarding restyle's evidence (GH-164 follow-up) (numbered
 Success criteria, reviewing GH-141's change to Analysis:
 
 6. **Current captures of Analysis.** The PR has before and after captures of Analysis on phone and computer, in light and dark.
-   - "After" is the head that merges the change; "before" is that same head with only GH-141's change undone (docs/product/pinned-catalog.md's "Restyling Integrations" rule), with the undo diff in the PR.
+   - "After" is the head that merges the change; "before" is that same head with only GH-141's change undone (docs/product/pinned-catalog.md's "Rediseño de Integrations" rule), with the undo diff in the PR.
    - If undoing GH-141 alone changes more than GH-141 did, the PR says so and lists the extra differences for Zeta; nothing more is undone.
    - Both sides come from head's `comparisons.mjs --strict`, one install, one Argentina day, fonts pinned (ADR-0042). The PR records the fontsource version.
 7. **Every other screen compared, every difference explained.** `ae.mjs` runs over the raw captures of every other screen in the registry, with its output attached. AE 0 is expected; every non-zero line is accounted for (see Behaviour). A missing side, a one-sided `null` or an unreadable capture is a failure, never AE 0.
@@ -119,7 +119,7 @@ Success criteria, the Home Today capture (GH-45 follow-up) (numbered on their ow
 Success criteria, captures at rest (numbered on their own; Metrics cites them as "Rest criterion N"):
 
 1. **Repeatable.** Five whole-registry `--strict` runs per commit, with no `--only`, each on a fresh sample and on the same Argentina day, each compared with the first run by `ae.mjs`, give AE 0 on every row and side, `VariedadesCompu built` included. Base and head, both captured with head's tooling, give AE 0 on every row the change did not touch. Runs on the loaded shared machine count; an idle machine is never required.
-2. **The resting state.** What is captured is the state the screen comes to rest in once nothing is still changing: no animated change running, no request pending (a background re-read included) and no control still disabled or busy while it waits. For the open variety's "Low stock warning" switch on VariedadesCompu, that is the switch enabled, on or off as the sample's stored threshold gives it, never drawn disabled mid-refresh.
+2. **The resting state.** What is captured is the state the screen comes to rest in once nothing is still changing: no animated change running, no request pending (a background re-read included) and no control still disabled or busy while it waits. For the open product's "Low stock warning" switch on VariedadesCompu, that is the switch enabled, on or off as the sample's stored threshold gives it, never drawn disabled mid-refresh.
 3. **Never half-drawn.** A screen that has not come to rest when it is captured fails its row under `--strict`. It is never accepted as a pass.
 4. **Nothing loosened, nothing a seller sees changes.** There is no pixel tolerance. No row is excused, skipped or listed as a known failure. The app's own behaviour (its animated changes, a control disabled while a refresh runs), screens and copy are not changed to make the capture pass. Capture stays review evidence and never becomes a gate step.
 
@@ -161,7 +161,7 @@ Success criteria, the shot method's evidence (GH-301 part 3) (numbered on their 
   - every animated change that ends (transitions and finite animations, on any element of the captured screen) has finished;
   - no request is still pending, a background re-read the screen started on its own included;
   - no control is still between states, such as disabled or busy while a refresh runs.
-- An element is captured in the state it comes to rest in. For VariedadesCompu's open variety, the "Low stock warning" switch is captured enabled, on or off as the sample's stored threshold gives it, never grey because the capture landed while stock was being re-read.
+- An element is captured in the state it comes to rest in. For VariedadesCompu's open product, the "Low stock warning" switch is captured enabled, on or off as the sample's stored threshold gives it, never grey because the capture landed while stock was being re-read.
 - **How a shot is taken** is ADR-0052's: one method for every row and both sides, showing the seller's view at the row's registry viewport with nothing moved, stretched or cut off by the shot.
 
 ### Capturing at rest
@@ -216,7 +216,7 @@ Success criteria, the shot method's evidence (GH-301 part 3) (numbered on their 
 - **Rows**: the first-run checklist and the after-import notice get three rows each, phone, computer and phone-dark, like the existing `InicioPrimeraVez*` rows: 6 new rows. There is no computer-dark row for a first-run element; a later change to Home's dark computer layout adds one if it needs it. The existing `InicioPrimeraVez`, `InicioPrimeraVezCompu` and `InicioPrimeraVezOscuro` rows keep covering what they cover. Exact row and account names are the Tech Lead's.
 - **The checklist's drawing and capture**:
   - design draws the four steps (docs/product/navigation.md) with their "Done" marks from existing design-system elements only: no new component, colour or token value;
-  - the drawing and the capture show the same state, a mix with at least one step "Done" and at least one pending; never both required steps (1 and 2) "Done", since the checklist goes for good the first time both are met. Assumed mix: step 1 "Done" (a variety priced today), step 2 and both optional steps pending; any mix meeting the constraint serves equally;
+  - the drawing and the capture show the same state, a mix with at least one step "Done" and at least one pending; never both required steps (1 and 2) "Done", since the checklist goes for good the first time both are met. Assumed mix: step 1 "Done" (a product priced today), step 2 and both optional steps pending; any mix meeting the constraint serves equally;
   - each step reads its box and the word "Done", never colour alone, and the checklist carries no attention icon; the step labels are design's wording within the icon and text rule's limits;
   - its capture account is a business with no Onboarding state, as a business that existed before the Onboarding shipped.
 - **The after-import notice's drawing and capture**:
@@ -294,7 +294,7 @@ Success criteria, the shot method's evidence (GH-301 part 3) (numbered on their 
 
 ### The Onboarding restyle's evidence (GH-164 follow-up)
 
-- **Screens**: the six Onboarding steps (variety and price, opening stock, header and footer, Telegram bot, partner, expense categories) and "Done", which has its four rows (phone and computer, light and dark), each reached as above.
+- **Screens**: the six Onboarding steps (product and price, opening stock, header and footer, Telegram bot, partner, expense categories) and "Done", which has its four rows (phone and computer, light and dark), each reached as above.
 - **Computer** means the Onboarding's one phone-width column captured at the computer viewport; the Onboarding has no computer layout of its own (docs/product/onboarding.md).
 - **Per screen**: phone and computer, light and dark; plus one phone capture at 320 px with text at 130 %, light only. Each shows its named section whole.
 - **Registry**: every capture is a row of `scripts/design/screens.json`. A missing row is added as design tooling, with the two registry tests as its seams; a row that cannot reach its screen is a defect, never an exemption. Any mechanism for the 130 % text lives in `scripts/design/` only, never in product code.

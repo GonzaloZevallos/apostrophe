@@ -25,6 +25,7 @@ import {
 } from '../../routes'
 import { COMMON_TEXT } from '../../copy/common'
 import { INTEGRATIONS_LINK_WORD } from '../../copy/pinnedCatalog'
+import ContentArea from '../../components/ContentArea'
 
 const GROUPS: readonly { to: string; label: string; icon: NombreIcono }[] = [
   { to: SETTINGS_BUSINESS, label: COMMON_TEXT.business, icon: 'negocio' },
@@ -41,7 +42,7 @@ export default function Settings() {
   const me = useOutletContext<Me>()
 
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <div className="cuerpo ajustes">
         <div className="ajustes__titulos">
           <span className="encabezado__negocio ajustes__negocio">{me.business_name}</span>
@@ -61,6 +62,6 @@ export default function Settings() {
           ))}
         </nav>
       </div>
-    </main>
+    </ContentArea>
   )
 }

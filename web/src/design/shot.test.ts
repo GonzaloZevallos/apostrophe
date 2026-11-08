@@ -1,12 +1,19 @@
 import { describe, expect, it } from 'vitest'
 import {
+  CALM_CONTEXT,
+  CALM_CSS,
+  PROBE_CSS,
+  captureContextOptions,
   censusClass,
   coversScreen,
   fitsViewport,
   grownHeight,
   layerMiss,
+  named,
   planShot,
   regionMiss,
+  rowCapture,
+  shotReason,
   shotStepReason,
   sizeRecordMiss,
   sizesChanged,
@@ -16,6 +23,7 @@ import {
   type FixedElement,
   type Snapshot,
 } from '../../../scripts/design/shot.mjs'
+import { SETTLE_REASON_REJECTED, SETTLE_REASON_UNSETTLED } from '../../../scripts/design/settle.mjs'
 
 const PHONE = { width: 390, height: 844 }
 
@@ -425,5 +433,95 @@ describe('shotStepReason', () => {
   it('gives one reason for any other kind', () => {
     expect(shotStepReason('error', 'design')).toBe('shot: could not take the shot (design)')
     expect(shotStepReason('whatever', 'built')).toBe('shot: could not take the shot (built)')
+  })
+})
+
+describe('the calm page', () => {
+  it('zeroes the four animation and transition declarations on every element', () => {
+    expect(CALM_CSS.startsWith('*, *::before, *::after {')).toBe(true)
+    for (const property of ['animation-duration', 'animation-delay', 'transition-duration', 'transition-delay']) {
+      expect(CALM_CSS).toContain(`${property}: 0s !important;`)
+    }
+  })
+
+  it('has the probe sheet carry the caret rule and the calm rule', () => {
+    expect(PROBE_CSS).toContain('*, *::before, *::after { caret-color: transparent !important; }')
+    expect(PROBE_CSS).toContain(CALM_CSS)
+  })
+
+  it('builds the context options of a row with reduced motion', () => {
+    expect(CALM_CONTEXT).toEqual({ reducedMotion: 'reduce' })
+    expect(captureContextOptions({ width: 390, height: 844, url: 'http://127.0.0.1:1' })).toEqual({
+      viewport: { width: 390, height: 844 },
+      deviceScaleFactor: 2,
+      colorScheme: 'light',
+      baseURL: 'http://127.0.0.1:1',
+      reducedMotion: 'reduce',
+    })
+  })
+})
+
+describe('named', () => {
+  it('builds only the lines of its fixed table, for a known side', () => {
+    expect(named('no built screen yet', 'built')).toBe('shot: no built screen yet (built)')
+    expect(() => named('Nueva venta 12', 'built')).toThrow('shot: a reason outside the fixed table')
+    expect(() => named('did not settle', 'both' as 'built')).toThrow('shot: a reason outside the fixed table')
+  })
+})
+
+describe('shotReason', () => {
+  it('keeps a known line of the same side', () => {
+    const line = layerMiss({ left: -1, top: 0, right: 10, bottom: 10 }, PHONE, [], 'design') as string
+    expect(shotReason(line, 'design')).toBe(line)
+    expect(shotReason(shotStepReason('timeout', 'built'), 'built')).toBe('shot: timed out taking the shot (built)')
+  })
+
+  it('maps both settle reasons to did not settle', () => {
+    expect(shotReason(SETTLE_REASON_UNSETTLED, 'built')).toBe('shot: did not settle (built)')
+    expect(shotReason(SETTLE_REASON_REJECTED, 'design')).toBe('shot: did not settle (design)')
+  })
+
+  it('maps anything else, page text and a shot: look-alike included, to could not take the shot', () => {
+    const text = 'estado no alcanzado en {"click":"Cobrar 4500"}: timeout'
+    expect(shotReason(text, 'built')).toBe('shot: could not take the shot (built)')
+    expect(shotReason('shot: Nueva venta 4500 (built)', 'built')).toBe('shot: could not take the shot (built)')
+    expect(shotReason('shot: did not settle (design)', 'built')).toBe('shot: could not take the shot (built)')
+  })
+})
+
+describe('rowCapture', () => {
+  it('is captured with no reasons when both paths are set', () => {
+    expect(rowCapture({ design: { path: '/a.design.png' }, built: { path: '/a.built.png', reason: 'ignored' } })).toEqual({
+      capture: 'captured',
+    })
+  })
+
+  it('is not captured, with the built reason, for a screen not built yet', () => {
+    expect(
+      rowCapture({
+        design: { path: '/a.design.png', reason: null },
+        built: { path: null, reason: named('no built screen yet', 'built') },
+      }),
+    ).toEqual({ capture: 'not-captured', reasons: { built: 'shot: no built screen yet (built)' } })
+  })
+
+  it('is not captured for a built step failure and keeps the design side out of reasons', () => {
+    const result = rowCapture({
+      design: { path: '/a.design.png', reason: null },
+      built: { path: null, reason: shotStepReason('error', 'built') },
+    })
+    expect(result).toEqual({ capture: 'not-captured', reasons: { built: 'shot: could not take the shot (built)' } })
+  })
+
+  it('has both reasons when neither side has a capture', () => {
+    expect(
+      rowCapture({
+        design: { path: null, reason: named('did not settle', 'design') },
+        built: { path: null, reason: named('no built screen yet', 'built') },
+      }),
+    ).toEqual({
+      capture: 'not-captured',
+      reasons: { design: 'shot: did not settle (design)', built: 'shot: no built screen yet (built)' },
+    })
   })
 })

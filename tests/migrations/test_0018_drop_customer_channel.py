@@ -27,6 +27,13 @@ CUSTOMERS = (
     (5, 2, "Nadie", None, 1, None),
 )
 OTHER_TABLES = ("sale", "sale_line", "payment")
+# `sale` is read by the columns it had at this revision: a later revision adds some (0023's
+# `number`), and a `SELECT *` would fail on each.
+SELECTED = {
+    "sale": "id, business_id, sale_date, customer_id, shipping_charged, note, recorded_at",
+    "sale_line": "*",
+    "payment": "*",
+}
 
 
 def _config(connection: object) -> Config:
@@ -150,7 +157,10 @@ def _snapshot(engine: Engine) -> dict[str, list[tuple[Any, ...]]]:
         }
         for table in OTHER_TABLES:
             snapshot[table] = [
-                tuple(row) for row in connection.execute(text(f"SELECT * FROM {table} ORDER BY id"))
+                tuple(row)
+                for row in connection.execute(
+                    text(f"SELECT {SELECTED[table]} FROM {table} ORDER BY id")
+                )
             ]
         snapshot["balance"] = [
             tuple(row)

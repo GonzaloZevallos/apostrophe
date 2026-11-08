@@ -48,8 +48,8 @@ import Shell from './Shell'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
 
-const BAR = ['Home', 'Sales', 'Customers', 'Varieties', 'More']
-const RAIL = ['Home', 'Sales', 'Customers', 'Varieties', 'Expenses', 'Analysis']
+const BAR = ['Home', 'Sales', 'Customers', 'Products', 'More']
+const RAIL = ['Home', 'Sales', 'Customers', 'Products', 'Expenses', 'Analysis']
 
 const viewport = vi.hoisted(() => ({ current: 'phone' as 'phone' | 'computer' }))
 
@@ -171,7 +171,7 @@ test('the rail is "New sale", four tabs, a divider, Gastos and Análisis, then t
     'Home',
     'Sales',
     'Customers',
-    'Varieties',
+    'Products',
     '---',
     'Expenses',
     'Analysis',
@@ -244,7 +244,7 @@ test.each([
 // arrow on a card, neither on a form. Controls are found by role and accessible name.
 test.each([
   ['Home', HOME],
-  ['Varieties', VARIETIES],
+  ['Products', VARIETIES],
 ])('a root (%s) shows the "+ Nueva venta" control and no arrow', (_name, path) => {
   renderShell([path])
 
@@ -253,8 +253,8 @@ test.each([
 })
 
 test.each([
-  ['the catalog on a phone', CATALOG, false, '‹ Varieties'],
-  ['the catalog on a computer', CATALOG, true, '‹ Varieties'],
+  ['the catalog on a phone', CATALOG, false, '‹ Products'],
+  ['the catalog on a computer', CATALOG, true, '‹ Products'],
 ])('a card (%s) shows its "‹ parent" arrow and never "+ Nueva venta"', (_name, path, computer, arrow) => {
   renderShell([path], { computer })
 
@@ -263,7 +263,7 @@ test.each([
 })
 
 // A variety's back names the loaded record, so the shell shows no arrow for it until its screen
-// declares one (never a bare '‹' or the registry's 'Variety'); it still shows no "New sale".
+// declares one (never a bare '‹' or the registry's 'Product'); it still shows no "New sale".
 test('a card that is a variety on a phone shows no arrow before its screen declares one, and no "New sale"', () => {
   renderShell([pathTo(VARIETY, { id: 2 })])
 
@@ -303,10 +303,10 @@ test.each([
   [HOME, 'Home', 'Home'],
   [SALES, 'Sales', 'Sales'],
   [CUSTOMERS, 'Customers', 'Customers'],
-  [VARIETIES, 'Varieties', 'Varieties'],
+  [VARIETIES, 'Products', 'Products'],
   [pathTo(SALE, { id: 7 }), 'Sales', 'Sales'],
   [pathTo(CUSTOMER, { id: 3 }), 'Customers', 'Customers'],
-  [pathTo(VARIETY, { id: 2 }), 'Varieties', 'Varieties'],
+  [pathTo(VARIETY, { id: 2 }), 'Products', 'Products'],
 ])('on %s each surface marks %s alone, with aria-current', (path, barEntry, railEntry) => {
   const { container } = renderShell([path])
 
@@ -494,7 +494,7 @@ test('a bar that repeats an icon is rejected by the rule', () => {
   expect(iconAndTextProblems(container)).toEqual([expect.stringContaining('shares its icon with "Uno"')])
 })
 
-const MISSING_LINE = 'Add a price to a variety so you can sell'
+const MISSING_LINE = 'Add a price to a product so you can sell'
 
 function checklist(pricedDone: boolean): FirstRunAnswer {
   return {

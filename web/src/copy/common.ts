@@ -73,7 +73,7 @@ export const COMMON_TEXT = {
   /** @deprecated read `common:discardTheChange` */
   discardTheChange: 'Discard the change?',
   /** @deprecated read `common:newVariety` */
-  newVariety: 'New variety',
+  newVariety: 'New product',
   /** @deprecated read `common:newPrice` */
   newPrice: 'New price',
   /** @deprecated read `common:entries` */
@@ -105,7 +105,7 @@ export const COMMON_TEXT = {
   /** @deprecated read `common:gramsSold` with `{ grams }` */
   soldSuffix: ' sold',
   /** @deprecated read `common:variety` */
-  variety: 'Variety',
+  variety: 'Product',
   /** @deprecated read `common:sales` */
   sales: 'Sales',
   /** @deprecated read `common:grams` */
@@ -125,7 +125,7 @@ export const COMMON_TEXT = {
   /** @deprecated read `common:copy` */
   copy: 'Copy',
   /** @deprecated read `common:varieties` */
-  varieties: 'Varieties',
+  varieties: 'Products',
   /** @deprecated read `common:close` */
   close: 'Close',
   /** @deprecated read `common:discardTheChanges` */
@@ -153,7 +153,7 @@ export const COMMON_TEXT = {
   /** @deprecated read `common:date` */
   date: 'Date',
   /** @deprecated read `common:pickAVariety` */
-  pickAVariety: 'Pick a variety',
+  pickAVariety: 'Pick a product',
   /** @deprecated read `common:note` */
   note: 'Note',
   /** @deprecated read `common:takeFromStock` */
@@ -185,7 +185,7 @@ export const COMMON_TEXT = {
   /** @deprecated read `common:period` */
   period: 'Period',
   /** @deprecated read `common:addAnotherVariety` */
-  addAnotherVariety: 'Add another variety',
+  addAnotherVariety: 'Add another product',
   /** @deprecated read `common:saveTheName` */
   saveTheName: 'Save the name',
   /** @deprecated read `common:change` */
@@ -235,7 +235,7 @@ export const COMMON_TEXT = {
   /** @deprecated read `common:yourAccount` */
   yourAccount: 'Your account',
   /** @deprecated read `common:varietyWithPrice` */
-  varietyWithPrice: 'Variety with price',
+  varietyWithPrice: 'Product with price',
   /** @deprecated read `common:initialStock` */
   initialStock: 'Initial stock',
   /** @deprecated read `common:telegramBot` */

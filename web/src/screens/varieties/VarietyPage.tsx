@@ -68,12 +68,13 @@ import { COMMON_TEXT } from '../../copy/common'
 import { VARIETIES_TEXT } from '../../copy/varieties'
 import { OUT_OF_DATE_JOINER } from '../../copy/pinnedCatalog'
 import { DISCARD_DETAIL } from '../../copy/onboarding'
+import ContentArea from '../../components/ContentArea'
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <div className="cuerpo">{children}</div>
-    </main>
+    </ContentArea>
   )
 }
 
@@ -259,7 +260,7 @@ function VarietyPageView({
   )
 
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <div className="cuerpo">
         <div className="encabezado-fila">
           <h1 className="encabezado__titulo">{variety.name}</h1>
@@ -340,6 +341,6 @@ function VarietyPageView({
         {!archived && <VarietyRemoval varietyId={varietyId} removal={variety.removal} grams={row?.quantity ?? null} />}
       </div>
       {open === null && leaveConfirm}
-    </main>
+    </ContentArea>
   )
 }

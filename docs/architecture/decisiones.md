@@ -77,3 +77,6 @@ Un ADR da el motivo de una decisión; lo que el sistema hace hoy se afirma en la
 | [0070](../adr/0070-the-vip-type-is-the-single-is-vip-row-of-a-business-set-only-by-the-migration-and-the-import-and-never-identified-by-name.md) | el tipo VIP es la única fila is_vip de un Business y nunca se identifica por nombre |  |
 | [0071](../adr/0071-a-refusal-may-carry-named-fields-next-to-its-code.md) | un rechazo puede llevar campos con nombre junto a su código |  |
 | [0072](../adr/0072-una-corrida-manual-de-ci-yml-en-un-sha-juzga-el-head-con-el-workflow-de-master.md) | una corrida manual de `ci.yml` en un sha juzga el head con el workflow de master |  |
+| [0073](../adr/0073-a-sale-number-is-a-counter-on-the-business-raised-only-by-the-sale-insert.md) | el número de una venta es un contador del Business que solo sube el alta de la venta |  |
+| [0074](../adr/0074-fixed-chip-sets-are-a-branded-type-declared-in-one-registry-the-native-select-is-banned-and-the-selector-is-the-only-control-for-a-growable-set.md) | los conjuntos fijos de chips son un tipo con marca declarado en un solo registro; el Selector es el único control de un conjunto que crece |  |
+| [0075](../adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md) | la palabra en pantalla es siempre Product y no existe ningún ajuste de palabra |  |
