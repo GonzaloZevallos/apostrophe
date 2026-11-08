@@ -54,7 +54,8 @@ function stubFetch({ products }: Stubs): ReturnType<typeof vi.fn> {
     }
     if (method === 'GET' && path === '/customers')return Promise.resolve(jsonResponse(200, [ANA]))
     if (method === 'GET' && path === '/customers/7') return Promise.resolve(jsonResponse(200, ANA))
-    if (method === 'GET' && path.startsWith('/sales?')) return Promise.resolve(jsonResponse(200, []))
+    const url = path.split('?')[0]
+    if (method === 'GET' && url === '/sales') return Promise.resolve(jsonResponse(200, []))
     return Promise.reject(new Error(`unexpected request: ${method} ${path}`))
   })
   vi.stubGlobal('fetch', fetchMock)
