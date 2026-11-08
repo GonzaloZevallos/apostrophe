@@ -12,7 +12,7 @@ El avance principal es que el cliente vea exactamente las cifras que ve la vende
 
 # Sale bill
 
-Los hechos de una venta registrada que la vendedora puede compartir con el cliente de esa venta. Se calculan en vivo a partir del **Settlement** cuando se lee el detalle de la venta, y nunca se guardan ni se loguean. El servidor manda solo hechos, en una estructura cerrada y sin texto, y el front arma el texto para compartir (ADR-0053). La venta, sus líneas y su Sale number están definidos en `sales.md`; el Settlement, los pagos y los Balances, en `payments.md`. La parte 1 de GH-322 entregó los hechos; la parte 2 (GH-376) entregó el texto, la entrada de unidad y las acciones Share y Copy en el detalle de la venta; GH-519 agregó el Sale number. El texto exacto, sus líneas que pueden faltar y el botón están en `sales.md`, "Sale bill (en el detalle de la venta)".
+Los hechos de una venta registrada que la vendedora puede compartir con el cliente de esa venta. Se calculan en vivo a partir del **Settlement** cuando se lee el detalle de la venta, y nunca se guardan ni se loguean. El servidor manda solo hechos, en una estructura cerrada y sin texto, y el front arma el texto para compartir (ADR-0053). La venta, sus líneas y su Sale number están definidos en `sales.md`; el Settlement, los pagos y los Balances, en `payments.md`; los **Payment method**s, en `payment-methods.md`. La parte 1 de GH-322 entregó los hechos; la parte 2 (GH-376) entregó el texto, la entrada de unidad y las acciones Share y Copy en el detalle de la venta; GH-519 agregó el Sale number. El texto exacto, sus líneas que pueden faltar y el botón están en `sales.md`, "Sale bill (en el detalle de la venta)".
 
 ## Comportamiento
 
@@ -73,7 +73,7 @@ Los hechos de una venta registrada que la vendedora puede compartir con el clien
 - **El Sale number** se lee "Sale #N", sin ceros a la izquierda, sin prefijo y sin separador de miles, y es el mismo que el título del detalle.
 - **Las cantidades** se formatean a partir de centésimos enteros con `formatQuantity`, nunca de un float. La plata se lee `$ 11.000`, nunca con el formato del **Catalog**.
 - **Las palabras fijas y la unidad** viven en el **Copy module**, en el grupo `saleBill`, "Sale #N" incluido. La unidad es una sola entrada, "g", hasta #318.
-- **Los nombres que tipeó la vendedora** (el del negocio, los de los productos y el del Payment method) salen exactamente como están guardados; el Sale bill no agrega formato propio.
+- **Los nombres que tipeó la vendedora** (el del negocio, los de los productos y el del Payment method) salen exactamente como están guardados y nunca se traducen; el Sale bill no agrega formato propio.
 - **El botón** Share o Copy es el primer elemento de la fila de acciones del detalle, nunca dentro del aviso "Sale saved". Si compartir sale bien o se cancela, no muestra nada. Si compartir falla, muestra su línea con el ícono de atención y la etiqueta pasa a Copy. Si copiar sale bien, muestra el aviso "Bill copied". Si copiar falla, muestra su línea con el ícono de atención y debajo el bloque seleccionable "Sale bill". Con `bill: null` el botón no aparece. Mientras carga, conserva la etiqueta, queda deshabilitado y ocupado, y no muestra cifras.
 
 ### Lo que el Sale bill nunca lleva
