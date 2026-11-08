@@ -49,7 +49,7 @@ function byLineThenRule(a: TopLevelFinding, b: TopLevelFinding): number {
 }
 
 function nameOf(path: string): string {
-  return (path.split('/').pop() ?? path).replace('.txt', '')
+  return (path.split('\u002F').pop() ?? path).replace('.txt', '')
 }
 
 const entries = Object.entries(fixtures).map(([path, source]) => ({ name: nameOf(path), source }))

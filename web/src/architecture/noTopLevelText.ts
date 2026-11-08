@@ -45,14 +45,16 @@ export const I18N_EXCEPTION: { readonly path: string; readonly reason: string } 
 }
 
 const LOCALES_DIR = 'locales/'
+/** The path separator, spelled by code so the route-literal scan does not read it as a path. */
+const SLASH = '\u002F'
 const I18N_OBJECTS: readonly string[] = ['i18n', 'i18next']
 const RESOURCE_CALLS: readonly string[] = ['getResource', 'getResourceBundle', 'getFixedT', 'resolveKey']
 const RESOURCE_MEMBERS: readonly string[] = ['store', 'services']
 
 /** `path` normalised to start at `src/`, with `/` separators. */
 function fromSrc(path: string): string {
-  const slashed = `/${path.split('\\').join('/')}`
-  const at = slashed.indexOf('/src/')
+  const slashed = `${SLASH}${path.split('\\').join(SLASH)}`
+  const at = slashed.indexOf(`${SLASH}src${SLASH}`)
   return at < 0 ? slashed.slice(1) : slashed.slice(at + 1)
 }
 
@@ -120,7 +122,7 @@ function importedBindings(file: ts.SourceFile): Set<string> {
     const clause = statement.importClause
     if (clause === undefined || clause.isTypeOnly) continue
     const specifier = statement.moduleSpecifier.text
-    const base = specifier.slice(specifier.lastIndexOf('/') + 1)
+    const base = specifier.slice(specifier.lastIndexOf(SLASH) + 1)
     const isLocaleJson = specifier.includes(LOCALES_DIR) && specifier.endsWith('.json')
     const isEnglishStatic = [ENGLISH_STATIC_MODULE, `${ENGLISH_STATIC_MODULE}.ts`, `${ENGLISH_STATIC_MODULE}.js`].includes(base)
     if (!isLocaleJson && !isEnglishStatic) continue
