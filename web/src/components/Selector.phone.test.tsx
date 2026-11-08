@@ -377,3 +377,26 @@ describe('the optional fieldRef, accessibleName and placeholder props', () => {
     expect(field()).not.toHaveTextContent('Pick one')
   })
 })
+
+describe('the optional listHost prop', () => {
+  test('the phone list is drawn in the host, outside the form', async () => {
+    const user = userEvent.setup()
+    const host = document.createElement('div')
+    document.body.appendChild(host)
+    renderForm(<Controlled {...base} required options={numbered(3)} listHost={host} />)
+    await user.click(field())
+    const list = screen.getByRole('dialog')
+    expect(host).toContainElement(list)
+    expect(field().closest('form')).not.toContainElement(list)
+    await user.click(screen.getByRole('button', { name: 'Close' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    host.remove()
+  })
+
+  test('with no host the list is inside the form, as before', async () => {
+    const user = userEvent.setup()
+    renderForm(<Controlled {...base} required options={numbered(3)} />)
+    await user.click(field())
+    expect(field().closest('form')).toContainElement(screen.getByRole('dialog'))
+  })
+})

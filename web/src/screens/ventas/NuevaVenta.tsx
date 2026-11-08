@@ -198,6 +198,10 @@ function NuevaVentaForm() {
     if (customerWasOpen) setCustomerAsked(false)
   }
   const customerShown = customerAsked && customerSheet.isOpen
+  // A line's Product list is open on a sheet: it is drawn in `listHost`, outside the form, and the
+  // form beneath is `inert`, so what is covered is reported as covered (mobile check) and unreachable.
+  const [listHost, setListHost] = useState<HTMLElement | null>(null)
+  const lineListOpen = useViewport() !== 'computer' && customerSheet.isOpen && !customerAsked
   function askCustomer(): void {
     setCustomerAsked(true)
     customerSheet.open()
@@ -573,7 +577,7 @@ function NuevaVentaForm() {
 
   return (
     <ContentArea as="main" className="pantalla">
-      <form ref={formRef} className="nueva-venta" onSubmit={onSubmit}>
+      <form ref={formRef} className="nueva-venta" inert={lineListOpen} onSubmit={onSubmit}>
         <div className="nueva-venta__disposicion">
         <div className="nueva-venta__cuerpo" aria-busy={repricing || opening || undefined}>
           <div className="encabezado-fila nueva-venta__cabecera">
@@ -644,6 +648,7 @@ function NuevaVentaForm() {
                     varietiesLoading={!varietiesQuery.isSuccess}
                     canRemove={lines.length > 1}
                     varietyRef={varietyFieldRef}
+                    listHost={listHost}
                     gramsRef={gramsFieldRef}
                     specialPriceRef={specialPriceFieldRef}
                     onOpen={() => openLine(line.key)}
@@ -652,9 +657,11 @@ function NuevaVentaForm() {
                   />
                 ))}
               </div>
-              <Boton variant="secondary" icon="agregar" onClick={addLine}>
-                {COMMON_TEXT.addAnotherVariety}
-              </Boton>
+              <div className="nueva-venta__agregar" inert={locked}>
+                <Boton variant="secondary" icon="agregar" onClick={addLine}>
+                  {COMMON_TEXT.addAnotherVariety}
+                </Boton>
+              </div>
 
               <div className="nueva-venta__fila-dato">
                 <span>{SALES_TEXT.shippingCharged}</span>
@@ -736,6 +743,7 @@ function NuevaVentaForm() {
         )}
         </div>
       </form>
+      <div className="nueva-venta__lista" ref={setListHost} />
 
       {customerShown && <NuevaVentaCliente allowNone onChosen={chooseCustomer} />}
 

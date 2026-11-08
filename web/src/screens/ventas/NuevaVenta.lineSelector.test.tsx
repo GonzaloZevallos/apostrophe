@@ -69,6 +69,7 @@ async function openSale(entry: Entry): Promise<void> {
   await act(() => router.navigate(SALE_NEW, entry === 'customer' ? { state: newSaleFor('7') } : undefined))
   render(<App />)
   await screen.findByText('New sale')
+  await screen.findByLabelText('Line 1 grams')
   if (entry === 'customer') await screen.findByText('Ana')
 }
 

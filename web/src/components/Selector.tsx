@@ -26,6 +26,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useViewport } from '../shell/useViewport'
 import Boton from './Boton'
@@ -58,6 +59,11 @@ export type SelectorProps = {
   fieldRef?: Ref<HTMLButtonElement>
   /** Names the group, the field and the list where `label` would; the visible label stays `label`. */
   accessibleName?: string
+  /**
+   * Where the phone's list is drawn instead of beside the field. A screen that needs what is beneath
+   * the open list covered (`inert`) draws the list outside that part and says where here.
+   */
+  listHost?: HTMLElement | null
 } & (
   | { required: true; emptyWording?: never; /** Shown in the value area while empty; never a row. */ placeholder?: string }
   | { required?: false; emptyWording: string; placeholder?: never }
@@ -79,6 +85,11 @@ interface Item {
 function assignRef<T>(ref: Ref<T> | undefined, element: T | null): void {
   if (typeof ref === 'function') ref(element)
   else if (ref) ref.current = element
+}
+
+/** `list` drawn in `host` when the screen gave one, in place otherwise. */
+function inListHost(host: HTMLElement | null | undefined, list: ReactNode): ReactNode {
+  return host ? createPortal(list, host) : list
 }
 
 export default function Selector(props: SelectorProps) {
@@ -492,7 +503,7 @@ export default function Selector(props: SelectorProps) {
           )}
         </div>
       </div>
-      {shown && (
+      {shown && inListHost(props.listHost, (
         <SheetLevel.Provider value={level + 1}>
           <Sheet
             computer={false}
@@ -515,7 +526,7 @@ export default function Selector(props: SelectorProps) {
             </div>
           </Sheet>
         </SheetLevel.Provider>
-      )}
+      ))}
     </>
   )
 }

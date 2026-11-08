@@ -85,6 +85,8 @@ test('with the save held, the lines are inert and the rest of the form is not', 
 
   await waitFor(() => expect(screen.getByLabelText('Line 1 grams').closest('[inert]')).not.toBeNull())
   expect(screen.getByRole('button', { name: 'Save sale' }).closest('[inert]')).toBeNull()
+  // Adding a line would collapse the open one under a save: it is locked with the lines.
+  expect(screen.getByRole('button', { name: 'Add another product' }).closest('[inert]')).not.toBeNull()
 
   await act(async () => {
     answer(jsonResponse(422, { detail: 'no', code: 'sale.shipping_negative' }))

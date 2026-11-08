@@ -74,6 +74,8 @@ interface NuevaVentaLineaProps {
   /** "Quitar" is only offered when the sale has more than one line. */
   canRemove: boolean
   varietyRef: RefObject<HTMLButtonElement | null>
+  /** Where the phone's Product list is drawn, outside the form it covers. */
+  listHost: HTMLElement | null
   gramsRef: RefObject<HTMLInputElement | null>
   specialPriceRef: RefObject<HTMLInputElement | null>
   onOpen: () => void
@@ -93,6 +95,7 @@ export default function NuevaVentaLinea({
   varietiesLoading,
   canRemove,
   varietyRef,
+  listHost,
   gramsRef,
   specialPriceRef,
   onOpen,
@@ -164,6 +167,7 @@ export default function NuevaVentaLinea({
           loading={varietiesLoading}
           emptySetMessage={t('emptyStates:selectorNoVarieties')}
           fieldRef={varietyRef}
+          listHost={listHost}
           onChange={(picked) => {
             const name = varieties.find((item) => String(item.id) === picked)?.name ?? ''
             onChange({ varietyId: picked ?? '', varietyName: name })
