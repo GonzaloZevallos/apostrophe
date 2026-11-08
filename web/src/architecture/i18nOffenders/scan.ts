@@ -19,11 +19,11 @@ export const SCANNED = {
 } as const
 
 export function isScanned(path: string): boolean {
-  const parts = path.split('/')
+  if (!path.startsWith('/src/')) return false
+  const parts = path.slice('/src/'.length).split(/\//)
   return (
-    parts[0] === '' &&
-    parts[1] === 'src' &&
-    (SCANNED.roots as readonly (string | undefined)[]).includes(parts[2]) &&
+    parts.length > 1 &&
+    (SCANNED.roots as readonly (string | undefined)[]).includes(parts[0]) &&
     SCANNED.suffixes.some((suffix) => path.endsWith(suffix)) &&
     !SCANNED.excludedSuffixes.some((suffix) => path.endsWith(suffix)) &&
     !parts.slice(0, -1).includes(SCANNED.excludedFolder)
