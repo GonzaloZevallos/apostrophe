@@ -40,7 +40,10 @@ export async function fillSaleLine(
   }
   await expect(varietyField).toBeVisible()
   await varietyField.click()
-  await page.getByRole('dialog', { name: `Line ${n} product options` }).getByRole('button', { name: variety }).click()
+  // The Selector's list is a dialog of buttons on a phone and a listbox of options on a computer.
+  const listName = `Line ${n} product options`
+  const list = page.getByRole('dialog', { name: listName }).or(page.getByRole('listbox', { name: listName }))
+  await list.getByRole('button', { name: variety }).or(list.getByRole('option', { name: variety })).click()
   await page.getByLabel(`Line ${n} grams`).fill(grams)
   if (gift === true) await page.getByLabel(`Line ${n} gift`).check()
   if (specialPrice !== undefined) {
