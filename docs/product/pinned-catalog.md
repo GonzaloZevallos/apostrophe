@@ -23,7 +23,7 @@ Esto afina el paso de configuración del primer job (el Test send antes de que l
 
 **Cuando** un rediseño de una pantalla como Integrations está para aprobarse, **quiero** una comparación de antes y después de esa pantalla, capturada de la misma forma desde el código sin el cambio y con el cambio, **para** saber que cambió solo lo que se quería cambiar, y que lo que hace el vendedor ahí (token, chats, Find my chat, Test it, las líneas de ayuda y los motivos, el enlace a la pantalla del Catalog) se sigue leyendo y funcionando como antes, y aprobar con confianza.
 
-Esto afina los criterios "looks as designed" (icon-and-text-rule.md criterio 6, la métrica de diseño de navigation.md); no es un job de producto nuevo. Su protagonista es quien aprueba el rediseño (el revisor y, al final, Zeta), no el vendedor. Su propósito es encontrar diferencias no buscadas, no juzgar si la pantalla se ve bien. Salió del rediseño de Integrations de GH-116, cuya aprobación se apoyó solo en una captura del "después".
+Esto afina los criterios "se ve como fue diseñado" (icon-and-text-rule.md criterio 6, la métrica de diseño de navigation.md); no es un job de producto nuevo. Su protagonista es quien aprueba el rediseño (el revisor y, al final, Zeta), no el vendedor. Su propósito es encontrar diferencias no buscadas, no juzgar si la pantalla se ve bien. Salió del rediseño de Integrations de GH-116, cuya aprobación se apoyó solo en una captura del "después".
 
 Criterios de éxito:
 
