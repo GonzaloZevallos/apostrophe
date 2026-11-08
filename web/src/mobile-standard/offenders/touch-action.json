@@ -654,30 +654,6 @@
     "issue": 47
   },
   {
-    "screen": "Entrar",
-    "rule": "touch-action",
-    "target": "button:Sign in",
-    "issue": 49
-  },
-  {
-    "screen": "Entrar",
-    "rule": "touch-action",
-    "target": "button:Show",
-    "issue": 49
-  },
-  {
-    "screen": "EntrarFreno",
-    "rule": "touch-action",
-    "target": "button:Sign in",
-    "issue": 49
-  },
-  {
-    "screen": "EntrarFreno",
-    "rule": "touch-action",
-    "target": "button:Show",
-    "issue": 49
-  },
-  {
     "screen": "EstadosConfirmar",
     "rule": "touch-action",
     "target": "button:Delete sale",

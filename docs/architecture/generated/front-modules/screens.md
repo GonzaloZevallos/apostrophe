@@ -152,6 +152,7 @@ subgraph src["src"]
     src_screens_EntradaStock_tsx["EntradaStock.tsx"]
     src_screens_Entrar_tsx["Entrar.tsx"]
     src_screens_EntriesList_tsx["EntriesList.tsx"]
+    src_screens_ForgotSheet_tsx["ForgotSheet.tsx"]
     src_screens_Gastos_tsx["Gastos.tsx"]
     src_screens_Inicio_tsx["Inicio.tsx"]
     src_screens_Invitacion_tsx["Invitacion.tsx"]
@@ -192,6 +193,7 @@ src_screens_Catalogo_tsx-->src_screens_PinPublish_tsx
 src_screens_Catalogo_tsx-->src_screens_catalogCopy_ts
 src_screens_Catalogo_tsx-->src_screens_telegramPreview_ts
 src_screens_EntradaStock_tsx-->src_screens_StockEntryForm_tsx
+src_screens_Entrar_tsx-->src_screens_ForgotSheet_tsx
 src_screens_EntriesList_tsx-->src_screens_Variedades_tsx
 src_screens_EntriesList_tsx-->src_screens_originLabel_ts
 src_screens_Gastos_tsx-->src_screens_expenses_ExpenseForm_tsx
