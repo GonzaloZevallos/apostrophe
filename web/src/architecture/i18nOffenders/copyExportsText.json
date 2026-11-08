@@ -1,0 +1,18 @@
+[
+  {"file":"analysis.ts","issue":353},
+  {"file":"auth.ts","issue":350},
+  {"file":"catalog.ts","issue":352},
+  {"file":"common.ts","issue":null,"reason":"its @deprecated COMMON_TEXT and its two messages are held equal to their keys by common.deprecated.test.ts"},
+  {"file":"customers.ts","issue":351},
+  {"file":"dates.ts","issue":353},
+  {"file":"expenses.ts","issue":351},
+  {"file":"inicio.ts","issue":350},
+  {"file":"onboarding.ts","issue":350},
+  {"file":"payments.ts","issue":351},
+  {"file":"pinnedCatalog.ts","issue":352},
+  {"file":"sales.ts","issue":351},
+  {"file":"settings.ts","issue":353},
+  {"file":"shell.ts","issue":350},
+  {"file":"stock.ts","issue":352},
+  {"file":"varieties.ts","issue":352}
+]
