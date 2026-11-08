@@ -1,47 +1,49 @@
 # GH-601: evidencia del reintento de un lado que no queda quieto
 
-Estado: **la regla de parada se cumplió, el trabajo se detuvo** (la corrida 1 salió con 1). Faltan las corridas 2 y 3,
-la reproducción con un segundo `compare.sh` y el AE 0 entre corridas; no se corrieron porque la regla de parada manda
-detenerse y informar, sin agregar intentos ni aflojar ninguna cota.
-
-## Hecho
+## Qué se probó
 - Política pura en `scripts/design/settle.mjs` (tests en `web/src/design/settle.test.ts`).
-- Cableado en `scripts/design/comparisons.mjs`, probado con tres casos que sirve el propio proceso de test
-  (`web/src/design/census.test.ts`): pasa en el segundo intento, nunca queda quieto, y el censo del intento que pasó.
+- Cableado en `scripts/design/comparisons.mjs`, probado con cuatro casos que sirve el propio proceso de test
+  (`web/src/design/census.test.ts`): pasa en el segundo intento, nunca queda quieto, no se repite tras una escritura y el
+  censo del intento que pasó.
+- Decisión de la persona que decide (Decisión 1): no se reintenta una escritura; un paso que manda una escritura espera
+  su respuesta antes de asentarse (`writesAnswered`, igual para toda fila y ambos lados). No hizo falta la lista de
+  excepciones `not compared: sends a write`: las filas `Save sale` pasaron en las tres corridas registradas.
 
-## Corrida 1: `scripts/design/compare.sh --strict` sobre todo el registro
-- Head: `00166830a38bcca0542d1aeecfae15dc51e93401`.
-  Muestra nueva, sin `--only`, sin `--census`. Carga ambiente de la máquina (promedio de carga de 5 a 12 al empezar, otros
-  procesos corriendo), no un segundo `compare.sh` puesto a propósito. Duración: 540 s.
-- **Código de salida: 1.**
-- Línea impresa: `retries: 2 rows, 4 attempts`.
-- Filas reintentadas, las dos con éxito en el intento 2:
-  - `InicioPrimeraVezOscuro`: `built: settled on attempt 2 of 3 after rest-mismatch`.
-  - `ClienteFichaOscuro`: `built: settled on attempt 2 of 3 after rest-mismatch`.
-- Filas que fallaron: `VentaGuardada` y `VentaGuardadaOscuro`, las dos filas `Save sale`
-  (`la pantalla no quedó quieta`). Mandan una escritura, así que el sondeo de escrituras no las reintenta: es el riesgo
-  conocido del plan ("Rows that save are not rescued"). Solas, con `--only VentaGuardada,VentaGuardadaOscuro` y una muestra
-  nueva, pasan (`ok`, `retries: 0 rows, 0 attempts`, salida 0), con el promedio de carga en 26.
+## Corrida 0 (antes de esperar la respuesta de la escritura)
+`scripts/design/compare.sh --strict` sobre todo el registro, head `00166830a38bcca0542d1aeecfae15dc51e93401`, 540 s,
+**salida 1**, `retries: 2 rows, 4 attempts`. Reintentadas con éxito en el intento 2: `InicioPrimeraVezOscuro` y
+`ClienteFichaOscuro` (las dos `rest-mismatch`). Fallaron `VentaGuardada` y `VentaGuardadaOscuro` (`la pantalla no quedó
+quieta`): mandan una escritura, así que no se reintentan. Solas, con `--only` y una muestra nueva, pasan (salida 0).
 
-## Tasas medidas (una sola corrida)
-- Filas con lado construido: 173 (220 filas menos 47 que todavía no existen en la app).
-- Fallas en el intento 1: 4 (2 reintentadas, 2 filas de escritura sin reintento) → 4 / 173 = 0,023, bajo el umbral de 0,15.
-- Fallas en el intento 2 tras una falla en el intento 1: 0 de 2 (0 %), bajo el umbral de 0,5.
-- Filas reintentadas: 2, bajo el umbral de 5.
-- Fallas por tipo de las filas reintentadas: 2 `rest-mismatch`. El tipo de las dos filas de escritura no se imprime, porque no se
-  reintentan.
+## Reproducción bajo carga
+Dos `compare.sh --strict` completos al mismo tiempo (el segundo arrancó cuando el primero ya imprimía filas, para que no
+compitan por el build del front), sin `--census`, sobre `0a345044` más un cambio solo de texto de diagnóstico del mensaje
+de falla (no se commiteó). Los dos terminaron con **salida 0** y `retries: 0 rows, 0 attempts`.
+- Fallas en el intento 1: 0 de 173 filas con lado construido en cada uno (0,000, umbral 0,15).
+- Fallas en el intento 2 tras una falla en el intento 1: no hubo ninguna falla en el intento 1.
+- Fallas por tipo: ninguna.
+Un primer intento de la misma prueba, con los dos arrancando juntos, no llegó a capturar: `compare: the sample app was not
+ready in 120 s` en los dos (el build del front y la espera de 120 s de `compare.sh`). No cuenta como corrida.
 
-## Qué falta, y por qué
-La regla de parada se activa por "las tres corridas no salen todas con 0". Lo que la cumple es la corrida 1 con las dos
-filas de escritura. Decidir queda para el Tech Lead: reponer la muestra por intento está fuera de alcance del plan, y
-cualquier otra salida (por ejemplo, tratar una escritura idempotente de esas filas) cambia el alcance. Sin las corridas 2 y
-3 no se puede decir si las dos filas fallan en cada corrida o solo en esta.
+## Tres corridas seguidas en el head del PR
+Head `51f4c4ae27af417641e1c9aa293a15d24218bea0`, muestra nueva cada vez, sin `--only`, sin `--census`, una detrás de otra.
 
-Sin correr: la reproducción con un segundo `compare.sh` a la vez; las corridas 2 y 3; `ae.mjs` AE 0 entre corridas.
+| Corrida | Salida | Duración | Línea `retries:` | Filas reintentadas |
+|---|---|---|---|---|
+| 1 | 0 | 683 s | `retries: 1 rows, 2 attempts` | `EstadosConfirmar`: `built: settled on attempt 2 of 3 after rest-mismatch` |
+| 2 | 0 | 658 s | `retries: 2 rows, 4 attempts` | `Variedades` y `Catalogo`: `built: settled on attempt 2 of 3 after rest-mismatch` |
+| 3 | 0 | 739 s | `retries: 0 rows, 0 attempts` | ninguna |
 
-## Pendiente de decisión
-La revisión devolvió el trabajo por lo mismo: el criterio de hecho (tres corridas con salida 0) no se cumple mientras las
-dos filas `Save sale` (y `OnboardingVariedad`) mandan una escritura y no se reintentan. Hace falta que una persona decida:
-aceptar que las filas que escriben no se rescatan y cambiar el criterio, o ampliar el alcance (una muestra nueva por intento,
-o una escritura idempotente). Con esa decisión se corren la reproducción con un segundo `compare.sh`, las tres corridas
-seguidas y el AE 0 entre corridas, y se anotan acá.
+Antes de estas tres hubo un arranque que no capturó nada (`compare: the sample app was not ready in 120 s`, salida 1, a los
+132 s): coincidió con un `tsc` y un `oxlint` que corrí a la vez. No cuenta como corrida y no se repitió; las tres de arriba
+son las tres siguientes, seguidas.
+
+- Fallas en el intento 1: 1, 2 y 0 de 173 filas con lado construido (0,006, 0,012 y 0,000; umbral 0,15).
+- Fallas en el intento 2 tras una falla en el intento 1: 0 de 3 (umbral 0,5). Los tres reintentos fueron `rest-mismatch`.
+- Filas reintentadas por corrida: 1, 2 y 0 (umbral 5). Ninguna fila se reintentó en 2 o más de las 3 corridas.
+- `VentaGuardada`, `VentaGuardadaOscuro` y `OnboardingVariedad` pasaron en las tres, sin reintento.
+
+## `ae.mjs` entre corridas
+`node scripts/design/ae.mjs <corrida n> <corrida n+1>`, sin `--only`: corrida 1 contra 2 y 2 contra 3, las dos con **salida 0**.
+En cada una, 391 líneas de lado con `AE 0`, 47 lados construidos sin captura en ninguna (las filas que todavía no existen en
+la app) y ninguna otra línea. Es decir, AE 0 en toda fila capturada en las dos.
