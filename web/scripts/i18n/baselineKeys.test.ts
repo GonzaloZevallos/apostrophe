@@ -113,6 +113,23 @@ describe('mapping problems', () => {
   })
 })
 
+describe('excepted rows', () => {
+  test('an excepted row is not compared, and a mapping problem of that source is still reported', () => {
+    const wrong = changed('sample.ts:TITLE', { key: 'shapes:hello' })
+    expect(mappingProblems(wrong, committed, en, new Set(['sample.ts:TITLE\u00000']))).toEqual([])
+
+    const bad = changed('sample.ts:GROUP.greet', { key: 'shapes:hello', params: [] })
+    expect(mappingProblems(bad, committed, en, new Set(['sample.ts:GROUP.greet\u00000']))).toEqual([
+      'sample.ts:GROUP.greet row 0: 1 args against 0 params',
+    ])
+  })
+
+  test('a row not in the set is still compared', () => {
+    const wrong = changed('sample.ts:TITLE', { key: 'shapes:hello' })
+    expect(mappingProblems(wrong, committed, en, new Set(['sample.ts:TITLE\u00001']))).toEqual(['sample.ts:TITLE row 0: renders another text in en'])
+  })
+})
+
 describe('coverage problems', () => {
   const files = fixture ? [fixture] : []
 
