@@ -22,6 +22,8 @@ Extends ADR-0042 (rules 6 and 7) and ADR-0052 without amending them.
 ## Measured miss rates
 `docs/evidence/GH-601-built-settle.md` has the runs. Before this ADR's write rule was complete, one whole-registry run (head `00166830`) missed 4 of 173 built rows on attempt 1: 2 were retried and passed on attempt 2, and the 2 `Save sale` rows wrote, so they were not retried and the run exited 1. Two whole-registry runs at the same time exited 0 with no miss. On head `51f4c4ae` three consecutive runs exited 0: attempt 1 missed 1, 2 and 0 of 173 built rows (at most 0.012), 0 of 3 retried rows missed again on attempt 2, at most 2 rows were retried in a run, and no row was retried in two runs. All retries were `rest-mismatch`.
 
+On the head after the master merge (`3accc29e`), three whole-registry runs on a heavily loaded machine retried no row (0 of 174 built rows missed on attempt 1) and `ae.mjs` gave AE 0 on every side between them; they exited 1 only because master's `--strict` also fails on the 119 rows with no built screen yet.
+
 ## Risks
 - An intermittent late refetch can pass on a later attempt; the note and the summary line keep that visible.
 - How `restAfterShot` and the step catch pick their kind is shown by the wiring cases and the recorded runs, not by unit tests.
