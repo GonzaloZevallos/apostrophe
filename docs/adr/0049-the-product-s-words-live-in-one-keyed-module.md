@@ -124,3 +124,19 @@ keyed by id, with English as the source copy. It strikes two clauses of this ADR
 exemption's permission is withdrawn; the literals in `components/AvisoExito.tsx` remain as
 debt that a later GH-316 front part removes. The rest of this ADR stands until those parts
 move the words.
+
+## Amendment (GH-379): las palabras nunca se resuelven al cargar un módulo
+
+`web/src/architecture/noTopLevelText.ts` (`findTopLevelText`) lee cada fuente con el parser de
+TypeScript y aplica tres reglas. `noTopLevelText.test.ts` las prueba con fixtures `.txt` y
+`noTopLevelText.real.test.ts` recorre todo `web/src/` (sin tests).
+
+1. `t-outside-function`: `t(`, `i18n.t(` o `i18next.t(` en el module scope. Module scope es todo lo que no es el cuerpo de una función, método, accessor o constructor: initializers de campos de clase, bloques `static {}`, default parameters, decorators, los argumentos de una llamada hecha en module scope y el cuerpo de un IIFE. Los getters y setters de un object literal cuentan como dentro de una función.
+2. Los alias de `t` tomados en module scope (`const tt = i18next.t`, `const { t } = i18n`) están prohibidos, no se siguen.
+3. Falso positivo conocido: un default parameter que llama a un parámetro anterior llamado `t` (`function f(t, x = t('a'))`) se marca igual.
+4. `locale-import`, fuera de `src/i18n/`, marca: `import`, `export … from`, `export * from`, `import()` literal sobre `locales/`, un `import.meta.glob` sobre `locales/`, y un glob o `import()` cuyo argumento no es literal (string, template sin sustituciones o array de ellos).
+5. Se permiten `import type`, `export type … from` y `typeof import(…)`. `require()` no está cubierto, porque `src/` es solo ESM.
+6. `resource-read`, en module scope: llamadas a `getResource`, `getResourceBundle`, `getFixedT` y `resolveKey`; `.store` y `.services` sobre `i18n` o `i18next`; y acceso a propiedad o elemento sobre un binding importado de un JSON de locale o de `i18n/englishStatic` (`ENGLISH_STATIC_MODULE`). Pasar el binding por referencia (como argumento o dentro de un objeto) no es una lectura.
+7. Límite: un alias de un binding de locale (`const c = common`) no se sigue.
+8. `i18n/` tiene una única excepción con nombre, `I18N_EXCEPTION` (`src/i18n/testing.ts`, `testT = i18n.t`, un helper de tests): una constante con su razón, nunca una lista, y solo para `t-outside-function`.
+9. `isKeyShaped` (`i18n/keyShape.ts`) es la única prueba de forma de key que usan los guards, verificada contra cada valor de los locales.
