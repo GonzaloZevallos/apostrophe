@@ -180,7 +180,9 @@ export function findTopLevelText(path: string, source: string): TopLevelFinding[
         add(node, 't-outside-function')
       }
     } else if (isI18nT(node)) {
-      add(node, 't-outside-function')
+      // An alias (`const tt =\n i18next.t`) is one finding, at its declaration.
+      const { parent } = node
+      add(ts.isVariableDeclaration(parent) && parent.initializer === node ? parent : node, 't-outside-function')
     } else if (ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node)) {
       const { expression } = node
       if (!ts.isIdentifier(expression)) return
