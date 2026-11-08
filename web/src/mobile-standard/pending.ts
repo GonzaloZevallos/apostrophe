@@ -29,7 +29,8 @@ export const PENDING_TAPS: readonly PendingTap[] = [
     screen: 'NuevaVentaConLinea',
     route: SALE_NEW,
     steps: [
-      { fill: { label: SALES_TEXT.lineVariety(1), value: 'Golden Cookies' } },
+      { press: `${SALES_TEXT.lineVariety(1)} ${common('common:pickAVariety')}` },
+      { press: 'Golden Cookies' },
       { fill: { label: SALES_TEXT.lineGrams(1), value: '10' } },
     ],
     button: SALES_TEXT.saveSale,
