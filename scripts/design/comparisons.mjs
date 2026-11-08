@@ -47,13 +47,19 @@ import { pngCssWidth, sheetHtml } from './sheet.mjs'
 import { FONT_FAMILIES, fontCss, fontRoute } from './fonts.mjs'
 import { pageProbe } from './probe.mjs'
 import {
+  CAPTURE_ATTEMPTS,
   SETTLE_ADVANCE_MS,
   SETTLE_BOUND,
   SETTLE_FRAMES,
   SETTLE_QUIET_HOPS,
   SETTLE_REASON_UNSETTLED,
   animationRecords,
+  captureWithRetries,
   frameRecords,
+  isRetryableKind,
+  kindOfSettle,
+  retryNote,
+  retrySummary,
   settleWith,
   shotKept,
   signatureOf,
@@ -235,19 +241,20 @@ function withinTimeout(promise) {
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer))
 }
 
-// `null` when the page has finished drawing, else a reason with no page data in it. In this
-// order: the network once after a navigation, the applied-check (it loads fonts, so it runs
-// before the clock moves), then the clock advance and the frame sampling.
-async function settle(page, { advanceMs, afterGoto = false, ofFirstText }) {
+// `{ reason, kind }`: `reason` is `null` when the page has finished drawing, else a reason with no
+// page data in it, and `kind` is the closed kind of that miss (`settle.mjs`), set here where the
+// reason is produced. In this order: the network once after a navigation, the applied-check (it
+// loads fonts, so it runs before the clock moves), then the clock advance and the frame sampling.
+async function settleKinded(page, { advanceMs, afterGoto = false, ofFirstText }) {
   if (afterGoto) {
     try {
       await page.waitForLoadState('networkidle')
     } catch (error) {
-      return `la red no se aquietó: ${firstLine(error)}`
+      return { reason: `la red no se aquietó: ${firstLine(error)}`, kind: 'network' }
     }
   }
   const applied = await appliedCheck(page, ofFirstText)
-  if (applied) return applied
+  if (applied) return { reason: applied, kind: 'other' }
   const clock = page.context().clock
   let lastHash = null
   const reason = await settleWith(
@@ -263,21 +270,29 @@ async function settle(page, { advanceMs, afterGoto = false, ofFirstText }) {
     { advanceMs, frames: SETTLE_FRAMES, bound: SETTLE_BOUND },
   )
   if (reason === null) settledHash.set(page, lastHash)
-  return reason
+  return { reason, kind: reason === null ? null : kindOfSettle(reason) }
 }
+
+// The bare reason of `settleKinded`, as a string or `null`: what `census.mjs` is given.
+const settle = async (page, options) => (await settleKinded(page, options)).reason
 
 // One more frame, sampled right after a screenshot with NO clock advance: a late refetch lands
 // after the settled frames. The shot is kept only if that frame is calm (no mutation since the
 // last settled frame included) and has the last settled frame's hash; any miss, or a frame that
-// cannot be read, is the one rest failure (`null` when the page is still at rest). Nothing is
-// discarded: the shot itself does not mutate the page (see `SHOT` and `hideCaret`).
+// cannot be read, is the one rest failure (`reason: null` when the page is still at rest). Its kind
+// says which: `rest-mismatch` for a frame that is not calm or whose hash differs, `rest-unread` for
+// one that could not be read. Nothing is discarded: the shot itself does not mutate the page (see
+// `SHOT` and `hideCaret`).
 async function restAfterShot(page) {
+  let frame
   try {
-    const frame = await withinTimeout(page.evaluate(SAMPLE_FRAME_SOURCE))
-    return shotKept(frame, settledHash.get(page)) ? null : SETTLE_REASON_UNSETTLED
+    frame = await withinTimeout(page.evaluate(SAMPLE_FRAME_SOURCE))
   } catch {
-    return SETTLE_REASON_UNSETTLED
+    return { reason: SETTLE_REASON_UNSETTLED, kind: 'rest-unread' }
   }
+  return shotKept(frame, settledHash.get(page))
+    ? { reason: null, kind: null }
+    : { reason: SETTLE_REASON_UNSETTLED, kind: 'rest-mismatch' }
 }
 
 const firstLine = (error) => String(error?.code ?? error?.message ?? error).split('\n')[0]
@@ -364,11 +379,11 @@ async function scaleMisses(page, s, side, when) {
 }
 
 async function applyTextScale(page, s, side, ofFirstText) {
-  if (!s.text_scale) return null
+  if (!s.text_scale) return { reason: null, kind: null }
   await page.evaluate(applyInPage, { factor: s.text_scale })
   const miss = await scaleMisses(page, s, side, 'antes de la captura')
-  if (miss) return miss
-  return settle(page, { advanceMs: SETTLE_ADVANCE_MS, ofFirstText })
+  if (miss) return { reason: miss, kind: 'other' }
+  return settleKinded(page, { advanceMs: SETTLE_ADVANCE_MS, ofFirstText })
 }
 
 // The screenshot has been taken: the viewport must be the size it was at the final settle, the
@@ -378,10 +393,12 @@ const settledViewport = new WeakMap()
 
 async function verifyAfterShot(page, s, label, png, side) {
   if (!viewportUnchanged(settledViewport.get(page), page.viewportSize())) {
-    return sideOutcome(viewportMovedReason(side), null)
+    return sideOutcome(viewportMovedReason(side), null, 'other')
   }
   const miss = s.text_scale ? await scaleMisses(page, s, label, 'después de la captura') : null
-  return sideOutcome(miss ?? (await restAfterShot(page)), png)
+  if (miss) return sideOutcome(miss, null, 'other')
+  const rest = await restAfterShot(page)
+  return sideOutcome(rest.reason, png, rest.kind)
 }
 
 // The design file an entry is compared against: `design`, else the entry's own name.
@@ -458,7 +475,8 @@ async function takeShot(page, { block, ofFirstText, census, side }) {
     if (census) await bounded(census.before(page))
     return await shotSteps(page, { block, ofFirstText, census, side }, handles)
   } catch (error) {
-    return sideOutcome(shotStepReason(stepKind(error), side), null)
+    const kind = stepKind(error)
+    return sideOutcome(shotStepReason(kind, side), null, kind === 'timeout' ? 'shot-timeout' : 'other')
   } finally {
     await Promise.allSettled(handles.map((handle) => handle.dispose()))
   }
@@ -479,8 +497,8 @@ async function shotSteps(page, { block, ofFirstText, census, side }, handles) {
     }
   }
   const clip = block ? await bounded(sectionClip(block)) : undefined
-  const last = await settle(page, { advanceMs: 0, ofFirstText })
-  if (last) return sideOutcome(last, null)
+  const last = await settleKinded(page, { advanceMs: 0, ofFirstText })
+  if (last.reason) return sideOutcome(last.reason, null, last.kind)
   settledViewport.set(page, page.viewportSize())
   let miss
   if (plan.mode === 'layer') {
@@ -495,14 +513,34 @@ async function shotSteps(page, { block, ofFirstText, census, side }, handles) {
     miss = sizeRecordMiss(before, after, side)
   }
   miss ??= regionMiss(await bounded(page.evaluate(readMetrics)), clip, side, { layer: plan.mode === 'layer' })
-  if (miss) return sideOutcome(miss, null)
+  if (miss) return sideOutcome(miss, null, 'other')
   census?.atShot(page)
   const png = await bounded(page.screenshot(clip === undefined ? SHOT : { ...SHOT, clip }))
   return sideOutcome(null, png)
 }
 
-async function captureDesign(browser, s, options, ctx) {
-  const census = ctx.census?.design
+// Whether the attempt's page sent any request other than a read, set before the page navigates. The
+// built login goes through `context.request` before the page exists, so it is not counted here.
+function watchWrites(page, probe) {
+  page.on('request', (request) => {
+    if (request.method() !== 'GET' && request.method() !== 'HEAD') probe.wrote = true
+  })
+}
+
+// The page's first navigation. A Playwright timeout is the side's retryable `step-timeout`; any other
+// error is thrown, as it was before kinds existed.
+async function navigate(page, url) {
+  try {
+    await page.goto(url)
+  } catch (error) {
+    if (error?.name === 'TimeoutError') return sideOutcome(firstLine(error), null, 'step-timeout')
+    throw error
+  }
+  return null
+}
+
+// One attempt at the design side: its own context, page and census (`census`, or null).
+async function captureDesign(browser, s, options, ctx, census, probe) {
   const context = await browser.newContext(options)
   try {
     await pauseClock(context)
@@ -510,11 +548,13 @@ async function captureDesign(browser, s, options, ctx) {
     await routeDesign(context, ctx)
     const page = await context.newPage()
     page.setDefaultTimeout(Math.max(PLAYWRIGHT_DEFAULT_MS, TIMEOUT))
-    await page.goto(pathToFileURL(join(PROTOTYPE, `${designOf(s)}.dc.html`)).href)
-    const first = await settle(page, { advanceMs: SETTLE_ADVANCE_MS, afterGoto: true, ofFirstText: true })
-    if (first) return sideOutcome(first, null)
+    watchWrites(page, probe)
+    const navigated = await navigate(page, pathToFileURL(join(PROTOTYPE, `${designOf(s)}.dc.html`)).href)
+    if (navigated) return navigated
+    const first = await settleKinded(page, { advanceMs: SETTLE_ADVANCE_MS, afterGoto: true, ofFirstText: true })
+    if (first.reason) return sideOutcome(first.reason, null, first.kind)
     const scaled = await applyTextScale(page, s, 'diseño', true)
-    if (scaled) return sideOutcome(scaled, null)
+    if (scaled.reason) return sideOutcome(scaled.reason, null, scaled.kind)
     // A file that draws several states: only the block under the entry's `section` label, which
     // must be exactly one element, never a silent first match.
     let block = null
@@ -536,17 +576,17 @@ async function captureDesign(browser, s, options, ctx) {
 }
 
 // The built screen in the state its entry asks for; what could not be reached is the side's failure.
-async function captureBuilt(browser, s, options, ctx) {
+async function captureBuilt(browser, s, options, census, probe) {
   const context = await browser.newContext(options)
   try {
-    return await captureBuiltIn(context, s, options, ctx)
+    return await captureBuiltIn(context, s, census, probe)
   } finally {
-    await ctx.census?.built.dispose()
+    await census?.dispose()
     await context.close()
   }
 }
 
-async function captureBuiltIn(context, s, options, ctx) {
+async function captureBuiltIn(context, s, census, probe) {
   await pauseClock(context)
   await addProbe(context)
   if (s.tema) {
@@ -571,25 +611,29 @@ async function captureBuiltIn(context, s, options, ctx) {
   }
   const page = await context.newPage()
   page.setDefaultTimeout(TIMEOUT)
-  await page.goto(resolveFacts(s.route, placeholders))
-  const first = await settle(page, { advanceMs: SETTLE_ADVANCE_MS, afterGoto: true, ofFirstText: false })
-  if (first) return sideOutcome(first, null)
+  watchWrites(page, probe)
+  const navigated = await navigate(page, resolveFacts(s.route, placeholders))
+  if (navigated) return navigated
+  const first = await settleKinded(page, { advanceMs: SETTLE_ADVANCE_MS, afterGoto: true, ofFirstText: false })
+  if (first.reason) return sideOutcome(first.reason, null, first.kind)
   for (const step of s.steps ?? []) {
-    let reason
+    let reached
     try {
       await run(page, step, placeholders)
-      reason = await settle(page, { advanceMs: SETTLE_ADVANCE_MS, ofFirstText: false })
+      reached = await settleKinded(page, { advanceMs: SETTLE_ADVANCE_MS, ofFirstText: false })
     } catch (error) {
-      reason = firstLine(error)
+      reached = { reason: firstLine(error), kind: error?.name === 'TimeoutError' ? 'step-timeout' : 'other' }
     }
-    if (reason) return sideOutcome(`estado no alcanzado en ${JSON.stringify(step)}: ${reason}`, null)
+    if (reached.reason) {
+      return sideOutcome(`estado no alcanzado en ${JSON.stringify(step)}: ${reached.reason}`, null, reached.kind)
+    }
   }
   const scaled = await applyTextScale(page, s, 'construido', false)
-  if (scaled) return sideOutcome(scaled, null)
-  const shot = await takeShot(page, { block: null, ofFirstText: false, census: ctx.census?.built, side: 'built' })
+  if (scaled.reason) return sideOutcome(scaled.reason, null, scaled.kind)
+  const shot = await takeShot(page, { block: null, ofFirstText: false, census, side: 'built' })
   if (shot.failure !== null) return shot
   const outcome = await verifyAfterShot(page, s, 'construido', shot.png, 'built')
-  await ctx.census?.built.after(page)
+  await census?.after(page)
   return outcome
 }
 
@@ -617,23 +661,38 @@ async function composeSheet(browser, s, designWidth, builtWidth, design, built, 
   await context.close()
 }
 
-// The census of a row, one per side; its settle is the capture's own, with no clock advance.
-function censusOf(options, s) {
-  const side = (ofFirstText) =>
-    createCensus({
-      deviceScaleFactor: options.deviceScaleFactor,
-      settle: (page) => settle(page, { advanceMs: 0, ofFirstText }),
-    })
-  return { design: side(true), built: side(false) }
-}
+// The census of one side of one attempt; its settle is the capture's own, with no clock advance.
+const censusSide = (options, ofFirstText) =>
+  createCensus({
+    deviceScaleFactor: options.deviceScaleFactor,
+    settle: (page) => settle(page, { advanceMs: 0, ofFirstText }),
+  })
 
-// The capture of one side: what it could not do is a failure of the screen, not a throw, and
-// that side has no PNG under any name.
-async function attempt(label, ctx, capture) {
+// The capture of one side, whole, again while it missed for load and its attempt sent no write
+// (`settle.mjs`, ADR-0075). `capture(census, probe)` is one attempt, in its own context and with its
+// own census (`makeCensus()`, or none); the row keeps the last attempt's. What the side could not do
+// is a failure of the screen, not a throw, and that side has no PNG under any name. A pass after a
+// miss is a note, never a failure; a side that missed every attempt keeps its failure and the kinds
+// it missed by.
+async function attempt(label, side, ctx, makeCensus, capture) {
   try {
-    const outcome = await capture()
-    if (outcome.failure === null) return outcome.png
-    fail(ctx, `${label} no se pudo capturar: ${outcome.failure}`)
+    const result = await captureWithRetries(
+      async () => {
+        const census = ctx.census ? makeCensus() : null
+        if (ctx.census) ctx.census[side] = census
+        const probe = { wrote: false }
+        const outcome = await capture(census, probe)
+        return { outcome, wrote: probe.wrote }
+      },
+      { attempts: CAPTURE_ATTEMPTS, retryable: isRetryableKind },
+    )
+    const note = retryNote(side, result, CAPTURE_ATTEMPTS)
+    if (result.attempts > 1) ctx.retried.push(result.attempts)
+    if (result.outcome.failure === null) {
+      if (note) ctx.notes.push(note)
+      return result.outcome.png
+    }
+    fail(ctx, `${label} no se pudo capturar: ${result.outcome.failure}${note}`)
   } catch (error) {
     fail(ctx, `${label} no se pudo capturar: ${firstLine(error)}`)
   }
@@ -643,6 +702,9 @@ async function attempt(label, ctx, capture) {
 const browser = await chromium.launch()
 const results = []
 let failed = false
+// The rows with a side captured more than once, and those sides' attempts: the run's summary line.
+let retriedRows = 0
+let retriedAttempts = 0
 try {
   for (const s of screens) {
     if (only && !only.has(s.screen)) continue
@@ -659,14 +721,28 @@ try {
     const builtOptions = contextOptions(sizes.built)
     // A row's side PNGs come only from this run's own buffers: the previous run's are deleted first.
     for (const file of staleFiles(readdirSync(out), [s.screen])) unlinkSync(join(out, file))
-    const ctx = { notes: [], failures: [], census: values.census ? censusOf(builtOptions, s) : null }
+    const ctx = { notes: [], failures: [], census: values.census ? { design: null, built: null } : null, retried: [] }
     const { notes } = ctx
     const entry = { screen: s.screen, file: null, notes, design: null, built: null }
     try {
-      const design = await attempt('el diseño', ctx, () => captureDesign(browser, s, designOptions, ctx))
+      const design = await attempt(
+        'el diseño',
+        'design',
+        ctx,
+        () => censusSide(designOptions, true),
+        (census, probe) => captureDesign(browser, s, designOptions, ctx, census, probe),
+      )
       let built = null
       if (s.route === null) notes.push('todavía no existe en la app')
-      else built = await attempt('lo construido', ctx, () => captureBuilt(browser, s, builtOptions, ctx))
+      else {
+        built = await attempt(
+          'lo construido',
+          'built',
+          ctx,
+          () => censusSide(builtOptions, false),
+          (census, probe) => captureBuilt(browser, s, builtOptions, census, probe),
+        )
+      }
       if (design) {
         entry.design = join(out, `${s.screen}.design.png`)
         writeFileSync(entry.design, design)
@@ -682,12 +758,14 @@ try {
       fail(ctx, `la pantalla falló: ${firstLine(error)}`)
     }
     if (ctx.census) {
-      const sides = Object.entries({ design: ctx.census.design, built: ctx.census.built }).filter(
-        ([, side]) => Object.keys(side.record).length > 0,
-      )
+      const sides = Object.entries(ctx.census).filter(([, side]) => side !== null && Object.keys(side.record).length > 0)
       if (sides.length) entry.census = Object.fromEntries(sides.map(([name, side]) => [name, side.record]))
     }
     if (ctx.failures.length) failed = true
+    if (ctx.retried.length) {
+      retriedRows += 1
+      retriedAttempts += ctx.retried.reduce((sum, used) => sum + used, 0)
+    }
     results.push(entry)
     console.log(`${s.screen}: ${notes.length ? notes.join('; ') : 'ok'}`)
   }
@@ -695,6 +773,7 @@ try {
   await browser.close()
   writeFileSync(join(out, 'index.json'), JSON.stringify(results, null, 2))
 }
+console.log(retrySummary(retriedRows, retriedAttempts))
 if (values.strict && failed) {
   console.error('comparisons: --strict and a capture failed (a side that did not settle or could not be reached, a font, or a screen that threw)')
   process.exitCode = 1

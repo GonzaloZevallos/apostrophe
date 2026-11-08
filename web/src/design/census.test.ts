@@ -234,7 +234,10 @@ describe('comparisons.mjs --census', () => {
     expect(output).toContain('lo construido no se pudo capturar')
   }, CENSUS_TEST_MS)
 
-  // Measured 2026-11-07 (<fill in>): the three cases below.
+  // Measured 2026-11-07 (one `vitest run --project census`, load average 12 to 15 at the start): the
+  // three cases below took 6564 ms (second attempt passes), 10851 ms (never calm, three attempts, the
+  // slowest) and 6744 ms (the same with --census); well under the 30 s that would have dropped the
+  // never-calm case.
   it('captures the built side again from a fresh context when the first load never comes to rest', async () => {
     const { entries, status, output } = await run('late-a', 'Invitacion', [], 'late-a')
     expect(status, output).toBe(0)
