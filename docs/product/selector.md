@@ -1,6 +1,7 @@
 ## Jobs
 
 - Cuando estoy cargando un registro en el teléfono y un campo necesita una opción de mi propia lista, que sigue creciendo, quiero encontrar la opción y elegirla en dos toques sin perder lo que ya cargué, para terminar el registro en menos de un minuto y nunca elegir algo equivocado.
+- Cuando agrego una línea a una venta en el teléfono, quiero encontrar y elegir el producto correcto de una lista en la que puedo buscar, sin perder la venta que estoy cargando, para registrar el pedido en pocos toques y que la línea siga cotizada con el Current price de ese día, nunca de memoria. (La historia de New sale; definida en sales.md).
 
 La computadora también es una situación: el mismo campo se usa con teclado, conserva la capacidad y no recibe pulido dedicado (Phone first).
 
@@ -10,7 +11,7 @@ La computadora también es una situación: el mismo campo se usa con teclado, co
 
 El Selector es el único control para elegir una opción de un Growable set: un conjunto que puede tener una opción con la que la app no vino, hoy o por una decisión ya tomada (Products, Expense categories, Withdrawal reasons, Customer types; y con GH-318, units, time zone, Money format y Payment methods). Lo opuesto es un Fixed set, declarado en `web/src/components/fixedSets.ts` con un motivo, que puede mostrarse como chips. El componente vive en `web/src/components/Selector.tsx`, y su búsqueda en `web/src/components/selectorSearch.ts`.
 
-Las partes de GH-581 pasan las pantallas al Selector. Desde la parte 3 lo usan el formulario de Stock entry (`EntradaStock`, para el Product) y el de Take from stock (para el Withdrawal reason y el Product de cada línea), como describe stock.md.
+Las partes de GH-581 pasan las pantallas al Selector. Desde la parte 3 lo usan el formulario de Stock entry (`EntradaStock`, para el Product) y el de Take from stock (para el Withdrawal reason y el Product de cada línea), como describe stock.md. Desde la parte 4 lo usa cada línea de New sale (`NuevaVentaLinea`, para el Product), como describe sales.md.
 
 ## El campo
 
@@ -40,6 +41,7 @@ Las partes de GH-581 pasan las pantallas al Selector. Desde la parte 3 lo usan e
 ## Historial
 
 - El contexto `SheetLevel` de `useSheetStack.ts` (0 por defecto) da el nivel: el Selector llama a `useSheet(level + 1)` y envuelve su lista en `SheetLevel` en `level + 1`; nunca recibe un nivel por prop. Sin envoltorio la lista es el nivel 1; dentro de un formulario en el nivel 1 es el nivel 2. `NuevaVentaCliente` provee los niveles 1 y 2 alrededor de su selector de cliente y de su creador, sin ningún cambio visible.
+- En New sale, la lista de productos de una línea es el nivel 1 sobre el formulario, dentro del `SheetStackProvider` de `NuevaVenta`. Comparte el número de nivel con Pick a customer (`NuevaVentaCliente`), pero las dos nunca están abiertas a la vez.
 - Volver y "Close" cierran exactamente una entrada, nunca el formulario de abajo. Un doble toque, o elegir y tocar "Close" enseguida, tampoco saca el formulario: un solo abrir emite a lo sumo un cierre.
 - Pasar de teléfono a computadora con la lista abierta la cierra una vez; pasar de computadora a teléfono cierra el desplegable. En los dos casos el foco vuelve al campo.
 - Límite conocido: una Sheet hermana que use el mismo número de nivel también se lee como abierta junto con la lista. Una prueba lo fija; quien revisa cada cambio de pantalla comprueba el nivel de cada Sheet hermana.
@@ -81,7 +83,7 @@ Todo texto sale del Copy module (`web/src/copy/`), en inglés, con el en-XA gene
 
 - `common`: `search` (Search), `noResults` (No results), `noLongerAvailable` (no longer available), `selected` (Selected), `optionsOf` ("{{name}} options", que recibe el `label` del campo), `paid` (Paid), `owing` (Owing), `paymentMethod` (Payment method), `noType` (No type). Las últimas cuatro no las muestra el control: sirven a la nota de prueba de Payment methods y a los cambios de pantalla posteriores.
 - `emptyStates`:
-  - `selectorNoVarieties`: "No products yet. Add them in the Products tab."
+  - `selectorNoVarieties`: "No products yet. Add them in the Products tab." Lo usan Stock entry, Take from stock y cada línea de New sale.
   - `selectorNoCategories`: "No categories yet. Add them in Settings → Expense categories."
   - `selectorNoReasons`: "No reasons yet. Add them in Settings → Business → Withdrawal reasons."
 
@@ -99,15 +101,15 @@ Una prueba comprueba que cada mensaje nombra el lugar con las mismas palabras de
 ## WalkState y chequeo en el teléfono
 
 - El componente no tiene una ruta a la que el recorrido llegue, así que el componente por sí solo no agrega ninguna entrada de WalkState ni toca las listas de infractores ni los dibujos de `pantallas/` de ninguna pantalla. Cada pantalla recibe su entrada, su limpieza de infractores y su dibujo en la parte que la pasa al Selector.
-- Desde la parte 3, el chequeo `mobile` recorre listas del Selector abiertas en el teléfono: `stock-entry/variety-selector-open` (12 Products, con búsqueda) y `withdrawal/reason-selector-open`. Ahí se controlan las filas y el campo de búsqueda de 44 px, el texto de 16 px, la ausencia de scroll horizontal y que toda fila quede alcanzable por encima del teclado.
+- Desde la parte 3, el chequeo `mobile` recorre listas del Selector abiertas en el teléfono: `stock-entry/variety-selector-open` (12 Products, con búsqueda) y `withdrawal/reason-selector-open`. Desde la parte 4 recorre también `new-sale/line-variety-selector-open` (12 Products o más, con búsqueda). Ahí se controlan las filas y el campo de búsqueda de 44 px, el texto de 16 px, la ausencia de scroll horizontal y que toda fila quede alcanzable por encima del teclado.
 
 ## Dueños de `fixedSets.ts`
 
-`fixedSets.ts` y su guarda son de las partes 3 y 5 de GH-581. La parte 3 declaró ahí solo `STOCK_ENTRY_ORIGINS` ("fixed set: Stock entry origins"). Nada de lo que entrega el Selector (componente, auxiliar, pruebas, dibujo) importa de ese archivo.
+`fixedSets.ts` y su guarda son de las partes 3 y 5 de GH-581. La parte 3 declaró ahí solo `STOCK_ENTRY_ORIGINS` ("fixed set: Stock entry origins"). Nada de lo que entrega el Selector (componente, auxiliar, pruebas, dibujo) importa de ese archivo, y la parte 4 no lo toca.
 
 ## Diseño
 
-El Selector está dibujado en el bloque "Selector" de `docs/product/design-system/pantallas/Componentes.dc.html`: el campo cerrado, el campo con "no longer available" con nombre y sin nombre, el campo cargando, la lista de teléfono con búsqueda y sin ella, No results, el conjunto vacío en sus tres variantes y el desplegable de computadora. La regla y sus dos ejemplos están en `docs/product/design-system/README.md`, en "Chips o Selector".
+El Selector está dibujado en el bloque "Selector" de `docs/product/design-system/pantallas/Componentes.dc.html`: el campo cerrado, el campo con "no longer available" con nombre y sin nombre, el campo cargando, la lista de teléfono con búsqueda y sin ella, No results, el conjunto vacío en sus tres variantes y el desplegable de computadora. La regla y sus dos ejemplos están en `docs/product/design-system/README.md`, en "Chips o Selector". Cada pantalla pasada al Selector lo muestra en su propio dibujo de `pantallas/`, New sale incluido.
 
 ## Métricas
 
@@ -123,4 +125,4 @@ Cada criterio de éxito se mide con una prueba de vitest y Testing Library, a tr
 8. Se conserva el orden recibido, la búsqueda empieza vacía al reabrir y el foco vuelve al campo.
 9. El mensaje de conjunto vacío de Products, como todo valor del Copy module, no dice "variety"/"varieties": lo controla el barrido permanente de varieties.md (`web/src/copy/productWord.test.ts`).
 
-El resultado del trabajo (una Sale registrada desde el teléfono en menos de un minuto) se mide en las partes que pasan cada pantalla al Selector, no en esta.
+El resultado del trabajo (una Sale registrada desde el teléfono en menos de un minuto) se mide en las partes que pasan cada pantalla al Selector, no en esta. Para la línea de New sale lo miden los criterios 28 a 32 de sales.md y su presupuesto de toques (`web/e2e/tapBudget.spec.ts`).
