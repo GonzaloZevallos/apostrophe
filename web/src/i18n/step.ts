@@ -22,10 +22,10 @@ export function stepText(text: string, bundle: Bundle): string {
 type Field = 'click' | 'press' | 'wait' | 'fill.label'
 
 /** The texts a step names, by field; `fill.value` is not one of them. */
-function namedTexts(step: Readonly<Record<string, unknown>>): [Field, unknown][] {
+function namedTexts(step: object): [Field, unknown][] {
   const named: [Field, unknown][] = []
-  for (const field of ['click', 'press', 'wait'] as const) if (field in step) named.push([field, step[field]])
-  const fill = step['fill']
+  for (const field of ['click', 'press', 'wait'] as const) if (field in step) named.push([field, Reflect.get(step, field)])
+  const fill: unknown = Reflect.get(step, 'fill')
   if (typeof fill === 'object' && fill !== null && 'label' in fill) named.push(['fill.label', fill.label])
   return named
 }
@@ -41,7 +41,7 @@ function resolves(text: unknown, bundle: Bundle): boolean {
   }
 }
 
-type StepsRow = { screen: string; steps?: readonly Readonly<Record<string, unknown>>[] }
+type StepsRow = { screen: string; steps?: readonly object[] }
 
 /** A row is converted when any named text of its steps (`click`, `press`, `wait`, `fill.label`) is key-shaped. */
 export function isConvertedRow(row: StepsRow): boolean {

@@ -7,6 +7,7 @@
 
 import type { Page } from '@playwright/test'
 import { showsPending, type PendingTap, type TappedButton } from '../../src/mobile-standard/pending.ts'
+import type { Bundle } from '../../src/i18n/resolve.ts'
 import { shorten } from '../../src/mobile-standard/targets.ts'
 import type { Violation } from '../../src/mobile-standard/violation.ts'
 import { pageViolation, type CellId } from './collect.js'
@@ -15,14 +16,14 @@ import { open, painted, runSteps, settle, type Facts } from './walk.js'
 
 const WRITE_WAIT_MS = 2_000
 
-export async function walkPending(page: Page, tap: PendingTap, cell: CellId, facts: Facts): Promise<Violation[]> {
+export async function walkPending(page: Page, tap: PendingTap, cell: CellId, facts: Facts, bundle: Bundle): Promise<Violation[]> {
   const context = page.context()
   const hold = await holdWrite(context, tap.write.method, tap.write.path)
   try {
     const screen = { screen: tap.screen, route: tap.route, path: tap.route, viewport: null, signedOut: tap.signedOut ?? false, theme: null, steps: tap.steps }
     await open(page, screen, facts)
     await settle(page)
-    if (!(await runSteps(page, screen, facts))) return [pageViolation(cell, 'unreachable')]
+    if (!(await runSteps(page, screen, facts, bundle))) return [pageViolation(cell, 'unreachable')]
     const button = page.getByRole('button', { name: tap.button, exact: true }).first()
     const handle = await button.elementHandle({ timeout: 3_000 }).catch(() => null)
     if (handle === null) return [pageViolation(cell, 'unreachable')]

@@ -59,6 +59,8 @@ import { pngCssWidth, sheetHtml } from './sheet.mjs'
 import { FONT_FAMILIES, fontCss, fontRoute } from './fonts.mjs'
 import { applyInPage } from './textScale.mjs'
 import { createCensus } from './census.mjs'
+import { resolveStep } from '../../web/src/i18n/step.ts'
+import { loadBundle } from '../../web/scripts/i18n/loadBundle.ts'
 import {
   CAPTURE_ATTEMPTS,
   SETTLE_ADVANCE_MS,
@@ -165,7 +167,11 @@ function resolveFacts(template, placeholders) {
   })
 }
 
-async function run(page, step, placeholders) {
+// A step may name a locale key instead of an English text: resolved against the `en` bundle, read once.
+const EN = loadBundle('en')
+
+async function run(page, rawStep, placeholders) {
+  const step = resolveStep(rawStep, EN)
   if (step.click) await page.getByText(step.click, { exact: true }).first().click()
   // An icon-only control has an accessible name and no text: found by role and exact name,
   // and strict, so zero matches or two fail the row instead of picking one.

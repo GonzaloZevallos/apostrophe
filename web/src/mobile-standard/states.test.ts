@@ -7,6 +7,13 @@ import { STATE_NAMES } from './registry.ts'
 import { common, refusal } from './copy.ts'
 import { PENDING_TAPS } from './pending.ts'
 import { stateNameProblems, type WalkState } from './states.ts'
+import { isConvertedRow } from '../i18n/step.ts'
+
+describe('the walked states name no key yet', () => {
+  it('has no key-shaped click, press, wait or fill.label in any state', () => {
+    expect(STATES.filter((state) => isConvertedRow(state)).map((state) => state.screen)).toEqual([])
+  })
+})
 
 describe('the walked states and their names', () => {
   it('names every walked state once, and walks every name', () => {
