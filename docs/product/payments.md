@@ -156,7 +156,7 @@ El dinero que un **Customer** entrega, y lo que cada Customer debe por eso: su *
 ### Restricciones
 
 - `payment` es la tabla de ADR-0007 y lleva `business_id`. El Business sale de la **Session**.
-- Cada Payment se vincula a su Payment method por `payment_method_id`, obligatorio y del mismo Business, completado por la migración a partir del valor de hoy. La columna vieja `method` queda congelada con sus valores, los Payments nuevos la dejan vacía y nada la lee (ADR-0070).
+- Cada Payment se vincula a su Payment method por `payment_method_id`, obligatorio y del mismo Business, completado por la migración a partir del valor de hoy. La columna vieja `method` queda congelada con sus valores, los Payments nuevos la dejan vacía y nada la lee (ADR-0076).
 - Pagos registra el On-the-spot payment de una Sale a través del puerto `OnTheSpotPayments`; ventas nunca escribe la tabla `payment` directamente.
 - Las rutas de Payment se suman al barrido de aislamiento, al test de rutas con acceso restringido y al test de migración de pertenencia.
 - Los códigos de rechazo van en `contract.json` (ADR-0008):

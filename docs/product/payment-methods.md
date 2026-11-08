@@ -15,7 +15,7 @@ Criterios de éxito:
 
 # Payment methods
 
-La lista propia de cada **Business** de las formas en que cobra. Cada **Payment** lleva exactamente uno. Un Payment method es solo una etiqueta sobre dinero recibido: nunca cambia ninguna cifra. Se guarda por Business en su propio hexágono `payment_methods` (ADR-0055), y lo ve solo su Business (ADR-0004). Los Payments se vinculan a su método por id, y la columna vieja del método queda congelada (ADR-0070). Pagos (`payments.md`) y ventas (`sales.md`) lo leen por su propio protocolo para ofrecer la lista y mostrar el método de cada Payment. El **Sale bill** (`sale-bill.md`) lleva su nombre. La pantalla vive en Settings → Business → Payment methods. No hay paso de Payment methods en el **Onboarding** ni en la **First-run checklist**: todo Business ya arranca con dos métodos, así que nada frena la primera Sale.
+La lista propia de cada **Business** de las formas en que cobra. Cada **Payment** lleva exactamente uno. Un Payment method es solo una etiqueta sobre dinero recibido: nunca cambia ninguna cifra. Se guarda por Business en su propio hexágono `payment_methods` (ADR-0055), y lo ve solo su Business (ADR-0004). Los Payments se vinculan a su método por id, y la columna vieja del método queda congelada (ADR-0076). Pagos (`payments.md`) y ventas (`sales.md`) lo leen por su propio protocolo para ofrecer la lista y mostrar el método de cada Payment. El **Sale bill** (`sale-bill.md`) lleva su nombre. La pantalla vive en Settings → Business → Payment methods. No hay paso de Payment methods en el **Onboarding** ni en la **First-run checklist**: todo Business ya arranca con dos métodos, así que nada frena la primera Sale.
 
 ## Comportamiento
 
@@ -23,7 +23,7 @@ La lista propia de cada **Business** de las formas en que cobra. Cada **Payment*
 
 - Todo Business existente recibe dos métodos con la migración, "Cash" y "Transfer", en ese orden.
 - Un Business nuevo los recibe al abrirse, en su **Stored language** (en inglés hasta #317), igual que las **Expense category** por defecto. Desde entonces son datos propios: un cambio de idioma nunca los renombra.
-- Cada Payment existente queda vinculado al método que corresponde al valor que tiene hoy (efectivo → "Cash", transferencia → "Transfer"). La columna vieja del método queda congelada con su valor, los Payments nuevos la dejan vacía y nada en pantalla la lee (ADR-0070).
+- Cada Payment existente queda vinculado al método que corresponde al valor que tiene hoy (efectivo → "Cash", transferencia → "Transfer"). La columna vieja del método queda congelada con su valor, los Payments nuevos la dejan vacía y nada en pantalla la lee (ADR-0076).
 - "Cash" y "Transfer" son filas comunes: se pueden renombrar, reordenar, archivar o eliminar como cualquier otra. Ningún código compara el nombre de un método.
 
 ### Un Payment method
