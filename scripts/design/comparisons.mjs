@@ -12,8 +12,9 @@
 // and, for a side with no PNG, `reasons.design` or `reasons.built`: a fixed English line built
 // by `named()` in `shot.mjs`, never page text. Both are optional for every reader; the Spanish
 // `notes` stay. A plain run exits 0 even when no row is captured; `--strict` exits 1 after every
-// row has run and `index.json` is written. Bad usage or an unreadable `--registry` (default:
-// `screens.json` next to this file) exits 2. A failed write of `index.json` fails the run.
+// row has run and `index.json` is written, except that a run over the whole registry (no `--only`) only
+// counts the rows with no built screen (`route: null`) as `not compared: no built screen`. Bad usage or an
+// unreadable `--registry` (default: `screens.json` next to this file) exits 2. A failed write of `index.json` fails the run.
 //
 // `--facts` is what `scripts/design/sample-app.sh` wrote. Screens and how to reach each
 // state come from `scripts/design/screens.json`. A step that fails, a screen not built
@@ -442,9 +443,14 @@ let failed = false
 // The rows with a side captured more than once, and those sides' attempts: the run's summary line.
 let retriedRows = 0
 let retriedAttempts = 0
+// The screens with no built screen yet (`route: null`) that this run went over. In a run over the whole
+// registry (no `--only`) they are `not compared: no built screen`, not a failure of `--strict`; a row
+// asked for by name with `--only` is still one (GH-601, human decision).
+const unbuilt = new Set()
 try {
   for (const s of screens) {
     if (only && !only.has(s.screen)) continue
+    if (s.route === null) unbuilt.add(s.screen)
     // Each side has its own context options: the design side's size is `design_viewport` when the
     // row has one, the built side's is always `viewport ?? PHONE` (screens.mjs, `viewportsOf`).
     const sizes = viewportsOf(s)
@@ -523,8 +529,13 @@ try {
   }
 }
 console.log(retrySummary(retriedRows, retriedAttempts))
+// Rows with no built screen, listed by name in the index (`capture: 'not-captured'`, built reason `no built
+// screen yet`); a whole-registry run only counts them. A row with a built route that is not captured, a
+// failed capture and a design side that failed (`failed`) all still fail `--strict`.
+const excused = only ? [] : results.filter((e) => e.capture === 'not-captured' && unbuilt.has(e.screen))
+if (excused.length) console.log(`not compared: no built screen: ${excused.length} rows`)
 // `--strict`, after the index is written: any failed capture or any row not captured exits 1.
-if (values.strict && (failed || results.some((e) => e.capture === 'not-captured'))) {
+if (values.strict && (failed || results.some((e) => e.capture === 'not-captured' && !excused.includes(e)))) {
   console.error('comparisons: --strict and a row is not captured, or a capture failed (a side that did not settle or could not be reached, a font, a screen that threw, or a screen not built yet)')
   process.exitCode = 1
 }

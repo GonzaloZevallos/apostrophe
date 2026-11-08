@@ -351,6 +351,41 @@ describe('comparisons.mjs exit status and capture', () => {
     expect(output).toContain('comparisons: --strict and a row is not captured')
   }, CENSUS_TEST_MS)
 
+  // A run over the whole registry (no --only): rows with no built screen are counted, not failed (GH-601).
+  const wholeRun = async (name: string, rows: string[], joinToken = 'j'): Promise<Run> => {
+    const path = join(dir, `${name}.registry.json`)
+    const real = JSON.parse(readFileSync(REGISTRY, 'utf-8')) as { screens: Array<{ screen: string }> }
+    const reset = real.screens.find((row) => row.screen === 'Reset')
+    const built = real.screens.filter((row) => rows.includes(row.screen))
+    writeFileSync(path, JSON.stringify({ screens: [{ ...reset, route: null }, ...built] }))
+    const out = join(dir, name)
+    const { status, output } = await spawnScript([
+      '--facts', writeFacts(name, joinToken), '--out', out, '--step-timeout', String(CENSUS_STEP_MS),
+      '--strict', '--registry', path,
+    ])
+    return { entries: JSON.parse(readFileSync(join(out, 'index.json'), 'utf-8')), status, output }
+  }
+
+  it('exits 0 with --strict over the whole registry when the only rows not captured have no built screen', async () => {
+    const { entries, status, output } = await wholeRun('whole-ok', [])
+    expect(status, output).toBe(0)
+    expect(output).toContain('not compared: no built screen: 1 rows')
+    const [entry] = entries as [Entry]
+    expect(entry.screen).toBe('Reset')
+    expect(entry.capture).toBe('not-captured')
+    expect(entry.reasons).toEqual({ built: NOT_BUILT })
+  }, CENSUS_TEST_MS)
+
+  it('still exits 1 with --strict over the whole registry when a row with a built screen is not captured', async () => {
+    const { entries, status, output } = await wholeRun('whole-miss', ['Invitacion'], 'never')
+    expect(status, output).toBe(1)
+    expect(output).toContain('not compared: no built screen: 1 rows')
+    expect(output).toContain('comparisons: --strict and a row is not captured')
+    const invitacion = entries.find((e) => e.screen === 'Invitacion')
+    expect(invitacion?.capture).toBe('not-captured')
+    expect(invitacion?.built).toBeNull()
+  }, CENSUS_TEST_MS)
+
   it('exits 2 and writes no index when the registry cannot be read', async () => {
     const out = join(dir, 'no-registry')
     const { status, output } = await spawnScript([
