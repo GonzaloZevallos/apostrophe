@@ -25,6 +25,7 @@ import FlashProvider from '../flash/FlashProvider'
 import { STOCK, STOCK_ENTRY, STOCK_ENTRY_NEW, VARIETIES as VARIETIES_PATH, VARIETY, pathTo } from '../routes'
 import EntradaStock from './EntradaStock'
 import { LIMITS } from '../copy/limits'
+import emptyStates from '../copy/locales/en/emptyStates.json'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
@@ -885,12 +886,13 @@ test('while the Varieties load the field is busy and says nothing about an empty
 
   const field = await screen.findByRole('button', { name: /^Product/ })
   expect(field).toHaveAttribute('aria-busy', 'true')
-  expect(screen.queryByText(/No varieties yet/)).toBeNull()
+  expect(screen.queryByText(emptyStates.selectorNoVarieties)).toBeNull()
 
   await act(async () => release(jsonResponse(200, [])))
   await waitFor(() => expect(field).not.toHaveAttribute('aria-busy'))
   await userEvent.click(field)
-  expect(await screen.findByText('No products yet. Add them in the Products tab.')).toBeInTheDocument()
+  expect(await screen.findByText(emptyStates.selectorNoVarieties)).toBeInTheDocument()
+  expect(emptyStates.selectorNoVarieties).toMatch(/^No products yet/)
 })
 
 test('an edited entry whose archived name cannot be read shows the failure and a retry, and still saves its stored Variety', async () => {

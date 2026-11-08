@@ -13,6 +13,7 @@ import WITHDRAWAL from '../../api/fixtures/withdrawal.json'
 import { VARIETIES as VARIETIES_PATH, WITHDRAWAL as WITHDRAWAL_PATH, WITHDRAWAL_EDIT, WITHDRAWAL_NEW, pathTo, withdrawalNewFor } from '../../routes'
 import { REASONS, jsonResponse, pickReason, pickVariety, reasonField, renderWithdrawals, varietyField } from './renderWithdrawals'
 import { LIMITS } from '../../copy/limits'
+import emptyStates from '../../copy/locales/en/emptyStates.json'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 
 afterEach(() => {
@@ -453,7 +454,8 @@ test.each([
   )
 
   expect(await screen.findByRole('button', { name })).toHaveAttribute('aria-busy', 'true')
-  expect(screen.queryByText(/No reasons yet|No varieties yet/)).toBeNull()
+  expect(screen.queryByText(emptyStates.selectorNoReasons)).toBeNull()
+  expect(screen.queryByText(emptyStates.selectorNoVarieties)).toBeNull()
   await userEvent.click(screen.getByRole('button', { name: 'Close' }))
   expect(screen.queryByRole('alertdialog')).toBeNull()
   release(jsonResponse(200, []))
