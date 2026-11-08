@@ -4,7 +4,7 @@
  * handled by `queryClient.ts`'s global boundary, which redirects before anything
  * below needs to render; this layout renders nothing for it rather than flash a
  * retry panel on top of that redirect. A dropped network shows "Sin conexión"
- * (`accounts.md`, "No network" — this does not depend on the service worker); any
+ * (`accounts.md`, "Sin red" — this does not depend on the service worker); any
  * other failure (a 500, above all) shows the generic retry instead of a blank page
  * that never recovers. A successful `me` mounts the flash toast's provider
  * (`flash/`) above everything nested, so a toast armed before `navigate(-1)` shows on
