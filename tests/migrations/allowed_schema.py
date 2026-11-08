@@ -10,6 +10,9 @@ every table and column, upgrades to `to_revision` and checks that:
 - the schema differs only by the migration's own `Allowed` list: columns that went from
   NOT NULL to NULL, and columns that were added to a table that already existed.
 
+The plan's invariant 1 names comparator.py as the proof; master's comparator.py is values-only
+and was kept as it is, so the allowed-schema half of that proof lives here.
+
 A migration adds its own entry to the `Allowed` it passes; nothing is allowed by default.
 `violations` returns the list, so a test can also feed it a snapshot it must reject.
 """
