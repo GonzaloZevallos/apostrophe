@@ -179,6 +179,7 @@ export const readScroll = () => ({
 export function scrollersInPage(elements) {
   return elements
     .filter((element) => element !== document.documentElement && element !== document.body)
+    .filter((element) => element.localName !== 'textarea')
     .filter((element) => ['auto', 'scroll', 'overlay'].includes(getComputedStyle(element).overflowY))
     .map((element) => ({ scrollHeight: element.scrollHeight, clientHeight: element.clientHeight }))
 }

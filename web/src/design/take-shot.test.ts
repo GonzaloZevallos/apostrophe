@@ -63,14 +63,14 @@ async function context(): Promise<BrowserContext> {
 }
 
 // One fixture, one fresh context: its settled page, then the shot.
-async function shoot(markup: string) {
+async function shoot(markup: string, block: string | null = null) {
   const made = await context()
   try {
     const page = await made.newPage()
     await page.setContent(markup)
     const first = await settle(page, { advanceMs: SETTLE_ADVANCE_MS, afterGoto: true, ofFirstText: false })
     expect(first).toBeNull()
-    return await takeShot(page, { block: null, ofFirstText: false, census: null, side: 'built' })
+    return await takeShot(page, { block: block === null ? null : page.locator(block), ofFirstText: false, census: null, side: 'built' })
   } finally {
     await made.close()
   }
@@ -220,5 +220,37 @@ describe('takeShot on a phone page (scroll and stitch)', () => {
     expect(colourAt(png, 756)).toEqual(rgb(BLUE))
     expect(colourAt(png, 1470)).toEqual(rgb(PURPLE))
     expect(colourAt(png, 1442)).toEqual(rgb(PURPLE))
+  }, TAKE_SHOT_TEST_MS)
+
+  it('crops a section to its own columns and rows, on every frame', async () => {
+    const shot = await shoot(
+      html(
+        `${bands([900, RED])}<div id="card" style="margin-left:51.4px;width:200.2px;height:400px;background:${GREEN}"></div>${bands([900, BLUE])}`,
+      ),
+      '#card',
+    )
+    const png = decode(shot)
+    // Out to whole CSS px: columns 51 to 252 (201 wide), rows 900 to 1300, the grow path's crop.
+    expect(png.width).toBe(201 * CAPTURE_SCALE)
+    expect(png.height).toBe(400 * CAPTURE_SCALE)
+    expect(colourAt(png, 200)).toEqual(rgb(GREEN))
+    expect(colourAt(png, 2)).toEqual(rgb(GREEN))
+    expect(colourAt(png, 398)).toEqual(rgb(GREEN))
+  }, TAKE_SHOT_TEST_MS)
+
+  it('takes a page whose textarea holds more text than its box, as the grow path did', async () => {
+    const lines = Array.from({ length: 30 }, (_, at) => `line ${at}`).join('\n')
+    const shot = await shoot(html(`<textarea style="display:block;height:56px;width:300px">${lines}</textarea>${bands([200, RED])}`))
+    const png = decode(shot)
+    expect(png.height).toBe(VIEWPORT.height * CAPTURE_SCALE)
+    expect(colourAt(png, 150)).toEqual(rgb(RED))
+  }, TAKE_SHOT_TEST_MS)
+
+  it('refuses a page that fits whose element scrolls inside itself, naming it as the inner scroll', async () => {
+    const shot = await shoot(
+      html(`<div style="height:100px;overflow:auto"><div style="height:400px;background:${RED}"></div></div>${bands([200, BLUE])}`),
+    )
+    expect(shot.png).toBeNull()
+    expect(shot.failure).toBe(named('the page scrolls inside an element', 'built'))
   }, TAKE_SHOT_TEST_MS)
 })

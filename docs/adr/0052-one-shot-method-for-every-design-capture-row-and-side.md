@@ -129,13 +129,17 @@ viewport grew`). Home con la barra de #373 y Analysis, clara y oscura, no se pod
   `clip.y`), avanzan de a una altura de viewport, cortan en los bordes de los sticky, achican el último
   `offset` a `scrollHeight - height` y recortan lo que se repite. Con un `clip` cubre su rango vertical; un
   `clip` más ancho que el viewport sigue siendo `section outside the viewport`. Un `dpr` que no es entero se
-  rechaza con `device scale factor is not a whole number`.
+  rechaza con `device scale factor is not a whole number`. Cada cuadro es una captura del viewport entero: el
+  `clip` también fija las columnas (`cropLeft`, `cropWidth`, iguales en todos los cuadros) y `stitch` las
+  recorta. El `clip` se redondea hacia afuera a px CSS enteros por los cuatro lados, igual que `sectionClip`
+  en la ruta `grow`, así un lado sale del mismo tamaño que antes.
 - **Redondeo en un solo lugar.** Solo `scrollPlan` redondea: los offsets en px CSS enteros, los recortes en px
   de dispositivo enteros. `stitch` y `take-shot.mjs` reciben enteros y nunca redondean; `stitch` tira un
   error ante un valor que no lo sea.
 - **El documento es el único que scrollea.** `innerScrollMiss` rechaza la página (`the page scrolls inside an
   element`) cuando un elemento que no es una capa scrollea y el documento no. Nunca se cose el scroll
-  interno de un elemento.
+  interno de un elemento. Un `textarea` no cuenta: es un control de formulario cuyo texto largo se ve
+  recortado en su caja, igual que en la ruta `grow`, y no esconde parte de la página.
 
 ### Lo fijado: `pinnedClass` es una regla
 
