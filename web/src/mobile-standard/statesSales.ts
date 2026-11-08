@@ -6,12 +6,21 @@ import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { SALES_TEXT } from '../copy/sales.ts'
 import type { WalkState } from './states.ts'
 
+/** Twelve listed Products, so a line's Product list shows its search. Seeded for this state's reads only. */
+const TWELVE_PRODUCTS = Array.from({ length: 12 }, (_unused, index) => ({
+  id: 100 + index,
+  name: `Variedad ${index + 1}`,
+  archived: false,
+  current_price: null,
+}))
+
 export const SALES_STATES: readonly WalkState[] = [
   {
     screen: 'NuevaVentaConLinea',
     route: SALE_NEW,
     steps: [
-      { fill: { label: SALES_TEXT.lineVariety(1), value: 'Golden Cookies' } },
+      { press: `${SALES_TEXT.lineVariety(1)} ${common('common:pickAVariety')}` },
+      { press: 'Golden Cookies' },
       { fill: { label: SALES_TEXT.lineGrams(1), value: '10' } },
       { click: common('common:addAnotherVariety') },
     ],
@@ -22,12 +31,20 @@ export const SALES_STATES: readonly WalkState[] = [
     screen: 'NuevaVentaConLineaYPago',
     route: SALE_NEW,
     steps: [
-      { fill: { label: SALES_TEXT.lineVariety(1), value: 'Golden Cookies' } },
+      { press: `${SALES_TEXT.lineVariety(1)} ${common('common:pickAVariety')}` },
+      { press: 'Golden Cookies' },
       { fill: { label: SALES_TEXT.lineGrams(1), value: '10' } },
       { click: common('common:addAnotherVariety') },
       { click: common('common:cashMethod') },
     ],
     visible: '$ 120.000',
+  },
+  {
+    screen: 'new-sale/line-variety-selector-open',
+    route: SALE_NEW,
+    steps: [{ press: `${SALES_TEXT.lineVariety(1)} ${common('common:pickAVariety')}` }],
+    visible: 'Variedad 1',
+    reads: [{ path: /^\/api\/products$/, status: 200, body: TWELVE_PRODUCTS }],
   },
   {
     screen: 'ElegirCliente',
@@ -45,7 +62,8 @@ export const SALES_STATES: readonly WalkState[] = [
     screen: 'DescartarVenta',
     route: SALE_NEW,
     steps: [
-      { fill: { label: SALES_TEXT.lineVariety(1), value: 'Sir Jack' } },
+      { press: `${SALES_TEXT.lineVariety(1)} ${common('common:pickAVariety')}` },
+      { press: 'Sir Jack' },
       { fill: { label: SALES_TEXT.lineGrams(1), value: '5' } },
       { press: common('common:close') },
     ],

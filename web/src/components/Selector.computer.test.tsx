@@ -250,3 +250,15 @@ describe('the phone list follows the visual viewport', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Close' }))
   })
 })
+
+describe('the optional props on a computer', () => {
+  test('accessibleName names the field and the listbox, and the placeholder shows in the empty field', async () => {
+    const user = userEvent.setup()
+    renderForm(<Controlled {...base} required options={numbered(4)} accessibleName="Line 1 item" placeholder="Pick one" />)
+    const named = screen.getByRole('button', { name: /^Line 1 item/ })
+    expect(named).toHaveTextContent('Pick one')
+    await user.click(named)
+    expect(screen.getByRole('listbox', { name: 'Line 1 item options' })).toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: 'Pick one' })).not.toBeInTheDocument()
+  })
+})

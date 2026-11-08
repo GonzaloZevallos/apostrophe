@@ -2381,6 +2381,11 @@ body {
   flex-direction: column;
 }
 
+.nueva-venta__agregar,
+.nueva-venta__lista {
+  display: contents;
+}
+
 .nueva-venta__disposicion {
   flex: 1 1 auto;
   min-height: 0;
@@ -4722,6 +4727,7 @@ body {
   /* "Agregar otra variedad" and a line's "Quitar": the link buttons of this screen's
    * body and lines, at least 44 px tall. */
   .nueva-venta__cuerpo > .boton--enlace,
+  .nueva-venta__agregar > .boton--enlace,
   .nueva-venta__linea .boton--enlace {
     display: flex;
     align-items: center;
@@ -4790,6 +4796,7 @@ body {
  * items) keep their own height, and the body scrolls. */
 @media (max-width: 899.98px) {
   .nueva-venta__cuerpo > *,
+  .nueva-venta__agregar > *,
   .nueva-venta__resumen > * {
     flex-shrink: 0;
   }

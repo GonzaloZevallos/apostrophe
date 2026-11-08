@@ -152,7 +152,7 @@ test.describe('the states the walk adds', () => {
     const screen = asScreen({
       screen: 'Probe',
       route: SALE_NEW,
-      steps: [{ fill: { label: 'Line 1 product', value: 'Sir Jack' } }, { press: 'Close' }],
+      steps: [{ press: 'Line 1 product Pick a product' }, { press: 'Sir Jack' }, { press: 'Close' }],
       visible: 'Discard the sale?',
     })
     expect(unreachable(await walkScreen(page, screen, PROBE_CELL, false, readFacts()))).toEqual([])

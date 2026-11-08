@@ -5,7 +5,8 @@
  * carry the `enterkeyhint` that moves the keyboard through them.
  */
 
-import { act, render, screen } from '@testing-library/react'
+import { pickProduct, productField } from './lineProduct'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import App from '../../App'
@@ -35,7 +36,7 @@ async function openForm(): Promise<ReturnType<typeof vi.fn>> {
   await act(() => router.navigate(SALE_NEW))
   render(<App />)
   await screen.findByText('New sale')
-  await screen.findByRole('option', { name: 'Rosa' })
+  await waitFor(() => expect(productField(1)).toBeEnabled())
   return fetchMock
 }
 
@@ -77,7 +78,7 @@ test('the keyboard key moves from grams to Precio especial, then closes the keyb
   const user = userEvent.setup()
   const fetchMock = await openForm()
 
-  await user.selectOptions(screen.getByLabelText('Line 1 product'), '1')
+  await pickProduct(user, 1, 'Rosa')
   await user.type(screen.getByLabelText('Line 1 grams'), '2{Enter}')
   expect(screen.getByLabelText('Line 1 special price')).toBe(document.activeElement)
 
