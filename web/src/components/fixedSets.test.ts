@@ -14,6 +14,7 @@ import {
   FIXED_SETS,
   HOME_PERIODS,
   SALES_PERIODS,
+  STOCK_ENTRY_ORIGINS,
   THEME_CHOICES,
   type FixedOption,
 } from './fixedSets'
@@ -53,6 +54,12 @@ test('the theme choices are Automatic, Light, Dark in that order', () => {
   ])
 })
 
+test('the Stock entry origins are Purchase, Harvest, Initial stock, Adjustment in that order', () => {
+  expect(values(STOCK_ENTRY_ORIGINS)).toEqual(['purchase', 'harvest', 'opening_stock', 'adjustment'])
+  expect(labels(STOCK_ENTRY_ORIGINS)).toEqual(['Purchase', 'Harvest', 'Initial stock', 'Adjustment'])
+  expect(STOCK_ENTRY_ORIGINS.every((option) => option.icon === undefined)).toBe(true)
+})
+
 test('the customer-type icons keep their order, glyphs and accessible names', () => {
   expect(values(CUSTOMER_TYPE_ICON_SET)).toEqual([
     'circle', 'star', 'heart', 'diamond', 'flag', 'tag', 'crown', 'bell',
@@ -84,6 +91,7 @@ test('FIXED_SETS gives every exported set a non-empty reason, and names nothing 
     SALES_PERIODS: 'fixed view: periods',
     THEME_CHOICES: 'fixed set: theme choice',
     CUSTOMER_TYPE_ICON_SET: 'fixed set: the neutral icon set ships with the app',
+    STOCK_ENTRY_ORIGINS: 'fixed set: Stock entry origins',
   })
 })
 

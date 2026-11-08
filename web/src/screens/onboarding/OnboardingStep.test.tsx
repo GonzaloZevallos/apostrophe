@@ -19,6 +19,7 @@ import { HOME } from '../../routes'
 import OnboardingStep, { DISCARD_DETAIL, PARTLY_SAVED_DETAIL } from './OnboardingStep'
 import type { StepBodyProps } from './stepBodies'
 import { isFirst, isLast, STEPS } from './steps'
+import { SheetRouterProvider } from '../../components/useSheetStack'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
 const ORDER: StepSlug[] = ['variety', 'stock', 'header_footer', 'bot', 'partner', 'categories']
@@ -76,7 +77,9 @@ function renderFrame(
   )
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-      <RouterProvider router={router} />
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
 }

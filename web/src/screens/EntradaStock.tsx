@@ -28,6 +28,7 @@ import Loading from '../components/Loading'
 import { useBackOr } from '../components/useBackOr'
 import { useGoneExit } from '../components/useGoneExit'
 import { useLeaveGuard } from '../components/useLeaveGuard'
+import { SheetStackProvider } from '../components/useSheetStack'
 import { useFlash } from '../flash/useFlash'
 import { STOCK, VARIETIES } from '../routes'
 import Boton from '../components/Boton'
@@ -49,6 +50,14 @@ function Frame({ children }: { children: React.ReactNode }) {
 }
 
 export default function EntradaStock({ mode }: Props) {
+  return (
+    <SheetStackProvider>
+      <EntradaStockScreen mode={mode} />
+    </SheetStackProvider>
+  )
+}
+
+function EntradaStockScreen({ mode }: Props) {
   const me = useOutletContext<Me>()
   const { id } = useParams<{ id: string }>()
   const [searchParams] = useSearchParams()

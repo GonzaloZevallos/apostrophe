@@ -109,7 +109,7 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
 
   await page.goto(`${INSECURE_ORIGIN}${STOCK_ENTRY_NEW}`)
   await page.getByLabel('Grams').fill('50')
-  await page.getByLabel('Product').selectOption({ label: 'Rosa' })
+  await pickStockVariety(page, 'Rosa')
   await page.getByLabel('Total cost').fill('45000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 
@@ -126,3 +126,5 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
   )
   expect(copied).toEqual([EXPECTED_PLAIN_TEXT])
 })
+
+import { pickStockVariety } from './helpers/stockVariety.js'

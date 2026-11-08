@@ -31,6 +31,7 @@ import ErrorGenerico from '../../components/ErrorGenerico'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import SinConexion from '../../components/SinConexion'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
+import { SheetStackProvider } from '../../components/useSheetStack'
 import { afterProgress } from './afterProgress'
 import StepIndicator from './StepIndicator'
 import type { StepBodyProps } from './stepBodies'
@@ -59,17 +60,27 @@ export const DISCARD = COMMON_TEXT.yesDiscard
 type Skip = 'one' | 'rest'
 type Failure = 'offline' | 'error'
 
-export default function OnboardingStep({
-  slug,
-  me,
-  progress,
-  Body,
-}: {
+export default function OnboardingStep(props: StepProps) {
+  return (
+    <SheetStackProvider>
+      <OnboardingStepFrame {...props} />
+    </SheetStackProvider>
+  )
+}
+
+interface StepProps {
   slug: StepSlug
   me: Me
   progress: OnboardingProgress
   Body: ComponentType<StepBodyProps>
-}) {
+}
+
+function OnboardingStepFrame({
+  slug,
+  me,
+  progress,
+  Body,
+}: StepProps) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const info = stepInfo(slug)
