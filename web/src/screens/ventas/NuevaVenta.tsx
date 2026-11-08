@@ -87,6 +87,7 @@ function emptyLine(): LineState {
   return {
     key: typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
     varietyId: '',
+    varietyName: '',
     grams: '',
     gift: false,
     specialPrice: '',
@@ -188,6 +189,19 @@ function NuevaVentaForm() {
   const [note, setNote] = useState('')
   const [method, setMethod] = useState<PaymentChoice | null>(null)
   const customerSheet = useSheet(1)
+  // `useSheet(1).isOpen` is true for any sheet at level 1, a line's Product list included:
+  // the customer Sheet mounts only when the seller opened it.
+  const [customerAsked, setCustomerAsked] = useState(false)
+  const [customerWasOpen, setCustomerWasOpen] = useState(customerSheet.isOpen)
+  if (customerWasOpen !== customerSheet.isOpen) {
+    setCustomerWasOpen(customerSheet.isOpen)
+    if (customerWasOpen) setCustomerAsked(false)
+  }
+  const customerShown = customerAsked && customerSheet.isOpen
+  function askCustomer(): void {
+    setCustomerAsked(true)
+    customerSheet.open()
+  }
   const [formError, setFormError] = useState<string | null>(null)
   const [shippingError, setShippingError] = useState<string | null>(null)
   const [noteError, setNoteError] = useState<string | null>(null)
@@ -204,7 +218,7 @@ function NuevaVentaForm() {
   const formRef = useRef<HTMLFormElement | null>(null)
   useVisualViewport(formRef)
 
-  const varietyFieldRef = useRef<HTMLSelectElement | null>(null)
+  const varietyFieldRef = useRef<HTMLButtonElement | null>(null)
   const gramsFieldRef = useRef<HTMLInputElement | null>(null)
   const specialPriceFieldRef = useRef<HTMLInputElement | null>(null)
 
@@ -590,13 +604,13 @@ function NuevaVentaForm() {
             <Loading />
           ) : (
             <>
-              {repricing && !customerSheet.isOpen && <LoadingAnuncio refresco />}
+              {repricing && !customerShown && <LoadingAnuncio refresco />}
               {customer === null ? (
-                <Boton variant="secondary" icon="clientes" onClick={customerSheet.open}>
+                <Boton variant="secondary" icon="clientes" onClick={askCustomer}>
                   {SALES_TEXT.pickCustomer}
                 </Boton>
               ) : (
-                <Boton variant="row" onClick={customerSheet.open}>
+                <Boton variant="row" onClick={askCustomer}>
                   <div className="nueva-venta__cliente">
                     <div className="nueva-venta__cliente-texto">
                       <span className="lista-clientes__nombre">
@@ -624,6 +638,7 @@ function NuevaVentaForm() {
                     figuresLoading={repricing && line.varietyId !== '' && parseGrams(line.grams).ok}
                     variety={varietyOf(line.varietyId)}
                     varieties={varieties}
+                    varietiesLoading={!varietiesQuery.isSuccess}
                     canRemove={lines.length > 1}
                     varietyRef={varietyFieldRef}
                     gramsRef={gramsFieldRef}
@@ -719,7 +734,7 @@ function NuevaVentaForm() {
         </div>
       </form>
 
-      {customerSheet.isOpen && <NuevaVentaCliente allowNone onChosen={chooseCustomer} />}
+      {customerShown && <NuevaVentaCliente allowNone onChosen={chooseCustomer} />}
 
       {blocker.state === 'blocked' && (
         <div className="nueva-venta__aviso">

@@ -12,6 +12,7 @@ import App from '../../App'
 import { HOME, SALE, SALES, SALE_NEW } from '../../routes'
 import { queryClient } from '../../queryClient'
 import { router } from '../../router'
+import { pickProduct, productField, productFieldName } from './lineProduct'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 const ROSA = {
@@ -27,11 +28,6 @@ function jsonResponse(status: number, body: unknown): Response {
 /** Answers the held `POST /sales` the test is waiting on. */
 let answerSave: ((response: Response) => void) | null = null
 let varietiesCalls = 0
-
-/** The one place a test says how a line's Product is picked. */
-async function pickProduct(user: ReturnType<typeof userEvent.setup>, n: number, id: string): Promise<void> {
-  await user.selectOptions(screen.getByLabelText(`Line ${n} product`), id)
-}
 
 async function openForm(varieties: (call: number) => unknown): Promise<void> {
   varietiesCalls = 0
@@ -57,9 +53,9 @@ async function openForm(varieties: (call: number) => unknown): Promise<void> {
   await act(() => router.navigate(SALE_NEW))
   render(<App />)
   await screen.findByText('New sale')
-  await screen.findByLabelText('Line 1 product')
+  await screen.findByRole('button', { name: productFieldName(1) })
   await waitFor(() => expect(varietiesCalls).toBeGreaterThan(0))
-  await waitFor(() => expect(screen.getByLabelText('Line 1 product')).toBeEnabled())
+  await waitFor(() => expect(productField(1)).toBeEnabled())
 }
 
 async function held(): Promise<(response: Response) => void> {
@@ -68,7 +64,7 @@ async function held(): Promise<(response: Response) => void> {
 }
 
 async function fillAndSave(user: ReturnType<typeof userEvent.setup>): Promise<void> {
-  await pickProduct(user, 1, '1')
+  await pickProduct(user, 1, 'Rosa')
   await user.type(screen.getByLabelText('Line 1 grams'), '2')
   await user.click(screen.getByRole('radio', { name: 'Cash' }))
   expect(await screen.findByText('list')).toBeInTheDocument()
@@ -109,7 +105,7 @@ test('a no-price refusal focuses the flagged line once the lock lifts', async ()
   })
 
   expect(await screen.findByText('Rosa has no price for that date')).toBeInTheDocument()
-  const field = screen.getByLabelText('Line 1 product')
+  const field = productField(1)
   await waitFor(() => expect(document.activeElement).toBe(field))
   expect(field.closest('[inert]')).toBeNull()
 })
@@ -122,7 +118,7 @@ test('a later save with another refusal does not pull focus back to the Product 
   await act(async () => {
     first(jsonResponse(422, { detail: 'no price', code: 'sale.no_price_that_day' }))
   })
-  await waitFor(() => expect(document.activeElement).toBe(screen.getByLabelText('Line 1 product')))
+  await waitFor(() => expect(document.activeElement).toBe(productField(1)))
 
   // A typed special price prices the line, so the next save reaches the API.
   answerSave = null
@@ -136,7 +132,7 @@ test('a later save with another refusal does not pull focus back to the Product 
   })
 
   await waitFor(() => expect(screen.getByLabelText('Line 1 grams').closest('[inert]')).toBeNull())
-  expect(document.activeElement).not.toBe(screen.getByLabelText('Line 1 product'))
+  expect(document.activeElement).not.toBe(productField(1))
 })
 
 test('a successful save still navigates to the saved sale', async () => {

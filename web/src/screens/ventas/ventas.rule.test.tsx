@@ -9,6 +9,7 @@
  * exact name kept).
  */
 
+import { pickProduct } from './lineProduct'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -143,7 +144,7 @@ test.each(VIEWPORTS)("NuevaVenta: with two lines, Pick a customer and Nuevo clie
       </SheetRouterProvider>
     </QueryClientProvider>,
   )
-  await user.selectOptions(await screen.findByLabelText('Line 1 product'), '1')
+  await pickProduct(user, 1, 'Rosa')
   await user.type(screen.getByLabelText('Line 1 grams'), '2')
   await user.click(await screen.findByRole('button', { name: 'Add another product' }))
   expect(screen.getByRole('button', { name: 'Remove line 2' })).toHaveClass('boton-icono')
