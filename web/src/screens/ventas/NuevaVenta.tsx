@@ -300,6 +300,9 @@ function NuevaVentaForm() {
       return [...withoutBlankOpen, created]
     })
     setOpenKey(created.key)
+    // The new line's Product field takes focus once it is on the page; its list stays closed.
+    focusNonceRef.current += 1
+    setFocusRequest({ lineKey: created.key, field: 'variety', nonce: focusNonceRef.current })
   }
 
   /** "Quitar", only offered on the open line when the sale has more than one —
@@ -341,7 +344,7 @@ function NuevaVentaForm() {
       const variety = varietyOf(line.varietyId)
       return {
         id: line.key,
-        varietyName: variety?.name ?? '',
+        varietyName: variety?.name ?? line.varietyName,
         gift: line.gift,
         specialPrice: specialPriceOf(line),
         quote: variety !== undefined ? quoteOf(variety) : null,
