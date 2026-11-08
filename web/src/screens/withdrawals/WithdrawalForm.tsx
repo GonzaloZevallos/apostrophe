@@ -118,10 +118,10 @@ function without(keys: ReadonlySet<number>, key: number): ReadonlySet<number> {
   return rest
 }
 
-function withFirstVariety(state: FormState, varietyId: string): FormState {
+function withFirstVariety(state: FormState, varietyId: string, varietyName: string): FormState {
   return {
     ...state,
-    lines: state.lines.map((line, index) => (index === 0 ? { ...line, varietyId } : line)),
+    lines: state.lines.map((line, index) => (index === 0 ? { ...line, varietyId, varietyName } : line)),
   }
 }
 
@@ -217,9 +217,11 @@ export default function WithdrawalForm({
   if (target === 'new' && loaded !== undefined && !preselectChecked) {
     setPreselectChecked(true)
     const chosen = preselected(initialVarietyId, new Set(loaded.map((variety) => String(variety.id))))
-    if (chosen !== initialVarietyId) {
-      setInitial((previous) => withFirstVariety(previous, chosen))
-      setForm((previous) => withFirstVariety(previous, chosen))
+    // The chosen Variety is named from the list now, so a refusal later still shows its name.
+    const chosenName = loaded.find((variety) => String(variety.id) === chosen)?.name ?? ''
+    if (chosen !== '' || chosen !== initialVarietyId) {
+      setInitial((previous) => withFirstVariety(previous, chosen, chosenName))
+      setForm((previous) => withFirstVariety(previous, chosen, chosenName))
     }
   }
 
@@ -490,6 +492,7 @@ export default function WithdrawalForm({
           <input
             className="campo__input"
             type="date"
+            autoComplete="off"
             value={form.date}
             max={me.today}
             onChange={(event) => setForm((previous) => ({ ...previous, date: event.target.value }))}
@@ -523,6 +526,7 @@ export default function WithdrawalForm({
               className="campo__input"
               aria-label={STOCK_TEXT.gramos0(index + 1)}
               inputMode="decimal"
+              autoComplete="off"
               enterKeyHint={index === form.lines.length - 1 ? 'done' : 'next'}
               value={line.grams}
               onChange={(event) => setLine(line.key, { grams: event.target.value })}
@@ -564,6 +568,7 @@ export default function WithdrawalForm({
           <input
             className="campo__input"
             value={form.note}
+            autoComplete="off"
             maxLength={200}
             enterKeyHint="done"
             onChange={(event) => setForm((previous) => ({ ...previous, note: event.target.value }))}

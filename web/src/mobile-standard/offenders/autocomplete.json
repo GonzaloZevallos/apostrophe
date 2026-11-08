@@ -462,24 +462,6 @@
     "issue": 47
   },
   {
-    "screen": "SacarDelStock",
-    "rule": "autocomplete",
-    "target": "textbox:Date",
-    "issue": 47
-  },
-  {
-    "screen": "SacarDelStock",
-    "rule": "autocomplete",
-    "target": "textbox:Grams #",
-    "issue": 47
-  },
-  {
-    "screen": "SacarDelStock",
-    "rule": "autocomplete",
-    "target": "textbox:Note",
-    "issue": 47
-  },
-  {
     "screen": "VariedadNueva",
     "rule": "autocomplete",
     "target": "textbox:Name Up to # characters · cannot repeat another vari",

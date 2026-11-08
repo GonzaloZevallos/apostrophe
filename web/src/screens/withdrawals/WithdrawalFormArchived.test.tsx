@@ -258,6 +258,35 @@ test('the list changing twice before the save still leaves the guilty line named
 
   expect(await within(lineOf(1)).findByText(GONE)).toBeInTheDocument()
   expect(variety(1)).toHaveTextContent('Zkittlez')
+  expect(screen.getByRole('button', { name: SUBMIT_NEW })).toBeDisabled()
+
+  await pickVariety(1, 'Gelato')
+  expect(within(lineOf(1)).queryByText(GONE)).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: SUBMIT_NEW })).toBeEnabled()
+  await userEvent.click(screen.getByRole('button', { name: SUBMIT_NEW }))
+  await waitFor(() => expect(state.writes).toHaveLength(2))
+  expect(state.writes[1]?.body).toEqual({
+    reason_id: 1,
+    date: '2026-10-06',
+    lines: [{ product_id: 2, quantity: '2' }],
+  })
+})
+
+test('a line preselected through ?variety= keeps its name with the mark when a save finds it archived', async () => {
+  const state = world([ZKITTLEZ, GELATO])
+  render_([withdrawalNewFor(1)], state)
+  await varietyField(1)
+  await waitFor(() => expect(variety(1)).toHaveTextContent('Zkittlez'))
+  await pickReason('Marketing')
+  await userEvent.type(screen.getByLabelText('Grams 1'), '2')
+  state.archiveOnNextWrite = [1]
+
+  await userEvent.click(screen.getByRole('button', { name: SUBMIT_NEW }))
+
+  expect(await within(lineOf(1)).findByText(GONE)).toBeInTheDocument()
+  expect(variety(1)).toHaveTextContent('Zkittlez')
+  expect(variety(1)).toHaveTextContent('no longer available')
+  expect(screen.getByRole('button', { name: SUBMIT_NEW })).toBeDisabled()
 })
 
 /** An edit of withdrawal 1 (stored line: Zkittlez, archived since) plus two added lines. */
