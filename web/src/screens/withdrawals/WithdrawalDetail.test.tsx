@@ -10,7 +10,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import WITHDRAWAL from '../../api/fixtures/withdrawal.json'
 import { VARIETIES as VARIETIES_PATH, WITHDRAWAL as WITHDRAWAL_PATH, pathTo } from '../../routes'
-import { jsonResponse, renderWithdrawals, type FetchImpl } from './renderWithdrawals'
+import { jsonResponse, reasonField, renderWithdrawals, type FetchImpl } from './renderWithdrawals'
 import { LIMITS } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 
@@ -121,8 +121,7 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Wit
 
   expect(await screen.findByLabelText('Grams 1')).toHaveValue('5.5')
   expect(screen.getByLabelText('Note')).toHaveValue('Para la fiesta')
-  expect(await screen.findByRole('button', { name: 'Marketing' })).toHaveAttribute('aria-pressed', 'true')
-  expect(screen.getByRole('button', { name: 'Own use' })).toHaveAttribute('aria-pressed', 'false')
+  expect(await reasonField()).toHaveTextContent('Marketing')
   await userEvent.clear(screen.getByLabelText('Grams 1'))
   await userEvent.type(screen.getByLabelText('Grams 1'), '6')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
