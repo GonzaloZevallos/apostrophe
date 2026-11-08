@@ -1,6 +1,6 @@
 /**
- * The one owner of the page's scroll on a change of screen (navigation.md, "Scroll on a change
- * of screen", criteria 21-23; ADR-0069). Mounted once in `Root`, above the public and the gated
+ * The one owner of the page's scroll on a change of screen (navigation.md, "Scroll al cambiar
+ * de pantalla", criteria 21-23; ADR-0069). Mounted once in `Root`, above the public and the gated
  * trees. Nothing else in `web/src` scrolls the page: `architecture/navigationScroll.test.ts`
  * keeps it so.
  *

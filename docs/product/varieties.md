@@ -279,7 +279,7 @@ Criterios de éxito:
   que abre el formulario de Stock entry con el Product por elegir (`stock.md`).
 - **"Take from stock"**, un botón secundario junto a "+ Stock entry", en celular y
   computadora, que abre el formulario de Stock withdrawal sin ningún Product elegido (`stock.md`).
-- **"New product"**: agrega un Product (un formulario; en el celular, una **Sheet** dibujada por el único `Sheet` compartido, sobre Products, según el Phone layout de navigation.md).
+- **"New product"**: agrega un Product (un formulario; en el celular, una **Sheet** dibujada por el único `Sheet` compartido, sobre Products, según "Disposición en el celular" de navigation.md).
 - **"All entries"** abajo de todo (`stock.md`), en `/varieties/entries`. Lista solo Stock entries.
 - **"Archived (N)"** abajo de todo, junto a "All entries", que abre la tarjeta
   Archived. No se muestra cuando no hay ninguno.
@@ -394,7 +394,7 @@ Criterios de éxito:
   Catalog attributes) tienen "Close" y una confirmación al salir con algo tipeado;
   uno sin tocar se cierra de inmediato.
   - En el celular cada uno es una Sheet a pantalla completa dibujada por el único `Sheet` compartido (ADR-0062,
-    el Phone layout de navigation.md), con su acción principal fija abajo del formulario.
+    "Disposición en el celular" de navigation.md), con su acción principal fija abajo del formulario.
   - El renombre, el aviso de Stock bajo y los Catalog attributes se abren como Sheets sobre esta
     página, que queda detrás, y comparten el único registro de cambios sin guardar de la página.
     Volver cierra primero la Sheet y nunca salta por encima de la página.
@@ -435,7 +435,7 @@ Criterios de éxito:
   - registrar una Price entry que rige desde hoy nunca exige abrir un selector de fecha;
   - las reglas de fecha no cambian: se permite cualquier fecha, una Price entry por Product por fecha, y una fecha rechazada se rechaza como antes;
   - la fecha elegida se conserva cuando el guardado se rechaza por cualquier campo.
-- **En el celular**: una Sheet a pantalla completa dibujada por el único `Sheet` compartido (ADR-0062, el Phone layout de navigation.md), con "Close" arriba y "Save the price" fijo abajo del formulario, por encima del teclado; los rechazos van arriba de él. No tiene afuera: "Close" y el gesto de volver del celular son sus salidas. Abierta por un link directo, se muestra sobre la página de ese Product, que queda inerte detrás. Cambiar el tamaño cruzando 900 px o rotar el celular conserva lo tipeado.
+- **En el celular**: una Sheet a pantalla completa dibujada por el único `Sheet` compartido (ADR-0062, "Disposición en el celular" de navigation.md), con "Close" arriba y "Save the price" fijo abajo del formulario, por encima del teclado; los rechazos van arriba de él. No tiene afuera: "Close" y el gesto de volver del celular son sus salidas. Abierta por un link directo, se muestra sobre la página de ese Product, que queda inerte detrás. Cambiar el tamaño cruzando 900 px o rotar el celular conserva lo tipeado.
 - **En una computadora**: un modal sobre la página del Product, sin cambios por el diseño en el celular (ADR-0044).
   - "Close" vuelve a esa página; un guardado exitoso también vuelve ahí, muestra el toast "Price saved", y la sección Prices muestra la Price entry nueva.
   - Un rechazo deja el modal abierto con todo lo tipeado, en línea en su campo.

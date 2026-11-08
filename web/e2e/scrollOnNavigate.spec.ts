@@ -94,7 +94,7 @@ const COLLECT = /^Collect from /
 // Record payment saves clear. Every viewport reuses the one page and resizes it.
 let page: Page
 
-test.describe.serial('Scroll on a change of screen', () => {
+test.describe.serial('Scroll al cambiar de pantalla', () => {
   test.beforeAll(async ({ browser, workerServer }) => {
     test.setTimeout(300_000)
     page = await (

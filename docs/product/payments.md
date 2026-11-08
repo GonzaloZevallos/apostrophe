@@ -12,7 +12,7 @@ Es el mismo job de "manejar mi negocio desde el celular" que el de cualquier otr
 
 **Cuando** un cliente me paga mientras charlo con él en el celular, **quiero** abrir Record payment desde su ficha o desde su fila de deudor, registrar el pago y volver enseguida a ese cliente, **para** ver que su Balance baja sin perder mi lugar. (Seguimiento de GH-46: en el celular Record payment es una **Sheet** sobre la pantalla desde la que se abrió, nunca una página propia, y esa pantalla conserva su posición de scroll.)
 
-**Cuando** estoy atendiendo a un cliente con el celular en la mano, **quiero** que la app se comporte como una app de celular (un formulario que llena la pantalla con su acción principal bajo el pulgar, y nada de lo que necesito escondido detrás del teclado), **para poder** registrar un pago sin pelearme con la pantalla ni perder lo que escribí. (El job del Phone layout, navigation.md, GH-319: acá lo sirve Record payment dibujado con el único `Sheet` compartido.)
+**Cuando** estoy atendiendo a un cliente con el celular en la mano, **quiero** que la app se comporte como una app de celular (un formulario que llena la pantalla con su acción principal bajo el pulgar, y nada de lo que necesito escondido detrás del teclado), **para poder** registrar un pago sin pelearme con la pantalla ni perder lo que escribí. (El job de "Disposición en el celular", navigation.md, GH-319: acá lo sirve Record payment dibujado con el único `Sheet` compartido.)
 
 Criterios de éxito:
 
@@ -84,7 +84,7 @@ Criterios de éxito:
   - La cantidad dice "1 sale owing" cuando es una sola Sale que todavía se debe, y "N sales owing" cuando son dos o más (por ejemplo "4 sales owing"). Es la misma regla de singular y plural que usa el bloque "Owed to you" de Home para la misma cantidad (results.md).
 - **Sus filas**: solo los Customers cuyo Balance es mayor que $0, por Owing since (el más viejo primero), los empates por nombre.
   - Cada fila muestra el Balance en ámbar y "since dd/mm", nunca como chip.
-  - Cada fila lleva **"Collect"** (nombre accesible "Collect from <name>"), que abre Record payment con ese Customer ya elegido. Tocar el resto de la fila abre la ficha del Customer. En el celular, "Collect" y "Owed to you" son blancos táctiles de al menos 44×44 (navigation.md, Phone layout).
+  - Cada fila lleva **"Collect"** (nombre accesible "Collect from <name>"), que abre Record payment con ese Customer ya elegido. Tocar el resto de la fila abre la ficha del Customer. En el celular, "Collect" y "Owed to you" son blancos táctiles de al menos 44×44 (navigation.md, "Disposición en el celular").
 - **Nadie debe**: la sección dice un "Nobody owes you" fijo, sin nada para tocar.
 - **La cabecera de Customers** no lleva ninguna cifra de deuda tocable: la sección misma está en pantalla.
 - **Búsqueda**: mientras se escribe una consulta, Customers se colapsa en una sola lista plana por nombre (customers.md); un Customer que debe conserva ahí su Balance, "owes you since dd/mm" y "Collect".
@@ -139,7 +139,7 @@ Criterios de éxito:
   - "Payment saved · still owing $ X" cuando queda algo;
   - "Payment saved" cuando no queda nada.
 
-  Esta es la segunda excepción deliberada a la regla de toast sin datos de accounts.md. La pantalla desde la que se abrió se refresca desde la API, así que el Balance más bajo ya está ahí cuando la Sheet se cierra. En el celular el toast queda arriba de la barra de esa pantalla (navigation.md, Phone layout).
+  Esta es la segunda excepción deliberada a la regla de toast sin datos de accounts.md. La pantalla desde la que se abrió se refresca desde la API, así que el Balance más bajo ya está ahí cuando la Sheet se cierra. En el celular el toast queda arriba de la barra de esa pantalla (navigation.md, "Disposición en el celular").
 - **Los rechazos** se muestran en línea, arriba de la acción principal, y conservan todo lo escrito:
   - por encima del Balance;
   - fecha futura;

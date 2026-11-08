@@ -544,7 +544,8 @@ body {
   padding-bottom: 2px;
 }
 
-/* The "‹ parent" arrow a card shows above its own header (`navigation.md`, "Chrome and back"). */
+/* The "‹ parent" arrow a card shows above its own header (`navigation.md`,
+   "Marco y camino de vuelta"). */
 .flecha-atras {
   display: flex;
   padding: var(--espacio-md) var(--margen-pantalla) 0;
