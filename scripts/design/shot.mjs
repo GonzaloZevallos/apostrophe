@@ -268,7 +268,7 @@ function chromeOnFrameZero(unit, frame, viewport, dpr) {
 // come from `stickyPlacement`.
 export function hiddenRule(units, frameIndex, assignment) {
   const hidden = units.filter((_unit, at) => assignment[at] !== frameIndex)
-  const kept = units.filter((unit, at) => assignment[at] === frameIndex && unit.position === 'fixed')
+  const kept = units.filter((unit, at) => assignment[at] === frameIndex && pinnedClass(unit) === 'chrome')
   const rules = hidden.map((unit) => {
     const keep = kept.filter((fixedUnit) => inside(fixedUnit, unit))
     const skip = keep.length === 0 ? '' : `:not(${keep.map(({ chain }) => `${chain}, ${chain} *`).join(', ')})`
