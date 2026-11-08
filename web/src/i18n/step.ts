@@ -41,24 +41,26 @@ function resolves(text: unknown, bundle: Bundle): boolean {
   }
 }
 
+type StepsRow = { screen: string; steps?: readonly Readonly<Record<string, unknown>>[] }
+
+/** A row is converted when any named text of its steps (`click`, `press`, `wait`, `fill.label`) is key-shaped. */
+export function isConvertedRow(row: StepsRow): boolean {
+  return (row.steps ?? []).some((step) => namedTexts(step).some(([, text]) => typeof text === 'string' && isKeyShaped(text)))
+}
+
 /**
- * A row is converted when any named text of its steps is key-shaped; then every one must be
- * key-shaped and resolve. One message per failing field, with the zero-based index in `steps`
- * (every kind of step counts). An unconverted row gives none.
+ * In a converted row every named text must be key-shaped and resolve. One message per failing
+ * field, with the zero-based index in `steps` (every kind of step counts). An unconverted row
+ * gives none.
  */
-export function rowProblems(
-  row: { screen: string; steps?: readonly Readonly<Record<string, unknown>>[] },
-  bundle: Bundle,
-): string[] {
-  const steps = (row.steps ?? []).map((step) => namedTexts(step))
-  const converted = steps.some((named) => named.some(([, text]) => typeof text === 'string' && isKeyShaped(text)))
-  if (!converted) return []
+export function rowProblems(row: StepsRow, bundle: Bundle): string[] {
+  if (!isConvertedRow(row)) return []
   const problems: string[] = []
-  steps.forEach((named, index) => {
-    for (const [field, text] of named) {
+  for (const [index, step] of (row.steps ?? []).entries()) {
+    for (const [field, text] of namedTexts(step)) {
       if (!resolves(text, bundle)) problems.push(`${row.screen}: step ${index} ${field} is not a resolving key`)
     }
-  })
+  }
   return problems
 }
 

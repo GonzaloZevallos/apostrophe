@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { describe, expect, test } from 'vitest'
 import { loadBundle } from '../../scripts/i18n/loadBundle.ts'
 import { MissingKeyError } from './resolve.ts'
-import { resolveStep, rowProblems, stepText } from './step.ts'
+import { isConvertedRow, resolveStep, rowProblems, stepText } from './step.ts'
 
 const en = loadBundle('en')
 
@@ -95,6 +95,16 @@ describe('rowProblems', () => {
       steps: [{ click: 'common:home' }, { fill: { label: 'common:variety', value: 'kg:5' } }, { select: { label: 'x', index: 0 } }, { offline: true }],
     }
     expect(rowProblems(row, en)).toEqual([])
+  })
+})
+
+describe('isConvertedRow', () => {
+  test('any key-shaped click, press, wait or fill.label converts a row; fill.value alone does not', () => {
+    expect(isConvertedRow(CONVERTED)).toBe(true)
+    expect(isConvertedRow(withField(0, 'click', 'comon:close'))).toBe(true)
+    expect(isConvertedRow({ screen: 'A', steps: [{ fill: { label: 'common:home', value: 'v' } }] })).toBe(true)
+    expect(isConvertedRow({ screen: 'A', steps: [{ fill: { label: 'Name', value: 'common:close' } }, { select: { label: 'common:home', index: 0 } }] })).toBe(false)
+    expect(isConvertedRow({ screen: 'A' })).toBe(false)
   })
 })
 
