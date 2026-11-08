@@ -1,4 +1,4 @@
-"""Database naming (CODING_STANDARDS §11, docs/adr/0076): the login guard tables get a
+"""Database naming (CODING_STANDARDS §11, docs/adr/0077): the login guard tables get a
 surrogate `id`, and four names are fixed.
 
 Revision ID: 0025

@@ -1,4 +1,4 @@
-"""Migration 0025 (CODING_STANDARDS §11, docs/adr/0076): the guard tables get a surrogate
+"""Migration 0025 (CODING_STANDARDS §11, docs/adr/0077): the guard tables get a surrogate
 `id`, `locked_until` / `window_start` / `effective_from` become `unlocks_at` /
 `window_started_at` / `effective_on`, and the customer phone constraint takes its
 convention name. Run through the real revisions on a seeded file database: every row
