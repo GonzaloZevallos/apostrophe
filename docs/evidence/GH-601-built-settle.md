@@ -38,3 +38,10 @@ cualquier otra salida (por ejemplo, tratar una escritura idempotente de esas fil
 3 no se puede decir si las dos filas fallan en cada corrida o solo en esta.
 
 Sin correr: la reproducción con un segundo `compare.sh` a la vez; las corridas 2 y 3; `ae.mjs` AE 0 entre corridas.
+
+## Pendiente de decisión
+La revisión devolvió el trabajo por lo mismo: el criterio de hecho (tres corridas con salida 0) no se cumple mientras las
+dos filas `Save sale` (y `OnboardingVariedad`) mandan una escritura y no se reintentan. Hace falta que una persona decida:
+aceptar que las filas que escriben no se rescatan y cambiar el criterio, o ampliar el alcance (una muestra nueva por intento,
+o una escritura idempotente). Con esa decisión se corren la reproducción con un segundo `compare.sh`, las tres corridas
+seguidas y el AE 0 entre corridas, y se anotan acá.
