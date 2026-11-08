@@ -2,6 +2,7 @@
 
 - Cuando estoy cargando un registro en el teléfono y un campo necesita una opción de mi propia lista, que sigue creciendo, quiero encontrar la opción y elegirla en dos toques sin perder lo que ya cargué, para terminar el registro en menos de un minuto y nunca elegir algo equivocado.
 - Cuando agrego una línea a una venta en el teléfono, quiero encontrar y elegir el producto correcto de una lista en la que puedo buscar, sin perder la venta que estoy cargando, para registrar el pedido en pocos toques y que la línea siga cotizada con el Current price de ese día, nunca de memoria. (La historia de New sale; definida en sales.md).
+- Cuando un cliente me paga, con una venta o a cuenta de una deuda, quiero decir cómo me pagó con el mismo control que uso para cualquier elección que puede crecer, para registrar el medio a propósito y nunca por un valor que quedó de antes; y cuando los Payment methods pasen a ser mi propia lista, registrar un pago se tiene que sentir igual. (Parte 5 de GH-581; definida en sales.md y payments.md).
 
 La computadora también es una situación: el mismo campo se usa con teclado, conserva la capacidad y no recibe pulido dedicado (Phone first).
 
@@ -9,9 +10,9 @@ La computadora también es una situación: el mismo campo se usa con teclado, co
 
 ## Qué es
 
-El Selector es el único control para elegir una opción de un Growable set: un conjunto que puede tener una opción con la que la app no vino, hoy o por una decisión ya tomada (Products, Expense categories, Withdrawal reasons, Customer types; y con GH-318, units, time zone, Money format y Payment methods). Lo opuesto es un Fixed set, declarado en `web/src/components/fixedSets.ts` con un motivo, que puede mostrarse como chips. El componente vive en `web/src/components/Selector.tsx`, y su búsqueda en `web/src/components/selectorSearch.ts`.
+El Selector es el único control para elegir una opción de un Growable set: un conjunto que puede tener una opción con la que la app no vino, hoy o por una decisión ya tomada (Products, Expense categories, Withdrawal reasons, Customer types, Payment methods; y con GH-318, units, time zone y Money format). Lo opuesto es un Fixed set, declarado en `web/src/components/fixedSets.ts` con un motivo, que puede mostrarse como chips. El componente vive en `web/src/components/Selector.tsx`, y su búsqueda en `web/src/components/selectorSearch.ts`.
 
-Las partes de GH-581 pasan las pantallas al Selector. Desde la parte 3 lo usan el formulario de Stock entry (`EntradaStock`, para el Product) y el de Take from stock (para el Withdrawal reason y el Product de cada línea), como describe stock.md. Desde la parte 4 lo usa cada línea de New sale (`NuevaVentaLinea`, para el Product), como describe sales.md.
+Las partes de GH-581 pasan las pantallas al Selector. Desde la parte 3 lo usan el formulario de Stock entry (`EntradaStock`, para el Product) y el de Take from stock (para el Withdrawal reason y el Product de cada línea), como describe stock.md. Desde la parte 4 lo usa cada línea de New sale (`NuevaVentaLinea`, para el Product), como describe sales.md. Desde la parte 5 lo usan el medio de pago de New sale bajo Paid (`SelectorPago`) y el de Record payment (`Cobro`), con la etiqueta "Payment method" y las opciones incorporadas Cash y Transfer, como describen sales.md y payments.md.
 
 ## El campo
 
@@ -45,7 +46,8 @@ Las partes de GH-581 pasan las pantallas al Selector. Desde la parte 3 lo usan e
 ## Historial
 
 - El contexto `SheetLevel` de `useSheetStack.ts` (0 por defecto) da el nivel: el Selector llama a `useSheet(level + 1)` y envuelve su lista en `SheetLevel` en `level + 1`; nunca recibe un nivel por prop. Sin envoltorio la lista es el nivel 1; dentro de un formulario en el nivel 1 es el nivel 2. `NuevaVentaCliente` provee los niveles 1 y 2 alrededor de su selector de cliente y de su creador, sin ningún cambio visible.
-- En New sale, la lista de productos de una línea es el nivel 1 sobre el formulario, dentro del `SheetStackProvider` de `NuevaVenta`. Comparte el número de nivel con Pick a customer (`NuevaVentaCliente`), pero las dos nunca están abiertas a la vez: New sale monta Pick a customer solo cuando la vendedora lo pidió.
+- En New sale, la lista de productos de una línea y la lista de medios son el nivel 1 sobre el formulario, dentro del `SheetStackProvider` de `NuevaVenta`. Comparten el número de nivel con Pick a customer (`NuevaVentaCliente`), pero nunca están abiertas a la vez: New sale monta Pick a customer solo cuando la vendedora lo pidió, y un Selector cierra su lista al elegir.
+- En Record payment, la lista de medios es el nivel de arriba de la Sheet de Record payment, dentro de un `SheetStackProvider` montado en la raíz de `CobroRoute`, abra desde la fila de deudor de Customers, la de Home o la ficha del Customer.
 - Volver y "Close" cierran exactamente una entrada, nunca el formulario de abajo. Un doble toque, o elegir y tocar "Close" enseguida, tampoco saca el formulario: un solo abrir emite a lo sumo un cierre.
 - Pasar de teléfono a computadora con la lista abierta la cierra una vez; pasar de computadora a teléfono cierra el desplegable. En los dos casos el foco vuelve al campo.
 - Límite conocido: una Sheet hermana que use el mismo número de nivel también se lee como abierta junto con la lista. Una prueba lo fija; quien revisa cada cambio de pantalla comprueba el nivel de cada Sheet hermana.
@@ -75,17 +77,20 @@ Las partes de GH-581 pasan las pantallas al Selector. Desde la parte 3 lo usan e
 - Campo opcional con una elección puesta (por `selected` o por un valor que no está en ninguna lista): primero la fila para borrar y debajo el mensaje.
 - Campo opcional sin elección: el mensaje solo.
 - Campo obligatorio: el mensaje solo, nunca una fila para borrar.
+- El medio de pago, hasta GH-318, siempre tiene sus dos opciones incorporadas y nunca llega a un conjunto vacío.
 
 ## Carga y cargas fallidas
 
 - El Selector no tiene estado de error. Mientras las opciones de un campo no se cargaron con éxito (pendiente, fallida o reintentando), quien lo usa mantiene `loading`: el campo sigue deshabilitado con su esqueleto, y el manejo de errores de la propia pantalla dice qué falló y ofrece reintentar.
 - El mensaje de conjunto vacío aparece solo después de una carga exitosa que no trajo opciones. Una carga fallida nunca parece un conjunto vacío.
+- El medio de pago, hasta GH-318, no lo alimenta ninguna consulta, así que nunca está en `loading`.
 
 ## Textos
 
 Todo texto sale del Copy module (`web/src/copy/`), en inglés, con el en-XA generado; se reusan las claves existentes (`close`, `loading`, `owing`). El `placeholder` y el `accessibleName` que pasa una pantalla también salen del Copy module.
 
-- `common`: `search` (Search), `noResults` (No results), `noLongerAvailable` (no longer available), `selected` (Selected), `optionsOf` ("{{name}} options", que recibe el `accessibleName` del campo o, si no tiene, su `label`), `paid` (Paid), `owing` (Owing), `paymentMethod` (Payment method), `noType` (No type). Las últimas cuatro no las muestra el control: sirven a la nota de prueba de Payment methods y a los cambios de pantalla posteriores.
+- `common`: `search` (Search), `noResults` (No results), `noLongerAvailable` (no longer available), `selected` (Selected), `optionsOf` ("{{name}} options", que recibe el `accessibleName` del campo o, si no tiene, su `label`), `paid` (Paid), `owing` (Owing), `paymentMethod` (Payment method), `noType` (No type). El control no muestra las últimas cuatro por sí mismo: desde la parte 5, `paid` y `owing` rotulan el Fixed set Paid · Owing y `paymentMethod` es la etiqueta del campo del medio en New sale y en Record payment; `noType` sirve a un cambio de pantalla posterior.
+- La frase de rechazo "Choose how they paid.", que New sale y Record payment muestran junto al campo del medio con el Attention icon, sale también del Copy module; la muestra la pantalla, no el Selector.
 - `emptyStates`:
   - `selectorNoVarieties`: "No products yet. Add them in the Products tab." Lo usan Stock entry, Take from stock y cada línea de New sale.
   - `selectorNoCategories`: "No categories yet. Add them in Settings → Expense categories."
@@ -95,26 +100,27 @@ Una prueba comprueba que cada mensaje nombra el lugar con las mismas palabras de
 
 ## Reglas
 
-- Un conjunto que puede tener una opción con la que la app no vino, hoy o por una decisión ya tomada, se elige con el Selector, nunca con chips. Solo los Fixed sets pueden ser chips. Ejemplos: Expense categories → Selector; Today · Week · Month → chips.
-- Chips, pills, Pestanas y controles `role="radio"` toman sus opciones solo de un Fixed set declarado en `fixedSets.ts`, con un motivo no vacío. `fixedSets.ts` importa solo de `web/src/copy/` y del tipo `IconName`. Una `FixedOption` tiene solo `value`, un getter de copy `label` y un `IconName` opcional; el estado en tiempo de ejecución vive en una capa aparte por `value`.
+- Un conjunto que puede tener una opción con la que la app no vino, hoy o por una decisión ya tomada, se elige con el Selector, nunca con chips. Solo los Fixed sets pueden ser chips. Ejemplos: Expense categories → Selector; Today · Week · Month → chips; Payment methods → Selector; Paid · Owing (el estado de pago, que no es un medio) → chips.
+- Chips, pills, Pestanas y controles `role="radio"` toman sus opciones solo de un Fixed set declarado en `fixedSets.ts`, con un motivo no vacío. `fixedSets.ts` importa solo de `web/src/copy/` y del tipo `IconName`. Una `FixedOption` tiene solo `value`, un getter de copy `label` y un `IconName` opcional; el estado en tiempo de ejecución vive en una capa aparte por `value`. `SegmentedChoice` recibe sus `options` como `FixedSet<T>` y el estado de cada opción (`disabled`, `describedBy`) en la capa aparte `optionState`.
 - Ningún conjunto leído de los datos o la configuración de un Business, Payment methods incluidos, se declara nunca en `fixedSets.ts`, ni siquiera temporalmente.
 - Cualquier selector posterior sobre datos o configuración del Business (GH-318: units, time zone, Money format, Payment methods) se construye sobre el Selector.
-- Nota de prueba de Payment methods, hasta GH-318: los Payment methods todavía no existen. Las pruebas y los dibujos del Selector pueden usar un conjunto de Payment method armado dentro de la prueba o del dibujo, con las claves `Payment method`, `Paid` y `Owing`; ese conjunto nunca se declara en `fixedSets.ts` ni lo lee ninguna pantalla.
+- Payment methods hasta GH-318: los medios Cash y Transfer están incorporados y no son configurables. Sus opciones del Selector se arman una sola vez a partir del Copy module, fuera de `fixedSets.ts`, y las comparten New sale y Record payment; GH-318 reemplaza solo esa fuente. Las pruebas y los dibujos del Selector pueden seguir usando un conjunto de Payment method armado dentro de la prueba o del dibujo, que nunca se declara en `fixedSets.ts`.
 - Una parte que pasa una pantalla al Selector, y solo ella, agrega la entrada de WalkState de esa pantalla, borra las entradas de las listas de infractores que el cambio deja obsoletas y actualiza el dibujo de la pantalla en `pantallas/`. Nunca le quita una capacidad que la pantalla tenía (creación en el lugar, líneas de ayuda, el rechazo ante una línea que ya no existe), los Fixed sets conservan su aspecto y su comportamiento, y le pasa al campo el estado de carga de la consulta que lo alimenta. Cuando un campo obligatorio queda con el conjunto vacío, esa parte se asegura de que el formulario a medio cargar se conserve o se pueda recuperar.
 - Un cambio genérico del componente (como las props opcionales `accessibleName`, `fieldRef`, `placeholder` y `listHost` de la parte 4) no es un cambio de pantalla: no agrega WalkState, no toca infractores ni dibujos.
 
 ## WalkState y chequeo en el teléfono
 
 - El componente no tiene una ruta a la que el recorrido llegue, así que el componente por sí solo no agrega ninguna entrada de WalkState ni toca las listas de infractores ni los dibujos de `pantallas/` de ninguna pantalla. Cada pantalla recibe su entrada, su limpieza de infractores y su dibujo en la parte que la pasa al Selector.
-- Desde la parte 3, el chequeo `mobile` recorre listas del Selector abiertas en el teléfono: `stock-entry/variety-selector-open` (12 Products, con búsqueda) y `withdrawal/reason-selector-open`. Desde la parte 4 recorre también `new-sale/line-variety-selector-open` (12 Products o más, con búsqueda). Ahí se controlan las filas y el campo de búsqueda de 44 px, el texto de 16 px, la ausencia de scroll horizontal y que toda fila quede alcanzable por encima del teclado.
+- Desde la parte 3, el chequeo `mobile` recorre listas del Selector abiertas en el teléfono: `stock-entry/variety-selector-open` (12 Products, con búsqueda) y `withdrawal/reason-selector-open`. Desde la parte 4 recorre también `new-sale/line-variety-selector-open` (12 Products o más, con búsqueda), y desde la parte 5 `new-sale/method-selector-open` (Cash y Transfer, sin búsqueda). Ahí se controlan las filas y el campo de búsqueda de 44 px, el texto de 16 px, la ausencia de scroll horizontal y que toda fila quede alcanzable por encima del teclado.
+- La parte 5 borró todas las entradas `radio:Cash`, `radio:Transfer` y `radio:Owing` de `touch-action.json` (21) y cualquier otra que dejó obsoleta, sin agregar ningún infractor; las celdas `radio:Paid` y `radio:Owing` pasan por `touch-action: manipulation` y `user-select: none` en `.selector-pago__opcion`.
 
 ## Dueños de `fixedSets.ts`
 
-`fixedSets.ts` y su guarda son de las partes 3 y 5 de GH-581. La parte 3 declaró ahí solo `STOCK_ENTRY_ORIGINS` ("fixed set: Stock entry origins"). Nada de lo que entrega el Selector (componente, auxiliar, pruebas, dibujo) importa de ese archivo, y la parte 4 no lo toca.
+`fixedSets.ts` y su guarda son de las partes 3 y 5 de GH-581. La parte 3 declaró ahí `STOCK_ENTRY_ORIGINS` ("fixed set: Stock entry origins"). La parte 5 declaró el estado de pago Paid · Owing ("fixed set: payment state, which is not a method"), que usa `SegmentedChoice` en New sale. Ningún medio de pago está declarado ahí. Nada de lo que entrega el Selector (componente, auxiliar, pruebas, dibujo) importa de ese archivo, y la parte 4 no lo toca.
 
 ## Diseño
 
-El Selector está dibujado en el bloque "Selector" de `docs/product/design-system/pantallas/Componentes.dc.html`: el campo cerrado, el campo con "no longer available" con nombre y sin nombre, el campo cargando, la lista de teléfono con búsqueda y sin ella, No results, el conjunto vacío en sus tres variantes y el desplegable de computadora. La regla y sus dos ejemplos están en `docs/product/design-system/README.md`, en "Chips o Selector". Cada pantalla pasada al Selector lo muestra en su propio dibujo de `pantallas/`, New sale incluido (el campo cerrado; la lista abierta la juzga el chequeo `mobile`).
+El Selector está dibujado en el bloque "Selector" de `docs/product/design-system/pantallas/Componentes.dc.html`: el campo cerrado, el campo con "no longer available" con nombre y sin nombre, el campo cargando, la lista de teléfono con búsqueda y sin ella, No results, el conjunto vacío en sus tres variantes y el desplegable de computadora. La regla y sus dos ejemplos están en `docs/product/design-system/README.md`, en "Chips o Selector". Cada pantalla pasada al Selector lo muestra en su propio dibujo de `pantallas/`: New sale (el campo de producto de la línea y el campo "Payment method" bajo Paid, cerrados) y Registrar cobro (el campo "Payment method" cerrado); las listas abiertas las juzga el chequeo `mobile`.
 
 ## Métricas
 
@@ -130,5 +136,6 @@ Cada criterio de éxito se mide con una prueba de vitest y Testing Library, a tr
 8. Se conserva el orden recibido, la búsqueda empieza vacía al reabrir y el foco vuelve al campo.
 9. El mensaje de conjunto vacío de Products, como todo valor del Copy module, no dice "variety"/"varieties": lo controla el barrido permanente de varieties.md (`web/src/copy/productWord.test.ts`).
 10. Props opcionales (`Selector.phone.test.tsx`, `Selector.computer.test.tsx`): el `fieldRef` de quien lo usa recibe el `<button>` del campo y le da el foco; con `accessibleName`, el nombre del campo empieza con él y contiene el valor, la etiqueta visible sigue siendo `label` y la lista se llama "{accessibleName} options"; con `placeholder` y sin elección, el campo lo muestra y ninguna fila de la lista lo tiene; mientras carga, el `placeholder` no se muestra.
+11. Guarda de `fixedSets.ts` (parte 5): el Fixed set Paid · Owing tiene su motivo no vacío, `SegmentedChoice` solo acepta un `FixedSet<T>`, y ningún valor de medio (cash, transfer) aparece en `fixedSets.ts`.
 
-El resultado del trabajo (una Sale registrada desde el teléfono en menos de un minuto) se mide en las partes que pasan cada pantalla al Selector, no en esta. Para la línea de New sale lo miden los criterios 28 a 32 de sales.md y su presupuesto de toques (`web/e2e/tapBudget.spec.ts`).
+El resultado del trabajo (una Sale registrada desde el teléfono en menos de un minuto) se mide en las partes que pasan cada pantalla al Selector, no en esta. Para la línea de New sale lo miden los criterios 28 a 32 de sales.md y su presupuesto de toques (`web/e2e/tapBudget.spec.ts`); para el medio de pago, los criterios 33 a 36 de sales.md y los criterios 10 y 11 de payments.md.
