@@ -24,15 +24,38 @@ import { TOLERANCE, gatherInPage, unscaled } from './textScale.mjs'
 import {
   PROBE_CSS,
   coversScreen,
+  hiddenRule,
+  innerScrollMiss,
   layerMiss,
+  named,
+  pinnedClass,
   planShot,
   regionMiss,
+  scrollPlan,
+  shiftMiss,
   shotStepReason,
   sizeRecordMiss,
+  stickyPlacement,
+  stickyProbeOffset,
   viewportMovedReason,
   viewportUnchanged,
 } from './shot.mjs'
-import { allElements, fixedInPage, layerReadInPage, readMetrics, sameNodesInPage, snapshotInPage } from './shot-page.mjs'
+import {
+  adoptSheetInPage,
+  allElements,
+  dropSheetInPage,
+  fixedInPage,
+  layerReadInPage,
+  pinnedInPage,
+  readMetrics,
+  readScroll,
+  rectInPage,
+  sameNodesInPage,
+  scrollToInPage,
+  scrollersInPage,
+  snapshotInPage,
+} from './shot-page.mjs'
+import { stitch } from './stitch.mjs'
 
 // The wall-clock bound of one step and the instant the clock is paused at, set once per run.
 let TIMEOUT = 8000
@@ -334,6 +357,7 @@ export async function shotSteps(page, { block, ofFirstText, census, side }, hand
   handles.push(beforeHandle)
   const fixed = await bounded(page.evaluate(fixedInPage, beforeHandle))
   const plan = planShot(metrics, fixed, viewport)
+  if (plan.mode === 'scroll') return scrollShot(page, { block, ofFirstText, census, side }, handles)
   let before = null
   if (plan.mode === 'grow') {
     before = await sizeSnapshot(page, beforeHandle)
@@ -362,4 +386,108 @@ export async function shotSteps(page, { block, ofFirstText, census, side }, hand
   census?.atShot(page)
   const png = await bounded(page.screenshot(clip === undefined ? SHOT : { ...SHOT, clip }))
   return sideOutcome(null, png)
+}
+
+// Moves the document to `offset` and waits until the page is at rest there. A reason, or null.
+async function scrollSettled(page, offset, ofFirstText) {
+  await bounded(page.evaluate(scrollToInPage, offset))
+  return settle(page, { advanceMs: 0, ofFirstText })
+}
+
+// What `shiftMiss` reads of the page now: where it is scrolled, its size, and the snapshot of its elements
+// matched by node identity against `first` (the snapshot at the top, with its handle) when there is one.
+async function readFrame(page, offset, handles, first) {
+  const handle = await bounded(page.evaluateHandle(allElements))
+  handles.push(handle)
+  const [scroll, snapshot] = await Promise.all([bounded(page.evaluate(readScroll)), sizeSnapshot(page, handle)])
+  if (first !== null) await nodeIdentity(page, first.read.snapshot, first.handle, snapshot, handle)
+  // The snapshot's tops are page tops; `shiftMiss` reads them from the viewport and adds the scroll itself.
+  const entries = snapshot.entries.map((entry) => ({ ...entry, top: entry.top - scroll.scrollTop }))
+  return { read: { offset, ...scroll, vvAlto: snapshot.vvAlto, snapshot: { ...snapshot, entries } }, handle }
+}
+
+// Where a sticky element sits when it is not stuck: its page top and bottom at the offset the probe
+// scrolled to, or null when it is stuck there (the page cannot show it at a place of its own).
+function naturalPlace(pinned, rect, scrollTop, viewport) {
+  const stuck =
+    typeof pinned.insetTop === 'number'
+      ? rect.top < pinned.insetTop
+      : typeof pinned.insetBottom === 'number' && rect.bottom + pinned.insetBottom > viewport.height
+  return stuck ? null : { top: rect.top + scrollTop, bottom: rect.bottom + scrollTop }
+}
+
+// A phone page at its real viewport, frame by frame (docs/adr/0052, GH-491). The viewport is never
+// changed. Every decision is `shot.mjs`'s: `planShot` chose this path, `scrollPlan` the frames,
+// `stickyPlacement` where each pinned element is drawn, `hiddenRule` the stylesheet of each frame
+// and `shiftMiss` whether the page held still. Nothing here rounds: `stitch` copies rows.
+async function scrollShot(page, { block, ofFirstText, census, side }, handles) {
+  const refused = (reason) => sideOutcome(reason, null)
+  const viewport = page.viewportSize()
+  let last = await scrollSettled(page, 0, ofFirstText)
+  if (last) return refused(last)
+  settledViewport.set(page, page.viewportSize())
+  const clip = block ? await bounded(sectionClip(block)) : undefined
+  const dpr = await bounded(page.evaluate(() => window.devicePixelRatio))
+  const top = await readFrame(page, 0, handles, null)
+  const metrics = await bounded(page.evaluate(readMetrics))
+  const scrollers = await bounded(page.evaluate(scrollersInPage, top.handle))
+  const inner = innerScrollMiss(metrics, scrollers, side)
+  if (inner) return refused(inner)
+  const pinned = await bounded(page.evaluate(pinnedInPage, top.handle))
+  const maxOffset = Math.max(0, metrics.scrollHeight - viewport.height)
+  const unplaced = refused(named('a pinned element could not be placed', side))
+  for (const element of pinned.filter((p) => pinnedClass(p) === 'content')) {
+    last = await scrollSettled(page, stickyProbeOffset(element, viewport, maxOffset), ofFirstText)
+    if (last) return refused(last)
+    const [rect, { scrollTop }] = await Promise.all([
+      bounded(page.evaluate(rectInPage, [top.handle, element.index])),
+      bounded(page.evaluate(readScroll)),
+    ])
+    element.natural = naturalPlace(element, rect, scrollTop, viewport)
+    if (element.natural === null) return unplaced
+  }
+  last = await scrollSettled(page, 0, ofFirstText)
+  if (last) return refused(last)
+  const again = await readFrame(page, 0, handles, top)
+  const moved = shiftMiss(top.read, again.read, side)
+  if (moved) return refused(moved)
+  const frames = framesOf(metrics, viewport, dpr, clip, pinned, side)
+  if ('reason' in frames) return refused(frames.reason)
+  const placed = stickyPlacement(pinned, frames.frames, viewport, side, dpr)
+  if ('reason' in placed) return refused(placed.reason)
+  census?.atShot(page)
+  const shots = []
+  for (const [at, frame] of frames.frames.entries()) {
+    last = await scrollSettled(page, frame.offset, ofFirstText)
+    if (last) return refused(last)
+    const sheet = await bounded(page.evaluateHandle(adoptSheetInPage, hiddenRule(placed.units, at, placed.assignment)))
+    try {
+      const now = await readFrame(page, frame.offset, handles, top)
+      const miss = shiftMiss(top.read, now.read, side)
+      if (miss) return refused(miss)
+      shots.push(await bounded(page.screenshot(SHOT)))
+    } finally {
+      await Promise.allSettled([page.evaluate(dropSheetInPage, sheet).then(() => sheet.dispose())])
+    }
+  }
+  last = await scrollSettled(page, 0, ofFirstText)
+  if (last) return refused(last)
+  return sideOutcome(null, stitch(shots, frames.frames, dpr))
+}
+
+// The frames of the page: the plan without any break first, then one break at the natural top of each
+// sticky element that a frame would cut, so that every sticky element sits whole in one frame. An
+// element that still does not fit is left to `stickyPlacement`, which refuses it.
+function framesOf(metrics, viewport, dpr, clip, pinned, side) {
+  const sticky = pinned.filter((p) => pinnedClass(p) === 'content')
+  const first = scrollPlan(metrics, viewport, dpr, clip, [], side)
+  if ('reason' in first) return first
+  const range = (frame) => [(frame.offset * dpr + frame.cropTop) / dpr, (frame.offset * dpr + frame.cropTop + frame.cropHeight) / dpr]
+  const cut = sticky.filter((p) =>
+    first.frames.some((frame) => {
+      const [from, to] = range(frame)
+      return p.natural.top < to && p.natural.bottom > from && !(p.natural.top >= from && p.natural.bottom <= to)
+    }),
+  )
+  return scrollPlan(metrics, viewport, dpr, clip, cut.map((p) => p.natural.top), side)
 }
