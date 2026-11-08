@@ -54,13 +54,15 @@ En todos, el tamaño del PNG es igual al de la parte 1 (el alto no cambió). Por
 | `Variedades` | 168736 | 2196 | Lo mismo. |
 | `Analisis`, `AnalisisOscuro` | 167122 | 9008 | Lo mismo; el alto no cambia. |
 | `VariedadArchivada`, `VariedadArchivadaOscuro` | 107167 | 1900 | Lo mismo. |
-| `EstadosConfirmar` | 52176 | 1740 | Lo mismo (un lado `built` alto; no verifiqué qué elemento fijo se movió). |
+| `EstadosConfirmar` | 52176 | 1740 | La barra fija pasa a la primera pantalla y tapa el pie de la tarjeta (imágenes comparadas, ver abajo). |
 | `Catalogo`, `CatalogoOscuro` | 26922, 27551 | 1988, 2114 | Lo mismo. |
 | `VariedadDetalle`, `VariedadDetalleOscuro` | 24799 | 2610 | Lo mismo. |
 | `VentaGuardada`, `VentaGuardadaOscuro` | 15904 | 1734 | Lo mismo. |
 | `ClienteFicha`, `ClienteFichaOscuro` | 9872 | 1886 | Lo mismo. |
 
-**No esperado, a mirar en la parte 3:** `NegocioNuevo` y `Invitacion`, lado `built`, AE 243 con 780x1688 (844 px CSS, exactamente un teléfono: la página cabe). Se esperaba AE 0. La diferencia es de 243 píxeles; no investigué su causa.
+**`NegocioNuevo` y `Invitacion`, lado `built`, AE 243 con 780x1688** (844 px CSS, exactamente un teléfono: la página cabe). Se esperaba AE 0, pero la causa no es la ruta de scroll. Comparé los dos PNG píxel a píxel: los 243 píxeles distintos están en un rectángulo de 16x20 px de dispositivo, en y 1613-1632 (x 647-662 en `NegocioNuevo`, x 384-399 en `Invitacion`), y al recortar esa franja en las dos corridas se lee "The invitation can be used once and expires on 14/11." en la parte 1 y "...expires on 15/11." en esta corrida. Es un dato de los hechos de la app de muestra que depende del día en que corre: la parte 1 corrió el 2026-11-07 a las 20:xx (AR) y esta a las 23:37 (AR), que ya es 2026-11-08 en UTC. La parte 3 no debe contar estas dos filas como cambio de la ruta de scroll.
+
+**`EstadosConfirmar`** (AE 52176): comparé las dos imágenes. En la parte 1 la tarjeta de confirmación ("No, keep it" / "Yes, delete it") termina y la barra inferior viene después, al final del documento. En esta corrida la barra fija está en la primera pantalla (desde y 1544) y tapa la parte de abajo de la tarjeta. Es la razón esperada, ahora verificada.
 
 La razón "el alto cambia donde una caja `100dvh` se estiraba" **no aparece**: ninguna imagen `built` cambió de tamaño.
 
@@ -83,7 +85,18 @@ Se esperaba AE 0 en los lados `design` de teléfono. `ae` no puede comparar esto
 
 Lectura: son filas con un recorte de sección (`clip`). La parte 1 daba un PNG del ancho del recorte; esta corrida da uno del ancho del viewport completo (por ejemplo 828 = 414 CSS, el `design_viewport`; 780 = 390 CSS). Lo vi en `InicioImportado.design.png`: sale con el margen de la página a los lados del recorte. Los pocos casos de 1 px menos de alto (1098 a 1097, 1044 a 1043, 1698 a 1697, 248 a 247) parecen venir de redondear el borde del recorte. Es una lectura, no una comprobación del código. Esto es un cambio de comportamiento en el lado `design` de teléfono con recorte, y la parte 3 debe saberlo antes de comparar.
 
+## Criterios de la tarea que esta evidencia muestra sin cumplir
+
+La cabeza no cambió desde la corrida (el código de la ruta de scroll es el mismo), así que estos dos puntos siguen abiertos y son defectos de `take-shot.mjs`, no de esta evidencia:
+
+1. `OnboardingMensajeTexto130` (lado `built`) ya no captura (sección 2).
+2. 18 lados `design` de teléfono con recorte salen del ancho del viewport, no del recorte (sección 3). Causa vista en el código: en la ruta de scroll el recorte sólo fija el rango vertical y cada cuadro es una captura del viewport completo, que `stitch` recorta sólo en vertical.
+
+Cuando esos dos defectos se arreglen, hay que repetir la corrida completa y actualizar este archivo.
+
 ## Archivos de esta carpeta (parte 2)
+
+- `part2-phone-sizes.json`: el registro de scratch de los tres tamaños (copia de `InicioHoy`, `InicioOscuro`, `Analisis` y `AnalisisOscuro` con `viewport` 320x568, 375x812 y 430x932), regenerado desde `screens.json`. Se usa con `comparisons.mjs --registry`. La corrida de todo el registro es `compare.sh` con la espera de los hechos subida a 600 s (cambiar `seq 1 240` por `seq 1 1200` en una copia): el cambio es sólo ese número.
 
 - `part2-p2.index.json`: índice de la corrida de todo el registro (171 `captured`, 48 `not-captured`), con cada ruta reducida a su basename.
 - `part2-p2-sizes.index.json`: índice de las 12 filas a 320x568, 375x812 y 430x932.
