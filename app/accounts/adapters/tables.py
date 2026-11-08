@@ -18,6 +18,9 @@ class BusinessRow(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(BUSINESS_NAME_MAX_LENGTH))
     language: Mapped[str] = mapped_column(String(35))
+    # The highest Sale number this business ever gave (docs/adr/0073); only
+    # `SqlSales.add` raises it, so deleting a sale never frees a number.
+    last_sale_number: Mapped[int] = mapped_column(server_default="0")
 
 
 class UserRow(Base):

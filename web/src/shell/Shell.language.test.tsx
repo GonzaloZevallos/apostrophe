@@ -114,14 +114,14 @@ test('on the phone a root re-renders a bar label, "New sale" and the nav name in
 
 test("on the phone a card re-renders its back arrow's registry parent word in the same node", async () => {
   const { container } = renderShell(CATALOG, false)
-  const arrow = screen.getByRole('button', { name: '‹ Varieties' })
+  const arrow = screen.getByRole('button', { name: '‹ Products' })
   installGerman()
 
   await switchToGerman()
 
   expect(arrow).toHaveTextContent('de:backArrow de:varieties')
   expect(arrow.isConnected).toBe(true)
-  expect(container).not.toHaveTextContent('Varieties')
+  expect(container).not.toHaveTextContent('Products')
   noMissesFor(['common:backArrow', 'common:varieties'])
 })
 

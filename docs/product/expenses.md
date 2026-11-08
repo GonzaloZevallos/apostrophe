@@ -14,7 +14,7 @@ Criterios de éxito:
 
 1. Una Expense se registra desde el teléfono en menos de un minuto. Su formulario abre en 2 toques como máximo desde cualquier Tab root (More → "+ Add expense") y en 1 toque desde Expenses. En una computadora no lleva más toques que en el teléfono. La fecha ya viene en hoy, y la Expense category se elige de la lista del negocio.
 2. Para cualquier mes, la vista muestra cada Expense de ese mes y el total del mes. Las desglosa por Expense category, con un subtotal para cada una. Los totales siempre son iguales a la suma de las Expenses que se muestran, también justo después de una edición o una eliminación.
-3. La flor nunca es una Expense. Nada de acá registra gramos ni una variedad, y una Purchase nunca aparece en las listas de Expenses. Así, los resultados pueden contar las Expenses y las Purchases por separado sin contar nada dos veces.
+3. La flor nunca es una Expense. Nada de acá registra gramos ni un producto, y una Purchase nunca aparece en las listas de Expenses. Así, los resultados pueden contar las Expenses y las Purchases por separado sin contar nada dos veces.
 4. Todo lo de acá se hace desde el teléfono, sin ninguna llamada a la API a mano.
 5. **Las Expense categories se administran en un solo lugar.** Expenses no agrega, renombra ni elimina Expense categories; solo tiene un link a Settings → Expense categories. La única excepción es crear una Expense category dentro del formulario de la Expense.
 6. **Se ve como en el diseño.** More y Expenses, en teléfono y computadora, coinciden con `docs/product/design-system/pantallas/`, juzgados a ojo.
@@ -28,7 +28,7 @@ La plata que un negocio paga por cualquier cosa que no sea flor, archivada bajo 
 
 ### Expense category
 
-- Los nombres de Expense category siguen la regla del nombre de una Variety:
+- Los nombres de Expense category siguen la regla del nombre de un Product:
   - sin espacios al principio ni al final, los espacios internos reducidos a uno, hasta 60 caracteres;
   - únicos dentro de un negocio, sin importar mayúsculas ni espacios;
   - dos negocios pueden tener cada uno una Expense category con el mismo nombre.
@@ -55,7 +55,7 @@ La plata que un negocio paga por cualquier cosa que no sea flor, archivada bajo 
 - **Expense category**: obligatoria, sin valor por defecto; se elige cada vez. Tiene que ser una de las Expense categories propias del negocio. Cualquier otro id de Expense category responde 404.
 - **Monto**: obligatorio, en pesos enteros, mayor que cero.
 - **Detalle**: obligatorio, sin espacios al principio ni al final, no en blanco, hasta 200 caracteres.
-- Una Expense no tiene gramos, ni variedad, ni estado pendiente, de borrador o de aprobación.
+- Una Expense no tiene gramos, ni producto, ni estado pendiente, de borrador o de aprobación.
 - **Editar**: los cuatro campos se pueden editar en el lugar, con la misma validación que al registrar. No se guarda historial de ediciones.
 - **Eliminar**: borra la Expense para siempre.
 - Tanto una edición como una eliminación se ven de inmediato en los totales del mes.
@@ -118,7 +118,7 @@ Se leen de los datos y de las pruebas; no hay telemetría.
 - **M2, los totales cierran (criterio 2)**: los totales que difieren de la suma de las Expenses que se muestran tienen que ser 0. Lo controlan pruebas después de crear, editar y eliminar, en la API y en pantalla. Un mes sin Expenses muestra $0 y ninguna Expense category.
 - **M3, "en qué" (criterio 2)**: la proporción de la plata de cada mes archivada bajo "Other". Si se mantiene alta, las Expense categories no le están sirviendo al User para ver adónde se va la plata.
 - **M4, uso**: negocios con al menos una Expense en un mes, sobre los negocios activos.
-- **M5, la flor queda afuera (criterio 3)**: las Purchases que aparecen en las listas de Expenses tienen que ser 0, por construcción. Una Expense no tiene ningún campo que pueda guardar gramos ni una variedad.
+- **M5, la flor queda afuera (criterio 3)**: las Purchases que aparecen en las listas de Expenses tienen que ser 0, por construcción. Una Expense no tiene ningún campo que pueda guardar gramos ni un producto.
 - **M6, sin curl (criterio 4)**: la corrida de punta a punta del front:
   - registra una Expense desde More → "+ Add expense" y una desde Expenses;
   - edita y elimina una;

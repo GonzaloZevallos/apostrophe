@@ -16,9 +16,9 @@ test.use({ viewport: { width: 1280, height: 720 } })
 
 async function addVariety(page: Page, name: string): Promise<void> {
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
-  await page.getByPlaceholder('Variety name').fill(name)
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await page.getByRole('link', { name: 'New product' }).click()
+  await page.getByPlaceholder('Product name').fill(name)
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
 }
 
 /** Signs up, makes two varieties and opens "New price" of Rosa; returns Rosa's id. */
@@ -32,11 +32,11 @@ async function openPriceModal(page: Page): Promise<number> {
   // The host takes focus to the title once the form is there: its effects have run.
   await expect(page.locator('.gasto-form__titulo')).toBeFocused()
   const found = /\/varieties\/(\d+)\/prices\/new$/.exec(new URL(page.url()).pathname)
-  if (found?.[1] === undefined) throw new Error(`no variety id in ${page.url()}`)
+  if (found?.[1] === undefined) throw new Error(`no product id in ${page.url()}`)
   return Number(found[1])
 }
 
-test('Tab cycled through the dialog never focuses anything in the list, the variety page or the side rail', async ({ page }) => {
+test('Tab cycled through the dialog never focuses anything in the list, the product page or the side rail', async ({ page }) => {
   await openPriceModal(page)
   // The form kind's chrome: no side rail is drawn at all behind the modal.
   await expect(page.locator('nav.riel-lateral')).toHaveCount(0)
@@ -67,7 +67,7 @@ test('a click at another variety\'s list row never opens it: it lands on the bac
   await expectPath(page, pathTo(VARIETY, { id }))
 })
 
-test('Escape on an untouched form returns to the variety page', async ({ page }) => {
+test('Escape on an untouched form returns to the product page', async ({ page }) => {
   const id = await openPriceModal(page)
 
   await page.keyboard.press('Escape')

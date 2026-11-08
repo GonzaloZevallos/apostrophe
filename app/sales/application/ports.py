@@ -101,6 +101,13 @@ class SaleView:
     customer: SaleViewCustomer | None
     lines: tuple[SaleViewLine, ...]
 
+    @property
+    def number(self) -> int:
+        """The sale's number in its business (CONTEXT.md: Sale number); a stored sale
+        always has one."""
+        assert self.sale.number is not None, "only stored sales have a number"
+        return self.sale.number
+
 
 class SaleViews(Protocol):
     """Sales joined with the names a screen needs (docs/adr/0011), for one business.

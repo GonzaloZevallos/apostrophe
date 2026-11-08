@@ -19,10 +19,10 @@ test.use({ isMobile: true, hasTouch: true, viewport: { width: 375, height: 812 }
 const NOTICE = 'Go on to the setup'
 
 async function priceAVariety(page: import('@playwright/test').Page, name: string): Promise<void> {
-  await expect(page.getByRole('heading', { name: 'Add your first variety' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Add your first product' })).toBeVisible()
   await page.getByLabel(/^Name/).fill(name)
   await page.getByLabel(/^List price/).fill('9000')
-  await page.getByRole('button', { name: 'Save the variety' }).click()
+  await page.getByRole('button', { name: 'Save the product' }).click()
 }
 
 test('a new business goes from the invitation to Nueva venta from "Done", with no notice left', async ({
@@ -51,7 +51,7 @@ test('a new business goes from the invitation to Nueva venta from "Done", with n
   await page.getByRole('button', { name: 'Continue' }).click()
 
   await expect(page.getByRole('heading', { name: 'Done' })).toBeVisible()
-  await expect(page.getByText('Done · 1 variety', { exact: true })).toHaveCount(1)
+  await expect(page.getByText('Done · 1 product', { exact: true })).toHaveCount(1)
   await expect(page.getByText('Done · 1 entry', { exact: true })).toHaveCount(1)
   await page.getByRole('button', { name: 'Add my first sale' }).click()
   await expectPath(page, SALE_NEW)

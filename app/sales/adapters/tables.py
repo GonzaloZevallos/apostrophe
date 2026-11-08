@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
-from sqlalchemy import ForeignKey, Index, String
+from sqlalchemy import ForeignKey, Index, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base, UtcDateTime
@@ -22,10 +22,16 @@ PRICING_RULE_MAX_LENGTH = 10
 
 class SaleRow(Base):
     __tablename__ = "sale"
-    __table_args__ = (Index(None, "business_id", "sale_date"),)
+    __table_args__ = (
+        Index(None, "business_id", "sale_date"),
+        UniqueConstraint("business_id", "number"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
+    # The Sale number (CONTEXT.md, docs/adr/0073): given only by `SqlSales.add`, never
+    # defaulted, never reused.
+    number: Mapped[int]
     sale_date: Mapped[date]
     customer_id: Mapped[int | None] = mapped_column(ForeignKey("customer.id"))
     shipping_charged: Mapped[int]

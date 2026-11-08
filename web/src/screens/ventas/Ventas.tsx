@@ -36,6 +36,7 @@ import Icono from '../../components/Icono'
 import Insignia from '../../components/Insignia'
 import Loading from '../../components/Loading'
 import Notice from '../../components/Notice'
+import { type FixedValue, SALES_PERIODS } from '../../components/fixedSets'
 import Pestanas from '../../components/Pestanas'
 import SinConexion from '../../components/SinConexion'
 import { salesCount } from '../../format/counts'
@@ -47,20 +48,9 @@ import { useTranslation } from 'react-i18next'
 import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import { useViewport } from '../../shell/useViewport'
 import { COMMON_TEXT } from '../../copy/common'
+import ContentArea from '../../components/ContentArea'
 
-export type Period = 'hoy' | 'semana' | 'mes' | 'fechas'
-
-
-const PERIOD_LABEL: Record<Period, string> = {
-  hoy: COMMON_TEXT.today,
-  semana: COMMON_TEXT.week,
-  mes: COMMON_TEXT.month,
-  fechas: SALES_TEXT.dates,
-}
-
-const PERIODS: Period[] = ['hoy', 'semana', 'mes', 'fechas']
-
-const PESTANA_ITEMS = PERIODS.map((item) => ({ value: item, label: PERIOD_LABEL[item] }))
+export type Period = FixedValue<typeof SALES_PERIODS>
 
 function rangeFor(period: Period, today: string, custom: DateRange): DateRange {
   if (period === 'hoy') return todayRange(today)
@@ -114,13 +104,13 @@ export default function Ventas() {
   const total = sales.reduce((sum, sale) => sum + sale.total, 0)
 
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <div className="cuerpo">
         <div className="ventas__cabecera">
           <span className="encabezado__titulo">{COMMON_TEXT.sales}</span>
 
           <Pestanas
-            items={PESTANA_ITEMS}
+            items={SALES_PERIODS}
             value={period}
             onChange={setPeriod}
             ariaLabel={COMMON_TEXT.period}
@@ -220,6 +210,6 @@ export default function Ventas() {
           </>
         )}
       </div>
-    </main>
+    </ContentArea>
   )
 }

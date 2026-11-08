@@ -1,24 +1,24 @@
 ## Jobs
 
-**Cuando** cierro una semana o un mes, o quiero saber por qué un período anduvo bien o mal, **quiero** ver desde el teléfono qué variedades me dejan plata y cuánta, cómo se movieron las ventas, el Profit y el Cash en las últimas semanas y meses, qué día de la semana vende más y adónde se va la plata de las Expenses, **para** decidir qué reponer, a qué cambiarle el precio, qué empujar y en qué dejar de poner plata, sin la pestaña Análisis de la planilla y con Margins sacados del costo real de cada Lot.
+**Cuando** cierro una semana o un mes, o quiero saber por qué un período anduvo bien o mal, **quiero** ver desde el teléfono qué productos me dejan plata y cuánta, cómo se movieron las ventas, el Profit y el Cash en las últimas semanas y meses, qué día de la semana vende más y adónde se va la plata de las Expenses, **para** decidir qué reponer, a qué cambiarle el precio, qué empujar y en qué dejar de poner plata, sin la pestaña Análisis de la planilla y con Margins sacados del costo real de cada Lot.
 
-Sirve al job de resultados del brief ("When I look at a day, a week or a month, I want sales, profit and cash side by side, so I can tell whether I make money and how much I actually have"), a lo largo de los períodos y por variedad, y alimenta el job de stock. El control diario del Cash sigue siendo de Resultados (#7).
+Sirve al job de resultados del brief ("When I look at a day, a week or a month, I want sales, profit and cash side by side, so I can tell whether I make money and how much I actually have"), a lo largo de los períodos y por producto, y alimenta el job de stock. El control diario del Cash sigue siendo de Resultados (#7).
 
 **Cuando** cierro una semana o un mes en Analysis, o veo que uno dejó menos de lo que esperaba, **quiero** ver en la fila de ese período lo que me costó lo vendido (Cost of goods sold) y lo que perdí por Stock shortfall, al lado del Profit, **para** entender de dónde salió el Profit sin volver a Home ni hacer cuentas, y confiar en que Analysis y Home dicen lo mismo.
 
 Este job afina el primero para cada fila de semana y de mes; no es un job nuevo. Antes, el Cost of goods sold y el Stock shortfall de un período pasado no se veían en ningún lado: el Stock shortfall estaba solo dentro del Profit, sin poder separarlo, y Home muestra solo la semana y el mes en curso.
 
-**Cuando** saco gramos de mi propio stock sin venderlos (para convidar en una fiesta y que la gente conozca el negocio, o para consumo propio), **quiero** registrarlo desde el teléfono en pocos toques (fecha, variedades y gramos, Withdrawal reason), **para** mantener el stock bien y ver en el Profit lo que me costó promocionar el negocio y lo que consumí, sin registrar una venta que nadie hizo ni un Adjustment que se lee como flor perdida. (Acá lo sirven las líneas de costo por Withdrawal reason; el Stock withdrawal se define en stock.md.)
+**Cuando** saco gramos de mi propio stock sin venderlos (para convidar en una fiesta y que la gente conozca el negocio, o para consumo propio), **quiero** registrarlo desde el teléfono en pocos toques (fecha, productos y gramos, Withdrawal reason), **para** mantener el stock bien y ver en el Profit lo que me costó promocionar el negocio y lo que consumí, sin registrar una venta que nadie hizo ni un Adjustment que se lee como flor perdida. (Acá lo sirven las líneas de costo por Withdrawal reason; el Stock withdrawal se define en stock.md.)
 
 **Cuando** saco stock sin venderlo, **quiero** registrarlo bajo un Withdrawal reason con mis propias palabras, **para que** Home y Analysis muestren cuánto me cuesta cada tipo de Stock withdrawal y cuánto baja mi Profit. (GH-318, parte de Withdrawal reasons: acá lo sirve una línea de costo por Withdrawal reason en la cabecera del mes, en cada fila de semana y de mes y desde el First record, en el orden de la lista del negocio; la lista se define en stock.md.)
 
 **Cuando** llevo el negocio desde el teléfono entre pedidos o en medio de un chat con un cliente, varias veces por día, **quiero** que la app esté ordenada según lo que hago de verdad y con qué frecuencia, con Analysis a mano para la mirada semanal o mensual, **para** volver al cliente en vez de buscar entre menús. (El job de navegación, navigation.md.)
 
-**Cuando** quiero saber cómo me fue en un mes, desde el teléfono y entre otras cosas, **quiero** elegir primero el mes y leer cada cifra de Analysis de arriba abajo, sin desplazarme de costado ni hacer zoom, **para** saber si gané plata ese mes y qué variedades la dejaron. (GH-319, Analysis en el teléfono. Afina el primer job para el teléfono y cambia solo la disposición, nunca lo que muestra una sección. Antes, el dueño se desplazaba de costado y perdía a qué variedad o período pertenecía una cifra, o esperaba a estar en la computadora.)
+**Cuando** quiero saber cómo me fue en un mes, desde el teléfono y entre otras cosas, **quiero** elegir primero el mes y leer cada cifra de Analysis de arriba abajo, sin desplazarme de costado ni hacer zoom, **para** saber si gané plata ese mes y qué productos la dejaron. (GH-319, Analysis en el teléfono. Afina el primer job para el teléfono y cambia solo la disposición, nunca lo que muestra una sección. Antes, el dueño se desplazaba de costado y perdía a qué producto o período pertenecía una cifra, o esperaba a estar en la computadora.)
 
 Criterios de éxito:
 
-1. **Respuestas sin cuentas**: desde una sola pantalla en el teléfono, un vendedor puede nombrar la variedad de mayor Margin del mes elegido y la de menor Margin, la Best week de las últimas 8 semanas, el Best weekday y la Expense category que más se llevó ese mes.
+1. **Respuestas sin cuentas**: desde una sola pantalla en el teléfono, un vendedor puede nombrar el producto de mayor Margin del mes elegido y el de menor Margin, la Best week de las últimas 8 semanas, el Best weekday y la Expense category que más se llevó ese mes.
 2. **Un solo cálculo**: cada cifra es igual a lo que muestra Resultados (#7) para el mismo período y a un cálculo directo sobre las mismas ventas, Stock entries, Stock withdrawals, Payments y Expenses. Eso cubre ventas, Cost of goods sold, Stock shortfall, el costo de cada Withdrawal reason, Expenses, Profit y Cash, en cada fila de semana, cada fila de mes y desde el First record. Para la semana y el mes en curso, el Cost of goods sold y el Stock shortfall de las filas son iguales a los de Week y Month de Home. Para el mes en curso, el Stock shortfall es una sola cifra, que se lee igual en la cabecera del mes, en la fila del mes y en el Month de Home. 0 diferencias.
 3. **Costo honesto** (ADR-0009, ADR-0010):
    - Los Margins salen del costo real de cada Lot, como están hoy los Lots.
@@ -29,7 +29,7 @@ Criterios de éxito:
 4. **Nada leído solo por el color, nada inventado**: cada barra y cada fila llevan su propia cifra. Un período sin actividad muestra $0 o queda afuera por una regla explícita, nunca con una cifra de relleno.
 5. **Los negocios nunca se mezclan** (ADR-0004): cada cifra cubre solo el negocio de la Session, y los nombres de los Withdrawal reasons también.
 6. **Cada fila explica su Profit**: las 8 filas de semana y las 12 filas de mes muestran el Cost of goods sold, y el Stock shortfall cuando el período lo tiene, al lado de la línea de cada Withdrawal reason con Stock withdrawals en el período, las Expenses, el Profit y el Cash.
-7. **Se lee de arriba abajo en el teléfono**: a 320 px y a 246 px (texto al 130 %), con un nombre de variedad de 60 caracteres y cifras de nueve dígitos, el dueño puede cambiar de mes y leer cada sección sin desplazarse de costado.
+7. **Se lee de arriba abajo en el teléfono**: a 320 px y a 246 px (texto al 130 %), con un nombre de producto de 60 caracteres y cifras de nueve dígitos, el dueño puede cambiar de mes y leer cada sección sin desplazarse de costado.
 8. **Nada se pierde en el teléfono**: cada cifra de cada fila de tabla aparece en su tarjeta con la misma etiqueta existente y en el mismo orden, y el selector de mes es el primer control de la pantalla.
 9. **La computadora no cambia**: la captura de `AnalisisCompu` sale igual que antes de las tarjetas del teléfono.
 10. **Se lee de un vistazo**: en el teléfono cada cifra principal entra en una línea, ningún texto mide menos de 12 px y cada zona de toque, las flechas del mes incluidas, mide al menos 44×44.
@@ -37,7 +37,7 @@ Criterios de éxito:
 
 # Análisis
 
-Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada variedad: Margin por variedad de un mes elegido; ventas, Cost of goods sold, Stock shortfall, Profit y Cash de las últimas 8 semanas y los últimos 12 meses; el patrón por día de la semana; los totales desde el First record, y las Expenses por Expense category. Es de solo lectura y lo ve solo su negocio (ADR-0004). Cada cifra que comparte con Resultados (#7) sale del cálculo de #7. El Cost of goods sold, el Stock shortfall y el costo de los Stock withdrawals por Withdrawal reason siguen a los Lots como están hoy (ADR-0009, ADR-0010). Lee ventas, stock (Stock entries, Stock withdrawals y la lista de Withdrawal reasons), Payments y Expenses. Se llega desde More en el teléfono y desde la barra lateral en la computadora (navigation.md).
+Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada producto: Margin por producto de un mes elegido; ventas, Cost of goods sold, Stock shortfall, Profit y Cash de las últimas 8 semanas y los últimos 12 meses; el patrón por día de la semana; los totales desde el First record, y las Expenses por Expense category. Es de solo lectura y lo ve solo su negocio (ADR-0004). Cada cifra que comparte con Resultados (#7) sale del cálculo de #7. El Cost of goods sold, el Stock shortfall y el costo de los Stock withdrawals por Withdrawal reason siguen a los Lots como están hoy (ADR-0009, ADR-0010). Lee ventas, stock (Stock entries, Stock withdrawals y la lista de Withdrawal reasons), Payments y Expenses. Se llega desde More en el teléfono y desde la barra lateral en la computadora (navigation.md).
 
 ## Comportamiento
 
@@ -75,25 +75,25 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
   - El Profit, los Margins, los Margin percentages y el Average margin siguen sus propias reglas.
   - La API dice si una cifra está toda pendiente, una vez por cifra; el front solo le da formato.
 
-### El mes elegido, por variedad
+### El mes elegido, por producto
 
-- **Filas**: solo las variedades vendidas o regaladas ese mes. Una variedad que ese mes solo tuvo Stock withdrawals no tiene fila.
-- **Ventas sin envío**: la suma de los totales guardados de las Sale lines de la variedad ese mes. Un Gift cuenta $0 y un Special price su total tipeado.
+- **Filas**: solo los productos vendidos o regalados ese mes. Un producto que ese mes solo tuvo Stock withdrawals no tiene fila.
+- **Ventas sin envío**: la suma de los totales guardados de las Sale lines del producto ese mes. Un Gift cuenta $0 y un Special price su total tipeado.
 - **Participación en el mes**: sus ventas sin envío sobre las ventas sin envío del mes. No se muestra cuando las ventas sin envío del mes son $0.
-- **Gramos**: gramos vendidos y gramos regalados, como dos cifras. Un Adjustment negativo y un Stock withdrawal no son ninguna de las dos, y quedan afuera de los gramos, el costo y el Margin de toda variedad.
+- **Gramos**: gramos vendidos y gramos regalados, como dos cifras. Un Adjustment negativo y un Stock withdrawal no son ninguna de las dos, y quedan afuera de los gramos, el costo y el Margin de todo producto.
 - **Cost of goods sold**: lo que cuestan sus gramos vendidos y regalados, de sus Lots como están hoy, con la marca de pendiente cuando corresponde.
 - **Margin**: ventas de gramos con costo − Cost of goods sold con costo, en pesos; puede ser negativo. Sin gramos pendientes, las ventas de gramos con costo son iguales a las ventas sin envío.
-- **Margin percentage**: el Margin sobre las ventas de gramos con costo de la variedad. No se muestra cuando estas son $0 (solo regalada, o con todos los gramos pendientes).
-- **Gramos pendientes**: el Margin y el Margin percentage llevan "and N g without cost", con N contando solo los gramos pendientes vendidos y regalados de esa variedad. Ejemplo: 10 g vendidos a $10.000, 6 g de una Purchase de $3.000 y 4 g pendientes, muestran ventas $10.000, Margin $3.000 "and 4 g without cost" y 50%.
+- **Margin percentage**: el Margin sobre las ventas de gramos con costo del producto. No se muestra cuando estas son $0 (solo regalado, o con todos los gramos pendientes).
+- **Gramos pendientes**: el Margin y el Margin percentage llevan "and N g without cost", con N contando solo los gramos pendientes vendidos y regalados de ese producto. Ejemplo: 10 g vendidos a $10.000, 6 g de una Purchase de $3.000 y 4 g pendientes, muestran ventas $10.000, Margin $3.000 "and 4 g without cost" y 50%.
 - **Orden**: por Margin en pesos, de mayor a menor. Un Margin marcado se ordena por la cifra que muestra y conserva su marca.
 - **Cabecera del mes**:
   - las ventas (envío incluido), los gramos vendidos o regalados y el Average margin;
-  - el Average margin es el Margin total del mes sobre sus ventas de gramos con costo. Se marca cuando alguna variedad tiene gramos pendientes (contando solo gramos vendidos y regalados), y no tiene porcentaje cuando esas ventas son $0;
+  - el Average margin es el Margin total del mes sobre sus ventas de gramos con costo. Se marca cuando algún producto tiene gramos pendientes (contando solo gramos vendidos y regalados), y no tiene porcentaje cuando esas ventas son $0;
   - "Stock shortfall $ X" cuando el mes tiene algún Stock shortfall, con su propia marca de pendiente, o solo sus gramos pendientes cuando está todo pendiente. Es la misma cifra, y se lee igual, que la de la fila del mes y la del Month de Home;
   - "<motivo> $ X" para cada Withdrawal reason con un Stock withdrawal en el mes (por ejemplo "Marketing $ X" u "Own use $ X"), en el orden de la lista del negocio, cada una con su propia marca de pendiente (o solo sus gramos pendientes cuando está todo pendiente), aparte del Stock shortfall;
-  - la pantalla aclara que la tabla de variedades suma las ventas del mes menos el envío;
+  - la pantalla aclara que la tabla de productos suma las ventas del mes menos el envío;
   - la cabecera no lleva un total de Cost of goods sold.
-- **Un mes sin ventas ni Gifts**: totales en $0, sin filas de variedad y con una línea fija que dice que ese mes no se vendió nada. Su Stock shortfall y las líneas de sus Withdrawal reasons se siguen mostrando cuando los tiene.
+- **Un mes sin ventas ni Gifts**: totales en $0, sin filas de producto y con una línea fija que dice que ese mes no se vendió nada. Su Stock shortfall y las líneas de sus Withdrawal reasons se siguen mostrando cuando los tiene.
 
 ### Semana por semana (últimas 8) y mes por mes (últimos 12)
 
@@ -147,7 +147,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 
 ### En pantalla (`Analisis`, `AnalisisCompu`)
 
-- **Dónde**: una Tab root (navigation.md). En el teléfono, la opción de More "Analysis · Varieties, weeks, months and days"; en la computadora, "Analysis" en la barra lateral, debajo del separador.
+- **Dónde**: una Tab root (navigation.md). En el teléfono, la opción de More "Analysis · Products, weeks, months and days"; en la computadora, "Analysis" en la barra lateral, debajo del separador.
 - **Computadora**: la disposición de `AnalisisCompu`, con las tres secciones como tablas. La disposición del teléfono nunca la cambia: su captura sigue igual.
 - **Filas de semana y de mes**: en el teléfono son tarjetas (ver En el teléfono); en la computadora, cómo se ubican en una fila el Cost of goods sold, el Stock shortfall y las líneas de los Withdrawal reasons (líneas o subfilas) lo decide diseño. Cada cifra va en palabras, y lo pendiente y lo negativo se dicen con una palabra o un signo, nunca solo con el color, en los dos temas.
 - **Gráficos**: solo el acento y los tokens; cada barra lleva su cifra. Las marcas de mejor, las marcas de pendiente y los negativos se dicen con una palabra o una forma, nunca solo con el color.
@@ -159,17 +159,17 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 
 - **El selector de mes primero**: es el primer control de Analysis. La regla de orden que Expenses aplica a su propio selector de mes está acotada a Expenses y nunca llega a Analysis.
 - **Una sola disposición a la vez**:
-  - En ancho de teléfono, las tres secciones (por variedad, últimas 8 semanas, últimos 12 meses) se muestran como listas de tarjetas, y no hay ninguna tabla en la página.
+  - En ancho de teléfono, las tres secciones (por producto, últimas 8 semanas, últimos 12 meses) se muestran como listas de tarjetas, y no hay ninguna tabla en la página.
   - En ancho de computadora se muestran como tablas, y no hay ninguna tarjeta en la página.
   - El selector de mes, los títulos de las secciones y la columna lateral son los mismos elementos en las dos disposiciones.
   - Ninguna cifra queda expuesta dos veces a la tecnología de asistencia.
   - Analysis no tiene formularios, así que cruzar los 900 px no pierde nada.
-- **Tarjeta de variedad**: el nombre, después las ventas, la participación en el mes, los gramos vendidos, los gramos regalados, el Cost of goods sold y el Margin con su Margin percentage. La participación y el Margin percentage aparecen con las mismas reglas que en la computadora.
+- **Tarjeta de producto**: el nombre, después las ventas, la participación en el mes, los gramos vendidos, los gramos regalados, el Cost of goods sold y el Margin con su Margin percentage. La participación y el Margin percentage aparecen con las mismas reglas que en la computadora.
 - **Tarjeta de semana y tarjeta de mes**: la etiqueta del período, después las cifras de la fila en el orden de la fila (ver Semana por semana, más arriba). El Stock shortfall y la línea de cada Withdrawal reason aparecen solo cuando el período los tiene.
 - **Mismas cifras, mismo orden, mismas etiquetas**: cada tarjeta lleva cada cifra de la fila que reemplaza, en el orden de esa fila, con las etiquetas que ya tiene el Copy module (y, para un Withdrawal reason, su nombre). Nada se reordena, se esconde detrás de un toque ni se pliega, y no hay saltos entre secciones.
 - **Cifra principal**: las ventas son la cifra principal de una tarjeta. Entran en una línea, y su "$" nunca se separa de su número.
 - **Ajuste**:
-  - Los nombres, los nombres de Withdrawal reason y las etiquetas de período se cortan con puntos suspensivos. El nombre completo de una variedad se sigue leyendo en la computadora y en su página, y el de un Withdrawal reason en Settings → Business → Withdrawal reasons.
+  - Los nombres, los nombres de Withdrawal reason y las etiquetas de período se cortan con puntos suspensivos. El nombre completo de un producto se sigue leyendo en la computadora y en su página, y el de un Withdrawal reason en Settings → Business → Withdrawal reasons.
   - Las cifras nunca se cortan, nunca pasan a otra línea, nunca se parten y nunca pierden su "$".
   - Una marca de pendiente ("and N g without cost", o "N g without cost" cuando toda la cifra está pendiente) va en la línea de abajo de su cifra, dentro de la misma tarjeta, y nunca se corta ni se recorta. Así, una cifra con parte pendiente nunca se lee como completa.
   - Nada se desplaza de costado a 320 px ni a 246 px (texto al 130 %), con un nombre de 60 caracteres y cifras de nueve dígitos. Ningún texto mide menos de 12 px. Cada zona de toque mide al menos 44×44, las flechas del mes incluidas.
@@ -184,10 +184,10 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 
 ## Métricas
 
-- **Respuestas sin cuentas (criterio 1)**: una prueba del front sobre un negocio sembrado lee, solo desde la pantalla, la mejor y la peor variedad por Margin, la Best week marcada, el Best weekday marcado y la Expense category más grande del mes. Cada una coincide con la respuesta esperada.
+- **Respuestas sin cuentas (criterio 1)**: una prueba del front sobre un negocio sembrado lee, solo desde la pantalla, el mejor y el peor producto por Margin, la Best week marcada, el Best weekday marcado y la Expense category más grande del mes. Cada una coincide con la respuesta esperada.
 - **Un solo cálculo (criterio 2)**:
   - En cada semana, cada mes y la ventana histórica de una historia sembrada, las ventas, el Cost of goods sold, el Stock shortfall, el costo de cada Withdrawal reason, las Expenses, el Profit y el Cash son iguales a las cifras de Resultados (#7) y a un cálculo directo. 0 diferencias.
-  - Las ventas de la tabla de variedades suman las ventas del mes menos su envío.
+  - Las ventas de la tabla de productos suman las ventas del mes menos su envío.
   - La historia sembrada incluye un Adjustment negativo con costo, uno pendiente, una Sale line con gramos pendientes, tres o más Withdrawal reasons (uno renombrado y uno reordenado), un Stock withdrawal con costo de cada Withdrawal reason y un Stock withdrawal pendiente.
     - Sobre ella, el Cost of goods sold, el Stock shortfall y la línea de cada Withdrawal reason de cada fila de semana y de mes son iguales a un cálculo directo.
     - La semana y el mes en curso son iguales a `periods.week` y `periods.month` de `/panel`.
@@ -200,11 +200,11 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
   - Sus filas de semana y de mes, y el Profit desde el First record, llevan su costo y son iguales a las cifras de Home para la misma semana y el mismo mes. 0 diferencias.
   - Un negocio cuyo único registro es un Stock withdrawal muestra esa historia, no la línea de que no hay nada para analizar.
 - **Costo honesto (criterio 3)**: 100% de aprobación.
-  - Una Stock entry o un Stock withdrawal con fecha atrasada o editados mueven el costo y el Margin de las semanas, los meses y las variedades pasados afectados en la siguiente lectura, y nada más.
+  - Una Stock entry o un Stock withdrawal con fecha atrasada o editados mueven el costo y el Margin de las semanas, los meses y los productos pasados afectados en la siguiente lectura, y nada más.
   - Los gramos pendientes siempre muestran sus gramos y nunca se costean en $0.
-  - Un Adjustment negativo baja el Profit en su fecha por el costo de sus Lots, aparece en el Stock shortfall de su período y no mueve el Margin ni el Cost of goods sold de ninguna variedad.
+  - Un Adjustment negativo baja el Profit en su fecha por el costo de sus Lots, aparece en el Stock shortfall de su período y no mueve el Margin ni el Cost of goods sold de ningún producto.
   - Un Stock withdrawal de cada Withdrawal reason baja el Profit en su fecha por el costo de sus Lots y aparece en la línea de su Withdrawal reason. No mueve nada de esto:
-    - la fila, los gramos, el Margin ni la participación de una variedad;
+    - la fila, los gramos, el Margin ni la participación de un producto;
     - el Average margin;
     - la Best week ni el Best weekday;
     - el Cost of goods sold ni el Stock shortfall.
@@ -217,12 +217,12 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
   - Una cifra toda pendiente muestra gramos, nunca "$ 0": en una fila, en la cabecera del mes (Stock shortfall y la línea de cada Withdrawal reason) y en las líneas desde el First record. Un mes en curso cuyo único Stock shortfall es de 2 g sin costo muestra "2 g without cost" tanto en la cabecera como en la fila.
 - **Las filas explican el Profit (criterio 6)**: una prueba del front sobre una historia sembrada lee el Cost of goods sold en las 8 filas de semana y las 12 filas de mes, en el orden indicado, el Stock shortfall solo en los períodos con un Adjustment negativo, y la línea de cada Withdrawal reason solo en los períodos con un Stock withdrawal de ese Withdrawal reason, en el orden de la lista.
 - **Matriz de Margin**: 100% de aprobación. Cubre:
-  - una variedad solo regalada (Margin negativo, sin Margin percentage);
+  - un producto solo regalado (Margin negativo, sin Margin percentage);
   - una mezcla de vendida y regalada;
   - gramos pendientes: 10 g por $10.000, con 6 g que cuestan $3.000, muestran $3.000 "and 4 g without cost" y 50%, ordenada por la cifra que muestra;
   - una línea partida entre gramos con costo y pendientes, con el redondeo de mitad hacia arriba de sus ventas con costo;
-  - un Adjustment negativo que queda afuera de la tabla de variedades y cuenta como Stock shortfall;
-  - un Stock withdrawal que queda afuera de la tabla de variedades y cuenta en la línea de su Withdrawal reason;
+  - un Adjustment negativo que queda afuera de la tabla de productos y cuenta como Stock shortfall;
+  - un Stock withdrawal que queda afuera de la tabla de productos y cuenta en la línea de su Withdrawal reason;
   - un mes con solo Gifts (sin participación ni porcentaje de Average margin).
 - **Best week y Best weekday**: 100% de aprobación. Cubre:
   - una Best week elegida por ventas, no por Profit;
@@ -232,7 +232,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 - **Nada inventado (criterio 4)**:
   - ninguna semana ni mes antes del First record;
   - filas en $0 dentro de la historia, Cost of goods sold incluido;
-  - un mes vacío muestra su línea fija y ninguna fila de variedad;
+  - un mes vacío muestra su línea fija y ninguna fila de producto;
   - un período sin Adjustment negativo no muestra línea de Stock shortfall;
   - un período sin Stock withdrawal de un Withdrawal reason no muestra línea para ese Withdrawal reason;
   - un negocio sin registros muestra su línea fija;
@@ -241,7 +241,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
   - el Profit y el Cash;
   - la cabecera del mes;
   - las cifras desde el First record;
-  - la tabla por variedad;
+  - la tabla por producto;
   - la Best week.
 
   El único cambio de presentación fuera de las filas es un Stock shortfall o la línea de un Withdrawal reason toda pendiente en la cabecera o desde el First record, que ahora muestra solo sus gramos en vez de "$ 0 and N g without cost".
@@ -264,7 +264,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
   - No se agrega ninguna fuera de las reglas de gate.md.
 - **Aislamiento (criterio 5)**: cada ruta de Analysis está en el barrido y responde solo las cifras y los nombres de Withdrawal reason de su propio negocio, nunca los datos del otro negocio sembrado.
 - **Sin eco**: después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen montos ni nombres.
-- **Velocidad**: la pantalla responde en menos de 300 ms con un año de unos cientos de ventas y unas decenas de variedades (el disparador de revisión de ADR-0010).
+- **Velocidad**: la pantalla responde en menos de 300 ms con un año de unos cientos de ventas y unas decenas de productos (el disparador de revisión de ADR-0010).
 - **Sin curl**: la corrida de punta a punta del front:
   - abre More → Analysis en el teléfono, y la opción de la barra lateral en la computadora;
   - retrocede un mes;
@@ -276,7 +276,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 - Un rango de fechas a medida (Dates) o un selector de semana.
 - Editar cualquier cosa desde Analysis, la lista de Withdrawal reasons incluida (se edita en Settings → Business → Withdrawal reasons).
 - Un monto inicial de Cash o la plata en mano.
-- Stock shortfall por variedad; el costo de cada Withdrawal reason por variedad.
+- Stock shortfall por producto; el costo de cada Withdrawal reason por producto.
 - Un total de Cost of goods sold en la cabecera del mes o desde el First record.
 - Gráficos, variaciones o comparaciones entre períodos.
 - Cambiar la nota fija de Home "includes pending cost".
@@ -299,7 +299,7 @@ Cada pasaje nombra el ADR que lo decide, la parte que lo va a entregar y la orac
 
 Decidido en docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; lo entrega la parte de unidades.
 
-- Nunca se van a sumar cantidades de unidades distintas. Una cantidad pendiente se va a contar por unidad, así que una cifra va a decir "and N <label> without cost" una vez por cada unidad que tenga pendiente. Los gramos de una semana, de un mes y de una variedad van a pasar a ser un monto por unidad, cada uno con su etiqueta.
+- Nunca se van a sumar cantidades de unidades distintas. Una cantidad pendiente se va a contar por unidad, así que una cifra va a decir "and N <label> without cost" una vez por cada unidad que tenga pendiente. Los gramos de una semana, de un mes y de un producto van a pasar a ser un monto por unidad, cada uno con su etiqueta.
 - Va a reemplazar: "Lleva "and N g without cost", donde N suma cada gramo pendiente que tiene detrás" y "**Gramos**: gramos vendidos y gramos regalados, como dos cifras."
 
 ### Plata
@@ -321,4 +321,4 @@ Decidido en docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-i
 Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; lo entrega la parte de categorías.
 
 - La tabla del mes elegido se va a poder agrupar por categoría y subcategoría, además de por producto.
-- Va a reemplazar: "**Mes elegido**: abre en el mes en curso en hora argentina" y "la pantalla aclara que la tabla de variedades suma las ventas del mes menos el envío".
+- Va a reemplazar: "**Mes elegido**: abre en el mes en curso en hora argentina" y "la pantalla aclara que la tabla de productos suma las ventas del mes menos el envío".

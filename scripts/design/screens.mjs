@@ -37,6 +37,9 @@ export function assertScreens(screens, pantallas = PANTALLAS) {
     if ('viewport' in s && !isViewport(s.viewport)) {
       throw new Error(`${s.screen}: viewport must be two positive integers, width and height`)
     }
+    if ('design_viewport' in s && !isViewport(s.design_viewport)) {
+      throw new Error(`${s.screen}: design_viewport must be two positive integers, width and height`)
+    }
     if ('steps' in s) assertSteps(s)
     if ('needs' in s) assertNeeds(s, all, seen)
     if ('design' in s || 'section' in s) assertDesign(s, pantallas)
@@ -46,6 +49,24 @@ export function assertScreens(screens, pantallas = PANTALLAS) {
       throw new Error(`${s.screen}: an entry that reaches ${LISTO} must name an account of its own`)
     }
   }
+}
+
+// The phone every row is captured at unless it names a `viewport`.
+/** @type {readonly [number, number]} */
+export const PHONE = [390, 844]
+
+// The size of each side's browser context. The built side is `viewport ?? PHONE`, as it has always
+// been. The design side is `design_viewport` when the row has one (a drawing whose own width is not
+// the row's viewport), else the same size as the built side. `design_viewport` is read in three places: the
+// guard above, here (the contexts' sizes), and `composeSheet` (comparisons.mjs), which asks only whether it is set.
+/**
+ * @param {Readonly<Record<string, unknown>>} s
+ * @returns {{ design: readonly [number, number], built: readonly [number, number] }}
+ */
+export function viewportsOf(s) {
+  const built = /** @type {readonly [number, number]} */ (s.viewport ?? PHONE)
+  const design = /** @type {readonly [number, number]} */ (s.design_viewport ?? built)
+  return { design, built }
 }
 
 /** @param {unknown} value */

@@ -49,6 +49,7 @@ import { useLabel } from '../../i18n/label'
 import { HOME } from '../../routes'
 import { COMMON_TEXT } from '../../copy/common'
 import { CHECKLIST_REQUIRED, CHECKLIST_OPTIONAL } from '../../copy/inicio'
+import ContentArea from '../../components/ContentArea'
 
 export { DISCARD_DETAIL, PARTLY_SAVED_DETAIL }
 export const DISCARD_QUESTION = ONBOARDING_TEXT.discardWhatYouTyped
@@ -117,7 +118,7 @@ export default function OnboardingStep({
   }
 
   return (
-    <main className="pantalla onboarding">
+    <ContentArea as="main" className="pantalla onboarding">
       <div className="onboarding__columna">
         {isFirst(slug) && <BrandMark variant="lockup" />}
         <div className={`onboarding__cabecera${previous === undefined ? ' onboarding__cabecera--derecha' : ''}`}>
@@ -185,6 +186,6 @@ export default function OnboardingStep({
           onCancel={() => setAskingSkip(null)}
         />
       )}
-    </main>
+    </ContentArea>
   )
 }

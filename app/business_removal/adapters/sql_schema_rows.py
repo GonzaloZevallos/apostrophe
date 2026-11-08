@@ -81,12 +81,21 @@ class SqlSchemaRows:
         business = self._table(BUSINESS_TABLE)
         app_user = self._table(APP_USER_TABLE)
         statement = (
-            select(business.c.id, business.c.name, business.c.language)
+            select(
+                business.c.id,
+                business.c.name,
+                business.c.language,
+                business.c.last_sale_number,
+            )
             .select_from(app_user.join(business, business.c.id == app_user.c.business_id))
             .where(app_user.c.email == normalized)
         )
         row = self._session.execute(statement).first()
-        return None if row is None else BusinessRef(row.id, row.name, row.language)
+        return (
+            None
+            if row is None
+            else BusinessRef(row.id, row.name, row.language, row.last_sale_number)
+        )
 
     def rows(self, table: str, business_id: int) -> list[dict[str, object]]:
         sa_table = self._table(table)

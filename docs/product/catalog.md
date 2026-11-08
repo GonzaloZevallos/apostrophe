@@ -1,51 +1,51 @@
 # Catalog
 
-El texto que les ofrece a los Customers de un negocio las Varieties que se pueden vender hoy. Lo ve solo su **Business** (ADR-0004). Se arma a partir de:
-- los **Catalog attributes** de cada **Variety**;
+El texto que les ofrece a los Customers de un negocio los Products que se pueden vender hoy. Lo ve solo su **Business** (ADR-0004). Se arma a partir de:
+- los **Catalog attributes** de cada **Product**;
 - su **Current price** hoy (varieties.md);
 - su **Stock status** en este momento (stock.md);
 - las **Pricing settings** del Business (pricing-settings.md), para la línea de Bulk price;
 - el **Shown language** del Business, para las líneas fijas (stored-language.md);
 
-entre el **Catalog header and footer** propios del Business. El **Pinned catalog** (pinned-catalog.md) envía exactamente este texto por el bot de Telegram propio del Business y lo mantiene al día. Share y Copy quedan para enviarlo a mano, en una forma que se pega en cualquier app de chat con sus saltos de línea (ver Copy y Share). Una **Archived variety** (varieties.md) nunca forma parte de él.
+entre el **Catalog header and footer** propios del Business. El **Pinned catalog** (pinned-catalog.md) envía exactamente este texto por el bot de Telegram propio del Business y lo mantiene al día. Share y Copy quedan para enviarlo a mano, en una forma que se pega en cualquier app de chat con sus saltos de línea (ver Copy y Share). Un **Archived product** (varieties.md) nunca forma parte de él.
 
 Dónde viven sus partes (navigation.md):
-- la pantalla del **Catalog** (`/varieties/catalog`) se abre desde "Send catalog" en Varieties;
-- los atributos de una Variety se editan en su página, en "In the catalog";
+- la pantalla del **Catalog** (`/varieties/catalog`) se abre desde "Send catalog" en Products;
+- los atributos de un Product se editan en su página, en "In the catalog";
 - el header y el footer se editan en Settings → Catalog message (o, hasta que exista ese grupo, en el lugar provisorio al que se llega desde la pantalla del Catalog; ver más abajo).
 
 ## Jobs
 
-**Cuando** cambia un precio, se agota una variedad o empiezo a ofrecer una, **quiero** abrir el texto del Catalog que la app ya armó a partir de los Current prices y el stock de hoy, revisarlo, y compartirlo o copiarlo con un toque, **para** mandárselo yo mismo a mis clientes (por WhatsApp, Telegram o Instagram) sin volver a tipear un precio ni el nombre de una variedad, y que mis clientes nunca vean un precio desactualizado ni una variedad que no puedo vender.
+**Cuando** cambia un precio, se agota un producto o empiezo a ofrecer uno, **quiero** abrir el texto del Catalog que la app ya armó a partir de los Current prices y el stock de hoy, revisarlo, y compartirlo o copiarlo con un toque, **para** mandárselo yo mismo a mis clientes (por WhatsApp, Telegram o Instagram) sin volver a tipear un precio ni el nombre de un producto, y que mis clientes nunca vean un precio desactualizado ni un producto que no puedo vender.
 
 Configurar los Catalog attributes y el Catalog header and footer es el paso de configuración de este mismo job. Mantener el Pinned catalog al día por sí solo (Test send, Publish, fijarlo) es el job de Telegram de BRIEF.md, que sirve pinned-catalog.md, que reutiliza este texto tal cual.
 
 **Cuando** quiero mandarle el Catalog de hoy a mano a un cliente o a un chat, **quiero** copiarlo con un toque y pegarlo en cualquier lado para que se lea como en pantalla, **para** mandarlo enseguida sin volver a tipear ni corregir nada. (Lo sirven las versiones plana y enriquecida de Copy y Share, que envía la versión plana de Copy.)
 
-**Cuando** configuro cómo cobra mi negocio, registro el precio de una variedad o entrego un pedido, **quiero** que la app use solo las Pricing rules que tiene mi negocio, **para** cobrarle a cada cliente exactamente lo que quiero cobrar sin ver campos que no me corresponden. (Se define en pricing-settings.md: acá lo sirven la línea de Bulk price, que sigue a Bulk price, y que el VIP price nunca llega a los clientes.)
+**Cuando** configuro cómo cobra mi negocio, registro el precio de un producto o entrego un pedido, **quiero** que la app use solo las Pricing rules que tiene mi negocio, **para** cobrarle a cada cliente exactamente lo que quiero cobrar sin ver campos que no me corresponden. (Se define en pricing-settings.md: acá lo sirven la línea de Bulk price, que sigue a Bulk price, y que el VIP price nunca llega a los clientes.)
 
 **Cuando** llevo mi negocio desde el teléfono entre pedidos o en medio de un chat con un cliente, varias veces por día, **quiero** que la app esté ordenada según lo que hago de verdad y con qué frecuencia, **para** volver al cliente en vez de buscar entre menús. (Es el job de navegación, navigation.md: acá lo sirve la pantalla del Catalog, a 2 toques como máximo desde cualquier Tab root.)
 
-**Cuando** un cliente me pregunta qué tengo o cuánto sale algo, o entra flor, se termina o cambia de precio, **quiero** abrir una variedad y encontrar todo sobre ella en su propia página, que la lista me diga de un vistazo qué tengo, qué se está por terminar y qué no puedo vender, y tener el Catalog de hoy a un toque de esa lista, listo para compartir desde el teléfono, **para** contestarle al cliente, registrar lo que entró y mandar un Catalog al día sin moverme entre pantallas, y que mis clientes nunca reciban un precio desactualizado ni una variedad que no puedo vender. (El job de navegación aplicado a las Varieties, el stock y el Catalog, varieties.md: acá lo sirven la pantalla del Catalog y Share.)
+**Cuando** un cliente me pregunta qué tengo o cuánto sale algo, o entra flor, se termina o cambia de precio, **quiero** abrir un producto y encontrar todo sobre él en su propia página, que la lista me diga de un vistazo qué tengo, qué se está por terminar y qué no puedo vender, y tener el Catalog de hoy a un toque de esa lista, listo para compartir desde el teléfono, **para** contestarle al cliente, registrar lo que entró y mandar un Catalog al día sin moverme entre pantallas, y que mis clientes nunca reciban un precio desactualizado ni un producto que no puedo vender. (El job de navegación aplicado a los Products, el stock y el Catalog, varieties.md: acá lo sirven la pantalla del Catalog y Share.)
 
-**Cuando** una variedad que cargué por error, o una con la que ya no trabajo, sigue apareciendo en mis listas y selectores, **quiero** sacarla desde el teléfono en pocos toques, eliminándola si nunca se movió y archivándola si tiene historial, **para que** mis listas muestren solo lo que todavía vendo, ninguna cifra pasada de ventas, stock, costo o Profit cambie, y pueda volver a tenerla exactamente como estaba si empiezo a venderla de nuevo. (Acá lo sirve dejar las Archived varieties fuera del texto y de lo que no sale; se define en varieties.md.)
+**Cuando** un producto que cargué por error, o uno con el que ya no trabajo, sigue apareciendo en mis listas y selectores, **quiero** sacarlo desde el teléfono en pocos toques, eliminándolo si nunca se movió y archivándolo si tiene historial, **para que** mis listas muestren solo lo que todavía vendo, ninguna cifra pasada de ventas, stock, costo o Profit cambie, y pueda volver a tenerlo exactamente como estaba si empiezo a venderlo de nuevo. (Acá lo sirve dejar los Archived products fuera del texto y de lo que no sale; se define en varieties.md.)
 
 **Cuando** mi negocio trabaja en un idioma que no es el inglés, **quiero** que el Catalog de mis clientes hable ese idioma de punta a punta, incluidas las líneas fijas y no solo el header y el footer que tipeé, y que un negocio abierto en ese idioma arranque con su header, su footer y sus Expense categories ya en él, **para que** lo que leen los clientes sea coherente y yo no tenga nada que traducir ni volver a tipear. Mientras mi negocio está en inglés, no cambia absolutamente nada de lo que vemos yo o mis clientes. (Compartido con stored-language.md: acá lo sirven las líneas fijas, que siguen al Shown language, y los valores por defecto del header y el footer, que siguen al Stored language al abrirse.)
 
 Criterios de éxito:
 
 1. **Texto exacto**: el texto del Catalog sigue exactamente el formato de la planilla.
-   - El header, después un bloque por Variety, después el footer.
+   - El header, después un bloque por Product, después el footer.
    - Cada bloque tiene su emoji y su nombre en negrita, el Indica share, el Aroma, el List price por gramo y la línea de Bulk price.
    - Los marcadores `**bold**` quedan en el texto (`catalog.text` y lo que envía el Pinned catalog; Copy y Share sacan la versión plana, ver más abajo).
    - La plata se escribe como `$11.000`.
    - Una línea se deja afuera cuando le falta su dato (Indica share, Aroma, Bulk price), y la línea de Bulk price también mientras Bulk price está desactivado.
    - Se prueba contra un conjunto de referencia con 0 diferencias.
-2. **Hoy, solo lo que se puede vender**: una Variety aparece solo cuando no está archivada, se muestra, tiene un Current price en la fecha de hoy en Argentina y tiene Stock mayor que cero en este momento.
-   - Las Varieties archivadas, ocultas, sin precio, agotadas y que nunca tuvieron Stock quedan afuera.
+2. **Hoy, solo lo que se puede vender**: un Product aparece solo cuando no está archivado, se muestra, tiene un Current price en la fecha de hoy en Argentina y tiene Stock mayor que cero en este momento.
+   - Los Products archivados, ocultos, sin precio, agotados y que nunca tuvieron Stock quedan afuera.
    - El Stock bajo sigue adentro.
-3. **Rápido, desde el teléfono**: desde Varieties → "Send catalog", el vendedor comparte o copia el texto de hoy en unos segundos sin tipear nada. Share le pasa a la hoja nativa de compartir exactamente la versión plana de Copy; sin hoja de compartir, queda Copy. Una hoja de compartir que nunca termina nunca deja la pantalla trabada: Share y Copy siguen usables. Esto incluye el teléfono en la red de la casa por http plano. No hay ninguna llamada a la API a mano.
-4. **Sin adivinar por qué**: cada Variety sin archivar que no sale da un motivo, el primero que corresponda: oculta, sin precio hoy, después agotada o sin movimientos. Se dice con palabra, nunca solo por color.
+3. **Rápido, desde el teléfono**: desde Products → "Send catalog", el vendedor comparte o copia el texto de hoy en unos segundos sin tipear nada. Share le pasa a la hoja nativa de compartir exactamente la versión plana de Copy; sin hoja de compartir, queda Copy. Una hoja de compartir que nunca termina nunca deja la pantalla trabada: Share y Copy siguen usables. Esto incluye el teléfono en la red de la casa por http plano. No hay ninguna llamada a la API a mano.
+4. **Sin adivinar por qué**: cada Product sin archivar que no sale da un motivo, el primero que corresponda: oculto, sin precio hoy, después agotado o sin movimientos. Se dice con palabra, nunca solo por color.
 5. **Los Businesses nunca se mezclan** (ADR-0004): los atributos, el header y el footer pertenecen a un solo Business. El texto y la lista nunca incluyen datos de otro Business.
 6. **Los clientes nunca ven el VIP price**: el texto nunca lo lleva, sean cuales sean los interruptores.
 7. **Un solo idioma de punta a punta**: para un Business cuyo Shown language no es el inglés, cada línea fija del texto (y la línea vacía del Pinned catalog) está en ese idioma, en la pantalla del Catalog, Test it, Publish y la Upkeep por igual. Un Business en inglés en la misma corrida sigue en inglés.
@@ -54,7 +54,7 @@ Criterios de éxito:
 
 ## Comportamiento
 
-### Catalog attributes, por Variety
+### Catalog attributes, por Product
 
 - **Emoji**: opcional, exactamente un emoji. Texto común o más de un emoji se rechaza. Sin ninguno, la línea del nombre no lleva un emoji de reemplazo.
 - **Indica share**: número entero opcional de 0 a 100; el resto es sativa. En inglés se lee "• N% indica / (100−N)% sativa", incluidos los extremos 0 y 100. Sin ninguno, la línea se deja afuera.
@@ -64,11 +64,11 @@ Criterios de éxito:
   - Vacío significa que no hay, y la línea se deja afuera.
   - Se permite `*` (ver Marcadores de negrita).
 - **Se muestra**: sí o no.
-  - Sí por defecto para una Variety nueva.
-  - Sí para cada Variety que existía cuando salió el Catalog.
-- **Cuáles se pueden editar**: toda Variety sin archivar, incluidas las que quedan afuera por falta de precio o de Stock. Los atributos de una Archived variety son de solo lectura hasta que se restaura, y archivarla o restaurarla los conserva, incluida la marca de si se muestra (varieties.md).
+  - Sí por defecto para un Product nuevo.
+  - Sí para cada Product que existía cuando salió el Catalog.
+- **Cuáles se pueden editar**: todo Product sin archivar, incluidos los que quedan afuera por falta de precio o de Stock. Los atributos de un Archived product son de solo lectura hasta que se restaura, y archivarlo o restaurarlo los conserva, incluida la marca de si se muestra (varieties.md).
 - **Sin efectos colaterales**: los atributos nunca tocan precios, Stock ni Sales.
-- **Dónde**: se editan solo en la página propia de la Variety, en su sección "In the catalog" (varieties.md), nunca en la pantalla del Catalog.
+- **Dónde**: se editan solo en la página propia del Product, en su sección "In the catalog" (varieties.md), nunca en la pantalla del Catalog.
 
 ### Catalog header and footer, por negocio
 
@@ -85,9 +85,9 @@ Criterios de éxito:
 
 ### El texto del Catalog
 
-- **Disposición**: el header, después un bloque por cada Variety que califica, ordenadas por nombre, después el footer. Hay una línea en blanco entre secciones, y un header o un footer en blanco no deja una línea en blanco de más.
-- **Cuáles califican**: una Variety sin archivar, que se muestra, que tiene un Current price hoy en hora argentina y que tiene Stock mayor que cero. El Stock bajo califica. Una Archived variety nunca califica, sean cuales sean su marca, su precio o su Stock.
-- **Un bloque de Variety** (se muestra la redacción en inglés):
+- **Disposición**: el header, después un bloque por cada Product que califica, ordenados por nombre, después el footer. Hay una línea en blanco entre secciones, y un header o un footer en blanco no deja una línea en blanco de más.
+- **Cuáles califican**: un Product sin archivar, que se muestra, que tiene un Current price hoy en hora argentina y que tiene Stock mayor que cero. El Stock bajo califica. Un Archived product nunca califica, sean cuales sean su marca, su precio o su Stock.
+- **Un bloque de Product** (se muestra la redacción en inglés):
   - `<emoji> **<name>**`, o `**<name>**` sin emoji;
   - `• N% indica / M% sativa`, solo con Indica share;
   - `• Aroma/flavor: <aroma>`, solo con Aroma;
@@ -108,7 +108,7 @@ Criterios de éxito:
 
 ### Marcadores de negrita
 
-- **Permitidos en todos lados**: el vendedor puede tipear `**` en el header, el footer, el Aroma y el nombre de la Variety. Ningún campo rechaza `*`.
+- **Permitidos en todos lados**: el vendedor puede tipear `**` en el header, el footer, el Aroma y el nombre del Product. Ningún campo rechaza `*`.
 - **Se conservan en el texto como se tipearon**: el texto del Catalog (`catalog.text`, y lo que envía el Pinned catalog) conserva cada marcador exactamente como se tipeó. No se escapa ni se quita nada, tampoco cuando un nombre que contiene `**` queda envuelto en los `**` propios de la app.
 - **Regla de emparejamiento**: lo que sea que muestre el texto lee los marcadores `**` de izquierda a derecha y los empareja en orden.
   - El texto entre cada par va en negrita, y los marcadores de ese par se ocultan.
@@ -118,8 +118,8 @@ Criterios de éxito:
 ### En pantalla: la pantalla del Catalog
 
 - **Ruta**: `/varieties/catalog`. El viejo `/catalogo` redirige ahí de forma permanente (navigation.md).
-- **Se abre desde**: "Send catalog" en Varieties, y el aviso "Your Telegram catalog is out of date" de Home. Es un detalle (navigation.md): la barra o la barra lateral y "‹ Varieties", sin "+ New sale".
-- **Siempre se abre**, también cuando nada califica: muestra entonces el estado vacío, y el Pinned catalog conserva su propio mensaje vacío y "Up to date" (pinned-catalog.md). "Send catalog" está desactivado, con su motivo en palabras (p. ej. "Add a variety with a price and its stock"), solo mientras se muestra la First-run checklist y nada califica (navigation.md).
+- **Se abre desde**: "Send catalog" en Products, y el aviso "Your Telegram catalog is out of date" de Home. Es un detalle (navigation.md): la barra o la barra lateral y "‹ Products", sin "+ New sale".
+- **Siempre se abre**, también cuando nada califica: muestra entonces el estado vacío, y el Pinned catalog conserva su propio mensaje vacío y "Up to date" (pinned-catalog.md). "Send catalog" está desactivado, con su motivo en palabras (p. ej. "Add a product with a price and its stock"), solo mientras se muestra la First-run checklist y nada califica (navigation.md).
 - **"How it looks in Telegram"**: el texto como lo lee un cliente. No cambia por cómo funciona Copy.
   - La negrita sigue la regla de emparejamiento de arriba.
   - Cada otra línea, salto, línea en blanco, emoji y precio es idéntico a la versión plana de Copy.
@@ -144,13 +144,13 @@ Criterios de éxito:
   - Funciona en cualquier estado en que esté Share, incluido un compartir que no terminó.
   - Una falla muestra un "Could not copy." fijo y ningún toast. Ningún mensaje lleva texto del Catalog, y no hay ningún estado que diga qué versión se copió.
 - **El estado del Pinned catalog y Publish** (pinned-catalog.md): "Up to date" u "Out of date" con su motivo fijo, y Publish. Cuando Publish no está disponible, dice por qué en palabras y enlaza a donde están los Bot settings: Settings → Integrations, o el lugar provisorio hasta que exista.
-- **Lo que no sale, y por qué**: cada Variety sin archivar que queda fuera del Catalog de hoy, por nombre, cada una con un motivo, el primero que corresponda:
-  1. oculta por el vendedor ("hidden");
+- **Lo que no sale, y por qué**: cada Product sin archivar que queda fuera del Catalog de hoy, por nombre, cada uno con un motivo, el primero que corresponda:
+  1. oculto por el vendedor ("hidden");
   2. sin precio hoy ("no price");
-  3. las propias palabras del Stock: agotada ("sold out") o sin movimientos ("no entries").
+  3. las propias palabras del Stock: agotado ("sold out") o sin movimientos ("no entries").
 
-  Cada motivo se dice con palabra, nunca solo por color (p. ej. "Sir Jack, sold out · Mango Bomb, no price · X, hidden"). La redacción exacta es de diseño. Las Archived varieties no se listan acá.
-- **Enlaces**: cada Variety nombrada en la vista previa o en lo que no sale abre la sección "In the catalog" de esa Variety en su página. "Edit header and footer" abre Settings → Catalog message, o el lugar provisorio hasta que exista.
+  Cada motivo se dice con palabra, nunca solo por color (p. ej. "Sir Jack, sold out · Mango Bomb, no price · X, hidden"). La redacción exacta es de diseño. Los Archived products no se listan acá.
+- **Enlaces**: cada Product nombrado en la vista previa o en lo que no sale abre la sección "In the catalog" de ese Product en su página. "Edit header and footer" abre Settings → Catalog message, o el lugar provisorio hasta que exista.
 - **La pantalla en sí no edita ningún header, footer ni dato de los Bot settings**: solo enlaza afuera (navigation.md).
 - **El lugar provisorio** (una excepción deliberada y provisoria mientras no existan Settings → Integrations y Catalog message):
   - tiene los Bot settings (token, chat del canal, chat propio, Test it) y el header y el footer, funcionando exactamente como antes, sin rehacer nada;
@@ -158,9 +158,9 @@ Criterios de éxito:
   - es un formulario: "Close" vuelve por el historial, y sin historial a la pantalla del Catalog; salir con cambios sin guardar pregunta antes;
   - no tiene pestaña, acceso en More, grupo en Settings ni marca de "coming soon", y no muestra estado del Pinned catalog ni Publish;
   - el propio issue de Settings redirige los dos enlaces y lo quita. Si Settings ya existe, no se construye.
-- **Guardar los atributos** (en la página de la Variety) o **el header y el footer** muestra el toast "Catalog saved"; la pantalla del Catalog muestra el texto nuevo la próxima vez que se abre. Los toasts no llevan datos.
+- **Guardar los atributos** (en la página del Product) o **el header y el footer** muestra el toast "Catalog saved"; la pantalla del Catalog muestra el texto nuevo la próxima vez que se abre. Los toasts no llevan datos.
 - **Las negativas** se muestran en línea y conservan lo tipeado. Cada una lleva un código de `contract.json` (ADR-0008) y nunca repite lo ingresado (ADR-0005).
-- **Una Variety que ya no está** sigue la regla "That is gone." de accounts.md.
+- **Un Product que ya no está** sigue la regla "That is gone." de accounts.md.
 
 ### Restricciones
 
@@ -211,8 +211,8 @@ Criterios de éxito:
 - **Siempre se abre**: la pantalla del Catalog se abre sin nada que califique fuera del primer uso, y "Send catalog" está desactivado solo mientras se muestra la First-run checklist y nada califica.
 - **Dirección**: `/varieties/catalog` abre la pantalla del Catalog, también al recargar; `/catalogo` responde una redirección permanente a ella.
 - **Lugar provisorio**: mientras no existan los grupos de Settings, una prueba del front muestra que los Bot settings y el header y el footer se guardan desde ahí, que los dos enlaces lo abren, que no muestra estado del Pinned catalog ni Publish, y que ninguna pestaña, More ni Settings lleva a él.
-- **Sin curl (criterio 3)**: la corrida de punta a punta del front edita los atributos de una Variety en su página y el header y el footer (en Settings, o en el lugar provisorio hasta que exista), abre Varieties → "Send catalog" y toca Copy. La parte plana del portapapeles es igual al texto de la API con los marcadores emparejados quitados.
-- **Velocidad (criterio 3)**: la pantalla responde en menos de 300 ms con unas decenas de Varieties, y se abre a 2 toques como máximo desde cualquier Tab root.
+- **Sin curl (criterio 3)**: la corrida de punta a punta del front edita los atributos de un Product en su página y el header y el footer (en Settings, o en el lugar provisorio hasta que exista), abre Products → "Send catalog" y toca Copy. La parte plana del portapapeles es igual al texto de la API con los marcadores emparejados quitados.
+- **Velocidad (criterio 3)**: la pantalla responde en menos de 300 ms con unas decenas de Products, y se abre a 2 toques como máximo desde cualquier Tab root.
 - **Aislamiento (criterio 5)**: cada ruta del Catalog está en el barrido y responde 404 o vacío desde otro Business. Los interruptores o el idioma de un Business nunca cambian el texto de otro.
 - **Sin eco**: ninguna negativa ni línea de log contiene el header, el footer, el Aroma ni el emoji tipeados; después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen ningún texto del Catalog.
 - **Diseño**: `scripts/design/compare.sh` corre antes y después para la pantalla del Catalog, en teléfono y computadora, adjunto al PR.
@@ -230,7 +230,7 @@ Criterios de éxito:
 - Un límite de tiempo para la hoja de compartir, o copiar el Catalog por su cuenta cuando compartir falla o no termina.
 - Agregar un título o un link a lo que Share le pasa a la hoja de compartir, o acortar o reescribir su texto para un destino.
 - Hacer que un destino de compartir (la extensión para compartir de Telegram o de otra app) termine cuando se cuelga de su lado.
-- Un orden propio de Varieties.
+- Un orden propio de Products.
 - Restaurar el header o el footer por defecto.
 - Reescribir el header o el footer guardados de un Business cuando cambia su idioma, o completar valores por defecto para Businesses existentes.
 - Traducir los datos propios del vendedor.
@@ -241,7 +241,7 @@ Criterios de éxito:
 - Un toast después de compartir.
 - Rediseñar los Bot settings o la edición del header y el footer.
 - Un VIP price en el Catalog, o un Catalog aparte para los VIP customers.
-- Listar Archived varieties en la pantalla del Catalog.
+- Listar Archived products en la pantalla del Catalog.
 
 ## Planificado en GH-318
 
@@ -254,14 +254,14 @@ Cada pasaje nombra el ADR que lo decide, la parte que lo va a entregar y la orac
 Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; lo entrega la parte de plantilla del Catalog.
 
 - Los bloques, las líneas y su orden entre el header y el footer van a ser propios del Business, guardados por Business. Un Business nuevo va a arrancar con nombre y precio, y el header "**CATALOG**".
-- Va a reemplazar: "**Disposición**: el header, después un bloque por cada Variety que califica, ordenadas por nombre, después el footer." y las líneas fijas "`• Price per gram: <money>`" y "`• From <grams>: <money> each`".
+- Va a reemplazar: "**Disposición**: el header, después un bloque por cada Product que califica, ordenados por nombre, después el footer." y las líneas fijas "`• Price per gram: <money>`" y "`• From <grams>: <money> each`".
 
 ### Atributos que se muestran en el Catalog
 
 Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; lo entrega la parte de categorías.
 
 - Los atributos que define una subcategoría, con, para cada campo, si se muestra en el Catalog, van a ocupar el lugar de los tres fijos. El emoji, el Indica share y el Aroma van a pasar a ser atributos de la única subcategoría del Business migrado, con el texto del Catalog de hoy sin cambios para él. La línea de un atributo archivado va a salir del Catalog y sus valores se van a conservar. Si un Product está oculto va a seguir siendo una marca del Product.
-- Va a reemplazar: "### Catalog attributes, por Variety" (**Emoji**, **Indica share**, **Aroma/flavor**) y "**Se muestra**: sí o no."
+- Va a reemplazar: "### Catalog attributes, por Product" (**Emoji**, **Indica share**, **Aroma/flavor**) y "**Se muestra**: sí o no."
 
 ### Formato de la plata
 
@@ -270,12 +270,12 @@ Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-an
 - El formato de plata del Catalog va a seguir el símbolo de moneda y los decimales de plata del Business.
 - Va a reemplazar: "**Plata**: `$` seguido directamente del monto, con punto para los miles (`$11.000`). Es el formato propio del Catalog, no el `$ 11.000` de la app." y "Los formatos de plata y de gramos son los mismos en todos los idiomas."
 
-### La Product word y la Unit
+### La Unit
 
-Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md y docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md y docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md; lo entregan la parte de Product word, la parte de unidades y el cambio de nombre a Product en la API.
+Decidido en docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; lo entrega la parte de unidades.
 
-- El Catalog, el bot y los reportes van a usar la Product word del vendedor, mostrada como se tipeó y nunca traducida, y la etiqueta de la Unit de cada Product en lugar de "g".
-- Va a reemplazar: "Los gramos enteros se muestran sin decimales; si no, se usa coma decimal (`2,5 g`)." y, en Fuera de alcance, "Un orden propio de Varieties."
+- El Catalog, el bot y los reportes van a usar la etiqueta de la Unit de cada Product en lugar de "g".
+- Va a reemplazar: "Los gramos enteros se muestran sin decimales; si no, se usa coma decimal (`2,5 g`)." y, en Fuera de alcance, "Un orden propio de Products."
 
 ### El día del negocio
 

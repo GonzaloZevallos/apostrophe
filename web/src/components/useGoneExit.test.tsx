@@ -9,15 +9,16 @@ import { inAppState } from './inAppState'
 import { normalisePath, useGoneExit } from './useGoneExit'
 import { useGoneNotice } from './goneExit'
 import { SheetRouterProvider } from './useSheetStack'
+import ContentArea from './ContentArea'
 
 afterEach(() => vi.unstubAllGlobals())
 
 function Page({ name }: { name: string }) {
   return (
-    <main>
+    <ContentArea as="main">
       <h1>{name}</h1>
       {useGoneNotice() && <p role="status">That is gone. The list is up to date.</p>}
-    </main>
+    </ContentArea>
   )
 }
 

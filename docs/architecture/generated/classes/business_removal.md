@@ -88,11 +88,13 @@ classDiagram
   class Business {
     id : int
     language : str
+    last_sale_number : int #124; None
     name : str
   }
   class BusinessRef {
     id : int
     language : str
+    last_sale_number : int #124; None
     name : str
   }
   class Column {

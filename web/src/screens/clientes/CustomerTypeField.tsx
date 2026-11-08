@@ -9,6 +9,7 @@
 import { useId } from 'react'
 import BotonLink from '../../components/BotonLink'
 import Icono from '../../components/Icono'
+import { useLoading } from '../../components/useLoading'
 import { useCustomerTypes } from '../../api/customerTypes'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { glyphOf } from '../../customerTypes/icons'
@@ -23,7 +24,9 @@ export interface CustomerTypeFieldProps {
 
 export default function CustomerTypeField({ value, onChange, error }: CustomerTypeFieldProps) {
   const selectId = useId()
-  const types = useCustomerTypes().data
+  const typesQuery = useCustomerTypes()
+  const types = typesQuery.data
+  useLoading(typesQuery.isPending)
 
   if (types === undefined) return null
 

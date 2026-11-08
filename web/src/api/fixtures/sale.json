@@ -1,5 +1,6 @@
 {
   "id": 10,
+  "number": 2,
   "date": "2026-09-14",
   "customer": { "id": 1, "name": "Ana Pérez", "vip": false },
   "shipping_charged": 500,

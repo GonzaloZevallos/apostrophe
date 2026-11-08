@@ -15,6 +15,7 @@ erDiagram
     INTEGER id PK
     VARCHAR(60) name
     VARCHAR(35) language
+    INTEGER last_sale_number
   }
   catalog_attributes {
     INTEGER id PK
@@ -150,6 +151,7 @@ erDiagram
   sale {
     INTEGER id PK
     INTEGER business_id FK
+    INTEGER number
     DATE sale_date
     INTEGER customer_id FK "nullable"
     INTEGER shipping_charged

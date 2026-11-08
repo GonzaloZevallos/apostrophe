@@ -199,7 +199,7 @@ test('"Done" entered with the flag has one line per step and never an amount', a
 
   expect(await screen.findByRole('heading', { name: 'Done' })).toBeInTheDocument()
   expect(screen.getByText('6 of 6 steps')).toBeInTheDocument()
-  expect(screen.getAllByText('Done · 2 varieties')).toHaveLength(1)
+  expect(screen.getAllByText('Done · 2 products')).toHaveLength(1)
   expect(screen.getAllByText('Done · 2 entries')).toHaveLength(1)
   expect(screen.getByText('For later — in Settings → Integrations')).toBeInTheDocument()
   expect(screen.getByText('For later — in Settings → Users')).toBeInTheDocument()
