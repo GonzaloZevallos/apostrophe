@@ -30,11 +30,11 @@ Los hechos de una venta registrada que la vendedora puede compartir con el clien
 - **Fecha**: la fecha propia de la venta.
 - **Shipping charged**: aparte de las líneas.
 - **Total**: el total de la venta, envío incluido.
-- **Líneas**: en el orden en que se registraron. Cada línea tiene el nombre de la variedad, su cantidad (al centésimo, como se registró) y su monto.
+- **Líneas**: en el orden en que se registraron. Cada línea tiene el nombre del producto, su cantidad (al centésimo, como se registró) y su monto.
   - Una línea con **Bulk price** agrega su precio unitario y la regla "bulk".
   - Una línea de regalo lleva la regla "gift" y un monto de $0.
   - Las líneas de lista, VIP y **Special price** llevan solo el monto, sin regla ni precio unitario.
-  - Una variedad archivada conserva su nombre tal cual.
+  - Un producto archivado conserva su nombre tal cual.
 - **Estado de pago**: gana el primer chequeo que encaja.
   1. Total $0 (solo regalos): none.
   2. Pagada en el momento: cash o transfer, según el medio registrado. Si el Settlement igual informa algo debido para ella, la venta es inconsistente.
@@ -71,7 +71,7 @@ Los hechos de una venta registrada que la vendedora puede compartir con el clien
 - **El Sale number** se lee "Sale #N", sin ceros a la izquierda, sin prefijo y sin separador de miles, y es el mismo que el título del detalle.
 - **Las cantidades** se formatean a partir de centésimos enteros con `formatQuantity`, nunca de un float. La plata se lee `$ 11.000`, nunca con el formato del **Catalog**.
 - **Las palabras fijas y la unidad** viven en el **Copy module**, en el grupo `saleBill`, "Sale #N" incluido. La unidad es una sola entrada, "g", hasta #318.
-- **Los nombres que tipeó la vendedora** (el del negocio y los de las variedades) salen exactamente como están guardados; el Sale bill no agrega formato propio.
+- **Los nombres que tipeó la vendedora** (el del negocio y los de los productos) salen exactamente como están guardados; el Sale bill no agrega formato propio.
 - **El botón** Share o Copy es el primer elemento de la fila de acciones del detalle, nunca dentro del aviso "Sale saved". Si compartir sale bien o se cancela, no muestra nada. Si compartir falla, muestra su línea con el ícono de atención y la etiqueta pasa a Copy. Si copiar sale bien, muestra el aviso "Bill copied". Si copiar falla, muestra su línea con el ícono de atención y debajo el bloque seleccionable "Sale bill". Con `bill: null` el botón no aparece. Mientras carga, conserva la etiqueta, queda deshabilitado y ocupado, y no muestra cifras.
 
 ### Lo que el Sale bill nunca lleva

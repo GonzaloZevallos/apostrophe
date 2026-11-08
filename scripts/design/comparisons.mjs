@@ -2,7 +2,18 @@
 // sample app, at the same width, one PNG per screen.
 //
 //   node scripts/design/comparisons.mjs --facts <sample.json> --out <dir> [--only A,B] [--strict]
-//                                  [--census] [--step-timeout <ms>]
+//                                  [--census] [--step-timeout <ms>] [--registry <screens.json>]
+//
+// Every capture, phone and desktop, both sides, runs on a calm page (`shot.mjs`: `CALM_CONTEXT`,
+// `CALM_CSS`, `PROBE_CSS`): reduced motion in the context, animation and transition durations
+// and delays at 0 in the probe's adopted stylesheet, and the fonts ready before the first frame.
+//
+// Each `index.json` entry has `capture` (`captured` when both PNGs exist, else `not-captured`)
+// and, for a side with no PNG, `reasons.design` or `reasons.built`: a fixed English line built
+// by `named()` in `shot.mjs`, never page text. Both are optional for every reader; the Spanish
+// `notes` stay. A plain run exits 0 even when no row is captured; `--strict` exits 1 after every
+// row has run and `index.json` is written. Bad usage or an unreadable `--registry` (default:
+// `screens.json` next to this file) exits 2. A failed write of `index.json` fails the run.
 //
 // `--facts` is what `scripts/design/sample-app.sh` wrote. Screens and how to reach each
 // state come from `scripts/design/screens.json`. A step that fails, a screen not built
@@ -62,7 +73,23 @@ import {
 } from './settle.mjs'
 import { applyInPage, gatherInPage, TOLERANCE, unscaled } from './textScale.mjs'
 import { createCensus } from './census.mjs'
-import { coversScreen, layerMiss, planShot, regionMiss, shotStepReason, sizeRecordMiss, staleFiles, viewportMovedReason, viewportUnchanged } from './shot.mjs'
+import {
+  CAPTURE_SCALE,
+  PROBE_CSS,
+  captureContextOptions,
+  coversScreen,
+  layerMiss,
+  named,
+  planShot,
+  regionMiss,
+  rowCapture,
+  shotReason,
+  shotStepReason,
+  sizeRecordMiss,
+  staleFiles,
+  viewportMovedReason,
+  viewportUnchanged,
+} from './shot.mjs'
 import { allElements, fixedInPage, layerReadInPage, readMetrics, sameNodesInPage, snapshotInPage } from './shot-page.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -80,10 +107,13 @@ const { values } = parseArgs({
     strict: { type: 'boolean', default: false },
     census: { type: 'boolean', default: false },
     'step-timeout': { type: 'string' },
+    registry: { type: 'string' },
   },
 })
 if (!values.facts || !values.out) {
-  console.error('usage: comparisons.mjs --facts <sample.json> --out <dir> [--only A,B] [--strict] [--census] [--step-timeout <ms>]')
+  console.error(
+    'usage: comparisons.mjs --facts <sample.json> --out <dir> [--only A,B] [--strict] [--census] [--step-timeout <ms>] [--registry <screens.json>]',
+  )
   process.exit(2)
 }
 // The wall-clock bound of one step, set once. Without the flag it is the 8 s every run had.
@@ -95,8 +125,16 @@ if (!/^\d+$/.test(values['step-timeout'] ?? '1') || !Number.isSafeInteger(TIMEOU
 // Playwright's own default for the design page, which is not bounded by `TIMEOUT` alone.
 const PLAYWRIGHT_DEFAULT_MS = 30_000
 const facts = JSON.parse(readFileSync(values.facts, 'utf-8'))
-const { screens } = JSON.parse(readFileSync(join(HERE, 'screens.json'), 'utf-8'))
-assertScreens(screens)
+// The registry: `--registry`, else the one next to this file. A file that cannot be read, is not
+// JSON or is not a registry is a configuration error like bad usage; nothing of it is printed.
+let screens
+try {
+  ;({ screens } = JSON.parse(readFileSync(values.registry ?? join(HERE, 'screens.json'), 'utf-8')))
+  assertScreens(screens)
+} catch {
+  console.error('comparisons: the registry could not be read')
+  process.exit(2)
+}
 const only = values.only ? new Set(values.only.split(',')) : null
 // `facts.accounts`: the sample's extra businesses by name, each `{ email, password }`;
 // `facts.account_kinds`: each one's kind, `open` or `ended` (ADR-0042, GH-189).
@@ -119,7 +157,7 @@ if (typeof facts.today !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(facts.today))
 const out = resolve(values.out)
 mkdirSync(out, { recursive: true })
 
-const DEVICE_SCALE_FACTOR = 2
+const DEVICE_SCALE_FACTOR = CAPTURE_SCALE
 const CAPTURE_INSTANT = new Date(`${facts.today}T12:00:00-03:00`)
 
 // The user a screen signs in as: its `account`'s, else La Huerta's.
@@ -167,11 +205,11 @@ async function pauseClock(context) {
 
 async function addProbe(context) {
   await context.addInitScript(`(${pageProbe.toString()})(${signatureOf.toString()})`)
-  await context.addInitScript(() => {
+  await context.addInitScript((css) => {
     const sheet = new CSSStyleSheet()
-    sheet.replaceSync('*, *::before, *::after { caret-color: transparent !important; }')
+    sheet.replaceSync(css)
     document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet]
-  })
+  }, PROBE_CSS)
 }
 
 // One frame of the fake clock, then what the page looks like, in this order: no request in
@@ -248,6 +286,12 @@ async function settle(page, { advanceMs, afterGoto = false, ofFirstText }) {
   }
   const applied = await appliedCheck(page, ofFirstText)
   if (applied) return applied
+  // Every face the page asked for has finished loading before the first frame is sampled.
+  try {
+    await withinTimeout(page.evaluate(() => document.fonts.ready.then(() => undefined)))
+  } catch {
+    return SETTLE_REASON_UNSETTLED
+  }
   const clock = page.context().clock
   let lastHash = null
   const reason = await settleWith(
@@ -423,6 +467,28 @@ const stepKind = (error) => (error?.message === 'timeout' || error?.name === 'Ti
 // Every read, resize and the shot itself run bounded by `withinTimeout`; the settle keeps its own bounds.
 const bounded = (promise) => withinTimeout(Promise.resolve(promise))
 
+// Most reads of the page, one browser round trip each, that wait for the resize event of a growth.
+const RESIZE_POLLS = 100
+
+// Grows the viewport and waits until the page has been told: the resize event reaches the page on
+// a later browser frame than `setViewportSize` returns on, and a page that follows it (the shell's
+// visual-viewport pin writes a `style` on its layout) would otherwise mutate after the settle and
+// the shot, and the frame after the shot would find it moving. The listener goes in before the
+// resize and only sets a flag: no DOM is touched. A page that is never told is not waited on
+// longer than the bound.
+async function growViewport(page, size) {
+  await bounded(
+    page.evaluate(() => {
+      window.__captureResized = false
+      ;(window.visualViewport ?? window).addEventListener('resize', () => { window.__captureResized = true }, { once: true })
+    }),
+  )
+  await bounded(page.setViewportSize(size))
+  for (let polls = 0; polls < RESIZE_POLLS; polls += 1) {
+    if (await bounded(page.evaluate(() => window.__captureResized === true))) return
+  }
+}
+
 // The before and after snapshots of the elements, matched by node identity through their handles.
 async function sizeSnapshot(page, handle) {
   return bounded(page.evaluate(snapshotInPage, handle))
@@ -475,7 +541,7 @@ async function shotSteps(page, { block, ofFirstText, census, side }, handles) {
   if (plan.mode === 'grow') {
     before = await sizeSnapshot(page, beforeHandle)
     if (plan.height !== viewport.height) {
-      await bounded(page.setViewportSize({ width: viewport.width, height: plan.height }))
+      await growViewport(page, { width: viewport.width, height: plan.height })
     }
   }
   const clip = block ? await bounded(sectionClip(block)) : undefined
@@ -629,15 +695,17 @@ function censusOf(options, s) {
 
 // The capture of one side: what it could not do is a failure of the screen, not a throw, and
 // that side has no PNG under any name.
-async function attempt(label, ctx, capture) {
+// Returns `{ png, reason }`: the reason is a fixed `named()` line, never the Spanish note.
+async function attempt(label, side, ctx, capture) {
   try {
     const outcome = await capture()
-    if (outcome.failure === null) return outcome.png
+    if (outcome.failure === null) return { png: outcome.png, reason: null }
     fail(ctx, `${label} no se pudo capturar: ${outcome.failure}`)
+    return { png: null, reason: shotReason(outcome.failure, side) }
   } catch (error) {
     fail(ctx, `${label} no se pudo capturar: ${firstLine(error)}`)
+    return { png: null, reason: named('could not take the shot', side) }
   }
-  return null
 }
 
 const browser = await chromium.launch()
@@ -649,53 +717,64 @@ try {
     // Each side has its own context options: the design side's size is `design_viewport` when the
     // row has one, the built side's is always `viewport ?? PHONE` (screens.mjs, `viewportsOf`).
     const sizes = viewportsOf(s)
-    const contextOptions = ([width, height]) => ({
-      viewport: { width, height },
-      deviceScaleFactor: DEVICE_SCALE_FACTOR,
-      colorScheme: 'light',
-      baseURL: facts.url,
-    })
-    const designOptions = contextOptions(sizes.design)
-    const builtOptions = contextOptions(sizes.built)
+    const designOptions = captureContextOptions({ width: sizes.design[0], height: sizes.design[1], url: facts.url })
+    const builtOptions = captureContextOptions({ width: sizes.built[0], height: sizes.built[1], url: facts.url })
     // A row's side PNGs come only from this run's own buffers: the previous run's are deleted first.
     for (const file of staleFiles(readdirSync(out), [s.screen])) unlinkSync(join(out, file))
     const ctx = { notes: [], failures: [], census: values.census ? censusOf(builtOptions, s) : null }
     const { notes } = ctx
     const entry = { screen: s.screen, file: null, notes, design: null, built: null }
+    // What each side recorded: a path only once its PNG write has returned, else a fixed reason.
+    const sides = { design: { path: null, reason: null }, built: { path: null, reason: null } }
     try {
-      const design = await attempt('el diseño', ctx, () => captureDesign(browser, s, designOptions, ctx))
-      let built = null
+      const design = await attempt('el diseño', 'design', ctx, () => captureDesign(browser, s, designOptions, ctx))
+      let built = { png: null, reason: named('no built screen yet', 'built') }
       if (s.route === null) notes.push('todavía no existe en la app')
-      else built = await attempt('lo construido', ctx, () => captureBuilt(browser, s, builtOptions, ctx))
-      if (design) {
-        entry.design = join(out, `${s.screen}.design.png`)
-        writeFileSync(entry.design, design)
+      else built = await attempt('lo construido', 'built', ctx, () => captureBuilt(browser, s, builtOptions, ctx))
+      sides.design.reason = design.reason
+      sides.built.reason = built.reason
+      if (design.png) {
+        const path = join(out, `${s.screen}.design.png`)
+        writeFileSync(path, design.png)
+        entry.design = sides.design.path = path
       }
-      if (built) {
-        entry.built = join(out, `${s.screen}.built.png`)
-        writeFileSync(entry.built, built)
+      if (built.png) {
+        const path = join(out, `${s.screen}.built.png`)
+        writeFileSync(path, built.png)
+        entry.built = sides.built.path = path
       }
       const file = join(out, `${s.screen}.png`)
-      await composeSheet(browser, s, sizes.design[0], sizes.built[0], design, built, notes, file)
+      await composeSheet(browser, s, sizes.design[0], sizes.built[0], design.png, built.png, notes, file)
       entry.file = file
     } catch (error) {
       fail(ctx, `la pantalla falló: ${firstLine(error)}`)
     }
+    // A side with no path and no reason threw before it could record one.
+    for (const side of ['design', 'built']) {
+      if (sides[side].path === null && !sides[side].reason) sides[side].reason = named('could not take the shot', side)
+    }
+    Object.assign(entry, rowCapture(sides))
     if (ctx.census) {
-      const sides = Object.entries({ design: ctx.census.design, built: ctx.census.built }).filter(
+      const censusSides = Object.entries({ design: ctx.census.design, built: ctx.census.built }).filter(
         ([, side]) => Object.keys(side.record).length > 0,
       )
-      if (sides.length) entry.census = Object.fromEntries(sides.map(([name, side]) => [name, side.record]))
+      if (censusSides.length) entry.census = Object.fromEntries(censusSides.map(([name, side]) => [name, side.record]))
     }
     if (ctx.failures.length) failed = true
     results.push(entry)
     console.log(`${s.screen}: ${notes.length ? notes.join('; ') : 'ok'}`)
   }
 } finally {
-  await browser.close()
-  writeFileSync(join(out, 'index.json'), JSON.stringify(results, null, 2))
+  // The index first, so a browser that will not close cannot lose it; a write that fails is not
+  // caught and fails the run.
+  try {
+    writeFileSync(join(out, 'index.json'), JSON.stringify(results, null, 2))
+  } finally {
+    await browser.close()
+  }
 }
-if (values.strict && failed) {
-  console.error('comparisons: --strict and a capture failed (a side that did not settle or could not be reached, a font, or a screen that threw)')
+// `--strict`, after the index is written: any failed capture or any row not captured exits 1.
+if (values.strict && (failed || results.some((e) => e.capture === 'not-captured'))) {
+  console.error('comparisons: --strict and a row is not captured, or a capture failed (a side that did not settle or could not be reached, a font, a screen that threw, or a screen not built yet)')
   process.exitCode = 1
 }

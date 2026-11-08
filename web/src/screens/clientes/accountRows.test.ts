@@ -86,7 +86,7 @@ test.each(HOW_PAID_SUBS)('a %s sale reads "Sale" over %s, with its own total', (
   expect(view.own).toBe('$ 5.000')
 })
 
-test('a sale names no variety and no grams', () => {
+test('a sale names no product and no grams', () => {
   const view = ledgerRowView(saleWith('cash', 'owes', 5000))
   expect(`${view.title} ${view.sub}`).not.toMatch(/\d+(,\d+)? g\b/)
 })

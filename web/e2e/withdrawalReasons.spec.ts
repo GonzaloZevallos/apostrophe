@@ -29,13 +29,13 @@ test('a seller adds a withdrawal reason, records a withdrawal with it and reads 
 
   // A variety with one lot: 50 g for $ 20.000.
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByRole('link', { name: 'New product' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: '+ Stock entry' }).click()
   await page.getByLabel('Grams').fill('50')
-  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
+  await page.getByLabel('Product').selectOption({ label: 'Rosa' })
   await page.getByLabel('Total cost').fill('20000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 
@@ -62,7 +62,7 @@ test('a seller adds a withdrawal reason, records a withdrawal with it and reads 
   await expect(page.getByRole('group', { name: 'Reason' }).locator('[aria-pressed="true"]')).toHaveCount(0)
 
   // Record 3 g with it.
-  await page.getByLabel('Variety 1', { exact: true }).selectOption({ label: 'Rosa' })
+  await page.getByLabel('Product 1', { exact: true }).selectOption({ label: 'Rosa' })
   await page.getByLabel('Grams 1', { exact: true }).fill('3')
   await expect(page.getByRole('button', { name: 'Save the withdrawal' })).toBeDisabled()
   await page.getByRole('button', { name: 'Gifts', exact: true }).click()

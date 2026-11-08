@@ -1,5 +1,5 @@
 /**
- * The panel's body (`docs/product/results.md`, "What each tab shows"): the Hoy · Semana ·
+ * The panel's body (`docs/product/results.md`, "Qué muestra cada pestaña"): the Hoy · Semana ·
  * Mes switch and what each tab draws, each figure straight from `GET /panel`
  * (`PanelAnswer`). Nothing here computes, sorts or sign-tests an amount: ranges go through
  * `formatDateShort` only, Ganancia and Caja through `formatSignedMoney`.
@@ -20,7 +20,9 @@ import { OWED_PLACE } from '../../components/useReturnToPlace'
 import InAppLink from '../../components/InAppLink'
 import BotonLink from '../../components/BotonLink'
 import MarcaEstado from '../../components/MarcaEstado'
+import { type FixedValue, HOME_PERIODS } from '../../components/fixedSets'
 import Pestanas from '../../components/Pestanas'
+import { assertType, type Equal } from '../../components/typeEquals'
 import type {
   PanelAnswer,
   PanelDebts,
@@ -38,11 +40,7 @@ import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import PeriodPanel from './PeriodFigures'
 import { COMMON_TEXT } from '../../copy/common'
 
-const TAB_LABEL: Record<PanelTab, string> = { today: COMMON_TEXT.today, week: COMMON_TEXT.week, month: COMMON_TEXT.month }
-const TAB_ITEMS = (['today', 'week', 'month'] as const).map((value) => ({
-  value,
-  label: TAB_LABEL[value],
-}))
+assertType<Equal<FixedValue<typeof HOME_PERIODS>, PanelTab>>()
 
 function rangeLabel(tab: PanelTab, period: PanelPeriod): string {
   if (tab === 'today') return COMMON_TEXT.todayWith(formatDateShort(period.start))
@@ -66,7 +64,7 @@ export default function InicioPanel({
   return (
     <>
       <div className="inicio__periodos">
-        <Pestanas items={TAB_ITEMS} value={tab} onChange={onTab} ariaLabel={COMMON_TEXT.period} />
+        <Pestanas items={HOME_PERIODS} value={tab} onChange={onTab} ariaLabel={COMMON_TEXT.period} />
         <span className="pie">{rangeLabel(tab, period)}</span>
       </div>
 

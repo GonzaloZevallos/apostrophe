@@ -1,4 +1,4 @@
-"""Results' own arithmetic (docs/product/results.md: "Figures per period"; PRD
+"""Results' own arithmetic (docs/product/results.md: "Cifras por período"; PRD
 criterion 3). Pure, no infrastructure: `average_sale` rounds half up to the whole peso
 and is `None` with no sales, never a `0`.
 

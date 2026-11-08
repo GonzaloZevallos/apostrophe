@@ -39,9 +39,9 @@ async function box(locator: Locator): Promise<Box> {
 async function signInWithAPricedVariety(page: Page): Promise<void> {
   await signUpNewBusiness(page, { businessName: `Vivero Telefono ${uniqueTag()}`, email: `telefono-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByRole('link', { name: 'New product' }).click()
   await page.getByLabel('Name').fill('Jazmín')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await setPriceDate(page, '2000-01-01')
@@ -96,7 +96,7 @@ test('the form is three zones at every phone width: footer in view, header fixed
     const header = page.locator('.nueva-venta__cabecera')
     const before = await box(header)
     for (let line = 0; line < 4; line += 1) {
-      await page.getByRole('button', { name: 'Add another variety' }).click()
+      await page.getByRole('button', { name: 'Add another product' }).click()
     }
     const scroller = page.locator('.nueva-venta__disposicion')
     await scroller.evaluate((node) => {

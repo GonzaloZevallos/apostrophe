@@ -6,7 +6,7 @@
 
 ## Qué es hoy
 
-En el contrato JSON de stock, ventas y resultados, la cantidad de una variedad se llama `quantity`, igual que en el código detrás. El valor sigue siendo el de siempre: gramos, como Decimal con hasta dos decimales. Esta parte cambia solo nombres. El paso a centésimos de una unidad (ADR-0056, Invariante 5) y la agrupación por unidad (`QuantityByUnit`, Invariante 6) son de la parte de unidades.
+En el contrato JSON de stock, ventas y resultados, la cantidad de un producto se llama `quantity`, igual que en el código detrás. El valor sigue siendo el de siempre: gramos, como Decimal con hasta dos decimales. Esta parte cambia solo nombres. El paso a centésimos de una unidad (ADR-0056, Invariante 5) y la agrupación por unidad (`QuantityByUnit`, Invariante 6) son de la parte de unidades.
 
 ## Reglas
 
@@ -19,7 +19,7 @@ En el contrato JSON de stock, ventas y resultados, la cantidad de una variedad s
 - El front (tipos, fakes de fetch, e2e) usa los nombres nuevos. El snapshot de OpenAPI los sigue.
 - La importación de la planilla cambia solo donde arma o lee esos schemas o puertos, y carga los mismos registros con los mismos valores. Las columnas de la planilla y el informe del operador no cambian.
 - Las tablas y columnas guardadas conservan sus nombres. El mapeo de `quantity` a las columnas existentes queda en el adaptador, igual que `variety_id` (ADR-0061). No hay migración.
-- El vendedor no ve ningún cambio: el texto de pantalla, el catálogo y todas las cifras se leen igual. Una palabra de pantalla que dice gramos queda así hasta la parte de unidades o la de la palabra del producto.
+- El vendedor no ve ningún cambio: el texto de pantalla, el catálogo y todas las cifras se leen igual. Una palabra de pantalla que dice gramos queda así hasta la parte de unidades.
 
 ## Lo que todavía dice grams en el contrato
 

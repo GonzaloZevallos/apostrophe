@@ -1,6 +1,6 @@
 """`period_figures` with no infrastructure (CODING_STANDARDS §5, ADR-0020): the
 margin matrix, best-and-ties, profit's pending N, sparse/empty history and the
-variety-identity (docs/product/analysis.md's metrics)."""
+variety-identity (docs/product/analysis.md's "Métricas")."""
 
 import time
 from datetime import date, timedelta
@@ -224,7 +224,7 @@ def test_a_sale_line_draw_with_no_variety_is_rejected() -> None:
         )
 
 
-# --- Margin matrix (docs/product/analysis.md: Margin matrix) ---
+# --- Margin matrix (docs/product/analysis.md: Matriz de Margin) ---
 
 
 def test_a_variety_only_gifted_has_a_negative_margin_and_no_percentage() -> None:
@@ -341,7 +341,7 @@ def test_a_month_with_only_gifts_has_no_share_and_no_average_percentage() -> Non
     assert figures.month.varieties[0].share_percent is None
 
 
-# --- Identity (docs/product/analysis.md: One computation) ---
+# --- Identity (docs/product/analysis.md: Un solo cálculo (criterio 2)) ---
 
 
 def test_variety_sales_without_shipping_plus_shipping_equal_the_month_s_sales() -> None:
@@ -364,7 +364,7 @@ def test_variety_sales_without_shipping_plus_shipping_equal_the_month_s_sales() 
     assert total_variety_sales + 1_500 == figures.month.sales
 
 
-# --- Profit's pending N (docs/product/analysis.md: Honest cost) ---
+# --- Profit's pending N (docs/product/analysis.md: Costo honesto (criterio 3)) ---
 
 
 def test_profit_s_pending_n_counts_sold_gifted_and_shortfall_grams_in_its_own_week() -> None:
@@ -389,7 +389,7 @@ def test_profit_s_pending_n_counts_sold_gifted_and_shortfall_grams_in_its_own_we
     assert figures.month.shortfall.pending_quantity == Quantity.of("2")
 
 
-# --- Best and ties (docs/product/analysis.md: Best week, Best weekday) ---
+# --- Best and ties (docs/product/analysis.md: Best week y Best weekday) ---
 
 
 def test_best_week_is_by_sales_not_profit() -> None:
@@ -440,7 +440,7 @@ def test_all_zero_weekdays_mark_none_best() -> None:
     assert not any(w.best for w in figures.weekdays)
 
 
-# --- Sparse and empty history (docs/product/analysis.md: Sparse history) ---
+# --- Sparse and empty history (docs/product/analysis.md: Historia escasa) ---
 
 
 def test_no_week_or_month_appears_before_the_first_record() -> None:
@@ -470,7 +470,7 @@ def test_a_business_with_no_records_answers_the_empty_shape() -> None:
     assert all(w.sales == 0 for w in figures.weekdays)
 
 
-# --- Time guard (docs/product/analysis.md: Speed) ---
+# --- Time guard (docs/product/analysis.md: Velocidad) ---
 
 
 # --- totals_between (ADR-0013 amendment GH-70: Inicio's panel reads this seam,
