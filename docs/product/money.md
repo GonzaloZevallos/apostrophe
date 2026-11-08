@@ -34,10 +34,13 @@ Antes de esta parte, el peso entero era la única opción y nadie la rodeaba a m
 
 ### Cifras que dividen
 
-- Las sumas y restas sin división (totales, Balance, Total owed, Profit, Cash, el Panel) dan exactamente lo mismo en un Business de escala 0 y en uno de escala 2 con los mismos datos.
-- El Cost of goods sold, el Margin, el Average sale y las Sales de gramos con costo dividen. Se calculan exactos y se redondean mitad hacia arriba con `round_half_up` a la unidad guardada del Business (ADR-0058, que enmienda ADR-0007 y ADR-0010).
-- La pantalla las muestra con los decimales del Business.
-- Por eso un Business de escala 2 puede ser más exacto que uno de escala 0, con una diferencia menor que una unidad mostrada. Es lo esperado, no un defecto.
+Algunas cifras dividen: el total de una Sale line, el costo por unidad que se toma de un Lot, el Cost of goods sold, el Stock shortfall, el costo de cada Withdrawal reason, el Margin, las Sales de gramos con costo y el Average sale.
+
+- Se calculan exactas y se redondean mitad hacia arriba con `round_half_up` a los decimales que muestra el Business (Money format; hoy, unidades enteras), nunca a un lugar más fino que su Money scale. Se guardan y se muestran con esa precisión.
+- Lo que el vendedor debe es siempre un monto que puede tipear. Ningún total de línea deja una fracción imposible de cobrar, y cobrar lo que muestra la pantalla nunca crea un Credit.
+- Toda cifra, con división o sin ella (totales, Balance, Total owed, Profit, Cash, el Panel, Analysis), da exactamente lo mismo en un Business de escala 0 y en uno de escala 2 con los mismos datos.
+- Qué pasa con el redondeo cuando un Business sube sus decimales lo define la parte que agregue esa configuración.
+- Esto enmienda la frase de redondeo de ADR-0058 ("a la unidad guardada") y sus enmiendas de ADR-0007 y ADR-0010; la tarea deja el hallazgo para corregir el ADR.
 
 ### Rechazo por demasiados decimales
 
@@ -78,8 +81,9 @@ Antes de esta parte, el peso entero era la única opción y nadie la rodeaba a m
 
 - Tests de rutas de dinero y seeders de aislamiento que pasan en escala 0 y en escala 2 (fixture `money_scale`): 100%.
 - Diferencia en escala 0, contra antes de esta parte, en las respuestas del contrato, el Business export y el texto del Catalog y del Sale bill: 0 bytes.
-- Montos que en escala 2 vuelven distintos de lo ingresado, en cualquier campo de dinero o cifra sin división: 0.
-- Cifras con división que en escala 2 difieren de las de escala 0 en una unidad mostrada o más: 0.
+- Montos que en escala 2 vuelven distintos de lo ingresado, en cualquier campo de dinero: 0.
+- Cifras, con división o sin ella, que difieren entre escala 0 y escala 2 con los mismos datos: 0.
+- Totales de línea o Balances con una fracción más fina que los decimales que muestra el Business: 0.
 - Montos con demasiados decimales que se guardan o se redondean en silencio: 0. Cada uno responde 422 `money.too_many_decimals` y muestra el mensaje del Copy module.
 - Módulos de caso de uso o de dominio que importan el helper de dinero o leen la escala: 0.
 - Respuestas que filtran el dinero o la escala de otro Business: 0.
