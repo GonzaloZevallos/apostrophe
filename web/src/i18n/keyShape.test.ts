@@ -11,7 +11,7 @@ const xaFiles = import.meta.glob('../copy/locales/en-XA/*.json', {
 }) as Record<string, unknown>
 
 function fileName(path: string): string {
-  return path.slice(path.lastIndexOf('/') + 1)
+  return /[^/]+$/.exec(path)?.[0] ?? path
 }
 
 // Every string leaf of a locale file, as `[key path, text]`, walking nested objects.
