@@ -185,7 +185,7 @@ def _assert_dropped_and_whole(engine: Engine) -> None:
     columns = [column["name"] for column in inspect(engine).get_columns("customer")]
     assert columns == ["id", "business_id", "name", "phone", "vip", "customer_type_id"]
     assert [name for name in inspect(engine).get_unique_constraints("customer")] == [
-        {"name": "uq_customer_business_phone", "column_names": ["business_id", "phone"]}
+        {"name": "uq_customer_business_id_phone", "column_names": ["business_id", "phone"]}
     ]
     with engine.connect() as connection:
         dbapi_connection = connection.connection.dbapi_connection

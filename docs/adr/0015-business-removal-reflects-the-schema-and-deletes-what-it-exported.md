@@ -195,3 +195,5 @@ describes what runs.
 Narrowed: amounts are exported as the exact value in currency units, and the export carries the
 business's `{scale, decimals}` beside them, so a business at scale 2 is not exported as whole pesos.
 Quantity columns stay as ADR-0056 stores them, in hundredths.
+
+> Amended by ADR-0077: `login_guard` now has an `id`, but still no `business_id`, so it is still deleted by email; the export key `price_entry.effective_from` is now `effective_on`.

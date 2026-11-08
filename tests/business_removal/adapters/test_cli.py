@@ -214,7 +214,7 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
 
     price_entry = kinds["price_entry"][0]
     assert price_entry["variety_id"] == variety_ref
-    assert price_entry["effective_from"] == days.price.isoformat()
+    assert price_entry["effective_on"] == days.price.isoformat()
     assert price_entry["list_price"] == 5000
 
     threshold = kinds["stock_threshold"][0]

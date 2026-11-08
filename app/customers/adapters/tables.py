@@ -16,7 +16,7 @@ class CustomerRow(Base):
     # can translate exactly this `IntegrityError` into `PhoneTaken`. `vip` has no
     # `create_constraint`: the domain enforces it.
     __table_args__ = (
-        UniqueConstraint("business_id", "phone", name="uq_customer_business_phone"),
+        UniqueConstraint("business_id", "phone"),
         # The in-use count and the guarded delete of a customer type walk this index.
         Index(None, "customer_type_id"),
     )
@@ -24,7 +24,7 @@ class CustomerRow(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
     name: Mapped[str] = mapped_column(String(NAME_MAX_LENGTH))
-    # Nullable: a customer may have no phone (ADR-0021). `uq_customer_business_phone`
+    # Nullable: a customer may have no phone (ADR-0021). `uq_customer_business_id_phone`
     # still applies only among non-null values; SQLite never treats two NULLs as equal.
     phone: Mapped[str | None] = mapped_column(String(PHONE_MAX_LENGTH))
     # Frozen (docs/adr/0059): kept with the values it holds, no longer read. A

@@ -107,10 +107,14 @@ class SqlAccounts:
     def login_locks(self, email: Email | None, address_digest: str) -> LoginLocks:
         email_locked_until = None
         if email is not None:
-            email_row = self._session.get(LoginGuardRow, email.value)
-            email_locked_until = None if email_row is None else email_row.locked_until
-        address_row = self._session.get(LoginAddressGuardRow, address_digest)
-        address_locked_until = None if address_row is None else address_row.locked_until
+            email_locked_until = self._session.scalar(
+                select(LoginGuardRow.unlocks_at).where(LoginGuardRow.email == email.value)
+            )
+        address_locked_until = self._session.scalar(
+            select(LoginAddressGuardRow.unlocks_at).where(
+                LoginAddressGuardRow.address_digest == address_digest
+            )
+        )
         return LoginLocks(email_locked_until, address_locked_until)
 
     def count_email_failure(self, email: Email, now: datetime) -> int:
@@ -129,15 +133,17 @@ class SqlAccounts:
         # The address window resets inside the same statement (plan invariant): a
         # window that started at or before `cutoff` has expired, so this failure
         # starts a fresh one instead of extending the old count.
-        expired = LoginAddressGuardRow.window_start <= cutoff
+        expired = LoginAddressGuardRow.window_started_at <= cutoff
         insert_statement = sqlite_insert(LoginAddressGuardRow).values(
-            address_digest=address_digest, failures=1, window_start=now
+            address_digest=address_digest, failures=1, window_started_at=now
         )
         statement = insert_statement.on_conflict_do_update(
             index_elements=["address_digest"],
             set_={
                 "failures": case((expired, 1), else_=LoginAddressGuardRow.failures + 1),
-                "window_start": case((expired, now), else_=LoginAddressGuardRow.window_start),
+                "window_started_at": case(
+                    (expired, now), else_=LoginAddressGuardRow.window_started_at
+                ),
             },
         ).returning(LoginAddressGuardRow.failures)
         failures = self._session.execute(statement).scalar_one()
@@ -145,7 +151,7 @@ class SqlAccounts:
         return failures
 
     def lock_email(self, email: Email, now: datetime, until: datetime, max_failures: int) -> None:
-        # Guarded on (locked_until IS NULL OR locked_until <= now) (plan invariant):
+        # Guarded on (unlocks_at IS NULL OR unlocks_at <= now) (plan invariant):
         # two requests that both reach the threshold set the lock only once, and
         # counting during an active lock never stretches it. Subtracts the threshold
         # rather than setting a constant, so failures counted during the lock stay in
@@ -154,9 +160,9 @@ class SqlAccounts:
             update(LoginGuardRow)
             .where(
                 LoginGuardRow.email == email.value,
-                (LoginGuardRow.locked_until.is_(None)) | (LoginGuardRow.locked_until <= now),
+                (LoginGuardRow.unlocks_at.is_(None)) | (LoginGuardRow.unlocks_at <= now),
             )
-            .values(locked_until=until, failures=LoginGuardRow.failures - max_failures)
+            .values(unlocks_at=until, failures=LoginGuardRow.failures - max_failures)
         )
         self._session.execute(statement)
         self._session.flush()
@@ -166,10 +172,10 @@ class SqlAccounts:
             update(LoginAddressGuardRow)
             .where(
                 LoginAddressGuardRow.address_digest == address_digest,
-                (LoginAddressGuardRow.locked_until.is_(None))
-                | (LoginAddressGuardRow.locked_until <= now),
+                (LoginAddressGuardRow.unlocks_at.is_(None))
+                | (LoginAddressGuardRow.unlocks_at <= now),
             )
-            .values(locked_until=until)
+            .values(unlocks_at=until)
         )
         self._session.execute(statement)
         self._session.flush()
@@ -183,9 +189,9 @@ class SqlAccounts:
             update(LoginGuardRow)
             .where(
                 LoginGuardRow.email == email.value,
-                (LoginGuardRow.locked_until.is_(None)) | (LoginGuardRow.locked_until <= now),
+                (LoginGuardRow.unlocks_at.is_(None)) | (LoginGuardRow.unlocks_at <= now),
             )
-            .values(failures=0, locked_until=None)
+            .values(failures=0, unlocks_at=None)
         )
         self._session.execute(statement)
         self._session.flush()
@@ -196,7 +202,7 @@ class SqlAccounts:
         statement = (
             update(LoginGuardRow)
             .where(LoginGuardRow.email == email.value)
-            .values(failures=0, locked_until=None)
+            .values(failures=0, unlocks_at=None)
         )
         self._session.execute(statement)
         self._session.flush()
