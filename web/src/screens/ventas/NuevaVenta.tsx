@@ -200,6 +200,7 @@ function NuevaVentaForm() {
     nonce: number
   } | null>(null)
   const focusNonceRef = useRef(0)
+  const appliedNonceRef = useRef(0)
   const formRef = useRef<HTMLFormElement | null>(null)
   useVisualViewport(formRef)
 
@@ -409,19 +410,30 @@ function NuevaVentaForm() {
     mutationFn: (body: SaleBody) => post<SavedSale>('/sales', body),
   })
 
+  // The lines are unreachable while a save is in flight (`locked`, the `inert` on the
+  // lines' container below): a save's answer runs `openLine` or navigates, and would
+  // otherwise swap or unmount a line whose Product list is open — a history entry the
+  // Selector does not pop on unmount.
+  const locked = save.isPending
+
   // Saving with a line in error opens and focuses that field (plan, "Saving"):
   // `openLine` may or may not change `openKey` (the line could already be open),
   // so the actual `.focus()` call waits for this effect, which re-runs once a
   // fresh `focusRequest` lands, after the line's own fields are on the page. The
-  // request's own `nonce` (never reset) is what re-triggers the effect on a
-  // second save with the same field at fault — a plain `setState` inside the
-  // effect would only start another, unnecessary render (oxlint's own
-  // `set-state-in-effect`). Guarded on `openKey === focusRequest.lineKey`, so a
-  // stale request from an earlier save never steals focus back from a line the
-  // seller opened by hand afterwards — only the field this same request named,
+  // request's own `nonce` (never reset) is what makes a second request with the same
+  // field at fault count as a new one — a plain `setState` inside the effect would
+  // only start another, unnecessary render (oxlint's own `set-state-in-effect`).
+  // While `locked` the effect does nothing, and a request is applied once, after
+  // that lock lifts: `appliedNonceRef` remembers it, so the lock lifting again on a
+  // later save never takes focus back for a request already served. Guarded on
+  // `openKey === focusRequest.lineKey`, so a request never steals focus from a line
+  // the seller opened by hand afterwards — only the field this same request named,
   // on the line it named, is ever focused.
   useEffect(() => {
-    if (focusRequest === null || focusRequest.lineKey !== openKey) return
+    if (locked || focusRequest === null) return
+    if (focusRequest.nonce === appliedNonceRef.current) return
+    if (focusRequest.lineKey !== openKey) return
+    appliedNonceRef.current = focusRequest.nonce
     const ref =
       focusRequest.field === 'grams'
         ? gramsFieldRef
@@ -429,7 +441,7 @@ function NuevaVentaForm() {
           ? specialPriceFieldRef
           : varietyFieldRef
     ref.current?.focus()
-  }, [focusRequest, openKey])
+  }, [focusRequest, openKey, locked])
 
   function fieldForError(line: LineState): 'variety' | 'grams' | 'specialPrice' {
     if (specialPriceErrorFor(line) !== null) return 'specialPrice'
@@ -600,7 +612,7 @@ function NuevaVentaForm() {
                 </Boton>
               )}
 
-              <div className="nueva-venta__lineas">
+              <div className="nueva-venta__lineas" inert={locked}>
                 {lines.map((line, index) => (
                   <NuevaVentaLinea
                     key={line.key}
