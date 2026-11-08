@@ -367,6 +367,7 @@ export default function StockEntryForm({
               <span className="campo__rotulo">{COMMON_TEXT.grams}</span>
               <input
                 className="campo__input"
+                autoComplete="off"
                 inputMode="decimal"
                 value={grams}
                 onChange={(event) => setGrams(event.target.value)}
@@ -382,6 +383,7 @@ export default function StockEntryForm({
               <span className="campo__rotulo">{STOCK_TEXT.costoTotal}</span>
               <input
                 className="campo__input"
+                autoComplete="off"
                 inputMode="numeric"
                 value={totalCost}
                 onChange={(event) => setTotalCost(event.target.value)}
@@ -397,6 +399,7 @@ export default function StockEntryForm({
               <span className="campo__rotulo">{COMMON_TEXT.date}</span>
               <input
                 className="campo__input"
+                autoComplete="off"
                 type="date"
                 value={date}
                 onChange={(event) => setDate(event.target.value)}
@@ -407,6 +410,7 @@ export default function StockEntryForm({
               <span className="campo__rotulo">{COMMON_TEXT.grams}</span>
               <input
                 className="campo__input"
+                autoComplete="off"
                 inputMode="decimal"
                 value={grams}
                 onChange={(event) => setGrams(event.target.value)}
@@ -458,6 +462,7 @@ export default function StockEntryForm({
               <span className="campo__rotulo">{STOCK_TEXT.costoTotal}</span>
               <input
                 className="campo__input"
+                autoComplete="off"
                 inputMode="numeric"
                 value={totalCost}
                 onChange={(event) => setTotalCost(event.target.value)}
@@ -470,6 +475,7 @@ export default function StockEntryForm({
               <span className="campo__rotulo">{COMMON_TEXT.note}</span>
               <input
                 className="campo__input"
+                autoComplete="off"
                 value={note}
                 maxLength={200}
                 onChange={(event) => setNote(event.target.value)}

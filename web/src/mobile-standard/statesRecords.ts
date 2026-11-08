@@ -116,7 +116,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
   {
     screen: 'stock-entry/variety-selector-open',
     route: STOCK_ENTRY_NEW,
-    steps: [{ click: common('common:variety') }],
+    steps: [{ press: common('common:variety') }],
     visible: 'Variedad 1',
     reads: [{ path: /^\/api\/products$/, status: 200, body: TWELVE_VARIETIES }],
   },
