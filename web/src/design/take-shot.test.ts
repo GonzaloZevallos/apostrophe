@@ -15,9 +15,11 @@ import { addProbe, configureShot, pauseClock, settle, takeShot } from '../../../
 // The step bound every case runs at: the same one the census test uses (`web/src/design/census.test.ts`):
 // one page load starved of CPU takes 8 to 20 s beside the other workers, and 60 s is 3 times that.
 const CENSUS_STEP_MS = 60_000
-// The ceiling of one case: max(180000, 2 x slowest case, slowest case + CENSUS_STEP_MS), by the census
-// rule. The slowest case and the file total were measured beside `pytest -n 8` and `npm run typecheck`
-// in loops: see MEASURED below.
+// The ceiling of one case: max(180000, 2 x slowest case, slowest case + CENSUS_STEP_MS) by the census
+// rule. Measured 2026-11-07 (two runs of `vitest run src/design/take-shot.test.ts` beside `pytest -n 8` and
+// `npm run typecheck` in loops, load average 17 to 20): slowest case 2455 ms ('refuses a page that jumps
+// on a repeating timer'), the file 15.9 to 16.1 s in all. max(180000, 4910, 62455) = 180000, so the 180 s
+// floor sets it. If a loaded run breaks it, cut fixtures; never loosen a bound.
 const TAKE_SHOT_TEST_MS = 180_000
 
 const VIEWPORT = { width: 375, height: 812 }
@@ -91,9 +93,6 @@ function decode(shot: { png: Buffer | null; failure: string | null }): PNG {
 
 const changed = named('the page changed while it was shot', 'built')
 
-// Measured 2026-11-07, on an idle machine only (not yet beside `pytest -n 8` and `npm run typecheck`
-// in loops, as the census was): slowest case about 1.3 s, ten cases 12 s in all. The ceiling above is
-// the 180 s floor of the census rule. If a loaded run breaks it, cut fixtures; never loosen a bound.
 describe('takeShot on a phone page (scroll and stitch)', () => {
   it('refuses a page that jumps on its first scroll', async () => {
     const shot = await shoot(
