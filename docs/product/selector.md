@@ -1,16 +1,16 @@
-# Selector
-
 ## Jobs
 
 - Cuando estoy cargando un registro en el teléfono y un campo necesita una opción de mi propia lista, que sigue creciendo, quiero encontrar la opción y elegirla en dos toques sin perder lo que ya cargué, para terminar el registro en menos de un minuto y nunca elegir algo equivocado.
 
 La computadora también es una situación: el mismo campo se usa con teclado, conserva la capacidad y no recibe pulido dedicado (Phone first).
 
+# Selector
+
 ## Qué es
 
 El Selector es el único control para elegir una opción de un Growable set: un conjunto que puede tener una opción con la que la app no vino, hoy o por una decisión ya tomada (Varieties, Expense categories, Withdrawal reasons, Customer types; y con GH-318, units, time zone, Money format, Product word y Payment methods). Lo opuesto es un Fixed set, declarado en `web/src/components/fixedSets.ts` con un motivo, que puede mostrarse como chips. El componente vive en `web/src/components/Selector.tsx`, y su búsqueda en `web/src/components/selectorSearch.ts`.
 
-En esta parte ninguna pantalla lo usa todavía; las partes siguientes de GH-581 pasan las pantallas al Selector.
+Las partes de GH-581 pasan las pantallas al Selector. Desde la parte 3 lo usan el formulario de Stock entry (`EntradaStock`, para la Variety) y el de Take from stock (para el Withdrawal reason y la Variety de cada línea), como describe stock.md.
 
 ## El campo
 
