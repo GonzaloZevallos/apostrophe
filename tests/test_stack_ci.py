@@ -1143,6 +1143,71 @@ def test_an_unknown_step_is_refused() -> None:
     assert _problems(workflow) == ["job 'checks' runs an unknown step: make everything-green"]
 
 
+INSTALLER = "bash scripts/docs/install-ci-tools.sh"
+CACHE_PATH = "${{ runner.temp }}/downloads"
+CACHE_KEY_FILE = "hashFiles('scripts/docs/install-ci-tools.sh')"
+
+
+def _is_cache(step: Data) -> bool:
+    return str(step.get("uses", "")).startswith("actions/cache@")
+
+
+def _docs_cache_problems(workflow: Data) -> list[str]:
+    """What keeps the `docs` job from restoring the installer's downloads before it runs."""
+    steps = _steps(cast("Data", workflow["jobs"]["docs"]))
+    installer = [i for i, step in enumerate(steps) if str(step.get("run", "")).strip() == INSTALLER]
+    if len(installer) != 1:
+        return [f"the docs job has {len(installer)} installer steps, not 1"]
+    caches = [step for step in steps[: installer[0]] if _is_cache(step)]
+    if len(caches) != 1:
+        return [f"the docs job has {len(caches)} actions/cache steps before the installer, not 1"]
+    options = cast("Data", caches[0].get("with", {}))
+    problems: list[str] = []
+    if options.get("path") != CACHE_PATH:
+        problems.append(f"the docs cache path is {options.get('path')!r}, not {CACHE_PATH!r}")
+    if CACHE_KEY_FILE not in str(options.get("key", "")):
+        problems.append(f"the docs cache key does not contain {CACHE_KEY_FILE}")
+    if "restore-keys" in options:
+        problems.append("the docs cache has restore-keys, which could restore stale archives")
+    return problems
+
+
+def test_the_docs_job_caches_the_installer_downloads_before_the_installer() -> None:
+    assert _docs_cache_problems(WORKFLOW) == []
+
+
+def test_a_docs_job_without_the_cache_step_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["docs"]["steps"]
+    steps[:] = [step for step in steps if not _is_cache(step)]
+    assert _docs_cache_problems(workflow) == [
+        "the docs job has 0 actions/cache steps before the installer, not 1"
+    ]
+
+
+def test_a_docs_cache_step_after_the_installer_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["docs"]["steps"]
+    cache = next(step for step in steps if _is_cache(step))
+    steps.remove(cache)
+    steps.insert(next(i for i, step in enumerate(steps) if step.get("run") == INSTALLER) + 1, cache)
+    assert _docs_cache_problems(workflow) == [
+        "the docs job has 0 actions/cache steps before the installer, not 1"
+    ]
+
+
+def test_a_docs_cache_with_another_path_or_key_or_restore_keys_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["docs"]["steps"]
+    cache = next(step for step in steps if _is_cache(step))
+    cache["with"] = {"path": "downloads", "key": "docs-ci-tools", "restore-keys": "docs-"}
+    assert _docs_cache_problems(workflow) == [
+        f"the docs cache path is 'downloads', not {CACHE_PATH!r}",
+        f"the docs cache key does not contain {CACHE_KEY_FILE}",
+        "the docs cache has restore-keys, which could restore stale archives",
+    ]
+
+
 GENERATE = "uv run --no-project python -m scripts.docs.generate"
 DOCS_OWNED = ("docs/architecture/generated", "docs/api")
 
