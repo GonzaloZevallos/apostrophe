@@ -25,6 +25,18 @@ de falla (no se commiteó). Los dos terminaron con **salida 0** y `retries: 0 ro
 Un primer intento de la misma prueba, con los dos arrancando juntos, no llegó a capturar: `compare: the sample app was not
 ready in 120 s` en los dos (el build del front y la espera de 120 s de `compare.sh`). No cuenta como corrida.
 
+### Bajo carga, en el head entregado
+La prueba de arriba corrió antes de `writesAnswered`, así que no mide el head entregado. Se repitió sobre `c25093ae0a040ca3acd9c6175f6c24c06651bec8`
+(el mismo código de captura que `51f4c4ae`; solo cambian docs), con la máquina cargada por las pruebas de otros trabajos
+(carga media 19,6 / 25,5 / 22,2 al arrancar, de 1, 5 y 15 minutos). `compare.sh` no llegó a arrancar tres veces
+(`the sample app was not ready in 120 s`, el build del front tardaba más de 120 s con esa carga; no capturó nada, no cuenta
+como corrida). La cuarta se hizo con el mismo `sample-app.sh` y `comparisons.mjs --strict` pero esperando los datos de la app
+sin el límite de 120 s (un guion en el directorio temporal). Resultado: **salida 0**, `retries: 1 rows, 2 attempts`: `InicioChecklistOscuro`
+(`built: settled on attempt 2 of 3 after rest-mismatch`).
+- Fallas en el intento 1: 1 de 171 filas con lado construido en `ok` (0,006, umbral 0,15).
+- Fallas en el intento 2 tras una falla en el intento 1: 0 de 1 (umbral 0,5).
+- Filas reintentadas: 1 (umbral 5).
+
 ## Tres corridas seguidas en el head del PR
 Head `51f4c4ae27af417641e1c9aa293a15d24218bea0`, muestra nueva cada vez, sin `--only`, sin `--census`, una detrás de otra.
 
