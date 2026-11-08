@@ -105,3 +105,18 @@ Cuando esos dos defectos se arreglen, hay que repetir la corrida completa y actu
 ## Estado en `0f96db32`
 
 Revisado de nuevo sobre `0f96db32`: `take-shot.mjs` no cambió desde la corrida (`git diff 1f94db75 HEAD -- scripts/design/take-shot.mjs scripts/design/shot.mjs scripts/design/stitch.mjs` vacío), así que los dos criterios abiertos de arriba siguen abiertos y los números de esta corrida siguen siendo los vigentes. Esta evidencia no se puede cerrar sin el arreglo de la ruta de scroll.
+
+## Corrida después de los dos arreglos (cabeza `cc24101a`)
+
+Los dos defectos de la ruta de scroll se arreglaron en esta tarea (commits `62bfa248` y `cc24101a`):
+
+- **Columnas del recorte.** `scrollPlan` ahora da a cada cuadro `cropLeft` y `cropWidth` (px de dispositivo, redondeados hacia afuera a px CSS enteros) y `stitch` los recorta; el final del recorte también sube a px CSS enteros, como `sectionClip` en `grow`. Así el lado sale del mismo tamaño que antes.
+- **`textarea`.** `scrollersInPage` ya no cuenta un `textarea`: `OnboardingMensajeTexto130` (built, 320x844) tenía uno con texto de 87 px en una caja de 56 px en una página que cabe, y `innerScrollMiss` la rechazaba. Antes de este cambio, la ruta `grow` la capturaba. Un `div` con `overflow: auto` sigue rechazado (fixture nuevo).
+
+Corrida nueva de todo el registro sobre `cc24101a` (una app de muestra, `comparisons.mjs --facts … --out …/p3`, 2026-11-08 00:42:04 a 00:58:18), más las 12 filas de los tres tamaños (`--registry part2-phone-sizes.json`, fin 00:59:17). `ae` de la parte 1 (`a3`) contra ella: `ae-part1-part2-fixed.txt`.
+
+- Lado `built`: 172 capturados, como en la parte 1; ninguna fila perdida. `OnboardingMensajeTexto130` está `captured`. Lado `design`: 219.
+- **Ningún `FAIL different dimensions`** (eran 18). Las 12 filas de 320x568, 375x812 y 430x932 quedaron `captured` (índices `part2-p3.index.json` y `part2-p3-sizes.index.json`).
+- `ae`: 294 lados con AE 0, 97 con AE mayor que 0, 47 `not compared` (todos `no built screen yet`).
+
+**Esta lista de 97 no se puede atribuir toda a la ruta de scroll.** La parte 1 corrió el 2026-11-07 y esta corrida el 2026-11-08: los hechos de la app de muestra dependen del día (fechas "Hoy", vencimiento de la invitación), y por eso aparecen también filas de escritorio con AE chico (por ejemplo 1610 en muchas `Inicio*Compu`), que la ruta de scroll no toca. Un intento de línea base del mismo día sobre la misma app, ya usada por la corrida anterior, quedó contaminado por el estado que las capturas dejan en la app (filas de onboarding con `could not take the shot`, `Ventas` con AE de 69494), así que no se usa. Una línea base del código de la parte 1 sobre una app nueva del mismo día estaba corriendo al cerrar esta entrega y su resultado no está en esta carpeta: **queda sin separar qué filas de escritorio cambian por el día y cuáles por el código**. Lo que sí se sostiene: las filas de teléfono más altas que el teléfono con barra fija (`InicioHoy`, `InicioPrimeraVez`, `InicioChecklist`, `Clientes`, `Variedades`, `Analisis`, `VariedadArchivada`, `EstadosConfirmar`, …) tienen el mismo tamaño que en la parte 1 y cambian por la barra en la primera pantalla (razón de arriba); `NegocioNuevo` e `Invitacion` siguen en AE 243 por la fecha de vencimiento.
