@@ -22,6 +22,8 @@ import {
   STOCK_ENTRY_NEW,
   VARIETIES,
   VARIETY,
+  WITHDRAWAL_EDIT,
+  WITHDRAWAL_NEW,
 } from '../routes.ts'
 import { AUTH_TEXT } from '../copy/auth.ts'
 import { common } from './copy.ts'
@@ -76,6 +78,14 @@ const TWELVE_VARIETIES = Array.from({ length: 12 }, (_unused, index) => ({
   current_price: null,
 }))
 
+const LONG_NAME = 'Una variedad con un nombre larguísimo de sesenta caracteres!!'
+
+/** Twelve Withdrawal reasons, one with a 60-character name, seeded for these states' reads only. */
+const TWELVE_REASONS = Array.from({ length: 12 }, (_unused, index) => ({
+  id: 200 + index,
+  name: index === 11 ? LONG_NAME : `Motivo ${index + 1}`,
+}))
+
 /** Entry 1 pointed at a Variety that is archived: no listed Variety has this id. */
 const ARCHIVED_ENTRY = {
   id: 1,
@@ -91,6 +101,38 @@ const ARCHIVED_ENTRY_READ = { path: /^\/stock\/entries\/1$/, status: 200, body: 
 const ARCHIVED_ONLY = /^\?archived=true$/
 
 export const RECORDS_STATES: readonly WalkState[] = [
+  {
+    // Twelve reasons, one of 60 characters: the phone list is open and its search shows.
+    screen: 'withdrawal/reason-selector-open',
+    route: WITHDRAWAL_NEW,
+    steps: [{ press: STOCK_TEXT.motivo }],
+    visible: 'Motivo 1',
+    reads: [{ path: /^\/api\/withdrawal-reasons$/, status: 200, body: TWELVE_REASONS }],
+  },
+  {
+    // A stored line on a Variety archived since: its 60-character name shows with the mark.
+    screen: 'withdrawal/line-archived-variety',
+    route: pathTo(WITHDRAWAL_EDIT, { id: 1 }),
+    steps: [],
+    visible: common('common:noLongerAvailable'),
+    reads: [
+      {
+        path: /^\/stock\/withdrawals\/1$/,
+        status: 200,
+        body: {
+          id: 1,
+          reason_id: 200,
+          reason_name: 'Motivo 1',
+          date: '2026-10-02',
+          note: null,
+          total_quantity: 5.5,
+          lines: [{ product_id: 9999, product_name: LONG_NAME, quantity: 5.5 }],
+        },
+      },
+      { path: /^\/api\/withdrawal-reasons$/, status: 200, body: TWELVE_REASONS },
+      { path: /^\/api\/products$/, status: 200, body: TWELVE_VARIETIES },
+    ],
+  },
   {
     screen: 'stock-entry/edit-archived-variety',
     route: ENTRY_ROUTE,

@@ -464,12 +464,6 @@
   {
     "screen": "SacarDelStock",
     "rule": "autocomplete",
-    "target": "combobox:Variety #",
-    "issue": 47
-  },
-  {
-    "screen": "SacarDelStock",
-    "rule": "autocomplete",
     "target": "textbox:Date",
     "issue": 47
   },
