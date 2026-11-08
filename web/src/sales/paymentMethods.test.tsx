@@ -10,7 +10,7 @@ import { beforeEach, expect, test } from 'vitest'
 import Selector from '../components/Selector'
 import { renderForm } from '../components/selectorTestKit'
 import { stubViewport } from '../test-viewport'
-import { type PaymentMethodOptions, usePaymentMethodOptions } from './paymentMethods'
+import { paymentMethodOf, usePaymentMethodOptions } from './paymentMethods'
 
 beforeEach(() => stubViewport('computer'))
 
@@ -38,13 +38,21 @@ test('a list with options never shows empty-set or loading text', async () => {
 })
 
 test('the hook returns exactly the API values, cash then transfer, and a required built-in list', () => {
-  const seen: { current?: PaymentMethodOptions } = {}
   function Probe() {
-    seen.current = usePaymentMethodOptions()
-    return null
+    const { options, builtIn, required } = usePaymentMethodOptions()
+    return (
+      <p>
+        {options.map((option) => option.value).join(',')} builtIn={String(builtIn)} required={String(required)}
+      </p>
+    )
   }
   renderForm(<Probe />)
-  expect(seen.current?.options.map((option) => option.value)).toEqual(['cash', 'transfer'])
-  expect(seen.current?.builtIn).toBe(true)
-  expect(seen.current?.required).toBe(true)
+  expect(screen.getByText('cash,transfer builtIn=true required=true')).toBeInTheDocument()
+})
+
+test('a value that is not a method is never taken for one', () => {
+  expect(paymentMethodOf('cash')).toBe('cash')
+  expect(paymentMethodOf('transfer')).toBe('transfer')
+  expect(paymentMethodOf('owing')).toBeNull()
+  expect(paymentMethodOf(null)).toBeNull()
 })
