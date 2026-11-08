@@ -40,7 +40,7 @@ import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { panelQuery, type PanelTab } from '../api/panel'
 import ErrorGenerico from '../components/ErrorGenerico'
-import Loading from '../components/Loading'
+import Loading, { LoadingWhile } from '../components/Loading'
 import { AvisoCuerpo } from '../components/AvisoAmbar'
 import SinConexion from '../components/SinConexion'
 import { initialsOf } from '../format/initials'
@@ -53,6 +53,7 @@ import ImportNotice from './inicio/ImportNotice'
 import InicioPanel from './inicio/InicioPanel'
 import OnboardingNotice from './onboarding/OnboardingNotice'
 import { COMMON_TEXT } from '../copy/common'
+import ContentArea from '../components/ContentArea'
 
 export { PINNED_CATALOG_OUT_OF_DATE }
 
@@ -88,9 +89,12 @@ export default function Inicio() {
   const ready = panelRead.data !== undefined && !panelRead.isFetching && settled
   useReturnToPlace({ root, ready, fallback: owedPlace })
   const failed = [panelRead, onboardingQuery].find((query) => query.isError)
+  // The first answers are still on their way; a refresh over the panel already shown is not this.
+  const waiting = panelRead.isPending || !settled
 
   return (
-    <main className="pantalla" ref={root}>
+    <ContentArea as="main" className="pantalla" ref={root}>
+      <LoadingWhile active={waiting} />
       <div className="cuerpo">
         <div className="inicio__cabecera">
           <div className="inicio__cabecera-titulos">
@@ -141,6 +145,6 @@ export default function Inicio() {
           <InicioPanel panel={panelRead.data} tab={tab} onTab={setTab} today={me.today} />
         )}
       </div>
-    </main>
+    </ContentArea>
   )
 }

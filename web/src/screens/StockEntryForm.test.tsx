@@ -80,7 +80,7 @@ test('with a fixed variety and origin it posts the opening stock and offers no o
   expect(screen.queryByRole('button', { name: 'Purchase' })).not.toBeInTheDocument()
   // The variety is named, not chosen.
   expect(await screen.findByText('Sir Jack')).toBeInTheDocument()
-  expect(screen.queryByLabelText('Variety')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Product')).not.toBeInTheDocument()
   expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
 
   await userEvent.type(screen.getByLabelText('Grams'), '30')
@@ -159,7 +159,7 @@ test('without the locked props the form is the owner\'s whole form', async () =>
   )
 
   expect(await screen.findByLabelText('Date')).toHaveValue('2026-10-03')
-  expect(screen.getByLabelText('Variety')).toBeEnabled()
+  expect(screen.getByLabelText('Product')).toBeEnabled()
   expect(screen.getByLabelText('Note')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Purchase' })).toBeInTheDocument()
   expect(screen.getByText('Required for a purchase')).toBeInTheDocument()

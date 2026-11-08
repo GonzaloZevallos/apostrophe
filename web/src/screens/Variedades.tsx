@@ -56,6 +56,7 @@ import { varietiesByName } from './varieties/varietiesByName'
 import { CATALOG_DISABLED_REASON, EMPTY_DETAIL, EMPTY_TITLE, VARIETIES_TEXT } from '../copy/varieties'
 import { COMMON_TEXT } from '../copy/common'
 import { GENERIC_REFUSAL_MESSAGE as COPY_GENERIC_REFUSAL_MESSAGE } from '../copy/settings'
+import ContentArea from '../components/ContentArea'
 
 const CATALOG_REASON_ID = 'mandar-catalogo-motivo'
 
@@ -116,7 +117,7 @@ export default function Variedades() {
   const summary = ready ? summaryLine(rows.map(({ row }) => row.status)) : null
 
   return (
-    <main className="pantalla variedades">
+    <ContentArea as="main" className="pantalla variedades">
       <div className="cuerpo">
         <h1 className="encabezado__titulo">{COMMON_TEXT.varieties}</h1>
         {summary !== null && <p className="pie variedades__resumen">{summary}</p>}
@@ -175,7 +176,7 @@ export default function Variedades() {
           </InAppLink>
         )}
       </div>
-    </main>
+    </ContentArea>
   )
 }
 

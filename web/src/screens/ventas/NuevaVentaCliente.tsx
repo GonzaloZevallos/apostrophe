@@ -29,7 +29,7 @@ import Boton from '../../components/Boton'
 import Icono from '../../components/Icono'
 import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
-import { useSheet } from '../../components/useSheetStack'
+import { SheetLevel, useSheet } from '../../components/useSheetStack'
 import CustomerFields, { type CustomerFieldsValue } from '../clientes/CustomerFields'
 import {
   GENERIC_REFUSAL,
@@ -122,6 +122,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
   }
 
   return (
+    <SheetLevel.Provider value={1}>
     <div className="cliente-sheet" role="presentation">
       <div className="cliente-sheet__contenido">
         <span className="cliente-sheet__manija" aria-hidden="true" />
@@ -182,25 +183,28 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
             {COMMON_TEXT.newCustomer}
           </Boton>
         ) : (
-          <form className="formulario" onSubmit={onCreate}>
-            <CustomerFields
-              value={newCustomer}
-              onChange={setNewCustomer}
-              nameError={nameError}
-              phoneError={phoneError}
-            />
-            {formError !== null && (
-              <span className="campo__error" role="alert">
-                {formError}
-              </span>
-            )}
-            {offline && <SinConexion />}
-            <Boton textOnly="submit" type="submit" disabled={create.isPending}>
-              {SALES_TEXT.createCustomer}
-            </Boton>
-          </form>
+          <SheetLevel.Provider value={2}>
+            <form className="formulario" onSubmit={onCreate}>
+              <CustomerFields
+                value={newCustomer}
+                onChange={setNewCustomer}
+                nameError={nameError}
+                phoneError={phoneError}
+              />
+              {formError !== null && (
+                <span className="campo__error" role="alert">
+                  {formError}
+                </span>
+              )}
+              {offline && <SinConexion />}
+              <Boton textOnly="submit" type="submit" disabled={create.isPending}>
+                {SALES_TEXT.createCustomer}
+              </Boton>
+            </form>
+          </SheetLevel.Provider>
         )}
       </div>
     </div>
+    </SheetLevel.Provider>
   )
 }

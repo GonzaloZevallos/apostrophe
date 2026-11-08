@@ -14,10 +14,15 @@
  *   but never while the form is `touched`. It opens no dialog of its own.
  *
  * `aside` renders beside the dialog, never inside it (the leave confirmation, the gone notice).
+ *
+ * The sheet is a content area (`ContentArea`), and on a phone its modal body is the only owner:
+ * the frame is a plain element, so a load drawn in the form marks the dialog, not the screen under
+ * it. On a computer the frame is the owner and the body is not, unless the body is a dialog too.
  */
 
 import { type ReactNode, type RefObject, useEffect, useLayoutEffect, useRef } from 'react'
 import { useViewport } from '../shell/useViewport'
+import ContentArea from './ContentArea'
 import { useVisualViewport } from './useVisualViewport'
 
 export interface SheetProps {
@@ -101,6 +106,7 @@ export default function Sheet({
   // as a control without a name, a role or a pressed state.
   const frame = useRef<HTMLDivElement>(null)
   const body = useRef<HTMLDivElement>(null)
+  const bodyIsDialog = !computer || computerDialog
   // On a phone the sheet's height and top follow the visible viewport (`--vv-alto`, `--vv-top`),
   // so the keyboard does not cover the pinned action. The hook does nothing on a computer.
   useVisualViewport(frame, { fixedForm: false })
@@ -144,23 +150,27 @@ export default function Sheet({
   }, [computer])
 
   return (
-    <Frame
+    <ContentArea
+      as={Frame}
       ref={frame}
+      owner={computer && Frame === 'main'}
       className={computer ? computerClass : 'pantalla sheet'}
       role={computer ? computerFrameRole : undefined}
     >
-      <div
+      <ContentArea
+        as="div"
         ref={body}
+        owner={bodyIsDialog}
         className={computer ? computerBodyClass : 'cuerpo sheet__body'}
-        role={computer && !computerDialog ? undefined : 'dialog'}
-        aria-modal={computer && !computerDialog ? undefined : true}
-        aria-labelledby={computer && !computerDialog ? undefined : titleId}
-        aria-label={computer && !computerDialog ? undefined : titleId === undefined ? label : undefined}
+        role={bodyIsDialog ? 'dialog' : undefined}
+        aria-modal={bodyIsDialog ? true : undefined}
+        aria-labelledby={bodyIsDialog ? titleId : undefined}
+        aria-label={bodyIsDialog ? (titleId === undefined ? label : undefined) : undefined}
       >
         {children}
-      </div>
+      </ContentArea>
       {aside}
-    </Frame>
+    </ContentArea>
   )
 }
 

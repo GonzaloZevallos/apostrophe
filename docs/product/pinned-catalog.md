@@ -9,7 +9,7 @@ Dónde viven sus partes (navigation.md):
 
 ## Jobs
 
-**Cuando** algo cambia lo que dice mi Catalog (se registra o se elimina un precio, una variedad se agota o vuelve, oculto, archivo, restauro o edito una variedad, cambio el header o el footer, activo o desactivo el Bulk price), **quiero** que el Pinned catalog del chat de Telegram de mi negocio se actualice solo, después de haber visto un Test send en mi propio chat antes que los clientes, **para que** mis clientes nunca vean un precio desactualizado ni una variedad que no puedo vender, y yo nunca tenga que acordarme de copiarlo, pegarlo y fijarlo de nuevo.
+**Cuando** algo cambia lo que dice mi Catalog (se registra o se elimina un precio, un producto se agota o vuelve, oculto, archivo, restauro o edito un producto, cambio el header o el footer, activo o desactivo el Bulk price), **quiero** que el Pinned catalog del chat de Telegram de mi negocio se actualice solo, después de haber visto un Test send en mi propio chat antes que los clientes, **para que** mis clientes nunca vean un precio desactualizado ni un producto que no puedo vender, y yo nunca tenga que acordarme de copiarlo, pegarlo y fijarlo de nuevo.
 
 **Cuando** conecto mi bot en Settings → Integrations y toco Test it, **quiero** que, si falla, me diga en una oración qué tengo que arreglar (el token, mi chat sin iniciar o mi número de chat), **para** arreglarlo desde el teléfono, probar de nuevo y llegar a publicar el Catalog sin adivinar ni pedirle ayuda a nadie.
 
@@ -19,7 +19,7 @@ Esto afina el paso de configuración del primer job (el Test send antes de que l
 
 **Cuando** necesito cambiar cómo está configurado mi negocio (cambiarle el nombre, sumar a un socio, conectar o cambiar el bot de Telegram, editar el Catalog header and footer, manejar mis Expense categories, pasar a oscuro, cambiar mi contraseña o cerrar sesión), **quiero** cada configuración de todo el negocio en un solo lugar, cada una en su propia pantalla corta, **para** cambiarla en pocos toques desde el teléfono y volver al cliente, sin preguntarme qué pantalla la tiene. (Acá lo sirve Integrations: el token del bot, los chats, Find my chat y Test it, y un camino para seguir a publicar.)
 
-**Cuando** una variedad que cargué por error, o una con la que ya no trabajo, sigue apareciendo en mis listas y selectores, **quiero** sacarla desde el teléfono en pocos toques, eliminándola si nunca se movió y archivándola si tiene historial, **para que** mis listas muestren solo lo que todavía vendo, ninguna cifra pasada de ventas, stock, costo o Profit cambie, y pueda volver a tenerla exactamente como estaba si empiezo a venderla de nuevo. (Acá lo sirve que archivar y restaurar disparen la Upkeep; se define en varieties.md.)
+**Cuando** un producto que cargué por error, o uno con el que ya no trabajo, sigue apareciendo en mis listas y selectores, **quiero** sacarlo desde el teléfono en pocos toques, eliminándolo si nunca se movió y archivándolo si tiene historial, **para que** mis listas muestren solo lo que todavía vendo, ninguna cifra pasada de ventas, stock, costo o Profit cambie, y pueda volver a tenerlo exactamente como estaba si empiezo a venderlo de nuevo. (Acá lo sirve que archivar y restaurar disparen la Upkeep; se define en varieties.md.)
 
 **Cuando** un rediseño de una pantalla como Integrations está para aprobarse, **quiero** una comparación de antes y después de esa pantalla, capturada de la misma forma desde el código sin el cambio y con el cambio, **para** saber que cambió solo lo que se quería cambiar, y que lo que hace el vendedor ahí (token, chats, Find my chat, Test it, las líneas de ayuda y los motivos, el enlace a la pantalla del Catalog) se sigue leyendo y funcionando como antes, y aprobar con confianza.
 
@@ -111,7 +111,7 @@ La configuración (token, chats, Find my chat, primer Test it y Publish) se juzg
 | Chat propio sin iniciar, o el vendedor bloqueó el bot (403) | "Open your bot in Telegram and tap Start, then test it again." |
 | Chat propio no encontrado (400 "chat not found"): un número equivocado, o un número correcto cuyo chat nunca se inició, que Telegram no distingue | "We could not find your chat: check the number and tap Start in your bot." |
 | Telegram caído, 429 o sin conexión | "Telegram did not respond" |
-| Texto por encima del límite de Telegram | "It is too long for Telegram: shorten aromas or hide varieties." |
+| Texto por encima del límite de Telegram | "It is too long for Telegram: shorten aromas or hide products." |
 | Cualquier otra falla | "We could not send you the test: check the token and your chat." |
 
 - **Ninguno de los motivos de Test it menciona el canal.** Los motivos dependen de la acción, no solo de la respuesta de Telegram.
@@ -128,7 +128,7 @@ La configuración (token, chats, Find my chat, primer Test it y Publish) se juzg
   - Al tener éxito muestra el toast "Catalog published".
 - **Falla**:
   - Un canal equivocado, o un bot que no puede enviar o fijar ahí, falla en línea con un motivo fijo que nunca repite lo tipeado. Un 401, 403 o 400 contra el canal dice "The bot cannot post in the channel", como antes; Publish no tiene un motivo de token propio.
-  - Un texto por encima del límite de Telegram falla en línea con "It is too long for Telegram: shorten aromas or hide varieties." No se envía nada.
+  - Un texto por encima del límite de Telegram falla en línea con "It is too long for Telegram: shorten aromas or hide products." No se envía nada.
 
 ### Upkeep (edición automática del Pinned catalog)
 
@@ -136,14 +136,14 @@ La configuración (token, chats, Find my chat, primer Test it y Publish) se juzg
 - **Disparadores**:
   - Price entries registradas o eliminadas;
   - Catalog attributes, header o footer;
-  - una Variety renombrada;
-  - una Variety archivada o restaurada (varieties.md);
+  - un Product renombrado;
+  - un Product archivado o restaurado (varieties.md);
   - Stock entries registradas, editadas o eliminadas;
   - Stock withdrawals registradas, editadas o eliminadas;
   - Sales registradas o eliminadas, Undo incluido;
   - un guardado de Settings → Prices que cambia cualquiera de los dos interruptores de Pricing settings (pricing-settings.md), ya que la línea de Bulk price depende de Bulk price;
   - el comienzo de un nuevo día en hora argentina, para las Price entries que entran en vigencia ese día.
-- **Regla**: el texto se vuelve a armar ante un disparador. El Pinned catalog se edita solo si el texto nuevo difiere del **Last published text**. Reponer una Variety que ya está en el Catalog, o retirar gramos dejándola con Stock mayor que cero, no envía nada.
+- **Regla**: el texto se vuelve a armar ante un disparador. El Pinned catalog se edita solo si el texto nuevo difiere del **Last published text**. Reponer un Product que ya está en el Catalog, o retirar gramos dejándolo con Stock mayor que cero, no envía nada.
 - **Solo edita.** La Upkeep nunca envía un mensaje nuevo, ni siquiera cuando el viejo se eliminó a mano.
 - **El guardado que la dispara nunca espera a Telegram**:
   - responde y muestra su propio toast por su cuenta;
@@ -162,7 +162,7 @@ La configuración (token, chats, Find my chat, primer Test it y Publish) se juzg
     - "The bot cannot post in the channel": sacaron el bot o no es admin, y el vendedor tiene que arreglarlo en Telegram;
     - "The pinned message is gone: publish it again": el mensaje se eliminó a mano;
     - "It still has to be published with the new bot or channel": se probó y se guardó un cambio de token o de canal, pero todavía no se publicó;
-    - "It is too long for Telegram: shorten aromas or hide varieties.": el texto supera el límite de Telegram.
+    - "It is too long for Telegram: shorten aromas or hide products.": el texto supera el límite de Telegram.
 - **"The last one was on dd/mm"**: se muestra siempre que se haya publicado en el chat del canal actual. Después de un cambio de token o de canal, se deja afuera hasta el primer Publish ahí.
 - **Qué refleja**: el resultado del último intento, o el cambio de token o de canal sin publicar. No hay estado pendiente: mientras corre una Upkeep, sigue el estado anterior.
 - **No lo afectan Test it ni Find my chat**: sus fallas nunca cambian el estado.
@@ -178,7 +178,7 @@ La configuración (token, chats, Find my chat, primer Test it y Publish) se juzg
 - El Pinned catalog, Test it y Publish usan: el header, después "Nothing to offer for now.", después el footer. Un header o un footer en blanco se deja afuera.
 - Esto cuenta como "Up to date".
 - El estado vacío propio de la pantalla del Catalog y Copy no cambian: no hay nada para copiar (catalog.md).
-- Cuando una Variety vuelve a calificar, la Upkeep restaura el Catalog completo.
+- Cuando un Product vuelve a calificar, la Upkeep restaura el Catalog completo.
 
 ### Cambiar el canal o el token
 
@@ -189,7 +189,7 @@ La configuración (token, chats, Find my chat, primer Test it y Publish) se juzg
 
 ### El texto
 
-- Exactamente el texto del Catalog del único autor (ADR-0022), que nunca incluye una Archived variety, nunca lleva un VIP price y lleva la línea de Bulk price solo mientras Bulk price está activado (catalog.md).
+- Exactamente el texto del Catalog del único autor (ADR-0022), que nunca incluye un Archived product, nunca lleva un VIP price y lleva la línea de Bulk price solo mientras Bulk price está activado (catalog.md).
 - Los marcadores `**` pasan a ser negrita real de Telegram, emparejados de izquierda a derecha. Un `**` final sin pareja se muestra como se tipeó.
 - El Test send y la copia publicada son idénticos para los mismos datos.
 - **Largo**: se mide como lo mide Telegram, sobre el mensaje tal como se envía. Por encima del límite de Telegram nunca se parte ni se corta; se rechaza, como se dijo arriba.
@@ -223,7 +223,7 @@ La configuración (token, chats, Find my chat, primer Test it y Publish) se juzg
 
 ## Métricas
 
-- **Matriz de disparadores (criterio 1)**: para cada disparador, incluidos los Stock withdrawals, el cambio de día, archivar y restaurar una Variety y un guardado de Prices, se intenta una edición exactamente cuando el texto armado difiere del Last published text. Un retiro que lleva el Stock de una Variety a cero o menos edita el Pinned catalog; uno que deja el texto sin cambios no envía nada. Cambiar Bulk price en un Business con un Bulk price en vigencia edita el Pinned catalog; cambiar solo VIP customers no envía nada, ya que el texto no cambia. 100% de aprobación.
+- **Matriz de disparadores (criterio 1)**: para cada disparador, incluidos los Stock withdrawals, el cambio de día, archivar y restaurar un Product y un guardado de Prices, se intenta una edición exactamente cuando el texto armado difiere del Last published text. Un retiro que lleva el Stock de un Product a cero o menos edita el Pinned catalog; uno que deja el texto sin cambios no envía nada. Cambiar Bulk price en un Business con un Bulk price en vigencia edita el Pinned catalog; cambiar solo VIP customers no envía nada, ya que el texto no cambia. 100% de aprobación.
 - **Un mensaje por chat (criterio 2)**:
   - un envío por chat del canal, después solo ediciones: 0 envíos nuevos mientras existe ese mensaje;
   - un cambio de canal o de token da exactamente un envío nuevo, y 0 llamadas posteriores contra el mensaje viejo;

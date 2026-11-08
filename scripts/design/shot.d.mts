@@ -63,3 +63,20 @@ export function viewportUnchanged(atSettle: Viewport, afterShot: Viewport): bool
 export function viewportMovedReason(side: Side): string;
 export function staleFiles(existing: ReadonlyArray<string>, rows: ReadonlyArray<string>): string[];
 export function shotStepReason(kind: string, side: Side): string;
+export type Capture = 'captured' | 'not-captured';
+export type SideRecord = { path: string | null; reason?: string | null };
+export type RowCapture = { capture: Capture; reasons?: { design?: string; built?: string } };
+export const CALM_CONTEXT: Readonly<{ reducedMotion: 'reduce' }>;
+export const CAPTURE_SCALE: 2;
+export const CALM_CSS: string;
+export const PROBE_CSS: string;
+export function captureContextOptions(row: { width: number; height: number; url: string }): {
+  viewport: Viewport;
+  deviceScaleFactor: 2;
+  colorScheme: 'light';
+  baseURL: string;
+  reducedMotion: 'reduce';
+};
+export function named(what: string, side: Side): string;
+export function shotReason(failure: string, side: Side): string;
+export function rowCapture(sides: { design: SideRecord; built: SideRecord }): RowCapture;

@@ -50,7 +50,7 @@ test('shows the date, the reason by word, every line and the note, with the bar 
 test('the "‹" back goes to the page it was opened from', async () => {
   const { router } = renderWithdrawals([VARIETIES_PATH, ONE], serving(WITHDRAWAL))
 
-  await userEvent.click(await screen.findByRole('button', { name: '‹ Varieties' }))
+  await userEvent.click(await screen.findByRole('button', { name: '‹ Products' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
 })
@@ -58,7 +58,7 @@ test('the "‹" back goes to the page it was opened from', async () => {
 test('with no history, back goes to Variedades', async () => {
   const { router } = renderWithdrawals([ONE], serving(WITHDRAWAL))
 
-  await userEvent.click(await screen.findByRole('button', { name: '‹ Varieties' }))
+  await userEvent.click(await screen.findByRole('button', { name: '‹ Products' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
 })
@@ -147,11 +147,11 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Wit
   ])
 })
 
-test('opening a withdrawal that is gone shows "That is gone." and "Back to Varieties"', async () => {
+test('opening a withdrawal that is gone shows "That is gone." and "Back to Products"', async () => {
   renderWithdrawals([ONE], async () => jsonResponse(404, { code: 'stock.withdrawal_not_found' }))
 
   expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Back to Varieties' })).toHaveAttribute('href', VARIETIES_PATH)
+  expect(screen.getByRole('link', { name: 'Back to Products' })).toHaveAttribute('href', VARIETIES_PATH)
 })
 
 test('deleting a withdrawal that is gone goes to Variedades with "That is gone. The list is up to date."', async () => {
@@ -177,6 +177,6 @@ test('the detail keeps the icon and text rule: Delete carries its icon and word,
 
   const borrar = await screen.findByRole('button', { name: 'Delete' })
   expect(borrar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  expect(screen.getByRole('button', { name: '‹ Varieties' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '‹ Products' })).toBeInTheDocument()
   expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
 })

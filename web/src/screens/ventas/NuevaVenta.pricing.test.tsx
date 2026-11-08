@@ -61,7 +61,7 @@ async function openFor(handlers: Record<string, () => Response>): Promise<Return
 async function line(grams: string) {
   const user = userEvent.setup()
   // The varieties arrive after the form mounts: wait until the line can offer them.
-  const picker = await screen.findByLabelText('Line 1 variety')
+  const picker = await screen.findByLabelText('Line 1 product')
   await waitFor(() => expect(within(picker).getAllByRole('option').length).toBeGreaterThan(1))
   await user.selectOptions(picker, '3')
   await user.type(screen.getByLabelText('Line 1 grams'), grams)
