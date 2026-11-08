@@ -124,3 +124,28 @@ keyed by id, with English as the source copy. It strikes two clauses of this ADR
 exemption's permission is withdrawn; the literals in `components/AvisoExito.tsx` remain as
 debt that a later GH-316 front part removes. The rest of this ADR stands until those parts
 move the words.
+
+## Amendment (GH-379): las palabras nunca se resuelven al cargar un módulo
+
+`web/src/architecture/noTopLevelText.ts` (`findTopLevelText`) lee cada fuente con el parser de
+TypeScript y aplica tres reglas. `noTopLevelText.test.ts` las prueba con fixtures `.txt` y
+`noTopLevelText.real.test.ts` recorre todo `web/src/` (sin tests).
+
+1. `t-outside-function`: `t(`, `i18n.t(` o `i18next.t(` en el module scope. Module scope es todo lo que no es el cuerpo de una función, método, accessor o constructor: initializers de campos de clase, bloques `static {}`, default parameters, decorators, los argumentos de una llamada hecha en module scope y el cuerpo de un IIFE. Los getters y setters de un object literal cuentan como dentro de una función.
+2. Los alias de `t` tomados en module scope (`const tt = i18next.t`, `const { t } = i18n`) están prohibidos, no se siguen.
+3. Falso positivo conocido: un default parameter que llama a un parámetro anterior llamado `t` (`function f(t, x = t('a'))`) se marca igual.
+4. `locale-import`, fuera de `src/i18n/`, marca: `import`, `export … from`, `export * from`, `import()` literal sobre `locales/`, un `import.meta.glob` sobre `locales/`, y un glob o `import()` cuyo argumento no es literal (string, template sin sustituciones o array de ellos).
+5. Se permiten `import type`, `export type … from` y `typeof import(…)`. `require()` no está cubierto, porque `src/` es solo ESM.
+6. `resource-read`, en module scope: llamadas a `getResource`, `getResourceBundle`, `getFixedT` y `resolveKey`; `.store` y `.services` sobre `i18n` o `i18next`; y acceso a propiedad o elemento sobre un binding importado de un JSON de locale o de `i18n/englishStatic` (`ENGLISH_STATIC_MODULE`). Pasar el binding por referencia (como argumento o dentro de un objeto) no es una lectura.
+7. Límite: un alias de un binding de locale (`const c = common`) no se sigue.
+8. `i18n/` tiene una única excepción con nombre, `I18N_EXCEPTION` (`src/i18n/testing.ts`, `testT = i18n.t`, un helper de tests): una constante con su razón, nunca una lista, y solo para `t-outside-function`.
+9. `isKeyShaped` (`i18n/keyShape.ts`) es la única prueba de forma de key que usan los guards, verificada contra cada valor de los locales.
+
+## Amendment (GH-379, parte 2): solo texto con key
+
+La guarda de `copyOnly` ya no se limita a los literales de JSX: `findCopyImports` (`web/src/architecture/copyOnly.ts`) lee con el parser de TypeScript los imports de `copy/<nombre>.ts` en `SCANNED` (`.ts` y `.tsx` bajo `screens/`, `shell/` y `components/`, sin `*.test.ts`, `*.test.tsx` ni carpetas `fixtures/`, solo por sufijo). `alt` y `aria-valuetext` se suman a `TEXT_ATTRIBUTES`.
+
+- Un import con nombre cuenta como texto si ese export tiene palabras según `wordsOf` (`web/src/design/copyTexts.ts`); un import de namespace, `export * from` o `import()` dinámico cuenta si el módulo tiene alguna. `import type`, `export type … from` y un especificador `type` no cuentan.
+- `wordsOf` descarta todo valor con forma de key (`isKeyShaped`) y comprueba cada uno contra `en`: `unresolved key`, `unusable key` y `unreadable export` son hallazgos que `lists.test.ts` no tolera.
+- Dos listas derivadas del árbol, `i18nOffenders/copyExportsText.json` y `copyImports.json`, nombran lo que falta mover. `COPY_OWNER` (`owners.ts`) da el issue de cada archivo de copy (#350 a #353). Las listas solo se achican: cada parte de área borra solo sus entradas (`docs/product/gate.md`).
+- Límites, igual que la regla de JSX: un texto armado por un helper fuera de `copy/`, un literal asignado a una variable y renderizado después, y un `import()` cuyo argumento no es un literal no se ven. Un alias de path para `copy/` no existe hoy y no se sigue.

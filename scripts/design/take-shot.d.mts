@@ -1,6 +1,6 @@
 import type { BrowserContext, JSHandle, Locator, Page } from 'playwright';
 import type { Census } from './census.mjs';
-import type { SideOutcome } from './settle.mjs';
+import type { SettleKind, SideOutcome } from './settle.mjs';
 import type { Clip, Side, Snapshot, Viewport } from './shot.mjs';
 
 export type ShotConfig = { timeoutMs: number; instant: Date };
@@ -17,8 +17,10 @@ export function configureShot(config: ShotConfig): void;
 export function pauseClock(context: BrowserContext): Promise<void>;
 export function addProbe(context: BrowserContext): Promise<void>;
 export function withinTimeout<T>(promise: Promise<T>): Promise<T>;
+export type Settled = { reason: string | null; kind: SettleKind | null };
+export function settleKinded(page: Page, args: SettleArgs): Promise<Settled>;
 export function settle(page: Page, args: SettleArgs): Promise<string | null>;
-export function restAfterShot(page: Page): Promise<string | null>;
+export function restAfterShot(page: Page): Promise<Settled>;
 export const firstLine: (error: unknown) => string;
 export function scaleMisses(page: Page, s: TextScaled, side: string, when: string): Promise<string | null>;
 export const settledViewport: WeakMap<Page, Viewport | null>;

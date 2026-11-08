@@ -11,6 +11,7 @@ from app.shared.money import (
     MoneyFormat,
     MoneyNotRepresentable,
     round_half_up,
+    round_half_up_to_units,
 )
 
 
@@ -156,3 +157,25 @@ def test_round_half_up_is_exact_on_huge_fractions() -> None:
     huge = Fraction(10**30 * 2 + 1, 2)
 
     assert round_half_up(huge, MoneyFormat("$", 0)) == Money((10**30 + 1) * 100)
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        (Fraction(5, 2), 3),
+        (Fraction(-5, 2), -3),
+        (Fraction(49, 20), 2),
+        (Fraction(7), 7),
+        (Fraction(0), 0),
+    ],
+)
+def test_round_half_up_to_units_rounds_ties_away_from_zero(value: Fraction, expected: int) -> None:
+    assert round_half_up_to_units(value) == expected
+
+
+def test_round_half_up_to_units_agrees_with_round_half_up_at_zero_decimals() -> None:
+    value = Fraction(123_457, 100)
+
+    assert (
+        round_half_up_to_units(value) * 100 == round_half_up(value, MoneyFormat("$", 0)).hundredths
+    )

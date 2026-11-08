@@ -1,0 +1,2 @@
+// expect: locale-import@2
+export * from '../copy/locales/en/common.json'

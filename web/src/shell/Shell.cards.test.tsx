@@ -1,9 +1,9 @@
 /**
- * "Exactly one ‹ per card" (GH-135, navigation.md, "Chrome and back"), through the real route
- * table, the real `Shell` and every card screen, with the API faked at `fetch`: on a phone and on a
- * computer (its two-pane details included) a card shows one "‹ <parent>" button, the shell's, and
- * none on the price form behind its modal. Then the rows of navigation.md's back table this
- * change touches, each with no history to go back to.
+ * "Exactly one ‹ per card" (GH-135, navigation.md, "Marco y camino de vuelta"), through the real
+ * route table, the real `Shell` and every card screen, with the API faked at `fetch`: on a phone
+ * and on a computer (its two-pane details included) a card shows one "‹ <parent>" button, the
+ * shell's, and none on the price form behind its modal. Then the rows of navigation.md's back
+ * table this change touches, each with no history to go back to.
  */
 
 import { act, render, screen, waitFor } from '@testing-library/react'

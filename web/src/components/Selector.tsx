@@ -18,6 +18,7 @@
 import {
   type KeyboardEvent,
   type ReactNode,
+  type Ref,
   type RefCallback,
   useContext,
   useId,
@@ -25,6 +26,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useViewport } from '../shell/useViewport'
 import Boton from './Boton'
@@ -53,7 +55,19 @@ export type SelectorProps = {
   loading: boolean
   /** One line of plain text, shown when `options` is empty. */
   emptySetMessage: string
-} & ({ required: true; emptyWording?: never } | { required?: false; emptyWording: string })
+  /** Receives the field's `<button>`, for a caller that focuses it or scrolls it into view. */
+  fieldRef?: Ref<HTMLButtonElement>
+  /** Names the group, the field and the list where `label` would; the visible label stays `label`. */
+  accessibleName?: string
+  /**
+   * Where the phone's list is drawn instead of beside the field. A screen that needs what is beneath
+   * the open list covered (`inert`) draws the list outside that part and says where here.
+   */
+  listHost?: HTMLElement | null
+} & (
+  | { required: true; emptyWording?: never; /** Shown in the value area while empty; never a row. */ placeholder?: string }
+  | { required?: false; emptyWording: string; placeholder?: never }
+)
 
 /** Above this many options the list has a search field. */
 const SEARCH_ABOVE = 8
@@ -67,9 +81,22 @@ interface Item {
   glyph?: string
 }
 
+/** Hands `element` to a caller's ref, whether it is a callback or an object. */
+function assignRef<T>(ref: Ref<T> | undefined, element: T | null): void {
+  if (typeof ref === 'function') ref(element)
+  else if (ref) ref.current = element
+}
+
+/** `list` drawn in `host` when the screen gave one, in place otherwise. */
+function inListHost(host: HTMLElement | null | undefined, list: ReactNode): ReactNode {
+  return host ? createPortal(list, host) : list
+}
+
 export default function Selector(props: SelectorProps) {
   const { options, value, onChange, label, selected, loading, emptySetMessage } = props
   const emptyWording = props.required === true ? null : props.emptyWording
+  const placeholder = props.required === true ? props.placeholder : undefined
+  const name = props.accessibleName ?? label
   const { t } = useTranslation()
   // Its skeleton stands where the value will be: the area is waiting while it shows.
   useLoading(loading)
@@ -78,6 +105,7 @@ export default function Selector(props: SelectorProps) {
   const sheet = useSheet(level + 1)
   const ids = useId()
   const labelId = `${ids}-label`
+  const nameId = props.accessibleName === undefined ? labelId : `${ids}-name`
   const valueId = `${ids}-value`
 
   const [mine, setMine] = useState(false)
@@ -89,7 +117,12 @@ export default function Selector(props: SelectorProps) {
   const closing = useRef(false)
   const searchFocused = useRef(false)
   const wrapperRef = useRef<HTMLDivElement>(null)
-  const fieldRef = useRef<HTMLButtonElement>(null)
+  const fieldRef = useRef<HTMLButtonElement | null>(null)
+  const callerFieldRef = props.fieldRef
+  const setFieldRef: RefCallback<HTMLButtonElement> = (element) => {
+    fieldRef.current = element
+    assignRef(callerFieldRef, element)
+  }
   const dropdownRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
   const rowsRef = useRef<HTMLDivElement>(null)
@@ -381,7 +414,7 @@ export default function Selector(props: SelectorProps) {
 
   const noResults = options.length > 0 && visible.length === 0
   const message = options.length === 0 ? emptySetMessage : noResults ? t('common:noResults') : null
-  const optionsName = t('common:optionsOf', { name: label })
+  const optionsName = t('common:optionsOf', { name })
 
   const body = (
     <>
@@ -403,7 +436,7 @@ export default function Selector(props: SelectorProps) {
   const valueArea = loading ? (
     <span className="cargando__barra cargando__barra--corta selector__esqueleto" aria-hidden="true" />
   ) : value === null ? (
-    <span className="selector__texto">{emptyWording}</span>
+    <span className="selector__texto">{emptyWording ?? placeholder}</span>
   ) : current !== undefined ? (
     <>
       {current.glyph !== undefined && (
@@ -425,18 +458,23 @@ export default function Selector(props: SelectorProps) {
 
   return (
     <>
-      <div ref={wrapperRef} className="selector" role="group" aria-labelledby={labelId} tabIndex={-1}>
-        <span id={labelId} className="campo__rotulo">
+      <div ref={wrapperRef} className="selector" role="group" aria-labelledby={nameId} tabIndex={-1}>
+        <span id={labelId} className="campo__rotulo" aria-hidden={props.accessibleName === undefined ? undefined : 'true'}>
           {label}
         </span>
+        {props.accessibleName !== undefined && (
+          <span id={nameId} className="visualmente-oculto">
+            {props.accessibleName}
+          </span>
+        )}
         <div className="selector__control">
           <button
-            ref={fieldRef}
+            ref={setFieldRef}
             type="button"
             className="selector__campo"
             disabled={loading}
             aria-busy={loading ? 'true' : undefined}
-            aria-labelledby={loading ? labelId : `${labelId} ${valueId}`}
+            aria-labelledby={loading ? nameId : `${nameId} ${valueId}`}
             aria-haspopup={computer ? 'listbox' : 'dialog'}
             aria-expanded={computer ? dropdown : shown}
             onClick={openField}
@@ -465,7 +503,7 @@ export default function Selector(props: SelectorProps) {
           )}
         </div>
       </div>
-      {shown && (
+      {shown && inListHost(props.listHost, (
         <SheetLevel.Provider value={level + 1}>
           <Sheet
             computer={false}
@@ -488,7 +526,7 @@ export default function Selector(props: SelectorProps) {
             </div>
           </Sheet>
         </SheetLevel.Provider>
-      )}
+      ))}
     </>
   )
 }

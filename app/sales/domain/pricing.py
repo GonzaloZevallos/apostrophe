@@ -6,16 +6,18 @@ never summed across a sale) and VIP (Clientes VIP on, a VIP customer and a VIP p
 always from the variety's current price on the sale's date (docs/adr/0034).
 
 `line_total` and `special_rate` are the only two roundings anywhere in sales, both half
-up and both integer arithmetic: no `round()`, `float` or `Decimal.quantize` in a sales
-money path.
+up and both through `round_half_up_to_units`: no `round()`, `float` or `Decimal.quantize`
+in a sales money path.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
+from fractions import Fraction
 from typing import ClassVar
 
+from app.shared.money import round_half_up_to_units
 from app.shared.pricing_settings import PricingSettings
 from app.shared.quantity import Quantity
 
@@ -116,15 +118,14 @@ class VarietyPricing:
 
 def line_total(price_per_gram: int, quantity: Quantity) -> int:
     """`price_per_gram x grams`, rounded to the whole peso, half up (PM clarification,
-    round 1): `(price*h + 50) // 100`, with `h` the grams in hundredths."""
-    return (price_per_gram * quantity.hundredths + 50) // 100
+    round 1)."""
+    return round_half_up_to_units(price_per_gram * quantity.units)
 
 
 def special_rate(total: int, quantity: Quantity) -> int:
     """The price per gram implied by a special price's whole-peso total, half up. This
     figure is stored for reference only: it never feeds back into a total (ADR-0003)."""
-    h = quantity.hundredths
-    return (200 * total + h) // (2 * h)
+    return round_half_up_to_units(Fraction(total) / quantity.units)
 
 
 @dataclass(frozen=True)

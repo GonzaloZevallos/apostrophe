@@ -20,12 +20,6 @@
   {
     "screen": "DescartarVenta",
     "rule": "autocomplete",
-    "target": "combobox:Line # product",
-    "issue": 78
-  },
-  {
-    "screen": "DescartarVenta",
-    "rule": "autocomplete",
     "target": "textbox:Date",
     "issue": 78
   },
@@ -51,12 +45,6 @@
     "screen": "DescartarVenta",
     "rule": "autocomplete",
     "target": "textbox:Line # special price",
-    "issue": 78
-  },
-  {
-    "screen": "ElegirCliente",
-    "rule": "autocomplete",
-    "target": "combobox:Line # product",
     "issue": 78
   },
   {
@@ -224,12 +212,6 @@
   {
     "screen": "NuevaVenta",
     "rule": "autocomplete",
-    "target": "combobox:Line # product",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVenta",
-    "rule": "autocomplete",
     "target": "textbox:Date",
     "issue": 78
   },
@@ -255,12 +237,6 @@
     "screen": "NuevaVenta",
     "rule": "autocomplete",
     "target": "textbox:Line # special price",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaCliente",
-    "rule": "autocomplete",
-    "target": "combobox:Line # product",
     "issue": 78
   },
   {
@@ -302,12 +278,6 @@
   {
     "screen": "NuevaVentaConLinea",
     "rule": "autocomplete",
-    "target": "combobox:Line # product",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaConLinea",
-    "rule": "autocomplete",
     "target": "textbox:Date",
     "issue": 78
   },
@@ -338,12 +308,6 @@
   {
     "screen": "NuevaVentaConLineaYPago",
     "rule": "autocomplete",
-    "target": "combobox:Line # product",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaConLineaYPago",
-    "rule": "autocomplete",
     "target": "textbox:Date",
     "issue": 78
   },
@@ -369,12 +333,6 @@
     "screen": "NuevaVentaConLineaYPago",
     "rule": "autocomplete",
     "target": "textbox:Shipping",
-    "issue": 78
-  },
-  {
-    "screen": "NuevoClienteEnVenta",
-    "rule": "autocomplete",
-    "target": "combobox:Line # product",
     "issue": 78
   },
   {

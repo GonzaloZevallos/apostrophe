@@ -212,7 +212,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(previewJazmin.getByText('$ 500 x g', { exact: true })).toBeVisible()
   await expect(previewJazmin.getByText('$ 5.000', { exact: true })).toBeVisible()
 
-  const previewLirio = page.locator('.nueva-venta__linea--abierta').filter({ has: page.getByLabel('Line 2 product') })
+  const previewLirio = page.locator('.nueva-venta__linea--abierta').filter({ has: page.getByRole('button', { name: /^Line 2 product/ }) })
   await expect(previewLirio.locator('.insignia')).toHaveText('list')
   await expect(previewLirio.getByText('$ 300 x g', { exact: true })).toBeVisible()
   await expect(previewLirio.getByText('$ 6.000', { exact: true })).toBeVisible()

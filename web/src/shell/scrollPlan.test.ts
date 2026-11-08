@@ -1,5 +1,5 @@
 /**
- * `decideScroll`, the pure rule of "Scroll on a change of screen" (navigation.md, criteria
+ * `decideScroll`, the pure rule of "Scroll al cambiar de pantalla" (navigation.md, criteria
  * 21-23): what the page does when the location changes. One row per action x kind x viewport.
  */
 
