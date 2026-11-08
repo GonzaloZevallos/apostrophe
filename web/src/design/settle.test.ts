@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  CAPTURE_ATTEMPTS,
   SETTLE_ADVANCE_MS,
   SETTLE_BOUND,
   SETTLE_FRAMES,
@@ -7,7 +8,12 @@ import {
   SETTLE_REASON_REJECTED,
   SETTLE_REASON_UNSETTLED,
   animationRecords,
+  captureWithRetries,
   frameRecords,
+  isRetryableKind,
+  kindOfSettle,
+  retryNote,
+  retrySummary,
   settleWith,
   shotKept,
   signatureOf,
@@ -17,6 +23,8 @@ import {
   type LayoutPage,
   type LayoutRecord,
   type SettleFrame,
+  type SettleKind,
+  type SideOutcome,
   type SettlePort,
 } from '../../../scripts/design/settle.mjs'
 
@@ -506,5 +514,146 @@ describe('sideOutcome', () => {
       png: null,
       failure: SETTLE_REASON_UNSETTLED,
     })
+  })
+})
+
+describe('sideOutcome kind', () => {
+  it('carries the given kind on a failure and none on a success', () => {
+    expect(sideOutcome(SETTLE_REASON_UNSETTLED, 'png-bytes', 'unsettled')).toEqual({
+      png: null,
+      failure: SETTLE_REASON_UNSETTLED,
+      kind: 'unsettled',
+    })
+    expect(sideOutcome(null, 'png-bytes', 'unsettled')).toEqual({ png: 'png-bytes', failure: null })
+  })
+
+  it('is not retryable when a failure is given with no kind', () => {
+    expect(isRetryableKind(sideOutcome('algo falló', null).kind)).toBe(false)
+  })
+})
+
+describe('kindOfSettle', () => {
+  it('maps the two settle reasons by equality and everything else to other', () => {
+    expect(kindOfSettle(SETTLE_REASON_UNSETTLED)).toBe('unsettled')
+    expect(kindOfSettle(SETTLE_REASON_REJECTED)).toBe('rejected')
+    expect(kindOfSettle(`${SETTLE_REASON_UNSETTLED} `)).toBe('other')
+    expect(kindOfSettle(`estado no alcanzado en {}: ${SETTLE_REASON_UNSETTLED}`)).toBe('other')
+    expect(kindOfSettle('una tipografía de la página quedó en error')).toBe('other')
+  })
+})
+
+describe('isRetryableKind', () => {
+  it('is true for every load-shaped kind and false for other and for anything unknown', () => {
+    const load: SettleKind[] = ['unsettled', 'rejected', 'network', 'rest-mismatch', 'rest-unread', 'shot-timeout', 'step-timeout']
+    for (const kind of load) expect(isRetryableKind(kind), kind).toBe(true)
+    expect(isRetryableKind('other')).toBe(false)
+    expect(isRetryableKind(null)).toBe(false)
+    expect(isRetryableKind('unsettled but different' as SettleKind)).toBe(false)
+  })
+})
+
+describe('CAPTURE_ATTEMPTS', () => {
+  it('is three', () => {
+    expect(CAPTURE_ATTEMPTS).toBe(3)
+  })
+})
+
+const miss = (kind: SettleKind): SideOutcome<string> => sideOutcome(SETTLE_REASON_UNSETTLED, 'png', kind)
+const pass = sideOutcome(null, 'png')
+
+// A port that answers `answers` in order, counting its calls.
+function attemptsOf(answers: ReadonlyArray<{ outcome: SideOutcome<string>; wrote: boolean } | Error>) {
+  const log = { calls: 0 }
+  const port = () => {
+    const next = answers[Math.min(log.calls, answers.length - 1)]
+    log.calls += 1
+    return next instanceof Error ? Promise.reject(next) : Promise.resolve(next as { outcome: SideOutcome<string>; wrote: boolean })
+  }
+  return { port, log }
+}
+
+const policy = { attempts: CAPTURE_ATTEMPTS, retryable: isRetryableKind }
+
+describe('captureWithRetries', () => {
+  it('calls again after each retryable miss and returns the pass with the kinds it missed by', async () => {
+    const { port, log } = attemptsOf([
+      { outcome: miss('unsettled'), wrote: false },
+      { outcome: miss('rest-mismatch'), wrote: false },
+      { outcome: pass, wrote: false },
+    ])
+    const result = await captureWithRetries(port, policy)
+    expect(log.calls).toBe(3)
+    expect(result).toEqual({ outcome: pass, attempts: 3, kinds: ['unsettled', 'rest-mismatch'] })
+  })
+
+  it('stops after exactly the attempts it is given and returns the last failure', async () => {
+    const { port, log } = attemptsOf([{ outcome: miss('network'), wrote: false }])
+    const result = await captureWithRetries(port, policy)
+    expect(log.calls).toBe(3)
+    expect(result.attempts).toBe(3)
+    expect(result.outcome.failure).toBe(SETTLE_REASON_UNSETTLED)
+    expect(result.kinds).toEqual(['network', 'network', 'network'])
+  })
+
+  it('calls once when the first attempt passes', async () => {
+    const { port, log } = attemptsOf([{ outcome: pass, wrote: false }])
+    expect(await captureWithRetries(port, policy)).toEqual({ outcome: pass, attempts: 1, kinds: [] })
+    expect(log.calls).toBe(1)
+  })
+
+  it('never calls again for a kind that is not retryable', async () => {
+    const { port, log } = attemptsOf([{ outcome: miss('other'), wrote: false }])
+    const result = await captureWithRetries(port, policy)
+    expect(log.calls).toBe(1)
+    expect(result.kinds).toEqual(['other'])
+  })
+
+  it('never calls again after an attempt that wrote, whatever the kind', async () => {
+    const { port, log } = attemptsOf([{ outcome: miss('unsettled'), wrote: true }])
+    const result = await captureWithRetries(port, policy)
+    expect(log.calls).toBe(1)
+    expect(result.attempts).toBe(1)
+  })
+
+  it('lets a thrown capture propagate after one call', async () => {
+    const { port, log } = attemptsOf([new Error('boom')])
+    await expect(captureWithRetries(port, policy)).rejects.toThrow('boom')
+    expect(log.calls).toBe(1)
+  })
+
+  it('does not retry a thrown capture that follows a miss either', async () => {
+    const { port, log } = attemptsOf([{ outcome: miss('unsettled'), wrote: false }, new Error('boom')])
+    await expect(captureWithRetries(port, policy)).rejects.toThrow('boom')
+    expect(log.calls).toBe(2)
+  })
+
+  it('uses the retryable function it is given', async () => {
+    const { port, log } = attemptsOf([{ outcome: miss('unsettled'), wrote: false }])
+    await captureWithRetries(port, { attempts: 3, retryable: () => false })
+    expect(log.calls).toBe(1)
+  })
+})
+
+describe('retryNote', () => {
+  it('names the side, the attempt and the kinds after a pass that followed misses', () => {
+    const result = { outcome: pass, attempts: 3, kinds: ['unsettled', 'rest-mismatch'] as SettleKind[] }
+    expect(retryNote('built', result, 3)).toBe('built: settled on attempt 3 of 3 after unsettled, rest-mismatch')
+  })
+
+  it('is the failure suffix when every attempt missed', () => {
+    const result = { outcome: miss('unsettled'), attempts: 3, kinds: ['unsettled', 'unsettled', 'unsettled'] as SettleKind[] }
+    expect(retryNote('built', result, 3)).toBe(' (after 3 attempts: unsettled, unsettled, unsettled)')
+  })
+
+  it('is empty when the first attempt decided', () => {
+    expect(retryNote('built', { outcome: pass, attempts: 1, kinds: [] }, 3)).toBe('')
+    expect(retryNote('design', { outcome: miss('other'), attempts: 1, kinds: ['other'] }, 3)).toBe('')
+  })
+})
+
+describe('retrySummary', () => {
+  it('is one fixed line of two counts', () => {
+    expect(retrySummary(0, 0)).toBe('retries: 0 rows, 0 attempts')
+    expect(retrySummary(1, 2)).toBe('retries: 1 rows, 2 attempts')
   })
 })

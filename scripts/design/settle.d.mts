@@ -44,5 +44,26 @@ export type AnimationRecord = { playState: string; pending: boolean; finite: boo
 export function animationRecords(doc: Pick<Document, 'getAnimations'>): AnimationRecord[];
 export function unfinished(records: ReadonlyArray<AnimationRecord>): boolean[];
 export function shotKept(frame: SettleFrame, settledHash: string): boolean;
-export type SideOutcome<T> = { png: T | null; failure: string | null };
-export function sideOutcome<T>(reason: string | null, png: T): SideOutcome<T>;
+export type SettleKind =
+  | 'unsettled'
+  | 'rejected'
+  | 'network'
+  | 'rest-mismatch'
+  | 'rest-unread'
+  | 'shot-timeout'
+  | 'step-timeout'
+  | 'other';
+export const SETTLE_KINDS: ReadonlyArray<SettleKind>;
+export function isRetryableKind(kind: SettleKind | null | undefined): boolean;
+export function kindOfSettle(reason: string): SettleKind;
+export type SideOutcome<T> = { png: T | null; failure: string | null; kind?: SettleKind };
+export function sideOutcome<T>(reason: string | null, png: T, kind?: SettleKind): SideOutcome<T>;
+export const CAPTURE_ATTEMPTS: number;
+export type CaptureAttempt<T> = { outcome: SideOutcome<T>; wrote: boolean };
+export type CaptureResult<T> = { outcome: SideOutcome<T>; attempts: number; kinds: SettleKind[] };
+export function captureWithRetries<T>(
+  port: () => Promise<CaptureAttempt<T>>,
+  options: { attempts: number; retryable: (kind: SettleKind | undefined) => boolean },
+): Promise<CaptureResult<T>>;
+export function retryNote<T>(side: string, result: CaptureResult<T>, max: number): string;
+export function retrySummary(rows: number, attempts: number): string;

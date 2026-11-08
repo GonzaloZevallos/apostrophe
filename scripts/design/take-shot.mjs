@@ -14,6 +14,7 @@ import {
   SETTLE_REASON_UNSETTLED,
   animationRecords,
   frameRecords,
+  kindOfSettle,
   settleWith,
   shotKept,
   signatureOf,
@@ -143,24 +144,25 @@ export function withinTimeout(promise) {
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer))
 }
 
-// `null` when the page has finished drawing, else a reason with no page data in it. In this
-// order: the network once after a navigation, the applied-check (it loads fonts, so it runs
-// before the clock moves), then the clock advance and the frame sampling.
-export async function settle(page, { advanceMs, afterGoto = false, ofFirstText }) {
+// `{ reason, kind }`: `reason` is `null` when the page has finished drawing, else a reason with no
+// page data in it, and `kind` is the closed kind of that miss (`settle.mjs`), set here where the
+// reason is produced. In this order: the network once after a navigation, the applied-check (it
+// loads fonts, so it runs before the clock moves), then the clock advance and the frame sampling.
+export async function settleKinded(page, { advanceMs, afterGoto = false, ofFirstText }) {
   if (afterGoto) {
     try {
       await page.waitForLoadState('networkidle')
     } catch (error) {
-      return `la red no se aquietó: ${firstLine(error)}`
+      return { reason: `la red no se aquietó: ${firstLine(error)}`, kind: 'network' }
     }
   }
   const applied = await appliedCheck(page, ofFirstText)
-  if (applied) return applied
+  if (applied) return { reason: applied, kind: 'other' }
   // Every face the page asked for has finished loading before the first frame is sampled.
   try {
     await withinTimeout(page.evaluate(() => document.fonts.ready.then(() => undefined)))
   } catch {
-    return SETTLE_REASON_UNSETTLED
+    return { reason: SETTLE_REASON_UNSETTLED, kind: 'unsettled' }
   }
   const clock = page.context().clock
   let lastHash = null
@@ -177,21 +179,29 @@ export async function settle(page, { advanceMs, afterGoto = false, ofFirstText }
     { advanceMs, frames: SETTLE_FRAMES, bound: SETTLE_BOUND },
   )
   if (reason === null) settledHash.set(page, lastHash)
-  return reason
+  return { reason, kind: reason === null ? null : kindOfSettle(reason) }
 }
+
+// The bare reason of `settleKinded`, as a string or `null`: what `census.mjs` is given.
+export const settle = async (page, options) => (await settleKinded(page, options)).reason
 
 // One more frame, sampled right after a screenshot with NO clock advance: a late refetch lands
 // after the settled frames. The shot is kept only if that frame is calm (no mutation since the
 // last settled frame included) and has the last settled frame's hash; any miss, or a frame that
-// cannot be read, is the one rest failure (`null` when the page is still at rest). Nothing is
-// discarded: the shot itself does not mutate the page (see `SHOT` and `hideCaret`).
+// cannot be read, is the one rest failure (`reason: null` when the page is still at rest). Its kind
+// says which: `rest-mismatch` for a frame that is not calm or whose hash differs, `rest-unread` for
+// one that could not be read. Nothing is discarded: the shot itself does not mutate the page (see
+// `SHOT` and `hideCaret`).
 export async function restAfterShot(page) {
+  let frame
   try {
-    const frame = await withinTimeout(page.evaluate(SAMPLE_FRAME_SOURCE))
-    return shotKept(frame, settledHash.get(page)) ? null : SETTLE_REASON_UNSETTLED
+    frame = await withinTimeout(page.evaluate(SAMPLE_FRAME_SOURCE))
   } catch {
-    return SETTLE_REASON_UNSETTLED
+    return { reason: SETTLE_REASON_UNSETTLED, kind: 'rest-unread' }
   }
+  return shotKept(frame, settledHash.get(page))
+    ? { reason: null, kind: null }
+    : { reason: SETTLE_REASON_UNSETTLED, kind: 'rest-mismatch' }
 }
 
 export const firstLine = (error) => String(error?.code ?? error?.message ?? error).split('\n')[0]
@@ -248,7 +258,9 @@ export async function verifyAfterShot(page, s, label, png, side) {
     return sideOutcome(viewportMovedReason(side), null)
   }
   const miss = s.text_scale ? await scaleMisses(page, s, label, 'después de la captura') : null
-  return sideOutcome(miss ?? (await restAfterShot(page)), png)
+  if (miss) return sideOutcome(miss, null)
+  const rest = await restAfterShot(page)
+  return sideOutcome(rest.reason, png, rest.kind)
 }
 
 // A section is cropped to its parent block. When a direct child sticks out of that block
@@ -350,7 +362,10 @@ export async function takeShot(page, { block, ofFirstText, census, side }) {
     if (census) await bounded(census.before(page))
     return await shotSteps(page, { block, ofFirstText, census, side }, handles)
   } catch (error) {
-    return sideOutcome(shotStepReason(stepKind(error), side), null)
+    const kind = stepKind(error)
+    return kind === 'timeout'
+      ? sideOutcome(shotStepReason(kind, side), null, 'shot-timeout')
+      : sideOutcome(shotStepReason(kind, side), null)
   } finally {
     await Promise.allSettled(handles.map((handle) => handle.dispose()))
   }
@@ -372,8 +387,8 @@ export async function shotSteps(page, { block, ofFirstText, census, side }, hand
     }
   }
   const clip = block ? await bounded(sectionClip(block)) : undefined
-  const last = await settle(page, { advanceMs: 0, ofFirstText })
-  if (last) return sideOutcome(last, null)
+  const last = await settleKinded(page, { advanceMs: 0, ofFirstText })
+  if (last.reason) return sideOutcome(last.reason, null, last.kind)
   settledViewport.set(page, page.viewportSize())
   let miss
   if (plan.mode === 'layer') {
@@ -394,10 +409,10 @@ export async function shotSteps(page, { block, ofFirstText, census, side }, hand
   return sideOutcome(null, png)
 }
 
-// Moves the document to `offset` and waits until the page is at rest there. A reason, or null.
+// Moves the document to `offset` and waits until the page is at rest there. `{ reason, kind }`.
 async function scrollSettled(page, offset, ofFirstText) {
   await bounded(page.evaluate(scrollToInPage, offset))
-  return settle(page, { advanceMs: 0, ofFirstText })
+  return settleKinded(page, { advanceMs: 0, ofFirstText })
 }
 
 // What `shiftMiss` reads of the page now: where it is scrolled, its size, and the snapshot of its elements
@@ -427,10 +442,10 @@ function naturalPlace(pinned, rect, scrollTop, viewport) {
 // `stickyPlacement` where each pinned element is drawn, `hiddenRule` the stylesheet of each frame
 // and `shiftMiss` whether the page held still. Nothing here rounds: `stitch` copies rows.
 async function scrollShot(page, { block, ofFirstText, census, side }, handles) {
-  const refused = (reason) => sideOutcome(reason, null)
+  const refused = (reason, kind) => sideOutcome(reason, null, kind)
   const viewport = page.viewportSize()
   let last = await scrollSettled(page, 0, ofFirstText)
-  if (last) return refused(last)
+  if (last.reason) return refused(last.reason, last.kind)
   settledViewport.set(page, page.viewportSize())
   const clip = block ? await bounded(sectionBox(block)) : undefined
   const dpr = await bounded(page.evaluate(() => window.devicePixelRatio))
@@ -444,7 +459,7 @@ async function scrollShot(page, { block, ofFirstText, census, side }, handles) {
   const unplaced = refused(named('a pinned element could not be placed', side))
   for (const element of pinned.filter((p) => pinnedClass(p) === 'content')) {
     last = await scrollSettled(page, stickyProbeOffset(element, viewport, maxOffset), ofFirstText)
-    if (last) return refused(last)
+    if (last.reason) return refused(last.reason, last.kind)
     const [rect, { scrollTop }] = await Promise.all([
       bounded(page.evaluate(rectInPage, [top.handle, element.index])),
       bounded(page.evaluate(readScroll)),
@@ -453,7 +468,7 @@ async function scrollShot(page, { block, ofFirstText, census, side }, handles) {
     if (element.natural === null) return unplaced
   }
   last = await scrollSettled(page, 0, ofFirstText)
-  if (last) return refused(last)
+  if (last.reason) return refused(last.reason, last.kind)
   const again = await readFrame(page, 0, handles, top)
   const moved = shiftMiss(top.read, again.read, side)
   if (moved) return refused(moved)
@@ -465,7 +480,7 @@ async function scrollShot(page, { block, ofFirstText, census, side }, handles) {
   const shots = []
   for (const [at, frame] of frames.frames.entries()) {
     last = await scrollSettled(page, frame.offset, ofFirstText)
-    if (last) return refused(last)
+    if (last.reason) return refused(last.reason, last.kind)
     const sheet = await bounded(page.evaluateHandle(adoptSheetInPage, hiddenRule(placed.units, at, placed.assignment)))
     try {
       const now = await readFrame(page, frame.offset, handles, top)
@@ -477,7 +492,7 @@ async function scrollShot(page, { block, ofFirstText, census, side }, handles) {
     }
   }
   last = await scrollSettled(page, 0, ofFirstText)
-  if (last) return refused(last)
+  if (last.reason) return refused(last.reason, last.kind)
   return sideOutcome(null, stitch(shots, frames.frames, dpr))
 }
 
