@@ -60,8 +60,36 @@ son las tres siguientes, seguidas.
 En cada una, 391 líneas de lado con `AE 0`, 47 lados construidos sin captura en ninguna (las filas que todavía no existen en
 la app) y ninguna otra línea. Es decir, AE 0 en toda fila capturada en las dos.
 
-## Después del merge con master
-Las corridas de arriba son del código de captura anterior al merge con master (`bb2f72e1`), donde `takeShot` y `settle` pasaron a
-`scripts/design/take-shot.mjs`. El merge solo movió los tipos de falla a ese archivo (`settleKinded`, `restAfterShot` con tipo,
-`shot-timeout`) y dejó igual la política de `settle.mjs` y el cableado de `comparisons.mjs`. Se verificó con las pruebas
-(`settle.test.ts`, `census.test.ts`, `take-shot.test.ts`: 87 pasan) y no se repitieron las tres corridas completas.
+## Después del merge con master: tres corridas en el head entregado
+Las corridas de arriba son del código anterior al merge con master. El merge trajo código de captura nuevo (`take-shot.mjs`,
+`shot.mjs`, `stitch.mjs`, unas 1.100 líneas) y filas nuevas en `screens.json`; no solo movió los tipos de falla. Por eso se
+repitieron sobre el head `3accc29e97db7b0095a6e1c5e6602d3eb2b6d12c`, una detrás de otra, cada una con una muestra nueva, sin
+`--only` y sin `--census`. Mismos pasos que `compare.sh` (`sample-app.sh` y `comparisons.mjs --strict`) esperando los datos de
+la app sin su límite de 120 s, porque la máquina estaba cargada por otros trabajos (carga media de 27 a 29 al arrancar cada una).
+
+| Corrida | Head | Salida | Duración | Línea `retries:` | Filas reintentadas |
+|---|---|---|---|---|---|
+| 1 | `3accc29e` | **1** | 1081 s | `retries: 0 rows, 0 attempts` | ninguna |
+| 2 | `3accc29e` | **1** | 1183 s | `retries: 0 rows, 0 attempts` | ninguna |
+| 3 | `3accc29e` | **1** | 1241 s | `retries: 0 rows, 0 attempts` | ninguna |
+
+Las tres salen con 1 por una sola causa, que no es una captura fallida ni un lado que no quedó quieto. Cada corrida tiene 293
+filas: 174 con el lado construido capturado y 119 `not-captured`, todas con la razón `shot: no built screen yet (built)` (filas
+con `route: null`, todavía sin pantalla en la app). Ninguna otra fila tiene razón de falla y la salida no tiene ninguna línea
+`no se pudo capturar`. La regla de `--strict` de master (`results.some(not-captured)`) sale 1 por esas 119 filas, con o sin este
+cambio: no se tocó (invariante 7) y no hay una excepción nombrada para ellas en el registro. Antes del merge esas filas no
+hacían salir 1 (`failed` solo miraba las capturas), por eso las corridas de arriba dieron 0.
+
+- Fallas en el intento 1: 0 de 174 filas con lado construido en cada corrida (umbral 0,15). Fallas en el intento 2 tras una
+  falla en el intento 1: no hubo ninguna. Filas reintentadas: 0, 0 y 0 (umbral 5); ninguna se reintentó en 2 o más corridas.
+- No se ejerció el camino de reintento en estas tres corridas: no hizo falta. Lo cubren los tres casos de `census.test.ts`.
+- Carga: las tres corrieron con la máquina cargada por otros trabajos (carga media de 27 a 29), sin segunda corrida de
+  `compare.sh` en paralelo; esa es la carga de la reproducción en este head.
+- `ae.mjs` entre corridas, sin `--only`: 1 contra 2 y 2 contra 3, las dos con **salida 0**. En cada una, 467 líneas de lado con
+  `AE 0` y 119 líneas `not compared — shot: no built screen yet (built)` (las mismas filas sin pantalla), nada más.
+
+### Veredicto contra el criterio
+El criterio pide tres corridas `--strict` seguidas que salgan 0. En este head salen 1, solo por las 119 filas sin pantalla
+construida (la regla de master), y la regla de parada del encargo dice parar y avisar. No se cambió `--strict`, el registro ni se
+listó nada como excepción para llegar a 0. Lo que sí se midió en este head: 174 de 174 lados construidos capturados en las tres
+corridas, 0 reintentos, AE 0 en los 467 lados entre corridas.
