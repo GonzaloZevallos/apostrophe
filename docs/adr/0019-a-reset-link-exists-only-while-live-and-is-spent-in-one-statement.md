@@ -85,4 +85,4 @@ change once links exist in the database.
   minus platform tables, so the digest would be written, and `secret_columns`, which
   skipped withheld tables, would stop checking it.
 
-> Amended by ADR-0076: the unlock of `login_guard` sets `failures = 0, unlocks_at = NULL` (the column was `locked_until`).
+> Amended by ADR-0077: the unlock of `login_guard` sets `failures = 0, unlocks_at = NULL` (the column was `locked_until`).

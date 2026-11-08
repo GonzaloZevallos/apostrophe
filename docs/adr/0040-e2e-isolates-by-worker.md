@@ -348,4 +348,4 @@ A toast with no product timer (the history-state `Notice`, "Customer saved") kee
 - Toasts the recorder cannot see (`.aviso-toast` category toasts, `.venta-guardada`) stay on page text and keep the old race.
 - `expectToast` proves the toast was shown after the action, not that it was shown for the action: a different toast with the same text from another source in the window would pass.
 
-> Amended by ADR-0076: `login_guard` and `login_address_guard` carry a surrogate `id` primary key, unique on `email` / `address_digest`.
+> Amended by ADR-0077: `login_guard` and `login_address_guard` carry a surrogate `id` primary key, unique on `email` / `address_digest`.

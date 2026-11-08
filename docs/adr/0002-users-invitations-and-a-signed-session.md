@@ -85,4 +85,4 @@ from Negocio (`POST /auth/password`)".
   database by hand, and a changed password hash still closes every session of that
   user.
 
-> Amended by ADR-0076: `login_guard` and `login_address_guard` now have a surrogate `id` primary key; `email` / `address_digest` are unique, and `locked_until` / `window_start` are `unlocks_at` / `window_started_at`.
+> Amended by ADR-0077: `login_guard` and `login_address_guard` now have a surrogate `id` primary key; `email` / `address_digest` are unique, and `locked_until` / `window_start` are `unlocks_at` / `window_started_at`.
