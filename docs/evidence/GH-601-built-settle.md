@@ -88,8 +88,38 @@ hacían salir 1 (`failed` solo miraba las capturas), por eso las corridas de arr
 - `ae.mjs` entre corridas, sin `--only`: 1 contra 2 y 2 contra 3, las dos con **salida 0**. En cada una, 467 líneas de lado con
   `AE 0` y 119 líneas `not compared — shot: no built screen yet (built)` (las mismas filas sin pantalla), nada más.
 
+### Veredicto sobre `3accc29e`
+Con la regla de `--strict` de entonces (que fallaba por las 119 filas sin pantalla) las tres salieron 1, solo por esas filas. La
+decisión humana 5 las acepta como excepción; las tres corridas de la sección siguiente son sobre el head con esa regla. No se
+cambió el registro ni se listó nada más como excepción.
+
+## Decisión humana 5: tres corridas en el head con la excepción de las filas sin pantalla
+La regla: una corrida `--strict` sobre todo el registro (sin `--only`) cuenta las filas con `route: null` (cada una en
+`NULL_ROUTE_CEILING` con el issue que la va a construir) como `not compared: no built screen: N rows`, las deja por nombre en
+`index.json` (`capture: 'not-captured'`) y no sale 1 por ellas. Una fila con ruta construida que no se captura, una captura que
+falla o un lado de diseño que falla siguen saliendo 1.
+
+Head `57c53adc57a81989b50c5127151104ecc2465c5c`. Tres corridas seguidas, cada una con una muestra nueva, sin `--only` y sin
+`--census`; mismos pasos que `compare.sh` (`sample-app.sh` y `comparisons.mjs --strict`) esperando los datos de la app sin su
+límite de 120 s, porque la máquina estaba cargada por otros trabajos.
+
+| Corrida | Head | Salida | Duración | Carga media al arrancar | Línea `retries:` | Filas reintentadas |
+|---|---|---|---|---|---|---|
+| 1 | `57c53adc` | **0** | 703 s | 18,6 | `retries: 0 rows, 0 attempts` | ninguna |
+| 2 | `57c53adc` | **0** | 682 s | 5,2 | `retries: 0 rows, 0 attempts` | ninguna |
+| 3 | `57c53adc` | **0** | 1243 s | 3,7 | `retries: 0 rows, 0 attempts` | ninguna |
+
+- Cada corrida imprime `not compared: no built screen: 119 rows` y tiene 293 filas: 174 capturadas y 119 `not-captured`, todas con
+  la razón `shot: no built screen yet (built)`. Ninguna otra fila tiene razón de falla.
+- Fallas en el intento 1: 0 de 174 filas con lado construido en cada corrida (umbral 0,15). Intento 2 tras una falla: no hubo.
+  Filas reintentadas: 0, 0 y 0 (umbral 5). La regla de parada no se activó. No hizo falta ninguna excepción por escritura
+  (`Save sale`, `OnboardingVariedad`): todas se capturaron.
+- `ae.mjs` entre corridas, sin `--only`: 1 contra 2 y 2 contra 3, las dos con **salida 0**; en cada una 467 líneas `AE 0` y 119
+  `not compared — shot: no built screen yet (built)`, nada más.
+- El camino de reintento no se ejerció en estas tres; lo cubren los casos de `census.test.ts` y la reproducción con carga de arriba.
+- La carga era menor que en las corridas anteriores (la de otros trabajos bajó durante la sesión), así que estas tres no prueban
+  por sí solas la reproducción con carga; esa es la de la sección de la reproducción, hecha sobre el código de captura entregado.
+
 ### Veredicto contra el criterio
-El criterio pide tres corridas `--strict` seguidas que salgan 0. En este head salen 1, solo por las 119 filas sin pantalla
-construida (la regla de master), y la regla de parada del encargo dice parar y avisar. No se cambió `--strict`, el registro ni se
-listó nada como excepción para llegar a 0. Lo que sí se midió en este head: 174 de 174 lados construidos capturados en las tres
-corridas, 0 reintentos, AE 0 en los 467 lados entre corridas.
+Tres corridas `--strict` seguidas sobre todo el registro salen 0 en el head, con la única excepción que nombra la decisión
+humana 5 (119 filas sin pantalla construida), 174 de 174 lados construidos capturados, 0 reintentos y AE 0 en los 467 lados.

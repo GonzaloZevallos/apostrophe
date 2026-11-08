@@ -25,6 +25,8 @@ Extends ADR-0042 (rules 6 and 7) and ADR-0052 without amending them.
 
 On the head after the master merge (`3accc29e`), three whole-registry runs on a heavily loaded machine retried no row (0 of 174 built rows missed on attempt 1) and `ae.mjs` gave AE 0 on every side between them; they exited 1 only because master's `--strict` also fails on the 119 rows with no built screen yet.
 
+With human decision 5 in place (head `57c53adc`), three consecutive whole-registry `--strict` runs exited 0: 0 of 174 built rows missed on attempt 1, no row was retried, 119 rows were counted as `not compared: no built screen`, and `ae.mjs` gave AE 0 on every side between the runs.
+
 ## Risks
 - An intermittent late refetch can pass on a later attempt; the note and the summary line keep that visible.
 - How `restAfterShot` and the step catch pick their kind is shown by the wiring cases and the recorded runs, not by unit tests.
