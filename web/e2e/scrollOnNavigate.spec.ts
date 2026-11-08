@@ -16,6 +16,7 @@
 import type { Locator, Page } from '@playwright/test'
 import { CUSTOMERS, EXPENSES, HOME, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expect, test, withToastRecorder } from './fixtures.js'
+import { choosePaymentMethod } from './helpers/paymentMethod.js'
 import { seedLongExpenses, seedLongLists, seedLongVarieties } from './helpers/scrollSeed.js'
 import { expectToast } from './helpers/toast.js'
 import { expectPath } from './helpers/url.js'
@@ -249,7 +250,7 @@ test.describe.serial('Scroll al cambiar de pantalla', () => {
           // A save: the whole debt of the first debtor.
           offset = await openScrolled()
           await page.getByRole('button', { name: /^All: / }).click()
-          await page.getByRole('radio', { name: 'Cash' }).check()
+          await choosePaymentMethod(page, 'Cash')
           await expectToast(page, 'Payment saved', () => page.getByRole('button', { name: 'Save' }).click())
           await expectPath(page, path)
           await expect(page.getByRole('dialog')).toHaveCount(0)

@@ -510,6 +510,11 @@ export default function Selector(props: SelectorProps) {
             <span id={valueId} className="selector__valor">
               {valueArea}
             </span>
+            {/* An empty field shows only its label (outside the button): its text is the label, hidden,
+                so tools that read a button's text find one. `aria-labelledby` still names it. */}
+            {!loading && value === null && emptyWording === null && placeholder === undefined && (
+              <span className="visualmente-oculto">{label}</span>
+            )}
             <span className="selector__chevron">
               <Icono nombre="abajo" />
             </span>
