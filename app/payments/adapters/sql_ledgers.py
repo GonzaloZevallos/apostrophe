@@ -66,7 +66,7 @@ class SqlLedgers:
 
         on_the_spot_methods: dict[int, PaymentMethodLabel] = {}
         later_by_customer: dict[int, list[LaterPaymentEntry]] = {}
-        # Display reads join the method whether or not it is archived (docs/adr/0070).
+        # Display reads join the method whether or not it is archived (docs/adr/0076).
         for payment, method_name, method_icon in self._session.execute(
             select(PaymentRow, PaymentMethodRow.name, PaymentMethodRow.icon)
             .join(

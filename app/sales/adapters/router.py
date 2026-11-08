@@ -81,7 +81,7 @@ def get_on_the_spot(
     request: Request, session: SessionDep, business_id: CurrentBusinessId
 ) -> OnTheSpotPayments:
     # Sales never writes a `payment` row nor imports `app.payments`: `app/main.py` hangs
-    # payments' `SqlOnTheSpotPayments` on `app.state.on_the_spot_payments` (docs/adr/0070).
+    # payments' `SqlOnTheSpotPayments` on `app.state.on_the_spot_payments` (docs/adr/0076).
     factory = cast(
         Callable[[Session, int], OnTheSpotPayments], request.app.state.on_the_spot_payments
     )

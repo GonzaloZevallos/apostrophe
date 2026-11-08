@@ -44,7 +44,7 @@ _CHECK_CUSTOMER_ID = 1
 
 # The sheet's two words become the names the import looks the business's method up by
 # (ignoring case and spaces); this adapter is the only place a method is found by name
-# to write a payment (docs/adr/0070).
+# to write a payment (docs/adr/0076).
 _SHEET_METHOD_NAMES = {"cash": "Cash", "transfer": "Transfer"}
 
 

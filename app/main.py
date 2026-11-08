@@ -225,7 +225,7 @@ def create_app(
         partial(PaymentMethodsOpening, defaults=BabelPaymentMethodDefaults(copy_catalog)),
     )
     # Sales writes a sale's payment only through its `OnTheSpotPayments` port, payments
-    # reads a method's availability through its own protocol (docs/adr/0070).
+    # reads a method's availability through its own protocol (docs/adr/0076).
     app.state.on_the_spot_payments = SqlOnTheSpotPayments
     app.state.available_methods = SqlPaymentMethods
     # A factory, not an instance (the same shape as `business_opening` above): sales

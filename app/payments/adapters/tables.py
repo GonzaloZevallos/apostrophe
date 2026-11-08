@@ -37,7 +37,7 @@ class PaymentRow(Base):
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
     paid_on: Mapped[date]
     amount: Mapped[int]
-    # Frozen (docs/adr/0070): every value stored before 0021 stays, a new payment writes NULL
+    # Frozen (docs/adr/0076): every value stored before 0021 stays, a new payment writes NULL
     # and nothing reads it. The method of a payment is `payment_method_id`.
     method: Mapped[str | None] = mapped_column(String(PAYMENT_METHOD_MAX_LENGTH))
     payment_method_id: Mapped[int]

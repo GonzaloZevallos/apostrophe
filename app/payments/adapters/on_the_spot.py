@@ -1,4 +1,4 @@
-"""Payments' implementation of sales' `OnTheSpotPayments` port (docs/adr/0070): the only
+"""Payments' implementation of sales' `OnTheSpotPayments` port (docs/adr/0076): the only
 code that writes the `payment` row of a sale. Sales never writes `PaymentRow` itself."""
 
 from __future__ import annotations

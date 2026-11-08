@@ -1,4 +1,4 @@
-"""Settings → Business → Payment methods (docs/adr/0055, docs/adr/0070): the business's own
+"""Settings → Business → Payment methods (docs/adr/0055, docs/adr/0076): the business's own
 list. Every route is built for the request's business; a method of another business
 answers 404 like one that does not exist."""
 

@@ -26,7 +26,7 @@ class PaymentOwingIn(BaseModel):
 
 
 # The owing choice is the kind tag of a union, never a string a method's name could equal
-# (docs/adr/0070). `null` stays a $0 sale with no payment.
+# (docs/adr/0076). `null` stays a $0 sale with no payment.
 PaymentIn = Annotated[PaymentWithMethodIn | PaymentOwingIn, Field(discriminator="kind")]
 
 
