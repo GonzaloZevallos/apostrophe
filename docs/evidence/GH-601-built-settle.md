@@ -59,3 +59,9 @@ son las tres siguientes, seguidas.
 `node scripts/design/ae.mjs <corrida n> <corrida n+1>`, sin `--only`: corrida 1 contra 2 y 2 contra 3, las dos con **salida 0**.
 En cada una, 391 líneas de lado con `AE 0`, 47 lados construidos sin captura en ninguna (las filas que todavía no existen en
 la app) y ninguna otra línea. Es decir, AE 0 en toda fila capturada en las dos.
+
+## Después del merge con master
+Las corridas de arriba son del código de captura anterior al merge con master (`bb2f72e1`), donde `takeShot` y `settle` pasaron a
+`scripts/design/take-shot.mjs`. El merge solo movió los tipos de falla a ese archivo (`settleKinded`, `restAfterShot` con tipo,
+`shot-timeout`) y dejó igual la política de `settle.mjs` y el cableado de `comparisons.mjs`. Se verificó con las pruebas
+(`settle.test.ts`, `census.test.ts`, `take-shot.test.ts`: 87 pasan) y no se repitieron las tres corridas completas.
