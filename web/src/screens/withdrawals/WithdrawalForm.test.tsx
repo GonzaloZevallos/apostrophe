@@ -199,7 +199,10 @@ test.each([
 
     const field = await reasonField()
     const reason = field.closest('.campo') as HTMLElement
-    expect(await within(reason).findByRole('alert')).toHaveTextContent('That reason is gone. Pick another.')
+    const alert = await within(reason).findByRole('alert')
+    expect(alert).toHaveTextContent('That reason is gone. Pick another.')
+    expect(reason).toHaveAttribute('role', 'group')
+    expect(reason).toHaveAccessibleDescription('That reason is gone. Pick another.')
     await waitFor(() => expect(reasonReads).toBeGreaterThan(readsBefore))
     await waitFor(() => expect(field).not.toHaveTextContent('Own use'))
     expect(await reasonField()).toBe(field)

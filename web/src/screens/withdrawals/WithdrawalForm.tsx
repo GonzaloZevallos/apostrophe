@@ -468,7 +468,12 @@ export default function WithdrawalForm({
     <div className="gasto-form">
       {header}
       <form className="formulario" onSubmit={onSubmit}>
-        <div className="campo" aria-describedby={reasonError === null ? undefined : reasonErrorId}>
+        <div
+          className="campo"
+          role="group"
+          aria-label={STOCK_TEXT.motivo}
+          aria-describedby={reasonError === null ? undefined : reasonErrorId}
+        >
           <Selector
             required
             label={STOCK_TEXT.motivo}
