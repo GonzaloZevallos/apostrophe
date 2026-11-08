@@ -117,12 +117,13 @@ class MoneyFormat:
 def _round_half_up(value: Fraction, decimals: int) -> int:
     """An exact amount in currency units as signed hundredths, rounded half up (away from
     zero on a tie) to `decimals`, in integer arithmetic only."""
-    places = 10**decimals
+    places: int = 10**decimals
     scaled = value * places
     numerator, denominator = scaled.numerator, scaled.denominator
     rounded, _ = divmod(2 * abs(numerator) + denominator, 2 * denominator)
     signed = -rounded if numerator < 0 else rounded
-    return signed * 10 ** (MAX_DECIMALS - decimals)
+    to_hundredths: int = 10 ** (MAX_DECIMALS - decimals)
+    return signed * to_hundredths
 
 
 def round_half_up(value: Fraction, money_format: MoneyFormat) -> Money:
