@@ -141,7 +141,7 @@ Criterios de éxito, cambiar y resetear una contraseña:
 Criterios de éxito, las pantallas para entrar y los estados compartidos rediseñados (GH-49):
 
 27. **Entrar es rápido.** Desde el teléfono, quien vende abre un link de Invitation, o un Reset link, y llega a Home con la sesión iniciada en menos de un minuto, e inicia sesión desde la pantalla de inicio de sesión en pocos segundos. No aparece ningún paso que el diseño no dibuje.
-28. **Cada estado se distingue por palabra y forma, nunca solo por color**: el mensaje del freno, "This invitation no longer works", "This link no longer works. Ask whoever sent it for a new one.", "No connection", vacío, cargando, el reintento genérico ante un error del servidor y "That is gone.". Todo el texto en español rioplatense con vos. Todos los textos siguen el Product language (inglés, desde el Copy module); el español es solo el Documentation language. (Corregido en GH-521: decía "Rioplatense Spanish with vos", un resto de antes de la decisión del Product language.)
+28. **Cada estado se distingue por palabra y forma, nunca solo por color**: el mensaje del freno, "This invitation no longer works", "This link no longer works. Ask whoever sent it for a new one.", "No connection", vacío, cargando, el reintento genérico ante un error del servidor y "That is gone.". Todos los textos siguen el Product language (inglés, desde el Copy module); el español es solo el Documentation language. (Corregido en GH-521: decía "Rioplatense Spanish with vos", un resto de antes de la decisión del Product language.)
 29. **El teléfono y la computadora coinciden con el diseño.** La pantalla de inicio de sesión (`Entrar`), la de Business nuevo (`NegocioNuevo`), la de Invitation (`Invitacion`), la de reseteo y los estados compartidos (`Estados`) coinciden con `docs/product/design-system/pantallas/` en ambos, revisado a ojo; `scripts/design/compare.sh` corre antes y después.
 30. **El aspecto no revela nada nuevo.**
     - Ninguna pantalla ni estado dice si un email tiene un User, qué freno saltó ni cuántos intentos quedan.
@@ -425,7 +425,7 @@ Criterios de éxito, el test de seguridad de la cookie (seguimiento de GH-130):
     - no usa la palabra "operator" ni nombra ningún canal (WhatsApp, Telegram, un número de teléfono), y no guarda ningún contacto: así sirve a cualquier instalación (Assume nothing);
     - no dice que un reseteo levanta el bloqueo: un reseteo reinicia solo el conteo del email, nunca el de la dirección, así que esa línea engañaría a quien acaba de quedar bloqueado;
     - no tiene dibujo propio, así que la Design capture no la compara.
-  - Cualquiera de los bloqueos muestra el mensaje del freno. Ningún texto nombra el freno por dirección, y ambos bloqueos se ven y se leen igual.
+  - Cualquiera de los bloqueos muestra el mensaje del freno, sin cambios y sin mención de "Forgot your password?". Ningún texto nombra el freno por dirección, y ambos bloqueos se ven y se leen igual.
   - Una solicitud respondida con 401 va al inicio de sesión.
   - Una Invitation desconocida, usada o vencida muestra "This invitation no longer works".
   - Abrir `/invitation/{token}` o `/reset/{token}` con la sesión iniciada primero cierra la sesión, a través del backend, y después muestra la pantalla de la Invitation o la de reseteo como sin sesión. Eso incluye el link para sumarse al propio Business del User, y un Reset link para el mismo User.
