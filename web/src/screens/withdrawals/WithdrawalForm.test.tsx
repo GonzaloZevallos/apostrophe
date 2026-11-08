@@ -10,7 +10,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import contract from '../../api/contract.json'
 import WITHDRAWAL from '../../api/fixtures/withdrawal.json'
 import { VARIETIES as VARIETIES_PATH, WITHDRAWAL_EDIT, WITHDRAWAL_NEW, pathTo, withdrawalNewFor } from '../../routes'
-import { REASONS, jsonResponse, renderWithdrawals } from './renderWithdrawals'
+import { REASONS, jsonResponse, pickReason, pickVariety, reasonField, renderWithdrawals, varietyField } from './renderWithdrawals'
 import { LIMITS } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 
@@ -21,7 +21,7 @@ afterEach(() => {
 async function openFromVariedades() {
   const view = renderWithdrawals([VARIETIES_PATH], async () => jsonResponse(404, {}))
   await userEvent.click(await screen.findByRole('link', { name: 'Take from stock' }))
-  await screen.findByLabelText('Variety 1')
+  await varietyField(1)
   return view
 }
 
@@ -63,17 +63,14 @@ test('closing it with something typed asks first, and discarding leaves', async 
 
 test('the reason has no default: saving stays off until one is chosen', async () => {
   await openFromVariedades()
-  await userEvent.selectOptions(screen.getByLabelText('Variety 1'), 'Zkittlez')
+  await pickVariety(1, 'Zkittlez')
   await userEvent.type(screen.getByLabelText('Grams 1'), '5')
 
-  const promotion = screen.getByRole('button', { name: 'Marketing' })
-  const ownUse = screen.getByRole('button', { name: 'Own use' })
-  expect(promotion).toHaveAttribute('aria-pressed', 'false')
-  expect(ownUse).toHaveAttribute('aria-pressed', 'false')
+  expect(await reasonField()).toHaveAttribute('aria-expanded', 'false')
   expect(screen.getByRole('button', { name: 'Save the withdrawal' })).toBeDisabled()
 
-  await userEvent.click(ownUse)
-  expect(ownUse).toHaveAttribute('aria-pressed', 'true')
+  await pickReason('Own use')
+  expect(await reasonField()).toHaveTextContent('Own use')
   expect(screen.getByRole('button', { name: 'Save the withdrawal' })).toBeEnabled()
 })
 
@@ -86,19 +83,24 @@ test('offers the business\'s reasons in the order received, none chosen, and Rea
   renderWithdrawals([WITHDRAWAL_NEW], async () => jsonResponse(404, {}), undefined, undefined, async () =>
     jsonResponse(200, inOrder),
   )
-  await screen.findByLabelText('Variety 1')
+  await varietyField(1)
 
-  const reason = screen.getByRole('group', { name: 'Reason' })
-  const buttons = within(reason).getAllByRole('button')
-  expect(buttons.map((button) => button.textContent)).toEqual(['Samples', 'Marketing', 'Own use'])
-  for (const button of buttons) expect(button).toHaveAttribute('aria-pressed', 'false')
+  await userEvent.click(await reasonField())
+  const list = within(await screen.findByRole('dialog', { name: 'Reason options' }))
+  expect(list.getAllByRole('button').map((button) => button.textContent)).toEqual(
+    expect.arrayContaining(['Samples', 'Marketing', 'Own use']),
+  )
+  const names = list.getAllByRole('button').map((button) => button.textContent)
+  expect(names.indexOf('Samples')).toBeLessThan(names.indexOf('Marketing'))
+  expect(names.indexOf('Marketing')).toBeLessThan(names.indexOf('Own use'))
   expect(screen.queryByText(/Promotion/)).not.toBeInTheDocument()
+  await userEvent.click(list.getByRole('button', { name: 'Close' }))
 
   // Everything else filled in: only the missing reason keeps saving off.
-  await userEvent.selectOptions(screen.getByLabelText('Variety 1'), 'Zkittlez')
+  await pickVariety(1, 'Zkittlez')
   await userEvent.type(screen.getByLabelText('Grams 1'), '5')
   expect(screen.getByRole('button', { name: 'Save the withdrawal' })).toBeDisabled()
-  await userEvent.click(within(reason).getByRole('button', { name: 'Samples' }))
+  await pickReason('Samples')
   expect(screen.getByRole('button', { name: 'Save the withdrawal' })).toBeEnabled()
 })
 
@@ -117,8 +119,8 @@ test('recording sends the chosen reason by its id', async () => {
     undefined,
     async () => jsonResponse(200, [{ id: 7, name: 'Samples' }, { id: 3, name: 'Marketing' }]),
   )
-  await userEvent.click(await screen.findByRole('button', { name: 'Samples' }))
-  await userEvent.selectOptions(screen.getByLabelText('Variety 1'), 'Gelato')
+  await pickReason('Samples')
+  await pickVariety(1, 'Gelato')
   await userEvent.type(screen.getByLabelText('Grams 1'), '2')
 
   await userEvent.click(screen.getByRole('button', { name: 'Save the withdrawal' }))
@@ -138,11 +140,9 @@ test('editing starts on its own reason and lets any reason of the list be picked
     return jsonResponse(404, {})
   })
 
-  const own = await screen.findByRole('button', { name: 'Own use' })
-  expect(own).toHaveAttribute('aria-pressed', 'true')
-  expect(await screen.findByRole('button', { name: 'Marketing' })).toHaveAttribute('aria-pressed', 'false')
+  expect(await reasonField()).toHaveTextContent('Own use')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Marketing' }))
+  await pickReason('Marketing')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
   await userEvent.click(
     within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Yes, save' }),
@@ -178,11 +178,11 @@ test.each([
       },
     )
     if (method === 'POST') {
-      await userEvent.click(await screen.findByRole('button', { name: 'Own use' }))
-      await userEvent.selectOptions(screen.getByLabelText('Variety 1'), 'Gelato')
+      await pickReason('Own use')
+      await pickVariety(1, 'Gelato')
       await userEvent.type(screen.getByLabelText('Grams 1'), '2,5')
     } else {
-      await screen.findByRole('button', { name: 'Own use' })
+      expect(await reasonField()).toHaveTextContent('Own use')
       await userEvent.clear(screen.getByLabelText('Grams 1'))
       await userEvent.type(screen.getByLabelText('Grams 1'), '2,5')
     }
@@ -196,16 +196,17 @@ test.each([
       )
     }
 
-    const reason = screen.getByRole('group', { name: 'Reason' })
+    const field = await reasonField()
+    const reason = field.closest('.campo') as HTMLElement
     expect(await within(reason).findByRole('alert')).toHaveTextContent('That reason is gone. Pick another.')
     await waitFor(() => expect(reasonReads).toBeGreaterThan(readsBefore))
-    await waitFor(() => expect(within(reason).queryByRole('button', { name: 'Own use' })).not.toBeInTheDocument())
-    for (const button of within(reason).getAllByRole('button')) expect(button).toHaveAttribute('aria-pressed', 'false')
+    await waitFor(() => expect(field).not.toHaveTextContent('Own use'))
+    expect(await reasonField()).toBe(field)
     expect(screen.getByLabelText('Grams 1')).toHaveValue('2,5')
     expect(screen.getByLabelText('Note')).toHaveValue(method === 'POST' ? 'mía' : 'Para la fiestamía')
     expect(screen.getByRole('button', { name: method === 'POST' ? 'Save the withdrawal' : 'Save' })).toBeDisabled()
 
-    await userEvent.click(within(reason).getByRole('button', { name: 'Marketing' }))
+    await pickReason('Marketing')
     expect(within(reason).queryByRole('alert')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: method === 'POST' ? 'Save the withdrawal' : 'Save' })).toBeEnabled()
   },
@@ -222,7 +223,7 @@ test('grams ask for the decimal keypad and the date never goes past today', asyn
 test('?variety= chooses the first line\'s variety', async () => {
   renderWithdrawals([withdrawalNewFor(2)], async () => jsonResponse(404, {}))
 
-  expect(await screen.findByLabelText('Variety 1')).toHaveValue('2')
+  expect(await varietyField(1)).toHaveTextContent('Gelato')
   // chosen from the link, so nothing is typed yet: leaving asks nothing
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
 })
@@ -237,11 +238,11 @@ test('saves with every line, a trimmed note, then shows "Withdrawal saved" where
     return jsonResponse(404, {})
   })
   await userEvent.click(await screen.findByRole('link', { name: 'Take from stock' }))
-  await userEvent.click(await screen.findByRole('button', { name: 'Marketing' }))
-  await userEvent.selectOptions(screen.getByLabelText('Variety 1'), 'Zkittlez')
+  await pickReason('Marketing')
+  await pickVariety(1, 'Zkittlez')
   await userEvent.type(screen.getByLabelText('Grams 1'), '5,5')
   await userEvent.click(screen.getByRole('button', { name: 'Add another variety' }))
-  await userEvent.selectOptions(screen.getByLabelText('Variety 2'), 'Zkittlez')
+  await pickVariety(2, 'Zkittlez')
   await userEvent.type(screen.getByLabelText('Grams 2'), '1')
   await userEvent.type(screen.getByLabelText('Note'), '  Para la fiesta ')
 
@@ -274,16 +275,16 @@ test('a refusal shows inline by its code and keeps everything typed', async () =
     return jsonResponse(404, {})
   })
   await userEvent.click(await screen.findByRole('link', { name: 'Take from stock' }))
-  await userEvent.click(await screen.findByRole('button', { name: 'Own use' }))
-  await userEvent.selectOptions(screen.getByLabelText('Variety 1'), 'Gelato')
+  await pickReason('Own use')
+  await pickVariety(1, 'Gelato')
   await userEvent.type(screen.getByLabelText('Grams 1'), '2,5')
   await userEvent.type(screen.getByLabelText('Note'), 'mía')
 
   await userEvent.click(screen.getByRole('button', { name: 'Save the withdrawal' }))
 
   expect(await screen.findByRole('alert')).toHaveTextContent('Grams allow up to two decimals')
-  expect(screen.getByRole('button', { name: 'Own use' })).toHaveAttribute('aria-pressed', 'true')
-  expect(screen.getByLabelText('Variety 1')).toHaveValue('2')
+  expect(await reasonField()).toHaveTextContent('Own use')
+  expect(await varietyField(1)).toHaveTextContent('Gelato')
   expect(screen.getByLabelText('Grams 1')).toHaveValue('2,5')
   expect(screen.getByLabelText('Note')).toHaveValue('mía')
 })
@@ -318,8 +319,8 @@ test.each(WITHDRAWAL_REFUSALS)('%s shows its fixed text inline, naming nothing t
     if (url === '/stock/withdrawals' && init?.method === 'POST') return jsonResponse(status, { code })
     return jsonResponse(404, {})
   })
-  await userEvent.click(await screen.findByRole('button', { name: 'Marketing' }))
-  await userEvent.selectOptions(screen.getByLabelText('Variety 1'), 'Gelato')
+  await pickReason('Marketing')
+  await pickVariety(1, 'Gelato')
   await userEvent.type(screen.getByLabelText('Grams 1'), '2,5')
   await userEvent.type(screen.getByLabelText('Note'), 'secreta')
 
@@ -338,8 +339,8 @@ test('grams the front cannot read are refused inline without calling the API', a
     if (init?.method === 'POST') writes()
     return jsonResponse(404, {})
   })
-  await userEvent.click(await screen.findByRole('button', { name: 'Marketing' }))
-  await userEvent.selectOptions(screen.getByLabelText('Variety 1'), 'Zkittlez')
+  await pickReason('Marketing')
+  await pickVariety(1, 'Zkittlez')
   await userEvent.type(screen.getByLabelText('Grams 1'), '0')
 
   await userEvent.click(screen.getByRole('button', { name: 'Save the withdrawal' }))
@@ -369,7 +370,11 @@ test('a send that finds the withdrawal gone goes to Variedades with the fixed no
 test('with two lines the form keeps the icon and text rule: Quitar is icon-only, Agregar carries its icon and word', async () => {
   await openFromVariedades()
   await userEvent.click(screen.getByRole('button', { name: 'Add another variety' }))
-  await screen.findByLabelText('Variety 2')
+  await varietyField(2)
+  // An unchosen Selector shows no text yet: choose, so the rule reads what the seller reads.
+  await pickReason('Marketing')
+  await pickVariety(1, 'Gelato')
+  await pickVariety(2, 'Zkittlez')
 
   const quitar = screen.getByRole('button', { name: 'Remove variety 1' })
   expect(quitar).toHaveClass('boton-icono')
@@ -382,6 +387,6 @@ test('with two lines the form keeps the icon and text rule: Quitar is icon-only,
   expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS, optionClasses: ['pildora'] })
 
   await userEvent.click(quitar)
-  expect(screen.queryByLabelText('Variety 2')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /^Variety 2/ })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /^Remove variety/ })).not.toBeInTheDocument()
 })

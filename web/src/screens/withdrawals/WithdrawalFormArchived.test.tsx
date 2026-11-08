@@ -110,7 +110,7 @@ const SUBMIT_NEW = 'Save the withdrawal'
 
 /** A new withdrawal with the given varieties on its lines, ready to save. */
 async function fillNew(names: string[]) {
-  await userEvent.click(await screen.findByRole('button', { name: 'Marketing' }))
+  await pickReason('Marketing')
   for (const [index, name] of names.entries()) {
     if (index > 0) await userEvent.click(screen.getByRole('button', { name: 'Add another variety' }))
     await userEvent.selectOptions(await screen.findByLabelText(`Variety ${index + 1}`), name)
@@ -131,7 +131,7 @@ test.each([
   const state = world([GELATO])
   const { router } = render_([withdrawalNewFor(id)], state)
 
-  expect(await screen.findByLabelText('Variety 1')).toHaveValue('')
+  expect(await varietyField(1)).toHaveValue('')
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: SUBMIT_NEW })).toBeDisabled()
 
@@ -147,7 +147,7 @@ test('editing a line on a variety archived since keeps its id and name, also whi
   state.listGate = gate()
   const { router } = render_([pathTo(WITHDRAWAL_EDIT, { id: 1 })], state)
 
-  const select = await screen.findByLabelText('Variety 1')
+  const select = await varietyField(1)
   expect(select).toHaveValue('1')
   expect(select).toHaveDisplayValue('Zkittlez')
   expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
@@ -253,7 +253,7 @@ test('the list changing twice before the save still leaves the guilty line named
 /** An edit of withdrawal 1 (stored line: Zkittlez, archived since) plus two added lines. */
 async function editWithTwoAddedLines(state: World) {
   render_([pathTo(WITHDRAWAL_EDIT, { id: 1 })], state)
-  await screen.findByLabelText('Variety 1')
+  await varietyField(1)
   await waitFor(() => expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled())
   for (const [position, name] of [
     [2, 'Gelato'],
