@@ -1,6 +1,6 @@
 # GH-491 parte 2: evidencia de la captura de teléfono por scroll y unión
 
-Sin cambios de código. Esta evidencia compara una corrida nueva de todo el registro, hecha con la rama en su cabeza, contra la corrida `after` de la parte 1.
+Esta evidencia compara una corrida nueva de todo el registro contra la corrida `after` de la parte 1. La primera versión no tocó código; después, por la decisión humana de este task, se arreglaron dos defectos de la ruta de scroll y se repitió la corrida. **El estado vigente está en la última sección ("Corrida después de los dos arreglos"); las secciones 2 y 3 y la de criterios sin cumplir describen la corrida anterior y están superadas.**
 
 ## Comandos, fecha y cabeza
 
@@ -27,7 +27,7 @@ Los lados `design` miden 640x1688, 750x1688 y 860x1864 en Home, y 640x2000, 750x
 
 Vista una imagen: `InicioHoy_375x812.built.png`. La barra inferior y "+ New sale" aparecen una sola vez, dentro de la primera pantalla del teléfono (y de 1370 a 1600 px de 2142), sin hueco ni doble dibujo; el contenido de abajo sigue después. No miré una por una las otras once filas de este cuadro: sus resultados son el estado `captured` y las medidas del índice.
 
-## 2. Comprobación de regresión
+## 2. Comprobación de regresión (SUPERADA: corrida anterior a los arreglos; ver la última sección)
 
 Por nombre de pantalla, fila por fila (no sólo por conteo):
 
@@ -37,7 +37,7 @@ Por nombre de pantalla, fila por fila (no sólo por conteo):
 - Las 47 filas `not-captured` restantes son todas `shot: no built screen yet (built)`, las mismas de la parte 1. Ninguna fila falla por `did not settle`.
 - Escritorio: todas las filas con viewport de 900 px o más (`*Compu*`, `*Compu960*`) siguen capturando y dan AE 0.
 
-## 3. Lista de AE mayor que 0
+## 3. Lista de AE mayor que 0 (SUPERADA: corrida anterior a los arreglos; la lista vigente de 97 filas está en la última sección)
 
 `ae` de la parte 1 contra esta corrida: 348 lados con AE 0, 24 con AE mayor que 0, 18 `FAIL different dimensions`, 48 `not compared` (47 por `no built screen yet` y la regresión de arriba). Salida completa en `ae-part1-part2.txt`. Ninguna fila de escritorio aparece.
 
@@ -85,7 +85,7 @@ Se esperaba AE 0 en los lados `design` de teléfono. `ae` no puede comparar esto
 
 Lectura: son filas con un recorte de sección (`clip`). La parte 1 daba un PNG del ancho del recorte; esta corrida da uno del ancho del viewport completo (por ejemplo 828 = 414 CSS, el `design_viewport`; 780 = 390 CSS). Lo vi en `InicioImportado.design.png`: sale con el margen de la página a los lados del recorte. Los pocos casos de 1 px menos de alto (1098 a 1097, 1044 a 1043, 1698 a 1697, 248 a 247) parecen venir de redondear el borde del recorte. Es una lectura, no una comprobación del código. Esto es un cambio de comportamiento en el lado `design` de teléfono con recorte, y la parte 3 debe saberlo antes de comparar.
 
-## Criterios de la tarea que esta evidencia muestra sin cumplir
+## Criterios de la tarea que esta evidencia mostraba sin cumplir (SUPERADO: los dos defectos están arreglados y repetida la corrida; ver la última sección)
 
 La cabeza no cambió desde la corrida (el código de la ruta de scroll es el mismo), así que estos dos puntos siguen abiertos y son defectos de `take-shot.mjs`, no de esta evidencia:
 
@@ -100,7 +100,10 @@ Cuando esos dos defectos se arreglen, hay que repetir la corrida completa y actu
 
 - `part2-p2.index.json`: índice de la corrida de todo el registro (171 `captured`, 48 `not-captured`), con cada ruta reducida a su basename.
 - `part2-p2-sizes.index.json`: índice de las 12 filas a 320x568, 375x812 y 430x932.
-- `ae-part1-part2.txt`: salida de `ae` de la parte 1 contra esta corrida.
+- `ae-part1-part2.txt`: salida de `ae` de la parte 1 contra esta corrida (anterior a los arreglos).
+- `part2-p3.index.json`, `part2-p3-sizes.index.json`: índices de la corrida después de los arreglos (cabeza `cc24101a`).
+- `ae-part1-part2-fixed.txt`: `ae` de la parte 1 contra esa corrida (las 97 filas de la última sección).
+- `ae-b4-p3.txt`: `ae` del código de la parte 1 el mismo día (`b4`) contra esa corrida.
 
 ## Estado en `0f96db32`
 
@@ -118,5 +121,121 @@ Corrida nueva de todo el registro sobre `cc24101a` (una app de muestra, `compari
 - Lado `built`: 172 capturados, como en la parte 1; ninguna fila perdida. `OnboardingMensajeTexto130` está `captured`. Lado `design`: 219.
 - **Ningún `FAIL different dimensions`** (eran 18). Las 12 filas de 320x568, 375x812 y 430x932 quedaron `captured` (índices `part2-p3.index.json` y `part2-p3-sizes.index.json`).
 - `ae`: 294 lados con AE 0, 97 con AE mayor que 0, 47 `not compared` (todos `no built screen yet`).
+- Lados `design`: **todos en AE 0** contra la parte 1, incluidos los 18 que antes daban `FAIL different dimensions`. Las 97 filas con AE mayor que 0 son todas del lado `built`.
 
-**Esta lista de 97 no se puede atribuir toda a la ruta de scroll.** La parte 1 corrió el 2026-11-07 y esta corrida el 2026-11-08: los hechos de la app de muestra dependen del día (fechas "Hoy", vencimiento de la invitación), y por eso aparecen también filas de escritorio con AE chico (por ejemplo 1610 en muchas `Inicio*Compu`), que la ruta de scroll no toca. Un intento de línea base del mismo día sobre la misma app, ya usada por la corrida anterior, quedó contaminado por el estado que las capturas dejan en la app (filas de onboarding con `could not take the shot`, `Ventas` con AE de 69494), así que no se usa. Una línea base del código de la parte 1 sobre una app nueva del mismo día estaba corriendo al cerrar esta entrega y su resultado no está en esta carpeta: **queda sin separar qué filas de escritorio cambian por el día y cuáles por el código**. Lo que sí se sostiene: las filas de teléfono más altas que el teléfono con barra fija (`InicioHoy`, `InicioPrimeraVez`, `InicioChecklist`, `Clientes`, `Variedades`, `Analisis`, `VariedadArchivada`, `EstadosConfirmar`, …) tienen el mismo tamaño que en la parte 1 y cambian por la barra en la primera pantalla (razón de arriba); `NegocioNuevo` e `Invitacion` siguen en AE 243 por la fecha de vencimiento.
+### Línea base del mismo día, para separar el día del código
+
+La lista de 97 mezcla dos cosas: la parte 1 corrió el 2026-11-07 y esta corrida el 2026-11-08, y los hechos de la app de muestra dependen del día. Para separarlas corrí el código de la parte 1 el mismo día sobre una app nueva:
+
+- Código: `git archive 1525bf65` (la cabeza de la parte 1 ya fusionada, ancestro de esta rama) extraído en un directorio de scratch, con `web/node_modules` enlazado.
+- App: `sample-app.sh --dir <tmp>/app`, una app nueva, que no se había usado en otra captura. Corrida: `node scripts/design/comparisons.mjs --facts <facts> --out ~/.cache/apostrophe/GH-491/b4`, de ese directorio. 2026-11-08 01:18:49 a 01:31:23.
+- Comparación: `node scripts/design/ae.mjs ~/.cache/apostrophe/GH-491/b4 ~/.cache/apostrophe/GH-491/p3`, salida en `ae-b4-p3.txt`. Resultado: de las 97 filas, **75 dan AE 0** (el código de la parte 1 y el nuevo dan la misma imagen el mismo día: la diferencia contra la parte 1 es del día) y **22 siguen con AE mayor que 0** (diferencia de código). En `ae-b4-p3.txt`: 219 lados `design` con AE 0, 150 `built` con AE 0, 22 `built` con AE mayor que 0, 47 `not compared` (`no built screen yet`, las mismas de siempre), ningún `FAIL`.
+- Las 37 filas de escritorio de la lista (todas `*Compu*`) dan AE 0 contra `b4`: **ninguna cambia por el código**. La ruta `grow` y la de capa no se tocaron y la evidencia lo confirma.
+
+Para los recortes: tomé el rectángulo donde difieren la parte 1 y esta corrida (`a3` contra `p3`) y lo recorté en las dos. Los que abrí: `InicioImportado` (1610), `Ventas` (3209), `NuevaVenta` (2095), `EntradaStock` (2003), `Cobro` (4616) y `NegocioNuevo`. En todos, la diferencia es una fecha: "Today 07/11" y "Today 08/11", "07/11" y "08/11", "…/07/2026" y "…/08/2026", "since 19/10" y "since 20/10". En las demás filas con `b4` en AE 0 no abrí el recorte: sólo digo que el código no lo causa.
+
+### Las 97 filas con AE mayor que 0 (parte 1 contra esta corrida)
+
+Cada fila: lado, viewport, AE de la parte 1 contra esta corrida, AE del código de la parte 1 el mismo día contra esta corrida (`b4`) y la razón. Todas son del lado `built`. 37 de escritorio, 60 de teléfono.
+
+| Fila | Lado | Viewport | AE parte 1 | AE `b4` | Razón para la parte 3 |
+|---|---|---|---|---|---|
+| `NegocioNuevo` | built | teléfono | 243 | 0 | Día/estado: El vencimiento de la invitación pasa de 14/11 a 15/11 (comparado antes píxel a píxel) |
+| `Invitacion` | built | teléfono | 243 | 0 | Día/estado: El vencimiento de la invitación pasa de 14/11 a 15/11 (comparado antes píxel a píxel) |
+| `InicioHoy` | built | teléfono | 175497 | 170333 | Código: la barra fija y "+ New sale" pasan del final del documento a la primera pantalla (imagen vista). La diferencia empieza en y 1408 (el botón sobre la barra) |
+| `InicioOscuro` | built | teléfono | 175497 | 170333 | Código: la barra fija y "+ New sale" pasan del final del documento a la primera pantalla (imagen vista). La diferencia empieza en y 1408 (el botón sobre la barra) |
+| `InicioHoyCompu` | built | escritorio | 5164 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `InicioHoyCompuOscuro` | built | escritorio | 5164 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `InicioPrimeraVez` | built | teléfono | 165030 | 163420 | Código (por la diferencia de `b4`, no abierta): la barra y el botón en la primera pantalla; la diferencia empieza en y 1336 |
+| `InicioPrimeraVezCompu` | built | escritorio | 1610 | 0 | Día/estado: La fecha "Today 07/11" pasa a "Today 08/11" (recorte visto en `InicioImportado`; mismo rectángulo en todas las filas con este AE) |
+| `InicioPrimeraVezOscuro` | built | teléfono | 165030 | 163420 | Código (por la diferencia de `b4`, no abierta): la barra y el botón en la primera pantalla; la diferencia empieza en y 1336 |
+| `InicioOnboardingEnCurso` | built | teléfono | 1610 | 0 | Día/estado: La fecha "Today 07/11" pasa a "Today 08/11" (recorte visto en `InicioImportado`; mismo rectángulo en todas las filas con este AE) |
+| `InicioOnboardingEnCursoCompu` | built | escritorio | 1610 | 0 | Día/estado: La fecha "Today 07/11" pasa a "Today 08/11" (recorte visto en `InicioImportado`; mismo rectángulo en todas las filas con este AE) |
+| `InicioOnboardingEnCursoOscuro` | built | teléfono | 1610 | 0 | Día/estado: La fecha "Today 07/11" pasa a "Today 08/11" (recorte visto en `InicioImportado`; mismo rectángulo en todas las filas con este AE) |
+| `InicioOnboardingCompleto` | built | teléfono | 1610 | 0 | Día/estado: La fecha "Today 07/11" pasa a "Today 08/11" (recorte visto en `InicioImportado`; mismo rectángulo en todas las filas con este AE) |
+| `InicioOnboardingCompletoCompu` | built | escritorio | 1610 | 0 | Día/estado: La fecha "Today 07/11" pasa a "Today 08/11" (recorte visto en `InicioImportado`; mismo rectángulo en todas las filas con este AE) |
+| `InicioOnboardingCompletoOscuro` | built | teléfono | 1610 | 0 | Día/estado: La fecha "Today 07/11" pasa a "Today 08/11" (recorte visto en `InicioImportado`; mismo rectángulo en todas las filas con este AE) |
+| `InicioChecklist` | built | teléfono | 172667 | 171057 | Código (por la diferencia de `b4`, no abierta): la barra y el botón en la primera pantalla; la diferencia empieza en y 1408 |
+| `InicioChecklistCompu` | built | escritorio | 1610 | 0 | Día/estado: La fecha "Today 07/11" pasa a "Today 08/11" (recorte visto en `InicioImportado`; mismo rectángulo en todas las filas con este AE) |
+| `InicioChecklistOscuro` | built | teléfono | 172667 | 171057 | Código (por la diferencia de `b4`, no abierta): la barra y el botón en la primera pantalla; la diferencia empieza en y 1408 |
+| `InicioImportado` | built | teléfono | 1610 | 0 | Día/estado: La fecha "Today 07/11" pasa a "Today 08/11" (recorte visto en `InicioImportado`; mismo rectángulo en todas las filas con este AE) |
+| `InicioImportadoCompu` | built | escritorio | 1610 | 0 | Día/estado: La fecha "Today 07/11" pasa a "Today 08/11" (recorte visto en `InicioImportado`; mismo rectángulo en todas las filas con este AE) |
+| `InicioImportadoOscuro` | built | teléfono | 1610 | 0 | Día/estado: La fecha "Today 07/11" pasa a "Today 08/11" (recorte visto en `InicioImportado`; mismo rectángulo en todas las filas con este AE) |
+| `Ventas` | built | teléfono | 3209 | 0 | Día/estado: La fecha de la lista pasa de "07/11" a "08/11" (recorte visto en `Ventas`) |
+| `VentasCompu` | built | escritorio | 3209 | 0 | Día/estado: La fecha de la lista pasa de "07/11" a "08/11" (recorte visto en `Ventas`) |
+| `NuevaVenta` | built | teléfono | 2095 | 0 | Día/estado: "Today 07/11" pasa a "Today 08/11" (recorte visto en `NuevaVenta`) |
+| `NuevaVentaCliente` | built | teléfono | 2095 | 0 | Día/estado: "Today 07/11" pasa a "Today 08/11" (recorte visto en `NuevaVenta`) |
+| `NuevaVentaCompu` | built | escritorio | 2095 | 0 | Día/estado: "Today 07/11" pasa a "Today 08/11" (recorte visto en `NuevaVenta`) |
+| `VentaDetalle` | built | teléfono | 1211 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `VentaDetalleCompu` | built | escritorio | 1211 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `VentasOscuro` | built | teléfono | 3209 | 0 | Día/estado: La fecha de la lista pasa de "07/11" a "08/11" (recorte visto en `Ventas`) |
+| `VentasCompuOscuro` | built | escritorio | 3209 | 0 | Día/estado: La fecha de la lista pasa de "07/11" a "08/11" (recorte visto en `Ventas`) |
+| `NuevaVentaOscuro` | built | teléfono | 2095 | 0 | Día/estado: "Today 07/11" pasa a "Today 08/11" (recorte visto en `NuevaVenta`) |
+| `NuevaVentaClienteOscuro` | built | teléfono | 2095 | 0 | Día/estado: "Today 07/11" pasa a "Today 08/11" (recorte visto en `NuevaVenta`) |
+| `NuevaVentaCompuOscuro` | built | escritorio | 2095 | 0 | Día/estado: "Today 07/11" pasa a "Today 08/11" (recorte visto en `NuevaVenta`) |
+| `VentaDetalleOscuro` | built | teléfono | 1211 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `VentaDetalleCompuOscuro` | built | escritorio | 1211 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `VentaGuardada` | built | teléfono | 16703 | 15904 | Código (por la diferencia de `b4`, no abierta): la barra fija en la primera pantalla; la diferencia empieza en y 1544 (= 1688 − 144) y termina donde estaba la barra al final del documento |
+| `VentaGuardadaOscuro` | built | teléfono | 16703 | 15904 | Código (por la diferencia de `b4`, no abierta): la barra fija en la primera pantalla; la diferencia empieza en y 1544 (= 1688 − 144) y termina donde estaba la barra al final del documento |
+| `Clientes` | built | teléfono | 187919 | 180347 | Código (por la diferencia de `b4`, no abierta): la barra y el botón en la primera pantalla; la diferencia empieza en y 1408 |
+| `ClientesCompu` | built | escritorio | 14879 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `ClienteFicha` | built | teléfono | 14515 | 9872 | Código (por la diferencia de `b4`, no abierta): la barra fija en la primera pantalla; la diferencia empieza en y 1544 (= 1688 − 144) y termina donde estaba la barra al final del documento |
+| `Cobro` | built | teléfono | 4616 | 0 | Día/estado: "since 19/10" pasa a "since 20/10" (recorte visto en `Cobro`) |
+| `CobroCompu` | built | escritorio | 16120 | 0 | Día/estado: Lo mismo en escritorio (fecha relativa de `Cobro`) |
+| `ClientesOscuro` | built | teléfono | 187919 | 180347 | Código (por la diferencia de `b4`, no abierta): la barra y el botón en la primera pantalla; la diferencia empieza en y 1408 |
+| `ClientesCompuOscuro` | built | escritorio | 14879 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `ClienteFichaOscuro` | built | teléfono | 14515 | 9872 | Código (por la diferencia de `b4`, no abierta): la barra fija en la primera pantalla; la diferencia empieza en y 1544 (= 1688 − 144) y termina donde estaba la barra al final del documento |
+| `CobroOscuro` | built | teléfono | 4616 | 0 | Día/estado: "since 19/10" pasa a "since 20/10" (recorte visto en `Cobro`) |
+| `CobroCompuOscuro` | built | escritorio | 16120 | 0 | Día/estado: Lo mismo en escritorio (fecha relativa de `Cobro`) |
+| `EntradaStock` | built | teléfono | 2003 | 0 | Día/estado: La fecha "…/07/2026" pasa a "…/08/2026" (recorte visto en `EntradaStock`) |
+| `EntradaStockEditar` | built | teléfono | 289 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `EntradaStockCompu` | built | escritorio | 2212 | 0 | Día/estado: Lo mismo que 2003 en escritorio (mismo texto, mismo alto de recorte) |
+| `EntradaStockSinEntradas` | built | teléfono | 2003 | 0 | Día/estado: La fecha "…/07/2026" pasa a "…/08/2026" (recorte visto en `EntradaStock`) |
+| `EntradaStockSinEntradasOscuro` | built | teléfono | 2003 | 0 | Día/estado: La fecha "…/07/2026" pasa a "…/08/2026" (recorte visto en `EntradaStock`) |
+| `EntradaStockSinEntradasCompu` | built | escritorio | 2212 | 0 | Día/estado: Lo mismo que 2003 en escritorio (mismo texto, mismo alto de recorte) |
+| `EntradaStockSinEntradasCompuOscuro` | built | escritorio | 2212 | 0 | Día/estado: Lo mismo que 2003 en escritorio (mismo texto, mismo alto de recorte) |
+| `TodasLasEntradas` | built | teléfono | 9020 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `TodasLasEntradasVariedad` | built | teléfono | 11573 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `SacarDelStock` | built | teléfono | 2003 | 0 | Día/estado: La fecha "…/07/2026" pasa a "…/08/2026" (recorte visto en `EntradaStock`) |
+| `SacarDelStockCompu` | built | escritorio | 2212 | 0 | Día/estado: Lo mismo que 2003 en escritorio (mismo texto, mismo alto de recorte) |
+| `RetiroDetalle` | built | teléfono | 1158 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `VerTodas` | built | teléfono | 316 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `PrecioNuevo` | built | teléfono | 1108 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `PrecioNuevoCompu` | built | escritorio | 1384 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `PrecioNuevoOscuro` | built | teléfono | 1108 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `PrecioNuevoCompuOscuro` | built | escritorio | 1384 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `Variedades` | built | teléfono | 168857 | 168736 | Código (por la diferencia de `b4`, no abierta): la barra y el botón en la primera pantalla; la diferencia empieza en y 1408 |
+| `VariedadesCompu` | built | escritorio | 8583 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `VariedadDetalle` | built | teléfono | 33106 | 24799 | Código (por la diferencia de `b4`, no abierta): la barra fija en la primera pantalla; la diferencia empieza en y 1544 (= 1688 − 144) y termina donde estaba la barra al final del documento |
+| `ArchivadasCompu` | built | escritorio | 632 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `Gastos` | built | teléfono | 879 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `GastosCompu` | built | escritorio | 879 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `GastoNuevo` | built | teléfono | 2003 | 0 | Día/estado: La fecha "…/07/2026" pasa a "…/08/2026" (recorte visto en `EntradaStock`) |
+| `GastoNuevoCompu` | built | escritorio | 2212 | 0 | Día/estado: Lo mismo que 2003 en escritorio (mismo texto, mismo alto de recorte) |
+| `Catalogo` | built | teléfono | 26922 | 26922 | Código (por la diferencia de `b4`, no abierta): la barra fija en la primera pantalla; la diferencia empieza en y 1544 (= 1688 − 144) y termina donde estaba la barra al final del documento |
+| `Analisis` | built | teléfono | 225088 | 167122 | Código (por la diferencia de `b4`, no abierta): la barra y el botón en la primera pantalla; la diferencia empieza en y 1408 |
+| `AnalisisCompu` | built | escritorio | 49948 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `AnalisisOscuro` | built | teléfono | 225088 | 167122 | Código (por la diferencia de `b4`, no abierta): la barra y el botón en la primera pantalla; la diferencia empieza en y 1408 |
+| `AnalisisCompuOscuro` | built | escritorio | 49948 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `EstadosSinConexion` | built | teléfono | 5970 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `EstadosSinConexionCompu` | built | escritorio | 3465 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `EstadosConfirmar` | built | teléfono | 56203 | 52176 | Código: la barra fija pasa a la primera pantalla (y 1544 = 1688 − 144) y tapa el pie de la tarjeta (imágenes vistas) |
+| `VariedadDetalleOscuro` | built | teléfono | 33106 | 24799 | Código (por la diferencia de `b4`, no abierta): la barra fija en la primera pantalla; la diferencia empieza en y 1544 (= 1688 − 144) y termina donde estaba la barra al final del documento |
+| `ArchivadasCompuOscuro` | built | escritorio | 632 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `CatalogoOscuro` | built | teléfono | 27551 | 27551 | Código (por la diferencia de `b4`, no abierta): la barra fija en la primera pantalla; la diferencia empieza en y 1544 (= 1688 − 144) y termina donde estaba la barra al final del documento |
+| `VerTodasOscuro` | built | teléfono | 316 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `TodasLasEntradasOscuro` | built | teléfono | 13973 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `TodasLasEntradasVariedadOscuro` | built | teléfono | 11573 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `RetiroDetalleOscuro` | built | teléfono | 1158 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `EstadosSinConexionOscuro` | built | teléfono | 5970 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `EstadosSinConexionCompuOscuro` | built | escritorio | 3465 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `VariedadArchivada` | built | teléfono | 107799 | 107167 | Código (por la diferencia de `b4`, no abierta): la barra fija en la primera pantalla; la diferencia empieza en y 1544 (= 1688 − 144) y termina donde estaba la barra al final del documento |
+| `VariedadArchivadaOscuro` | built | teléfono | 107799 | 107167 | Código (por la diferencia de `b4`, no abierta): la barra fija en la primera pantalla; la diferencia empieza en y 1544 (= 1688 − 144) y termina donde estaba la barra al final del documento |
+| `VariedadArchivadaCompu` | built | escritorio | 632 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `VariedadArchivadaCompuOscuro` | built | escritorio | 632 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `InicioHoyCompu960` | built | escritorio | 5164 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `InicioHoyCompu960Texto130` | built | escritorio | 91185 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `InicioHoyCompuTexto130` | built | escritorio | 8041 | 0 | Día/estado: con el código de la parte 1 en una app nueva del mismo día (`b4`) esta fila da AE 0 contra la corrida nueva; el recorte no lo abrí |
+| `GastoNuevoOscuro` | built | teléfono | 2003 | 0 | Día/estado: La fecha "…/07/2026" pasa a "…/08/2026" (recorte visto en `EntradaStock`) |
+
+Las 22 filas de código, de teléfono, tienen el mismo tamaño que en la parte 1 y la diferencia empieza en y 1544 (= 1688 − 144, el alto del teléfono menos la barra) o en y 1408 (el botón "+ New sale" sobre la barra). Sólo abrí `InicioHoy` y `EstadosConfirmar`. Las otras 20 las explico por la caja de la diferencia, no por la imagen. `Catalogo` y `CatalogoOscuro` dan el mismo AE contra la parte 1 y contra `b4`: son código puro, sin fecha. `NegocioNuevo` e `Invitacion` quedan en AE 243 por el vencimiento de la invitación.
