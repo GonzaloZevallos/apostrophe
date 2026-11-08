@@ -37,7 +37,7 @@ export function literalCopies(
 
 describe('the empty-state wordings', () => {
   test('are all listed, non-empty and distinct', () => {
-    expect(WORDINGS).toHaveLength(12)
+    expect(WORDINGS).toHaveLength(13)
     expect(new Set(WORDINGS).size).toBe(WORDINGS.length)
     for (const wording of WORDINGS) expect(wording).not.toBe('')
   })
