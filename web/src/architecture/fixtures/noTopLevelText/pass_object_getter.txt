@@ -1,0 +1,7 @@
+// expect: none
+import { t } from 'i18next'
+export const labels = {
+  get title() {
+    return t('a')
+  },
+}
