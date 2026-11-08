@@ -78,6 +78,7 @@ export const PAYMENT_METHODS_TEXT = {
   deleteBody: "No payment uses it. This can't be undone.",
   errorLastActive: 'This is your only method. Add another one first.',
   errorInUse: 'A payment already uses this method, so it can only be archived.',
+  /** The settings screen when a row it acts on is gone (the picker's own notice is errorMethodUnavailable). */
   errorNotFound: 'This payment method no longer exists.',
   errorMoveFailed: "We couldn't move this method. Try again.",
   errorActionFailed: "We couldn't do that. Try again.",
