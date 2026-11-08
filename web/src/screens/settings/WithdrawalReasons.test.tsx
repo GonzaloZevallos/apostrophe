@@ -139,8 +139,9 @@ test('renaming a reason toasts "Reason saved" with no name and lists the new nam
   const served = [...LIST]
   renderScreen(async (url, init) => {
     if (url === '/api/withdrawal-reasons/2' && init?.method === 'PATCH') {
-      served[1] = { id: 2, name: 'Mine' }
-      return jsonResponse(200, served[1])
+      const renamed = { id: 2, name: 'Mine' }
+      served.splice(served.findIndex((reason) => reason.id === 2), 1, renamed)
+      return jsonResponse(200, renamed)
     }
     throw new Error(`unexpected ${url}`)
   }, served)
@@ -159,7 +160,7 @@ test('deleting a reason toasts "Reason deleted" with no name', async () => {
   const served = [...LIST]
   renderScreen(async (url, init) => {
     if (url === '/api/withdrawal-reasons/2' && init?.method === 'DELETE') {
-      served.pop()
+      served.splice(served.findIndex((reason) => reason.id === 2), 1)
       return new Response(null, { status: 204 })
     }
     throw new Error(`unexpected ${url}`)

@@ -30,7 +30,7 @@ TestingLibraryElementError: Unable to find a label with the text of: Name
      86|   await userEvent.clear(screen.getByLabelText('Name'))
 ```
 
-El DOM de las tres corridas rojas tiene el toast `Reason saved` y ningún `role="dialog"`. Salidas completas: `GH-645-forced-red-old-{1..5}.txt` (rojas: 1, 3 y 5).
+El DOM de las tres corridas rojas tiene el toast `Reason saved` y ningún `role="dialog"`. Salidas completas: `docs/evidence/GH-645/GH-645-forced-red-old-{1..5}.txt` (rojas: 1, 3 y 5).
 
 ## 2. Causa
 
@@ -76,7 +76,7 @@ Contra los tests nuevos el arnés es más estricto: todo `navigate(-1)` queda re
 +  }) as typeof router.navigate
 ```
 
-Diffs completos: `GH-645-harness-old.diff`, `GH-645-harness-new.diff`. El archivo temporario `WithdrawalReasons.forced.test.tsx` se borró antes de commitear.
+Diffs completos: `docs/evidence/GH-645/GH-645-harness-old.diff`, `docs/evidence/GH-645/GH-645-harness-new.diff`. El archivo temporario `WithdrawalReasons.forced.test.tsx` se borró antes de commitear.
 
 ## 4. Arreglo
 
@@ -88,7 +88,7 @@ Solo `web/src/screens/settings/WithdrawalReasons.test.tsx`. El test combinado pa
 
 Donde se espera la hoja abierta se la busca por nombre accesible (`addReasonTitle` / `renameReasonTitle`, rol `dialog` en jsdom, que no tiene `matchMedia` y dibuja la hoja de teléfono) y los campos con `findBy*`.
 
-Resultado con el arnés estricto: `GH-645-forced-green-new-{1..5}.txt`, `Tests 11 passed (11)` en las cinco.
+Resultado con el arnés estricto: `docs/evidence/GH-645/GH-645-forced-green-new-{1..5}.txt`, `Tests 11 passed (11)` en las cinco.
 
 ## 5. Conteos (`npx vitest list`, ordenada)
 
@@ -119,7 +119,7 @@ Base `5a133e4d`:
 | Pata | n | rojos |
 |---|---|---|
 | archivo solo, 3 en paralelo, `loadavg` 42→32 (16 CPU) | 30 | 0 |
-| suite completa `--sequence.shuffle`, semillas 645001 / 645002 / 645003 | 3 | 0 |
+| suite completa `--sequence.shuffle`, semillas 645001 / 645002 / 645003 (colas en `docs/evidence/GH-645/GH-645-shuffle-*.txt`) | 3 | 0 |
 
 ## 8. Límites
 
