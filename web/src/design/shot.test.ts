@@ -681,7 +681,9 @@ describe('shiftMiss', () => {
   const later = (over: Partial<FrameRead>, entries: Entry[] = scrolled) =>
     read({ offset: 844, scrollTop: 844, ...over }, entries)
   // The same page on a frame scrolled by 844: a flow element's viewport top moved by exactly the scroll.
-  const scrolled = [entry('main', { top: 100 - 844 }), entry('div.bar', { top: 12, pinned: true })]
+  const flowShifted = entry('main', { top: 100 - 844 })
+  const barShifted = entry('div.bar', { top: 12, pinned: true })
+  const scrolled = [flowShifted, barShifted]
   const withCounts = (frame: FrameRead, counts: Record<string, number>): FrameRead => ({
     ...frame,
     snapshot: { ...frame.snapshot, counts },
@@ -709,38 +711,38 @@ describe('shiftMiss', () => {
   })
 
   it('misses an element that is not pinned whose page top, width or height changed', () => {
-    const moved = [entry('main', { top: 100 - 844 + 1 }), scrolled[1]]
-    const wider = [entry('main', { top: 100 - 844, width: 391 }), scrolled[1]]
-    const taller = [entry('main', { top: 100 - 844, height: 61 }), scrolled[1]]
-    const shorter = [entry('main', { top: 100 - 844, height: 59 }), scrolled[1]]
+    const moved = [entry('main', { top: 100 - 844 + 1 }), barShifted]
+    const wider = [entry('main', { top: 100 - 844, width: 391 }), barShifted]
+    const taller = [entry('main', { top: 100 - 844, height: 61 }), barShifted]
+    const shorter = [entry('main', { top: 100 - 844, height: 59 }), barShifted]
     for (const entries of [moved, wider, taller, shorter]) expect(shiftMiss(read(), later({}, entries), 'built')).toBe(MISS)
   })
 
   it('misses a replaced node, pinned or not', () => {
-    const plain = [entry('main', { top: -744, same_node: false }), scrolled[1]]
-    const bar = [scrolled[0], entry('div.bar', { top: 12, pinned: true, same_node: false })]
+    const plain = [entry('main', { top: -744, same_node: false }), barShifted]
+    const bar = [flowShifted, entry('div.bar', { top: 12, pinned: true, same_node: false })]
     expect(shiftMiss(read(), later({}, plain), 'built')).toBe(MISS)
     expect(shiftMiss(read(), later({}, bar), 'built')).toBe(MISS)
   })
 
   it('misses an element that is gone and a count that changed', () => {
-    expect(shiftMiss(read(), later({}, [scrolled[1]]), 'built')).toBe(MISS)
+    expect(shiftMiss(read(), later({}, [barShifted]), 'built')).toBe(MISS)
     const more = withCounts(later({}, [...scrolled, entry('p')]), { main: 1, 'div.bar': 1, p: 1 })
     expect(shiftMiss(read(), more, 'built')).toBe(MISS)
     expect(shiftMiss(read(), withCounts(later({}), { main: 2, 'div.bar': 1 }), 'built')).toBe(MISS)
   })
 
   it('does not compare the top of a pinned element, only its size', () => {
-    const lower = [scrolled[0], entry('div.bar', { top: 700, pinned: true })]
-    const taller = [scrolled[0], entry('div.bar', { top: 12, pinned: true, height: 61 })]
-    const narrower = [scrolled[0], entry('div.bar', { top: 12, pinned: true, width: 380 })]
+    const lower = [flowShifted, entry('div.bar', { top: 700, pinned: true })]
+    const taller = [flowShifted, entry('div.bar', { top: 12, pinned: true, height: 61 })]
+    const narrower = [flowShifted, entry('div.bar', { top: 12, pinned: true, width: 380 })]
     expect(shiftMiss(read(), later({}, lower), 'built')).toBeNull()
     expect(shiftMiss(read(), later({}, taller), 'built')).toBe(MISS)
     expect(shiftMiss(read(), later({}, narrower), 'built')).toBe(MISS)
   })
 
   it('misses an element that became or stopped being pinned', () => {
-    expect(shiftMiss(read(), later({}, [scrolled[0], entry('div.bar', { top: 12, pinned: false })]), 'built')).toBe(MISS)
+    expect(shiftMiss(read(), later({}, [flowShifted, entry('div.bar', { top: 12, pinned: false })]), 'built')).toBe(MISS)
   })
 
   it('names the side it was given', () => {

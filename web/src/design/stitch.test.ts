@@ -82,17 +82,15 @@ describe('stitch', () => {
     expect(Buffer.compare(out.data, source.data.subarray(700 * WIDTH * 4))).toBe(0)
   })
 
-  const one = (): { shots: Buffer[]; plan: ScrollFrame[] } => {
-    const plan = [{ offset: 0, cropTop: 0, cropHeight: 600 }]
-    return { shots: frames(page(600, WIDTH), plan, 600, 1), plan }
-  }
+  const whole: ScrollFrame = { offset: 0, cropTop: 0, cropHeight: 600 }
+  const one = (): { shots: Buffer[]; plan: ScrollFrame[] } => ({ shots: frames(page(600, WIDTH), [whole], 600, 1), plan: [whole] })
 
   it('throws on a device scale factor, offset, crop top or crop height that is not a whole number', () => {
     const { shots, plan } = one()
     expect(() => stitch(shots, plan, 1.5)).toThrow('stitch: the device scale factor is not a whole number')
-    expect(() => stitch(shots, [{ ...plan[0], offset: 0.5 }], 1)).toThrow('stitch: an offset is not a whole number')
-    expect(() => stitch(shots, [{ ...plan[0], cropTop: 0.5 }], 1)).toThrow('stitch: a crop top is not a whole number')
-    expect(() => stitch(shots, [{ ...plan[0], cropHeight: 599.5 }], 1)).toThrow(
+    expect(() => stitch(shots, [{ ...whole, offset: 0.5 }], 1)).toThrow('stitch: an offset is not a whole number')
+    expect(() => stitch(shots, [{ ...whole, cropTop: 0.5 }], 1)).toThrow('stitch: a crop top is not a whole number')
+    expect(() => stitch(shots, [{ ...whole, cropHeight: 599.5 }], 1)).toThrow(
       'stitch: a crop height is not a whole number',
     )
   })
@@ -109,8 +107,8 @@ describe('stitch', () => {
   })
 
   it('throws on frames of different widths', () => {
-    const { shots, plan } = one()
+    const { shots } = one()
     const wider = PNG.sync.write(new PNG({ width: WIDTH + 1, height: 600 }))
-    expect(() => stitch([shots[0], wider], [plan[0], plan[0]], 1)).toThrow('stitch: the frames differ in width')
+    expect(() => stitch([...shots, wider], [whole, whole], 1)).toThrow('stitch: the frames differ in width')
   })
 })

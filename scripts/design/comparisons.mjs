@@ -78,6 +78,7 @@ import {
   PROBE_CSS,
   captureContextOptions,
   coversScreen,
+  grownHeight,
   layerMiss,
   named,
   planShot,
@@ -536,7 +537,10 @@ async function shotSteps(page, { block, ofFirstText, census, side }, handles) {
   const beforeHandle = await bounded(page.evaluateHandle(allElements))
   handles.push(beforeHandle)
   const fixed = await bounded(page.evaluate(fixedInPage, beforeHandle))
-  const plan = planShot(metrics, fixed, viewport)
+  const planned = planShot(metrics, fixed, viewport)
+  // Until the scroll path is wired in this function (GH-491), a phone page grows like any other.
+  const plan =
+    planned.mode === 'scroll' ? { mode: 'grow', height: grownHeight(metrics, viewport) ?? viewport.height } : planned
   let before = null
   if (plan.mode === 'grow') {
     before = await sizeSnapshot(page, beforeHandle)
