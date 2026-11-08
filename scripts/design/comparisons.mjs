@@ -675,9 +675,12 @@ const censusSide = (options, ofFirstText) =>
 // miss is a note, never a failure; a side that missed every attempt keeps its failure and the kinds
 // it missed by.
 async function attempt(label, side, ctx, makeCensus, capture) {
+  // Counted as each attempt starts, so a capture that throws after a miss still counts its attempts.
+  let started = 0
   try {
     const result = await captureWithRetries(
       async () => {
+        started += 1
         const census = ctx.census ? makeCensus() : null
         if (ctx.census) ctx.census[side] = census
         const probe = { wrote: false }
@@ -687,15 +690,16 @@ async function attempt(label, side, ctx, makeCensus, capture) {
       { attempts: CAPTURE_ATTEMPTS, retryable: isRetryableKind },
     )
     const note = retryNote(side, result, CAPTURE_ATTEMPTS)
-    if (result.attempts > 1) ctx.retried.push(result.attempts)
     if (result.outcome.failure === null) {
       if (note) ctx.notes.push(note)
+      if (started > 1) ctx.retried.push(started)
       return result.outcome.png
     }
     fail(ctx, `${label} no se pudo capturar: ${result.outcome.failure}${note}`)
   } catch (error) {
     fail(ctx, `${label} no se pudo capturar: ${firstLine(error)}`)
   }
+  if (started > 1) ctx.retried.push(started)
   return null
 }
 
