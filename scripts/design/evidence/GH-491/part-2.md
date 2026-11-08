@@ -105,7 +105,7 @@ Cuando esos dos defectos se arreglen, hay que repetir la corrida completa y actu
 - `ae-part1-part2-fixed.txt`: `ae` de la parte 1 contra esa corrida (las 97 filas de la última sección).
 - `ae-b4-p3.txt`: `ae` del código de la parte 1 el mismo día (`b4`) contra esa corrida.
 
-## Estado en `0f96db32`
+## Estado en `0f96db32` (SUPERADO: los dos criterios se cerraron con los arreglos `62bfa248` y `cc24101a`; ver la última sección)
 
 Revisado de nuevo sobre `0f96db32`: `take-shot.mjs` no cambió desde la corrida (`git diff 1f94db75 HEAD -- scripts/design/take-shot.mjs scripts/design/shot.mjs scripts/design/stitch.mjs` vacío), así que los dos criterios abiertos de arriba siguen abiertos y los números de esta corrida siguen siendo los vigentes. Esta evidencia no se puede cerrar sin el arreglo de la ruta de scroll.
 
