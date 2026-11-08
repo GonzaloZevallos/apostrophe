@@ -110,7 +110,7 @@ def test_an_unknown_variety_blocks_before_payment_or_kind_are_read() -> None:
     [result] = sale_inputs((row,), VARIETY_NAMES)
 
     assert isinstance(result, CellProblem)
-    assert result.kind == "import.unknown_variety"
+    assert result.kind == "import.unknown_product"
 
 
 def test_a_blank_shipping_cell_becomes_zero() -> None:

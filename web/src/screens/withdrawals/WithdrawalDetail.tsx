@@ -35,6 +35,7 @@ import { VARIETIES, WITHDRAWAL_EDIT, pathTo } from '../../routes'
 import WithdrawalFacts from './WithdrawalFacts'
 import { COMMON_TEXT } from '../../copy/common'
 import { STOCK_TEXT } from '../../copy/stock'
+import ContentArea from '../../components/ContentArea'
 
 
 /** A deleted withdrawal's own query shares the `'stock'` prefix every other stock figure
@@ -101,32 +102,33 @@ export default function WithdrawalDetail() {
       return <GoneScreen label={COMMON_TEXT.varieties} to={VARIETIES} />
     }
     return (
-      <main className="pantalla">
+      <ContentArea as="main" className="pantalla">
         <div className="cuerpo">
           {query.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}
         </div>
-      </main>
+      </ContentArea>
     )
   }
   if (query.data === undefined) {
     return (
-      <main className="pantalla">
+      <ContentArea as="main" className="pantalla">
         <div className="cuerpo">
           <Loading />
         </div>
-      </main>
+      </ContentArea>
     )
   }
 
   const withdrawal = query.data
   const date = formatDate(withdrawal.date, me.today)
-  const confirmation =
-    withdrawal.reason === 'promotion'
-      ? STOCK_TEXT.borrasLaPromocionDel(date, formatGrams(withdrawal.total_quantity))
-      : STOCK_TEXT.borrasElConsumoPropio(date, formatGrams(withdrawal.total_quantity))
+  const confirmation = STOCK_TEXT.borrasElRetiroDel(
+    withdrawal.reason_name,
+    date,
+    formatGrams(withdrawal.total_quantity),
+  )
 
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <div className="cuerpo">
         <WithdrawalFacts withdrawal={withdrawal} today={me.today} />
         {offline && <SinConexion />}
@@ -154,6 +156,6 @@ export default function WithdrawalDetail() {
           onCancel={() => setConfirmingDelete(false)}
         />
       )}
-    </main>
+    </ContentArea>
   )
 }

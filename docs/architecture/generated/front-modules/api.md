@@ -12,6 +12,7 @@ subgraph src["src"]
     src_api_catalog_ts["catalog.ts"]
     src_api_client_ts["client.ts"]
     src_api_contract_json["contract.json"]
+    src_api_customerTypes_ts["customerTypes.ts"]
     src_api_customers_ts["customers.ts"]
     src_api_expenses_ts["expenses.ts"]
     src_api_firstRun_ts["firstRun.ts"]
@@ -27,11 +28,14 @@ subgraph src["src"]
     src_api_sales_ts["sales.ts"]
     src_api_stock_ts["stock.ts"]
     src_api_varieties_ts["varieties.ts"]
+    src_api_withdrawalReasons_ts["withdrawalReasons.ts"]
   end
 end
 src_api_analysis_ts-->src_api_client_ts
 src_api_catalog_ts-->src_api_client_ts
 src_api_catalog_ts-->src_api_keys_ts
+src_api_customerTypes_ts-->src_api_client_ts
+src_api_customerTypes_ts-->src_api_keys_ts
 src_api_customers_ts-->src_api_client_ts
 src_api_customers_ts-->src_api_payments_ts
 src_api_expenses_ts-->src_api_client_ts
@@ -41,6 +45,7 @@ src_api_me_ts-->src_api_client_ts
 src_api_me_ts-->src_api_language_ts
 src_api_onboarding_ts-->src_api_client_ts
 src_api_onboarding_ts-->src_api_keys_ts
+src_api_panel_ts-->src_api_analysis_ts
 src_api_panel_ts-->src_api_client_ts
 src_api_panel_ts-->src_api_keys_ts
 src_api_panel_ts-->src_api_stock_ts
@@ -54,4 +59,6 @@ src_api_refusals_ts-->src_api_contract_json
 src_api_sales_ts-->src_api_client_ts
 src_api_stock_ts-->src_api_client_ts
 src_api_varieties_ts-->src_api_client_ts
+src_api_withdrawalReasons_ts-->src_api_client_ts
+src_api_withdrawalReasons_ts-->src_api_stock_ts
 ```

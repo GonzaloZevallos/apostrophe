@@ -3,12 +3,12 @@
 pending, and the rows of `period_figures` that carry it."""
 
 from datetime import date, timedelta
-from typing import Literal
+from typing import Literal, Protocol
 
 import pytest
 
-from app.results.domain.figures import RowCost
-from app.results.domain.ledger import DrawRow, SaleRecord
+from app.results.domain.figures import ReasonCost, RowCost
+from app.results.domain.ledger import DrawRow, ReasonRecord, SaleRecord
 from app.results.domain.period_figures import (
     Buckets,
     period_figures,
@@ -24,6 +24,27 @@ YESTERDAY = TODAY - timedelta(days=1)
 
 Reason = Literal["shortfall", "promotion", "own_use", "cost_of_goods"]
 REASONS: tuple[Reason, ...] = ("shortfall", "promotion", "own_use", "cost_of_goods")
+
+
+MARKETING = 1
+OWN_USE = 2
+LISTED = [ReasonRecord(MARKETING, "Marketing", 0), ReasonRecord(OWN_USE, "Own use", 1)]
+REASON_IDS = {"promotion": MARKETING, "own_use": OWN_USE}
+
+
+class _HasWithdrawals(Protocol):
+    @property
+    def withdrawals(self) -> tuple[ReasonCost, ...]: ...
+
+
+def _reason_line(figure: _HasWithdrawals, reason: Reason) -> RowCost | None:
+    """A reason's `ReasonCost` read as the `RowCost` the other lines are: fully pending
+    exactly when its amount is `None`."""
+    found = [c for c in figure.withdrawals if c.reason_id == REASON_IDS[reason]]
+    if not found:
+        return None
+    [cost] = found
+    return RowCost(cost.amount or 0, cost.pending_quantity, cost.amount is None)
 
 
 def _g(value: str) -> Quantity:
@@ -44,7 +65,8 @@ def _draw(reason: Reason, day: date, *, quantity: str, costed: int | None, pendi
             pending=_g(pending),
         )
     return DrawRow(
-        kind=reason,
+        kind="shortfall" if reason == "shortfall" else "withdrawal",
+        reason_id=REASON_IDS.get(reason),
         day=day,
         variety_id=None,
         variety_name=None,
@@ -64,6 +86,7 @@ def _scan(draws: list[DrawRow]) -> Buckets:
         expenses=[],
         purchases=[],
         earliest_entry_day=YESTERDAY,
+        reasons=LISTED,
     )
     return buckets
 
@@ -74,9 +97,9 @@ def _line(reason: Reason, draws: list[DrawRow], start: date, end: date) -> RowCo
         case "shortfall":
             return totals.shortfall
         case "promotion":
-            return totals.promotion
+            return _reason_line(totals, reason)
         case "own_use":
-            return totals.own_use
+            return _reason_line(totals, reason)
         case "cost_of_goods":
             return totals.cost_of_goods_row
 
@@ -208,23 +231,24 @@ def test_every_row_the_header_and_since_carry_the_same_row_cost_as_totals_betwee
         expenses=[],
         purchases=[],
         earliest_entry_day=TODAY,
+        reasons=LISTED,
     )
 
     week = figures.weeks[-1]
     month_row = figures.months[-1]
     assert week.cost_of_goods == RowCost(0, _g("4"), True)
     assert week.shortfall == RowCost(0, _g("2"), True)
-    assert week.promotion == RowCost(0, _g("1"), True)
-    assert week.own_use == RowCost(90, _g("1"), False)
+    assert _reason_line(week, "promotion") == RowCost(0, _g("1"), True)
+    assert _reason_line(week, "own_use") == RowCost(90, _g("1"), False)
     assert month_row.cost_of_goods == week.cost_of_goods
     assert month_row.shortfall == week.shortfall
     assert figures.month.shortfall == week.shortfall
-    assert figures.month.promotion == week.promotion
-    assert figures.month.own_use == week.own_use
+    assert _reason_line(figures.month, "promotion") == _reason_line(week, "promotion")
+    assert _reason_line(figures.month, "own_use") == _reason_line(week, "own_use")
     assert figures.since_first_record is not None
     assert figures.since_first_record.shortfall == week.shortfall
-    assert figures.since_first_record.promotion == week.promotion
-    assert figures.since_first_record.own_use == week.own_use
+    assert _reason_line(figures.since_first_record, "promotion") == _reason_line(week, "promotion")
+    assert _reason_line(figures.since_first_record, "own_use") == _reason_line(week, "own_use")
 
 
 def test_a_week_without_a_shortfall_has_none_and_a_real_zero_cost_of_goods() -> None:
@@ -239,6 +263,7 @@ def test_a_week_without_a_shortfall_has_none_and_a_real_zero_cost_of_goods() -> 
         expenses=[],
         purchases=[],
         earliest_entry_day=YESTERDAY,
+        reasons=LISTED,
     )
 
     week = figures.weeks[-1]

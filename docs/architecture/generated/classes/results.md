@@ -64,6 +64,7 @@ classDiagram
   router --> ports
   router --> read_panel
   router --> schemas
+  schemas --> figures
   schemas --> ports
   schemas --> read_panel
 ```
@@ -92,6 +93,7 @@ classDiagram
     expenses_by_day_category : dict~date, dict~int, tuple~str, str, int~~~
     payments_by_day : dict~date, int~
     purchases_by_day : dict~date, int~
+    reasons : tuple~ReasonRecord, ...~
     sales_by_day : dict~date, int~
     sales_count_by_day : dict~date, int~
     shortfall_totals : dict~date, _CostDayTotals~
@@ -99,17 +101,15 @@ classDiagram
     variety_names : dict~int, str~
     weekday_counts : dict~int, int~
     weekday_sales : dict~int, int~
-    withdrawal_totals : dict~tuple~date, WithdrawalKind~, _CostDayTotals~
+    withdrawal_totals : dict~tuple~date, int~, _CostDayTotals~
     cash(start: date, end: date) int
     cost_of_goods_row(start: date, end: date) RowCost
     costed_cost(start: date, end: date) int
     expense_categories(start: date, end: date) dict~int, tuple~str, str, int~~
     expenses(start: date, end: date) int
-    own_use(start: date, end: date) RowCost #124; None
     payments(start: date, end: date) int
     pending_quantity(start: date, end: date) Quantity
     profit(start: date, end: date) AmountWithPending
-    promotion(start: date, end: date) RowCost #124; None
     purchases(start: date, end: date) int
     quantity(start: date, end: date) Quantity
     quantity_gifted(start: date, end: date) Quantity
@@ -119,6 +119,7 @@ classDiagram
     sales_of_costed(start: date, end: date) int
     sales_without_shipping(start: date, end: date) int
     shortfall(start: date, end: date) RowCost #124; None
+    withdrawals(start: date, end: date) tuple~ReasonCost, ...~
   }
   class CostFigure {
     costed : int
@@ -131,6 +132,7 @@ classDiagram
     line_total : int #124; None
     pending : Quantity
     quantity : Quantity
+    reason_id : int #124; None
     sale_id : int #124; None
     variety_id : int #124; None
     variety_name : str #124; None
@@ -164,15 +166,14 @@ classDiagram
     average_margin
     month : Month
     next : Month #124; None
-    own_use : RowCost #124; None
     previous : Month #124; None
-    promotion : RowCost #124; None
     quantity_gifted : Quantity
     quantity_sold : Quantity
     sales : int
     sales_without_shipping : int
     shortfall : RowCost #124; None
     varieties : tuple~VarietyRow, ...~
+    withdrawals : tuple~ReasonCost, ...~
   }
   class MonthRowFigures {
     cash : int
@@ -181,12 +182,11 @@ classDiagram
     first_day : date
     last_day : date
     month : Month
-    own_use : RowCost #124; None
     profit
-    promotion : RowCost #124; None
     quantity : Quantity
     sales : int
     shortfall : RowCost #124; None
+    withdrawals : tuple~ReasonCost, ...~
   }
   class PaymentRecord {
     amount : int
@@ -201,15 +201,14 @@ classDiagram
     cost_of_goods
     cost_of_goods_row
     expenses : int
-    own_use : RowCost #124; None
     profit
-    promotion : RowCost #124; None
     purchases : int
     quantity_gifted : Quantity
     quantity_sold : Quantity
     sales : int
     sales_count : int
     shortfall : RowCost #124; None
+    withdrawals : tuple~ReasonCost, ...~
   }
   class Periods {
     month
@@ -219,6 +218,18 @@ classDiagram
   class PurchaseRecord {
     day : date
     total_cost : int
+  }
+  class ReasonCost {
+    amount : int #124; None
+    name : str
+    pending : bool
+    pending_quantity : Quantity
+    reason_id : int
+  }
+  class ReasonRecord {
+    name : str
+    position : int
+    reason_id : int
   }
   class RowCost {
     all_pending : bool
@@ -234,11 +245,10 @@ classDiagram
   class SinceFirstRecordFigures {
     cash : int
     expenses : int
-    own_use : RowCost #124; None
     profit
-    promotion : RowCost #124; None
     sales : int
     shortfall : RowCost #124; None
+    withdrawals : tuple~ReasonCost, ...~
   }
   class VarietyRow {
     cost
@@ -257,12 +267,11 @@ classDiagram
     expenses : int
     first_day : date
     last_day : date
-    own_use : RowCost #124; None
     profit
-    promotion : RowCost #124; None
     quantity : Quantity
     sales : int
     shortfall : RowCost #124; None
+    withdrawals : tuple~ReasonCost, ...~
   }
   class WeekdayFigures {
     best : bool
@@ -379,18 +388,17 @@ classDiagram
     cash : int
     cost_of_goods : int
     expenses : int
-    own_use : CostLineFigures #124; None
     pending_cost : bool
     period : Period
     profit : int
     profit_pending : bool
-    promotion : CostLineFigures #124; None
     purchases : int
     quantity_gifted : Quantity
     quantity_sold : Quantity
     sales : int
     sales_count : int
     shortfall : CostLineFigures #124; None
+    withdrawals : tuple~ReasonCost, ...~
   }
   class Purchases {
     earliest_entry_day() date #124; None
@@ -415,6 +423,9 @@ classDiagram
     threshold : Quantity #124; None
     variety_id : int
   }
+  class WithdrawalReasons {
+    all() Sequence~ReasonRecord~
+  }
   MonthInvalid --|> AnalysisRuleBroken
   MonthOutOfRange --|> AnalysisRuleBroken
   Panel --> DebtsSummary : debts
@@ -435,15 +446,14 @@ classDiagram
     average_margin
     month : str
     next : str #124; None
-    own_use : RowCostOut #124; None
     previous : str #124; None
     products : list~ProductRowOut~
-    promotion : RowCostOut #124; None
     quantity_gifted
     quantity_sold
     sales : int
     sales_without_shipping : int
     shortfall : RowCostOut #124; None
+    withdrawals : list~ReasonCostOut~
   }
   class AnalysisOut {
     first_record : date #124; None
@@ -501,12 +511,11 @@ classDiagram
     first_day : date
     last_day : date
     month : str
-    own_use : RowCostOut #124; None
     profit
-    promotion : RowCostOut #124; None
     quantity
     sales : int
     shortfall : RowCostOut #124; None
+    withdrawals : list~ReasonCostOut~
   }
   class PanelOut {
     debts
@@ -530,11 +539,9 @@ classDiagram
     cost_of_goods : int
     end : date
     expenses : int
-    own_use : CostLineOut #124; None
     pending_cost : bool
     profit : int
     profit_pending : bool
-    promotion : CostLineOut #124; None
     purchases : int
     quantity_gifted
     quantity_sold
@@ -542,6 +549,7 @@ classDiagram
     sales_count : int
     shortfall : CostLineOut #124; None
     start : date
+    withdrawals : list~ReasonCostOut~
     of(figures: PeriodFigures) PeriodOut
   }
   class PeriodsOut {
@@ -559,6 +567,14 @@ classDiagram
     sales_without_shipping : int
     share_percent : int #124; None
   }
+  class ReasonCostOut {
+    amount : int #124; None
+    name : str
+    pending : bool
+    pending_quantity
+    reason_id : int
+    from_domain(cost: ReasonCost) ReasonCostOut
+  }
   class RowCostOut {
     all_pending : bool
     amount : int
@@ -567,11 +583,10 @@ classDiagram
   class SinceFirstRecordOut {
     cash : int
     expenses : int
-    own_use : RowCostOut #124; None
     profit
-    promotion : RowCostOut #124; None
     sales : int
     shortfall : RowCostOut #124; None
+    withdrawals : list~ReasonCostOut~
   }
   class WeekOut {
     best : bool
@@ -580,12 +595,11 @@ classDiagram
     expenses : int
     first_day : date
     last_day : date
-    own_use : RowCostOut #124; None
     profit
-    promotion : RowCostOut #124; None
     quantity
     sales : int
     shortfall : RowCostOut #124; None
+    withdrawals : list~ReasonCostOut~
   }
   class WeekdayOut {
     best : bool

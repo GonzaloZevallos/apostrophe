@@ -39,15 +39,15 @@ import type { Variety } from './Variedades'
 import { ORIGIN_LABEL } from './originLabel'
 import { STOCK_TEXT } from '../copy/stock'
 import { EMPTY_STATE_KEYS } from '../copy/emptyStates'
-import { REASON_LABEL } from './withdrawals/withdrawalReasons'
 import { COMMON_TEXT } from '../copy/common'
 import { OUT_OF_DATE_JOINER } from '../copy/pinnedCatalog'
+import ContentArea from '../components/ContentArea'
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <div className="cuerpo">{children}</div>
-    </main>
+    </ContentArea>
   )
 }
 
@@ -211,7 +211,7 @@ export function EntryRows({
                   {nameOf(varietyId ?? 0)}
                 </span>
                 <span className="fila-entrada__linea2">
-                  {REASON_LABEL[entry.reason]}
+                  {entry.reason_name}
                   {OUT_OF_DATE_JOINER}
                   {`−${formatGrams(entry.quantity)}`}
                 </span>

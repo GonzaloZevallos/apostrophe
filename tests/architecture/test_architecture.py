@@ -24,6 +24,7 @@ HEXAGON_ROOTS = (
     REPO_ROOT / "app" / "accounts",
     REPO_ROOT / "app" / "products",
     REPO_ROOT / "app" / "customers",
+    REPO_ROOT / "app" / "customer_types",
     REPO_ROOT / "app" / "expenses",
     REPO_ROOT / "app" / "payments",
     REPO_ROOT / "app" / "sales",
@@ -36,6 +37,7 @@ HEXAGON_ROOTS = (
     REPO_ROOT / "app" / "onboarding",
     REPO_ROOT / "app" / "pricing_settings",
     REPO_ROOT / "app" / "payment_methods",
+    REPO_ROOT / "app" / "money_format",
 )
 ALL_HEXAGON_NAMES = frozenset(dotted(root) for root in HEXAGON_ROOTS)
 SHARED_KERNEL_MODULES = tuple(sorted((REPO_ROOT / "app" / "shared").glob("*.py")))

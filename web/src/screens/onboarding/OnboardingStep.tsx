@@ -31,6 +31,7 @@ import ErrorGenerico from '../../components/ErrorGenerico'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import SinConexion from '../../components/SinConexion'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
+import { SheetStackProvider } from '../../components/useSheetStack'
 import { afterProgress } from './afterProgress'
 import StepIndicator from './StepIndicator'
 import type { StepBodyProps } from './stepBodies'
@@ -49,6 +50,7 @@ import { useLabel } from '../../i18n/label'
 import { HOME } from '../../routes'
 import { COMMON_TEXT } from '../../copy/common'
 import { CHECKLIST_REQUIRED, CHECKLIST_OPTIONAL } from '../../copy/inicio'
+import ContentArea from '../../components/ContentArea'
 
 export { DISCARD_DETAIL, PARTLY_SAVED_DETAIL }
 export const DISCARD_QUESTION = ONBOARDING_TEXT.discardWhatYouTyped
@@ -58,17 +60,27 @@ export const DISCARD = COMMON_TEXT.yesDiscard
 type Skip = 'one' | 'rest'
 type Failure = 'offline' | 'error'
 
-export default function OnboardingStep({
-  slug,
-  me,
-  progress,
-  Body,
-}: {
+export default function OnboardingStep(props: StepProps) {
+  return (
+    <SheetStackProvider>
+      <OnboardingStepFrame {...props} />
+    </SheetStackProvider>
+  )
+}
+
+interface StepProps {
   slug: StepSlug
   me: Me
   progress: OnboardingProgress
   Body: ComponentType<StepBodyProps>
-}) {
+}
+
+function OnboardingStepFrame({
+  slug,
+  me,
+  progress,
+  Body,
+}: StepProps) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const info = stepInfo(slug)
@@ -117,7 +129,7 @@ export default function OnboardingStep({
   }
 
   return (
-    <main className="pantalla onboarding">
+    <ContentArea as="main" className="pantalla onboarding">
       <div className="onboarding__columna">
         {isFirst(slug) && <BrandMark variant="lockup" />}
         <div className={`onboarding__cabecera${previous === undefined ? ' onboarding__cabecera--derecha' : ''}`}>
@@ -185,6 +197,6 @@ export default function OnboardingStep({
           onCancel={() => setAskingSkip(null)}
         />
       )}
-    </main>
+    </ContentArea>
   )
 }

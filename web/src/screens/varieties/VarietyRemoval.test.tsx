@@ -18,6 +18,7 @@ import FlashProvider from '../../flash/FlashProvider'
 import { VARIETIES, VARIETY, pathTo, relative } from '../../routes'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
+import ContentArea from '../../components/ContentArea'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN }
 const GONE_TEXT = 'That is gone. The list is up to date.'
@@ -99,7 +100,7 @@ function renderPage({ removal = 'archive', grams = 12, overrides = {}, list, com
           </QueryClientProvider>
         ),
         children: [
-          { path: relative(VARIETIES), element: <main>Varieties screen</main> },
+          { path: relative(VARIETIES), element: <ContentArea as="main">Products screen</ContentArea> },
           {
             path: relative(VARIETY),
             element: <VarietyRoute render={(varietyId) => <VarietyPage varietyId={varietyId} />} />,
@@ -133,8 +134,8 @@ afterEach(() => {
 
 describe('the action the page offers', () => {
   test.each([
-    ['delete', 'Delete variety', 'Archive variety'],
-    ['archive', 'Archive variety', 'Delete variety'],
+    ['delete', 'Delete product', 'Archive product'],
+    ['archive', 'Archive product', 'Delete product'],
   ] as const)('removal "%s" offers "%s" and never "%s"', async (removal, offered, refused) => {
     renderPage({ removal })
 
@@ -142,12 +143,12 @@ describe('the action the page offers', () => {
     expect(screen.queryByRole('button', { name: refused })).not.toBeInTheDocument()
   })
 
-  test('"Delete variety" is an icon + text critical action, not a filled button; only the dialog fills', async () => {
+  test('"Delete product" is an icon + text critical action, not a filled button; only the dialog fills', async () => {
     const user = userEvent.setup()
     renderPage({ removal: 'delete' })
 
-    const trigger = await screen.findByRole('button', { name: 'Delete variety' })
-    expect(trigger.textContent).toBe('Delete variety')
+    const trigger = await screen.findByRole('button', { name: 'Delete product' })
+    expect(trigger.textContent).toBe('Delete product')
     expect(trigger.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
     expect(trigger).toHaveClass('boton--critico')
     expect(trigger).not.toHaveClass('boton--destructivo')
@@ -161,10 +162,10 @@ describe('the action the page offers', () => {
     expect(document.querySelectorAll('.boton--destructivo')).toHaveLength(1)
   })
 
-  test('"Archive variety" keeps its non-destructive look', async () => {
+  test('"Archive product" keeps its non-destructive look', async () => {
     renderPage({ removal: 'archive' })
 
-    const trigger = await screen.findByRole('button', { name: 'Archive variety' })
+    const trigger = await screen.findByRole('button', { name: 'Archive product' })
     expect(trigger).toHaveClass('boton--suave')
     expect(trigger).not.toHaveClass('boton--critico')
   })
@@ -173,7 +174,7 @@ describe('the action the page offers', () => {
     renderPage({ removal: null })
 
     await screen.findByRole('heading', { name: 'Blue Dream' })
-    expect(screen.queryByRole('button', { name: /variedad$/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^(Delete|Archive) product$/ })).not.toBeInTheDocument()
   })
 })
 
@@ -182,7 +183,7 @@ describe('archiving', () => {
     const user = userEvent.setup()
     const { fetchMock } = renderPage({ overrides: { 'POST /api/products/2/archive': () => json(200, {}) } })
 
-    await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
+    await user.click(await screen.findByRole('button', { name: 'Archive product' }))
 
     expect(screen.getByRole('alertdialog')).toHaveTextContent(ARCHIVE_DETAIL)
     expect(writes(fetchMock)).toEqual([])
@@ -192,7 +193,7 @@ describe('archiving', () => {
     const user = userEvent.setup()
     renderPage({ grams: 0 })
 
-    await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
+    await user.click(await screen.findByRole('button', { name: 'Archive product' }))
 
     expect(screen.getByRole('alertdialog')).toHaveTextContent(
       'If you archive it, they stop showing on Home and in the lists, but the stock is kept.',
@@ -204,7 +205,7 @@ describe('archiving', () => {
     const user = userEvent.setup()
     renderPage({ grams: -5 })
 
-    await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
+    await user.click(await screen.findByRole('button', { name: 'Archive product' }))
 
     expect(screen.getByRole('alertdialog')).toHaveTextContent('It has a shortfall of 5 g.')
     expect(screen.getByRole('alertdialog')).not.toHaveTextContent('You have')
@@ -213,7 +214,7 @@ describe('archiving', () => {
   test('"No, keep it" closes the dialog and sends nothing', async () => {
     const user = userEvent.setup()
     const { fetchMock } = renderPage()
-    await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
+    await user.click(await screen.findByRole('button', { name: 'Archive product' }))
 
     await user.click(screen.getByRole('button', { name: 'No, keep it' }))
 
@@ -221,38 +222,38 @@ describe('archiving', () => {
     expect(writes(fetchMock)).toEqual([])
   })
 
-  test('confirming archives, goes back to Variedades and says "Variety archived"', async () => {
+  test('confirming archives, goes back to Variedades and says "Product archived"', async () => {
     const user = userEvent.setup()
     const { fetchMock } = renderPage({ overrides: { 'POST /api/products/2/archive': () => json(200, {}) } })
-    await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
+    await user.click(await screen.findByRole('button', { name: 'Archive product' }))
 
     await user.click(screen.getByRole('button', { name: 'Yes, archive it' }))
 
-    expect(await screen.findByText('Varieties screen')).toBeInTheDocument()
-    expect(await screen.findByText('Variety archived')).toBeInTheDocument()
+    expect(await screen.findByText('Products screen')).toBeInTheDocument()
+    expect(await screen.findByText('Product archived')).toBeInTheDocument()
     expect(writes(fetchMock)).toEqual(['POST /api/products/2/archive'])
   })
 })
 
 describe('deleting', () => {
-  test('asks first in a destructive dialog, then deletes, goes back and says "Variety deleted"', async () => {
+  test('asks first in a destructive dialog, then deletes, goes back and says "Product deleted"', async () => {
     const user = userEvent.setup()
     const { fetchMock } = renderPage({
       removal: 'delete',
       overrides: { 'DELETE /api/products/2': () => new Response(null, { status: 204 }) },
     })
-    await user.click(await screen.findByRole('button', { name: 'Delete variety' }))
+    await user.click(await screen.findByRole('button', { name: 'Delete product' }))
     expect(screen.getByRole('alertdialog')).toHaveTextContent("This can't be undone.")
     expect(writes(fetchMock)).toEqual([])
 
     await user.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
-    expect(await screen.findByText('Varieties screen')).toBeInTheDocument()
-    expect(await screen.findByText('Variety deleted')).toBeInTheDocument()
+    expect(await screen.findByText('Products screen')).toBeInTheDocument()
+    expect(await screen.findByText('Product deleted')).toBeInTheDocument()
     expect(writes(fetchMock)).toEqual(['DELETE /api/products/2'])
   })
 
-  test('history that appeared after the page loaded: no toast, the page is read again and offers "Archive variety"', async () => {
+  test('history that appeared after the page loaded: no toast, the page is read again and offers "Archive product"', async () => {
     const user = userEvent.setup()
     let removal: 'delete' | 'archive' = 'delete'
     const { fetchMock } = renderPage({
@@ -265,13 +266,13 @@ describe('deleting', () => {
         },
       },
     })
-    await user.click(await screen.findByRole('button', { name: 'Delete variety' }))
+    await user.click(await screen.findByRole('button', { name: 'Delete product' }))
 
     await user.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
-    expect(await screen.findByRole('button', { name: 'Archive variety' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Archive product' })).toBeInTheDocument()
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
-    expect(screen.queryByText(/^Variedad (eliminada|archivada)$/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/^Product (deleted|archived)$/)).not.toBeInTheDocument()
     expect(reads(fetchMock, 'GET /api/products/2')).toBe(2)
   })
 })
@@ -286,13 +287,13 @@ describe('a variety that is already gone', () => {
         // The page itself stays readable, so the notice is on screen, not the gone screen.
         overrides: { 'DELETE /api/products/2': () => json(404, { code }) },
       })
-      await user.click(await screen.findByRole('button', { name: 'Delete variety' }))
+      await user.click(await screen.findByRole('button', { name: 'Delete product' }))
 
       await user.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
       expect(await screen.findByText(GONE_TEXT)).toBeInTheDocument()
       expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
-      expect(screen.queryByText('Variety deleted')).not.toBeInTheDocument()
+      expect(screen.queryByText('Product deleted')).not.toBeInTheDocument()
       await waitFor(() => expect(reads(fetchMock, 'GET /api/products/2')).toBeGreaterThan(1))
     },
   )
@@ -308,12 +309,12 @@ describe('a dropped network or a failure', () => {
         },
       },
     })
-    await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
+    await user.click(await screen.findByRole('button', { name: 'Archive product' }))
 
     await user.click(screen.getByRole('button', { name: 'Yes, archive it' }))
 
     expect(await screen.findByText(/offline/i)).toBeInTheDocument()
-    expect(screen.queryByText(/^Variedad (eliminada|archivada)$/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/^Product (deleted|archived)$/)).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Blue Dream' })).toBeInTheDocument()
   })
 })
@@ -324,7 +325,7 @@ describe('the computer', () => {
   test('removing the selected variety selects the next one by name', async () => {
     const user = userEvent.setup()
     renderPage({ computer: true, list: LIST, overrides: { 'POST /api/products/2/archive': () => json(200, {}) } })
-    await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
+    await user.click(await screen.findByRole('button', { name: 'Archive product' }))
 
     await user.click(screen.getByRole('button', { name: 'Yes, archive it' }))
 
@@ -338,7 +339,7 @@ describe('the computer', () => {
       list: [variety(1, 'Amnesia'), variety(2, 'Blue Dream')],
       overrides: { 'POST /api/products/2/archive': () => json(200, {}) },
     })
-    await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
+    await user.click(await screen.findByRole('button', { name: 'Archive product' }))
 
     await user.click(screen.getByRole('button', { name: 'Yes, archive it' }))
 
@@ -353,7 +354,7 @@ describe('the computer', () => {
       list: [variety(2, 'Blue Dream', 'delete')],
       overrides: { 'DELETE /api/products/2': () => new Response(null, { status: 204 }) },
     })
-    await user.click(await screen.findByRole('button', { name: 'Delete variety' }))
+    await user.click(await screen.findByRole('button', { name: 'Delete product' }))
 
     await user.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
@@ -364,7 +365,7 @@ describe('the computer', () => {
   test('a phone goes back to Variedades, whatever the list holds', async () => {
     const user = userEvent.setup()
     renderPage({ list: LIST, overrides: { 'POST /api/products/2/archive': () => json(200, {}) } })
-    await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
+    await user.click(await screen.findByRole('button', { name: 'Archive product' }))
 
     await user.click(screen.getByRole('button', { name: 'Yes, archive it' }))
 
@@ -377,11 +378,11 @@ describe('what is never written down', () => {
     const user = userEvent.setup()
     const spies = (['log', 'info', 'warn', 'error', 'debug'] as const).map((method) => vi.spyOn(console, method))
     renderPage({ overrides: { 'POST /api/products/2/archive': () => json(200, {}) } })
-    await user.click(await screen.findByRole('button', { name: 'Archive variety' }))
+    await user.click(await screen.findByRole('button', { name: 'Archive product' }))
 
     await user.click(screen.getByRole('button', { name: 'Yes, archive it' }))
 
-    const toast = (await screen.findByText('Variety archived')).closest('.aviso-exito')
+    const toast = (await screen.findByText('Product archived')).closest('.aviso-exito')
     expect(toast).not.toBeNull()
     expect(toast).not.toHaveTextContent('Blue Dream')
     expect(toast).not.toHaveTextContent('12')

@@ -47,6 +47,18 @@ export const CUSTOMERS_TEXT = {
   phoneTaken: 'That phone number already belongs to another customer',
   searchCustomer: 'Search customer',
   searching: 'Searching…',
+  typeLabel: 'Customer type',
+  typeNone: 'No type',
+  typeNotice: 'Add a customer type',
+  typeNotFound: 'That type no longer exists. Pick another one.',
+  typeIconCircle: 'Circle',
+  typeIconStar: 'Star',
+  typeIconHeart: 'Heart',
+  typeIconDiamond: 'Diamond',
+  typeIconFlag: 'Flag',
+  typeIconTag: 'Tag',
+  typeIconCrown: 'Crown',
+  typeIconBell: 'Bell',
   balanceAmount: (running_balance: string | number) => `balance ${running_balance}`,
 } as const
 

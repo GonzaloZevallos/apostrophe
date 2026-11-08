@@ -16,7 +16,7 @@ import { STOCK_TEXT } from '../../copy/stock'
 import { VARIETIES, WITHDRAWAL_EDIT, WITHDRAWAL_NEW, pathTo } from '../../routes'
 import { flipViewport, stubViewport } from '../../test-viewport'
 import { behindPane, expectBehindPane, expectBehindPaneEmpty } from '../../test/behindPane'
-import { jsonResponse, renderWithdrawals } from './renderWithdrawals'
+import { jsonResponse, reasonField, renderWithdrawals } from './renderWithdrawals'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -41,7 +41,7 @@ test('a direct address to the new withdrawal shows the sheet over Varieties, foc
 
   const dialog = await screen.findByRole('dialog', { name: COMMON_TEXT.takeFromStock })
   expect(dialog).toHaveAttribute('aria-modal', 'true')
-  await waitFor(() => expect(screen.getByRole('button', { name: 'Promotion' })).toHaveFocus())
+  await waitFor(async () => expect(await reasonField()).toHaveFocus())
   expect(screen.getAllByRole('button', { name: COMMON_TEXT.close })).toHaveLength(1)
   expect(within(dialog).getByRole('button', { name: COMMON_TEXT.close })).toBeInTheDocument()
 
@@ -64,7 +64,9 @@ test('a direct address to the edit shows the sheet over the withdrawal, focus on
   renderWithdrawals([EDIT], withdrawalApi())
 
   const dialog = await screen.findByRole('dialog', { name: COMMON_TEXT.takeFromStock })
-  await waitFor(() => expect(screen.getByRole('button', { name: 'Promotion' })).toHaveFocus())
+  // An edit's Reason field is busy until the list arrives, so focus rests in the sheet, never outside it.
+  await reasonField()
+  expect(dialog).toContainElement(document.activeElement as HTMLElement)
   expect(screen.getAllByRole('button', { name: COMMON_TEXT.close })).toHaveLength(1)
   expect(document.querySelector('.sheet__actions')).toContainElement(
     screen.getByRole('button', { name: COMMON_TEXT.save }),
@@ -115,7 +117,7 @@ test('on a computer there is no sheet and no pane', async () => {
   stubViewport('computer')
   renderWithdrawals([WITHDRAWAL_NEW], withdrawalApi())
 
-  await screen.findByRole('button', { name: 'Promotion' })
+  await reasonField()
   expect(document.querySelector('.sheet')).toBeNull()
   expect(document.querySelector('.behind-pane')).toBeNull()
   expect(document.querySelector('.sheet__actions')).toBeNull()

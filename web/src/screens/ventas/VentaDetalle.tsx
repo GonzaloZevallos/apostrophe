@@ -1,6 +1,6 @@
 /**
  * `VentaDetalle` (`sales.md`, "On screen: Detalle de venta"; `VentaDetalle.dc.html`):
- * the title with the sale's date, the total, a summary line of grams (the API's
+ * the title "Sale #N" with the sale's date under it, the total, a summary line of grams (the API's
  * `total_quantity`, never summed here) · the customer or "Sin cliente" · how it was
  * paid (`paymentSummary`, dropping `payment: 'none'`'s part), each line with its
  * price per gram, `ReglaInsignia` and line total, shipping, a final Total row and
@@ -58,6 +58,7 @@ import NuevaVentaCliente from './NuevaVentaCliente'
 import SaleBillButton from './SaleBillButton'
 import { COMMON_TEXT } from '../../copy/common'
 import { SALE_BILL_TEXT, SALES_TEXT } from '../../copy/sales'
+import ContentArea from '../../components/ContentArea'
 
 export const CUSTOMER_ALREADY_ASSIGNED_MESSAGE = SALES_TEXT.saleHasCustomer
 const ASSIGN_TOAST_MS = 2500
@@ -254,26 +255,26 @@ function VentaDetalleScreen() {
     }
     if (error instanceof NetworkError) {
       return (
-        <main className="pantalla">
+        <ContentArea as="main" className="pantalla">
           <div className="cuerpo">
             <SinConexion />
           </div>
-        </main>
+        </ContentArea>
       )
     }
     return (
-      <main className="pantalla">
+      <ContentArea as="main" className="pantalla">
         <div className="cuerpo">
           <ErrorGenerico />
         </div>
-      </main>
+      </ContentArea>
     )
   }
 
   if (isPending || data === undefined) {
     return (
-      <main className="pantalla">
-        <div className="cuerpo" aria-busy="true">
+      <ContentArea as="main" className="pantalla">
+        <div className="cuerpo">
           <div className="encabezado__fila">
             <span className="encabezado__titulo" />
           </div>
@@ -282,18 +283,19 @@ function VentaDetalleScreen() {
             <SaleBillButton state={{ kind: 'loading' }} refreshing={false} onCopied={() => undefined} />
           </div>
         </div>
-      </main>
+      </ContentArea>
     )
   }
   const sale = data
   const refreshing = assignMutation.isPending || (awaitingAssigned && sale.customer === null)
 
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <span className="encabezado__titulo">{SALES_TEXT.saleOf(formatDateShort(sale.date))}</span>
+          <span className="encabezado__titulo">{SALES_TEXT.saleNumber(sale.number)}</span>
         </div>
+        <span className="rotulo venta-detalle__fecha">{formatDateShort(sale.date)}</span>
 
         {undoAvailable && (
           <div className="venta-guardada" role="status">
@@ -395,6 +397,6 @@ function VentaDetalleScreen() {
           onCancel={() => setConfirmingDelete(false)}
         />
       )}
-    </main>
+    </ContentArea>
   )
 }

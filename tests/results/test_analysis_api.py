@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
-from tests.conftest import TODAY, MovableClock
+from tests.conftest import TODAY, MovableClock, reason_id
 
 
 def _variety_with_price(client: TestClient, name: str, list_price: int) -> int:
@@ -70,9 +70,9 @@ def test_a_month_before_the_first_record_is_refused(client: TestClient) -> None:
 def test_the_month_expense_breakdown_matches_get_expenses_without_purchases(
     client: TestClient,
 ) -> None:
-    # Categories differing in case and accents (docs/product/analysis.md: "sorted by
-    # name as in Gastos"): both endpoints must order, subtotal and total them exactly
-    # the same way, over the stored name_key.
+    # Categories differing in case and accents (docs/product/analysis.md:
+    # "ordenadas por nombre como en Expenses"): both endpoints must order, subtotal and total
+    # them exactly the same way, over the stored name_key.
     names = ["Transporte", "árbol", "ZEPELÍN", "andamios"]
     category_ids = [
         client.post("/expense-categories", json={"name": name}).json()["id"] for name in names
@@ -281,7 +281,8 @@ def _statement_count(engine: Engine, client: TestClient) -> int:
 
 
 def _seed_bigger_history(client: TestClient) -> None:
-    """A full seeded year (docs/product/analysis.md's '300 ms... a year of history'),
+    """A full seeded year (docs/product/analysis.md's
+    'menos de 300 ms con un año de unos cientos de ventas'),
     not 25 sales on one day: entries, sales and expenses spread across the last 360
     days, over 8 varieties, so the 8 weeks, 12 months and every day bucket all carry
     real history — not just today's."""
@@ -321,7 +322,7 @@ def _seed_bigger_history(client: TestClient) -> None:
     withdrawal = client.post(
         "/stock/withdrawals",
         json={
-            "reason": "own_use",
+            "reason_id": reason_id(client, "Own use"),
             "date": (TODAY - timedelta(days=7)).isoformat(),
             "lines": [{"product_id": variety_ids[0], "quantity": "1"}],
         },
@@ -346,7 +347,10 @@ def test_one_get_analysis_issues_the_same_number_of_statements_small_or_seeded(
     )
     client.post(
         "/stock/withdrawals",
-        json={"reason": "promotion", "lines": [{"product_id": variety_id, "quantity": "1"}]},
+        json={
+            "reason_id": reason_id(client, "Marketing"),
+            "lines": [{"product_id": variety_id, "quantity": "1"}],
+        },
     )
 
     _seed_bigger_history(other_client)

@@ -9,9 +9,11 @@ from sqlalchemy import MetaData
 
 from app.accounts.adapters import tables as accounts_tables
 from app.catalog.adapters import tables as catalog_tables
+from app.customer_types.adapters import tables as customer_types_tables
 from app.customers.adapters import tables as customers_tables
 from app.db import Base
 from app.expenses.adapters import tables as expenses_tables
+from app.money_format.adapters import tables as money_format_tables
 from app.onboarding.adapters import tables as onboarding_tables
 from app.payment_methods.adapters import tables as payment_methods_tables
 from app.payments.adapters import tables as payments_tables
@@ -24,6 +26,7 @@ from app.stock.adapters import tables as stock_tables
 TABLE_MODULES = (
     accounts_tables,
     products_tables,
+    customer_types_tables,
     customers_tables,
     expenses_tables,
     sales_tables,
@@ -34,6 +37,7 @@ TABLE_MODULES = (
     onboarding_tables,
     pricing_settings_tables,
     payment_methods_tables,
+    money_format_tables,
 )
 
 metadata: MetaData = Base.metadata

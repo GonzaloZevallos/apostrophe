@@ -23,6 +23,7 @@ import { newBusinessInvitationUrl } from '../backend.js'
 import { expectPath } from './url.js'
 import { expectToast } from './toast.js'
 import { fillSaleLine } from './sale.js'
+import { pickWithdrawalReason } from './stockVariety.js'
 import { leaveOnboarding } from './signup.js'
 import { uniqueTag } from './unique.js'
 
@@ -57,9 +58,9 @@ async function idAt(page: Page, template: string): Promise<number> {
 
 export async function seedRecords(page: Page, customerName: string): Promise<Records> {
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByRole('link', { name: 'New product' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   const variety = await idAt(page, VARIETY)
   await page.getByRole('link', { name: 'New price' }).click()
@@ -78,7 +79,7 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
 
   await page.goto(STOCK_ENTRY_NEW)
   await page.getByLabel('Grams').fill('50')
-  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
+  await pickStockVariety(page, 'Rosa')
   await page.getByLabel('Total cost').fill('45000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
   await page.goto(STOCK)
@@ -87,11 +88,13 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
 
   await page.goto(withdrawalNewFor(variety))
   await page.getByLabel('Grams 1', { exact: true }).fill('1')
-  await page.getByRole('button', { name: 'Promotion', exact: true }).click()
+  await pickWithdrawalReason(page, 'Marketing')
   await expectToast(page, 'Withdrawal saved', () => page.getByRole('button', { name: 'Save the withdrawal' }).click())
   await page.goto(pathTo(VARIETY, { id: variety }))
-  await page.locator('.fila-entrada__enlace', { hasText: 'Promotion' }).click()
+  await page.locator('.fila-entrada__enlace', { hasText: 'Marketing' }).click()
   const withdrawal = await idAt(page, WITHDRAWAL)
 
   return { variety, customer, sale, entry, withdrawal, customerName }
 }
+
+import { pickStockVariety } from './stockVariety.js'

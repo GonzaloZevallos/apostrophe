@@ -31,6 +31,7 @@ from app.accounts.adapters.import_port import BusinessDirectory
 from app.accounts.adapters.sql_accounts import SqlAccounts
 from app.catalog.adapters.import_port import CatalogImport
 from app.clock import Clock, business_day, system_clock
+from app.customer_types.adapters.import_port import VipTypeImport
 from app.customers.adapters.import_port import CustomersImport
 from app.db import make_engine
 from app.expenses.adapters.import_port import ExpensesImport
@@ -139,6 +140,7 @@ def _run(
         catalog = CatalogImport(session, args.business_id)
         expenses = ExpensesImport(session, args.business_id)
         customers = CustomersImport(session, args.business_id)
+        vip_type = VipTypeImport(session, args.business_id)
         sales = SalesImport(
             session,
             args.business_id,
@@ -166,6 +168,7 @@ def _run(
             catalog=catalog,
             expenses=expenses,
             customers=customers,
+            vip_type=vip_type,
             sales=sales,
             payments=payments,
             pricing_settings=pricing_settings,
@@ -190,6 +193,7 @@ def _run(
             catalog=catalog,
             expenses=expenses,
             customers=customers,
+            vip_type=vip_type,
             sales=sales,
             payments=payments,
             onboarding=onboarding,

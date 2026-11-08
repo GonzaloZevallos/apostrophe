@@ -30,6 +30,8 @@ classDiagram
   }
   class withdrawal {
   }
+  class withdrawal_reason {
+  }
   allocation --> lot_order
   entry --> errors
   lot_order --> draw_source
@@ -37,9 +39,9 @@ classDiagram
   stock_level --> draw_source
   stock_level --> lot_order
   stock_level --> threshold
-  withdrawal --> draw_source
   withdrawal --> entry
   withdrawal --> errors
+  withdrawal_reason --> errors
 ```
 
 #### application
@@ -53,6 +55,8 @@ classDiagram
   class history {
   }
   class manage_entries {
+  }
+  class manage_reasons {
   }
   class manage_withdrawals {
   }
@@ -68,6 +72,7 @@ classDiagram
   manage_entries --> errors
   manage_entries --> ports
   manage_entries --> variety_use
+  manage_reasons --> ports
   manage_withdrawals --> errors
   manage_withdrawals --> ports
   manage_withdrawals --> variety_use
@@ -87,6 +92,8 @@ classDiagram
 classDiagram
   class adapters {
   }
+  class babel_defaults {
+  }
   class draw_costs {
   }
   class draw_rows {
@@ -101,6 +108,10 @@ classDiagram
   }
   class purchases {
   }
+  class reasons_opening {
+  }
+  class results_reasons {
+  }
   class router {
   }
   class schemas {
@@ -112,6 +123,8 @@ classDiagram
   class sql_stock_withdrawals {
   }
   class sql_thresholds {
+  }
+  class sql_withdrawal_reasons {
   }
   class stock_figures {
   }
@@ -132,15 +145,19 @@ classDiagram
   line_costs --> sql_stock_withdrawals
   onboarding_facts --> tables
   purchases --> tables
+  reasons_opening --> sql_withdrawal_reasons
+  results_reasons --> sql_withdrawal_reasons
   router --> schemas
   router --> sql_draws
   router --> sql_stock_entries
   router --> sql_stock_withdrawals
   router --> sql_thresholds
+  router --> sql_withdrawal_reasons
   router --> variety_catalog
   sql_stock_entries --> tables
   sql_stock_withdrawals --> tables
   sql_thresholds --> tables
+  sql_withdrawal_reasons --> tables
   stock_figures --> draw_rows
   stock_figures --> sql_draws
   stock_figures --> sql_stock_entries
@@ -157,6 +174,7 @@ classDiagram
     order
     pricing_rule : str #124; None
     quantity : Quantity
+    reason_id : int #124; None
     sale_id : int #124; None
     source
     variety_id : int
@@ -191,6 +209,9 @@ classDiagram
   class EntryQuantityInvalid {
     code : ClassVar~str~
   }
+  class LastReason {
+    code : ClassVar~str~
+  }
   class Lot {
     order
     quantity : Quantity
@@ -211,6 +232,26 @@ classDiagram
   }
   class Origin {
     name
+  }
+  class ReasonCannotMove {
+    code : ClassVar~str~
+  }
+  class ReasonHasWithdrawals {
+    code : ClassVar~str~
+  }
+  class ReasonName {
+    key : str
+    value : str
+    of(raw: str) ReasonName
+  }
+  class ReasonNameBlank {
+    code : ClassVar~str~
+  }
+  class ReasonNameTaken {
+    code : ClassVar~str~
+  }
+  class ReasonNameTooLong {
+    code : ClassVar~str~
   }
   class SaleLineDraw {
     day : date
@@ -251,11 +292,11 @@ classDiagram
     id : int #124; None
     lines : tuple~WithdrawalLine, ...~
     note : str #124; None
-    reason
+    reason_id : int
     recorded_at : datetime
     total_quantity : Quantity
     withdrawn_on : date
-    of(reason: WithdrawalReason #124; str #124; None, withdrawn_on: date, note: str #124; None, lines: tuple~WithdrawalLine, ...~, today: date, recorded_at: datetime, id: int #124; None) Withdrawal
+    of(reason_id: int #124; None, withdrawn_on: date, note: str #124; None, lines: tuple~WithdrawalLine, ...~, today: date, recorded_at: datetime, id: int #124; None) Withdrawal
   }
   class WithdrawalDateInFuture {
     code : ClassVar~str~
@@ -269,7 +310,7 @@ classDiagram
     day : date
     position : int
     quantity : Quantity
-    reason
+    reason_id : int
     recorded_at : datetime
     variety_id : int
     withdrawal_id : int
@@ -290,7 +331,14 @@ classDiagram
     code : ClassVar~str~
   }
   class WithdrawalReason {
+    id : int
     name
+    position : int
+    check_removable(has_withdrawals: bool, reason_count: int) None
+    rename(name: ReasonName) None
+  }
+  class WithdrawalReasonNotFound {
+    code : ClassVar~str~
   }
   class WithdrawalReasonRequired {
     code : ClassVar~str~
@@ -302,8 +350,7 @@ classDiagram
   Draw --> LotOrder : order
   Lot --> LotOrder : order
   StockEntry --> Origin : origin
-  Withdrawal --> WithdrawalReason : reason
-  WithdrawalLineDraw --> WithdrawalReason : reason
+  WithdrawalReason --> ReasonName : name
 ```
 
 ## application
@@ -316,6 +363,9 @@ classDiagram
   }
   class Draws {
     for_varieties(variety_ids: Collection~int~ #124; None) list~SaleLineDraw~
+  }
+  class ReasonDefaults {
+    for_language(language: Language) tuple~ReasonName, ...~
   }
   class StockEntries {
     add(entry: StockEntry) StockEntry
@@ -357,12 +407,24 @@ classDiagram
   }
   class WithdrawalMovement {
     quantity : Quantity
-    reason : WithdrawalReason
+    reason_id : int
+    reason_name : str
     recorded_at : datetime
     withdrawal_id : int
     withdrawn_on : date
   }
+  class WithdrawalReasons {
+    add(name: ReasonName, position: int) WithdrawalReasonEntity
+    all() list~WithdrawalReasonEntity~
+    count() int
+    get(reason_id: int) WithdrawalReasonEntity #124; None
+    has_withdrawals(reason_id: int) bool
+    remove(reason_id: int) bool
+    reorder(reason_ids: list~int~) None
+    save(reason: WithdrawalReasonEntity) WithdrawalReasonEntity
+  }
   class WithdrawalView {
+    reason_name : str
     variety_names : dict~int, str~
     withdrawal : Withdrawal
   }
@@ -379,6 +441,9 @@ classDiagram
 
 ```mermaid
 classDiagram
+  class BabelReasonDefaults {
+    for_language(language: Language) tuple~ReasonName, ...~
+  }
   class EntryIn {
     date : EntryDate #124; None
     note : str #124; None
@@ -410,6 +475,17 @@ classDiagram
     threshold : QuantityOut #124; None
     of(view: VarietyStock) 'ProductStockOut'
   }
+  class ReasonIn {
+    name : str
+  }
+  class ReasonMoveIn {
+    direction : Literal~'up', 'down'~
+  }
+  class ReasonOut {
+    id : int
+    name : str
+    of(reason: WithdrawalReasonEntity) 'ReasonOut'
+  }
   class SqlDrawCosts {
     rows() list~DrawRow~
   }
@@ -422,6 +498,9 @@ classDiagram
   class SqlPurchases {
     earliest_entry_day() date #124; None
     purchases() list~PurchaseRecord~
+  }
+  class SqlResultsWithdrawalReasons {
+    all() Sequence~ReasonRecord~
   }
   class SqlStockEntries {
     add(entry: StockEntry) StockEntry
@@ -468,6 +547,16 @@ classDiagram
     names() dict~int, str~
     usable(variety_id: int) bool
   }
+  class SqlWithdrawalReasons {
+    add(name: ReasonName, position: int) WithdrawalReason
+    all() list~WithdrawalReason~
+    count() int
+    get(reason_id: int) WithdrawalReason #124; None
+    has_withdrawals(reason_id: int) bool
+    remove(reason_id: int) bool
+    reorder(reason_ids: list~int~) None
+    save(reason: WithdrawalReason) WithdrawalReason
+  }
   class StockEntryRow {
     business_id : Mapped~int~
     entry_date : Mapped~date~
@@ -503,8 +592,9 @@ classDiagram
     business_id : Mapped~int~
     id : Mapped~int~
     note : Mapped~str #124; None~
-    reason : Mapped~str~
+    reason : Mapped~str #124; None~
     recorded_at : Mapped~datetime~
+    withdrawal_reason_id : Mapped~int~
     withdrawn_on : Mapped~date~
   }
   class ThresholdIn {
@@ -514,7 +604,7 @@ classDiagram
     date : EntryDate #124; None
     lines : list~WithdrawalLineIn~
     note : str #124; None
-    reason : str #124; None
+    reason_id : int #124; None
   }
   class WithdrawalLineIn {
     product_id : int
@@ -530,16 +620,30 @@ classDiagram
     id : int
     kind : Literal~'withdrawal'~
     quantity
-    reason : WithdrawalReason
+    reason_id : int
+    reason_name : str
   }
   class WithdrawalOut {
     date : date
     id : int
     lines : list~WithdrawalLineOut~
     note : str #124; None
-    reason : WithdrawalReason
+    reason_id : int
+    reason_name : str
     total_quantity
     of(view: WithdrawalView) 'WithdrawalOut'
+  }
+  class WithdrawalReasonRow {
+    business_id : Mapped~int~
+    id : Mapped~int~
+    name : Mapped~str~
+    name_key : Mapped~str~
+    position : Mapped~int~
+  }
+  class WithdrawalReasonsOpening {
+    opened(business_id: int, language: BusinessLanguage) None
+  }
+  class WithdrawalWithoutReason {
   }
   EntryMovementOut --|> EntryOut
 ```

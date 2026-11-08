@@ -13,6 +13,7 @@ from app.results.application.ports import (
     PaymentsLedger,
     Purchases,
     SalesLedger,
+    WithdrawalReasons,
 )
 from app.results.domain.figures import AnalysisFigures
 from app.results.domain.period_figures import period_figures
@@ -43,6 +44,7 @@ def analyse(
     payments: PaymentsLedger,
     expenses: ExpensesLedger,
     purchases: Purchases,
+    reasons: WithdrawalReasons,
     *,
     today: date,
     month: str | None,
@@ -64,6 +66,7 @@ def analyse(
         expenses=expenses.all(),
         purchases=purchases.purchases(),
         earliest_entry_day=purchases.earliest_entry_day(),
+        reasons=reasons.all(),
     )
 
     current_month = Month.containing(today)

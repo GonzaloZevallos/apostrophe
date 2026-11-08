@@ -401,7 +401,7 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
   expect(creditFila.querySelector('.cuenta-cliente__monto')).toHaveTextContent('$ 2.000')
   expect(creditFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('Credit $ 2.000')
 
-  // Title over sub-line on the left, the sale naming no variety and no grams.
+  // Title over sub-line on the left, the sale naming no product and no grams.
   expect(saleFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Sale')
   expect(saleFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent('Left owing')
   expect(firstPaymentFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · Cash')

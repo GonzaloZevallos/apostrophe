@@ -135,13 +135,13 @@ test('real screens: a flash toast, a toast on its own timer and the card\'s hist
   await signUpNewBusiness(page, { businessName, email: `duena-registro-${uniqueTag()}@example.com` })
 
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByRole('link', { name: 'New product' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: '+ Stock entry' }).click()
   await page.getByLabel('Grams').fill('50')
-  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
+  await pickStockVariety(page, 'Rosa')
   await page.getByLabel('Total cost').fill('20000')
   // FlashProvider: 2.5 s on the flash toast.
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
@@ -162,3 +162,5 @@ test('real screens: a flash toast, a toast on its own timer and the card\'s hist
   // No product timer on this one (history state): the page check stays next to the recorder's.
   await expect(page.getByText('Customer saved')).toBeVisible()
 })
+
+import { pickStockVariety } from './helpers/stockVariety.js'

@@ -63,6 +63,12 @@ msgstr "⟦Šĥìṗṗìňĝ åňđ ťřåňšṗöřť·~·~·~·~⟧"
 msgid "expenses.default_category.other"
 msgstr "⟦Öťĥèř·~⟧"
 
+msgid "stock.default_reason.marketing"
+msgstr "⟦Ṁåřķèťìňĝ·~·~⟧"
+
+msgid "stock.default_reason.own_use"
+msgstr "⟦Öŵň ûšè·~·⟧"
+
 msgid "payment_methods.default.cash"
 msgstr "⟦Çåšĥ·~⟧"
 

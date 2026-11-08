@@ -85,7 +85,7 @@ test('shows the total, each line with its lowercase rule badge, shipping, note a
   )
   renderDetalle()
 
-  expect(await screen.findByText('Sale of 14/09')).toBeInTheDocument()
+  expect(await screen.findByText('Sale #2')).toBeInTheDocument()
   expect(screen.getAllByText('$ 11.000')).toHaveLength(2) // the big total and the final Total row.
   expect(screen.getByText('Flor A')).toBeInTheDocument()
   expect(screen.getByText('list')).toBeInTheDocument()
@@ -110,16 +110,40 @@ test('shows the skeleton while the sale is pending, then the sale in its place',
   renderDetalle()
 
   expect(await screen.findByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
-  expect(screen.queryByText('Sale of 14/09')).not.toBeInTheDocument()
+  expect(screen.queryByText('Sale #2')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Delete sale' })).not.toBeInTheDocument()
   expect(fetch).toHaveBeenCalledTimes(1)
   expect(fetch).toHaveBeenCalledWith('/sales/10', expect.objectContaining({ method: 'GET' }))
 
   resolveSale(jsonResponse(200, SALE))
 
-  expect(await screen.findByText('Sale of 14/09')).toBeInTheDocument()
+  expect(await screen.findByText('Sale #2')).toBeInTheDocument()
   expect(screen.getAllByText('$ 11.000').length).toBeGreaterThan(0)
   expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+})
+
+test('while the detail loads the title is empty and nothing reads like a Sale number', async () => {
+  vi.mocked(fetch).mockReturnValue(new Promise<Response>(() => undefined))
+  renderDetalle()
+
+  expect(await screen.findByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
+  const main = screen.getByRole('main')
+  const body = main.firstElementChild as HTMLElement
+  expect(main).toHaveAttribute('aria-busy', 'true')
+  expect(body).not.toHaveAttribute('aria-busy')
+  expect(body.querySelector('.encabezado__titulo')).toBeEmptyDOMElement()
+  expect(main.textContent ?? '').not.toMatch(/#|[0-9]|Sale/)
+})
+
+test('the title is the Sale number as plain text, and the date sits under it', async () => {
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...SALE, number: 77 }))
+  renderDetalle()
+
+  const title = await screen.findByText('Sale #77')
+  expect(title.tagName).toBe('SPAN')
+  expect(title.closest('button, a')).toBeNull()
+  expect(title.parentElement?.nextElementSibling).toHaveTextContent(/^14\/09$/)
+  expect(screen.queryByText('Sale #10')).not.toBeInTheDocument() // the id (10) is never shown as the number.
 })
 
 test('a sale with no customer and no payment shows "No customer" and drops the payment part', async () => {
@@ -154,7 +178,7 @@ test('Delete sale asks "Antes de borrar" naming the date, the amount and the gra
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, SALE))
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, DELETED))
   renderDetalle()
-  await screen.findByText('Sale of 14/09')
+  await screen.findByText('Sale #2')
 
   await userEvent.click(screen.getByRole('button', { name: 'Delete sale' }))
   expect(
@@ -173,7 +197,7 @@ test('Delete sale asks "Antes de borrar" naming the date, the amount and the gra
 test('cancelling the delete confirmation keeps the sale', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
   renderDetalle()
-  await screen.findByText('Sale of 14/09')
+  await screen.findByText('Sale #2')
 
   await userEvent.click(screen.getByRole('button', { name: 'Delete sale' }))
   await userEvent.click(screen.getByRole('button', { name: 'No, keep it' }))
@@ -188,7 +212,7 @@ test('right after a save, Deshacer deletes the sale with no confirmation and nam
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, SALE))
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, DELETED))
   renderDetalle(saleJustSaved())
-  await screen.findByText('Sale of 14/09')
+  await screen.findByText('Sale #2')
 
   expect(screen.getByText('Sale saved')).toBeInTheDocument()
 
@@ -206,7 +230,7 @@ test('right after a save, Deshacer deletes the sale with no confirmation and nam
 test('opening the detail without the just-saved marker never shows Deshacer', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
   renderDetalle()
-  await screen.findByText('Sale of 14/09')
+  await screen.findByText('Sale #2')
 
   expect(screen.queryByText('Sale saved')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Undo' })).not.toBeInTheDocument()
@@ -216,7 +240,7 @@ test('a sale already gone when deleted shows the gone notice and returns to Vent
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, SALE))
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(404, { code: 'sale.not_found' }))
   renderDetalle()
-  await screen.findByText('Sale of 14/09')
+  await screen.findByText('Sale #2')
 
   await userEvent.click(screen.getByRole('button', { name: 'Delete sale' }))
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
@@ -227,7 +251,7 @@ test('a sale already gone when deleted shows the gone notice and returns to Vent
 test('a sale with a customer already never shows Assign customer', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
   renderDetalle()
-  await screen.findByText('Sale of 14/09')
+  await screen.findByText('Sale #2')
 
   expect(screen.queryByRole('button', { name: 'Assign customer' })).not.toBeInTheDocument()
 })
@@ -411,7 +435,7 @@ test('a sale keeps its recorded "VIP" and "bulk" badges while both pricing switc
   )
   renderDetalle()
 
-  expect(await screen.findByText('Sale of 14/09')).toBeInTheDocument()
+  expect(await screen.findByText('Sale #2')).toBeInTheDocument()
   expect(screen.getByText('VIP')).toBeInTheDocument()
   expect(screen.getByText('bulk')).toBeInTheDocument()
 })

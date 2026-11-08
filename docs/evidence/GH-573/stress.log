@@ -1,0 +1,111 @@
+start tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=shuffle cap=1 logged=0 time=2026-11-04T18:16:54Z
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=shuffle n=1 load_start=17.19 load_end=14.14 seed=405060 result=green counts=Test_Files_262_passed_|_1_skipped_(263);Tests_4046_passed_|_4_skipped_(4050); failing=-
+summary tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=shuffle n=1 red=0 cap=1 time=2026-11-04T18:22:54Z
+start tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=shuffle cap=2 logged=1 time=2026-11-04T18:22:54Z
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=shuffle n=2 load_start=14.14 load_end=16.35 seed=449805 result=green counts=Test_Files_262_passed_|_1_skipped_(263);Tests_4046_passed_|_4_skipped_(4050); failing=-
+summary tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=shuffle n=2 red=0 cap=2 time=2026-11-04T18:30:03Z
+start tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=shuffle cap=3 logged=2 time=2026-11-04T18:30:03Z
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=shuffle n=3 load_start=16.35 load_end=16.46 seed=815770 result=green counts=Test_Files_262_passed_|_1_skipped_(263);Tests_4046_passed_|_4_skipped_(4050); failing=-
+summary tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=shuffle n=3 red=0 cap=3 time=2026-11-04T18:37:26Z
+start tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=shuffle cap=4 logged=3 time=2026-11-04T18:37:26Z
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=shuffle n=4 load_start=16.46 load_end=8.15 seed=346982 result=green counts=Test_Files_262_passed_|_1_skipped_(263);Tests_4046_passed_|_4_skipped_(4050); failing=-
+summary tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=shuffle n=4 red=0 cap=4 time=2026-11-04T18:41:53Z
+start tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=shuffle cap=5 logged=4 time=2026-11-04T18:41:53Z
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=shuffle n=5 load_start=8.15 load_end=27.72 seed=597742 result=green counts=Test_Files_262_passed_|_1_skipped_(263);Tests_4046_passed_|_4_skipped_(4050); failing=-
+summary tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=shuffle n=5 red=0 cap=5 time=2026-11-04T18:47:37Z
+start tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=shuffle cap=6 logged=5 time=2026-11-04T18:47:37Z
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=shuffle n=6 load_start=27.72 load_end=9.34 seed=41928 result=green counts=Test_Files_262_passed_|_1_skipped_(263);Tests_4046_passed_|_4_skipped_(4050); failing=-
+summary tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=shuffle n=6 red=0 cap=6 time=2026-11-04T18:52:51Z
+start tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census cap=10 logged=0 time=2026-11-04T18:52:52Z
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=1 cmd="uv run --no-project pytest -n 8" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=1 cmd="uv run --no-project mypy app tests scripts" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=1 cmd="npm --prefix web run typecheck" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=1 cmd="npm --prefix web run build" started=1 finished=0 fastfail=0
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=1 load_start=9.34 load_end=14.09 seed=- result=green counts=Test_Files_1_passed_(1);Tests_6_passed_(6); failing=-
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=2 cmd="uv run --no-project pytest -n 8" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=2 cmd="uv run --no-project mypy app tests scripts" started=18 finished=17 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=2 cmd="npm --prefix web run typecheck" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=2 cmd="npm --prefix web run build" started=1 finished=0 fastfail=0
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=2 load_start=14.09 load_end=16.04 seed=- result=green counts=Test_Files_1_passed_(1);Tests_6_passed_(6); failing=-
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=3 cmd="uv run --no-project pytest -n 8" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=3 cmd="uv run --no-project mypy app tests scripts" started=28 finished=27 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=3 cmd="npm --prefix web run typecheck" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=3 cmd="npm --prefix web run build" started=1 finished=0 fastfail=0
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=3 load_start=16.04 load_end=16.48 seed=- result=green counts=Test_Files_1_passed_(1);Tests_6_passed_(6); failing=-
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=4 cmd="uv run --no-project pytest -n 8" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=4 cmd="uv run --no-project mypy app tests scripts" started=28 finished=27 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=4 cmd="npm --prefix web run typecheck" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=4 cmd="npm --prefix web run build" started=1 finished=0 fastfail=0
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=4 load_start=16.48 load_end=17.60 seed=- result=green counts=Test_Files_1_passed_(1);Tests_6_passed_(6); failing=-
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=5 cmd="uv run --no-project pytest -n 8" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=5 cmd="uv run --no-project mypy app tests scripts" started=28 finished=27 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=5 cmd="npm --prefix web run typecheck" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=5 cmd="npm --prefix web run build" started=1 finished=0 fastfail=0
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=5 load_start=17.60 load_end=19.75 seed=- result=green counts=Test_Files_1_passed_(1);Tests_6_passed_(6); failing=-
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=6 cmd="uv run --no-project pytest -n 8" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=6 cmd="uv run --no-project mypy app tests scripts" started=27 finished=26 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=6 cmd="npm --prefix web run typecheck" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=6 cmd="npm --prefix web run build" started=1 finished=0 fastfail=0
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=6 load_start=19.75 load_end=19.81 seed=- result=green counts=Test_Files_1_passed_(1);Tests_6_passed_(6); failing=-
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=7 cmd="uv run --no-project pytest -n 8" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=7 cmd="uv run --no-project mypy app tests scripts" started=28 finished=27 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=7 cmd="npm --prefix web run typecheck" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=7 cmd="npm --prefix web run build" started=1 finished=0 fastfail=0
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=7 load_start=19.81 load_end=18.88 seed=- result=green counts=Test_Files_1_passed_(1);Tests_6_passed_(6); failing=-
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=8 cmd="uv run --no-project pytest -n 8" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=8 cmd="uv run --no-project mypy app tests scripts" started=28 finished=27 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=8 cmd="npm --prefix web run typecheck" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=8 cmd="npm --prefix web run build" started=1 finished=0 fastfail=0
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=8 load_start=18.88 load_end=20.15 seed=- result=green counts=Test_Files_1_passed_(1);Tests_6_passed_(6); failing=-
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=9 cmd="uv run --no-project pytest -n 8" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=9 cmd="uv run --no-project mypy app tests scripts" started=28 finished=27 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=9 cmd="npm --prefix web run typecheck" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=9 cmd="npm --prefix web run build" started=1 finished=0 fastfail=0
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=9 load_start=20.15 load_end=21.00 seed=- result=green counts=Test_Files_1_passed_(1);Tests_6_passed_(6); failing=-
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=10 cmd="uv run --no-project pytest -n 8" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=10 cmd="uv run --no-project mypy app tests scripts" started=28 finished=27 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=10 cmd="npm --prefix web run typecheck" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=10 cmd="npm --prefix web run build" started=1 finished=0 fastfail=0
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=10 load_start=21.00 load_end=22.77 seed=- result=green counts=Test_Files_1_passed_(1);Tests_6_passed_(6); failing=-
+summary tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=10 red=0 cap=10 time=2026-11-04T18:58:47Z
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=10 cmd="uv run --no-project pytest -n 8" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=10 cmd="uv run --no-project mypy app tests scripts" started=28 finished=27 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=10 cmd="npm --prefix web run typecheck" started=1 finished=0 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=census n=10 cmd="npm --prefix web run build" started=1 finished=0 fastfail=0
+start tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load cap=6 logged=0 time=2026-11-04T18:58:47Z
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=1 cmd="uv run --no-project pytest -n 8" started=2 finished=1 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=1 cmd="uv run --no-project mypy app tests scripts" started=294 finished=293 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=1 cmd="npm --prefix web run typecheck" started=7 finished=6 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=1 cmd="npm --prefix web run build" started=7 finished=6 fastfail=0
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=1 load_start=22.77 load_end=22.64 seed=- result=green counts=Test_Files_262_passed_|_1_skipped_(263);Tests_4046_passed_|_4_skipped_(4050); failing=-
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=2 cmd="uv run --no-project pytest -n 8" started=2 finished=1 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=2 cmd="uv run --no-project mypy app tests scripts" started=291 finished=290 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=2 cmd="npm --prefix web run typecheck" started=7 finished=6 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=2 cmd="npm --prefix web run build" started=7 finished=6 fastfail=0
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=2 load_start=22.64 load_end=24.45 seed=- result=green counts=Test_Files_262_passed_|_1_skipped_(263);Tests_4046_passed_|_4_skipped_(4050); failing=-
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=3 cmd="uv run --no-project pytest -n 8" started=2 finished=1 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=3 cmd="uv run --no-project mypy app tests scripts" started=295 finished=294 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=3 cmd="npm --prefix web run typecheck" started=7 finished=6 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=3 cmd="npm --prefix web run build" started=7 finished=6 fastfail=0
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=3 load_start=24.45 load_end=21.05 seed=- result=green counts=Test_Files_262_passed_|_1_skipped_(263);Tests_4046_passed_|_4_skipped_(4050); failing=-
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=4 cmd="uv run --no-project pytest -n 8" started=2 finished=1 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=4 cmd="uv run --no-project mypy app tests scripts" started=293 finished=292 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=4 cmd="npm --prefix web run typecheck" started=7 finished=6 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=4 cmd="npm --prefix web run build" started=7 finished=6 fastfail=0
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=4 load_start=21.05 load_end=20.55 seed=- result=green counts=Test_Files_262_passed_|_1_skipped_(263);Tests_4046_passed_|_4_skipped_(4050); failing=-
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=5 cmd="uv run --no-project pytest -n 8" started=2 finished=1 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=5 cmd="uv run --no-project mypy app tests scripts" started=294 finished=293 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=5 cmd="npm --prefix web run typecheck" started=7 finished=6 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=5 cmd="npm --prefix web run build" started=7 finished=6 fastfail=0
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=5 load_start=20.55 load_end=21.19 seed=- result=green counts=Test_Files_262_passed_|_1_skipped_(263);Tests_4046_passed_|_4_skipped_(4050); failing=-
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=6 cmd="uv run --no-project pytest -n 8" started=2 finished=1 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=6 cmd="uv run --no-project mypy app tests scripts" started=293 finished=292 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=6 cmd="npm --prefix web run typecheck" started=7 finished=6 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=6 cmd="npm --prefix web run build" started=7 finished=6 fastfail=0
+iter tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=6 load_start=21.19 load_end=26.05 seed=- result=green counts=Test_Files_262_passed_|_1_skipped_(263);Tests_4046_passed_|_4_skipped_(4050); failing=-
+summary tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=6 red=0 cap=6 time=2026-11-04T19:45:52Z
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=6 cmd="uv run --no-project pytest -n 8" started=2 finished=1 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=6 cmd="uv run --no-project mypy app tests scripts" started=293 finished=292 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=6 cmd="npm --prefix web run typecheck" started=7 finished=6 fastfail=0
+companion tree=d895687008f0243014cc1b1ade489f269a72a2f5 mode=full-load n=6 cmd="npm --prefix web run build" started=7 finished=6 fastfail=0
+driver done 2026-11-04T19:45:52Z

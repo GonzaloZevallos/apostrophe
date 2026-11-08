@@ -8,8 +8,16 @@
 // page text: only tag-and-class paths, ordinals, counts, sizes, booleans and fixed strings.
 
 import { SETTLE_REASON_REJECTED, SETTLE_REASON_UNSETTLED } from './settle.mjs'
-import { censusClass, coversScreen, fitsViewport, grownHeight, sizesChanged } from './shot.mjs'
-import { allElements, fixedInPage, layerInPage, readMetrics, sameNodesInPage, snapshotInPage } from './shot-page.mjs'
+import { censusClass, coversScreen, fitsViewport, grownHeight, pinnedClass, planShot, sizesChanged } from './shot.mjs'
+import {
+  allElements,
+  fixedInPage,
+  layerInPage,
+  pinnedInPage,
+  readMetrics,
+  sameNodesInPage,
+  snapshotInPage,
+} from './shot-page.mjs'
 
 export const ERROR_BEFORE = 'census read before growth failed'
 export const ERROR_AFTER = 'census read after growth failed'
@@ -26,6 +34,19 @@ function vvAltoFlags(before, after) {
   const same = before.vvAlto === after.vvAlto
   return { vv_alto: same ? 'unchanged' : 'changed', vv_alto_before: before.vvAlto, vv_alto_after: after.vvAlto }
 }
+
+// A pinned element as the census records it (GH-491): what the reader of `shot-page.mjs` found, and the
+// class `pinnedClass` (`shot.mjs`) gives it. Nothing is classified here.
+const pinnedRecord = (element) => ({
+  path: element.path,
+  position: element.position,
+  inset_top: element.insetTop,
+  inset_bottom: element.insetBottom,
+  margin_top: element.marginTop,
+  margin_bottom: element.marginBottom,
+  transform: element.transform,
+  pinned_class: pinnedClass(element),
+})
 
 // One side's census. `record` is the plain object that goes into `index.json`; the handle and the
 // before snapshot stay here. `settle(page)` is the capture's own settle with no clock advance.
@@ -62,6 +83,10 @@ export function createCensus({ deviceScaleFactor, settle }) {
       class: censusClass({ layer: covering !== undefined, grown, wide }),
     })
     before = await page.evaluate(snapshotInPage, handle)
+    // The side a phone page is scrolled and stitched on (`planShot` says so): every fixed and sticky element.
+    if (planShot(metrics, fixed, viewportBefore).mode === 'scroll') {
+      record.pinned = (await page.evaluate(pinnedInPage, handle)).map(pinnedRecord)
+    }
     if (covering !== undefined) {
       const ordinals = []
       const paths = []

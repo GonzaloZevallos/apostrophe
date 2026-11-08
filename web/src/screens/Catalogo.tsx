@@ -44,6 +44,8 @@ import { telegramPreview } from './telegramPreview'
 import { CATALOG_SECTION_ID, SETTINGS_CATALOG_MESSAGE, VARIETY, pathTo } from '../routes'
 import { COMMON_TEXT } from '../copy/common'
 import { STOCK_TEXT } from '../copy/stock'
+import ContentArea from '../components/ContentArea'
+import { LoadingWhile } from '../components/Loading'
 
 export const CATALOG_COPIED = CATALOG_TEXT.catalogoCopiado
 export const COPY_FAILED_MESSAGE = CATALOG_TEXT.noSePudoCopiar
@@ -98,19 +100,19 @@ export default function Catalogo() {
   if (catalogQuery.isError) {
     if (catalogQuery.error instanceof NetworkError) {
       return (
-        <main className="pantalla">
+        <ContentArea as="main" className="pantalla">
           <div className="cuerpo">
             <SinConexion />
           </div>
-        </main>
+        </ContentArea>
       )
     }
     return (
-      <main className="pantalla">
+      <ContentArea as="main" className="pantalla">
         <div className="cuerpo">
           <ErrorGenerico />
         </div>
-      </main>
+      </ContentArea>
     )
   }
 
@@ -119,7 +121,8 @@ export default function Catalogo() {
   const leftOut = catalog?.products.filter((variety) => variety.state !== 'in') ?? []
 
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
+      <LoadingWhile active={catalogQuery.isPending} />
       <div className="cuerpo">
         <h1 className="encabezado__titulo">{COMMON_TEXT.catalog}</h1>
 
@@ -219,6 +222,6 @@ export default function Catalogo() {
         </div>
         </div>
       </div>
-    </main>
+    </ContentArea>
   )
 }

@@ -1,8 +1,8 @@
 /**
  * Collecting from Hoy, phone and computer, against the real backend through the built front
- * (results.md, "Te deben block"): a seller taps "Collect from <name>" on the debtor's row, saves a
- * payment in Registrar cobro, and is back on Inicio in one move, with the block refreshed from
- * the API and the toast not naming the customer. "Close" returns in one move too.
+ * (results.md, "Bloque Owed to you"): a seller taps "Collect from <name>" on the debtor's row,
+ * saves a payment in Registrar cobro, and is back on Inicio in one move, with the block
+ * refreshed from the API and the toast not naming the customer. "Close" returns in one move too.
  *
  * "In one move" is read from the browser's own history: a single `page.goBack()` from Inicio
  * after the round trip leaves the app's own history, not Registrar cobro again.
@@ -37,9 +37,9 @@ for (const viewport of VIEWPORTS) {
     })
 
     await page.goto(VARIETIES)
-    await page.getByRole('link', { name: 'New variety' }).click()
+    await page.getByRole('link', { name: 'New product' }).click()
     await page.getByLabel('Name').fill('Rosa')
-    await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+    await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
     await page.getByRole('link', { name: /Rosa/ }).click()
     await page.getByRole('link', { name: 'New price' }).click()
     await page.getByLabel(/^List price/).fill('1000')

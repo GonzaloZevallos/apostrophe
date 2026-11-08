@@ -3,6 +3,7 @@
   "name": "Caro Núñez",
   "phone": null,
   "vip": false,
+  "customer_type_id": null,
   "balance": 0,
   "owing_since": null,
   "standing": "settled"

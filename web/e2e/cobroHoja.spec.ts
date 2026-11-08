@@ -36,10 +36,10 @@ const ORIGIN_PATH = { customers: CUSTOMERS, home: HOME, card: CUSTOMER } as cons
 async function makeDebtor(page: Page): Promise<void> {
   await signUpNewBusiness(page)
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByRole('link', { name: 'New product' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await page.getByRole('button', { name: 'Add the variety' }).click()
-  await expect(page.getByText('Variety saved')).toBeVisible()
+  await page.getByRole('button', { name: 'Add the product' }).click()
+  await expect(page.getByText('Product saved')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('1000')

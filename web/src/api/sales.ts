@@ -43,6 +43,8 @@ export interface SaleLine {
 
 export interface Sale {
   id: number
+  /** The Sale number: the seller's own count in this business, never the id. */
+  number: number
   date: string
   customer: SaleCustomer | null
   shipping_charged: number
@@ -97,6 +99,8 @@ export interface SaleBillLine {
  * the customer, read from the last `GET /sales/{id}` and never recomputed here. */
 export interface SaleBill {
   business_name: string
+  /** The Sale number: the seller's own count in this business, not an id. */
+  number: number
   date: SaleDetail['date']
   shipping_charged: number
   total: number
@@ -109,6 +113,7 @@ export interface SaleBill {
  * OpenAPI snapshot; `satisfies` ties each to its type so a renamed field fails `tsc`. */
 export const SALE_BILL_KEYS = [
   'business_name',
+  'number',
   'date',
   'shipping_charged',
   'total',

@@ -4,13 +4,17 @@
  * exit (`onDone`, `onCancel`, `onGone`) and learns whether something was typed through
  * `onDirtyChange`, so the host alone decides how leaving works (as `ExpenseForm` does).
  *
- * The reason has no default: it is chosen every time, and saving stays off until it is.
+ * The reason has no default: it is chosen every time, and saving stays off until it is. The
+ * choices are the business's own list (`GET /api/withdrawal-reasons`), in its order; an edit
+ * starts on its own reason. A reason deleted meanwhile (`stock.withdrawal_reason_not_found`)
+ * keeps the form open, re-reads the list and clears the field, which says so.
  * Grams are typed text and travel as the decimal string `parseGrams` returns, never as a
  * JS number. Editing confirms before saving. The form saves, but never navigates or toasts.
  */
 
 import { type FormEvent, useEffect, useId, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useLoading } from '../../components/useLoading'
 import { useOutletContext } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE, get } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
@@ -26,8 +30,9 @@ import {
 import {
   type Withdrawal,
   type WithdrawalInput,
-  type WithdrawalReason,
+  type WithdrawalReasonItem,
   editWithdrawal,
+  readWithdrawalReasons,
   recordWithdrawal,
 } from '../../api/stock'
 import type { SuccessToast } from '../../components/AvisoExito'
@@ -36,8 +41,8 @@ import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGen
 import { SheetActions } from '../../components/Sheet'
 import SinConexion from '../../components/SinConexion'
 import { parseGrams } from '../../format/parse'
-import { guiltyKeys, keptOptions, preselected } from './goneLines'
-import { REASON_OPTIONS } from './withdrawalReasons'
+import { guiltyKeys, lineChoice, preselected } from './goneLines'
+import Selector from '../../components/Selector'
 import type { Variety } from '../Variedades'
 import Boton from '../../components/Boton'
 import { GRAMS_INVALID, STOCK_TEXT } from '../../copy/stock'
@@ -55,11 +60,14 @@ export type WithdrawalTarget = 'new' | Withdrawal
 interface LineState {
   key: number
   varietyId: string
+  /** The name the line shows its Variety by: the stored one, or the picked option's. Never read from a list. */
+  varietyName: string
   grams: string
 }
 
 interface FormState {
-  reason: WithdrawalReason | ''
+  /** The chosen reason's id; `null` until one is picked (it has no default). */
+  reasonId: number | null
   date: string
   lines: LineState[]
   note: string
@@ -74,20 +82,21 @@ const NONE: ReadonlySet<number> = new Set()
 function initialState(target: WithdrawalTarget, today: string, varietyId: string): FormState {
   if (target === 'new') {
     return {
-      reason: '',
+      reasonId: null,
       date: today,
-      lines: [{ key: 0, varietyId, grams: '' }],
+      lines: [{ key: 0, varietyId, varietyName: '', grams: '' }],
       note: '',
       gone: NONE,
       suspect: NONE,
     }
   }
   return {
-    reason: target.reason,
+    reasonId: target.reason_id,
     date: target.date,
     lines: target.lines.map((line, index) => ({
       key: index,
       varietyId: String(line.product_id),
+      varietyName: line.product_name,
       grams: String(line.quantity),
     })),
     note: target.note ?? '',
@@ -102,15 +111,6 @@ function storedIdsOf(target: WithdrawalTarget): ReadonlySet<string> {
   return new Set(target.lines.map((line) => String(line.product_id)))
 }
 
-/** Name by id, seeded from the stored lines and filled from every list that loads. */
-function seededNames(target: WithdrawalTarget): Map<string, string> {
-  const names = new Map<string, string>()
-  if (target !== 'new') {
-    for (const line of target.lines) names.set(String(line.product_id), line.product_name)
-  }
-  return names
-}
-
 function without(keys: ReadonlySet<number>, key: number): ReadonlySet<number> {
   if (!keys.has(key)) return keys
   const rest = new Set(keys)
@@ -118,10 +118,10 @@ function without(keys: ReadonlySet<number>, key: number): ReadonlySet<number> {
   return rest
 }
 
-function withFirstVariety(state: FormState, varietyId: string): FormState {
+function withFirstVariety(state: FormState, varietyId: string, varietyName: string): FormState {
   return {
     ...state,
-    lines: state.lines.map((line, index) => (index === 0 ? { ...line, varietyId } : line)),
+    lines: state.lines.map((line, index) => (index === 0 ? { ...line, varietyId, varietyName } : line)),
   }
 }
 
@@ -141,7 +141,7 @@ const fetchVarieties = () => get<Variety[]>('/api/products')
 /** Equal by what was typed: the lines' keys are only React's. */
 function sameForm(a: FormState, b: FormState): boolean {
   return (
-    a.reason === b.reason &&
+    a.reasonId === b.reasonId &&
     a.date === b.date &&
     a.note === b.note &&
     a.lines.length === b.lines.length &&
@@ -177,18 +177,29 @@ export default function WithdrawalForm({
     queryKey: keys.varieties(),
     queryFn: fetchVarieties,
   })
+  const reasonsQuery = useQuery({
+    queryKey: keys.withdrawalReasons(),
+    queryFn: readWithdrawalReasons,
+  })
   const [initial, setInitial] = useState<FormState>(() => initialState(target, me.today, initialVarietyId))
   const [form, setForm] = useState<FormState>(initial)
   const [storedIds] = useState(() => storedIdsOf(target))
-  const [names] = useState(() => seededNames(target))
+  // A refusal's re-read keeps its Selector mounted: it is busy meanwhile, never re-keyed.
+  const [refreshingReasons, setRefreshingReasons] = useState(false)
+  const [refreshingVarieties, setRefreshingVarieties] = useState(false)
   const [preselectChecked, setPreselectChecked] = useState(false)
   const [seenAt, setSeenAt] = useState(0)
   const messageId = useId()
   const nextKey = useRef(initial.lines.length)
   const [formError, setFormError] = useState<string | null>(null)
+  const [reasonError, setReasonError] = useState<string | null>(null)
+  const reasonErrorId = useId()
   const [offline, setOffline] = useState(false)
   const [sending, setSending] = useState(false)
   const [confirmingSave, setConfirmingSave] = useState(false)
+
+  // A new withdrawal draws only its header until both lists answer.
+  useLoading(target === 'new' && (varietiesQuery.isPending || reasonsQuery.isPending))
 
   const dirty = !sameForm(form, initial)
   useEffect(() => {
@@ -206,9 +217,11 @@ export default function WithdrawalForm({
   if (target === 'new' && loaded !== undefined && !preselectChecked) {
     setPreselectChecked(true)
     const chosen = preselected(initialVarietyId, new Set(loaded.map((variety) => String(variety.id))))
-    if (chosen !== initialVarietyId) {
-      setInitial((previous) => withFirstVariety(previous, chosen))
-      setForm((previous) => withFirstVariety(previous, chosen))
+    // The chosen Variety is named from the list now, so a refusal later still shows its name.
+    const chosenName = loaded.find((variety) => String(variety.id) === chosen)?.name ?? ''
+    if (chosen !== '' || chosen !== initialVarietyId) {
+      setInitial((previous) => withFirstVariety(previous, chosen, chosenName))
+      setForm((previous) => withFirstVariety(previous, chosen, chosenName))
     }
   }
 
@@ -217,7 +230,6 @@ export default function WithdrawalForm({
   // list never gets here: its `dataUpdatedAt` does not move.
   if (loaded !== undefined && !listFailed && listedAt !== seenAt) {
     setSeenAt(listedAt)
-    for (const variety of loaded) names.set(String(variety.id), variety.name)
     const fresh = new Set(loaded.map((variety) => String(variety.id)))
     setForm((previous) => {
       if (previous.gone.size === 0 && previous.suspect.size === 0) return previous
@@ -228,10 +240,22 @@ export default function WithdrawalForm({
     })
   }
 
+  // Never `isFetching`: a refetch must not close an open list. An edit keeps its stored
+  // reason as the value while the list is on its way; the field is busy until it arrives.
+  const reasonsLoading =
+    reasonsQuery.isPending || (reasonsQuery.isError && reasonsQuery.data === undefined) || refreshingReasons
+  const varietiesLoading =
+    varietiesQuery.isPending || (varietiesQuery.isError && varietiesQuery.data === undefined) || refreshingVarieties
+  const reasonOptions = (reasonsQuery.data ?? []).map((reason: WithdrawalReasonItem) => ({
+    value: String(reason.id),
+    label: reason.name,
+  }))
+
   const complete =
-    form.reason !== '' &&
+    form.reasonId !== null &&
     form.lines.every((line) => line.varietyId !== '' && line.grams.trim() !== '')
-  const canSubmit = complete && loaded !== undefined && form.gone.size === 0 && !sending
+  const canSubmit =
+    complete && loaded !== undefined && reasonsQuery.data !== undefined && form.gone.size === 0 && !sending
 
   function setLine(key: number, change: Partial<LineState>): void {
     setForm((previous) => {
@@ -243,6 +267,11 @@ export default function WithdrawalForm({
         ...(moved ? { gone: without(previous.gone, key), suspect: without(previous.suspect, key) } : {}),
       }
     })
+  }
+
+  function pickVariety(lineKey: number, value: string | null): void {
+    const name = varieties.find((variety) => String(variety.id) === value)?.name ?? ''
+    setLine(lineKey, { varietyId: value ?? '', varietyName: name })
   }
 
   /** The list again, now: `null` when it could not be fetched (and the form says so). */
@@ -262,7 +291,13 @@ export default function WithdrawalForm({
 
   /** A save was refused as `variety.archived`: learn from a fresh list which line it was. */
   async function settleArchived(sent: readonly LineState[]): Promise<void> {
-    const fresh = await freshList()
+    setRefreshingVarieties(true)
+    let fresh: Variety[] | null
+    try {
+      fresh = await freshList()
+    } finally {
+      setRefreshingVarieties(false)
+    }
     if (fresh === null) {
       // Not knowing is not clearing: every line that could be the one stays blamed.
       const doubtful = sent.filter((line) => line.varietyId !== '' && !storedIds.has(line.varietyId))
@@ -314,7 +349,7 @@ export default function WithdrawalForm({
   }
 
   function buildBody(): WithdrawalInput | null {
-    if (form.reason === '') return null
+    if (form.reasonId === null) return null
     const lines: WithdrawalInput['lines'] = []
     for (const line of form.lines) {
       const grams = parseGrams(line.grams)
@@ -324,7 +359,7 @@ export default function WithdrawalForm({
     }
     const note = form.note.trim()
     return {
-      reason: form.reason,
+      reason_id: form.reasonId,
       date: form.date,
       lines,
       ...(note === '' ? {} : { note }),
@@ -339,6 +374,7 @@ export default function WithdrawalForm({
       return
     }
     setFormError(null)
+    setReasonError(null)
     setOffline(false)
     setSending(true)
     const sent = form.lines
@@ -352,7 +388,18 @@ export default function WithdrawalForm({
         setOffline(true)
       } else if (caught instanceof ApiError) {
         const message = resolveOverride(REFUSAL_MESSAGES, caught.code)
-        if (caught.code === 'stock.withdrawal_variety_not_found') {
+        if (caught.code === 'stock.withdrawal_reason_not_found') {
+          // Before the generic gone branch: the withdrawal is fine, its reason is gone. Nothing
+          // typed is lost; the list is read again and the field asks for another reason.
+          setForm((previous) => ({ ...previous, reasonId: null }))
+          setReasonError(message === undefined ? GENERIC_REFUSAL : refusalText(t, message))
+          setRefreshingReasons(true)
+          try {
+            await queryClient.invalidateQueries({ queryKey: keys.withdrawalReasons() })
+          } finally {
+            setRefreshingReasons(false)
+          }
+        } else if (caught.code === 'stock.withdrawal_variety_not_found') {
           // The withdrawal itself still has somewhere to go: only a line's variety is gone.
           invalidateResource(queryClient, 'varieties')
           setFormError(message === undefined ? GENERIC_REFUSAL : refusalText(t, message))
@@ -405,35 +452,51 @@ export default function WithdrawalForm({
       </div>
     )
   }
+  if (reasonsQuery.isError && reasonsQuery.data === undefined) {
+    return (
+      <div className="gasto-form">
+        {header}
+        {reasonsQuery.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}
+      </div>
+    )
+  }
   // A new withdrawal waits for the list (its picker is all it has); an edit already has
   // its lines, with their names, so it shows them while the list is on its way.
-  if (loaded === undefined && target === 'new') return <div className="gasto-form">{header}</div>
+  if ((loaded === undefined || reasonsQuery.data === undefined) && target === 'new') return <div className="gasto-form">{header}</div>
 
   return (
     <div className="gasto-form">
       {header}
       <form className="formulario" onSubmit={onSubmit}>
-        <fieldset className="campo">
-          <legend className="campo__rotulo">{STOCK_TEXT.motivo}</legend>
-          <div className="origen-pildoras">
-            {REASON_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                className={form.reason === option.value ? 'pildora pildora--activa' : 'pildora'}
-                aria-pressed={form.reason === option.value}
-                onClick={() => setForm((previous) => ({ ...previous, reason: option.value }))}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </fieldset>
+        <div
+          className="campo"
+          role="group"
+          aria-describedby={reasonError === null ? undefined : reasonErrorId}
+        >
+          <Selector
+            required
+            label={STOCK_TEXT.motivo}
+            options={reasonOptions}
+            value={form.reasonId === null ? null : String(form.reasonId)}
+            onChange={(next) => {
+              setReasonError(null)
+              setForm((previous) => ({ ...previous, reasonId: next === null ? null : Number(next) }))
+            }}
+            loading={reasonsLoading}
+            emptySetMessage={t('emptyStates:selectorNoReasons')}
+          />
+          {reasonError !== null && (
+            <span className="campo__error" role="alert" id={reasonErrorId}>
+              {reasonError}
+            </span>
+          )}
+        </div>
         <label className="campo">
           <span className="campo__rotulo">{COMMON_TEXT.date}</span>
           <input
             className="campo__input"
             type="date"
+            autoComplete="off"
             value={form.date}
             max={me.today}
             onChange={(event) => setForm((previous) => ({ ...previous, date: event.target.value }))}
@@ -441,25 +504,23 @@ export default function WithdrawalForm({
           />
         </label>
         {form.lines.map((line, index) => (
-          <fieldset className="campo" key={line.key}>
+          <fieldset
+            className="campo"
+            key={line.key}
+            aria-describedby={marked(line.key) ? `${messageId}-${line.key}` : undefined}
+          >
             <legend className="campo__rotulo">
               {form.lines.length === 1 ? STOCK_TEXT.variedadYGramos : STOCK_TEXT.variedadYGramos0(index + 1)}
             </legend>
-            <select
-              className="campo__input"
-              aria-label={STOCK_TEXT.variedad0(index + 1)}
-              aria-describedby={marked(line.key) ? `${messageId}-${line.key}` : undefined}
-              value={line.varietyId}
-              onChange={(event) => setLine(line.key, { varietyId: event.target.value })}
+            <Selector
               required
-            >
-              <option value="">{COMMON_TEXT.pickAVariety}</option>
-              {keptOptions([line], varieties, names).map((option) => (
-                <option key={option.value} value={option.value} disabled={option.disabled}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              label={form.lines.length === 1 ? COMMON_TEXT.variety : STOCK_TEXT.variedad0(index + 1)}
+              {...lineChoice(line, varieties)}
+              value={line.varietyId === '' ? null : line.varietyId}
+              onChange={(next) => pickVariety(line.key, next)}
+              loading={varietiesLoading}
+              emptySetMessage={t('emptyStates:selectorNoVarieties')}
+            />
             {marked(line.key) && (
               <span className="campo__error" role="alert" id={`${messageId}-${line.key}`}>
                 {refusalText(t, GONE_DETAIL)}
@@ -469,6 +530,7 @@ export default function WithdrawalForm({
               className="campo__input"
               aria-label={STOCK_TEXT.gramos0(index + 1)}
               inputMode="decimal"
+              autoComplete="off"
               enterKeyHint={index === form.lines.length - 1 ? 'done' : 'next'}
               value={line.grams}
               onChange={(event) => setLine(line.key, { grams: event.target.value })}
@@ -499,7 +561,7 @@ export default function WithdrawalForm({
             nextKey.current += 1
             setForm((previous) => ({
               ...previous,
-              lines: [...previous.lines, { key, varietyId: '', grams: '' }],
+              lines: [...previous.lines, { key, varietyId: '', varietyName: '', grams: '' }],
             }))
           }}
         >
@@ -510,6 +572,7 @@ export default function WithdrawalForm({
           <input
             className="campo__input"
             value={form.note}
+            autoComplete="off"
             maxLength={200}
             enterKeyHint="done"
             onChange={(event) => setForm((previous) => ({ ...previous, note: event.target.value }))}

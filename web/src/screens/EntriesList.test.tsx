@@ -204,7 +204,7 @@ test("an archived variety's withdrawal rows still open the withdrawal's detail",
     'GET /api/products/3': () => jsonResponse(200, ARCHIVED_VARIETY),
     'GET /stock/products/3/movements': () =>
       jsonResponse(200, [
-        { kind: 'withdrawal', id: 9, date: '2026-10-06', reason: 'promotion', quantity: 5.5 },
+        { kind: 'withdrawal', id: 9, date: '2026-10-06', reason_id: 7, reason_name: 'Samples', quantity: 5.5 },
         { ...STOCK.entries[0], kind: 'entry' },
       ]),
   })
@@ -220,7 +220,7 @@ test("a variety's list holds its withdrawals, told by reason word and minus sign
   fakeApi({
     'GET /stock/products/3/movements': () =>
       jsonResponse(200, [
-        { kind: 'withdrawal', id: 9, date: '2026-10-06', reason: 'promotion', quantity: 5.5 },
+        { kind: 'withdrawal', id: 9, date: '2026-10-06', reason_id: 7, reason_name: 'Samples', quantity: 5.5 },
         { ...STOCK.entries[0], kind: 'entry' },
       ]),
   })
@@ -228,7 +228,7 @@ test("a variety's list holds its withdrawals, told by reason word and minus sign
 
   const rows = await screen.findAllByRole('listitem')
   expect(rows).toHaveLength(2)
-  expect(within(rows[0]!).getByText('Promotion · −5,5 g')).toBeInTheDocument()
+  expect(within(rows[0]!).getByText('Samples · −5,5 g')).toBeInTheDocument()
   expect(within(rows[0]!).getByRole('link')).toHaveAttribute('href', pathTo(WITHDRAWAL, { id: 9 }))
   expect(within(rows[0]!).queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
   expect(within(rows[1]!).getByText('Purchase · 30 g')).toBeInTheDocument()
@@ -245,7 +245,7 @@ test('"All entries" shows the entry and no withdrawal, and never asks for moveme
     'GET /stock': () => jsonResponse(200, { total: 30, products: [], entries: [recorded] }),
     'GET /stock/products/3/movements': () =>
       jsonResponse(200, [
-        { kind: 'withdrawal', id: 9, date: '2026-10-06', reason: 'promotion', quantity: 5.5 },
+        { kind: 'withdrawal', id: 9, date: '2026-10-06', reason_id: 7, reason_name: 'Samples', quantity: 5.5 },
         { ...recorded, kind: 'entry' },
       ]),
   })
@@ -260,7 +260,7 @@ test('"All entries" shows the entry and no withdrawal, and never asks for moveme
   expect(asked.filter((url) => url.includes('/movements'))).toEqual([])
 
   const list = screen.getByRole('list')
-  expect(within(list).queryByText(/Promotion|Own use/)).toBeNull()
+  expect(within(list).queryByText(/Marketing|Own use/)).toBeNull()
   expect(within(list).queryByText(/−/)).toBeNull()
 })
 
@@ -273,7 +273,7 @@ test('Editar links to the entry form', async () => {
   expect(await screen.findByTestId('where')).toHaveTextContent(pathTo(STOCK_ENTRY, { id: 11 }))
 })
 
-test('Delete asks "Before deleting" naming date, variety and grams, then deletes and says so', async () => {
+test('Delete asks "Before deleting" naming date, product and grams, then deletes and says so', async () => {
   fakeApi({ 'DELETE /stock/entries/12': () => new Response(null, { status: 204 }) })
   renderAt(STOCK_PATH)
 
@@ -332,7 +332,7 @@ test('a variety that is gone, or an id that is not a number, shows "That is gone
   fakeApi()
   renderAt(pathTo(VARIETY_ENTRIES, { id: 99 }))
   expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Back to Varieties' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Back to Products' })).toBeInTheDocument()
 })
 
 test('a delete marks the catalog stale and the stock list refetches', async () => {

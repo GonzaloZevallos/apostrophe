@@ -196,7 +196,7 @@ test('month navigation requests the previous month and disables at the bounds', 
 test('the computer table carries headers, the margin stack, pending marks and the best/current week', async () => {
   renderAnalisis(async () => jsonResponse(200, analysisFixture), 'computer')
 
-  const table = (await screen.findAllByText('Variety')).find(
+  const table = (await screen.findAllByText('Product')).find(
     (node) => node.closest('table') !== null,
   )
   expect(table).not.toBeUndefined()
@@ -295,19 +295,19 @@ test('month navigation disables "Previous month" when there is no earlier month'
   expect(screen.getByRole('button', { name: 'Previous month' })).toBeDisabled()
 })
 
-test('Promotion and Own use show apart from Stock shortfall, each with only its own pending grams', async () => {
+test('Marketing and Own use show apart from Stock shortfall, each with only its own pending grams', async () => {
   renderAnalisis(async () => jsonResponse(200, analysisFixture))
 
-  // The month header: a promotion with half a pending gram, an own use fully costed.
+  // The month header: a Marketing line with only half a pending gram and no cost, an Own use fully costed.
   await screen.findByText(SINCE_FIRST_RECORD_LABEL)
-  expect(rowOf(strip(), 'Promotion').textContent).toBe('Promotion $ 4.000 and 0,5 g without cost')
+  expect(rowOf(strip(), 'Marketing').textContent).toBe('Marketing 0,5 g without cost')
   expect(rowOf(strip(), 'Own use').textContent).toBe('Own use $ 1.500')
   expect(rowOf(strip(), 'Stock shortfall').textContent).toBe(
     'Stock shortfall $ 3.000 and 1 g without cost',
   )
 
   // The since-the-first-record totals read the same two lines.
-  expect(rowOf(history(), 'Promotion').textContent).toBe('Promotion $ 9.000 and 0,5 g without cost')
+  expect(rowOf(history(), 'Marketing').textContent).toBe('Marketing 0,5 g without cost')
   expect(rowOf(history(), 'Own use').textContent).toBe('Own use $ 2.500')
 })
 
@@ -318,17 +318,17 @@ test('a week and a month row show a withdrawal line only when the period has one
   // Phone cards: only the fixture's first week (10/8) has a promotion and an own use.
   const weekCards = cardsIn('.analisis__semanas')
   expect(weekCards).toHaveLength(8)
-  expect(rowStarting(weekCards[0]!, 'Promotion')).toBe('Promotion $ 1.000')
+  expect(rowStarting(weekCards[0]!, 'Marketing')).toBe('Marketing 0,5 g without cost')
   expect(rowStarting(weekCards[0]!, 'Own use')).toBe('Own use $ 500')
   for (const card of weekCards.slice(1)) {
-    expect(rowStarting(card, 'Promotion')).toBeUndefined()
+    expect(rowStarting(card, 'Marketing')).toBeUndefined()
     expect(rowStarting(card, 'Own use')).toBeUndefined()
   }
 
   // The month cards: the same, with the fixture's last month holding no promotion.
   const monthCards = cardsIn('.analisis__meses')
-  expect(rowStarting(monthCards[0]!, 'Promotion')).toBe('Promotion $ 1.000')
-  expect(rowStarting(monthCards.at(-1)!, 'Promotion')).toBeUndefined()
+  expect(rowStarting(monthCards[0]!, 'Marketing')).toBe('Marketing 0,5 g without cost')
+  expect(rowStarting(monthCards.at(-1)!, 'Marketing')).toBeUndefined()
 })
 
 const FIXTURE_FIRST_WEEK = analysisFixture.weeks[0]!
@@ -342,7 +342,7 @@ function pendingRowFixture() {
     month: { ...analysisFixture.month, shortfall: { amount: 0, pending_quantity: 2, all_pending: true } },
     since_first_record: {
       ...analysisFixture.since_first_record,
-      promotion: { amount: 0, pending_quantity: 3, all_pending: true },
+      withdrawals: [{ reason_id: 1, name: 'Marketing', amount: null, pending: true, pending_quantity: 3 }],
     },
     weeks: analysisFixture.weeks.map((week, index) =>
       index === 1
@@ -354,7 +354,9 @@ function pendingRowFixture() {
             : week,
     ),
     months: analysisFixture.months.map((row, index) =>
-      index === 1 ? { ...row, promotion: fullyPending } : row,
+      index === 1
+        ? { ...row, withdrawals: [{ reason_id: 1, name: 'Marketing', amount: null, pending: true, pending_quantity: 4 }] }
+        : row,
     ),
   }
 }
@@ -371,12 +373,12 @@ test('every week and month row shows Cost of goods sold, in the PRD order', asyn
     expect(rowStarting(card, 'Cost of goods sold')).toMatch(/^Cost of goods sold \$ [\d.]+$/)
   }
 
-  // Cost of goods sold, Stock shortfall, Promotion, Own use: the named rows, in order.
+  // Cost of goods sold, Stock shortfall, Marketing, Own use: the named rows, in order.
   const first = weekCards[0]!
   const names = rowsOf(first)
-    .map((text) => text.match(/^(Cost of goods sold|Stock shortfall|Promotion|Own use)/)?.[1])
+    .map((text) => text.match(/^(Cost of goods sold|Stock shortfall|Marketing|Own use)/)?.[1])
     .filter((name) => name !== undefined)
-  expect(names).toEqual(['Cost of goods sold', 'Stock shortfall', 'Promotion', 'Own use'])
+  expect(names).toEqual(['Cost of goods sold', 'Stock shortfall', 'Marketing', 'Own use'])
   const cost = FIXTURE_FIRST_WEEK.cost_of_goods.amount.toLocaleString('es-AR')
   expect(rowStarting(first, 'Cost of goods sold')).toBe(`Cost of goods sold $ ${cost}`)
 })
@@ -443,8 +445,8 @@ test('a fully pending figure reads only its grams on the header, the since lines
   // No amount element and no $: the grams alone sit in the marker.
   expect(shortfall.querySelector('.analisis__monto-cifra')).toBeNull()
   expect(shortfall.textContent).not.toContain('$')
-  expect(rowOf(history(), 'Promotion').textContent).toBe('Promotion 3 g without cost')
-  expect(rowStarting(cardsIn('.analisis__meses')[1]!, 'Promotion')).toBe('Promotion 4 g without cost')
+  expect(rowOf(history(), 'Marketing').textContent).toBe('Marketing 3 g without cost')
+  expect(rowStarting(cardsIn('.analisis__meses')[1]!, 'Marketing')).toBe('Marketing 4 g without cost')
   expect(rowStarting(cardsIn('.analisis__semanas')[2]!, 'Cost of goods sold')).toBe(
     'Cost of goods sold 4 g without cost',
   )
@@ -477,7 +479,7 @@ test('the computer tables carry the same cost lines under each row', async () =>
   const monthTable = document.querySelector<HTMLElement>('.analisis__tabla-contenedor--meses')!
   const monthCostRows = monthTable.querySelectorAll<HTMLElement>('.analisis__fila-costos')
   expect(monthCostRows).toHaveLength(analysisFixture.months.length)
-  expect(rowOf(monthCostRows[1]!, 'Promotion').textContent).toBe('Promotion 4 g without cost')
+  expect(rowOf(monthCostRows[1]!, 'Marketing').textContent).toBe('Marketing 4 g without cost')
 })
 
 test('the history block has one named row per metric, in order, each with its amount', async () => {
@@ -494,7 +496,7 @@ test('the history block has one named row per metric, in order, each with its am
     'Profit',
     'Cash',
     'Stock shortfall',
-    'Promotion',
+    'Marketing',
     'Own use',
   ])
   expect(partsOf(rowOf(block, 'Sales'))).toEqual(['Sales', '$ 399.818'])
@@ -512,7 +514,7 @@ test('the history marker shows only when pending_quantity > 0, and alone when al
       ...analysisFixture.since_first_record,
       profit: { amount: 140000, pending_quantity: 0 },
       shortfall: null,
-      promotion: { amount: 0, pending_quantity: 3, all_pending: true },
+      withdrawals: [{ reason_id: 1, name: 'Marketing', amount: null, pending: true, pending_quantity: 3 }],
     },
   }
   renderAnalisis(async () => jsonResponse(200, fixture))
@@ -521,9 +523,9 @@ test('the history marker shows only when pending_quantity > 0, and alone when al
   const block = history()
   expect(partsOf(rowOf(block, 'Profit'))).toEqual(['Profit', '$ 140.000'])
   expect(within(block).queryByRole('group', { name: 'Stock shortfall' })).not.toBeInTheDocument()
-  const promotion = rowOf(block, 'Promotion')
-  expect(promotion.textContent).toBe('Promotion 3 g without cost')
-  expect(partsOf(promotion)).toEqual(['Promotion', '3 g without cost'])
+  const promotion = rowOf(block, 'Marketing')
+  expect(promotion.textContent).toBe('Marketing 3 g without cost')
+  expect(partsOf(promotion)).toEqual(['Marketing', '3 g without cost'])
 })
 
 test('the hero is a group named "You sold in the month" holding the amount in one nowrap element', async () => {
@@ -704,8 +706,8 @@ describe('the phone renders cards, one per row, month selector first', () => {
     analysisFixture.weeks.forEach((week, index) => {
       const card = cards[index]!
       expect(card).toHaveAccessibleName(formatDateShort(week.first_day))
-      const withdrawals = [week.shortfall, week.promotion, week.own_use]
-        .filter((cost) => cost !== null)
+      const withdrawals = [week.shortfall, ...week.withdrawals]
+        .filter((cost) => cost !== null && cost.amount !== null)
         .map((cost) => formatMoney(cost.amount))
       expect(figuresOf(card)).toEqual([
         formatMoney(week.sales),
@@ -721,12 +723,12 @@ describe('the phone renders cards, one per row, month selector first', () => {
       )
       expect(within(card).queryByText(BEST_WEEK_MARK) !== null).toBe(week.best)
     })
-    const labels = rowsOf(cards[0]!).map((text) => text.replace(/ \$.*$| [\d,.]+ g$/, ''))
+    const labels = rowsOf(cards[0]!).map((text) => text.replace(/ \$.*$| [\d,.]+ g( without cost)?$/, ''))
     expect(labels).toEqual([
       'Grams',
       'Cost of goods sold',
       'Stock shortfall',
-      'Promotion',
+      'Marketing',
       'Own use',
       'expenses',
       'profit',
@@ -743,8 +745,8 @@ describe('the phone renders cards, one per row, month selector first', () => {
     analysisFixture.months.forEach((row, index) => {
       const card = cards[index]!
       expect(card).toHaveAccessibleName(formatMonthLong(row.month))
-      const withdrawals = [row.shortfall, row.promotion, row.own_use]
-        .filter((cost) => cost !== null)
+      const withdrawals = [row.shortfall, ...row.withdrawals]
+        .filter((cost) => cost !== null && cost.amount !== null)
         .map((cost) => formatMoney(cost.amount))
       expect(figuresOf(card)).toEqual([
         formatMoney(row.sales),

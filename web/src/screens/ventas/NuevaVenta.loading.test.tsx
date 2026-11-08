@@ -8,7 +8,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
@@ -114,7 +114,7 @@ test('once the prices arrive the loading state gives way to the form', async () 
 test('a date change keeps what was typed and shows compact bars where prices were, then reprices', async () => {
   const user = userEvent.setup()
   await openAndPriceToday()
-  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.selectOptions(screen.getByLabelText('Line 1 product'), '1')
   await user.type(screen.getByLabelText('Line 1 grams'), '2')
   await user.type(screen.getByLabelText('Shipping'), '00')
   expect(screen.getAllByText('$ 2.000').length).toBeGreaterThanOrEqual(1)
@@ -123,7 +123,7 @@ test('a date change keeps what was typed and shows compact bars where prices wer
 
   // Everything typed is still there, and the form never went blank.
   expect(screen.getByLabelText('Line 1 grams')).toHaveValue('2')
-  expect(screen.getByLabelText('Line 1 variety')).toHaveValue('1')
+  expect(screen.getByLabelText('Line 1 product')).toHaveValue('1')
   expect(screen.getByLabelText('Shipping')).toHaveValue('000')
   // Exactly one progressbar, the visually hidden announcer; the figures wait behind bars.
   expect(screen.getAllByRole('progressbar')).toHaveLength(1)
@@ -147,6 +147,25 @@ test('a date change keeps what was typed and shows compact bars where prices wer
   expect(document.querySelector('.cargando--compacto')).toBeNull()
   expect(screen.getByLabelText('Line 1 grams')).toHaveValue('2')
   expect(screen.getByRole('button', { name: 'Save sale' })).toBeEnabled()
+})
+
+test('the content area is busy while the first prices come, and a date change over the form never marks it', async () => {
+  renderForm()
+  const main = screen.getByRole('main')
+  expect(main).toHaveAttribute('aria-busy', 'true')
+
+  answer(`/api/products?on=2026-10-02`, [ROSA_TODAY])
+  await screen.findByRole('button', { name: 'Save sale' })
+  expect(main).not.toHaveAttribute('aria-busy')
+
+  fireEvent.change(screen.getByLabelText('Date'), { target: { value: '2026-10-01' } })
+  // The announcer is up (the refresh is under way), and the area already shown is not busy.
+  expect(screen.getAllByRole('progressbar')).toHaveLength(1)
+  expect(screen.getByRole('main')).not.toHaveAttribute('aria-busy')
+
+  answer(`/api/products?on=2026-10-01`, [ROSA_YESTERDAY])
+  await waitFor(() => expect(screen.queryByRole('progressbar')).not.toBeInTheDocument())
+  expect(screen.getByRole('main')).not.toHaveAttribute('aria-busy')
 })
 
 test('Pick a customer shows the loading state before its first answer', async () => {

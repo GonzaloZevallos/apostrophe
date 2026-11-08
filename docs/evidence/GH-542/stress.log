@@ -1,0 +1,100 @@
+start tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=squeezed cap=10 logged=0 time=2026-11-04T20:02:53Z
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=squeezed n=1 result=green exit=0 first=- peak_out=2 peak_waiters=3 errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=squeezed n=2 result=green exit=0 first=- peak_out=2 peak_waiters=6 errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=squeezed n=3 result=red exit=1 first=sample-app:_POST_/stock/entries_->_500_Internal_Server_Error_ peak_out=2 peak_waiters=3 errors=TimeoutError;
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=squeezed n=4 result=green exit=0 first=- peak_out=2 peak_waiters=2 errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=squeezed n=5 result=green exit=0 first=- peak_out=2 peak_waiters=4 errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=squeezed n=6 result=green exit=0 first=- peak_out=2 peak_waiters=4 errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=squeezed n=7 result=red exit=1 first=sample-app:_POST_/stock/entries_->_500_Internal_Server_Error_ peak_out=2 peak_waiters=3 errors=TimeoutError;
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=squeezed n=8 result=green exit=0 first=- peak_out=2 peak_waiters=1 errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=squeezed n=9 result=red exit=1 first=sample-app:_POST_/stock/entries_->_500_Internal_Server_Error_ peak_out=2 peak_waiters=3 errors=TimeoutError;
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=squeezed n=10 result=green exit=0 first=- peak_out=2 peak_waiters=3 errors=-
+summary tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=squeezed n=10 red=3 cap=10 time=2026-11-04T20:05:22Z
+start tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default cap=30 logged=0 time=2026-11-04T20:05:27Z
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=1 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=2 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=3 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=4 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=5 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=6 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=7 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=8 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=9 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=10 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=11 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=12 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=13 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=14 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=15 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=16 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=17 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=18 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=19 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=20 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=21 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=22 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=23 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=24 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=25 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=26 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=27 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=28 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=29 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=30 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+summary tree=7c5accb734314bf2bc67b618b475a453ab800185 mode=default n=30 red=0 cap=30 time=2026-11-04T20:14:44Z
+start tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed cap=10 logged=0 time=2026-11-04T20:42:01Z
+iter tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=1 result=green exit=0 first=- peak_out=2 peak_waiters=4 errors=-
+iter tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=2 result=green exit=0 first=- peak_out=2 peak_waiters=4 errors=-
+iter tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=3 result=red exit=1 first=sample-app:_POST_/sales_->_500_Internal_Server_Error_ peak_out=2 peak_waiters=6 errors=TimeoutError;
+iter tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=4 result=red exit=1 first=sample-app:_POST_/stock/entries_->_500_Internal_Server_Error_ peak_out=2 peak_waiters=5 errors=TimeoutError;
+iter tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=5 result=green exit=0 first=- peak_out=2 peak_waiters=3 errors=-
+iter tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=6 result=green exit=0 first=- peak_out=2 peak_waiters=2 errors=-
+iter tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=7 result=green exit=0 first=- peak_out=2 peak_waiters=3 errors=-
+iter tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=8 result=red exit=1 first=sample-app:_POST_/sales_->_500_Internal_Server_Error_ peak_out=2 peak_waiters=6 errors=TimeoutError;
+iter tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=9 result=green exit=0 first=- peak_out=2 peak_waiters=3 errors=-
+iter tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=10 result=green exit=0 first=- peak_out=2 peak_waiters=4 errors=-
+summary tree=cd0282832ace33280032a48bd5245fbbbdefa950 mode=squeezed n=10 red=3 cap=10 time=2026-11-04T20:44:26Z
+start tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=squeezed cap=10 logged=0 time=2026-11-04T21:04:54Z
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=squeezed n=1 result=green exit=0 first=- peak_out=2 peak_waiters=5 errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=squeezed n=2 result=green exit=0 first=- peak_out=2 peak_waiters=3 errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=squeezed n=3 result=green exit=0 first=- peak_out=2 peak_waiters=2 errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=squeezed n=4 result=green exit=0 first=- peak_out=2 peak_waiters=4 errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=squeezed n=5 result=green exit=0 first=- peak_out=2 peak_waiters=4 errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=squeezed n=6 result=green exit=0 first=- peak_out=2 peak_waiters=4 errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=squeezed n=7 result=green exit=0 first=- peak_out=2 peak_waiters=4 errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=squeezed n=8 result=green exit=0 first=- peak_out=2 peak_waiters=2 errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=squeezed n=9 result=green exit=0 first=- peak_out=2 peak_waiters=2 errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=squeezed n=10 result=green exit=0 first=- peak_out=2 peak_waiters=4 errors=-
+summary tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=squeezed n=10 red=0 cap=10 time=2026-11-04T21:07:16Z
+start tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default cap=30 logged=0 time=2026-11-04T21:07:21Z
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=1 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=2 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=3 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=4 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=5 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=6 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=7 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=8 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=9 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=10 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=11 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=12 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=13 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=14 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=15 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=16 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=17 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=18 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=19 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=20 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=21 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=22 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=23 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=24 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=25 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=26 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=27 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=28 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=29 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+iter tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=30 result=green exit=0 first=- peak_out=- peak_waiters=- errors=-
+summary tree=ceab79a27fd6185a8776e158b507bdff3296185d mode=default n=30 red=0 cap=30 time=2026-11-04T21:14:29Z

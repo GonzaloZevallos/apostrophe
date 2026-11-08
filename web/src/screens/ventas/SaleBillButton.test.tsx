@@ -12,7 +12,7 @@ import SALE_DETAIL from '../../api/fixtures/sale-detail.json'
 import SaleBillButton from './SaleBillButton'
 
 const BILL = SALE_DETAIL.bill as SaleBill
-const BILL_TEXT = 'Flores del Sur\n14/09\n\nFlor A 3,5 g · $ 10.500\nShipping · $ 500\n\nTotal · $ 11.000\nStill owed on this sale: $ 11.000\nYour balance: $ 11.000'
+const BILL_TEXT = 'Flores del Sur\nSale #2 · 14/09\n\nFlor A 3,5 g · $ 10.500\nShipping · $ 500\n\nTotal · $ 11.000\nStill owed on this sale: $ 11.000\nYour balance: $ 11.000'
 
 function setSecureContext(value: boolean) {
   Object.defineProperty(window, 'isSecureContext', { value, configurable: true })

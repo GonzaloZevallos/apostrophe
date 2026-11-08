@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 
 from app.shared.quantity import Quantity
-from app.stock.domain.draw_source import DrawSource, WithdrawalReason, draw_source_of
+from app.stock.domain.draw_source import DrawSource
 from app.stock.domain.entry import StockEntry
 
 STOCK_ENTRY_RANK = 0
@@ -64,7 +64,8 @@ class Draw:
 
     `sale_id`, `line_total`, `pricing_rule` and `variety_name` ride along from the
     `SaleLineDraw` a sale-line draw was built from (a negative-adjustment draw leaves
-    them at their defaults, as does a withdrawal-line draw), so results' own `DrawCosts`
+    them at their defaults, as does a withdrawal-line draw, which carries its
+    `reason_id`), so results' own `DrawCosts`
     (ADR-0020) reads them off this exact draw once `allocate` has costed it, never by
     joining a line to its cost through `(sale_id, position)` afterwards. `allocate` and
     `stock_level` never read them."""
@@ -77,6 +78,7 @@ class Draw:
     line_total: int | None = None
     pricing_rule: str | None = None
     variety_name: str | None = None
+    reason_id: int | None = None
 
     def __post_init__(self) -> None:
         if not self.quantity.is_positive:
@@ -114,7 +116,7 @@ class WithdrawalLineDraw:
     withdrawal reader answers, beside `SaleLineDraw`, so this module never imports
     anything outside `app/stock/`. `withdrawal_id` is the line's `ref_id` in its
     `LotOrder`, `day` the withdrawal's date, `recorded_at` its own (an edit never
-    changes it), `reason` what decides the draw's source."""
+    changes it), `reason_id` the reason of the business it is filed under."""
 
     variety_id: int
     day: date
@@ -122,7 +124,7 @@ class WithdrawalLineDraw:
     withdrawal_id: int
     position: int
     quantity: Quantity
-    reason: WithdrawalReason
+    reason_id: int
 
 
 def _entry_order(entry: StockEntry) -> LotOrder:
@@ -185,7 +187,8 @@ def lots_and_draws(
                 _withdrawal_draw_order(withdrawal_draw),
                 withdrawal_draw.variety_id,
                 withdrawal_draw.quantity,
-                draw_source_of(withdrawal_draw.reason),
+                DrawSource.WITHDRAWAL,
+                reason_id=withdrawal_draw.reason_id,
             )
         )
     varieties = set(lots) | set(draws)

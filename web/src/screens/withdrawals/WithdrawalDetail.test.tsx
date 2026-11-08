@@ -10,7 +10,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import WITHDRAWAL from '../../api/fixtures/withdrawal.json'
 import { VARIETIES as VARIETIES_PATH, WITHDRAWAL as WITHDRAWAL_PATH, pathTo } from '../../routes'
-import { jsonResponse, renderWithdrawals, type FetchImpl } from './renderWithdrawals'
+import { jsonResponse, reasonField, renderWithdrawals, type FetchImpl } from './renderWithdrawals'
 import { LIMITS } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 
@@ -20,7 +20,8 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-const OWN_USE = { ...WITHDRAWAL, reason: 'own_use', note: null }
+// A name only this business gave: no screen holds it, so it can only come from the API.
+const SAMPLES = { ...WITHDRAWAL, reason_id: 7, reason_name: 'Samples for friends', total_quantity: 12.5, note: null }
 
 function serving(body: unknown, extra?: FetchImpl): FetchImpl {
   return async (url, init) => {
@@ -35,7 +36,8 @@ test('shows the date, the reason by word, every line and the note, with the bar 
   renderWithdrawals([VARIETIES_PATH, ONE], serving(WITHDRAWAL))
 
   expect(await screen.findByText('Zkittlez')).toBeInTheDocument()
-  expect(screen.getByText('Promotion')).toBeInTheDocument()
+  expect(screen.getByText('Marketing')).toBeInTheDocument()
+  expect(screen.queryByText(/Promotion/)).toBeNull()
   expect(screen.getByText('02/10')).toBeInTheDocument()
   expect(screen.getByText('5,5 g')).toBeInTheDocument()
   expect(screen.getByText('Para la fiesta')).toBeInTheDocument()
@@ -48,7 +50,7 @@ test('shows the date, the reason by word, every line and the note, with the bar 
 test('the "‹" back goes to the page it was opened from', async () => {
   const { router } = renderWithdrawals([VARIETIES_PATH, ONE], serving(WITHDRAWAL))
 
-  await userEvent.click(await screen.findByRole('button', { name: '‹ Varieties' }))
+  await userEvent.click(await screen.findByRole('button', { name: '‹ Products' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
 })
@@ -56,12 +58,12 @@ test('the "‹" back goes to the page it was opened from', async () => {
 test('with no history, back goes to Variedades', async () => {
   const { router } = renderWithdrawals([ONE], serving(WITHDRAWAL))
 
-  await userEvent.click(await screen.findByRole('button', { name: '‹ Varieties' }))
+  await userEvent.click(await screen.findByRole('button', { name: '‹ Products' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
 })
 
-test('Delete names the promotion, the date and the grams; confirming deletes and toasts "Withdrawal deleted"', async () => {
+test('Delete names the reason, the date and the grams; confirming deletes and toasts "Withdrawal deleted"', async () => {
   const deletes = vi.fn()
   const { router } = renderWithdrawals(
     [VARIETIES_PATH, ONE],
@@ -76,7 +78,7 @@ test('Delete names the promotion, the date and the grams; confirming deletes and
   await userEvent.click(await screen.findByRole('button', { name: 'Delete' }))
 
   const dialog = await screen.findByRole('alertdialog', { name: 'Before deleting' })
-  expect(dialog).toHaveTextContent('Delete the promotion from 02/10? 5,5 g go back to stock.')
+  expect(dialog).toHaveTextContent('Delete the Marketing withdrawal from 02/10? 5,5 g go back to stock.')
   await userEvent.click(within(dialog).getByRole('button', { name: 'No, keep it' }))
   expect(deletes).not.toHaveBeenCalled()
 
@@ -90,13 +92,16 @@ test('Delete names the promotion, the date and the grams; confirming deletes and
   expect(deletes).toHaveBeenCalledTimes(1)
 })
 
-test('Delete on an own-use withdrawal says "el consumo propio"', async () => {
-  renderWithdrawals([VARIETIES_PATH, ONE], serving(OWN_USE))
+test('shows the reason by the name the API answers, and Delete names it with the grams as the formatter writes them', async () => {
+  renderWithdrawals([VARIETIES_PATH, ONE], serving(SAMPLES))
+
+  expect(await screen.findByText('Samples for friends')).toBeInTheDocument()
+  expect(screen.queryByText('Marketing')).toBeNull()
 
   await userEvent.click(await screen.findByRole('button', { name: 'Delete' }))
 
   expect(await screen.findByRole('alertdialog')).toHaveTextContent(
-    'Delete the own use from 02/10? 5,5 g go back to stock.',
+    'Delete the Samples for friends withdrawal from 02/10? 12,5 g go back to stock.',
   )
 })
 
@@ -116,7 +121,7 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Wit
 
   expect(await screen.findByLabelText('Grams 1')).toHaveValue('5.5')
   expect(screen.getByLabelText('Note')).toHaveValue('Para la fiesta')
-  expect(screen.getByRole('button', { name: 'Promotion' })).toHaveAttribute('aria-pressed', 'true')
+  expect(await reasonField()).toHaveTextContent('Marketing')
   await userEvent.clear(screen.getByLabelText('Grams 1'))
   await userEvent.type(screen.getByLabelText('Grams 1'), '6')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
@@ -133,7 +138,7 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Wit
   expect(router.state.location.pathname).toBe(ONE)
   expect(puts).toEqual([
     {
-      reason: 'promotion',
+      reason_id: 1,
       date: '2026-10-02',
       lines: [{ product_id: 1, quantity: '6' }],
       note: 'Para la fiesta',
@@ -141,11 +146,11 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Wit
   ])
 })
 
-test('opening a withdrawal that is gone shows "That is gone." and "Back to Varieties"', async () => {
+test('opening a withdrawal that is gone shows "That is gone." and "Back to Products"', async () => {
   renderWithdrawals([ONE], async () => jsonResponse(404, { code: 'stock.withdrawal_not_found' }))
 
   expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Back to Varieties' })).toHaveAttribute('href', VARIETIES_PATH)
+  expect(screen.getByRole('link', { name: 'Back to Products' })).toHaveAttribute('href', VARIETIES_PATH)
 })
 
 test('deleting a withdrawal that is gone goes to Variedades with "That is gone. The list is up to date."', async () => {
@@ -171,6 +176,6 @@ test('the detail keeps the icon and text rule: Delete carries its icon and word,
 
   const borrar = await screen.findByRole('button', { name: 'Delete' })
   expect(borrar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  expect(screen.getByRole('button', { name: '‹ Varieties' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '‹ Products' })).toBeInTheDocument()
   expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
 })

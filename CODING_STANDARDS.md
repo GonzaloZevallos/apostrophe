@@ -131,7 +131,12 @@ doc may record a deliberate exception; without one, this standard wins over an a
 
 1. **Chrome.**
    - Checked: the bottom bar, the header and "+ Nueva venta" are inside the viewport at load
-     and after scrolling to the middle (`chrome-at-load`, `chrome-mid-scroll`).
+     and after scrolling to the middle (`chrome-at-load`, `chrome-mid-scroll`). Which kind
+     carries which chrome: a tab root has the bar and "+ Nueva venta"; a card or detail has
+     the bar and no "+ Nueva venta"; a form or a getting-in screen has neither; the header is
+     there where the screen has one. A sheet or confirmation is judged by the screen beneath
+     it, and covered chrome (inside `[inert]` or `[aria-hidden="true"]`, or beneath an open
+     modal dialog) passes; forbidden chrome that is present and uncovered is reported.
    - Review: the bar and header are fixed; content is padded so nothing sits behind them.
      Insets and `dvh` are the installed shell's (accounts.md): the `--inset-*` tokens, and
      never `100vh`.
@@ -208,7 +213,9 @@ step that cannot reach its screen is reported as `unreachable`, never skipped.
 
 **The offender list.** A failure the app has today is listed, never skipped:
 `web/src/mobile-standard/offenders/<rule>.json`, one file per rule, each entry one screen,
-rule, target and issue (an area issue from the fixed map #45-#49, #59, #60, #78), with
+rule, target and issue (the allowed numbers are `AREA_ISSUES` in `web/src/mobile-standard/offenders/index.ts`:
+an existing entry keeps its area issue, and a new finding cites the open follow-up opened
+for it), with
 optional `sizes` and `themes`. It can only shrink: the run fails on a new offender, on an
 entry whose cell now passes, and on an entry with no valid issue number. It grows only
 by a trade, or by the real cells of a row new to the screens registry (the conditions are in
@@ -219,7 +226,7 @@ pinned fixture and date (ADR-0048); a change to either is a change to the lists,
 same diff. One rule has no file: `tabular-figures` (a figure outside its figure class) is
 fixed, never listed, and the loader refuses an entry for it.
 
-**Attached.** Every area PR (#45-#49, #59, #60, #78) attaches the check's result: the
+**Attached.** Every area PR (one whose issue is in `AREA_ISSUES`) attaches the check's result: the
 `mobile` project of `npm --prefix web run e2e`, and the offender counts that
 `scripts/design/compare.sh` prints (`COMPARE_MOBILE=1` runs the check there too). The real
 keyboard and the real-device pass stay by eye (accounts.md, ADR-0028).

@@ -111,6 +111,7 @@ class SaleLineOut(BaseModel):
 
 class SaleOut(BaseModel):
     id: int
+    number: int
     date: SaleDate
     customer: SaleCustomerOut | None
     shipping_charged: int
@@ -126,6 +127,7 @@ class SaleOut(BaseModel):
         assert sale.id is not None, "only stored sales go out"
         return cls(
             id=sale.id,
+            number=view.number,
             date=sale.date,
             customer=None if view.customer is None else SaleCustomerOut.of(view.customer),
             shipping_charged=sale.shipping_charged,
@@ -221,11 +223,13 @@ class SaleBillLineOut(BaseModel):
 
 class SaleBillOut(BaseModel):
     """The facts a seller may share with a sale's customer (CONTEXT.md: Sale bill),
-    closed: no field for the note, the customer, any id, the VIP flag, cost or margin."""
+    closed: no field for the note, the customer, any id, the VIP flag, cost or margin. The
+    Sale number is not an id: it is the seller's own count, the same one the detail shows."""
 
     model_config = ConfigDict(extra="forbid")
 
     business_name: str
+    number: int
     date: SaleDate
     shipping_charged: int
     total: int
@@ -237,6 +241,7 @@ class SaleBillOut(BaseModel):
     def of(cls, bill: SaleBill) -> "SaleBillOut":
         return cls(
             business_name=bill.business_name,
+            number=bill.number,
             date=bill.date,
             shipping_charged=bill.shipping_charged,
             total=bill.total,
@@ -253,6 +258,7 @@ class SaleDetailOut(BaseModel):
     allocates."""
 
     id: int
+    number: int
     date: SaleDate
     customer: SaleCustomerOut | None
     shipping_charged: int
@@ -272,6 +278,7 @@ class SaleDetailOut(BaseModel):
         assert len(costs) == len(view.lines), "one LineCost per line, in the same order"
         return cls(
             id=sale.id,
+            number=view.number,
             date=sale.date,
             customer=None if view.customer is None else SaleCustomerOut.of(view.customer),
             shipping_charged=sale.shipping_charged,

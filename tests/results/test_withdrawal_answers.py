@@ -14,7 +14,7 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 
-from tests.conftest import TODAY
+from tests.conftest import TODAY, reason_id
 from tests.contract_shapes import assert_matches_fixture
 
 HOY = TODAY.isoformat()
@@ -69,7 +69,7 @@ def _withdraw(client: TestClient, variety_id: int, *, reason: str, quantity: str
     response = client.post(
         "/stock/withdrawals",
         json={
-            "reason": reason,
+            "reason_id": reason_id(client, reason),
             "date": on,
             "lines": [{"product_id": variety_id, "quantity": quantity}],
         },
@@ -89,14 +89,24 @@ def _seed_the_history(client: TestClient) -> None:
     a = _variety(client, "A")
     b = _variety(client, "B")
     _entry(client, a, quantity="100", total_cost=10_000, on="2026-09-01")
-    _withdraw(client, a, reason="promotion", quantity="1", on="2026-09-10")
-    _withdraw(client, a, reason="promotion", quantity="4", on="2026-09-29")
+    _withdraw(client, a, reason="Marketing", quantity="1", on="2026-09-10")
+    _withdraw(client, a, reason="Marketing", quantity="4", on="2026-09-29")
     _adjust(client, a, quantity="-2", on="2026-09-30")
-    _withdraw(client, a, reason="own_use", quantity="3", on="2026-10-01")
+    _withdraw(client, a, reason="Own use", quantity="3", on="2026-10-01")
     _sale(client, a, quantity="5", on=HOY)
-    _withdraw(client, b, reason="promotion", quantity="2", on=HOY)
+    _withdraw(client, b, reason="Marketing", quantity="2", on=HOY)
     _adjust(client, b, quantity="-1", on=HOY)
     _sale(client, b, quantity="1", on=HOY)
+
+
+def _line(figure: dict[str, Any], name: str) -> dict[str, Any] | None:
+    """The cost line of the reason called `name` in a period's `withdrawals`, without
+    its id and name, or `None` when the period has none."""
+    found = [line for line in figure["withdrawals"] if line["name"] == name]
+    if not found:
+        return None
+    [line] = found
+    return {k: v for k, v in line.items() if k not in ("reason_id", "name")}
 
 
 def _same_line(panel_line: dict[str, Any] | None, analysis_line: dict[str, Any] | None) -> bool:
@@ -124,12 +134,12 @@ def test_the_panel_and_analysis_agree_on_every_withdrawal_figure(client: TestCli
     # By hand. Week 28/09-04/10: promotion 4 g costed ($400) + B's 2 g pending; own use
     # 3 g ($300). Month October: only B's 2 g pending promotion, the same $300 own use.
     # Hoy: only B's pending promotion.
-    assert week["promotion"] == {"amount": 400, "pending": True}
-    assert week["own_use"] == {"amount": 300, "pending": False}
-    assert month["promotion"] == {"amount": 0, "pending": True}
-    assert month["own_use"] == {"amount": 300, "pending": False}
-    assert today["promotion"] == {"amount": 0, "pending": True}
-    assert today["own_use"] is None
+    assert _line(week, "Marketing") == {"amount": 400, "pending": True, "pending_quantity": 2.0}
+    assert _line(week, "Own use") == {"amount": 300, "pending": False, "pending_quantity": 0.0}
+    assert _line(month, "Marketing") == {"amount": None, "pending": True, "pending_quantity": 2.0}
+    assert _line(month, "Own use") == {"amount": 300, "pending": False, "pending_quantity": 0.0}
+    assert _line(today, "Marketing") == {"amount": None, "pending": True, "pending_quantity": 2.0}
+    assert _line(today, "Own use") is None
     # The shortfall stays the adjustments' own: $200 costed on 30/09, B's pending on Hoy.
     assert week["shortfall"] == {"amount": 200, "pending": True}
     # October's only adjustment is B's -1 g on 02/10, wholly pending: $0 costed.
@@ -144,6 +154,10 @@ def test_the_panel_and_analysis_agree_on_every_withdrawal_figure(client: TestCli
     # - own use $300 (B's wholly pending sale is out of it, as for any pending sale).
     assert week["profit"] == 5_000 - 500 - 200 - 400 - 300
     assert week["profit_pending"] is True
+    # Cash: A's 5 g and B's 1 g sales at $1.000/g, both paid in cash on HOY, no expense
+    # or other payment; the Marketing and Own use withdrawals move no cash.
+    assert week["cash"] == 6_000
+    assert month["cash"] == 6_000
     # October: the same, less the 30/09 shortfall and the 29/09 promotion.
     assert month["profit"] == 5_000 - 500 - 300
     assert month["profit_pending"] is True
@@ -155,17 +169,19 @@ def test_the_panel_and_analysis_agree_on_every_withdrawal_figure(client: TestCli
         assert (row["profit"]["pending_quantity"] > 0) == panel_period["profit_pending"]
         assert row["sales"] == panel_period["sales"]
         assert row["expenses"] == panel_period["expenses"]
-        assert row["cash"] == panel_period["cash"]
-        for line in ("promotion", "own_use"):
-            assert _same_line(panel_period[line], row[line]), line
-    assert week_row["promotion"]["pending_quantity"] == 2.0
-    assert month_row["own_use"]["pending_quantity"] == 0.0
+        assert row["cash"] == panel_period["cash"] == 6_000
+        assert panel_period["withdrawals"] == row["withdrawals"]
+    marketing = _line(week_row, "Marketing")
+    own_use = _line(month_row, "Own use")
+    assert marketing is not None and own_use is not None
+    assert marketing["pending_quantity"] == 2.0
+    assert own_use["pending_quantity"] == 0.0
 
     # The chosen month's header carries the same two lines as the month row, and the
     # month's cost of goods is its varieties' costed cost (A's 5 g sale only).
     header = analysis["month"]
-    assert header["promotion"] == month_row["promotion"]
-    assert header["own_use"] == month_row["own_use"]
+    assert _line(header, "Marketing") == _line(month_row, "Marketing")
+    assert _line(header, "Own use") == _line(month_row, "Own use")
     assert header["shortfall"] == {"amount": 0, "pending_quantity": 1.0, "all_pending": True}
     assert sum(v["cost"]["costed"] for v in header["products"]) == month["cost_of_goods"] == 500
     # The panel's month shortfall is the header's, amount and pending flag.
@@ -185,20 +201,24 @@ def test_the_panel_and_analysis_agree_on_every_withdrawal_figure(client: TestCli
     # -2 g on 30/09 costs $200; B's -1 g has no lot, so it is pending. Withdrawals never
     # count.
     assert since["shortfall"] == {"amount": 200, "pending_quantity": 1.0, "all_pending": False}
-    assert since["promotion"] == {"amount": 500, "pending_quantity": 2.0, "all_pending": False}
-    assert since["own_use"] == {"amount": 300, "pending_quantity": 0.0, "all_pending": False}
+    assert _line(since, "Marketing") == {"amount": 500, "pending": True, "pending_quantity": 2.0}
+    assert _line(since, "Own use") == {"amount": 300, "pending": False, "pending_quantity": 0.0}
 
     # A month with only one reason shows no line for the other (September: no own use).
     september = next(m for m in analysis["months"] if m["month"] == "2026-09")
-    assert september["promotion"] == {"amount": 500, "pending_quantity": 0.0, "all_pending": False}
-    assert september["own_use"] is None
+    assert _line(september, "Marketing") == {
+        "amount": 500,
+        "pending": False,
+        "pending_quantity": 0.0,
+    }
+    assert _line(september, "Own use") is None
 
 
 def test_a_withdrawal_dated_before_every_other_record_starts_the_history(
     client: TestClient,
 ) -> None:
     a = _variety(client, "A")
-    _withdraw(client, a, reason="promotion", quantity="2", on="2026-10-01")
+    _withdraw(client, a, reason="Marketing", quantity="2", on="2026-10-01")
     _entry(client, a, quantity="10", total_cost=1_000, on=HOY)
     _sale(client, a, quantity="1", on=HOY)
 
@@ -212,27 +232,31 @@ def test_a_withdrawal_dated_before_every_other_record_starts_the_history(
     assert _same_line(panel["month"]["shortfall"], analysis["month"]["shortfall"])
     assert not _same_line({"amount": 0, "pending": False}, None)
     # The later entry settles the withdrawn grams at its $100/g.
-    assert analysis["weeks"][-1]["promotion"] == {
+    assert _line(analysis["weeks"][-1], "Marketing") == {
         "amount": 200,
+        "pending": False,
         "pending_quantity": 0.0,
-        "all_pending": False,
     }
-    assert analysis["months"][-1]["promotion"] == {
+    assert _line(analysis["months"][-1], "Marketing") == {
         "amount": 200,
+        "pending": False,
         "pending_quantity": 0.0,
-        "all_pending": False,
     }
     for period, row in (
         (panel["week"], analysis["weeks"][-1]),
         (panel["month"], analysis["months"][-1]),
     ):
-        assert period["promotion"] == {"amount": 200, "pending": False}
+        assert _line(period, "Marketing") == {
+            "amount": 200,
+            "pending": False,
+            "pending_quantity": 0.0,
+        }
         assert row["profit"]["amount"] == period["profit"] == 1_000 - 100 - 200
 
 
 def test_a_business_whose_only_record_is_a_withdrawal_has_a_history(client: TestClient) -> None:
     a = _variety(client, "A")
-    _withdraw(client, a, reason="own_use", quantity="3", on=HOY)
+    _withdraw(client, a, reason="Own use", quantity="3", on=HOY)
 
     analysis = client.get("/analysis").json()
     panel = client.get("/panel").json()["periods"]
@@ -240,24 +264,28 @@ def test_a_business_whose_only_record_is_a_withdrawal_has_a_history(client: Test
     assert analysis["first_record"] == HOY
     assert len(analysis["weeks"]) >= 1
     assert analysis["weeks"][-1]["sales"] == 0
-    assert analysis["weeks"][-1]["own_use"] == {
-        "amount": 0,
+    assert _line(analysis["weeks"][-1], "Own use") == {
+        "amount": None,
+        "pending": True,
         "pending_quantity": 3.0,
-        "all_pending": True,
     }
-    assert analysis["weeks"][-1]["promotion"] is None
-    assert analysis["months"][-1]["own_use"] == {
-        "amount": 0,
+    assert _line(analysis["weeks"][-1], "Marketing") is None
+    assert _line(analysis["months"][-1], "Own use") == {
+        "amount": None,
+        "pending": True,
         "pending_quantity": 3.0,
-        "all_pending": True,
     }
-    assert analysis["since_first_record"]["own_use"] == {
-        "amount": 0,
+    assert _line(analysis["since_first_record"], "Own use") == {
+        "amount": None,
+        "pending": True,
         "pending_quantity": 3.0,
-        "all_pending": True,
     }
     assert analysis["since_first_record"]["profit"]["pending_quantity"] == 3.0
-    assert panel["month"]["own_use"] == {"amount": 0, "pending": True}
+    assert _line(panel["month"], "Own use") == {
+        "amount": None,
+        "pending": True,
+        "pending_quantity": 3.0,
+    }
     assert panel["month"]["profit_pending"] is True
 
 
@@ -271,8 +299,8 @@ def test_a_withdrawal_moves_none_of_the_sale_shortfall_or_cash_figures(
     before_panel = client.get("/panel").json()["periods"]
     before_analysis = client.get("/analysis").json()
 
-    _withdraw(client, a, reason="promotion", quantity="4", on=HOY)
-    _withdraw(client, a, reason="own_use", quantity="60", on=HOY)
+    _withdraw(client, a, reason="Marketing", quantity="4", on=HOY)
+    _withdraw(client, a, reason="Own use", quantity="60", on=HOY)
 
     after_panel = client.get("/panel").json()["periods"]
     after_analysis = client.get("/analysis").json()
@@ -293,7 +321,7 @@ def test_a_withdrawal_moves_none_of_the_sale_shortfall_or_cash_figures(
     for name in ("today", "week", "month"):
         for key in untouched:
             assert after_panel[name][key] == before_panel[name][key], (name, key)
-        assert after_panel[name]["promotion"] is not None or name == "today"
+        assert _line(after_panel[name], "Marketing") is not None or name == "today"
     assert after_panel["month"]["profit"] < before_panel["month"]["profit"]
     for key in (
         "sales",
@@ -326,16 +354,80 @@ def test_another_business_s_withdrawals_never_reach_the_answers(
     client: TestClient, other_client: TestClient
 ) -> None:
     a = _variety(client, "A")
-    _withdraw(client, a, reason="promotion", quantity="2", on=HOY)
+    _withdraw(client, a, reason="Marketing", quantity="2", on=HOY)
 
     panel = other_client.get("/panel").json()["periods"]
     analysis = other_client.get("/analysis").json()
 
     for period in panel.values():
-        assert period["promotion"] is None
-        assert period["own_use"] is None
+        assert _line(period, "Marketing") is None
+        assert _line(period, "Own use") is None
         assert period["profit"] == 0
     assert analysis["first_record"] is None
     assert analysis["since_first_record"] is None
-    assert analysis["month"]["promotion"] is None
-    assert analysis["month"]["own_use"] is None
+    assert analysis["month"]["withdrawals"] == []
+    assert analysis["month"]["withdrawals"] == []
+
+
+def test_a_reordered_reason_reaches_the_panel_and_the_analysis_in_the_new_order(
+    client: TestClient,
+) -> None:
+    _seed_the_history(client)
+    reasons = client.get("/api/withdrawal-reasons").json()
+    marketing = next(r["id"] for r in reasons if r["name"] == "Marketing")
+
+    moved = client.post(f"/api/withdrawal-reasons/{marketing}/move", json={"direction": "down"})
+    assert moved.status_code == 200, moved.text
+
+    panel = client.get("/panel").json()["periods"]
+    analysis = client.get("/analysis").json()
+    order = ["Own use", "Marketing"]
+    assert [line["name"] for line in panel["week"]["withdrawals"]] == order
+    assert [line["name"] for line in analysis["weeks"][-1]["withdrawals"]] == order
+    assert [line["name"] for line in analysis["month"]["withdrawals"]] == ["Own use", "Marketing"]
+    assert [line["name"] for line in analysis["since_first_record"]["withdrawals"]] == order
+
+
+def test_a_renamed_reason_relabels_past_withdrawals_movements_panel_and_analysis(
+    client: TestClient,
+) -> None:
+    _seed_the_history(client)
+    marketing = reason_id(client, "Marketing")
+    variety_id = client.get("/stock").json()["products"][0]["product_id"]
+    movements_before = client.get(f"/stock/products/{variety_id}/movements").json()
+    past = [m["id"] for m in movements_before if m.get("reason_name") == "Marketing"]
+    assert past
+    read_before = client.get(f"/stock/withdrawals/{past[0]}").json()
+    panel_before = client.get("/panel").json()
+    analysis_before = client.get("/analysis").json()
+
+    renamed = client.patch(f"/api/withdrawal-reasons/{marketing}", json={"name": "Publicidad"})
+    assert renamed.status_code == 200, renamed.text
+
+    read_after = client.get(f"/stock/withdrawals/{past[0]}").json()
+    assert read_after["reason_name"] == "Publicidad"
+    assert read_after == read_before | {"reason_name": "Publicidad"}
+    movements_after = client.get(f"/stock/products/{variety_id}/movements").json()
+    assert {m["reason_name"] for m in movements_after if m["kind"] == "withdrawal"} == {
+        "Publicidad",
+        "Own use",
+    }
+    panel_after = client.get("/panel").json()
+    analysis_after = client.get("/analysis").json()
+    for period in ("today", "week", "month"):
+        names = [w["name"] for w in panel_after["periods"][period]["withdrawals"]]
+        assert "Marketing" not in names
+    assert "Publicidad" in [w["name"] for w in panel_after["periods"]["week"]["withdrawals"]]
+    assert "Publicidad" in [w["name"] for w in analysis_after["weeks"][-1]["withdrawals"]]
+    # Only the label moved: relabelling the old answers gives exactly the new ones.
+    assert _relabelled(panel_before) == panel_after
+    assert _relabelled(analysis_before) == analysis_after
+
+
+def _relabelled(answer: object) -> object:
+    """`answer` with every "Marketing" label read as "Publicidad", whatever its depth."""
+    if isinstance(answer, dict):
+        return {key: _relabelled(value) for key, value in answer.items()}
+    if isinstance(answer, list):
+        return [_relabelled(item) for item in answer]
+    return "Publicidad" if answer == "Marketing" else answer

@@ -38,6 +38,7 @@
   "common.ts:COMMON_TEXT.entryDeleted": { "key": "common:entryDeleted" },
   "common.ts:COMMON_TEXT.entrySaved": { "key": "common:entrySaved" },
   "common.ts:COMMON_TEXT.expenseCategories": { "key": "common:expenseCategories" },
+  "common.ts:COMMON_TEXT.withdrawalReasons": { "key": "common:withdrawalReasons" },
   "common.ts:COMMON_TEXT.expenses": { "key": "common:expenses" },
   "common.ts:COMMON_TEXT.flowerPurchases": { "key": "common:flowerPurchases" },
   "common.ts:COMMON_TEXT.grams": { "key": "common:grams" },

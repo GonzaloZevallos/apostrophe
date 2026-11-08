@@ -15,7 +15,6 @@ import { formatDate } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { VARIETY_ENTRIES, WITHDRAWAL, pathTo } from '../../routes'
 import { ORIGIN_LABEL } from '../originLabel'
-import { REASON_LABEL } from '../withdrawals/withdrawalReasons'
 import { VARIETIES_TEXT } from '../../copy/varieties'
 import { OUT_OF_DATE_JOINER } from '../../copy/pinnedCatalog'
 
@@ -49,7 +48,7 @@ export default function VarietyStockSection({
               <InAppLink to={pathTo(WITHDRAWAL, { id: movement.id })} className="fila-entrada__enlace">
                 <span className="fila-entrada__texto">
                   <span className="fila-entrada__linea1">
-                    {formatDate(movement.date, today)}{OUT_OF_DATE_JOINER}{REASON_LABEL[movement.reason]}
+                    {formatDate(movement.date, today)}{OUT_OF_DATE_JOINER}{movement.reason_name}
                   </span>
                 </span>
                 <span className="fila-entrada__cifras">

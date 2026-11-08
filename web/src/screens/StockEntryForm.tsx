@@ -17,6 +17,7 @@
 
 import { type FormEvent, Fragment, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE, get } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
@@ -26,14 +27,16 @@ import { costPerGram, gramsToHundredths } from '../domain/costPerGram'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { SheetActions } from '../components/Sheet'
+import Selector from '../components/Selector'
 import SinConexion from '../components/SinConexion'
 import { useViewport } from '../shell/useViewport'
 import { formatDate } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import { parseMoney, parseSignedGrams } from '../format/parse'
 import type { Variety } from './Variedades'
-import { varietiesByName } from './varieties/varietiesByName'
+import { entryVarietyChoice } from './stockEntryChoice'
 import Boton from '../components/Boton'
+import { STOCK_ENTRY_ORIGINS } from '../components/fixedSets'
 import {
   COST_REQUIRED_HELP,
   GRAMS_INVALID,
@@ -49,13 +52,6 @@ export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 export const COST_REQUIRED = STOCK_TEXT.unaCompraNecesitaUn
 export const COST_ON_NEGATIVE = STOCK_TEXT.unAjusteNegativoNo
 export const DATE_IN_FUTURE = COMMON_TEXT.dateCannotBeFuture
-
-const ORIGIN_OPTIONS: { value: Origin; label: string }[] = [
-  { value: 'purchase', label: COMMON_TEXT.purchase },
-  { value: 'harvest', label: COMMON_TEXT.harvest },
-  { value: 'opening_stock', label: COMMON_TEXT.initialStock },
-  { value: 'adjustment', label: COMMON_TEXT.adjustment },
-]
 
 const FIELD_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'stock.cost_required': COST_REQUIRED,
@@ -141,10 +137,8 @@ export default function StockEntryForm({
     queryFn: () => get<Variety[]>('/api/products?archived=true'),
     enabled: !entryVarietyIsListed,
   })
-  const pickable = [
-    ...(listedVarieties ?? []),
-    ...(archivedQuery.data ?? []).filter((v) => v.id === initial?.product_id),
-  ]
+  const choice = entryVarietyChoice(initial?.product_id, varietiesQuery, archivedQuery)
+  const { t } = useTranslation()
 
   const [date, setDate] = useState(initial?.date ?? today)
   const [grams, setGrams] = useState(initial !== undefined ? String(initial.quantity) : '')
@@ -193,9 +187,18 @@ export default function StockEntryForm({
       ? costPerGram(previewCost.value, gramsToHundredths(previewGrams.value))
       : null
 
+  // A starting choice (`?variety=`) that is not a listed Variety is no choice at all.
+  const startedUnlisted =
+    initial === undefined &&
+    fixedVarietyId === undefined &&
+    varietyId !== '' &&
+    choice.kind === 'ready' &&
+    !choice.options.some((option) => option.value === varietyId)
+  const chosenId = startedUnlisted ? '' : varietyId
+
   const varietyGrams = (() => {
-    const variety = Number(varietyId)
-    if (varietyId === '' || !Number.isInteger(variety)) return null
+    const variety = Number(chosenId)
+    if (chosenId === '' || !Number.isInteger(variety)) return null
     const found = stockQuery.data?.products.find((row) => row.product_id === variety)
     return found?.quantity ?? null
   })()
@@ -209,8 +212,8 @@ export default function StockEntryForm({
     note?: string
   } | null {
     if (!previewGrams.ok) return null
-    const variety = Number(varietyId)
-    if (!Number.isInteger(variety) || varietyId === '') return null
+    const variety = Number(chosenId)
+    if (!Number.isInteger(variety) || chosenId === '') return null
     const parsedCost = totalCost.trim() === '' ? undefined : parseMoney(totalCost)
     if (parsedCost !== undefined && !parsedCost.ok) return null
     return {
@@ -291,9 +294,16 @@ export default function StockEntryForm({
   }
 
   const varietyName = (() => {
-    const found = pickable.find((variety) => String(variety.id) === varietyId)
-    return found?.name ?? ''
+    const found = choice.options.find((option) => option.value === chosenId)
+    if (found !== undefined) return found.label
+    return choice.selected?.value === chosenId ? choice.selected.label : ''
   })()
+
+  const varietyHelp = varietyGrams !== null && (
+    <span className="campo__ayuda" data-copy="help">
+      {onHandHelp(formatGrams(varietyGrams))}
+    </span>
+  )
 
   const dialogs = (
     <>
@@ -357,6 +367,7 @@ export default function StockEntryForm({
               <span className="campo__rotulo">{COMMON_TEXT.grams}</span>
               <input
                 className="campo__input"
+                autoComplete="off"
                 inputMode="decimal"
                 value={grams}
                 onChange={(event) => setGrams(event.target.value)}
@@ -372,6 +383,7 @@ export default function StockEntryForm({
               <span className="campo__rotulo">{STOCK_TEXT.costoTotal}</span>
               <input
                 className="campo__input"
+                autoComplete="off"
                 inputMode="numeric"
                 value={totalCost}
                 onChange={(event) => setTotalCost(event.target.value)}
@@ -387,6 +399,7 @@ export default function StockEntryForm({
               <span className="campo__rotulo">{COMMON_TEXT.date}</span>
               <input
                 className="campo__input"
+                autoComplete="off"
                 type="date"
                 value={date}
                 onChange={(event) => setDate(event.target.value)}
@@ -397,39 +410,41 @@ export default function StockEntryForm({
               <span className="campo__rotulo">{COMMON_TEXT.grams}</span>
               <input
                 className="campo__input"
+                autoComplete="off"
                 inputMode="decimal"
                 value={grams}
                 onChange={(event) => setGrams(event.target.value)}
                 required
               />
             </label>
-            <label className="campo">
-              <span className="campo__rotulo">{COMMON_TEXT.variety}</span>
-              <select
-                className="campo__input"
-                value={varietyId}
-                onChange={(event) => setVarietyId(event.target.value)}
-                disabled={fixedVarietyId !== undefined}
-                required
-              >
-                <option value="">{COMMON_TEXT.pickAVariety}</option>
-                {varietiesByName(pickable).map((variety) => (
-                  <option key={variety.id} value={variety.id}>
-                    {variety.name}
-                  </option>
-                ))}
-              </select>
-              {varietyGrams !== null && (
-                <span className="campo__ayuda" data-copy="help">
-                  {onHandHelp(formatGrams(varietyGrams))}
-                </span>
-              )}
-            </label>
+            {choice.kind === 'failed' ? (
+              <div className="campo">
+                <span className="campo__rotulo">{COMMON_TEXT.variety}</span>
+                <Boton variant="notice" onClick={() => void archivedQuery.refetch()}>
+                  {archivedQuery.error instanceof NetworkError ? t('common:offline') : t('common:genericError')}
+                </Boton>
+                {varietyHelp}
+              </div>
+            ) : (
+              <div className="campo">
+                <Selector
+                  required
+                  label={COMMON_TEXT.variety}
+                  options={choice.options}
+                  selected={choice.selected}
+                  value={chosenId === '' ? null : chosenId}
+                  onChange={(next) => setVarietyId(next ?? '')}
+                  loading={choice.kind === 'loading'}
+                  emptySetMessage={t('emptyStates:selectorNoVarieties')}
+                />
+                {varietyHelp}
+              </div>
+            )}
             {fixedOrigin === undefined && (
               <fieldset className="campo">
                 <legend className="campo__rotulo">{STOCK_TEXT.origen}</legend>
                 <div className="origen-pildoras">
-                  {ORIGIN_OPTIONS.map((option) => (
+                  {STOCK_ENTRY_ORIGINS.map((option) => (
                     <button
                       key={option.value}
                       type="button"
@@ -437,7 +452,7 @@ export default function StockEntryForm({
                       aria-pressed={origin === option.value}
                       onClick={() => setOrigin(option.value)}
                     >
-                      {option.label}
+                      {option.label()}
                     </button>
                   ))}
                 </div>
@@ -447,6 +462,7 @@ export default function StockEntryForm({
               <span className="campo__rotulo">{STOCK_TEXT.costoTotal}</span>
               <input
                 className="campo__input"
+                autoComplete="off"
                 inputMode="numeric"
                 value={totalCost}
                 onChange={(event) => setTotalCost(event.target.value)}
@@ -459,6 +475,7 @@ export default function StockEntryForm({
               <span className="campo__rotulo">{COMMON_TEXT.note}</span>
               <input
                 className="campo__input"
+                autoComplete="off"
                 value={note}
                 maxLength={200}
                 onChange={(event) => setNote(event.target.value)}

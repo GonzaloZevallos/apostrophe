@@ -62,6 +62,12 @@ msgstr "Shipping and transport"
 msgid "expenses.default_category.other"
 msgstr "Other"
 
+msgid "stock.default_reason.marketing"
+msgstr "Marketing"
+
+msgid "stock.default_reason.own_use"
+msgstr "Own use"
+
 msgid "payment_methods.default.cash"
 msgstr "Cash"
 

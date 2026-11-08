@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process'
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { tmpdir } from 'node:os'
@@ -10,6 +10,7 @@ import { afterAll, beforeAll, describe, expect, it, onTestFinished } from 'vites
 // built side is a tiny page served here (a long document, and a layer over the screen); the
 // design side is the real prototype, served from the repo.
 const SCRIPT = resolve(__dirname, '../../../scripts/design/comparisons.mjs')
+const REGISTRY = resolve(__dirname, '../../../scripts/design/screens.json')
 const FONT = resolve(
   __dirname,
   '../../node_modules/@fontsource/geist/files/geist-latin-400-normal.woff2',
@@ -43,7 +44,8 @@ const PAGES: Record<string, string> = {
   'n': page(
     `<div class="pantalla" style="height:100vh"><div class="tall" style="height:2000px">Nueva venta</div>
      <div class="fill" style="position:absolute;top:0;left:0;width:5px;height:100vh"></div></div>
-     <div class="barra" style="position:fixed;bottom:0;left:0;right:0;height:60px"></div>`,
+     <div class="barra" style="position:fixed;bottom:0;left:0;right:0;height:60px"></div>
+     <div class="cinta" style="position:sticky;top:8px;height:20px"></div>`,
   ),
   // A layer over a document taller than the screen: the shot never grows it, the census does, and
   // the page is calm at the shot's height and never calm once the census has grown it. The timer is
@@ -91,12 +93,17 @@ afterAll(async () => {
   rmSync(dir, { recursive: true, force: true })
 })
 
-type Side = Record<string, unknown> & { sizes_changed?: Array<Record<string, unknown>> }
+type Side = Record<string, unknown> & {
+  sizes_changed?: Array<Record<string, unknown>>
+  pinned?: Array<Record<string, unknown>>
+}
 type Run = { entries: Entry[]; status: number; output: string }
 type Entry = {
   screen: string
   design: string | null
   built: string | null
+  capture?: 'captured' | 'not-captured'
+  reasons?: { design?: string; built?: string }
   census?: { design?: Side; built?: Side }
 }
 
@@ -105,9 +112,8 @@ async function run(name: string, only: string, extra: string[]): Promise<Run> {
   return runWith(name, only, ['--step-timeout', String(CENSUS_STEP_MS), ...extra])
 }
 
-async function runWith(name: string, only: string, extra: string[]): Promise<Run> {
+function writeFacts(name: string): string {
   const facts = join(dir, `${name}.json`)
-  const out = join(dir, name)
   writeFileSync(
     facts,
     JSON.stringify({
@@ -118,7 +124,12 @@ async function runWith(name: string, only: string, extra: string[]): Promise<Run
       ids: { new_business_token: 'n', join_token: 'j', reset_token: 'r' },
     }),
   )
-  const child = spawn('node', [SCRIPT, '--facts', facts, '--out', out, '--only', only, '--strict', ...extra], {
+  return facts
+}
+
+// One spawn of the script with the exact arguments given: its exit status and what it printed.
+async function spawnScript(args: string[]): Promise<{ status: number; output: string }> {
+  const child = spawn('node', [SCRIPT, ...args], {
     detached: true,
   })
   // `detached` makes the child the leader of its own process group, so `-pid` names that group.
@@ -136,6 +147,12 @@ async function runWith(name: string, only: string, extra: string[]): Promise<Run
   child.stdout.on('data', (chunk: Buffer) => (output += chunk.toString()))
   child.stderr.on('data', (chunk: Buffer) => (output += chunk.toString()))
   const status = await new Promise<number>((done) => child.on('close', (code) => done(code ?? -1)))
+  return { status, output }
+}
+
+async function runWith(name: string, only: string, extra: string[]): Promise<Run> {
+  const out = join(dir, name)
+  const { status, output } = await spawnScript(['--facts', writeFacts(name), '--out', out, '--only', only, ...extra])
   const index = join(out, 'index.json')
   // A child that died before writing the index (a missing browser, say) fails with its own exit
   // status and output, not with an ENOENT on a file it never wrote.
@@ -145,7 +162,7 @@ async function runWith(name: string, only: string, extra: string[]): Promise<Run
 
 describe('comparisons.mjs --census', () => {
   it('writes the census fields of a long page and of a layer, on both sides', async () => {
-    const { entries, status, output } = await run('on', 'NegocioNuevo,Invitacion', ['--census'])
+    const { entries, status, output } = await run('on', 'NegocioNuevo,Invitacion', ['--census', '--strict'])
     expect(status, output).toBe(0)
     const [tall, layer] = entries as [Entry, Entry]
 
@@ -168,9 +185,24 @@ describe('comparisons.mjs --census', () => {
     const document = built?.document as { scroll_height: number } | undefined
     expect(fill?.after).toMatchObject({ height: document?.scroll_height })
     expect(built?.sizes_changed?.some((entry) => entry.path === 'div.barra')).toBe(false)
+    // The phone side records its pinned elements, each with the class `pinnedClass` gives it.
+    expect(built?.pinned).toEqual([
+      expect.objectContaining({
+        path: 'div.barra',
+        position: 'fixed',
+        inset_top: 784, // the computed value of `top` is the used one: 844 high, 60 tall
+        inset_bottom: 0,
+        transform: 'none',
+        pinned_class: 'chrome',
+      }),
+      expect.objectContaining({ path: 'div.cinta', position: 'sticky', inset_top: 8, pinned_class: 'content' }),
+    ])
+    expect(built?.pinned?.[0]).toHaveProperty('margin_top')
+    expect(built?.pinned?.[0]).toHaveProperty('margin_bottom')
 
     const covered = layer.census?.built
     expect(covered).toMatchObject({ layer: true, class: 'layer' })
+    expect(covered?.pinned).toBeUndefined()
     expect(covered?.layer_metrics).toMatchObject({
       overflows: true,
       frame_inside_viewport: true,
@@ -183,11 +215,11 @@ describe('comparisons.mjs --census', () => {
   }, CENSUS_TEST_MS)
 
   it('keeps the entry keys and both PNGs the same as without it', async () => {
-    const on = await run('same-on', 'NegocioNuevo', ['--census'])
-    const off = await run('same-off', 'NegocioNuevo', [])
+    const on = await run('same-on', 'NegocioNuevo', ['--census', '--strict'])
+    const off = await run('same-off', 'NegocioNuevo', ['--strict'])
     expect(on.status, on.output).toBe(0)
     expect(off.status, off.output).toBe(0)
-    expect(Object.keys(off.entries[0] as Entry)).toEqual(['screen', 'file', 'notes', 'design', 'built'])
+    expect(Object.keys(off.entries[0] as Entry)).toEqual(['screen', 'file', 'notes', 'design', 'built', 'capture'])
     expect(off.entries[0]?.census).toBeUndefined()
     const bytes = (path: string | null): Buffer => readFileSync(path as string)
     expect(bytes(on.entries[0]?.design ?? null).equals(bytes(off.entries[0]?.design ?? null))).toBe(true)
@@ -195,7 +227,7 @@ describe('comparisons.mjs --census', () => {
   }, CENSUS_TEST_MS)
 
   it('records a census that cannot settle as a fixed error and changes nothing else', async () => {
-    const { entries, status, output } = await run('error', 'Reset', ['--census'])
+    const { entries, status, output } = await run('error', 'Reset', ['--census', '--strict'])
     expect(status, output).toBe(0)
     const [entry] = entries as [Entry]
     expect(entry.built).not.toBeNull()
@@ -209,12 +241,64 @@ describe('comparisons.mjs --census', () => {
   }, CENSUS_TEST_MS)
 
   it('fails the built side when a step cannot finish within --step-timeout', async () => {
-    const { status, output } = await runWith('forced', 'Reset', ['--census', '--step-timeout', '1'])
+    const { status, output } = await runWith('forced', 'Reset', ['--census', '--strict', '--step-timeout', '1'])
     expect(status, output).toBe(1)
     expect(output).toContain('lo construido no se pudo capturar')
   }, CENSUS_TEST_MS)
 
   it.each(['0', 'abc'])('rejects --step-timeout %s before any browser starts', async (value) => {
-    await expect(runWith(`bad-${value}`, 'Reset', ['--step-timeout', value])).rejects.toThrow(/status 2/)
+    await expect(runWith(`bad-${value}`, 'Reset', ['--strict', '--step-timeout', value])).rejects.toThrow(/status 2/)
   })
+})
+
+// Exit codes and the capture fields. The registry is a fixture: the `Reset` row's real design with
+// no route, so only the design side is taken and the built side is a screen not built yet.
+describe('comparisons.mjs exit status and capture', () => {
+  const NOT_BUILT = 'shot: no built screen yet (built)'
+  const fixture = (name: string): string => {
+    const path = join(dir, `${name}.registry.json`)
+    const real = JSON.parse(readFileSync(REGISTRY, 'utf-8')) as { screens: Array<{ screen: string }> }
+    const reset = real.screens.find((row) => row.screen === 'Reset')
+    writeFileSync(path, JSON.stringify({ screens: [{ ...reset, route: null }] }))
+    return path
+  }
+
+  it('exits 0 without --strict when no row is captured, and the index says why', async () => {
+    const { entries, status, output } = await run('plain', 'Reset', ['--registry', fixture('plain')])
+    expect(status, output).toBe(0)
+    const [entry] = entries as [Entry]
+    expect(entry.capture).toBe('not-captured')
+    expect(entry.reasons).toEqual({ built: NOT_BUILT })
+    expect(entry.design).not.toBeNull()
+    expect(entry.built).toBeNull()
+  }, CENSUS_TEST_MS)
+
+  it('exits non-zero with --strict, after the index is written', async () => {
+    const { entries, status, output } = await run('strict', 'Reset', ['--strict', '--registry', fixture('strict')])
+    expect(status, output).not.toBe(0)
+    expect(status).not.toBe(2)
+    expect(entries).toHaveLength(1)
+    expect(entries[0]?.reasons?.built).toBe(NOT_BUILT)
+    expect(output).toContain('comparisons: --strict and a row is not captured')
+  }, CENSUS_TEST_MS)
+
+  it('exits 2 and writes no index when the registry cannot be read', async () => {
+    const out = join(dir, 'no-registry')
+    const { status, output } = await spawnScript([
+      '--facts', writeFacts('no-registry'), '--out', out, '--registry', join(dir, 'missing.json'),
+    ])
+    expect(status, output).toBe(2)
+    expect(output).toContain('comparisons: the registry could not be read')
+    expect(existsSync(join(out, 'index.json'))).toBe(false)
+  }, CENSUS_TEST_MS)
+
+  it('fails the run when index.json cannot be written', async () => {
+    const out = join(dir, 'unwritable')
+    mkdirSync(join(out, 'index.json'), { recursive: true })
+    const { status, output } = await spawnScript([
+      '--facts', writeFacts('unwritable'), '--out', out, '--only', 'Reset', '--registry', fixture('unwritable'),
+    ])
+    expect(status, output).not.toBe(0)
+    expect(output).toMatch(/EISDIR/)
+  }, CENSUS_TEST_MS)
 })

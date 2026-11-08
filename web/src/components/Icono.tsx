@@ -63,6 +63,14 @@ export const ICON_NAMES = [
   'coins',
   'phone',
   'generic',
+  'circulo',
+  'estrella',
+  'corazon',
+  'rombo',
+  'bandera',
+  'etiqueta',
+  'corona',
+  'campana',
 ] as const
 
 export type NombreIcono = (typeof ICON_NAMES)[number]
@@ -234,6 +242,14 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
   generic: (
     <><circle cx="12" cy="12" r="8.5" /><path d="M9 12h6" /></>
   ),
+  circulo: <circle cx="12" cy="12" r="8" />,
+  estrella: <path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.9z" />,
+  corazon: <path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.3a4.3 4.3 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z" />,
+  rombo: <path d="m12 3.5 8.5 8.5-8.5 8.5L3.5 12z" />,
+  bandera: <><path d="M6 21V4" /><path d="M6 5h12l-2.5 4 2.5 4H6" /></>,
+  etiqueta: <><path d="M4 4h8l8 8-8 8-8-8z" /><circle cx="8.5" cy="8.5" r="1" /></>,
+  corona: <path d="M4 18 3.5 8l5 4 3.5-6 3.5 6 5-4L20 18z" />,
+  campana: <><path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15z" /><path d="M10 21h4" /></>,
 }
 
 export default function Icono({ nombre, label }: IconoProps) {

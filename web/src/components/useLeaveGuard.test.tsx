@@ -6,13 +6,14 @@ import { createMemoryRouter, RouterProvider, useNavigate } from 'react-router'
 import { expect, test } from 'vitest'
 import LeaveConfirm from './LeaveConfirm'
 import { useLeaveGuard } from './useLeaveGuard'
+import ContentArea from './ContentArea'
 
 function Form({ startDirty }: { startDirty: boolean }) {
   const [dirty, setDirty] = useState(startDirty)
   const { blocker, disarm } = useLeaveGuard(dirty)
   const navigate = useNavigate()
   return (
-    <main>
+    <ContentArea as="main">
       <h1>Formulario</h1>
       <button type="button" onClick={() => setDirty(true)}>
         Escribir
@@ -38,7 +39,7 @@ function Form({ startDirty }: { startDirty: boolean }) {
           discardLabel="Sí, descartalos"
         />
       )}
-    </main>
+    </ContentArea>
   )
 }
 

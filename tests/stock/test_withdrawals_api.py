@@ -12,7 +12,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.stock.adapters.tables import StockWithdrawalLineRow, StockWithdrawalRow
-from tests.conftest import MovableClock
+from tests.conftest import MovableClock, reason_id
 from tests.contract_shapes import assert_matches_fixture
 from tests.fakes.archive import archive_by_hand
 
@@ -34,8 +34,10 @@ def _stock_in(client: TestClient, variety_id: int, quantity: str = "50", **extra
 
 
 def _body(variety_id: int, **overrides: Any) -> dict[str, Any]:
+    """Names reason 1: the seeded "Marketing" of the first business of a fresh database,
+    the `client`'s. Anyone else's body needs a `reason_id` of its own."""
     body: dict[str, Any] = {
-        "reason": "promotion",
+        "reason_id": 1,
         "lines": [{"product_id": variety_id, "quantity": "5"}],
     }
     body.update(overrides)
@@ -47,7 +49,8 @@ def _line(variety_id: int, quantity: str = "5") -> dict[str, Any]:
 
 
 def _record(client: TestClient, variety_id: int, **overrides: Any) -> dict[str, Any]:
-    response = client.post("/stock/withdrawals", json=_body(variety_id, **overrides))
+    own = {"reason_id": reason_id(client, "Marketing")} | overrides
+    response = client.post("/stock/withdrawals", json=_body(variety_id, **own))
     assert response.status_code == 201, response.text
     answer: dict[str, Any] = response.json()
     return answer
@@ -65,7 +68,7 @@ def test_a_withdrawal_is_recorded_and_answers_with_its_lines(client: TestClient)
     withdrawal = _record(
         client,
         zkittlez,
-        reason="own_use",
+        reason_id=reason_id(client, "Own use"),
         note="  para mí  ",
         lines=[
             {"product_id": zkittlez, "quantity": "2.5"},
@@ -74,7 +77,10 @@ def test_a_withdrawal_is_recorded_and_answers_with_its_lines(client: TestClient)
     )
 
     assert_matches_fixture(withdrawal, "withdrawal")
-    assert withdrawal["reason"] == "own_use"
+    assert (withdrawal["reason_id"], withdrawal["reason_name"]) == (
+        reason_id(client, "Own use"),
+        "Own use",
+    )
     assert withdrawal["date"] == TODAY
     assert withdrawal["note"] == "para mí"
     assert withdrawal["total_quantity"] == 3.5
@@ -110,12 +116,14 @@ def test_stock_moves_exactly_on_record_edit_and_delete(client: TestClient) -> No
     edited = client.put(
         f"/stock/withdrawals/{withdrawal['id']}",
         json=_body(
-            variety_id, reason="own_use", lines=[{"product_id": variety_id, "quantity": "7"}]
+            variety_id,
+            reason_id=reason_id(client, "Own use"),
+            lines=[{"product_id": variety_id, "quantity": "7"}],
         ),
     )
     assert edited.status_code == 200, edited.text
     assert edited.json()["id"] == withdrawal["id"]
-    assert edited.json()["reason"] == "own_use"
+    assert edited.json()["reason_name"] == "Own use"
     assert _quantity_of(client, variety_id) == 43.0
 
     deleted = client.delete(f"/stock/withdrawals/{withdrawal['id']}")
@@ -208,8 +216,7 @@ def test_an_edit_keeps_the_recording_order_of_the_withdrawal(
 @pytest.mark.parametrize(
     ("overrides", "code"),
     [
-        ({"reason": None}, "stock.withdrawal_reason_required"),
-        ({"reason": "gift"}, "stock.withdrawal_reason_required"),
+        ({"reason_id": None}, "stock.withdrawal_reason_required"),
         ({"lines": []}, "stock.withdrawal_no_lines"),
         ({"date": "2026-10-03"}, "stock.withdrawal_date_in_future"),
         ({"note": "x" * 201}, "stock.withdrawal_note_too_long"),
@@ -295,7 +302,7 @@ def test_movements_mix_entries_and_withdrawals_newest_first(
     both = _record(
         client,
         first,
-        reason="own_use",
+        reason_id=reason_id(client, "Own use"),
         date="2026-09-15",
         lines=[
             {"product_id": first, "quantity": "1"},
@@ -316,7 +323,10 @@ def test_movements_mix_entries_and_withdrawals_newest_first(
         ("entry", "2026-09-01"),
     ]
     assert [row["id"] for row in rows[1:3]] == [both["id"], earlier["id"]]
-    assert rows[1]["reason"] == "own_use"
+    assert (rows[1]["reason_id"], rows[1]["reason_name"]) == (
+        reason_id(client, "Own use"),
+        "Own use",
+    )
     assert rows[1]["quantity"] == 1.5  # one row for the withdrawal, its repeated lines summed
     assert rows[3]["cost_per_gram"] == 2_000
     assert [(row["kind"], row["quantity"]) for row in other] == [("withdrawal", 2.0)]
@@ -421,7 +431,7 @@ def test_a_withdrawal_is_never_a_sale_a_debt_or_money(client: TestClient) -> Non
         )
 
     before = snapshot()
-    withdrawal = _record(client, variety_id, reason="own_use")
+    withdrawal = _record(client, variety_id, reason_id=reason_id(client, "Own use"))
     assert snapshot() == before
     client.delete(f"/stock/withdrawals/{withdrawal['id']}")
     assert snapshot() == before
@@ -517,7 +527,7 @@ def test_an_edit_keeps_a_variety_archived_since_and_changes_the_rest(
         f"/stock/withdrawals/{withdrawal['id']}",
         json=_body(
             kept,
-            reason="own_use",
+            reason_id=reason_id(client, "Own use"),
             date="2026-09-20",
             note="cambió",
             lines=[_line(kept, "7")],
@@ -526,7 +536,11 @@ def test_an_edit_keeps_a_variety_archived_since_and_changes_the_rest(
 
     assert response.status_code == 200, response.text
     stored = client.get(f"/stock/withdrawals/{withdrawal['id']}").json()
-    assert (stored["reason"], stored["date"], stored["note"]) == ("own_use", "2026-09-20", "cambió")
+    assert (stored["reason_name"], stored["date"], stored["note"]) == (
+        "Own use",
+        "2026-09-20",
+        "cambió",
+    )
     assert [line["quantity"] for line in stored["lines"]] == [7]
 
 
@@ -582,3 +596,86 @@ def test_a_withdrawal_touching_an_archived_variety_can_still_be_read_and_deleted
     assert client.get(f"/stock/withdrawals/{withdrawal['id']}").json() == withdrawal
     assert client.delete(f"/stock/withdrawals/{withdrawal['id']}").status_code == 204
     assert _rows(engine) == (0, 0)
+
+
+def _custom_reason(client: TestClient, name: str = "Regalos") -> int:
+    response = client.post("/api/withdrawal-reasons", json={"name": name})
+    assert response.status_code == 201, response.text
+    return int(response.json()["id"])
+
+
+def test_a_withdrawal_is_recorded_and_edited_under_a_reason_the_business_added(
+    client: TestClient,
+) -> None:
+    variety_id = _variety(client)
+    custom = _custom_reason(client)
+
+    withdrawal = _record(client, variety_id, reason_id=custom)
+    assert (withdrawal["reason_id"], withdrawal["reason_name"]) == (custom, "Regalos")
+    assert "reason" not in withdrawal
+    movement = client.get(f"/stock/products/{variety_id}/movements").json()[0]
+    assert (movement["reason_id"], movement["reason_name"]) == (custom, "Regalos")
+
+    edited = client.put(
+        f"/stock/withdrawals/{withdrawal['id']}",
+        json=_body(variety_id, reason_id=reason_id(client, "Own use")),
+    )
+    assert edited.status_code == 200, edited.text
+    assert (edited.json()["reason_id"], edited.json()["reason_name"]) == (
+        reason_id(client, "Own use"),
+        "Own use",
+    )
+    back = client.put(
+        f"/stock/withdrawals/{withdrawal['id']}", json=_body(variety_id, reason_id=custom)
+    )
+    assert back.json()["reason_name"] == "Regalos"
+    assert client.get(f"/stock/withdrawals/{withdrawal['id']}").json() == back.json()
+
+
+def test_another_business_reason_answers_404_on_record_and_on_edit(
+    client: TestClient, other_client: TestClient, engine: Engine
+) -> None:
+    mine = _variety(client)
+    theirs = reason_id(other_client, "Marketing")
+    withdrawal = _record(client, mine)
+
+    recorded = client.post("/stock/withdrawals", json=_body(mine, reason_id=theirs))
+    edited = client.put(
+        f"/stock/withdrawals/{withdrawal['id']}", json=_body(mine, reason_id=theirs)
+    )
+
+    for refused in (recorded, edited):
+        assert _refusal(refused) == (404, "stock.withdrawal_reason_not_found")
+        assert str(theirs) not in refused.text
+    assert _rows(engine)[0] == 1
+    assert client.get(f"/stock/withdrawals/{withdrawal['id']}").json() == withdrawal
+
+
+def test_an_unknown_reason_answers_404_and_an_edit_leaves_the_withdrawal_as_it_was(
+    client: TestClient, engine: Engine
+) -> None:
+    variety_id = _variety(client)
+    withdrawal = _record(client, variety_id)
+
+    recorded = client.post("/stock/withdrawals", json=_body(variety_id, reason_id=999_999))
+    edited = client.put(
+        f"/stock/withdrawals/{withdrawal['id']}",
+        json=_body(variety_id, reason_id=999_999, lines=[_line(variety_id, "9")]),
+    )
+
+    assert _refusal(recorded) == (404, "stock.withdrawal_reason_not_found")
+    assert _refusal(edited) == (404, "stock.withdrawal_reason_not_found")
+    assert _rows(engine)[0] == 1
+    assert client.get(f"/stock/withdrawals/{withdrawal['id']}").json() == withdrawal
+
+
+def test_a_missing_reason_id_is_still_the_required_refusal(client: TestClient) -> None:
+    variety_id = _variety(client)
+    body = _body(variety_id)
+    del body["reason_id"]
+
+    absent = client.post("/stock/withdrawals", json=body)
+    null = client.post("/stock/withdrawals", json=_body(variety_id, reason_id=None))
+
+    assert _refusal(absent) == (422, "stock.withdrawal_reason_required")
+    assert _refusal(null) == (422, "stock.withdrawal_reason_required")

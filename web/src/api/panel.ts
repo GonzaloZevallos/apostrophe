@@ -9,9 +9,10 @@
 import { queryOptions } from '@tanstack/react-query'
 import { get } from './client'
 import { keys } from './keys'
+import type { ReasonCost } from './analysis'
 import type { VarietyStock } from './stock'
 
-/** A period's stock shortfall, promotion or own-use cost (CONTEXT.md), `null` exactly
+/** A period's stock shortfall cost (CONTEXT.md), `null` exactly
  * when the period has none of that line's records. `pending` is decided from that
  * line's own pending quantity (plan invariant); no quantity crosses the wire (PM). Twin of
  * `CostLineOut`. */
@@ -31,8 +32,7 @@ export interface PanelPeriod {
   cost_of_goods: number
   pending_cost: boolean
   shortfall: PanelCostLine | null
-  promotion: PanelCostLine | null
-  own_use: PanelCostLine | null
+  withdrawals: ReasonCost[]
   expenses: number
   purchases: number
   profit: number

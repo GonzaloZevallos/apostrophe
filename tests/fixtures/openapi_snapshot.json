@@ -159,16 +159,6 @@
             ],
             "title": "Next"
           },
-          "own_use": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "previous": {
             "anyOf": [
               {
@@ -186,16 +176,6 @@
             },
             "title": "Products",
             "type": "array"
-          },
-          "promotion": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "quantity_gifted": {
             "title": "Quantity Gifted",
@@ -222,6 +202,13 @@
                 "type": "null"
               }
             ]
+          },
+          "withdrawals": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCostOut"
+            },
+            "title": "Withdrawals",
+            "type": "array"
           }
         },
         "required": [
@@ -234,8 +221,7 @@
           "quantity_gifted",
           "average_margin",
           "shortfall",
-          "promotion",
-          "own_use",
+          "withdrawals",
           "products"
         ],
         "title": "AnalysisMonthOut",
@@ -785,7 +771,7 @@
         "type": "object"
       },
       "CostLineOut": {
-        "description": "A period's stock shortfall, promotion or own-use cost (CONTEXT.md), `null`\nexactly when the period has none of that line's records. `pending` is decided from\nthat line's own pending grams (plan invariant); no grams cross the wire (PM).",
+        "description": "A period's stock shortfall cost (CONTEXT.md), `null`\nexactly when the period has none of that line's records. `pending` is decided from\nthat line's own pending grams (plan invariant); no grams cross the wire (PM).",
         "properties": {
           "amount": {
             "title": "Amount",
@@ -867,6 +853,17 @@
       },
       "CustomerIn": {
         "properties": {
+          "customer_type_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Type Id"
+          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -881,11 +878,6 @@
               }
             ],
             "title": "Phone"
-          },
-          "vip": {
-            "default": false,
-            "title": "Vip",
-            "type": "boolean"
           }
         },
         "required": [
@@ -899,6 +891,17 @@
           "balance": {
             "title": "Balance",
             "type": "integer"
+          },
+          "customer_type_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Type Id"
           },
           "id": {
             "title": "Id",
@@ -950,6 +953,7 @@
           "name",
           "phone",
           "vip",
+          "customer_type_id",
           "balance",
           "owing_since",
           "standing"
@@ -959,6 +963,17 @@
       },
       "CustomerPatchIn": {
         "properties": {
+          "customer_type_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Type Id"
+          },
           "name": {
             "anyOf": [
               {
@@ -980,20 +995,123 @@
               }
             ],
             "title": "Phone"
-          },
-          "vip": {
+          }
+        },
+        "title": "CustomerPatchIn",
+        "type": "object"
+      },
+      "CustomerTypeIcon": {
+        "description": "The closed set of neutral icons. The keys are stored values: changing one is a\ndata migration. The front's map is checked against the OpenAPI snapshot.",
+        "enum": [
+          "circle",
+          "star",
+          "heart",
+          "diamond",
+          "flag",
+          "tag",
+          "crown",
+          "bell"
+        ],
+        "title": "CustomerTypeIcon",
+        "type": "string"
+      },
+      "CustomerTypeIn": {
+        "properties": {
+          "icon": {
             "anyOf": [
               {
-                "type": "boolean"
+                "enum": [
+                  "circle",
+                  "star",
+                  "heart",
+                  "diamond",
+                  "flag",
+                  "tag",
+                  "crown",
+                  "bell"
+                ],
+                "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Vip"
+            "title": "Icon"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
           }
         },
-        "title": "CustomerPatchIn",
+        "required": [
+          "name"
+        ],
+        "title": "CustomerTypeIn",
+        "type": "object"
+      },
+      "CustomerTypeOut": {
+        "properties": {
+          "icon": {
+            "$ref": "#/components/schemas/CustomerTypeIcon"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "is_vip": {
+            "title": "Is Vip",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "icon",
+          "is_vip"
+        ],
+        "title": "CustomerTypeOut",
+        "type": "object"
+      },
+      "CustomerTypePatchIn": {
+        "properties": {
+          "icon": {
+            "anyOf": [
+              {
+                "enum": [
+                  "circle",
+                  "star",
+                  "heart",
+                  "diamond",
+                  "flag",
+                  "tag",
+                  "crown",
+                  "bell"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "CustomerTypePatchIn",
         "type": "object"
       },
       "DebtorCustomerOut": {
@@ -1792,28 +1910,8 @@
             "title": "Month",
             "type": "string"
           },
-          "own_use": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "profit": {
             "$ref": "#/components/schemas/AmountWithPendingOut"
-          },
-          "promotion": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "quantity": {
             "title": "Quantity",
@@ -1832,6 +1930,13 @@
                 "type": "null"
               }
             ]
+          },
+          "withdrawals": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCostOut"
+            },
+            "title": "Withdrawals",
+            "type": "array"
           }
         },
         "required": [
@@ -1842,8 +1947,7 @@
           "quantity",
           "cost_of_goods",
           "shortfall",
-          "promotion",
-          "own_use",
+          "withdrawals",
           "expenses",
           "profit",
           "cash"
@@ -2348,16 +2452,6 @@
             "title": "Expenses",
             "type": "integer"
           },
-          "own_use": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/CostLineOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "pending_cost": {
             "title": "Pending Cost",
             "type": "boolean"
@@ -2369,16 +2463,6 @@
           "profit_pending": {
             "title": "Profit Pending",
             "type": "boolean"
-          },
-          "promotion": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/CostLineOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "purchases": {
             "title": "Purchases",
@@ -2414,6 +2498,13 @@
             "format": "date",
             "title": "Start",
             "type": "string"
+          },
+          "withdrawals": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCostOut"
+            },
+            "title": "Withdrawals",
+            "type": "array"
           }
         },
         "required": [
@@ -2427,8 +2518,7 @@
           "cost_of_goods",
           "pending_cost",
           "shortfall",
-          "promotion",
-          "own_use",
+          "withdrawals",
           "expenses",
           "purchases",
           "profit",
@@ -3189,6 +3279,95 @@
         "title": "ProgressOut",
         "type": "object"
       },
+      "ReasonCostOut": {
+        "description": "One withdrawal reason's cost line, in the list order `period_figures` answered\nit: Home's Week, Month and Today and every Análisis row serialise it through here\nand nowhere else. `amount` is `null` when every gram is pending, never 0.",
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "pending": {
+            "title": "Pending",
+            "type": "boolean"
+          },
+          "pending_quantity": {
+            "title": "Pending Quantity",
+            "type": "number"
+          },
+          "reason_id": {
+            "title": "Reason Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "reason_id",
+          "name",
+          "amount",
+          "pending",
+          "pending_quantity"
+        ],
+        "title": "ReasonCostOut",
+        "type": "object"
+      },
+      "ReasonIn": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "ReasonIn",
+        "type": "object"
+      },
+      "ReasonMoveIn": {
+        "properties": {
+          "direction": {
+            "enum": [
+              "up",
+              "down"
+            ],
+            "title": "Direction",
+            "type": "string"
+          }
+        },
+        "required": [
+          "direction"
+        ],
+        "title": "ReasonMoveIn",
+        "type": "object"
+      },
+      "ReasonOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "ReasonOut",
+        "type": "object"
+      },
       "RecordPaymentOut": {
         "properties": {
           "after": {
@@ -3245,7 +3424,7 @@
         "type": "object"
       },
       "RowCostOut": {
-        "description": "One An\u00e1lisis cost line (cost of goods, stock shortfall, promotion or own use): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
+        "description": "One Análisis cost line (cost of goods or stock shortfall): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
         "properties": {
           "all_pending": {
             "title": "All Pending",
@@ -3361,7 +3540,7 @@
       },
       "SaleBillOut": {
         "additionalProperties": false,
-        "description": "The facts a seller may share with a sale's customer (CONTEXT.md: Sale bill),\nclosed: no field for the note, the customer, any id, the VIP flag, cost or margin.",
+        "description": "The facts a seller may share with a sale's customer (CONTEXT.md: Sale bill),\nclosed: no field for the note, the customer, any id, the VIP flag, cost or margin. The\nSale number is not an id: it is the seller's own count, the same one the detail shows.",
         "properties": {
           "balance": {
             "anyOf": [
@@ -3390,6 +3569,10 @@
             "title": "Lines",
             "type": "array"
           },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
           "payment": {
             "$ref": "#/components/schemas/BillPaymentOut"
           },
@@ -3404,6 +3587,7 @@
         },
         "required": [
           "business_name",
+          "number",
           "date",
           "shipping_charged",
           "total",
@@ -3438,7 +3622,7 @@
         "type": "object"
       },
       "SaleDetailOut": {
-        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` \u2014 used by the list and by every write \u2014 never\nallocates.",
+        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` — used by the list and by every write — never\nallocates.",
         "properties": {
           "bill": {
             "anyOf": [
@@ -3487,6 +3671,10 @@
             ],
             "title": "Note"
           },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
           "payment": {
             "discriminator": {
               "mapping": {
@@ -3528,6 +3716,7 @@
         },
         "required": [
           "id",
+          "number",
           "date",
           "customer",
           "shipping_charged",
@@ -3740,6 +3929,10 @@
             ],
             "title": "Note"
           },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
           "payment": {
             "discriminator": {
               "mapping": {
@@ -3777,6 +3970,7 @@
         },
         "required": [
           "id",
+          "number",
           "date",
           "customer",
           "shipping_charged",
@@ -3853,28 +4047,8 @@
             "title": "Expenses",
             "type": "integer"
           },
-          "own_use": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "profit": {
             "$ref": "#/components/schemas/AmountWithPendingOut"
-          },
-          "promotion": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "sales": {
             "title": "Sales",
@@ -3889,6 +4063,13 @@
                 "type": "null"
               }
             ]
+          },
+          "withdrawals": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCostOut"
+            },
+            "title": "Withdrawals",
+            "type": "array"
           }
         },
         "required": [
@@ -3897,8 +4078,7 @@
           "profit",
           "cash",
           "shortfall",
-          "promotion",
-          "own_use"
+          "withdrawals"
         ],
         "title": "SinceFirstRecordOut",
         "type": "object"
@@ -4100,28 +4280,8 @@
             "title": "Last Day",
             "type": "string"
           },
-          "own_use": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "profit": {
             "$ref": "#/components/schemas/AmountWithPendingOut"
-          },
-          "promotion": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RowCostOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "quantity": {
             "title": "Quantity",
@@ -4140,6 +4300,13 @@
                 "type": "null"
               }
             ]
+          },
+          "withdrawals": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCostOut"
+            },
+            "title": "Withdrawals",
+            "type": "array"
           }
         },
         "required": [
@@ -4149,8 +4316,7 @@
           "quantity",
           "cost_of_goods",
           "shortfall",
-          "promotion",
-          "own_use",
+          "withdrawals",
           "expenses",
           "profit",
           "cash",
@@ -4188,7 +4354,7 @@
         "type": "object"
       },
       "WithdrawalIn": {
-        "description": "Bare (ADR-0005): `reason` is optional here so a missing one is the domain's\ncoded refusal, not a pydantic error that would echo the input.",
+        "description": "Bare (ADR-0005): `reason_id` is optional here so a missing one is the domain's\ncoded refusal, not a pydantic error that would echo the input.",
         "properties": {
           "date": {
             "anyOf": [
@@ -4220,16 +4386,16 @@
             ],
             "title": "Note"
           },
-          "reason": {
+          "reason_id": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "integer"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Reason"
+            "title": "Reason Id"
           }
         },
         "required": [
@@ -4308,14 +4474,20 @@
             "title": "Quantity",
             "type": "number"
           },
-          "reason": {
-            "$ref": "#/components/schemas/WithdrawalReason"
+          "reason_id": {
+            "title": "Reason Id",
+            "type": "integer"
+          },
+          "reason_name": {
+            "title": "Reason Name",
+            "type": "string"
           }
         },
         "required": [
           "id",
           "date",
-          "reason",
+          "reason_id",
+          "reason_name",
           "quantity"
         ],
         "title": "WithdrawalMovementOut",
@@ -4350,8 +4522,13 @@
             ],
             "title": "Note"
           },
-          "reason": {
-            "$ref": "#/components/schemas/WithdrawalReason"
+          "reason_id": {
+            "title": "Reason Id",
+            "type": "integer"
+          },
+          "reason_name": {
+            "title": "Reason Name",
+            "type": "string"
           },
           "total_quantity": {
             "title": "Total Quantity",
@@ -4360,7 +4537,8 @@
         },
         "required": [
           "id",
-          "reason",
+          "reason_id",
+          "reason_name",
           "date",
           "note",
           "total_quantity",
@@ -4368,15 +4546,6 @@
         ],
         "title": "WithdrawalOut",
         "type": "object"
-      },
-      "WithdrawalReason": {
-        "description": "Why grams were taken out of stock with no sale (CONTEXT.md: Promotion, Own\nuse). The values are what the database stores.",
-        "enum": [
-          "promotion",
-          "own_use"
-        ],
-        "title": "WithdrawalReason",
-        "type": "string"
       },
       "app__payment_methods__adapters__router__PaymentMethodOut": {
         "properties": {
@@ -4574,6 +4743,175 @@
         "summary": "Get Analysis",
         "tags": [
           "results"
+        ]
+      }
+    },
+    "/api/customer-types": {
+      "get": {
+        "operationId": "list_customer_types_api_customer_types_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerTypeOut"
+                  },
+                  "title": "Response List Customer Types Api Customer Types Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Customer Types",
+        "tags": [
+          "customer-types"
+        ]
+      },
+      "post": {
+        "operationId": "add_customer_type_api_customer_types_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerTypeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerTypeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Customer Type",
+        "tags": [
+          "customer-types"
+        ]
+      }
+    },
+    "/api/customer-types/{type_id}": {
+      "delete": {
+        "operationId": "remove_customer_type_api_customer_types__type_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "type_id",
+            "required": true,
+            "schema": {
+              "title": "Type Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Remove Customer Type",
+        "tags": [
+          "customer-types"
+        ]
+      },
+      "patch": {
+        "operationId": "edit_customer_type_api_customer_types__type_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "type_id",
+            "required": true,
+            "schema": {
+              "title": "Type Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerTypePatchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerTypeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Edit Customer Type",
+        "tags": [
+          "customer-types"
         ]
       }
     },
@@ -5482,6 +5820,236 @@
         "summary": "Restore Product",
         "tags": [
           "products"
+        ]
+      }
+    },
+    "/api/withdrawal-reasons": {
+      "get": {
+        "operationId": "list_reasons_api_withdrawal_reasons_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReasonOut"
+                  },
+                  "title": "Response List Reasons Api Withdrawal Reasons Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Reasons",
+        "tags": [
+          "stock"
+        ]
+      },
+      "post": {
+        "operationId": "add_reason_api_withdrawal_reasons_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReasonOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Reason",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
+    "/api/withdrawal-reasons/{reason_id}": {
+      "delete": {
+        "operationId": "delete_reason_api_withdrawal_reasons__reason_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "reason_id",
+            "required": true,
+            "schema": {
+              "title": "Reason Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Reason",
+        "tags": [
+          "stock"
+        ]
+      },
+      "patch": {
+        "operationId": "rename_reason_api_withdrawal_reasons__reason_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "reason_id",
+            "required": true,
+            "schema": {
+              "title": "Reason Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReasonOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Rename Reason",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
+    "/api/withdrawal-reasons/{reason_id}/move": {
+      "post": {
+        "operationId": "move_reason_api_withdrawal_reasons__reason_id__move_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "reason_id",
+            "required": true,
+            "schema": {
+              "title": "Reason Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonMoveIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReasonOut"
+                  },
+                  "title": "Response Move Reason Api Withdrawal Reasons  Reason Id  Move Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Move Reason",
+        "tags": [
+          "stock"
         ]
       }
     },

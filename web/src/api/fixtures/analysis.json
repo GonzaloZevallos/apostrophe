@@ -11,8 +11,10 @@
     "quantity_gifted": 15.0,
     "average_margin": { "amount": 41000, "percent": 55, "pending_quantity": 2.5 },
     "shortfall": { "amount": 3000, "pending_quantity": 1.0, "all_pending": false },
-    "promotion": { "amount": 4000, "pending_quantity": 0.5, "all_pending": false },
-    "own_use": { "amount": 1500, "pending_quantity": 0.0, "all_pending": false },
+    "withdrawals": [
+      { "reason_id": 1, "name": "Marketing", "amount": null, "pending": true, "pending_quantity": 0.5 },
+      { "reason_id": 2, "name": "Own use", "amount": 1500, "pending": false, "pending_quantity": 0.0 }
+    ],
     "products": [
       {
         "product_id": 1,
@@ -54,8 +56,10 @@
       "quantity": 10.0,
       "cost_of_goods": { "amount": 6000, "pending_quantity": 0.0, "all_pending": false },
       "shortfall": { "amount": 2000, "pending_quantity": 0.0, "all_pending": false },
-      "promotion": { "amount": 1000, "pending_quantity": 0.0, "all_pending": false },
-      "own_use": { "amount": 500, "pending_quantity": 0.0, "all_pending": false },
+      "withdrawals": [
+        { "reason_id": 1, "name": "Marketing", "amount": null, "pending": true, "pending_quantity": 0.5 },
+        { "reason_id": 2, "name": "Own use", "amount": 500, "pending": false, "pending_quantity": 0.0 }
+      ],
       "expenses": 2000,
       "profit": { "amount": 5000, "pending_quantity": 0.0 },
       "cash": 13000,
@@ -68,8 +72,7 @@
       "quantity": 12.0,
       "cost_of_goods": { "amount": 7000, "pending_quantity": 0.0, "all_pending": false },
       "shortfall": null,
-      "promotion": null,
-      "own_use": null,
+      "withdrawals": [],
       "expenses": 1500,
       "profit": { "amount": 7000, "pending_quantity": 0.0 },
       "cash": 16000,
@@ -82,8 +85,7 @@
       "quantity": 13.0,
       "cost_of_goods": { "amount": 8000, "pending_quantity": 0.0, "all_pending": false },
       "shortfall": null,
-      "promotion": null,
-      "own_use": null,
+      "withdrawals": [],
       "expenses": 2500,
       "profit": { "amount": 6000, "pending_quantity": 0.0 },
       "cash": 17000,
@@ -96,8 +98,7 @@
       "quantity": 14.0,
       "cost_of_goods": { "amount": 9000, "pending_quantity": 0.0, "all_pending": false },
       "shortfall": null,
-      "promotion": null,
-      "own_use": null,
+      "withdrawals": [],
       "expenses": 1800,
       "profit": { "amount": 8000, "pending_quantity": 0.0 },
       "cash": 19000,
@@ -110,8 +111,7 @@
       "quantity": 12.5,
       "cost_of_goods": { "amount": 8500, "pending_quantity": 0.0, "all_pending": false },
       "shortfall": null,
-      "promotion": null,
-      "own_use": null,
+      "withdrawals": [],
       "expenses": 2200,
       "profit": { "amount": 6500, "pending_quantity": 0.0 },
       "cash": 17500,
@@ -124,8 +124,7 @@
       "quantity": 16.0,
       "cost_of_goods": { "amount": 9500, "pending_quantity": 0.0, "all_pending": false },
       "shortfall": null,
-      "promotion": null,
-      "own_use": null,
+      "withdrawals": [],
       "expenses": 2000,
       "profit": { "amount": 9000, "pending_quantity": 6.0 },
       "cash": 21000,
@@ -138,8 +137,7 @@
       "quantity": 13.5,
       "cost_of_goods": { "amount": 9000, "pending_quantity": 0.0, "all_pending": false },
       "shortfall": null,
-      "promotion": null,
-      "own_use": null,
+      "withdrawals": [],
       "expenses": 1900,
       "profit": { "amount": 7500, "pending_quantity": 0.0 },
       "cash": 19500,
@@ -152,8 +150,7 @@
       "quantity": 18.0,
       "cost_of_goods": { "amount": 10000, "pending_quantity": 0.0, "all_pending": false },
       "shortfall": null,
-      "promotion": null,
-      "own_use": null,
+      "withdrawals": [],
       "expenses": 2100,
       "profit": { "amount": 11000, "pending_quantity": 0.0 },
       "cash": 27500,
@@ -169,8 +166,10 @@
       "quantity": 25.0,
       "cost_of_goods": { "amount": 20000, "pending_quantity": 0.0, "all_pending": false },
       "shortfall": { "amount": 2000, "pending_quantity": 0.0, "all_pending": false },
-      "promotion": { "amount": 1000, "pending_quantity": 0.0, "all_pending": false },
-      "own_use": { "amount": 500, "pending_quantity": 0.0, "all_pending": false },
+      "withdrawals": [
+        { "reason_id": 1, "name": "Marketing", "amount": null, "pending": true, "pending_quantity": 0.5 },
+        { "reason_id": 2, "name": "Own use", "amount": 500, "pending": false, "pending_quantity": 0.0 }
+      ],
       "expenses": 6000,
       "profit": { "amount": 12000, "pending_quantity": 0.0 },
       "cash": 35000
@@ -183,8 +182,7 @@
       "quantity": 30.0,
       "cost_of_goods": { "amount": 24000, "pending_quantity": 0.0, "all_pending": false },
       "shortfall": null,
-      "promotion": null,
-      "own_use": null,
+      "withdrawals": [],
       "expenses": 7000,
       "profit": { "amount": 18000, "pending_quantity": 0.0 },
       "cash": 48000
@@ -197,8 +195,7 @@
       "quantity": 32.0,
       "cost_of_goods": { "amount": 26000, "pending_quantity": 0.0, "all_pending": false },
       "shortfall": null,
-      "promotion": null,
-      "own_use": null,
+      "withdrawals": [],
       "expenses": 8000,
       "profit": { "amount": 20000, "pending_quantity": 0.0 },
       "cash": 52000
@@ -211,8 +208,7 @@
       "quantity": 49.0,
       "cost_of_goods": { "amount": 30000, "pending_quantity": 0.0, "all_pending": false },
       "shortfall": null,
-      "promotion": null,
-      "own_use": null,
+      "withdrawals": [],
       "expenses": 8200,
       "profit": { "amount": 26000, "pending_quantity": 0.0 },
       "cash": 65000
@@ -225,8 +221,7 @@
       "quantity": 56.0,
       "cost_of_goods": { "amount": 32000, "pending_quantity": 0.0, "all_pending": false },
       "shortfall": null,
-      "promotion": null,
-      "own_use": null,
+      "withdrawals": [],
       "expenses": 7600,
       "profit": { "amount": 30500, "pending_quantity": 6.0 },
       "cash": 77000
@@ -239,8 +234,7 @@
       "quantity": 43.0,
       "cost_of_goods": { "amount": 28000, "pending_quantity": 0.0, "all_pending": false },
       "shortfall": null,
-      "promotion": null,
-      "own_use": null,
+      "withdrawals": [],
       "expenses": 6500,
       "profit": { "amount": 33500, "pending_quantity": 3.5 },
       "cash": 40000
@@ -261,8 +255,10 @@
     "profit": { "amount": 140000, "pending_quantity": 9.5 },
     "cash": 317000,
     "shortfall": { "amount": 8000, "pending_quantity": 3.0, "all_pending": false },
-    "promotion": { "amount": 9000, "pending_quantity": 0.5, "all_pending": false },
-    "own_use": { "amount": 2500, "pending_quantity": 0.0, "all_pending": false }
+    "withdrawals": [
+      { "reason_id": 1, "name": "Marketing", "amount": null, "pending": true, "pending_quantity": 0.5 },
+      { "reason_id": 2, "name": "Own use", "amount": 2500, "pending": false, "pending_quantity": 0.0 }
+    ]
   },
   "month_expenses": {
     "categories": [

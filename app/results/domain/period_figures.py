@@ -27,6 +27,7 @@ from app.results.domain.figures import (
     MonthFigures,
     MonthRowFigures,
     PeriodTotals,
+    ReasonCost,
     RowCost,
     SinceFirstRecordFigures,
     VarietyRow,
@@ -38,6 +39,7 @@ from app.results.domain.ledger import (
     ExpenseRecord,
     PaymentRecord,
     PurchaseRecord,
+    ReasonRecord,
     SaleRecord,
 )
 from app.results.domain.rounding import percent
@@ -45,9 +47,6 @@ from app.shared.calendar import Month, Week
 from app.shared.quantity import Quantity
 
 ZERO = Quantity(0)
-
-WithdrawalKind = Literal["promotion", "own_use"]
-CostLine = Literal["shortfall", "promotion", "own_use"]
 
 
 def row_cost(amount: int, pending_quantity: Quantity, quantity: Quantity) -> RowCost:
@@ -59,6 +58,18 @@ def row_cost(amount: int, pending_quantity: Quantity, quantity: Quantity) -> Row
         pending_quantity=pending_quantity,
         all_pending=quantity.is_positive and pending_quantity == quantity,
     )
+
+
+def _line_cost(days: Sequence[_CostDayTotals]) -> RowCost | None:
+    """The sum of one cost line's day buckets, `None` with no day at all."""
+    if not days:
+        return None
+    pending = ZERO
+    quantity = ZERO
+    for day_totals in days:
+        pending = pending + day_totals.pending_quantity
+        quantity = quantity + day_totals.quantity
+    return row_cost(sum(t.costed for t in days), pending, quantity)
 
 
 def _days(start: date, end_inclusive: date) -> list[date]:
@@ -107,9 +118,10 @@ class Buckets:
     day_totals: dict[date, _DayTotals] = field(default_factory=dict)
     variety_day_totals: dict[tuple[date, int], _VarietyDayTotals] = field(default_factory=dict)
     shortfall_totals: dict[date, _CostDayTotals] = field(default_factory=dict)
-    withdrawal_totals: dict[tuple[date, WithdrawalKind], _CostDayTotals] = field(
-        default_factory=dict
-    )
+    withdrawal_totals: dict[tuple[date, int], _CostDayTotals] = field(default_factory=dict)
+    # The business's reasons in list order (position, then id), as `scan` was handed
+    # them: `withdrawals` answers in this order and nothing else re-orders them.
+    reasons: tuple[ReasonRecord, ...] = ()
     variety_names: dict[int, str] = field(default_factory=dict)
     sales_by_day: dict[date, int] = field(default_factory=dict)
     sales_count_by_day: dict[date, int] = field(default_factory=dict)
@@ -195,37 +207,42 @@ class Buckets:
                 total = total + totals.pending_quantity
         return total
 
-    def _cost_line(self, line: CostLine, start: date, end: date) -> RowCost | None:
-        """One cost line's costed amount and pending grams in `[start, end]`, `None`
-        exactly when no draw of that kind falls in the window."""
-        days: list[_CostDayTotals] = []
-        for d in _days(start, end):
-            match line:
-                case "shortfall":
-                    found = self.shortfall_totals.get(d)
-                case "promotion" | "own_use":
-                    found = self.withdrawal_totals.get((d, line))
-                case _:
-                    assert_never(line)
-            if found is not None:
-                days.append(found)
-        if not days:
-            return None
-        pending = ZERO
-        quantity = ZERO
-        for day_totals in days:
-            pending = pending + day_totals.pending_quantity
-            quantity = quantity + day_totals.quantity
-        return row_cost(sum(t.costed for t in days), pending, quantity)
-
     def shortfall(self, start: date, end: date) -> RowCost | None:
-        return self._cost_line("shortfall", start, end)
+        """The stock shortfall's costed amount and pending grams in `[start, end]`,
+        `None` exactly when no shortfall draw falls in the window."""
+        days = [
+            found for d in _days(start, end) if (found := self.shortfall_totals.get(d)) is not None
+        ]
+        return _line_cost(days)
 
-    def promotion(self, start: date, end: date) -> RowCost | None:
-        return self._cost_line("promotion", start, end)
-
-    def own_use(self, start: date, end: date) -> RowCost | None:
-        return self._cost_line("own_use", start, end)
+    def withdrawals(self, start: date, end: date) -> tuple[ReasonCost, ...]:
+        """One cost per reason with a withdrawal in `[start, end]`, in the order of the
+        business's reasons. The only place a reason's cost is worked out: Home and
+        Análisis read this and never order or add anything of their own. A withdrawal
+        whose reason is not in the list is a broken read and raises, never dropped."""
+        by_reason: dict[int, list[_CostDayTotals]] = {}
+        for (day, reason_id), totals in self.withdrawal_totals.items():
+            if start <= day <= end:
+                by_reason.setdefault(reason_id, []).append(totals)
+        listed = {reason.reason_id for reason in self.reasons}
+        unknown = by_reason.keys() - listed
+        if unknown:
+            raise ValueError(f"a withdrawal is filed under an unknown reason: {sorted(unknown)}")
+        costs: list[ReasonCost] = []
+        for reason in self.reasons:
+            line = _line_cost(by_reason.get(reason.reason_id, []))
+            if line is None:
+                continue
+            costs.append(
+                ReasonCost(
+                    reason_id=reason.reason_id,
+                    name=reason.name,
+                    amount=None if line.all_pending else line.amount,
+                    pending_quantity=line.pending_quantity,
+                    pending=line.pending_quantity.is_positive,
+                )
+            )
+        return tuple(costs)
 
     def cost_of_goods_row(self, start: date, end: date) -> RowCost:
         """Cost of goods as an Análisis row reads it: the costed cost and the pending
@@ -245,14 +262,13 @@ class Buckets:
         spent = self.expenses(start, end)
         amount = sales_total - sales_pending - cost - spent
         pending = self.pending_quantity(start, end)
-        for line in (
-            self.shortfall(start, end),
-            self.promotion(start, end),
-            self.own_use(start, end),
-        ):
-            if line is not None:
-                amount -= line.amount
-                pending = pending + line.pending_quantity
+        shortfall = self.shortfall(start, end)
+        if shortfall is not None:
+            amount -= shortfall.amount
+            pending = pending + shortfall.pending_quantity
+        for reason_cost in self.withdrawals(start, end):
+            amount -= reason_cost.amount or 0
+            pending = pending + reason_cost.pending_quantity
         return AmountWithPending(amount, pending)
 
     def cash(self, start: date, end: date) -> int:
@@ -316,12 +332,14 @@ def scan(
     expenses: Sequence[ExpenseRecord],
     purchases: Sequence[PurchaseRecord],
     earliest_entry_day: date | None,
+    reasons: Sequence[ReasonRecord] = (),
 ) -> tuple[Buckets, date | None]:
     """Scans every ledger exactly once: each loop below both fills its own buckets
     and folds its own days into `first_record` — the minimum date across sales,
     stock entries, stock withdrawals, payments and expenses (ADR-0020) — so nothing is
     scanned a second time just to find it."""
-    buckets = Buckets()
+    ordered = sorted(reasons, key=lambda reason: (reason.position, reason.reason_id))
+    buckets = Buckets(reasons=tuple(ordered))
     first_record = earliest_entry_day
 
     for row in draws:
@@ -331,11 +349,13 @@ def scan(
                 agg.costed += row.costed or 0
                 agg.pending_quantity = agg.pending_quantity + row.pending
                 agg.quantity = agg.quantity + row.quantity
-            case "promotion" | "own_use":
+            case "withdrawal":
                 # A withdrawal is neither a sale nor a shortfall: it writes only its
                 # own bucket, and its date counts as a first record.
+                if row.reason_id is None:
+                    raise ValueError("a withdrawal draw always carries its reason")
                 withdrawn = buckets.withdrawal_totals.setdefault(
-                    (row.day, row.kind), _CostDayTotals()
+                    (row.day, row.reason_id), _CostDayTotals()
                 )
                 withdrawn.costed += row.costed or 0
                 withdrawn.pending_quantity = withdrawn.pending_quantity + row.pending
@@ -388,7 +408,7 @@ def scan(
 def totals_between(buckets: Buckets, start: date, end: date) -> PeriodTotals:
     """One `[start, end]` window's figures, read off an already-`scan`ned `Buckets`
     (ADR-0013 amendment GH-70): sales, sales count, grams sold and gifted, cost of
-    goods, stock shortfall, promotion, own use, expenses, purchases, profit and cash — the one
+    goods, stock shortfall, each withdrawal reason, expenses, purchases, profit and cash — the one
     computation Inicio's panel and Análisis's weeks/months/since-first-record all
     read, never a second sum of their own. Profit and cash stay written once, in
     `Buckets.profit`/`Buckets.cash` above."""
@@ -403,8 +423,7 @@ def totals_between(buckets: Buckets, start: date, end: date) -> PeriodTotals:
         ),
         cost_of_goods_row=buckets.cost_of_goods_row(start, end),
         shortfall=buckets.shortfall(start, end),
-        promotion=buckets.promotion(start, end),
-        own_use=buckets.own_use(start, end),
+        withdrawals=buckets.withdrawals(start, end),
         expenses=buckets.expenses(start, end),
         purchases=buckets.purchases(start, end),
         profit=buckets.profit(start, end),
@@ -482,8 +501,7 @@ def _month_figures(
             pending_quantity=pending_sold_gifted,
         ),
         shortfall=buckets.shortfall(month.first_day, month.last_day),
-        promotion=buckets.promotion(month.first_day, month.last_day),
-        own_use=buckets.own_use(month.first_day, month.last_day),
+        withdrawals=buckets.withdrawals(month.first_day, month.last_day),
         varieties=varieties,
     )
 
@@ -513,8 +531,7 @@ def _weeks(buckets: Buckets, today: date, first_record: date | None) -> tuple[We
                 expenses=totals.expenses,
                 cost_of_goods=totals.cost_of_goods_row,
                 shortfall=totals.shortfall,
-                promotion=totals.promotion,
-                own_use=totals.own_use,
+                withdrawals=totals.withdrawals,
                 profit=totals.profit,
                 cash=totals.cash,
                 best=False,
@@ -566,8 +583,7 @@ def _months(
                 expenses=totals.expenses,
                 cost_of_goods=totals.cost_of_goods_row,
                 shortfall=totals.shortfall,
-                promotion=totals.promotion,
-                own_use=totals.own_use,
+                withdrawals=totals.withdrawals,
                 profit=totals.profit,
                 cash=totals.cash,
             )
@@ -620,8 +636,11 @@ def period_figures(
     expenses: Sequence[ExpenseRecord],
     purchases: Sequence[PurchaseRecord],
     earliest_entry_day: date | None,
+    reasons: Sequence[ReasonRecord] = (),
 ) -> AnalysisFigures:
-    buckets, first_record = scan(draws, sales, payments, expenses, purchases, earliest_entry_day)
+    buckets, first_record = scan(
+        draws, sales, payments, expenses, purchases, earliest_entry_day, reasons
+    )
 
     first_month = None if first_record is None else Month.containing(first_record)
     current_month = Month.containing(today)
@@ -641,8 +660,7 @@ def period_figures(
             profit=since_totals.profit,
             cash=since_totals.cash,
             shortfall=since_totals.shortfall,
-            promotion=since_totals.promotion,
-            own_use=since_totals.own_use,
+            withdrawals=since_totals.withdrawals,
         )
         since_first_record_expenses = _expense_breakdown(buckets, first_record, today)
 

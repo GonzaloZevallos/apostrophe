@@ -41,6 +41,10 @@ export interface RegistryScreen {
  * routes. The `states-*` subtasks append their names here, one per line.
  */
 export const STATE_NAMES: readonly string[] = [
+  // Records (`states-records`).
+  'ClienteNuevoSinTipos',
+  'ClienteNuevoConTipos',
+  'ClienteFichaConTipo',
   // Sales and collections (`states-sales`).
   'NuevaVentaConLinea',
   'NuevaVentaConLineaYPago',
@@ -67,6 +71,11 @@ export const STATE_NAMES: readonly string[] = [
   'MediosPagoEditar',
   'MediosPagoUnico',
   'MediosPagoBorrar',
+  'stock-entry/variety-selector-open',
+  'stock-entry/edit-archived-variety',
+  'stock-entry/edit-archived-variety-failed',
+  'withdrawal/reason-selector-open',
+  'withdrawal/line-archived-variety',
   'EntradaStockConfirmarCambios',
   'EntradaStockConfirmarBorrado',
   'PrecioNuevoFormulario',
@@ -81,7 +90,14 @@ export const STATE_NAMES: readonly string[] = [
   'GastoConfirmarBorrado',
   'ConfiguracionCategoriaRenombrar',
   'ConfiguracionCategoriaConfirmarBorrado',
+  'ConfiguracionTipoClienteNuevo',
+  'ConfiguracionTipoClienteLista',
+  'ConfiguracionTipoClienteEnUso',
   'ConfiguracionContrasena',
+  'ConfiguracionMotivos',
+  'ConfiguracionMotivoNuevo',
+  'ConfiguracionMotivoRenombrar',
+  'ConfiguracionMotivoConfirmarBorrado',
 ]
 
 function asRecord(value: unknown, what: string): Record<string, unknown> {

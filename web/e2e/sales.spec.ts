@@ -134,9 +134,9 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // desde" of today would leave those earlier dates with no price of their own.
   async function addVariety(name: string, listPrice?: string, effectiveFrom?: string): Promise<void> {
     await page.goto(VARIETIES)
-    await page.getByRole('link', { name: 'New variety' }).click()
+    await page.getByRole('link', { name: 'New product' }).click()
     await page.getByLabel('Name').fill(name)
-    await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+    await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
     if (listPrice === undefined) return
     await page.getByRole('link', { name: new RegExp(name) }).click()
     await page.getByRole('link', { name: 'New price' }).click()
@@ -158,7 +158,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
     'Home',
     'Sales',
     'Customers',
-    'Varieties',
+    'Products',
     'More',
   ])
 
@@ -205,7 +205,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   // The live preview, before saving — every line, not only the sale's own total:
   // PRD metric 2, "0 differences" against what the detail shows after saving.
-  // Line 1 (Jazmín) is now the closed row — "Add another variety" closed it
+  // Line 1 (Jazmín) is now the closed row — "Add another product" closed it
   // when line 2 opened (plan, "Line editor": one open line at a time); line 2
   // (Lirio) is still the open editor.
   const previewJazmin = page.getByRole('button', { name: /^Line 1: Jazmín/ })
@@ -213,7 +213,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(previewJazmin.getByText('$ 500 x g', { exact: true })).toBeVisible()
   await expect(previewJazmin.getByText('$ 5.000', { exact: true })).toBeVisible()
 
-  const previewLirio = page.locator('.nueva-venta__linea--abierta').filter({ has: page.getByLabel('Line 2 variety') })
+  const previewLirio = page.locator('.nueva-venta__linea--abierta').filter({ has: page.getByLabel('Line 2 product') })
   await expect(previewLirio.locator('.insignia')).toHaveText('list')
   await expect(previewLirio.getByText('$ 300 x g', { exact: true })).toBeVisible()
   await expect(previewLirio.getByText('$ 6.000', { exact: true })).toBeVisible()
@@ -406,9 +406,9 @@ test('the Regalo switch is checked by a real tap, shows a press without flipping
     email: `duena-regalo-${uniqueTag()}@example.com`,
   })
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByRole('link', { name: 'New product' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('1000')

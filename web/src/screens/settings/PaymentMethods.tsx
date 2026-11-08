@@ -9,6 +9,7 @@
 
 import { type FormEvent, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import ContentArea from '../../components/ContentArea'
 import { ApiError, NetworkError } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
 import {
@@ -83,7 +84,7 @@ export default function PaymentMethods() {
   }
 
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <div className="cuerpo medios-pago">
         <h1 className="encabezado__titulo">{T.title}</h1>
         <p className="pie">{T.subtitle}</p>
@@ -152,7 +153,7 @@ export default function PaymentMethods() {
           onGone={onGone}
         />
       )}
-    </main>
+    </ContentArea>
   )
 }
 

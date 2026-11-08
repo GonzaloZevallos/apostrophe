@@ -15,6 +15,9 @@ classDiagram
   }
   class InvalidLanguageTag {
   }
+  class InvalidMoney {
+    code : ClassVar~str~
+  }
   class InvalidQuantity {
     code : ClassVar~str~
   }
@@ -29,6 +32,19 @@ classDiagram
   }
   class MissingOperatorKey {
     key : str
+  }
+  class Money {
+    hundredths : int
+    as_decimal() Decimal
+    in_units_of(factor: int) int
+    of(value: Decimal #124; int #124; str) Money
+  }
+  class MoneyFormat {
+    decimals : int
+    symbol : str
+  }
+  class MoneyNotRepresentable {
+    code : ClassVar~str~
   }
   class Month {
     first_day : date

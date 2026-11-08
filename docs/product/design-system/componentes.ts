@@ -307,7 +307,15 @@ export type NombreIcono =
   | 'card'
   | 'coins'
   | 'phone'
-  | 'generic';
+  | 'generic'
+  | 'circulo'
+  | 'estrella'
+  | 'corazon'
+  | 'rombo'
+  | 'bandera'
+  | 'etiqueta'
+  | 'corona'
+  | 'campana';
 
 /** Más info: una línea corta con una "i" al final que despliega, en su lugar y debajo de la
  *  línea, la explicación larga (el cómo o el porqué, nunca una consecuencia ni la salida de un

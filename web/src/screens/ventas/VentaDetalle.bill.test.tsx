@@ -57,7 +57,7 @@ afterEach(() => {
 })
 
 const BILL_TEXT =
-  'Flores del Sur\n14/09\n\nFlor A 3,5 g · $ 10.500\nShipping · $ 500\n\nTotal · $ 11.000\nStill owed on this sale: $ 11.000\nYour balance: $ 11.000'
+  'Flores del Sur\nSale #2 · 14/09\n\nFlor A 3,5 g · $ 10.500\nShipping · $ 500\n\nTotal · $ 11.000\nStill owed on this sale: $ 11.000\nYour balance: $ 11.000'
 
 test('Share sends the text of the bill the detail answered', async () => {
   const share = vi.fn(() => Promise.resolve())
@@ -87,7 +87,7 @@ test('the button is the first of the actions, and never inside the Sale saved no
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...SALE, customer: null }))
   renderDetalle(saleJustSaved())
 
-  await screen.findByText('Sale of 14/09')
+  await screen.findByText('Sale #2')
   const copy = screen.getByRole('button', { name: 'Copy' })
   const wrapper = copy.parentElement
   expect(wrapper).toHaveClass('sale-bill')
@@ -102,7 +102,7 @@ test('a sale whose bill is null has no Share or Copy, and the rest of the detail
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...SALE, bill: null }))
   renderDetalle()
 
-  expect(await screen.findByText('Sale of 14/09')).toBeInTheDocument()
+  expect(await screen.findByText('Sale #2')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Copy' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Share' })).not.toBeInTheDocument()
 })
@@ -116,7 +116,22 @@ test('while the detail loads the button is there, disabled and busy, with no dig
   expect(button).toHaveAttribute('aria-busy', 'true')
   const body = button.closest('.cuerpo') as HTMLElement
   expect(body.closest('main')?.textContent ?? '').not.toMatch(/[0-9$]/)
-  expect(body).toHaveAttribute('aria-busy', 'true')
+  expect(body.closest('main')).toHaveAttribute('aria-busy', 'true')
+})
+
+test('the title and the first line of the bill after the business name show the same number', async () => {
+  const share = vi.fn((_data: { text: string }) => Promise.resolve())
+  Object.defineProperty(navigator, 'share', { value: share, configurable: true })
+  vi.mocked(fetch).mockResolvedValue(
+    jsonResponse(200, { ...SALE, number: 77, bill: { ...SALE.bill, number: 77 } }),
+  )
+  renderDetalle()
+
+  expect(await screen.findByText('Sale #77')).toBeInTheDocument()
+  await userEvent.click(await readyButton('Share'))
+
+  const sent = share.mock.calls[0]?.[0]
+  expect(sent?.text.split('\n')[1]).toBe('Sale #77 · 14/09')
 })
 
 test('a 404 still takes the not-found path, with no button', async () => {
@@ -124,7 +139,7 @@ test('a 404 still takes the not-found path, with no button', async () => {
   renderDetalle()
 
   await waitFor(() => expect(screen.queryByRole('button', { name: 'Copy' })).not.toBeInTheDocument())
-  expect(screen.queryByText('Sale of 14/09')).not.toBeInTheDocument()
+  expect(screen.queryByText('Sale #2')).not.toBeInTheDocument()
 })
 
 const NICO_SEARCH_RESULT = { id: 5, name: 'Nico', phone: '1111', vip: true }
@@ -146,7 +161,7 @@ function stubAssign(gets: (() => Promise<Response>)[]) {
 }
 
 async function chooseNico() {
-  await screen.findByText('Sale of 14/09')
+  await screen.findByText('Sale #2')
   await userEvent.click(screen.getByRole('button', { name: 'Assign customer' }))
   fireEvent.change(screen.getByPlaceholderText('Phone or name'), { target: { value: 'Nico' } })
   await userEvent.click(await screen.findByText('Nico'))
@@ -188,7 +203,7 @@ test('a focus refetch that started before the assign leaves the button busy unti
     () => new Promise<Response>((resolve) => (releaseFresh = resolve)),
   ])
   const queryClient = renderDetalle()
-  await screen.findByText('Sale of 14/09')
+  await screen.findByText('Sale #2')
   // A refetch on focus starts before the PUT.
   await act(async () => {
     void queryClient.refetchQueries({ queryKey: keys.sale('10') })

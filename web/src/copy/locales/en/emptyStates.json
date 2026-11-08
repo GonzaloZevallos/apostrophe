@@ -2,13 +2,17 @@
   "salesList": "You haven't recorded any sales in this period yet.",
   "customersList": "You have not added any customers yet.",
   "nobodyOwes": "Nobody owes you",
-  "homeVarietiesTitle": "Start with your varieties",
-  "homeVarietiesDetail": "Add your first variety with its price. Without a price it cannot be sold.",
+  "homeVarietiesTitle": "Start with your products",
+  "homeVarietiesDetail": "Add your first product with its price. Without a price it cannot be sold.",
   "stockTitle": "No stock entries",
   "stockDetail": "Enter your initial stock or a purchase",
   "catalogTitle": "Nothing in the catalog today",
   "catalogDetail": "Nothing to copy yet",
   "analysisNoHistory": "There is nothing to analyze yet.",
   "analysisEmptyMonth": "You did not sell or give away anything this month.",
-  "archivedMethods": "No archived methods"
+  "archivedMethods": "No archived methods",
+  "customerTypesList": "No customer types yet",
+  "selectorNoVarieties": "No products yet. Add them in the Products tab.",
+  "selectorNoCategories": "No categories yet. Add them in Settings → Expense categories.",
+  "selectorNoReasons": "No reasons yet. Add them in Settings → Business → Withdrawal reasons."
 }

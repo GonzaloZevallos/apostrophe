@@ -99,9 +99,9 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
 
   // A variety with a price and stock, so the catalog has something to copy.
   await page.goto(`${INSECURE_ORIGIN}${VARIETIES}`)
-  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByRole('link', { name: 'New product' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await page.getByRole('button', { name: 'Add the variety' }).click()
+  await page.getByRole('button', { name: 'Add the product' }).click()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('9000')
@@ -109,7 +109,7 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
 
   await page.goto(`${INSECURE_ORIGIN}${STOCK_ENTRY_NEW}`)
   await page.getByLabel('Grams').fill('50')
-  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
+  await pickStockVariety(page, 'Rosa')
   await page.getByLabel('Total cost').fill('45000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 
@@ -126,3 +126,5 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
   )
   expect(copied).toEqual([EXPECTED_PLAIN_TEXT])
 })
+
+import { pickStockVariety } from './helpers/stockVariety.js'

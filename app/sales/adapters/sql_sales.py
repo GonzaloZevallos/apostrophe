@@ -20,6 +20,8 @@ from sqlalchemy.engine import CursorResult
 from sqlalchemy.orm import InstrumentedAttribute, Session
 from sqlalchemy.sql.elements import ColumnElement
 
+from app.accounts.adapters.tables import BusinessRow
+from app.customer_types.adapters.vip_type import SqlVipType
 from app.customers.adapters.tables import CustomerRow
 from app.db import flush_or_refuse
 from app.payment_methods.adapters.tables import PaymentMethodRow
@@ -44,8 +46,18 @@ class SqlSales:
         self._business_id = business_id
 
     def add(self, sale: Sale) -> Sale:
+        # The only place a Sale number is given (docs/adr/0073): one UPDATE ... RETURNING
+        # on the business's counter, before anything else is written, inside the use
+        # case's single commit. A save that fails rolls the increment back with it.
+        number = self._session.execute(
+            update(BusinessRow)
+            .where(BusinessRow.id == self._business_id)
+            .values(last_sale_number=BusinessRow.last_sale_number + 1)
+            .returning(BusinessRow.last_sale_number)
+        ).scalar_one()
         row = SaleRow(
             business_id=self._business_id,
+            number=number,
             sale_date=sale.date,
             customer_id=sale.customer_id,
             shipping_charged=sale.shipping_charged,
@@ -60,7 +72,7 @@ class SqlSales:
 
         # The payment row is written by `OnTheSpotPayments`, never here (docs/adr/0076).
         flush_or_refuse(self._session)
-        return replace(sale, id=row.id)
+        return replace(sale, id=row.id, number=number)
 
     def get(self, sale_id: int) -> Sale | None:
         row = self._row(sale_id)
@@ -130,7 +142,7 @@ class SqlSales:
                 SaleRow,
                 CustomerRow.id,
                 CustomerRow.name,
-                CustomerRow.vip,
+                CustomerRow.customer_type_id,
                 PaymentRow.id,
                 PaymentRow.paid_on,
                 PaymentRow.amount,
@@ -161,19 +173,24 @@ class SqlSales:
         statement = statement.order_by(SaleRow.sale_date.desc(), SaleRow.id.desc())
 
         rows = self._session.execute(statement).all()
+        vip_type_id = SqlVipType(self._session, self._business_id).id()
         ids = [row[0].id for row in rows]
         lines_by_sale = self._line_views_by_sale(ids)
 
         views = []
         for row in rows:
             sale_row = row[0]
-            customer_id, customer_name, customer_vip = row[1], row[2], row[3]
+            customer_id, customer_name, customer_type_id = row[1], row[2], row[3]
             payment_id, paid_on, amount, method_id, method_name, method_icon = row[4:10]
             payment_customer_id = row[10]
             customer = (
                 None
                 if customer_id is None
-                else SaleViewCustomer(id=customer_id, name=customer_name, vip=customer_vip)
+                else SaleViewCustomer(
+                    id=customer_id,
+                    name=customer_name,
+                    vip=customer_type_id is not None and customer_type_id == vip_type_id,
+                )
             )
             payment = (
                 None
@@ -197,6 +214,7 @@ class SqlSales:
                 payment=payment,
                 recorded_at=sale_row.recorded_at,
                 id=sale_row.id,
+                number=sale_row.number,
             )
             views.append(SaleView(sale=sale, customer=customer, lines=lines))
         return views
@@ -288,6 +306,7 @@ class SqlSales:
             payment=payment,
             recorded_at=row.recorded_at,
             id=row.id,
+            number=row.number,
         )
 
 

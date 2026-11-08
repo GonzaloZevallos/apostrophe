@@ -59,6 +59,7 @@ from tests.conftest import (
     TODAY,
     MovableClock,
     open_business,
+    reason_id,
     signed_in,
 )
 from tests.fakes.archive import archive_by_hand
@@ -103,6 +104,12 @@ def seed_expenses(client: TestClient) -> dict[str, int]:
     )
     assert expense.status_code == 201, expense.text
     return {"category_id": category_id, "expense_id": expense.json()["id"]}
+
+
+def seed_customer_types(client: TestClient) -> dict[str, int]:
+    created = client.post("/api/customer-types", json={"name": f"{MARKER} customer type"})
+    assert created.status_code == 201, created.text
+    return {"type_id": created.json()["id"]}
 
 
 def seed_sales(client: TestClient) -> dict[str, int]:
@@ -174,13 +181,19 @@ def seed_stock(client: TestClient) -> dict[str, int]:
     withdrawal = client.post(
         "/stock/withdrawals",
         json={
-            "reason": "promotion",
+            "reason_id": reason_id(client, "Marketing"),
             "note": MARKER,
             "lines": [{"product_id": variety["id"], "quantity": "5"}],
         },
     )
     assert withdrawal.status_code == 201, withdrawal.text
     return {"stock_entry_id": entry.json()["id"], "withdrawal_id": withdrawal.json()["id"]}
+
+
+def seed_withdrawal_reasons(client: TestClient) -> dict[str, int]:
+    reason = client.post("/api/withdrawal-reasons", json={"name": f"{MARKER} reason"})
+    assert reason.status_code == 201, reason.text
+    return {"reason_id": reason.json()["id"]}
 
 
 def seed_pinned_catalog(client: TestClient) -> dict[str, int]:
@@ -250,9 +263,11 @@ def seed_first_run(client: TestClient) -> dict[str, int]:
 SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_varieties,
     seed_customers,
+    seed_customer_types,
     seed_expenses,
     seed_sales,
     seed_stock,
+    seed_withdrawal_reasons,
     seed_catalog,
     seed_pinned_catalog,
     seed_payments,
@@ -271,8 +286,16 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "effective_from": "2026-02-01",
         "list_price": 12_000,
     },
-    ("POST", "/customers"): {"name": "Another customer", "phone": "11 9876-5432"},
-    ("PATCH", "/customers/{customer_id}"): {"name": "Renamed"},
+    # The assign body names a type id (invariant 9): in the sweep it is business A's
+    # seeded type, which business B must not be able to reach through a customer.
+    ("POST", "/customers"): {
+        "name": "Another customer",
+        "phone": "11 9876-5432",
+        "customer_type_id": 1,
+    },
+    ("PATCH", "/customers/{customer_id}"): {"name": "Renamed", "customer_type_id": 1},
+    ("POST", "/api/customer-types"): {"name": "Another customer type", "icon": "heart"},
+    ("PATCH", "/api/customer-types/{type_id}"): {"name": "Renamed type"},
     ("POST", "/expense-categories"): {"name": "Another category"},
     ("PATCH", "/expense-categories/{category_id}"): {"name": "Renamed category"},
     ("POST", "/expenses"): {
@@ -308,14 +331,17 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "quantity": "20",
     },
     ("POST", "/stock/withdrawals"): {
-        "reason": "own_use",
+        "reason_id": 1,
         "lines": [{"product_id": 1, "quantity": "1"}],
     },
     ("PUT", "/stock/withdrawals/{withdrawal_id}"): {
-        "reason": "own_use",
+        "reason_id": 1,
         "lines": [{"product_id": 1, "quantity": "2"}],
     },
     ("PUT", "/stock/products/{product_id}/threshold"): {"quantity": "15"},
+    ("POST", "/api/withdrawal-reasons"): {"name": "Another reason"},
+    ("POST", "/api/withdrawal-reasons/{reason_id}/move"): {"direction": "up"},
+    ("PATCH", "/api/withdrawal-reasons/{reason_id}"): {"name": "Another name"},
     ("PUT", "/catalog/products/{product_id}"): {
         "shown": True,
         "emoji": None,
@@ -541,7 +567,10 @@ def test_a_withdrawal_naming_a_missing_or_foreign_variety_is_refused_the_same_wa
     business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
 ) -> None:
     def body(variety_id: int) -> dict[str, Any]:
-        return {"reason": "promotion", "lines": [{"product_id": variety_id, "quantity": "1"}]}
+        return {
+            "reason_id": reason_id(business_b, "Marketing"),
+            "lines": [{"product_id": variety_id, "quantity": "1"}],
+        }
 
     own_variety = business_b.post("/api/products", json={"name": "B withdrawal variety"}).json()
     own = business_b.post("/stock/withdrawals", json=body(own_variety["id"]))
@@ -561,6 +590,37 @@ def test_a_withdrawal_naming_a_missing_or_foreign_variety_is_refused_the_same_wa
         assert missing.json() == other_business.json()
 
     assert business_b.get(f"/stock/products/{seeded_b['variety_id']}/movements").status_code == 404
+
+
+def test_a_withdrawal_naming_a_missing_or_foreign_reason_is_refused_the_same_way(
+    business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
+) -> None:
+    foreign_reason = reason_id(business_a, "Marketing")
+    own_variety = business_b.post("/api/products", json={"name": "B reason variety"}).json()
+
+    def body(reason: int) -> dict[str, Any]:
+        return {
+            "reason_id": reason,
+            "lines": [{"product_id": own_variety["id"], "quantity": "1"}],
+        }
+
+    own = business_b.post("/stock/withdrawals", json=body(reason_id(business_b, "Marketing")))
+    assert own.status_code == 201, own.text
+    path = f"/stock/withdrawals/{own.json()['id']}"
+
+    sends: list[Callable[[int], Any]] = [
+        lambda reason: business_b.post("/stock/withdrawals", json=body(reason)),
+        lambda reason: business_b.put(path, json=body(reason)),
+    ]
+    for send in sends:
+        missing = send(999_999)
+        other_business = send(foreign_reason)
+
+        assert missing.status_code == 404, missing.text
+        assert other_business.status_code == 404, other_business.text
+        assert missing.json() == other_business.json()
+        assert missing.json()["code"] == "stock.withdrawal_reason_not_found"
+    assert business_b.get(path).json() == own.json()
 
 
 def test_a_body_reference_to_a_missing_or_foreign_customer_is_refused_the_same_way(
@@ -627,6 +687,32 @@ def test_assigning_a_customer_from_another_business_is_refused_the_same_way_as_m
     assert valid.status_code == 200, valid.text
 
 
+def test_assigning_a_customer_type_from_another_business_is_refused_the_same_way_as_missing(
+    business_a: TestClient, business_b: TestClient, seeded: dict[str, int]
+) -> None:
+    foreign_type = seeded["type_id"]
+    own_customer = business_b.post(
+        "/customers", json={"name": "B customer 4", "phone": "11 5555-4444"}
+    ).json()
+    url = f"/customers/{own_customer['id']}"
+
+    created = {
+        which: business_b.post("/customers", json={"name": "B new", "customer_type_id": t})
+        for which, t in (("missing", 999_999), ("foreign", foreign_type))
+    }
+    edited = {
+        which: business_b.patch(url, json={"customer_type_id": t})
+        for which, t in (("missing", 999_999), ("foreign", foreign_type))
+    }
+
+    for pair in (created, edited):
+        assert pair["missing"].status_code == 404, pair["missing"].text
+        assert pair["foreign"].status_code == 404, pair["foreign"].text
+        assert pair["missing"].json() == pair["foreign"].json()
+    assert [c["name"] for c in business_b.get("/customers").json()] == ["B customer 4"]
+    assert business_a.get("/api/customer-types").json()[0]["id"] == foreign_type
+
+
 def test_another_business_reads_none_of_the_archived_stock_rows(
     business_a: TestClient, business_b: TestClient, engine: Engine
 ) -> None:
@@ -647,6 +733,16 @@ def test_another_business_lists_none_of_its_records(
 
     assert response.status_code == 200
     assert MARKER not in response.text
+
+
+def test_another_business_lists_none_of_the_reasons_seeded_in_the_first(
+    business_a: TestClient, business_b: TestClient, seeded: dict[str, int]
+) -> None:
+    mine = [reason["name"] for reason in business_a.get("/api/withdrawal-reasons").json()]
+    theirs = [reason["name"] for reason in business_b.get("/api/withdrawal-reasons").json()]
+
+    assert f"{MARKER} reason" in mine
+    assert theirs == ["Marketing", "Own use"]
 
 
 def test_business_a_sees_its_own_catalog_seed(
@@ -899,8 +995,7 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
             "cost_of_goods": 0,
             "pending_cost": False,
             "shortfall": None,
-            "promotion": None,
-            "own_use": None,
+            "withdrawals": [],
             "expenses": 0,
             "purchases": 0,
             "profit": 0,
@@ -1005,8 +1100,7 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
             "quantity_gifted": 0.0,
             "average_margin": {"amount": 0, "percent": None, "pending_quantity": 0.0},
             "shortfall": None,
-            "promotion": None,
-            "own_use": None,
+            "withdrawals": [],
             "products": [],
         },
         "weeks": [],
@@ -1130,3 +1224,58 @@ def test_another_business_reads_none_of_the_archived_catalog_attributes(
     assert [r["product_id"] for r in business_a.get("/catalog/archived").json()] == [variety["id"]]
 
     assert business_b.get("/catalog/archived").json() == []
+
+
+def _priced_variety(client: TestClient) -> int:
+    variety = client.post("/api/products", json={"name": "Lavanda"}).json()
+    client.post(
+        f"/api/products/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 10_000},
+    )
+    return int(variety["id"])
+
+
+def _sell_one(client: TestClient, variety_id: int) -> dict[str, Any]:
+    response = client.post(
+        "/sales",
+        json={
+            "payment": {
+                "kind": "method",
+                "payment_method_id": client.get("/api/payment-methods").json()[0]["id"],
+            },
+            "lines": [{"product_id": variety_id, "quantity": "1"}],
+        },
+    )
+    assert response.status_code == 201, response.text
+    return dict(response.json())
+
+
+def test_two_businesses_both_start_at_sale_number_1_and_neither_learns_the_other_s_count(
+    business_a: TestClient, business_b: TestClient
+) -> None:
+    variety_a = _priced_variety(business_a)
+    sales_a = [_sell_one(business_a, variety_a) for _ in range(3)]
+    sale_b = _sell_one(business_b, _priced_variety(business_b))
+
+    # B's sale has the fourth global id and is still B's first sale.
+    assert sale_b["id"] == 4
+    assert sale_b["number"] == 1
+    detail_b = business_b.get(f"/sales/{sale_b['id']}").json()
+    assert detail_b["number"] == 1
+    assert detail_b["bill"]["number"] == 1
+    assert business_a.get(f"/sales/{sales_a[-1]['id']}").json()["number"] == 3
+
+    # The bill carries no sale id: its fields are closed and the number is not the id.
+    assert not {"id", "sale_id"} & detail_b["bill"].keys()
+    assert detail_b["bill"]["number"] != sale_b["id"]
+
+    # B's list holds B's one sale; A's holds A's three. Neither carries the other's.
+    assert [row["number"] for row in business_b.get("/sales").json()] == [1]
+    assert sorted(row["number"] for row in business_a.get("/sales").json()) == [1, 2, 3]
+
+    # B asking for A's sale learns nothing: not found, and no number anywhere in the body.
+    refused = business_b.get(f"/sales/{sales_a[-1]['id']}")
+    assert refused.status_code == 404
+    assert "number" not in refused.text
+    assert business_b.delete(f"/sales/{sales_a[-1]['id']}").status_code == 404
+    assert business_a.get(f"/sales/{sales_a[-1]['id']}").json()["number"] == 3

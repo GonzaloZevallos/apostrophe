@@ -3,7 +3,7 @@
  * `web/src/api/fixtures/panel.json`): every figure on every tab, negative
  * Ganancia/Caja, the pending-cost note's placement, no-average, "Nobody owes you",
  * navigation, stock rows, a no-year range across a year boundary, the
- * "Start with your varieties" banner above the figures, and a remount with a
+ * "Start with your products" banner above the figures, and a remount with a
  * different answer never showing the first answer's figures (`gcTime: 0`).
  */
 
@@ -206,7 +206,7 @@ function figureNames(): string[] {
     'You gave away',
     'Cost of goods sold',
     'Stock shortfall',
-    'Promotion',
+    'Marketing',
     'Own use',
     'Expenses',
     'Flower purchases',
@@ -270,7 +270,7 @@ test('Semana: Stock shortfall shows with no note of its own when its cost isn\'t
   expect(noteIn('Stock shortfall')).toBeNull()
 })
 
-test('Semana: Promotion and Own use follow Stock shortfall and come before Gastos, each with its own note flag', async () => {
+test('Semana: Marketing and Own use follow Stock shortfall and come before Gastos, each with its own note flag', async () => {
   stubFetch(PANEL)
   renderInicio()
   await screen.findByText('You sold today')
@@ -281,19 +281,19 @@ test('Semana: Promotion and Own use follow Stock shortfall and come before Gasto
     'You gave away',
     'Cost of goods sold',
     'Stock shortfall',
-    'Promotion',
+    'Marketing',
     'Own use',
     'Expenses',
   ])
-  const promocion = screen.getByRole('group', { name: 'Promotion' })
-  expect(within(promocion).getByText('$ 2.000')).toBeInTheDocument()
-  expect(noteIn('Promotion')).toBe('includes pending cost')
+  const marketing = screen.getByRole('group', { name: 'Marketing' })
+  expect(within(marketing).getByText('$ 2.000')).toBeInTheDocument()
+  expect(noteIn('Marketing')).toBe('includes pending cost')
   const consumo = screen.getByRole('group', { name: 'Own use' })
   expect(within(consumo).getByText('$ 1.000')).toBeInTheDocument()
   expect(noteIn('Own use')).toBeNull()
 })
 
-test('Hoy and a period with no withdrawal show neither Promotion nor Own use', async () => {
+test('Hoy and a period with no withdrawal show neither Marketing nor Own use', async () => {
   // Today carries a withdrawal of each reason, as it does right after the form's
   // default date is saved: Hoy still hides both lines.
   const withdrawnToday: PanelAnswer = {
@@ -302,20 +302,20 @@ test('Hoy and a period with no withdrawal show neither Promotion nor Own use', a
       ...PANEL.periods,
       today: {
         ...PANEL.periods.today,
-        promotion: { amount: 2000, pending: false },
-        own_use: { amount: 1000, pending: false },
+        withdrawals: [{ reason_id: 1, name: 'Marketing', amount: 2000, pending: false, pending_quantity: 0 }, { reason_id: 2, name: 'Own use', amount: 1000, pending: false, pending_quantity: 0 }],
       },
+      month: { ...PANEL.periods.month, withdrawals: [] },
     },
   }
   stubFetch(withdrawnToday)
   renderInicio()
   await screen.findByText('You sold today')
-  expect(screen.queryByText('Promotion')).not.toBeInTheDocument()
+  expect(screen.queryByText('Marketing')).not.toBeInTheDocument()
   expect(screen.queryByText('Own use')).not.toBeInTheDocument()
 
   screen.getByRole('button', { name: 'Month' }).click()
   await screen.findByText('You sold this month')
-  expect(screen.queryByText('Promotion')).not.toBeInTheDocument()
+  expect(screen.queryByText('Marketing')).not.toBeInTheDocument()
   expect(screen.queryByText('Own use')).not.toBeInTheDocument()
 })
 
@@ -352,8 +352,7 @@ test('no sales shows no average, and the range reads with no year', async () => 
         cost_of_goods: 0,
         pending_cost: false,
         shortfall: null,
-        promotion: null,
-        own_use: null,
+        withdrawals: [],
         expenses: 5000,
         purchases: 0,
         profit: -5000,
@@ -452,7 +451,7 @@ test('stock rows: name, grams, status and days left, in the API\'s own order, wi
 })
 
 for (const theme of ['claro', 'oscuro'] as const) {
-  test(`"Start with your varieties" shows above the panel, which still shows its real figures (${theme})`, async () => {
+  test(`"Start with your products" shows above the panel, which still shows its real figures (${theme})`, async () => {
     chooseTheme(theme)
     stubFetch(PANEL, START)
     const { container } = renderInicio()
@@ -523,7 +522,7 @@ test('shows the fixed pinned-catalog notice while the pin is out of date', async
   expect(notice.closest('a')).toHaveAttribute('href', CATALOG)
 })
 
-test('the stale-catalog notice and the "Start with your varieties" state carry the decorative attention icon; a fresh pin has none', async () => {
+test('the stale-catalog notice and the "Start with your products" state carry the decorative attention icon; a fresh pin has none', async () => {
   stubFetch(PANEL, START, {
     status: { state: 'out_of_date', reason: 'telegram_unreachable', last_published_on: '2026-09-29' },
   })
@@ -573,7 +572,7 @@ const FINISH: OnboardingProgress = {
 }
 
 for (const theme of ['claro', 'oscuro'] as const) {
-  test(`an Onboarding business sees the notice at the top with its count and what is missing, and never Start with your varieties (${theme})`, async () => {
+  test(`an Onboarding business sees the notice at the top with its count and what is missing, and never Start with your products (${theme})`, async () => {
     chooseTheme(theme)
     stubFetch(PANEL, ONBOARDING_ANSWER, { status: null }, MID_ONBOARDING)
     renderInicio()
@@ -607,7 +606,6 @@ test('with /first-run answering last, slot 1 stays empty: Arrancá never flashes
   await screen.findByText('You sold today')
 
   expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
-  expect(screen.queryByText('emptyStates:homeVarietiesTitle')).not.toBeInTheDocument()
   release(jsonResponse(200, ONBOARDING_ANSWER))
   expect(await screen.findByText('Go on to the setup')).toBeInTheDocument()
   expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
@@ -743,7 +741,7 @@ for (const theme of ['claro', 'oscuro'] as const) {
     const list = await screen.findByRole('list', { name: 'To get started' })
     const steps = within(list).getAllByRole('listitem')
     expect(steps.map((step) => step.textContent)).toEqual([
-      'Add a variety with its priceRequiredDone',
+      'Add a product with its priceRequiredDone',
       'Add what you have todayRequired',
       'Connect the botOptional',
       'Invite a partnerOptionalDone',

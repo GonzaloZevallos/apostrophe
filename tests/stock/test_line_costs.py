@@ -15,7 +15,6 @@ from app.sales.domain.pricing import PricingRule
 from app.sales.domain.sale import Sale, SaleLine
 from app.shared.quantity import Quantity
 from app.stock.adapters.line_costs import costs_for_sale
-from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import Origin, StockEntry
 from app.stock.domain.lot_order import SaleLineDraw, WithdrawalLineDraw
 
@@ -178,7 +177,7 @@ def test_an_earlier_withdrawal_takes_the_lot_first_so_the_sale_line_is_pending()
         withdrawal_id=3,
         position=0,
         quantity=Quantity.of("10"),
-        reason=WithdrawalReason.PROMOTION,
+        reason_id=1,
     )
 
     costs = costs_for_sale(entries, draws, FakeWithdrawalDraws([withdrawal]), sale)

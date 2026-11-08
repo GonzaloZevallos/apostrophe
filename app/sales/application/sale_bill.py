@@ -32,6 +32,7 @@ def sale_bill(
         return None
     return SaleBill(
         business_name=business_name,
+        number=view.number,
         date=sale.date,
         shipping_charged=sale.shipping_charged,
         total=sale.total,

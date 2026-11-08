@@ -14,9 +14,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.shared.quantity import Quantity
-from app.stock.adapters.tables import StockWithdrawalLineRow, StockWithdrawalRow
+from app.stock.adapters.tables import (
+    StockWithdrawalLineRow,
+    StockWithdrawalRow,
+    WithdrawalReasonRow,
+)
 from app.stock.application.ports import WithdrawalMovement
-from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.lot_order import WithdrawalLineDraw
 from app.stock.domain.withdrawal import Withdrawal, WithdrawalLine
 
@@ -43,7 +46,7 @@ class SqlStockWithdrawals:
             for variety_id, hundredths in self._session.execute(statement).all()
         )
         return Withdrawal(
-            reason=self._reason_of(header),
+            reason_id=header.withdrawal_reason_id,
             withdrawn_on=header.withdrawn_on,
             note=header.note,
             lines=lines,
@@ -54,7 +57,7 @@ class SqlStockWithdrawals:
     def add(self, withdrawal: Withdrawal) -> Withdrawal:
         header = StockWithdrawalRow(
             business_id=self._business_id,
-            reason=withdrawal.reason.value,
+            withdrawal_reason_id=withdrawal.reason_id,
             withdrawn_on=withdrawal.withdrawn_on,
             note=withdrawal.note,
             recorded_at=withdrawal.recorded_at,
@@ -68,7 +71,7 @@ class SqlStockWithdrawals:
         assert withdrawal.id is not None, "replace takes a withdrawal that was added"
         header = self._header(withdrawal.id)
         assert header is not None, "replace takes a withdrawal of this business"
-        header.reason = withdrawal.reason.value
+        header.withdrawal_reason_id = withdrawal.reason_id
         header.withdrawn_on = withdrawal.withdrawn_on
         header.note = withdrawal.note
         self._delete_lines(withdrawal.id)
@@ -106,49 +109,53 @@ class SqlStockWithdrawals:
                 withdrawal_id=header.id,
                 position=line.position,
                 quantity=Quantity(line.grams_hundredths),
-                reason=self._reason_of(header),
+                reason_id=header.withdrawal_reason_id,
             )
             for line, header in self._session.execute(statement).all()
         ]
 
     def movements_of(self, variety_id: int) -> list[WithdrawalMovement]:
         statement = (
-            select(StockWithdrawalLineRow.grams_hundredths, StockWithdrawalRow)
+            select(
+                StockWithdrawalLineRow.grams_hundredths,
+                StockWithdrawalRow,
+                WithdrawalReasonRow.name,
+            )
             .join(
                 StockWithdrawalRow,
                 (StockWithdrawalRow.id == StockWithdrawalLineRow.stock_withdrawal_id)
                 & (StockWithdrawalRow.business_id == self._business_id),
+            )
+            .join(
+                WithdrawalReasonRow,
+                (WithdrawalReasonRow.id == StockWithdrawalRow.withdrawal_reason_id)
+                & (WithdrawalReasonRow.business_id == self._business_id),
             )
             .where(
                 StockWithdrawalLineRow.business_id == self._business_id,
                 StockWithdrawalLineRow.variety_id == variety_id,
             )
         )
-        summed: dict[int, tuple[StockWithdrawalRow, int]] = {}
-        for hundredths, header in self._session.execute(statement).all():
-            _, total = summed.get(header.id, (header, 0))
-            summed[header.id] = (header, total + hundredths)
+        summed: dict[int, tuple[StockWithdrawalRow, str, int]] = {}
+        for hundredths, header, reason_name in self._session.execute(statement).all():
+            _, _, total = summed.get(header.id, (header, reason_name, 0))
+            summed[header.id] = (header, reason_name, total + hundredths)
         movements = [
             WithdrawalMovement(
                 withdrawal_id=header.id,
                 withdrawn_on=header.withdrawn_on,
                 recorded_at=header.recorded_at,
-                reason=self._reason_of(header),
+                reason_id=header.withdrawal_reason_id,
+                reason_name=reason_name,
                 quantity=Quantity(total),
             )
-            for header, total in summed.values()
+            for header, reason_name, total in summed.values()
         ]
         return sorted(
             movements,
             key=lambda m: (m.withdrawn_on, m.recorded_at, m.withdrawal_id),
             reverse=True,
         )
-
-    @staticmethod
-    def _reason_of(row: StockWithdrawalRow) -> WithdrawalReason:
-        """The one place a stored reason becomes a `WithdrawalReason`, with no
-        fallback: a value the check constraint should have refused fails loudly."""
-        return WithdrawalReason(row.reason)
 
     def _header(self, withdrawal_id: int) -> StockWithdrawalRow | None:
         return self._session.scalar(

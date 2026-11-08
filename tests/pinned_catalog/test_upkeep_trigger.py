@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 
 from app.pinned_catalog.adapters.tables import PinnedCatalogRow
 from app.pinned_catalog.domain.errors import TelegramUnreachable
+from tests.conftest import reason_id
 from tests.fakes.telegram import FakeTelegram
 
 TOKEN = "123456789:top-secret-bot-token"
@@ -434,7 +435,7 @@ def test_nothing_is_attempted_after_a_channel_change_until_publicar(
 
 def _withdraw(client: TestClient, variety_id: int, quantity: str, **extra: Any) -> dict[str, Any]:
     body: dict[str, Any] = {
-        "reason": "promotion",
+        "reason_id": reason_id(client, "Marketing"),
         "lines": [{"product_id": variety_id, "quantity": quantity}],
     }
     response = client.post("/stock/withdrawals", json=body | extra)
@@ -484,7 +485,10 @@ def test_an_edit_moving_the_only_line_between_varieties_edits_the_pin_once(
 
     edited = client.put(
         f"/stock/withdrawals/{withdrawal['id']}",
-        json={"reason": "promotion", "lines": [{"product_id": beta["id"], "quantity": "50"}]},
+        json={
+            "reason_id": reason_id(client, "Marketing"),
+            "lines": [{"product_id": beta["id"], "quantity": "50"}],
+        },
     )
     assert edited.status_code == 200, edited.text
 
@@ -518,7 +522,7 @@ def test_a_note_only_edit_sends_nothing(client: TestClient, telegram: FakeTelegr
     edited = client.put(
         f"/stock/withdrawals/{withdrawal['id']}",
         json={
-            "reason": "promotion",
+            "reason_id": reason_id(client, "Marketing"),
             "note": "otra nota",
             "lines": [{"product_id": variety["id"], "quantity": "5"}],
         },

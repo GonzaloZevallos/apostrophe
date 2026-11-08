@@ -40,7 +40,7 @@ class AmountWithPending:
 
 @dataclass(frozen=True)
 class RowCost:
-    """One Análisis cost line (cost of goods, stock shortfall, promotion or own use):
+    """One Análisis cost line (cost of goods or stock shortfall):
     its costed amount, its own pending grams and whether *every* gram behind it is
     pending, so the screen reads "N g sin costo" and never "$ 0". `row_cost` in
     `period_figures` is the only place `all_pending` is decided."""
@@ -56,6 +56,28 @@ class RowCost:
             raise ValueError("a cost line's pending grams cannot be negative")
         if self.all_pending and not self.pending_quantity.is_positive:
             raise ValueError("a fully pending cost line has pending grams")
+
+
+@dataclass(frozen=True)
+class ReasonCost:
+    """One withdrawal reason's cost over a window: its costed `amount`, `None` exactly
+    when every gram withdrawn under it is still pending (so no screen reads "$ 0"), its
+    own `pending_quantity` and `pending`, whether that is positive. `period_figures` is
+    the only place one is built, in the list order of the business's reasons."""
+
+    reason_id: int
+    name: str
+    amount: int | None
+    pending_quantity: Quantity
+    pending: bool
+
+    def __post_init__(self) -> None:
+        if self.amount is not None and self.amount < 0:
+            raise ValueError("a reason's cost cannot be negative")
+        if self.amount is None and not self.pending:
+            raise ValueError("a reason with no costed amount is fully pending")
+        if self.pending != self.pending_quantity.is_positive:
+            raise ValueError("pending is exactly whether pending grams are positive")
 
 
 @dataclass(frozen=True)
@@ -81,8 +103,7 @@ class MonthFigures:
     quantity_gifted: Quantity
     average_margin: MarginFigure
     shortfall: RowCost | None
-    promotion: RowCost | None
-    own_use: RowCost | None
+    withdrawals: tuple[ReasonCost, ...]
     varieties: tuple[VarietyRow, ...]
 
 
@@ -95,8 +116,7 @@ class WeekFigures:
     expenses: int
     cost_of_goods: RowCost
     shortfall: RowCost | None
-    promotion: RowCost | None
-    own_use: RowCost | None
+    withdrawals: tuple[ReasonCost, ...]
     profit: AmountWithPending
     cash: int
     best: bool
@@ -112,8 +132,7 @@ class MonthRowFigures:
     expenses: int
     cost_of_goods: RowCost
     shortfall: RowCost | None
-    promotion: RowCost | None
-    own_use: RowCost | None
+    withdrawals: tuple[ReasonCost, ...]
     profit: AmountWithPending
     cash: int
 
@@ -133,8 +152,7 @@ class SinceFirstRecordFigures:
     profit: AmountWithPending
     cash: int
     shortfall: RowCost | None
-    promotion: RowCost | None
-    own_use: RowCost | None
+    withdrawals: tuple[ReasonCost, ...]
 
 
 @dataclass(frozen=True)
@@ -165,8 +183,7 @@ class PeriodTotals:
     cost_of_goods: CostFigure
     cost_of_goods_row: RowCost
     shortfall: RowCost | None
-    promotion: RowCost | None
-    own_use: RowCost | None
+    withdrawals: tuple[ReasonCost, ...]
     expenses: int
     purchases: int
     profit: AmountWithPending

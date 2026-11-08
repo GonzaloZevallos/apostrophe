@@ -13,7 +13,7 @@ the seller reads (`PaymentMethodLabel`: id, name, icon).
 
 - **Id keys.** `payment.payment_method_id` points at `payment_method`; no code compares a
   method's name or branches on Cash/Transfer. Both enums are gone.
-- **`method` is frozen and nullable.** Migration 0021 fills the new column from the old value
+- **`method` is frozen and nullable.** Migration 0026 fills the new column from the old value
   and keeps every stored value; a new payment writes NULL there and nothing reads it. The
   downgrade refuses once any payment has a NULL `method`. `tests/migrations/comparator.py`
   proves that no pre-existing column changes.

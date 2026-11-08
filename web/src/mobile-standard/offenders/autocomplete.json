@@ -18,33 +18,9 @@
     "issue": 47
   },
   {
-    "screen": "ClienteEditar",
-    "rule": "autocomplete",
-    "target": "textbox:Name",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteEditar",
-    "rule": "autocomplete",
-    "target": "textbox:Phone",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteNuevo",
-    "rule": "autocomplete",
-    "target": "textbox:Name",
-    "issue": 46
-  },
-  {
-    "screen": "ClienteNuevo",
-    "rule": "autocomplete",
-    "target": "textbox:Phone",
-    "issue": 46
-  },
-  {
     "screen": "DescartarVenta",
     "rule": "autocomplete",
-    "target": "combobox:Line # variety",
+    "target": "combobox:Line # product",
     "issue": 78
   },
   {
@@ -80,7 +56,7 @@
   {
     "screen": "ElegirCliente",
     "rule": "autocomplete",
-    "target": "combobox:Line # variety",
+    "target": "combobox:Line # product",
     "issue": 78
   },
   {
@@ -118,156 +94,6 @@
     "rule": "autocomplete",
     "target": "textbox:Line # special price",
     "issue": 78
-  },
-  {
-    "screen": "EntradaStock",
-    "rule": "autocomplete",
-    "target": "combobox:Variety",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStock",
-    "rule": "autocomplete",
-    "target": "textbox:Total cost Required for a purchase",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStock",
-    "rule": "autocomplete",
-    "target": "textbox:Date",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStock",
-    "rule": "autocomplete",
-    "target": "textbox:Grams",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStock",
-    "rule": "autocomplete",
-    "target": "textbox:Note",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockConfirmarBorrado",
-    "rule": "autocomplete",
-    "target": "combobox:Variety It has # g today",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockConfirmarBorrado",
-    "rule": "autocomplete",
-    "target": "textbox:Total cost Required for a purchase",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockConfirmarBorrado",
-    "rule": "autocomplete",
-    "target": "textbox:Date",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockConfirmarBorrado",
-    "rule": "autocomplete",
-    "target": "textbox:Grams",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockConfirmarBorrado",
-    "rule": "autocomplete",
-    "target": "textbox:Note",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockConfirmarCambios",
-    "rule": "autocomplete",
-    "target": "combobox:Variety It has # g today",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockConfirmarCambios",
-    "rule": "autocomplete",
-    "target": "textbox:Total cost Required for a purchase",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockConfirmarCambios",
-    "rule": "autocomplete",
-    "target": "textbox:Date",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockConfirmarCambios",
-    "rule": "autocomplete",
-    "target": "textbox:Grams",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockConfirmarCambios",
-    "rule": "autocomplete",
-    "target": "textbox:Note",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockEditar",
-    "rule": "autocomplete",
-    "target": "combobox:Variety It has # g today",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockEditar",
-    "rule": "autocomplete",
-    "target": "textbox:Total cost Required for a purchase",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockEditar",
-    "rule": "autocomplete",
-    "target": "textbox:Date",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockEditar",
-    "rule": "autocomplete",
-    "target": "textbox:Grams",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockEditar",
-    "rule": "autocomplete",
-    "target": "textbox:Note",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockSinEntradas",
-    "rule": "autocomplete",
-    "target": "combobox:Variety It has # g today",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockSinEntradas",
-    "rule": "autocomplete",
-    "target": "textbox:Total cost Required for a purchase",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockSinEntradas",
-    "rule": "autocomplete",
-    "target": "textbox:Date",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockSinEntradas",
-    "rule": "autocomplete",
-    "target": "textbox:Grams",
-    "issue": 47
-  },
-  {
-    "screen": "EntradaStockSinEntradas",
-    "rule": "autocomplete",
-    "target": "textbox:Note",
-    "issue": 47
   },
   {
     "screen": "GastoDesdeGastos",
@@ -398,7 +224,7 @@
   {
     "screen": "NuevaVenta",
     "rule": "autocomplete",
-    "target": "combobox:Line # variety",
+    "target": "combobox:Line # product",
     "issue": 78
   },
   {
@@ -434,7 +260,7 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "autocomplete",
-    "target": "combobox:Line # variety",
+    "target": "combobox:Line # product",
     "issue": 78
   },
   {
@@ -476,7 +302,7 @@
   {
     "screen": "NuevaVentaConLinea",
     "rule": "autocomplete",
-    "target": "combobox:Line # variety",
+    "target": "combobox:Line # product",
     "issue": 78
   },
   {
@@ -512,7 +338,7 @@
   {
     "screen": "NuevaVentaConLineaYPago",
     "rule": "autocomplete",
-    "target": "combobox:Line # variety",
+    "target": "combobox:Line # product",
     "issue": 78
   },
   {
@@ -548,7 +374,7 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "combobox:Line # variety",
+    "target": "combobox:Line # product",
     "issue": 78
   },
   {
@@ -578,12 +404,6 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "autocomplete",
-    "target": "textbox:Name",
-    "issue": 78
-  },
-  {
-    "screen": "NuevoClienteEnVenta",
-    "rule": "autocomplete",
     "target": "textbox:Note",
     "issue": 78
   },
@@ -592,36 +412,6 @@
     "rule": "autocomplete",
     "target": "textbox:Line # special price",
     "issue": 78
-  },
-  {
-    "screen": "NuevoClienteEnVenta",
-    "rule": "autocomplete",
-    "target": "textbox:Phone",
-    "issue": 78
-  },
-  {
-    "screen": "OnboardingStock",
-    "rule": "autocomplete",
-    "target": "textbox:Total cost Optional · if you leave it out, the lot c",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingStock",
-    "rule": "autocomplete",
-    "target": "textbox:Grams",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingStockTexto130",
-    "rule": "autocomplete",
-    "target": "textbox:Total cost Optional · if you leave it out, the lot c",
-    "issue": 49
-  },
-  {
-    "screen": "OnboardingStockTexto130",
-    "rule": "autocomplete",
-    "target": "textbox:Grams",
-    "issue": 49
   },
   {
     "screen": "PrecioNuevo",
@@ -669,42 +459,18 @@
     "screen": "PrecioNuevoFormulario",
     "rule": "autocomplete",
     "target": "textbox:List price $ Per gram, in whole pesos",
-    "issue": 47
-  },
-  {
-    "screen": "SacarDelStock",
-    "rule": "autocomplete",
-    "target": "combobox:Variety #",
-    "issue": 47
-  },
-  {
-    "screen": "SacarDelStock",
-    "rule": "autocomplete",
-    "target": "textbox:Date",
-    "issue": 47
-  },
-  {
-    "screen": "SacarDelStock",
-    "rule": "autocomplete",
-    "target": "textbox:Grams #",
-    "issue": 47
-  },
-  {
-    "screen": "SacarDelStock",
-    "rule": "autocomplete",
-    "target": "textbox:Note",
     "issue": 47
   },
   {
     "screen": "VariedadNueva",
     "rule": "autocomplete",
-    "target": "textbox:Name Up to # characters · cannot repeat another vari",
+    "target": "textbox:Name Up to # characters · cannot repeat another prod",
     "issue": 47
   },
   {
     "screen": "VariedadNuevaFormulario",
     "rule": "autocomplete",
-    "target": "textbox:Name Up to # characters · cannot repeat another vari",
+    "target": "textbox:Name Up to # characters · cannot repeat another prod",
     "issue": 47
   },
   {

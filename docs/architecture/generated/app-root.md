@@ -25,8 +25,11 @@ classDiagram
   }
   class MissingSetting {
   }
+  class MoneyFormatMissing {
+  }
   class Refused {
     code : str
+    fields : Mapping~str, object~
   }
   class Settings {
     database_auth_token : str #124; None
@@ -68,6 +71,9 @@ classDiagram
   }
   class _Coded {
     code : ClassVar~str~
+  }
+  class _Detailed {
+    refusal_fields : Mapping~str, object~
   }
   class _Leaving {
     leaving(variety_id: int) None

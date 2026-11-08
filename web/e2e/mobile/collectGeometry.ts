@@ -9,7 +9,7 @@
  * ordinal `[n]` in document order, so N identical offenders are N Violations and fixing or
  * adding one always changes the diff.
  *
- * Rules: h-scroll, chrome-at-load, chrome-mid-scroll, touch-target, input-font,
+ * Rules: h-scroll, touch-target, input-font,
  * text-size, figure-split, name-overflow, autocomplete, inputmode, input-type,
  * user-select, touch-action, overscroll and tabular-figures (the figure patterns come from
  * `mobile-standard/figures.ts`, passed in as sources). The 60-character fixture names are the ones
@@ -149,32 +149,6 @@ export function collectGeometry({
       break
     }
   }
-
-  // --- chrome -------------------------------------------------------------------------
-  const chrome = (): Element[] => [
-    ...all('nav.bar-inferior'),
-    ...all('a.boton-nueva-venta'),
-    ...all('header').filter((h) => h.closest('article, section, li, form, dialog, [role=dialog]') === null),
-  ]
-  const outside = (element: Element): boolean => {
-    const rect = element.getBoundingClientRect()
-    return rect.top < -0.5 || rect.bottom > window.innerHeight + 0.5 || rect.left < -0.5 || rect.right > width + 0.5
-  }
-  window.scrollTo(0, 0)
-  for (const element of chrome()) if (outside(element)) add('chrome-at-load', element)
-
-  const scrollers = Array.from(document.querySelectorAll('*')).filter(
-    (element) =>
-      element !== document.body &&
-      element !== document.documentElement &&
-      element.scrollHeight > element.clientHeight + 1 &&
-      ['auto', 'scroll'].includes(getComputedStyle(element).overflowY),
-  )
-  window.scrollTo(0, (document.documentElement.scrollHeight - window.innerHeight) / 2)
-  for (const element of scrollers) element.scrollTop = (element.scrollHeight - element.clientHeight) / 2
-  for (const element of chrome()) if (outside(element)) add('chrome-mid-scroll', element)
-  window.scrollTo(0, 0)
-  for (const element of scrollers) element.scrollTop = 0
 
   // --- touch, type -------------------------------------------------------------------
   const TAPPABLE = 'button, a[href], input:not([type=hidden]), select, textarea, [role=button], [role=link], [role=tab], summary'

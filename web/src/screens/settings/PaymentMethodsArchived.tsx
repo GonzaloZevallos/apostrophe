@@ -6,6 +6,7 @@
 
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import ContentArea from '../../components/ContentArea'
 import { useTranslation } from 'react-i18next'
 import { NetworkError } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
@@ -39,7 +40,7 @@ export default function PaymentMethodsArchived() {
   }
 
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <div className="cuerpo medios-pago">
         <h1 className="encabezado__titulo">{T.archivedTitle}</h1>
         {failed && (
@@ -80,6 +81,6 @@ export default function PaymentMethodsArchived() {
           </ul>
         )}
       </div>
-    </main>
+    </ContentArea>
   )
 }

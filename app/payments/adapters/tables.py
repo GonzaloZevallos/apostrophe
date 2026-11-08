@@ -14,7 +14,7 @@ from datetime import date, datetime
 from sqlalchemy import ForeignKey, ForeignKeyConstraint, Index, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.db import Base, UtcDateTime
+from app.db import Base, UtcDateTime, money_column
 
 PAYMENT_METHOD_MAX_LENGTH = 10
 
@@ -36,8 +36,8 @@ class PaymentRow(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
     paid_on: Mapped[date]
-    amount: Mapped[int]
-    # Frozen (docs/adr/0076): every value stored before 0021 stays, a new payment writes NULL
+    amount: Mapped[int] = money_column()
+    # Frozen (docs/adr/0076): every value stored before 0026 stays, a new payment writes NULL
     # and nothing reads it. The method of a payment is `payment_method_id`.
     method: Mapped[str | None] = mapped_column(String(PAYMENT_METHOD_MAX_LENGTH))
     payment_method_id: Mapped[int]

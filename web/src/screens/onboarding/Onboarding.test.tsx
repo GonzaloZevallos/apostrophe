@@ -40,6 +40,7 @@ import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { CHECKLIST_DONE } from '../../copy/inicio'
 import { ONBOARDING_TEXT } from '../../copy/onboarding'
 import { stepInfo } from './steps'
+import { SheetRouterProvider } from '../../components/useSheetStack'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
 const ORDER: StepSlug[] = ['variety', 'stock', 'header_footer', 'bot', 'partner', 'categories']
@@ -132,7 +133,9 @@ function renderAt(initial: string | { pathname: string; state: unknown }, index 
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
   return router
@@ -199,7 +202,7 @@ test('"Done" entered with the flag has one line per step and never an amount', a
 
   expect(await screen.findByRole('heading', { name: 'Done' })).toBeInTheDocument()
   expect(screen.getByText('6 of 6 steps')).toBeInTheDocument()
-  expect(screen.getAllByText('Done · 2 varieties')).toHaveLength(1)
+  expect(screen.getAllByText('Done · 2 products')).toHaveLength(1)
   expect(screen.getAllByText('Done · 2 entries')).toHaveLength(1)
   expect(screen.getByText('For later — in Settings → Integrations')).toBeInTheDocument()
   expect(screen.getByText('For later — in Settings → Users')).toBeInTheDocument()
@@ -361,7 +364,9 @@ test('the frame is a plain step: rendered alone it sends nothing', async () => {
   ])
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <RouterProvider router={router} />
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
 

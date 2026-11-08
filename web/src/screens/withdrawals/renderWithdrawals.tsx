@@ -5,13 +5,15 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
-import { vi } from 'vitest'
+import { expect, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import type { ShownLanguage } from '../../api/language'
 import FlashProvider from '../../flash/FlashProvider'
 import { VARIETIES as VARIETIES_PATH, WITHDRAWAL, WITHDRAWAL_EDIT, WITHDRAWAL_NEW, relative } from '../../routes'
+import { SheetRouterProvider } from '../../components/useSheetStack'
 import Shell from '../../shell/Shell'
 import Variedades from '../Variedades'
 import WithdrawalDetail from './WithdrawalDetail'
@@ -33,6 +35,12 @@ export const VARIETIES = [
   { id: 2, name: 'Gelato', current_price: null },
 ]
 
+/** The business's reasons as `GET /api/withdrawal-reasons` answers them, in its order. */
+export const REASONS = [
+  { id: 1, name: 'Marketing' },
+  { id: 2, name: 'Own use' },
+]
+
 export const STOCK = { total: 0, products: [], entries: [] }
 
 /** Answers the reads every screen here makes; `rest` answers the rest (writes, the withdrawal). */
@@ -40,22 +48,25 @@ export function withReads(
   rest: FetchImpl,
   varieties?: () => Promise<Response>,
   stock: unknown = STOCK,
+  reasons?: () => Promise<Response>,
 ): FetchImpl {
   return async (url, init) => {
+    if (url === '/api/withdrawal-reasons') return reasons === undefined ? jsonResponse(200, REASONS) : reasons()
     if (url === '/api/products') return varieties === undefined ? jsonResponse(200, VARIETIES) : varieties()
     if (url === '/stock') return jsonResponse(200, stock)
     return rest(url, init)
   }
 }
 
-/** `varieties` answers `GET /api/products` when a test needs the list to change over time; `stock` is what `GET /stock` holds. */
+/** `varieties` answers `GET /api/products` when a test needs the list to change over time; `stock` is what `GET /stock` holds; `reasons` answers `GET /api/withdrawal-reasons` the same way. */
 export function renderWithdrawals(
   initialEntries: string[],
   fetchImpl: FetchImpl,
   varieties?: () => Promise<Response>,
   stock?: unknown,
+  reasons?: () => Promise<Response>,
 ) {
-  const fetchMock = vi.fn(withReads(fetchImpl, varieties, stock))
+  const fetchMock = vi.fn(withReads(fetchImpl, varieties, stock, reasons))
   vi.stubGlobal('fetch', fetchMock)
   const router = createMemoryRouter(
     [
@@ -94,8 +105,40 @@ export function renderWithdrawals(
   )
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-      <RouterProvider router={router} />
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
   return { router, fetchMock }
+}
+
+/** A Selector's field once it has loaded: a busy field is still waiting for its list. */
+async function loadedField(name: RegExp): Promise<HTMLElement> {
+  const field = await screen.findByRole('button', { name })
+  await waitFor(() => expect(field).not.toHaveAttribute('aria-busy'))
+  return field
+}
+
+/** The line's Variety field; a single line is "Variety", several are "Variety 1", "Variety 2". */
+export function varietyField(position: number): Promise<HTMLElement> {
+  return loadedField(position === 1 ? /^Product(?! [2-9])/ : new RegExp(`^Product ${position}`))
+}
+
+export function reasonField(): Promise<HTMLElement> {
+  return loadedField(/^Reason/)
+}
+
+/** Opens a Selector's phone list and taps one option by its name. */
+async function pickFrom(field: HTMLElement, name: string): Promise<void> {
+  await userEvent.click(field)
+  await userEvent.click(await screen.findByRole('button', { name }))
+}
+
+export async function pickVariety(position: number, name: string): Promise<void> {
+  await pickFrom(await varietyField(position), name)
+}
+
+export async function pickReason(name: string): Promise<void> {
+  await pickFrom(await reasonField(), name)
 }

@@ -19,6 +19,7 @@ subgraph src["src"]
     src_components_Boton_tsx["Boton.tsx"]
     src_components_BrandMark_tsx["BrandMark.tsx"]
     src_components_ConfirmDialog_tsx["ConfirmDialog.tsx"]
+    src_components_ContentArea_tsx["ContentArea.tsx"]
     src_components_ErrorGenerico_tsx["ErrorGenerico.tsx"]
     src_components_GoneNotice_tsx["GoneNotice.tsx"]
     src_components_GoneScreen_tsx["GoneScreen.tsx"]
@@ -40,19 +41,23 @@ subgraph src["src"]
     src_components_SinConexion_tsx["SinConexion.tsx"]
     src_components_botonVisual_tsx["botonVisual.tsx"]
     src_components_feedback_ts["feedback.ts"]
+    src_components_fixedSets_ts["fixedSets.ts"]
     src_components_goneExit_ts["goneExit.ts"]
     src_components_inAppState_ts["inAppState.ts"]
     src_components_keyboard_ts["keyboard.ts"]
     src_components_paymentMethodIcons_ts["paymentMethodIcons.ts"]
+    src_components_typeEquals_ts["typeEquals.ts"]
     src_components_useBackOr_ts["useBackOr.ts"]
     src_components_useGoneExit_ts["useGoneExit.ts"]
     src_components_useLeaveGuard_ts["useLeaveGuard.ts"]
+    src_components_useLoading_ts["useLoading.ts"]
     src_components_useReturnToPlace_ts["useReturnToPlace.ts"]
     src_components_useSheetStack_ts["useSheetStack.ts"]
     src_components_useVisualViewport_ts["useVisualViewport.ts"]
   end
 end
 src_components_AuthPage_tsx-->src_components_BrandMark_tsx
+src_components_AuthPage_tsx-->src_components_ContentArea_tsx
 src_components_AvisoAmbar_tsx-->src_components_Icono_tsx
 src_components_AvisoExito_tsx-->src_components_feedback_ts
 src_components_BotonLink_tsx-->src_components_Boton_tsx
@@ -61,22 +66,28 @@ src_components_BotonLink_tsx-->src_components_botonVisual_tsx
 src_components_Boton_tsx-->src_components_Icono_tsx
 src_components_Boton_tsx-->src_components_botonVisual_tsx
 src_components_ConfirmDialog_tsx-->src_components_AnswerButton_tsx
+src_components_ContentArea_tsx-->src_components_useLoading_ts
 src_components_ErrorGenerico_tsx-->src_components_AvisoAmbar_tsx
 src_components_GoneScreen_tsx-->src_components_BotonLink_tsx
+src_components_GoneScreen_tsx-->src_components_ContentArea_tsx
 src_components_InAppLink_tsx-->src_components_inAppState_ts
 src_components_LeaveConfirm_tsx-->src_components_ConfirmDialog_tsx
+src_components_Loading_tsx-->src_components_useLoading_ts
 src_components_MasInfo_tsx-->src_components_Icono_tsx
 src_components_Notice_tsx-->src_components_feedback_ts
 src_components_PaneRowLink_tsx-->src_components_InAppLink_tsx
 src_components_PasswordField_tsx-->src_components_Boton_tsx
 src_components_Pestanas_tsx-->src_components_botonVisual_tsx
+src_components_Pestanas_tsx-->src_components_fixedSets_ts
 src_components_ReglaInsignia_tsx-->src_components_Insignia_tsx
 src_components_SelectorPago_tsx-->src_components_Icono_tsx
 src_components_SelectorPago_tsx-->src_components_paymentMethodIcons_ts
+src_components_Sheet_tsx-->src_components_ContentArea_tsx
 src_components_Sheet_tsx-->src_components_useVisualViewport_ts
 src_components_SinConexion_tsx-->src_components_AvisoAmbar_tsx
 src_components_botonVisual_tsx-->src_components_Boton_tsx
 src_components_botonVisual_tsx-->src_components_Icono_tsx
+src_components_fixedSets_ts-->src_components_Icono_tsx
 src_components_goneExit_ts-->src_components_feedback_ts
 src_components_paymentMethodIcons_ts-->src_components_Icono_tsx
 src_components_useGoneExit_ts-->src_components_feedback_ts

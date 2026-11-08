@@ -21,5 +21,6 @@
   "web/src/screens/settings/Settings.tsx",
   "web/src/screens/settings/SettingsGroup.tsx",
   "web/src/screens/settings/UsersGroup.test.tsx",
-  "web/src/screens/settings/UsersGroup.tsx"
+  "web/src/screens/settings/UsersGroup.tsx",
+  "web/src/screens/settings/WithdrawalReasons.tsx"
 ]

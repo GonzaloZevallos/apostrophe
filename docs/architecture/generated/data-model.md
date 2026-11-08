@@ -15,6 +15,7 @@ erDiagram
     INTEGER id PK
     VARCHAR(60) name
     VARCHAR(35) language
+    INTEGER last_sale_number
   }
   catalog_attributes {
     INTEGER id PK
@@ -37,6 +38,15 @@ erDiagram
     VARCHAR(60) name
     VARCHAR(16) phone "nullable"
     BOOLEAN vip
+    INTEGER customer_type_id FK "nullable"
+  }
+  customer_type {
+    INTEGER id PK
+    INTEGER business_id FK
+    VARCHAR(40) name
+    VARCHAR(40) name_key
+    VARCHAR(16) icon
+    BOOLEAN is_vip
   }
   expense {
     INTEGER id PK
@@ -78,6 +88,13 @@ erDiagram
     VARCHAR(254) email PK
     INTEGER failures
     DATETIME locked_until "nullable"
+  }
+  money_format {
+    INTEGER id PK
+    INTEGER business_id FK
+    VARCHAR symbol
+    INTEGER decimals
+    INTEGER scale
   }
   onboarding {
     INTEGER id PK
@@ -151,6 +168,7 @@ erDiagram
   sale {
     INTEGER id PK
     INTEGER business_id FK
+    INTEGER number
     DATE sale_date
     INTEGER customer_id FK "nullable"
     INTEGER shipping_charged
@@ -188,7 +206,8 @@ erDiagram
   stock_withdrawal {
     INTEGER id PK
     INTEGER business_id FK
-    VARCHAR(9) reason
+    INTEGER withdrawal_reason_id FK
+    VARCHAR(9) reason "nullable"
     DATE withdrawn_on
     VARCHAR(200) note "nullable"
     DATETIME recorded_at
@@ -208,10 +227,18 @@ erDiagram
     VARCHAR(60) name_key
     DATETIME archived_at "nullable"
   }
+  withdrawal_reason {
+    INTEGER id PK
+    INTEGER business_id FK
+    VARCHAR(60) name
+    VARCHAR(60) name_key
+    INTEGER position
+  }
   app_user ||--o| reset_link : user_id
   business ||--o{ app_user : business_id
   business ||--o{ catalog_attributes : business_id
   business ||--o{ customer : business_id
+  business ||--o{ customer_type : business_id
   business ||--o{ expense : business_id
   business ||--o{ expense_category : business_id
   business ||--o{ invitation : business_id
@@ -226,13 +253,16 @@ erDiagram
   business ||--o{ stock_withdrawal : business_id
   business ||--o{ stock_withdrawal_line : business_id
   business ||--o{ variety : business_id
+  business ||--o{ withdrawal_reason : business_id
   business ||--o| catalog_header_footer : business_id
   business ||--o| first_run : business_id
+  business ||--o| money_format : business_id
   business ||--o| onboarding : business_id
   business ||--o| pinned_catalog : business_id
   business ||--o| pricing_settings : business_id
   customer ||--o{ payment : customer_id
   customer ||--o{ sale : customer_id
+  customer_type ||--o{ customer : customer_type_id
   expense_category ||--o{ expense : category_id
   expense_category }o--o{ expense : business_id
   payment_method ||--o{ payment : payment_method_id
@@ -246,4 +276,6 @@ erDiagram
   variety ||--o{ stock_entry : variety_id
   variety ||--o{ stock_threshold : variety_id
   variety ||--o{ stock_withdrawal_line : variety_id
+  withdrawal_reason ||--o{ stock_withdrawal : withdrawal_reason_id
+  withdrawal_reason }o--o{ stock_withdrawal : business_id
 ```

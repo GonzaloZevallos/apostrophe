@@ -2,14 +2,18 @@
  * One visit of one screen in one cell, loaded or with the API held. It returns the
  * `Violation`s found and never throws for what it cannot reach: a registry step whose text
  * is missing, or a signed-in screen the app bounces to Entrar, is recorded as `unreachable`
- * with an empty target (a page rule).
+ * with an empty target (a page rule), and so is a loaded page whose path no registry row
+ * matches, since no kind says which chrome it owes.
  */
 
 import { LOGIN } from '../../src/routes.ts'
 import type { Page } from '@playwright/test'
+import { expectationFor } from '../../src/mobile-standard/chrome.ts'
+import { ROUTE_REGISTRY } from '../../src/mobile-standard/registry.ts'
 import type { WalkState } from '../../src/mobile-standard/states.ts'
 import type { Violation } from '../../src/mobile-standard/violation.ts'
 import { collect, pageViolation, type CellId } from './collect.js'
+import { runChrome } from './collectChrome.js'
 import { guardWrites, holdApi, stubReads } from './network.js'
 import { asScreen } from './states.js'
 import { open, painted, runSteps, settle, type Facts, type WalkScreen } from './walk.js'
@@ -47,6 +51,10 @@ export async function walkScreen(
     if (hold === null) {
       if (!(await runSteps(page, screen, facts))) return [pageViolation(cell, 'unreachable')]
       found.push(...(await collect(page, 'loaded', cell)))
+      // The kind is read where the steps left the page: a sheet keeps its screen's path, a form route has its own row.
+      const expectation = expectationFor(screen.signedOut, new URL(page.url()).pathname, ROUTE_REGISTRY)
+      if (expectation === null) found.push(pageViolation(cell, 'unreachable'))
+      else found.push(...(await runChrome(page, cell, expectation)))
     }
   } finally {
     if (hold !== null) await hold.release()

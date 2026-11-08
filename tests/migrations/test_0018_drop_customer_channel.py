@@ -1,5 +1,5 @@
 """Migration 0018 drops `customer.channel` for good (ADR-0047): through the real
-the real migration from 0017 to 0018, over the plain sqlite driver and sqlite+libsql (ADR-0016),
+`upgrade_to_head` from 0017, over the plain sqlite driver and sqlite+libsql (ADR-0016),
 the column is gone and every other customer column, sale, line and payment row, and every
 debtor's balance, is exactly as it was. The downgrade gives back an empty column."""
 
@@ -13,7 +13,7 @@ from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine
 
 from app.db import make_engine
-from app.migrations.runner import MIGRATIONS_ROOT
+from app.migrations.runner import MIGRATIONS_ROOT, upgrade_to_head
 
 NOW = "2026-01-01 12:00:00"
 
@@ -27,6 +27,14 @@ CUSTOMERS = (
     (5, 2, "Nadie", None, 1, None),
 )
 OTHER_TABLES = ("sale", "sale_line", "payment")
+# `sale` is read by the columns it had at this revision: a later revision adds some (0023's
+# `number`), and a `SELECT *` would fail on each.
+SELECTED = {
+    "sale": "id, business_id, sale_date, customer_id, shipping_charged, note, recorded_at",
+    "sale_line": "*",
+    # Named, not `*`: a later migration (0026) adds payment.payment_method_id, which 0018 never touched.
+    "payment": "id, business_id, paid_on, amount, method, customer_id, sale_id, recorded_at",
+}
 
 
 def _config(connection: object) -> Config:
@@ -150,7 +158,10 @@ def _snapshot(engine: Engine) -> dict[str, list[tuple[Any, ...]]]:
         }
         for table in OTHER_TABLES:
             snapshot[table] = [
-                tuple(row) for row in connection.execute(text(f"SELECT * FROM {table} ORDER BY id"))
+                tuple(row)
+                for row in connection.execute(
+                    text(f"SELECT {SELECTED[table]} FROM {table} ORDER BY id")
+                )
             ]
         snapshot["balance"] = [
             tuple(row)
@@ -173,7 +184,7 @@ def _snapshot(engine: Engine) -> dict[str, list[tuple[Any, ...]]]:
 
 def _assert_dropped_and_whole(engine: Engine) -> None:
     columns = [column["name"] for column in inspect(engine).get_columns("customer")]
-    assert columns == ["id", "business_id", "name", "phone", "vip"]
+    assert columns == ["id", "business_id", "name", "phone", "vip", "customer_type_id"]
     assert [name for name in inspect(engine).get_unique_constraints("customer")] == [
         {"name": "uq_customer_business_phone", "column_names": ["business_id", "phone"]}
     ]
@@ -191,7 +202,7 @@ def _run_upgrade(url: str) -> None:
     assert any(balance > 0 for _, balance in before["balance"])
     assert any(balance < 0 for _, balance in before["balance"])
 
-    _upgrade_to(engine, "0018")
+    upgrade_to_head(engine)
 
     assert _snapshot(engine) == before
     _assert_dropped_and_whole(engine)
@@ -212,9 +223,14 @@ def test_the_downgrade_gives_back_an_empty_nullable_column(tmp_path: Path) -> No
     _upgrade_to(engine, "0017")
     _seed(engine)
     before = _snapshot(engine)
-    _upgrade_to(engine, "0018")
+    upgrade_to_head(engine)
 
     with engine.connect() as connection:
+        raw = connection.connection.dbapi_connection
+        assert raw is not None
+        # As the upgrade runner does: a downgrade that rebuilds a referenced table needs
+        # foreign keys off before any write.
+        raw.execute("PRAGMA foreign_keys=OFF")
         with connection.begin():
             command.downgrade(_config(connection), "0017")
 
