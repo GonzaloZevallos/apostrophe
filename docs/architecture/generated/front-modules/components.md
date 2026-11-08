@@ -21,6 +21,7 @@ subgraph src["src"]
     src_components_ConfirmDialog_tsx["ConfirmDialog.tsx"]
     src_components_ContentArea_tsx["ContentArea.tsx"]
     src_components_ErrorGenerico_tsx["ErrorGenerico.tsx"]
+    src_components_FieldRefusal_tsx["FieldRefusal.tsx"]
     src_components_GoneNotice_tsx["GoneNotice.tsx"]
     src_components_GoneScreen_tsx["GoneScreen.tsx"]
     src_components_Icono_tsx["Icono.tsx"]
@@ -68,6 +69,7 @@ src_components_Boton_tsx-->src_components_botonVisual_tsx
 src_components_ConfirmDialog_tsx-->src_components_AnswerButton_tsx
 src_components_ContentArea_tsx-->src_components_useLoading_ts
 src_components_ErrorGenerico_tsx-->src_components_AvisoAmbar_tsx
+src_components_FieldRefusal_tsx-->src_components_AvisoAmbar_tsx
 src_components_GoneScreen_tsx-->src_components_BotonLink_tsx
 src_components_GoneScreen_tsx-->src_components_ContentArea_tsx
 src_components_InAppLink_tsx-->src_components_inAppState_ts
