@@ -26,6 +26,7 @@ import { HOME } from '../../routes'
 import { SHOWN_EN } from '../../test/shownLanguage'
 import Listo from './Listo'
 import OnboardingStep from './OnboardingStep'
+import { SheetRouterProvider } from '../../components/useSheetStack'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
 const ORDER: StepSlug[] = ['variety', 'stock', 'header_footer', 'bot', 'partner', 'categories']
@@ -56,7 +57,9 @@ function inRouter(element: React.ReactNode, answer: OnboardingProgress) {
   )
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <RouterProvider router={router} />
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
 }

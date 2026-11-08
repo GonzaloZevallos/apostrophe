@@ -23,6 +23,7 @@ import { newBusinessInvitationUrl } from '../backend.js'
 import { expectPath } from './url.js'
 import { expectToast } from './toast.js'
 import { fillSaleLine } from './sale.js'
+import { pickWithdrawalReason } from './stockVariety.js'
 import { leaveOnboarding } from './signup.js'
 import { uniqueTag } from './unique.js'
 
@@ -78,7 +79,7 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
 
   await page.goto(STOCK_ENTRY_NEW)
   await page.getByLabel('Grams').fill('50')
-  await page.getByLabel('Product').selectOption({ label: 'Rosa' })
+  await pickStockVariety(page, 'Rosa')
   await page.getByLabel('Total cost').fill('45000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
   await page.goto(STOCK)
@@ -87,7 +88,7 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
 
   await page.goto(withdrawalNewFor(variety))
   await page.getByLabel('Grams 1', { exact: true }).fill('1')
-  await page.getByRole('button', { name: 'Marketing', exact: true }).click()
+  await pickWithdrawalReason(page, 'Marketing')
   await expectToast(page, 'Withdrawal saved', () => page.getByRole('button', { name: 'Save the withdrawal' }).click())
   await page.goto(pathTo(VARIETY, { id: variety }))
   await page.locator('.fila-entrada__enlace', { hasText: 'Marketing' }).click()
@@ -95,3 +96,5 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
 
   return { variety, customer, sale, entry, withdrawal, customerName }
 }
+
+import { pickStockVariety } from './stockVariety.js'

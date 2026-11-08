@@ -22,6 +22,7 @@ const API_SEGMENTS = [
 ]
 
 const CENSUS = 'src/design/census.test.ts'
+const TAKE_SHOT = 'src/design/take-shot.test.ts'
 const CONFIG_EXCLUDE = ['**/node_modules/**', 'e2e/**']
 
 export default defineConfig({
@@ -62,7 +63,7 @@ export default defineConfig({
     // { query: '?raw' })`) saw '' and passed on nothing. Only `?raw` loads are let
     // through; component imports of CSS stay empty.
     css: { include: [/styles\/tokens\.css/, /[?&]raw(?:&|$)/] },
-    // The census test drives real browsers, and the script it runs bounds every browser step by
+    // The census and take-shot tests drive real browsers, and the script they run bounds every browser step by
     // wall-clock time. Run beside ~15 jsdom workers it is slowed 4 to 6 times, so it is a project of
     // its own, in a later group: it starts when the other files are done. That group does NOT have the
     // CPU to itself under `parallel_checks`: `web-tests` then runs next to pytest, mypy, tsc and the
@@ -72,8 +73,8 @@ export default defineConfig({
     // not from the script's 8 s default.
     // Everything else (the 40 s ceiling above included) is inherited unchanged.
     projects: [
-      { extends: true, test: { name: 'unit', exclude: [...CONFIG_EXCLUDE, CENSUS] } },
-      { extends: true, test: { name: 'census', include: [CENSUS], sequence: { groupOrder: 1 } } },
+      { extends: true, test: { name: 'unit', exclude: [...CONFIG_EXCLUDE, CENSUS, TAKE_SHOT] } },
+      { extends: true, test: { name: 'census', include: [CENSUS, TAKE_SHOT], sequence: { groupOrder: 1 } } },
     ],
   },
 })

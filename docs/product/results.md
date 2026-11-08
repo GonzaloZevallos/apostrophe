@@ -2,21 +2,21 @@
 
 **Cuando** abro la app, o paro entre pedidos o al final del día para ver cómo va hoy, esta semana o este mes, **quiero** ver en una sola pantalla qué vendí, cuánto me costó, cuánto gasté, cuánto gané (Profit), la plata que realmente se movió (Cash), quién me debe y cuánto me queda de cada Product, **para** saber si estoy ganando plata y cuánta tengo de verdad, y saber si tengo que reponer o cobrar una deuda, sin abrir Sales, Customers y Products una por una ni hacer ninguna cuenta.
 
-El Profit y el Cash no existen en ningún otro lugar del producto, y son la razón de ser del Panel. El Panel de la planilla calculaba mal la ganancia: bajaba la semana en que se compraba flor. Mostrar la deuda y el stock en la misma pantalla es una comodidad que se suma a eso.
+El Profit y el Cash no existen en ningún otro lugar del producto, y son la razón de ser del Panel. El Panel de la planilla calculaba mal el Profit: bajaba la semana en que se compraba flor. Mostrar la deuda y el stock en la misma pantalla es una comodidad que se suma a eso.
 
 **Cuando** abro la app entre pedidos o al final del día, **quiero** ver qué vendí hoy, quién me debe y qué se está terminando, y actuar enseguida (cobrarle a un deudor, abrir un Product que está bajo, arreglar lo que me dice un aviso), **para** volver al Customer sin pasar por Customers y Products una por una ni hacer cuentas.
 
 Este job afina el job del Panel de arriba y el job de navegación para Today (GH-45); no es un job nuevo. Su protagonista es el vendedor, en el teléfono y con poco tiempo. Week y Month son para la mirada semanal o mensual, y Analysis para todo lo más profundo. Antes, el vendedor entraba a Customers para cobrar y a Products Product por Product, y configuraba el Business sin guía, muchas veces olvidándose del bot.
 
-**Cuando** saco gramos de mi propio stock sin venderlos (para convidar en una fiesta y que la gente conozca el negocio, o para consumo propio), **quiero** registrarlo desde el teléfono en pocos toques (fecha, Products y gramos, motivo), **para** mantener bien el stock y ver en el Profit lo que me costó promocionar el negocio y lo que consumí, sin registrar una venta que nadie hizo ni un ajuste que se lee como flor perdida. (Acá lo sirven las líneas de costo por motivo de Week y Month; el retiro se define en stock.md.)
+**Cuando** saco gramos de mi propio stock sin venderlos (para convidar en una fiesta y que la gente conozca el negocio, o para consumo propio), **quiero** registrarlo desde el teléfono en pocos toques (fecha, Products y gramos, Withdrawal reason), **para** mantener bien el stock y ver en el Profit lo que me costó promocionar el negocio y lo que consumí, sin registrar una venta que nadie hizo ni un Adjustment que se lee como flor perdida. (Acá lo sirven las líneas de costo por Withdrawal reason de Week y Month; el Stock withdrawal se define en stock.md.)
 
-**Cuando** saco stock sin venderlo, **quiero** archivarlo bajo un motivo con mis propias palabras, **para que** Home y Analysis muestren cuánto me cuesta cada tipo de retiro y cuánto baja mi Profit. (GH-318, motivos de retiro: acá lo sirve una línea de costo por Withdrawal reason en Week y Month, en el orden de la lista del Business; la lista se define en stock.md.)
+**Cuando** saco stock sin venderlo, **quiero** registrarlo bajo un Withdrawal reason con mis propias palabras, **para que** Home y Analysis muestren cuánto me cuesta cada tipo de Stock withdrawal y cuánto baja mi Profit. (GH-318, parte de Withdrawal reasons: acá lo sirve una línea de costo por Withdrawal reason en Week y Month, en el orden de la lista del Business; la lista se define en stock.md.)
 
 **Cuando** llevo el negocio desde el teléfono entre pedidos o en medio de un chat con un Customer, varias veces por día, **quiero** que la app esté ordenada según lo que hago de verdad y con qué frecuencia, **para** volver al Customer en vez de buscar entre menús. (Es el job de navegación, navigation.md. Acá lo sirve Today, que muestra lo que se puede resolver hoy, con "Collect" en cada deudor.)
 
 **Cuando** acabo de abrir mi Business y todavía está vacío, **quiero** que me guíen por lo que necesita, un paso corto a la vez y con valores por defecto ya cargados, **para** registrar mi primera venta el mismo día sin buscar entre Settings, Products y la pantalla del Catalog. (Acá lo sirve el aviso "Go on to the setup" arriba de Home, el único camino de vuelta al Onboarding; se define en onboarding.md.)
 
-**Cuando** un Product que cargué por error, o uno con el que ya no trabajo, sigue apareciendo en mis listas y selectores, **quiero** sacarlo desde el teléfono en pocos toques, eliminándolo si nunca se movió y archivándolo si tiene historial, **para que** mis listas muestren solo lo que todavía vendo, ninguna cifra pasada de ventas, stock, costo o ganancia cambie, y pueda volver a tenerlo exactamente como estaba si empiezo a venderlo de nuevo. (Acá lo sirve What you have left, que deja afuera los Archived products mientras todas las cifras del período siguen iguales; se define en varieties.md.)
+**Cuando** un Product que cargué por error, o uno con el que ya no trabajo, sigue apareciendo en mis listas y selectores, **quiero** sacarlo desde el teléfono en pocos toques, eliminándolo si nunca se movió y archivándolo si tiene historial, **para que** mis listas muestren solo lo que todavía vendo, ninguna cifra pasada de ventas, stock, costo o Profit cambie, y pueda volver a tenerla exactamente como estaba si empiezo a venderla de nuevo. (Acá lo sirve What you have left, que deja afuera los Archived products mientras todas las cifras del período siguen iguales; se define en varieties.md.)
 
 Criterios de éxito:
 
@@ -35,8 +35,8 @@ Criterios de éxito:
    - Una cifra negativa se muestra tal cual, nunca se oculta ni se lleva a cero.
    - El Pending cost se marca, nunca se toma como $0 (ADR-0009). El Profit se calcula entonces sobre la parte con costo.
    - La flor perdida por un Adjustment negativo baja el Profit en la fecha del Adjustment.
-   - Los gramos retirados bajan el Profit en la fecha del retiro, cada Withdrawal reason en su propia línea, nunca dentro del Cost of goods sold ni del Stock shortfall.
-   - Las Stock entries y los retiros corregidos se ven la próxima vez que se abre el Panel: un período no tiene fecha de cierre.
+   - Los gramos retirados bajan el Profit en la fecha del Stock withdrawal, cada Withdrawal reason en su propia línea, nunca dentro del Cost of goods sold ni del Stock shortfall.
+   - Las Stock entries y los Stock withdrawals corregidos se ven la próxima vez que se abre el Panel: un período no tiene fecha de cierre.
    - Archivar o restaurar un Product no mueve ninguna cifra.
 4. **Quién debe y qué queda, de un vistazo**: la plata adeudada, cada deudor a un toque de cobrarle, y el stock de cada Product sin archivar con su estado. El estado se dice por forma y palabra, nunca solo por color.
 5. **Los Businesses nunca se mezclan** (ADR-0004): cada cifra sale solo del Business de quien consulta, y la ruta del Panel entra en el barrido de aislamiento. Ninguna cifra va a la consola ni al almacenamiento del navegador.
@@ -44,13 +44,13 @@ Criterios de éxito:
    - cada cifra viene del servidor;
    - un período sin actividad muestra ceros reales;
    - el Average sale no muestra nada cuando el período no tiene ventas.
-7. **Un retiro no es una venta**: registrar uno deja exactamente como estaban las ventas, la cantidad de ventas, el Average sale, los gramos vendidos, You gave away, el Cost of goods sold, el Stock shortfall y el Cash.
+7. **Un Stock withdrawal no es una venta**: registrar uno deja exactamente como estaban las ventas, la cantidad de ventas, el Average sale, los gramos vendidos, You gave away, el Cost of goods sold, el Stock shortfall y el Cash.
 8. **Cobrar en un toque desde Today**: "Collect" en cada fila de deudor del bloque "Owed to you" abre Record payment con ese Customer elegido, con nombre accesible "Collect from <name>"; volver o "Close" sale con un solo movimiento.
 9. **Today es solo lo que se puede resolver**: lo vendido hoy, después Owed to you, después What you have left; un Product bajo lleva a su página; ninguna cifra de resultado (Profit, Cash, costos, Expenses, You gave away, Purchases) se muestra en Today.
-10. **El primer uso sigue la definición de hoy**: un Business recién creado recibe el aviso del Onboarding; solo un Business que existía antes de que saliera el Onboarding ve la checklist de cuatro pasos; un Business importado ve el aviso posterior a la importación, que se puede descartar; nunca se muestra más de un elemento de primer uso a la vez (navigation.md).
+10. **El primer uso sigue la definición de hoy**: un Business recién creado recibe el aviso del Onboarding; solo un Business que existía antes de que saliera el Onboarding ve la checklist de cuatro pasos; un Business cargado por el Spreadsheet import ve el aviso posterior al Spreadsheet import, que se puede descartar; nunca se muestra más de un elemento de primer uso a la vez (navigation.md).
 11. **Cada aviso lleva a su arreglo**: "Your Telegram catalog is out of date" abre la pantalla del Catalog; el avatar del Business abre Settings.
 12. **Como en el diseño**: Home, `InicioOscuro` (Home, tema oscuro) e `InicioCompu` (Home, disposición de computadora) coinciden con `docs/product/design-system/pantallas/`, en teléfono y computadora, en los dos temas.
-13. **Nada cambia para un Business existente** (GH-318, motivos de retiro): ve los mismos costos, Profit y Cash; la única diferencia visible es que la línea "Promotion" ahora dice "Marketing".
+13. **Nada cambia para un Business existente** (GH-318, parte de Withdrawal reasons): ve los mismos costos, Profit y Cash; la única diferencia visible es que la línea "Promotion" ahora dice "Marketing".
 
 # Resultados
 
@@ -63,7 +63,7 @@ Si un Business gana plata y cuánta tiene de verdad, hoy, esta semana y este mes
 - los Payments, los Balances y el Settlement, de payments (ADR-0012);
 - el Stock status y los Days left, de stock.
 
-No calcula nada que esas capacidades ya calculen, más allá de sumarlo. Sus cifras por período salen del único cálculo que también lee Analysis (ADR-0020): el Profit de acá y el de Analysis son la misma cifra. Home también lleva el aviso del Onboarding (onboarding.md), la First-run checklist y el aviso posterior a la importación (navigation.md); acá se define su lugar en Home. Un Archived product (varieties.md) sale de What you have left y de "Start with your products", mientras que todas las cifras del período lo siguen contando.
+No calcula nada que esas capacidades ya calculen, más allá de sumarlo. Sus cifras por período salen del único cálculo que también lee Analysis (ADR-0020): el Profit de acá y el de Analysis son la misma cifra. Home también lleva el aviso del Onboarding (onboarding.md), la First-run checklist y el aviso posterior al Spreadsheet import (navigation.md); acá se define su lugar en Home. Un Archived product (varieties.md) sale de What you have left y de "Start with your products", mientras que todas las cifras del período la siguen contando.
 
 ## Comportamiento
 
@@ -81,36 +81,36 @@ No calcula nada que esas capacidades ya calculen, más allá de sumarlo. Sus cif
 
 Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el Stock shortfall, el costo de cada Withdrawal reason, las Expenses, el Profit y el Cash salen del mismo cálculo por período que Analysis (ADR-0020), nunca de una segunda suma. Cuentan todos los Products, los archivados incluidos.
 
-- **Ventas**: la suma de los totales de las ventas del período, envío incluido, pagadas o no. Es la misma cifra que el total de Sales. Su título sigue a la pestaña: "You sold today", "You sold this week" o "You sold this month". Los retiros nunca son ventas.
+- **Ventas**: la suma de los totales de las ventas del período, envío incluido, pagadas o no. Es la misma cifra que el total de Sales. Su título sigue a la pestaña: "You sold today", "You sold this week" o "You sold this month". Los Stock withdrawals nunca son ventas.
 - **Cantidad de ventas**: cuenta ventas, no líneas.
 - **Average sale**: ventas ÷ cantidad de ventas, redondeado al peso entero con mitad hacia arriba. No se muestra nada cuando no hay ventas.
 - **Gramos vendidos**: los gramos de las líneas del período que no son Gifts.
 - **Gramos regalados** ("You gave away"): los gramos de las líneas de Gift del período. Los gramos retirados nunca son gramos regalados.
-- **Cost of goods sold** ("Cost of goods sold"): lo que cuestan los gramos de las líneas de venta del período (Gifts incluidos), de sus Lots tal como están hoy (ADR-0009, ADR-0010). No incluye el costo de un Adjustment negativo ni el de un retiro.
-- **Stock shortfall** ("Stock shortfall"): lo que cuestan los gramos sacados por los Adjustments negativos del período, en la fecha del Adjustment, de sus Lots tal como están hoy, primero el más antiguo (CONTEXT.md: Stock shortfall). Se muestra como "Stock shortfall $ X" solo cuando el período tiene algún Adjustment negativo; si no, la línea se deja afuera. Nunca incluye un retiro.
-- **Costo de cada Withdrawal reason** (una línea con el nombre del motivo, por ejemplo "Marketing $ X" u "Own use $ X"): lo que cuestan los gramos de los retiros del período con ese motivo, en la fecha del retiro, de sus Lots tal como están hoy, primero el más antiguo. Se muestra solo cuando el período tiene un retiro de ese motivo; si no, su línea se deja afuera. Las líneas siguen el orden de la lista de motivos del Business, y el nombre es el actual del motivo, también para los períodos pasados.
+- **Cost of goods sold** ("Cost of goods sold"): lo que cuestan los gramos de las Sale lines del período (Gifts incluidos), de sus Lots tal como están hoy (ADR-0009, ADR-0010). No incluye el costo de un Adjustment negativo ni el de un Stock withdrawal.
+- **Stock shortfall** ("Stock shortfall"): lo que cuestan los gramos sacados por los Adjustments negativos del período, en la fecha del Adjustment, de sus Lots tal como están hoy, primero el más antiguo (CONTEXT.md: Stock shortfall). Se muestra como "Stock shortfall $ X" solo cuando el período tiene algún Adjustment negativo; si no, la línea se deja afuera. Nunca incluye un Stock withdrawal.
+- **Costo de cada Withdrawal reason** (una línea con el nombre del Withdrawal reason, por ejemplo "Marketing $ X" u "Own use $ X"): lo que cuestan los gramos de los Stock withdrawals del período con ese Withdrawal reason, en la fecha del Stock withdrawal, de sus Lots tal como están hoy, primero el más antiguo. Se muestra solo cuando el período tiene un Stock withdrawal de ese Withdrawal reason; si no, su línea se deja afuera. Las líneas siguen el orden de la lista de Withdrawal reasons del Business, y el nombre es el actual del Withdrawal reason, también para los períodos pasados.
 - **Expenses** ("Expenses"): la suma de las Expenses del período.
 - **Purchases** ("Flower purchases"): el costo total de las Stock entries de origen Purchase del período.
 - **Profit**: ventas − Cost of goods sold − Stock shortfall − el costo de cada Withdrawal reason − Expenses.
-  - Cuando parte de su costo está pendiente, se calcula sobre la parte con costo: las ventas de los gramos pendientes se dejan afuera (ventas − (ventas sin envío − ventas de gramos con costo) − Cost of goods sold con costo − faltante con costo − el costo con costo de cada Withdrawal reason − Expenses), con las ventas de gramos con costo por línea como las define el Margin de CONTEXT.md (total de la línea × gramos con costo ÷ gramos de la línea, con mitad hacia arriba). La cifra de ventas que se muestra sigue siendo la venta completa.
+  - Cuando parte de su costo está pendiente, se calcula sobre la parte con costo: las ventas de los gramos pendientes se dejan afuera (ventas − (ventas sin envío − ventas de gramos con costo) − Cost of goods sold con costo − Stock shortfall con costo − el costo con costo de cada Withdrawal reason − Expenses), con las ventas de gramos con costo por línea como las define el Margin de CONTEXT.md (total de la línea × gramos con costo ÷ gramos de la línea, con mitad hacia arriba). La cifra de ventas que se muestra sigue siendo la venta completa.
   - Es la misma cifra que Analysis muestra como Profit para la misma semana o el mismo mes.
   - Lleva el tratamiento de acento del diseño cualquiera sea su signo: el acento marca la cifra principal, no si es buena o mala.
-- **Cash**: Payments recibidos − Expenses − Purchases. Los Payments recibidos son todos los Payments con fecha en el período, tanto los On-the-spot payments como los posteriores, cada uno en su propia fecha. El Cash se muestra al lado del Profit. Un retiro nunca lo toca.
+- **Cash**: Payments recibidos − Expenses − Purchases. Los Payments recibidos son todos los Payments con fecha en el período, tanto los On-the-spot payments como los posteriores, cada uno en su propia fecha. El Cash se muestra al lado del Profit. Un Stock withdrawal nunca lo toca.
 
 ### Qué muestra cada pestaña
 
 - **Today** muestra lo que se puede resolver hoy, de arriba abajo: lo vendido hoy (ventas, cantidad de ventas, Average sale y gramos vendidos), después el bloque "Owed to you", después What you have left.
-- **Week y Month** muestran ventas, cantidad de ventas, Average sale, gramos vendidos, You gave away, Cost of goods sold, Stock shortfall (cuando el período lo tiene), una línea por cada Withdrawal reason con retiros en el período, Expenses, Flower purchases, Profit y Cash, y después el bloque "Owed to you" y What you have left. Las líneas de los motivos van justo después de Stock shortfall y antes de Expenses, en el orden de la lista del Business.
-- El Profit, el Cash, el Cost of goods sold, el Stock shortfall, las líneas de los motivos, las Expenses, You gave away y las Purchases nunca se muestran en Today.
+- **Week y Month** muestran ventas, cantidad de ventas, Average sale, gramos vendidos, You gave away, Cost of goods sold, Stock shortfall (cuando el período lo tiene), una línea por cada Withdrawal reason con Stock withdrawals en el período, Expenses, Flower purchases, Profit y Cash, y después el bloque "Owed to you" y What you have left. Las líneas de los Withdrawal reasons van justo después de Stock shortfall y antes de Expenses, en el orden de la lista del Business.
+- El Profit, el Cash, el Cost of goods sold, el Stock shortfall, las líneas de los Withdrawal reasons, las Expenses, You gave away y las Purchases nunca se muestran en Today.
 
 ### Pending cost
 
 - Una nota fija, "includes pending cost", sin gramos ni montos:
-  - debajo de Cost of goods sold, cuando alguna de las líneas de venta del período tiene gramos pendientes tal como están hoy los Lots;
+  - debajo de Cost of goods sold, cuando alguna de las Sale lines del período tiene gramos pendientes tal como están hoy los Lots;
   - debajo de Stock shortfall, cuando alguno de los Adjustments negativos del período tiene gramos pendientes;
-  - debajo de la línea de cada Withdrawal reason, cuando alguno de los retiros del período con ese motivo tiene gramos pendientes;
+  - debajo de la línea de cada Withdrawal reason, cuando alguno de los Stock withdrawals del período con ese Withdrawal reason tiene gramos pendientes;
   - debajo de Profit, cuando corresponde cualquiera de las anteriores.
-- **Una línea de motivo toda pendiente**: cuando todos los gramos detrás de la línea de un Withdrawal reason están pendientes, la línea muestra sus gramos sin costo (por ejemplo "1 g without cost") en lugar de una cifra, nunca "$ 0", y lleva la nota. La línea nunca se oculta porque su costo esté pendiente.
+- **Una línea de Withdrawal reason toda pendiente**: cuando todos los gramos detrás de la línea de un Withdrawal reason están pendientes, la línea muestra sus gramos sin costo (por ejemplo "1 g without cost") en lugar de una cifra, nunca "$ 0", y lleva la nota. La línea nunca se oculta porque su costo esté pendiente.
 - El Cash nunca la lleva: el Pending cost no es plata que se movió.
 - Sin nada pendiente, ninguna cifra muestra la nota.
 
@@ -125,7 +125,7 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 
 - **Cifras**: el Total owed, la cantidad de Sales still owing ("1 sale owing" o "N sales owing") y la fecha de Owing since más antigua, como las define payments.md.
 - **Avance**: hasta 3 Customers con el Balance más alto por encima de $0. Los empates se ordenan por Owing since (el más antiguo primero) y después por nombre. El diseño puede ajustar el número.
-  - Cada fila muestra el Balance en ámbar y "since dd/mm", y lleva "Collect" (nombre accesible "Collect from <name>"), que abre Record payment con ese Customer ya elegido (payments.md), como una entrada en el historial de la app.
+  - Cada fila muestra el Balance en ámbar y "since dd/mm", y lleva "Collect" (nombre accesible "Collect from <name>"), que abre Record payment con ese Customer ya elegido (payments.md), como un paso más en el historial de la app.
   - Tocar el resto de la fila abre la ficha de ese Customer.
 - Tocar el título del bloque abre Customers, en su sección Owed to you.
 - Los Customers con Credit nunca aparecen y no cuentan en ninguna cifra.
@@ -167,7 +167,7 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 - El estado de primer uso es del Business: cada User, un socio que se sumó incluido, ve el mismo elemento.
 - Week y Month conservan los mismos avisos encima de sus propias cifras.
 - En una computadora usa la disposición de dos columnas de `InicioCompu` (Home, disposición de computadora), con los mismos avisos en el mismo orden arriba.
-- Sigue los temas claro y oscuro, y coincide con `docs/product/design-system/pantallas/` en los dos. Las líneas de los motivos usan la fila de resultado existente (la etiqueta a la izquierda y la cifra a la derecha); no tienen dibujo propio.
+- Sigue los temas claro y oscuro, y coincide con `docs/product/design-system/pantallas/` en los dos. Las líneas de los Withdrawal reasons usan la fila de resultado existente (la etiqueta a la izquierda y la cifra a la derecha); no tienen dibujo propio.
 - No es un menú de acciones:
   - no registra nada por sí mismo y no tiene toasts propios;
   - su única acción principal es el "+ New sale" del marco; "Collect" en las filas de deudor es la única otra acción directa, además de los avisos, que solo abren donde está su arreglo.
@@ -178,7 +178,7 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 
 - El Business sale de la Session.
 - La ruta del Panel entra en el barrido de aislamiento y en la prueba de rutas protegidas.
-- Cada cifra se calcula en el servidor, y también qué elemento de primer uso y qué avisos se muestran, la cuenta y el paso siguiente del aviso del Onboarding, cada paso de la checklist, qué líneas de motivo se muestran y en qué orden, y si una línea de motivo está toda pendiente. El navegador nunca ordena ni suma nada.
+- Cada cifra se calcula en el servidor, y también qué elemento de primer uso y qué avisos se muestran, la cuenta y el paso siguiente del aviso del Onboarding, cada paso de la checklist, qué líneas de Withdrawal reason se muestran y en qué orden, y si una línea de Withdrawal reason está toda pendiente. El navegador nunca ordena ni suma nada.
 - Ninguna cifra ni nombre va a los logs, la consola ni el almacenamiento del navegador.
 
 ## Métricas
@@ -188,43 +188,43 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
   - el total y la cantidad de ventas contra Sales;
   - las cifras de Owed to you contra la sección "Owed to you" de Customers;
   - los gramos, el estado, los Days left y el detalle de cada Product contra Products;
-  - el Profit, el Cost of goods sold, el Stock shortfall, el costo de cada Withdrawal reason, las Expenses y el Cash de Week y Month contra la fila de `GET /analysis` para la misma semana y el mismo mes, sobre una historia sembrada que incluye un Adjustment negativo con gramos con costo, uno con gramos pendientes, una línea de venta con gramos pendientes, tres o más motivos (uno renombrado y uno reordenado), un retiro con costo de cada motivo y un retiro con gramos pendientes.
+  - el Profit, el Cost of goods sold, el Stock shortfall, el costo de cada Withdrawal reason, las Expenses y el Cash de Week y Month contra la fila de `GET /analysis` para la misma semana y el mismo mes, sobre una historia sembrada que incluye un Adjustment negativo con gramos con costo, uno con gramos pendientes, una Sale line con gramos pendientes, tres o más Withdrawal reasons (uno renombrado y uno reordenado), un Stock withdrawal con costo de cada Withdrawal reason y un Stock withdrawal con gramos pendientes.
 - **Fórmulas (criterio 3)**: una matriz, 100% de aprobación, que cubre:
   - el Profit y el Cash;
   - los Payments contados en su propia fecha, no en la de la venta;
   - una Purchase con fecha atrasada o una Stock entry editada que mueven el Cost of goods sold y el Profit;
   - un Adjustment negativo que baja el Profit en su costo con costo en su propia fecha, muestra "Stock shortfall $ X" y deja sin cambios el Cost of goods sold y el Cash;
-  - un retiro de cada motivo que baja el Profit en su propia fecha, muestra su propia línea con el nombre del motivo y deja sin cambios el Cost of goods sold, el Stock shortfall y el Cash;
-  - un período sin Adjustment negativo que no muestra línea de Stock shortfall, y uno sin retiro de un motivo que no muestra línea para ese motivo;
-  - las líneas de los motivos en el orden de la lista del Business, también después de reordenarla, y con el nombre actual después de renombrar un motivo;
-  - gramos pendientes en una línea de venta que dejan sus ventas afuera del Profit mientras "You sold today" conserva la venta completa;
-  - el Pending cost que muestra la nota debajo de Cost of goods sold, de Stock shortfall, de la línea de cada motivo y del Profit como está definido, y nunca debajo del Cash;
-  - una línea de motivo toda pendiente que muestra sus gramos sin costo, nunca "$ 0";
+  - un Stock withdrawal de cada Withdrawal reason que baja el Profit en su propia fecha, muestra su propia línea con el nombre del Withdrawal reason y deja sin cambios el Cost of goods sold, el Stock shortfall y el Cash;
+  - un período sin Adjustment negativo que no muestra línea de Stock shortfall, y uno sin Stock withdrawal de un Withdrawal reason que no muestra línea para ese Withdrawal reason;
+  - las líneas de los Withdrawal reasons en el orden de la lista del Business, también después de reordenarla, y con el nombre actual después de renombrar uno;
+  - gramos pendientes en una Sale line que dejan sus ventas afuera del Profit mientras "You sold today" conserva la venta completa;
+  - el Pending cost que muestra la nota debajo de Cost of goods sold, de Stock shortfall, de la línea de cada Withdrawal reason y del Profit como está definido, y nunca debajo del Cash;
+  - una línea de Withdrawal reason toda pendiente que muestra sus gramos sin costo, nunca "$ 0";
   - Profit y Cash negativos que se muestran como "−$ X".
-- **Nada cambia para un Business existente (criterio 13)**: sobre una historia sembrada, antes y después de la migración de los motivos, cada cifra de Week y Month es idéntica, y la única etiqueta que difiere es "Promotion" → "Marketing".
+- **Nada cambia para un Business existente (criterio 13)**: sobre una historia sembrada, antes y después de la migración de los Withdrawal reasons, cada cifra de Week y Month es idéntica, y la única etiqueta que difiere es "Promotion" → "Marketing".
 - **Archivar no mueve nada (criterio 3)**: cada cifra del período es idéntica antes de archivar un Product con historial, después de archivarlo y después de restaurarlo; el Archived product no aparece en What you have left y no cuenta para "Start with your products".
-- **No es una venta (criterio 7)**: después de registrar un retiro, 0 diferencias en ventas, cantidad de ventas, Average sale, gramos vendidos, You gave away, Cost of goods sold, Stock shortfall y Cash.
-- **Pestañas (criterio 9)**: las pruebas del front, en teléfono y computadora, muestran Today solo con lo vendido hoy, Owed to you y What you have left, en ese orden, y el Profit, el Cash, el Cost of goods sold, el Stock shortfall, las líneas de los motivos, las Expenses, You gave away y las Purchases solo en Week y Month, con las líneas de los motivos justo después de Stock shortfall.
+- **No es una venta (criterio 7)**: después de registrar un Stock withdrawal, 0 diferencias en ventas, cantidad de ventas, Average sale, gramos vendidos, You gave away, Cost of goods sold, Stock shortfall y Cash.
+- **Pestañas (criterio 9)**: las pruebas del front, en teléfono y computadora, muestran Today solo con lo vendido hoy, Owed to you y What you have left, en ese orden, y el Profit, el Cash, el Cost of goods sold, el Stock shortfall, las líneas de los Withdrawal reasons, las Expenses, You gave away y las Purchases solo en Week y Month, con las líneas de los Withdrawal reasons justo después de Stock shortfall.
 - **Cobrar en un toque (criterio 8)**: la corrida de punta a punta del front, en ventanas de teléfono y de computadora, toca "Collect from <name>" en Today, Record payment abre con ese Customer elegido, se guarda un Payment y un solo movimiento de vuelta regresa a Home.
 - **Actualización después de Collect**: las pruebas del front muestran un Payment parcial que deja al deudor con el Balance nuevo, un Payment total que saca la fila y el avance que se completa hasta 3 según su orden, "Nobody owes you" cuando no queda nadie que deba, y los dos toasts como están especificados, sin nombre de Customer.
-- **El orden de Home (criterios 10, 11)**: las pruebas del front, en teléfono y computadora, muestran como máximo uno entre el aviso del Onboarding, la checklist o "Start with your products" (nunca dos), después el aviso de desactualizado, después el aviso posterior a la importación, después las cifras; el aviso de desactualizado abre la pantalla del Catalog y el avatar abre Settings.
+- **El orden de Home (criterios 10, 11)**: las pruebas del front, en teléfono y computadora, muestran como máximo uno entre el aviso del Onboarding, la checklist o "Start with your products" (nunca dos), después el aviso de desactualizado, después el aviso posterior al Spreadsheet import, después las cifras; el aviso de desactualizado abre la pantalla del Catalog y el avatar abre Settings.
 - **Primer uso (criterio 10)**: las matrices de primer uso de navigation.md, 100% de aprobación.
 - **Bordes de período**: una semana que cruza un mes y un año, el lunes como primer día y un cambio de día en hora argentina. 100% de aprobación.
 - **Avance de deudores (criterio 4)**: ordenado por Balance, después por Owing since y después por nombre; los Credits excluidos; "Nobody owes you" cuando nadie debe; "Collect" con su nombre accesible en cada fila. Ningún estado se dice solo por color, en los dos temas.
-- **Aislamiento (criterio 5)**: desde otro Business, la ruta del Panel no muestra ninguna cifra, nombre de motivo, estado de Onboarding ni estado de primer uso del primer Business. Después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen cifras ni nombres.
+- **Aislamiento (criterio 5)**: desde otro Business, la ruta del Panel no muestra ninguna cifra, nombre de Withdrawal reason, estado de Onboarding ni estado de primer uso del primer Business. Después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen cifras ni nombres.
 - **Nada inventado (criterio 6)**:
-  - un Business vacío muestra $ 0 y 0 g, sin Average sale y sin ninguna línea de Stock shortfall ni de motivo;
+  - un Business vacío muestra $ 0 y 0 g, sin Average sale y sin ninguna línea de Stock shortfall ni de Withdrawal reason;
   - cada cifra en pantalla es igual a la respuesta de la API.
-- **Como en el diseño (criterio 12)**: `scripts/design/compare.sh` corre antes y después para Home, `InicioOscuro` e `InicioCompu`, en teléfono y computadora, con las capturas adjuntas al PR y cada diferencia con el diseño listada. El registro de pantallas no captura Week ni Month: las líneas de los motivos y su nota se cubren con las pruebas del front y la corrida de teléfono.
-- **Sin curl**: la corrida de punta a punta del front abre Home, pasa por los tres períodos, lee las líneas de los motivos después de registrar un retiro de cada uno (un motivo agregado por el dueño incluido), abre Customers desde el título del bloque, un Customer desde el avance y Record payment desde el "Collect" de una fila del avance.
-- **Medida de negocio**, que lee el Operator solo a partir de los registros existentes y nunca se muestra en la app: la proporción de Businesses anteriores al Onboarding que completan la checklist, y la proporción de Businesses importados que publican el Catalog.
+- **Como en el diseño (criterio 12)**: `scripts/design/compare.sh` corre antes y después para Home, `InicioOscuro` e `InicioCompu`, en teléfono y computadora, con las capturas adjuntas al PR y cada diferencia con el diseño listada. El registro de pantallas no captura Week ni Month: las líneas de los Withdrawal reasons y su nota se cubren con las pruebas del front y la corrida de teléfono.
+- **Sin curl**: la corrida de punta a punta del front abre Home, pasa por los tres períodos, lee las líneas de los Withdrawal reasons después de registrar un Stock withdrawal de cada uno (un Withdrawal reason agregado por el dueño incluido), abre Customers desde el título del bloque, un Customer desde el avance y Record payment desde el "Collect" de una fila del avance.
+- **Medida de negocio**, que lee el Operator solo a partir de los registros existentes y nunca se muestra en la app: la proporción de Businesses anteriores al Onboarding que completan la checklist, y la proporción de Businesses cargados por el Spreadsheet import que publican el Catalog.
 
 ## Fuera de alcance
 
 - Dates o cualquier rango a medida; comparar con períodos anteriores; gráficos.
 - Registrar cualquier cosa desde el Panel salvo con "+ New sale" y "Collect".
 - Actualizaciones en vivo entre socios.
-- Márgenes por Product (#8), Stock shortfall por Product, y el costo de cada Withdrawal reason por Product.
+- Margin por Product (#8), Stock shortfall por Product, y el costo de cada Withdrawal reason por Product.
 - Gramos pendientes contados en el Panel ("and N g without cost") para una cifra con parte pendiente: la nota del Panel es fija y no lleva gramos; Analysis muestra las cuentas.
 - Los gramos totales del stock en el Panel.
 - Descartar el aviso del Onboarding.
@@ -232,7 +232,7 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 - Poner primero los Products bajos en What you have left.
 - Rediseñar Record payment según `Cobro.dc.html`: es trabajo propio de la pantalla de payments.
 - Una checklist para un Business recién creado: recibe el Onboarding.
-- Mostrar una línea en $0 para un Withdrawal reason sin retiros en el período.
+- Mostrar una línea en $0 para un Withdrawal reason sin Stock withdrawals en el período.
 
 ## Planificado en GH-318
 
@@ -244,7 +244,7 @@ Cada pasaje nombra el ADR que lo decide, la parte que lo va a entregar y la orac
 
 Decidido en docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; lo entrega la parte de unidades.
 
-- Una cifra que suma cantidades de varios Products va a mostrar un monto por unidad, cada uno con su etiqueta (un `QuantityByUnit`, que crea la parte de unidades), porque nunca se van a sumar cantidades de unidades distintas. Esto abarca la cantidad vendida, la cantidad regalada ("You gave away") y los totales de retiros.
+- Una cifra que suma cantidades de varios Products va a mostrar un monto por unidad, cada uno con su etiqueta (un `QuantityByUnit`, que crea la parte de unidades), porque nunca se van a sumar cantidades de unidades distintas. Esto abarca la cantidad vendida, la cantidad regalada ("You gave away") y los totales de Stock withdrawals.
 - Va a reemplazar: "**Gramos vendidos**: los gramos de las líneas del período que no son Gifts." y "**Gramos regalados** ("You gave away"): los gramos de las líneas de Gift del período. Los gramos retirados nunca son gramos regalados."
 - La etiqueta "Flower purchases" y las cantidades de "What you have left" van a seguir la unidad de cada Product.
 

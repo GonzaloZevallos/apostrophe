@@ -5,7 +5,7 @@ from datetime import date, datetime
 from sqlalchemy import Date, ForeignKey, ForeignKeyConstraint, Index, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.db import Base, UtcDateTime
+from app.db import Base, UtcDateTime, money_column
 from app.expenses.domain.category import NAME_MAX_LENGTH
 from app.expenses.domain.expense import DETAIL_MAX_LENGTH
 
@@ -44,7 +44,7 @@ class ExpenseRow(Base):
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
     category_id: Mapped[int]
     spent_on: Mapped[date] = mapped_column(Date)
-    amount: Mapped[int]
+    amount: Mapped[int] = money_column()
     detail: Mapped[str] = mapped_column(String(DETAIL_MAX_LENGTH))
     # Set once at creation from the injected clock; never changed by an edit.
     recorded_at: Mapped[datetime] = mapped_column(UtcDateTime)

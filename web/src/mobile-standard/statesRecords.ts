@@ -19,8 +19,11 @@ import {
   SETTINGS_CUSTOMER_TYPES,
   STOCK,
   STOCK_ENTRY,
+  STOCK_ENTRY_NEW,
   VARIETIES,
   VARIETY,
+  WITHDRAWAL_EDIT,
+  WITHDRAWAL_NEW,
 } from '../routes.ts'
 import { AUTH_TEXT } from '../copy/auth.ts'
 import { common } from './copy.ts'
@@ -64,7 +67,101 @@ const SAMPLE_TYPED_CUSTOMER = {
   standing: 'settled',
 }
 
+/**
+ * Twelve listed Varieties, one with a 60-character name, so the Variety Selector's list shows
+ * its search and its longest row. Seeded for this state's reads only, never the pinned fixture.
+ */
+const TWELVE_VARIETIES = Array.from({ length: 12 }, (_unused, index) => ({
+  id: 100 + index,
+  name: index === 11 ? 'Una variedad con un nombre larguísimo de sesenta caracteres!!' : `Variedad ${index + 1}`,
+  archived: false,
+  current_price: null,
+}))
+
+const LONG_NAME = 'Una variedad con un nombre larguísimo de sesenta caracteres!!'
+
+/** Twelve Withdrawal reasons, one with a 60-character name, seeded for these states' reads only. */
+const TWELVE_REASONS = Array.from({ length: 12 }, (_unused, index) => ({
+  id: 200 + index,
+  name: index === 11 ? LONG_NAME : `Motivo ${index + 1}`,
+}))
+
+/** Entry 1 pointed at a Variety that is archived: no listed Variety has this id. */
+const ARCHIVED_ENTRY = {
+  id: 1,
+  date: '2026-09-20',
+  product_id: 9999,
+  origin: 'harvest',
+  quantity: 25,
+  total_cost: null,
+  cost_per_gram: null,
+  note: null,
+}
+const ARCHIVED_ENTRY_READ = { path: /^\/stock\/entries\/1$/, status: 200, body: ARCHIVED_ENTRY }
+const ARCHIVED_ONLY = /^\?archived=true$/
+
 export const RECORDS_STATES: readonly WalkState[] = [
+  {
+    // Twelve reasons, one of 60 characters: the phone list is open and its search shows.
+    screen: 'withdrawal/reason-selector-open',
+    route: WITHDRAWAL_NEW,
+    steps: [{ press: STOCK_TEXT.motivo }],
+    visible: 'Motivo 1',
+    reads: [{ path: /^\/api\/withdrawal-reasons$/, status: 200, body: TWELVE_REASONS }],
+  },
+  {
+    // A stored line on a Variety archived since: its 60-character name shows with the mark.
+    screen: 'withdrawal/line-archived-variety',
+    route: pathTo(WITHDRAWAL_EDIT, { id: 1 }),
+    steps: [],
+    visible: common('common:noLongerAvailable'),
+    reads: [
+      {
+        path: /^\/stock\/withdrawals\/1$/,
+        status: 200,
+        body: {
+          id: 1,
+          reason_id: 200,
+          reason_name: 'Motivo 1',
+          date: '2026-10-02',
+          note: null,
+          total_quantity: 5.5,
+          lines: [{ product_id: 9999, product_name: LONG_NAME, quantity: 5.5 }],
+        },
+      },
+      { path: /^\/api\/withdrawal-reasons$/, status: 200, body: TWELVE_REASONS },
+      { path: /^\/api\/products$/, status: 200, body: TWELVE_VARIETIES },
+    ],
+  },
+  {
+    screen: 'stock-entry/edit-archived-variety',
+    route: ENTRY_ROUTE,
+    steps: [{ wait: STOCK_TEXT.editarEntrada }],
+    visible: 'Variedad antigua',
+    reads: [
+      ARCHIVED_ENTRY_READ,
+      {
+        path: /^\/api\/products$/,
+        query: ARCHIVED_ONLY,
+        status: 200,
+        body: [{ id: 9999, name: 'Variedad antigua', archived: true, current_price: null }],
+      },
+    ],
+  },
+  {
+    screen: 'stock-entry/edit-archived-variety-failed',
+    route: ENTRY_ROUTE,
+    steps: [{ wait: STOCK_TEXT.editarEntrada }],
+    visible: common('common:genericError'),
+    reads: [ARCHIVED_ENTRY_READ, { path: /^\/api\/products$/, query: ARCHIVED_ONLY, status: 500 }],
+  },
+  {
+    screen: 'stock-entry/variety-selector-open',
+    route: STOCK_ENTRY_NEW,
+    steps: [{ press: common('common:variety') }],
+    visible: 'Variedad 1',
+    reads: [{ path: /^\/api\/products$/, status: 200, body: TWELVE_VARIETIES }],
+  },
   {
     // The sample Business has no customer types, so the form's type field is the notice.
     screen: 'ClienteNuevoSinTipos',
