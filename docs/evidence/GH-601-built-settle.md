@@ -10,7 +10,7 @@ detenerse y informar, sin agregar intentos ni aflojar ninguna cota.
   (`web/src/design/census.test.ts`): pasa en el segundo intento, nunca queda quieto, y el censo del intento que pasó.
 
 ## Corrida 1: `scripts/design/compare.sh --strict` sobre todo el registro
-- Head: `00166830` (completo `$(git rev-parse HEAD)` al momento de correr: ver el commit de este documento como padre).
+- Head: `00166830a38bcca0542d1aeecfae15dc51e93401`.
   Muestra nueva, sin `--only`, sin `--census`. Carga ambiente de la máquina (promedio de carga de 5 a 12 al empezar, otros
   procesos corriendo), no un segundo `compare.sh` puesto a propósito. Duración: 540 s.
 - **Código de salida: 1.**
