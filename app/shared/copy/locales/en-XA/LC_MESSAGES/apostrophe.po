@@ -33,7 +33,7 @@ msgid "operator.import.counts_heading"
 msgstr "⟦Çöûňťš:·~·⟧"
 
 msgid "operator.import.count_varieties"
-msgstr "⟦  Ṽåřìèťìèš: {count}·~·~·⟧"
+msgstr "⟦  Ṗřöđûçťš: {count}·~·~·⟧"
 
 msgid "operator.import.count_price_entries"
 msgstr "⟦  Ṗřìçè èňťřìèš: {count}·~·~·~⟧"

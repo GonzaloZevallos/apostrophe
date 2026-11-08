@@ -273,7 +273,7 @@ test('Editar links to the entry form', async () => {
   expect(await screen.findByTestId('where')).toHaveTextContent(pathTo(STOCK_ENTRY, { id: 11 }))
 })
 
-test('Delete asks "Before deleting" naming date, variety and grams, then deletes and says so', async () => {
+test('Delete asks "Before deleting" naming date, product and grams, then deletes and says so', async () => {
   fakeApi({ 'DELETE /stock/entries/12': () => new Response(null, { status: 204 }) })
   renderAt(STOCK_PATH)
 
@@ -332,7 +332,7 @@ test('a variety that is gone, or an id that is not a number, shows "That is gone
   fakeApi()
   renderAt(pathTo(VARIETY_ENTRIES, { id: 99 }))
   expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Back to Varieties' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Back to Products' })).toBeInTheDocument()
 })
 
 test('a delete marks the catalog stale and the stock list refetches', async () => {

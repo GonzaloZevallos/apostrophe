@@ -32,7 +32,7 @@ msgid "operator.import.counts_heading"
 msgstr "Counts:"
 
 msgid "operator.import.count_varieties"
-msgstr "  Varieties: {count}"
+msgstr "  Products: {count}"
 
 msgid "operator.import.count_price_entries"
 msgstr "  Price entries: {count}"

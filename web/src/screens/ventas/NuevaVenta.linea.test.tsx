@@ -77,7 +77,7 @@ test('the keyboard key moves from grams to Precio especial, then closes the keyb
   const user = userEvent.setup()
   const fetchMock = await openForm()
 
-  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await user.selectOptions(screen.getByLabelText('Line 1 product'), '1')
   await user.type(screen.getByLabelText('Line 1 grams'), '2{Enter}')
   expect(screen.getByLabelText('Line 1 special price')).toBe(document.activeElement)
 

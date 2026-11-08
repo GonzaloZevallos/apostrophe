@@ -36,7 +36,7 @@ test('lists "+ Cargar gasto", "Take from stock", Gastos and Análisis first, in 
   expect(entries[1]).toHaveTextContent('Stock out without a sale')
   expect(entries[1]).not.toHaveTextContent('Promotion')
   expect(entries[2]).toHaveTextContent('By month and by category')
-  expect(entries[3]).toHaveTextContent('Varieties, weeks, months and days')
+  expect(entries[3]).toHaveTextContent('Products, weeks, months and days')
   expect(entries[4]).toHaveTextContent(
     'Business, users, bot, catalog, categories, appearance and your account',
   )

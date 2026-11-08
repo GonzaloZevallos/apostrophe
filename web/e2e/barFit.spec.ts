@@ -33,8 +33,8 @@ const COMPUTER = { width: 1280, height: 920 }
 
 test.use(PHONE_CONTEXT)
 
-const BAR_LABELS = ['Home', 'Sales', 'Customers', 'Varieties', 'More']
-const RAIL_LABELS = ['Home', 'Sales', 'Customers', 'Varieties', 'Expenses', 'Analysis']
+const BAR_LABELS = ['Home', 'Sales', 'Customers', 'Products', 'More']
+const RAIL_LABELS = ['Home', 'Sales', 'Customers', 'Products', 'Expenses', 'Analysis']
 
 interface Item {
   text: string

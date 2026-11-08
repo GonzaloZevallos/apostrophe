@@ -183,7 +183,7 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
 
       await page.goto(root)
       counter = { taps: 0 }
-      if (root !== VARIETIES) await viaTab(page, counter, computer, 'Varieties')
+      if (root !== VARIETIES) await viaTab(page, counter, computer, 'Products')
       await settled(page, computer)
       await tap(counter, page.getByRole('link', { name: 'Send catalog' }))
       await expectPath(page, CATALOG)
@@ -191,7 +191,7 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
 
       await page.goto(root)
       counter = { taps: 0 }
-      if (root !== VARIETIES) await viaTab(page, counter, computer, 'Varieties')
+      if (root !== VARIETIES) await viaTab(page, counter, computer, 'Products')
       await settled(page, computer)
       await tap(counter, page.getByRole('link', { name: '+ Stock entry' }))
       await expectPath(page, STOCK_ENTRY_NEW)

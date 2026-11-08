@@ -1,6 +1,6 @@
 ## Jobs
 
-**Cuando** configuro cómo pone precios mi negocio, registro el precio de una variedad o entrego un pedido, **quiero** que la app use solo las Pricing rules que tiene mi negocio (un Bulk price si vendo por cantidad, y un VIP price que fijo por variedad para mis VIP customers), **para** cobrarle a cada cliente exactamente lo que quiero sin tipear un **Special price** a mano, sin ver campos que no me corresponden y sin que el precio de nadie cambie por sorpresa.
+**Cuando** configuro cómo pone precios mi negocio, registro el precio de un producto o entrego un pedido, **quiero** que la app use solo las Pricing rules que tiene mi negocio (un Bulk price si vendo por cantidad, y un VIP price que fijo por producto para mis VIP customers), **para** cobrarle a cada cliente exactamente lo que quiero sin tipear un **Special price** a mano, sin ver campos que no me corresponden y sin que el precio de nadie cambie por sorpresa.
 
 **Cuando** tengo clientes habituales a los que trato distinto, **quiero** agruparlos en tipos a los que les pongo nombre yo y elegir el tipo de cada uno desde su ficha, **para poder** distinguirlos de un vistazo, y más adelante cobrarles según su tipo, sin depender de la memoria ni de notas. (GH-405: lo sirven acá el interruptor Customer types y la fila Customer types del grupo Prices; definido en customers.md.)
 
@@ -18,23 +18,23 @@ Lo que hace cada regla lo define la capacidad a cargo, y cada una sigue los inte
 - el disparador del **Upkeep**: pinned-catalog.md;
 - lo que activa la **Spreadsheet import**: import.md.
 
-La protagonista es quien vende. Afina los jobs de ventas y de variedades; no es un job nuevo. Las configuraciones son raras y deliberadas. El formulario de precio, el formulario de cliente y New sale las siguen.
+La protagonista es quien vende. Afina los jobs de ventas y de productos; no es un job nuevo. Las configuraciones son raras y deliberadas. El formulario de precio, el formulario de cliente y New sale las siguen.
 
 Sin esto, quienes venden dejan en blanco los campos de Bulk y VIP que no usan, y tipean a mano un Special price para cualquier VIP price que no sea el Bulk price.
 
 Criterios de éxito:
 
 1. **Solo se ven mis reglas.**
-   - Con una regla desactivada, nada de ella aparece en el formulario de precio, la página de la **Variety**, el campo "Customer type" del formulario de **Customer**, New sale ni el texto del Catalog.
+   - Con una regla desactivada, nada de ella aparece en el formulario de precio, la página del **Product**, el campo "Customer type" del formulario de **Customer**, New sale ni el texto del Catalog.
    - Una **Sale** recibe precio como si la regla no existiera.
    - Con las dos desactivadas, una Sale recibe precio solo por **List price**. **Gift** y Special price siguen funcionando.
 2. **Mi VIP price, nunca peor que el normal.** A un VIP customer (un Customer del VIP type) se le cobra el menor de los precios de las reglas que se aplican a la línea:
    - el List price;
    - el Bulk price, cuando Bulk está activado y la línea llega al **Bulk minimum**;
-   - el VIP price de la Variety, cuando Customer types está activado y la Price entry de ese día tiene uno.
+   - el VIP price del Product, cuando Customer types está activado y la Price entry de ese día tiene uno.
 
-   Una Variety sin VIP price le cobra a un VIP customer como a cualquier otro. La vista previa en vivo muestra el mismo precio antes de guardar.
-3. **El precio de nadie se mueve por sorpresa.** Después de cada cambio, a cada VIP customer existente se le cobra exactamente lo que se le cobraba antes, por la misma Variety, día y gramos; también después de la actualización que pasó la marca VIP al VIP type. No cambia el precio, la regla ni el total de ninguna Sale pasada, hagan lo que hagan después los interruptores.
+   Un Product sin VIP price le cobra a un VIP customer como a cualquier otro. La vista previa en vivo muestra el mismo precio antes de guardar.
+3. **El precio de nadie se mueve por sorpresa.** Después de cada cambio, a cada VIP customer existente se le cobra exactamente lo que se le cobraba antes, por el mismo Product, día y gramos; también después de la actualización que pasó la marca VIP al VIP type. No cambia el precio, la regla ni el total de ninguna Sale pasada, hagan lo que hagan después los interruptores.
 4. **Cambiar de interruptor no pierde nada.** Desactivar una regla y volver a activarla trae de vuelta cada Bulk price, VIP price, Customer type y pertenencia guardados. Solo las Sales y las Price entries registradas mientras estaba desactivada quedan sin ella.
 5. **Los Customers nunca ven el VIP price.** El Catalog nunca lo muestra. Su línea de Bulk se muestra solo mientras Bulk price está activado.
 6. **Rápido.** Cada interruptor se cambia en pocos toques desde Settings → Prices. Registrar una Sale sigue llevando menos de un minuto.
@@ -74,7 +74,7 @@ Criterios de éxito:
 ### En pantalla: Settings → Prices
 
 - **Lugar**: un grupo de Settings (navigation.md), después de Users y antes de Integrations.
-- **Ruta**: `/settings/prices`, fijada en `scripts/design/screens.json`. No hay otro acceso: no se llega desde la página de una Variety ni desde el formulario de precio. Prices queda a 2 toques de una Tab root.
+- **Ruta**: `/settings/prices`, fijada en `scripts/design/screens.json`. No hay otro acceso: no se llega desde la página de un Product ni desde el formulario de precio. Prices queda a 2 toques de una Tab root.
 - **Un formulario**:
   - "Close", y una confirmación al salir con cambios sin guardar ("Discard the prices?"); un grupo sin tocar se cierra de inmediato;
   - dos interruptores, "Bulk price" y "Customer types", cada uno marcado como activado o desactivado por palabra o forma y `aria-checked`, nunca solo por color;
@@ -84,7 +84,7 @@ Criterios de éxito:
 - **Una línea de ayuda fija bajo el interruptor Customer types**, en texto chico atenuado, que se muestra esté activado o desactivado:
   - en un Business con VIP type: "Customers in the VIP type pay the VIP price where a price has one. Other types have no price yet.";
   - en cualquier otro: "Customer types have no price yet."
-  - No hay conteo, ni lista de Varieties sin VIP price, ni aviso en ningún otro lado.
+  - No hay conteo, ni lista de Products sin VIP price, ni aviso en ningún otro lado.
 - **La fila "Customer types"** (rótulo y chevron), dentro de la tarjeta del interruptor, debajo de la línea de ayuda y arriba de "Save the prices": lleva a la lista y la gestión de los tipos (`/settings/prices/customer-types`, a 3 toques de una Tab root; customers.md). Sigue el valor guardado del interruptor, no el que se está editando: aparece después de activar el interruptor y tocar "Save the prices", y desaparece al guardarlo desactivado.
 - **Upkeep**: un guardado que cambia cualquiera de los dos interruptores lo dispara (pinned-catalog.md), porque la línea de Bulk del Catalog depende de Bulk price.
 - **Avisos**: un grupo que ya no existe, la falta de red y los errores del servidor siguen accounts.md.
@@ -105,12 +105,12 @@ El **Business export** (accounts.md) guarda los dos interruptores tal como está
 - **Migración de los interruptores (criterio 3)**:
   - los Businesses existentes terminan con los dos interruptores activados;
   - cada Price entry con un Bulk price tiene VIP price = Bulk price;
-  - para cada VIP customer existente, el precio, la regla y el total de una Sale son iguales a lo que eran antes, por la misma Variety, día y gramos: 0 diferencias.
+  - para cada VIP customer existente, el precio, la regla y el total de una Sale son iguales a lo que eran antes, por el mismo Product, día y gramos: 0 diferencias.
 - **Migración de los Customer types (criterio 3)**: ningún interruptor cambia de valor; cada Business existente tiene su VIP type con exactamente los Customers de `vip = 1`; para cada uno de ellos el precio, la regla y el total de una Sale nueva son iguales antes y después: 0 diferencias; el comparador M3 compartido encuentra 0 valores cambiados.
 - **Valores por defecto**: un Business abierto con una **Invitation** de Business nuevo tiene los dos interruptores desactivados y ningún Customer type.
 - **Cambiar de interruptor no pierde nada (criterio 4)**: después de desactivar y volver a activar, cada Bulk price, VIP price, Customer type y pertenencia guardados se leen como antes, incluido un Customer editado mientras Customer types estaba desactivado.
 - **Inmutabilidad del precio guardado (criterio 3)**: después de cualquier cambio de interruptor o de pertenencia, el precio, la regla y el total de las líneas existentes no cambian.
-- **Las pantallas siguen los interruptores (criterio 1)**: tests del front muestran, con cada interruptor desactivado, ningún rastro de él en el formulario de precio, la página de la Variety, el formulario, la ficha y la lista de Customers, la fila Customer types de Prices, el badge de Sales, New sale ni el Catalog. Los badges registrados en el detalle de una Sale se mantienen.
+- **Las pantallas siguen los interruptores (criterio 1)**: tests del front muestran, con cada interruptor desactivado, ningún rastro de él en el formulario de precio, la página del Product, el formulario, la ficha y la lista de Customers, la fila Customer types de Prices, el badge de Sales, New sale ni el Catalog. Los badges registrados en el detalle de una Sale se mantienen.
 - **Grupo Prices (criterio 6)**:
   - tests del front cubren "Close", la confirmación de cambios sin guardar, un cierre sin tocar, "Save the prices", "Prices saved", la etiqueta "Customer types", la línea fija, las dos formas de la línea de ayuda, la fila Customer types siguiendo el valor guardado, su lugar y su ruta, y la ausencia de cualquier otro acceso;
   - Prices se abre en 2 toques como máximo desde cualquier **Tab root**, y la lista de Customer types en 3;
@@ -128,7 +128,7 @@ El **Business export** (accounts.md) guarda los dos interruptores tal como está
 - Precios por Customer type (parte customer-type prices).
 - El Onboarding, incluido con qué arranca un Business nuevo.
 - Rechazar o avisar en una Sale porque los interruptores cambiaron en medio de la Sale.
-- Un aviso o conteo de Varieties sin VIP price.
+- Un aviso o conteo de Products sin VIP price.
 - Roles o permisos para cambiar los interruptores.
 - La fila "Tipos de cliente" bajo el grupo Customers que mostraba el dibujo de Configuración: a los Customer types se llega solo desde Prices.
 - Aplicar al tocar, como hace Appearance: los interruptores cambian el precio de cada Sale nueva para cada socio, así que se guardan de forma explícita.
