@@ -111,29 +111,64 @@ test.each([
   expect(screen.getByLabelText('Name')).toHaveValue('Gift')
 })
 
-test('adding and renaming toast "Reason saved" with no name, and deleting toasts "Reason deleted"', async () => {
+/** The row of the reason with this name, so Rename and Delete are taken by name and never by position. */
+async function rowOf(name: string): Promise<HTMLElement> {
+  const rows = await screen.findAllByRole('listitem')
+  const row = rows.find((candidate) => within(candidate).queryByText(name) !== null)
+  if (row === undefined) throw new Error(`no row for ${name}`)
+  return row
+}
+
+test('adding a reason toasts "Reason saved" with no name', async () => {
+  const served = [...LIST]
   renderScreen(async (url, init) => {
-    if (url === '/api/withdrawal-reasons' && init?.method === 'POST') return jsonResponse(201, { id: 3, name: 'Gift' })
-    if (url === '/api/withdrawal-reasons/2' && init?.method === 'PATCH') return jsonResponse(200, { id: 2, name: 'Mine' })
-    if (url === '/api/withdrawal-reasons/2' && init?.method === 'DELETE') return new Response(null, { status: 204 })
+    if (url === '/api/withdrawal-reasons' && init?.method === 'POST') {
+      served.push({ id: 3, name: 'Gift' })
+      return jsonResponse(201, { id: 3, name: 'Gift' })
+    }
     throw new Error(`unexpected ${url}`)
-  })
+  }, served)
   await userEvent.click(await screen.findByRole('button', { name: SETTINGS_TEXT.addWithdrawalReason }))
-  await userEvent.type(screen.getByLabelText('Name'), 'Gift')
+  await screen.findByRole('dialog', { name: SETTINGS_TEXT.addReasonTitle })
+  await userEvent.type(await screen.findByLabelText('Name'), 'Gift')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
-  const saved = await screen.findByRole('status')
-  expect(saved).toHaveTextContent(/^Reason saved$/)
+  expect(await screen.findByRole('status')).toHaveTextContent(/^Reason saved$/)
+})
 
-  const rows = screen.getAllByRole('button', { name: SETTINGS_TEXT.rename })
-  await userEvent.click(rows[1]!)
-  await userEvent.clear(screen.getByLabelText('Name'))
-  await userEvent.type(screen.getByLabelText('Name'), 'Mine')
+test('renaming a reason toasts "Reason saved" with no name and lists the new name', async () => {
+  const served = [...LIST]
+  renderScreen(async (url, init) => {
+    if (url === '/api/withdrawal-reasons/2' && init?.method === 'PATCH') {
+      served[1] = { id: 2, name: 'Mine' }
+      return jsonResponse(200, served[1])
+    }
+    throw new Error(`unexpected ${url}`)
+  }, served)
+  const row = await rowOf('Own use')
+  await userEvent.click(within(row).getByRole('button', { name: SETTINGS_TEXT.rename }))
+  await screen.findByRole('dialog', { name: SETTINGS_TEXT.renameReasonTitle })
+  const field = await screen.findByLabelText('Name')
+  await userEvent.clear(field)
+  await userEvent.type(field, 'Mine')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
-  expect(await screen.findByText(SETTINGS_TEXT.reasonSaved)).toBeVisible()
+  expect(await screen.findByRole('status')).toHaveTextContent(/^Reason saved$/)
+  expect(await screen.findByText('Mine')).toBeVisible()
+})
 
-  await userEvent.click(screen.getAllByRole('button', { name: SETTINGS_TEXT.delete })[1]!)
-  await userEvent.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: SETTINGS_TEXT.delete }))
-  expect(await screen.findByText(SETTINGS_TEXT.reasonDeleted)).toBeVisible()
+test('deleting a reason toasts "Reason deleted" with no name', async () => {
+  const served = [...LIST]
+  renderScreen(async (url, init) => {
+    if (url === '/api/withdrawal-reasons/2' && init?.method === 'DELETE') {
+      served.pop()
+      return new Response(null, { status: 204 })
+    }
+    throw new Error(`unexpected ${url}`)
+  }, served)
+  const row = await rowOf('Own use')
+  await userEvent.click(within(row).getByRole('button', { name: SETTINGS_TEXT.delete }))
+  await userEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: SETTINGS_TEXT.delete }))
+  expect(await screen.findByRole('status')).toHaveTextContent(/^Reason deleted$/)
+  await waitFor(() => expect(screen.queryByText('Own use')).toBeNull())
 })
 
 test.each([
