@@ -471,7 +471,6 @@ export default function WithdrawalForm({
         <div
           className="campo"
           role="group"
-          aria-label={STOCK_TEXT.motivo}
           aria-describedby={reasonError === null ? undefined : reasonErrorId}
         >
           <Selector

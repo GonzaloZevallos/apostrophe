@@ -23,6 +23,7 @@ import { newBusinessInvitationUrl } from '../backend.js'
 import { expectPath } from './url.js'
 import { expectToast } from './toast.js'
 import { fillSaleLine } from './sale.js'
+import { pickWithdrawalReason } from './stockVariety.js'
 import { leaveOnboarding } from './signup.js'
 import { uniqueTag } from './unique.js'
 
@@ -87,7 +88,7 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
 
   await page.goto(withdrawalNewFor(variety))
   await page.getByLabel('Grams 1', { exact: true }).fill('1')
-  await page.getByRole('button', { name: 'Marketing', exact: true }).click()
+  await pickWithdrawalReason(page, 'Marketing')
   await expectToast(page, 'Withdrawal saved', () => page.getByRole('button', { name: 'Save the withdrawal' }).click())
   await page.goto(pathTo(VARIETY, { id: variety }))
   await page.locator('.fila-entrada__enlace', { hasText: 'Marketing' }).click()

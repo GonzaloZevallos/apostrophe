@@ -169,9 +169,9 @@ async function recordWithdrawal(
 ): Promise<void> {
   await page.goto(WITHDRAWAL_NEW)
   await page.getByLabel('Date').fill(withdrawal.date)
-  await page.getByLabel('Variety 1', { exact: true }).selectOption({ label: withdrawal.variety })
+  await pickWithdrawalVariety(page, withdrawal.variety)
   await page.getByLabel('Grams 1', { exact: true }).fill(withdrawal.grams)
-  await page.getByRole('button', { name: withdrawal.reason, exact: true }).click()
+  await pickWithdrawalReason(page, withdrawal.reason)
   await expectToast(page, 'Withdrawal saved', () => page.getByRole('button', { name: 'Save the withdrawal' }).click())
 }
 
@@ -470,4 +470,4 @@ async function tallerMoves(page: Page): Promise<string[]> {
   return outgrown ? [...moved, 'documento-mas-alto-que-la-ventana'] : moved
 }
 
-import { pickStockVariety } from './helpers/stockVariety.js'
+import { pickStockVariety, pickWithdrawalReason, pickWithdrawalVariety } from './helpers/stockVariety.js'
