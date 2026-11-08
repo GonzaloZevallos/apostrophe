@@ -20,7 +20,7 @@ Extends ADR-0042 (rules 6 and 7) and ADR-0052 without amending them.
 - Both sides go through the same wrapper; nothing branches on the side, row, file or width (ADR-0052).
 
 ## Measured miss rates
-The reproduction under load and the three recorded runs are in `docs/evidence/GH-601-built-settle.md`.
+One whole-registry `compare.sh --strict` run on head `00166830` (`docs/evidence/GH-601-built-settle.md`): 173 built rows, 4 missed on attempt 1 (4 / 173 = 0.023), of which 2 were retried and passed on attempt 2 (0 of 2 missed again) and 2 were the `Save sale` rows (`VentaGuardada`, `VentaGuardadaOscuro`), which wrote and so were not retried: the run exited 1. Both pass alone with `--only`. The two retried rows missed by `rest-mismatch`. No row was retried in two runs, because only one run was recorded; the three-run record is not complete.
 
 ## Risks
 - An intermittent late refetch can pass on a later attempt; the note and the summary line keep that visible.
