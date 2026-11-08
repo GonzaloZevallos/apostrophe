@@ -104,4 +104,94 @@ the build, and a starved page load takes 8 to 20 s.
   has an idle CPU.
 - `compare.sh` still runs at 8 s.
 
+## Amendment (GH-491), 2026-11-07
+
+Las filas de teléfono se sacan en su viewport real, con scroll y costura. Escritorio sigue creciendo, y
+las capas siguen sin moverse. Lo de arriba no se reescribe: esta enmienda lo completa. `takeShot` y sus
+ayudas viven ahora en `scripts/design/take-shot.mjs`; las decisiones puras siguen en `scripts/design/shot.mjs`
+y `scripts/design/stitch.mjs` solo copia filas.
+
+### El problema
+
+Crecer el viewport hasta la altura del documento, en el teléfono, mueve el chrome fijo, las cajas
+`min-height: 100dvh` y la barra inferior, y `sizeRecordMiss` rechaza la toma (`the page changed when the
+viewport grew`). Home con la barra de #373 y Analysis, clara y oscura, no se podían capturar.
+
+### Método
+
+- **Una sola rama sobre la clase de fila.** `planShot` devuelve `layer` si `coversScreen` se cumple, `scroll`
+  si no y el ancho del viewport es menor que 900, y `grow` en cualquier otro caso, igual que antes. Vale para
+  el lado de diseño y para el construido; el lado solo nombra la falla.
+- **`fullPage` y `captureBeyondViewport` siguen sin usarse.** Los dos agrandan el viewport (el segundo por
+  dentro de la llamada), y eso es justo lo que mueve el chrome fijo y las cajas `100dvh`. El método nuevo
+  nunca cambia el viewport: lo fija el contexto una vez.
+- **Un cuadro por tramo.** `scrollPlan` arma los cuadros `{ offset, cropTop, cropHeight }`: empiezan en 0 (o en
+  `clip.y`), avanzan de a una altura de viewport, cortan en los bordes de los sticky, achican el último
+  `offset` a `scrollHeight - height` y recortan lo que se repite. Con un `clip` cubre su rango vertical; un
+  `clip` más ancho que el viewport sigue siendo `section outside the viewport`. Un `dpr` que no es entero se
+  rechaza con `device scale factor is not a whole number`.
+- **Redondeo en un solo lugar.** Solo `scrollPlan` redondea: los offsets en px CSS enteros, los recortes en px
+  de dispositivo enteros. `stitch` y `take-shot.mjs` reciben enteros y nunca redondean; `stitch` tira un
+  error ante un valor que no lo sea.
+- **El documento es el único que scrollea.** `innerScrollMiss` rechaza la página (`the page scrolls inside an
+  element`) cuando un elemento que no es una capa scrollea y el documento no. Nunca se cose el scroll
+  interno de un elemento.
+
+### Lo fijado: `pinnedClass` es una regla
+
+`pinnedClass` es el único lugar que clasifica un elemento fijado, y lo hace por el `position` computado del
+elemento mismo: `fixed` es `chrome` (se dibuja en el cuadro 0 y se oculta después, no ocupa lugar en el flujo)
+y `sticky` es `content` (se dibuja una vez, en su lugar natural). `fixed` gana sobre cualquier ancestro. No hay
+selector ni bloque contenedor en la regla; `.bar-inferior`, `.nueva-venta-flotante` o un encabezado sticky son
+ejemplos, no la condición. `shot-page.mjs` solo informa el `position`, y `fixedInPage` lo sigue leyendo para
+el predicado de capa sin clasificar.
+
+- **`viewportFixed`.** Un `fixed` se prueba pegado al viewport cuando `rect.top = insetTop + marginTop` o
+  `rect.bottom = viewport.height - insetBottom - marginBottom`, con 0,5 px CSS de tolerancia (una
+  comparación, no un redondeo). Si los dos insets son `auto`, si no vale ninguna de las dos ecuaciones (un
+  ancestro con `transform`) o si su propio `transform` no es `none`, el lado no se captura con `a pinned
+  element could not be placed`.
+- **`hiddenRule`.** Devuelve el texto de la hoja de una sola toma. Oculta subárboles enteros (la cadena de
+  `:nth-child` y sus descendientes, más `::before` y `::after`) con `visibility: hidden !important`, para
+  todo lo que no va en este cuadro, y hace visible, por su propia cadena, a un descendiente `fixed` que sí va
+  en este cuadro. La hoja es una `CSSStyleSheet` adoptada y se saca después de cada cuadro: ningún módulo
+  toca un nodo, un estilo ni un atributo de la página.
+- **Lugar natural por sondeo.** Para cada sticky, `stickyProbeOffset` da el offset al que sale de su
+  contenedor (abajo: `clamp(containerContentBottom + insetBottom - viewport.height, 0, maxOffset)`; arriba:
+  `clamp(containerContentTop - insetTop, 0, maxOffset)`). Se scrollea ahí, se asienta con `advanceMs: 0`, y el
+  lugar natural es `rect.top + offset`. Si el elemento sigue pegado en ese offset, no se puede medir su lugar
+  y el lado no se captura.
+- **S0 y S0'.** Se toma la foto S0 en 0, se sondea cada sticky, se vuelve a 0, se asienta y se toma S0'.
+  `shiftMiss(S0, S0')` tiene que pasar, y también compara el `--vv-alto` en línea: así se descubre un
+  encabezado que colapsa o una carga perezosa antes de sacar un solo cuadro.
+- **`stickyPlacement` asigna cada elemento a un único cuadro.** El chrome va al cuadro 0; un sticky va al cuadro
+  cuyo recorte contiene su rectángulo natural entero. Devuelve `a pinned element could not be placed` cuando
+  el chrome no se ve en el cuadro 0, un sticky es más alto que un cuadro, el borde de un cuadro corta a otro
+  elemento fijado o dos bordes se contradicen.
+- **Un hueco o un doble dibujo nunca se aceptan.** Lo que las decisiones puras no pueden ubicar es un lado
+  `not-captured` con una razón con nombre, y no se parcha.
+- **`shiftMiss` en cada cuadro.** Se compara cada cuadro contra el cuadro 0. Es una falla: `scrollTop` fuera
+  del offset planeado; otro `scrollHeight` o viewport; para un elemento no fijado, otra posición en la página
+  (`top + scrollTop`), otro ancho o alto, o un nodo reemplazado; un cambio de cantidad; y, para un fijado, otro
+  tamaño (su `top` no se compara). La razón es `the page changed while it was shot`.
+
+### Costo
+
+Una captura, una foto de tamaños y una pasada de identidad por cuadro, más un scroll por cada sticky:
+lineal en los elementos dibujados por la cantidad de cuadros. Escritorio y capas no cambian de costo.
+
+### Riesgo 5, resuelto
+
+El riesgo 5 (las cuatro filas de capa de teléfono llegan al lado de diseño como una sección más alta que el
+teléfono) se resuelve: ese lado ahora es `scroll`, y `scrollPlan` cubre el rango vertical del `clip` con
+varios cuadros y recorta al `clip`.
+
+### Riesgos nuevos
+
+1. Un sticky que el borde de un cuadro no puede evitar, dos sticky cuyos bordes se contradicen, o un `fixed`
+   que no se puede probar pegado al viewport, se rechazan y nunca se parchan: la fila queda `not-captured`
+   con `a pinned element could not be placed`.
+2. Si la lectura de vuelta del sondeo falla (el elemento sigue pegado, o S0' difiere de S0), el lado es
+   `not-captured`: no se adivina un lugar natural.
+
 Date: 2026-10-27.
