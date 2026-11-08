@@ -447,7 +447,7 @@ Un aviso que el vendedor toca para abrir aquello a lo que apunta, como el "Go on
 _Avoid_: banner, card button, row, callout, alert
 
 **Design capture**:
-La captura lado a lado del archivo de diseño de una pantalla y la app construida, adjunta a un PR como evidencia de revisión y juzgada a ojo contra el Drawing as guide. Nunca es un paso del Gate. Su regla completa vive en `docs/product/design-capture.md`.
+La captura lado a lado del archivo de diseño de una pantalla y la app construida, adjunta a un PR como evidencia de revisión y juzgada a ojo contra el Drawing as guide. Nunca es un paso del Gate. En el teléfono la captura se toma en el viewport real del teléfono, sin agrandarlo nunca (scroll y unión); una pantalla que la herramienta no puede capturar queda not-captured y se informa como "not compared", nunca como AE 0 ni como un pase, y nunca bloquea. Su regla completa vive en `docs/product/design-capture.md`.
 _Avoid_: screenshot test, visual regression test, snapshot, gate step
 
 **Product language**:
