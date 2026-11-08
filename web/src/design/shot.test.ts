@@ -410,19 +410,40 @@ describe('scrollPlan', () => {
   it('covers a clip from its y, cropping to it (dpr 1 and 2)', () => {
     const clip = { x: 0, y: 900.5, width: 390, height: 300 }
     expect(scrollPlan(doc(2000), PHONE, 1, clip, [], 'built')).toStrictEqual({
-      frames: [{ offset: 900, cropTop: 0, cropHeight: 301 }],
+      frames: [{ offset: 900, cropTop: 0, cropHeight: 301, cropLeft: 0, cropWidth: 390 }],
     })
+    // The end goes up to a whole CSS px, as the grow path's crop does: 1200.5 is 1201, 2402 device px.
     expect(scrollPlan(doc(2000), PHONE, 2, clip, [], 'built')).toStrictEqual({
-      frames: [{ offset: 900, cropTop: 0, cropHeight: 601 }],
+      frames: [{ offset: 900, cropTop: 0, cropHeight: 602, cropLeft: 0, cropWidth: 780 }],
     })
   })
 
   it('steps over a tall clip and crops the overlap of the last frame', () => {
     expect(scrollPlan(doc(2000), PHONE, 1, { x: 0, y: 700, width: 390, height: 1300 }, [], 'built')).toStrictEqual({
       frames: [
-        { offset: 700, cropTop: 0, cropHeight: 844 },
-        { offset: 1156, cropTop: 388, cropHeight: 456 },
+        { offset: 700, cropTop: 0, cropHeight: 844, cropLeft: 0, cropWidth: 390 },
+        { offset: 1156, cropTop: 388, cropHeight: 456, cropLeft: 0, cropWidth: 390 },
       ],
+    })
+  })
+
+  it('crops a clip to its columns, rounded outward to whole CSS px, on every frame (dpr 1, 2 and 3)', () => {
+    // Left 12.4 goes down to 12, right 330.2 goes up to 331: 319 CSS px wide.
+    const clip = { x: 12.4, y: 100, width: 317.8, height: 1000, right: 330.2, bottom: 1100 }
+    const columns = (dpr: number) => ({ cropLeft: 12 * dpr, cropWidth: 319 * dpr })
+    for (const dpr of [1, 2, 3]) {
+      const planned = scrollPlan(doc(2000), PHONE, dpr, clip, [], 'built')
+      if (!('frames' in planned)) throw new Error('fixture plan refused')
+      expect(planned.frames.length).toBe(2)
+      for (const frame of planned.frames) expect(frame).toMatchObject(columns(dpr))
+    }
+  })
+
+  it('rounds a clip edge on a whole CSS px up from its own box, not from a sum with float error', () => {
+    // top 0.1 plus height 99.9 is 100.00000000000001 in floats; the box's own bottom is 100.
+    const clip = { x: 0, y: 0.1, width: 390, height: 99.9, right: 390, bottom: 100 }
+    expect(scrollPlan(doc(2000), PHONE, 2, clip, [], 'built')).toStrictEqual({
+      frames: [{ offset: 0, cropTop: 0, cropHeight: 200, cropLeft: 0, cropWidth: 780 }],
     })
   })
 

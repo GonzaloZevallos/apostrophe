@@ -176,8 +176,12 @@ export function stickyProbeOffset(pinned, viewport, maxOffset) {
 // px, rows of that frame's screenshot. The frames start at 0 (or at the clip's y), step by the viewport
 // height, break where a boundary falls inside a step, and the last offset is clamped to
 // `scrollHeight - height` with the overlap cropped away, so every page row lands in exactly one frame.
-// `boundaries` are page y values (CSS px). With a clip the frames cover its vertical range only.
-// This is the only place a shot rounds: starts go down to a whole CSS px, ends go up to a whole device px.
+// `boundaries` are page y values (CSS px). With a clip the frames cover its vertical range and carry its
+// horizontal one as `cropLeft` and `cropWidth` (device px, the same on every frame): the screenshot of a
+// frame is the whole viewport and `stitch` crops it. The clip is rounded outward to whole CSS px on every
+// side, as the grow path's `sectionClip` does, so a side comes out the size it did before.
+// This is the only place a shot rounds: starts go down to a whole CSS px, ends go up to a whole CSS px
+// (a whole device px as well, with a whole dpr).
 export function scrollPlan(metrics, viewport, dpr, clip, boundaries, side) {
   if (!Number.isInteger(dpr) || dpr < 1) return { reason: named('device scale factor is not a whole number', side) }
   const documentHeight = Math.max(Math.ceil(metrics.scrollHeight), viewport.height)
@@ -185,12 +189,15 @@ export function scrollPlan(metrics, viewport, dpr, clip, boundaries, side) {
   const maxOffset = documentHeight - viewport.height
   let start = 0
   let end = documentHeight * dpr
+  let columns = {}
   if (clip !== undefined && clip !== null) {
     const within =
       clip.x >= 0 && clip.y >= 0 && clip.x + clip.width <= viewport.width && clip.y + clip.height <= documentHeight
     if (!within) return { reason: named('section outside the viewport', side) }
     start = Math.floor(clip.y) * dpr
-    end = Math.ceil((clip.y + clip.height) * dpr)
+    end = Math.ceil(clip.bottom ?? clip.y + clip.height) * dpr
+    const left = Math.floor(clip.x)
+    columns = { cropLeft: left * dpr, cropWidth: (Math.ceil(clip.right ?? clip.x + clip.width) - left) * dpr }
   }
   const breaks = [...new Set(boundaries.map((boundary) => Math.floor(boundary) * dpr))].sort((a, b) => a - b)
   const frames = []
@@ -199,7 +206,7 @@ export function scrollPlan(metrics, viewport, dpr, clip, boundaries, side) {
     const cut = breaks.find((at) => at > cursor && at < limit && at < end)
     const to = cut ?? Math.min(limit, end)
     const offset = Math.min(cursor / dpr, maxOffset)
-    frames.push({ offset, cropTop: cursor - offset * dpr, cropHeight: to - cursor })
+    frames.push({ offset, cropTop: cursor - offset * dpr, cropHeight: to - cursor, ...columns })
     cursor = to
   }
   return { frames }

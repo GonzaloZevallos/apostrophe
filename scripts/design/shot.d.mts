@@ -1,5 +1,5 @@
 export type Viewport = { width: number; height: number };
-export type Clip = { x: number; y: number; width: number; height: number };
+export type Clip = { x: number; y: number; width: number; height: number; right?: number; bottom?: number };
 export type FixedElement = {
   display: string;
   visibility: string;
@@ -103,7 +103,7 @@ export function stickyProbeOffset(
   viewport: Viewport,
   maxOffset: number,
 ): number;
-export type ScrollFrame = { offset: number; cropTop: number; cropHeight: number };
+export type ScrollFrame = { offset: number; cropTop: number; cropHeight: number; cropLeft?: number; cropWidth?: number };
 export type ScrollPlan = { frames: ScrollFrame[] } | { reason: string };
 export function scrollPlan(
   metrics: { scrollHeight: number },

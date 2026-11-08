@@ -111,4 +111,41 @@ describe('stitch', () => {
     const wider = PNG.sync.write(new PNG({ width: WIDTH + 1, height: 600 }))
     expect(() => stitch([...shots, wider], [whole, whole], 1)).toThrow('stitch: the frames differ in width')
   })
+
+  it('crops every frame to the columns of the plan, rows and columns copied exactly once', () => {
+    // dpr 2: a page 8 device px wide, a section from CSS px 1 to 3 (device columns 2 to 6).
+    const source = page(1200, 8)
+    const planned = scrollPlan(
+      { scrollHeight: 600 },
+      { width: 4, height: 300 },
+      2,
+      { x: 1.2, y: 100.5, width: 1.3, height: 400, right: 2.5, bottom: 500.5 },
+      [],
+      'built',
+    )
+    if (!('frames' in planned)) throw new Error('fixture plan refused')
+    expect(planned.frames.every((frame) => frame.cropLeft === 2 && frame.cropWidth === 4)).toBe(true)
+    const out = PNG.sync.read(stitch(frames(source, planned.frames, 300, 2), planned.frames, 2))
+    expect(out.width).toBe(4)
+    expect(out.height).toBe((501 - 100) * 2)
+    for (let row = 0; row < out.height; row++) {
+      for (let column = 0; column < out.width; column++) {
+        const at = (row * out.width + column) * 4
+        const sourceRow = 200 + row
+        expect([...out.data.subarray(at, at + 3)]).toStrictEqual([sourceRow % 256, Math.floor(sourceRow / 256), column + 2])
+      }
+    }
+  })
+
+  it('throws on columns that are not whole, differ between frames, are missing on some, or lie outside', () => {
+    const { shots } = one()
+    const columned: ScrollFrame = { ...whole, cropLeft: 1, cropWidth: 2 }
+    expect(() => stitch(shots, [{ ...columned, cropLeft: 0.5 }], 1)).toThrow('stitch: a crop left is not a whole number')
+    expect(() => stitch(shots, [{ ...columned, cropWidth: 1.5 }], 1)).toThrow('stitch: a crop width is not a whole number')
+    expect(() => stitch([...shots, ...shots], [columned, whole], 1)).toThrow('stitch: only some frames have columns')
+    expect(() => stitch([...shots, ...shots], [columned, { ...columned, cropLeft: 0 }], 1)).toThrow(
+      'stitch: the frames differ in columns',
+    )
+    expect(() => stitch(shots, [{ ...columned, cropLeft: 3 }], 1)).toThrow('stitch: the columns lie outside the frames')
+  })
 })
