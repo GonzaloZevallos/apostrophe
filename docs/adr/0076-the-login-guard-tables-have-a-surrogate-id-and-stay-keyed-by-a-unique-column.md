@@ -1,8 +1,11 @@
-# ADR-0076: The login guard tables have a surrogate id and stay keyed by a unique column
+---
+status: accepted
+date: 2026-11-08
+---
 
-## Status
+# The login guard tables have a surrogate id and stay keyed by a unique column
 
-Accepted. Part 1 of the database naming work (#75, CODING_STANDARDS §11).
+Part 1 of the database naming work (#75, CODING_STANDARDS §11).
 
 ## Context
 
