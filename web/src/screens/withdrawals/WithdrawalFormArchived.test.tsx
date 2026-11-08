@@ -123,7 +123,7 @@ const SUBMIT_NEW = 'Save the withdrawal'
 async function fillNew(names: string[]) {
   await pickReason('Marketing')
   for (const [index, name] of names.entries()) {
-    if (index > 0) await userEvent.click(screen.getByRole('button', { name: 'Add another variety' }))
+    if (index > 0) await userEvent.click(screen.getByRole('button', { name: 'Add another product' }))
     await pickVariety(index + 1, name)
     await userEvent.type(screen.getByLabelText(`Grams ${index + 1}`), '2')
   }
@@ -298,7 +298,7 @@ async function editWithTwoAddedLines(state: World) {
     [2, 'Gelato'],
     [3, 'Gorilla'],
   ] as const) {
-    await userEvent.click(screen.getByRole('button', { name: 'Add another variety' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Add another product' }))
     await pickVariety(position, name)
     await userEvent.type(screen.getByLabelText(`Grams ${position}`), '1')
   }

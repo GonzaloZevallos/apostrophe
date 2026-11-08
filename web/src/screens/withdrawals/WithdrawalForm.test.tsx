@@ -245,7 +245,7 @@ test('saves with every line, a trimmed note, then shows "Withdrawal saved" where
   await pickReason('Marketing')
   await pickVariety(1, 'Zkittlez')
   await userEvent.type(screen.getByLabelText('Grams 1'), '5,5')
-  await userEvent.click(screen.getByRole('button', { name: 'Add another variety' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Add another product' }))
   await pickVariety(2, 'Zkittlez')
   await userEvent.type(screen.getByLabelText('Grams 2'), '1')
   await userEvent.type(screen.getByLabelText('Note'), '  Para la fiesta ')
@@ -373,7 +373,7 @@ test('a send that finds the withdrawal gone goes to Variedades with the fixed no
 
 test('with two lines the form keeps the icon and text rule: Quitar is icon-only, Agregar carries its icon and word', async () => {
   await openFromVariedades()
-  await userEvent.click(screen.getByRole('button', { name: 'Add another variety' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Add another product' }))
   await varietyField(2)
   // An unchosen Selector shows no text yet: choose, so the rule reads what the seller reads.
   await pickReason('Marketing')
@@ -392,7 +392,7 @@ test('with two lines the form keeps the icon and text rule: Quitar is icon-only,
 
   await userEvent.click(quitar)
   expect(screen.queryByRole('button', { name: /^Product 2/ })).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: /^Remove variety/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /^Remove product/ })).not.toBeInTheDocument()
 })
 
 const MANY_VARIETIES = Array.from({ length: 12 }, (_unused, index) => ({
