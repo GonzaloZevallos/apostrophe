@@ -79,15 +79,17 @@ erDiagram
     DATETIME used_at "nullable"
   }
   login_address_guard {
-    VARCHAR(64) address_digest PK
+    INTEGER id PK
+    VARCHAR(64) address_digest UK
     INTEGER failures
-    DATETIME window_start
-    DATETIME locked_until "nullable"
+    DATETIME window_started_at
+    DATETIME unlocks_at "nullable"
   }
   login_guard {
-    VARCHAR(254) email PK
+    INTEGER id PK
+    VARCHAR(254) email UK
     INTEGER failures
-    DATETIME locked_until "nullable"
+    DATETIME unlocks_at "nullable"
   }
   onboarding {
     INTEGER id PK
@@ -129,7 +131,7 @@ erDiagram
     INTEGER id PK
     INTEGER business_id FK
     INTEGER variety_id FK
-    DATE effective_from
+    DATE effective_on
     INTEGER list_price
     INTEGER bulk_price "nullable"
     INTEGER bulk_minimum_hundredths "nullable"

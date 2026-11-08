@@ -27,13 +27,13 @@ class ProductRow(Base):
 
 class PriceEntryRow(Base):
     __tablename__ = "price_entry"
-    __table_args__ = (UniqueConstraint("variety_id", "effective_from"),)
+    __table_args__ = (UniqueConstraint("variety_id", "effective_on"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     # Redundant with the variety's on purpose: every row says whose it is (docs/adr/0004).
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
     variety_id: Mapped[int] = mapped_column(ForeignKey("variety.id"))
-    effective_from: Mapped[date]
+    effective_on: Mapped[date]
     list_price: Mapped[int]
     bulk_price: Mapped[int | None]
     bulk_minimum_hundredths: Mapped[int | None]

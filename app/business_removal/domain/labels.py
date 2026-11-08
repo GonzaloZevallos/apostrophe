@@ -21,7 +21,7 @@ LABEL_COLUMN: dict[str, str] = {
     "payment": "paid_on",
     "stock_entry": "entry_date",
     "stock_withdrawal": "withdrawn_on",
-    "price_entry": "effective_from",
+    "price_entry": "effective_on",
     "expense": "spent_on",
     "app_user": "email",
 }

@@ -136,7 +136,7 @@ def _assert_schema(engine: Engine) -> None:
     inspector = inspect(engine)
     assert {
         tuple(u["column_names"]): u["name"] for u in inspector.get_unique_constraints("customer")
-    } == {("business_id", "phone"): "uq_customer_business_phone"}
+    } == {("business_id", "phone"): "uq_customer_business_id_phone"}
     assert "ix_customer_customer_type_id" in {i["name"] for i in inspector.get_indexes("customer")}
     foreign_keys = {
         fk["name"]: (fk["referred_table"], fk["options"])

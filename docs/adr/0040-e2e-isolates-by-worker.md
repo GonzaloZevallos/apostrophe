@@ -347,3 +347,5 @@ A toast with no product timer (the history-state `Notice`, "Customer saved") kee
 - The same text shown again while one toast is still on screen (`showNow` twice on one location: `Gastos`, `EntriesList`, `PriceRows`) writes the same text to the same element, so there is no mutation and the recorder holds one entry. `toastRecorder.spec.ts` pins that behaviour with a toast fed to the page (the app path itself is not driven). A spec that needs the second one asserts what follows it.
 - Toasts the recorder cannot see (`.aviso-toast` category toasts, `.venta-guardada`) stay on page text and keep the old race.
 - `expectToast` proves the toast was shown after the action, not that it was shown for the action: a different toast with the same text from another source in the window would pass.
+
+> Amended by ADR-0076: `login_guard` and `login_address_guard` carry a surrogate `id` primary key, unique on `email` / `address_digest`.

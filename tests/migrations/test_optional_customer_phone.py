@@ -162,7 +162,7 @@ def test_the_unique_constraint_still_carries_its_name(tmp_path: Path) -> None:
 
     inspector = inspect(engine)
     assert [c["name"] for c in inspector.get_unique_constraints("customer")] == [
-        "uq_customer_business_phone"
+        "uq_customer_business_id_phone"
     ]
     engine.dispose()
 

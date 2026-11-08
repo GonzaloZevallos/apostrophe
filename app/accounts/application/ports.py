@@ -69,7 +69,7 @@ class Accounts(Protocol):
     def clear_email(self, email: Email, now: datetime) -> None: ...
 
     def unlock_email(self, email: Email) -> None:
-        """Unguarded (docs/adr/0019): sets `failures = 0, locked_until = NULL`
+        """Unguarded (docs/adr/0019): sets `failures = 0, unlocks_at = NULL`
         whatever the lock's state. Only a completed Reset calls it."""
         ...
 

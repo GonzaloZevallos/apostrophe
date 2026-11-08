@@ -48,3 +48,5 @@ easiest one to introduce by accident: one query without a filter in any future t
 - **One database per business**: total isolation, but migrations, backups and the
   invitation flow multiply by the number of businesses for a handful of friends.
 - **Row-level security in the database**: SQLite has none.
+
+> Amended by ADR-0076: `login_guard` and `login_address_guard` are keyed by a surrogate `id`; `email` / `address_digest` are unique columns.

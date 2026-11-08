@@ -125,7 +125,7 @@ class SqlProducts:
     def _entry_row(self, entry: PriceEntry) -> PriceEntryRow:
         return PriceEntryRow(
             business_id=self._business_id,
-            effective_from=entry.effective_from,
+            effective_on=entry.effective_from,
             list_price=entry.list_price,
             bulk_price=entry.bulk.price if entry.bulk else None,
             bulk_minimum_hundredths=entry.bulk.minimum.hundredths if entry.bulk else None,
@@ -145,7 +145,7 @@ def _product(row: ProductRow) -> Product:
 def _entry(row: PriceEntryRow) -> PriceEntry:
     minimum = row.bulk_minimum_hundredths
     return PriceEntry.of(
-        effective_from=row.effective_from,
+        effective_from=row.effective_on,
         list_price=row.list_price,
         bulk_price=row.bulk_price,
         bulk_minimum=None if minimum is None else Quantity(minimum),
