@@ -522,9 +522,20 @@ async function shotSteps(page, { block, ofFirstText, census, side }, handles) {
 // Whether the attempt's page sent any request other than a read, set before the page navigates. The
 // built login goes through `context.request` before the page exists, so it is not counted here.
 function watchWrites(page, probe) {
+  probe.writes = []
   page.on('request', (request) => {
-    if (request.method() !== 'GET' && request.method() !== 'HEAD') probe.wrote = true
+    if (request.method() !== 'GET' && request.method() !== 'HEAD') {
+      probe.wrote = true
+      probe.writes.push(request)
+    }
   })
+}
+
+// A step that sent a write is done only once the write has its response (or has failed): the
+// settle that follows then starts from the page's answer, not from a request still on its way. Bounded
+// by `TIMEOUT` like every wait here; it is the same for every row and both sides.
+async function writesAnswered(probe) {
+  await withinTimeout(Promise.all(probe.writes.map((request) => request.response())))
 }
 
 // The page's first navigation. A Playwright timeout is the side's retryable `step-timeout`; any other
@@ -620,6 +631,7 @@ async function captureBuiltIn(context, s, census, probe) {
     let reached
     try {
       await run(page, step, placeholders)
+      await writesAnswered(probe)
       reached = await settleKinded(page, { advanceMs: SETTLE_ADVANCE_MS, ofFirstText: false })
     } catch (error) {
       reached = { reason: firstLine(error), kind: error?.name === 'TimeoutError' ? 'step-timeout' : 'other' }

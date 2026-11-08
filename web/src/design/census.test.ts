@@ -71,10 +71,13 @@ const NEVER_CALM = page(
    <script>let ticks = 0
    setInterval(() => { document.body.dataset.t = String((ticks += 1)) }, 5)</script>`,
 )
+// The same page, which also sends a write as it loads: its side is never captured again.
+const WRITES = NEVER_CALM.replace('</script>', "\nfetch('/write', { method: 'POST' })</script>")
 const CALM = page('<div>Nueva venta</div>')
 const loads = new Map<string, number>()
 const pageOf = (token: string): string | undefined => {
   if (token === 'never') return NEVER_CALM
+  if (token === 'wrote') return WRITES
   if (!token.startsWith('late-')) return PAGES[token]
   const count = (loads.get(token) ?? 0) + 1
   loads.set(token, count)
@@ -258,6 +261,15 @@ describe('comparisons.mjs --census', () => {
       'lo construido no se pudo capturar: la pantalla no quedó quieta (after 3 attempts: unsettled, unsettled, unsettled)',
     ])
     expect(output).toContain('retries: 1 rows, 3 attempts')
+  }, CENSUS_TEST_MS)
+
+  it('does not capture a side again once its page sent a write', async () => {
+    const { entries, status, output } = await run('wrote', 'Invitacion', [], 'wrote')
+    expect(status, output).toBe(1)
+    const [entry] = entries as [Entry]
+    expect(entry.built).toBeNull()
+    expect(entry.notes).toEqual(['lo construido no se pudo capturar: la pantalla no quedó quieta'])
+    expect(output).toContain('retries: 0 rows, 0 attempts')
   }, CENSUS_TEST_MS)
 
   it('writes the census of the attempt that passed, with no error or settle miss from the one before', async () => {
