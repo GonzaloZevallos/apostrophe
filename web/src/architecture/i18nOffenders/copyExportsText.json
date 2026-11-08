@@ -2,7 +2,7 @@
   {"file":"analysis.ts","issue":353},
   {"file":"auth.ts","issue":350},
   {"file":"catalog.ts","issue":352},
-  {"file":"common.ts","issue":null,"reason":"its @deprecated COMMON_TEXT and its two messages are held equal to their keys by common.deprecated.test.ts"},
+  {"file":"common.ts","issue":null,"reason":"its @deprecated texts object and its two messages are held equal to their keys by common.deprecated.test.ts"},
   {"file":"customers.ts","issue":351},
   {"file":"dates.ts","issue":353},
   {"file":"expenses.ts","issue":351},

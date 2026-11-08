@@ -30,7 +30,7 @@ export const COPY_OWNER: Record<string, Owner> = {
 /** Why a file has no owner: it needs no part to move its words. */
 export const NO_OWNER_REASON: Record<string, string> = {
   'emptyStates.ts': 'it exports only keys',
-  'common.ts': 'its @deprecated COMMON_TEXT and its two messages are held equal to their keys by common.deprecated.test.ts',
+  'common.ts': 'its @deprecated texts object and its two messages are held equal to their keys by common.deprecated.test.ts',
 }
 
 /**

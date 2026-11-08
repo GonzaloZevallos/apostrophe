@@ -127,6 +127,7 @@ Criterios de éxito:
 La guarda de textos con key (ADR-0049) guarda dos listas en `web/src/architecture/i18nOffenders/`, ambas derivadas del árbol, un JSON ordenado con una entrada por línea:
 
 - `copyExportsText.json` lista cada archivo de `web/src/copy/` que todavía escribe palabras propias: `{ file, issue }`. `common.ts` es la única entrada con `issue: null`, con su `reason`.
+  - `emptyStates.ts` nunca es entrada: solo exporta keys y los strings de sus límites no son texto (`KEYS_ONLY` en `owners.ts`).
 - `copyImports.json` lista cada archivo de `screens/`, `shell/` o `components/` que importa esas palabras: `{ file, imports, issue }`, una entrada por par de archivo importador y dueño. Los imports de `common.ts` y `emptyStates.ts` nunca son entradas.
 
 El `issue` sale de `COPY_OWNER` (`owners.ts`), la única tabla que escribe un número de issue para un archivo de copy. `lists.test.ts` recalcula ambas listas desde el árbol y falla ante un infractor sin entrada, una entrada vencida (un archivo borrado incluido), un `issue` distinto del dueño, un `null` fuera de `common.ts` y cualquier hallazgo de `wordsOf`.
