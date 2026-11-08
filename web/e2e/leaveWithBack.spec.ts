@@ -7,8 +7,7 @@
 
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMERS, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from './fixtures.js'
-import { choosePaymentMethod } from './helpers/paymentMethod.js'
+import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { newBusinessInvitationUrl } from './backend.js'
 import { fillSaleLine } from './helpers/sale.js'

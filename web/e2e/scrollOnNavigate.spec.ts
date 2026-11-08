@@ -15,8 +15,7 @@
 
 import type { Locator, Page } from '@playwright/test'
 import { CUSTOMERS, EXPENSES, HOME, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
-import { expect, test, withToastRecorder } from './fixtures.js'
-import { choosePaymentMethod } from './helpers/paymentMethod.js'
+import { choosePaymentMethod, expect, test, withToastRecorder } from './fixtures.js'
 import { seedLongExpenses, seedLongLists, seedLongVarieties } from './helpers/scrollSeed.js'
 import { expectToast } from './helpers/toast.js'
 import { expectPath } from './helpers/url.js'
