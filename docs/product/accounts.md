@@ -588,8 +588,8 @@ Estos estados los dibuja `Estados` (GH-49), con el estilo del diseño y su redac
     - se muestra un aviso fijo: "That is gone. The list is up to date."
   - El aviso no es un toast de éxito. No tiene datos, ni "Undo", ni acción de reintento, y se anuncia como un toast.
   - Confirmar el borrado de un registro que ya no está da el mismo aviso, no el toast de éxito del borrado.
-  - **Abrir el detalle de un registro que ya no está** (una Product, un Customer, una Expense, una Sale o una Stock entry) muestra "That is gone." con un botón de vuelta a su lista:
-    - "Back to Products" (una Product o una Stock entry);
+  - **Abrir el detalle de un registro que ya no está** (un Product, un Customer, una Expense, una Sale o una Stock entry) muestra "That is gone." con un botón de vuelta a su lista:
+    - "Back to Products" (un Product o una Stock entry);
     - "Back to Customers";
     - "Back to Expenses" (el mes actual);
     - "Back to Sales".
