@@ -44,7 +44,8 @@ const PAGES: Record<string, string> = {
   'n': page(
     `<div class="pantalla" style="height:100vh"><div class="tall" style="height:2000px">Nueva venta</div>
      <div class="fill" style="position:absolute;top:0;left:0;width:5px;height:100vh"></div></div>
-     <div class="barra" style="position:fixed;bottom:0;left:0;right:0;height:60px"></div>`,
+     <div class="barra" style="position:fixed;bottom:0;left:0;right:0;height:60px"></div>
+     <div class="cinta" style="position:sticky;top:8px;height:20px"></div>`,
   ),
   // A layer over a document taller than the screen: the shot never grows it, the census does, and
   // the page is calm at the shot's height and never calm once the census has grown it. The timer is
@@ -92,7 +93,10 @@ afterAll(async () => {
   rmSync(dir, { recursive: true, force: true })
 })
 
-type Side = Record<string, unknown> & { sizes_changed?: Array<Record<string, unknown>> }
+type Side = Record<string, unknown> & {
+  sizes_changed?: Array<Record<string, unknown>>
+  pinned?: Array<Record<string, unknown>>
+}
 type Run = { entries: Entry[]; status: number; output: string }
 type Entry = {
   screen: string
@@ -181,9 +185,24 @@ describe('comparisons.mjs --census', () => {
     const document = built?.document as { scroll_height: number } | undefined
     expect(fill?.after).toMatchObject({ height: document?.scroll_height })
     expect(built?.sizes_changed?.some((entry) => entry.path === 'div.barra')).toBe(false)
+    // The phone side records its pinned elements, each with the class `pinnedClass` gives it.
+    expect(built?.pinned).toEqual([
+      expect.objectContaining({
+        path: 'div.barra',
+        position: 'fixed',
+        inset_top: 784, // the computed value of `top` is the used one: 844 high, 60 tall
+        inset_bottom: 0,
+        transform: 'none',
+        pinned_class: 'chrome',
+      }),
+      expect.objectContaining({ path: 'div.cinta', position: 'sticky', inset_top: 8, pinned_class: 'content' }),
+    ])
+    expect(built?.pinned?.[0]).toHaveProperty('margin_top')
+    expect(built?.pinned?.[0]).toHaveProperty('margin_bottom')
 
     const covered = layer.census?.built
     expect(covered).toMatchObject({ layer: true, class: 'layer' })
+    expect(covered?.pinned).toBeUndefined()
     expect(covered?.layer_metrics).toMatchObject({
       overflows: true,
       frame_inside_viewport: true,
