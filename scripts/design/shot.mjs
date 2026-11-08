@@ -381,7 +381,10 @@ export function sizeRecordMiss(before, after, side) {
 // `--vv-alto`, a count that changed, an element that is not pinned whose page top (`top + scrollTop`),
 // width or height changed or whose node was replaced, or a pinned element whose size changed (its top
 // moves with the scroll and is not compared).
-const PAGE_TOP_SLOP = 1e-6
+// The snapshot reads a top rounded to 0.01 px in the page, so the same top read at two scroll offsets can
+// differ by that step (a .005 that rounds up in one read and down in the other): a comparison of layout
+// values, not a rounding done here.
+const PAGE_TOP_SLOP = 0.011
 
 export function shiftMiss(frame0, frameN, side) {
   const missed =

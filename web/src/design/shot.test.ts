@@ -718,6 +718,13 @@ describe('shiftMiss', () => {
     for (const entries of [moved, wider, taller, shorter]) expect(shiftMiss(read(), later({}, entries), 'built')).toBe(MISS)
   })
 
+  it('lets a top differ by the snapshot step of 0.01 px but misses 0.05 px', () => {
+    const step = [entry('main', { top: 100 - 844 + 0.01 }), barShifted]
+    const more = [entry('main', { top: 100 - 844 + 0.05 }), barShifted]
+    expect(shiftMiss(read(), later({}, step), 'built')).toBeNull()
+    expect(shiftMiss(read(), later({}, more), 'built')).toBe(MISS)
+  })
+
   it('misses a replaced node, pinned or not', () => {
     const plain = [entry('main', { top: -744, same_node: false }), barShifted]
     const bar = [flowShifted, entry('div.bar', { top: 12, pinned: true, same_node: false })]
