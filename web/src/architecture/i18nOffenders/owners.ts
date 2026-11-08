@@ -34,10 +34,13 @@ export const NO_OWNER_REASON: Record<string, string> = {
 }
 
 /**
- * Copy files whose only plain strings are not text: `emptyStates.ts` exports keys, and the
- * strings of its `EMPTY_STATE_LIMITS` are limit kinds (`emptyLine`), so it is never an offender.
+ * The exports whose plain strings are not text, by copy file: the strings of `EMPTY_STATE_LIMITS`
+ * are limit kinds (`emptyLine`). Any other export of the file still counts, so a real word added
+ * to `emptyStates.ts` is an offender.
  */
-export const KEYS_ONLY: readonly string[] = ['emptyStates.ts']
+export const NOT_TEXT_EXPORTS: Record<string, readonly string[]> = {
+  'emptyStates.ts': ['EMPTY_STATE_LIMITS'],
+}
 
 /** What is wrong with an owner table over the copy `files`: a file with no owner, one that is gone, a `none` with no reason. */
 export function ownerProblems(owner: Record<string, Owner>, reasons: Record<string, string>, files: readonly string[]): string[] {

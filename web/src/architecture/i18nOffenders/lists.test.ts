@@ -17,6 +17,7 @@ import {
   copyModules,
   listProblems,
   serializeList,
+  textExportsOf,
   type ExportsEntry,
   type ImportsEntry,
 } from './scan'
@@ -53,7 +54,21 @@ describe('COPY_OWNER', () => {
   })
 })
 
-const exportsList = (...entries: ExportsEntry[]): ExportsEntry[] => entries
+describe('textExportsOf', () => {
+  test('leaves out the limit kinds of emptyStates.ts and nothing else of that file', () => {
+    const limits = new Map([['emptyStates.ts.EMPTY_STATE_LIMITS.salesList', 'emptyLine']])
+    expect([...textExportsOf('emptyStates.ts', limits)]).toEqual([])
+    const withWord = new Map([...limits, ['emptyStates.ts.EXTRA.title', 'Nothing here']])
+    expect([...textExportsOf('emptyStates.ts', withWord)]).toEqual(['EXTRA'])
+  })
+
+  test('exempts nothing in another file, even an export of the same name', () => {
+    const words = new Map([['sales.ts.EMPTY_STATE_LIMITS.x', 'Hola']])
+    expect([...textExportsOf('sales.ts', words)]).toEqual(['EMPTY_STATE_LIMITS'])
+  })
+})
+
+const exportsList =(...entries: ExportsEntry[]): ExportsEntry[] => entries
 const importsList = (...entries: ImportsEntry[]): ImportsEntry[] => entries
 
 describe('listProblems on copyExportsText entries', () => {

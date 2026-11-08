@@ -8,7 +8,7 @@
 import { loadBundle } from '../../../scripts/i18n/loadBundle.ts'
 import { wordsOf } from '../../design/copyTexts'
 import { findCopyImports } from '../copyOnly'
-import { COPY_OWNER, KEYS_ONLY, NO_OWNER_REASON } from './owners'
+import { COPY_OWNER, NO_OWNER_REASON, NOT_TEXT_EXPORTS } from './owners'
 
 /** The files whose imports of copy words are judged: `.ts` and `.tsx`, by suffix, minus tests and fixtures folders. */
 export const SCANNED = {
@@ -79,9 +79,15 @@ export function copyFindings(): string[] {
   return Object.keys(copyModules()).flatMap((file) => wordsIn(file).findings).sort()
 }
 
+/** The exported names, among the keys of `words` (`file.EXPORT.path`), that are text: `NOT_TEXT_EXPORTS` are left out. */
+export function textExportsOf(file: string, words: ReadonlyMap<string, string>): Set<string> {
+  const names = [...words.keys()].map((key) => key.slice(file.length + 1).split('.')[0] ?? '')
+  return new Set(names.filter((name) => !(NOT_TEXT_EXPORTS[file] ?? []).includes(name)))
+}
+
 /** The exported names of `file` that hold words. */
 function exportsWithWords(file: string): Set<string> {
-  return new Set([...wordsIn(file).words.keys()].map((key) => key.slice(file.length + 1).split('.')[0] ?? ''))
+  return textExportsOf(file, wordsIn(file).words)
 }
 
 function issueOf(file: string): number | null {
@@ -92,7 +98,7 @@ function issueOf(file: string): number | null {
 /** The copy files that hold words of their own, sorted by file. */
 export function computeCopyExportsText(): ExportsEntry[] {
   return Object.keys(copyModules())
-    .filter((file) => !KEYS_ONLY.includes(file) && wordsIn(file).words.size > 0)
+    .filter((file) => exportsWithWords(file).size > 0)
     .sort()
     .map((file) => {
       const issue = issueOf(file)
