@@ -16,7 +16,11 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import LoginAddressGuardRow, ResetLinkRow
-from tests.accounts.guard_rows import find_guard_row
+from tests.accounts.guard_rows import (
+    address_digest_of,
+    find_address_guard_row,
+    find_guard_row,
+)
 from tests.conftest import PASSWORD, MovableClock, open_business
 
 NEW_PASSWORD = "a brand new password"
@@ -99,7 +103,7 @@ def test_wrong_current_password_counts_for_both_brakes(
     assert refused.json()["code"] == "account.current_password_wrong"
     with Session(engine) as session:
         email_row = find_guard_row(session, "cambio@example.com")
-        address_row = session.scalar(select(LoginAddressGuardRow))
+        address_row = find_address_guard_row(session, address_digest_of("203.0.113.21"))
         assert email_row is not None and email_row.failures == 1
         assert address_row is not None and address_row.failures == 1
 
@@ -136,7 +140,7 @@ def test_under_either_lock_change_is_refused_even_with_the_right_password(
 
         with Session(engine) as session:
             email_before = find_guard_row(session, "locked@example.com")
-            address_before = session.scalar(select(LoginAddressGuardRow))
+            address_before = find_address_guard_row(session, address_digest_of("203.0.113.23"))
             email_failures_before = email_before.failures if email_before is not None else 0
             address_failures_before = address_before.failures if address_before is not None else 0
 
@@ -149,7 +153,7 @@ def test_under_either_lock_change_is_refused_even_with_the_right_password(
     assert under_lock.json()["code"] == "account.login_locked"
     with Session(engine) as session:
         email_after = find_guard_row(session, "locked@example.com")
-        address_after = session.scalar(select(LoginAddressGuardRow))
+        address_after = find_address_guard_row(session, address_digest_of("203.0.113.23"))
         assert email_after is not None and email_after.failures == email_failures_before + 1
         assert address_after is not None and address_after.failures == address_failures_before + 1
 
@@ -226,7 +230,7 @@ def test_under_the_address_lock_alone_change_answers_429_and_counts_both_whateve
 
         with Session(engine) as session:
             email_before = find_guard_row(session, "alock@example.com")
-            address_before = session.scalar(select(LoginAddressGuardRow))
+            address_before = find_address_guard_row(session, address_digest_of(host))
             email_failures_before = email_before.failures if email_before is not None else 0
             address_failures_before = address_before.failures if address_before is not None else 0
 
@@ -243,7 +247,7 @@ def test_under_the_address_lock_alone_change_answers_429_and_counts_both_whateve
     assert under_lock.json()["code"] == "account.login_locked"
     with Session(engine) as session:
         email_after = find_guard_row(session, "alock@example.com")
-        address_after = session.scalar(select(LoginAddressGuardRow))
+        address_after = find_address_guard_row(session, address_digest_of(host))
         assert email_after is not None and email_after.failures == email_failures_before + 1
         assert address_after is not None and address_after.failures == address_failures_before + 1
 
@@ -262,7 +266,7 @@ def test_with_no_lock_a_short_new_password_answers_422_and_counts_nothing(
     assert refused.json()["code"] == "account.password_weak"
     with Session(engine) as session:
         email_row = find_guard_row(session, "weak@example.com")
-        address_row = session.scalar(select(LoginAddressGuardRow))
+        address_row = find_address_guard_row(session, address_digest_of("203.0.113.24"))
         assert email_row is None
         assert address_row is None
 
@@ -285,7 +289,7 @@ def test_a_successful_change_resets_the_email_count_and_leaves_the_address_alone
     assert ok.status_code == 200
     with Session(engine) as session:
         email_row = find_guard_row(session, "reset@example.com")
-        address_row = session.scalar(select(LoginAddressGuardRow))
+        address_row = find_address_guard_row(session, address_digest_of("203.0.113.25"))
         assert email_row is not None and email_row.failures == 0
         assert address_row is not None and address_row.failures == 4
 

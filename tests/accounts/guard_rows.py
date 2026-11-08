@@ -5,8 +5,18 @@ from __future__ import annotations
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from starlette.requests import Request
 
+from app.accounts.adapters.deps import client_address
 from app.accounts.adapters.tables import LoginAddressGuardRow, LoginGuardRow
+from tests.conftest import SETTINGS
+
+
+def address_digest_of(host: str) -> str:
+    """The digest the app stores for a test client connecting from `host`, worked out by
+    the app's own `client_address`."""
+    request = Request({"type": "http", "client": (host, 12345), "headers": []})
+    return client_address(request, SETTINGS)
 
 
 def find_guard_row(session: Session, email: str) -> LoginGuardRow | None:
