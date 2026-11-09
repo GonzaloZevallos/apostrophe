@@ -25,12 +25,13 @@
  * first Publicar").
  */
 
-import { CATALOG, SETTINGS } from '../routes'
+import { CATALOG } from '../routes'
 import { useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useOutletContext } from 'react-router'
 import BrandMark from '../components/BrandMark'
 import InAppLink from '../components/InAppLink'
+import SettingsAvatar from '../components/SettingsAvatar'
 import { owedPlace, useReturnToPlace } from '../components/useReturnToPlace'
 import { peekPaymentReturn } from '../paymentReturn'
 import { get, NetworkError } from '../api/client'
@@ -43,7 +44,6 @@ import ErrorGenerico from '../components/ErrorGenerico'
 import Loading, { LoadingWhile } from '../components/Loading'
 import { AvisoCuerpo } from '../components/AvisoAmbar'
 import SinConexion from '../components/SinConexion'
-import { initialsOf } from '../format/initials'
 import { PINNED_CATALOG_OUT_OF_DATE } from '../copy/inicio'
 import { useTranslation } from 'react-i18next'
 import { EMPTY_STATE_KEYS } from '../copy/emptyStates'
@@ -104,13 +104,7 @@ export default function Inicio() {
             </div>
             <span className="encabezado__titulo">{COMMON_TEXT.home}</span>
           </div>
-          <InAppLink
-            to={SETTINGS}
-            aria-label={COMMON_TEXT.settingsFor(me.business_name)}
-            className="inicio__avatar"
-          >
-            {initialsOf(me.business_name)}
-          </InAppLink>
+          <SettingsAvatar />
         </div>
 
         {notices.first?.kind === 'onboarding' && <OnboardingNotice progress={notices.first.progress} />}

@@ -15,6 +15,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useMatch } from 'react-router'
 import BotonLink from '../../components/BotonLink'
+import SettingsAvatar from '../../components/SettingsAvatar'
 import { NetworkError } from '../../api/client'
 import { listCustomers } from '../../api/customers'
 import { debtorsQuery } from '../../api/payments'
@@ -93,6 +94,7 @@ export default function Clientes() {
           <BotonLink to={CUSTOMER_NEW} variant="secondary" icon="agregar">
             {COMMON_TEXT.newCustomer}
           </BotonLink>
+          <SettingsAvatar />
         </div>
         {feedback !== null && <Notice {...feedback} />}
         <label className="campo">
