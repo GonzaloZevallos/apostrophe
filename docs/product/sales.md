@@ -173,7 +173,7 @@ Criterios de éxito, Sale number:
   - **Total de $0**: queda saldada sin medio y sin nada debido. Un medio enviado con ella se ignora y no se guarda.
   - Un total por encima de $0 necesita un medio o "queda debiendo".
   - No existe el pago parcial en el momento.
-  - Lo que viaja a la API es uno de cash, transfer u owing, igual que antes de la parte 5 de GH-581.
+  - Lo que viaja a la API es uno de cash, transfer u owing, igual que antes de la parte 5 de GH-581. En New sale lo deriva una función pura, `paymentChoiceOf` (`web/src/sales/pricing.ts`), a partir del estado Paid · Owing, el medio y el total. Owing da `owing`, Paid con medio da ese medio, y Paid sin medio o sin estado elegido no da nada. Un medio que haya quedado guardado con Owing elegido nunca se manda.
 - **Cliente**:
   - Opcional solo cuando no queda nada debiendo.
   - Tiene que ser del mismo negocio; el cliente de otro negocio no se encuentra.
@@ -266,12 +266,12 @@ Criterios de éxito, Sale number:
 - **Cómo se pagó** (`SelectorPago`, desde la parte 5 de GH-581; el control del medio está en selector.md):
   - **El estado**: "Paid · Owing" es un `SegmentedChoice` cuyas opciones salen de un Fixed set declarado en `fixedSets.ts` con el motivo "fixed set: payment state, which is not a method". Conserva el aspecto y el comportamiento de los botones de pago de antes; su único agregado es `touch-action: manipulation` y `user-select: none`, que no cambia cómo se ve. El estado deshabilitado y la descripción de cada opción viven en una capa aparte por valor (`optionState`), nunca en el Fixed set.
   - **Al abrir**: lo que la pantalla elegía al abrir para la opción vieja Cash lo elige ahora para Paid; el medio arranca siempre vacío.
-  - **El medio**: bajo Paid aparece un Selector obligatorio con la etiqueta "Payment method", la misma entrada del Copy module que usa Record payment (payments.md). Sus opciones son "Cash" y "Transfer", en ese orden, de la única lista de opciones de medio armada a partir del Copy module que comparten New sale y Record payment; esa lista nunca se declara en `fixedSets.ts`. Sin valor por defecto, sin opción "Select…", sin `placeholder` y sin fila para borrar: vacío, el campo muestra solo su etiqueta. Con dos opciones la lista no tiene búsqueda.
+  - **El medio**: bajo Paid aparece un Selector obligatorio con la etiqueta "Payment method", la misma entrada del Copy module que usa Record payment (payments.md). Sus opciones son "Cash" y "Transfer", en ese orden. Salen de la única lista de opciones de medio, armada a partir del Copy module por `usePaymentMethodOptions()` (`web/src/sales/paymentMethods.ts`), que comparten New sale y Record payment. Esa lista nunca se declara en `fixedSets.ts`. El campo no tiene valor por defecto, ni opción "Select…", ni `placeholder`, ni fila para borrar: vacío, muestra solo su etiqueta. Con dos opciones la lista no tiene búsqueda.
   - **Bajo Owing** el medio no se muestra ni se pide.
   - **Sin restos**: pasar de Paid a Owing y volver a Paid deja el medio vacío otra vez.
-  - **En el teléfono**: la lista de medios es su propia entrada del historial, en el nivel 1 sobre el formulario, dentro del `SheetStackProvider` de `NuevaVenta`. Volver o "Close" con la lista abierta cierran solo la lista; nunca preguntan "Discard the sale?". Elegir un medio no cambia la condición de "Discard the sale?".
+  - **En el teléfono**: la lista de medios es su propia entrada del historial, en el nivel 1 sobre el formulario, dentro del `SheetStackProvider` de `NuevaVenta`. Se dibuja en el mismo `listHost` que las listas de las líneas, fuera del formulario, que mientras tanto queda `inert`. Volver o "Close" con la lista abierta cierran solo la lista; nunca preguntan "Discard the sale?". Elegir un medio no cambia la condición de "Discard the sale?".
   - **En la computadora**: el desplegable del Selector con teclado; Escape cierra solo el desplegable.
-  - **Sin medio al guardar**: con Paid y un total por encima de $0, "Save sale" sigue habilitado. Tocarlo sin medio no guarda nada, no entra en el estado de guardado en curso, muestra "Choose how they paid." junto al campo con el **Attention icon** al lado y lleva a la vendedora al campo. La frase sale del Copy module y desaparece apenas se elige un medio. Una venta de $0 se guarda sin medio, como antes.
+  - **Sin medio al guardar**: con Paid y un total por encima de $0, "Save sale" sigue habilitado. Este control corre después de los rechazos de las líneas, del de "sin líneas" y del de envío. Tocar "Save sale" sin medio no guarda nada y no entra en el estado de guardado en curso. Muestra "Choose how they paid." junto al campo, con el **Attention icon** al lado (`FieldRefusal`), y lleva el foco de la vendedora al campo. La frase sale del Copy module y desaparece apenas se elige un medio. Una venta de $0 se guarda sin medio, como antes.
   - **Sin estado elegido**: si no está elegido ni Paid ni Owing, el guardado se rechaza como antes.
   - Lo que se manda a la API no cambia: cash, transfer u owing.
 - **Gift y Special price se excluyen**:
@@ -321,7 +321,12 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
 - **Ningún campo desborda ni queda recortado** a 320 px ni con el texto al 130 %.
 - **Objetivos táctiles**: las opciones Paid · Owing, "Add another product" y los botones de diálogo miden al menos 44 px de alto; todo campo tiene al menos 16 px. La lista de productos de una línea y la de medios siguen las medidas del Selector (filas y búsqueda de 44 px, texto de 16 px).
 - **Teclados**: gramos `inputmode="decimal"`; pesos (envío, Special price) `inputmode="numeric"`; los campos de una línea llevan `enterkeyhint` para que la tecla de acción del teclado avance entre ellos.
-- **Dibujo**: el campo de producto de la línea y el campo "Payment method" bajo Paid, cerrados, están dibujados como Selector en los dibujos de New sale de `docs/product/design-system/pantallas/` (`NuevaVenta.dc.html` y `NuevaVentaOscuro.dc.html`); las listas abiertas no se dibujan, las juzga el chequeo `mobile`. Los dibujos de computadora no cambian. Ante una diferencia, ganan esta definición y los ADRs (Drawing as guide).
+- **Dibujo**: los dibujos de New sale de `docs/product/design-system/pantallas/` muestran los dos campos del Selector cerrados:
+  - El campo de producto de la línea aparece en `NuevaVenta.dc.html` y `NuevaVentaOscuro.dc.html`.
+  - Paid · Owing y, bajo Paid, el campo "Payment method" aparecen en los dibujos de computadora `NuevaVentaCompu`, `NuevaVentaClienteCompu` y sus versiones oscuras. Es el único cambio de esos dibujos.
+  - Las listas abiertas no se dibujan: las juzga el chequeo `mobile`.
+  - El dibujo del paso de cobro del teléfono (`NuevaVentaCobrar`, `NuevaVentaCobrarOscuro`) no se actualizó. Todavía muestra un select "Cómo paga" con Efectivo por defecto, medios que la app no tiene, "Queda debiendo" como medio y una línea "10 % pagando en efectivo" sin regla escrita.
+  - Ante una diferencia, ganan esta definición y los ADRs (Drawing as guide).
 
 ### En pantalla: Sales (`Sales`, `VentasCompu`)
 
@@ -429,15 +434,15 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 ### Estado de carga compartido
 
 - En estas pantallas aplica al detalle de la venta, a la lista de Sales antes de su primera respuesta, a New sale mientras espera precios (al abrirse y al cambiar la fecha), a los resultados de Pick a customer antes de su primera respuesta, y al botón del Sale bill mientras carga el detalle.
-- El campo de producto de cada línea muestra mientras cargan los productos el estado de carga propio del Selector (selector.md), nunca el texto de conjunto vacío.
+- El campo de producto de cada línea muestra mientras cargan los productos el estado de carga propio del Selector (selector.md), nunca el texto de conjunto vacío. El campo del medio nunca carga: su lista viene con la app.
 - No lleva ningún dígito, símbolo de moneda ni cifra de relleno (accounts.md, criterio 7).
 
 ### Chequeo en el teléfono
 
 - El chequeo `mobile` recorre la lista de productos de una línea de New sale abierta en el teléfono en el estado `new-sale/line-variety-selector-open` (`web/src/mobile-standard/statesSales.ts`), con 12 productos o más, así que la búsqueda se muestra. Los demás estados `new-sale/*` eligen el producto de la línea tocando el campo y después la opción.
 - El cambio al Selector borró de `autocomplete.json` las siete entradas `combobox:Line # product` que quedaron obsoletas (DescartarVenta, ElegirCliente, NuevaVenta, NuevaVentaCliente, NuevaVentaConLinea, NuevaVentaConLineaYPago y NuevoClienteEnVenta), y no agregó ningún infractor.
-- Desde la parte 5 de GH-581 recorre también la lista de medios abierta en el estado `new-sale/method-selector-open` (`statesSales.ts`). Los estados `new-sale/*` que eligen un medio lo hacen con Paid, después el campo y después la opción.
-- El cambio del medio al Selector borró todas las entradas `radio:Cash`, `radio:Transfer` y `radio:Owing` de `touch-action.json` (21) y cualquier otra entrada que dejó obsoleta, sin agregar ningún infractor. Las celdas nuevas `radio:Paid` y `radio:Owing` pasan por el agregado de CSS de `SegmentedChoice`.
+- Desde la parte 5 de GH-581 recorre también la lista de medios abierta en el estado `new-sale/method-selector-open` (`statesSales.ts`). Los estados `new-sale/*` que eligen un medio, como `NuevaVentaConLineaYPago`, lo hacen con Paid, después el campo y después la opción.
+- El cambio del medio al Selector borró de `touch-action.json` las 21 entradas `radio:Cash`, `radio:Transfer` y `radio:Owing`: tres por cada estado DescartarVenta, ElegirCliente, NuevaVenta, NuevaVentaCliente, NuevaVentaConLinea, NuevaVentaConLineaYPago y NuevoClienteEnVenta. También borró cualquier otra entrada que dejó obsoleta y no agregó ningún infractor. Las celdas nuevas `radio:Paid` y `radio:Owing` pasan gracias al agregado de CSS de `SegmentedChoice`.
 
 ## Métricas
 
@@ -469,7 +474,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - **Sin eco**: (Criterio 5)
   - ningún cuerpo de rechazo ni línea de log contiene la nota, el nombre de un cliente ni un monto enviado;
   - después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen ninguno.
-- **Tiempo de registro**: la corrida del front registra una venta desde un viewport de teléfono con un cliente existente, uno nuevo (con o sin Phone number) o ninguno (`web/e2e/sales.spec.ts`, `web/e2e/ventasTelefono.spec.ts`), y el presupuesto de toques se cumple (`web/e2e/tapBudget.spec.ts`); ningún test mide su duración. Registrar responde en menos de 300 ms con unas pocas docenas de productos y clientes. (Criterios 1, 14, 33) Desde la parte 4 de GH-581, esas corridas eligen el producto de cada línea con el Selector (`web/e2e/helpers/sale.ts`), en el teléfono y en la computadora; desde la parte 5, eligen el medio con Paid, después el campo y después la opción, y el presupuesto de toques crece como máximo en ese paso. Los controles del estado de guardado en curso siguen como estaban.
+- **Tiempo de registro**: la corrida del front registra una venta desde un viewport de teléfono con un cliente existente, uno nuevo (con o sin Phone number) o ninguno (`web/e2e/sales.spec.ts`, `web/e2e/ventasTelefono.spec.ts`), y el presupuesto de toques se cumple (`web/e2e/tapBudget.spec.ts`); ningún test mide su duración. Registrar responde en menos de 300 ms con unas pocas docenas de productos y clientes. (Criterios 1, 14, 33) Desde la parte 4 de GH-581, esas corridas eligen el producto de cada línea con el Selector (`web/e2e/helpers/sale.ts`), en el teléfono y en la computadora; desde la parte 5, eligen el medio con Paid, después el campo y después la opción (`web/e2e/helpers/paymentMethod.ts`), y el presupuesto de toques crece como máximo en ese paso. Los controles del estado de guardado en curso siguen como estaban.
 - **Vista previa = guardado**: (Criterio 6)
   - la vista previa del front pasa la misma matriz de cotización que el dominio, para cada combinación de llaves;
   - la corrida de punta a punta compara la vista previa con el detalle guardado: 0 diferencias.
@@ -501,8 +506,9 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - **Producto de una línea, carga y conjunto vacío (criterio 32)**: mientras cargan los productos, y con la consulta fallida, el campo tiene `aria-busy`, sin texto, y la lista no se abre; sin productos, la lista abierta muestra "No products yet. Add them in the Products tab." y cerrarla conserva la venta.
 - **Producto de una línea, agregar una línea**: agregar una línea le da el foco a su campo de producto sin abrir la lista.
 - **Chequeo en el teléfono, producto de una línea**: `new-sale/line-variety-selector-open` pasa el chequeo `mobile` sin ningún infractor nuevo, y no queda ninguna entrada `combobox:Line # product` obsoleta.
-- **Medio, es un Selector (criterio 34)**: un test del front muestra bajo Paid el campo "Payment method" con exactamente Cash y Transfer, ningún grupo de radio ni botón `aria-pressed` con los medios y ninguna fila para borrar; bajo Owing el campo no está.
+- **Medio, es un Selector (criterio 34)**: un test del front (`SelectorPago.test.tsx`, `NuevaVenta.method.test.tsx`) muestra bajo Paid el campo "Payment method" con exactamente Cash y Transfer, ningún grupo de radio ni botón `aria-pressed` con los medios y ninguna fila para borrar; bajo Owing el campo no está.
 - **Medio, sin medio no se guarda (criterio 34)**: con Paid, total por encima de $0 y sin medio, tocar "Save sale" no hace ningún pedido a la API, no entra en el estado de guardado en curso y muestra "Choose how they paid." con el Attention icon junto al campo, que recibe el foco; elegir un medio saca la frase. Una venta de $0 con Paid se guarda sin medio.
+- **Medio, valor enviado (criterio 34)**: tests unitarios de `paymentChoiceOf` y `validateSale` (`pricing.test.ts`) cubren cada valor que viaja (cash, transfer, owing), el caso de $0, un medio que quedó guardado con Owing elegido (nunca se manda) y Owing sin cliente.
 - **Medio, sin restos (criterio 34)**: elegir Transfer, pasar a Owing y volver a Paid deja el campo vacío.
 - **Medio, volver y Escape (criterio 35)**: con la lista de medios abierta, volver o "Close" cierran solo la lista y "Discard the sale?" no aparece; en la computadora, Escape cierra solo el desplegable.
 - **Medio, nada se pierde (criterio 36)**: sin cliente, Owing está deshabilitado con "To leave it owing, pick a customer"; los tests existentes de Owing pasan con sus aserciones sin cambios; el `FixedSet` de Paid · Owing declara su motivo y ningún medio está en `fixedSets.ts`.
@@ -518,7 +524,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - **Sale number, nunca reutilizado (criterio 24)**: borrar una venta del medio deja un hueco; borrar la de número más alto (por Delete sale y por Undo) y registrar otra da el número siguiente, nunca el borrado; un guardado rechazado no consume número; dos guardados simultáneos en un negocio reciben números distintos. Editar la fecha no aplica (no se edita); asignar un cliente después no cambia el número.
 - **Sale number, el mismo en los dos lugares (criterio 25)**: un test del front muestra que el título del detalle y la línea `Sale #N · dd/mm` del Sale bill llevan el mismo número para la misma venta; el título es texto seleccionable, no un botón; mientras carga, el título queda vacío y no aparece ningún `#`, dígito ni "Sale".
 - **Sale number, historial (criterio 27)**: test de la migración: en una base con ventas de dos negocios, cada negocio queda numerado desde 1 por (fecha, momento de registro, id), con un empate de fecha y momento resuelto por id; la migración solo agrega una columna; la siguiente venta nueva de cada negocio sigue al número más alto. Una Spreadsheet import en un negocio vacío numera por fecha y orden de registro.
-- **Design capture**: el detalle de la venta en el teléfono muestra "Sale #N" en el lugar dibujado, en claro y en oscuro (`docs/product/design-capture.md`). En New sale, el campo de producto de la línea y el campo "Payment method" bajo Paid se leen como el campo del Selector dibujado (`NuevaVenta`, `NuevaVentaOscuro`). Cualquier otra diferencia con el dibujo es un hallazgo aparte.
+- **Design capture**: el detalle de la venta en el teléfono muestra "Sale #N" en el lugar dibujado, en claro y en oscuro (`docs/product/design-capture.md`). En New sale, el campo de producto de la línea se lee como el campo del Selector dibujado en `NuevaVenta` y `NuevaVentaOscuro`. Paid · Owing, con el campo "Payment method" bajo Paid, se lee como lo dibujado en `NuevaVentaCompu` y `NuevaVentaClienteCompu`. Cualquier otra diferencia con el dibujo es un hallazgo aparte.
 
 ## Fuera de alcance
 
@@ -538,7 +544,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - Para el Sale bill: un año en la fecha; un paso de vista previa; un estado de "ya compartido"; un recibo de pago; elegir un canal o enviar desde la app; una factura; escapar o reescribir los nombres que tipeó la vendedora para el formato de alguna app de chat; hacer configurable la unidad (#318); cualquier otro idioma (#317).
 - Para el Sale number: buscar o filtrar ventas por número; mostrarlo en Sales, en la historia del cliente, en Home o en Analysis; el resto del rediseño del detalle de la venta (#530) y la línea "por Telegram" del dibujo (un hallazgo aparte, y un canal choca con Assume nothing); el `sale.id` global que ya lleva el camino del detalle (`/sales/{sale_id}`), un hallazgo aparte con su propio issue.
 - Para el producto de una línea: crear un producto desde la línea (se crea en la pestaña Products); cambiar el texto de "elegir un producto", el nombre accesible, el mensaje de conjunto vacío o el rechazo; abrir la lista sola al agregar una línea; saltar solo a los gramos después de elegir; dibujar la lista abierta en `pantallas/`.
-- Para el medio de pago: hacer configurables los Payment methods (GH-318); recordar el último medio o proponer uno por defecto; cambiar lo que se guarda o lo que viaja a la API; cambiar el estado Paid · Owing más allá de cómo está construido; dibujar la lista abierta en `pantallas/`.
+- Para el medio de pago: hacer configurables los Payment methods (GH-318); recordar el último medio o proponer uno por defecto; cambiar lo que se guarda o lo que viaja a la API; cambiar el estado Paid · Owing más allá de cómo está construido; dibujar la lista abierta en `pantallas/`; un descuento por medio de pago como el "10 % pagando en efectivo" del dibujo del paso de cobro, que no tiene regla escrita.
 
 ## Planeado en GH-318
 
@@ -571,8 +577,8 @@ Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-an
 
 Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; lo entrega la parte payment methods.
 
-- Los Payment methods van a ser la lista propia del negocio; un negocio nuevo va a empezar con "Cash" y "Transfer", y uno existente va a conservar los dos. El campo "Payment method" ya es un Selector (parte 5 de GH-581): la parte payment methods reemplaza solo la fuente de sus opciones.
-- Va a reemplazar: "cómo se pagó: Paid · Owing y, bajo Paid, el medio en el campo \"Payment method\" (Cash, Transfer).", "Sus opciones son \"Cash\" y \"Transfer\", en ese orden, de la única lista de opciones de medio armada a partir del Copy module" y "**Pagada entera en el momento, en efectivo o por transferencia.**" ("Owing" sigue siendo un estado, no un medio).
+- Los Payment methods van a ser la lista propia del negocio; un negocio nuevo va a empezar con "Cash" y "Transfer", y uno existente va a conservar los dos. El campo "Payment method" ya es un Selector (parte 5 de GH-581): la parte payment methods reemplaza solo la fuente de sus opciones (`usePaymentMethodOptions()`), y agrega el mensaje de conjunto vacío que nombra el lugar donde se crean los medios.
+- Va a reemplazar: "cómo se pagó: Paid · Owing y, bajo Paid, el medio en el campo \"Payment method\" (Cash, Transfer).", "Sus opciones son \"Cash\" y \"Transfer\", en ese orden" y "**Pagada entera en el momento, en efectivo o por transferencia.**" ("Owing" sigue siendo un estado, no un medio).
 
 ### Business time zone
 

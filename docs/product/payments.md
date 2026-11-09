@@ -1,7 +1,3 @@
-# Pagos
-
-El dinero que un **Customer** entrega, y lo que cada Customer debe por eso: su **Balance**, su **Owing since** y la cuenta de sus **Sales** y **Payments**. Lo ve solo su **Business** (ADR-0004). Lee las Sales y sus **On-the-spot payments** de sales (ADR-0007) y los Customers de customers. **Cash** (#7) cuenta los Payments en sus propias fechas. Qué Sale salda un Payment se calcula en el momento y nunca se guarda, igual que el **Cost of goods sold** (ADR-0009, ADR-0010), mientras que los precios de una Sale quedan congelados (ADR-0003). Quién debe se muestra como la sección Owed to you arriba de Customers y como el bloque "Owed to you" de Home; no hay una pantalla Owed to you aparte.
-
 ## Jobs
 
 **Cuando** un cliente me paga parte o todo lo que debe, en efectivo o por transferencia, el mismo día o semanas después, **quiero** registrarlo desde el celular en pocos toques y ver que su Balance y su "owing since" bajan en el acto, **para** saber siempre quién me debe qué y desde cuándo, y que nada de lo que pagó o todavía debe se pierda ni caiga en la persona equivocada.
@@ -15,6 +11,10 @@ Es el mismo job de "manejar mi negocio desde el celular" que el de cualquier otr
 **Cuando** estoy atendiendo a un cliente con el celular en la mano, **quiero** que la app se comporte como una app de celular (un formulario que llena la pantalla con su acción principal bajo el pulgar, y nada de lo que necesito escondido detrás del teclado), **para poder** registrar un pago sin pelearme con la pantalla ni perder lo que escribí. (El job de "Disposición en el celular", navigation.md, GH-319: acá lo sirve Record payment dibujado con el único `Sheet` compartido.)
 
 **Cuando** un cliente me paga, con una venta o a cuenta de una deuda, **quiero** decir cómo me pagó con el mismo control que uso para cualquier elección que puede crecer, **para** registrar el medio a propósito y nunca por un valor que quedó de antes; y cuando los Payment methods pasen a ser mi propia lista, registrar un pago se tiene que sentir igual. (Parte 5 de GH-581: acá lo sirve el campo "Payment method" de Record payment, un **Selector** obligatorio y sin valor por defecto; en New sale lo sirve el mismo campo bajo Paid, sales.md.)
+
+# Pagos
+
+El dinero que un **Customer** entrega, y lo que cada Customer debe por eso: su **Balance**, su **Owing since** y la cuenta de sus **Sales** y **Payments**. Lo ve solo su **Business** (ADR-0004). Lee las Sales y sus **On-the-spot payments** de sales (ADR-0007) y los Customers de customers. **Cash** (#7) cuenta los Payments en sus propias fechas. Qué Sale salda un Payment se calcula en el momento y nunca se guarda, igual que el **Cost of goods sold** (ADR-0009, ADR-0010), mientras que los precios de una Sale quedan congelados (ADR-0003). Quién debe se muestra como la sección Owed to you arriba de Customers y como el bloque "Owed to you" de Home; no hay una pantalla Owed to you aparte.
 
 Criterios de éxito:
 
@@ -139,30 +139,31 @@ Criterios de éxito:
   - la fecha viene completa con hoy;
   - el medio, en el campo "Payment method" (abajo), obligatorio.
 - **El medio** (`Cobro`, desde la parte 5 de GH-581; el control está en selector.md):
-  - Es un Selector obligatorio con la etiqueta "Payment method", la misma entrada del Copy module que usa New sale (sales.md). Sus opciones son "Cash" y "Transfer", en ese orden, de la única lista de opciones de medio armada a partir del Copy module que comparten Record payment y New sale. Esa lista nunca se declara en `fixedSets.ts`: los Payment methods son un **Growable set**, y GH-318 reemplaza solo esa fuente.
-  - Sin valor por defecto, sin opción "Select…", sin `placeholder` y sin fila para borrar: vacío, el campo muestra solo su etiqueta. Con dos opciones la lista no tiene búsqueda.
+  - Es un Selector obligatorio con la etiqueta "Payment method", la misma entrada del Copy module que usa New sale (sales.md). Va donde estaban los botones Cash · Transfer: después de la fila de la fecha y antes del resumen de lo que queda después del Payment. Sus opciones son "Cash" y "Transfer", en ese orden. Salen de la única lista de opciones de medio, armada a partir del Copy module por `usePaymentMethodOptions()` (`web/src/sales/paymentMethods.ts`), que comparten Record payment y New sale. Esa lista nunca se declara en `fixedSets.ts`: los Payment methods son un **Growable set**, y GH-318 reemplaza solo esa fuente.
+  - Sin valor por defecto, sin opción "Select…", sin `placeholder` y sin fila para borrar: vacío, el campo muestra solo su etiqueta. Con dos opciones la lista no tiene búsqueda. No tiene mensaje de conjunto vacío ni estado de carga: la lista viene con la app.
   - Record payment abre siempre con el medio vacío. Nada se recuerda entre Payments, ni para el mismo Customer ni entre Customers.
   - Elegir un medio cuenta como algo elegido: después, "Close" o volver piden confirmación igual que con un monto o una fecha que escribió el vendedor. Un valor que la pantalla completa sola al abrir (la fecha de hoy) no cuenta.
   - Lo que se guarda no cambia: el mismo Payment, con método `cash` o `transfer`.
   - **En el celular**: tocar el campo abre la lista en una Sheet, su propia entrada del historial en el nivel de arriba de Record payment. Hay un `SheetStackProvider` en la raíz de `CobroRoute`. Volver o "Close" con la lista abierta cierran solo la lista, nunca Record payment, desde cualquiera de sus tres accesos, y nunca abren la confirmación de cambios sin guardar.
-  - **En la computadora**: el desplegable del Selector con teclado; Escape cierra solo el desplegable y no cierra el modal.
-  - **Sin medio al guardar**: la acción principal sigue habilitada. Tocarla sin medio no guarda nada, no entra en el estado de guardado en curso, muestra "Choose how they paid." junto al campo con el **Attention icon** al lado, y lleva al vendedor al campo. La frase sale del Copy module y desaparece apenas se elige un medio.
+  - **En la computadora**: el desplegable del Selector con teclado. El primer Escape cierra solo el desplegable y no cierra el modal. El segundo sale si el formulario está sin tocar, o pide confirmación si tiene algo escrito o elegido.
+  - **Sin medio al guardar**: la acción principal sigue habilitada. Este control corre después del control del monto. Tocar la acción sin medio no guarda nada y no entra en el estado de guardado en curso. Muestra "Choose how they paid." junto al campo, con el **Attention icon** al lado (`FieldRefusal`, que el campo nombra con su `aria-describedby`), y lleva el foco del vendedor al campo. La frase sale del Copy module y desaparece apenas se elige un medio. Si el monto también es inválido, primero se muestra solo el rechazo del monto.
 - **Antes de guardar**, la vista previa de la API muestra qué Sales salda el Payment ("Taken from the oldest debt") y "They still owe $ X" cuando queda algo.
 - **Después de guardar**:
   - "Payment saved · still owing $ X" cuando queda algo;
   - "Payment saved" cuando no queda nada.
 
   Esta es la segunda excepción deliberada a la regla de toast sin datos de accounts.md. La pantalla desde la que se abrió se refresca desde la API, así que el Balance más bajo ya está ahí cuando la Sheet se cierra. En el celular el toast queda arriba de la barra de esa pantalla (navigation.md, "Disposición en el celular").
-- **Los rechazos** se muestran en línea, arriba de la acción principal, y conservan todo lo escrito:
+- **Los rechazos** se muestran en línea y conservan todo lo escrito:
   - por encima del Balance;
   - fecha futura;
   - monto menor o igual que $0.
 
-  Falta el método se muestra junto al campo "Payment method" (arriba), nunca arriba de la acción principal; el rechazo de la API para falta el método queda como respaldo.
+  Siguen en el mismo lugar que antes de la parte 5. El rechazo por falta de medio se muestra junto al campo "Payment method" (arriba). El rechazo de la API por falta de medio (`payment.method_required`) queda como respaldo y muestra la misma frase en el mismo lugar.
 
 ### Chequeo en el teléfono
 
-- El cambio al Selector borró todas las entradas `radio:Cash`, `radio:Transfer` y `radio:Owing` de `touch-action.json` (21 entre New sale y Record payment) y cualquier otra entrada que dejó obsoleta, sin agregar ningún infractor.
+- Las 21 entradas `radio:Cash`, `radio:Transfer` y `radio:Owing` de `touch-action.json` eran todas de estados recorridos de New sale. Record payment no tenía ninguna, así que su cambio al Selector no borró ni agregó ningún infractor.
+- Record payment no tiene un estado de WalkState con la lista de medios abierta (`record-payment/method-selector-open` no se agregó). La lista abierta la cubren los tests del front (`CobroHistory.test.tsx`). El estado `CobroDesdeClientes` elige el medio abriendo el campo y tocando la opción.
 
 ### Restricciones
 
@@ -216,11 +217,15 @@ Criterios de éxito:
   - en un viewport de computadora, los mismos accesos abren un modal.
 - **Foco y texto escrito (GH-319)**: un test del front muestra el foco en el primer campo cuando se abre la Sheet del celular; un test de cambio de viewport (de celular a computadora y de vuelta) conserva el monto escrito; los tests de cambios sin guardar de Record payment pasan sin editarse sus aserciones; la lista de infractores del **Mobile check** no nombra ningún estado de Sheet recorrido de Record payment.
 - **Lugar conservado (criterio 9)**: una corrida end-to-end desplaza Customers y Home de modo que la fila de deudor tocada quede debajo de la primera pantalla, después abre Record payment y lo cierra, una vez con "Close" y una vez con un guardado parcial. Cada vez el desplazamiento queda sin cambios y el foco está en el "Collect" tocado. Después de un guardado que salda todo el Balance, el desplazamiento queda sin cambios y el foco está en el título "Owed to you" (o "Nobody owes you").
-- **Acuerdo con el diseño (criterio 9)**: la Design capture de Record payment en el celular muestra que el dibujo y la app construida son los dos una Sheet, con el campo "Payment method" cerrado como el Selector dibujado en Registrar cobro (`docs/product/design-system/pantallas/`). La nota de evidencia no deja ninguna diferencia abierta; la manija y el asomo del dibujo son una diferencia conocida, descartada a propósito (ADR-0062).
+- **Acuerdo con el diseño (criterio 9)**: la Design capture de Record payment en el celular muestra que el dibujo y la app construida son los dos una Sheet, con el campo "Payment method" cerrado como el Selector dibujado en Registrar cobro (`Cobro`, `CobroOscuro` y `CobroCompu` en `docs/product/design-system/pantallas/`). La nota de evidencia no deja ninguna diferencia abierta; la manija y el asomo del dibujo son una diferencia conocida, descartada a propósito (ADR-0062).
 - **El medio es un Selector (criterio 10)**: un test del front muestra en Record payment el campo "Payment method" con exactamente Cash y Transfer, ningún grupo de radio ni botón `aria-pressed` con los medios, y ninguna fila para borrar.
 - **Siempre vacío (criterio 10)**: un test del front abre Record payment dos veces seguidas (mismo Customer y otro Customer) después de guardar un Payment con Cash, y las dos veces el medio está vacío.
 - **Sin medio no se guarda (criterio 10)**: tocar guardar sin medio no hace ningún pedido a la API, no entra en el estado de guardado en curso y muestra "Choose how they paid." con el Attention icon junto al campo, que recibe el foco; elegir un medio saca la frase.
-- **Historial (criterio 11)**: desde la fila de deudor de Customers, la de Home y la ficha del Customer: con el formulario sin tocar, volver lleva a la pantalla madre; con solo un medio elegido, volver muestra LeaveConfirm; con la lista abierta, volver cierra solo la lista. En la computadora, Escape cierra solo el desplegable.
+- **Historial (criterio 11)**: `CobroHistory.test.tsx` lo cubre desde la fila de deudor de Customers, la de Home y la ficha del Customer:
+  - con el formulario sin tocar, volver lleva a la pantalla madre;
+  - con algo escrito, o con solo un medio elegido, volver muestra LeaveConfirm;
+  - con la lista abierta, volver cierra solo la lista;
+  - en la computadora, el primer Escape cierra solo el desplegable y el segundo sale o pregunta.
 - **Mobile check (criterio 11)**: no queda ninguna entrada `radio:Cash`, `radio:Transfer` ni `radio:Owing` en `touch-action.json`, y el chequeo pasa sin ningún infractor nuevo.
 
 ## Fuera de alcance
@@ -239,3 +244,4 @@ Criterios de éxito:
 - Los Products o los gramos de una Sale en la cuenta del Customer: el detalle de la Sale los muestra.
 - Hacer configurables los Payment methods: GH-318, parte payment methods. Hasta entonces los medios son Cash y Transfer, incorporados.
 - Recordar el último medio usado, o proponer uno por defecto.
+- Un mensaje de conjunto vacío para el medio: lo agrega la parte payment methods de GH-318, cuando el vendedor pueda crear medios.
