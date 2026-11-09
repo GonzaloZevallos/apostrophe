@@ -70,6 +70,7 @@ export const STATE_NAMES: readonly string[] = [
   'EntradasTodas',
   'stock-entry/variety-selector-open',
   'new-sale/line-variety-selector-open',
+  'new-sale/method-selector-open',
   'stock-entry/edit-archived-variety',
   'stock-entry/edit-archived-variety-failed',
   'withdrawal/reason-selector-open',
