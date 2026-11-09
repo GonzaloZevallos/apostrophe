@@ -21,7 +21,13 @@ import math
 from decimal import Decimal
 from typing import Annotated, Any
 
-from pydantic import AfterValidator, BeforeValidator, PlainSerializer, ValidationInfo
+from pydantic import (
+    AfterValidator,
+    BeforeValidator,
+    PlainSerializer,
+    ValidationInfo,
+    WithJsonSchema,
+)
 
 from app.shared.money import MAX_INTEGER_DIGITS
 
@@ -91,7 +97,10 @@ def _on_the_wire(value: Decimal) -> int | float:
 MoneyAmount = Annotated[Decimal, BeforeValidator(_as_decimal), AfterValidator(_checked)]
 
 MoneyOut = Annotated[
-    Decimal, PlainSerializer(_on_the_wire, return_type=int | float, when_used="json")
+    Decimal,
+    PlainSerializer(_on_the_wire, return_type=int | float, when_used="json"),
+    # Every amount answered in this part is whole, so the contract names one JSON type.
+    WithJsonSchema({"type": "integer"}, mode="serialization"),
 ]
 """A response's money field: the value in currency units, as a JSON integer when whole
 (`11000`) and otherwise an exact JSON number (`11000.5`), never a string."""
