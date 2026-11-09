@@ -29,7 +29,7 @@ LABEL_COLUMN: dict[str, str] = {
 # table -> the foreign-key column whose target's label (recursively) names this row.
 LABEL_VIA: dict[str, str] = {
     "sale_line": "variety_id",
-    "catalog_attributes": "variety_id",
+    "catalog_attribute": "variety_id",
     "stock_threshold": "variety_id",
     "stock_withdrawal_line": "variety_id",
 }
