@@ -86,6 +86,14 @@ const TWELVE_REASONS = Array.from({ length: 12 }, (_unused, index) => ({
   name: index === 11 ? LONG_NAME : `Motivo ${index + 1}`,
 }))
 
+/** Twelve Customer types, one with a 60-character name, seeded for the type list's state only. */
+const TWELVE_TYPES = Array.from({ length: 12 }, (_unused, index) => ({
+  id: 300 + index,
+  name: index === 11 ? LONG_NAME : `Tipo ${index + 1}`,
+  icon: 'star',
+  is_vip: false,
+}))
+
 /** Entry 1 pointed at a Variety that is archived: no listed Variety has this id. */
 const ARCHIVED_ENTRY = {
   id: 1,
@@ -177,6 +185,14 @@ export const RECORDS_STATES: readonly WalkState[] = [
     steps: [],
     visible: CUSTOMERS_TEXT.typeLabel,
     reads: [{ path: /^\/api\/customer-types$/, status: 200, body: SAMPLE_TYPES }],
+  },
+  {
+    // Twelve types, one of 60 characters: the phone list is open and its search shows.
+    screen: 'customer/type-selector-open',
+    route: CUSTOMER_NEW,
+    steps: [{ press: CUSTOMERS_TEXT.typeLabel }],
+    visible: 'Tipo 1',
+    reads: [{ path: /^\/api\/customer-types$/, status: 200, body: TWELVE_TYPES }],
   },
   {
     // A customer in a type, answered by a stub, so the detail page's type line is walked.
