@@ -9,6 +9,7 @@ from app.accounts.adapters.deps import CurrentBusinessId
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
+from app.money_route import MoneyJsonRoute
 from app.sales.adapters.business_name import SqlBusinessNames
 from app.sales.adapters.customer_facts import SqlCustomerFacts
 from app.sales.adapters.price_book import SqlPriceBook
@@ -46,7 +47,7 @@ from app.sales.domain.sale import (
 from app.shared.money import TooManyDecimals
 from app.shared.quantity import InvalidQuantity, Quantity
 
-router = APIRouter(prefix="/sales", tags=["sales"])
+router = APIRouter(prefix="/sales", tags=["sales"], route_class=MoneyJsonRoute)
 
 
 SessionDep = Annotated[Session, Depends(get_session)]

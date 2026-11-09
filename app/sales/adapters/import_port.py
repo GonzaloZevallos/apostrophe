@@ -20,13 +20,13 @@ from typing import assert_never
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.money_format.adapters.reader import SqlMoneyFormat
 from app.sales.adapters.price_book import PlannedPriceBook, SqlPriceBook
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.adapters.tables import SaleRow
 from app.sales.application.record_sale import LineInput, record_sale
 from app.sales.domain.pricing import SaleRuleBroken
 from app.sales.domain.sale import CustomerFact, LineRequest, PaymentMethod, Sale
+from app.shared.money import MoneyFormat
 from app.shared.pricing_settings import PricingSettings
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.application.ports import Refusal, SaleCheck, SaleCheckInput
@@ -136,7 +136,7 @@ class SalesImport:
             SqlPriceBook(self._session, self._business_id),
             _FixedVip(sale.vip),
             _FixedSettings(settings),
-            SqlMoneyFormat(self._session, self._business_id),
+            _SheetAmounts(),
             transaction,
             sale_date=sale.sale_date,
             today=today,
@@ -199,3 +199,12 @@ def _assign_ordinals(
         if sale.variety_key not in ordinals:
             ordinals[sale.variety_key] = len(ordinals) + 1
     return ordinals
+
+
+class _SheetAmounts:
+    """A sheet's amounts are whole currency units already, so any format accepts them: the
+    use case's check passes by value, and this hexagon never reads the money format table
+    it does not own (docs/adr/0055)."""
+
+    def current(self) -> MoneyFormat:
+        return MoneyFormat(symbol="#", decimals=0)

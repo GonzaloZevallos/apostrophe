@@ -9,6 +9,7 @@ from app.accounts.adapters.deps import CurrentBusinessId
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
+from app.money_route import MoneyJsonRoute
 from app.products.adapters.schemas import (
     PriceEntryIn,
     PriceEntryOut,
@@ -35,7 +36,7 @@ from app.products.domain.product import (
 from app.shared.money import TooManyDecimals
 from app.shared.quantity import InvalidQuantity, Quantity
 
-router = APIRouter(prefix="/api/products", tags=["products"])
+router = APIRouter(prefix="/api/products", tags=["products"], route_class=MoneyJsonRoute)
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
