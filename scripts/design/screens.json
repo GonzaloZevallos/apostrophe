@@ -81,6 +81,8 @@
     { "screen": "ClienteFichaOscuro", "design": "ClienteFichaOscuro", "route": "/customers/{debtor}", "path": "/customers/{debtor}", "tema": "oscuro" },
     {"screen": "ClienteFichaPago", "route": null, "path": "/customers/payments/detail"},
     {"screen": "ClienteFichaPagoOscuro", "route": null, "path": "/customers/payments/detail", "tema": "oscuro"},
+    {"screen": "ClienteFichaPagoCompu", "route": null, "path": "/customers/payments/detail", "viewport": [1280, 920]},
+    {"screen": "ClienteFichaPagoCompuOscuro", "route": null, "path": "/customers/payments/detail", "tema": "oscuro", "viewport": [1280, 920]},
     { "screen": "CobroOscuro", "design": "CobroOscuro", "route": "/customers/{debtor}/payment", "path": "/customers/{debtor}/payment", "tema": "oscuro" },
     { "screen": "CobroCompuOscuro", "design": "CobroCompuOscuro", "route": "/customers/{debtor}/payment", "path": "/customers/{debtor}/payment", "tema": "oscuro", "viewport": [1280, 920] },
     {"screen": "CobroElegirCliente", "route": null, "path": "/payments/new"},
