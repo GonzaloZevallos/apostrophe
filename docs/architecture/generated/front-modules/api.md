@@ -8,6 +8,7 @@ Only edges between files inside `api/` are drawn; edges between folders are in [
 flowchart LR
 subgraph src["src"]
   subgraph src_api["api"]
+    src_api_amountRefusal_ts["amountRefusal.ts"]
     src_api_analysis_ts["analysis.ts"]
     src_api_catalog_ts["catalog.ts"]
     src_api_client_ts["client.ts"]
@@ -30,6 +31,7 @@ subgraph src["src"]
     src_api_withdrawalReasons_ts["withdrawalReasons.ts"]
   end
 end
+src_api_amountRefusal_ts-->src_api_refusals_ts
 src_api_analysis_ts-->src_api_client_ts
 src_api_catalog_ts-->src_api_client_ts
 src_api_catalog_ts-->src_api_keys_ts
