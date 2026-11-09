@@ -110,7 +110,6 @@ def pinned_environment(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     monkeypatch.setenv("APOSTROPHE_SECRET_KEY", "k" * 32)
     monkeypatch.setenv("APOSTROPHE_DATABASE_URL", f"sqlite:///{database}")
     monkeypatch.setenv("APOSTROPHE_PUBLIC_URL", "http://localhost:9")
-    monkeypatch.delenv("APOSTROPHE_E2E_CLOCK_OFFSET", raising=False)
     return database
 
 
