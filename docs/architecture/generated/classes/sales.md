@@ -458,8 +458,8 @@ classDiagram
     note : Mapped~str #124; None~
     number : Mapped~int~
     recorded_at : Mapped~datetime~
-    sale_date : Mapped~date~
     shipping_charged : Mapped~int~
+    sold_on : Mapped~date~
   }
   class SalesImport {
     check_sales(price_history: Sequence~PriceHistoryRow~, variety_keys: Mapping~str, str~, sales: Sequence~SaleCheckInput~, today: date, settings: PricingSettings) Sequence~SaleCheck~

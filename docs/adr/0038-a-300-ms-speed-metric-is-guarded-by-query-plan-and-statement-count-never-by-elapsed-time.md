@@ -18,13 +18,14 @@ out of it).
    (`EXPLAIN QUERY PLAN`) of the list's statements must search named indexes instead of
    scanning whole tables, and the number of SQL statements a request issues must be the
    same at two data sizes. No test in the gate asserts on a measured duration.
-2. **Three indexes make the guard possible** (migration `0016`): `ix_sale_business_id_sale_date`
-   on `sale (business_id, sale_date)`, `ix_sale_line_sale_id` on `sale_line (sale_id)` and
+2. **Three indexes make the guard possible** (migration `0016`): `ix_sale_business_id_sold_on`
+   on `sale (business_id, sold_on)`, `ix_sale_line_sale_id` on `sale_line (sale_id)` and
    `ix_payment_sale_id` on `payment (sale_id)`. Before, those tables had only their primary
    keys, so there was no index a plan check could see go missing. An index changes what a
    query costs, never what it returns; the migration touches no row, and its test proves it
-   over a seeded database on both drivers. `sale.sale_date` is on the naming allowlist; the
-   index takes its current name (CODING_STANDARDS section 11) and the allowlist is untouched.
+   over a seeded database on both drivers. `sale.sale_date` was on the naming allowlist; the
+   index took its current name (CODING_STANDARDS section 11) and the allowlist was untouched.
+   Column renamed in GH-75 part 2 (migration 0026).
 3. **The settlement read is left alone.** `SqlLedgers` sums every `sale_line` of the business
    (ADR-0012). It is not asserted to avoid scans; the statement count alone covers it.
 
@@ -48,7 +49,7 @@ lines:  SCAN sale_line
 After (migration `0016`):
 
 ```
-sales:  SEARCH sale USING INDEX ix_sale_business_id_sale_date (business_id=? AND sale_date>? AND sale_date<?)
+sales:  SEARCH sale USING INDEX ix_sale_business_id_sold_on (business_id=? AND sold_on>? AND sold_on<?)
         SEARCH payment USING INDEX ix_payment_sale_id (sale_id=?) LEFT-JOIN
 lines:  SEARCH sale_line USING INDEX ix_sale_line_sale_id (sale_id=?)
         SEARCH variety USING INTEGER PRIMARY KEY (rowid=?)

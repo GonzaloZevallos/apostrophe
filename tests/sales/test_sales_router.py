@@ -394,6 +394,30 @@ def test_list_sales_orders_newest_date_first_then_most_recently_recorded(
     ]
 
 
+def test_each_sale_s_date_is_read_back_in_the_list_and_in_the_detail(
+    client: TestClient,
+) -> None:
+    # Two past dates, different from each other and from the clock's today (2026-10-02).
+    variety_id = _variety(client)
+    ids: dict[str, int] = {}
+    for sale_date in ("2026-09-03", "2026-09-21"):
+        body = {
+            "date": sale_date,
+            "payment": "cash",
+            "lines": [{"product_id": variety_id, "quantity": "10"}],
+        }
+        ids[sale_date] = int(client.post("/sales", json=body).json()["id"])
+
+    listed = client.get("/sales").json()
+
+    assert [(sale["id"], sale["date"]) for sale in listed] == [
+        (ids["2026-09-21"], "2026-09-21"),
+        (ids["2026-09-03"], "2026-09-03"),
+    ]
+    for sale_date, sale_id in ids.items():
+        assert client.get(f"/sales/{sale_id}").json()["date"] == sale_date
+
+
 def test_list_sales_filters_by_an_inclusive_date_range(client: TestClient) -> None:
     variety_id = _variety(client)
 

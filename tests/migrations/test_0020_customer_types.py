@@ -149,6 +149,13 @@ def _assert_schema(engine: Engine) -> None:
         assert dbapi_connection.execute("PRAGMA foreign_key_check").fetchall() == []
 
 
+def _under_the_old_names(after: Snapshot) -> Snapshot:
+    """0026 renamed `sale.sale_date`: read it under its 0019 name, as the walk compares."""
+    for row in after["sale"].values():
+        row["sale_date"] = row.pop("sold_on", row.get("sale_date"))
+    return after
+
+
 def _run_upgrade(url: str) -> None:
     engine = make_engine(url)
     _migrate(engine, "up", "0019")
@@ -157,7 +164,7 @@ def _run_upgrade(url: str) -> None:
 
     upgrade_to_head(engine)
 
-    assert changed_values(before, snapshot(engine)) == []
+    assert changed_values(before, _under_the_old_names(snapshot(engine))) == []
     _assert_typed_as_the_vip_mark(engine)
     _assert_schema(engine)
     engine.dispose()

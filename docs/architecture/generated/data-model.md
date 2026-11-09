@@ -161,7 +161,7 @@ erDiagram
     INTEGER id PK
     INTEGER business_id FK
     INTEGER number
-    DATE sale_date
+    DATE sold_on
     INTEGER customer_id FK "nullable"
     INTEGER shipping_charged
     VARCHAR(200) note "nullable"
@@ -181,7 +181,7 @@ erDiagram
   stock_entry {
     INTEGER id PK
     INTEGER business_id FK
-    DATE entry_date
+    DATE entered_on
     INTEGER variety_id FK
     VARCHAR(20) origin
     INTEGER grams_hundredths

@@ -210,7 +210,7 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     assert stock_entry["note"] == "stock seed"
     # `seed()` never passes a `date`, so the entry is recorded on the business day
     # of the seed instant.
-    assert stock_entry["entry_date"] == business_day(seed_instant).isoformat()
+    assert stock_entry["entered_on"] == business_day(seed_instant).isoformat()
 
     price_entry = kinds["price_entry"][0]
     assert price_entry["variety_id"] == variety_ref
