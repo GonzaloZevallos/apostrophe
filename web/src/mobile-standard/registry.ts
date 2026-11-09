@@ -75,6 +75,7 @@ export const STATE_NAMES: readonly string[] = [
   'stock-entry/edit-archived-variety-failed',
   'withdrawal/reason-selector-open',
   'withdrawal/line-archived-variety',
+  'customer/type-selector-open',
   'EntradaStockConfirmarCambios',
   'EntradaStockConfirmarBorrado',
   'PrecioNuevoFormulario',
