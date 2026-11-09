@@ -117,7 +117,10 @@ test('saving under Paid above $0 with no method is refused at the field: sentenc
   expect(alert).toBeInTheDocument()
   expect(screen.getByRole('button', { name: /^Payment method/ })).toHaveFocus()
   expect(posted(fetchMock)).toHaveLength(0)
+  // Never entered the pending state: Save is enabled and the lines are not locked (`inert`).
   expect(save).toBeEnabled()
+  expect(screen.getByLabelText('Line 1 grams').closest('[inert]')).toBeNull()
+  expect(screen.getByRole('button', { name: /^Payment method/ }).closest('[inert]')).toBeNull()
 
   await choosePaymentMethod(user, 'Transfer')
   expect(screen.queryByText('Choose how they paid.')).not.toBeInTheDocument()
@@ -197,4 +200,58 @@ test('on the phone the method list is its own history entry: back closes only th
   expect(screen.getByRole('button', { name: /^Payment method/ })).toHaveTextContent('Cash')
   await waitFor(() => expect(document.querySelector('form[inert]')).toBeNull())
   expect(within(document.body).queryByRole('dialog', { name: 'Payment method options' })).not.toBeInTheDocument()
+})
+
+test('on the phone a line Product list open makes the method field inert, and closing it frees the field', async () => {
+  stubViewport('phone')
+  const user = userEvent.setup()
+  stubShop()
+  await openSale()
+  await choosePaid(user)
+  const method = screen.getByRole('button', { name: /^Payment method/ })
+  expect(method.closest('[inert]')).toBeNull()
+
+  await waitFor(() => expect(screen.getByRole('button', { name: /^Line 1 product/ })).toBeEnabled())
+  await user.click(screen.getByRole('button', { name: /^Line 1 product/ }))
+  const list = await screen.findByRole('dialog', { name: 'Line 1 product options' })
+  expect(depth()).toBe(1)
+  expect(list.closest('[inert]')).toBeNull()
+  expect(method.closest('[inert]')).not.toBeNull()
+
+  await act(() => router.navigate(-1))
+  await waitFor(() => expect(list).not.toBeInTheDocument())
+  expect(depth()).toBe(0)
+  expect(method.closest('[inert]')).toBeNull()
+})
+
+test('on a computer the first Escape closes only the method dropdown; the second reaches the page, which does nothing', async () => {
+  const user = userEvent.setup()
+  stubShop()
+  await openSale()
+  await choosePaid(user)
+  const path = router.state.location.pathname
+  const method = screen.getByRole('button', { name: /^Payment method/ })
+
+  await user.click(method)
+  expect(await screen.findByRole('listbox', { name: 'Payment method options' })).toBeInTheDocument()
+  const onDocument = vi.fn()
+  document.addEventListener('keydown', onDocument)
+  try {
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+    expect(method).toHaveFocus()
+    expect(onDocument).not.toHaveBeenCalled()
+    expect(router.state.location.pathname).toBe(path)
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+
+    await user.keyboard('{Escape}')
+    expect(onDocument).toHaveBeenCalledTimes(1)
+  } finally {
+    document.removeEventListener('keydown', onDocument)
+  }
+  // New sale has no Escape of its own: the form stays, nothing is asked, nothing is chosen.
+  expect(router.state.location.pathname).toBe(path)
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+  expect(method).not.toHaveTextContent('Cash')
 })
