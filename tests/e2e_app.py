@@ -16,6 +16,12 @@ set, the app and the CLI calls below run on one advancing clock that started at 
 so a run never depends on the date it happens on. `python -m tests.e2e_app offset` prints
 the offset to hand to every worker; `invite-business` and `reset-password` are the accounts
 command line under that same clock. Nothing but this module reads the variable.
+
+The pinned calendar (screen images, GH-653): `pinned <accounts argv>`, `pinned-import <import
+argv>` and `pinned-date` run the accounts command line, the Spreadsheet import and a date
+print on `PINNED_INSTANT`, the instant `create_mobile_e2e_app` answers, so the design
+sample's operator links, its imported business and its seeding date agree with its server.
+No environment variable selects the pinned clock.
 """
 
 from __future__ import annotations
@@ -35,6 +41,7 @@ from app.clock import Clock, system_clock
 from app.main import create_app
 from app.pinned_catalog.domain.errors import SendRefusal, TelegramRefused
 from app.settings import Settings
+from app.spreadsheet_import.adapters import cli as import_cli
 from tests.fakes.telegram import FakeTelegram
 
 # The one person who pressed Iniciar on the e2e bot: Buscar mi chat finds this number, and
@@ -145,6 +152,11 @@ def create_e2e_app() -> FastAPI:
 PINNED_INSTANT = datetime(2026, 9, 16, 12, 0, tzinfo=ZoneInfo("America/Argentina/Buenos_Aires"))
 
 
+def pinned_clock() -> datetime:
+    """The clock of the pinned calendar: `PINNED_INSTANT` on every call."""
+    return PINNED_INSTANT
+
+
 def create_mobile_e2e_app() -> FastAPI:
     return create_app(
         Settings.from_env(),
@@ -156,10 +168,19 @@ def create_mobile_e2e_app() -> FastAPI:
 
 def main(argv: Sequence[str]) -> int:
     """`offset` | `invite-business` | `reset-password <email>`: the accounts command line
-    (same stdout, stderr and exit code) on the e2e clock, plus the offset to give workers."""
+    (same stdout, stderr and exit code) on the e2e clock, plus the offset to give workers.
+    `pinned <accounts argv>` and `pinned-import <import argv>` run the accounts command line
+    and the Spreadsheet import on `PINNED_INSTANT`; `pinned-date` prints its date."""
     if list(argv) == ["offset"]:
         sys.stdout.write(f"{offset_seconds()}\n")
         return 0
+    if list(argv) == ["pinned-date"]:
+        sys.stdout.write(f"{PINNED_INSTANT.date().isoformat()}\n")
+        return 0
+    if argv and argv[0] == "pinned":
+        return accounts_cli.main(list(argv[1:]), clock=pinned_clock)
+    if argv and argv[0] == "pinned-import":
+        return import_cli.main(list(argv[1:]), clock=pinned_clock)
     return accounts_cli.main(list(argv), clock=environment_clock())
 
 
