@@ -38,6 +38,11 @@ def upgrade() -> None:
 def downgrade() -> None:
     raw = op.get_bind().connection.dbapi_connection
     assert raw is not None
+    # Deliberately not put back, unlike 0023 and 0025: a walk down from head reaches 0023's
+    # rebuild of `sale` next, and this step is the only point before alembic's first write
+    # where the pragma still takes effect. Putting it back here turns enforcement on again
+    # for that rebuild (test_0013_archived_variety walks it). Every new connection sets the
+    # pragma on again in `app/db.py`.
     raw.execute("PRAGMA foreign_keys=OFF")
     op.execute("ALTER TABLE stock_entry RENAME COLUMN entered_on TO entry_date")
     op.drop_index(op.f("ix_sale_business_id_sold_on"), table_name="sale")
