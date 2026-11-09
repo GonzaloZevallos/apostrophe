@@ -18,6 +18,7 @@
 
 import { COMMON_TEXT } from '../copy/common'
 import { CUSTOMER_TYPE_ICON_NAME } from '../copy/readers/customerTypeIcons'
+import { PAYMENT_STATE_NAME } from '../copy/readers/paymentStates'
 import { SALES_TEXT } from '../copy/sales'
 import { SETTINGS_TEXT } from '../copy/settings'
 import type { NombreIcono } from './Icono'
@@ -47,6 +48,7 @@ const PERIODS_REASON = 'fixed view: periods'
 const THEME_REASON = 'fixed set: theme choice'
 const ICONS_REASON = 'fixed set: the neutral icon set ships with the app'
 const ORIGINS_REASON = 'fixed set: Stock entry origins'
+const PAYMENT_STATE_REASON = 'fixed set: payment state, which is not a method'
 
 /** Home's period tabs. */
 export const HOME_PERIODS = fixedSet(PERIODS_REASON, [
@@ -90,6 +92,12 @@ export const STOCK_ENTRY_ORIGINS = fixedSet(ORIGINS_REASON, [
   { value: 'adjustment', label: () => COMMON_TEXT.adjustment },
 ])
 
+/** New sale's Paid · Owing: the state of how it was paid. The Payment method is not here. */
+export const PAYMENT_STATES = fixedSet(PAYMENT_STATE_REASON, [
+  { value: 'paid', label: PAYMENT_STATE_NAME.paid },
+  { value: 'owing', label: PAYMENT_STATE_NAME.owing },
+])
+
 /** Every declared set and the reason it is fixed, readable in one place. */
 export const FIXED_SETS = {
   HOME_PERIODS: PERIODS_REASON,
@@ -97,4 +105,5 @@ export const FIXED_SETS = {
   THEME_CHOICES: THEME_REASON,
   CUSTOMER_TYPE_ICON_SET: ICONS_REASON,
   STOCK_ENTRY_ORIGINS: ORIGINS_REASON,
+  PAYMENT_STATES: PAYMENT_STATE_REASON,
 } as const

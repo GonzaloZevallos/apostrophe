@@ -72,3 +72,8 @@ export async function choosePaymentMethod(user: Pick<UserEvent, 'click'>, method
   const option = screen.queryByRole('option', { name: method }) ?? (await screen.findByRole('button', { name: method }))
   await user.click(option)
 }
+
+/** Chooses New sale's Paid state, which is what opens the Payment method field. */
+export async function choosePaid(user: Pick<UserEvent, 'click'>): Promise<void> {
+  await user.click(await screen.findByRole('radio', { name: 'Paid' }))
+}

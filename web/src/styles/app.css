@@ -1798,6 +1798,8 @@ body {
   color: var(--tinta2);
   font-size: 14px;
   cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .selector-pago__opcion--activa {

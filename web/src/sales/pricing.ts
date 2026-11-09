@@ -11,6 +11,7 @@
  * invariants): nothing here runs again once a sale is saved.
  */
 
+import type { PaymentMethod } from '../api/payments'
 import { noPriceMessage, OWING_HINT } from '../copy/sales'
 
 export type PricingRule = 'list' | 'bulk' | 'vip' | 'gift' | 'special'
@@ -205,9 +206,12 @@ export function hundredthsOfApiGrams(apiGrams: number): number {
   return toHundredths(String(apiGrams))
 }
 
-/** The two errors `validateSale` checks, each on its own field (plan: the only
- * screen-side checks before saving; every other refusal comes back from the API). */
-export type SaleError = { field: 'customer' | `line:${string}`; message: string }
+/** The errors `validateSale` checks, each on its own field (plan: the only screen-side checks
+ * before saving; every other refusal comes back from the API). The missing method carries no
+ * wording: the field draws its own refusal from the Copy module. */
+export type SaleError =
+  | { field: 'customer' | `line:${string}`; message: string }
+  | { field: 'method' }
 
 export interface LineValidation {
   id: string
@@ -219,12 +223,31 @@ export interface LineValidation {
 
 export type PaymentChoice = 'cash' | 'transfer' | 'owing'
 
-/** The two rules the sale screen checks before saving (sales.md criterion 7):
- * Debiendo needs a customer, and every line that is priced from the day's prices
- * (not a gift, no special price) needs one. Any other refusal comes back from the
- * API, with its own code. */
+/** The state of "how paid": Paid or Owing, or nothing chosen yet. */
+export type PayState = 'paid' | 'owing'
+
+/** The wire payment of a sale, derived from (state, method, total). A method held while the state
+ * is not Paid is never sent; Paid with no method gives null (the screen allows that only at $0,
+ * and the API refuses it otherwise); an unchosen state gives null. */
+export function paymentChoiceOf(
+  payState: PayState | null,
+  method: PaymentMethod | null,
+  // The total takes part in the rule `validateSale` applies, not in the value: Paid sends its
+  // method whatever the total, and a $0 sale with no method sends none.
+  _total: number,
+): PaymentChoice | null {
+  if (payState === 'owing') return 'owing'
+  if (payState === 'paid') return method
+  return null
+}
+
+/** The rules the sale screen checks before saving (sales.md): Owing needs a customer, Paid above
+ * $0 needs a method, and every line that is priced from the day's prices (not a gift, no special
+ * price) needs one. Any other refusal comes back from the API, with its own code. */
 export function validateSale(input: {
-  method: PaymentChoice | null
+  payState: PayState | null
+  method: PaymentMethod | null
+  total: number
   hasCustomer: boolean
   lines: readonly LineValidation[]
 }): SaleError[] {
@@ -238,8 +261,11 @@ export function validateSale(input: {
       })
     }
   }
-  if (input.method === 'owing' && !input.hasCustomer) {
+  if (input.payState === 'owing' && !input.hasCustomer) {
     errors.push({ field: 'customer', message: OWING_HINT })
+  }
+  if (input.payState === 'paid' && input.method === null && input.total > 0) {
+    errors.push({ field: 'method' })
   }
   return errors
 }
