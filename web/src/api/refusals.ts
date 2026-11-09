@@ -41,10 +41,6 @@ export const NAME_ARCHIVED_MESSAGE: Refusal = { key: 'refusals:nameArchived' }
  * sales or stock. It repeats no name or amount (ADR-0005). */
 export const HAS_HISTORY_MESSAGE: Refusal = { key: 'refusals:hasHistory' }
 
-/** Fixed text for `money.too_many_decimals`: an amount with more decimals than the business
- * allows. Every amount field shows it inline and keeps what was typed; it repeats no amount. */
-export const MONEY_TOO_MANY_DECIMALS_MESSAGE: Refusal = { key: REFUSAL_KEY['money.too_many_decimals'] }
-
 /** A code's kind, from the shared contract. The parameter stays a plain `string`
  * because a code comes in untyped off the wire (`ApiError.code`); a code the
  * contract does not list is never read as `'gone'`: an unrecognised refusal must

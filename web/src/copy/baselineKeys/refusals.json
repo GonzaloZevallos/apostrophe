@@ -396,6 +396,6 @@
     "key": "refusals:withdrawalVarietyNotFound"
   },
   "refusals.ts:REFUSAL_BY_CODE[\"money.too_many_decimals\"]": {
-    "key": "refusals:moneyWholeOnly"
+    "key": "refusals:generic"
   }
 }
