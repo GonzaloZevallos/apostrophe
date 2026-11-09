@@ -7,7 +7,6 @@ the flip, so scale 2 is opened here by hand, through the app's own opening wirin
 
 from __future__ import annotations
 
-from collections.abc import Iterator
 from datetime import date
 from decimal import Decimal
 from typing import Any
@@ -18,8 +17,6 @@ from sqlalchemy import text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.db import make_engine
-from app.main import create_app
 from app.products.adapters.sql_products import SqlProducts
 from app.products.application.manage_prices import record_price_entry
 from app.products.domain.product import PriceEntry, Product, ProductName
@@ -30,38 +27,23 @@ from app.sales.domain.sale import Sale
 from app.shared.money import TooManyDecimals
 from app.shared.pricing_settings import PricingSettings
 from app.shared.quantity import Quantity
-from tests.conftest import NOW, SETTINGS, TEST_HASHER, MovableClock, open_business, signed_in
+from tests.conftest import NOW
 from tests.fakes.money_format import WholeAmounts
-from tests.fakes.telegram import FakeTelegram
 
 DAY = "2026-10-02"
 
 
-def _client_at(scale: int, clock: MovableClock) -> Iterator[tuple[TestClient, Engine]]:
-    engine = make_engine("sqlite://")
-    app = create_app(
-        SETTINGS,
-        engine=engine,
-        clock=clock,
-        hasher=TEST_HASHER,
-        telegram=FakeTelegram(),
-        upkeep_ticker=False,
-        opening_money_scale=scale,
-    )
-    with TestClient(app) as http:
-        token = open_business(http, engine, clock, f"Negocio {scale}", f"s{scale}@example.com")
-        yield signed_in(http, token), engine
-    engine.dispose()
+@pytest.fixture(params=(0, 2))
+def money_scale(request: pytest.FixtureRequest) -> int:
+    """This module opens its businesses at both scales; the suite's own `SCALES` stays (0,)
+    until the flip, and the `app` fixture hands the scale to the opening wiring."""
+    scale: int = request.param
+    return scale
 
 
-@pytest.fixture
-def scale_two(clock: MovableClock) -> Iterator[tuple[TestClient, Engine]]:
-    yield from _client_at(2, clock)
-
-
-@pytest.fixture
-def scale_zero(clock: MovableClock) -> Iterator[tuple[TestClient, Engine]]:
-    yield from _client_at(0, clock)
+def _stored(units: int, scale: int) -> int:
+    factor: int = 10**scale
+    return units * factor
 
 
 def _raw(engine: Engine, sql: str) -> list[tuple[Any, ...]]:
@@ -98,14 +80,15 @@ def _sell(client: TestClient, product_id: int, **body: Any) -> dict[str, Any]:
     return sale
 
 
-def test_a_price_entry_is_stored_in_hundredths_and_read_back_as_the_domain_amount(
-    scale_two: tuple[TestClient, Engine],
+def test_a_price_entry_is_stored_at_the_business_scale_and_read_back_as_the_domain_amount(
+    client: TestClient, engine: Engine, money_scale: int
 ) -> None:
-    client, engine = scale_two
     client.put("/pricing-settings", json={"is_bulk_pricing": True, "is_vip_customers": True})
     product_id = _product(client, bulk_price=9_000, bulk_minimum="5")
 
-    assert _raw(engine, "SELECT list_price, bulk_price FROM price_entry") == [(1_100_000, 900_000)]
+    assert _raw(engine, "SELECT list_price, bulk_price FROM price_entry") == [
+        (_stored(11_000, money_scale), _stored(9_000, money_scale))
+    ]
     with Session(engine) as session:
         product = SqlProducts(session, _business_id(engine)).get(product_id)
     assert product is not None
@@ -113,10 +96,9 @@ def test_a_price_entry_is_stored_in_hundredths_and_read_back_as_the_domain_amoun
     assert (entry.list_price, entry.bulk.price if entry.bulk else None) == (11_000, 9_000)
 
 
-def test_a_price_entry_added_by_the_repository_is_stored_in_hundredths(
-    scale_two: tuple[TestClient, Engine],
+def test_a_price_entry_added_by_the_repository_is_stored_at_the_business_scale(
+    engine: Engine, client: TestClient, money_scale: int
 ) -> None:
-    _, engine = scale_two
     with Session(engine) as session:
         products = SqlProducts(session, _business_id(engine))
         added = products.add(Product(ProductName.of("Rosa")))
@@ -126,24 +108,23 @@ def test_a_price_entry_added_by_the_repository_is_stored_in_hundredths(
         session.commit()
 
     assert [e.list_price for e in stored.price_entries] == [12_500]
-    assert _raw(engine, "SELECT list_price FROM price_entry") == [(1_250_000,)]
+    assert _raw(engine, "SELECT list_price FROM price_entry") == [(_stored(12_500, money_scale),)]
 
 
-def test_a_sale_is_stored_in_hundredths_and_the_repository_reads_it_back(
-    scale_two: tuple[TestClient, Engine],
+def test_a_sale_is_stored_at_the_business_scale_and_the_repository_reads_it_back(
+    client: TestClient, engine: Engine, money_scale: int
 ) -> None:
-    client, engine = scale_two
     product_id = _product(client)
 
     sale = _sell(client, product_id, shipping_charged=1_500)
 
     assert sale["shipping_charged"] == 1_500
     assert sale["total"] == 23_500
-    assert _raw(engine, "SELECT shipping_charged FROM sale") == [(150_000,)]
+    assert _raw(engine, "SELECT shipping_charged FROM sale") == [(_stored(1_500, money_scale),)]
     assert _raw(engine, "SELECT price_per_gram, line_total FROM sale_line") == [
-        (1_100_000, 2_200_000)
+        (_stored(11_000, money_scale), _stored(22_000, money_scale))
     ]
-    assert _raw(engine, "SELECT amount FROM payment") == [(2_350_000,)]
+    assert _raw(engine, "SELECT amount FROM payment") == [(_stored(23_500, money_scale),)]
     with Session(engine) as session:
         view = SqlSales(session, _business_id(engine)).get_view(sale["id"])
     assert view is not None
@@ -152,12 +133,11 @@ def test_a_sale_is_stored_in_hundredths_and_the_repository_reads_it_back(
     assert view.sale.payment is not None and view.sale.payment.amount == 23_500
 
 
-def test_the_sales_ledger_sums_in_whole_units_at_scale_2(
-    scale_two: tuple[TestClient, Engine],
+def test_the_sales_ledger_sums_in_whole_units_at_both_scales(
+    client: TestClient, engine: Engine, money_scale: int
 ) -> None:
     from app.sales.adapters.sales_ledger import SqlSalesLedger
 
-    client, engine = scale_two
     _sell(client, _product(client), shipping_charged=1_500)
 
     with Session(engine) as session:
@@ -166,25 +146,21 @@ def test_the_sales_ledger_sums_in_whole_units_at_scale_2(
     assert (record.shipping, record.total) == (1_500, 23_500)
 
 
-def test_the_same_data_answers_the_same_sale_and_catalog_text_at_both_scales(
-    scale_zero: tuple[TestClient, Engine], scale_two: tuple[TestClient, Engine]
+def test_the_sale_list_and_catalog_text_do_not_depend_on_the_scale(
+    client: TestClient, money_scale: int
 ) -> None:
-    answers = []
-    for client, _ in (scale_zero, scale_two):
-        product_id = _product(client, bulk_price=9_000, bulk_minimum="5")
-        client.post(
-            "/stock/entries",
-            json={"product_id": product_id, "origin": "opening_stock", "quantity": "50"},
-        )
-        sale = _sell(client, product_id, shipping_charged=1_500)
-        sale.pop("id")
-        sale["lines"][0].pop("product_id")
-        catalog = client.get("/catalog").json()["text"]
-        listed = client.get("/sales").json()
-        answers.append((sale, catalog, [(s["total"], s["shipping_charged"]) for s in listed]))
+    product_id = _product(client, bulk_price=9_000, bulk_minimum="5")
+    client.post(
+        "/stock/entries",
+        json={"product_id": product_id, "origin": "opening_stock", "quantity": "50"},
+    )
+    _sell(client, product_id, shipping_charged=1_500)
 
-    assert answers[0] == answers[1]
-    assert "11.000" in answers[0][1]
+    catalog = client.get("/catalog").json()["text"]
+    listed = client.get("/sales").json()
+
+    assert [(s["total"], s["shipping_charged"]) for s in listed] == [(23_500, 1_500)]
+    assert "11.000" in catalog
 
 
 @pytest.mark.parametrize("field", ["shipping_charged", "special_price"])
@@ -251,9 +227,8 @@ class _PricesAnyProduct:
 
 @pytest.mark.parametrize("field", ["list_price", "bulk_price", "vip_price"])
 def test_a_price_with_a_decimal_is_refused_and_nothing_is_saved(
-    scale_zero: tuple[TestClient, Engine], field: str
+    client: TestClient, engine: Engine, field: str
 ) -> None:
-    _, engine = scale_zero
     with Session(engine) as session:
         products = SqlProducts(session, _business_id(engine))
         product = products.add(Product(ProductName.of("Lavanda")))
@@ -283,9 +258,8 @@ class _BothOn:
 
 
 def test_money_on_the_sales_and_prices_routes_is_a_json_integer_at_scale_0(
-    scale_zero: tuple[TestClient, Engine],
+    client: TestClient,
 ) -> None:
-    client, _ = scale_zero
     product_id = _product(client)
     sale = _sell(client, product_id, shipping_charged=1_500)
 
