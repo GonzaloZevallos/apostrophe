@@ -38,6 +38,7 @@ import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import type { PricingSettings as ApiPricingSettings } from '../../api/pricingSettings'
 import { resolveOverride, type RefusalCode } from '../../api/refusals'
+import type { PaymentMethod } from '../../api/payments'
 import Boton from '../../components/Boton'
 import { SALE, SALES, pathTo } from '../../routes'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
@@ -57,7 +58,8 @@ import { formatGrams, formatMoney } from '../../format/money'
 import { parseGrams, parseMoney } from '../../format/parse'
 import {
   type LineValidation,
-  type PaymentChoice,
+  type PayState,
+  paymentChoiceOf,
   type PriceQuote,
   type PricingSettings,
   fromHundredths,
@@ -187,7 +189,11 @@ function NuevaVentaForm() {
   const [openKey, setOpenKey] = useState<string>(() => lines[0]?.key ?? '')
   const [shipping, setShipping] = useState('0')
   const [note, setNote] = useState('')
-  const [method, setMethod] = useState<PaymentChoice | null>(null)
+  const [payState, setPayState] = useState<PayState | null>(null)
+  // Held only while the state is Paid: leaving Paid empties it, so Paid → Owing → Paid starts empty.
+  const [method, setMethod] = useState<PaymentMethod | null>(null)
+  const [methodRefused, setMethodRefused] = useState(false)
+  const methodFieldRef = useRef<HTMLButtonElement | null>(null)
   const customerSheet = useSheet(1)
   // `useSheet(1).isOpen` is true for any sheet at level 1, a line's Product list included:
   // the customer Sheet mounts only when the seller opened it.
@@ -198,10 +204,11 @@ function NuevaVentaForm() {
     if (customerWasOpen) setCustomerAsked(false)
   }
   const customerShown = customerAsked && customerSheet.isOpen
-  // A line's Product list is open on a sheet: it is drawn in `listHost`, outside the form, and the
-  // form beneath is `inert`, so what is covered is reported as covered (mobile check) and unreachable.
+  // A level-1 Selector list (a line's Product list, the Payment method list) is open on a sheet: it
+  // is drawn in `listHost`, outside the form, and the form beneath is `inert`, so what is covered is
+  // reported as covered (mobile check) and unreachable. Every Selector in the form shares `listHost`.
   const [listHost, setListHost] = useState<HTMLElement | null>(null)
-  const lineListOpen = useViewport() !== 'computer' && customerSheet.isOpen && !customerAsked
+  const pickerListOpen = useViewport() !== 'computer' && customerSheet.isOpen && !customerAsked
   function askCustomer(): void {
     setCustomerAsked(true)
     customerSheet.open()
@@ -273,7 +280,13 @@ function NuevaVentaForm() {
 
   function chooseCustomer(chosen: Customer | null): void {
     setCustomerOverride(chosen)
-    if (chosen === null && method === 'owing') setMethod(null)
+    if (chosen === null && payState === 'owing') setPayState(null)
+  }
+
+  function choosePayState(next: PayState): void {
+    setPayState(next)
+    setMethod(null)
+    setMethodRefused(false)
   }
 
   function updateLine(key: string, patch: Partial<LineState>): void {
@@ -355,14 +368,11 @@ function NuevaVentaForm() {
       }
     })
 
-  const errors = validateSale({
-    method,
-    hasCustomer: customer !== null,
-    lines: lineValidations,
-  })
-
   function noPriceErrorFor(key: string): string | null {
-    return errors.find((error) => error.field === `line:${key}`)?.message ?? null
+    for (const error of errors) {
+      if (error.field === `line:${key}` && 'message' in error) return error.message
+    }
+    return null
   }
 
   /** The one message a line shows, in the plan's priority order: an invalid typed
@@ -419,6 +429,14 @@ function NuevaVentaForm() {
     }),
     parseShipping(shipping) ?? 0,
   )
+
+  const errors = validateSale({
+    payState,
+    method,
+    total: totals.total,
+    hasCustomer: customer !== null,
+    lines: lineValidations,
+  })
 
   const touched =
     customer !== null ||
@@ -480,6 +498,7 @@ function NuevaVentaForm() {
     setNoteError(null)
     setDateError(null)
     setPaymentError(null)
+    setMethodRefused(false)
     setOffline(false)
 
     const firstInError = lines.find((line) => combinedLineError(line) !== null)
@@ -504,13 +523,20 @@ function NuevaVentaForm() {
       setShippingError(SALES_TEXT.shippingNotNegative)
       return
     }
+    // Paid above $0 with no method: the refusal draws at the field and nothing is sent, so the
+    // save never enters its pending state.
+    if (errors.some((error) => error.field === 'method')) {
+      setMethodRefused(true)
+      methodFieldRef.current?.focus()
+      return
+    }
 
     const body: SaleBody = {
       date,
       customer_id: customer?.id ?? null,
       shipping_charged: shippingCharged,
       note: note.trim() === '' ? null : note,
-      payment: method,
+      payment: paymentChoiceOf(payState, method, totals.total),
       lines: filled.map((line) => {
         const grams = parseGrams(line.grams)
         return {
@@ -577,7 +603,7 @@ function NuevaVentaForm() {
 
   return (
     <ContentArea as="main" className="pantalla">
-      <form ref={formRef} className="nueva-venta" inert={lineListOpen} onSubmit={onSubmit}>
+      <form ref={formRef} className="nueva-venta" inert={pickerListOpen} onSubmit={onSubmit}>
         <div className="nueva-venta__disposicion">
         <div className="nueva-venta__cuerpo" aria-busy={repricing || opening || undefined}>
           <div className="encabezado-fila nueva-venta__cabecera">
@@ -709,10 +735,18 @@ function NuevaVentaForm() {
           <div className="nueva-venta__resumen">
             <div className="nueva-venta__pago">
               <SelectorPago
-                value={method}
-                onChange={setMethod}
+                payState={payState}
+                onPayState={choosePayState}
+                method={method}
+                onMethod={(next) => {
+                  setMethod(next)
+                  setMethodRefused(false)
+                }}
                 owingDisabled={customer === null}
                 owingDescription={OWING_HINT}
+                listHost={listHost}
+                methodRefused={methodRefused}
+                methodRef={methodFieldRef}
               />
               {paymentError !== null && (
                 <span className="campo__error" role="alert">
@@ -734,7 +768,7 @@ function NuevaVentaForm() {
               <Boton
                 textOnly="submit"
                 type="submit"
-                variant={onPhone && method === null ? 'secondary' : 'primary'}
+                variant={onPhone && payState === null ? 'secondary' : 'primary'}
                 disabled={save.isPending || varietiesQuery.isFetching || settingsQuery.isFetching}>
                 {SALES_TEXT.saveSale}
               </Boton>

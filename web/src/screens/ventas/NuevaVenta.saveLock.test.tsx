@@ -7,6 +7,7 @@
 
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { choosePaid, choosePaymentMethod } from '../../components/selectorTestKit'
 import { afterEach, expect, test, vi } from 'vitest'
 import App from '../../App'
 import { HOME, SALE, SALES, SALE_NEW } from '../../routes'
@@ -66,7 +67,8 @@ async function held(): Promise<(response: Response) => void> {
 async function fillAndSave(user: ReturnType<typeof userEvent.setup>): Promise<void> {
   await pickProduct(user, 1, 'Rosa')
   await user.type(screen.getByLabelText('Line 1 grams'), '2')
-  await user.click(screen.getByRole('radio', { name: 'Cash' }))
+  await choosePaid(user)
+  await choosePaymentMethod(user, 'Cash')
   expect(await screen.findByText('list')).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Save sale' }))
 }

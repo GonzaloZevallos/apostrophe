@@ -13,6 +13,7 @@ import { CUSTOMERS, HOME, SALE, SALES, SALE_NEW, pathTo } from '../../routes'
 import { inAppState } from '../../components/inAppState'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { choosePaid, choosePaymentMethod } from '../../components/selectorTestKit'
 import { afterEach, expect, test, vi } from 'vitest'
 import SALE_DETAIL from '../../api/fixtures/sale-detail.json'
 import App from '../../App'
@@ -101,7 +102,8 @@ test('a variety with no price that day shows its message and blocks saving', asy
 
   await pickProduct(user, 1, 'Tulipán')
   await user.type(screen.getByLabelText('Line 1 grams'), '1')
-  await user.click(screen.getByRole('radio', { name: 'Cash' }))
+  await choosePaid(user)
+  await choosePaymentMethod(user, 'Cash')
 
   expect(await screen.findByText('Tulipán has no price for that date')).toBeInTheDocument()
 
@@ -179,7 +181,8 @@ test('a successful save opens the sale the API answered with, replacing history'
 
   await pickProduct(user, 1, 'Rosa')
   await user.type(screen.getByLabelText('Line 1 grams'), '2')
-  await user.click(screen.getByRole('radio', { name: 'Cash' }))
+  await choosePaid(user)
+  await choosePaymentMethod(user, 'Cash')
   await user.click(screen.getByRole('button', { name: 'Save sale' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(SALE, { id: 42 })))
@@ -198,7 +201,8 @@ test('saving posts each line\'s amount as `quantity`, never `grams`', async () =
 
   await pickProduct(user, 1, 'Rosa')
   await user.type(screen.getByLabelText('Line 1 grams'), '2,5')
-  await user.click(screen.getByRole('radio', { name: 'Cash' }))
+  await choosePaid(user)
+  await choosePaymentMethod(user, 'Cash')
   await user.click(screen.getByRole('button', { name: 'Save sale' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(SALE, { id: 42 })))
@@ -236,7 +240,8 @@ test('the posted line\'s product_id is the id of the product picked from the pro
 
   await pickProduct(user, 1, 'Salvia')
   await user.type(screen.getByLabelText('Line 1 grams'), '1')
-  await user.click(screen.getByRole('radio', { name: 'Cash' }))
+  await choosePaid(user)
+  await choosePaymentMethod(user, 'Cash')
   await user.click(screen.getByRole('button', { name: 'Save sale' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(SALE, { id: 42 })))
@@ -361,7 +366,8 @@ test('a refused save keeps everything typed, the message on its field', async ()
 
   await pickProduct(user, 1, 'Rosa')
   await user.type(screen.getByLabelText('Line 1 grams'), '2')
-  await user.click(screen.getByRole('radio', { name: 'Cash' }))
+  await choosePaid(user)
+  await choosePaymentMethod(user, 'Cash')
   await user.type(screen.getByLabelText('Note'), 'una nota bien larga')
   await user.click(screen.getByRole('button', { name: 'Save sale' }))
 
@@ -369,7 +375,7 @@ test('a refused save keeps everything typed, the message on its field', async ()
   expect(productField(1)).toHaveTextContent('Rosa')
   expect(screen.getByLabelText('Line 1 grams')).toHaveValue('2')
   expect(screen.getByLabelText('Note')).toHaveValue('una nota bien larga')
-  expect(screen.getByRole('radio', { name: 'Cash' })).toBeChecked()
+  expect(screen.getByRole('button', { name: /^Payment method/ })).toHaveTextContent('Cash')
   expect(screen.getByText('New sale')).toBeInTheDocument()
 })
 
@@ -408,7 +414,8 @@ test('sale.no_price_that_day refetches prices, and the line then shows its own m
 
   await pickProduct(user, 1, 'Rosa')
   await user.type(screen.getByLabelText('Line 1 grams'), '2')
-  await user.click(screen.getByRole('radio', { name: 'Cash' }))
+  await choosePaid(user)
+  await choosePaymentMethod(user, 'Cash')
   expect(await screen.findByText('list')).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'Save sale' }))
@@ -443,7 +450,8 @@ test('sale.no_price_that_day opens the flagged line even when it was closed', as
   await user.click(screen.getByRole('button', { name: 'Add another product' }))
   await pickProduct(user, 2, 'Clavel')
   await user.type(screen.getByLabelText('Line 2 grams'), '1')
-  await user.click(screen.getByRole('radio', { name: 'Cash' }))
+  await choosePaid(user)
+  await choosePaymentMethod(user, 'Cash')
 
   // Line 1 (Rosa) is closed now; line 2 (Clavel) is the open one.
   expect(queryProductField(1)).not.toBeInTheDocument()
@@ -474,7 +482,8 @@ test('sale.customer_not_found and sale.variety_not_found keep the form open with
 
   await pickProduct(user, 1, 'Rosa')
   await user.type(screen.getByLabelText('Line 1 grams'), '2')
-  await user.click(screen.getByRole('radio', { name: 'Cash' }))
+  await choosePaid(user)
+  await choosePaymentMethod(user, 'Cash')
 
   await user.click(screen.getByRole('button', { name: 'Save sale' }))
   expect(await screen.findByText('Check the details and try again.')).toBeInTheDocument()
@@ -540,7 +549,8 @@ test('a $0 special price is refused rather than silently priced at list, and Reg
   expect(screen.queryByText('special')).not.toBeInTheDocument()
   expect(screen.getByLabelText(`Line 1 gift`)).toBeDisabled()
 
-  await user.click(screen.getByRole('radio', { name: 'Cash' }))
+  await choosePaid(user)
+  await choosePaymentMethod(user, 'Cash')
   await user.click(screen.getByRole('button', { name: 'Save sale' }))
   expect(fetchMock.mock.calls.some(([path, init]) => path === '/sales' && (init as RequestInit)?.method === 'POST')).toBe(
     false,
@@ -621,7 +631,8 @@ test('a closed line with bad grams shows its own message and opens on save, with
   await user.click(screen.getByRole('button', { name: 'Add another product' }))
   await pickProduct(user, 2, 'Tulipán')
   await user.type(screen.getByLabelText('Line 2 grams'), '1')
-  await user.click(screen.getByRole('radio', { name: 'Cash' }))
+  await choosePaid(user)
+  await choosePaymentMethod(user, 'Cash')
 
   // Line 1, now closed, shows its message under the row rather than figures.
   expect(await screen.findByText('Enter the grams: comma, up to two decimals')).toBeInTheDocument()
@@ -648,7 +659,8 @@ test('a forced sale.grams_invalid answer keeps everything typed, the message at 
 
   await pickProduct(user, 1, 'Rosa')
   await user.type(screen.getByLabelText('Line 1 grams'), '2')
-  await user.click(screen.getByRole('radio', { name: 'Cash' }))
+  await choosePaid(user)
+  await choosePaymentMethod(user, 'Cash')
   await user.click(screen.getByRole('button', { name: 'Save sale' }))
 
   expect(await screen.findByText('Check the details and try again.')).toBeInTheDocument()
