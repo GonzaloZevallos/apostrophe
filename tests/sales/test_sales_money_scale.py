@@ -17,6 +17,8 @@ from sqlalchemy import text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from app.catalog.adapters.sql_catalog_varieties import SqlCatalogVarieties
+from app.catalog.domain.product import CatalogPrice
 from app.products.adapters.sql_products import SqlProducts
 from app.products.application.manage_prices import record_price_entry
 from app.products.domain.product import PriceEntry, Product, ProductName
@@ -29,6 +31,7 @@ from app.shared.pricing_settings import PricingSettings
 from app.shared.quantity import Quantity
 from tests.conftest import NOW
 from tests.fakes.money_format import WholeAmounts
+from tests.money_wire import assert_money_is_int
 
 DAY = "2026-10-02"
 
@@ -146,21 +149,72 @@ def test_the_sales_ledger_sums_in_whole_units_at_both_scales(
     assert (record.shipping, record.total) == (1_500, 23_500)
 
 
-def test_the_sale_list_and_catalog_text_do_not_depend_on_the_scale(
-    client: TestClient, money_scale: int
-) -> None:
+CATALOG_TEXT = (
+    "\U0001f33f **CATALOG** \U0001f33f\n\n**Lavanda**\n"
+    "\u2022 Price per gram: $11.000\n\u2022 From 5 g: $9.000 each\n\n"
+    "\U0001f4e9 Questions and orders by private message."
+)
+BILL = {
+    "business_name": "Primer Negocio",
+    "number": 1,
+    "date": DAY,
+    "shipping_charged": 1_500,
+    "total": 46_500,
+    "lines": [
+        {
+            "product": "Lavanda",
+            "quantity": 5.0,
+            "amount": 45_000,
+            "rule": "bulk",
+            "unit_price": 9_000,
+        }
+    ],
+    "payment": {"state": "cash", "still_owed": None},
+    "balance": None,
+}
+
+
+def _stocked_bulk_product(client: TestClient) -> int:
+    client.put("/pricing-settings", json={"is_bulk_pricing": True, "is_vip_customers": True})
     product_id = _product(client, bulk_price=9_000, bulk_minimum="5")
     client.post(
         "/stock/entries",
         json={"product_id": product_id, "origin": "opening_stock", "quantity": "50"},
     )
-    _sell(client, product_id, shipping_charged=1_500)
+    return product_id
 
-    catalog = client.get("/catalog").json()["text"]
-    listed = client.get("/sales").json()
 
-    assert [(s["total"], s["shipping_charged"]) for s in listed] == [(23_500, 1_500)]
-    assert "11.000" in catalog
+def test_the_catalog_text_and_its_prices_are_the_same_at_both_scales(
+    client: TestClient, engine: Engine, money_scale: int
+) -> None:
+    _stocked_bulk_product(client)
+
+    with Session(engine) as session:
+        (shown,) = SqlCatalogVarieties(session, _business_id(engine)).on(date(2026, 10, 2))
+
+    assert shown.price == CatalogPrice(
+        list_price=11_000, bulk_price=9_000, bulk_minimum=Quantity.of("5")
+    )
+    assert client.get("/catalog").json()["text"] == CATALOG_TEXT
+
+
+def test_the_sale_bill_and_the_sale_list_are_the_same_at_both_scales(
+    client: TestClient, money_scale: int
+) -> None:
+    product_id = _stocked_bulk_product(client)
+    customer = client.post("/customers", json={"name": "Juana", "phone": "11 1000-0000"}).json()
+    created = _sell(
+        client,
+        product_id,
+        customer_id=customer["id"],
+        shipping_charged=1_500,
+        lines=[{"product_id": product_id, "quantity": "5"}],
+    )
+
+    assert client.get(f"/sales/{created['id']}").json()["bill"] == BILL
+    assert [(s["total"], s["shipping_charged"]) for s in client.get("/sales").json()] == [
+        (46_500, 1_500)
+    ]
 
 
 @pytest.mark.parametrize("field", ["shipping_charged", "special_price"])
@@ -257,19 +311,97 @@ class _BothOn:
         return PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
 
 
-def test_money_on_the_sales_and_prices_routes_is_a_json_integer_at_scale_0(
-    client: TestClient,
-) -> None:
-    product_id = _product(client)
-    sale = _sell(client, product_id, shipping_charged=1_500)
+def _owing_sale(client: TestClient, product_id: int) -> dict[str, Any]:
+    customer = client.post("/customers", json={"name": "Juana", "phone": "11 1000-0000"}).json()
+    return _sell(
+        client,
+        product_id,
+        customer_id=customer["id"],
+        payment="owing",
+        shipping_charged=1_500,
+        lines=[{"product_id": product_id, "quantity": "5"}],
+    )
 
-    entry = client.get(f"/api/products/{product_id}/prices").json()[0]
-    shapes = [
-        sale["shipping_charged"],
-        sale["total"],
-        sale["lines"][0]["price_per_gram"],
-        sale["lines"][0]["line_total"],
-        entry["list_price"],
-    ]
-    assert all(type(value) is int for value in shapes)
-    assert shapes == [1_500, 23_500, 11_000, 22_000, 11_000]
+
+def test_money_on_every_converted_route_is_a_json_integer(client: TestClient) -> None:
+    client.put("/pricing-settings", json={"is_bulk_pricing": True, "is_vip_customers": True})
+    product_id = _product(client, bulk_price=9_000, bulk_minimum="5", vip_price=8_000)
+    client.post(
+        "/stock/entries",
+        json={"product_id": product_id, "origin": "opening_stock", "quantity": "50"},
+    )
+
+    created = _owing_sale(client, product_id)
+    detail = client.get(f"/sales/{created['id']}").json()
+    listed = client.get("/sales").json()
+    prices = client.get(f"/api/products/{product_id}/prices").json()
+
+    sale_fields = ("shipping_charged", "total", "lines[].price_per_gram", "lines[].line_total")
+    assert_money_is_int(created, *sale_fields)
+    assert_money_is_int({"sales": listed}, "sales[].shipping_charged", "sales[].total")
+    assert_money_is_int(
+        detail,
+        *sale_fields,
+        "lines[].cost.costed",
+        "bill.shipping_charged",
+        "bill.total",
+        "bill.lines[].amount",
+        "bill.lines[].unit_price",
+        "bill.payment.still_owed",
+        "bill.balance",
+    )
+    assert_money_is_int({"entries": prices}, "entries[].list_price", "entries[].bulk_price")
+    assert_money_is_int({"entries": prices}, "entries[].vip_price")
+
+
+@pytest.mark.parametrize(
+    "where",
+    ["shipping_charged", "special_price", "list_price", "bulk_price", "vip_price"],
+)
+def test_a_money_field_with_a_decimal_is_refused_over_http_and_nothing_is_saved(
+    client: TestClient, engine: Engine, where: str
+) -> None:
+    client.put("/pricing-settings", json={"is_bulk_pricing": True, "is_vip_customers": True})
+    product_id = _product(client)
+    sales_before = _raw(engine, "SELECT count(*) FROM sale")
+    entries_before = _raw(engine, "SELECT count(*) FROM price_entry")
+    if where in ("shipping_charged", "special_price"):
+        line: dict[str, Any] = {"product_id": product_id, "quantity": "2"}
+        if where == "special_price":
+            line["special_price"] = 10.5
+        refused = client.post(
+            "/sales",
+            json={
+                "lines": [line],
+                "payment": "cash",
+                "date": DAY,
+                **({"shipping_charged": 10.5} if where == "shipping_charged" else {}),
+            },
+        )
+    else:
+        refused = client.post(
+            f"/api/products/{product_id}/prices",
+            json={
+                "effective_from": "2026-02-01",
+                "list_price": 10.5 if where == "list_price" else 11_000,
+                "bulk_price": 10.5 if where == "bulk_price" else 9_000,
+                "bulk_minimum": "5",
+                "vip_price": 10.5 if where == "vip_price" else 8_000,
+            },
+        )
+
+    assert refused.status_code == 422, refused.text
+    assert refused.json() == {
+        "detail": "the amount has more decimals than the business allows",
+        "code": "money.too_many_decimals",
+    }
+    assert _raw(engine, "SELECT count(*) FROM sale") == sales_before
+    assert _raw(engine, "SELECT count(*) FROM price_entry") == entries_before
+
+
+def test_a_whole_amount_written_with_a_decimal_point_is_accepted(client: TestClient) -> None:
+    product_id = _product(client)
+
+    sale = _sell(client, product_id, shipping_charged=1_500.0)
+
+    assert sale["shipping_charged"] == 1_500
