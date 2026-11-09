@@ -56,10 +56,8 @@ test('a seller creates a customer type in Settings and assigns it from the Custo
 
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Name').fill('Carla Cobrar')
-  const select = page.getByRole('combobox', { name: 'Customer type' })
-  const friends = await select.locator('option', { hasText: 'Friends' }).getAttribute('value')
-  if (friends === null) throw new Error('the Customer form does not offer the new type')
-  await select.selectOption(friends)
+  await page.getByRole('button', { name: /^Customer type/ }).click()
+  await page.getByRole('option', { name: 'Friends' }).or(page.getByRole('button', { name: 'Friends', exact: true })).click()
   await page.getByRole('button', { name: 'Save and use' }).click()
 
   await expectPath(page, CUSTOMER)
@@ -79,10 +77,8 @@ test('a seller cannot delete a type that still has a customer, and is told how m
 
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Name').fill('Carla Cobrar')
-  const select = page.getByRole('combobox', { name: 'Customer type' })
-  const friends = await select.locator('option', { hasText: 'Friends' }).getAttribute('value')
-  if (friends === null) throw new Error('the Customer form does not offer the new type')
-  await select.selectOption(friends)
+  await page.getByRole('button', { name: /^Customer type/ }).click()
+  await page.getByRole('option', { name: 'Friends' }).or(page.getByRole('button', { name: 'Friends', exact: true })).click()
   await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)
 
