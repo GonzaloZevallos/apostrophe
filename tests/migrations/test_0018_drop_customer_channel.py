@@ -30,10 +30,16 @@ OTHER_TABLES = ("sale", "sale_line", "payment")
 # `sale` is read by the columns it had at this revision: a later revision adds some (0023's
 # `number`), and a `SELECT *` would fail on each.
 SELECTED = {
-    "sale": "id, business_id, sale_date, customer_id, shipping_charged, note, recorded_at",
+    "sale": "id, business_id, {sale_date}, customer_id, shipping_charged, note, recorded_at",
     "sale_line": "*",
     "payment": "*",
 }
+
+
+def _sale_date_column(engine: Engine) -> str:
+    """The stored name of the sale date: `sale_date` before 0026, `sold_on` after."""
+    names = {column["name"] for column in inspect(engine).get_columns("sale")}
+    return "sold_on" if "sold_on" in names else "sale_date"
 
 
 def _config(connection: object) -> Config:
@@ -159,7 +165,10 @@ def _snapshot(engine: Engine) -> dict[str, list[tuple[Any, ...]]]:
             snapshot[table] = [
                 tuple(row)
                 for row in connection.execute(
-                    text(f"SELECT {SELECTED[table]} FROM {table} ORDER BY id")
+                    text(
+                        f"SELECT {SELECTED[table].format(sale_date=_sale_date_column(engine))} "
+                        f"FROM {table} ORDER BY id"
+                    )
                 )
             ]
         snapshot["balance"] = [

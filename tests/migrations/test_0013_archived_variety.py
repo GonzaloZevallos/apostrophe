@@ -32,6 +32,11 @@ def _downgrade_to(engine: Engine, revision: str) -> None:
         config = Config()
         config.set_main_option("script_location", str(MIGRATIONS_ROOT))
         config.attributes["connection"] = connection
+        raw = connection.connection.dbapi_connection
+        assert raw is not None
+        # As the upgrade runner does: a downgrade that rebuilds a referenced table needs
+        # foreign keys off before any write.
+        raw.execute("PRAGMA foreign_keys=OFF")
         with connection.begin():
             command.downgrade(config, revision)
 
