@@ -7,6 +7,8 @@ import {
   assertScreens,
   assertSelectedAccounts,
   assertSelectedNeeds,
+  captureSelection,
+  screenImageRows,
   sectionOccurrences,
 } from '../../../scripts/design/screens.mjs'
 import { ROUTE_REGISTRY } from '../mobile-standard/registry'
@@ -1333,5 +1335,71 @@ describe('the capture accounts of sample_app.py (GH-274)', () => {
     expect(listo.length).toBeGreaterThan(0)
     for (const entry of listo) expect(capture).not.toContain((entry as { account?: string }).account)
     expect(() => assertSelectedAccounts(screens.screens, { ...real, ...Object.fromEntries(namesOf('ONBOARDING_ACCOUNTS').map((n) => [n, 'open' as const])), inicio: 'ended' })).not.toThrow()
+  })
+})
+
+describe('the screen image rows', () => {
+  const names = (rows: ReadonlyArray<Record<string, unknown>>) => rows.map((r) => r.screen)
+
+  it('keeps a plain row, a row with a phone viewport and a row 899 wide, in file order', () => {
+    const rows = [
+      { screen: 'A', route: '/a' },
+      { screen: 'B', route: '/b', viewport: [390, 844] },
+      { screen: 'C', route: '/c', viewport: [899, 700] },
+    ]
+    expect(names(screenImageRows(rows))).toEqual(['A', 'B', 'C'])
+  })
+
+  it('leaves out a dark row, a computer row at width 900, a large-text row and a row with no route', () => {
+    const rows = [
+      { screen: 'Dark', route: '/a', tema: 'oscuro' },
+      { screen: 'Computer', route: '/b', viewport: [900, 700] },
+      { screen: 'Large', route: '/c', text_scale: 1.3 },
+      { screen: 'NoRoute', route: null },
+      { screen: 'Kept', route: '/d' },
+    ]
+    expect(names(screenImageRows(rows))).toEqual(['Kept'])
+  })
+
+  it('adds, to the image rows, every row they need transitively: an included row, a dark row, a computer row', () => {
+    const rows = [
+      { screen: 'Unrelated', route: null },
+      { screen: 'Computer', route: '/a', viewport: [1280, 920] },
+      { screen: 'Dark', route: '/a', tema: 'oscuro', needs: 'Computer' },
+      { screen: 'Phone', route: '/a', needs: 'Dark' },
+    ]
+    expect(names(screenImageRows(rows))).toEqual(['Phone'])
+    expect(names(captureSelection(rows))).toEqual(['Computer', 'Dark', 'Phone'])
+  })
+
+  it('lists a row needed by two image rows once, in its own place in the file', () => {
+    const rows = [
+      { screen: 'Base', route: null },
+      { screen: 'Left', route: '/l', needs: 'Base' },
+      { screen: 'Right', route: '/r', needs: 'Base' },
+    ]
+    expect(names(captureSelection(rows))).toEqual(['Base', 'Left', 'Right'])
+  })
+
+  it('refuses a name with a character outside letters, digits and hyphens, naming the row', () => {
+    expect(() => assertScreens([{ screen: 'Inicio Hoy' }])).toThrow(
+      /^Inicio Hoy: screen must match \^\[A-Za-z0-9-\]\+\$$/,
+    )
+    expect(() => assertScreens([{ screen: 'Inicio_Hoy' }])).toThrow(/Inicio_Hoy: screen must match/)
+  })
+
+  it('refuses two names equal ignoring case, naming both', () => {
+    expect(() => assertScreens([{ screen: 'Ventas' }, { screen: 'ventas' }])).toThrow(
+      /^ventas: screen is equal to Ventas ignoring case$/,
+    )
+  })
+
+  it('accepts the real screens.json whole, and its selection never needs a row it does not hold', () => {
+    const real = screens.screens as Array<Record<string, unknown>>
+    expect(() => assertScreens(real)).not.toThrow()
+    expect(() => assertSelectedNeeds(captureSelection(real), real)).not.toThrow()
+    const included = new Set(names(screenImageRows(real)))
+    expect(included.size).toBeGreaterThan(0)
+    expect(captureSelection(real).length).toBeGreaterThanOrEqual(included.size)
   })
 })
