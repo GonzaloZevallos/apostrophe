@@ -8,7 +8,7 @@
 
 **Cuando** mi negocio trabaja en un idioma que no es el inglés, **quiero** que un negocio abierto en ese idioma arranque con sus Expense categories ya en él, **para** no tener nada que volver a tipear, mientras nada cambia para un negocio en inglés. (Compartido con stored-language.md y catalog.md: acá lo sirven las Expense categories por defecto, que siguen el Stored language al abrirse.)
 
-**Cuando** registro una Expense o guardo un Customer desde el teléfono, **quiero** elegir su Expense category o su Customer type igual que elijo un Product o un Withdrawal reason (un campo con etiqueta que abre su propia lista, con búsqueda cuando la lista es larga), **para** terminar el formulario en pocos toques y que volver nunca tire lo que ya tipeé. (Parte 6 de GH-581, compartido con customers.md y selector.md: acá lo sirve el campo "Category" del formulario de la Expense.)
+**Cuando** registro una Expense o guardo un Customer desde el teléfono, **quiero** elegir su Expense category o su Customer type igual que elijo un Product o un Withdrawal reason (un campo con etiqueta que abre su propia lista, con búsqueda cuando la lista es larga), **para** terminar el formulario en pocos toques y que volver nunca tire lo que ya tipeé. (Parte 6 de GH-581, compartido con customers.md y selector.md: acá lo sirven el campo "Category" del formulario de la Expense y la edición en el lugar como su propia entrada del historial.)
 
 En la práctica, estos jobs se juntan así. El vendedor paga algo que no es flor entre pedidos, o se sienta a mirar en qué se fue la plata de la semana o del mes. Carga la Expense en 2 toques como máximo desde donde esté. Encuentra las Expenses de cualquier mes, con el total y lo que se llevó cada Expense category, en un solo lugar evidente. La computadora es el mismo job en una pantalla más grande.
 
@@ -94,8 +94,14 @@ La plata que un negocio paga por cualquier cosa que no sea flor, archivada bajo 
   - Sin historial (un link directo), vuelve a Expenses en el mes en curso.
   - Un guardado exitoso muestra "Expense saved" sin saltar a otro lado. Después de guardar desde Expenses, Expenses se queda en el mes que mostraba y se actualiza.
   - Salir con algo tipeado pregunta antes de descartar; un formulario sin tocar se cierra de inmediato.
+- **La edición en el lugar dentro de Expenses** (desde la parte 6 de GH-581) es, en el teléfono, su propia entrada del historial sobre Expenses, como cualquier formulario o Sheet: volver y "Close" son la misma acción.
+  - Sin tocar, volver cierra la edición y deja Expenses en el mes que mostraba.
+  - Con algo tipeado, volver pregunta antes de descartar: seguir editando se queda en la edición; descartar vuelve a Expenses en ese mes.
+  - Volver nunca saca de Expenses ni tira lo tipeado sin preguntar.
+  - No cambian las rutas de Expenses, la navegación por mes ni cómo se abre o se ve la edición. En la computadora, nada cambia salvo que Escape con el desplegable de Category abierto cierra solo el desplegable.
 - **El campo "Category"** (desde la parte 6 de GH-581) es un Selector obligatorio (selector.md) sobre las Expense categories del negocio, en el orden en que las da el negocio:
-  - mientras las Expense categories no se cargaron con éxito (pendiente, fallida o reintentando), el campo está cargando: deshabilitado, con su esqueleto y sin ningún texto de conjunto vacío; el manejo de fallas de la pantalla dice qué falló;
+  - mientras las Expense categories no se cargaron con éxito (pendiente, fallida o reintentando), el campo está cargando: deshabilitado, con su esqueleto y sin ningún texto de conjunto vacío;
+  - si la carga falla y el formulario no lo informa ya de otro modo, debajo del campo se muestra la línea de falla que ya tiene la app ("No connection" sin red, el reintento genérico ante un error del servidor; accounts.md), con el Attention icon y asociada al campo como su descripción, sin texto nuevo; la consulta se repite cuando la app vuelve a consultar, y la línea desaparece cuando las Expense categories llegan. Guardar sigue bloqueado por el error de campo obligatorio;
   - en el teléfono abre su lista en una Sheet, como su propia entrada del historial sobre el formulario; con más de 8 Expense categories, la lista tiene búsqueda. En la computadora es un desplegable con teclado, y Escape cierra solo el desplegable;
   - volver o "Close" con la lista abierta cierra solo la lista, nunca el formulario. Esto vale al registrar desde Expenses, al registrar desde More y al editar en el lugar dentro de Expenses;
   - sin ninguna Expense category, la lista muestra "No categories yet. Add them in Settings → Expense categories." (`emptyStates:selectorNoCategories`), y crear una dentro del formulario sigue disponible al lado;
@@ -122,7 +128,7 @@ La plata que un negocio paga por cualquier cosa que no sea flor, archivada bajo 
 - Un link de Expenses a Settings → Expense categories aparece solo una vez que ese grupo existe. Ningún link puede apuntar a una pantalla que no existe, y ningún vendedor puede perder la administración de las Expense categories.
 - El dominio de expenses no guarda ningún nombre por defecto ni importa ninguna biblioteca de traducción. La apertura del negocio nuevo toma los valores por defecto a través del puerto `BusinessDefaults` (`for_language(language)`), con el Stored language, nunca con el Shown language.
 - Las Expense categories son un Growable set: nunca se declaran en `fixedSets.ts` ni se eligen con chips (selector.md).
-- El formulario monta un `SheetStackProvider` en `ExpenseNewRoute` y en la edición en el lugar de `Gastos`, para que la lista del Selector sea su propia entrada del historial.
+- El formulario monta un `SheetStackProvider` en `ExpenseNewRoute` y en la edición en el lugar de `Gastos`, para que la lista del Selector sea su propia entrada del historial, en el nivel de arriba del formulario.
 
 ## Métricas
 
@@ -161,8 +167,8 @@ Se leen de los datos y de las pruebas; no hay telemetría.
 - **M12, se ve como en el diseño (criterio 6)**: comparaciones de antes y después de `scripts/design/compare.sh`, en teléfono y computadora, adjuntas al PR y juzgadas a ojo.
 - **M13, los valores por defecto siguen el idioma (criterio 7)**: un negocio abierto en `en` recibe las cuatro Expense categories idénticas byte a byte a `en.baseline.json`; uno abierto en un `de` de prueba recibe las cuatro de `de`; después de que cualquiera de los dos negocios cambie de idioma, sus Expense categories no cambian; filas cambiadas en negocios existentes: 0; negocios abiertos bajo el `en-XA` forzado con Expense categories en `en-XA`: 0. Bajo el `en-XA` forzado, los valores por defecto generados desde su fuente no dejan ninguna letra después de sacar los segmentos `⟦…⟧`. 100% de aprobación.
 - **M14, la Expense category con el Selector (criterio 8)**: con 12 o más Expense categories sembradas, las pruebas del front muestran el Selector en el formulario, ningún `<select>`, grupo de radios ni botón `aria-pressed` para ese campo, y que tipear parte de un nombre en la búsqueda de la lista encuentra la Expense category y tocarla la elige. 100% de aprobación.
-- **M15, volver nunca tira el formulario (criterio 9)**: para cada punto de entrada (`ExpenseNewRoute` desde Expenses y desde More, y la edición en el lugar de `Gastos`), las pruebas del front muestran: formulario sin tocar, volver va a la pantalla madre; formulario con algo tipeado, volver pide confirmar el descarte; con la lista abierta, volver cierra solo la lista; en la computadora, Escape cierra solo el desplegable. 100% de aprobación.
-- **M16, conjunto vacío y carga (criterio 10)**: las pruebas del front muestran "No categories yet. Add them in Settings → Expense categories." con el conjunto vacío, y ningún texto de conjunto vacío mientras la consulta está pendiente o falló. El chequeo `mobile` recorre el estado `expense/category-selector-empty` y las entradas `combobox:Category` obsoletas de `autocomplete.json` ya no están, sin ningún infractor nuevo.
+- **M15, volver nunca tira el formulario (criterio 9)**: para cada punto de entrada (`ExpenseNewRoute` desde Expenses y desde More, y la edición en el lugar de `Gastos`), las pruebas del front muestran: formulario sin tocar, volver va a la pantalla madre; formulario con algo tipeado, volver pide confirmar el descarte; con la lista abierta, volver cierra solo la lista; en la computadora, Escape cierra solo el desplegable. Para la edición en el lugar, volver sin tocar deja Expenses en el mes que mostraba. 100% de aprobación.
+- **M16, conjunto vacío y carga (criterio 10)**: las pruebas del front muestran "No categories yet. Add them in Settings → Expense categories." con el conjunto vacío, y ningún texto de conjunto vacío mientras la consulta está pendiente o falló; con la carga fallida, la línea de falla existente bajo el campo. El chequeo `mobile` recorre el estado `expense/category-selector-empty` y las entradas `combobox:Category` obsoletas de `autocomplete.json` ya no están, sin ningún infractor nuevo.
 - **M17, nada se pierde (criterio 10)**: las pruebas del front muestran que la Expense category creada dentro del formulario queda elegida y el error se borra, también con el conjunto vacío; que el rechazo por una Expense category que desapareció deja el campo vacío con "That category is gone. Pick another." y conserva lo tipeado; y que el error de campo obligatorio sigue apareciendo.
 
 ## Fuera de alcance
@@ -178,3 +184,4 @@ Se leen de los datos y de las pruebas; no hay telemetría.
 - Construir Settings o sus grupos: navigation.md y sus propios issues.
 - Traducir o renombrar las Expense categories guardadas de un negocio cuando cambia su idioma, o completar hacia atrás valores por defecto en otro idioma para negocios existentes.
 - Cambiar el texto del conjunto vacío para que mencione la creación dentro del formulario.
+- Cambiar las rutas de Expenses, su navegación por mes o cómo se abre y se ve la edición en el lugar.
