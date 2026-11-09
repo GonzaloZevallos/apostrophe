@@ -17,9 +17,9 @@ from app.business_removal.domain.schema import Schema
 
 # table -> one of its own columns, used as the label when the table has no `name`.
 LABEL_COLUMN: dict[str, str] = {
-    "sale": "sale_date",
+    "sale": "sold_on",
     "payment": "paid_on",
-    "stock_entry": "entry_date",
+    "stock_entry": "entered_on",
     "stock_withdrawal": "withdrawn_on",
     "price_entry": "effective_on",
     "expense": "spent_on",

@@ -33,7 +33,7 @@ class StockEntryRow(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
-    entry_date: Mapped[date]
+    entered_on: Mapped[date]
     variety_id: Mapped[int] = mapped_column(ForeignKey("variety.id"))
     origin: Mapped[str] = mapped_column(String(ORIGIN_MAX_LENGTH))
     # Signed: a negative adjustment takes grams away (app/shared/quantity.py).
