@@ -56,6 +56,7 @@ classDiagram
   import_port --> expense
   import_port --> manage_categories
   import_port --> manage_expenses
+  import_port --> ports
   import_port --> sql_expense_categories
   import_port --> sql_expenses
   import_port --> tables
@@ -77,6 +78,7 @@ classDiagram
   router --> category
   router --> expense
   router --> month
+  router --> ports
   router --> schemas
   router --> sql_expense_categories
   router --> sql_expenses
@@ -201,6 +203,9 @@ classDiagram
     remove(expense_id: int) None
     save(expense: Expense) Expense
   }
+  class MoneyFormatReader {
+    current() MoneyFormat
+  }
 ```
 
 ## adapters
@@ -222,7 +227,7 @@ classDiagram
     expenses : list~ExpenseOut~
     id : int
     name : str
-    subtotal : int
+    subtotal
   }
   class ExpenseCategoriesOpening {
     opened(business_id: int, language: BusinessLanguage) None
@@ -234,13 +239,13 @@ classDiagram
     name_key : Mapped~str~
   }
   class ExpenseIn {
-    amount : int
+    amount
     category_id : int
     detail : str
     spent_on : date
   }
   class ExpenseOut {
-    amount : int
+    amount
     category_id : int
     detail : str
     id : int
@@ -266,7 +271,7 @@ classDiagram
   class MonthlyViewOut {
     categories : list~CategorySubtotalOut~
     month : str
-    total : int
+    total
     of(view: MonthlyExpenses) 'MonthlyViewOut'
   }
   class SqlExpenseCategories {
@@ -287,5 +292,8 @@ classDiagram
   }
   class SqlExpensesLedger {
     all() list~ExpenseRecord~
+  }
+  class _SheetAmounts {
+    current() MoneyFormat
   }
 ```

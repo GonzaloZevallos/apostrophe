@@ -1464,8 +1464,16 @@
       "ExpenseIn": {
         "properties": {
           "amount": {
-            "title": "Amount",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Amount"
           },
           "category_id": {
             "title": "Category Id",
@@ -2117,8 +2125,16 @@
       "PaymentIn": {
         "properties": {
           "amount": {
-            "title": "Amount",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Amount"
           },
           "method": {
             "anyOf": [
@@ -2154,8 +2170,16 @@
       "PaymentPreviewIn": {
         "properties": {
           "amount": {
-            "title": "Amount",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Amount"
           },
           "paid_on": {
             "format": "date",
