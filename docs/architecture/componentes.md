@@ -42,7 +42,7 @@ El diagrama de clases de cada capacidad lo genera [scripts/docs/generate.py](../
 | customer_types | [customer_types](../../app/customer_types/application/ports.py) `CustomerTypes` `CustomersInType` | [customer_types](generated/classes/customer_types.md) |
 | customers | [customers](../../app/customers/application/ports.py) `Customers` `Balances` `CustomerTypes` | [customers](generated/classes/customers.md) |
 | expenses | [expenses](../../app/expenses/application/ports.py) `Expenses` `ExpenseCategories` | [expenses](generated/classes/expenses.md) |
-| money_format | sin `ports.py` todavía: solo `adapters/`, porque ningún caso de uso lee el formato; la fila la escribe [opening](../../app/money_format/adapters/opening.py) `MoneyFormatOpening` | [money_format](generated/classes/money_format.md) |
+| money_format | sin `ports.py` propio: solo `adapters/`. Los casos de uso leen el formato (símbolo y decimales, nunca la escala) por el `MoneyFormatReader` de cada hexágono, que implementa `SqlMoneyFormat`; `app/main.py` lo cuelga en `app.state.*_money_format` (el de stock es `app.state.stock_money_format`). La fila la escribe [opening](../../app/money_format/adapters/opening.py) `MoneyFormatOpening` | [money_format](generated/classes/money_format.md) |
 | onboarding | [onboarding](../../app/onboarding/application/ports.py) `Onboardings` `VarietyFacts` `StockFacts` | [onboarding](generated/classes/onboarding.md) |
 | payments | [payments](../../app/payments/application/ports.py) `Payments` `Ledgers` | [payments](generated/classes/payments.md) |
 | pinned_catalog | [pinned_catalog](../../app/pinned_catalog/application/ports.py) `TelegramApi` `PinSnapshots` `PinRecorder` | [pinned_catalog](generated/classes/pinned_catalog.md) |
@@ -51,7 +51,7 @@ El diagrama de clases de cada capacidad lo genera [scripts/docs/generate.py](../
 | results | [results](../../app/results/application/ports.py) `StockFigures` `SalesLedger` `DebtSummary` `WithdrawalReasons` | [results](generated/classes/results.md) |
 | sales | [sales](../../app/sales/application/ports.py) `Sales` `PriceBook` `CustomerFacts` | [sales](generated/classes/sales.md) |
 | spreadsheet_import | [spreadsheet_import](../../app/spreadsheet_import/application/ports.py) `VarietiesImport` `SalesImport` `VipTypeImport` | [spreadsheet_import](generated/classes/spreadsheet_import.md) |
-| stock | [stock](../../app/stock/application/ports.py) `StockEntries` `Withdrawals` `VarietyCatalog` `WithdrawalReasons` `ReasonDefaults` | [stock](generated/classes/stock.md) |
+| stock | [stock](../../app/stock/application/ports.py) `StockEntries` `Withdrawals` `VarietyCatalog` `WithdrawalReasons` `ReasonDefaults` `MoneyFormatReader` (en [ports.py](../../app/stock/application/ports.py), implementado por `SqlMoneyFormat` y cableado como `app.state.stock_money_format` en `app/main.py`) | [stock](generated/classes/stock.md) |
 | shared | sin puertos de negocio: [transaction.py](../../app/shared/transaction.py) `Transaction` | [shared](generated/classes/shared.md) |
 
 Un ejemplo de punta a punta, con las llamadas en orden, está en [flujos-clave.md](flujos-clave.md).
