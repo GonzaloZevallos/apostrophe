@@ -9,6 +9,11 @@ table is rebuilt and no row is copied. Only one index covers a renamed column, 0
 `ix_sale_business_id_sale_date`; it is dropped before the rename and created again under
 the convention name after it (`op.f` spells the final name). `stock_entry` has no index on
 its date. The downgrade is the exact mirror and restores the 0025 schema, names included.
+
+The downgrade turns foreign keys off before its first write, as 0023 and 0025 do. It
+rebuilds nothing itself, but it is the first step of a walk down from head, and SQLite
+ignores `PRAGMA foreign_keys` once a write transaction is open: without this, the
+rebuild of `sale` in 0023's downgrade runs with enforcement on and fails.
 """
 
 from collections.abc import Sequence
@@ -31,6 +36,9 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    raw = op.get_bind().connection.dbapi_connection
+    assert raw is not None
+    raw.execute("PRAGMA foreign_keys=OFF")
     op.execute("ALTER TABLE stock_entry RENAME COLUMN entered_on TO entry_date")
     op.drop_index(op.f("ix_sale_business_id_sold_on"), table_name="sale")
     op.execute("ALTER TABLE sale RENAME COLUMN sold_on TO sale_date")
