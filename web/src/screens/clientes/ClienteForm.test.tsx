@@ -576,8 +576,8 @@ test('13 types: the field is a Selector, no select, radio group or pressed butto
   renderForm(CUSTOMER_NEW)
   const user = userEvent.setup()
 
+  await waitFor(async () => expect(await typeField()).toHaveTextContent('No type'))
   const field = await typeField()
-  expect(field).toHaveTextContent('No type')
   expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
   expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument()
   expect(screen.queryByRole('radio')).not.toBeInTheDocument()
@@ -629,8 +629,8 @@ test('the list has no clearing row with no type chosen, and the clearing row set
   expect(within(dialog).getAllByRole('button').map((button) => button.textContent)).toEqual([
     '',
     'No type',
-    '♡ Friends Selected',
-    '★ Wholesale',
+    '♡Friends Selected',
+    '★Wholesale',
   ])
   await user.click(within(dialog).getByRole('button', { name: 'No type' }))
   await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Customer type options' })).not.toBeInTheDocument())
@@ -638,7 +638,7 @@ test('the list has no clearing row with no type chosen, and the clearing row set
 
   await user.click(await typeField())
   expect(within(screen.getByRole('dialog', { name: 'Customer type options' })).queryByRole('button', { name: 'No type' })).not.toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'Close' }))
+  await user.click(within(screen.getByRole('dialog', { name: 'Customer type options' })).getByRole('button', { name: 'Close' }))
   await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Customer type options' })).not.toBeInTheDocument())
 
   await user.click(screen.getByRole('button', { name: 'Save and use' }))
@@ -688,7 +688,9 @@ test('while the types load there is no No type, no notice and no empty wording; 
 
 test('after a failed load the field stays busy with the failure line, described by it, and Save still sends the held type', async () => {
   const other = stubTypesAnswer(() => Promise.reject(new TypeError('offline')))
-  other.mockResolvedValue(jsonResponse(200, { id: 7, name: 'Tincho', phone: null, vip: false, customer_type_id: 2 }))
+  other.mockImplementation(() =>
+    Promise.resolve(jsonResponse(200, { id: 7, name: 'Tincho', phone: null, vip: false, customer_type_id: 2 })),
+  )
   renderForm(pathTo(CUSTOMER_EDIT, { id: 7 }))
   const user = userEvent.setup()
 
