@@ -1717,7 +1717,11 @@
           "special_price": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
               },
               {
                 "type": "null"
@@ -2624,7 +2628,11 @@
           "bulk_price": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
               },
               {
                 "type": "null"
@@ -2638,13 +2646,25 @@
             "type": "string"
           },
           "list_price": {
-            "title": "List Price",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "List Price"
           },
           "vip_price": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
               },
               {
                 "type": "null"
@@ -3575,9 +3595,17 @@
             "title": "Payment"
           },
           "shipping_charged": {
-            "default": 0,
-            "title": "Shipping Charged",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "default": "0",
+            "title": "Shipping Charged"
           }
         },
         "required": [
