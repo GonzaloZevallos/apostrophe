@@ -294,6 +294,7 @@ def test_a_delete_committed_first_makes_the_entry_answer_gone_and_orphans_nothin
             manage_entries.record_entry(
                 SqlStockEntries(late, BUSINESS),
                 _StaleCatalog(SqlVarietyCatalog(late, BUSINESS)),
+                WholeAmounts(),
                 late,
                 entry_date=DAY,
                 variety_id=variety_id,

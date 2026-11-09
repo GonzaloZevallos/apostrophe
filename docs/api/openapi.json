@@ -1250,7 +1250,11 @@
           "total_cost": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
               },
               {
                 "type": "null"

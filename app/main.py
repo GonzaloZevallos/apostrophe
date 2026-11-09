@@ -279,6 +279,7 @@ def create_app(
     app.state.products_money_format = SqlMoneyFormat
     app.state.payments_money_format = SqlMoneyFormat
     app.state.expenses_money_format = SqlMoneyFormat
+    app.state.stock_money_format = SqlMoneyFormat
     # Another factory of the same shape: results reaches stock's rows and draws only
     # through its own `StockFigures` port, never `app.stock` directly (ADR-0006). The
     # panel route builds this over the request's own `Session` and business, the way

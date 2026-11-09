@@ -364,6 +364,9 @@ classDiagram
   class Draws {
     for_varieties(variety_ids: Collection~int~ #124; None) list~SaleLineDraw~
   }
+  class MoneyFormatReader {
+    current() MoneyFormat
+  }
   class ReasonDefaults {
     for_language(language: Language) tuple~ReasonName, ...~
   }
@@ -450,20 +453,20 @@ classDiagram
     origin : Origin
     product_id : int
     quantity
-    total_cost : int #124; None
+    total_cost : MoneyAmount #124; None
   }
   class EntryMovementOut {
     kind : Literal~'entry'~
   }
   class EntryOut {
-    cost_per_gram : int #124; None
+    cost_per_gram : MoneyOut #124; None
     date : date
     id : int
     note : str #124; None
     origin : Origin
     product_id : int
     quantity
-    total_cost : int #124; None
+    total_cost : MoneyOut #124; None
     of(entry: StockEntry) 'EntryOut'
   }
   class ProductStockOut {
