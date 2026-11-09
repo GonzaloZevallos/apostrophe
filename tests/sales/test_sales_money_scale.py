@@ -405,3 +405,29 @@ def test_a_whole_amount_written_with_a_decimal_point_is_accepted(client: TestCli
     sale = _sell(client, product_id, shipping_charged=1_500.0)
 
     assert sale["shipping_charged"] == 1_500
+
+
+@pytest.mark.parametrize(
+    ("body", "path"),
+    [
+        ({"total": 11_000.0}, "total"),
+        ({"total": "11000"}, "total"),
+        ({"total": True}, "total"),
+        ({"total": 11_000}, "balance"),
+        ({"lines": [{"cost": {"costed": None}}]}, "lines[].cost.costed"),
+        ({"lines": []}, "lines[].line_total"),
+        ({"lines": [{"line_total": 1}, {"line_total": 2.5}]}, "lines[].line_total"),
+    ],
+)
+def test_the_money_wire_helper_rejects_what_is_not_a_json_integer(
+    body: dict[str, Any], path: str
+) -> None:
+    with pytest.raises(AssertionError):
+        assert_money_is_int(body, path)
+
+
+def test_the_money_wire_helper_accepts_integers_and_a_listed_null() -> None:
+    body = {"total": 11_000, "lines": [{"cost": {"costed": None}}]}
+
+    assert_money_is_int(body, "total")
+    assert_money_is_int(body, "lines[].cost.costed", null_ok=("lines[].cost.costed",))

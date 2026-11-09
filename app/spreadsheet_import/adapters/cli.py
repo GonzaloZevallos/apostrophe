@@ -36,6 +36,7 @@ from app.customers.adapters.import_port import CustomersImport
 from app.db import make_engine
 from app.expenses.adapters.import_port import ExpensesImport
 from app.migrations.runner import upgrade_to_head
+from app.money_format.adapters.reader import SqlMoneyFormat
 from app.onboarding.adapters.import_port import OnboardingEnding
 from app.payments.adapters.import_port import PaymentsImport
 from app.pricing_settings.adapters.import_port import PricingSettingsImport
@@ -139,7 +140,7 @@ def _run(
         expenses = ExpensesImport(session, args.business_id)
         customers = CustomersImport(session, args.business_id)
         vip_type = VipTypeImport(session, args.business_id)
-        sales = SalesImport(session, args.business_id)
+        sales = SalesImport(session, args.business_id, SqlMoneyFormat(session, args.business_id))
         payments = PaymentsImport(session, args.business_id)
         onboarding = OnboardingEnding(session, args.business_id)
         pricing_settings = PricingSettingsImport(session, args.business_id)

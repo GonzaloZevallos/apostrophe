@@ -23,6 +23,7 @@ from sqlalchemy.orm import Session
 from app.sales.adapters.price_book import PlannedPriceBook, SqlPriceBook
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.adapters.tables import SaleRow
+from app.sales.application.ports import MoneyFormatReader
 from app.sales.application.record_sale import LineInput, record_sale
 from app.sales.domain.pricing import SaleRuleBroken
 from app.sales.domain.sale import CustomerFact, LineRequest, PaymentMethod, Sale
@@ -62,9 +63,14 @@ def _payment_method(method: OnTheSpotMethod | None) -> PaymentMethod | None:
 class SalesImport:
     """`SalesImport` for one business."""
 
-    def __init__(self, session: Session, business_id: int) -> None:
+    def __init__(
+        self, session: Session, business_id: int, money_format: MoneyFormatReader | None = None
+    ) -> None:
         self._session = session
         self._business_id = business_id
+        # The command line hangs the business's own format here; a caller that has none
+        # gets the whole-amount one, which accepts a sheet's whole amounts all the same.
+        self._money_format: MoneyFormatReader = money_format or _SheetAmounts()
 
     def has_records(self) -> bool:
         statement = (
@@ -136,7 +142,7 @@ class SalesImport:
             SqlPriceBook(self._session, self._business_id),
             _FixedVip(sale.vip),
             _FixedSettings(settings),
-            _SheetAmounts(),
+            self._money_format,
             transaction,
             sale_date=sale.sale_date,
             today=today,
