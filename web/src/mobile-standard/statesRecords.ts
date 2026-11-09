@@ -11,6 +11,7 @@ import {
   CUSTOMER_NEW,
   CUSTOMERS,
   EXPENSE_CATEGORIES,
+  EXPENSE_NEW,
   EXPENSES,
   MORE,
   pathTo,
@@ -26,6 +27,8 @@ import {
   WITHDRAWAL_NEW,
 } from '../routes.ts'
 import { AUTH_TEXT } from '../copy/auth.ts'
+import { ENGLISH_STATIC } from '../i18n/englishStatic.ts'
+import { resolveKey } from '../i18n/resolve.ts'
 import { common } from './copy.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { SETTINGS_TEXT } from '../copy/settings.ts'
@@ -116,6 +119,14 @@ export const RECORDS_STATES: readonly WalkState[] = [
     steps: [{ press: STOCK_TEXT.motivo }],
     visible: 'Motivo 1',
     reads: [{ path: /^\/api\/withdrawal-reasons$/, status: 200, body: TWELVE_REASONS }],
+  },
+  {
+    // The business has no Expense categories: the open Category list shows the empty-set line.
+    screen: 'expense/category-selector-empty',
+    route: EXPENSE_NEW,
+    steps: [{ press: common('common:category') }],
+    visible: resolveKey(ENGLISH_STATIC, 'emptyStates:selectorNoCategories'),
+    reads: [{ path: /^\/api\/expense-categories$/, status: 200, body: [] }],
   },
   {
     // A stored line on a Variety archived since: its 60-character name shows with the mark.
