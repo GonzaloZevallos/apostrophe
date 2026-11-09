@@ -110,6 +110,7 @@ const SCREENS: Case[] = [
     element: () => <ClienteForm mode="editar" />,
     route: pathTo(CUSTOMER_EDIT, { id: 7 }),
     path: CUSTOMER_EDIT,
+    dataRouter: true,
   },
   { name: 'VentaDetalle', element: () => <VentaDetalle />, route: pathTo(SALE, { id: 9 }), path: SALE, dataRouter: true },
   { name: 'Expenses', element: () => <Gastos />, route: EXPENSES, path: EXPENSES },
