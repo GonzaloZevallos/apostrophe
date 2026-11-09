@@ -8,6 +8,7 @@
 
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { choosePaid, choosePaymentMethod } from '../../components/selectorTestKit'
 import { afterEach, expect, test, vi } from 'vitest'
 import App from '../../App'
 import { newSaleFor } from '../../components/feedback'
@@ -224,7 +225,8 @@ test('a Product no longer offered keeps its name with the mark, is not offered, 
 
   await user.click(screen.getByRole('button', { name: 'Add another product' }))
   expect(await screen.findByRole('button', { name: /^Line 1: Rosa/ })).toBeInTheDocument()
-  await user.click(screen.getByRole('radio', { name: 'Cash' }))
+  await choosePaid(user)
+  await choosePaymentMethod(user, 'Cash')
   await user.click(screen.getByRole('button', { name: 'Save sale' }))
 
   expect(await screen.findAllByText('Rosa has no price for that date')).not.toHaveLength(0)

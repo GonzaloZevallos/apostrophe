@@ -27,7 +27,7 @@ export const SALES_STATES: readonly WalkState[] = [
     visible: '$ 120.000',
   },
   {
-    // The same form once Cash is chosen: Save is drawn as the primary button, not the secondary one.
+    // The same form once Paid and Cash are chosen: Save is drawn as the primary button, not the secondary one.
     screen: 'NuevaVentaConLineaYPago',
     route: SALE_NEW,
     steps: [
@@ -35,9 +35,18 @@ export const SALES_STATES: readonly WalkState[] = [
       { press: 'Golden Cookies' },
       { fill: { label: SALES_TEXT.lineGrams(1), value: '10' } },
       { click: common('common:addAnotherVariety') },
-      { click: common('common:cashMethod') },
+      { click: common('common:paid') },
+      { press: common('common:paymentMethod') },
+      { press: common('common:cashMethod') },
     ],
     visible: '$ 120.000',
+  },
+  {
+    // Paid chosen and the Payment method list open: the form is inert beneath it.
+    screen: 'new-sale/method-selector-open',
+    route: SALE_NEW,
+    steps: [{ click: common('common:paid') }, { press: common('common:paymentMethod') }],
+    visible: common('common:transfer'),
   },
   {
     screen: 'new-sale/line-variety-selector-open',

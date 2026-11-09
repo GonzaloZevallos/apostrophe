@@ -43,8 +43,6 @@ ALLOWLIST: frozenset[Break] = frozenset(
         ("customer", "column", ("vip",), "is_"),
         ("expense", "foreign_key", ("business_id", "category_id"), "fk_name"),
         ("reset_link", "foreign_key", ("user_id",), "fk_name"),
-        ("sale", "column", ("sale_date",), "_on"),
-        ("stock_entry", "column", ("entry_date",), "_on"),
     }
 )
 

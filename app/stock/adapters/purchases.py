@@ -20,7 +20,7 @@ class SqlPurchases:
         self._business_id = business_id
 
     def purchases(self) -> list[PurchaseRecord]:
-        statement = select(StockEntryRow.entry_date, StockEntryRow.total_cost).where(
+        statement = select(StockEntryRow.entered_on, StockEntryRow.total_cost).where(
             StockEntryRow.business_id == self._business_id,
             StockEntryRow.origin == Origin.PURCHASE.value,
         )
@@ -30,7 +30,7 @@ class SqlPurchases:
         ]
 
     def earliest_entry_day(self) -> date | None:
-        statement = select(func.min(StockEntryRow.entry_date)).where(
+        statement = select(func.min(StockEntryRow.entered_on)).where(
             StockEntryRow.business_id == self._business_id
         )
         return self._session.scalar(statement)

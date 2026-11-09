@@ -130,3 +130,13 @@ def test_a_locked_email_of_a_removed_business_s_user_is_counted_and_deleted() ->
     with engine.connect() as connection:
         left = connection.execute(text("SELECT email FROM login_guard ORDER BY email")).scalars()
         assert list(left) == ["staying@example.com", "stranger@example.com"]
+
+
+def test_the_export_carries_the_renamed_date_columns_and_neither_old_name() -> None:
+    schema = _schema_rows().schema()
+
+    columns = {table.name: {column.name for column in table.columns} for table in schema.tables}
+
+    assert "sold_on" in columns["sale"]
+    assert "entered_on" in columns["stock_entry"]
+    assert not {"sale_date", "entry_date"} & {name for names in columns.values() for name in names}

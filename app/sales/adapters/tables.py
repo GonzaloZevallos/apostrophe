@@ -23,7 +23,7 @@ PRICING_RULE_MAX_LENGTH = 10
 class SaleRow(Base):
     __tablename__ = "sale"
     __table_args__ = (
-        Index(None, "business_id", "sale_date"),
+        Index(None, "business_id", "sold_on"),
         UniqueConstraint("business_id", "number"),
     )
 
@@ -32,7 +32,7 @@ class SaleRow(Base):
     # The Sale number (CONTEXT.md, docs/adr/0073): given only by `SqlSales.add`, never
     # defaulted, never reused.
     number: Mapped[int]
-    sale_date: Mapped[date]
+    sold_on: Mapped[date]
     customer_id: Mapped[int | None] = mapped_column(ForeignKey("customer.id"))
     shipping_charged: Mapped[int] = money_column()
     note: Mapped[str | None] = mapped_column(String(NOTE_MAX_LENGTH))

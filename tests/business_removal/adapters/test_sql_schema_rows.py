@@ -463,8 +463,8 @@ def test_rows_parses_bool_date_and_naive_datetime_columns(tmp_path: Path) -> Non
 
         [entry_row] = rows.rows("stock_entry", business.id)
         assert entry_row["id"] == entry["id"]
-        assert type(entry_row["entry_date"]) is date
-        assert entry_row["entry_date"] == date(2026, 1, 1)
+        assert type(entry_row["entered_on"]) is date
+        assert entry_row["entered_on"] == date(2026, 1, 1)
 
         recorded_at = entry_row["recorded_at"]
         assert type(recorded_at) is datetime

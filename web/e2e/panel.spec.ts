@@ -27,7 +27,7 @@
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, HOME, SALES, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, pathTo } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expectToast } from './helpers/toast.js'
-import { expect, test } from './fixtures.js'
+import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { setPriceDate } from './helpers/priceDate.js'
 import { watchConsole } from './console.js'
@@ -222,7 +222,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.goto(SALES)
   await page.getByRole('link', { name: 'New sale' }).click()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '3' })
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await page.getByRole('radio', { name: 'Paid' }).check(); await choosePaymentMethod(page, 'Cash')
   await page.getByRole('button', { name: 'Save sale' }).click()
   await expect(page.getByText('Sale saved')).toBeVisible()
 

@@ -100,6 +100,12 @@ def _seed(engine: Engine) -> None:
                 )
 
 
+def _sale_date_column(engine: Engine) -> str:
+    """The stored name of the sale date: `sale_date` before 0026, `sold_on` after."""
+    names = {column["name"] for column in inspect(engine).get_columns("sale")}
+    return "sold_on" if "sold_on" in names else "sale_date"
+
+
 def _counts(engine: Engine) -> dict[str, int]:
     with engine.connect() as connection:
         return {
@@ -132,8 +138,8 @@ def _unchanged_columns(engine: Engine) -> list[tuple[Any, ...]]:
             tuple(row)
             for row in connection.execute(
                 text(
-                    "SELECT id, business_id, sale_date, customer_id, shipping_charged, note, "
-                    "recorded_at FROM sale ORDER BY id"
+                    f"SELECT id, business_id, {_sale_date_column(engine)}, customer_id, "
+                    "shipping_charged, note, recorded_at FROM sale ORDER BY id"
                 )
             )
         ]
@@ -205,7 +211,7 @@ def test_a_duplicate_number_in_one_business_is_refused_but_another_business_may_
     engine = make_engine(f"sqlite:///{tmp_path / 'apostrophe.db'}")
     upgrade_to_head(engine)
     insert = text(
-        "INSERT INTO sale (business_id, sale_date, shipping_charged, recorded_at, number) "
+        "INSERT INTO sale (business_id, sold_on, shipping_charged, recorded_at, number) "
         "VALUES (:b, '2026-03-01', 0, :at, :n)"
     )
     with engine.begin() as connection:
@@ -230,7 +236,7 @@ def test_a_sale_without_a_number_is_refused_at_head(tmp_path: Path) -> None:
     with pytest.raises(IntegrityError), engine.begin() as connection:
         connection.execute(
             text(
-                "INSERT INTO sale (business_id, sale_date, shipping_charged, recorded_at) "
+                "INSERT INTO sale (business_id, sold_on, shipping_charged, recorded_at) "
                 "VALUES (1, '2026-03-01', 0, :at)"
             ),
             {"at": MIDDLE},

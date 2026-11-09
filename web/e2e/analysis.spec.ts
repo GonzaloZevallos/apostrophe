@@ -12,7 +12,7 @@
 
 import { ANALYSIS, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, WITHDRAWAL_NEW } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from './fixtures.js'
+import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import type { Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -57,7 +57,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   // A cash sale, today.
   await page.goto(SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '10' })
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await page.getByRole('radio', { name: 'Paid' }).check(); await choosePaymentMethod(page, 'Cash')
   await page.getByRole('button', { name: 'Save sale' }).click()
   await expect(page.getByText('Sale saved')).toBeVisible()
 
@@ -218,7 +218,7 @@ test('Análisis reads Cost of goods sold, Stock shortfall, Marketing and Own use
   await page.goto(SALE_NEW)
   await page.getByLabel('Date').fill(twoWeeksAgo)
   await fillSaleLine(page, 1, { variety: 'Lirio', grams: '15' })
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await page.getByRole('radio', { name: 'Paid' }).check(); await choosePaymentMethod(page, 'Cash')
   await page.getByRole('button', { name: 'Save sale' }).click()
   await expect(page.getByText('Sale saved')).toBeVisible()
 
@@ -329,7 +329,7 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
   await recordEntry(page, { date: daysFrom(today, -14), grams: '10', variety: longName, origin: 'Purchase', cost: '10000' })
   await page.goto(SALE_NEW)
   await fillSaleLine(page, 1, { variety: longName, grams: '500' })
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await page.getByRole('radio', { name: 'Paid' }).check(); await choosePaymentMethod(page, 'Cash')
   await page.getByRole('button', { name: 'Save sale' }).click()
   await expect(page.getByText('Sale saved')).toBeVisible()
 

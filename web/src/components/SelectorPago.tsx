@@ -1,69 +1,85 @@
 /**
- * `SelectorPago` (`componentes.ts`'s `SelectorPagoProps`, plan "Components"): the
- * segmented control Efectivo · Transferencia · Debiendo, replacing the native
- * radio fieldset (PM, adjustment 2: Debiendo stays a disabled control with "Para
- * dejar debiendo elegí un cliente" as its accessible description — tests change
- * only the selector for that removed native `<input type="radio">`, never the
- * behaviour).
+ * `SelectorPago` (`NuevaVenta.dc.html`): how a sale was paid. The state, Paid · Owing, is a fixed
+ * `SegmentedChoice` over `PAYMENT_STATES`; under Paid, and only there, the Payment method is a
+ * required Selector (Cash and Transfer, no default, no clearing row) from `usePaymentMethodOptions`.
  *
- * A `role="radiogroup"` of three `role="radio"`s, named exactly "Efectivo",
- * "Transferencia" and "Debiendo" — nothing else in their accessible name, so a
- * screen reader announces the same three words the design shows. It allows no
- * selection: `value` is `PaymentChoice | null`, and nothing here defaults it.
- * Debiendo's `aria-describedby` only appears when the caller disables it and
- * gives a description — the caller (the sale form) decides when that is true,
- * this component only wires the two together.
- *
- * It is a thin wrapper over `SegmentedChoice`, which holds the markup. Disabled Debiendo carries the native `disabled` attribute too, not only
- * `aria-disabled` (review finding, plan-invariant: PM adjustment 2 says tests
- * "change only selectors for removed native controls" — a `button` can be
- * natively disabled same as the `<input type="radio">` it replaces, so the
- * form's tests keep `toBeDisabled()`/`toBeEnabled()` instead of reading a new
- * attribute).
+ * Owing keeps the native `disabled` and its description while the caller says there is no
+ * Customer, so the sale form's `toBeDisabled()`/`toBeEnabled()` still read it. The method list
+ * opens on the phone as its own history entry, drawn in `listHost` so the form beneath can be
+ * `inert` while it is open. This component holds no state: the sale form owns the state and the
+ * method, and empties the method when the state leaves Paid.
  */
 
-import { useId } from 'react'
+import { type Ref, useId } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { PaymentChoice } from '../sales/pricing'
+import type { PaymentMethod } from '../api/payments'
+import { paymentMethodOf, usePaymentMethodOptions } from '../sales/paymentMethods'
+import type { PayState } from '../sales/pricing'
+import FieldRefusal from './FieldRefusal'
+import { PAYMENT_STATES } from './fixedSets'
 import SegmentedChoice from './SegmentedChoice'
+import Selector from './Selector'
 
 export interface SelectorPagoProps {
-  value: PaymentChoice | null
-  onChange: (value: PaymentChoice) => void
+  payState: PayState | null
+  onPayState: (value: PayState) => void
+  method: PaymentMethod | null
+  onMethod: (value: PaymentMethod | null) => void
   owingDisabled?: boolean
   owingDescription?: string
+  /** Where the phone's method list is drawn, outside the form. */
+  listHost?: HTMLElement | null
+  /** The seller tried to save under Paid with no method: the field shows its refusal. */
+  methodRefused?: boolean
+  methodRef?: Ref<HTMLButtonElement>
 }
 
-/** Keys, resolved in render: a module-level table never calls `t`. */
-const OPTIONS: { value: PaymentChoice; label: 'common:cashMethod' | 'common:transfer' | 'common:owing' }[] = [
-  { value: 'cash', label: 'common:cashMethod' },
-  { value: 'transfer', label: 'common:transfer' },
-  { value: 'owing', label: 'common:owing' },
-]
-
 export default function SelectorPago({
-  value,
-  onChange,
+  payState,
+  onPayState,
+  method,
+  onMethod,
   owingDisabled = false,
   owingDescription,
+  listHost,
+  methodRefused = false,
+  methodRef,
 }: SelectorPagoProps) {
   const { t } = useTranslation()
   const descriptionId = useId()
+  const refusalId = useId()
+  const methodOptions = usePaymentMethodOptions()
   const showDescription = owingDisabled && owingDescription !== undefined
-  const options = OPTIONS.map(({ value: choice, label }) => {
-    const option = { value: choice, label: t(label) }
-    return choice === 'owing'
-      ? { ...option, disabled: owingDisabled, describedBy: showDescription ? descriptionId : undefined }
-      : option
-  })
 
   return (
     <div>
-      <SegmentedChoice options={options} value={value} onChange={onChange} ariaLabel={t('common:howPaid')} />
+      <SegmentedChoice
+        options={PAYMENT_STATES}
+        optionState={{
+          owing: { disabled: owingDisabled, describedBy: showDescription ? descriptionId : undefined },
+        }}
+        value={payState}
+        onChange={onPayState}
+        ariaLabel={t('common:howPaid')}
+      />
       {showDescription && (
         <span id={descriptionId} className="selector-pago__ayuda">
           {owingDescription}
         </span>
+      )}
+      {payState === 'paid' && (
+        <div className="selector-pago__metodo">
+          <Selector
+            {...methodOptions}
+            label={t('common:paymentMethod')}
+            value={method}
+            onChange={(next) => onMethod(paymentMethodOf(next))}
+            listHost={listHost}
+            fieldRef={methodRef}
+            describedBy={methodRefused ? refusalId : undefined}
+          />
+          {methodRefused && <FieldRefusal id={refusalId}>{t('common:chooseHowTheyPaid')}</FieldRefusal>}
+        </div>
       )}
     </div>
   )

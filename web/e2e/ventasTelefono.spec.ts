@@ -14,7 +14,7 @@
  */
 
 import { SALE_NEW, SALES, VARIETIES } from '../src/routes.js'
-import { expect, test, withToastRecorder, type WorkerServer } from './fixtures.js'
+import { choosePaymentMethod, expect, test, withToastRecorder, type WorkerServer } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import type { Browser, BrowserContext, Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -97,7 +97,7 @@ test('a sale is recorded from a phone: existing customer, new customer, none', a
       await expect(page.locator('.cliente-sheet')).toHaveCount(0)
       await expect(page.locator('.lista-clientes__nombre')).toHaveText('Luz Díaz')
     }
-    await page.getByRole('radio', { name: 'Cash' }).check()
+    await page.getByRole('radio', { name: 'Paid' }).check(); await choosePaymentMethod(page, 'Cash')
     await expect(page.locator('.nueva-venta__pie')).toContainText('$ 5.000')
     await page.getByRole('button', { name: 'Save sale' }).click()
     await expect(page.getByText('Sale saved')).toBeVisible()
@@ -126,7 +126,7 @@ test.describe('phone sales sweep', () => {
     await signUpWithAVariety(page)
     await page.goto(SALE_NEW)
     await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '10' })
-    await page.getByRole('radio', { name: 'Cash' }).check()
+    await page.getByRole('radio', { name: 'Paid' }).check(); await choosePaymentMethod(page, 'Cash')
     await page.getByRole('button', { name: 'Save sale' }).click()
     await expect(page.getByText('Sale saved')).toBeVisible()
     session = await context.storageState()
