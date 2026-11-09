@@ -707,7 +707,7 @@ body {
 
 /* The Expenses card on the phone's Analysis: a title and its two actions, stacked, each at the
  * phone's tap height through `Boton`. */
-.analisis__gastos {
+.tarjeta-gastos {
   display: flex;
   flex-direction: column;
   gap: var(--espacio-md);

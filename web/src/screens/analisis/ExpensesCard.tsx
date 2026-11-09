@@ -14,7 +14,7 @@ export default function ExpensesCard() {
   const { t } = useTranslation()
   if (useViewport() === 'computer') return null
   return (
-    <div role="group" aria-label={t('common:expenses')} className="analisis__gastos">
+    <div role="group" aria-label={t('common:expenses')} className="tarjeta-gastos">
       <span className="rotulo">{t('common:expenses')}</span>
       <BotonLink to={EXPENSE_NEW} icon="agregar">
         {t('common:addExpense')}
