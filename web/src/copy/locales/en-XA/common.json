@@ -116,5 +116,9 @@
   "paid": "⟦Ṗåìđ·~⟧",
   "paymentMethod": "⟦Ṗåýṁèňť ṁèťĥöđ·~·~·⟧",
   "chooseHowTheyPaid": "⟦Çĥööšè ĥöŵ ťĥèý ṗåìđ.·~·~·~·~⟧",
-  "noType": "⟦Ňö ťýṗè·~·⟧"
+  "noType": "⟦Ňö ťýṗè·~·⟧",
+  "homeViewSwitchLabel": "⟦Ĥöṁè ṽìèŵ·~·~⟧",
+  "homeSegmentToday": "⟦Ťöđåý·~⟧",
+  "homeSegmentAnalysis": "⟦Åňåłýšìš·~·⟧",
+  "seeExpenses": "⟦Šèè ťĥè èẋṗèňšèš·~·~·~⟧"
 }

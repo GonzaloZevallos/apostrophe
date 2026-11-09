@@ -30,7 +30,9 @@ import type { Me } from '../api/me'
 import { formatMonthLong } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import Loading from '../components/Loading'
+import HomeViewSwitch from '../components/HomeViewSwitch'
 import SettingsAvatar from '../components/SettingsAvatar'
+import ExpensesCard from './analisis/ExpensesCard'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import { amountParts } from './analisisCost'
@@ -309,6 +311,8 @@ export default function Analisis() {
           <span className="encabezado__titulo">{COMMON_TEXT.analysis}</span>
           <SettingsAvatar />
         </div>
+        <HomeViewSwitch selected="analysis" />
+        <ExpensesCard />
 
         {query.isPending && <Loading />}
 

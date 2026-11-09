@@ -31,6 +31,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useOutletContext } from 'react-router'
 import BrandMark from '../components/BrandMark'
 import InAppLink from '../components/InAppLink'
+import HomeViewSwitch from '../components/HomeViewSwitch'
 import SettingsAvatar from '../components/SettingsAvatar'
 import { owedPlace, useReturnToPlace } from '../components/useReturnToPlace'
 import { peekPaymentReturn } from '../paymentReturn'
@@ -106,6 +107,7 @@ export default function Inicio() {
           </div>
           <SettingsAvatar />
         </div>
+        <HomeViewSwitch selected="today" />
 
         {notices.first?.kind === 'onboarding' && <OnboardingNotice progress={notices.first.progress} />}
         {notices.first?.kind === 'checklist' && <FirstRunChecklist steps={notices.first.steps} />}
