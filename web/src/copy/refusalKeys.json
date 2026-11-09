@@ -116,5 +116,6 @@
   "onboarding.step_invalid": "refusals:generic",
   "onboarding.required_steps_unmet": "refusals:generic",
   "onboarding.not_found": "refusals:goneNotice",
+  "money.too_many_decimals": "refusals:moneyWholeOnly",
   "RequestInvalid": "refusals:generic"
 }

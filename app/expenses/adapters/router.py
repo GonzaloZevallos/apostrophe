@@ -26,6 +26,7 @@ from app.expenses.domain.category import (
 from app.expenses.domain.expense import ExpenseNotFound
 from app.expenses.domain.month import Month
 from app.http_errors import TranslateErrors
+from app.shared.money import TooManyDecimals
 
 router = APIRouter(tags=["expenses"])
 categories_router = APIRouter(prefix="/expense-categories")
@@ -53,7 +54,7 @@ as_http = TranslateErrors(
     [
         (404, (CategoryNotFound, ExpenseNotFound)),
         (409, (CategoryNameTaken, CategoryInUse)),
-        (422, (ExpenseRuleBroken,)),
+        (422, (ExpenseRuleBroken, TooManyDecimals)),
     ]
 )
 

@@ -3,6 +3,7 @@
   "goneNotice": "That is gone. The list is up to date.",
   "goneDetail": "That is gone.",
   "nameArchived": "That name belongs to an archived product. Look for it in Archived.",
+  "moneyWholeOnly": "Use whole amounts only.",
   "hasHistory": "This product already has history: archive it instead of deleting it.",
   "pinnedNotReady": "Test it first to see how it looks",
   "probarloTokenInvalid": "The token is not valid: copy it again from @BotFather.",
