@@ -4,7 +4,7 @@
  * never through Category (a control another subtask replaces).
  */
 
-import { act, screen } from '@testing-library/react'
+import { act, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { sheetDepth } from '../components/useSheetStack'
@@ -233,6 +233,40 @@ test('resize: computer to phone, then back from a dirty edit asks', async () => 
 
   expect(await screen.findByText(DISCARD)).toBeInTheDocument()
   expect(screen.getByLabelText('Details')).toHaveValue('Bolsas x')
+})
+
+test('phone: with the Category list open back closes only the list and the edit stays; a second back asks', async () => {
+  stubViewport('phone')
+  const router = renderExpenses([SEPTEMBER], fetchFake())
+  await openEdit()
+  await makeDirty()
+  await userEvent.click(await screen.findByRole('button', { name: /^Category/ }))
+  await screen.findByRole('dialog', { name: 'Category options' })
+  expect(sheetDepth(router.state.location.state)).toBe(2)
+
+  await act(() => router.navigate(-1))
+
+  await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Category options' })).toBeNull())
+  expect(sheetDepth(router.state.location.state)).toBe(1)
+  expect(screen.getByLabelText('Details')).toHaveValue('Bolsas x')
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+
+  await act(() => router.navigate(-1))
+  expect(await screen.findByText(DISCARD)).toBeInTheDocument()
+})
+
+test('computer: Escape with the Category dropdown open closes only the dropdown', async () => {
+  stubViewport('computer')
+  renderExpenses([SEPTEMBER], fetchFake())
+  await openEdit()
+  await userEvent.click(await screen.findByRole('button', { name: /^Category/ }))
+  expect(await screen.findByRole('listbox', { name: 'Category options' })).toBeInTheDocument()
+
+  await userEvent.keyboard('{Escape}')
+
+  await waitFor(() => expect(screen.queryByRole('listbox')).toBeNull())
+  expect(screen.getByLabelText('Details')).toBeInTheDocument()
+  expect(screen.queryByText(DISCARD)).not.toBeInTheDocument()
 })
 
 test('computer: Close on a dirty edit asks as before and never touches the history', async () => {

@@ -7,12 +7,14 @@
 
 import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
+import { sheetDepth } from "../../components/useSheetStack";
 import { EXPENSES, EXPENSE_NEW, MORE } from "../../routes";
 import { stubViewport } from "../../test-viewport";
 import {
   type FetchImpl,
   ME,
+  categoryField,
   chooseCategory,
   jsonResponse,
   renderExpenses,
@@ -26,11 +28,14 @@ const CATEGORIES = [
 const EMPTY_VIEW = { month: "2026-10", total: 0, categories: [] };
 
 /** `holdPost`: the POST to EXPENSES waits for this promise, so the test decides when the save lands. */
-function api({ holdPost }: { holdPost?: Promise<void> } = {}): FetchImpl {
+function api({
+  holdPost,
+  categories = CATEGORIES,
+}: { holdPost?: Promise<void>; categories?: typeof CATEGORIES } = {}): FetchImpl {
   return async (url, init) => {
     const method = init?.method ?? "GET";
     if (url.startsWith("/expense-categories") && method === "GET")
-      return jsonResponse(200, CATEGORIES);
+      return jsonResponse(200, categories);
     if (url.startsWith("/expenses?month=") && method === "GET")
       return jsonResponse(200, EMPTY_VIEW);
     if (url === EXPENSES && method === "POST") {
@@ -273,4 +278,151 @@ test("after a save the form is no longer in history: leaving by history is a pop
   expect(await screen.findByText("More screen")).toBeInTheDocument();
   expect(router.state.historyAction).toBe("POP");
   expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+});
+
+const MANY_CATEGORIES = Array.from({ length: 12 }, (_unused, index) => ({
+  id: 100 + index,
+  name: `Rubro ${String(index + 1).padStart(2, "0")}`,
+}));
+
+test("with 12 categories the field is a Selector found by typing, with no select, pressed button or radio group", async () => {
+  renderExpenses([MORE, EXPENSE_NEW], api({ categories: MANY_CATEGORIES }));
+  const field = await categoryField();
+
+  expect(document.querySelector("select")).toBeNull();
+  expect(screen.queryByRole("radiogroup")).toBeNull();
+  expect(
+    screen
+      .getAllByRole("button")
+      .filter((button) => button.hasAttribute("aria-pressed")),
+  ).toEqual([]);
+
+  await userEvent.click(field);
+  const list = within(
+    await screen.findByRole("dialog", { name: "Category options" }),
+  );
+  await userEvent.type(list.getByRole("searchbox"), "09");
+  expect(list.queryByRole("button", { name: "Rubro 08" })).toBeNull();
+  await userEvent.click(list.getByRole("button", { name: "Rubro 09" }));
+  await waitFor(() => expect(field).toHaveTextContent("Rubro 09"));
+});
+
+test("an empty set shows its message in the open list and the inline creation stays", async () => {
+  renderExpenses([MORE, EXPENSE_NEW], api({ categories: [] }));
+
+  await userEvent.click(await categoryField());
+
+  const list = within(
+    await screen.findByRole("dialog", { name: "Category options" }),
+  );
+  expect(
+    list.getByText(
+      "No categories yet. Add them in Settings → Expense categories.",
+    ),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "Create a new category" }),
+  ).toBeInTheDocument();
+});
+
+test("while the categories load the form shows no empty wording and no field", async () => {
+  const pending: FetchImpl = async (url, init) => {
+    if (
+      url.startsWith("/expense-categories") &&
+      (init?.method ?? "GET") === "GET"
+    )
+      return new Promise(() => undefined);
+    return api()(url, init);
+  };
+  renderExpenses([MORE, EXPENSE_NEW], pending);
+
+  await screen.findByRole("button", { name: "Close" });
+
+  expect(screen.queryByText(/No categories yet/)).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: /^Category/ }),
+  ).not.toBeInTheDocument();
+});
+
+test("nothing chosen: the field reads its placeholder and the form cannot be saved", async () => {
+  renderExpenses([MORE, EXPENSE_NEW], api());
+  await userEvent.type(await screen.findByLabelText("Amount"), "1000");
+  await userEvent.type(screen.getByLabelText("Details"), "Cinta");
+
+  expect(await categoryField()).toHaveTextContent("Pick a category");
+  expect(
+    screen.getByRole("button", { name: "Save the expense" }),
+  ).toBeDisabled();
+});
+
+describe.each([
+  ["Expenses", [EXPENSES], EXPENSES, "Add expense"],
+  ["More", [MORE], MORE, "Add expense from More"],
+] as const)("the new expense opened from %s", (_origin, entries, parent, link) => {
+  async function open(): Promise<ReturnType<typeof renderExpenses>> {
+    stubViewport("phone");
+    const router = renderExpenses([...entries], api());
+    await userEvent.click(await screen.findByRole("link", { name: link }));
+    await screen.findByLabelText("Details");
+    expect(router.state.location.pathname).toBe(EXPENSE_NEW);
+    return router;
+  }
+
+  test("a clean form: back goes to the parent with no question", async () => {
+    const router = await open();
+
+    await act(() => router.navigate(-1));
+
+    await waitFor(() => expect(router.state.location.pathname).toBe(parent));
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+  });
+
+  test("a dirty form: back raises LeaveConfirm", async () => {
+    const router = await open();
+    await userEvent.type(screen.getByLabelText("Details"), "Cinta");
+
+    await act(() => router.navigate(-1));
+
+    expect(await screen.findByRole("alertdialog")).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe(EXPENSE_NEW);
+  });
+
+  test("with the list open back closes only the list and keeps what was typed; a second back asks", async () => {
+    const router = await open();
+    await userEvent.type(screen.getByLabelText("Details"), "Cinta");
+    await userEvent.click(await categoryField());
+    await screen.findByRole("dialog", { name: "Category options" });
+    expect(sheetDepth(router.state.location.state)).toBe(1);
+
+    await act(() => router.navigate(-1));
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("dialog", { name: "Category options" }),
+      ).toBeNull(),
+    );
+    expect(router.state.location.pathname).toBe(EXPENSE_NEW);
+    expect(screen.getByLabelText("Details")).toHaveValue("Cinta");
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+
+    await act(() => router.navigate(-1));
+    expect(await screen.findByRole("alertdialog")).toBeInTheDocument();
+  });
+
+  test("on the computer Escape with the dropdown open closes only the dropdown", async () => {
+    stubViewport("computer");
+    const router = renderExpenses([...entries], api());
+    await userEvent.click(await screen.findByRole("link", { name: link }));
+    await userEvent.click(await categoryField());
+    expect(
+      await screen.findByRole("listbox", { name: "Category options" }),
+    ).toBeInTheDocument();
+
+    await userEvent.keyboard("{Escape}");
+
+    await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull());
+    expect(router.state.location.pathname).toBe(EXPENSE_NEW);
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Details")).toBeInTheDocument();
+  });
 });

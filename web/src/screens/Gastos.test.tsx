@@ -374,6 +374,43 @@ test('a category removed mid-form keeps what was typed and empties Categoría', 
   expect(screen.getByLabelText('Details')).toHaveValue('Cinta para embalar')
 })
 
+test('the gone refusal is tied to the field, and an inline-created category that is gone is not offered afterwards', async () => {
+  renderExpenses(
+    [EXPENSES],
+    store(
+      [...SEED],
+      // The created category is never kept by the store, so it is dead at the save.
+      async (url, init) => {
+        const method = init?.method ?? 'GET'
+        if (url === '/expense-categories' && method === 'POST') return jsonResponse(201, { id: 3, name: 'Insumos' })
+        if (url === EXPENSES && method === 'POST') {
+          return jsonResponse(404, { detail: 'no category', code: 'expense_category.not_found' })
+        }
+        throw new RangeError('not mine')
+      },
+    ),
+  )
+
+  await userEvent.click(await screen.findByRole('link', { name: 'Add expense' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Create a new category' }))
+  await userEvent.type(screen.getByLabelText('New category name'), 'Insumos')
+  await userEvent.click(screen.getByRole('button', { name: 'Create category' }))
+  await vi.waitFor(async () => expect(await categoryField()).toHaveTextContent('Insumos'))
+  await userEvent.type(screen.getByLabelText('Amount'), '1000')
+  await userEvent.type(screen.getByLabelText('Details'), 'Cinta')
+  await userEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
+
+  const refusal = await screen.findByText(CATEGORY_GONE)
+  const field = await categoryField()
+  expect(field).toHaveTextContent('Pick a category')
+  expect(field).toHaveAttribute('aria-describedby', refusal.id)
+
+  await userEvent.click(field)
+  const list = within(await screen.findByRole('dialog', { name: 'Category options' }))
+  expect(list.getByRole('button', { name: 'Packaging' })).toBeInTheDocument()
+  expect(list.queryByRole('button', { name: 'Insumos' })).not.toBeInTheDocument()
+})
+
 test('a server error on the expense form shows the generic retry, never the refusal text', async () => {
   renderExpenses(
     [EXPENSES],
