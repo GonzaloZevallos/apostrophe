@@ -19,7 +19,7 @@ import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Link, Outlet, RouterProvider, useLocation } from 'react-router'
 import FlashProvider from '../../flash/FlashProvider'
-import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { queryClient, setCurrentPath, setNavigate } from '../../queryClient'
 import ClienteForm from './ClienteForm'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
@@ -102,8 +102,10 @@ function renderForm(initialPath: string, previous?: string) {
       : { initialEntries: [previous, initialPath], initialIndex: 1 },
   )
   render(
-    <QueryClientProvider client={new QueryClient()}>
-      <RouterProvider router={router} />
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
   return router
@@ -294,7 +296,9 @@ test('a 401 on save clears the cache and goes to Entrar, through the session bou
   )
   render(
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
 
@@ -529,30 +533,81 @@ test('the form follows the icon and text rule: its submit and its Cerrar are tex
   expectIconAndTextRule(document.body)
 })
 
+
 const TYPES = [
   { id: 1, name: 'Friends', icon: 'heart', is_vip: false },
   { id: 2, name: 'Wholesale', icon: 'star', is_vip: true },
 ]
 
-test('the Customer type field offers No type first, then each type with its icon', async () => {
-  api = stubFetchWithSettings(true, true, TYPES)
-  renderForm(CUSTOMER_NEW)
+const MANY_TYPES = Array.from({ length: 13 }, (_unused, index) => ({
+  id: index + 1,
+  name: `Kind ${String(index + 1).padStart(2, '0')}`,
+  icon: 'star',
+  is_vip: false,
+}))
 
-  const field = await screen.findByLabelText('Customer type')
-  const options = within(field).getAllByRole('option').map((option) => option.textContent)
-  expect(options).toEqual(['No type', '♡ Friends', '★ Wholesale'])
-  expect(field).toHaveValue('')
-  expect(screen.queryByText('Add a customer type')).not.toBeInTheDocument()
+/** `fetch` with `/api/customer-types` answered by `answer`; the rest goes to the returned mock. */
+function stubTypesAnswer(answer: () => Promise<Response>) {
+  const other: typeof api = vi.fn()
+  vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => {
+    if (input === '/pricing-settings') {
+      return Promise.resolve(jsonResponse(200, { is_bulk_pricing: true, is_vip_customers: true }))
+    }
+    if (input === '/api/customer-types') return answer()
+    return other(input, init)
+  })
+  return other
+}
+
+function typeField() {
+  return screen.findByRole('button', { name: /^Customer type/ })
+}
+
+async function chooseType(user: ReturnType<typeof userEvent.setup>, name: string) {
+  await user.click(await typeField())
+  await user.click(await screen.findByRole('button', { name }))
+  await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Customer type options' })).not.toBeInTheDocument())
+}
+
+test('13 types: the field is a Selector, no select, radio group or pressed button, and search finds and picks one', async () => {
+  stubViewport('phone')
+  api = stubFetchWithSettings(true, true, MANY_TYPES)
+  api.mockResolvedValue(jsonResponse(201, { id: 12, name: 'Ana', phone: null, vip: false, customer_type_id: 9 }))
+  renderForm(CUSTOMER_NEW)
+  const user = userEvent.setup()
+
+  const field = await typeField()
+  expect(field).toHaveTextContent('No type')
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+  expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument()
+  expect(screen.queryByRole('radio')).not.toBeInTheDocument()
+  expect(screen.queryAllByRole('button', { pressed: true })).toHaveLength(0)
+  expect(screen.queryAllByRole('button', { pressed: false })).toHaveLength(0)
+
+  await user.type(screen.getByLabelText('Name'), 'Ana')
+  await user.click(field)
+  await user.type(screen.getByRole('searchbox'), 'kind 09')
+  await user.click(screen.getByRole('button', { name: 'Kind 09' }))
+  await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Customer type options' })).not.toBeInTheDocument())
+  expect(await typeField()).toHaveTextContent('Kind 09')
+  await user.click(screen.getByRole('button', { name: 'Save and use' }))
+
+  expect(await screen.findByText('la ficha')).toBeInTheDocument()
+  expect(api).toHaveBeenCalledWith(
+    '/customers',
+    expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Ana', phone: '', customer_type_id: 9 }) }),
+  )
 })
 
 test('a type is set on a new customer and sent as customer_type_id', async () => {
   api = stubFetchWithSettings(true, true, TYPES)
   api.mockResolvedValue(jsonResponse(201, { id: 12, name: 'Ana', phone: null, vip: false, customer_type_id: 1 }))
   renderForm(CUSTOMER_NEW)
+  const user = userEvent.setup()
 
-  await userEvent.type(await screen.findByLabelText('Name'), 'Ana')
-  await userEvent.selectOptions(await screen.findByLabelText('Customer type'), '♡ Friends')
-  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+  await user.type(await screen.findByLabelText('Name'), 'Ana')
+  await chooseType(user, 'Friends')
+  await user.click(screen.getByRole('button', { name: 'Save and use' }))
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(api).toHaveBeenCalledWith(
@@ -561,17 +616,32 @@ test('a type is set on a new customer and sent as customer_type_id', async () =>
   )
 })
 
-test('editing shows the current type and clears it with No type', async () => {
+test('the list has no clearing row with no type chosen, and the clearing row sets No type when one is', async () => {
   api = stubFetchWithSettings(true, true, TYPES)
   api.mockResolvedValueOnce(jsonResponse(200, { id: 7, name: 'Tincho', phone: null, vip: false, customer_type_id: 1 }))
   api.mockResolvedValue(jsonResponse(200, { id: 7, name: 'Tincho', phone: null, vip: false, customer_type_id: null }))
   renderForm(pathTo(CUSTOMER_EDIT, { id: 7 }))
+  const user = userEvent.setup()
 
-  const field = await screen.findByLabelText('Customer type')
-  await waitFor(() => expect(field).toHaveValue('1'))
-  await userEvent.selectOptions(field, 'No type')
-  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+  await waitFor(async () => expect(await typeField()).toHaveTextContent('Friends'))
+  await user.click(await typeField())
+  const dialog = screen.getByRole('dialog', { name: 'Customer type options' })
+  expect(within(dialog).getAllByRole('button').map((button) => button.textContent)).toEqual([
+    '',
+    'No type',
+    '♡ Friends Selected',
+    '★ Wholesale',
+  ])
+  await user.click(within(dialog).getByRole('button', { name: 'No type' }))
+  await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Customer type options' })).not.toBeInTheDocument())
+  expect(await typeField()).toHaveTextContent('No type')
 
+  await user.click(await typeField())
+  expect(within(screen.getByRole('dialog', { name: 'Customer type options' })).queryByRole('button', { name: 'No type' })).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Close' }))
+  await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Customer type options' })).not.toBeInTheDocument())
+
+  await user.click(screen.getByRole('button', { name: 'Save and use' }))
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(api).toHaveBeenCalledWith(
     '/customers/7',
@@ -579,17 +649,17 @@ test('editing shows the current type and clears it with No type', async () => {
   )
 })
 
-test('editing changes a customer\'s type from one type to another', async () => {
+test("editing changes a customer's type from one type to another", async () => {
   api = stubFetchWithSettings(true, true, TYPES)
   api.mockResolvedValueOnce(jsonResponse(200, { id: 7, name: 'Tincho', phone: null, vip: false, customer_type_id: 1 }))
   api.mockResolvedValue(jsonResponse(200, { id: 7, name: 'Tincho', phone: null, vip: true, customer_type_id: 2 }))
   renderForm(pathTo(CUSTOMER_EDIT, { id: 7 }))
+  const user = userEvent.setup()
 
-  const field = await screen.findByLabelText('Customer type')
-  await waitFor(() => expect(field).toHaveValue('1'))
-  await userEvent.selectOptions(field, '★ Wholesale')
-  expect(field).toHaveValue('2')
-  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+  await waitFor(async () => expect(await typeField()).toHaveTextContent('Friends'))
+  await chooseType(user, 'Wholesale')
+  expect(await typeField()).toHaveTextContent('Wholesale')
+  await user.click(screen.getByRole('button', { name: 'Save and use' }))
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(api).toHaveBeenCalledWith(
@@ -603,35 +673,149 @@ test('with no types the field is the notice Add a customer type, leading to Sett
 
   const notice = await screen.findByRole('link', { name: 'Add a customer type' })
   expect(notice).toHaveAttribute('href', SETTINGS_CUSTOMER_TYPES)
-  expect(screen.queryByRole('combobox', { name: 'Customer type' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /^Customer type/ })).not.toBeInTheDocument()
 })
 
-test('with Customer types off the save sends no customer_type_id', async () => {
-  api = stubFetchWithSettings(false, true, TYPES)
-  api.mockResolvedValue(jsonResponse(201, { id: 13, name: 'Zoe', phone: null, vip: false, customer_type_id: null }))
+test('while the types load there is no No type, no notice and no empty wording; the field is busy', async () => {
+  stubTypesAnswer(() => new Promise<Response>(() => undefined))
   renderForm(CUSTOMER_NEW)
 
-  await userEvent.type(await screen.findByLabelText('Name'), 'Zoe')
-  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+  const field = await typeField()
+  expect(field).toBeDisabled()
+  expect(screen.queryByText('No type')).not.toBeInTheDocument()
+  expect(screen.queryByText('Add a customer type')).not.toBeInTheDocument()
+})
 
+test('after a failed load the field stays busy with the failure line, described by it, and Save still sends the held type', async () => {
+  const other = stubTypesAnswer(() => Promise.reject(new TypeError('offline')))
+  other.mockResolvedValue(jsonResponse(200, { id: 7, name: 'Tincho', phone: null, vip: false, customer_type_id: 2 }))
+  renderForm(pathTo(CUSTOMER_EDIT, { id: 7 }))
+  const user = userEvent.setup()
+
+  const line = await screen.findByText('Offline: check your internet and try again.')
+  const field = await typeField()
+  expect(field).toBeDisabled()
+  expect(screen.queryByText('No type')).not.toBeInTheDocument()
+  expect(screen.queryByText('Add a customer type')).not.toBeInTheDocument()
+  const describedBy = field.getAttribute('aria-describedby')
+  expect(describedBy).not.toBeNull()
+  expect(document.getElementById(describedBy ?? '')).toContainElement(line)
+
+  await user.type(await screen.findByLabelText('Name'), ' R')
+  await user.click(screen.getByRole('button', { name: 'Save and use' }))
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
-  expect(api).toHaveBeenCalledWith(
-    '/customers',
-    expect.objectContaining({ body: JSON.stringify({ name: 'Zoe', phone: '' }) }),
+  expect(other).toHaveBeenCalledWith(
+    '/customers/7',
+    expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho R', phone: '', customer_type_id: 2 }) }),
   )
 })
 
-test('a type deleted meanwhile (404 customer_type.not_found) shows the inline error and keeps the form', async () => {
+test('a server error on the types shows the generic retry line, and a remount that succeeds shows the Selector instead', async () => {
+  let answer: () => Promise<Response> = () => Promise.resolve(jsonResponse(500, { detail: 'boom' }))
+  stubTypesAnswer(() => answer())
+  const router = renderForm(CUSTOMER_NEW)
+  expect(await screen.findByRole('alert')).toBeInTheDocument()
+  expect(await typeField()).toBeDisabled()
+  expect(screen.queryByText('No type')).not.toBeInTheDocument()
+  await act(() => router.navigate(CUSTOMERS))
+
+  answer = () => Promise.resolve(jsonResponse(200, TYPES))
+  await act(() => router.navigate(CUSTOMER_NEW))
+  await waitFor(async () => expect(await typeField()).toBeEnabled())
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  expect(await typeField()).toHaveTextContent('No type')
+})
+
+test('a type deleted meanwhile (404 customer_type.not_found) clears the choice, shows its line and ties it to the field', async () => {
   api = stubFetchWithSettings(true, true, TYPES)
   api.mockResolvedValue(jsonResponse(404, { detail: 'gone', code: 'customer_type.not_found' }))
   renderForm(CUSTOMER_NEW)
+  const user = userEvent.setup()
 
-  await userEvent.type(await screen.findByLabelText('Name'), 'Ana')
-  await userEvent.selectOptions(await screen.findByLabelText('Customer type'), '★ Wholesale')
-  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+  await user.type(await screen.findByLabelText('Name'), 'Ana')
+  await chooseType(user, 'Wholesale')
+  await user.click(screen.getByRole('button', { name: 'Save and use' }))
 
-  expect(await screen.findByRole('alert')).toHaveTextContent('That type no longer exists. Pick another one.')
+  const refusal = await screen.findByText('That type no longer exists. Pick another one.')
   expect(screen.getByLabelText('Name')).toHaveValue('Ana')
-  expect(screen.getByLabelText('Customer type')).toHaveValue('')
+  const field = await typeField()
+  expect(field).toHaveTextContent('No type')
+  expect(field.getAttribute('aria-describedby')).toBe(refusal.id)
   expect(screen.queryByText('la ficha')).not.toBeInTheDocument()
+})
+
+describe('history', () => {
+  const CARD7 = pathTo(CUSTOMER, { id: 7 })
+  const EDIT7 = pathTo(CUSTOMER_EDIT, { id: 7 })
+
+  async function openNew() {
+    api = stubFetchWithSettings(true, true, TYPES)
+    const router = renderForm(CUSTOMERS)
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('link', { name: 'Abrir el formulario' }))
+    await screen.findByLabelText('Name')
+    return { router, user }
+  }
+
+  async function openEdit() {
+    api = stubFetchWithSettings(true, true, TYPES)
+    api.mockResolvedValue(jsonResponse(200, { id: 7, name: 'Tincho', phone: null, vip: false, customer_type_id: null }))
+    const router = renderForm(CARD7, CUSTOMERS)
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('link', { name: 'Editar' }))
+    await waitFor(() => expect(screen.getByLabelText('Name')).toHaveValue('Tincho'))
+    return { router, user }
+  }
+
+  describe.each([
+    ['new', openNew, CUSTOMER_NEW, CUSTOMERS],
+    ['edit', openEdit, EDIT7, CARD7],
+  ])('ClienteForm %s on the phone', (_name, open, here, parent) => {
+    beforeEach(() => stubViewport('phone'))
+
+    test('a clean form: back goes to the parent', async () => {
+      const { router } = await open()
+      await act(() => router.navigate(-1))
+      expect(router.state.location.pathname).toBe(parent)
+    })
+
+    test('a dirty form: back asks LeaveConfirm and keeping stays', async () => {
+      const { router, user } = await open()
+      await user.type(screen.getByLabelText('Name'), ' Sol')
+      await act(() => router.navigate(-1))
+      expect(screen.getByRole('alertdialog')).toHaveTextContent('Discard the customer?')
+      await user.click(screen.getByRole('button', { name: 'No, keep entering' }))
+      expect(router.state.location.pathname).toBe(here)
+    })
+
+    test('with the list open back closes only the list, even with the form dirty', async () => {
+      const { router, user } = await open()
+      await user.type(screen.getByLabelText('Name'), ' Sol')
+      await user.click(await typeField())
+      expect(screen.getByRole('dialog', { name: 'Customer type options' })).toBeInTheDocument()
+      await act(() => router.navigate(-1))
+      expect(screen.queryByRole('dialog', { name: 'Customer type options' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+      expect(router.state.location.pathname).toBe(here)
+      expect((screen.getByLabelText('Name') as HTMLInputElement).value).toContain('Sol')
+    })
+  })
+
+  describe.each([
+    ['new', openNew],
+    ['edit', openEdit],
+  ])('ClienteForm %s on the computer', (_name, open) => {
+    beforeEach(() => stubViewport('computer'))
+
+    test('Escape closes only the dropdown', async () => {
+      const { router, user } = await open()
+      const here = router.state.location.pathname
+      await user.click(await typeField())
+      expect(screen.getByRole('listbox')).toBeInTheDocument()
+      await user.keyboard('{Escape}')
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+      expect(router.state.location.pathname).toBe(here)
+      expect(screen.getByLabelText('Name')).toBeInTheDocument()
+    })
+  })
 })
