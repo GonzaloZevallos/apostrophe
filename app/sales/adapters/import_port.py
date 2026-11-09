@@ -14,11 +14,13 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from datetime import date, datetime
+from decimal import Decimal
 from typing import assert_never
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.money_format.adapters.reader import SqlMoneyFormat
 from app.sales.adapters.price_book import PlannedPriceBook, SqlPriceBook
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.adapters.tables import SaleRow
@@ -134,18 +136,21 @@ class SalesImport:
             SqlPriceBook(self._session, self._business_id),
             _FixedVip(sale.vip),
             _FixedSettings(settings),
+            SqlMoneyFormat(self._session, self._business_id),
             transaction,
             sale_date=sale.sale_date,
             today=today,
             customer_id=customer_id,
-            shipping_charged=sale.shipping,
+            shipping_charged=Decimal(sale.shipping),
             note=sale.note,
             lines=[
                 LineInput(
                     variety_id=variety_id,
                     quantity=sale.quantity,
                     gift=sale.gift,
-                    special_price=sale.special_total,
+                    special_price=(
+                        None if sale.special_total is None else Decimal(sale.special_total)
+                    ),
                 )
             ],
             method=_payment_method(sale.method),

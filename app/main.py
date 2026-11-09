@@ -42,6 +42,7 @@ from app.expenses.adapters.router import router as expenses_router
 from app.http_errors import Refused
 from app.migrations.runner import upgrade_to_head
 from app.money_format.adapters.opening import MoneyFormatOpening
+from app.money_format.adapters.reader import SqlMoneyFormat
 from app.onboarding.adapters.first_run_router import router as first_run_router
 from app.onboarding.adapters.opening import OnboardingOpening
 from app.onboarding.adapters.router import router as onboarding_router
@@ -273,6 +274,9 @@ def create_app(
     app.state.varieties_pricing_settings = SqlPricingSettings
     app.state.customers_pricing_settings = SqlPricingSettings
     app.state.owing_sales = SqlOwingSales
+    # How money is shown, read through each hexagon's own `MoneyFormatReader` port (docs/adr/0055).
+    app.state.sales_money_format = SqlMoneyFormat
+    app.state.products_money_format = SqlMoneyFormat
     # Another factory of the same shape: results reaches stock's rows and draws only
     # through its own `StockFigures` port, never `app.stock` directly (ADR-0006). The
     # panel route builds this over the request's own `Session` and business, the way

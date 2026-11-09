@@ -6,6 +6,7 @@ The failed-save cases run `record_sale` over a real Session on the test engine w
 SQLite, the second with no wait for the lock."""
 
 from datetime import UTC, date, datetime
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -27,6 +28,7 @@ from app.shared.pricing_settings import PricingSettings
 from app.shared.quantity import Quantity
 from app.shared.reference import ReferenceRefused
 from tests.conftest import TODAY
+from tests.fakes.money_format import WholeAmounts
 
 NOW = datetime(2026, 10, 2, 12, tzinfo=UTC)
 A_VARIETY_THAT_DOES_NOT_EXIST = 9_999
@@ -69,11 +71,12 @@ def _record(session: Session, variety_id: int, commit_fails: bool) -> Sale:
         _QuotesAnyVariety(),
         _NoCustomers(),
         _Settings(),
+        WholeAmounts(),
         _CommitFails(session) if commit_fails else session,
         sale_date=TODAY,
         today=TODAY,
         customer_id=None,
-        shipping_charged=0,
+        shipping_charged=Decimal(0),
         note=None,
         lines=[LineInput(variety_id=variety_id, quantity=Quantity.of(1))],
         method=PaymentMethod.CASH,
