@@ -7,7 +7,7 @@ date: 2026-10-28
 
 Amends docs/adr/0034-pricing-switches-live-in-their-own-table-and-the-lowest-applicable-rule-prices-a-line.md.
 
-Epic GH-318. Today one customer mark, `customer.vip`, and one nullable price per price entry,
+Epic GH-318. Today one customer mark, `customer.is_vip`, and one nullable price per price entry,
 `price_entry.vip_price`, make up the VIP rule (ADR-0034). The business-configuration PRD
 (`docs/product/business-configuration.md` on the epic's branch, read at commit c4286c2cab8e4a4160292d15921c552fcae3f3f3; it is not in `docs/product/` at this commit)
 replaces them with customer types. This records how their prices are stored and what happens to the
@@ -33,7 +33,7 @@ old columns. No code changes here.
   and the product is referenced by a `variety_id` column (docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md).
 - **A customer has at most one type.** The customer gains a reference to a customer type, which is a
   new nullable column; a customer with none pays no customer-type price.
-- **`customer.vip` and `price_entry.vip_price` are frozen in place.** They stay in their tables with
+- **`customer.is_vip` and `price_entry.vip_price` are frozen in place.** They stay in their tables with
   the values they hold. No migration changes or drops them, and the new code stops writing and reading
   them. They are history, not a second source of truth. The migration that builds this adds rows and
   fills new columns only (the PRD's "No stored row is rewritten by the migration"):
@@ -72,3 +72,5 @@ old columns. No code changes here.
 - **A price per type on the price entry itself**: it would need a column per type; a type is a row.
 - **Make the switches rows of the customer type**: the PRD keeps them per business, and
   `pricing_settings` already owns that.
+
+2026-11: the stored names became `catalog_attribute`/`is_shown` and `customer.is_vip` in migration 0027 (GH-75 part 3, CODING_STANDARDS §11); the decision is unchanged.

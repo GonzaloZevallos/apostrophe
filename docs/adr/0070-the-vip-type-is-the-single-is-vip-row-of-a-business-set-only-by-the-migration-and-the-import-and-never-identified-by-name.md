@@ -27,7 +27,7 @@ records how the code tells that type from any other.
 - **Readers ask once.** Every reader of VIP membership (pricing, the Sales list badge, the Customers
   list, Pick a customer) gets the VIP type's id once per request from one reader and compares each
   row's `customer_type_id` to it; none writes a correlated subquery of its own.
-- **`customer.vip` stays frozen.** It keeps its values and its allowlist entry, gains a server
+- **`customer.is_vip` stays frozen.** It keeps its values, gains a server
   default of false so a row written without it still stores a value, and no new code assigns or
   reads it.
 
@@ -36,3 +36,5 @@ records how the code tells that type from any other.
 - Moving a customer into the VIP type grants the VIP price from the next sale; moving out stops it.
 - The VIP type can be deleted once empty, and from then on nobody in that business gets the VIP
   price.
+
+2026-11: the stored names became `catalog_attribute`/`is_shown` and `customer.is_vip` in migration 0027 (GH-75 part 3, CODING_STANDARDS §11); the decision is unchanged.
