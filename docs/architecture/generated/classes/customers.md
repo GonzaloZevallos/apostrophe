@@ -179,9 +179,9 @@ classDiagram
     business_id : Mapped~int~
     customer_type_id : Mapped~int #124; None~
     id : Mapped~int~
+    is_vip : Mapped~bool~
     name : Mapped~str~
     phone : Mapped~str #124; None~
-    vip : Mapped~bool~
   }
   class CustomersImport {
     check_customer(name: str, phone: str #124; None) CustomerKey #124; CustomerRefusals

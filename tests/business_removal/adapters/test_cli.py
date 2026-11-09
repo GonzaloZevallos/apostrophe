@@ -79,7 +79,7 @@ EXPORTED_KINDS = (
     "stock_withdrawal_line",
     "withdrawal_reason",
     "catalog_header_footer",
-    "catalog_attributes",
+    "catalog_attribute",
     "onboarding",
     "first_run",
 )
@@ -234,9 +234,9 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     assert header_footer["header"] == CATALOG_HEADER
     assert header_footer["footer"] == CATALOG_FOOTER
 
-    attributes = kinds["catalog_attributes"][0]
+    attributes = kinds["catalog_attribute"][0]
     assert attributes["variety_id"] == variety_ref
-    assert attributes["shown"] is True
+    assert attributes["is_shown"] is True
     assert attributes["aroma"] == "floral"
     assert attributes["indica_share"] == 50
 

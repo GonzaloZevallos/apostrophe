@@ -140,3 +140,14 @@ def test_the_export_carries_the_renamed_date_columns_and_neither_old_name() -> N
     assert "sold_on" in columns["sale"]
     assert "entered_on" in columns["stock_entry"]
     assert not {"sale_date", "entry_date"} & {name for names in columns.values() for name in names}
+
+
+def test_the_export_carries_catalog_attribute_with_is_shown_and_is_vip_on_customer() -> None:
+    schema = _schema_rows().schema()
+
+    columns = {table.name: {column.name for column in table.columns} for table in schema.tables}
+
+    assert "is_shown" in columns["catalog_attribute"]
+    assert "is_vip" in columns["customer"]
+    assert "catalog_attributes" not in columns
+    assert not {"shown", "vip"} & (columns["catalog_attribute"] | columns["customer"])
