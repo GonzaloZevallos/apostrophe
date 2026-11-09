@@ -206,6 +206,8 @@ function GastosScreen() {
           target={editTarget}
           words={{
             title: EXPENSES_TEXT.editExpense,
+            question: COMMON_TEXT.discardTheChanges,
+            keep: COMMON_TEXT.noKeepEditing,
             lost: EXPENSES_TEXT.whatYouChangedIsLost,
             discard: EXPENSES_TEXT.yesDiscardThem,
           }}

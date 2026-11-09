@@ -25,7 +25,6 @@ import LeaveConfirm from '../../components/LeaveConfirm'
 import Sheet from '../../components/Sheet'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { SheetLevel, useSheet } from '../../components/useSheetStack'
-import { COMMON_TEXT } from '../../copy/common'
 import { useViewport } from '../../shell/useViewport'
 import ExpenseForm from './ExpenseForm'
 
@@ -33,6 +32,10 @@ import ExpenseForm from './ExpenseForm'
 export interface ExpenseEditWords {
   /** The sheet's accessible name. */
   title: string
+  /** The discard confirmation's question. */
+  question: string
+  /** Its keep-editing answer. */
+  keep: string
   /** What the discard confirmation says is lost. */
   lost: string
   /** The discard answer. */
@@ -143,10 +146,10 @@ export default function ExpenseEditSheet({
 
   const discardDialog: ReactNode = confirmingDiscard && (
     <ConfirmDialog
-      title={COMMON_TEXT.discardTheChanges}
+      title={words.question}
       detail={words.lost}
       confirmText={words.discard}
-      cancelText={COMMON_TEXT.noKeepEditing}
+      cancelText={words.keep}
       onConfirm={() => closeEdit()}
       onCancel={() => setConfirmingDiscard(false)}
     />
@@ -170,9 +173,9 @@ export default function ExpenseEditSheet({
         blocker.state === 'blocked' && (
           <LeaveConfirm
             blocker={blocker}
-            question={COMMON_TEXT.discardTheChanges}
+            question={words.question}
             detail={words.lost}
-            keepLabel={COMMON_TEXT.noKeepEditing}
+            keepLabel={words.keep}
             discardLabel={words.discard}
           />
         )
