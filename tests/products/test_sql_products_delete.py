@@ -53,6 +53,11 @@ def engine(request: pytest.FixtureRequest, tmp_path: Path) -> Iterator[Engine]:
         connection.execute(
             text("INSERT INTO business (id, name, language) VALUES (1, 'Negocio', 'en')")
         )
+        connection.execute(
+            text(
+                "INSERT INTO money_format (business_id, symbol, decimals, scale) VALUES (1, '$', 0, 0)"
+            )
+        )
     yield engine
     engine.dispose()
 

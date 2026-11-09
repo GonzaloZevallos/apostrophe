@@ -153,6 +153,11 @@ def test_two_writers_of_one_business_never_share_a_number(tmp_path: Path) -> Non
     with first_engine.begin() as connection:
         connection.execute(text("INSERT INTO business (id, name, language) VALUES (1, 'N', 'en')"))
         connection.execute(
+            text(
+                "INSERT INTO money_format (business_id, symbol, decimals, scale) VALUES (1, '$', 0, 0)"
+            )
+        )
+        connection.execute(
             text("INSERT INTO variety (id, business_id, name, name_key) VALUES (1, 1, 'V', 'v')")
         )
     second_engine = create_engine(url, connect_args={"timeout": 0})

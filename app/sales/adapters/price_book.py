@@ -16,10 +16,12 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.db import money_scale_factor, scaled
 from app.products.adapters.sql_products import SqlProducts
 from app.products.adapters.tables import PriceEntryRow
 from app.products.domain.product import PriceEntry, Product, ProductName, ProductRuleBroken
 from app.sales.domain.pricing import BulkQuote, PriceQuote, VarietyPricing
+from app.shared.money import Money
 from app.spreadsheet_import.domain.rows import PriceHistoryRow
 
 
@@ -45,11 +47,13 @@ class SqlPriceBook:
         varieties domain carries it: `None` when the entry has none."""
         if entry is None or entry.id is None:
             return None
-        return self._session.scalar(
-            select(PriceEntryRow.vip_price).where(
+        factor = money_scale_factor(self._session, self._business_id)
+        hundredths = self._session.scalar(
+            select(scaled(PriceEntryRow.vip_price, factor)).where(
                 PriceEntryRow.id == entry.id, PriceEntryRow.business_id == self._business_id
             )
         )
+        return None if hundredths is None else Money(hundredths).whole_units()
 
 
 class PlannedPriceBook:

@@ -26,7 +26,14 @@ from sqlalchemy import (
 from sqlalchemy.engine import Engine, make_url
 from sqlalchemy.engine.interfaces import DBAPIConnection
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import DeclarativeBase, MappedColumn, Session, SessionTransaction, mapped_column
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    InstrumentedAttribute,
+    MappedColumn,
+    Session,
+    SessionTransaction,
+    mapped_column,
+)
 from sqlalchemy.pool import ConnectionPoolEntry, StaticPool
 
 from app.shared.money import SCALE_FACTORS, Money
@@ -207,7 +214,9 @@ def money_scale_factor(session: Session, business_id: int) -> int:
     return factor
 
 
-def scaled(amount: ColumnElement[int], factor: int) -> ColumnElement[int]:
+def scaled[T: int | None](
+    amount: ColumnElement[T] | InstrumentedAttribute[T], factor: int
+) -> ColumnElement[T]:
     """The amount column in hundredths, inside the statement that loads it or inside the
     `SUM` over it: `amount * literal(factor)`. The domain reaches a whole-unit int only
     through `Money.whole_units()`, which never truncates or rounds."""
