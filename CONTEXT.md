@@ -379,12 +379,12 @@ Un link que el Operator imprime con scripts/reset-password.sh y que permite a un
 _Avoid_: recovery code, reset token, magic link, forgot-password email
 
 **Navigation**:
-La estructura fija de la app para un Business: las pestañas, More, Settings, y la única regla que le da a cada pantalla su marco y su camino de vuelta. Decide desde dónde se llega a cada capacidad, nunca qué hace. En la app: no tiene palabra propia.
-_Avoid_: menu, sitemap, routing, shell
+La estructura fija de la app para un Business: las pestañas del celular, la barra lateral de la computadora, el avatar "Settings" del encabezado del celular, Settings, y la única regla que le da a cada pantalla su marco y su camino de vuelta. Decide desde dónde se llega a cada capacidad, nunca qué hace; desde GH-651 no hay pantalla More, y cada uno de sus destinos tiene su propia entrada. En la app: no tiene palabra propia.
+_Avoid_: menu, sitemap, routing, shell, More
 
 **Tab root**:
-Una pantalla a la que se llega directo desde la barra o la barra lateral (Home, Sales, Customers, Products, Expenses, Analysis, More); muestra la barra y "+ New sale". Cualquier otra pantalla es una tarjeta o un detalle (con una flecha de regreso a su pantalla madre) o un formulario o una Sheet (con "Close").
-_Avoid_: home, main screen, section
+Una pantalla que muestra la barra (o la barra lateral) y "+ New sale": Home, Sales, Customers, Products y Analysis, y en una computadora también Expenses, que se abre desde la barra lateral. En el celular, a Analysis se llega con el segmento Today | Analysis de Home y marca Home como activa, y Expenses es un detalle con "‹ Analysis". Cualquier otra pantalla es una tarjeta o un detalle (con una flecha de regreso a su pantalla madre) o un formulario o una Sheet (con "Close").
+_Avoid_: home, main screen, section, More
 
 **Settings**:
 El único lugar que reúne cada configuración de todo el Business, en grupos: Business (con sus Withdrawal reasons), Users, Prices, Integrations, Catalog message, Expense categories, Appearance y Your account. La configuración de un solo Product vive en el Product, nunca acá, y nada del Operator está acá. _In the app_: Settings.
