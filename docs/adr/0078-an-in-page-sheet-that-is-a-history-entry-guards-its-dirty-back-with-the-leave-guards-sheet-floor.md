@@ -1,7 +1,11 @@
+---
+status: accepted
+date: 2026-11-09
+---
+
 # ADR-0078: Una hoja en la página que es una entrada del historial protege su atrás sucio con el piso de hoja del guardia de salida
 
-- Estado: aceptada
-- Extiende: ADR-0027 y ADR-0062 (no las enmienda)
+Extiende ADR-0027 y ADR-0062 (no las enmienda).
 
 ## Contexto
 
