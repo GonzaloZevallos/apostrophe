@@ -70,6 +70,7 @@ from app.sales.adapters.sales_ledger import SqlSalesLedger
 from app.settings import Settings
 from app.shared.copy import CopyCatalog
 from app.shared.language import BusinessLanguage
+from app.shared.money import MoneyNotRepresentable
 from app.static_spa import FrontNavigation, MissingBuiltFront, ShellPage, SpaStatic, api_segments
 from app.stock.adapters.babel_defaults import BabelReasonDefaults
 from app.stock.adapters.draw_costs import SqlDrawCosts
@@ -161,6 +162,15 @@ async def _refused(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(status_code=exc.status_code, content=content)
 
 
+async def _stored_amount_not_whole(request: Request, exc: Exception) -> JSONResponse:
+    # A stored amount a read cannot hold as whole units is an integrity failure, never a
+    # refusal of the request: 500, with the exception's own fixed literal and no amount.
+    assert isinstance(exc, MoneyNotRepresentable)
+    return JSONResponse(
+        status_code=500, content={"detail": str(exc), "code": MoneyNotRepresentable.code}
+    )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # Starlette's `State` is untyped; `create_app` always assigns an `Engine`.
@@ -188,6 +198,7 @@ def create_app(
     hasher: PasswordHasher | None = None,
     telegram: TelegramBackend | None = None,
     upkeep_ticker: bool = True,
+    opening_money_scale: int = 0,
 ) -> FastAPI:
     settings = settings or Settings.from_env()
     app = FastAPI(title="apostrophe", lifespan=lifespan)
@@ -212,6 +223,7 @@ def create_app(
     app.state.pinned_catalog_upkeep_ticker = upkeep_ticker
     app.add_exception_handler(RequestValidationError, _without_request_data)
     app.add_exception_handler(Refused, _refused)
+    app.add_exception_handler(MoneyNotRepresentable, _stored_amount_not_whole)
     # A factory, not an instance: `get_business_opening` builds it over the request's
     # own `Session`. `CompositeOpening` composes every capability that seeds something
     # at opening, so a new one joins here, not as a second keyword argument on
@@ -225,7 +237,7 @@ def create_app(
         partial(WithdrawalReasonsOpening, defaults=reason_defaults),
         partial(CatalogHeaderFooterOpening, defaults=header_footer_defaults),
         PricingSettingsOpening,
-        MoneyFormatOpening,
+        partial(MoneyFormatOpening, scale=opening_money_scale),
         partial(OnboardingOpening, clock=clock),
     )
     # A factory, not an instance (the same shape as `business_opening` above): sales

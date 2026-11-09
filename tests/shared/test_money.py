@@ -10,6 +10,8 @@ from app.shared.money import (
     Money,
     MoneyFormat,
     MoneyNotRepresentable,
+    TooManyDecimals,
+    money_within,
     round_half_up,
     round_half_up_to_units,
 )
@@ -179,3 +181,74 @@ def test_round_half_up_to_units_agrees_with_round_half_up_at_zero_decimals() -> 
     assert (
         round_half_up_to_units(value) * 100 == round_half_up(value, MoneyFormat("$", 0)).hundredths
     )
+
+
+@pytest.mark.parametrize(
+    ("amount", "decimals", "expected"),
+    [
+        ("10", 0, Money(1000)),
+        ("10.00", 0, Money(1000)),
+        ("10.000", 0, Money(1000)),
+        ("1E+1", 0, Money(1000)),
+        ("0.00", 0, Money(0)),
+        ("-12", 0, Money(-1200)),
+        ("10.5", 1, Money(1050)),
+        ("10.50", 2, Money(1050)),
+        ("10.505", 2, None),
+    ],
+)
+def test_money_within_checks_the_places_by_value(
+    amount: str, decimals: int, expected: Money | None
+) -> None:
+    if expected is None:
+        with pytest.raises(TooManyDecimals):
+            money_within(Decimal(amount), MoneyFormat("$", decimals))
+    else:
+        assert money_within(Decimal(amount), MoneyFormat("$", decimals)) == expected
+
+
+@pytest.mark.parametrize(
+    ("amount", "decimals"),
+    [("10.5", 0), ("0.01", 0), ("-10.5", 0), ("10.505", 2), ("0.001", 2), ("10.55", 1)],
+)
+def test_money_within_refuses_more_places_than_the_business_allows(
+    amount: str, decimals: int
+) -> None:
+    with pytest.raises(TooManyDecimals) as raised:
+        money_within(Decimal(amount), MoneyFormat("$", decimals))
+
+    assert str(raised.value) == "the amount has more decimals than the business allows"
+    assert amount not in str(raised.value)
+    assert TooManyDecimals.code == "money.too_many_decimals"
+
+
+def test_money_within_refuses_a_vanishingly_small_amount_without_a_huge_power() -> None:
+    with pytest.raises(TooManyDecimals):
+        money_within(Decimal("1E-999999999"), MoneyFormat("$", 2))
+
+
+def test_money_within_normalises_negative_zero() -> None:
+    assert money_within(Decimal("-0.0"), MoneyFormat("$", 0)) == Money(0)
+
+
+def test_money_within_still_refuses_what_is_not_a_finite_amount_or_too_large() -> None:
+    with pytest.raises(InvalidMoney):
+        money_within(Decimal("NaN"), MoneyFormat("$", 0))
+    with pytest.raises(InvalidMoney):
+        money_within(Decimal("1E+30"), MoneyFormat("$", 0))
+
+
+@pytest.mark.parametrize(
+    ("hundredths", "units"), [(1100, 11), (-1100, -11), (0, 0), (100, 1), (1_100_000, 11_000)]
+)
+def test_whole_units_is_exact(hundredths: int, units: int) -> None:
+    assert Money(hundredths).whole_units() == units
+    assert Money.of_units(units) == Money(hundredths)
+
+
+@pytest.mark.parametrize("hundredths", [1150, -1150, 1, -1, 99])
+def test_whole_units_raises_instead_of_truncating_or_rounding(hundredths: int) -> None:
+    with pytest.raises(MoneyNotRepresentable) as raised:
+        Money(hundredths).whole_units()
+
+    assert str(raised.value) == "the amount is not a whole number of units"

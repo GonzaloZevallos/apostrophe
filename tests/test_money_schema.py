@@ -2,9 +2,9 @@ from decimal import Decimal
 from typing import Any
 
 import pytest
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, TypeAdapter, ValidationError
 
-from app.money_schema import MoneyAmount
+from app.money_schema import MoneyAmount, MoneyOut
 
 
 class Priced(BaseModel):
@@ -77,8 +77,11 @@ def _python_refusal(value: Any) -> str:
     return errors[0]["msg"]
 
 
-def test_more_than_two_decimals_is_refused() -> None:
-    assert _refusal('{"price": 11000.123}') == "Value error, an amount allows at most two decimals"
+def test_decimal_places_are_not_judged_by_the_schema_type() -> None:
+    """Whether an amount has more places than the business shows is `money_within`'s rule,
+    checked where the business is known; the type keeps the value exact for it."""
+    assert Priced.model_validate_json('{"price": 11000.123}').price == Decimal("11000.123")
+    assert Priced.model_validate({"price": Decimal("0.001")}).price == Decimal("0.001")
 
 
 def test_nan_and_infinity_are_refused() -> None:
@@ -112,7 +115,7 @@ def test_an_amount_too_large_is_refused() -> None:
 
 
 def test_a_refusal_never_carries_the_amount() -> None:
-    for raw in ('{"price": 11000.123}', '{"price": "7654"}', '{"price": 7654321e30}'):
+    for raw in ('{"price": "7654"}', '{"price": 7654321e30}'):
         assert "7654" not in _refusal(raw)
         assert "11000" not in _refusal(raw)
 
@@ -134,3 +137,37 @@ def test_the_value_comes_back_without_trailing_zeros_or_a_positive_exponent(
     raw: str, exponent: int
 ) -> None:
     assert Priced.model_validate_json(raw).price.as_tuple().exponent == exponent
+
+
+@pytest.mark.parametrize(
+    ("amount", "expected"),
+    [
+        (Decimal("11000"), b"11000"),
+        (Decimal("11000.50"), b"11000.5"),
+        (Decimal("-11000.5"), b"-11000.5"),
+        (Decimal("-3"), b"-3"),
+        (Decimal("0"), b"0"),
+        (Decimal("0.00"), b"0"),
+        (Decimal("0.05"), b"0.05"),
+        (Decimal("1E+3"), b"1000"),
+        (Decimal("12345678901234567"), b"12345678901234567"),
+    ],
+)
+def test_money_out_is_a_json_integer_when_whole_and_an_exact_number_otherwise(
+    amount: Decimal, expected: bytes
+) -> None:
+    assert TypeAdapter(MoneyOut).dump_json(amount) == expected
+
+
+def test_money_out_in_a_model_is_never_a_string() -> None:
+    class Shown(BaseModel):
+        total: MoneyOut
+
+    assert Shown(total=Decimal("11000.50")).model_dump_json() == '{"total":11000.5}'
+
+
+def test_money_out_refuses_a_figure_a_json_number_cannot_carry_exactly() -> None:
+    with pytest.raises(ValueError, match="cannot be written exactly") as raised:
+        TypeAdapter(MoneyOut).dump_json(Decimal("1234567890123456.78"))
+
+    assert "1234567" not in str(raised.value)
