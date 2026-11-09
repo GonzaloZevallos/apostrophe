@@ -7,7 +7,7 @@ date: 2026-10-28
 
 Amends docs/adr/0034-pricing-switches-live-in-their-own-table-and-the-lowest-applicable-rule-prices-a-line.md.
 
-Epic GH-318. Today one customer mark, `customer.is_vip`, and one nullable price per price entry,
+Epic GH-318. Today one customer mark, `customer.vip`, and one nullable price per price entry,
 `price_entry.vip_price`, make up the VIP rule (ADR-0034). The business-configuration PRD
 (`docs/product/business-configuration.md` on the epic's branch, read at commit c4286c2cab8e4a4160292d15921c552fcae3f3f3; it is not in `docs/product/` at this commit)
 replaces them with customer types. This records how their prices are stored and what happens to the

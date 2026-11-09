@@ -27,7 +27,7 @@ records how the code tells that type from any other.
 - **Readers ask once.** Every reader of VIP membership (pricing, the Sales list badge, the Customers
   list, Pick a customer) gets the VIP type's id once per request from one reader and compares each
   row's `customer_type_id` to it; none writes a correlated subquery of its own.
-- **`customer.is_vip` stays frozen.** It keeps its values, gains a server
+- **`customer.is_vip` stays frozen.** It keeps its values and its allowlist entry, gains a server
   default of false so a row written without it still stores a value, and no new code assigns or
   reads it.
 
