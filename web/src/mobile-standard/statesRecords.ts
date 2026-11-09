@@ -27,8 +27,7 @@ import {
   WITHDRAWAL_NEW,
 } from '../routes.ts'
 import { AUTH_TEXT } from '../copy/auth.ts'
-import { ENGLISH_STATIC } from '../i18n/englishStatic.ts'
-import { resolveKey } from '../i18n/resolve.ts'
+import emptyStates from '../copy/locales/en/emptyStates.json' with { type: 'json' }
 import { common } from './copy.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { SETTINGS_TEXT } from '../copy/settings.ts'
@@ -125,7 +124,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
     screen: 'expense/category-selector-empty',
     route: EXPENSE_NEW,
     steps: [{ press: common('common:category') }],
-    visible: resolveKey(ENGLISH_STATIC, 'emptyStates:selectorNoCategories'),
+    visible: emptyStates.selectorNoCategories,
     reads: [{ path: /^\/api\/expense-categories$/, status: 200, body: [] }],
   },
   {

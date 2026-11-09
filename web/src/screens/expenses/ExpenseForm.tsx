@@ -129,20 +129,12 @@ export default function ExpenseForm({
   // The form draws only its header until the categories answer.
   useLoading(categoriesQuery.isPending)
   const categories = categoriesQuery.data ?? []
+  // The query is the single source: an inline-created category stops being offered as an extra
+  // the moment the query holds it.
   const allCategories = [
     ...categories,
     ...extraCategories.filter((extra) => !categories.some((category) => category.id === extra.id)),
   ]
-
-  // The query is the single source: an inline-created category stops being an extra once it holds it.
-  const loadedCategories = categoriesQuery.data
-  useEffect(() => {
-    if (loadedCategories === undefined) return
-    setExtraCategories((previous) => {
-      const pending = previous.filter((extra) => !loadedCategories.some((category) => category.id === extra.id))
-      return pending.length === previous.length ? previous : pending
-    })
-  }, [loadedCategories])
 
   const detailTrimmed = form.detail.trim()
   const canSubmit = form.category_id !== '' && detailTrimmed !== '' && !sending
