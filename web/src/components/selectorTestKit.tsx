@@ -5,11 +5,11 @@
  * note in `docs/product/selector.md`).
  */
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import type { UserEvent } from '@testing-library/user-event'
 import type { ReactNode } from 'react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
-import { vi } from 'vitest'
+import { expect, vi } from 'vitest'
 import { testT } from '../i18n/testing'
 import { HOME } from '../routes'
 import type { SelectorOption } from './Selector'
@@ -71,6 +71,9 @@ export async function choosePaymentMethod(user: Pick<UserEvent, 'click'>, method
   await user.click(await screen.findByRole('button', { name: /^Payment method/ }))
   const option = screen.queryByRole('option', { name: method }) ?? (await screen.findByRole('button', { name: method }))
   await user.click(option)
+  // The phone's list closes through the history, a frame later; whoever types next must not race
+  // the focus the closing list hands back to the field.
+  await waitFor(() => expect(option).not.toBeInTheDocument())
 }
 
 /** Chooses New sale's Paid state, which is what opens the Payment method field. */
