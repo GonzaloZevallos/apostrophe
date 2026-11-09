@@ -204,6 +204,11 @@ function GastosScreen() {
       {editTarget !== null && (
         <ExpenseEditSheet
           target={editTarget}
+          words={{
+            title: EXPENSES_TEXT.editExpense,
+            lost: EXPENSES_TEXT.whatYouChangedIsLost,
+            discard: EXPENSES_TEXT.yesDiscardThem,
+          }}
           onClosed={() => setEditTarget(null)}
           onSaved={(saved) => {
             invalidateResource(queryClient, 'expenses')

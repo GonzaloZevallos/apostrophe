@@ -26,12 +26,22 @@ import Sheet from '../../components/Sheet'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { SheetLevel, useSheet } from '../../components/useSheetStack'
 import { COMMON_TEXT } from '../../copy/common'
-import { EXPENSES_TEXT } from '../../copy/expenses'
 import { useViewport } from '../../shell/useViewport'
 import ExpenseForm from './ExpenseForm'
 
+/** The expense screen's own words, handed down by the host that reads them (the Copy module). */
+export interface ExpenseEditWords {
+  /** The sheet's accessible name. */
+  title: string
+  /** What the discard confirmation says is lost. */
+  lost: string
+  /** The discard answer. */
+  discard: string
+}
+
 export interface ExpenseEditSheetProps {
   target: Expense
+  words: ExpenseEditWords
   /** The edit is over: the host clears its target. */
   onClosed: () => void
   /** What follows a save, after the edit has closed. */
@@ -44,6 +54,7 @@ export interface ExpenseEditSheetProps {
 
 export default function ExpenseEditSheet({
   target,
+  words,
   onClosed,
   onSaved,
   onGone,
@@ -133,8 +144,8 @@ export default function ExpenseEditSheet({
   const discardDialog: ReactNode = confirmingDiscard && (
     <ConfirmDialog
       title={COMMON_TEXT.discardTheChanges}
-      detail={EXPENSES_TEXT.whatYouChangedIsLost}
-      confirmText={EXPENSES_TEXT.yesDiscardThem}
+      detail={words.lost}
+      confirmText={words.discard}
       cancelText={COMMON_TEXT.noKeepEditing}
       onConfirm={() => closeEdit()}
       onCancel={() => setConfirmingDiscard(false)}
@@ -150,7 +161,7 @@ export default function ExpenseEditSheet({
       computerBodyClass="capa__contenido"
       computerDialog={false}
       frameTag="div"
-      label={EXPENSES_TEXT.editExpense}
+      label={words.title}
       touched={dirty}
       onClose={requestClose}
       computerFrameRole="presentation"
@@ -160,9 +171,9 @@ export default function ExpenseEditSheet({
           <LeaveConfirm
             blocker={blocker}
             question={COMMON_TEXT.discardTheChanges}
-            detail={EXPENSES_TEXT.whatYouChangedIsLost}
+            detail={words.lost}
             keepLabel={COMMON_TEXT.noKeepEditing}
-            discardLabel={EXPENSES_TEXT.yesDiscardThem}
+            discardLabel={words.discard}
           />
         )
       }
