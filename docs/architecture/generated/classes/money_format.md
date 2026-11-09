@@ -16,9 +16,12 @@ classDiagram
   }
   class opening {
   }
+  class reader {
+  }
   class tables {
   }
   opening --> tables
+  reader --> tables
 ```
 
 ## domain
@@ -42,5 +45,8 @@ classDiagram
     id : Mapped~int~
     scale : Mapped~int~
     symbol : Mapped~str~
+  }
+  class SqlMoneyFormat {
+    current() MoneyFormat
   }
 ```
