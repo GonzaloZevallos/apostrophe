@@ -29,6 +29,7 @@ import {
 import { AUTH_TEXT } from '../copy/auth.ts'
 import { common, emptyState } from './copy.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
+import { EXPENSES_TEXT } from '../copy/expenses.ts'
 import { SETTINGS_TEXT } from '../copy/settings.ts'
 import { STOCK_TEXT } from '../copy/stock.ts'
 import { VARIETIES_TEXT } from '../copy/varieties.ts'
@@ -122,9 +123,9 @@ export const RECORDS_STATES: readonly WalkState[] = [
     // The business has no Expense categories: the open Category list shows the empty-set line.
     screen: 'expense/category-selector-empty',
     route: EXPENSE_NEW,
-    steps: [{ press: common('common:category') }],
+    steps: [{ press: `${common('common:category')} ${EXPENSES_TEXT.pickACategory}` }],
     visible: emptyState('emptyStates:selectorNoCategories'),
-    reads: [{ path: /^\/api\/expense-categories$/, status: 200, body: [] }],
+    reads: [{ path: /^\/expense-categories$/, status: 200, body: [] }],
   },
   {
     // A stored line on a Variety archived since: its 60-character name shows with the mark.

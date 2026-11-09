@@ -241,6 +241,7 @@ export default function ExpenseForm({
           <input
             className="campo__input"
             type="date"
+            autoComplete="off"
             value={form.spent_on}
             max={me.today}
             onChange={(event) => setForm((previous) => ({ ...previous, spent_on: event.target.value }))}
@@ -301,6 +302,7 @@ export default function ExpenseForm({
           <input
             className="campo__input campo__input--monto"
             inputMode="numeric"
+            autoComplete="off"
             value={form.amount}
             onChange={(event) => setForm((previous) => ({ ...previous, amount: event.target.value }))}
             required
@@ -311,6 +313,7 @@ export default function ExpenseForm({
           <input
             className="campo__input"
             value={form.detail}
+            autoComplete="off"
             maxLength={200}
             onChange={(event) => setForm((previous) => ({ ...previous, detail: event.target.value }))}
             required
