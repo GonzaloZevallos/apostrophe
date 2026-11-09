@@ -13,6 +13,7 @@ import { stubViewport } from "../../test-viewport";
 import {
   type FetchImpl,
   ME,
+  chooseCategory,
   jsonResponse,
   renderExpenses,
 } from "./renderExpenses";
@@ -47,10 +48,7 @@ function api({ holdPost }: { holdPost?: Promise<void> } = {}): FetchImpl {
 }
 
 async function fillForm(): Promise<void> {
-  await userEvent.selectOptions(
-    await screen.findByLabelText("Category"),
-    "Packaging",
-  );
+  await chooseCategory("Packaging");
   await userEvent.type(screen.getByLabelText("Amount"), "1000");
   await userEvent.type(screen.getByLabelText("Details"), "Cinta");
 }

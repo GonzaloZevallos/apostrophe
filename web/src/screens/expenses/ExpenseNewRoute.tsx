@@ -10,6 +10,8 @@
  *   to (`useFlash().armAfterLeaving`), calls `disarm()`, then leaves.
  * - On a phone the form is a `Sheet` (ADR-0062); on a direct address Expenses is drawn behind it
  *   (`ExpensesBehind`). The computer page is the one it always was.
+ * - The Category list is a Selector: its own history entry above the form, so a `SheetStackProvider`
+ *   sits above the leave guard and back with the list open closes only the list.
  * - Leaving with something typed asks first ("Discard the expense?"), through the one
  *   leave guard, so "Cerrar", the browser's Back and the swipe all ask the same question.
  */
@@ -25,6 +27,7 @@ import { useFlash } from '../../flash/useFlash'
 import { EXPENSES } from '../../routes'
 import BehindPane from '../../components/BehindPane'
 import Sheet from '../../components/Sheet'
+import { SheetStackProvider } from '../../components/useSheetStack'
 import { useViewport } from '../../shell/useViewport'
 import ExpenseForm from './ExpenseForm'
 import ExpensesBehind from './ExpensesBehind'
@@ -32,6 +35,14 @@ import { EXPENSES_TEXT } from '../../copy/expenses'
 import { COMMON_TEXT } from '../../copy/common'
 
 export default function ExpenseNewRoute() {
+  return (
+    <SheetStackProvider>
+      <ExpenseNewHost />
+    </SheetStackProvider>
+  )
+}
+
+function ExpenseNewHost() {
   const queryClient = useQueryClient()
   const flash = useFlash()
   const [dirty, setDirty] = useState(false)

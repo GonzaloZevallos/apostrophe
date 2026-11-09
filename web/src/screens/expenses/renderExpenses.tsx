@@ -6,10 +6,11 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import InAppLink from '../../components/InAppLink'
 import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
-import { vi } from 'vitest'
+import { expect, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import type { ShownLanguage } from '../../api/language'
 import FlashProvider from '../../flash/FlashProvider'
@@ -80,4 +81,20 @@ export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl) {
     </QueryClientProvider>,
   )
   return router
+}
+
+/** The Category field's button, found by its name (the Selector's field). */
+export async function categoryField(): Promise<HTMLElement> {
+  return screen.findByRole('button', { name: /^Category/ })
+}
+
+/**
+ * Chooses a Category the way a person does: opens the field, then picks the option, in the
+ * computer's dropdown (`option`) or the phone's list (a button in the list).
+ */
+export async function chooseCategory(name: string): Promise<void> {
+  await userEvent.click(await categoryField())
+  const option = screen.queryByRole('option', { name }) ?? (await screen.findByRole('button', { name }))
+  await userEvent.click(option)
+  await waitFor(() => expect(option).not.toBeInTheDocument())
 }

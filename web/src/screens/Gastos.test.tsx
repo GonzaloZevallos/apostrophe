@@ -15,7 +15,7 @@ import { EXPENSES, EXPENSE_CATEGORIES } from '../routes'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import { FLOWER_NOTICE } from './Gastos'
 import { CATEGORY_GONE } from './expenses/ExpenseForm'
-import { type FetchImpl, ME, jsonResponse, renderExpenses } from './expenses/renderExpenses'
+import { type FetchImpl, ME, categoryField, chooseCategory, jsonResponse, renderExpenses } from './expenses/renderExpenses'
 
 interface Row {
   id: number
@@ -109,7 +109,7 @@ function failing(match: (url: string, method: string) => boolean, make: () => Re
 }
 
 async function fillAndSave(detail: string, amount: string): Promise<void> {
-  await userEvent.selectOptions(await screen.findByLabelText('Category'), 'Packaging')
+  await chooseCategory('Packaging')
   await userEvent.type(screen.getByLabelText('Amount'), amount)
   await userEvent.type(screen.getByLabelText('Details'), detail)
   await userEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
@@ -370,7 +370,7 @@ test('a category removed mid-form keeps what was typed and empties Categoría', 
   await fillAndSave('Cinta para embalar', '1000')
 
   expect(await screen.findByText(CATEGORY_GONE)).toBeInTheDocument()
-  expect(screen.getByLabelText('Category')).toHaveValue('')
+  expect(await categoryField()).toHaveTextContent('Pick a category')
   expect(screen.getByLabelText('Details')).toHaveValue('Cinta para embalar')
 })
 
@@ -401,8 +401,8 @@ test('creating a category inside the expense form keeps what was typed and selec
   await userEvent.type(screen.getByLabelText('New category name'), 'Insumos')
   await userEvent.click(screen.getByRole('button', { name: 'Create category' }))
 
-  await vi.waitFor(() => {
-    expect(screen.getByLabelText('Category')).toHaveValue('3')
+  await vi.waitFor(async () => {
+    expect(await categoryField()).toHaveTextContent('Insumos')
   })
   expect(screen.getByLabelText('Details')).toHaveValue('Sustrato nuevo')
 })
@@ -478,7 +478,7 @@ test('a duplicate category name inside the form is refused, keeping what was typ
   expect(await screen.findByText('Check the details and try again.')).toBeInTheDocument()
   expect(screen.getByLabelText('New category name')).toHaveValue('Packaging')
   expect(screen.getByLabelText('Details')).toHaveValue('Sustrato nuevo')
-  expect(screen.getByLabelText('Category')).toHaveValue('')
+  expect(await categoryField()).toHaveTextContent('Pick a category')
 })
 
 test('if the categories cannot load, the edit overlay still has "Close"', async () => {

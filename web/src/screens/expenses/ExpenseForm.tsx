@@ -12,7 +12,8 @@
  * expense (Gastos): a new expense can neither be deleted nor be already gone.
  */
 
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, useEffect, useId, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useLoading } from '../../components/useLoading'
 import { useOutletContext } from 'react-router'
@@ -33,6 +34,7 @@ import type { SuccessToast } from '../../components/AvisoExito'
 import Boton from '../../components/Boton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { SheetActions } from '../../components/Sheet'
+import Selector from '../../components/Selector'
 import SinConexion from '../../components/SinConexion'
 import { useViewport } from '../../shell/useViewport'
 import { parseMoney } from '../../format/parse'
@@ -104,6 +106,8 @@ export default function ExpenseForm({
   const me = useOutletContext<Me>()
   const phone = useViewport() === 'phone'
   const queryClient = useQueryClient()
+  const { t } = useTranslation()
+  const categoryErrorId = useId()
   const categoriesQuery = useQuery({ queryKey: keys.expenseCategories(), queryFn: listCategories })
   const [initial] = useState<FormState>(() => initialForm(target, me.today))
   const [form, setForm] = useState<FormState>(initial)
@@ -129,6 +133,16 @@ export default function ExpenseForm({
     ...categories,
     ...extraCategories.filter((extra) => !categories.some((category) => category.id === extra.id)),
   ]
+
+  // The query is the single source: an inline-created category stops being an extra once it holds it.
+  const loadedCategories = categoriesQuery.data
+  useEffect(() => {
+    if (loadedCategories === undefined) return
+    setExtraCategories((previous) => {
+      const pending = previous.filter((extra) => !loadedCategories.some((category) => category.id === extra.id))
+      return pending.length === previous.length ? previous : pending
+    })
+  }, [loadedCategories])
 
   const detailTrimmed = form.detail.trim()
   const canSubmit = form.category_id !== '' && detailTrimmed !== '' && !sending
@@ -183,6 +197,7 @@ export default function ExpenseForm({
         setOffline(true)
       } else if (caught instanceof ApiError && resolveOverride(EXPENSE_FORM_OVERRIDES, caught.code) === 'category-gone') {
         invalidateResource(queryClient, 'expenseCategories')
+        setExtraCategories((previous) => previous.filter((extra) => extra.id !== body.category_id))
         setForm((previous) => ({ ...previous, category_id: '' }))
         setCategoryError(CATEGORY_GONE)
       } else if (caught instanceof ApiError && isGone(caught.code)) {
@@ -240,30 +255,27 @@ export default function ExpenseForm({
             required
           />
         </label>
-        <label className="campo">
-          <span className="campo__rotulo">{COMMON_TEXT.category}</span>
-          <select
-            className="campo__input"
-            value={form.category_id}
-            onChange={(event) => {
-              setCategoryError(null)
-              setForm((previous) => ({ ...previous, category_id: event.target.value }))
-            }}
+        <div className="campo">
+          <Selector
             required
-          >
-            <option value="">{EXPENSES_TEXT.pickACategory}</option>
-            {allCategories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        {categoryError !== null && (
-          <span className="campo__error" role="alert">
-            {categoryError}
-          </span>
-        )}
+            label={COMMON_TEXT.category}
+            placeholder={EXPENSES_TEXT.pickACategory}
+            options={allCategories.map((category) => ({ value: String(category.id), label: category.name }))}
+            value={form.category_id === '' ? null : form.category_id}
+            onChange={(next) => {
+              setCategoryError(null)
+              setForm((previous) => ({ ...previous, category_id: next ?? '' }))
+            }}
+            loading={categoriesQuery.isPending || categoriesQuery.isError}
+            emptySetMessage={t('emptyStates:selectorNoCategories')}
+            describedBy={categoryError === null ? undefined : categoryErrorId}
+          />
+          {categoryError !== null && (
+            <span className="campo__error" role="alert" id={categoryErrorId}>
+              {categoryError}
+            </span>
+          )}
+        </div>
         {creatingCategory ? (
           <div className="campo">
             <label className="campo">
