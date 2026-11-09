@@ -522,24 +522,6 @@
     "issue": 78
   },
   {
-    "screen": "DescartarVenta",
-    "rule": "touch-action",
-    "target": "radio:Cash",
-    "issue": 78
-  },
-  {
-    "screen": "DescartarVenta",
-    "rule": "touch-action",
-    "target": "radio:Owing",
-    "issue": 78
-  },
-  {
-    "screen": "DescartarVenta",
-    "rule": "touch-action",
-    "target": "radio:Transfer",
-    "issue": 78
-  },
-  {
     "screen": "ElegirCliente",
     "rule": "touch-action",
     "target": "button:Add another product",
@@ -585,24 +567,6 @@
     "screen": "ElegirCliente",
     "rule": "touch-action",
     "target": "button:No customer",
-    "issue": 78
-  },
-  {
-    "screen": "ElegirCliente",
-    "rule": "touch-action",
-    "target": "radio:Cash",
-    "issue": 78
-  },
-  {
-    "screen": "ElegirCliente",
-    "rule": "touch-action",
-    "target": "radio:Owing",
-    "issue": 78
-  },
-  {
-    "screen": "ElegirCliente",
-    "rule": "touch-action",
-    "target": "radio:Transfer",
     "issue": 78
   },
   {
@@ -1008,24 +972,6 @@
     "issue": 78
   },
   {
-    "screen": "NuevaVenta",
-    "rule": "touch-action",
-    "target": "radio:Cash",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVenta",
-    "rule": "touch-action",
-    "target": "radio:Owing",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVenta",
-    "rule": "touch-action",
-    "target": "radio:Transfer",
-    "issue": 78
-  },
-  {
     "screen": "NuevaVentaCliente",
     "rule": "touch-action",
     "target": "button:Add another product",
@@ -1098,24 +1044,6 @@
     "issue": 78
   },
   {
-    "screen": "NuevaVentaCliente",
-    "rule": "touch-action",
-    "target": "radio:Cash",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaCliente",
-    "rule": "touch-action",
-    "target": "radio:Owing",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaCliente",
-    "rule": "touch-action",
-    "target": "radio:Transfer",
-    "issue": 78
-  },
-  {
     "screen": "NuevaVentaConLinea",
     "rule": "touch-action",
     "target": "button:Add another product",
@@ -1152,24 +1080,6 @@
     "issue": 78
   },
   {
-    "screen": "NuevaVentaConLinea",
-    "rule": "touch-action",
-    "target": "radio:Cash",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaConLinea",
-    "rule": "touch-action",
-    "target": "radio:Owing",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaConLinea",
-    "rule": "touch-action",
-    "target": "radio:Transfer",
-    "issue": 78
-  },
-  {
     "screen": "NuevaVentaConLineaYPago",
     "rule": "touch-action",
     "target": "button:Add another product",
@@ -1203,24 +1113,6 @@
     "screen": "NuevaVentaConLineaYPago",
     "rule": "touch-action",
     "target": "button:Save sale",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaConLineaYPago",
-    "rule": "touch-action",
-    "target": "radio:Cash",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaConLineaYPago",
-    "rule": "touch-action",
-    "target": "radio:Owing",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaConLineaYPago",
-    "rule": "touch-action",
-    "target": "radio:Transfer",
     "issue": 78
   },
   {
@@ -1293,24 +1185,6 @@
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-action",
     "target": "button:Tincho Aguirre+#",
-    "issue": 78
-  },
-  {
-    "screen": "NuevoClienteEnVenta",
-    "rule": "touch-action",
-    "target": "radio:Cash",
-    "issue": 78
-  },
-  {
-    "screen": "NuevoClienteEnVenta",
-    "rule": "touch-action",
-    "target": "radio:Owing",
-    "issue": 78
-  },
-  {
-    "screen": "NuevoClienteEnVenta",
-    "rule": "touch-action",
-    "target": "radio:Transfer",
     "issue": 78
   },
   {

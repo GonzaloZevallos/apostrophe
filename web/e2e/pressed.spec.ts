@@ -27,7 +27,7 @@ import {
 } from '../src/routes.js'
 import { EXEMPT } from '../src/architecture/pressedExempt.js'
 import { composite, contrastRatio, parseColour } from '../src/test/contrast.js'
-import { expect, test } from './fixtures.js'
+import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import type { Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -297,7 +297,7 @@ test.describe('Undo', () => {
       // notice is up, so it cannot go while the button is read.
       await page.clock.install({ time: PAGE_CLOCK_START })
       await fillSaleLine(page, 1, { variety: 'Rosa', grams: '2' })
-      await page.getByRole('radio', { name: 'Cash' }).check()
+      await page.getByRole('radio', { name: 'Paid' }).check(); await choosePaymentMethod(page, 'Cash')
       await page.getByRole('button', { name: 'Save sale' }).click()
       await expect(page.getByText('Sale saved')).toBeVisible()
       // `performance.now()` counts the fake milliseconds since the install, so the page's

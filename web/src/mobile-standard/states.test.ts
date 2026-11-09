@@ -58,7 +58,8 @@ describe('the walk reads the shared words from the English bundle', () => {
       { click: 'Nico Parra' },
       { click: 'Record payment' },
       { fill: { label: 'Amount', value: '1000' } },
-      { click: 'Cash' },
+      { press: 'Payment method' },
+      { press: 'Cash' },
     ])
     expect(payment?.button).toBe('Save')
   })

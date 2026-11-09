@@ -13,7 +13,7 @@
 import type { Page } from '@playwright/test'
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMER_PAYMENT, CUSTOMERS, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { watchConsole } from './console.js'
-import { expect, test } from './fixtures.js'
+import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -116,7 +116,7 @@ for (const viewport of VIEWPORTS) {
     // "All" fills the whole balance in one tap, and the payment is saved.
     await page.getByRole('button', { name: 'All: $ 5.000' }).click()
     await expect(page.getByLabel('Amount')).toHaveValue('$ 5.000')
-    await page.getByRole('radio', { name: 'Cash' }).check()
+    await choosePaymentMethod(page, 'Cash')
     await expectToast(page, 'Payment saved', () => page.getByRole('button', { name: 'Save' }).click())
     await expectPath(page, CUSTOMERS)
 

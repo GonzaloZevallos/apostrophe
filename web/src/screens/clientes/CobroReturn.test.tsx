@@ -15,6 +15,8 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 import panelFixture from '../../api/fixtures/panel.json'
 import { inAppState } from '../../components/inAppState'
 import { consumePaymentReturn, peekPaymentReturn } from '../../paymentReturn'
+import { SheetRouterProvider } from '../../components/useSheetStack'
+import { choosePaymentMethod } from '../../components/selectorTestKit'
 import { router as appRouter } from '../../router'
 import { CUSTOMERS, HOME } from '../../routes'
 import { renderWithViewport } from '../../test-viewport'
@@ -71,7 +73,9 @@ function renderFrom(origin: string, viewport: Viewport) {
     render(
       <StrictMode>
         <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
+          <SheetRouterProvider router={router}>
+            <RouterProvider router={router} />
+          </SheetRouterProvider>
         </QueryClientProvider>
       </StrictMode>,
     ),
@@ -125,7 +129,7 @@ describe.each<[string, string, string]>([
 
     // Open → save: the origin focuses the customer's control, and the hand-off is taken.
     await open()
-    await userEvent.click(await screen.findByRole('radio', { name: 'Cash' }))
+    await choosePaymentMethod(userEvent, 'Cash')
     await userEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => expect(router.state.location.pathname).toBe(origin))
     await waitFor(async () => expect(await collect()).toHaveFocus())
