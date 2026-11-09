@@ -1,4 +1,4 @@
-"""Database naming (CODING_STANDARDS §11, docs/adr/0077): `sale.sale_date` becomes
+"""Database naming (CODING_STANDARDS §11): `sale.sale_date` becomes
 `sold_on` and `stock_entry.entry_date` becomes `entered_on`.
 
 Revision ID: 0026

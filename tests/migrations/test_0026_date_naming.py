@@ -1,4 +1,4 @@
-"""Migration 0026 (CODING_STANDARDS §11, docs/adr/0077): `sale.sale_date` becomes `sold_on`
+"""Migration 0026 (CODING_STANDARDS §11): `sale.sale_date` becomes `sold_on`
 and `stock_entry.entry_date` becomes `entered_on`, and the sale index on the date is
 rebuilt under the new name. Run through the real revisions on a seeded database, over the
 plain sqlite driver and sqlite+libsql (ADR-0016): every row survives under the new name,
