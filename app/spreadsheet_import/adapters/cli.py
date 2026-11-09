@@ -137,7 +137,9 @@ def _run(
         varieties = SqlProductsImport(session, args.business_id)
         stock = SqlStockImport(session, args.business_id)
         catalog = CatalogImport(session, args.business_id)
-        expenses = ExpensesImport(session, args.business_id)
+        expenses = ExpensesImport(
+            session, args.business_id, SqlMoneyFormat(session, args.business_id)
+        )
         customers = CustomersImport(session, args.business_id)
         vip_type = VipTypeImport(session, args.business_id)
         sales = SalesImport(session, args.business_id, SqlMoneyFormat(session, args.business_id))

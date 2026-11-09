@@ -1,10 +1,12 @@
 from datetime import date
+from decimal import Decimal
 
 from pydantic import BaseModel
 
 from app.expenses.domain.category import ExpenseCategory
 from app.expenses.domain.expense import Expense
 from app.expenses.domain.monthly_view import MonthlyExpenses
+from app.money_schema import MoneyAmount, MoneyOut
 
 
 class CategoryIn(BaseModel):
@@ -24,7 +26,7 @@ class CategoryOut(BaseModel):
 class ExpenseIn(BaseModel):
     spent_on: date
     category_id: int
-    amount: int
+    amount: MoneyAmount
     detail: str
 
 
@@ -32,7 +34,7 @@ class ExpenseOut(BaseModel):
     id: int
     spent_on: date
     category_id: int
-    amount: int
+    amount: MoneyOut
     detail: str
 
     @classmethod
@@ -42,7 +44,7 @@ class ExpenseOut(BaseModel):
             id=expense.id,
             spent_on=expense.spent_on,
             category_id=expense.category_id,
-            amount=expense.amount,
+            amount=Decimal(expense.amount),
             detail=expense.detail,
         )
 
@@ -50,25 +52,25 @@ class ExpenseOut(BaseModel):
 class CategorySubtotalOut(BaseModel):
     id: int
     name: str
-    subtotal: int
+    subtotal: MoneyOut
     expenses: list[ExpenseOut]
 
 
 class MonthlyViewOut(BaseModel):
     month: str
-    total: int
+    total: MoneyOut
     categories: list[CategorySubtotalOut]
 
     @classmethod
     def of(cls, view: MonthlyExpenses) -> "MonthlyViewOut":
         return cls(
             month=str(view.month),
-            total=view.total,
+            total=Decimal(view.total),
             categories=[
                 CategorySubtotalOut(
                     id=category.category_id,
                     name=category.name,
-                    subtotal=category.subtotal,
+                    subtotal=Decimal(category.subtotal),
                     expenses=[ExpenseOut.of(e) for e in category.expenses],
                 )
                 for category in view.categories
