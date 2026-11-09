@@ -19,7 +19,7 @@ export default function ExpensesCard() {
       <BotonLink to={EXPENSE_NEW} icon="agregar">
         {t('common:addExpense')}
       </BotonLink>
-      <BotonLink to={EXPENSES} variant="secondary">
+      <BotonLink to={EXPENSES} variant="link">
         {t('common:seeExpenses')}
       </BotonLink>
     </div>
