@@ -1183,8 +1183,9 @@ describe('the customer dark twins of the real screens.json', () => {
     ['ClientesCompu', 'ClientesCompuOscuro'],
     ['ClienteFicha', 'ClienteFichaOscuro'],
     ['Cobro', 'CobroOscuro'],
+    ['CobroCompu', 'CobroCompuOscuro'],
   ] as const
-  const lightKept = [['CobroCompu', 'CobroCompuOscuro']] as const
+  const lightKept: readonly (readonly [string, string])[] = []
   const pairs = [...ownDark, ...lightKept]
   const entry = (key: string) => screens.screens.find((s) => s.screen === key)
 
@@ -1306,20 +1307,18 @@ describe('the capture accounts of sample_app.py (GH-274)', () => {
   it('names each of them on exactly its three rows, each cropped to a label of its own drawing', () => {
     const rows = screens.screens as { screen: string; account?: string; design?: string; section?: string }[]
     const named = (account: string) => rows.filter((r) => r.account === account).map((r) => r.screen)
-    expect(named('checklist')).toEqual(['InicioChecklist', 'InicioChecklistCompu', 'InicioChecklistOscuro'])
-    expect(named('importada')).toEqual(['InicioImportado', 'InicioImportadoCompu', 'InicioImportadoOscuro'])
     expect(named('primera_vez')).toEqual(['InicioPrimeraVez', 'InicioPrimeraVezCompu', 'InicioPrimeraVezOscuro'])
     expect(named('en_curso')).toEqual(['InicioOnboardingEnCurso', 'InicioOnboardingEnCursoCompu', 'InicioOnboardingEnCursoOscuro'])
     expect(named('completo')).toEqual(['InicioOnboardingCompleto', 'InicioOnboardingCompletoCompu', 'InicioOnboardingCompletoOscuro'])
-    for (const r of rows.filter((x) => ['checklist', 'importada', 'primera_vez', 'en_curso', 'completo'].includes(x.account ?? ''))) {
+    for (const r of rows.filter((x) => ['primera_vez', 'en_curso', 'completo'].includes(x.account ?? ''))) {
       expect(typeof r.section, r.screen).toBe('string')
     }
   })
 
   it('refuses a first-run row whose label is not in its drawing, or occurs twice', () => {
-    const row = { screen: 'InicioChecklist', route: 'ruta', account: 'checklist' }
+    const row = { screen: 'InicioPrimeraVez', route: 'ruta', account: 'primera_vez' }
     expect(() => assertScreens([{ ...row, section: 'Una etiqueta que no está dibujada' }])).toThrow(
-      /^InicioChecklist: section "Una etiqueta que no está dibujada" is not in InicioChecklist\.dc\.html$/,
+      /^InicioPrimeraVez: section "Una etiqueta que no está dibujada" is not in InicioPrimeraVez\.dc\.html$/,
     )
     expect(() => assertScreens([{ screen: 'InicioHoyCompu', design: 'InicioCompu', route: 'ruta', section: 'Hoy' }])).toThrow(
       /InicioHoyCompu: section "Hoy" occurs \d+ times in InicioCompu\.dc\.html, expected exactly once/,

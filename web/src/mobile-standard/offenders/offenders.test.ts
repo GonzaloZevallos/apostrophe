@@ -204,7 +204,7 @@ describe('the offender files', () => {
  * them (`docs/product/gate.md`, "Una fila nueva del registro trae sus celdas"). Each states the
  * fault its entries observed. When an area issue removes a screen's last entry, its name goes.
  */
-const NEW_ROW_SCREENS = ['InicioChecklist', 'InicioImportado']
+const NEW_ROW_SCREENS: readonly string[] = []
 
 /** The cells of `screen` that state no fault. */
 function withoutReason(offenders: readonly Offender[], screen: string): Offender[] {
