@@ -496,6 +496,9 @@ classDiagram
   class _FixedVip {
     get(customer_id: int) CustomerFact #124; None
   }
+  class _SheetAmounts {
+    current() MoneyFormat
+  }
   SaleBillOut --> BillPaymentOut : payment
   SaleLineDetailOut --> LineCostOut : cost
 ```
