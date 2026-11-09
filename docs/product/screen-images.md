@@ -28,7 +28,7 @@ Una pantalla sin imagen (tema oscuro, computadora, texto agrandado o sin ruta) s
 ## Qué muestra
 
 - Solo el negocio de muestra sembrado el 16/09/2026, con los estados de Telegram del bot falso. Ningún dato real, ningún otro Business ni ningún Customer real aparece.
-- La app de muestra corre con `--pinned`: siembra con la fecha de `PINNED_INSTANT`, los comandos del Operator (token de Business nuevo, token para sumarse, Reset link) corren en ese mismo instante, y ninguna imagen depende del día en que se tomó.
+- La app de muestra corre con `--pinned`: siembra con la fecha de `PINNED_INSTANT`, los comandos del Operator (token de Business nuevo, token para sumarse, Reset link y el Spreadsheet import que carga el Business importado de la muestra) corren en ese mismo instante, y ninguna imagen depende del día en que se tomó.
 - El negocio de muestra es una ilustración con datos inventados. Su tipo de producto, sus unidades, sus precios y sus canales son los de la muestra, nunca lo que la app exige (Assume nothing); donde el texto describe configuración, el texto gana sobre la imagen.
 
 ## Qué promete y qué no
