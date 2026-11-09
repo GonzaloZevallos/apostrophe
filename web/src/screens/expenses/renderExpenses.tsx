@@ -19,6 +19,7 @@ import Gastos from '../Gastos'
 import ExpenseNewRoute from './ExpenseNewRoute'
 import { EXPENSES_TEXT } from '../../copy/expenses'
 import ContentArea from '../../components/ContentArea'
+import { SheetRouterProvider } from '../../components/useSheetStack'
 
 export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en' as ShownLanguage }
 
@@ -73,7 +74,9 @@ export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl) {
   )
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-      <RouterProvider router={router} />
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
   return router
