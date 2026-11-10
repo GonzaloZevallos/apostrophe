@@ -5,13 +5,8 @@
  */
 
 import { get } from './client'
+import type { MoneyFormat } from '../format/money'
 import type { ShownLanguage } from './language'
-
-/** How the business shows money: its symbol and decimals. The stored scale never reaches the front. */
-export interface MoneyFormat {
-  symbol: string
-  decimals: number
-}
 
 export interface Me {
   email: string

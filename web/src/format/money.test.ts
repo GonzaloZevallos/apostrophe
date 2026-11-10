@@ -6,8 +6,71 @@ import {
   formatMoneyMagnitude,
   formatQuantity,
   formatSignedMoney,
-  MONEY_DECIMALS,
+  moneyFormatter,
 } from './money'
+import vectors from './money.vectors.json'
+
+interface Vector {
+  amount: string
+  decimals: number
+  symbol: string
+  spaced: string
+  attached: string | null
+  signed: string
+}
+
+describe('moneyFormatter over money.vectors.json', () => {
+  const rows: Vector[] = vectors
+  const id = (row: Vector): string => `${row.symbol} ${row.amount} at ${row.decimals}`
+
+  test.each(rows)('$symbol $amount at $decimals decimals writes the spaced and the signed form', (row) => {
+    const money = moneyFormatter({ symbol: row.symbol, decimals: row.decimals })
+    expect(money.magnitude(row.amount), id(row)).toBe(row.spaced)
+    expect(money.signed(row.amount), id(row)).toBe(row.signed)
+    if (!row.amount.startsWith('-')) expect(money.money(row.amount), id(row)).toBe(row.spaced)
+  })
+
+  test.each(rows.filter((row) => row.attached !== null))(
+    '$symbol $amount at $decimals decimals writes the attached form',
+    (row) => {
+      expect(moneyFormatter({ symbol: row.symbol, decimals: row.decimals }).attached(row.amount)).toBe(row.attached)
+    },
+  )
+
+  test('a JSON number gives the same text as its decimal string', () => {
+    const money = moneyFormatter({ symbol: '$', decimals: 2 })
+    expect(money.money(1.005)).toBe('$ 1,01')
+    expect(money.money(11000.5)).toBe('$ 11.000,50')
+    expect(money.money(1e21)).toBe('$ 1.000.000.000.000.000.000.000,00')
+    expect(money.money(0.0000001)).toBe('$ 0,00')
+  })
+
+  test('a "$" business with 0 decimals reads $ 11.000 byte for byte as formatMoney does', () => {
+    const money = moneyFormatter({ symbol: '$', decimals: 0 })
+    for (const pesos of [0, 1, 500, 999999, 11000, 1234567, 10999.6, 11000.5]) {
+      expect(money.money(pesos)).toBe(formatMoney(pesos))
+    }
+    expect(money.signed(-4500)).toBe(formatSignedMoney(-4500))
+    expect(money.magnitude(-2000)).toBe(formatMoneyMagnitude(-2000))
+  })
+
+  test('a negative figure that rounds to zero shows no minus sign', () => {
+    const money = moneyFormatter({ symbol: 'US$', decimals: 0 })
+    expect(money.money(-0.4)).toBe('US$ 0')
+    expect(money.signed(-0.4)).toBe('US$ 0')
+  })
+
+  test('a symbol with regular-expression characters is kept together literally', () => {
+    const money = moneyFormatter({ symbol: 'R$', decimals: 2 })
+    expect(money.keepTogether('Pay R$ 5,00 or $ 5 now')).toBe('Pay R$\u00a05,00 or $ 5 now')
+    expect(moneyFormatter({ symbol: '$', decimals: 0 }).keepTogether('A $ 5 and a $ x')).toBe('A $\u00a05 and a $ x')
+    expect(moneyFormatter({ symbol: '$&', decimals: 0 }).keepTogether('a $& 5')).toBe('a $&\u00a05')
+  })
+
+  test('something that is not an amount is refused', () => {
+    expect(() => moneyFormatter({ symbol: '$', decimals: 0 }).money('abc')).toThrow('Not an amount: abc')
+  })
+})
 
 describe('formatMoney', () => {
   test('whole pesos with a dot as the thousands separator', () => {
@@ -40,10 +103,6 @@ describe('formatMoney', () => {
   test('a whole amount reads the same as before', () => {
     expect(formatMoney(1)).toBe('$ 1')
     expect(formatMoney(999999)).toBe('$ 999.999')
-  })
-
-  test('the display decimals are 0 today', () => {
-    expect(MONEY_DECIMALS).toBe(0)
   })
 })
 
