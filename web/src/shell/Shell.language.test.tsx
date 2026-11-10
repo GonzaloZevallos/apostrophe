@@ -19,7 +19,7 @@ import { CATALOG, HOME, SCREENS, type Screen } from '../routes'
 import { SHOWN_EN } from '../test/shownLanguage'
 import Shell from './Shell'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money_format: { symbol: '$', decimals: 0 } }
 
 const viewport = vi.hoisted(() => ({ current: 'phone' as 'phone' | 'computer' }))
 

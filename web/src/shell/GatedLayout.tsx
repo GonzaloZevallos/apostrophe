@@ -11,7 +11,9 @@
  * the screen history returns to. Nothing under it renders in a language other than the
  * business's: while a chunk for `shown_language` loads it renders nothing, and a load that
  * fails or times out ends in English (`i18n/language.ts`); an English business mounts in the
- * same commit its `me` arrives in.
+ * same commit its `me` arrives in. Money is the same: nothing renders before `me`, and the module-level
+ * money format (`format/money.ts`) is set from it in the render that mounts the outlet, so no child
+ * formats an amount in another Business's symbol or decimals (ADR-0081).
  */
 
 import { useQuery } from '@tanstack/react-query'
@@ -22,6 +24,7 @@ import { ApiError, NetworkError } from '../api/client'
 import SinConexion from '../components/SinConexion'
 import ErrorGenerico from '../components/ErrorGenerico'
 import FlashProvider from '../flash/FlashProvider'
+import { setMoneyFormat } from '../format/money'
 import { useShownLanguage } from '../i18n/language'
 import ContentArea from '../components/ContentArea'
 
@@ -50,6 +53,8 @@ export default function GatedLayout() {
     )
   }
   if (data === undefined || !languageReady) return null
+  // Idempotent and before the children render: the one place the format is taken from `me`.
+  setMoneyFormat(data.money_format)
   return (
     <FlashProvider>
       <Outlet context={data} />

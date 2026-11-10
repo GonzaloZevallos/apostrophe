@@ -22,7 +22,7 @@ import type { Viewport } from '../../routes'
 import { behindPane, expectBehindPane, expectBehindPaneEmpty } from '../../test/behindPane'
 import { flipViewport, renderWithViewport } from '../../test-viewport'
 
-const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
+const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', money_format: { symbol: '$', decimals: 0 } }
 const VARIETIES = [
   { id: 1, name: '24K Gold', archived: false, current_price: null },
   { id: 2, name: 'Sir Jack', archived: false, current_price: null },

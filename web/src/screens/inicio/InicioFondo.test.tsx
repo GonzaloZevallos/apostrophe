@@ -15,7 +15,7 @@ import type { PanelAnswer } from '../../api/panel'
 import InicioFondo from './InicioFondo'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money_format: { symbol: '$', decimals: 0 } }
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {

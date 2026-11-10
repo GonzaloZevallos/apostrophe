@@ -20,7 +20,7 @@ import Clientes from './clientes/Clientes'
 import Inicio from './Inicio'
 import { jsonResponse, renderWithdrawals, REASONS, VARIETIES } from './withdrawals/renderWithdrawals'
 
-const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN }
+const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN, money_format: { symbol: '$', decimals: 0 } }
 
 /** Releases every held answer; until then `fetch` never settles. */
 let release: () => void

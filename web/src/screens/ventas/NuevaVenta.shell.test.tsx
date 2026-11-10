@@ -15,7 +15,7 @@ import { SheetRouterProvider } from '../../components/useSheetStack'
 import { SALE_NEW } from '../../routes'
 import NuevaVenta from './NuevaVenta'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money_format: { symbol: '$', decimals: 0 } }
 
 class FakeVisualViewport extends EventTarget {
   offsetTop = 0

@@ -21,7 +21,7 @@ import { HISTORY, SETTINGS_ON, VARIETY_ROW, jsonResponse } from '../screens/vari
 import Shell from '../shell/Shell'
 import { CARDS_EXEMPT } from './backExempt'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money_format: { symbol: '$', decimals: 0 } }
 
 afterEach(() => {
   vi.unstubAllGlobals()

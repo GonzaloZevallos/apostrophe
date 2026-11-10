@@ -37,7 +37,7 @@ export const SALE_BILL_TEXT = {
     `${product} ${quantity} ${unit} · ${amount}`,
   bulk: (product: string, quantity: string, unit: string, unitPrice: string, amount: string) =>
     `${product} ${quantity} ${unit} · bulk price ${unitPrice}/${unit} · ${amount}`,
-  gift: (product: string, quantity: string, unit: string) => `${product} ${quantity} ${unit} · Gift · $ 0`,
+  gift: (product: string, quantity: string, unit: string, amount: string) => `${product} ${quantity} ${unit} · Gift · ${amount}`,
   shipping: (amount: string) => `Shipping · ${amount}`,
   total: (amount: string) => `Total · ${amount}`,
   paidCash: CUSTOMERS_TEXT.paidInCash,
@@ -79,7 +79,7 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'SALE_BILL_TEXT.header': [['Flores Test', 'Sale #1284', D]],
   'SALE_BILL_TEXT.item': [['Rosa', '3,5', 'g', M]],
   'SALE_BILL_TEXT.bulk': [['Rosa', '10', 'g', M, M]],
-  'SALE_BILL_TEXT.gift': [['Rosa', '1', 'g']],
+  'SALE_BILL_TEXT.gift': [['Rosa', '1', 'g', '$ 0']],
   'SALE_BILL_TEXT.shipping': [[M]],
   'SALE_BILL_TEXT.total': [[M]],
   'SALE_BILL_TEXT.stillOwed': [[M]],

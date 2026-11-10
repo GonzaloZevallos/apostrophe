@@ -21,7 +21,7 @@ describe('the saleBill copy group', () => {
     expect(SALE_BILL_TEXT.bulk('Luna', '10', 'g', '$ 9.000', '$ 90.000')).toBe(
       'Luna 10 g · bulk price $ 9.000/g · $ 90.000',
     )
-    expect(SALE_BILL_TEXT.gift('Mora', '1', 'g')).toBe('Mora 1 g · Gift · $ 0')
+    expect(SALE_BILL_TEXT.gift('Mora', '1', 'g', '$ 0')).toBe('Mora 1 g · Gift · $ 0')
     expect(SALE_BILL_TEXT.shipping('$ 2.000')).toBe('Shipping · $ 2.000')
     expect(SALE_BILL_TEXT.total('$ 127.000')).toBe('Total · $ 127.000')
     expect(SALE_BILL_TEXT.stillOwed('$ 27.000')).toBe('Still owed on this sale: $ 27.000')
@@ -40,7 +40,7 @@ describe('the saleBill copy group', () => {
       SALE_BILL_TEXT.header('', '', ''),
       SALE_BILL_TEXT.item('', '', '', ''),
       SALE_BILL_TEXT.bulk('', '', '', '', ''),
-      SALE_BILL_TEXT.gift('', '', ''),
+      SALE_BILL_TEXT.gift('', '', '', ''),
       SALE_BILL_TEXT.shipping(''),
       SALE_BILL_TEXT.total(''),
       SALE_BILL_TEXT.paidCash,
