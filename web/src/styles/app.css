@@ -5204,6 +5204,8 @@ a.ajustes-tema__opcion {
     .ajustes-tema__opcion,
     .ajustes-tema__opcion--activa,
     .inicio__avatar,
+    /* Expenses' month arrows rest on the --superficie pill, so the --superficie fill shows nothing. */
+    .gastos__mes-boton,
     .selector__campo,
     /* a whole-block control; nothing tappable may be nested in it (it would scale with it). */
     .aviso-onboarding
