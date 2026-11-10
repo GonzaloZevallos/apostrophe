@@ -934,6 +934,13 @@ body {
   color: var(--tinta2);
 }
 
+/* The phone field's example: the secondary ink, fully opaque, so it reads at 4.5:1 in both themes
+   (the browser's own placeholder grey does not in the dark one). */
+.campo__input[type='tel']::placeholder {
+  color: var(--tinta2);
+  opacity: 1;
+}
+
 /* The Phone country control: the same options, stacked, one per row (nine do not fit across). */
 .ajustes-tema--columna {
   flex-direction: column;
