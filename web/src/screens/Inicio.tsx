@@ -11,13 +11,10 @@
  * figures shown are always the current mount's own resolved answer, never a
  * stale one left behind by an earlier mount or another business.
  *
- * Slot 1 is `GET /first-run`'s `kind` (`inicioNotices`, ADR-0046): the Onboarding notice, the
- * first-run checklist, "Arrancá por las variedades" or nothing, drawn above the panel
- * instead of replacing it (a business can have history and no price today, and its
- * figures are real). The front derives none of it: it stays empty until `/first-run` has
- * answered, so nothing flashes, and a failure of it draws no slot 1 and no error (the
- * figures still show). The after-import notice is slot 3, after the pin notice. The
- * panel's and the Onboarding's failures show the existing "Sin conexión" or the retry.
+ * Home shows no first-use notice (`registro-unificado.md`, "Se sacan los avisos de primer uso"):
+ * it reads neither `GET /first-run` nor `GET /onboarding-progress`, whatever the setup state, and
+ * nothing replaces what they drew (ADR-0078, which retires ADR-0046's Home slot). The panel's
+ * failure shows the existing "Sin conexión" or the retry.
  *
  * The pinned-catalog notice (plan, "Front"; accounts.md's Inicio rule): a fixed
  * line, never a figure, while `GET /pinned-catalog/status` reads `out_of_date` —
@@ -34,8 +31,6 @@ import InAppLink from '../components/InAppLink'
 import { owedPlace, useReturnToPlace } from '../components/useReturnToPlace'
 import { peekPaymentReturn } from '../paymentReturn'
 import { get, NetworkError } from '../api/client'
-import { firstRunQuery } from '../api/firstRun'
-import { onboardingProgressQuery } from '../api/onboarding'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { panelQuery, type PanelTab } from '../api/panel'
@@ -45,13 +40,7 @@ import { AvisoCuerpo } from '../components/AvisoAmbar'
 import SinConexion from '../components/SinConexion'
 import { initialsOf } from '../format/initials'
 import { PINNED_CATALOG_OUT_OF_DATE } from '../copy/inicio'
-import { useTranslation } from 'react-i18next'
-import { EMPTY_STATE_KEYS } from '../copy/emptyStates'
-import { inicioNotices } from './inicioNotices'
-import FirstRunChecklist from './inicio/FirstRunChecklist'
-import ImportNotice from './inicio/ImportNotice'
 import InicioPanel from './inicio/InicioPanel'
-import OnboardingNotice from './onboarding/OnboardingNotice'
 import { COMMON_TEXT } from '../copy/common'
 import ContentArea from '../components/ContentArea'
 
@@ -62,7 +51,6 @@ interface PinnedCatalogStatus {
 }
 
 export default function Inicio() {
-  const { t } = useTranslation()
   const me = useOutletContext<Me>()
   const [tab, setTab] = useState<PanelTab>('today')
 
@@ -74,21 +62,14 @@ export default function Inicio() {
   })
   const pinOutOfDate = pinnedCatalog.data?.status?.state === 'out_of_date'
 
-  const onboardingQuery = useQuery(onboardingProgressQuery)
-  const firstRun = useQuery(firstRunQuery)
-  const notices = inicioNotices({
-    firstRun: firstRun.data,
-    onboarding: onboardingQuery.data,
-    pinOutOfDate,
-  })
   const root = useRef<HTMLElement>(null)
   const brandBox = useRef<HTMLDivElement>(null)
-  // The notices above the panel make the page taller once they answer (pending, not failed: a
-  // failure draws none), so the place is applied after them, never against a shorter page.
-  const settled = !pinnedCatalog.isPending && !onboardingQuery.isPending && !firstRun.isPending
+  // The catalog notice above the panel makes the page taller once it answers (pending, not failed: a
+  // failure draws none), so the place is applied after it, never against a shorter page.
+  const settled = !pinnedCatalog.isPending
   const ready = panelRead.data !== undefined && !panelRead.isFetching && settled
   useReturnToPlace({ root, ready, fallback: owedPlace })
-  const failed = [panelRead, onboardingQuery].find((query) => query.isError)
+  const failed = panelRead.isError ? panelRead : undefined
   // The first answers are still on their way; a refresh over the panel already shown is not this.
   const waiting = panelRead.isPending || !settled
 
@@ -113,17 +94,7 @@ export default function Inicio() {
           </InAppLink>
         </div>
 
-        {notices.first?.kind === 'onboarding' && <OnboardingNotice progress={notices.first.progress} />}
-        {notices.first?.kind === 'checklist' && <FirstRunChecklist steps={notices.first.steps} />}
-        {notices.first?.kind === 'start' && (
-          <div className="estado-vacio estado-vacio--atencion">
-            <AvisoCuerpo attention>
-              <span className="estado-vacio__titulo">{t(EMPTY_STATE_KEYS.homeVarietiesTitle)}</span>
-              <span className="estado-vacio__detalle">{t(EMPTY_STATE_KEYS.homeVarietiesDetail)}</span>
-            </AvisoCuerpo>
-          </div>
-        )}
-        {notices.pinOutOfDate && (
+        {pinOutOfDate && (
           <InAppLink to={CATALOG} className="aviso-ambar aviso-ambar--atencion" role="status">
             <AvisoCuerpo attention>
               <span className="aviso-ambar__titulo">{PINNED_CATALOG_OUT_OF_DATE}</span>
@@ -131,13 +102,11 @@ export default function Inicio() {
           </InAppLink>
         )}
 
-        {notices.importNotice && <ImportNotice />}
-
         {failed !== undefined && failed.error instanceof NetworkError && <SinConexion />}
         {failed !== undefined && !(failed.error instanceof NetworkError) && <ErrorGenerico />}
 
         {/* A saved payment drops the cached panel and leaves the hand-off: Home reads again and the
-            notices above it make the page taller once they answer. While that hand-off waits for
+            catalog notice above it makes the page taller once it answers. While that hand-off waits for
             its place, the marker tells the scroll owner (`ScrollSync`) the page is not at its final
             height yet. A first visit shows none: it has no place to return to. */}
         {!ready && failed === undefined && peekPaymentReturn() !== null && <Loading />}

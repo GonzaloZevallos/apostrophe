@@ -16,8 +16,6 @@ import { HOME, ONBOARDING, ONBOARDING_STOCK, SALE_NEW, SETTINGS_CATALOG_MESSAGE 
 
 test.use({ isMobile: true, hasTouch: true, viewport: { width: 375, height: 812 } })
 
-const NOTICE = 'Go on to the setup'
-
 async function priceAVariety(page: import('@playwright/test').Page, name: string): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Add your first product' })).toBeVisible()
   await page.getByLabel(/^Name/).fill(name)
@@ -25,7 +23,7 @@ async function priceAVariety(page: import('@playwright/test').Page, name: string
   await page.getByRole('button', { name: 'Save the product' }).click()
 }
 
-test('a new business goes from the invitation to Nueva venta from "Done", with no notice left', async ({
+test('a new business goes from the invitation to Nueva venta from "Done"', async ({
   page,
 }) => {
   const consoleMessages: string[] = []
@@ -58,7 +56,6 @@ test('a new business goes from the invitation to Nueva venta from "Done", with n
 
   await page.getByRole('button', { name: 'Close' }).click()
   await expect(page.locator('.encabezado__negocio')).toBeVisible()
-  await expect(page.getByText(NOTICE)).toHaveCount(0)
   await expectOnlyTheThemeStored(page)
   expect(consoleMessages).toEqual([])
 })
