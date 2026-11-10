@@ -5070,8 +5070,7 @@ body {
  *   the --superficie group): .inicio__avatar and .ajustes-tema__opcion, plain and --activa (the track is
  *   --superficie, the selected option --papel), and the selected variants
  *   .riel-lateral__item--activo, .riel-lateral__negocio--activo, .bar-inferior__item--activo,
- *   .pestanas__opcion--activa, .variedad-fila--activa and .selector-pago__opcion--activa;
- *   with the --linea cue and the scale as well, .aviso-onboarding (rests on --superficie).
+ *   .pestanas__opcion--activa, .variedad-fila--activa and .selector-pago__opcion--activa.
  * .opcion-interruptor is label-wrapped (its checkbox is stretched over it and must keep the
  * tap), so its cue is the fill only: its own rule below, with no `transform`.
  * A .boton--enlace inside .venta-guardada sits on the bar's own --boton fill, so it takes
@@ -5151,9 +5150,7 @@ body {
     .ajustes-tema__opcion,
     .ajustes-tema__opcion--activa,
     .inicio__avatar,
-    .selector__campo,
-    /* a whole-block control; nothing tappable may be nested in it (it would scale with it). */
-    .aviso-onboarding
+    .selector__campo
   ):active:not(:disabled):not([aria-disabled='true']) {
   transform: scale(0.98);
   background-color: var(--linea);
@@ -5196,7 +5193,6 @@ body {
     .ajustes-tema__opcion,
     .opcion-interruptor,
     .mas-info__boton,
-    .aviso-onboarding,
     .inicio__avatar,
     .variedades__todas,
     .pestanas,
@@ -5447,22 +5443,6 @@ body {
   background: var(--acento);
   font-size: 13px;
   text-decoration: none;
-}
-
-/* "Arrancá por las variedades": the attention icon beside its title and line. */
-.estado-vacio--atencion {
-  flex-direction: row;
-  align-items: flex-start;
-  text-align: left;
-  gap: 12px;
-}
-
-.estado-vacio--atencion .aviso-ambar__cuerpo {
-  gap: 10px;
-}
-
-.estado-vacio--atencion .estado-vacio__detalle {
-  max-width: none;
 }
 
 /* ===== end gh97-sales-home ===== */
