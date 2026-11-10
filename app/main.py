@@ -272,6 +272,9 @@ def create_app(
     # port (ADR-0006); the same `(Session, business_id)` factory shape. The router and the
     # pinned catalog's snapshot both build it from here.
     app.state.catalog_pricing_settings = SqlPricingSettings
+    # The catalog's money style comes from the Business through its own `MoneyFormatReader`
+    # port, the same factory shape; the catalog never imports `app.money_format`.
+    app.state.catalog_money_format = SqlMoneyFormat
     # The catalog's fixed lines, built once over the copy module (docs/adr/0050).
     app.state.catalog_words = BabelCatalogWords(copy_catalog)
     # The language those lines are shown in: the forced one read once here, the stored one

@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 from app.catalog.application.ports import (
     CatalogLanguage,
     CatalogPricingSettings,
+    MoneyFormatReader,
     CatalogWordsSource,
 )
 from app.pinned_catalog.adapters.publishable_catalog import publishable_text
@@ -54,12 +55,14 @@ class SqlPinSnapshots:
         engine: Engine,
         cipher: TokenCipher,
         pricing_settings: Callable[[Session, int], CatalogPricingSettings],
+        money_format: Callable[[Session, int], MoneyFormatReader],
         words: CatalogWordsSource,
         language: Callable[[Session], CatalogLanguage],
     ) -> None:
         self._engine = engine
         self._cipher = cipher
         self._pricing_settings = pricing_settings
+        self._money_format = money_format
         self._words = words
         self._language = language
 
@@ -71,6 +74,12 @@ class SqlPinSnapshots:
             settings = settings_from_row(row, self._cipher)
             facts = _facts_from_row(row)
             text = publishable_text(
-                session, business_id, today, self._pricing_settings, self._words, self._language
+                session,
+                business_id,
+                today,
+                self._pricing_settings,
+                self._money_format,
+                self._words,
+                self._language,
             )
             return PinSnapshot(settings=settings, pin=facts, text=text)

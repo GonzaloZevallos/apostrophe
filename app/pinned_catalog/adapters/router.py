@@ -15,6 +15,7 @@ from app.accounts.adapters.deps import CurrentBusinessId
 from app.catalog.application.ports import (
     CatalogLanguage,
     CatalogPricingSettings,
+    MoneyFormatReader,
     CatalogWordsSource,
 )
 from app.clock import Clock, get_clock, get_today
@@ -109,6 +110,13 @@ PricingSettingsDep = Annotated[
 ]
 
 
+def get_money_format(request: Request) -> Callable[[Session, int], MoneyFormatReader]:
+    return cast(Callable[[Session, int], MoneyFormatReader], request.app.state.catalog_money_format)
+
+
+MoneyFormatDep = Annotated[Callable[[Session, int], MoneyFormatReader], Depends(get_money_format)]
+
+
 def get_words(request: Request) -> CatalogWordsSource:
     return cast(CatalogWordsSource, request.app.state.catalog_words)
 
@@ -127,10 +135,11 @@ def get_snapshots(
     engine: EngineDep,
     cipher: CipherDep,
     pricing_settings: PricingSettingsDep,
+    money_format: MoneyFormatDep,
     words: WordsDep,
     language: LanguageDep,
 ) -> SqlPinSnapshots:
-    return SqlPinSnapshots(engine, cipher, pricing_settings, words, language)
+    return SqlPinSnapshots(engine, cipher, pricing_settings, money_format, words, language)
 
 
 def get_recorder(engine: EngineDep) -> SqlPinRecorder:

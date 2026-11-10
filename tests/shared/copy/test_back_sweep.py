@@ -13,6 +13,7 @@ from app.expenses.domain.category import CategoryName
 from app.settings import DEFAULT_LOCALES_DIR
 from app.shared.copy import CopyCatalog
 from app.shared.language import TEST_LOCALE
+from app.shared.money import MoneyFormat
 from tests.catalog.reference_texts import entry
 
 NAME, EMOJI, AROMA, HEADER, FOOTER = "Zorblax", "\U0001f33f", "Quimbly", "Hdrwq", "Ftrwq"
@@ -73,7 +74,7 @@ def pseudo_words() -> CatalogWords:
 
 
 def test_the_catalog_text_leaves_no_letter_outside_the_segments() -> None:
-    text = catalog_text(pseudo_words(), HEADER, FOOTER, entries())
+    text = catalog_text(pseudo_words(), HEADER, FOOTER, entries(), MoneyFormat("$", 0))
 
     assert text is not None
     assert "⟦" in text
@@ -81,8 +82,18 @@ def test_the_catalog_text_leaves_no_letter_outside_the_segments() -> None:
 
 
 def test_the_pinned_catalog_text_with_and_without_entries_leaves_no_letter() -> None:
-    assert leftover_letters(pinned_catalog_text(pseudo_words(), HEADER, FOOTER, entries())) == ""
-    assert leftover_letters(pinned_catalog_text(pseudo_words(), HEADER, FOOTER, [])) == ""
+    assert (
+        leftover_letters(
+            pinned_catalog_text(pseudo_words(), HEADER, FOOTER, entries(), MoneyFormat("$", 0))
+        )
+        == ""
+    )
+    assert (
+        leftover_letters(
+            pinned_catalog_text(pseudo_words(), HEADER, FOOTER, [], MoneyFormat("$", 0))
+        )
+        == ""
+    )
 
 
 def test_a_bulk_line_that_appends_a_literal_fails_the_sweep() -> None:
@@ -95,7 +106,7 @@ def test_a_bulk_line_that_appends_a_literal_fails_the_sweep() -> None:
         bulk=lambda quantity, price: real.bulk(quantity, price) + " each",
     )
 
-    text = catalog_text(planted, HEADER, FOOTER, entries())
+    text = catalog_text(planted, HEADER, FOOTER, entries(), MoneyFormat("$", 0))
 
     assert text is not None
     assert leftover_letters(text) == "each"
@@ -111,14 +122,14 @@ def test_an_english_nothing_to_offer_line_fails_the_sweep() -> None:
         bulk=real.bulk,
     )
 
-    assert leftover_letters(pinned_catalog_text(planted, HEADER, FOOTER, [])) == (
-        "Nothingtoofferfornow"
-    )
+    assert leftover_letters(
+        pinned_catalog_text(planted, HEADER, FOOTER, [], MoneyFormat("$", 0))
+    ) == ("Nothingtoofferfornow")
 
 
 @pytest.mark.parametrize("word", ["indica", "sativa"])
 def test_the_pseudo_lines_hold_none_of_the_english_words(word: str) -> None:
-    text = catalog_text(pseudo_words(), HEADER, FOOTER, entries())
+    text = catalog_text(pseudo_words(), HEADER, FOOTER, entries(), MoneyFormat("$", 0))
 
     assert text is not None
     assert word not in text

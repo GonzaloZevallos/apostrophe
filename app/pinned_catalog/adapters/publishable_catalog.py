@@ -19,6 +19,7 @@ from app.catalog.application.ports import (
     CatalogLanguage,
     CatalogPricingSettings,
     CatalogWordsSource,
+    MoneyFormatReader,
 )
 from app.catalog.application.read_catalog import read_publishable_text
 
@@ -28,6 +29,7 @@ def publishable_text(
     business_id: int,
     today: date,
     pricing_settings: Callable[[Session, int], CatalogPricingSettings],
+    money_format: Callable[[Session, int], MoneyFormatReader],
     words: CatalogWordsSource,
     language: Callable[[Session], CatalogLanguage],
 ) -> str:
@@ -41,6 +43,7 @@ def publishable_text(
         attributes,
         header_footer,
         pricing_settings(session, business_id),
+        money_format(session, business_id),
         words,
         language(session),
         business_id,

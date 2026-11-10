@@ -15,6 +15,7 @@ from app.catalog.application.ports import (
     CatalogStock,
     CatalogVarieties,
     CatalogWordsSource,
+    MoneyFormatReader,
 )
 from app.catalog.application.read_catalog import CatalogView, read_catalog
 from app.catalog.domain.header_footer import CatalogHeaderFooter
@@ -39,6 +40,7 @@ def set_header_footer(
     attributes_repo: CatalogAttributesRepository,
     header_footer_repo: CatalogHeaderFooterRepository,
     pricing_settings: CatalogPricingSettings,
+    money_format: MoneyFormatReader,
     words: CatalogWordsSource,
     language: CatalogLanguage,
     business_id: int,
@@ -54,6 +56,7 @@ def set_header_footer(
         attributes_repo,
         header_footer_repo,
         pricing_settings,
+        money_format,
         words,
         language,
         business_id,

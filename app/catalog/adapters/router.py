@@ -22,6 +22,7 @@ from app.catalog.application.errors import CatalogVarietyArchived, CatalogVariet
 from app.catalog.application.ports import (
     CatalogLanguage,
     CatalogPricingSettings,
+    MoneyFormatReader,
     CatalogWordsSource,
 )
 from app.catalog.application.read_archived import read_archived
@@ -74,6 +75,17 @@ def get_pricing_settings(
     return factory(session, business_id)
 
 
+def get_money_format(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> MoneyFormatReader:
+    # The same shape: `app/main.py` puts the real reader on `app.state.catalog_money_format`
+    # as a factory, so the catalog never imports `app.money_format` (ADR-0006).
+    factory = cast(
+        Callable[[Session, int], MoneyFormatReader], request.app.state.catalog_money_format
+    )
+    return factory(session, business_id)
+
+
 def get_words(request: Request) -> CatalogWordsSource:
     # Built once by `app/main.py`: the words of every language, a dict lookup per read.
     return cast(CatalogWordsSource, request.app.state.catalog_words)
@@ -90,6 +102,7 @@ StockDep = Annotated[StockStatusesFromStock, Depends(get_stock)]
 AttributesDep = Annotated[SqlCatalogAttributes, Depends(get_attributes)]
 HeaderFooterDep = Annotated[SqlCatalogHeaderFooter, Depends(get_header_footer)]
 PricingSettingsDep = Annotated[CatalogPricingSettings, Depends(get_pricing_settings)]
+MoneyFormatDep = Annotated[MoneyFormatReader, Depends(get_money_format)]
 WordsDep = Annotated[CatalogWordsSource, Depends(get_words)]
 LanguageDep = Annotated[CatalogLanguage, Depends(get_language)]
 
@@ -109,6 +122,7 @@ def get_catalog(
     attributes: AttributesDep,
     header_footer: HeaderFooterDep,
     pricing_settings: PricingSettingsDep,
+    money_format: MoneyFormatDep,
     words: WordsDep,
     language: LanguageDep,
     business_id: CurrentBusinessId,
@@ -120,6 +134,7 @@ def get_catalog(
         attributes,
         header_footer,
         pricing_settings,
+        money_format,
         words,
         language,
         business_id,
@@ -144,6 +159,7 @@ def put_variety_attributes(
     attributes: AttributesDep,
     header_footer: HeaderFooterDep,
     pricing_settings: PricingSettingsDep,
+    money_format: MoneyFormatDep,
     words: WordsDep,
     language: LanguageDep,
     business_id: CurrentBusinessId,
@@ -158,6 +174,7 @@ def put_variety_attributes(
                 attributes,
                 header_footer,
                 pricing_settings,
+                money_format,
                 words,
                 language,
                 business_id,
@@ -182,6 +199,7 @@ def put_header_footer(
     attributes: AttributesDep,
     header_footer: HeaderFooterDep,
     pricing_settings: PricingSettingsDep,
+    money_format: MoneyFormatDep,
     words: WordsDep,
     language: LanguageDep,
     business_id: CurrentBusinessId,
@@ -195,6 +213,7 @@ def put_header_footer(
             attributes,
             header_footer,
             pricing_settings,
+            money_format,
             words,
             language,
             business_id,

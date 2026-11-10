@@ -5,8 +5,10 @@ import pytest
 
 from app.catalog.domain.text import catalog_text, pinned_catalog_text
 from app.catalog.domain.words import CatalogWords
+from app.shared.money import MoneyFormat
 from tests.catalog.reference_texts import CASES, Case, entry
 
+DEFAULTS = MoneyFormat("$", 0)
 ENGLISH_WORDS = CatalogWords(
     nothing_to_offer="Nothing to offer for now.",
     indica=lambda indica, sativa: f"• {indica}% indica / {sativa}% sativa",
@@ -18,13 +20,19 @@ ENGLISH_WORDS = CatalogWords(
 
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case.name)
 def test_catalog_text_writes_the_reference_literal(case: Case) -> None:
-    assert catalog_text(ENGLISH_WORDS, case.header, case.footer, case.entries) == case.expected
+    assert (
+        catalog_text(ENGLISH_WORDS, case.header, case.footer, case.entries, DEFAULTS)
+        == case.expected
+    )
 
 
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case.name)
 def test_pinned_catalog_text_writes_the_reference_literal(case: Case) -> None:
     expected = case.expected if case.expected is not None else case.expected_pinned
-    assert pinned_catalog_text(ENGLISH_WORDS, case.header, case.footer, case.entries) == expected
+    assert (
+        pinned_catalog_text(ENGLISH_WORDS, case.header, case.footer, case.entries, DEFAULTS)
+        == expected
+    )
 
 
 def test_words_with_reordered_holes_reorder_the_line_and_keep_the_formatted_values() -> None:
@@ -44,10 +52,10 @@ def test_words_with_reordered_holes_reorder_the_line_and_keep_the_formatted_valu
         bulk_minimum="2.5",
     )
 
-    assert catalog_text(words, "", "", [full]) == (
+    assert catalog_text(words, "", "", [full], DEFAULTS) == (
         "**A**\n40% sativa | 60% indica\nx <- aroma\n$11.000 por gramo\n$9.000 c/u desde 2,5 g"
     )
-    assert pinned_catalog_text(words, "", "", []) == "Nada."
+    assert pinned_catalog_text(words, "", "", [], DEFAULTS) == "Nada."
 
 
 @pytest.mark.parametrize("blank", ["", "   ", "\n"])

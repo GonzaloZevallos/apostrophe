@@ -16,6 +16,7 @@ from app.catalog.application.ports import (
     CatalogStock,
     CatalogVarieties,
     CatalogWordsSource,
+    MoneyFormatReader,
 )
 from app.catalog.domain.attributes import CatalogAttributes
 from app.catalog.domain.product import CatalogPrice, CatalogState, catalog_state
@@ -101,6 +102,7 @@ def read_catalog(
     attributes_repo: CatalogAttributesRepository,
     header_footer_repo: CatalogHeaderFooterRepository,
     pricing_settings: CatalogPricingSettings,
+    money_format: MoneyFormatReader,
     words: CatalogWordsSource,
     language: CatalogLanguage,
     business_id: int,
@@ -113,6 +115,7 @@ def read_catalog(
         header_footer.header,
         header_footer.footer,
         entries,
+        money_format.current(),
     )
     return CatalogView(
         text=text, header=header_footer.header, footer=header_footer.footer, varieties=views
@@ -125,6 +128,7 @@ def read_publishable_text(
     attributes_repo: CatalogAttributesRepository,
     header_footer_repo: CatalogHeaderFooterRepository,
     pricing_settings: CatalogPricingSettings,
+    money_format: MoneyFormatReader,
     words: CatalogWordsSource,
     language: CatalogLanguage,
     business_id: int,
@@ -139,4 +143,5 @@ def read_publishable_text(
         header_footer.header,
         header_footer.footer,
         entries,
+        money_format.current(),
     )

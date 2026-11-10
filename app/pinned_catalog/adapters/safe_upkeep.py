@@ -21,6 +21,7 @@ from starlette.datastructures import State
 from app.catalog.application.ports import (
     CatalogLanguage,
     CatalogPricingSettings,
+    MoneyFormatReader,
     CatalogWordsSource,
 )
 from app.clock import Clock
@@ -42,9 +43,10 @@ def run_upkeep_safely(state: State, business_id: int, today: date) -> None:
     pricing_settings = cast(
         Callable[[Session, int], CatalogPricingSettings], state.catalog_pricing_settings
     )
+    money_format = cast(Callable[[Session, int], MoneyFormatReader], state.catalog_money_format)
     words = cast(CatalogWordsSource, state.catalog_words)
     language = cast(Callable[[Session], CatalogLanguage], state.catalog_language)
-    snapshots = SqlPinSnapshots(engine, cipher, pricing_settings, words, language)
+    snapshots = SqlPinSnapshots(engine, cipher, pricing_settings, money_format, words, language)
     recorder = SqlPinRecorder(engine)
     try:
         push(telegram, snapshots, recorder, locks, business_id, "upkeep", today, clock())
