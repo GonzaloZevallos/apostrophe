@@ -110,7 +110,7 @@ Todo texto sale del Copy module (`web/src/copy/`), en inglés, con el en-XA gene
 
 Una prueba comprueba que cada mensaje nombra el lugar con las mismas palabras de pantalla de ese lugar. Lo que vende un Business se llama siempre "Product" / "Products" en pantalla, sin ninguna palabra configurable (varieties.md, ADR-0061); la clave `selectorNoVarieties` es un identificador y conserva su nombre.
 
-La parte 7 no agrega ni cambia ningún texto que vea el usuario.
+La parte 7 agrega un único texto, `SETTINGS_TEXT.currentLanguage` («Current: xx»): la línea de texto plano que muestra el control de idioma cuando el idioma guardado no está entre los idiomas con textos. Hoy no se puede alcanzar, porque el control no se muestra mientras English sea el único idioma seleccionable. No cambia ningún otro texto.
 
 ## Reglas
 
@@ -131,7 +131,7 @@ Desde la parte 7 de GH-581, la guarda de `web/src/architecture/choiceControls.ts
 1. `role="radio"`, `role="tab"`, `aria-pressed` y las clases de chip `pildora`, `selector-pago__opcion` y `ajustes-tema__opcion` (cada una con sus modificadores), y un `role={…}` cuyo valor no se puede leer o puede ser `radio` o `tab`, aparecen solo en `SegmentedChoice.tsx`, en `Pestanas.tsx` y en los sitios crudos registrados en `fixedSets.ts` (`RAW_CHIP_SITES`: archivo, nombre del conjunto y motivo). En un sitio crudo, cada uno queda dentro de un `.map` cuyo receptor es el conjunto registrado para ese archivo, importado de `fixedSets` (o un `.filter` directo de él); un arreglo local, un spread, una prop o el resultado de una llamada fallan.
 2. No hay ningún `<select>` nativo en los fuentes del producto.
 
-Los sitios crudos registrados son `AppearanceGroup` (Theme choice), `BusinessGroup` (idioma), `CustomerTypeForm` (íconos del Customer type) y `StockEntryForm` (orígenes y signo de la Stock entry). Cada uno lee su tupla del registro.
+Los sitios crudos registrados son `AppearanceGroup` (Theme choice), `BusinessGroup` (idioma), `CustomerTypeForm` (íconos del Customer type) y `StockEntryForm` (orígenes de la Stock entry; el signo no es un conjunto fijo, se escribe junto con los gramos). Cada uno lee su tupla del registro.
 
 La guarda pasa sobre el árbol real y falla sobre fixtures con un mapa `aria-pressed` sobre datos sin declarar, con un `<select>` y con un sitio crudo que recorre algo que no importa de `fixedSets`.
 
