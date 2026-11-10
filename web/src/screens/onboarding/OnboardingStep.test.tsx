@@ -7,7 +7,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, within } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { type ComponentType } from 'react'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
@@ -45,9 +45,9 @@ const calls: string[] = []
 
 function renderFrame(
   slug: StepSlug,
-  options: { canSkipRest?: boolean; Body?: ComponentType<StepBodyProps> } = {},
+  options: { canSkipRest?: boolean; Body?: ComponentType<StepBodyProps>; me?: Me } = {},
 ) {
-  const { canSkipRest = true, Body = () => null } = options
+  const { canSkipRest = true, Body = () => null, me = ME } = options
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -61,7 +61,7 @@ function renderFrame(
     }),
   )
   const frame = (step: StepSlug) => (
-    <OnboardingStep slug={step} me={ME} progress={progress(canSkipRest)} Body={Body} />
+    <OnboardingStep slug={step} me={me} progress={progress(canSkipRest)} Body={Body} />
   )
   const router = createMemoryRouter(
     [
@@ -108,6 +108,22 @@ test('the first step opens with the lockup, in the main region', async () => {
   await screen.findByText('Step 1 of 6')
   const lockup = within(screen.getByRole('main')).getByRole('img', { name: 'apostrophe' })
   expect(lockup).toHaveTextContent('apostrophe’')
+})
+
+test('the first step says the Business\'s money format, with the defaults and with a changed one', async () => {
+  renderFrame('variety')
+  expect(await screen.findByText('Currency: $, 0 decimals')).toBeInTheDocument()
+  cleanup()
+
+  renderFrame('variety', { me: { ...ME, money_format: { symbol: 'US$', decimals: 2 } } })
+  expect(await screen.findByText('Currency: US$, 2 decimals')).toBeInTheDocument()
+})
+
+test('no other step says the currency', async () => {
+  renderFrame('stock')
+
+  await screen.findByText('Step 2 of 6')
+  expect(screen.queryByText(/^Currency:/)).not.toBeInTheDocument()
 })
 
 test('no other step shows the brand', async () => {

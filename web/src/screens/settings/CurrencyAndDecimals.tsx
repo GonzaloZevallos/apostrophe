@@ -117,6 +117,7 @@ export default function CurrencyAndDecimals() {
             className="campo__input"
             type="text"
             autoComplete="off"
+            enterKeyHint="done"
             value={symbol}
             onChange={(event) => {
               setSymbol(event.target.value)

@@ -29,6 +29,7 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'ONBOARDING_TEXT.varietyNamed': [['Rosa']],
   'ONBOARDING_TEXT.forLaterIn': [['Settings']],
   'ONBOARDING_TEXT.doneWith': [['Rosa']],
+  'ONBOARDING_TEXT.currencyLine': [['US$', '2']],
   'ONBOARDING_TEXT.ifYouSkipIt': [['Settings']],
 })
 
@@ -61,6 +62,7 @@ export const ONBOARDING_TEXT = {
   publishItFromVarieties: 'Whenever you like, publish it from Products → Send catalog',
   forLaterIn: (later: string | number) => `For later — in ${later}`,
   doneWith: (detail: string | number) => `Done · ${detail}`,
+  currencyLine: (symbol: string | number, decimals: string | number) => `Currency: ${symbol}, ${decimals} decimals`,
   goOnToTheSetup: 'Go on to the setup',
   discardWhatYouTyped: 'Discard what you typed?',
   createTheLink: 'Create the link',

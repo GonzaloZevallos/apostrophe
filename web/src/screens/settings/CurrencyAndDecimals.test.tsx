@@ -9,13 +9,16 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
+import saleFixture from '../../api/fixtures/sale.json'
+import GatedLayout from '../../shell/GatedLayout'
+import Ventas from '../ventas/Ventas'
 import { afterEach, beforeEach, expect, test, vi, type Mock } from 'vitest'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import { COMMON_TEXT } from '../../copy/common'
 import { SETTINGS_TEXT } from '../../copy/settings'
 import { currentMoneyFormat, formatMoney, resetMoneyFormat } from '../../format/money'
-import { SETTINGS_CURRENCY } from '../../routes'
+import { SALES, SETTINGS_CURRENCY } from '../../routes'
 import { SHOWN_EN } from '../../test/shownLanguage'
 import CurrencyAndDecimals from './CurrencyAndDecimals'
 
@@ -136,4 +139,55 @@ test('a refused lowering shows the fixed sentence with the Attention icon and ch
   await waitFor(() => {
     expect(queryClient.getQueryData<Me>(keys.me())?.money_format).toEqual({ symbol: '$', decimals: 0 })
   })
+})
+
+test('a mounted Sales list writes its total with the new symbol after Save, without navigating', async () => {
+  const user = userEvent.setup()
+  let stored = { symbol: '$', decimals: 0 }
+  const answer = (body: unknown) => Promise.resolve(jsonResponse(200, body))
+  vi.stubGlobal('fetch', (input: string, init?: RequestInit) => {
+    if (input === '/auth/me') return answer({ ...ME, money_format: stored })
+    if (input === '/api/money-format' && init?.method === 'PUT') {
+      stored = JSON.parse(String(init.body)) as typeof stored
+      return answer(stored)
+    }
+    if (input.startsWith(SALES)) return answer([saleFixture])
+    if (input === '/pricing-settings') return answer({ is_bulk_pricing: true, is_vip_customers: true })
+    return answer([])
+  })
+  const router = createMemoryRouter(
+    [
+      {
+        element: <GatedLayout />,
+        children: [
+          {
+            path: SETTINGS_CURRENCY,
+            element: (
+              <>
+                <Ventas />
+                <CurrencyAndDecimals />
+              </>
+            ),
+          },
+        ],
+      },
+    ],
+    { initialEntries: [SETTINGS_CURRENCY] },
+  )
+  render(
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
+
+  // The list's total, its sale row and the form's Example all write 11.000 with the Business's symbol.
+  await waitFor(() => expect(screen.getAllByText('$ 11.000')).toHaveLength(3))
+  const symbol = screen.getByRole('textbox', { name: new RegExp(SETTINGS_TEXT.currencySymbol) })
+  await user.clear(symbol)
+  await user.type(symbol, 'US$')
+  await user.click(screen.getByRole('button', { name: COMMON_TEXT.save }))
+
+  await waitFor(() => expect(screen.getAllByText('US$ 11.000')).toHaveLength(3))
+  expect(screen.queryByText('$ 11.000')).not.toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(SETTINGS_CURRENCY)
 })

@@ -360,6 +360,7 @@
   {"source":"onboarding.ts:ONBOARDING_TEXT.createTheLink","args":null,"text":"Create the link"},
   {"source":"onboarding.ts:ONBOARDING_TEXT.discardWhatYouTyped","args":null,"text":"Discard what you typed?"},
   {"source":"onboarding.ts:ONBOARDING_TEXT.doneWith","args":["Rosa"],"text":"Done · Rosa"},
+  {"source":"onboarding.ts:ONBOARDING_TEXT.currencyLine","args":["US$","2"],"text":"Currency: US$, 2 decimals"},
   {"source":"onboarding.ts:ONBOARDING_TEXT.entryMany","args":null,"text":"entries"},
   {"source":"onboarding.ts:ONBOARDING_TEXT.entryOne","args":null,"text":"entry"},
   {"source":"onboarding.ts:ONBOARDING_TEXT.expenseCategoriesLower","args":null,"text":"expense categories"},
