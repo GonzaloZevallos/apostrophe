@@ -70,9 +70,9 @@ def build_document(
     money: ExportedMoney | None = None,
 ) -> dict[str, Any]:
     """`{"business": {"id", "name", "language", "default_phone_country"[, "last_sale_number"]},
-    "exported_at", ["money": {"scale", "decimals"},] "kinds": {table: [records]}}`; the counter is in the
-    header whenever the business carries it (docs/adr/0073), and `money` whenever the
-    caller read the business's (docs/adr/0058).
+    "exported_at", ["money": {"scale", "decimals"},] "kinds": {table: [records]}}`; the counter
+    is in the header whenever the business carries it (docs/adr/0073), and `money` whenever
+    the caller read the business's (docs/adr/0058).
     Every owned table in `schema` becomes a kind, its records sorted by id, with
     `EXCLUDED_COLUMNS` dropped, `business_id` never repeated, foreign keys turned
     into `{"id", "name"}` references and `*_hundredths` integers into two-place
