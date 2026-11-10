@@ -712,7 +712,7 @@ def run(text: str) -> dict[str, Any]:
 
 
 def test_the_pin_is_read_from_mypy_and_must_be_major_minor() -> None:
-    assert python_pin({"tool": {"mypy": {"python_version": "3.13"}}}) == "3.13"
+    assert python_pin({"tool": {"mypy": {"python_version": "9.9"}}}) == "9.9"
     with pytest.raises(AssertionError, match=r"\[tool.mypy\] python_version"):
         python_pin({"tool": {}})
     with pytest.raises(AssertionError, match=r"\[tool.mypy\] python_version"):
