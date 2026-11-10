@@ -22,6 +22,7 @@ export const EMPTY_STATE_KEYS = {
   analysisNoHistory: 'emptyStates:analysisNoHistory',
   analysisEmptyMonth: 'emptyStates:analysisEmptyMonth',
   customerTypesList: 'emptyStates:customerTypesList',
+  paymentMethodsArchived: 'emptyStates:paymentMethodsArchived',
 } as const
 
 /** The limit kind of each empty state, measured in `en` by `copyLimits.real.test.ts`. */
@@ -36,4 +37,5 @@ export const EMPTY_STATE_LIMITS = {
   analysisNoHistory: 'emptyLine',
   analysisEmptyMonth: 'emptyLine',
   customerTypesList: 'emptyTitle',
+  paymentMethodsArchived: 'emptyTitle',
 } as const satisfies Record<keyof typeof EMPTY_STATE_KEYS, CopyKind>

@@ -6687,3 +6687,61 @@ body {
   }
 }
 /* ===== end Selector ===== */
+
+/* Settings → Payments and expenses: a row with its names beneath (`ConfiguracionCobros.dc.html`). */
+.ajustes__item-textos {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ajustes__item-detalle {
+  font-size: 13px;
+  color: var(--tinta2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Payment methods list: icon beside the name, 44 px move buttons, the row's action last. */
+.medio-pago-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-md);
+  padding: 13px 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+.medio-pago-fila:last-child {
+  border-bottom: 0;
+}
+
+.medio-pago-fila__nombre {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.medio-pago-fila__acciones {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+}
+
+.medio-pago-fila__acciones .boton {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.medio-pago-iconos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-sm);
+}

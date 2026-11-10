@@ -64,6 +64,9 @@ import ExpenseCategoriesGroup from './screens/settings/ExpenseCategoriesGroup'
 import IntegrationsGroup from './screens/settings/IntegrationsGroup'
 import PricingGroup from './screens/settings/PricingGroup'
 import CustomerTypes from './screens/settings/CustomerTypes'
+import PaymentMethods from './screens/settings/PaymentMethods'
+import PaymentMethodsArchived from './screens/settings/PaymentMethodsArchived'
+import PaymentsGroup from './screens/settings/PaymentsGroup'
 import UsersGroup from './screens/settings/UsersGroup'
 import WithdrawalReasons from './screens/settings/WithdrawalReasons'
 import WithdrawalDetail from './screens/withdrawals/WithdrawalDetail'
@@ -120,6 +123,9 @@ const ELEMENTS: Record<ScreenId, ReactElement> = {
   'settings-users': <UsersGroup />,
   'settings-prices': <PricingGroup />,
   'settings-customer-types': <CustomerTypes />,
+  'settings-payments': <PaymentsGroup />,
+  'settings-payment-methods': <PaymentMethods />,
+  'settings-payment-methods-archived': <PaymentMethodsArchived />,
   'settings-integrations': <IntegrationsGroup />,
   'settings-catalog-message': <CatalogMessageGroup />,
   'settings-expense-categories': <ExpenseCategoriesGroup />,

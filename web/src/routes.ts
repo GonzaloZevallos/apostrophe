@@ -70,6 +70,9 @@ export type ScreenId =
   | 'settings-business'
   | 'settings-users'
   | 'settings-prices'
+  | 'settings-payments'
+  | 'settings-payment-methods'
+  | 'settings-payment-methods-archived'
   | 'settings-customer-types'
   | 'settings-integrations'
   | 'settings-catalog-message'
@@ -142,6 +145,10 @@ export const SETTINGS_BUSINESS = '/settings/business'
 export const SETTINGS_USERS = '/settings/users'
 export const SETTINGS_PRICES = '/settings/prices'
 export const SETTINGS_CUSTOMER_TYPES = '/settings/prices/customer-types'
+/** Settings → Payments and expenses (Decision 21) → Payment methods → Archived. */
+export const SETTINGS_PAYMENTS = '/settings/payments'
+export const SETTINGS_PAYMENT_METHODS = '/settings/payments/methods'
+export const SETTINGS_PAYMENT_METHODS_ARCHIVED = '/settings/payments/methods/archived'
 export const SETTINGS_INTEGRATIONS = '/settings/integrations'
 export const SETTINGS_CATALOG_MESSAGE = '/settings/catalog-message'
 export const EXPENSE_CATEGORIES = '/settings/expense-categories'
@@ -343,6 +350,27 @@ export const SCREENS = [
     kind: 'form',
     titleKey: 'customerTypes:title',
     parent: 'settings-prices',
+  }),
+  screen({
+    id: 'settings-payments',
+    path: SETTINGS_PAYMENTS,
+    kind: 'card',
+    titleKey: 'paymentMethods:group.title',
+    parent: 'settings',
+  }),
+  screen({
+    id: 'settings-payment-methods',
+    path: SETTINGS_PAYMENT_METHODS,
+    kind: 'card',
+    titleKey: 'paymentMethods:title',
+    parent: 'settings-payments',
+  }),
+  screen({
+    id: 'settings-payment-methods-archived',
+    path: SETTINGS_PAYMENT_METHODS_ARCHIVED,
+    kind: 'card',
+    titleKey: 'paymentMethods:archived.title',
+    parent: 'settings-payment-methods',
   }),
   screen({
     id: 'settings-integrations',
