@@ -14,6 +14,7 @@ from app.catalog.domain.header_footer import CatalogHeaderFooter
 from app.catalog.domain.product import ArchivedCatalogProduct, CatalogProduct, StockStatus
 from app.catalog.domain.words import CatalogWords
 from app.shared.language import Language
+from app.shared.money import MoneyFormat
 from app.shared.pricing_settings import PricingSettings
 
 
@@ -61,6 +62,13 @@ class CatalogHeaderFooterRepository(Protocol):
 class CatalogPricingSettings(Protocol):
     def current(self) -> PricingSettings:
         """The business's pricing switches. Read once per catalog read."""
+        ...
+
+
+class CatalogMoneyFormat(Protocol):
+    def current(self) -> MoneyFormat:
+        """How the business shows money: its symbol and decimals, never the scale it
+        stores amounts at. Read once per catalog read (docs/adr/0055, docs/adr/0058)."""
         ...
 
 

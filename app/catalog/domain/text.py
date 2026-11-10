@@ -1,6 +1,7 @@
 """The one place the catalog text is written (CONTEXT.md: Catalog; the plan's
-invariant): no other module, front included, formats `$11.000`, catalog grams or
-assembles a variety block.
+invariant): no other module, front included, formats an attached amount such as
+`$11.000`, catalog grams or assembles a variety block. The symbol and decimals are the
+business's own `MoneyFormat`; none is written here.
 """
 
 from __future__ import annotations
@@ -11,6 +12,7 @@ from dataclasses import dataclass
 from app.catalog.domain.attributes import CatalogAttributes
 from app.catalog.domain.product import CatalogPrice
 from app.catalog.domain.words import CatalogWords
+from app.shared.money import MoneyFormat
 from app.shared.quantity import Quantity
 
 
@@ -22,24 +24,32 @@ class CatalogEntry:
 
 
 def catalog_text(
-    words: CatalogWords, header: str, footer: str, entries: Sequence[CatalogEntry]
+    words: CatalogWords,
+    money: MoneyFormat,
+    header: str,
+    footer: str,
+    entries: Sequence[CatalogEntry],
 ) -> str | None:
     """`None` with no entries, even if the header or footer is not blank. Otherwise the
     header (if not `""`), one block per entry in the order given, the footer (if not
     `""`), every section joined by exactly one blank line."""
     if not entries:
         return None
-    return _join(header, [_block(words, entry) for entry in entries], footer)
+    return _join(header, [_block(words, money, entry) for entry in entries], footer)
 
 
 def pinned_catalog_text(
-    words: CatalogWords, header: str, footer: str, entries: Sequence[CatalogEntry]
+    words: CatalogWords,
+    money: MoneyFormat,
+    header: str,
+    footer: str,
+    entries: Sequence[CatalogEntry],
 ) -> str:
     """What Telegram needs (#10): `catalog_text`'s text, or — when nothing qualifies —
     the header, the words' nothing-to-offer line and the footer, so the pin
     always has something to show. `GET /catalog` and Copiar keep `catalog_text`'s own
     `None` and their own empty state; this is the only other caller of `_join`."""
-    text = catalog_text(words, header, footer, entries)
+    text = catalog_text(words, money, header, footer, entries)
     if text is not None:
         return text
     return _join(header, [words.nothing_to_offer], footer)
@@ -57,17 +67,19 @@ def _join(header: str, blocks: Sequence[str], footer: str) -> str:
     return "\n\n".join(sections)
 
 
-def _block(words: CatalogWords, entry: CatalogEntry) -> str:
+def _block(words: CatalogWords, money: MoneyFormat, entry: CatalogEntry) -> str:
     lines = [_name_line(entry)]
     if entry.attributes.indica_share is not None:
         percent = entry.attributes.indica_share.percent
         lines.append(words.indica(str(percent), str(100 - percent)))
     if entry.attributes.aroma is not None:
         lines.append(words.aroma(entry.attributes.aroma.text))
-    lines.append(words.price_per_gram(_money(entry.price.list_price)))
+    lines.append(words.price_per_gram(_money(entry.price.list_price, money)))
     if entry.price.bulk_price is not None and entry.price.bulk_minimum is not None:
         lines.append(
-            words.bulk(_quantity(entry.price.bulk_minimum), _money(entry.price.bulk_price))
+            words.bulk(
+                _quantity(entry.price.bulk_minimum), _money(entry.price.bulk_price, money)
+            )
         )
     return "\n".join(lines)
 
@@ -78,10 +90,21 @@ def _name_line(entry: CatalogEntry) -> str:
     return f"**{entry.name}**"
 
 
-def _money(amount: int) -> str:
-    """`$11.000`: a dollar sign, then the whole pesos with a dot every three digits.
-    No `float`, `round()` or `Decimal`."""
-    return "$" + f"{amount:,}".replace(",", ".")
+def _money(amount: int, money: MoneyFormat) -> str:
+    """The business's symbol attached to the figure, then the whole units with a dot every
+    three digits from four digits up and, when the business has decimals, a comma and
+    exactly that many zeros: the amount is whole-unit, padded and never divided. Grouped
+    by hand: no locale library, `float`, `round()` or `Decimal`."""
+    digits = str(amount)
+    groups: list[str] = []
+    while len(digits) > 3:
+        groups.insert(0, digits[-3:])
+        digits = digits[:-3]
+    groups.insert(0, digits)
+    figure = ".".join(groups)
+    if money.decimals > 0:
+        figure += "," + "0" * money.decimals
+    return money.symbol + figure
 
 
 def _quantity(quantity: Quantity) -> str:
