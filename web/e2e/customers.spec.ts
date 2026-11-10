@@ -19,7 +19,7 @@
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import type { Locator, Page } from '@playwright/test'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from './fixtures.js'
+import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
@@ -121,7 +121,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // Paid in full through Registrar cobro.
   await page.getByRole('link', { name: 'Record payment' }).click()
   await page.getByRole('button', { name: 'All: $ 4.000' }).click()
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await choosePaymentMethod(page, 'Cash')
   await expectToast(page, 'Payment saved', () => page.getByRole('button', { name: 'Save' }).click())
   await expect(cardOf(page).getByText('Owes you', { exact: false })).toHaveCount(0)
 

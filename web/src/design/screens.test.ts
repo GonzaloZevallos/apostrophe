@@ -7,6 +7,8 @@ import {
   assertScreens,
   assertSelectedAccounts,
   assertSelectedNeeds,
+  captureSelection,
+  screenImageRows,
   sectionOccurrences,
 } from '../../../scripts/design/screens.mjs'
 import { ROUTE_REGISTRY } from '../mobile-standard/registry'
@@ -14,6 +16,9 @@ import { COMPUTER_MIN_WIDTH } from '../shell/useViewport'
 import screens from '../../../scripts/design/screens.json'
 import { TEXT_SCALE } from '../../../scripts/design/textScale.mjs'
 import { textsOf } from './copyTexts'
+import { isKeyShaped } from '../i18n/keyShape'
+import { isConvertedRow, rowProblems } from '../i18n/step'
+import { loadBundle } from '../../scripts/i18n/loadBundle'
 
 type CopyFile = Record<string, unknown>
 
@@ -40,14 +45,21 @@ function copyPatterns(modules: Record<string, CopyFile>): RegExp[] {
 
 type StepRow = { screen: string; steps?: Record<string, unknown>[] }
 
+const en = loadBundle('en')
+
 /** Invariant 12: the string a click, press, wait or fill.label of a registry row names
- * is a copy value or a sample name. (`section` names a block of the Spanish drawing in
+ * is a copy value or a sample name; a converted row (one that names a key) is judged by
+ * `rowProblems` against the English bundle instead. (`section` names a block of the Spanish drawing in
  * pantallas/, which stays as drawn, so it is judged against that file by `assertScreens`.) */
 function stepTextProblems(rows: StepRow[], modules: Record<string, CopyFile>): string[] {
   const patterns = copyPatterns(modules)
   const known = (text: string): boolean => SAMPLE_NAMES.includes(text) || patterns.some((p) => p.test(text))
   const problems: string[] = []
   for (const row of rows) {
+    if (isConvertedRow(row)) {
+      problems.push(...rowProblems(row, en))
+      continue
+    }
     for (const step of row.steps ?? []) {
       const named: [string, unknown][] = []
       for (const kind of ['click', 'press', 'wait']) if (kind in step) named.push([kind, step[kind]])
@@ -377,11 +389,39 @@ describe('the registry step rule', () => {
     ])
   })
 
+  it('judges a converted row by its keys: a row of resolving keys passes', () => {
+    const rows: StepRow[] = [
+      { screen: 'A', steps: [{ click: 'common:close' }, { press: 'common:home' }, { fill: { label: 'common:variety', value: 'Blue Dream' } }, { wait: 'common:done' }] },
+    ]
+    expect(stepTextProblems(rows, {})).toEqual([])
+  })
+
+  it('refuses a mixed row and a typo key, naming the screen, step and field and no text', () => {
+    const rows: StepRow[] = [
+      { screen: 'A', steps: [{ click: 'common:close' }, { press: 'Save' }] },
+      { screen: 'B', steps: [{ wait: 'comon:close' }, { click: 'common:home' }] },
+    ]
+    expect(stepTextProblems(rows, { '/src/copy/a.ts': { A: { save: 'Save' } } })).toEqual([
+      'A: step 1 press is not a resolving key',
+      'B: step 0 wait is not a resolving key',
+    ])
+  })
+
   it('reads a function value as a pattern, so a name in a template is accepted', () => {
     const rows: StepRow[] = [{ screen: 'A', steps: [{ wait: 'Variety: Gelato' }, { wait: 'Variety' }] }]
     expect(stepTextProblems(rows, { '/src/copy/a.ts': { A: { of: (name: string) => `Variety: ${name}` } } })).toEqual([
       'A: wait "Variety" is no copy value',
     ])
+  })
+})
+
+describe('the real screens.json and the sample names carry no key yet', () => {
+  it('converts no row', () => {
+    expect((screens.screens as StepRow[]).filter((row) => isConvertedRow(row)).map((row) => row.screen)).toEqual([])
+  })
+
+  it('has no key-shaped sample name', () => {
+    expect(SAMPLE_NAMES.filter((name) => isKeyShaped(name))).toEqual([])
   })
 })
 
@@ -1145,8 +1185,9 @@ describe('the customer dark twins of the real screens.json', () => {
     ['ClientesCompu', 'ClientesCompuOscuro'],
     ['ClienteFicha', 'ClienteFichaOscuro'],
     ['Cobro', 'CobroOscuro'],
+    ['CobroCompu', 'CobroCompuOscuro'],
   ] as const
-  const lightKept = [['CobroCompu', 'CobroCompuOscuro']] as const
+  const lightKept: readonly (readonly [string, string])[] = []
   const pairs = [...ownDark, ...lightKept]
   const entry = (key: string) => screens.screens.find((s) => s.screen === key)
 
@@ -1268,20 +1309,18 @@ describe('the capture accounts of sample_app.py (GH-274)', () => {
   it('names each of them on exactly its three rows, each cropped to a label of its own drawing', () => {
     const rows = screens.screens as { screen: string; account?: string; design?: string; section?: string }[]
     const named = (account: string) => rows.filter((r) => r.account === account).map((r) => r.screen)
-    expect(named('checklist')).toEqual(['InicioChecklist', 'InicioChecklistCompu', 'InicioChecklistOscuro'])
-    expect(named('importada')).toEqual(['InicioImportado', 'InicioImportadoCompu', 'InicioImportadoOscuro'])
     expect(named('primera_vez')).toEqual(['InicioPrimeraVez', 'InicioPrimeraVezCompu', 'InicioPrimeraVezOscuro'])
     expect(named('en_curso')).toEqual(['InicioOnboardingEnCurso', 'InicioOnboardingEnCursoCompu', 'InicioOnboardingEnCursoOscuro'])
     expect(named('completo')).toEqual(['InicioOnboardingCompleto', 'InicioOnboardingCompletoCompu', 'InicioOnboardingCompletoOscuro'])
-    for (const r of rows.filter((x) => ['checklist', 'importada', 'primera_vez', 'en_curso', 'completo'].includes(x.account ?? ''))) {
+    for (const r of rows.filter((x) => ['primera_vez', 'en_curso', 'completo'].includes(x.account ?? ''))) {
       expect(typeof r.section, r.screen).toBe('string')
     }
   })
 
   it('refuses a first-run row whose label is not in its drawing, or occurs twice', () => {
-    const row = { screen: 'InicioChecklist', route: 'ruta', account: 'checklist' }
+    const row = { screen: 'InicioPrimeraVez', route: 'ruta', account: 'primera_vez' }
     expect(() => assertScreens([{ ...row, section: 'Una etiqueta que no está dibujada' }])).toThrow(
-      /^InicioChecklist: section "Una etiqueta que no está dibujada" is not in InicioChecklist\.dc\.html$/,
+      /^InicioPrimeraVez: section "Una etiqueta que no está dibujada" is not in InicioPrimeraVez\.dc\.html$/,
     )
     expect(() => assertScreens([{ screen: 'InicioHoyCompu', design: 'InicioCompu', route: 'ruta', section: 'Hoy' }])).toThrow(
       /InicioHoyCompu: section "Hoy" occurs \d+ times in InicioCompu\.dc\.html, expected exactly once/,
@@ -1295,5 +1334,71 @@ describe('the capture accounts of sample_app.py (GH-274)', () => {
     expect(listo.length).toBeGreaterThan(0)
     for (const entry of listo) expect(capture).not.toContain((entry as { account?: string }).account)
     expect(() => assertSelectedAccounts(screens.screens, { ...real, ...Object.fromEntries(namesOf('ONBOARDING_ACCOUNTS').map((n) => [n, 'open' as const])), inicio: 'ended' })).not.toThrow()
+  })
+})
+
+describe('the screen image rows', () => {
+  const names = (rows: ReadonlyArray<Record<string, unknown>>) => rows.map((r) => r.screen)
+
+  it('keeps a plain row, a row with a phone viewport and a row 899 wide, in file order', () => {
+    const rows = [
+      { screen: 'A', route: '/a' },
+      { screen: 'B', route: '/b', viewport: [390, 844] },
+      { screen: 'C', route: '/c', viewport: [899, 700] },
+    ]
+    expect(names(screenImageRows(rows))).toEqual(['A', 'B', 'C'])
+  })
+
+  it('leaves out a dark row, a computer row at width 900, a large-text row and a row with no route', () => {
+    const rows = [
+      { screen: 'Dark', route: '/a', tema: 'oscuro' },
+      { screen: 'Computer', route: '/b', viewport: [900, 700] },
+      { screen: 'Large', route: '/c', text_scale: 1.3 },
+      { screen: 'NoRoute', route: null },
+      { screen: 'Kept', route: '/d' },
+    ]
+    expect(names(screenImageRows(rows))).toEqual(['Kept'])
+  })
+
+  it('adds, to the image rows, every row they need transitively: an included row, a dark row, a computer row', () => {
+    const rows = [
+      { screen: 'Unrelated', route: null },
+      { screen: 'Computer', route: '/a', viewport: [1280, 920] },
+      { screen: 'Dark', route: '/a', tema: 'oscuro', needs: 'Computer' },
+      { screen: 'Phone', route: '/a', needs: 'Dark' },
+    ]
+    expect(names(screenImageRows(rows))).toEqual(['Phone'])
+    expect(names(captureSelection(rows))).toEqual(['Computer', 'Dark', 'Phone'])
+  })
+
+  it('lists a row needed by two image rows once, in its own place in the file', () => {
+    const rows = [
+      { screen: 'Base', route: null },
+      { screen: 'Left', route: '/l', needs: 'Base' },
+      { screen: 'Right', route: '/r', needs: 'Base' },
+    ]
+    expect(names(captureSelection(rows))).toEqual(['Base', 'Left', 'Right'])
+  })
+
+  it('refuses a name with a character outside letters, digits and hyphens, naming the row', () => {
+    expect(() => assertScreens([{ screen: 'Inicio Hoy' }])).toThrow(
+      /^Inicio Hoy: screen must match \^\[A-Za-z0-9-\]\+\$$/,
+    )
+    expect(() => assertScreens([{ screen: 'Inicio_Hoy' }])).toThrow(/Inicio_Hoy: screen must match/)
+  })
+
+  it('refuses two names equal ignoring case, naming both', () => {
+    expect(() => assertScreens([{ screen: 'Ventas' }, { screen: 'ventas' }])).toThrow(
+      /^ventas: screen is equal to Ventas ignoring case$/,
+    )
+  })
+
+  it('accepts the real screens.json whole, and its selection never needs a row it does not hold', () => {
+    const real = screens.screens as Array<Record<string, unknown>>
+    expect(() => assertScreens(real)).not.toThrow()
+    expect(() => assertSelectedNeeds(captureSelection(real), real)).not.toThrow()
+    const included = new Set(names(screenImageRows(real)))
+    expect(included.size).toBeGreaterThan(0)
+    expect(captureSelection(real).length).toBeGreaterThanOrEqual(included.size)
   })
 })

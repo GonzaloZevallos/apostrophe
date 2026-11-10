@@ -1,5 +1,5 @@
 /**
- * The double-plus guard (icon-and-text-rule.md, "Which form each control takes"): the
+ * The double-plus guard (icon-and-text-rule.md, "Qué forma toma cada control"): the
  * `agregar` icon draws the plus, so the visible text beside it is the word alone. The docs'
  * "+ Cargar gasto" stands for icon + "Cargar gasto". A literal "+" in a visible position
  * would show two plus signs.

@@ -23,13 +23,13 @@ class SqlExpensesLedger:
             select(
                 ExpenseRow.spent_on,
                 scaled(ExpenseRow.amount, factor),
-                ExpenseRow.category_id,
+                ExpenseRow.expense_category_id,
                 ExpenseCategoryRow.name,
                 ExpenseCategoryRow.name_key,
             )
             .join(
                 ExpenseCategoryRow,
-                (ExpenseCategoryRow.id == ExpenseRow.category_id)
+                (ExpenseCategoryRow.id == ExpenseRow.expense_category_id)
                 & (ExpenseCategoryRow.business_id == self._business_id),
             )
             .where(ExpenseRow.business_id == self._business_id)

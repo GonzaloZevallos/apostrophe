@@ -38,7 +38,7 @@ from sqlalchemy.engine import Engine
 
 from app.db import make_engine
 
-SALES_INDEX = "ix_sale_business_id_sale_date"
+SALES_INDEX = "ix_sale_business_id_sold_on"
 LINES_INDEX = "ix_sale_line_sale_id"
 PAYMENT_INDEX = "ix_payment_sale_id"
 LIST_TABLES = ("sale", "sale_line", "payment")
@@ -117,8 +117,8 @@ def plan_problems(plan_lines: Sequence[str], statement: Literal["sales", "lines"
 
 
 INDEXED_SALES = [
-    "SEARCH sale USING INDEX ix_sale_business_id_sale_date "
-    "(business_id=? AND sale_date>? AND sale_date<?)",
+    "SEARCH sale USING INDEX ix_sale_business_id_sold_on "
+    "(business_id=? AND sold_on>? AND sold_on<?)",
     "SEARCH customer USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
     "SEARCH payment USING INDEX ix_payment_sale_id (sale_id=?) LEFT-JOIN",
 ]

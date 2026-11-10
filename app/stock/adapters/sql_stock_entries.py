@@ -31,7 +31,7 @@ class SqlStockEntries:
     def add(self, entry: StockEntry) -> StockEntry:
         row = StockEntryRow(
             business_id=self._business_id,
-            entry_date=entry.entry_date,
+            entered_on=entry.entry_date,
             variety_id=entry.variety_id,
             origin=entry.origin.value,
             grams_hundredths=entry.quantity.hundredths,
@@ -47,7 +47,7 @@ class SqlStockEntries:
         assert entry.id is not None, "save takes an entry that was added"
         row = self._row(entry.id)
         assert row is not None, "save takes an entry of this business"
-        row.entry_date = entry.entry_date
+        row.entered_on = entry.entry_date
         row.variety_id = entry.variety_id
         row.origin = entry.origin.value
         row.grams_hundredths = entry.quantity.hundredths
@@ -94,7 +94,7 @@ def _units(hundredths: int | None) -> int | None:
 
 def _entry(row: StockEntryRow, total_cost: int | None) -> StockEntry:
     return StockEntry(
-        entry_date=row.entry_date,
+        entry_date=row.entered_on,
         variety_id=row.variety_id,
         origin=Origin(row.origin),
         quantity=Quantity(row.grams_hundredths),

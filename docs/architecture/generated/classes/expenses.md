@@ -255,8 +255,8 @@ classDiagram
   class ExpenseRow {
     amount : Mapped~int~
     business_id : Mapped~int~
-    category_id : Mapped~int~
     detail : Mapped~str~
+    expense_category_id : Mapped~int~
     id : Mapped~int~
     recorded_at : Mapped~datetime~
     spent_on : Mapped~date~

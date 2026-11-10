@@ -407,6 +407,9 @@ def test_the_real_tree_holds_every_known_whole_tree_guard() -> None:
     assert {
         "src/architecture/forbiddenApis.real.test.ts",
         "src/architecture/hexColors.real.test.ts",
+        "src/architecture/i18nOffenders/lists.test.ts",
+        "src/architecture/copyOnly.test.ts",
+        "src/design/copyTexts.test.ts",
         "src/architecture/touch.test.ts",
         "src/architecture/insets.test.ts",
         "src/architecture/installShell.test.ts",

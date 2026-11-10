@@ -51,7 +51,7 @@ test('the open line fits and is thumb-sized at 320, 375, 430 and at 130 % text',
 
     const line = page.locator('.nueva-venta__linea--abierta')
     const controls = [
-      page.getByLabel('Line 1 product'),
+      page.getByRole('button', { name: /^Line 1 product/ }),
       page.getByLabel('Line 1 grams'),
       page.getByLabel('Line 1 special price'),
       line.locator('.opcion-interruptor'),
@@ -65,7 +65,7 @@ test('the open line fits and is thumb-sized at 320, 375, 430 and at 130 % text',
       expect(rect.height, `height at ${width}`).toBeGreaterThanOrEqual(TOUCH_TARGET)
     }
     for (const input of [
-      page.getByLabel('Line 1 product'),
+      page.getByRole('button', { name: /^Line 1 product/ }),
       page.getByLabel('Line 1 grams'),
       page.getByLabel('Line 1 special price'),
       page.getByLabel('Shipping'),

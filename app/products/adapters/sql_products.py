@@ -136,7 +136,7 @@ class SqlProducts:
     def _entry_row(self, entry: PriceEntry) -> PriceEntryRow:
         return PriceEntryRow(
             business_id=self._business_id,
-            effective_from=entry.effective_from,
+            effective_on=entry.effective_from,
             list_price=self._stored(entry.list_price),
             bulk_price=self._stored_or_none(entry.bulk.price if entry.bulk else None),
             bulk_minimum_hundredths=entry.bulk.minimum.hundredths if entry.bulk else None,
@@ -163,7 +163,7 @@ class SqlProducts:
                 PriceEntryRow.business_id == self._business_id,
                 PriceEntryRow.variety_id.in_(product_ids),
             )
-            .order_by(PriceEntryRow.effective_from)
+            .order_by(PriceEntryRow.effective_on)
         )
         grouped: dict[int, list[PriceEntry]] = {}
         for row, list_price, bulk_price, vip_price in self._session.execute(statement).all():
@@ -193,7 +193,7 @@ def _entry(
     assert list_price is not None, "a price entry always has a list price"
     minimum = row.bulk_minimum_hundredths
     return PriceEntry.of(
-        effective_from=row.effective_from,
+        effective_from=row.effective_on,
         list_price=list_price,
         bulk_price=bulk_price,
         bulk_minimum=None if minimum is None else Quantity(minimum),

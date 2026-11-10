@@ -338,13 +338,15 @@ classDiagram
   class LoginAddressGuardRow {
     address_digest : Mapped~str~
     failures : Mapped~int~
-    locked_until : Mapped~datetime #124; None~
-    window_start : Mapped~datetime~
+    id : Mapped~int~
+    unlocks_at : Mapped~datetime #124; None~
+    window_started_at : Mapped~datetime~
   }
   class LoginGuardRow {
     email : Mapped~str~
     failures : Mapped~int~
-    locked_until : Mapped~datetime #124; None~
+    id : Mapped~int~
+    unlocks_at : Mapped~datetime #124; None~
   }
   class LoginIn {
     email : str
@@ -357,11 +359,11 @@ classDiagram
     today : date
   }
   class ResetLinkRow {
+    app_user_id : Mapped~int~
     business_id : Mapped~int~
     created_at : Mapped~datetime~
     id : Mapped~int~
     token_digest : Mapped~str~
-    user_id : Mapped~int~
   }
   class ResetSubmitIn {
     new_password : str

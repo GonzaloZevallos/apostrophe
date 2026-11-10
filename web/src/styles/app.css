@@ -224,6 +224,13 @@ body {
   color: var(--deuda);
 }
 
+/* A field's own refusal (`FieldRefusal`): the Attention icon beside the sentence. */
+.campo__error:has(> .aviso-ambar__icono) {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-xs);
+}
+
 /* The customer form's focus state (`NuevaVentaCliente.dc.html`): a heavy inset ring on
  * the focused field. Only `CustomerFields` carries the class; the outline stays (made
  * transparent, so forced-colors still draws it) and is never removed. */
@@ -544,7 +551,8 @@ body {
   padding-bottom: 2px;
 }
 
-/* The "‹ parent" arrow a card shows above its own header (`navigation.md`, "Chrome and back"). */
+/* The "‹ parent" arrow a card shows above its own header (`navigation.md`,
+   "Marco y camino de vuelta"). */
 .flecha-atras {
   display: flex;
   padding: var(--espacio-md) var(--margen-pantalla) 0;
@@ -1790,6 +1798,8 @@ body {
   color: var(--tinta2);
   font-size: 14px;
   cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .selector-pago__opcion--activa {
@@ -2378,6 +2388,11 @@ body {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+}
+
+.nueva-venta__agregar,
+.nueva-venta__lista {
+  display: contents;
 }
 
 .nueva-venta__disposicion {
@@ -4721,6 +4736,7 @@ body {
   /* "Agregar otra variedad" and a line's "Quitar": the link buttons of this screen's
    * body and lines, at least 44 px tall. */
   .nueva-venta__cuerpo > .boton--enlace,
+  .nueva-venta__agregar > .boton--enlace,
   .nueva-venta__linea .boton--enlace {
     display: flex;
     align-items: center;
@@ -4789,6 +4805,7 @@ body {
  * items) keep their own height, and the body scrolls. */
 @media (max-width: 899.98px) {
   .nueva-venta__cuerpo > *,
+  .nueva-venta__agregar > *,
   .nueva-venta__resumen > * {
     flex-shrink: 0;
   }
@@ -5936,26 +5953,11 @@ body {
   opacity: 0;
 }
 
-/* The method: `SegmentedChoice` on the form's own surface, the chosen one on paper. */
+/* The method: the Payment method Selector and, under it, its refusal. */
 .cobro__metodo {
   display: flex;
   flex-direction: column;
   gap: var(--espacio-xs);
-}
-
-.cobro__metodo > .selector-pago {
-  background: var(--superficie);
-}
-
-.cobro__metodo .selector-pago__opcion {
-  min-height: var(--alto-tocable);
-  touch-action: manipulation;
-  padding: 0;
-  font-size: 15px;
-}
-
-.cobro__metodo .selector-pago__opcion--activa {
-  background: var(--papel);
 }
 
 .cobro__resumen {

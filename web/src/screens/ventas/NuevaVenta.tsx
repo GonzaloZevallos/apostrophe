@@ -39,6 +39,7 @@ import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import type { PricingSettings as ApiPricingSettings } from '../../api/pricingSettings'
 import { resolveOverride, type RefusalCode } from '../../api/refusals'
+import type { PaymentMethod } from '../../api/payments'
 import Boton from '../../components/Boton'
 import { SALE, SALES, pathTo } from '../../routes'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
@@ -58,7 +59,8 @@ import { formatGrams, formatMoney } from '../../format/money'
 import { parseGrams, parseMoney } from '../../format/parse'
 import {
   type LineValidation,
-  type PaymentChoice,
+  type PayState,
+  paymentChoiceOf,
   type PriceQuote,
   type PricingSettings,
   fromHundredths,
@@ -88,6 +90,7 @@ function emptyLine(): LineState {
   return {
     key: typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
     varietyId: '',
+    varietyName: '',
     grams: '',
     gift: false,
     specialPrice: '',
@@ -188,8 +191,30 @@ function NuevaVentaForm() {
   const [openKey, setOpenKey] = useState<string>(() => lines[0]?.key ?? '')
   const [shipping, setShipping] = useState('0')
   const [note, setNote] = useState('')
-  const [method, setMethod] = useState<PaymentChoice | null>(null)
+  const [payState, setPayState] = useState<PayState | null>(null)
+  // Held only while the state is Paid: leaving Paid empties it, so Paid → Owing → Paid starts empty.
+  const [method, setMethod] = useState<PaymentMethod | null>(null)
+  const [methodRefused, setMethodRefused] = useState(false)
+  const methodFieldRef = useRef<HTMLButtonElement | null>(null)
   const customerSheet = useSheet(1)
+  // `useSheet(1).isOpen` is true for any sheet at level 1, a line's Product list included:
+  // the customer Sheet mounts only when the seller opened it.
+  const [customerAsked, setCustomerAsked] = useState(false)
+  const [customerWasOpen, setCustomerWasOpen] = useState(customerSheet.isOpen)
+  if (customerWasOpen !== customerSheet.isOpen) {
+    setCustomerWasOpen(customerSheet.isOpen)
+    if (customerWasOpen) setCustomerAsked(false)
+  }
+  const customerShown = customerAsked && customerSheet.isOpen
+  // A level-1 Selector list (a line's Product list, the Payment method list) is open on a sheet: it
+  // is drawn in `listHost`, outside the form, and the form beneath is `inert`, so what is covered is
+  // reported as covered (mobile check) and unreachable. Every Selector in the form shares `listHost`.
+  const [listHost, setListHost] = useState<HTMLElement | null>(null)
+  const pickerListOpen = useViewport() !== 'computer' && customerSheet.isOpen && !customerAsked
+  function askCustomer(): void {
+    setCustomerAsked(true)
+    customerSheet.open()
+  }
   const [formError, setFormError] = useState<string | null>(null)
   const [shippingError, setShippingError] = useState<string | null>(null)
   const [noteError, setNoteError] = useState<string | null>(null)
@@ -202,10 +227,11 @@ function NuevaVentaForm() {
     nonce: number
   } | null>(null)
   const focusNonceRef = useRef(0)
+  const appliedNonceRef = useRef(0)
   const formRef = useRef<HTMLFormElement | null>(null)
   useVisualViewport(formRef)
 
-  const varietyFieldRef = useRef<HTMLSelectElement | null>(null)
+  const varietyFieldRef = useRef<HTMLButtonElement | null>(null)
   const gramsFieldRef = useRef<HTMLInputElement | null>(null)
   const specialPriceFieldRef = useRef<HTMLInputElement | null>(null)
 
@@ -256,7 +282,13 @@ function NuevaVentaForm() {
 
   function chooseCustomer(chosen: Customer | null): void {
     setCustomerOverride(chosen)
-    if (chosen === null && method === 'owing') setMethod(null)
+    if (chosen === null && payState === 'owing') setPayState(null)
+  }
+
+  function choosePayState(next: PayState): void {
+    setPayState(next)
+    setMethod(null)
+    setMethodRefused(false)
   }
 
   function updateLine(key: string, patch: Partial<LineState>): void {
@@ -287,6 +319,9 @@ function NuevaVentaForm() {
       return [...withoutBlankOpen, created]
     })
     setOpenKey(created.key)
+    // The new line's Product field takes focus once it is on the page; its list stays closed.
+    focusNonceRef.current += 1
+    setFocusRequest({ lineKey: created.key, field: 'variety', nonce: focusNonceRef.current })
   }
 
   /** "Quitar", only offered on the open line when the sale has more than one —
@@ -328,21 +363,18 @@ function NuevaVentaForm() {
       const variety = varietyOf(line.varietyId)
       return {
         id: line.key,
-        varietyName: variety?.name ?? '',
+        varietyName: variety?.name ?? line.varietyName,
         gift: line.gift,
         specialPrice: specialPriceOf(line),
         quote: variety !== undefined ? quoteOf(variety) : null,
       }
     })
 
-  const errors = validateSale({
-    method,
-    hasCustomer: customer !== null,
-    lines: lineValidations,
-  })
-
   function noPriceErrorFor(key: string): string | null {
-    return errors.find((error) => error.field === `line:${key}`)?.message ?? null
+    for (const error of errors) {
+      if (error.field === `line:${key}` && 'message' in error) return error.message
+    }
+    return null
   }
 
   /** The one message a line shows, in the plan's priority order: an invalid typed
@@ -400,6 +432,14 @@ function NuevaVentaForm() {
     parseShipping(shipping) ?? 0,
   )
 
+  const errors = validateSale({
+    payState,
+    method,
+    total: totals.total,
+    hasCustomer: customer !== null,
+    lines: lineValidations,
+  })
+
   const touched =
     customer !== null ||
     note.trim() !== '' ||
@@ -411,19 +451,30 @@ function NuevaVentaForm() {
     mutationFn: (body: SaleBody) => post<SavedSale>('/sales', body),
   })
 
+  // The lines are unreachable while a save is in flight (`locked`, the `inert` on the
+  // lines' container below): a save's answer runs `openLine` or navigates, and would
+  // otherwise swap or unmount a line whose Product list is open — a history entry the
+  // Selector does not pop on unmount.
+  const locked = save.isPending
+
   // Saving with a line in error opens and focuses that field (plan, "Saving"):
   // `openLine` may or may not change `openKey` (the line could already be open),
   // so the actual `.focus()` call waits for this effect, which re-runs once a
   // fresh `focusRequest` lands, after the line's own fields are on the page. The
-  // request's own `nonce` (never reset) is what re-triggers the effect on a
-  // second save with the same field at fault — a plain `setState` inside the
-  // effect would only start another, unnecessary render (oxlint's own
-  // `set-state-in-effect`). Guarded on `openKey === focusRequest.lineKey`, so a
-  // stale request from an earlier save never steals focus back from a line the
-  // seller opened by hand afterwards — only the field this same request named,
+  // request's own `nonce` (never reset) is what makes a second request with the same
+  // field at fault count as a new one — a plain `setState` inside the effect would
+  // only start another, unnecessary render (oxlint's own `set-state-in-effect`).
+  // While `locked` the effect does nothing, and a request is applied once, after
+  // that lock lifts: `appliedNonceRef` remembers it, so the lock lifting again on a
+  // later save never takes focus back for a request already served. Guarded on
+  // `openKey === focusRequest.lineKey`, so a request never steals focus from a line
+  // the seller opened by hand afterwards — only the field this same request named,
   // on the line it named, is ever focused.
   useEffect(() => {
-    if (focusRequest === null || focusRequest.lineKey !== openKey) return
+    if (locked || focusRequest === null) return
+    if (focusRequest.nonce === appliedNonceRef.current) return
+    if (focusRequest.lineKey !== openKey) return
+    appliedNonceRef.current = focusRequest.nonce
     const ref =
       focusRequest.field === 'grams'
         ? gramsFieldRef
@@ -431,7 +482,7 @@ function NuevaVentaForm() {
           ? specialPriceFieldRef
           : varietyFieldRef
     ref.current?.focus()
-  }, [focusRequest, openKey])
+  }, [focusRequest, openKey, locked])
 
   function fieldForError(line: LineState): 'variety' | 'grams' | 'specialPrice' {
     if (specialPriceErrorFor(line) !== null) return 'specialPrice'
@@ -449,6 +500,7 @@ function NuevaVentaForm() {
     setNoteError(null)
     setDateError(null)
     setPaymentError(null)
+    setMethodRefused(false)
     setOffline(false)
 
     const firstInError = lines.find((line) => combinedLineError(line) !== null)
@@ -473,13 +525,20 @@ function NuevaVentaForm() {
       setShippingError(SALES_TEXT.shippingNotNegative)
       return
     }
+    // Paid above $0 with no method: the refusal draws at the field and nothing is sent, so the
+    // save never enters its pending state.
+    if (errors.some((error) => error.field === 'method')) {
+      setMethodRefused(true)
+      methodFieldRef.current?.focus()
+      return
+    }
 
     const body: SaleBody = {
       date,
       customer_id: customer?.id ?? null,
       shipping_charged: shippingCharged,
       note: note.trim() === '' ? null : note,
-      payment: method,
+      payment: paymentChoiceOf(payState, method, totals.total),
       lines: filled.map((line) => {
         const grams = parseGrams(line.grams)
         return {
@@ -546,7 +605,7 @@ function NuevaVentaForm() {
 
   return (
     <ContentArea as="main" className="pantalla">
-      <form ref={formRef} className="nueva-venta" onSubmit={onSubmit}>
+      <form ref={formRef} className="nueva-venta" inert={pickerListOpen} onSubmit={onSubmit}>
         <div className="nueva-venta__disposicion">
         <div className="nueva-venta__cuerpo" aria-busy={repricing || opening || undefined}>
           <div className="encabezado-fila nueva-venta__cabecera">
@@ -580,13 +639,13 @@ function NuevaVentaForm() {
             <Loading />
           ) : (
             <>
-              {repricing && !customerSheet.isOpen && <LoadingAnuncio refresco />}
+              {repricing && !customerShown && <LoadingAnuncio refresco />}
               {customer === null ? (
-                <Boton variant="secondary" icon="clientes" onClick={customerSheet.open}>
+                <Boton variant="secondary" icon="clientes" onClick={askCustomer}>
                   {SALES_TEXT.pickCustomer}
                 </Boton>
               ) : (
-                <Boton variant="row" onClick={customerSheet.open}>
+                <Boton variant="row" onClick={askCustomer}>
                   <div className="nueva-venta__cliente">
                     <div className="nueva-venta__cliente-texto">
                       <span className="lista-clientes__nombre">
@@ -602,7 +661,7 @@ function NuevaVentaForm() {
                 </Boton>
               )}
 
-              <div className="nueva-venta__lineas">
+              <div className="nueva-venta__lineas" inert={locked}>
                 {lines.map((line, index) => (
                   <NuevaVentaLinea
                     key={line.key}
@@ -614,8 +673,10 @@ function NuevaVentaForm() {
                     figuresLoading={repricing && line.varietyId !== '' && parseGrams(line.grams).ok}
                     variety={varietyOf(line.varietyId)}
                     varieties={varieties}
+                    varietiesLoading={!varietiesQuery.isSuccess}
                     canRemove={lines.length > 1}
                     varietyRef={varietyFieldRef}
+                    listHost={listHost}
                     gramsRef={gramsFieldRef}
                     specialPriceRef={specialPriceFieldRef}
                     onOpen={() => openLine(line.key)}
@@ -624,9 +685,11 @@ function NuevaVentaForm() {
                   />
                 ))}
               </div>
-              <Boton variant="secondary" icon="agregar" onClick={addLine}>
-                {COMMON_TEXT.addAnotherVariety}
-              </Boton>
+              <div className="nueva-venta__agregar" inert={locked}>
+                <Boton variant="secondary" icon="agregar" onClick={addLine}>
+                  {COMMON_TEXT.addAnotherVariety}
+                </Boton>
+              </div>
 
               <div className="nueva-venta__fila-dato">
                 <span>{SALES_TEXT.shippingCharged}</span>
@@ -674,10 +737,18 @@ function NuevaVentaForm() {
           <div className="nueva-venta__resumen">
             <div className="nueva-venta__pago">
               <SelectorPago
-                value={method}
-                onChange={setMethod}
+                payState={payState}
+                onPayState={choosePayState}
+                method={method}
+                onMethod={(next) => {
+                  setMethod(next)
+                  setMethodRefused(false)
+                }}
                 owingDisabled={customer === null}
                 owingDescription={OWING_HINT}
+                listHost={listHost}
+                methodRefused={methodRefused}
+                methodRef={methodFieldRef}
               />
               {paymentError !== null && (
                 <span className="campo__error" role="alert">
@@ -699,7 +770,7 @@ function NuevaVentaForm() {
               <Boton
                 textOnly="submit"
                 type="submit"
-                variant={onPhone && method === null ? 'secondary' : 'primary'}
+                variant={onPhone && payState === null ? 'secondary' : 'primary'}
                 disabled={save.isPending || varietiesQuery.isFetching || settingsQuery.isFetching}>
                 {SALES_TEXT.saveSale}
               </Boton>
@@ -708,8 +779,9 @@ function NuevaVentaForm() {
         )}
         </div>
       </form>
+      <div className="nueva-venta__lista" ref={setListHost} />
 
-      {customerSheet.isOpen && <NuevaVentaCliente allowNone onChosen={chooseCustomer} />}
+      {customerShown && <NuevaVentaCliente allowNone onChosen={chooseCustomer} />}
 
       {blocker.state === 'blocked' && (
         <div className="nueva-venta__aviso">

@@ -8,6 +8,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import { RouterProvider, createMemoryRouter } from 'react-router'
+import { SheetRouterProvider } from '../components/useSheetStack'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { router as appRouter } from '../router'
 import { CUSTOMER_NEW, EXPENSE_NEW } from '../routes'
@@ -67,7 +68,9 @@ describe('the new customer', () => {
     renderWithViewport('phone', () =>
       render(
         <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
+          <SheetRouterProvider router={router}>
+            <RouterProvider router={router} />
+          </SheetRouterProvider>
         </QueryClientProvider>,
       ),
     )

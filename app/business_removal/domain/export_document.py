@@ -80,7 +80,7 @@ def build_document(
     `rows` may also carry withheld tables (`invitation`, `login_guard`, `reset_link`)
     the caller read for the delete but that never reach the document; those are never
     indexed here, since no exported table's foreign key ever targets one, and
-    `login_guard` has no `id` column to index by."""
+    `login_guard` has no `business_id`, so it is deleted by email, never exported."""
     owned = exported_tables(schema)
     rows_by_table: dict[str, dict[Any, Mapping[str, Any]]] = {
         name: {row["id"]: row for row in rows[name]} for name in owned if name in rows
@@ -151,7 +151,7 @@ def _record(
 
 def _foreign_key_targets(table: Table) -> dict[str, str]:
     """Every column of `table` that references another table, `business_id` aside --
-    for the composite expense foreign key this is `category_id` alone, never
+    for the composite expense foreign key this is `expense_category_id` alone, never
     `business_id` (the plan's invariant)."""
     targets: dict[str, str] = {}
     for foreign_key in table.foreign_keys:

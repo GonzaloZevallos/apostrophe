@@ -562,7 +562,7 @@ classDiagram
   }
   class StockEntryRow {
     business_id : Mapped~int~
-    entry_date : Mapped~date~
+    entered_on : Mapped~date~
     grams_hundredths : Mapped~int~
     id : Mapped~int~
     note : Mapped~str #124; None~

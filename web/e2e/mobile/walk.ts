@@ -3,6 +3,8 @@
 import type { Locator, Page } from '@playwright/test'
 import { resolvePlaceholders, type RegistryScreen } from '../../src/mobile-standard/registry.ts'
 import type { WalkStep } from '../../src/mobile-standard/states.ts'
+import { resolveStep } from '../../src/i18n/step.ts'
+import type { Bundle } from '../../src/i18n/resolve.ts'
 import { judgeLanguage } from '../../src/mobile-standard/language.ts'
 import { mobileLanguage } from '../env.js'
 
@@ -82,11 +84,11 @@ export async function open(page: Page, screen: WalkScreen, facts: Facts): Promis
   await assertLanguage(page)
 }
 
-/** Runs the registry's steps; answers whether every one was reachable. */
-export async function runSteps(page: Page, screen: WalkScreen, facts: Facts): Promise<boolean> {
+/** Runs the registry's steps, each resolved against `bundle` first (a key names its English text); answers whether every one was reachable. */
+export async function runSteps(page: Page, screen: WalkScreen, facts: Facts, bundle: Bundle): Promise<boolean> {
   try {
     for (const step of screen.steps) {
-      await run(page, step, facts)
+      await run(page, resolveStep(step, bundle), facts)
       await settle(page)
     }
     return true

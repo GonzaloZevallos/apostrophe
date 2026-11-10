@@ -1,7 +1,7 @@
 """Sales read VIP membership from the customer's type (docs/adr/0059, docs/adr/0070), at
 the HTTP seam over a real database. Price entry: list 1000, bulk 800 from 10, VIP price
 700. A customer is VIP when its type is the business's VIP type, whatever any type is
-called; the frozen `customer.vip` column is never read."""
+called; the frozen `customer.is_vip` column is never read."""
 
 import itertools
 from typing import Any
@@ -148,7 +148,7 @@ def test_the_frozen_vip_column_is_not_read(client: TestClient, engine: Engine) -
     make_type(engine, is_vip=True)
     customer_id = _customer(client)
     with Session(engine) as session:
-        session.execute(update(CustomerRow).values(vip=True))
+        session.execute(update(CustomerRow).values(is_vip=True))
         session.commit()
 
     sale = _sold(client, product_id, customer_id, "5")

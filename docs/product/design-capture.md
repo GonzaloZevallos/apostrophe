@@ -6,71 +6,71 @@ Lo que garantiza la fuente de diseño que está en master (qué versión, cómo 
 
 ## Jobs
 
-**When** corro el design capture sobre Home y el Onboarding antes de aprobar un cambio, **I want** que cada pantalla que lista el registro, con los dos temas de la última pantalla del Onboarding incluidos, se alcance como la alcanza un vendedor y se capture entera, y que el registro, sus tests y el plan coincidan, **so I can** confiar en una corrida `--strict` en verde como evidencia y aprobar sin parchear a mano un test, aceptar una pantalla que nunca se alcanzó ni registrar una excepción.
+**Cuando** corro el design capture sobre Home y el Onboarding antes de aprobar un cambio, **quiero** que cada pantalla que lista el registro, con los dos temas de la última pantalla del Onboarding incluidos, se alcance como la alcanza un vendedor y se capture entera, y que el registro, sus tests y el plan coincidan, **para poder** confiar en una corrida `--strict` en verde como evidencia y aprobar sin parchear a mano un test, aceptar una pantalla que nunca se alcanzó ni registrar una excepción.
 
 - Su protagonista es el mantenedor, o el revisor que actúa por él, como en los jobs del mantenedor de docs/product/accounts.md y docs/product/gate.md. El vendedor se ve afectado sólo de manera indirecta: una captura en la que nadie puede confiar demora los cambios que espera.
 - Afina los criterios de "se ve como fue diseñado" (docs/product/navigation.md criterio 7, docs/product/onboarding.md criterio 5 y su métrica de diseño, docs/product/icon-and-text-rule.md criterio 6); no es un job nuevo del producto.
 - También sirve cuando falla un guard de diseño o un test del registro y el mantenedor tiene que distinguir un defecto real de una fila rota del registro.
 - Antes (seguimiento de GH-142): la edición de un solo test rompió el invariante del propio plan, la fila `OnboardingListo` no llegaba a la última pantalla del Onboarding, el recorte de `OnboardingListoOscuro` salía cortado, y esos dos defectos no tenían issue.
 
-**When** estoy por aprobar el restyle del Onboarding de GH-164 y la evidencia del PR cubre sólo algunas de sus pantallas, **I want** cada paso del Onboarding y "Done" comparados con su diseño (viewports de teléfono y de computadora, claro y oscuro, el teléfono más angosto con texto al 130 %) y un par antes/después del restyle, **so I can** aprobar sabiendo que sólo cambió lo previsto y que nada de lo que un vendedor lee o toca se movió, sin aprobar con evidencia parcial ni frenar el PR.
+**Cuando** estoy por aprobar el restyle del Onboarding de GH-164 y la evidencia del PR cubre sólo algunas de sus pantallas, **quiero** cada paso del Onboarding y "Done" comparados con su diseño (viewports de teléfono y de computadora, claro y oscuro, el teléfono más angosto con texto al 130 %) y un par antes/después del restyle, **para poder** aprobar sabiendo que sólo cambió lo previsto y que nada de lo que un vendedor lee o toca se movió, sin aprobar con evidencia parcial ni frenar el PR.
 
 - Su protagonista es el mantenedor, o el revisor que actúa por él; el vendedor se ve afectado sólo de manera indirecta.
 - Afina docs/product/onboarding.md criterio 5 y docs/product/icon-and-text-rule.md criterio 6; no es un job nuevo del producto.
 - Antes (seguimiento de GH-164): la aprobación se apoyaba en dos de las siete pantallas (Bot y la última del Onboarding); Partner y Expense categories nunca se leyeron; no había tema oscuro, ni chequeo a 320 px / 130 %, ni par antes/después.
 
-**When** reviso un cambio contra el design capture, **I want** que cada fila del registro de pantallas nombre la pantalla y el registro que de verdad alcanza y captura, **so I can** aprobar sólo con la captura, sin cotejar a mano el registro contra las capturas y sin dejar un finding abierto sobre una cabeza aprobada.
+**Cuando** reviso un cambio contra el design capture, **quiero** que cada fila del registro de pantallas nombre la pantalla y el registro que de verdad alcanza y captura, **para poder** aprobar sólo con la captura, sin cotejar a mano el registro contra las capturas y sin dejar un finding abierto sobre una cabeza aprobada.
 
 - Afina el primer job y su criterio 2; no es un job nuevo. Su protagonista es el mismo mantenedor o revisor.
 - Antes (seguimiento de GH-166): la fila clara `VariedadArchivada` declaraba `/varieties/{low}` mientras navegaba a `/varieties/{sold_out}` y capturaba Sir Jack. El cruce del ADR-0033 lee los dos placeholders como `{id}`, así que ningún test lo vio, y el revisor lo reconcilió a mano.
 
-**When** corro el design capture sobre todo el registro, como hace un antes/después (ADR-0042), **I want** que cada fila alcance su pantalla y que cada captura pase su chequeo de fuentes, **so I can** leer un exit no cero como una falla real y adjuntar la corrida como evidencia sin explicar filas que siempre fallan.
+**Cuando** corro el design capture sobre todo el registro, como hace un antes/después (ADR-0042), **quiero** que cada fila alcance su pantalla y que cada captura pase su chequeo de fuentes, **para poder** leer un exit no cero como una falla real y adjuntar la corrida como evidencia sin explicar filas que siempre fallan.
 
 - Afina el primer job y su criterio 1 para todo el registro; no es un job nuevo. Su protagonista es el mismo mantenedor o revisor.
 - Antes (evidencia de GH-219 y GH-150): `EstadosConfirmar` nunca llegaba a "Delete sale", y `EstadosSinConexionCompu` y `EstadosSinConexionCompuOscuro` fallaban el chequeo de fuentes en su paso offline, en base y en cabeza por igual, así que toda corrida `--strict` del registro entero salía con exit 1 con las demás filas en ok.
 
-**When** reviso un cambio en cómo se ve Analysis, **I want** capturas actuales de antes y después de Analysis, una comparación sobre todas las demás pantallas del registro y un plan que nombre cada archivo que el cambio edita, **so I can** aprobar o rechazar sólo con la evidencia del PR, sin volver a tomar capturas, revisar pantallas a mano ni arrastrar un finding abierto a la tarea siguiente.
+**Cuando** reviso un cambio en cómo se ve Analysis, **quiero** capturas actuales de antes y después de Analysis, una comparación sobre todas las demás pantallas del registro y un plan que nombre cada archivo que el cambio edita, **para poder** aprobar o rechazar sólo con la evidencia del PR, sin volver a tomar capturas, revisar pantallas a mano ni arrastrar un finding abierto a la tarea siguiente.
 
 - Su protagonista es el mantenedor, o el revisor que actúa por él (al final, Zeta). El vendedor se ve afectado sólo de manera indirecta: un cambio que nadie puede aprobar demora las filas de Cost of goods sold y Stock shortfall que espera.
 - Afina la métrica de diseño de docs/product/analysis.md y el job anterior; no es un job nuevo del producto y no agrega comportamiento.
 - Antes (seguimiento de GH-141): el guard de `muestra` se editó fuera del seam declarado por el plan y la evidencia de diseño faltaba o estaba vencida. El mismo finding de spec-scope se levantó tres veces sobre una cabeza.
 
-**When** reviso un cambio cuyo antes/después de design capture (`compare.sh` / `comparisons.mjs`) se tomó en la máquina de desarrollo compartida, donde siempre corren otros agentes y worktrees, **I want** que esa captura cuente como evidencia sea cual sea la carga de la máquina, **so I can** aprobar sobre ella sin que el Developer registre una regla como "unsatisfiable" y la pase de largo.
+**Cuando** reviso un cambio cuyo antes/después de design capture (`compare.sh` / `comparisons.mjs`) se tomó en la máquina de desarrollo compartida, donde siempre corren otros agentes y worktrees, **quiero** que esa captura cuente como evidencia sea cual sea la carga de la máquina, **para poder** aprobar sobre ella sin que el Developer registre una regla como "unsatisfiable" y la pase de largo.
 
 - Mismo protagonista que el job anterior; lo afina y no es un job nuevo del producto.
 - Antes (seguimiento de GH-150): un invariante del plan pedía corridas de `compare.sh` sin carga ajena; las seis corridas tuvieron carga, así que nunca podía cumplirse, se registró como unsatisfiable y se pasó de largo.
 
-**When** reviso un cambio en los elementos de primera vez de Home antes de aprobarlo, **I want** que los tests, el contrato `/first-run` y el design capture prueben lo que dicen docs/product/navigation.md, docs/product/results.md y el ADR-0046 en cada estado posible y en los dos temas, **so I can** aprobar sólo con la evidencia, sin confiar en chequeos parciales ni arrastrar findings abiertos a la tarea siguiente.
+**Cuando** reviso un cambio en los elementos de primera vez de Home antes de aprobarlo, **quiero** que los tests, el contrato `/first-run` y el design capture prueben lo que dicen docs/product/navigation.md, docs/product/results.md y el ADR-0046 en cada estado posible y en los dos temas, **para poder** aprobar sólo con la evidencia, sin confiar en chequeos parciales ni arrastrar findings abiertos a la tarea siguiente.
 
 - Mismo protagonista que los jobs anteriores; afina el segundo y el tercer job de este archivo para las filas de Home y no es un job nuevo del producto. Su lado de tests y contrato es el de docs/product/navigation.md.
 - Se sirve acá con la fila `InicioHoyCompu` nombrando su propia sección y con una auditoría a ojo de las demás filas `Inicio*`.
 - Antes (seguimiento de GH-45): `InicioHoyCompu` no nombraba ninguna sección, así que su captura sólo de Today se comparaba con todo `InicioCompu.dc.html`, que también dibuja Week, y su diferencia era no cero por construcción.
 
-**When** reviso un design capture, base contra cabeza o una corrida contra otra, **I want** que cada pantalla se capture en el estado en que queda en reposo, sin ningún switch u otro elemento atrapado a mitad de un cambio (una animación, una relectura en segundo plano, un control todavía deshabilitado mientras espera), **so I can** leer AE 0 como "nada cambió" y cualquier línea no cero como una diferencia real, y aprobar sin volver a correr, explicar una diferencia ni arrastrar un finding abierto a la tarea siguiente.
+**Cuando** reviso un design capture, base contra cabeza o una corrida contra otra, **quiero** que cada pantalla se capture en el estado en que queda en reposo, sin ningún switch u otro elemento atrapado a mitad de un cambio (una animación, una relectura en segundo plano, un control todavía deshabilitado mientras espera), **para poder** leer AE 0 como "nada cambió" y cualquier línea no cero como una diferencia real, y aprobar sin volver a correr, explicar una diferencia ni arrastrar un finding abierto a la tarea siguiente.
 
 - Mismo protagonista que los jobs anteriores; afina el job de capturas bajo carga y no es un job nuevo del producto. El disparador es una línea de AE no cero en una pantalla que el PR no tocó. El vendedor se ve afectado sólo de manera indirecta.
 - Antes (evidencia de GH-45 y corridas de GH-261): `VariedadesCompu built: AE 2888`, el switch "Low stock warning" del producto abierto atrapado gris en unas corridas y negro en otras. La enmienda de GH-261 al ADR-0042 lo leyó como una transición de CSS sin asentar; era el switch dibujado deshabilitado mientras la página releía el stock en segundo plano y habilitado al terminar esa lectura. Los revisores volvían a correr o listaban la línea como inexplicada.
 
-**When** reviso un cambio que toca Home y miro su design capture antes de aprobarlo, **I want** que cada elemento de primera vez que Home puede mostrar (el aviso del Onboarding, el checklist de primera vez con sus marcas "Done", el aviso posterior a la importación) y la pestaña Today en la computadora se capturen cada uno por separado y se comparen con un dibujo de exactamente eso, **so I can** aprobar o rechazar sólo con la evidencia del PR, sin revisar esos estados a mano sobre un negocio que armo yo, y sin leer las cifras de Week en una comparación de Today.
+**Cuando** reviso un cambio que toca Home y miro su design capture antes de aprobarlo, **quiero** que cada elemento de primera vez que Home puede mostrar (el aviso del Onboarding, el checklist de primera vez con sus marcas "Done", el aviso posterior a la **Spreadsheet import**) y la pestaña Today en la computadora se capturen cada uno por separado y se comparen con un dibujo de exactamente eso, **para poder** aprobar o rechazar sólo con la evidencia del PR, sin revisar esos estados a mano sobre un negocio que armo yo, y sin leer las cifras de Week en una comparación de Today.
 
 - Su protagonista es el mantenedor, o el revisor que actúa por él; el vendedor se ve afectado sólo de manera indirecta: los cambios de Home que no se pueden aprobar con evidencia esperan más.
 - Afina el primer job ("cada fila alcanza su pantalla") y docs/product/results.md criterio 12 ("Looks as designed"); no es un job nuevo del producto y no agrega comportamiento.
-- Antes (evidencia de GH-45, docs/evidence/GH-45-inicio-captures.md): ningún dibujo mostraba el checklist de primera vez ni el aviso posterior a la importación y ninguna captura alcanzaba un negocio que los muestre, así que un revisor los juzgaba a mano si acaso; `InicioHoyCompu` e `InicioHoyCompuOscuro` se comparaban con todo el archivo `InicioCompu`, Week incluida.
+- Antes (evidencia de GH-45, docs/evidence/GH-45-inicio-captures.md): ningún dibujo mostraba el checklist de primera vez ni el aviso posterior a la Spreadsheet import y ninguna captura alcanzaba un negocio que los muestre, así que un revisor los juzgaba a mano si acaso; `InicioHoyCompu` e `InicioHoyCompuOscuro` se comparaban con todo el archivo `InicioCompu`, Week incluida.
 
-**When** me piden aceptar el restyle de Home de GH-272, **I want** ver cómo se mide Home contra su diseño en cada variante de Home (claro y oscuro, teléfono y computadora), y cómo aguanta a 960 px, 1280 px y 960 px con texto al 130 %, **so I can** aprobar sabiendo que el Home del vendedor se ve como fue diseñado, en lugar de confiar en que se construyó bien.
+**Cuando** me piden aceptar el restyle de Home de GH-272, **quiero** ver cómo se mide Home contra su diseño en cada variante de Home (claro y oscuro, teléfono y computadora), y cómo aguanta a 960 px, 1280 px y 960 px con texto al 130 %, **para poder** aprobar sabiendo que el Home del vendedor se ve como fue diseñado, en lugar de confiar en que se construyó bien.
 
 - Su protagonista es el PM, que revisa y aprueba GH-272. El vendedor no recibe comportamiento nuevo; lo que se protege es su Home (el Panel, pestañas Today, Week y Month) en sus dispositivos y con texto agrandado. Un cambio posterior que no deba romper el aspecto de Home puede reutilizar la misma evidencia.
 - Afina docs/product/results.md criterio 12 ("Looks as designed") y los jobs de evidencia de Analysis y del Onboarding de arriba; no es un job nuevo del producto y no agrega comportamiento.
-- Antes (seguimiento de GH-272): GH-272 se aprobó con el invariante 12 apoyado sólo en la construcción. No había un after-run de `ae.mjs`, ni lista de líneas AE de `InicioCompu` (Home, layout de computadora) e `InicioCompuOscuro`, ni capturas a 960 px, 1280 px o 130 % de texto, así que el bloque Coverage lo marcó "Not touched" y un finding `important` quedó abierto en `web/src/styles/app.css:3098`.
+- Antes (seguimiento de GH-272): GH-272 se aprobó con el invariante 12 apoyado sólo en la construcción. No había una corrida posterior de `ae.mjs`, ni lista de líneas AE de `InicioCompu` (Home, layout de computadora) e `InicioCompuOscuro`, ni capturas a 960 px, 1280 px o 130 % de texto, así que el bloque Coverage lo marcó "Not touched" y un finding `important` quedó abierto en `web/src/styles/app.css:3098`.
 
-**When** reviso el método de captura que el ADR-0052 congeló, **I want** un documento que muestre que el método da el mismo resultado corrida tras corrida, y que muestre cada fila donde difiere de la captura vieja, con una imagen de cada una, **so I can** juzgar cada diferencia una sola vez, sobre evidencia que pude reproducir, y cerrar los cinco findings de GH-273.
+**Cuando** reviso el método de captura que el ADR-0052 congeló, **quiero** un documento que muestre que el método da el mismo resultado corrida tras corrida, y que muestre cada fila donde difiere de la captura vieja, con una imagen de cada una, **para poder** juzgar cada diferencia una sola vez, sobre evidencia que pude reproducir, y cerrar los cinco findings de GH-273.
 
 - Su protagonista es el revisor del PR. El vendedor se ve afectado sólo de manera indirecta: un método de captura en el que nadie puede confiar demora los cambios que espera.
 - Afina el job de capturas en reposo y su criterio Rest 1 para el método de captura; no es un job nuevo del producto y no agrega comportamiento.
 - Antes (GH-273): cinco findings quedaron abiertos contra la forma vieja de sacar una captura, `VariedadesCompu built` entre ellos, capturada en gris por la herramienta vieja. Ninguna evidencia mostraba al método nuevo repitiéndose ni explicaba cada fila donde difiere del viejo.
 - Se sirve con `docs/evidence/GH-301-shot-method.md` y sus imágenes lado a lado en `docs/evidence/GH-301/` (GH-301 parte 3), los únicos archivos que esa tarea cambia. Espera dos trabajos separados: una línea base retomada (un commit de app recién fijado y la nueva corrida del censo de la parte 1 sobre él) y un arreglo que permita que los cuatro lados que nombra el riesgo 1 del ADR-0052 produzcan una imagen.
 
-**When** reviso una captura de teléfono (GH-491), **I want** que una fila de teléfono se capture en el viewport real del teléfono, sin agrandarlo nunca, y que una pantalla que la herramienta no puede capturar se diga "not compared" y nunca AE 0, **so I can** leer la captura como lo que ve el vendedor en su pantalla y no confundir una pantalla sin evidencia con una pantalla sin diferencias.
+**Cuando** reviso una captura de teléfono (GH-491), **quiero** que una fila de teléfono se capture en el viewport real del teléfono, sin agrandarlo nunca, y que una pantalla que la herramienta no puede capturar se diga "not compared" y nunca AE 0, **para poder** leer la captura como lo que ve el vendedor en su pantalla y no confundir una pantalla sin evidencia con una pantalla sin diferencias.
 
 - Su protagonista es el revisor del PR. El vendedor se ve afectado sólo de manera indirecta.
 - Afina el job anterior y el ADR-0052; no es un job nuevo del producto y no agrega comportamiento. Lo sirven "Cómo se saca una captura" y "El código de salida y 'not compared'" más abajo, y [GH-491-phone-shot.md](../evidence/GH-491-phone-shot.md).
@@ -90,7 +90,7 @@ Criterios de éxito:
 11. **Las capturas offline conservan sus fuentes.** Una fila que deja la app offline se captura con las fuentes propias de la página aplicadas, y el chequeo de aplicadas corre sobre ella exactamente como sobre cualquier otra fila.
 12. **Alcanzar cada fila no le cuesta nada al vendedor.** Hacer que una fila alcance su pantalla cambia sólo los pasos de esa fila, los datos de muestra y las herramientas de captura bajo `scripts/design/`, más los dos tests del registro dentro de sus seams declarados. Ninguna pantalla, copy, doc de capacidad ni la carga de fuentes propia de la app cambia.
 
-Criterios de éxito, la evidencia del restyle del Onboarding (seguimiento de GH-164) (numerados aparte; Metrics los cita como "Onboarding criterion N", y el "criterion N" a secas allí es la lista de arriba).
+Criterios de éxito, la evidencia del restyle del Onboarding (seguimiento de GH-164) (numerados aparte; Métricas los cita como "Onboarding criterion N", y el "criterion N" a secas allí es la lista de arriba).
 
 6. **Cada pantalla del Onboarding cubierta.** Cada uno de los seis pasos y "Done" tiene capturas para los viewports de teléfono y de computadora, en claro y oscuro, más una captura de teléfono a 320 px con texto al 130 %, sólo en claro, todo de una corrida `--strict` que sale con exit 0. Una pantalla faltante, un lado faltante o un `null` de un solo lado es una falla, nunca un pase.
 7. **Un par antes/después del restyle.** "Antes" es el código sin el cambio de GH-164 (una vez fusionado, la cabeza fusionada con sólo ese cambio deshecho, el diff del deshacer en el PR); "después" es la cabeza que se fusiona. Los dos salen del `comparisons.mjs` de la propia cabeza, una instalación, el mismo día argentino, fuentes fijadas, y se comparan como capturas crudas por AE exacto con `ae.mjs`. El PR registra la versión instalada de `@fontsource/plus-jakarta-sans`.
@@ -104,38 +104,38 @@ Criterios de éxito, revisar el cambio de GH-141 a Analysis:
    - "Después" es la cabeza que fusiona el cambio; "antes" es esa misma cabeza con sólo el cambio de GH-141 deshecho (regla "Rediseño de Integrations" de docs/product/pinned-catalog.md), con el diff del deshacer en el PR.
    - Si deshacer GH-141 solo cambia más de lo que cambió GH-141, el PR lo dice y lista las diferencias extra para Zeta; no se deshace nada más.
    - Los dos lados salen del `comparisons.mjs --strict` de la cabeza, una instalación, un día argentino, fuentes fijadas (ADR-0042). El PR registra la versión de fontsource.
-7. **Cada otra pantalla comparada, cada diferencia explicada.** `ae.mjs` corre sobre las capturas crudas de cada otra pantalla del registro, con su salida adjunta. AE 0 es lo esperado; cada línea no cero se explica (ver Behaviour). Un lado faltante, un `null` de un solo lado o una captura ilegible es una falla, nunca AE 0.
+7. **Cada otra pantalla comparada, cada diferencia explicada.** `ae.mjs` corre sobre las capturas crudas de cada otra pantalla del registro, con su salida adjunta. AE 0 es lo esperado; cada línea no cero se explica (ver Comportamiento). Un lado faltante, un `null` de un solo lado o una captura ilegible es una falla, nunca AE 0.
 8. **La edición del guard se declara, no se afloja.** El seam del plan para `muestra` nombra `tests/design/test_muestra_screens.py` y `tests/design/muestra_guard.py`, sólo para ese plan, y el guard conserva todo lo que chequeaba antes.
 9. **Nada de lo que ve un vendedor cambia** más allá de la intención decidida de GH-141: docs/product/analysis.md y la enmienda de GH-141 al ADR-0020 se mantienen, y pasan todas las suites.
 
-Criterios de éxito, capturas bajo carga (numerados aparte; Metrics los cita como "Load criterion N"):
+Criterios de éxito, capturas bajo carga (numerados aparte; Métricas los cita como "Load criterion N"):
 
 6. **Aceptada bajo carga.** Un antes/después capturado mientras la máquina lleva carga ajena es evidencia válida. Ningún invariante de plan ni regla de evidencia pide una máquina ociosa, y nada se registra como "unsatisfiable" ni como excepción.
 7. **La carga no cambia el resultado.** Un commit capturado bajo carga y capturado en reposo da AE 0 exacto en cada captura cruda, lado diseño y lado construido. Si la carga cambia los píxeles de una captura, eso es un defecto de captura, que se arregla en la captura, nunca pidiendo una máquina ociosa y nunca aflojando la comparación.
 8. **El Gate no se toca.** La captura sigue siendo evidencia de revisión juzgada a ojo y nunca es un paso del Gate. No se agrega ningún chequeo de tiempo transcurrido (ADR-0038).
 9. **Nada de lo que ve un vendedor cambia.** Ninguna pantalla, copy, route ni regla de producto cambia. Pasan todas las suites sin ningún test aflojado.
 
-Criterios de éxito, la captura de Home Today (seguimiento de GH-45) (numerados aparte; Metrics los cita como "Today criterion N"):
+Criterios de éxito, la captura de Home Today (seguimiento de GH-45) (numerados aparte; Métricas los cita como "Today criterion N"):
 
 1. **La captura dice la verdad.** En el lado diseño, `InicioHoyCompu` se compara con su propia sección nombrada, el frame Today, no con todo `InicioCompu.dc.html`. En el lado construido muestra la app tal como abre, en Today. Una diferencia no cero ahí es una diferencia real.
 2. **Cada fila de Home contabilizada.** El PR audita a ojo cada otra fila `Inicio*`. Cada arreglo sólo de declaración se hace en la misma tarea, cada otro arreglo es un issue de seguimiento enlazado, y nada de lo que se encuentra queda sin explicar.
 3. **Nada aflojado, nada que vea un vendedor.** Sólo cambian `screens.json`, los dos tests del registro (dentro de sus seams declarados, cada uno conservando todos sus guards) y el único caption del frame Today de `InicioCompu.dc.html`. Ninguna pantalla, copy que lee un vendedor ni regla de capacidad cambia, el script de captura no se toca y ningún paso de captura entra al Gate.
 
-Criterios de éxito, capturas en reposo (numerados aparte; Metrics los cita como "Rest criterion N"):
+Criterios de éxito, capturas en reposo (numerados aparte; Métricas los cita como "Rest criterion N"):
 
 1. **Repetible.** Cinco corridas `--strict` del registro entero por commit, sin `--only`, cada una sobre una muestra nueva y el mismo día argentino, cada una comparada con la primera por `ae.mjs`, dan AE 0 en cada fila y lado, `VariedadesCompu built` incluida. Base y cabeza, ambas capturadas con las herramientas de la cabeza, dan AE 0 en cada fila que el cambio no tocó. Las corridas en la máquina compartida cargada cuentan; nunca se exige una máquina ociosa.
 2. **El estado en reposo.** Lo que se captura es el estado en que la pantalla queda en reposo una vez que nada sigue cambiando: ningún cambio animado en curso, ningún request pendiente (una relectura en segundo plano incluida) y ningún control todavía deshabilitado u ocupado mientras espera. Para el switch "Low stock warning" del producto abierto en VariedadesCompu, eso es el switch habilitado, encendido o apagado según el umbral guardado de la muestra, nunca dibujado deshabilitado a mitad de una relectura.
 3. **Nunca a medio dibujar.** Una pantalla que no llegó al reposo cuando se captura falla su fila bajo `--strict`. Nunca se acepta como un pase.
 4. **Nada aflojado, nada que vea un vendedor cambia.** No hay tolerancia de píxeles. Ninguna fila se excusa, se saltea ni se lista como falla conocida. El comportamiento propio de la app (sus cambios animados, un control deshabilitado mientras corre una relectura), las pantallas y el copy no se cambian para que la captura pase. La captura sigue siendo evidencia de revisión y nunca pasa a ser un paso del Gate.
 
-Criterios de éxito, la evidencia de primera vez y de Today de Home (seguimiento de GH-45) (numerados aparte; Metrics los cita como "First-run criterion N"):
+Criterios de éxito, la evidencia de primera vez y de Today de Home (seguimiento de GH-45) (numerados aparte; Métricas los cita como "First-run criterion N"):
 
-1. **Cada elemento de primera vez tiene un dibujo y filas de registro.** `pantallas/` dibuja el checklist de primera vez con sus marcas "Done" y el aviso posterior a la importación, y cada uno tiene filas de registro que lo alcanzan como lo ve un vendedor, capturando su sección entera.
+1. **Cada elemento de primera vez tiene un dibujo y filas de registro.** `pantallas/` dibuja el checklist de primera vez con sus marcas "Done" y el aviso posterior a la Spreadsheet import, y cada uno tiene filas de registro que lo alcanzan como lo ve un vendedor, capturando su sección entera.
 2. **Today se compara como Today.** `InicioHoyCompu` e `InicioHoyCompuOscuro` recortan a una sección que contiene sólo Today, nunca una que también dibuje Week.
 3. **Todo el registro en verde, nada que vea un vendedor cambia.** Una corrida `--strict` de todo el registro sin `--only` sale con exit 0, sin fila quitada, salteada ni excusada. Ninguna regla, pantalla, route ni copy de la app de ningún doc de capacidad cambia. Los únicos tests editados son los dos tests del registro dentro de sus seams declarados y `tests/design/test_sample_app.py`, seam declarado de este plan, sólo extendido; todo otro test pasa sin editar.
-4. **Las diferencias se listan.** Donde un dibujo y los docs difieren en redacción o en lo que se muestra (docs/product/navigation.md para el checklist y el aviso posterior a la importación, docs/product/results.md para el orden de Home), el PR lista cada diferencia.
+4. **Las diferencias se listan.** Donde un dibujo y los docs difieren en redacción o en lo que se muestra (docs/product/navigation.md para el checklist y el aviso posterior a la Spreadsheet import, docs/product/results.md para el orden de Home), el PR lista cada diferencia.
 
-Criterios de éxito, la evidencia del restyle de Home (seguimiento de GH-272) (numerados aparte; Metrics los cita como "Home criterion N"):
+Criterios de éxito, la evidencia del restyle de Home (seguimiento de GH-272) (numerados aparte; Métricas los cita como "Home criterion N"):
 
 1. **Coincidencia exacta en cinco pantallas.** `Inicio` (Home), `InicioOscuro` (Home, tema oscuro), `InicioHoy` (Home en la pestaña Today), `InicioHoyCompu` (Home en la pestaña Today, layout de computadora) e `InicioHoyCompuOscuro` (lo mismo, tema oscuro) muestran cada una AE 0 exacto, lado diseño y lado construido, en una salida de `ae.mjs` adjunta al PR. "Casi cero" no pasa; un lado faltante, un `null` de un solo lado o una captura ilegible es una falla, nunca AE 0.
 2. **Cada línea de `InicioCompu` contabilizada.** Cada línea AE de `InicioCompu` (Home, layout de computadora) e `InicioCompuOscuro` se lista con su pantalla y lado, cada una en 0 o con un motivo de una línea que el PM aceptó en el PR, diciendo que la diferencia la prevé GH-272 o viene del propio archivo de diseño. Un motivo que no nombra causa ("ruido de render") no se acepta; una línea sin motivo aceptado es un desajuste.
@@ -143,7 +143,7 @@ Criterios de éxito, la evidencia del restyle de Home (seguimiento de GH-272) (n
 4. **Invariante 12 cubierto.** El bloque Coverage lleva un resultado de una línea para el invariante 12, movido de "Not touched" a cubierto y apuntando a la evidencia del PR, y el finding de `web/src/styles/app.css:3098` se cierra con él.
 5. **Nada aflojado, nada nuevo que vea un vendedor.** Ningún archivo de diseño se edita; todo arreglo lleva la construcción al diseño dentro de lo que GH-272 restyló en Home y no cambia ningún copy, comportamiento, cifra ni route; ningún paso de captura entra al Gate.
 
-Criterios de éxito, la evidencia del método de captura (GH-301 parte 3) (numerados aparte; Metrics los cita como "Shot criterion N"):
+Criterios de éxito, la evidencia del método de captura (GH-301 parte 3) (numerados aparte; Métricas los cita como "Shot criterion N"):
 
 1. **Repetible, criterio (a).** Para la cabeza y para la base (el commit más temprano anterior al commit de app fijado cuya app muestra cada etiqueta que hoy clickea el registro, capturado con el `scripts/design` de la cabeza como overlay), cinco corridas `--strict` del registro entero cada una, sin `--only`, cada una sobre una muestra nueva, las diez en un día argentino y cada una con exit 0; `ae.mjs` comparando la corrida 1 con las corridas 2 a 5 de cada lado muestra 0 líneas no cero, ningún lado faltante y ningún `null` de un solo lado. Cualquier otra cosa se informa como defecto, nunca se disimula ni se vuelve a correr hasta que pase.
 2. **Viejo contra nuevo, criterio (d).** La corrida 1 de la cabeza se compara con la corrida del censo de la parte 1 (riesgo 6 del ADR-0052), retomada sobre el commit de app recién fijado y en el mismo día argentino que las diez corridas, con `ae.mjs --box`. Cada fila y lado que difiere tiene un PNG lado a lado commiteado bajo `docs/evidence/GH-301/` y una línea en la tabla de veredictos que lo enlaza. Ninguna línea la causa sólo la fecha de la semilla.
@@ -153,15 +153,15 @@ Criterios de éxito, la evidencia del método de captura (GH-301 parte 3) (numer
 6. **Nada más se mueve.** Sólo cambian `docs/evidence/GH-301-shot-method.md` y los PNG lado a lado bajo `docs/evidence/GH-301/`; nada bajo `app/` ni la parte de producto de `web/src/`, ninguna fila de registro, y nada en el Gate, el CI ni `.agentic/stack.yaml`. Lo que la captura registra e imprime no lleva texto de página, nombres, montos ni datos de píxeles; las imágenes commiteadas muestran sólo el negocio de muestra.
 7. **Cada lado tiene una imagen.** Ningún lado se registra como falla conocida: los cuatro lados que nombra el riesgo 1 del ADR-0052 (`Inicio` diseño y construido, `Gastos` construido, `VariedadesCompu` construido) producen cada uno una imagen real antes de que se cierren los findings de GH-273.
 
-Criterios de éxito, la captura de teléfono (GH-491) (numerados aparte; Metrics los cita como "Phone criterion N"):
+Criterios de éxito, la captura de teléfono (GH-491) (numerados aparte; Métricas los cita como "Phone criterion N"):
 
 1. **Viewport real.** Una fila de teléfono se saca en su viewport real, sin agrandarlo nunca, de los dos lados.
 2. **Sin evidencia falsa.** Un lado que la herramienta no puede capturar queda `not-captured` con su razón; `ae.mjs` lo dice "not compared", nunca AE 0 ni un pase.
 3. **Juzgado a ojo sólo lo visto.** En la evidencia, sólo una fila cuyas imágenes se abrieron lleva `seen`; las demás dicen en qué se apoyan.
 
-## Behaviour
+## Comportamiento
 
-### What a capture is
+### Qué es una captura
 
 - Las fuentes están fijadas y el design capture nunca toca la red; `--strict` convierte una falla de fuente o de pantalla en un exit no cero, después de que corrió cada pantalla y se escribió `index.json` (ADR-0042).
 - Cada pantalla escribe su hoja compuesta y sus capturas crudas de diseño y construida; un antes/después compara las capturas crudas por AE exacto, nunca la hoja (ADR-0042).
@@ -195,15 +195,15 @@ Esta sección describe la herramienta como la dejaron las partes 1 y 2 de GH-491
 - **`ae.mjs` dice "not compared"** (`scripts/design/ae.mjs`): cuando uno de los lados de la pareja no tiene imagen, la línea es `<fila> <lado>: not compared — <razón>`. Nunca es una línea de AE: ni AE 0, ni un pase. Si el lado tenía imagen antes y ahora no, es una regresión y la línea es `FAIL not compared`, que hace fallar a `ae.mjs`; si ninguno tenía, o sólo el nuevo la tiene, sólo se dice "not compared", sin falla.
 - **Un revisor lee un not-compared como evidencia faltante**, cuando la regla de evidencia de una tarea nombra esa pantalla. Una pantalla "not compared" que la tarea exigía no es "sin diferencias": es una pantalla sin evidencia, y la tarea no está hecha en ese punto. Si ninguna regla de evidencia nombra la pantalla, un not-compared no bloquea nada por sí solo.
 
-### Capturing at rest
+### Capturar en reposo
 
 - **Elementos que nunca paran**: un elemento que nunca deja de moverse no falla su fila sólo por moverse, y tampoco recibe exención: como cada fila, debe dar la misma captura en cada corrida, sea cual sea la carga de la máquina. Ninguna fila del registro está diseñada para seguir moviéndose en reposo (los estados de carga tienen la forma del contenido, docs/product/accounts.md), así que no se nombra ninguna excepción. Una fila que la necesitara es una pregunta de producto para el PM, nunca una entrada del registro.
-- **Pantallas lentas**: una pantalla lenta pasa una vez que llega al reposo. Una pantalla que no llegó al reposo dentro de una cota falla su fila (ver Failures). La cota limita cuánto espera la captura; nunca es una afirmación sobre duración y nada asevera el tiempo transcurrido (ADR-0038). Es lo bastante generosa como para que la carga sola nunca falle una fila.
+- **Pantallas lentas**: una pantalla lenta pasa una vez que llega al reposo. Una pantalla que no llegó al reposo dentro de una cota falla su fila (ver Fallas). La cota limita cuánto espera la captura; nunca es una afirmación sobre duración y nada asevera el tiempo transcurrido (ADR-0038). Es lo bastante generosa como para que la carga sola nunca falle una fila.
 - **Sin chequeo de estado por corrida**: esperar el reposo es una condición sobre cuándo capturar, nunca un chequeo de lo que muestra la pantalla. La captura nunca compara el contenido de una pantalla con los datos de muestra. El estado de reposo se verifica a ojo en la evidencia de la tarea que lo asentó, y una regresión posterior a un estado estable pero equivocado se muestra como un AE no cero en un antes/después o como un desajuste con el archivo de diseño, atrapado a ojo en la revisión.
 - **La app no se cambia por esto**: un control que la app mantiene deshabilitado mientras corre una relectura (la guarda del vendedor contra actuar a mitad de una relectura) se queda como está; la captura espera que la relectura termine.
 - **Qué estado se asienta** está decidido: el estado en que la pantalla queda en reposo una vez que nada sigue cambiando. El finding de GH-261 (`VariedadesCompu built: AE 2888`, el switch atrapado deshabilitado mientras se releía el stock) se resuelve con esta regla.
 
-### Every row reaches its screen
+### Toda fila alcanza su pantalla
 
 - Cada fila del registro, no sólo `Inicio*` (Home) y el Onboarding, alcanza su pantalla como lo hace un vendedor y captura entera su sección nombrada. Una corrida `--strict` del registro entero sale no cero sólo cuando una fila de verdad falla.
 - **`EstadosConfirmar`** alcanza la confirmación de borrado (el caption `Antes de borrar` en `Estados.dc.html`) en el detalle de una venta como lo hace un vendedor: abre una venta que existe en la muestra y toca "Delete sale". Su captura muestra la confirmación entera: la pregunta que nombra la fecha, el monto y los gramos que vuelven de la venta, y "No, keep it / Yes, delete it" (docs/product/sales.md).
@@ -212,26 +212,26 @@ Esta sección describe la herramienta como la dejaron las partes 1 y 2 de GH-491
 - Una fila se hace alcanzar su pantalla sólo con sus pasos, los datos de muestra o la herramienta de captura. Nunca cambiando la pantalla, su copy, el `font-display` propio de la app ni el chequeo de aplicadas, y nunca quitando o excusando la fila.
 - Una fila que falla porque la app misma ya no muestra el camino del vendedor es un defecto de producto: se escala al PM, nunca se excusa en el registro.
 
-### A row names what it reaches
+### Una fila nombra lo que alcanza
 
 - El registro que una fila nombra en su path es el registro que su route y sus pasos alcanzan y capturan. Un path que no nombra ningún registro (un formulario como `/varieties/entries/new`, alcanzado desde un registro) no afirma nada sobre uno.
 - **La fila clara `VariedadArchivada`** declara `/varieties/{sold_out}`. Su route (`/varieties/{sold_out}`), sus pasos (archivar, abrir "Archived (1)", clickear "Sir Jack") y su captura no cambian.
 - **`VariedadArchivadaOscuro`** declara y alcanza `/varieties/{low}` (abre "Archived (2)", clickea Golden Cookies). Los dos temas no necesitan mostrar el mismo registro.
-- **Las filas `EntradaStockSinEntradas`** (claro, oscuro, Compu y CompuOscuro) declaran el formulario de entrada de stock, `/varieties/entries/new`, y parten de `/varieties/{no_entries}`: así llega un vendedor al formulario con "Initial stock" preseleccionado, y son verdaderas tal como están.
+- **Las filas `EntradaStockSinEntradas`** (claro, oscuro, Compu y CompuOscuro) declaran el formulario de Stock entry, `/varieties/entries/new`, y parten de `/varieties/{no_entries}`: así llega un vendedor al formulario con "Initial stock" preseleccionado, y son verdaderas tal como están.
 - **Una fila que nombra un registro distinto del que alcanza** (path y route que nombran registros distintos, o pasos que clickean otro registro):
   - un arreglo sólo de su declaración se hace en la tarea que la encuentra;
   - un arreglo que necesita otros pasos o datos de muestra pasa a ser un issue de seguimiento enlazado desde el PR de esa tarea;
   - nada de lo que se encuentra queda sin explicar en el PR.
 
-### A row captures the part it names (GH-45 follow-up)
+### Una fila captura la parte que nombra (seguimiento de GH-45)
 
 - **`InicioHoyCompu`** nombra su propia `section`: el frame Today de `InicioCompu.dc.html`, nunca el dibujo entero, que también dibuja Week. *(Superado por GH-526: el `InicioCompu.dc.html` del 2026-10-29 dibuja un solo frame, Today, así que `InicioHoyCompu` y toda otra fila `Inicio*` no nombran ninguna `section`, y las filas que clickeaban Week o Month se quitaron.)* En el lado diseño la sección coincide con exactamente un elemento (el recorte estricto del ADR-0042); cualquier otra cantidad falla la fila bajo `--strict`. El lado construido se captura entero, como abre la app, en Today, y se juzga a ojo que muestra Today; no se agrega ningún recorte en el lado construido y el script de captura no cambia. Su route, pasos y registro no cambian. El nombre exacto de la sección es del Tech Lead.
 - **La única edición del dibujo** *(superado por GH-526: el caption ya no está en el dibujo)*: el caption del frame Today en `InicioCompu.dc.html` pasa de la palabra suelta `Hoy` (Today), que además aparece dos veces como etiqueta de pestaña, a `Hoy · la pestaña con la que abre el panel` (Today, la pestaña con la que abre el panel), el caption que `Inicio.dc.html` (Home) ya usa para el mismo frame. Es un caption de frame que ningún vendedor ve; nada más cambia en el dibujo. Toda diferencia que cause del lado diseño en filas dibujadas de ese archivo se lista en el PR como prevista. Si ningún caption hace que la sección coincida exactamente una vez, la fila se queda como está y pasa a ser un issue de seguimiento enlazado.
 - **No se agrega ningún chequeo genérico** para una fila que captura una parte de una pantalla y no nombra sección: ninguna regla estática puede saber a qué parte de un archivo de diseño se refiere una fila, y se rechaza una conjetura o una lista de exentos.
-- **La auditoría en cambio**: el PR lleva una auditoría a ojo de cada otra fila `Inicio*`, hecha como en "A row names what it reaches" de arriba. Una fila que compara una captura de una pestaña con un dibujo de varias pestañas y no nombra sección se arregla en la tarea cuando el arreglo es sólo de declaración; cualquier otro arreglo pasa a ser un issue de seguimiento enlazado desde el PR; nada de lo que se encuentra queda sin explicar.
+- **La auditoría en cambio**: el PR lleva una auditoría a ojo de cada otra fila `Inicio*`, hecha como en "Una fila nombra lo que alcanza" de arriba. Una fila que compara una captura de una pestaña con un dibujo de varias pestañas y no nombra sección se arregla en la tarea cuando el arreglo es sólo de declaración; cualquier otro arreglo pasa a ser un issue de seguimiento enlazado desde el PR; nada de lo que se encuentra queda sin explicar.
 - El cambio toca `scripts/design/screens.json`, los dos tests del registro como sus seams declarados y el caption de arriba. La captura de la fila corregida se adjunta y se juzga a ojo, con un antes/después bajo el ADR-0042.
 
-### Registry rows for the last Onboarding screen
+### Filas del registro para la última pantalla del Onboarding
 
 - **Cada fila de la última pantalla del Onboarding alcanza esa pantalla como lo hace un vendedor**: parte de un paso opcional una vez cumplidos los dos pasos obligatorios, en una cuenta propia en ese estado, y pasa los pasos opcionales restantes como los define docs/product/onboarding.md. El estado de la cuenta es preparación, no comportamiento.
 - **La última pantalla del Onboarding tiene cuatro filas**: teléfono claro, teléfono oscuro, computadora clara y computadora oscura, para que quede cubierta en los dos viewports y los dos temas como cada otra pantalla del Onboarding.
@@ -242,17 +242,17 @@ Esta sección describe la herramienta como la dejaron las partes 1 y 2 de GH-491
 - **Las cuentas de captura son sólo herramienta de diseño**: las escribe sólo la app de muestra, nunca el código de producto ni la semilla de la que se renderiza `muestra.md`.
 - **Ninguna regla de producto se dobla por una captura**: "Skip the rest" nunca aparece en el paso 6, y la última pantalla del Onboarding se alcanza al pasar el último paso opcional (el paso 6 con "Continue").
 
-### Registry rows for Home's first-run elements and Today (GH-45 follow-up)
+### Filas del registro para los elementos de primera vez de Home y Today (seguimiento de GH-45)
 
-- **Filas**: el checklist de primera vez y el aviso posterior a la importación tienen tres filas cada uno, teléfono, computadora y teléfono oscuro, como las filas `InicioPrimeraVez*` existentes: 6 filas nuevas. No hay fila de computadora oscura para un elemento de primera vez; un cambio posterior al layout oscuro de computadora de Home la agrega si la necesita. Las filas existentes `InicioPrimeraVez`, `InicioPrimeraVezCompu` e `InicioPrimeraVezOscuro` siguen cubriendo lo que cubren. Los nombres exactos de fila y de cuenta son del Tech Lead.
+- **Filas**: el checklist de primera vez y el aviso posterior a la Spreadsheet import tienen tres filas cada uno, teléfono, computadora y teléfono oscuro, como las filas `InicioPrimeraVez*` existentes: 6 filas nuevas. No hay fila de computadora oscura para un elemento de primera vez; un cambio posterior al layout oscuro de computadora de Home la agrega si la necesita. Las filas existentes `InicioPrimeraVez`, `InicioPrimeraVezCompu` e `InicioPrimeraVezOscuro` siguen cubriendo lo que cubren. Los nombres exactos de fila y de cuenta son del Tech Lead.
 - **El dibujo y la captura del checklist**:
   - diseño dibuja los cuatro pasos (docs/product/navigation.md) con sus marcas "Done" sólo con elementos existentes del sistema de diseño: ningún componente, color ni valor de token nuevo;
   - el dibujo y la captura muestran el mismo estado, una mezcla con al menos un paso "Done" y al menos uno pendiente; nunca los dos pasos obligatorios (1 y 2) "Done", porque el checklist se va para siempre la primera vez que se cumplen los dos. Mezcla asumida: paso 1 "Done" (un producto con precio hoy), paso 2 y los dos pasos opcionales pendientes; sirve igual cualquier mezcla que cumpla la restricción;
   - cada paso lee su casilla y la palabra "Done", nunca sólo el color, y el checklist no lleva ícono de atención; las etiquetas de los pasos son la redacción de diseño dentro de los límites de la regla de ícono y texto;
   - su cuenta de captura es un negocio sin estado de Onboarding, como un negocio que existía antes de que se lanzara el Onboarding.
-- **El dibujo y la captura del aviso posterior a la importación**:
+- **El dibujo y la captura del aviso posterior a la Spreadsheet import**:
   - la fila captura el aviso solo y entero: "Connect the bot so the pinned catalog updates by itself", su ícono de atención y su control de descarte; lo que haya en el slot 1 queda fuera del recorte;
-  - su cuenta de captura es un negocio que la importación de la planilla realmente cargó, tal como la registra la importación (docs/product/import.md, ADR-0046), capturado antes de descartar el aviso y antes de publicar el bot por primera vez;
+  - su cuenta de captura es un negocio que la Spreadsheet import realmente cargó, tal como la registra la Spreadsheet import (docs/product/import.md, ADR-0046), capturado antes de descartar el aviso y antes de publicar el bot por primera vez;
   - un negocio importado que además mostrara el checklist es un defecto de producto (docs/product/navigation.md), nunca un estado para capturar.
 - **La etiqueta Today** *(superado por GH-526: el `InicioCompu.dc.html` redibujado no lleva esa etiqueta y ninguna fila `Inicio*` recorta a una sección; el texto de abajo registra la decisión de GH-274)*: sólo cambia `InicioCompu.dc.html`. Gana una etiqueta para su sección Today que aparece exactamente una vez en el archivo, redactada como la etiqueta de sección de `InicioHoy` (`Hoy · la pestaña con la que abre el panel`, Today, la pestaña con la que abre el panel). Es una anotación del dibujo, no copy de la app. `InicioHoyCompu` e `InicioHoyCompuOscuro` recortan a esa sección por ese texto. La pantalla construida no se toca; si el recorte sólo pudiera nombrarse cambiando la pantalla construida, el trabajo se frena y vuelve al PM como una pregunta de copy.
 - **Cuentas de captura**: las escribe sólo la herramienta de diseño, nunca el código de producto, una route de producto ni la semilla de la que se renderiza `muestra.md`. Ninguna entrada de la última pantalla del Onboarding nombra jamás una, y todo tipo de cuenta nuevo se declara en `facts.account_kinds`, rechazado cuando falta o no coincide como antes. El mecanismo es del Tech Lead, y también registrarlo como enmienda al ADR-0042, junto a la enmienda GH-189 que definió los tipos de cuenta.
@@ -264,7 +264,7 @@ Esta sección describe la herramienta como la dejaron las partes 1 y 2 de GH-491
   Nada más bajo `app/`, `web/src/` o `tests/` cambia, y cualquier otro test editado significa que la implementación está mal.
 - **No se exige un par AE antes/después**: nada de lo que ve un vendedor cambia, las seis filas son nuevas y las filas Today sólo cambian su recorte.
 
-### Captured whole
+### Captura entera
 
 - "Entera" significa la sección nombrada completa tal como la dibuja el archivo de diseño en `docs/product/design-system/pantallas/`. Para la última pantalla del Onboarding son su título, cada línea de paso ("Done", o "For later" con dónde) y sus dos acciones ("Add my first sale", "Go to Home"). Nunca significa `muestra.md`, que guarda las cifras del negocio de muestra, no el layout.
 - La misma regla vale en claro, oscuro y Compu (claro y oscuro), cada uno a su propio ancho registrado: una sección cortada se arregla en el recorte, nunca ensanchando la pantalla.
@@ -286,7 +286,7 @@ Esta sección describe la herramienta como la dejaron las partes 1 y 2 de GH-491
   - Una falla nombra la entrada y las dos listas de placeholders, nada más.
   - Punto ciego conocido, aceptado: una fila cuyo path no nombra ningún registro mientras su route sí, no la chequea esta regla. Sus pasos y su captura siguen chequeados por la auditoría y a ojo.
 
-### Plan rules for a registry change
+### Reglas del plan para un cambio del registro
 
 - Un cambio a las filas de `scripts/design/screens.json` declara los dos tests de cumplimiento del registro, `web/src/design/screens.test.ts` y `routes.test.ts`, como sus seams. Sus invariantes dicen "screens.json más los dos tests del registro", con las herramientas de diseño que necesita el cambio nombradas al lado.
 - Cualquier otro test editado significa que la implementación está mal.
@@ -294,7 +294,7 @@ Esta sección describe la herramienta como la dejaron las partes 1 y 2 de GH-491
 - El seam de `tests/design/test_sample_app.py` del seguimiento de primera vez de GH-45 (arriba) se declara sólo para ese plan, sólo extendido, y tampoco cambia esta regla.
 - Ningún invariante de plan pide una máquina ociosa o sin carga para una corrida de captura.
 
-### Failures
+### Fallas
 
 - Una fila que no puede alcanzar su pantalla falla mientras da los pasos hasta ahí, así que `--strict` sale no cero. Esa fila es un defecto a arreglar, nunca una falla conocida sobre la que informar.
 - Una fuente que queda en error en una captura, un paso offline incluido, falla el chequeo de aplicadas, así que `--strict` sale no cero.
@@ -310,7 +310,7 @@ Esta sección describe la herramienta como la dejaron las partes 1 y 2 de GH-491
 - Una fila cuya sección no coincide con ningún elemento de su dibujo, o con más de uno, falla bajo `--strict`; es un defecto a arreglar, nunca una falla conocida.
 - Una diferencia entre un dibujo y los docs nunca se arregla cambiando el copy de la app; la diferencia se lista en el PR.
 
-### Evidence in the PR
+### Evidencia en el PR
 
 - La salida de una llamada `--strict` sobre `Inicio*` (Home) y el bloque del Onboarding, exit 0.
 - Para un cambio que hace que una fila alcance su pantalla: la salida de una llamada `--strict` sobre todo el registro sin `--only`, exit 0, y las capturas de cada fila que arregló, juzgadas a ojo.
@@ -326,9 +326,9 @@ Esta sección describe la herramienta como la dejaron las partes 1 y 2 de GH-491
 - Para la evidencia del método de captura (GH-301 parte 3): ver esa sección más abajo.
 - Para la captura de teléfono (GH-491): [GH-491-phone-shot.md](../evidence/GH-491-phone-shot.md). Cada fila con AE mayor que 0 entre corridas lleva una de tres etiquetas (`expected (seen)`, `expected (inferred: <base>)`, `unexpected`); sólo una fila cuyas imágenes se abrieron en esa tarea pasa a `seen`; una fila `unexpected` se lista bajo "Reabiertas" y no se fusiona.
 
-### The Onboarding restyle's evidence (GH-164 follow-up)
+### La evidencia del restyle del Onboarding (seguimiento de GH-164)
 
-- **Pantallas**: los seis pasos del Onboarding (producto y precio, stock de apertura, encabezado y pie, bot de Telegram, partner, categorías de gastos) y "Done", que tiene sus cuatro filas (teléfono y computadora, claro y oscuro), cada una alcanzada como arriba.
+- **Pantallas**: los seis pasos del Onboarding (producto y precio, stock de apertura, Catalog header and footer, bot de Telegram, partner, Expense categories) y "Done", que tiene sus cuatro filas (teléfono y computadora, claro y oscuro), cada una alcanzada como arriba.
 - **Computadora** significa la única columna de ancho de teléfono del Onboarding capturada en el viewport de computadora; el Onboarding no tiene layout de computadora propio (docs/product/onboarding.md).
 - **Por pantalla**: teléfono y computadora, claro y oscuro; más una captura de teléfono a 320 px con texto al 130 %, sólo en claro. Cada una muestra su sección nombrada entera.
 - **Registro**: cada captura es una fila de `scripts/design/screens.json`. Una fila faltante se agrega como herramienta de diseño, con los dos tests del registro como sus seams; una fila que no puede alcanzar su pantalla es un defecto, nunca una exención. Todo mecanismo para el texto al 130 % vive sólo en `scripts/design/`, nunca en código de producto.
@@ -338,7 +338,7 @@ Esta sección describe la herramienta como la dejaron las partes 1 y 2 de GH-491
 - **Nunca se arregla acá**: una diferencia de redacción nunca se arregla cambiando copy (la diferencia se lista); todo lo que cambia comportamiento, copy, pasos, acciones o routes se separa en su propio bug y sólo se lista en el PR.
 - **Todo coincide**: el PR lo dice con la evidencia; es un resultado válido.
 
-### Reviewing GH-141's change to Analysis (criteria 6–9)
+### Revisar el cambio de GH-141 a Analysis (criterios 6–9)
 
 - **Las celdas de Analysis**: cuatro, cada una capturada antes y después: teléfono y computadora, claro y oscuro. Una celda faltante en cualquier lado significa que el trabajo no está hecho.
 - **Antes y después**: "después" es la cabeza que fusiona; "antes" es la cabeza que fusiona con sólo el cambio de GH-141 deshecho, el diff del deshacer en el PR. Las diferencias extra que causa el deshacer porque cambios posteriores se apoyan en GH-141 se listan para Zeta; no se deshace nada más.
@@ -356,7 +356,7 @@ Esta sección describe la herramienta como la dejaron las partes 1 y 2 de GH-491
 - Las capturas tomadas en la máquina compartida cargada se entregan tal como están, sin nota sobre la carga, sin entrada "unsatisfiable" y sin excepción.
 - **Prueba de independencia de la carga (una vez, para el cambio que la asentó, seguimiento de GH-150)**: la base y la cabeza del cambio se capturan cada una dos veces, una bajo carga ajena (al menos los chequeos de otro worktree corriendo) y una en reposo (ningún otro chequeo, agente ni worktree corriendo, registrado como lo registra el ADR-0041), todo con el `comparisons.mjs` de la propia cabeza, de una instalación, el mismo día argentino (ADR-0042). Para cada commit, `ae.mjs` compara la corrida cargada con la corrida en reposo. Nunca se repite como chequeo recurrente ni como paso del Gate.
 
-### The Home restyle's evidence (GH-272 follow-up) (Home criteria 1–5)
+### La evidencia del restyle de Home (seguimiento de GH-272) (criterios Home 1–5)
 
 - **Pantallas**: sólo Home, siete filas del registro: `Inicio` (Home), `InicioOscuro`, `InicioHoy`, `InicioHoyCompu`, `InicioHoyCompuOscuro`, `InicioCompu` e `InicioCompuOscuro`. Otras pantallas que GH-272 tocó tienen su propio seguimiento si llevan su propio finding.
 - **Antes y después**: "después" es la cabeza que fusiona; "antes" es esa cabeza con sólo el cambio de GH-272 deshecho, el diff del deshacer en el PR. Si deshacerlo solo cambia más de lo que cambió GH-272, el PR lo dice y lista las diferencias extra para el PM; no se deshace nada más. Los dos lados salen del `comparisons.mjs --strict` de la cabeza, una instalación, un día argentino, fuentes fijadas (ADR-0042); `ae.mjs` compara las capturas crudas, lado diseño y lado construido, nunca la hoja compuesta. Cada captura se juzga además a ojo contra su archivo de diseño.
@@ -370,7 +370,7 @@ Esta sección describe la herramienta como la dejaron las partes 1 y 2 de GH-491
 - **Todo coincide**: el PR lo dice con la evidencia; es un resultado válido.
 - Asumido: antes de este seguimiento Home no tenía ningún chequeo de su aspecto más allá del argumento de construcción y la confianza del revisor.
 
-### The shot method's evidence (GH-301 part 3) (Shot criteria 1–7)
+### La evidencia del método de captura (GH-301 parte 3) (criterios Shot 1–7)
 
 - **Dónde vive**: un documento, `docs/evidence/GH-301-shot-method.md`, y sus imágenes lado a lado, commiteadas bajo `docs/evidence/GH-301/` junto a las de la parte 1. Son los únicos archivos que la tarea cambia. Cada imagen es un PNG lado a lado viejo-contra-nuevo para una fila y lado que difieren, nombrado por fila y lado; nada más se commitea ahí (ni capturas crudas, ni `index.json`, ni salida del smoke check, ni fila de scratch de `/tmp`). Las imágenes se commitean en vez de subirse al PR porque el Developer no puede subir adjuntos a un PR y una imagen arrastrada a mano que se omitiera dejaría una fila sin juzgar. Lo que la captura registra e imprime lleva sólo paths de clases, tamaños, booleanos y coordenadas: ningún texto de página, nombres, montos ni datos de píxeles; las imágenes commiteadas muestran sólo el negocio de muestra.
 - **Primero la línea base**: antes de cualquier corrida, se coteja `main` contra el commit de app fijado en `app/`, `web/src/` y el registro. Si alguno de los tres se movió, el trabajo se frena sin evidencia parcial e informa cuál se movió y entre qué commits.
@@ -380,12 +380,12 @@ Esta sección describe la herramienta como la dejaron las partes 1 y 2 de GH-491
 - **Corridas de repetibilidad (criterio a)**: diez corridas `--strict` del registro entero, ninguna con `--only`, cada una sobre una muestra nueva y cada una con exit 0: cinco de la cabeza y cinco de la base con el `scripts/design` de la cabeza como overlay (ADR-0042, GH-219). Las diez se toman en un día argentino; si no se puede, el trabajo empieza de nuevo en un solo día y nunca mezcla días. De cada lado `ae.mjs` compara la corrida 1 con las corridas 2, 3, 4 y 5, y el documento informa por lado las líneas no cero, las filas con un lado faltante y las filas con un `null` de un solo lado, objetivo 0 cada una. Cualquier otra cosa es un defecto informado con su fila, lado y pareja de corridas, nunca disimulado ni vuelto a correr hasta que pase.
 - **Registro de reproducibilidad**: el commit de app fijado, el SHA de la cabeza, el SHA de la base y su fecha, el comando del smoke check de la base y su resultado, una línea que diga que `6541887d` se reemplazó y por qué, el diff stat del overlay (contra la base elegida), la versión de fontsource, el día argentino y los comandos. El revisor no vuelve a correr la herramienta como paso de la revisión; poder hacerlo es lo que hace confiable a la evidencia.
 - **Viejo contra nuevo (criterio d)**: por el riesgo 6 del ADR-0052, la corrida 1 de la cabeza se compara con la corrida del censo de la parte 1, retomada sobre el nuevo pin, con `ae.mjs --box`; las corridas propias de la herramienta vieja no se pueden tomar (su registro clickea etiquetas en español que la app ya no tiene, y no se parchea). La corrida de censo retomada se toma en el mismo día argentino que las diez corridas, así ambas llevan las mismas fechas de muestra y ninguna diferencia viene sólo de la fecha de la semilla; si no pueden compartir día, el censo se vuelve a tomar el día de las corridas. Cada fila y lado que difiere recibe un PNG lado a lado viejo-contra-nuevo commiteado bajo `docs/evidence/GH-301/`; una fila que difiere de un solo lado recibe una imagen y una línea sólo para ese lado. `VariedadesCompu built` se compara con la captura de la corrida del censo, y una captura vieja gris, donde aparece, se anota como el defecto conocido de GH-273 de la herramienta vieja. Las filas sin contraparte vieja (el ADR-0052 cuenta 27 filas viejas con etiquetas en español y 23 filas nuevas) se listan, no se juzgan. Si nada difiere, el documento lo dice con los conteos comparados.
-- **La tabla de veredictos**: una línea por fila y lado que difiere, con la fila, el lado, el enlace relativo a su imagen commiteada, un motivo propuesto y una celda de veredicto vacía. Cada línea enlaza una imagen que existe, y cada imagen commiteada tiene una línea; un desajuste en cualquier sentido es un defecto que se arregla antes de la revisión. Orden: filas de capa primero; después filas cuyo layout depende del alto del viewport (barras fijas, `dvh`/`min-height`), bajo un encabezado que las nombra como tales para la métrica (c); después el resto. Un motivo se propone sólo donde el ADR-0052, la regla de capa o la regla de alto de viewport explica claramente la fila; toda otra fila dice "no proposed reason". Los veredictos del revisor son mismo, diferencia prevista con un motivo de una línea, o equivocado; el autor nunca llena uno.
+- **La tabla de veredictos**: una línea por fila y lado que difiere, con la fila, el lado, el enlace relativo a su imagen commiteada, un motivo propuesto y una celda de veredicto vacía. Cada línea enlaza una imagen que existe, y cada imagen commiteada tiene una línea; un desajuste en cualquier sentido es un defecto que se arregla antes de la revisión. Orden: filas de capa primero; después filas cuyo layout depende del alto del viewport (barras fijas, `dvh`/`min-height`), bajo un título que las nombra como tales para la métrica (c); después el resto. Un motivo se propone sólo donde el ADR-0052, la regla de capa o la regla de alto de viewport explica claramente la fila; toda otra fila dice "no proposed reason". Los veredictos del revisor son mismo, diferencia prevista con un motivo de una línea, o equivocado; el autor nunca llena uno.
 - **Una falla ruidosa**: el método se muestra fallando una fila, una real si alguna falla, si no una fila de scratch descartable en `/tmp` (como hizo GH-273, p. ej. una capa más alta que el viewport) que nunca entra a `screens.json` y nunca se commitea. El documento registra el exit code no cero bajo `--strict`, alcanzado después de que corrió cada fila, el lado `null` en `index.json`, que no existe ningún PNG con ningún nombre, y la razón fija en inglés que nombra el lado. Si el método no falla la fila, eso se informa como defecto, nunca se presenta como la falla ruidosa.
 - **Campos opcionales**: cada campo nuevo de `index.json` sigue siendo opcional para `ae.mjs`, `compare.sh`, `composeSheet` y `web/src/design/*.test.ts`; el documento no depende de que haya alguno presente.
 - **Cierre**: el documento termina con un registro de cierre que lista los cinco findings de GH-273 por número, cada uno apuntando a la evidencia que lo cierra. Se cierran una vez que cada lado tiene una imagen y cada veredicto está lleno con 0 equivocados y 0 sin juzgar; un veredicto equivocado los mantiene abiertos y su fila es el seguimiento.
 
-## Metrics
+## Métricas
 
 Sin telemetría; se lee de la evidencia del PR y de los tests.
 
@@ -427,7 +427,7 @@ Sin telemetría; se lee de la evidencia del PR y de los tests.
 - **Nunca a medio dibujar (Rest criterion 3)**: una fila deliberadamente sin asentar (algo que nunca llega al reposo dentro de la cota) bajo `--strict` sale no cero, su lado `null`, sin PNG escrito, con el mensaje fijo que nombra la fila y el lado, mostrada una vez en el PR; nunca se lee como una diferencia de AE.
 - **Nada aflojado (Rest criterion 4)**: leído del diff: ninguna tolerancia en la comparación; el registro tiene las mismas filas que antes; ningún cambio visible al vendedor bajo `app/` o `web/src/`, el comportamiento de deshabilitado-mientras-se-relee del switch incluido; ningún cambio a `.agentic/stack.yaml`, el CI ni el Gate; ninguna aserción de tiempo transcurrido (ADR-0038).
 - **Finding cerrado**: el registro de cierre marca resuelto el `VariedadesCompu built: AE 2888` de GH-261, con su causa corregida a una relectura en segundo plano con el control deshabilitado, citando las cinco corridas por commit. Medida de negocio: findings de spec-scope por un AE inexplicado en una pantalla que el PR no tocó, objetivo 0.
-- **Existen las filas de primera vez (First-run criterion 1)**: `index.json` tiene un resultado para cada una de las 6 filas nuevas, 0 lados faltantes y ningún `null` de un solo lado; cada captura muestra su sección entera, juzgada a ojo. Las capturas del checklist muestran al menos un "Done" y al menos un paso pendiente y nunca los dos pasos obligatorios "Done", juzgado contra docs/product/navigation.md; la captura posterior a la importación muestra el aviso solo con su ícono y su control de descarte.
+- **Existen las filas de primera vez (First-run criterion 1)**: `index.json` tiene un resultado para cada una de las 6 filas nuevas, 0 lados faltantes y ningún `null` de un solo lado; cada captura muestra su sección entera, juzgada a ojo. Las capturas del checklist muestran al menos un "Done" y al menos un paso pendiente y nunca los dos pasos obligatorios "Done", juzgado contra docs/product/navigation.md; la captura posterior a la Spreadsheet import muestra el aviso solo con su ícono y su control de descarte.
 - **Today comparado como Today (First-run criterion 2)**: la etiqueta Today aparece exactamente una vez en `InicioCompu.dc.html`; las dos capturas Today de computadora no muestran contenido de Week, juzgado a ojo.
 - **Todo el registro en verde (First-run criterion 3)**: el PR tiene una salida `--strict` del registro entero, sin `--only`, exit 0, y la versión instalada de fontsource; pasan todas las suites; el diff toca sólo `scripts/design/`, `pantallas/`, los dos tests del registro, `tests/design/test_sample_app.py` (sólo casos nuevos, cada aserción existente conservada), la enmienda al ADR-0042 y este archivo; la línea Seams del plan nombra los tres tests; no se agrega ningún paso a `.agentic/stack.yaml`, el CI ni el Gate.
 - **Las diferencias se listan (First-run criterion 4)**: cada diferencia dibujo-contra-docs se lista en el PR con su pantalla: 0 sin listar.
@@ -449,7 +449,7 @@ Sin telemetría; se lee de la evidencia del PR y de los tests.
 - **Sin evidencia falsa (Phone criterion 2)**: toda pantalla sin captura aparece `not-captured` con su razón `shot: <what> (design|built)`, y `ae.mjs` la dice "not compared": 0 líneas AE 0 sobre un lado sin imagen.
 - **Juzgado a ojo sólo lo visto (Phone criterion 3)**: la evidencia da las cuentas de `expected (seen)`, `expected (inferred: …)` y `unexpected`, y dice que sólo las `seen` cumplen "juzgadas a ojo"; las `unexpected` están bajo "Reabiertas" con su id de fila.
 
-## Out of scope
+## Fuera de alcance
 
 - Todo cambio a docs/product/onboarding.md, docs/product/navigation.md, el copy de una pantalla o sus pasos para facilitar su captura.
 - Ensanchar una pantalla más allá de su ancho registrado para que quepa un recorte.

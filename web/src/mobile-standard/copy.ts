@@ -17,6 +17,13 @@ export function common(key: CommonKey, args?: Args): string {
   return resolveKey(ENGLISH_STATIC, key, args)
 }
 
+type EmptyStatesKey = Extract<CopyKey, `emptyStates:${string}`>
+
+/** The English text of an `emptyStates:` key. */
+export function emptyState(key: EmptyStatesKey): string {
+  return resolveKey(ENGLISH_STATIC, key)
+}
+
 /** The English text of a refusal. */
 export function refusal(refused: Refusal): string {
   return resolveKey(ENGLISH_STATIC, refused.key)

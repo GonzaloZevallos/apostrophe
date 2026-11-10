@@ -122,6 +122,18 @@ Criterios de éxito:
 - Si el pull request no toca ese spec, puede integrarse con el re-run en verde, pero solo después de abrir el issue del flake. El freno de `ci:` se cumple porque todos los jobs están en verde en el head.
 - Si un job `e2e-shard` se cancela o llega a su `timeout-minutes` (30), se vuelve a correr una sola vez, solo para distinguir un flake de una regresión. Un flake recibe su propio issue. El workflow no tiene ningún bucle de re-run.
 
+### Listas de infractores del texto en el front (GH-379, parte 2)
+
+La guarda de textos con key (ADR-0049) guarda dos listas en `web/src/architecture/i18nOffenders/`, ambas derivadas del árbol, un JSON ordenado con una entrada por línea:
+
+- `copyExportsText.json` lista cada archivo de `web/src/copy/` que todavía escribe palabras propias: `{ file, issue }`. `common.ts` es la única entrada con `issue: null`, con su `reason`.
+  - `emptyStates.ts` nunca es entrada: solo exporta keys y los strings de sus límites (`EMPTY_STATE_LIMITS`) no son texto (`NOT_TEXT_EXPORTS` en `owners.ts`, que exime solo ese export: una palabra real agregada a ese archivo sí es infractora).
+- `copyImports.json` lista cada archivo de `screens/`, `shell/` o `components/` que importa esas palabras: `{ file, imports, issue }`, una entrada por par de archivo importador y dueño. Los imports de `common.ts` y `emptyStates.ts` nunca son entradas.
+
+El `issue` sale de `COPY_OWNER` (`owners.ts`), la única tabla que escribe un número de issue para un archivo de copy. `lists.test.ts` recalcula ambas listas desde el árbol y falla ante un infractor sin entrada, una entrada vencida (un archivo borrado incluido), un `issue` distinto del dueño, un `null` fuera de `common.ts` y cualquier hallazgo de `wordsOf`.
+
+Las listas solo se achican: cada parte de área (#350 a #353) borra únicamente sus propias entradas cuando mueve sus palabras a keys. Nunca se agrega una entrada para tapar un infractor nuevo: se lo mueve a una key.
+
 ### Listas de infractores del estándar móvil
 
 El estándar móvil guarda listas de infractores en `web/src/mobile-standard/offenders/`:

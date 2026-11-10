@@ -10,7 +10,7 @@
 
 import { CUSTOMER, CUSTOMER_NEW, HOME, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from './fixtures.js'
+import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -71,7 +71,7 @@ for (const viewport of VIEWPORTS) {
     // A partial payment: back on Inicio, the row keeps its new balance.
     await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).click()
     await page.getByLabel('Amount').fill('2000')
-    await page.getByRole('radio', { name: 'Cash' }).check()
+    await choosePaymentMethod(page, 'Cash')
     // The exact text is the privacy check: an exact match cannot contain the customer's name.
     await expectToast(page, 'Payment saved · still owing $ 3.000', () =>
       page.getByRole('button', { name: 'Save' }).click(),
@@ -82,7 +82,7 @@ for (const viewport of VIEWPORTS) {
     // The rest, with "All": the row leaves and the block reads "Nobody owes you".
     await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).click()
     await page.getByRole('button', { name: 'All: $ 3.000' }).click()
-    await page.getByRole('radio', { name: 'Transfer' }).check()
+    await choosePaymentMethod(page, 'Transfer')
     await expectToast(page, 'Payment saved', () => page.getByRole('button', { name: 'Save' }).click())
     await expectPath(page, HOME)
     await expect(page.getByText('Nobody owes you')).toBeVisible()

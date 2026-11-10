@@ -28,7 +28,7 @@ promise that, so the highest number ever given is stored.
 - **A constraint is the last defence.** `UNIQUE(business_id, number)` (`uq_sale_business_id_number`)
   turns a bug into a failed save. A duplicate is a bug and has no rule code.
 - **Existing sales** are numbered once, by migration 0023, per business by
-  `(sale_date, recorded_at, id)`; each counter becomes that business's highest number. The
+  `(sale_date, recorded_at, id)` (column renamed in GH-75 part 2, migration 0026); each counter becomes that business's highest number. The
   Spreadsheet import writes through `SqlSales.add`, so it takes numbers in its own write order.
 
 ## Consequences

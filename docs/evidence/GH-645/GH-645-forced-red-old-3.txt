@@ -1,0 +1,272 @@
+
+ RUN  v5.0.5 /home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-645/web
+
+ ❯ |unit| src/screens/settings/WithdrawalReasons.forced.test.tsx (1 test | 1 failed) 1718ms
+   × adding and renaming toast "Reason saved" with no name, and deleting toasts "Reason deleted" 1710ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| src/screens/settings/WithdrawalReasons.forced.test.tsx > adding and renaming toast "Reason saved" with no name, and deleting toasts "Reason deleted"
+TestingLibraryElementError: Unable to find a label with the text of: Name
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="pantalla ajustes-grupo motivos-pantalla"
+      data-content-area=""
+    >
+      <div
+        class="ajustes-grupo__tarjeta"
+      >
+        <div
+          class="ajustes-grupo__encabezado"
+        >
+          <span
+            class="ajustes-grupo__titulo"
+          >
+            Withdrawal reasons
+          </span>
+          <button
+            aria-label="Close"
+            class="boton-icono"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="none"
+              height="22"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.6"
+              viewBox="0 0 24 24"
+              width="22"
+            >
+              <path
+                d="M6 6l12 12"
+              />
+              <path
+                d="M18 6 6 18"
+              />
+            </svg>
+          </button>
+        </div>
+        <div
+          class="ajustes-grupo__cuerpo"
+        >
+          <span
+            class="campo__rotulo"
+            data-copy="help"
+          >
+            The reasons you pick when you take stock out without selling it.
+          </span>
+          <ul
+            class="motivos"
+          >
+            <li
+              class="motivo-fila"
+            >
+              <span
+                class="motivo-fila__nombre"
+              >
+                Marketing
+              </span>
+              <div
+                class="motivo-fila__acciones"
+              >
+                <button
+                  aria-label="Move Marketing down"
+                  class="boton--enlace"
+                  type="button"
+                >
+                  Down
+                </button>
+                <button
+                  class="boton boton--suave"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    fill="none"
+                    height="22"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.6"
+                    viewBox="0 0 24 24"
+                    width="22"
+                  >
+                    <path
+                      d="M4 20l1.2-4.4L16.2 4.6a2.1 2.1 0 0 1 3 3L8.4 18.8z"
+                    />
+                    <path
+                      d="M14 7l3 3"
+                    />
+                  </svg>
+                  Rename
+                </button>
+                <button
+                  class="boton boton--critico"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    fill="none"
+                    height="22"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.6"
+                    viewBox="0 0 24 24"
+                    width="22"
+                  >
+                    <path
+                      d="M5 7h14"
+                    />
+                    <path
+                      d="M9.5 7V5a1.5 1.5 0 0 1 1.5-1.5h2A1.5 1.5 0 0 1 14.5 5v2"
+                    />
+                    <path
+                      d="M7 7l1 13h8l1-13"
+                    />
+                  </svg>
+                  Delete
+                </button>
+              </div>
+            </li>
+            <li
+              class="motivo-fila"
+            >
+              <span
+                class="motivo-fila__nombre"
+              >
+                Own use
+              </span>
+              <div
+                class="motivo-fila__acciones"
+              >
+                <button
+                  aria-label="Move Own use up"
+                  class="boton--enlace"
+                  type="button"
+                >
+                  Up
+                </button>
+                <button
+                  class="boton boton--suave"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    fill="none"
+                    height="22"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.6"
+                    viewBox="0 0 24 24"
+                    width="22"
+                  >
+                    <path
+                      d="M4 20l1.2-4.4L16.2 4.6a2.1 2.1 0 0 1 3 3L8.4 18.8z"
+                    />
+                    <path
+                      d="M14 7l3 3"
+                    />
+                  </svg>
+                  Rename
+                </button>
+                <button
+                  class="boton boton--critico"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    fill="none"
+                    height="22"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.6"
+                    viewBox="0 0 24 24"
+                    width="22"
+                  >
+                    <path
+                      d="M5 7h14"
+                    />
+                    <path
+                      d="M9.5 7V5a1.5 1.5 0 0 1 1.5-1.5h2A1.5 1.5 0 0 1 14.5 5v2"
+                    />
+                    <path
+                      d="M7 7l1 13h8l1-13"
+                    />
+                  </svg>
+                  Delete
+                </button>
+              </div>
+            </li>
+          </ul>
+          <button
+            class="boton boton--suave"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="none"
+              height="22"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.6"
+              viewBox="0 0 24 24"
+              width="22"
+            >
+              <path
+                d="M12 5v14"
+              />
+              <path
+                d="M5 12h14"
+              />
+            </svg>
+            Add reason
+          </button>
+          <div
+            class="aviso-flotante"
+          >
+            <div
+              class="aviso-toast"
+              role="status"
+            >
+              <span
+                class="aviso-toast__texto"
+              >
+                Reason saved
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ getAllByLabelText node_modules/@testing-library/dom/dist/queries/label-text.js:111:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/screens/settings/WithdrawalReasons.forced.test.tsx:86:32
+     84|   ;(globalThis as any).__hold.held.release?.()
+     85|   await tap
+     86|   await userEvent.clear(screen.getByLabelText('Name'))
+       |                                ^
+     87|   await userEvent.type(screen.getByLabelText('Name'), 'Mine')
+     88|   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  12:47:25
+   Duration  5.94s (environment 43%, tests 31%, import 12%, setup 9%, transform 5%)
+

@@ -11,13 +11,16 @@
  * - On a computer the field opens an inline dropdown, kept in local state and never in the sheet
  *   stack. Its Escape stops the event so the form's own Escape does not fire.
  * - Search folds text only through `selectorSearch.ts` and matches `label` only. The clearing row
- *   and the empty-set message sit outside the filter.
+ *   and the empty-set message sit outside the filter. An optional field shows its clearing row only
+ *   while it holds a choice: with none, the field already reads the empty wording, so the list
+ *   starts at the first option and never repeats the wording as a row.
  * - Every button is `type="button"`, and Enter in the search field never submits the form.
  */
 
 import {
   type KeyboardEvent,
   type ReactNode,
+  type Ref,
   type RefCallback,
   useContext,
   useId,
@@ -25,6 +28,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useViewport } from '../shell/useViewport'
 import Boton from './Boton'
@@ -41,19 +45,55 @@ export interface SelectorOption {
   glyph?: string
 }
 
-export type SelectorProps = {
-  options: readonly SelectorOption[]
+type SelectorBase = {
   value: string | null
   onChange: (value: string | null) => void
   /** The field's visible label. */
   label: string
   /** The current choice when it is not in `options`: shown with the mark, never offered. */
   selected?: { value: string; label: string }
+  /** Receives the field's `<button>`, for a caller that focuses it or scrolls it into view. */
+  fieldRef?: Ref<HTMLButtonElement>
+  /** Names the group, the field and the list where `label` would; the visible label stays `label`. */
+  accessibleName?: string
+  /** The id of the text that describes the field (its refusal): the field's `aria-describedby`. */
+  describedBy?: string
+  /**
+   * Where the phone's list is drawn instead of beside the field. A screen that needs what is beneath
+   * the open list covered (`inert`) draws the list outside that part and says where here.
+   */
+  listHost?: HTMLElement | null
+}
+
+/** A list read from the business's data: it can be empty and it can be loading. */
+type SelectorFed = {
+  builtIn?: never
+  options: readonly SelectorOption[]
   /** The caller keeps this true until the options loaded successfully. */
   loading: boolean
   /** One line of plain text, shown when `options` is empty. */
   emptySetMessage: string
-} & ({ required: true; emptyWording?: never } | { required?: false; emptyWording: string })
+} & (
+  | { required: true; emptyWording?: never; /** Shown in the value area while empty; never a row. */ placeholder?: string }
+  | { required?: false; emptyWording: string; placeholder?: never }
+)
+
+/**
+ * A list that is part of the app and has no query behind it (the Payment methods until GH-318): it
+ * always has its options, is never loading, is never empty and has no clearing row, so it has no
+ * `loading` and no empty-set message to give.
+ */
+type SelectorBuiltIn = {
+  builtIn: true
+  required: true
+  placeholder?: string
+  options: readonly [SelectorOption, ...SelectorOption[]]
+  loading?: never
+  emptySetMessage?: never
+  emptyWording?: never
+}
+
+export type SelectorProps = SelectorBase & (SelectorFed | SelectorBuiltIn)
 
 /** Above this many options the list has a search field. */
 const SEARCH_ABOVE = 8
@@ -67,9 +107,24 @@ interface Item {
   glyph?: string
 }
 
+/** Hands `element` to a caller's ref, whether it is a callback or an object. */
+function assignRef<T>(ref: Ref<T> | undefined, element: T | null): void {
+  if (typeof ref === 'function') ref(element)
+  else if (ref) ref.current = element
+}
+
+/** `list` drawn in `host` when the screen gave one, in place otherwise. */
+function inListHost(host: HTMLElement | null | undefined, list: ReactNode): ReactNode {
+  return host ? createPortal(list, host) : list
+}
+
 export default function Selector(props: SelectorProps) {
-  const { options, value, onChange, label, selected, loading, emptySetMessage } = props
+  const { options, value, onChange, label, selected } = props
+  const loading = props.builtIn === true ? false : props.loading
+  const emptySetMessage = props.builtIn === true ? null : props.emptySetMessage
   const emptyWording = props.required === true ? null : props.emptyWording
+  const placeholder = props.required === true ? props.placeholder : undefined
+  const name = props.accessibleName ?? label
   const { t } = useTranslation()
   // Its skeleton stands where the value will be: the area is waiting while it shows.
   useLoading(loading)
@@ -78,6 +133,7 @@ export default function Selector(props: SelectorProps) {
   const sheet = useSheet(level + 1)
   const ids = useId()
   const labelId = `${ids}-label`
+  const nameId = props.accessibleName === undefined ? labelId : `${ids}-name`
   const valueId = `${ids}-value`
 
   const [mine, setMine] = useState(false)
@@ -89,7 +145,12 @@ export default function Selector(props: SelectorProps) {
   const closing = useRef(false)
   const searchFocused = useRef(false)
   const wrapperRef = useRef<HTMLDivElement>(null)
-  const fieldRef = useRef<HTMLButtonElement>(null)
+  const fieldRef = useRef<HTMLButtonElement | null>(null)
+  const callerFieldRef = props.fieldRef
+  const setFieldRef: RefCallback<HTMLButtonElement> = (element) => {
+    fieldRef.current = element
+    assignRef(callerFieldRef, element)
+  }
   const dropdownRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
   const rowsRef = useRef<HTMLDivElement>(null)
@@ -99,7 +160,7 @@ export default function Selector(props: SelectorProps) {
   const effectiveQuery = showSearch ? query : ''
   const visible = options.filter((option) => matchesQuery(option.label, effectiveQuery))
   const items: Item[] = [
-    ...(emptyWording === null ? [] : [{ key: CLEAR, value: null, label: emptyWording }]),
+    ...(emptyWording === null || value === null ? [] : [{ key: CLEAR, value: null, label: emptyWording }]),
     ...visible.map((option) => ({ key: option.value, value: option.value, label: option.label, glyph: option.glyph })),
   ]
   const activeIndex = Math.max(0, items.findIndex((item) => item.key === activeKey))
@@ -277,7 +338,7 @@ export default function Selector(props: SelectorProps) {
   const initialKey = !showSearch
     ? current !== undefined
       ? current.value
-      : emptyWording !== null
+      : value !== null && emptyWording !== null
         ? CLEAR
         : (options[0]?.value ?? null)
     : null
@@ -381,7 +442,7 @@ export default function Selector(props: SelectorProps) {
 
   const noResults = options.length > 0 && visible.length === 0
   const message = options.length === 0 ? emptySetMessage : noResults ? t('common:noResults') : null
-  const optionsName = t('common:optionsOf', { name: label })
+  const optionsName = t('common:optionsOf', { name })
 
   const body = (
     <>
@@ -403,7 +464,7 @@ export default function Selector(props: SelectorProps) {
   const valueArea = loading ? (
     <span className="cargando__barra cargando__barra--corta selector__esqueleto" aria-hidden="true" />
   ) : value === null ? (
-    <span className="selector__texto">{emptyWording}</span>
+    <span className="selector__texto">{emptyWording ?? placeholder}</span>
   ) : current !== undefined ? (
     <>
       {current.glyph !== undefined && (
@@ -425,18 +486,24 @@ export default function Selector(props: SelectorProps) {
 
   return (
     <>
-      <div ref={wrapperRef} className="selector" role="group" aria-labelledby={labelId} tabIndex={-1}>
-        <span id={labelId} className="campo__rotulo">
+      <div ref={wrapperRef} className="selector" role="group" aria-labelledby={nameId} tabIndex={-1}>
+        <span id={labelId} className="campo__rotulo" aria-hidden={props.accessibleName === undefined ? undefined : 'true'}>
           {label}
         </span>
+        {props.accessibleName !== undefined && (
+          <span id={nameId} className="visualmente-oculto">
+            {props.accessibleName}
+          </span>
+        )}
         <div className="selector__control">
           <button
-            ref={fieldRef}
+            ref={setFieldRef}
             type="button"
             className="selector__campo"
             disabled={loading}
             aria-busy={loading ? 'true' : undefined}
-            aria-labelledby={loading ? labelId : `${labelId} ${valueId}`}
+            aria-labelledby={loading ? nameId : `${nameId} ${valueId}`}
+            aria-describedby={props.describedBy}
             aria-haspopup={computer ? 'listbox' : 'dialog'}
             aria-expanded={computer ? dropdown : shown}
             onClick={openField}
@@ -445,6 +512,11 @@ export default function Selector(props: SelectorProps) {
             <span id={valueId} className="selector__valor">
               {valueArea}
             </span>
+            {/* The built-in Payment method field, empty, shows only its label (outside the button): its text is that label, hidden,
+                so tools that read a button's text find one. `aria-labelledby` still names it. */}
+            {props.builtIn === true && value === null && placeholder === undefined && (
+              <span className="visualmente-oculto">{label}</span>
+            )}
             <span className="selector__chevron">
               <Icono nombre="abajo" />
             </span>
@@ -465,7 +537,7 @@ export default function Selector(props: SelectorProps) {
           )}
         </div>
       </div>
-      {shown && (
+      {shown && inListHost(props.listHost, (
         <SheetLevel.Provider value={level + 1}>
           <Sheet
             computer={false}
@@ -488,7 +560,7 @@ export default function Selector(props: SelectorProps) {
             </div>
           </Sheet>
         </SheetLevel.Provider>
-      )}
+      ))}
     </>
   )
 }

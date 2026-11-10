@@ -24,7 +24,7 @@ class SqlPurchases:
     def purchases(self) -> list[PurchaseRecord]:
         factor = money_scale_factor(self._session, self._business_id)
         statement = select(
-            StockEntryRow.entry_date, scaled(StockEntryRow.total_cost, factor)
+            StockEntryRow.entered_on, scaled(StockEntryRow.total_cost, factor)
         ).where(
             StockEntryRow.business_id == self._business_id,
             StockEntryRow.origin == Origin.PURCHASE.value,
@@ -35,7 +35,7 @@ class SqlPurchases:
         ]
 
     def earliest_entry_day(self) -> date | None:
-        statement = select(func.min(StockEntryRow.entry_date)).where(
+        statement = select(func.min(StockEntryRow.entered_on)).where(
             StockEntryRow.business_id == self._business_id
         )
         return self._session.scalar(statement)

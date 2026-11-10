@@ -5,7 +5,7 @@
 
 import { fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { useState } from 'react'
+import { createRef, useState } from 'react'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { testT } from '../i18n/testing'
 import { stubViewport } from '../test-viewport'
@@ -83,7 +83,7 @@ describe('picking', () => {
     unmount()
     renderForm(<Controlled {...base} emptyWording="No type" options={numbered(3)} />)
     await user.click(field())
-    expect(screen.getByRole('button', { name: 'No type' })).toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Option 1' })).toHaveFocus()
   })
 })
 
@@ -129,7 +129,7 @@ describe('search', () => {
 
   test('the clearing row is never filtered and No results shows below it', async () => {
     const user = userEvent.setup()
-    renderForm(<Controlled {...base} emptyWording="No type" options={numbered(9)} />)
+    renderForm(<Controlled {...base} emptyWording="No type" initial="v1" options={numbered(9)} />)
     await user.click(field())
     await user.type(screen.getByRole('searchbox'), 'qqq')
     expect(screen.getByRole('button', { name: 'No type' })).toBeInTheDocument()
@@ -218,6 +218,32 @@ describe('clearing row and empty set', () => {
     await user.click(field())
     expect(screen.queryByRole('button', { name: 'No type' })).not.toBeInTheDocument()
     expect(rowTexts()).toHaveLength(4)
+  })
+
+  test('an optional field with no choice has no clearing row, and the field reads the wording', async () => {
+    const user = userEvent.setup()
+    renderForm(<Controlled {...base} emptyWording="No type" options={numbered(3)} />)
+    expect(field()).toHaveTextContent('No type')
+    await user.click(field())
+    expect(rowTexts()).toEqual(['', 'Option 1', 'Option 2', 'Option 3'])
+    expect(within(screen.getByRole('dialog')).queryByText('No type')).not.toBeInTheDocument()
+  })
+
+  test('an optional field with no choice and an empty set shows the message alone', async () => {
+    const user = userEvent.setup()
+    renderForm(<Controlled {...base} emptyWording="No type" options={[]} />)
+    await user.click(field())
+    expect(rowTexts()).toEqual([''])
+    expect(screen.getByText(base.emptySetMessage)).toBeInTheDocument()
+  })
+
+  test('with search and no choice the focus is on the search field and the first row is an option', async () => {
+    const user = userEvent.setup()
+    renderForm(<Controlled {...base} emptyWording="No type" options={numbered(9)} />)
+    await user.click(field())
+    expect(screen.getByRole('searchbox')).toHaveFocus()
+    expect(rowTexts()[1]).toBe('Option 1')
+    expect(within(screen.getByRole('dialog')).queryByText('No type')).not.toBeInTheDocument()
   })
 
   test('an optional field takes its clearing wording from the noType key', async () => {
@@ -323,4 +349,80 @@ test('a row click and Enter on the field never submit the form', async () => {
   await user.keyboard('{Enter}')
   await user.click(screen.getByRole('button', { name: 'Option 1' }))
   expect(submitSpy).not.toHaveBeenCalled()
+})
+
+describe('the optional fieldRef, accessibleName and placeholder props', () => {
+  test("a caller's ref receives the field button and can focus it", () => {
+    const ref = createRef<HTMLButtonElement>()
+    renderForm(<Controlled {...base} required options={numbered(3)} fieldRef={ref} />)
+    expect(ref.current).toBe(field())
+    ref.current?.focus()
+    expect(field()).toHaveFocus()
+  })
+
+  test('accessibleName names the group, the field with its value and the list, while the label stays visible', async () => {
+    const user = userEvent.setup()
+    renderForm(<Controlled {...base} required options={numbered(3)} initial="v2" accessibleName="Line 1 item" />)
+    expect(screen.getByText('Category')).toBeVisible()
+    expect(screen.getByRole('group', { name: 'Line 1 item' })).toBeInTheDocument()
+    const named = screen.getByRole('button', { name: /^Line 1 item/ })
+    expect(named).toHaveAccessibleName('Line 1 item Option 2')
+    await user.click(named)
+    expect(screen.getByRole('dialog', { name: 'Line 1 item options' })).toBeInTheDocument()
+    expect(within(screen.getByRole('dialog')).getByText('Category')).toBeInTheDocument()
+  })
+
+  test('the placeholder shows with no value, is no row, and is not shown while loading', async () => {
+    const user = userEvent.setup()
+    function Switching() {
+      const [loading, setLoading] = useState(false)
+      return (
+        <>
+          <button type="button" onClick={() => setLoading(true)}>
+            Start loading
+          </button>
+          <Controlled {...base} loading={loading} required options={numbered(3)} placeholder="Pick one" />
+        </>
+      )
+    }
+    renderForm(<Switching />)
+    expect(field()).toHaveTextContent('Pick one')
+    await user.click(field())
+    expect(within(screen.getByRole('dialog')).queryByText('Pick one')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Close' }))
+    await user.click(screen.getByRole('button', { name: 'Start loading' }))
+    expect(screen.queryByText('Pick one')).not.toBeInTheDocument()
+  })
+
+  test('a placeholder is replaced by the picked name', async () => {
+    const user = userEvent.setup()
+    renderForm(<Controlled {...base} required options={numbered(3)} placeholder="Pick one" />)
+    await user.click(field())
+    await user.click(screen.getByRole('button', { name: 'Option 3' }))
+    expect(field()).toHaveTextContent('Option 3')
+    expect(field()).not.toHaveTextContent('Pick one')
+  })
+})
+
+describe('the optional listHost prop', () => {
+  test('the phone list is drawn in the host, outside the form', async () => {
+    const user = userEvent.setup()
+    const host = document.createElement('div')
+    document.body.appendChild(host)
+    renderForm(<Controlled {...base} required options={numbered(3)} listHost={host} />)
+    await user.click(field())
+    const list = screen.getByRole('dialog')
+    expect(host).toContainElement(list)
+    expect(field().closest('form')).not.toContainElement(list)
+    await user.click(screen.getByRole('button', { name: 'Close' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    host.remove()
+  })
+
+  test('with no host the list is inside the form, as before', async () => {
+    const user = userEvent.setup()
+    renderForm(<Controlled {...base} required options={numbered(3)} />)
+    await user.click(field())
+    expect(field().closest('form')).toContainElement(screen.getByRole('dialog'))
+  })
 })

@@ -25,7 +25,7 @@ def test_a_table_with_a_name_column_needs_no_declared_label() -> None:
 
 
 def test_a_table_declared_by_a_label_column_needs_no_name_column() -> None:
-    schema = Schema((Table("sale", (_column("id"), _column("sale_date")), ()),))
+    schema = Schema((Table("sale", (_column("id"), _column("sold_on")), ()),))
 
     assert unlabelled_tables(schema) == frozenset()
 

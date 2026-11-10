@@ -51,7 +51,7 @@ class SqlDraws:
         return [
             SaleLineDraw(
                 variety_id=line.variety_id,
-                day=sale.sale_date,
+                day=sale.sold_on,
                 recorded_at=sale.recorded_at,
                 sale_id=sale.id,
                 position=line.position,

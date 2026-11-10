@@ -8,6 +8,7 @@
 
 import { readFileSync } from 'node:fs'
 import { expect, test, type Browser, type Page } from '@playwright/test'
+import { loadBundle } from '../scripts/i18n/loadBundle.ts'
 import { MOBILE_FACTS_FILE, MOBILE_STATE_FILE, mobileLanguage } from './env.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { collect, GEOMETRY_COLLECTOR, type CellId } from './mobile/collect.js'
@@ -30,6 +31,9 @@ import type { Violation } from '../src/mobile-standard/violation.ts'
 
 const SIGNED_OUT = { cookies: [], origins: [] } as { cookies: []; origins: [] }
 
+/** The English texts a step's key stands for: read once from disk, never imported by the browserless core. */
+const bundle = loadBundle('en')
+
 function readFacts(): Facts {
   return parseFacts(JSON.parse(readFileSync(MOBILE_FACTS_FILE, 'utf-8')))
 }
@@ -51,8 +55,8 @@ for (const size of SIZES) {
         await test.step(screen.screen, async () => {
           const page = screen.signedOut ? outPage : inPage
           const cell = cellOf(screen.screen)
-          actual.push(...(await walkScreen(page, screen, cell, false, facts)))
-          actual.push(...(await walkScreen(page, screen, cell, true, facts)))
+          actual.push(...(await walkScreen(page, screen, cell, false, facts, bundle)))
+          actual.push(...(await walkScreen(page, screen, cell, true, facts, bundle)))
         })
       }
 
@@ -60,14 +64,14 @@ for (const size of SIZES) {
       for (const state of STATES) {
         await test.step(state.screen, async () => {
           const page = state.signedOut === true ? outPage : inPage
-          actual.push(...(await walkState(page, state, cellOf(state.screen), facts)))
+          actual.push(...(await walkState(page, state, cellOf(state.screen), facts, bundle)))
         })
       }
 
       for (const tap of PENDING_TAPS) {
         await test.step(`${tap.screen} pending`, async () => {
           const page = tap.signedOut === true ? outPage : inPage
-          actual.push(...(await walkPending(page, tap, cellOf(tap.screen), facts)))
+          actual.push(...(await walkPending(page, tap, cellOf(tap.screen), facts, bundle)))
         })
       }
 
@@ -108,7 +112,7 @@ test.describe('the walk rejects what it cannot reach', () => {
     const context = await newCell(browser, PROBE_SIZE, 'claro', MOBILE_STATE_FILE)
     const page = await context.newPage()
     const screen = { ...PROBE, steps: [{ wait: 'texto que no existe' }] }
-    expect(await walkScreen(page, screen, PROBE_CELL, false, readFacts())).toEqual([
+    expect(await walkScreen(page, screen, PROBE_CELL, false, readFacts(), bundle)).toEqual([
       { ...PROBE_CELL, rule: 'unreachable', target: '' },
     ])
     await context.close()
@@ -118,7 +122,7 @@ test.describe('the walk rejects what it cannot reach', () => {
     const context = await newCell(browser, PROBE_SIZE, 'claro', SIGNED_OUT)
     const page = await context.newPage()
     const screen = { ...PROBE, steps: [] }
-    expect(await walkScreen(page, screen, PROBE_CELL, false, readFacts())).toEqual([
+    expect(await walkScreen(page, screen, PROBE_CELL, false, readFacts(), bundle)).toEqual([
       { ...PROBE_CELL, rule: 'unreachable', target: '' },
     ])
     await context.close()
@@ -128,7 +132,7 @@ test.describe('the walk rejects what it cannot reach', () => {
     const context = await newCell(browser, PROBE_SIZE, 'claro', MOBILE_STATE_FILE)
     const page = await context.newPage()
     const screen = { ...PROBE, steps: [{ click: 'Week' }] }
-    expect(unreachable(await walkScreen(page, screen, PROBE_CELL, false, readFacts()))).toEqual([])
+    expect(unreachable(await walkScreen(page, screen, PROBE_CELL, false, readFacts(), bundle))).toEqual([])
     await context.close()
   })
 })
@@ -138,7 +142,7 @@ test.describe('the states the walk adds', () => {
     const context = await newCell(browser, PROBE_SIZE, 'claro', MOBILE_STATE_FILE)
     const page = await context.newPage()
     const screen = asScreen({ screen: 'Probe', route: SALES, steps: [], visible: 'texto que no existe' })
-    expect(await walkScreen(page, screen, PROBE_CELL, false, readFacts())).toEqual([
+    expect(await walkScreen(page, screen, PROBE_CELL, false, readFacts(), bundle)).toEqual([
       { ...PROBE_CELL, rule: 'unreachable', target: '' },
     ])
     await context.close()
@@ -152,10 +156,10 @@ test.describe('the states the walk adds', () => {
     const screen = asScreen({
       screen: 'Probe',
       route: SALE_NEW,
-      steps: [{ fill: { label: 'Line 1 product', value: 'Sir Jack' } }, { press: 'Close' }],
+      steps: [{ press: 'Line 1 product Pick a product' }, { press: 'Sir Jack' }, { press: 'Close' }],
       visible: 'Discard the sale?',
     })
-    expect(unreachable(await walkScreen(page, screen, PROBE_CELL, false, readFacts()))).toEqual([])
+    expect(unreachable(await walkScreen(page, screen, PROBE_CELL, false, readFacts(), bundle))).toEqual([])
     await context.close()
   })
 })
@@ -388,7 +392,7 @@ test.describe('the getting-in states the walk visits', () => {
       await guardWrites(context)
       const page = await context.newPage()
       const cell = { ...PROBE_CELL, screen: state.screen }
-      expect(unreachable(await walkState(page, state, cell, readFacts()))).toEqual([])
+      expect(unreachable(await walkState(page, state, cell, readFacts(), bundle))).toEqual([])
       await context.close()
     })
   }
@@ -401,7 +405,7 @@ test.describe('the getting-in states the walk visits', () => {
     const page = await context.newPage()
     const unstubbed = { ...brake, writes: [] }
     const cell = { ...PROBE_CELL, screen: 'EntrarFreno' }
-    expect(await walkState(page, unstubbed, cell, readFacts())).toEqual([{ ...cell, rule: 'unreachable', target: '' }])
+    expect(await walkState(page, unstubbed, cell, readFacts(), bundle)).toEqual([{ ...cell, rule: 'unreachable', target: '' }])
     await context.close()
   })
 
@@ -411,7 +415,7 @@ test.describe('the getting-in states the walk visits', () => {
     const context = await newCell(browser, PROBE_SIZE, 'claro', MOBILE_STATE_FILE)
     await guardWrites(context)
     const page = await context.newPage()
-    await walkState(page, retry, { ...PROBE_CELL, screen: 'EstadosReintento' }, readFacts())
+    await walkState(page, retry, { ...PROBE_CELL, screen: 'EstadosReintento' }, readFacts(), bundle)
     await page.goto(SALES)
     expect(await page.evaluate(async () => (await fetch('/sales', { headers: { Accept: 'application/json' } })).status)).toBe(200)
     await context.close()

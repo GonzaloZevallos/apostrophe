@@ -43,7 +43,7 @@ from tests.fakes.money_format import WholeAmounts
 DAY = date(2026, 10, 6)
 NOW = datetime(2026, 10, 6, 12, tzinfo=UTC)
 BUSINESS = 1
-DEPENDENTS = ("price_entry", "stock_entry", "stock_threshold", "catalog_attributes", "sale_line")
+DEPENDENTS = ("price_entry", "stock_entry", "stock_threshold", "catalog_attribute", "sale_line")
 
 
 @pytest.fixture(params=["sqlite", "sqlite+libsql"])
@@ -184,9 +184,7 @@ def test_a_rollback_after_the_dependent_deletes_keeps_every_dependent(engine: En
         session.rollback()
 
     assert _count(engine, "variety") == 1
-    assert [
-        _count(engine, t) for t in ("price_entry", "stock_threshold", "catalog_attributes")
-    ] == [
+    assert [_count(engine, t) for t in ("price_entry", "stock_threshold", "catalog_attribute")] == [
         1,
         1,
         1,
@@ -210,9 +208,7 @@ def test_delete_variety_rolls_back_the_dependents_when_the_guarded_delete_remove
         _delete(engine, variety_id, _GuardLosesTheRace)
 
     assert _count(engine, "variety") == 1
-    assert [
-        _count(engine, t) for t in ("price_entry", "stock_threshold", "catalog_attributes")
-    ] == [
+    assert [_count(engine, t) for t in ("price_entry", "stock_threshold", "catalog_attribute")] == [
         1,
         1,
         1,
@@ -241,9 +237,7 @@ def test_an_entry_recorded_first_makes_the_delete_answer_has_history(engine: Eng
 
     assert _count(engine, "variety") == 1
     assert _count(engine, "stock_entry") == 1
-    assert [
-        _count(engine, t) for t in ("price_entry", "stock_threshold", "catalog_attributes")
-    ] == [
+    assert [_count(engine, t) for t in ("price_entry", "stock_threshold", "catalog_attribute")] == [
         1,
         1,
         1,
@@ -399,9 +393,7 @@ def test_a_sale_recorded_first_makes_the_delete_answer_has_history(engine: Engin
 
     assert _count(engine, "variety") == 1
     assert _count(engine, "sale_line") == 1
-    assert [
-        _count(engine, t) for t in ("price_entry", "stock_threshold", "catalog_attributes")
-    ] == [
+    assert [_count(engine, t) for t in ("price_entry", "stock_threshold", "catalog_attribute")] == [
         1,
         1,
         1,
