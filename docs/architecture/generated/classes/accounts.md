@@ -242,6 +242,9 @@ classDiagram
     user_by_email(email: Email) User #124; None
     users_of_business(business_id: int) list~User~
   }
+  class AccountsMoneyFormat {
+    current() MoneyFormat
+  }
   class BusinessOpening {
     opened(business_id: int, language: BusinessLanguage) None
   }
@@ -355,8 +358,13 @@ classDiagram
   class MeOut {
     business_name : str
     email : str
+    money
     shown_language : str
     today : date
+  }
+  class MoneyFormatOut {
+    decimals : int
+    symbol : str
   }
   class ResetLinkRow {
     app_user_id : Mapped~int~
@@ -416,4 +424,5 @@ classDiagram
     samesite : Literal~'lax'~
     secure : bool
   }
+  MeOut --> MoneyFormatOut : money
 ```
