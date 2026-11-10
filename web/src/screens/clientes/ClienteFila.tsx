@@ -17,7 +17,7 @@ import PaneRowLink from '../../components/PaneRowLink'
 import type { Standing } from '../../api/payments'
 import { formatDateShort } from '../../format/dates'
 import { formatPhone } from '../../format/phone'
-import { formatMoney, formatMoneyMagnitude } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { useViewport } from '../../shell/useViewport'
 import { COMMON_TEXT } from '../../copy/common'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
@@ -36,6 +36,7 @@ interface Props {
 
 /** The avatar, the name over the number, and the money the row says (nothing for a settled customer). */
 function FilaContenido({ name, phone, vip, balance, owingSince, standing }: Required<Omit<Props, 'id'>>) {
+  const money = useMoney()
   return (
     <>
       <Avatar name={name} />
@@ -48,11 +49,11 @@ function FilaContenido({ name, phone, vip, balance, owingSince, standing }: Requ
       </span>
       {standing === 'owes' && owingSince !== null && (
         <span className="lista-clientes__balance">
-          <span className="monto-deuda cifra-n">{formatMoney(balance)}</span>
+          <span className="monto-deuda cifra-n">{money.money(balance)}</span>
           <span className="monto-deuda">{CUSTOMERS_TEXT.owesYouSince}{formatDateShort(owingSince)}</span>
         </span>
       )}
-      {standing === 'credit' && <span className="monto-credito cifra-n">{CUSTOMERS_TEXT.credit}{formatMoneyMagnitude(balance)}</span>}
+      {standing === 'credit' && <span className="monto-credito cifra-n">{CUSTOMERS_TEXT.credit}{money.magnitude(balance)}</span>}
     </>
   )
 }

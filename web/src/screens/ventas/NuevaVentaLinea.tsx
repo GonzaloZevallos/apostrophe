@@ -13,7 +13,8 @@ import Loading from '../../components/Loading'
 import OpcionInterruptor from '../../components/OpcionInterruptor'
 import ReglaInsignia from '../../components/ReglaInsignia'
 import Selector from '../../components/Selector'
-import { formatGrams, formatMoney } from '../../format/money'
+import { formatGrams } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { type priceLine, fromHundredths } from '../../sales/pricing'
 import { GRAMS_HELP, SALES_TEXT } from '../../copy/sales'
 import { useViewport } from '../../shell/useViewport'
@@ -102,6 +103,7 @@ export default function NuevaVentaLinea({
   onChange,
   onRemove,
 }: NuevaVentaLineaProps) {
+  const money = useMoney()
   // A browser without `matchMedia` (jsdom) is the phone, the layout this component's own
   // changes are for.
   const isComputer = useViewport() === 'computer'
@@ -137,10 +139,10 @@ export default function NuevaVentaLinea({
           preview !== null && (
             <div className="nueva-venta__linea-detalle">
               {preview.rule !== 'gift' && (
-                <span className="nueva-venta__linea-preciogramo cifra-n">{formatMoney(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
+                <span className="nueva-venta__linea-preciogramo cifra-n">{money.money(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
               )}
               <ReglaInsignia rule={preview.rule} />
-              <span className="nueva-venta__linea-total cifra-s">{formatMoney(preview.lineTotal)}</span>
+              <span className="nueva-venta__linea-total cifra-s">{money.money(preview.lineTotal)}</span>
             </div>
           )
         )}
@@ -246,10 +248,10 @@ export default function NuevaVentaLinea({
       {error === null && !figuresLoading && preview !== null && (
         <div className="nueva-venta__linea-detalle">
           {preview.rule !== 'gift' && (
-            <span className="nueva-venta__linea-preciogramo cifra-n">{formatMoney(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
+            <span className="nueva-venta__linea-preciogramo cifra-n">{money.money(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
           )}
           <ReglaInsignia rule={preview.rule} />
-          <span className="nueva-venta__linea-total cifra-s">{formatMoney(preview.lineTotal)}</span>
+          <span className="nueva-venta__linea-total cifra-s">{money.money(preview.lineTotal)}</span>
         </div>
       )}
       {canRemove && (

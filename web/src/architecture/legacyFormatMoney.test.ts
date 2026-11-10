@@ -9,7 +9,6 @@ import { describe, expect, test } from 'vitest'
 import { legacyImports } from './legacyFormatMoney'
 
 const STILL_IMPORTING: readonly string[] = [
-  'src/sales/saleBill.ts',
   'src/screens/Analisis.tsx',
   'src/screens/AnalisisTablas.tsx',
   'src/screens/EntriesList.tsx',
@@ -18,25 +17,12 @@ const STILL_IMPORTING: readonly string[] = [
   'src/screens/Variedades.tsx',
   'src/screens/analisisCards.ts',
   'src/screens/analisisCost.ts',
-  'src/screens/clientes/ClienteFicha.tsx',
-  'src/screens/clientes/ClienteFila.tsx',
-  'src/screens/clientes/Cobro.tsx',
-  'src/screens/clientes/CustomerCardBehind.tsx',
-  'src/screens/clientes/CustomersBehind.tsx',
-  'src/screens/clientes/TeDeben.tsx',
-  'src/screens/clientes/accountRows.ts',
   'src/screens/expenses/MonthBody.tsx',
-  'src/screens/inicio/InicioPanel.tsx',
-  'src/screens/inicio/PeriodFigures.tsx',
   'src/screens/onboarding/VarietyDone.tsx',
   'src/screens/priceDeleteNotice.ts',
   'src/screens/varieties/PriceRows.tsx',
   'src/screens/varieties/VarietyPage.tsx',
   'src/screens/varieties/VarietyStockSection.tsx',
-  'src/screens/ventas/NuevaVenta.tsx',
-  'src/screens/ventas/NuevaVentaLinea.tsx',
-  'src/screens/ventas/VentaDetalle.tsx',
-  'src/screens/ventas/Ventas.tsx',
 ]
 
 const modules = import.meta.glob('/src/**/*.{ts,tsx}', { query: '?raw', import: 'default', eager: true }) as Record<

@@ -55,7 +55,7 @@ import { useViewport } from '../../shell/useViewport'
 import { SheetStackProvider, useSheet } from '../../components/useSheetStack'
 import { useVisualViewport } from '../../components/useVisualViewport'
 import { formatDateLong, formatDateShort, maxSaleDate } from '../../format/dates'
-import { formatGrams, formatMoney, type MoneyFormat } from '../../format/money'
+import { formatGrams, type MoneyFormat } from '../../format/money'
 import { useMoney } from '../../format/moneyContext'
 import { parseGrams, parseMoney } from '../../format/parse'
 import {
@@ -765,7 +765,7 @@ function NuevaVentaForm() {
             <div className="nueva-venta__pie">
               <span className="rotulo">{SALES_TEXT.total}</span>
               <span className="cifra-xl">
-                {repricing ? <Loading compacto /> : formatMoney(totals.total)}
+                {repricing ? <Loading compacto /> : money.money(totals.total)}
               </span>
               <span className="rotulo nueva-venta__gramos">
                 {formatGrams(fromHundredths(totals.gramsSoldHundredths))}{COMMON_TEXT.soldSuffix}

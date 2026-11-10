@@ -41,7 +41,7 @@ import Selector from '../../components/Selector'
 import SinConexion from '../../components/SinConexion'
 import { useFlash } from '../../flash/useFlash'
 import { chipDate, formatDateShort } from '../../format/dates'
-import { formatMoney, type MoneyFormat } from '../../format/money'
+import type { MoneyFormat } from '../../format/money'
 import { useMoney } from '../../format/moneyContext'
 import { readMoneyInput } from '../../format/parse'
 import { GENERIC_REFUSAL } from './ClienteForm'
@@ -128,7 +128,7 @@ export default function Cobro({
   // Only the phone standard asks for `autocomplete`; the computer form's DOM stays as it was.
   const phoneAutoComplete = useViewport() === 'phone' ? 'off' : undefined
   const balance = customer.balance
-  // The number the API receives: the field's text is only how it is shown (`formatMoney`).
+  // The number the API receives: the field's text is only how it is shown (`money.money`).
   const [amount, setAmount] = useState<number | null>(balance)
   const [date, setDate] = useState(today)
   const [method, setMethod] = useState<PaymentMethod | null>(null)
@@ -198,7 +198,7 @@ export default function Cobro({
       invalidateResource(queryClient, 'payments')
       flash.armAfterLeaving(
         recorded.after.standing === 'owes'
-          ? PAYMENTS_TEXT.savedStillOwing(formatMoney(recorded.after.balance))
+          ? PAYMENTS_TEXT.savedStillOwing(money.money(recorded.after.balance))
           : PAYMENTS_TEXT.saved,
       )
       onDone()
@@ -228,7 +228,7 @@ export default function Cobro({
       <span className="cobro__cliente">
         {customer.name}
         {customer.standing === 'owes' && customer.owing_since !== null
-          ? owesLine(formatMoney(customer.balance), formatDateShort(customer.owing_since))
+          ? owesLine(money.money(customer.balance), formatDateShort(customer.owing_since))
           : ''}
       </span>
         <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
@@ -239,7 +239,7 @@ export default function Cobro({
               type="text"
               inputMode="numeric"
               autoComplete={phoneAutoComplete}
-              value={amount === null ? '' : formatMoney(amount)}
+              value={amount === null ? '' : money.money(amount)}
               onChange={(event) => {
                 const native = event.nativeEvent
                 const deleting =
@@ -252,7 +252,7 @@ export default function Cobro({
           </label>
           <div className="cobro__todo">
             <Boton variant="link" onClick={() => setAmount(balance)}>
-              {PAYMENTS_TEXT.all}{formatMoney(balance)}
+              {PAYMENTS_TEXT.all}{money.money(balance)}
             </Boton>
           </div>
           {amountError !== null && (
@@ -305,11 +305,11 @@ export default function Cobro({
               <span className="campo__rotulo">{PAYMENTS_TEXT.takenFromOldestDebt}</span>
               {preview.data.applied_to.map((split) => (
                 <span key={split.sale_id}>
-                  {formatMoney(split.amount)}{PAYMENTS_TEXT.toTheSaleOf}{formatDateShort(split.sale_date)}
+                  {money.money(split.amount)}{PAYMENTS_TEXT.toTheSaleOf}{formatDateShort(split.sale_date)}
                 </span>
               ))}
               {preview.data.after.standing === 'owes' && (
-                <span>{PAYMENTS_TEXT.stillOwes}{formatMoney(preview.data.after.balance)}</span>
+                <span>{PAYMENTS_TEXT.stillOwes}{money.money(preview.data.after.balance)}</span>
               )}
             </div>
           )}
