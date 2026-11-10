@@ -20,7 +20,8 @@
     "lastOffered": "You need at least one payment method. Add another one first.",
     "retry": "Try again",
     "moveFailed": "Couldn't move it. Try again.",
-    "loadError": "Couldn't load your payment methods."
+    "loadError": "Couldn't load your payment methods.",
+    "editNamed": "Edit {{name}}"
   },
   "form": {
     "titleNew": "New payment method",
