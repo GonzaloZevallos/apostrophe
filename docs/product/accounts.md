@@ -482,7 +482,7 @@ This file only says where it applies and how it is kept true. It does not restat
 
 These groups of Settings (navigation.md) replace the former Business screen, which no longer exists; `/negocio` redirects to Settings. Each is its own subscreen, a form: "Close", and a confirmation when leaving with unsaved changes; an untouched one closes at once. (Prices, between Users and Integrations, is pricing-settings.md.)
 
-- **Business**: rename the business. Toast "Business renamed"; refusals inline, keeping what was typed.
+- **Business**: rename the business and choose its Phone country, under one Save. Toast "Saved"; refusals inline, keeping what was typed.
 - **Users**:
   - the users by email, sorted by email, the signed-in one marked "you"; it always lists at least the signed-in user;
   - "Invite a partner": each tap creates one fresh join link, to copy or share with the phone's share sheet.
@@ -545,7 +545,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 
 - **Success toasts** are short, fixed and carry no data, with one deliberate exception.
   - This capability's toasts:
-    - "Business renamed";
+    - "Saved";
     - "Invitation ready", unless the link is shown on the screen;
     - "Password changed · we signed out your other sessions".
   - Choosing a theme shows no toast.

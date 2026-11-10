@@ -75,8 +75,6 @@ export const CUSTOMERS_TEXT = {
   balanceAmount: (running_balance: string | number) => `balance ${running_balance}`,
 } as const
 
-/** The ledger's fixed words, registered with the filled placeholder the screen shows
- * (`SAMPLES`' worst cases), so `copy/copyLimits.test.ts` measures them. */
 /** The phone field's placeholder: a local example of the business's Phone country, or the "+" form
  * when it has none (or a country this build has no example for). */
 export function phoneHint(country: string | null): string {
@@ -102,6 +100,8 @@ export function phoneHint(country: string | null): string {
   }
 }
 
+/** The ledger's fixed words, registered with the filled placeholder the screen shows
+ * (`SAMPLES`' worst cases), so `copy/copyLimits.test.ts` measures them. */
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: CUSTOMERS_TEXT.saleTitle },
   { kind: 'help', text: CUSTOMERS_TEXT.nothingToPay },

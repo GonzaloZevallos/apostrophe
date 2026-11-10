@@ -131,7 +131,7 @@ Success criteria, scroll on a change of screen (GH-480). They are checked at 320
 ### Settings
 
 - **One screen holding every business-wide setting, in groups, and nothing else.** The groups, in this order (each group's behaviour belongs to its owner):
-  - **Business**: the business's name (accounts.md). Toast "Business renamed".
+  - **Business**: the business's name and Phone country (accounts.md). Toast "Saved".
   - **Users**: the partners by email, sorted by email, the signed-in one marked "you", and "Invite a partner", which creates one fresh join link per tap, to copy or share (accounts.md). No list of invitations, no revoking, no roles.
   - **Prices** (pricing-settings.md), at `/settings/prices`:
     - the two switches, Bulk price and VIP customers;
