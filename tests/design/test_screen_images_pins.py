@@ -8,6 +8,9 @@ must reject."""
 import copy
 import json
 import re
+import shlex
+import tomllib
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -15,6 +18,7 @@ import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
+PYPROJECT = ROOT / "pyproject.toml"
 WORKFLOWS = ROOT / ".github" / "workflows"
 PR_FILE = WORKFLOWS / "screen-images-pr.yml"
 MASTER_FILE = WORKFLOWS / "screen-images.yml"
@@ -172,22 +176,35 @@ def is_subsequence(wanted: list[str], found: list[str]) -> bool:
     return all(any(w in f for f in it) for w in wanted)
 
 
-def pin_pr_order(pr: Workflow) -> list[str]:
+CAPTURE_ORDER = [
+    "actions/setup-node@v7",
+    "astral-sh/setup-uv@",
+    "Tools the capture needs",
+    "actions/checkout@",
+    "uv venv --python",
+    "uv sync --locked",
+    "scripts/design/screen-images.sh",
+    "GITHUB_STEP_SUMMARY",
+    "actions/upload-artifact@v4",
+]
+
+
+def capture_in_order(workflow: Workflow) -> bool:
     labels = [
-        str(s.get("uses") or s.get("run", "")).replace("\n", " ")
-        for s in steps(jobs(pr)["capture"])
+        " ".join([str(s.get("name", "")), str(s.get("uses") or s.get("run", ""))]).replace(
+            "\n", " "
+        )
+        for s in steps(jobs(workflow)["capture"])
     ]
-    wanted = [
-        "actions/setup-node@v7",
-        "astral-sh/setup-uv@",
-        "uv python find 3.13",
-        "actions/checkout@",
-        "uv sync --locked",
-        "scripts/design/screen-images.sh",
-        "GITHUB_STEP_SUMMARY",
-        "actions/upload-artifact@v4",
-    ]
-    return [] if is_subsequence(wanted, labels) else ["the PR job steps are not in order"]
+    return is_subsequence(CAPTURE_ORDER, labels)
+
+
+def pin_pr_order(pr: Workflow) -> list[str]:
+    return [] if capture_in_order(pr) else ["the PR job steps are not in order"]
+
+
+def pin_master_order(master: Workflow) -> list[str]:
+    return [] if capture_in_order(master) else ["the master capture job steps are not in order"]
 
 
 def pin_uploads(workflow: Workflow, label: str) -> list[str]:
@@ -252,6 +269,205 @@ def pin_apply_only(master: Workflow) -> list[str]:
     return broken
 
 
+# --- the Python pin: every workflow installs it before it uses Python ---------------------------
+
+# Jobs that use `uv run --no-project python` with no install; they run on whatever interpreter the
+# runner has. The set can only shrink: a test asserts each entry still breaks.
+KNOWN_GAPS = {("ci.yml", "changes"), ("ci.yml", "ci-ok")}
+
+ASSIGNMENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]*=")
+SHELL_KEYWORDS = {"then", "else", "do", "if", "elif", "while", "until", "!", "{", "(", "time"}
+DIRECT_USES = re.compile(r"(python[0-9.]*|pip[0-9.]*|pytest|mypy|ruff|uvx)")
+UV_USES = {"run", "sync", "pip"}
+MAJOR_MINOR = re.compile(r"[0-9]+\.[0-9]+")
+
+
+def python_pin(pyproject: dict[str, Any]) -> str:
+    """The one pin: `[tool.mypy] python_version`."""
+    value = pyproject.get("tool", {}).get("mypy", {}).get("python_version")
+    assert isinstance(value, str) and MAJOR_MINOR.fullmatch(value), (
+        f"[tool.mypy] python_version is {value!r}, not a major.minor string"
+    )
+    return value
+
+
+def pin_requires_python(pyproject: dict[str, Any], pin: str) -> list[str]:
+    found = pyproject.get("project", {}).get("requires-python")
+    return [] if found == ">=" + pin else [f"requires-python is {found!r}, not '>={pin}'"]
+
+
+def split_commands(run: str) -> list[list[str]]:
+    """The commands of a `run`, each as words. Raises ValueError when it cannot be split."""
+    text = run.replace("\\\n", " ")
+    segments: list[str] = []
+    current: list[str] = []
+    quote = ""
+    i = 0
+    while i < len(text):
+        ch = text[i]
+        if quote:
+            current.append(ch)
+            if ch == "\\" and quote == '"' and i + 1 < len(text):
+                current.append(text[i + 1])
+                i += 1
+            elif ch == quote:
+                quote = ""
+        elif ch == "\\" and i + 1 < len(text):
+            current.append(text[i : i + 2])
+            i += 1
+        elif ch in "'\"":
+            quote = ch
+            current.append(ch)
+        elif ch == "#" and (not current or current[-1].isspace()):
+            while i + 1 < len(text) and text[i + 1] != "\n":
+                i += 1
+        elif ch in "|;\n" or text.startswith("&&", i):
+            segments.append("".join(current))
+            current = []
+            if ch == "&":
+                i += 1
+        else:
+            current.append(ch)
+        i += 1
+    if quote:
+        raise ValueError("unbalanced quote")
+    segments.append("".join(current))
+    return [words for words in (shlex.split(seg) for seg in segments) if words]
+
+
+def command_words(words: list[str]) -> list[str]:
+    """The words from the command word on: assignments and leading shell keywords dropped."""
+    rest = list(words)
+    while rest and (ASSIGNMENT.match(rest[0]) or rest[0] in SHELL_KEYWORDS):
+        rest.pop(0)
+    return rest
+
+
+def python_options(words: list[str]) -> list[str]:
+    """The values of `--python X`, `--python=X` and `-p X`."""
+    found = []
+    for index, word in enumerate(words):
+        if word.startswith("--python="):
+            found.append(word.removeprefix("--python="))
+        elif word in ("--python", "-p") and index + 1 < len(words):
+            found.append(words[index + 1])
+    return found
+
+
+@dataclass(frozen=True)
+class Event:
+    step: int  # 1-based; 0 is the job's own env
+    kind: str  # "use", "install" or "version" (a version position that is not an install)
+    version: str | None
+    text: str
+
+
+def events_of_command(step: int, words: list[str]) -> list[Event]:
+    text = " ".join(words)
+    if not words:
+        return []
+    name = Path(words[0]).name
+    if name == "uv":
+        args = [w for w in words[1:] if not w.startswith("-")]
+        sub = args[0] if args else ""
+        if sub == "venv":
+            return [Event(step, "install", v, text) for v in python_options(words)]
+        if sub == "python" and len(args) > 1 and args[1] == "install":
+            return [Event(step, "install", v, text) for v in args[2:]]
+        if sub == "python" and len(args) > 1 and args[1] == "find":
+            return [Event(step, "use", None, text)] + [
+                Event(step, "version", v, text) for v in args[2:]
+            ]
+        if sub in UV_USES:
+            return [Event(step, "use", None, text)] + [
+                Event(step, "version", v, text) for v in python_options(words)
+            ]
+        return []
+    return [Event(step, "use", None, text)] if DIRECT_USES.fullmatch(name) else []
+
+
+def env_versions(env: Any, step: int) -> list[Event]:
+    if isinstance(env, dict) and "UV_PYTHON" in env:
+        return [Event(step, "version", str(env["UV_PYTHON"]), "UV_PYTHON")]
+    return []
+
+
+def scan_job(job: dict[str, Any]) -> tuple[list[Event], list[tuple[int, str]]]:
+    """Everything a job does with Python, in order, and the steps that cannot be read."""
+    events = env_versions(job.get("env"), 0)
+    unreadable: list[tuple[int, str]] = []
+    for number, step in enumerate(steps(job), start=1):
+        events += env_versions(step.get("env"), number)
+        if str(step.get("uses", "")).startswith("actions/setup-python@"):
+            version = step.get("with", {}).get("python-version")
+            if version is not None:
+                events.append(Event(number, "install", str(version), "actions/setup-python"))
+        if "run" in step:
+            try:
+                for words in split_commands(str(step["run"])):
+                    events += events_of_command(number, command_words(words))
+            except ValueError as error:
+                unreadable.append((number, str(error)))
+    return events, unreadable
+
+
+def where(label: str, job: str, step: int) -> str:
+    return f"{label}/{job}" + (f"/step {step}" if step else "")
+
+
+def pin_versions(workflow: Workflow, label: str, pin: str) -> list[str]:
+    """Every version position equals the pin; one that is an expression cannot be proven."""
+    broken = [
+        f"{label}: workflow env UV_PYTHON {e.version} is not {pin}"
+        for e in env_versions(workflow.get("env"), 0)
+        if e.version != pin
+    ]
+    for name, job in jobs(workflow).items():
+        events, unreadable = scan_job(job)
+        broken += [f"{where(label, name, n)}: {why}, cannot be proven" for n, why in unreadable]
+        for e in events:
+            if e.version is None:
+                continue
+            if "${{" in e.version:
+                broken.append(f"{where(label, name, e.step)}: {e.version!r} cannot be proven")
+            elif e.version != pin:
+                broken.append(
+                    f"{where(label, name, e.step)}: {e.text!r} has {e.version}, not {pin}"
+                )
+    return broken
+
+
+def pin_python_installed(workflow: Workflow, label: str, pin: str) -> list[str]:
+    """In each job, every use of Python comes after an install of exactly the pin."""
+    broken = []
+    for name, job in jobs(workflow).items():
+        events, unreadable = scan_job(job)
+        broken += [f"{where(label, name, n)}: {why}, cannot be proven" for n, why in unreadable]
+        installed = False
+        for e in events:
+            if e.kind == "install" and e.version == pin:
+                installed = True
+            elif e.kind == "use" and not installed:
+                broken.append(f"{where(label, name, e.step)}: {e.text!r} uses Python before {pin}")
+    return broken
+
+
+def workflow_files() -> list[Path]:
+    found = sorted([*WORKFLOWS.glob("*.yml"), *WORKFLOWS.glob("*.yaml")])
+    assert found
+    return found
+
+
+def pyproject_data() -> dict[str, Any]:
+    return tomllib.loads(PYPROJECT.read_text())
+
+
+def expected_breaks(workflow: Workflow, label: str, pin: str) -> list[str]:
+    """What the install pin finds, less the jobs `KNOWN_GAPS` states."""
+    gaps = {job for file, job in KNOWN_GAPS if file == label}
+    return [b for b in pin_python_installed(workflow, label, pin) if b.split("/")[1] not in gaps]
+
+
 # --- tests over the real files ---
 
 
@@ -274,6 +490,7 @@ def test_real_workflows_keep_every_pin() -> None:
     assert pin_no_git_writes(pr, "pr") + pin_no_git_writes(master, "master") == []
     assert pin_pr_raw_text(PR_FILE.read_text()) == []
     assert pin_pr_order(pr) == []
+    assert pin_master_order(master) == []
     assert pin_uploads(pr, "pr") + pin_uploads(master, "master") == []
     assert pin_concurrency(master) == []
     assert pin_push_job(master) == []
@@ -285,6 +502,28 @@ def test_push_job_runs_on_a_plain_runner_and_is_the_only_writer() -> None:
     master, _ = real()
     assert jobs(master)["push"]["runs-on"] == "ubuntu-24.04"
     assert jobs(master)["push"]["permissions"] == {"contents": "write"}
+
+
+def test_every_workflow_installs_the_pinned_python_before_it_uses_python() -> None:
+    pyproject = pyproject_data()
+    pin = python_pin(pyproject)
+    assert pin_requires_python(pyproject, pin) == []
+    names = [path.name for path in workflow_files()]
+    assert {"ci.yml", "backup.yml", "screen-images.yml", "screen-images-pr.yml"} <= set(names)
+    for path in workflow_files():
+        workflow = load(path)
+        assert pin_versions(workflow, path.name, pin) == []
+        assert expected_breaks(workflow, path.name, pin) == []
+
+
+def test_the_known_gaps_still_break_and_the_screen_images_and_backup_have_none() -> None:
+    pin = python_pin(pyproject_data())
+    for file, job in KNOWN_GAPS:
+        broken = pin_python_installed(load(WORKFLOWS / file), file, pin)
+        assert any(b.startswith(f"{file}/{job}/") for b in broken), (file, job)
+    for file in ("backup.yml", "screen-images.yml", "screen-images-pr.yml"):
+        assert pin_python_installed(load(WORKFLOWS / file), file, pin) == []
+    assert {file for file, _ in KNOWN_GAPS} == {"ci.yml"}
 
 
 # --- tests that each pin rejects a broken copy ---
@@ -440,3 +679,204 @@ def test_a_write_to_the_images_outside_apply_is_rejected() -> None:
     master, _ = real()
     steps(jobs(master)["push"])[0]["run"] = "cp new.webp docs/assets/screens/"
     assert len(pin_apply_only(master)) == 1
+
+
+# --- the Python pin rejects a broken copy ---
+
+
+def wrong_version(pin: str) -> str:
+    major, minor = pin.split(".")
+    return f"{major}.{int(minor) + 1}"
+
+
+def pin_of_the_project() -> str:
+    return python_pin(pyproject_data())
+
+
+def one_job(
+    *step_list: dict[str, Any],
+    workflow_env: dict[str, str] | None = None,
+    job_env: dict[str, str] | None = None,
+) -> Workflow:
+    job: dict[str, Any] = {"runs-on": "ubuntu-24.04", "steps": list(step_list)}
+    if job_env:
+        job["env"] = job_env
+    workflow: Workflow = {"jobs": {"j": job}}
+    if workflow_env:
+        workflow["env"] = workflow_env
+    return workflow
+
+
+def run(text: str) -> dict[str, Any]:
+    return {"run": text}
+
+
+def test_the_pin_is_read_from_mypy_and_must_be_major_minor() -> None:
+    assert python_pin({"tool": {"mypy": {"python_version": "3.13"}}}) == "3.13"
+    with pytest.raises(AssertionError, match=r"\[tool.mypy\] python_version"):
+        python_pin({"tool": {}})
+    with pytest.raises(AssertionError, match=r"\[tool.mypy\] python_version"):
+        python_pin({"tool": {"mypy": {"python_version": "3"}}})
+
+
+def test_a_changed_requires_python_is_rejected() -> None:
+    pyproject = copy.deepcopy(pyproject_data())
+    pin = python_pin(pyproject)
+    pyproject["project"]["requires-python"] = ">=" + wrong_version(pin)
+    assert pin_requires_python(pyproject, pin) == [
+        f"requires-python is '>={wrong_version(pin)}', not '>={pin}'"
+    ]
+
+
+VERSION_FORMS = [
+    "uv venv --python {v}",
+    "uv venv --python={v}",
+    "uv venv -p {v}",
+    "uv python install {v}",
+    "uv python find {v}",
+    "uv run --python {v} pytest",
+    "uv sync -p {v}",
+]
+
+
+@pytest.mark.parametrize("form", VERSION_FORMS)
+def test_a_version_that_is_not_the_pin_is_rejected_in_every_form(form: str) -> None:
+    pin = pin_of_the_project()
+    bad = one_job(run(form.format(v=wrong_version(pin))))
+    broken = pin_versions(bad, "w.yml", pin)
+    assert len(broken) == 1
+    assert broken[0].startswith("w.yml/j/step 1: ")
+    assert f"has {wrong_version(pin)}, not {pin}" in broken[0]
+    assert pin_versions(one_job(run(form.format(v=pin))), "w.yml", pin) == []
+
+
+def test_setup_python_with_another_version_is_rejected() -> None:
+    pin = pin_of_the_project()
+    step = {"uses": "actions/setup-python@v5", "with": {"python-version": wrong_version(pin)}}
+    assert len(pin_versions(one_job(step), "w.yml", pin)) == 1
+    good = {"uses": "actions/setup-python@v5", "with": {"python-version": pin}}
+    assert pin_versions(one_job(good, run("pytest")), "w.yml", pin) == []
+    assert pin_python_installed(one_job(good, run("pytest")), "w.yml", pin) == []
+    assert len(pin_python_installed(one_job(step, run("pytest")), "w.yml", pin)) == 1
+
+
+def test_uv_python_at_any_level_with_another_version_is_rejected() -> None:
+    pin = pin_of_the_project()
+    env = {"UV_PYTHON": wrong_version(pin)}
+    at_workflow = one_job(run("echo x"), workflow_env=env)
+    at_job = one_job(run("echo x"), job_env=env)
+    at_step = one_job({"env": env, "run": "echo x"})
+    assert pin_versions(at_workflow, "w.yml", pin) == [
+        f"w.yml: workflow env UV_PYTHON {wrong_version(pin)} is not {pin}"
+    ]
+    assert len(pin_versions(at_job, "w.yml", pin)) == 1
+    assert pin_versions(at_job, "w.yml", pin)[0].startswith("w.yml/j: ")
+    assert pin_versions(at_step, "w.yml", pin)[0].startswith("w.yml/j/step 1: ")
+    good = one_job(run("echo x"), workflow_env={"UV_PYTHON": pin})
+    assert pin_versions(good, "w.yml", pin) == []
+
+
+def test_uv_python_is_never_an_install() -> None:
+    pin = pin_of_the_project()
+    job = one_job(run("uv run python x"), job_env={"UV_PYTHON": pin})
+    assert len(pin_python_installed(job, "w.yml", pin)) == 1
+
+
+def test_a_version_that_is_an_expression_cannot_be_proven() -> None:
+    pin = pin_of_the_project()
+    step = {"uses": "actions/setup-python@v5", "with": {"python-version": "${{ matrix.py }}"}}
+    assert pin_versions(one_job(step), "w.yml", pin) == [
+        "w.yml/j/step 1: '${{ matrix.py }}' cannot be proven"
+    ]
+    venv = one_job(run("uv venv --python ${{ matrix.py }}"))
+    assert pin_versions(venv, "w.yml", pin) == ["w.yml/j/step 1: '${{' cannot be proven"]
+    assert len(pin_python_installed(one_job(step, run("pytest")), "w.yml", pin)) == 1
+
+
+def test_uv_python_find_put_back_before_the_install_is_rejected() -> None:
+    pin = pin_of_the_project()
+    for file in (MASTER_FILE, PR_FILE):
+        workflow = load(file)
+        tools = steps(jobs(workflow)["capture"])[2]
+        tools["run"] += f"\nuv python find {pin}"
+        assert pin_versions(workflow, file.name, pin) == []
+        broken = pin_python_installed(workflow, file.name, pin)
+        assert len(broken) == 1
+        assert broken[0].startswith(f"{file.name}/capture/step 3: 'uv python find {pin}'")
+
+
+def test_a_new_job_that_uses_python_without_an_install_is_rejected() -> None:
+    pin = pin_of_the_project()
+    workflow = load(PR_FILE)
+    workflow["jobs"]["extra"] = {"runs-on": "ubuntu-24.04", "steps": [run("uv run python x")]}
+    broken = pin_python_installed(workflow, "w.yml", pin)
+    assert broken == [f"w.yml/extra/step 1: 'uv run python x' uses Python before {pin}"]
+
+
+def test_the_order_inside_one_run_decides() -> None:
+    pin = pin_of_the_project()
+    after = one_job(run(f"uv venv --python {pin} && uv run python x"))
+    assert pin_python_installed(after, "w.yml", pin) == []
+    before = one_job(run(f"uv run python x && uv venv --python {pin}"))
+    assert len(pin_python_installed(before, "w.yml", pin)) == 1
+    on_lines = one_job(run(f"uv run python x\nuv venv --python {pin}"))
+    assert len(pin_python_installed(on_lines, "w.yml", pin)) == 1
+
+
+def test_a_use_behind_a_pipe_or_an_assignment_is_seen() -> None:
+    pin = pin_of_the_project()
+    piped = one_job(run("printf x | uv run --no-project python s.py"))
+    assert len(pin_python_installed(piped, "w.yml", pin)) == 1
+    assigned = one_job(run("FOO=1 BAR='a b' pytest -q"))
+    assert len(pin_python_installed(assigned, "w.yml", pin)) == 1
+    nested = one_job(run("if true; then python x; fi"))
+    assert len(pin_python_installed(nested, "w.yml", pin)) == 1
+
+
+def test_words_that_only_mention_python_are_not_uses() -> None:
+    pin = pin_of_the_project()
+    for text in (
+        'echo "python missing"',
+        "git log --grep python",
+        "printf 'uv run python x'",
+        "# python x",
+        "echo done # python x",
+        "npm --prefix web ci",
+    ):
+        assert pin_python_installed(one_job(run(text)), "w.yml", pin) == [], text
+    quoted = one_job(run('echo "a | uv run python; b"'))
+    assert pin_python_installed(quoted, "w.yml", pin) == []
+
+
+def test_a_run_that_cannot_be_split_is_rejected() -> None:
+    pin = pin_of_the_project()
+    bad = one_job(run('echo "unbalanced'))
+    expected = ["w.yml/j/step 1: unbalanced quote, cannot be proven"]
+    assert pin_python_installed(bad, "w.yml", pin) == expected
+    assert pin_versions(bad, "w.yml", pin) == expected
+
+
+def test_a_pin_bump_breaks_every_version_position_in_the_real_workflows() -> None:
+    pyproject = copy.deepcopy(pyproject_data())
+    pin = python_pin(pyproject)
+    bumped = wrong_version(pin)
+    pyproject["tool"]["mypy"]["python_version"] = bumped
+    new_pin = python_pin(pyproject)
+    positions = 0
+    for path in workflow_files():
+        workflow = load(path)
+        assert pin_versions(workflow, path.name, pin) == []
+        broken = pin_versions(workflow, path.name, new_pin)
+        positions += len(broken)
+        assert all(f"not {bumped}" in b for b in broken)
+    venv_lines = sum(
+        len(re.findall(r"uv venv --python \S+", path.read_text())) for path in workflow_files()
+    )
+    assert positions >= venv_lines > 0
+
+
+def test_master_capture_steps_out_of_order_are_rejected() -> None:
+    master, _ = real()
+    capture = jobs(master)["capture"]
+    capture["steps"] = list(reversed(steps(capture)))
+    assert pin_master_order(master) == ["the master capture job steps are not in order"]
