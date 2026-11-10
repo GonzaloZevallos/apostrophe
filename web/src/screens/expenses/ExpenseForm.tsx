@@ -275,6 +275,7 @@ export default function ExpenseForm({
               <span className="campo__rotulo">{EXPENSES_TEXT.newCategoryName}</span>
               <input
                 className="campo__input"
+                autoComplete="off"
                 value={newCategoryName}
                 onChange={(event) => setNewCategoryName(event.target.value)}
               />
