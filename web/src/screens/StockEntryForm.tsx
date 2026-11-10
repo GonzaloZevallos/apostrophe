@@ -19,7 +19,7 @@ import { type FormEvent, Fragment, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { TOO_MANY_DECIMALS_MESSAGE } from '../api/amountRefusal'
+import { tooManyDecimalsMessage } from '../api/amountRefusal'
 import { ApiError, NetworkError, UNKNOWN_CODE, get } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import { isGone, resolveOverride, type RefusalCode } from '../api/refusals'
@@ -32,7 +32,8 @@ import Selector from '../components/Selector'
 import SinConexion from '../components/SinConexion'
 import { useViewport } from '../shell/useViewport'
 import { formatDate } from '../format/dates'
-import { formatGrams, formatMoney } from '../format/money'
+import { formatGrams, formatMoney, type MoneyFormat } from '../format/money'
+import { useMoney } from '../format/useMoney'
 import { parseMoney, parseSignedGrams } from '../format/parse'
 import type { Variety } from './Variedades'
 import { entryVarietyChoice } from './stockEntryChoice'
@@ -41,7 +42,7 @@ import { STOCK_ENTRY_ORIGINS } from '../components/fixedSets'
 import {
   COST_REQUIRED_HELP,
   GRAMS_INVALID,
-  OPENING_COST_HINT,
+  openingCostHint,
   onHandHelp,
   perGramPreview,
   STOCK_TEXT,
@@ -54,14 +55,16 @@ export const COST_REQUIRED = STOCK_TEXT.unaCompraNecesitaUn
 export const COST_ON_NEGATIVE = STOCK_TEXT.unAjusteNegativoNo
 export const DATE_IN_FUTURE = COMMON_TEXT.dateCannotBeFuture
 
-const FIELD_OVERRIDES: Partial<Record<RefusalCode, string>> = {
-  'stock.cost_required': COST_REQUIRED,
-  'stock.cost_on_negative_adjustment': COST_ON_NEGATIVE,
-  'stock.date_in_future': DATE_IN_FUTURE,
-  'stock.grams_invalid': GRAMS_INVALID,
-  'stock.cost_invalid': GENERIC_REFUSAL,
-  'money.too_many_decimals': TOO_MANY_DECIMALS_MESSAGE,
-  'stock.note_too_long': GENERIC_REFUSAL,
+function fieldOverrides(format: MoneyFormat): Partial<Record<RefusalCode, string>> {
+  return {
+    'stock.cost_required': COST_REQUIRED,
+    'stock.cost_on_negative_adjustment': COST_ON_NEGATIVE,
+    'stock.date_in_future': DATE_IN_FUTURE,
+    'stock.grams_invalid': GRAMS_INVALID,
+    'stock.cost_invalid': GENERIC_REFUSAL,
+    'money.too_many_decimals': tooManyDecimalsMessage(format),
+    'stock.note_too_long': GENERIC_REFUSAL,
+  }
 }
 
 interface CommonProps {
@@ -122,6 +125,7 @@ export default function StockEntryForm({
   pinned = false,
 }: StockEntryFormProps) {
   const phone = useViewport() === 'phone'
+  const money = useMoney()
   const Actions = pinned ? SheetActions : Fragment
   const queryClient = useQueryClient()
   const varietiesQuery = useQuery({
@@ -253,7 +257,7 @@ export default function StockEntryForm({
         return
       }
       if (caught instanceof ApiError) {
-        const message = resolveOverride(FIELD_OVERRIDES, caught.code)
+        const message = resolveOverride(fieldOverrides(money.format), caught.code)
         setFormError(message ?? (caught.code !== UNKNOWN_CODE ? GENERIC_REFUSAL : ERROR_GENERICO_MENSAJE))
       } else if (caught instanceof NetworkError) {
         setOffline(true)
@@ -391,7 +395,7 @@ export default function StockEntryForm({
                 onChange={(event) => setTotalCost(event.target.value)}
               />
               <span className="campo__ayuda" data-copy="help">
-                {OPENING_COST_HINT}
+                {openingCostHint(money.money(0))}
               </span>
             </label>
           </>

@@ -5,9 +5,10 @@
  * "Mínimo en gramos". Kept apart from `PriceFields` so that file exports only components.
  */
 
-import { TOO_MANY_DECIMALS_MESSAGE } from '../../api/amountRefusal'
+import { tooManyDecimalsMessage } from '../../api/amountRefusal'
 import type { PricingSettings } from '../../api/pricingSettings'
 import { VARIETY_REFUSAL_TEXT, type RefusalCode } from '../../api/refusals'
+import type { MoneyFormat } from '../../format/money'
 import { parseGrams, parseMoney } from '../../format/parse'
 import { GRAMS_INVALID } from '../../copy/stock'
 import { VARIETIES_TEXT } from '../../copy/varieties'
@@ -26,19 +27,24 @@ export interface PriceValues {
   vipPrice: string
 }
 
-const FIELD_OF_CODE: Partial<Record<RefusalCode, { field: PriceField; message: Refusal | string }>> = {
-  'variety.duplicate_effective_date': { field: 'effectiveFrom', message: DUPLICATE_DATE_MESSAGE },
-  'variety.price_entry_invalid': { field: 'listPrice', message: PRICE_INVALID_MESSAGE },
-  'grams.invalid': { field: 'bulkMinimum', message: GRAMS_INVALID },
-  'money.too_many_decimals': { field: 'listPrice', message: TOO_MANY_DECIMALS_MESSAGE },
-  'variety.vip_price_not_below_list': {
-    field: 'vipPrice',
-    message: VARIETY_REFUSAL_TEXT['variety.vip_price_not_below_list'] ?? PRICE_INVALID_MESSAGE,
-  },
+type FieldOfCode = { field: PriceField; message: Refusal | string }
+
+/** The fields the refusal codes are about; the decimals refusal says what the business's decimals allow. */
+function fieldsOfCodes(format: MoneyFormat): Partial<Record<RefusalCode, FieldOfCode>> {
+  return {
+    'variety.duplicate_effective_date': { field: 'effectiveFrom', message: DUPLICATE_DATE_MESSAGE },
+    'variety.price_entry_invalid': { field: 'listPrice', message: PRICE_INVALID_MESSAGE },
+    'grams.invalid': { field: 'bulkMinimum', message: GRAMS_INVALID },
+    'money.too_many_decimals': { field: 'listPrice', message: tooManyDecimalsMessage(format) },
+    'variety.vip_price_not_below_list': {
+      field: 'vipPrice',
+      message: VARIETY_REFUSAL_TEXT['variety.vip_price_not_below_list'] ?? PRICE_INVALID_MESSAGE,
+    },
+  }
 }
 
-export function fieldOfCode(code: string): { field: PriceField; message: Refusal | string } | undefined {
-  return (FIELD_OF_CODE as Record<string, { field: PriceField; message: Refusal | string } | undefined>)[code]
+export function fieldOfCode(code: string, format: MoneyFormat): FieldOfCode | undefined {
+  return (fieldsOfCodes(format) as Record<string, FieldOfCode | undefined>)[code]
 }
 
 /** What a price entry carries besides its date: the amounts that were typed and are in force. */

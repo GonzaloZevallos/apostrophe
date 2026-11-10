@@ -32,7 +32,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useOutletContext } from 'react-router'
-import { TOO_MANY_DECIMALS_MESSAGE } from '../../api/amountRefusal'
+import { tooManyDecimalsMessage } from '../../api/amountRefusal'
 import { ApiError, NetworkError, UNKNOWN_CODE, get, post } from '../../api/client'
 import type { Customer } from '../../api/customers'
 import { keys } from '../../api/keys'
@@ -55,7 +55,8 @@ import { useViewport } from '../../shell/useViewport'
 import { SheetStackProvider, useSheet } from '../../components/useSheetStack'
 import { useVisualViewport } from '../../components/useVisualViewport'
 import { formatDateLong, formatDateShort, maxSaleDate } from '../../format/dates'
-import { formatGrams, formatMoney } from '../../format/money'
+import { formatGrams, formatMoney, type MoneyFormat } from '../../format/money'
+import { useMoney } from '../../format/useMoney'
 import { parseGrams, parseMoney } from '../../format/parse'
 import {
   type LineValidation,
@@ -82,7 +83,6 @@ export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 export const NO_LINES_MESSAGE = SALES_TEXT.addAtLeastOne
 export { OWING_HINT }
 export const PAYMENT_REQUIRED_MESSAGE = SALES_TEXT.pickHowPaid
-export const SPECIAL_PRICE_INVALID_MESSAGE = SALES_TEXT.specialPriceAboveZero
 export const LINE_GRAMS_INVALID = SALES_TEXT.enterGrams
 export const LINE_VARIETY_MISSING = COMMON_TEXT.pickAVariety
 
@@ -144,26 +144,30 @@ interface SaleBody {
   lines: LineBody[]
 }
 
-const SUBMIT_OVERRIDES: Partial<
+type SubmitOverrides = Partial<
   Record<
     RefusalCode,
     { field: 'customer' | 'shipping' | 'note' | 'date' | 'payment' | 'form'; message: string }
   >
-> = {
-  'sale.owing_without_customer': { field: 'customer', message: OWING_HINT },
-  'sale.shipping_negative': { field: 'shipping', message: SALES_TEXT.shippingNotNegative },
-  'sale.note_too_long': { field: 'note', message: SALES_TEXT.noteTooLong },
-  'sale.date_in_future': { field: 'date', message: COMMON_TEXT.dateCannotBeFuture },
-  'sale.payment_required': { field: 'payment', message: PAYMENT_REQUIRED_MESSAGE },
-  'sale.customer_not_found': { field: 'form', message: GENERIC_REFUSAL },
-  'sale.variety_not_found': { field: 'form', message: GENERIC_REFUSAL },
-  'sale.lines_missing': { field: 'form', message: GENERIC_REFUSAL },
-  'sale.gift_with_special_price': { field: 'form', message: GENERIC_REFUSAL },
-  'sale.special_price_invalid': { field: 'form', message: GENERIC_REFUSAL },
-  'sale.grams_invalid': { field: 'form', message: GENERIC_REFUSAL },
-  'sale.rule_broken': { field: 'form', message: GENERIC_REFUSAL },
-  'money.too_many_decimals': { field: 'form', message: TOO_MANY_DECIMALS_MESSAGE },
-  'sale.price_quote_invalid': { field: 'form', message: GENERIC_REFUSAL },
+>
+
+function submitOverrides(format: MoneyFormat): SubmitOverrides {
+  return {
+    'sale.owing_without_customer': { field: 'customer', message: OWING_HINT },
+    'sale.shipping_negative': { field: 'shipping', message: SALES_TEXT.shippingNotNegative },
+    'sale.note_too_long': { field: 'note', message: SALES_TEXT.noteTooLong },
+    'sale.date_in_future': { field: 'date', message: COMMON_TEXT.dateCannotBeFuture },
+    'sale.payment_required': { field: 'payment', message: PAYMENT_REQUIRED_MESSAGE },
+    'sale.customer_not_found': { field: 'form', message: GENERIC_REFUSAL },
+    'sale.variety_not_found': { field: 'form', message: GENERIC_REFUSAL },
+    'sale.lines_missing': { field: 'form', message: GENERIC_REFUSAL },
+    'sale.gift_with_special_price': { field: 'form', message: GENERIC_REFUSAL },
+    'sale.special_price_invalid': { field: 'form', message: GENERIC_REFUSAL },
+    'sale.grams_invalid': { field: 'form', message: GENERIC_REFUSAL },
+    'sale.rule_broken': { field: 'form', message: GENERIC_REFUSAL },
+    'money.too_many_decimals': { field: 'form', message: tooManyDecimalsMessage(format) },
+    'sale.price_quote_invalid': { field: 'form', message: GENERIC_REFUSAL },
+  }
 }
 
 /** One sheet stack per screen (ADR-0027): Elegir cliente is level 1, Nuevo cliente level 2. */
@@ -177,6 +181,7 @@ export default function NuevaVenta() {
 
 function NuevaVentaForm() {
   const me = useOutletContext<Me>()
+  const money = useMoney()
   const navigate = useNavigate()
   const location = useLocation()
   const queryClient = useQueryClient()
@@ -354,7 +359,7 @@ function NuevaVentaForm() {
    * `validateSale`'s own errors do. */
   function specialPriceErrorFor(line: LineState): string | null {
     if (line.specialPrice.trim() === '') return null
-    return parseMoney(line.specialPrice).ok ? null : SPECIAL_PRICE_INVALID_MESSAGE
+    return parseMoney(line.specialPrice).ok ? null : SALES_TEXT.specialPriceAboveZero(money.attached(0))
   }
 
   const lineValidations: LineValidation[] = lines
@@ -583,7 +588,7 @@ function NuevaVentaForm() {
         return
       }
       if (caught instanceof ApiError) {
-        const override = resolveOverride(SUBMIT_OVERRIDES, caught.code)
+        const override = resolveOverride(submitOverrides(money.format), caught.code)
         if (override !== undefined) {
           if (override.field === 'shipping') setShippingError(override.message)
           else if (override.field === 'note') setNoteError(override.message)

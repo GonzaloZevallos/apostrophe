@@ -23,7 +23,7 @@
 import { type FormEvent, type RefObject, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { TOO_MANY_DECIMALS_CODE, TOO_MANY_DECIMALS_MESSAGE } from '../../api/amountRefusal'
+import { TOO_MANY_DECIMALS_CODE, tooManyDecimalsMessage } from '../../api/amountRefusal'
 import { ApiError, NetworkError } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
 import {
@@ -41,7 +41,8 @@ import Selector from '../../components/Selector'
 import SinConexion from '../../components/SinConexion'
 import { useFlash } from '../../flash/useFlash'
 import { chipDate, formatDateShort } from '../../format/dates'
-import { formatMoney } from '../../format/money'
+import { formatMoney, type MoneyFormat } from '../../format/money'
+import { useMoney } from '../../format/useMoney'
 import { readMoneyInput } from '../../format/parse'
 import { GENERIC_REFUSAL } from './ClienteForm'
 import { paymentMethodOf, usePaymentMethodOptions } from '../../sales/paymentMethods'
@@ -99,8 +100,8 @@ const AMOUNT_MESSAGES: Partial<Record<PaymentRefusalCode, string>> = {
 /** `code` comes off the wire as a plain `string` (`ApiError.code`): this only
  * narrows it enough to index `AMOUNT_MESSAGES` safely, never asserting it is a
  * `payment.*` code the backend actually answers. */
-function amountMessage(code: string): string | undefined {
-  if (code === TOO_MANY_DECIMALS_CODE) return TOO_MANY_DECIMALS_MESSAGE
+function amountMessage(code: string, format: MoneyFormat): string | undefined {
+  if (code === TOO_MANY_DECIMALS_CODE) return tooManyDecimalsMessage(format)
   return Object.prototype.hasOwnProperty.call(AMOUNT_MESSAGES, code)
     ? AMOUNT_MESSAGES[code as PaymentRefusalCode]
     : undefined
@@ -123,6 +124,7 @@ export default function Cobro({
   onSendingChange,
 }: CobroProps) {
   const { t } = useTranslation()
+  const money = useMoney()
   // Only the phone standard asks for `autocomplete`; the computer form's DOM stays as it was.
   const phoneAutoComplete = useViewport() === 'phone' ? 'off' : undefined
   const balance = customer.balance
@@ -206,7 +208,7 @@ export default function Cobro({
       } else if (caught instanceof ApiError) {
         if (caught.code === 'payment.method_required') setMethodRefused(true)
         else if (caught.code === 'payment.future_date') setDateError(PAYMENTS_TEXT.dateInFuture)
-        else setAmountError(amountMessage(caught.code) ?? GENERIC_REFUSAL)
+        else setAmountError(amountMessage(caught.code, money.format) ?? GENERIC_REFUSAL)
       } else if (caught instanceof NetworkError) {
         setOffline(true)
       } else {

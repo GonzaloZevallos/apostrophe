@@ -38,10 +38,11 @@ import Selector from '../../components/Selector'
 import SinConexion from '../../components/SinConexion'
 import { useViewport } from '../../shell/useViewport'
 import { parseMoney } from '../../format/parse'
+import { useMoney } from '../../format/useMoney'
 import { EXPENSES_TEXT } from '../../copy/expenses'
 import { COMMON_TEXT } from '../../copy/common'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
-import { TOO_MANY_DECIMALS_CODE, TOO_MANY_DECIMALS_MESSAGE } from '../../api/amountRefusal'
+import { TOO_MANY_DECIMALS_CODE, tooManyDecimalsMessage } from '../../api/amountRefusal'
 
 export const CATEGORY_GONE = EXPENSES_TEXT.categoryGone
 export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
@@ -105,6 +106,7 @@ export default function ExpenseForm({
   onGone,
 }: ExpenseFormProps) {
   const me = useOutletContext<Me>()
+  const money = useMoney()
   const phone = useViewport() === 'phone'
   const queryClient = useQueryClient()
   const { t } = useTranslation()
@@ -199,7 +201,7 @@ export default function ExpenseForm({
         invalidateResource(queryClient, 'expenses')
         onGone?.()
       } else if (caught instanceof ApiError && caught.code === TOO_MANY_DECIMALS_CODE) {
-        setAmountError(TOO_MANY_DECIMALS_MESSAGE)
+        setAmountError(tooManyDecimalsMessage(money.format))
       } else if (isRefusal(caught)) {
         setFormError(GENERIC_REFUSAL)
       } else {

@@ -31,6 +31,7 @@ import {
 } from '../varieties/priceFieldRules'
 import { SAVE_OVERRIDES } from '../varieties/varietyForms'
 import { hasAnotherVariety } from './anotherVariety'
+import { useMoney } from '../../format/useMoney'
 import { useTranslation } from 'react-i18next'
 import { messageText, type Translate } from '../../i18n/refusalKeys'
 
@@ -74,6 +75,7 @@ export function useVarietyWithPrice({
 }: VarietyWithPriceOptions): VarietyWithPrice {
   const queryClient = useQueryClient()
   const { t } = useTranslation()
+  const money = useMoney()
   const navigate = useNavigate()
   const location = useLocation()
   const [saved, setSaved] = useState<OnboardingTarget | null>(seed)
@@ -120,7 +122,7 @@ export function useVarietyWithPrice({
         setSaved(null)
         void refreshProgress(queryClient)
       } else if (caught instanceof ApiError) {
-        const mapped = fieldOfCode(caught.code)
+        const mapped = fieldOfCode(caught.code, money.format)
         if (mapped !== undefined) setPriceErrors({ [mapped.field]: messageText(t, mapped.message) })
         else setPriceErrors({ form: genericLine(caught) })
       } else if (caught instanceof NetworkError) {

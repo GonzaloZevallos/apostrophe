@@ -15,6 +15,7 @@ import { ApiError, NetworkError, UNKNOWN_CODE, post } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
 import type { PricingSettings } from '../../api/pricingSettings'
 import { chipDate } from '../../format/dates'
+import { useMoney } from '../../format/useMoney'
 import { isGone, kindOf } from '../../api/refusals'
 import type { SuccessToast } from '../../components/AvisoExito'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
@@ -62,6 +63,7 @@ export default function PriceForm({
 }: PriceFormProps) {
   const queryClient = useQueryClient()
   const { t } = useTranslation()
+  const money = useMoney()
   const [effectiveFrom, setEffectiveFrom] = useState(today)
   const [values, setValues] = useState<PriceValues>({
     listPrice: '',
@@ -109,7 +111,7 @@ export default function PriceForm({
         invalidateResource(queryClient, 'varieties')
         onGone()
       } else if (caught instanceof ApiError) {
-        const mapped = fieldOfCode(caught.code)
+        const mapped = fieldOfCode(caught.code, money.format)
         if (mapped !== undefined) setErrors({ [mapped.field]: messageText(t, mapped.message) })
         else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') {
           setErrors({ form: GENERIC_REFUSAL_MESSAGE })
