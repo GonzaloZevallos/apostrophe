@@ -48,6 +48,15 @@ erDiagram
     VARCHAR(16) icon
     BOOLEAN is_vip
   }
+  customer_type_price {
+    INTEGER id PK
+    INTEGER business_id FK
+    INTEGER variety_id FK
+    INTEGER customer_type_id FK
+    INTEGER price
+    DATE effective_on
+    INTEGER entry_id "nullable"
+  }
   expense {
     INTEGER id PK
     INTEGER business_id FK
@@ -231,6 +240,7 @@ erDiagram
   business ||--o{ catalog_attribute : business_id
   business ||--o{ customer : business_id
   business ||--o{ customer_type : business_id
+  business ||--o{ customer_type_price : business_id
   business ||--o{ expense : business_id
   business ||--o{ expense_category : business_id
   business ||--o{ invitation : business_id
@@ -254,12 +264,14 @@ erDiagram
   customer ||--o{ payment : customer_id
   customer ||--o{ sale : customer_id
   customer_type ||--o{ customer : customer_type_id
+  customer_type ||--o{ customer_type_price : customer_type_id
   expense_category ||--o{ expense : expense_category_id
   expense_category }o--o{ expense : business_id
   sale ||--o{ payment : sale_id
   sale ||--o{ sale_line : sale_id
   stock_withdrawal ||--o{ stock_withdrawal_line : stock_withdrawal_id
   variety ||--o{ catalog_attribute : variety_id
+  variety ||--o{ customer_type_price : variety_id
   variety ||--o{ price_entry : variety_id
   variety ||--o{ sale_line : variety_id
   variety ||--o{ stock_entry : variety_id
