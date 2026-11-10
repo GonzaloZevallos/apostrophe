@@ -1,5 +1,5 @@
 """A customer's phone read by the business's Phone country, over `TestClient`
-(docs/adr/0073): the next local number follows the country, no country asks for "+", a
+(docs/adr/0082): the next local number follows the country, no country asks for "+", a
 local and an international spelling are one number, an untouched stored number is kept,
 and the spreadsheet import stays Argentine."""
 

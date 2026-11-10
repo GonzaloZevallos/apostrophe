@@ -59,7 +59,7 @@ def register_imported_customer(
 ) -> Customer:
     """The spreadsheet import's own write. The import hands in the VIP type id of a VIP
     of the sheet, and the frozen `vip` mark is never written (docs/adr/0070). Its numbers
-    are Argentine whatever the business's Phone country (docs/adr/0073)."""
+    are Argentine whatever the business's Phone country (docs/adr/0082)."""
     return _register(customers, transaction, name, phone, PhoneCountry.AR, customer_type_id)
 
 
@@ -110,7 +110,7 @@ def edit_customer(
         phone = customer.phone
     elif customer.phone is not None and changes.phone == customer.phone.value:
         # The stored value sent back as it is stays as it is, whatever the Phone country
-        # is now: it is neither normalised again nor looked up (docs/adr/0073).
+        # is now: it is neither normalised again nor looked up (docs/adr/0082).
         phone = customer.phone
     else:
         phone = PhoneNumber.optional(changes.phone, phone_country.current())

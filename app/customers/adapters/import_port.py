@@ -4,7 +4,7 @@ hand (CODING_STANDARDS section 1; the plan's invariant: an owner's import adapte
 writes only its own hexagon's tables).
 
 The import reads its numbers as Argentine whatever the business's Phone country: it
-passes `PhoneCountry.AR` itself and never reads the setting (docs/adr/0073).
+passes `PhoneCountry.AR` itself and never reads the setting (docs/adr/0082).
 
 `check_customer` never lets a phone number or a customer name reach this module's
 return value: on a broken rule (`CustomerRuleBroken`) it answers only the rule's own

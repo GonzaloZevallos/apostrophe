@@ -19,7 +19,7 @@ class BusinessProfile:
     user_emails: list[str]
     # The stored tag, never the shown one (docs/adr/0050).
     language: str
-    # The stored ISO code, or None while the business has none (docs/adr/0073).
+    # The stored ISO code, or None while the business has none (docs/adr/0082).
     phone_country: str | None
 
 
@@ -74,7 +74,7 @@ def change_phone_country(
 ) -> BusinessProfile:
     """Sets the business's Phone country, or clears it with None. A code that is not a
     listed country is refused (`UnknownPhoneCountry`, 422) before anything is read or
-    written. Stored phone numbers are never touched (docs/adr/0073)."""
+    written. Stored phone numbers are never touched (docs/adr/0082)."""
     country = None if code is None else PhoneCountry.parse(code)
     business = accounts.business(business_id)
     assert business is not None, "a signed-in user's business always exists"

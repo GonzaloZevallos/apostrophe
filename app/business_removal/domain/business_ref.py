@@ -14,7 +14,7 @@ class BusinessRef:
     id: int
     name: str
     language: str
-    # The ISO code of the business's Phone country, or None (docs/adr/0073).
+    # The ISO code of the business's Phone country, or None (docs/adr/0082).
     default_phone_country: str | None
 
     def __post_init__(self) -> None:

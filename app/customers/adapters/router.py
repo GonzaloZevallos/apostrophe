@@ -66,7 +66,7 @@ def get_phone_country(
     request: Request, session: SessionDep, business_id: CurrentBusinessId
 ) -> PhoneCountryReader:
     # Same shape as the pricing settings: `app/main.py` hangs the accounts reader on
-    # `app.state` as a `(Session, business_id)` factory (docs/adr/0073).
+    # `app.state` as a `(Session, business_id)` factory (docs/adr/0082).
     factory = cast(
         Callable[[Session, int], PhoneCountryReader],
         request.app.state.customers_phone_country,

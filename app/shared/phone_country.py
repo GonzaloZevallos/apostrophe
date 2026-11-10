@@ -1,5 +1,5 @@
 """The countries a business can set as its Phone country (CONTEXT.md: Phone country,
-docs/adr/0073). The one place a calling code, a national length or a trunk prefix is
+docs/adr/0082). The one place a calling code, a national length or a trunk prefix is
 written: the customers domain reads its rules from here, accounts validates against the
 enum, and the front holds only the names. Standard library only."""
 

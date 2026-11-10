@@ -77,7 +77,7 @@ class PricingSettingsReader(Protocol):
 
 class PhoneCountryReader(Protocol):
     """The business's Phone country, through the one port customers declares for it
-    (docs/adr/0073); the accounts hexagon implements it, wired in `app/main.py`.
+    (docs/adr/0082); the accounts hexagon implements it, wired in `app/main.py`.
     `None` is a business that has set none."""
 
     def current(self) -> PhoneCountry | None: ...

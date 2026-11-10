@@ -132,7 +132,7 @@ def test_optional_still_refuses_a_malformed_non_blank_phone() -> None:
         PhoneNumber.optional("2345-6789", PhoneCountry.AR)
 
 
-# -- US: "+1" is a listed code now (docs/adr/0073) -------------------------------------
+# -- US: "+1" is a listed code now (docs/adr/0082) -------------------------------------
 
 
 @pytest.mark.parametrize("raw", ["+12345678", "+123456789012345", "+1234567", "+1 415 555 267"])

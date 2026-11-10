@@ -1,4 +1,4 @@
-"""The business's Phone country through `TestClient` (docs/adr/0073): `GET /business`
+"""The business's Phone country through `TestClient` (docs/adr/0082): `GET /business`
 lists the options and the stored code, `PUT /business/phone-country` sets or clears it,
 and a code that is not listed is refused with nothing changed."""
 

@@ -1,5 +1,5 @@
 """The business's Phone country over `business.default_phone_country`. Built for one
-business (docs/adr/0073); a stored code that is not listed is `StoredPhoneCountryCorrupt`,
+business (docs/adr/0082); a stored code that is not listed is `StoredPhoneCountryCorrupt`,
 never a guess."""
 
 from sqlalchemy.orm import Session

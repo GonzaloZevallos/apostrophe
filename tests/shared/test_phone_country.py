@@ -1,4 +1,4 @@
-"""The one table of Phone countries (docs/adr/0073): its shape, and the lookup refusing a
+"""The one table of Phone countries (docs/adr/0082): its shape, and the lookup refusing a
 code that is not listed."""
 
 import pytest

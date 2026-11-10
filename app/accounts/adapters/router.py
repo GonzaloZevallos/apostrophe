@@ -88,7 +88,7 @@ class BusinessOut(BaseModel):
     # The stored language and the ones a business may switch to, for the Settings control.
     language: str
     selectable_languages: list[str]
-    # The stored Phone country code (or null) and the countries Settings lists (docs/adr/0073).
+    # The stored Phone country code (or null) and the countries Settings lists (docs/adr/0082).
     phone_country: str | None
     phone_countries: list[PhoneCountryOption]
 

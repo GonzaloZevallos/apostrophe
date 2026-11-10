@@ -1,5 +1,5 @@
 """The accounts Phone country reader and `SqlAccounts` over `business.default_phone_country`
-(docs/adr/0073): `current()` reads the one business it is built for, and a stored code that
+(docs/adr/0082): `current()` reads the one business it is built for, and a stored code that
 is not listed is a broken row that never echoes its value."""
 
 from collections.abc import Iterator

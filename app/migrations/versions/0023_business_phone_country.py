@@ -1,4 +1,4 @@
-"""Store a Phone country on every business (CONTEXT.md: Phone country, docs/adr/0073).
+"""Store a Phone country on every business (CONTEXT.md: Phone country, docs/adr/0082).
 
 Revision ID: 0023
 Revises: 0022

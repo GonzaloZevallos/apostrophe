@@ -1,5 +1,5 @@
 /**
- * The business's Phone country (`accounts.md`, docs/adr/0073): `GET /business` carries the stored
+ * The business's Phone country (`accounts.md`, docs/adr/0082): `GET /business` carries the stored
  * ISO code (or null) and the countries it may take, each with its calling code, in the order
  * Settings lists them. `PUT /business/phone-country` is the one way to change it. The front
  * holds no calling code and no length of its own: it shows what the API sends.

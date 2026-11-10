@@ -18,7 +18,7 @@ class BusinessRow(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(BUSINESS_NAME_MAX_LENGTH))
     language: Mapped[str] = mapped_column(String(35))
-    # An ISO 3166-1 alpha-2 code from app.shared.phone_country, or null (docs/adr/0073).
+    # An ISO 3166-1 alpha-2 code from app.shared.phone_country, or null (docs/adr/0082).
     default_phone_country: Mapped[str | None] = mapped_column(String(2))
 
 

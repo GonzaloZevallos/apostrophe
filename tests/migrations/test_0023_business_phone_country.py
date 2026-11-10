@@ -1,4 +1,4 @@
-"""Migration 0023 stores a Phone country on every business (docs/adr/0073): every existing
+"""Migration 0023 stores a Phone country on every business (docs/adr/0082): every existing
 business reads 'AR' after the real revisions from 0022, no value that existed changes (the
 shared comparator), and the column is nullable with no default."""
 

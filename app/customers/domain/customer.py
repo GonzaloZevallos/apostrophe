@@ -111,7 +111,7 @@ class PhoneNumber:
 
     @classmethod
     def of(cls, raw: str, country: PhoneCountry | None) -> PhoneNumber:
-        """The canonical number of one typed by the business's Phone country (docs/adr/0073).
+        """The canonical number of one typed by the business's Phone country (docs/adr/0082).
 
         With "+", a listed calling code is read by that country's rule whatever
         `country` is, and any other code is accepted as written. Without "+" the digits

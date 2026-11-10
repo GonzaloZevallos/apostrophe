@@ -1,5 +1,5 @@
 """`PUT /business/phone-country`: the one way a user changes the business's Phone country
-(docs/adr/0073). The business comes from the session only; stored phone numbers are never
+(docs/adr/0082). The business comes from the session only; stored phone numbers are never
 touched."""
 
 from typing import Annotated
