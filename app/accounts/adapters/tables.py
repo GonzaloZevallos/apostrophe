@@ -53,7 +53,7 @@ class ResetLinkRow(Base):
     # UNIQUE, not a rule in code.
     id: Mapped[int] = mapped_column(primary_key=True)
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
-    user_id: Mapped[int] = mapped_column(ForeignKey("app_user.id"), unique=True)
+    app_user_id: Mapped[int] = mapped_column(ForeignKey("app_user.id"), unique=True)
     token_digest: Mapped[str] = mapped_column(String(64), unique=True)
     created_at: Mapped[datetime] = mapped_column(UtcDateTime)
 

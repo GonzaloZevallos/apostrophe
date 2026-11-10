@@ -31,7 +31,7 @@ the sweeps agree before any of them builds.
   text quoted from the seller's spreadsheet (the column "Variedad" on an import problem line) and the
   seller's own data.
 
-## Identifiers that stay until #75
+## Identifiers that stay until the `variety` table is renamed
 
 These keep their names, and this is the one accepted exception to CODING_STANDARDS §2 (no renamed
 identifier) for this epic. Only the text a person reads changes.
@@ -59,8 +59,8 @@ Operator reads them on the terminal and they are text a person reads. They are t
 
 - The seller's word was a setting only to fit a flower seller's language to other businesses. One word,
   Product, fits all of them and removes the variable from every sentence.
-- Renaming identifiers would touch every table and test for no change a person sees; #75 owns the
-  database names, and ADR-0061 already keeps the front paths.
+- Renaming identifiers would touch every table and test for no change a person sees; the database names
+  are left alone until the `variety` table is renamed, and ADR-0061 already keeps the front paths.
 - A sweep over resolved text, not source, catches a copy value that reintroduces the word without
   forbidding the identifiers that stay.
 
@@ -70,4 +70,4 @@ Operator reads them on the terminal and they are text a person reads. They are t
   which the owner's rescope removes.
 - **A per-Business product word.** One word chosen by the seller does not fit a business that sells
   many kinds of things.
-- **Rename the identifiers now.** It is #75's work and changes nothing on screen.
+- **Rename the identifiers now.** It is the database renaming's work and changes nothing on screen.

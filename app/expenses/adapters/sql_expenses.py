@@ -23,7 +23,7 @@ class SqlExpenses:
     def add(self, expense: Expense) -> Expense:
         row = ExpenseRow(
             business_id=self._business_id,
-            category_id=expense.category_id,
+            expense_category_id=expense.category_id,
             spent_on=expense.spent_on,
             amount=expense.amount,
             detail=expense.detail,
@@ -37,7 +37,7 @@ class SqlExpenses:
         assert expense.id is not None, "save takes an expense that was added"
         row = self._row(expense.id)
         assert row is not None, "save takes an expense of this business"
-        row.category_id = expense.category_id
+        row.expense_category_id = expense.category_id
         row.spent_on = expense.spent_on
         row.amount = expense.amount
         row.detail = expense.detail
@@ -60,7 +60,7 @@ class SqlExpenses:
                 ExpenseCategoryRow,
                 and_(
                     ExpenseCategoryRow.business_id == ExpenseRow.business_id,
-                    ExpenseCategoryRow.id == ExpenseRow.category_id,
+                    ExpenseCategoryRow.id == ExpenseRow.expense_category_id,
                 ),
             )
             .where(
@@ -87,7 +87,7 @@ class SqlExpenses:
 def _expense(row: ExpenseRow) -> Expense:
     return Expense(
         spent_on=row.spent_on,
-        category_id=row.category_id,
+        category_id=row.expense_category_id,
         amount=row.amount,
         detail=row.detail,
         recorded_at=row.recorded_at,

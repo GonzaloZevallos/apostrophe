@@ -64,13 +64,15 @@ SCHEMA = Schema(
             (
                 _col("id", primary_key=True),
                 _col("business_id"),
-                _col("category_id"),
+                _col("expense_category_id"),
                 _col("spent_on"),
                 _col("amount"),
             ),
             (
                 ForeignKey(
-                    ("business_id", "category_id"), "expense_category", ("business_id", "id")
+                    ("business_id", "expense_category_id"),
+                    "expense_category",
+                    ("business_id", "id"),
                 ),
             ),
         ),
@@ -186,7 +188,7 @@ def test_the_composite_expense_foreign_key_references_the_category_by_id_alone()
             {
                 "id": 1,
                 "business_id": 1,
-                "category_id": 1,
+                "expense_category_id": 1,
                 "spent_on": date(2026, 1, 1),
                 "amount": 500,
             },
@@ -196,7 +198,7 @@ def test_the_composite_expense_foreign_key_references_the_category_by_id_alone()
     document = build_document(BUSINESS, SCHEMA, rows, EXPORTED_AT)
 
     expense = document["kinds"]["expense"][0]
-    assert expense["category_id"] == {"id": 1, "name": "Insumos de cultivo"}
+    assert expense["expense_category_id"] == {"id": 1, "name": "Insumos de cultivo"}
     assert "business_id" not in expense
     category = document["kinds"]["expense_category"][0]
     assert "business_id" not in category

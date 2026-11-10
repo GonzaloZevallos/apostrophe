@@ -135,7 +135,7 @@ def _record(
 
 def _foreign_key_targets(table: Table) -> dict[str, str]:
     """Every column of `table` that references another table, `business_id` aside --
-    for the composite expense foreign key this is `category_id` alone, never
+    for the composite expense foreign key this is `expense_category_id` alone, never
     `business_id` (the plan's invariant)."""
     targets: dict[str, str] = {}
     for foreign_key in table.foreign_keys:
