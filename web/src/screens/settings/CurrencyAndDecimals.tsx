@@ -41,8 +41,9 @@ const LEAVE = {
   discardLabel: COMMON_TEXT.yesDiscard,
 }
 
-/** The amount the Example writes: whole thousands and a half, so every decimals shows. */
-const EXAMPLE_AMOUNT = 11000.5
+/** The amounts the Example writes: whole thousands, and with decimals a half, so they show. */
+const EXAMPLE_WHOLE = 11000
+const EXAMPLE_WITH_DECIMALS = 11000.5
 
 const SYMBOL_CODE: RefusalCode = 'money_format.symbol_invalid'
 const LOWERING_CODE: RefusalCode = 'money_format.decimals_below_recorded'
@@ -146,7 +147,10 @@ export default function CurrencyAndDecimals() {
         <div className="campo">
           <span className="campo__rotulo">{SETTINGS_TEXT.currencyExample}</span>
           <output className="campo__valor" role="status">
-            {formatMoneyIn(EXAMPLE_AMOUNT, { symbol: symbol.trim(), decimals: Number(decimals) })}
+            {formatMoneyIn(Number(decimals) === 0 ? EXAMPLE_WHOLE : EXAMPLE_WITH_DECIMALS, {
+              symbol: symbol.trim(),
+              decimals: Number(decimals),
+            })}
           </output>
         </div>
         {loweringRefused && (

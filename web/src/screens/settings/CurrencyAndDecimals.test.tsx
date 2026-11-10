@@ -76,7 +76,7 @@ test('the Example is written from the unsaved symbol and decimals as they are ty
   const user = userEvent.setup()
   renderForm(fetchReturning(null))
 
-  expect(screen.getByRole('status')).toHaveTextContent('$ 11.001')
+  expect(screen.getByRole('status')).toHaveTextContent('$ 11.000')
 
   const symbol = screen.getByRole('textbox', { name: new RegExp(SETTINGS_TEXT.currencySymbol) })
   await user.clear(symbol)
