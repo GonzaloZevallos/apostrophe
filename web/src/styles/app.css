@@ -683,24 +683,33 @@ body {
 }
 
 /* The trailing slot of a phone header: the title takes the room the avatar leaves and is cut
- * with an ellipsis, so a long title never widens the page. The computer draws no avatar, so
- * there the row dissolves and the title is the flex item it always was. */
-.cabecera-fila {
-  display: flex;
-  align-items: center;
-  gap: var(--espacio-md);
-}
+ * with an ellipsis, so a long title never widens the page. Phone only: the computer draws no
+ * avatar and none of these rules apply there. `--envoltura` is a row added only to hold the
+ * title and the avatar; on the computer it dissolves, so the title is the flex or grid item
+ * of its header that it always was. */
+@media (max-width: 899.98px) {
+  .cabecera-fila {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-md);
+  }
 
-.cabecera-fila > .encabezado__titulo {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  .cabecera-fila--envoltura {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .cabecera-fila > .encabezado__titulo {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 @media (min-width: 900px) {
-  .cabecera-fila {
+  .cabecera-fila--envoltura {
     display: contents;
   }
 }

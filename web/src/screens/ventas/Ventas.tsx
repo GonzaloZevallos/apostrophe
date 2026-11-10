@@ -108,7 +108,7 @@ export default function Ventas() {
     <ContentArea as="main" className="pantalla">
       <div className="cuerpo">
         <div className="ventas__cabecera">
-          <div className="cabecera-fila">
+          <div className="cabecera-fila cabecera-fila--envoltura">
             <span className="encabezado__titulo">{COMMON_TEXT.sales}</span>
             <SettingsAvatar />
           </div>

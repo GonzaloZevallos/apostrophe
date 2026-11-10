@@ -89,7 +89,7 @@ export default function Clientes() {
       {/* The first answer only: a new search over the list already shown is not the area loading. */}
       <LoadingWhile active={isPending} />
       <div className="cuerpo">
-        <div className="clientes__encabezado">
+        <div className="clientes__encabezado cabecera-fila">
           <span className="encabezado__titulo">{COMMON_TEXT.customers}</span>
           <BotonLink to={CUSTOMER_NEW} variant="secondary" icon="agregar">
             {COMMON_TEXT.newCustomer}

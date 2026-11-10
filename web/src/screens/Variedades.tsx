@@ -120,7 +120,7 @@ export default function Variedades() {
   return (
     <ContentArea as="main" className="pantalla variedades">
       <div className="cuerpo">
-        <div className="cabecera-fila">
+        <div className="cabecera-fila cabecera-fila--envoltura">
           <h1 className="encabezado__titulo">{COMMON_TEXT.varieties}</h1>
           <SettingsAvatar />
         </div>

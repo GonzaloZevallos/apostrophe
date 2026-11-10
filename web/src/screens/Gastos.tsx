@@ -176,8 +176,10 @@ export default function Gastos() {
     <ContentArea as="main" className="pantalla">
       <div className="cuerpo gastos">
         <div className="gastos__cabecera">
-          <span className="encabezado__titulo gastos__titulo">{COMMON_TEXT.expenses}</span>
-          <SettingsAvatar />
+          <div className="cabecera-fila cabecera-fila--envoltura">
+            <span className="encabezado__titulo gastos__titulo">{COMMON_TEXT.expenses}</span>
+            <SettingsAvatar />
+          </div>
           <InAppLink to={EXPENSE_NEW} className="gastos__cargar" aria-label={COMMON_TEXT.addExpense}>
             <Icono nombre="agregar" />
             <span className="gastos__cargar-texto">{COMMON_TEXT.addExpense}</span>
