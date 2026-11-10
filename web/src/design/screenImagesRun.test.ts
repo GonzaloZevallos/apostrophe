@@ -1,7 +1,8 @@
 // @vitest-environment node
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { execFileSync, spawnSync } from 'node:child_process'
+import { chmodSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { PNG } from 'pngjs'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
@@ -302,5 +303,84 @@ describe('the command line', () => {
     )
     expect(await main(['plan'])).toBe(2)
     expect(error).toHaveBeenCalledWith('screenImagesRun: --out is required')
+  })
+})
+
+describe('container-args and image', () => {
+  const REPO = resolve(__dirname, '../../..')
+
+  function printed(run: () => Promise<number>): Promise<string> {
+    const written: string[] = []
+    const write = vi.spyOn(process.stdout, 'write').mockImplementation((chunk) => {
+      written.push(String(chunk))
+      return true
+    })
+    return run().finally(() => write.mockRestore()).then(() => written.join(''))
+  }
+
+  it('prints the image tag of the lockfile', async () => {
+    const lock = JSON.parse(readFileSync(join(REPO, 'web', 'package-lock.json'), 'utf-8'))
+    const version = lock.packages['node_modules/playwright'].version
+    expect(await printed(() => main(['image']))).toBe(`mcr.microsoft.com/playwright:v${version}-noble\n`)
+  })
+
+  it('prints the argv of containerArgs, NUL separated, over the capture selection', async () => {
+    const text = await printed(() =>
+      main(['container-args', '--facts', '/tmp/f.json', '--out', '/tmp/o', '--uid', '1000', '--gid', '1001']),
+    )
+    expect(text.endsWith('\0')).toBe(true)
+    const args = text.slice(0, -1).split('\0')
+    expect(args).toContain('1000:1001')
+    expect(args).toContain('/tmp/f.json:/work/facts.json:ro')
+    expect(args).toContain('/tmp/o:/out')
+    expect(args).toContain('--built-only')
+    expect(args.at(-1)?.split(',').length).toBeGreaterThan(50)
+  })
+
+  it('refuses a missing --facts, --uid or --gid', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    expect(await main(['container-args', '--out', '/tmp/o'])).toBe(2)
+    expect(error).toHaveBeenCalledWith('screenImagesRun: container-args needs --facts, --uid and --gid')
+  })
+})
+
+describe('screen-images.sh', () => {
+  const SCRIPT = resolve(__dirname, '../../../scripts/design/screen-images.sh')
+
+  // A `docker` that answers by its first words: the case says which commands fail.
+  function fakeDocker(failing: string[]): string {
+    const bin = join(root, 'bin')
+    mkdirSync(bin)
+    const script = join(bin, 'docker')
+    writeFileSync(script, `#!/usr/bin/env bash\ncase "$1 $2" in\n${failing.map((f) => `  "${f}"*) exit 1 ;;`).join('\n')}\nesac\nexit 0\n`)
+    chmodSync(script, 0o755)
+    return bin
+  }
+
+  function run(bin: string) {
+    const result = spawnSync('bash', [SCRIPT, '--out', out, '--apply'], {
+      env: { ...process.env, PATH: `${bin}:${process.env.PATH}` },
+      encoding: 'utf-8',
+    })
+    return { ...result, plan: JSON.parse(readFileSync(join(out, 'plan.json'), 'utf-8')), summary: readFileSync(join(out, 'summary.md'), 'utf-8') }
+  }
+
+  it('is valid bash', () => {
+    expect(() => execFileSync('bash', ['-n', SCRIPT])).not.toThrow()
+  })
+
+  it('without Docker writes a plan that did not start, names the cause and exits 1', () => {
+    const { status, plan, summary } = run(fakeDocker(['info']))
+    expect(status).toBe(1)
+    expect(plan).toMatchObject({ appStarted: false, reason: 'docker-unavailable', write: [], remove: [] })
+    expect(plan.failures.length).toBeGreaterThan(50)
+    expect(summary).toContain(NOT_STARTED['docker-unavailable'])
+  })
+
+  it('with an image that can be neither found nor pulled names that cause', () => {
+    const { status, plan, summary } = run(fakeDocker(['image inspect', 'pull']))
+    expect(status).toBe(1)
+    expect(plan).toMatchObject({ appStarted: false, reason: 'image-unavailable' })
+    expect(summary).toContain(NOT_STARTED['image-unavailable'])
   })
 })

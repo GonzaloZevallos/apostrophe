@@ -9,21 +9,28 @@
 //   node scripts/design/screenImagesRun.mjs apply --out <dir> --target <dir>
 //   node scripts/design/screenImagesRun.mjs not-started --reason <reason> --out <dir> [--registry <screens.json>]
 //   node scripts/design/screenImagesRun.mjs exit-code --out <dir>
+//   node scripts/design/screenImagesRun.mjs image
+//   node scripts/design/screenImagesRun.mjs container-args --facts <sample.json> --out <dir> --uid <n> --gid <n>
 //
 // `plan` writes `plan.json` (always with `appStarted` and the failures), `summary.md` and the webp
 // of every row to write into `--out`. `exit-code` prints nothing and exits 1 when the plan did not
-// start the app or has a failure, else 0. Bad usage exits 2.
+// start the app or has a failure, else 0. `image` prints the Playwright image tag of the lockfile;
+// `container-args` prints the arguments after `docker run` of one capture (`containerArgs`), each
+// ending in a NUL, for `screen-images.sh` to pass on unedited. Bad usage exits 2.
 
 import { mkdir, readdir, readFile, rename, stat, unlink, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
+import { captureSelection } from './screens.mjs'
 import {
+  containerArgs,
   decodeRgba,
   encodeWebp,
   imageFile,
   NOT_STARTED,
   planPublish,
+  playwrightImage,
   renderSummary,
   samePixels,
   UNSTABLE_NOTE,
@@ -31,6 +38,7 @@ import {
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REGISTRY = join(HERE, 'screens.json')
+const REPO = resolve(HERE, '..', '..')
 
 /**
  * The rows of a `screens.json`.
@@ -231,13 +239,31 @@ export async function main(argv) {
       a: { type: 'string' },
       b: { type: 'string' },
       reason: { type: 'string' },
+      facts: { type: 'string' },
+      uid: { type: 'string' },
+      gid: { type: 'string' },
       'base-sha': { type: 'string' },
       mode: { type: 'string', default: 'local' },
       registry: { type: 'string', default: REGISTRY },
     },
   })
+  if (command === 'image') {
+    process.stdout.write(`${playwrightImage(await readFile(join(REPO, 'web', 'package-lock.json'), 'utf-8'))}\n`)
+    return 0
+  }
   const out = values.out
   if (out === undefined) return usage('--out is required')
+  if (command === 'container-args') {
+    const { facts, uid, gid } = values
+    if (facts === undefined || uid === undefined || gid === undefined) {
+      return usage('container-args needs --facts, --uid and --gid')
+    }
+    const image = playwrightImage(await readFile(join(REPO, 'web', 'package-lock.json'), 'utf-8'))
+    const only = captureSelection(await loadRegistry(values.registry)).map((s) => String(s.screen))
+    const args = containerArgs({ image, repoDir: REPO, uid: Number(uid), gid: Number(gid), factsPath: facts, outDir: resolve(out), only })
+    process.stdout.write(args.map((arg) => `${arg}\0`).join(''))
+    return 0
+  }
   if (command === 'plan') {
     const { index: indexFile, 'built-dir': builtDir, committed } = values
     if (indexFile === undefined || builtDir === undefined || committed === undefined) {

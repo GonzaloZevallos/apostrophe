@@ -7,8 +7,16 @@
 // "Changed" is decided on decoded pixels, never on webp bytes or hashes (ADR-0079): a new
 // encoder version that writes other bytes for the same picture must not touch a committed image.
 
-import sharp from 'sharp'
+import { createRequire } from 'node:module'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { screenImageRows } from './screens.mjs'
+
+// `sharp` is a dependency of `web/`, as Playwright is: a script under `scripts/` finds it from there,
+// so `node scripts/design/screenImagesRun.mjs` works from the command line and not only under vitest.
+const HERE = dirname(fileURLToPath(import.meta.url))
+/** @type {typeof import('sharp')} */
+const sharp = createRequire(join(HERE, '..', '..', 'web', 'package.json'))('sharp')
 
 // The one lever on the size of an image: the encoder's effort (0 to 6). The encoding stays
 // lossless; changing anything else needs the owner's decision (ADR-0079).
