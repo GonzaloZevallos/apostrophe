@@ -4,25 +4,27 @@
 
 **Cuando** llevo mi negocio desde el teléfono, **quiero** mantener mis Expenses al día desde el teléfono, **para** dejar de llevarlas en la planilla y tener datos reales en su lugar cuando lleguen las ventas.
 
-**Cuando** llevo mi negocio desde el teléfono entre pedidos o en medio de un chat con un cliente, varias veces por día, **quiero** que la app esté ordenada según lo que hago de verdad y con qué frecuencia, con las Expenses a mano para la mirada semanal o mensual y cada configuración en un solo lugar, **para** volver al cliente en vez de buscar entre menús. (El job de navegación, navigation.md: acá lo sirven "+ Add expense" en More, una forma de registrar desde la misma Expenses, Expenses como la única vista mensual, y las Expense categories en Settings.)
+**Cuando** llevo mi negocio desde el teléfono entre pedidos o en medio de un chat con un cliente, varias veces por día, **quiero** que la app esté ordenada según lo que hago de verdad y con qué frecuencia, con las Expenses a mano para la mirada semanal o mensual y cada configuración en un solo lugar, **para** volver al cliente en vez de buscar entre menús. (El job de navegación, navigation.md: acá lo sirven la tarjeta Expenses de Analysis con "Add expense" y "See the expenses", una forma de registrar desde la misma Expenses, Expenses como la única vista mensual, y las Expense categories en Settings.)
+
+**Cuando** necesito registrar una Expense, sacar flor del stock, ver cómo va el negocio o cambiar una configuración desde el celular, **quiero** encontrarlo donde ya vive ese contexto (Analysis en Home, "Take from stock" en la vista de stock de Products, Settings en el encabezado), **para** terminar en pocos toques sin pasar por un menú que lo junta todo. (GH-651, el retiro de More, navigation.md: acá lo sirve la tarjeta Expenses de Analysis.)
 
 **Cuando** mi negocio trabaja en un idioma que no es el inglés, **quiero** que un negocio abierto en ese idioma arranque con sus Expense categories ya en él, **para** no tener nada que volver a tipear, mientras nada cambia para un negocio en inglés. (Compartido con stored-language.md y catalog.md: acá lo sirven las Expense categories por defecto, que siguen el Stored language al abrirse.)
 
-En la práctica, estos jobs se juntan así. El vendedor paga algo que no es flor entre pedidos, o se sienta a mirar en qué se fue la plata de la semana o del mes. Carga la Expense en 2 toques como máximo desde donde esté. Encuentra las Expenses de cualquier mes, con el total y lo que se llevó cada Expense category, en un solo lugar evidente. La computadora es el mismo job en una pantalla más grande.
+En la práctica, estos jobs se juntan así. El vendedor paga algo que no es flor entre pedidos, o se sienta a mirar en qué se fue la plata de la semana o del mes. Carga la Expense desde Analysis, a 2 toques desde Home y a 3 desde los demás Tab roots del teléfono. Encuentra las Expenses de cualquier mes, con el total y lo que se llevó cada Expense category, en un solo lugar evidente. La computadora es el mismo job en una pantalla más grande.
 
 Criterios de éxito:
 
-1. Una Expense se registra desde el teléfono en menos de un minuto. Su formulario abre en 2 toques como máximo desde cualquier Tab root (More → "+ Add expense") y en 1 toque desde Expenses. En una computadora no lleva más toques que en el teléfono. La fecha ya viene en hoy, y la Expense category se elige de la lista del negocio.
+1. Una Expense se registra desde el teléfono en menos de un minuto. En el teléfono su formulario abre en 2 toques desde Home (el segmento "Analysis", después "Add expense" en la tarjeta Expenses), en 3 desde Sales, Customers y Products, y en 1 toque desde Expenses. En una computadora no lleva más toques que en el teléfono. La fecha ya viene en hoy, y la Expense category se elige de la lista del negocio.
 2. Para cualquier mes, la vista muestra cada Expense de ese mes y el total del mes. Las desglosa por Expense category, con un subtotal para cada una. Los totales siempre son iguales a la suma de las Expenses que se muestran, también justo después de una edición o una eliminación.
 3. La flor nunca es una Expense. Nada de acá registra gramos ni un producto, y una Purchase nunca aparece en las listas de Expenses. Así, los resultados pueden contar las Expenses y las Purchases por separado sin contar nada dos veces.
 4. Todo lo de acá se hace desde el teléfono, sin ninguna llamada a la API a mano.
 5. **Las Expense categories se administran en un solo lugar.** Expenses no agrega, renombra ni elimina Expense categories; solo tiene un link a Settings → Expense categories. La única excepción es crear una Expense category dentro del formulario de la Expense.
-6. **Se ve como en el diseño.** More y Expenses, en teléfono y computadora, coinciden con `docs/product/design-system/pantallas/`, juzgados a ojo.
+6. **Se ve como en el diseño.** La tarjeta Expenses de Analysis y Expenses, en teléfono y computadora, coinciden con `docs/product/design-system/pantallas/`, juzgados a ojo.
 7. **Valores por defecto en el idioma del negocio.** Un negocio nuevo abierto en un idioma que no es el inglés arranca con sus cuatro Expense categories por defecto en ese idioma. En inglés son idénticas byte a byte a la línea de base, y un cambio de idioma posterior nunca las reescribe.
 
 # Expenses
 
-La plata que un negocio paga por cualquier cosa que no sea flor, archivada bajo sus propias Expense categories y vista solo por ese negocio (ADR-0004). La flor que se compra es una Purchase (stock), nunca una Expense. Resultados (#7) lee las Expenses y las Purchases por separado. A Expenses se llega desde More en el teléfono y desde la barra lateral en una computadora; las Expense categories se administran en Settings → Expense categories (navigation.md).
+La plata que un negocio paga por cualquier cosa que no sea flor, archivada bajo sus propias Expense categories y vista solo por ese negocio (ADR-0004). La flor que se compra es una Purchase (stock), nunca una Expense. Resultados (#7) lee las Expenses y las Purchases por separado. A Expenses se llega en el teléfono desde la tarjeta Expenses de Analysis ("See the expenses") y en una computadora desde la barra lateral; las Expense categories se administran en Settings → Expense categories (navigation.md).
 
 ## Comportamiento
 
@@ -71,23 +73,31 @@ La plata que un negocio paga por cualquier cosa que no sea flor, archivada bajo 
 
 ### En pantalla
 
-- **Expenses** (`Expenses`, ruta `/expenses`; la vieja `/gastos` redirige ahí de forma permanente) es una Tab root (navigation.md). Muestra la barra en el teléfono o la barra lateral en una computadora, con Expenses activa, y "+ New sale". Se llega desde More en el teléfono y desde la barra lateral en una computadora, debajo del separador. Tiene:
+- **La tarjeta Expenses de Analysis** (solo en el teléfono, debajo del corte de 900 px; GH-651): en Analysis, debajo del segmento Today | Analysis, una tarjeta titulada "Expenses" con dos acciones de al menos 44 px:
+  - "Add expense", un botón con el ícono de agregar, que abre el formulario de la Expense con la fecha de hoy;
+  - "See the expenses", un link de texto, sin conteo, que abre Expenses.
+
+  No espera a que respondan las cifras de Analysis: las dos acciones están en los estados cargando, error, vacío y con datos. En una computadora la tarjeta no se dibuja, porque a Expenses se llega desde la barra lateral. Reemplaza al "+ Add expense" que estaba en More, que ya no existe.
+- **Expenses** (`Expenses`, ruta `/expenses`; la vieja `/gastos` redirige ahí de forma permanente) es la única pantalla cuyo tipo depende del ancho (navigation.md, el ADR de GH-651):
+  - en el teléfono, un detalle con "‹ Analysis" (su pantalla madre), la barra con Home marcada como activa, sin "+ New sale", y el avatar "Settings" al final de la fila del título;
+  - en una computadora, una Tab root con la barra lateral, Expenses activa y "+ New sale", a la que se llega desde la barra lateral, debajo del separador.
+
+  Tiene:
   - la navegación por mes;
   - la línea fija "Flower purchases don't go here: enter them in Stock.";
   - un link que abre Settings → Expense categories. Expenses nunca agrega, renombra ni elimina una Expense category por sí misma;
-  - su propia forma de registrar una Expense nueva, que abre el formulario de la Expense con la fecha de hoy en 1 toque:
-    - en el teléfono, una acción secundaria en el cuerpo de Expenses, nunca un segundo "+" flotante que compita con "+ New sale";
+  - su propia forma de registrar una Expense nueva, "Add expense", que abre el formulario de la Expense con la fecha de hoy en 1 toque:
+    - en el teléfono, una acción secundaria debajo del título, nunca un segundo "+" flotante;
     - en una computadora, el botón "Add expense" en la cabecera de la página.
 
     Su aspecto exacto lo decide diseño.
-- **"+ Add expense"**, primero en More en el teléfono (ruta `/more`; la vieja `/mas` redirige ahí de forma permanente), abre directamente el formulario de la Expense con la fecha de hoy. Su subtítulo lo decide diseño.
-- **El formulario de la Expense** es un formulario (navigation.md): sin barra y sin "+ New sale", y se cierra con "Close".
+- **El formulario de la Expense** es un formulario (navigation.md), una Sheet en el teléfono: sin barra y sin "+ New sale", y se cierra con "Close".
   - "Category", "Amount" y "Details" se marcan como obligatorios.
   - El envío se bloquea mientras el detalle está en blanco.
   - La fecha viene completada con hoy.
-  - "Close" y un guardado exitoso vuelven por el historial a la pantalla que lo abrió (More o Expenses).
+  - "Close", el gesto de volver y un guardado exitoso vuelven por el historial a la pantalla que lo abrió (Analysis, desde su tarjeta Expenses, o Expenses).
   - Sin historial (un link directo), vuelve a Expenses en el mes en curso.
-  - Un guardado exitoso muestra "Expense saved" sin saltar a otro lado. Después de guardar desde Expenses, Expenses se queda en el mes que mostraba y se actualiza.
+  - Un guardado exitoso muestra "Expense saved" en la pantalla a la que vuelve, sin saltar a otro lado. Después de guardar desde Expenses, Expenses se queda en el mes que mostraba y se actualiza.
   - Salir con algo tipeado pregunta antes de descartar; un formulario sin tocar se cierra de inmediato.
 - **Una Expense category que desaparece con el formulario de la Expense abierto** (un socio la eliminó):
   - guardar deja el formulario abierto con todo lo tipeado;
@@ -109,6 +119,7 @@ La plata que un negocio paga por cualquier cosa que no sea flor, archivada bajo 
 - Ningún monto ni detalle se escribe en los logs, la consola del navegador ni el almacenamiento del navegador.
 - Un link de Expenses a Settings → Expense categories aparece solo una vez que ese grupo existe. Ningún link puede apuntar a una pantalla que no existe, y ningún vendedor puede perder la administración de las Expense categories.
 - El dominio de expenses no guarda ningún nombre por defecto ni importa ninguna biblioteca de traducción. La apertura del negocio nuevo toma los valores por defecto a través del puerto `BusinessDefaults` (`for_language(language)`), con el Stored language, nunca con el Shown language.
+- Las palabras de la tarjeta Expenses ("Expenses", "Add expense", "See the expenses") salen del Copy module.
 
 ## Métricas
 
@@ -120,18 +131,18 @@ Se leen de los datos y de las pruebas; no hay telemetría.
 - **M4, uso**: negocios con al menos una Expense en un mes, sobre los negocios activos.
 - **M5, la flor queda afuera (criterio 3)**: las Purchases que aparecen en las listas de Expenses tienen que ser 0, por construcción. Una Expense no tiene ningún campo que pueda guardar gramos ni un producto.
 - **M6, sin curl (criterio 4)**: la corrida de punta a punta del front:
-  - registra una Expense desde More → "+ Add expense" y una desde Expenses;
+  - registra una Expense desde la tarjeta Expenses de Analysis ("Add expense") y una desde Expenses;
   - edita y elimina una;
   - se mueve entre meses;
   - agrega, renombra y elimina una Expense category en Settings, un rechazo de eliminación incluido.
 - **M7, toques (criterio 1)**: la corrida de punta a punta cuenta los toques para abrir el formulario de la Expense, en ventanas de teléfono y de computadora:
-  - desde cada Tab root, ≤2;
+  - en el teléfono, 2 desde Home y 3 desde Sales, Customers y Products;
   - desde Expenses, 1;
   - en una computadora, nunca más que en el teléfono.
 
   Meta: 100% dentro del límite.
 - **M8, el marco de Expenses (criterios 1, 5)**: las pruebas del front muestran:
-  - la barra o la barra lateral, con "+ New sale";
+  - en el teléfono, "‹ Analysis", la barra y ningún "+ New sale"; en una computadora, la barra lateral con "+ New sale" y sin flecha de regreso;
   - la navegación por mes y la línea fija de la flor;
   - la acción de registrar: secundaria en el teléfono (sin un segundo "+" flotante), el botón de la cabecera en una computadora.
 - **M9, las Expense categories salieron de Expenses (criterio 5)**: las pruebas del front muestran:
@@ -139,13 +150,14 @@ Se leen de los datos y de las pruebas; no hay telemetría.
   - un link que abre Settings → Expense categories;
   - la creación en línea en el formulario de la Expense, que sigue funcionando.
 - **M10, vuelta del formulario**: las pruebas del front cubren:
-  - "Close" y un guardado exitoso que vuelven por el historial a More o a Expenses;
+  - "Close" y un guardado exitoso que vuelven por el historial a Analysis (abierto desde su tarjeta) o a Expenses;
   - "Expense saved";
   - la confirmación de descarte y el cierre de un formulario sin tocar;
   - la vuelta sin historial a Expenses en el mes en curso.
-- **M11, redirecciones**: `/gastos` → `/expenses` y `/mas` → `/more` responden una redirección permanente, cada una con su prueba.
-- **M12, se ve como en el diseño (criterio 6)**: comparaciones de antes y después de `scripts/design/compare.sh`, en teléfono y computadora, adjuntas al PR y juzgadas a ojo.
+- **M11, redirecciones**: `/gastos` → `/expenses` responde una redirección permanente, con su prueba. `/mas` ya no se redirige (navigation.md).
+- **M12, se ve como en el diseño (criterio 6)**: comparaciones de antes y después de `scripts/design/compare.sh`, en teléfono y computadora, adjuntas al PR y juzgadas a ojo. Una pantalla que la herramienta no puede capturar se informa como "not compared".
 - **M13, los valores por defecto siguen el idioma (criterio 7)**: un negocio abierto en `en` recibe las cuatro Expense categories idénticas byte a byte a `en.baseline.json`; uno abierto en un `de` de prueba recibe las cuatro de `de`; después de que cualquiera de los dos negocios cambie de idioma, sus Expense categories no cambian; filas cambiadas en negocios existentes: 0; negocios abiertos bajo el `en-XA` forzado con Expense categories en `en-XA`: 0. Bajo el `en-XA` forzado, los valores por defecto generados desde su fuente no dejan ninguna letra después de sacar los segmentos `⟦…⟧`. 100% de aprobación.
+- **M14, la tarjeta Expenses (GH-651)**: pruebas de Testing Library a través del router real, en ancho de teléfono: "Add expense" de la tarjeta abre el formulario de la Expense y "See the expenses" abre Expenses; en ancho de computadora la tarjeta no está. 100% de aprobación.
 
 ## Fuera de alcance
 
@@ -159,3 +171,4 @@ Se leen de los datos y de las pruebas; no hay telemetría.
 - Administrar las Expense categories desde Expenses.
 - Construir Settings o sus grupos: navigation.md y sus propios issues.
 - Traducir o renombrar las Expense categories guardadas de un negocio cuando cambia su idioma, o completar hacia atrás valores por defecto en otro idioma para negocios existentes.
+- Un conteo de Expenses en "See the expenses" y la pantalla Expenses rediseñada completa: los construye su propio issue de rediseño.
