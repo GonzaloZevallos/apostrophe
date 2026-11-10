@@ -61,9 +61,7 @@ def seeded_days(clock: MovableClock) -> SeededDays:
     )
 
 
-def build_app(
-    db_path: Path, clock: MovableClock, money_scale: int = 0
-) -> tuple[FastAPI, Engine]:
+def build_app(db_path: Path, clock: MovableClock, money_scale: int = 0) -> tuple[FastAPI, Engine]:
     url = f"sqlite:///{db_path}"
     engine = make_engine(url)
     settings = Settings(secret_key="test-secret", database_url=url)
@@ -92,9 +90,7 @@ def accept_invitation(
     return token
 
 
-def seed(
-    db_path: Path, clock: MovableClock | None = None, money_scale: int = 0
-) -> tuple[str, str]:
+def seed(db_path: Path, clock: MovableClock | None = None, money_scale: int = 0) -> tuple[str, str]:
     """Business B (staying) opened first, with a customer of its own; business A
     (leaving, the newest) opened second, with one of everything the export holds:
     a customer, a variety, a price entry, a stock entry, a withdrawal under a reason the

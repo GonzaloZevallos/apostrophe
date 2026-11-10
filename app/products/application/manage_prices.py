@@ -51,6 +51,7 @@ def _whole_amount(amount: Decimal, shown: MoneyFormat) -> int:
 
 def record_imported_price_entry(
     products: Products,
+    money_format: MoneyFormatReader,
     transaction: Transaction,
     product_id: int,
     effective_from: date,
@@ -60,9 +61,17 @@ def record_imported_price_entry(
     vip_price: int | None,
 ) -> PriceEntry:
     """The spreadsheet import's own write: it has already switched on what its sheet
-    needs, so the entry is stored as the sheet says (docs/adr/0034)."""
+    needs, so the entry is stored as the sheet says (docs/adr/0034). Its amounts are checked
+    by value against the business's decimals like typed ones (docs/adr/0058)."""
     product = get_product(products, product_id)
-    entry = PriceEntry.of(effective_from, list_price, bulk_price, bulk_minimum, vip_price=vip_price)
+    shown = money_format.current()
+    entry = PriceEntry.of(
+        effective_from,
+        _whole_amount(Decimal(list_price), shown),
+        None if bulk_price is None else _whole_amount(Decimal(bulk_price), shown),
+        bulk_minimum,
+        vip_price=None if vip_price is None else _whole_amount(Decimal(vip_price), shown),
+    )
     return _record(products, transaction, product, entry)
 
 

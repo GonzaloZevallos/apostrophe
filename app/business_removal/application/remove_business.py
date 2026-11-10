@@ -136,7 +136,7 @@ def remove_business(
     clock: Clock,
     email: str,
     *,
-    money_format: MoneyFormatRead | None = None,
+    money_format: MoneyFormatRead,
 ) -> int:
     """Exports the business found from `email`, asks the operator to type its name
     back, then deletes every row in one transaction -- only once the file has been
@@ -175,7 +175,7 @@ def remove_business(
         rows = {name: schema_rows.rows(name, business.id) for name in owned}
         # Read at the same step as the rows, in the same transaction and before the
         # delete: the export states the scale its stored amounts are held at.
-        money = money_format.of(business.id) if money_format is not None else None
+        money = money_format.of(business.id)
         now = _naive_utc(clock())
         document = build_document(
             Business(business.id, business.name, business.language, business.last_sale_number),

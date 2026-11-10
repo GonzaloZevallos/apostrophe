@@ -105,3 +105,30 @@ def test_a_sheet_amount_with_a_fraction_is_refused_and_nothing_is_written(
     assert code == 1
     assert client.get("/api/products").json() == []
     assert client.get("/expenses", params={"month": "2026-01"}).json()["total"] == 0
+
+
+@pytest.mark.parametrize(
+    ("sheet", "row", "column"),
+    [(layout.ENTRADAS_SHEET, 2, 5), (layout.AJUSTES_SHEET, 37, 3)],
+    ids=["stock entry cost", "price entry price"],
+)
+def test_a_fractional_stock_cost_or_price_is_refused_and_nothing_is_written(
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    operator_text_en: OperatorText,
+    money_scale: int,
+    sheet: str,
+    row: int,
+    column: int,
+) -> None:
+    workbook = _workbook()
+    workbook[sheet].cell(row=row, column=column, value=1000.5)
+
+    code, _err = _import(engine, clock, tmp_path, operator_text_en, workbook)
+
+    assert code == 1
+    assert client.get("/api/products").json() == []
+    assert client.get("/stock").json()["products"] == []
+    assert client.get("/customers").json() == []

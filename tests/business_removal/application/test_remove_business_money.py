@@ -7,7 +7,6 @@ from __future__ import annotations
 
 from app.business_removal.application.remove_business import remove_business
 from app.business_removal.domain.export_document import ExportedMoney
-from app.db import MoneyFormatMissing
 from tests.business_removal.application.test_remove_business import (
     BUSINESS,
     EMAIL,
@@ -22,18 +21,7 @@ from tests.business_removal.application.test_remove_business import (
     _schema,
 )
 from tests.business_removal.english_words import english_words
-
-
-class FakeMoneyFormat:
-    def __init__(self, money: ExportedMoney | None) -> None:
-        self._money = money
-        self.read_for: list[int] = []
-
-    def of(self, business_id: int) -> ExportedMoney:
-        self.read_for.append(business_id)
-        if self._money is None:
-            raise MoneyFormatMissing
-        return self._money
+from tests.business_removal.money_fakes import FakeMoneyFormat
 
 
 def _run(
@@ -82,7 +70,7 @@ def test_a_business_without_a_money_format_is_neither_exported_nor_deleted() -> 
     transaction = FakeTransaction()
     output = FakeOutput()
 
-    result = _run(schema_rows, FakeMoneyFormat(None), export_file, transaction, output)
+    result = _run(schema_rows, FakeMoneyFormat(missing=True), export_file, transaction, output)
 
     assert result == 1
     assert output.lines[-1] == FAILED_MESSAGE
