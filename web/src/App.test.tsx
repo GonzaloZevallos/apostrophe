@@ -46,7 +46,7 @@ test('the sales list renders the Ventas stub under the gated shell', async () =>
   vi.stubGlobal(
     'fetch',
     vi.fn().mockResolvedValue(
-      jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }),
+      jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }),
     ),
   )
   await act(() => router.navigate(SALES))
@@ -63,7 +63,7 @@ test('the new sale form renders the NuevaVenta stub under the gated shell', asyn
   vi.stubGlobal(
     'fetch',
     vi.fn().mockResolvedValue(
-      jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }),
+      jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }),
     ),
   )
   await act(() => router.navigate(SALE_NEW))
@@ -85,7 +85,7 @@ test('a sale detail renders VentaDetalle, from the API, under the gated shell', 
         return Promise.resolve(jsonResponse(200, { ...SALE_DETAIL, id: 1 }))
       }
       return Promise.resolve(
-        jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }),
+        jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }),
       )
     }),
   )
@@ -103,7 +103,7 @@ function fetchFor(view: unknown) {
     if (path.startsWith(EXPENSES)) return Promise.resolve(jsonResponse(200, view))
     if (path.startsWith('/expense-categories')) return Promise.resolve(jsonResponse(200, []))
     return Promise.resolve(
-      jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }),
+      jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }),
     )
   })
 }
