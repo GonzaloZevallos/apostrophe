@@ -16,7 +16,7 @@ from app.customers.application.errors import (
     PhoneTaken,
     RequiredFieldCleared,
 )
-from app.customers.application.ports import Balances, PricingSettingsReader
+from app.customers.application.ports import Balances, PhoneCountryReader, PricingSettingsReader
 from app.customers.domain.customer import Customer, CustomerRuleBroken
 from app.db import get_session
 from app.http_errors import Refused, TranslateErrors
@@ -62,9 +62,22 @@ def get_pricing_settings(
     return factory(session, business_id)
 
 
+def get_phone_country(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> PhoneCountryReader:
+    # Same shape as the pricing settings: `app/main.py` hangs the accounts reader on
+    # `app.state` as a `(Session, business_id)` factory (docs/adr/0073).
+    factory = cast(
+        Callable[[Session, int], PhoneCountryReader],
+        request.app.state.customers_phone_country,
+    )
+    return factory(session, business_id)
+
+
 CustomersDep = Annotated[SqlCustomers, Depends(get_customers)]
 BalancesDep = Annotated[Balances, Depends(get_balances)]
 SettingsDep = Annotated[PricingSettingsReader, Depends(get_pricing_settings)]
+PhoneCountryDep = Annotated[PhoneCountryReader, Depends(get_phone_country)]
 
 
 def _out(customer: Customer, balances: Balances, types: SqlCustomerTypeLookup) -> CustomerOut:
@@ -107,6 +120,7 @@ def register_customer(
     body: CustomerIn,
     customers: CustomersDep,
     settings: SettingsDep,
+    phone_country: PhoneCountryDep,
     types: CustomerTypesDep,
     balances: BalancesDep,
     session: SessionDep,
@@ -116,6 +130,7 @@ def register_customer(
             customer = manage_customers.register_customer(
                 customers,
                 settings,
+                phone_country,
                 types,
                 session,
                 name=body.name,
@@ -141,6 +156,7 @@ def edit_customer(
     body: CustomerPatchIn,
     customers: CustomersDep,
     settings: SettingsDep,
+    phone_country: PhoneCountryDep,
     types: CustomerTypesDep,
     balances: BalancesDep,
     session: SessionDep,
@@ -151,7 +167,7 @@ def edit_customer(
         changes = body.to_changes()
         try:
             customer = manage_customers.edit_customer(
-                customers, settings, types, session, customer_id, changes
+                customers, settings, phone_country, types, session, customer_id, changes
             )
         except CustomerTypeNotFound:
             raise _type_not_found() from None

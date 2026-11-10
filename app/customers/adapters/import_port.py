@@ -3,6 +3,9 @@ customer is registered through the same rule â€” `register_imported_customer` â€
 hand (CODING_STANDARDS section 1; the plan's invariant: an owner's import adapter
 writes only its own hexagon's tables).
 
+The import reads its numbers as Argentine whatever the business's Phone country: it
+passes `PhoneCountry.AR` itself and never reads the setting (docs/adr/0073).
+
 `check_customer` never lets a phone number or a customer name reach this module's
 return value: on a broken rule (`CustomerRuleBroken`) it answers only the rule's own
 `code`, never the exception, so a caller that mishandles the result still can't print
@@ -18,6 +21,7 @@ from app.customers.adapters.sql_customers import SqlCustomers
 from app.customers.adapters.tables import CustomerRow
 from app.customers.application.manage_customers import register_imported_customer
 from app.customers.domain.customer import CustomerName, CustomerRuleBroken, PhoneNumber
+from app.shared.phone_country import PhoneCountry
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.application.ports import CustomerKey, CustomerRefusals
 
@@ -47,7 +51,7 @@ class CustomersImport:
         phone_code = None
         normalised: PhoneNumber | None = None
         try:
-            normalised = PhoneNumber.optional(phone)
+            normalised = PhoneNumber.optional(phone, PhoneCountry.AR)
         except CustomerRuleBroken as broken:
             phone_code = broken.code
 

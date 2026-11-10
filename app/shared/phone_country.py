@@ -84,3 +84,12 @@ RULES: dict[PhoneCountry, PhoneCountryRule] = {
     PhoneCountry.ES: PhoneCountryRule("34", frozenset({9})),
     PhoneCountry.US: PhoneCountryRule("1", frozenset({10}), trunk_prefix="1"),
 }
+
+
+def listed_country_of(digits: str) -> PhoneCountry | None:
+    """The listed country whose calling code the digits start with, or `None`. The
+    codes are prefix-free, so at most one matches."""
+    for country, rule in RULES.items():
+        if digits.startswith(rule.calling_code):
+            return country
+    return None
