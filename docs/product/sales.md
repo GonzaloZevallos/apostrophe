@@ -12,6 +12,8 @@
 
 **Cuando** configuro cómo cotiza mi negocio, registro el precio de un producto o entrego un pedido, **quiero** que la app use solo las **Pricing rule**s que tiene mi negocio (un **Bulk price** si vendo por volumen, y un **VIP price** que fijo por producto si tengo clientes VIP), **para** cobrarle a cada cliente exactamente lo que quiero cobrarle sin tipear un **Special price** a mano, sin ver campos que no me aplican y sin que a nadie le cambie el precio por sorpresa. (Afina la primera historia; no es un trabajo nuevo. Definido en pricing-settings.md).
 
+**Cuando** registro una venta para un cliente que pertenece a uno de mis grupos de clientes, **quiero** que cada línea se cotice al precio que fijé para ese grupo y ese producto, **para** cobrarle a cada grupo su propio precio sin tipearlo ni sacarlo de memoria. (Parte customer-type prices de GH-318: lo sirve acá la cotización por **Customer-type price**; los precios se guardan en pricing-settings.md).
+
 **Cuando** quiero revisar lo que vendí hoy, esta semana o este mes, **quiero** ver las ventas de ese período con su total y su cantidad, **para** saber cómo viene la cosa entre pedido y pedido y encontrar una venta puntual para corregirla.
 
 **Cuando** reviso entre pedidos lo que vendí hoy, esta semana o este mes, **quiero** cambiar de período y abrir una venta en el teléfono sin tocar mal y sin una pantalla en blanco mientras carga, **para** encontrar la venta a corregir y asignarle su cliente o borrarla en pocos toques. (Afina la historia anterior y el criterio 11 para el teléfono; corregir una venta sigue siendo exactamente esas dos cosas).
@@ -30,7 +32,8 @@
 
 Lo que un cliente se lleva de una vez, con cada línea cotizada con los precios del día y las **Pricing settings** del negocio, y ese precio guardado en la línea (ADR-0003). Las ventas las ve solo su negocio (ADR-0004). Esta capacidad lee:
 - los Current prices, de los productos;
-- los clientes, con su estado VIP, de clientes;
+- los clientes, con su **Customer type**, de clientes;
+- los Customer-type prices vigentes, de las Pricing settings (pricing-settings.md);
 - qué Pricing rules usa el negocio, de las Pricing settings (pricing-settings.md).
 
 Los pagos (`payments.md`) saldan lo que una venta deja debiendo y dicen si cada venta sigue debiendo. El stock (`stock.md`) saca los gramos de cada línea de los **Lot**s de su producto y le da a la línea su **Cost of goods sold**, que sigue a los Lots y nunca queda congelado (ADR-0009). Esta capacidad cubre también las pantallas de ventas: New sale, Sales y el detalle de una venta, en el teléfono y en la computadora, y el Sale bill que se comparte desde el detalle de una venta. Dónde se ubican es navigation.md.
@@ -40,6 +43,8 @@ La protagonista de las historias del teléfono es la vendedora. Los diseños de 
 Antes de la parte 4 de GH-581, cada línea de New sale elegía su producto con un `<select>` nativo, que en el teléfono abre el selector del sistema, sin búsqueda y distinto del resto de las elecciones de la app. Los productos son un **Growable set**, así que se eligen solo con el **Selector** (ADR-0074). No hay registro de errores de producto ni de líneas abandonadas, y esta definición no afirma ninguno.
 
 Antes de la parte 5 de GH-581, cómo se pagó era una fila de tres botones (Cash · Transfer · Owing) que mezclaba el estado (pagada o debiendo) con el medio. Los Payment methods son un Growable set que pasa a ser la lista propia del negocio con GH-318, así que el medio se elige con el Selector; el estado Paid · Owing no es un medio y sigue siendo una elección fija. Los botones viejos además figuraban como infractores de `touch-action` en el **Mobile check** (zoom por doble toque y selección de texto al tocar). No hay registro de medios mal elegidos, y esta definición no afirma ninguno.
+
+Antes de la parte customer-type prices de GH-318, un precio propio por grupo existía solo para un grupo, el VIP. Para cualquier otro grupo, la vendedora tipeaba un Special price en cada línea, lo que pierde el vínculo entre la venta y el grupo que recibió el precio, o cotizaba de memoria.
 
 El Sale bill sirve en dos momentos: justo después de guardar, con el cliente todavía esperando en el chat (el principal), y más tarde, cuando el cliente pregunta y la vendedora abre el detalle de esa venta. Supuesto sobre hoy: la vendedora vuelve a tipear el pedido y el total, o manda una captura, y saca el Balance a mano.
 
@@ -53,7 +58,7 @@ Criterios de éxito, registro (API):
 2. **Un pedido es una venta**: un pedido es una sola venta por más productos que tenga, con el **Shipping charged** una vez. Su total es la suma de sus líneas más el envío. Cantidades y promedios cuentan ventas, no líneas.
 3. **Precio correcto y guardado**:
    - Cada línea se cotiza con las reglas de abajo, a partir del Current price del producto en la fecha de la venta y de las Pricing settings del negocio al momento de guardar. Guarda su precio por gramo y su Pricing rule.
-   - Los cambios posteriores nunca alteran lo que cobró una venta existente: cualquier **Price entry**, las Pricing settings, un cambio en el estado VIP de un cliente, un cliente asignado después, cualquier **Stock entry** o cualquier pago.
+   - Los cambios posteriores nunca alteran lo que cobró una venta existente: cualquier **Price entry**, cualquier Customer-type price, las Pricing settings, un cambio del Customer type de un cliente, el nombre o el borrado de un tipo, un cliente asignado después, cualquier **Stock entry** o cualquier pago.
    - Se rechaza una línea cuyo producto no tiene precio ese día, salvo que tenga Special price.
 4. **Sin limbo, sin deuda perdida**:
    - Una venta con datos faltantes o inválidos se rechaza entera.
@@ -64,8 +69,14 @@ Criterios de éxito, registro (API):
 Criterios de éxito, Pricing rules (pricing-settings.md):
 
 17. **Solo aplican las reglas del negocio.** Con una regla apagada, la venta se cotiza como si la regla no existiera, y New sale no muestra nada de ella. Con las dos apagadas, toda línea que no es regalo ni Special price toma el **List price**.
-18. **Un VIP nunca paga más que un cliente común.** A un cliente VIP se le cobra el menor de los precios de las reglas que aplican a la línea. Un producto sin VIP price le cobra a un VIP como a cualquiera.
-19. **A nadie le cambia el precio por sorpresa.** Después de la migración, a cada cliente VIP existente se le cobra exactamente lo mismo que antes, para el mismo producto, día y gramos.
+18. **Un cliente con tipo nunca paga más que un cliente común.** A un cliente con Customer type se le cobra el menor de los precios de las reglas que aplican a la línea. Un tipo sin precio vigente para un producto le cobra a su cliente como a cualquiera.
+19. **A nadie le cambia el precio por sorpresa.** Después de la migración de los Customer-type prices, y para los VIP prices registrados después, a cada cliente del VIP type se le cobra exactamente lo mismo que antes, para el mismo producto, día y gramos: el mismo precio por gramo, el mismo total y la misma insignia mostrada.
+
+Criterios de éxito, precio por Customer type (parte customer-type prices de GH-318):
+
+37. **El precio del grupo, sin tipear.** Con Customer types encendido, una línea nueva de un cliente con Customer type se cotiza al Customer-type price de ese tipo y producto cuando es el menor, sin tipear nada, y muestra el nombre del tipo.
+38. **Nunca sin precio.** Cuando el tipo no tiene precio vigente para ese producto en la fecha de la venta, el cliente no tiene tipo o la venta no tiene cliente, la línea se cotiza como antes: el menor entre el List price y el Bulk price que aplica.
+39. **Lo registrado no se mueve.** Una venta registrada conserva su precio, su regla y la copia del nombre del tipo, pase lo que pase después con el tipo, su nombre o sus precios. Las líneas guardadas antes con la regla VIP siguen diciendo "VIP".
 
 Criterios de éxito, en pantalla:
 
@@ -108,7 +119,7 @@ Criterios de éxito, Sale bill:
 
 20. **Un toque, sin tipear.** En el detalle de la venta, un toque en el teléfono abre la hoja de compartir del teléfono con el Sale bill listo o lo deja en el portapapeles; elegir el chat y enviar son pasos del propio teléfono. Si compartir o copiar falla, la vendedora igual obtiene el texto sin tipear.
 21. **Las cifras coinciden con la app.** El total, el estado de pago, lo que todavía se debe y el Balance del Sale bill coinciden siempre con el detalle de la venta, porque salen de la misma pasada de **Settlement** en la misma respuesta. Evidencia: el juego de referencia escrito a mano, 0 diferencias.
-22. **No se filtra nada privado.** Ni la nota, ni el nombre del cliente, ni las palabras VIP, special o list, ni ids ni links; una línea VIP o con Special price se lee como una línea de lista. El Sale bill no agrega formato propio, y los nombres que tipeó la vendedora (el del negocio y los de sus productos) salen exactamente como se tipearon. Evidencia: el test de filtraciones.
+22. **No se filtra nada privado.** Ni la nota, ni el nombre del cliente, ni el nombre de su Customer type, ni las palabras VIP, special o list, ni ids ni links; una línea VIP, una cotizada por un Customer type o una con Special price se lee como una línea de lista. El Sale bill no agrega formato propio, y los nombres que tipeó la vendedora (el del negocio y los de sus productos) salen exactamente como se tipearon. Evidencia: el test de filtraciones.
 23. **Se cumple Assume nothing.** Cada palabra fija y la unidad salen del **Copy module**; la unidad es una sola entrada, "g" por defecto, hasta #318. Evidencia: con la unidad puesta en "u", el texto dice "3,5 u" y "/u".
 
 Criterios de éxito, Sale number:
@@ -140,25 +151,29 @@ Criterios de éxito, Sale number:
   - Una línea puede marcarse opcionalmente como regalo o llevar un Special price.
   - El mismo producto puede aparecer en varias líneas de una venta, cada una cotizada por su lado, sin unirlas ni avisar.
 - **Stock**: registrar una venta o un regalo nunca se rechaza por stock (ADR-0009). Sus gramos salen del stock de su producto, que puede quedar negativo.
-- **Cotización**: se calcula cuando se registra la venta y se guarda en la línea con su Pricing rule (ADR-0003). Usa el Current price del producto en la fecha de la venta y las Pricing settings del negocio al momento de guardar. Gana el primer paso que aplica:
+- **Cotización**: se calcula cuando se registra la venta y se guarda en la línea con su Pricing rule (ADR-0003). Usa el Current price del producto en la fecha de la venta, el Customer-type price vigente en esa fecha y las Pricing settings del negocio al momento de guardar. Gana el primer paso que aplica:
   1. **Gift**: $0.
   2. **Special price**: el total tipeado para la línea, en pesos enteros y por encima de $0.
   3. **Si no, el menor precio por gramo** entre las reglas que aplican a la línea:
      - **List price**: aplica siempre.
      - **Bulk price**: Bulk price está encendido, el Current price tiene Bulk price y los gramos de la línea están en el **Bulk minimum** o por encima. El mínimo se mide por línea, nunca entre líneas.
-     - **VIP**: VIP customers está encendido, el cliente es VIP al momento de registrar y el Current price tiene VIP price.
+     - **Customer-type price**: Customer types está encendido, la venta tiene cliente, el cliente tiene un Customer type al momento de guardar y ese tipo tiene un Customer-type price vigente para el producto en la fecha de la venta. Cuál rige en una fecha lo dice pricing-settings.md ("Los precios por Customer type"): la fila más reciente en esa fecha o antes, y una fila guardada con una Price entry rige solo mientras esa Price entry es el Current price.
+  - **Ejemplo**: List price $12.000, Bulk price $10.000 desde 100 g y un Customer-type price de $9.000: una línea de 50 g y una de 150 g se cotizan las dos a $9.000 por gramo. Con un Customer-type price de $11.000, la de 50 g va a $11.000 y la de 150 g queda en el Bulk price de $10.000.
   - **Cómo se nombra la regla**:
-    - Si VIP y bulk empatan, la línea se guarda como VIP.
+    - Si el Customer-type price y el Bulk price empatan, la línea se guarda con la regla del Customer type.
     - Si no, nombra la línea la regla estrictamente menor.
-    - Un Bulk price y un VIP price siempre están por debajo de lista, así que lista aplica solo cuando no aplica ninguna de las otras.
-  - **A un cliente VIP se lo cotiza como a cualquiera** cuando el precio de ese día no tiene VIP price. Un VIP price por encima del Bulk price, en una línea en el Bulk minimum o por encima, da el Bulk price, guardado como "bulk".
+    - Un Bulk price siempre está por debajo de lista, y un Customer-type price se valida por debajo del List price de su propia fecha, así que lista aplica solo cuando no aplica ninguna de las otras. Si un List price posterior baja hasta un Customer-type price o por debajo, la línea toma el List price y se guarda como lista, sin aviso.
+  - **Qué guarda una línea cotizada por un Customer type**: la regla del Customer type, el tipo y una copia de su nombre tal como estaba al guardar. La copia nunca sigue un renombre ni el borrado del tipo, y la línea nunca se vuelve a cotizar.
+  - **Las líneas guardadas antes con la regla VIP** la conservan: `vip` sigue siendo una regla guardada válida, que se lee como el Customer type VIP de un negocio existente, y se muestra "VIP". Una línea nueva de un cliente del VIP type se guarda con la regla del Customer type y la copia de su nombre.
+  - **A un cliente con tipo se lo cotiza como a cualquiera** cuando su tipo no tiene Customer-type price vigente para ese producto en esa fecha. Un Customer-type price por encima del Bulk price, en una línea en el Bulk minimum o por encima, da el Bulk price, guardado como "bulk".
+  - **Sin cliente, sin tipo o con Customer types apagado**, la línea se cotiza solo con lista y Bulk price; con Customer types apagado, los Customer-type prices se ignoran por completo y nada guardado se borra.
   - **Con las dos llaves apagadas**, toda línea que no es regalo ni Special price toma el List price.
   - **Se rechaza**:
     - una línea marcada como regalo y con Special price a la vez;
     - una línea sin Special price cuyo producto no tiene Current price ese día.
   - **Llaves cambiadas con un formulario abierto**: una venta se cotiza con las llaves vigentes al guardarla, igual que con los Current prices. El guardado pasa sin rechazo y sin aviso.
 - **Total de la línea**:
-  - Para líneas de lista, Bulk price y VIP: gramos × el precio por gramo guardado, redondeado al peso entero más cercano, con la mitad exacta hacia arriba. Por ejemplo, 1,55 g × $10 001 = $15 501,55 → $15 502, y $7 502,50 → $7 503.
+  - Para líneas de lista, Bulk price, Customer type y VIP: gramos × el precio por gramo guardado, redondeado al peso entero más cercano, con la mitad exacta hacia arriba. Por ejemplo, 1,55 g × $10 001 = $15 501,55 → $15 502, y $7 502,50 → $7 503.
   - Una línea de regalo es $0. Una línea con Special price es su total tipeado, así que no necesita redondeo.
   - El total de una línea nunca cambia una vez registrada la venta.
 - **Costo de mercadería de la línea**:
@@ -182,7 +197,7 @@ Criterios de éxito, Sale number:
 - **Asignar un cliente después**:
   - Solo a una venta que no tiene, y solo un cliente del mismo negocio.
   - Una venta que ya tiene cliente se rechaza.
-  - Las líneas guardadas nunca se vuelven a cotizar, y el Sale number no cambia.
+  - Las líneas guardadas nunca se vuelven a cotizar, aunque el cliente tenga un Customer type con precio, y el Sale number no cambia.
 - **Nota**:
   - Opcional. Se recorta y admite hasta 200 caracteres; vacía después de recortar significa que no hay.
   - No es única y nunca se busca, se loguea ni se repite en errores.
@@ -192,13 +207,13 @@ Criterios de éxito, Sale number:
   - Orden: la fecha más nueva primero, después la registrada más recientemente primero.
   - Cada venta dice si sigue debiendo, calculado en vivo por pagos.
   - No muestra el Sale number.
-- **Ver una**: el Sale number, fecha, cliente o ninguno, envío, nota, cómo se pagó, total, y de cada línea el producto, los gramos, el precio por gramo guardado, la Pricing rule, el total de la línea y el Cost of goods sold (monto costeado y gramos pendientes). Trae también el Sale bill (abajo), o ninguno.
+- **Ver una**: el Sale number, fecha, cliente o ninguno, envío, nota, cómo se pagó, total, y de cada línea el producto, los gramos, el precio por gramo guardado, la Pricing rule (con la copia del nombre del tipo cuando la regla es la de un Customer type), el total de la línea y el Cost of goods sold (monto costeado y gramos pendientes). Trae también el Sale bill (abajo), o ninguno.
 - **Sale bill** (los hechos detrás del texto compartido):
-  - El nombre del negocio, el Sale number, la fecha, de cada línea el producto, la cantidad, el monto y la regla (bulk, gift o ninguna: lista, VIP y Special price se leen todas como ninguna), con el precio unitario en las líneas con Bulk price; el Shipping charged; el total; el estado de pago (cash, transfer, paid, owed, none) con lo que todavía se debe de esta venta; y el Balance del cliente, o ninguno cuando la venta no tiene cliente.
+  - El nombre del negocio, el Sale number, la fecha, de cada línea el producto, la cantidad, el monto y la regla (bulk, gift o ninguna: lista, VIP, Customer type y Special price se leen todas como ninguna), con el precio unitario en las líneas con Bulk price; el Shipping charged; el total; el estado de pago (cash, transfer, paid, owed, none) con lo que todavía se debe de esta venta; y el Balance del cliente, o ninguno cuando la venta no tiene cliente.
   - El nombre del negocio y los nombres de los productos son datos de la vendedora, y viajan exactamente como están guardados: nunca se escapan, se recortan ni se reescriben.
   - El estado de pago, lo que todavía se debe y el Balance salen de la única pasada de Settlement detrás del "still owing" del detalle, en la misma respuesta; nada vuelve a calcular el Settlement en otro lado.
   - El Balance es la cuenta entera del cliente al momento de leer el detalle, no en la fecha de la venta.
-  - Es cerrado: no tiene campo para la nota, el nombre o el id del cliente, ningún id de venta o de línea, la marca VIP, una Pricing rule que no sea bulk o gift, costo, margen ni link. El Sale number no es un id: es el número propio del negocio. El negocio sale solo de la sesión.
+  - Es cerrado: no tiene campo para la nota, el nombre o el id del cliente, ningún id de venta o de línea, la marca VIP, el Customer type ni su nombre, una Pricing rule que no sea bulk o gift, costo, margen ni link. El Sale number no es un id: es el número propio del negocio. El negocio sale solo de la sesión.
   - Cuando no se puede calcular, el detalle responde sin Sale bill y el resto del detalle no se ve afectado; el error nombra la regla incumplida y ninguna venta, cliente ni monto.
   - No se guarda ni se loguea nada de él.
 - **Borrar**:
@@ -226,6 +241,7 @@ Criterios de éxito, Sale number:
   - El Sale number es propio de cada negocio: dos negocios empiezan los dos en 1, y ni el número, ni el texto compartido, ni un error dejan que uno sepa cuántas ventas tiene otro.
   - La venta de otro negocio responde 404 al leer, asignar y borrar.
   - Las listas no muestran ninguna venta de otro negocio.
+  - Un Customer-type price de otro negocio nunca cotiza una línea.
   - Las rutas están en `tests/test_business_isolation.py`.
 
 ### En pantalla: New sale (`NuevaVenta`, `NuevaVentaCompu`)
@@ -245,10 +261,10 @@ Criterios de éxito, Sale number:
 - **No hay campo de Sale number**: el número lo asigna la app al guardar, nunca lo tipea la vendedora.
 - **El total de la venta** se muestra con los gramos vendidos y los gramos regalados.
 - **Vista previa en vivo**:
-  - Cada línea muestra su precio por gramo, su insignia de regla (lista, Bulk price, VIP, regalo, especial) y su total. El total de la venta se actualiza mientras la vendedora escribe.
-  - Aplica exactamente las reglas de cotización, redondeo y total de arriba, con las Pricing settings del negocio.
+  - Cada línea muestra su precio por gramo, su insignia de regla (lista, Bulk price, el nombre del Customer type, regalo, especial) y su total. El total de la venta se actualiza mientras la vendedora escribe.
+  - Aplica exactamente las reglas de cotización, redondeo y total de arriba, con las Pricing settings del negocio, el Customer type del cliente elegido y los Customer-type prices de la fecha.
   - Muestra solo reglas que pueden aplicar ahora: con una regla apagada, su insignia nunca aparece.
-  - Los precios y las Pricing settings se cargan al abrir el formulario y otra vez al cambiar la fecha; un cambio de fecha vuelve a cotizar cada línea con los Current prices de ese día.
+  - Los precios (los Customer-type prices incluidos) y las Pricing settings se cargan al abrir el formulario y otra vez al cambiar la fecha; un cambio de fecha vuelve a cotizar cada línea con los Current prices de ese día. Elegir otro cliente vuelve a cotizar cada línea con su tipo.
   - Los precios nunca se vuelven a consultar en vivo mientras la vendedora escribe.
 - **Esperando precios**: mientras el formulario espera los precios al abrirse, muestra el estado de carga compartido (accounts.md, `Estados`). Al cambiar la fecha, el formulario queda en pantalla con todo lo tipeado; el precio, la regla y el total de cada línea muestran el estado de carga, nunca una cifra de relleno, hasta que llegan los precios de ese día, y entonces se vuelve a cotizar cada línea. Un cambio de fecha con la lista de productos de una línea abierta la deja abierta.
 - **El producto de una línea** (`NuevaVentaLinea`, desde la parte 4 de GH-581; el control está en selector.md):
@@ -288,7 +304,7 @@ Criterios de éxito, Sale number:
   - Mientras el guardado está en curso, las líneas y "Add another product" quedan `inert`: no se puede abrir ninguna línea ni la lista de su producto, así que la respuesta del guardado nunca desmonta una lista abierta. El estado de carga de "Save sale" no cambia.
   - Un rechazo se muestra sobre su campo y conserva todo lo tipeado. Cuando un rechazo lleva el foco a un campo de una línea, se aplica una sola vez, después de que se levanta ese bloqueo; un pedido de foco ya servido o viejo nunca vuelve a llevarse el foco.
   - Un precio que borró una socia antes de guardar: el guardado se rechaza y la línea muestra el mensaje de sin precio.
-  - Un precio o las Pricing settings cambiados antes de guardar: el guardado pasa y el detalle muestra lo que se guardó.
+  - Un precio, un Customer-type price, el tipo del cliente o las Pricing settings cambiados antes de guardar: el guardado pasa y el detalle muestra lo que se guardó.
   - Un cliente o un producto que no se encuentran al guardar muestran la línea genérica y conservan el formulario.
 - **Salir**:
   - "Close", o el gesto de volver del sistema, después de haber cargado una línea, un cliente, envío o una nota, pregunta "Discard the sale?", con "No, keep entering" y "Yes, discard it".
@@ -317,7 +333,7 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
 - **Encabezado**: fijo, nunca se va al desplazar; "Close" y la fecha. El campo de fecha tiene al menos 16 px y al menos 44 px de alto.
 - **Cuerpo**: se desplaza entre encabezado y pie, en este orden: el cliente, las líneas, el Shipping charged, la nota y, al final, cómo se pagó (Paid · Owing y, bajo Paid, el campo "Payment method"). Se desplaza de modo que cómo se pagó, el campo del medio con su frase de rechazo, y la línea "To leave it owing, pick a customer" debajo, quedan enteros a la vista por encima del pie; esa línea tiene el margen lateral normal de la pantalla.
 - **Pie**: fijo al alcance del pulgar, por encima del teclado y del indicador de inicio. Contiene el total de la venta, los gramos vendidos y regalados en una línea compacta, y "Save sale". Con el teclado abierto se achica al total y el botón y sigue visible. Su aspecto exacto lo decide diseño.
-- **Una línea**: un único diseño fijo en todo ancho de teléfono de 320 a 430 px y con el texto al 130 %, nunca elegido midiendo la pantalla. Primera fila: el producto (el campo del Selector, con la etiqueta "Product", el valor y un chevron) y los gramos. Debajo: "Gift", una fila con interruptor de al menos 44 px de alto, y "Special price". Debajo de eso: el precio por gramo, la insignia de regla y el total de la línea.
+- **Una línea**: un único diseño fijo en todo ancho de teléfono de 320 a 430 px y con el texto al 130 %, nunca elegido midiendo la pantalla. Primera fila: el producto (el campo del Selector, con la etiqueta "Product", el valor y un chevron) y los gramos. Debajo: "Gift", una fila con interruptor de al menos 44 px de alto, y "Special price". Debajo de eso: el precio por gramo, la insignia de regla y el total de la línea. La insignia con el nombre de un Customer type nunca desborda: un nombre largo se corta dentro de la insignia, nunca empuja el total fuera de la línea.
 - **Ningún campo desborda ni queda recortado** a 320 px ni con el texto al 130 %.
 - **Objetivos táctiles**: las opciones Paid · Owing, "Add another product" y los botones de diálogo miden al menos 44 px de alto; todo campo tiene al menos 16 px. La lista de productos de una línea y la de medios siguen las medidas del Selector (filas y búsqueda de 44 px, texto de 16 px).
 - **Teclados**: gramos `inputmode="decimal"`; pesos (envío, Special price) `inputmode="numeric"`; los campos de una línea llevan `enterkeyhint` para que la tecla de acción del teclado avance entre ellos.
@@ -348,7 +364,7 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
   - No muestra el Sale number.
 - **La insignia VIP muestra el estado VIP actual del cliente**, no cómo se cotizó la venta.
   - La insignia de regla de cada línea en el detalle es el registro de cómo se cotizó.
-  - Un cliente que deja de ser VIP pierde la insignia en ventas pasadas, mientras sus líneas siguen diciendo "VIP". Eso no es volver a cotizar (ADR-0003).
+  - Un cliente que deja de ser VIP pierde la insignia en ventas pasadas, mientras sus líneas siguen diciendo "VIP" o el nombre del tipo que las cotizó. Eso no es volver a cotizar (ADR-0003).
   - Mientras VIP customers está apagado, ninguna fila muestra la insignia, y las marcas de los clientes quedan guardadas (customers.md).
 - **Carga**: antes de su primera respuesta, la lista muestra el estado de carga compartido, nunca una pantalla en blanco.
 - **En el teléfono** (`VentasCompu` sin cambios):
@@ -367,14 +383,14 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
   - el total;
   - de cada línea el producto, los gramos, el precio por gramo, la insignia de regla y el total de la línea;
   - el envío, la nota, cómo se pagó, y el cliente o "No customer".
-- **Las insignias de regla registradas** ("VIP", "bulk") muestran siempre lo que se registró, diga lo que diga hoy las Pricing settings. Son historia (ADR-0003).
+- **Las insignias de regla registradas** ("VIP", "bulk", y el nombre del Customer type tal como estaba al guardar) muestran siempre lo que se registró, diga lo que diga hoy las Pricing settings, y aunque el tipo se haya renombrado o eliminado. Son historia (ADR-0003).
 - **Compartir el Sale bill** (Share / Copy): ver "Sale bill" abajo.
 - **Assign customer**:
   - Se muestra solo cuando la venta no tiene cliente, y abre Pick a customer sin "No customer".
   - El gesto de volver del sistema con su hoja abierta hace lo que hace el "Close" propio de la hoja: cierra solo la hoja y no pregunta nada.
   - Si sale bien, el aviso "Customer assigned".
   - Si alguien asignó uno antes, "This sale already has a customer." y el detalle se actualiza.
-  - Después de asignar, el detalle se vuelve a leer del servidor, para que el Sale bill traiga el Balance del cliente recién asignado; nada arma el detalle a mano en el front. El Sale number no cambia.
+  - Después de asignar, el detalle se vuelve a leer del servidor, para que el Sale bill traiga el Balance del cliente recién asignado; nada arma el detalle a mano en el front. El Sale number no cambia, y las líneas conservan su precio y su regla.
 - **Delete sale**:
   - En el teléfono, el control y los botones de su confirmación miden al menos 44 px de alto.
   - Se confirma con `Before deleting`, que nombra la fecha, el monto y el total de gramos de sus líneas que vuelven al stock, regalos incluidos. Por ejemplo: "Delete the $ 11.000 sale from 02/10? 4 g go back to stock." Los botones son "No, keep it / Yes, delete it".
@@ -392,7 +408,7 @@ Un Sale bill corto en texto plano de una venta, que la vendedora le manda al cli
 **El texto**, en orden (las palabras fijas son las de la app, en inglés):
 1. El nombre del negocio, y en una línea nueva `Sale #N · dd/mm` (el Sale number y la fecha, sin año). Una línea en blanco.
 2. Una línea por cada línea de la venta:
-   - lista, VIP o Special price: `{product} {quantity} {unit} · {amount}`;
+   - lista, VIP, Customer type o Special price: `{product} {quantity} {unit} · {amount}`;
    - Bulk price: `{product} {quantity} {unit} · bulk price {unitPrice}/{unit} · {amount}`;
    - regalo: `{product} {quantity} {unit} · Gift · $ 0`.
 3. `Shipping · {amount}`, solo cuando el Shipping charged está por encima de $0.
@@ -413,7 +429,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 
 **La entrada de unidad**: la unidad es una sola entrada con clave del Copy module, "g", hasta que #318 la haga configurable. Cada palabra fija del Sale bill vive en el Copy module (grupo `saleBill`), "Sale #N" incluido; ningún módulo del Sale bill tiene un literal "g" ni llama al formateador de gramos.
 
-**Nunca en el Sale bill**: la nota, el nombre del cliente, las palabras VIP, special o list, ids (el `sale.id` incluido) ni links.
+**Nunca en el Sale bill**: la nota, el nombre del cliente, el nombre de su Customer type, las palabras VIP, special o list, ids (el `sale.id` incluido) ni links.
 
 **Sin formato propio**: ninguna palabra fija, separador ni formato del Sale bill lleva `*`, `_` ni comilla invertida. El texto que tipeó la vendedora (el nombre del negocio y los de los productos) sale exactamente como se tipeó, esos caracteres incluidos: nunca se escapa, se recorta ni se reemplaza, para que el cliente lea el mismo nombre que ve la vendedora. Cómo lo muestra una app de chat es asunto del chat; escapar para una app fijaría un canal (Assume nothing).
 
@@ -446,39 +462,48 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 
 ## Métricas
 
-- **Matriz de cotización**: 100 % pasando. (Criterios 3, 17, 18) Cubre:
-  - las dos llaves apagadas, solo Bulk price encendida, solo VIP encendida y las dos encendidas;
+- **Matriz de cotización**: 100 % pasando. (Criterios 3, 17, 18, 37, 38) Cubre:
+  - las dos llaves apagadas, solo Bulk price encendida, solo Customer types encendida y las dos encendidas;
   - regalo y Special price primero, y el orden de los pasos;
   - la regla del menor precio por debajo, en y por encima del Bulk minimum;
-  - el empate VIP–bulk guardado como "VIP";
-  - un VIP price por encima del Bulk price, guardado como "bulk" en el mínimo;
-  - un producto sin VIP price, para un VIP;
+  - el empate Customer-type price–bulk guardado con la regla del Customer type;
+  - un Customer-type price por encima del Bulk price, guardado como "bulk" en el mínimo;
+  - un List price posterior igual o menor que un Customer-type price, guardado como "lista";
+  - un tipo sin precio vigente para el producto, un cliente sin tipo y una venta sin cliente, cotizados como antes;
+  - el Customer-type price vigente en la fecha de la venta, para una venta con fecha anterior;
+  - un Customer-type price atado a una Price entry que deja de regir desde una Price entry posterior sin precio para ese tipo;
   - Bulk price medido por línea;
   - sin precio ese día, con y sin Special price;
   - regalo más Special price rechazado;
   - redondeo por debajo de ,50, exactamente ,50 y por encima de ,50;
   - una venta de varias líneas cuyo total es la suma de las líneas redondeadas.
-- **Precio guardado inmutable**: 100 % pasando. (Criterio 3) El precio, la regla y el total de las líneas existentes no cambian después de:
+- **Líneas cotizadas por un Customer type (criterio 37)**: la cantidad y la proporción de líneas nuevas con la regla del Customer type, entre las líneas de clientes con tipo, por negocio y período, leídas de lo guardado en cada línea.
+- **Special price en clientes con tipo (criterio 37, el atajo que se saca)**: la proporción de líneas de clientes con tipo cotizadas con Special price; tiene que bajar cuando los tipos tienen precio. En esta parte solo se mueve por el VIP type.
+- **Clientes con tipo cotizados como antes (criterio 38)**: las líneas de clientes con tipo guardadas como lista o bulk porque el tipo no tiene precio vigente; muestra lo que falta cargar.
+- **Precio guardado inmutable**: 100 % pasando. (Criterios 3, 39) El precio, la regla, la copia del nombre del tipo y el total de las líneas existentes no cambian después de:
   - agregar o borrar una Price entry, un VIP price incluido;
+  - agregar o borrar un Customer-type price;
+  - renombrar o eliminar un Customer type, o cambiar el tipo de un cliente;
   - cambiar cualquiera de las llaves de precio;
-  - prender o apagar VIP;
+  - prender o apagar Customer types;
   - asignar un cliente;
   - agregar, editar o borrar una Stock entry;
   - registrar o borrar un pago.
-- **Sin sorpresa para los VIP existentes (criterio 19)**: después de la migración, para cada cliente VIP existente, el precio, la regla y el total de una venta son iguales a los de antes, para el mismo producto, día y gramos. 0 diferencias.
+- **Sin sorpresa para los VIP existentes (criterio 19)**: después de la migración, para cada cliente del VIP type, el precio por gramo, el total y la insignia mostrada de una venta son iguales a los de antes, para el mismo producto, día y gramos: 0 diferencias. Un test cubre también una Price entry con VIP price seguida de otra sin VIP price: desde la segunda, el cliente paga lista o bulk, como antes. Las líneas viejas con la regla `vip` siguen diciendo "VIP".
 - **Una venta por pedido**: una venta de varios productos es una venta, con total = líneas redondeadas + envío una vez, por la API y por el formulario. (Criterios 2, 8)
 - **Todo o nada**: una venta rechazada deja 0 filas nuevas en ventas, líneas y pagos, y no consume Sale number. (Criterio 4)
 - **Debiendo sin cliente**: 0 guardadas; el dominio lo rechaza y un test lo cubre. (Criterio 4)
 - **Borrar devuelve gramos**: después de borrar una venta, el stock de sus productos sube exactamente los gramos de sus líneas, y la respuesta los nombra. La confirmación de Delete sale nombra los gramos, y el aviso de Undo dice que vuelven.
-- **Cobertura de aislamiento**: cada ruta de ventas está en el barrido y responde 404 o vacío desde otro negocio, incluidas referencias a un cliente o un producto de otro negocio. En pantalla, la venta de otro negocio abierta por id muestra "That is gone." (Criterio 5)
+- **Cobertura de aislamiento**: cada ruta de ventas está en el barrido y responde 404 o vacío desde otro negocio, incluidas referencias a un cliente o un producto de otro negocio; un Customer-type price de otro negocio nunca cotiza una línea. En pantalla, la venta de otro negocio abierta por id muestra "That is gone." (Criterio 5)
 - **Sin eco**: (Criterio 5)
   - ningún cuerpo de rechazo ni línea de log contiene la nota, el nombre de un cliente ni un monto enviado;
   - después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen ninguno.
 - **Tiempo de registro**: la corrida del front registra una venta desde un viewport de teléfono con un cliente existente, uno nuevo (con o sin Phone number) o ninguno (`web/e2e/sales.spec.ts`, `web/e2e/ventasTelefono.spec.ts`), y el presupuesto de toques se cumple (`web/e2e/tapBudget.spec.ts`); ningún test mide su duración. Registrar responde en menos de 300 ms con unas pocas docenas de productos y clientes. (Criterios 1, 14, 33) Desde la parte 4 de GH-581, esas corridas eligen el producto de cada línea con el Selector (`web/e2e/helpers/sale.ts`), en el teléfono y en la computadora; desde la parte 5, eligen el medio con Paid, después el campo y después la opción (`web/e2e/helpers/paymentMethod.ts`), y el presupuesto de toques crece como máximo en ese paso. Los controles del estado de guardado en curso siguen como estaban.
 - **Vista previa = guardado**: (Criterio 6)
-  - la vista previa del front pasa la misma matriz de cotización que el dominio, para cada combinación de llaves;
+  - la vista previa del front pasa la misma matriz de cotización que el dominio, para cada combinación de llaves, con y sin Customer type con precio;
   - la corrida de punta a punta compara la vista previa con el detalle guardado: 0 diferencias.
 - **Llaves en pantalla (criterio 17)**: tests del front muestran, para cada llave apagada, ninguna insignia ni campo de esa regla en New sale, ninguna insignia VIP en Sales y ninguna marca VIP en Pick a customer, mientras el detalle de una venta conserva sus insignias registradas.
+- **Insignia del tipo (criterios 37, 39)**: tests del front muestran el nombre del Customer type en la insignia de la vista previa y en el detalle; después de renombrar o eliminar el tipo, el detalle sigue mostrando el nombre guardado; una insignia con un nombre largo no desborda a 320 px ni con el texto al 130 %.
 - **Detectado antes de guardar**: (Criterio 7)
   - Owing deshabilitado sin cliente, y sacar el cliente reinicia cómo se pagó;
   - una línea sin precio muestra su mensaje antes de guardar;
@@ -513,9 +538,9 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - **Medio, volver y Escape (criterio 35)**: con la lista de medios abierta, volver o "Close" cierran solo la lista y "Discard the sale?" no aparece; en la computadora, Escape cierra solo el desplegable.
 - **Medio, nada se pierde (criterio 36)**: sin cliente, Owing está deshabilitado con "To leave it owing, pick a customer"; los tests existentes de Owing pasan con sus aserciones sin cambios; el `FixedSet` de Paid · Owing declara su motivo y ningún medio está en `fixedSets.ts`.
 - **Chequeo en el teléfono, medio (criterio 36)**: `new-sale/method-selector-open` pasa el chequeo `mobile` sin ningún infractor nuevo, y no queda ninguna entrada `radio:Cash`, `radio:Transfer` ni `radio:Owing` en `touch-action.json`.
-- **Juego de referencia del Sale bill (criterio 21)**: `saleBill.cases.json`, con los textos esperados escritos a mano contra esta definición, nunca generados; 0 diferencias. Casos: con y sin línea con Bulk price; una línea VIP y una con Special price que se leen como líneas de lista; un regalo; una venta de $0 solo de regalos con Balance distinto de cero; efectivo, transferencia, pagada después, debiendo en parte, debiendo entera; un Balance, un Credit y un Balance de exactamente $0; sin cliente; con y sin envío; una línea y varias líneas; cantidades 0,01, 0,1, 1,05 y 1000; un producto cuyo nombre tiene `*`, `_` y una comilla invertida, mostrado sin cambios; Sale #1 y un Sale number de cuatro cifras sin separador de miles, en la línea `Sale #N · dd/mm`.
+- **Juego de referencia del Sale bill (criterio 21)**: `saleBill.cases.json`, con los textos esperados escritos a mano contra esta definición, nunca generados; 0 diferencias. Casos: con y sin línea con Bulk price; una línea VIP, una cotizada por un Customer type y una con Special price que se leen como líneas de lista; un regalo; una venta de $0 solo de regalos con Balance distinto de cero; efectivo, transferencia, pagada después, debiendo en parte, debiendo entera; un Balance, un Credit y un Balance de exactamente $0; sin cliente; con y sin envío; una línea y varias líneas; cantidades 0,01, 0,1, 1,05 y 1000; un producto cuyo nombre tiene `*`, `_` y una comilla invertida, mostrado sin cambios; Sale #1 y un Sale number de cuatro cifras sin separador de miles, en la línea `Sale #N · dd/mm`.
 - **Formato de cantidades (criterio 21)**: `formatQuantity` da 1 → "0,01", 10 → "0,1", 105 → "1,05", 350 → "3,5", 100000 → "1.000" a partir de centésimos enteros; los tests existentes de `formatGrams` pasan sin editarlos.
-- **Test de filtraciones del Sale bill (criterio 22)**: con nombres de negocio y de productos sin `*`, `_` ni comillas invertidas, ningún texto de los casos contiene la nota, el nombre del cliente, "VIP", "special", "list", un id (el `sale.id` incluido), "http", `*`, `_` ni una comilla invertida; el esquema del Sale bill en la API es cerrado y no tiene ningún campo así.
+- **Test de filtraciones del Sale bill (criterio 22)**: con nombres de negocio y de productos sin `*`, `_` ni comillas invertidas, ningún texto de los casos contiene la nota, el nombre del cliente, el nombre de su Customer type, "VIP", "special", "list", un id (el `sale.id` incluido), "http", `*`, `_` ni una comilla invertida; el esquema del Sale bill en la API es cerrado y no tiene ningún campo así.
 - **Contrato cumplido**: un vitest lee los esquemas `SaleBillOut` de `tests/fixtures/openapi_snapshot.json` y verifica que sus nombres de propiedad y sus enums son iguales a las listas de claves del front, el Sale number incluido; el front y la API nunca se separan.
 - **Unidad y palabras del Copy module (criterio 23)**: con la entrada de unidad puesta en "u", el texto dice "3,5 u" y "/u"; una guarda no encuentra ningún literal "g" ni llamada a `formatGrams` en ningún fuente `saleBill*`; `en-XA` está regenerado y los tests de vigencia de textos pasan.
 - **Un toque (criterio 20)**: tests del front (fetch simulado) muestran que Share llama a compartir con el texto del Sale bill; con `isSecureContext=false`, `execCommand('copy')` se llama de forma sincrónica justo después del clic y aparece el aviso "Bill copied"; cancelar no muestra nada; si compartir falla aparece su línea con el ícono de atención y la etiqueta pasa a Copy; si copiar falla aparece su línea y el bloque seleccionable; `bill` nulo oculta el botón; cargando conserva la etiqueta, deshabilitado y ocupado, sin dígitos ni `$`. El proyecto móvil recorre el detalle de la venta por su fila del registro, cargado y retenido, y pasa sin ningún infractor nuevo. No se agrega ningún `WalkState` para los estados de copia fallida ni de carga: un estado nuevo en la ruta de la venta trae los infractores que esa ruta ya tiene bajo un nombre de pantalla nuevo, y las listas de infractores no pueden aceptarlo (`gate.md`). Los dos estados los cubren los tests del front de arriba.
@@ -541,6 +566,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - Construir la confirmación de cambios sin guardar de New customer (customers.md): su propio issue, con sus propios textos, para Customers y Pick a customer por igual.
 - Otras reglas VIP (un porcentaje sobre lista); promociones de precio por fecha.
 - Rechazar o avisar en una venta porque las Pricing settings cambiaron en medio de la venta.
+- Para los precios por Customer type: una pantalla para fijarlos o gestionarlos fuera del campo "VIP price" de una Price entry (la parte de la pantalla de precios por tipo); un aviso cuando un List price baja hasta un Customer-type price; volver a cotizar líneas registradas.
 - Para el Sale bill: un año en la fecha; un paso de vista previa; un estado de "ya compartido"; un recibo de pago; elegir un canal o enviar desde la app; una factura; escapar o reescribir los nombres que tipeó la vendedora para el formato de alguna app de chat; hacer configurable la unidad (#318); cualquier otro idioma (#317).
 - Para el Sale number: buscar o filtrar ventas por número; mostrarlo en Sales, en la historia del cliente, en Home o en Analysis; el resto del rediseño del detalle de la venta (#530) y la línea "por Telegram" del dibujo (un hallazgo aparte, y un canal choca con Assume nothing); el `sale.id` global que ya lleva el camino del detalle (`/sales/{sale_id}`), un hallazgo aparte con su propio issue.
 - Para el producto de una línea: crear un producto desde la línea (se crea en la pestaña Products); cambiar el texto de "elegir un producto", el nombre accesible, el mensaje de conjunto vacío o el rechazo; abrir la lista sola al agregar una línea; saltar solo a los gramos después de elegir; dibujar la lista abierta en `pantallas/`.
@@ -558,13 +584,6 @@ Decidido en docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-what
 
 - La cantidad de una línea va a estar en la unidad de su producto, guardada como un número entero de centésimos sea cual sea la unidad; los 0 a 2 decimales de la unidad solo van a validar lo tipeado y decidir cómo se muestra. El pie y el total de la venta van a mostrar la cantidad vendida y la cantidad regalada como un monto por unidad, cada uno con su etiqueta, nunca sumados entre unidades.
 - Va a reemplazar: "Tiene un producto del mismo negocio y gramos por encima de cero, con a lo sumo dos decimales, sea cual sea su regla." y "**El total de la venta** se muestra con los gramos vendidos y los gramos regalados."
-
-### Customer type y Pricing rule
-
-Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; lo entrega la parte customer-type prices.
-
-- Los Customer types van a reemplazar la marca VIP única. Las reglas de una línea van a ser lista, Bulk price o el precio del Customer type, a partir de filas con fecha de vigencia; Bulk price y los precios por Customer type van a seguir pudiéndose prender y apagar por negocio. Las columnas `vip` y `vip_price` van a quedar congeladas en su lugar, así una venta conserva el precio que cobró.
-- Va a reemplazar: "**VIP**: VIP customers está encendido, el cliente es VIP al momento de registrar y el Current price tiene VIP price." y la regla de nombre "Si VIP y bulk empatan, la línea se guarda como VIP."
 
 ### Money scale
 
