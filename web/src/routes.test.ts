@@ -486,6 +486,35 @@ describe("the registry against screens.json", () => {
     expect(refused).toContain(`${routes.SALES}: no registry row`);
   });
 
+  test("a row that leaves out or misstates computer_kind is refused on the computer side", () => {
+    const row = {
+      path: routes.EXPENSES,
+      kind: "card",
+      parent: routes.ANALYSIS,
+      computerParent: null,
+    };
+    const leftOut = registryDisagreements(
+      [{ ...row, computerKind: null }],
+      SCREENS,
+    );
+    expect(leftOut).toContain(`${routes.EXPENSES}: kind root on computer is not card`);
+    expect(leftOut).toContain(
+      `${routes.EXPENSES}: parent none on computer is not ${routes.ANALYSIS}`,
+    );
+
+    const misstated = registryDisagreements(
+      [{ ...row, computerKind: "card" }],
+      SCREENS,
+    );
+    expect(misstated).toContain(`${routes.EXPENSES}: kind root on computer is not card`);
+
+    expect(
+      registryDisagreements([{ ...row, computerKind: "root" }], SCREENS).filter((line) =>
+        line.startsWith(`${routes.EXPENSES}:`),
+      ),
+    ).toEqual([]);
+  });
+
   test("every Configuración group is a form, in the front and in the design registry", () => {
     const groups = SCREENS.filter(
       (s) => s.path.startsWith(`${routes.SETTINGS}/`) && parentOf(s.id, "phone")?.id === "settings",
@@ -1209,14 +1238,14 @@ describe("source scan for path literals", () => {
   test("lets through constants, other paths, API calls, comments, api/ and routes.ts itself", () => {
     expect(
       findPathLiterals([
-        { path: "src/screens/X.tsx", content: "<Link to={MORE}>" },
+        { path: "src/screens/X.tsx", content: "<Link to={EXPENSES}>" },
         {
           path: "src/screens/Y.tsx",
           content: "const to = '/algo-que-no-es-una-ruta'",
         },
         {
           path: "src/screens/Z.tsx",
-          content: "// goes to '/mas'\n/* '/gastos' */",
+          content: "// goes to '/gastos'\n/* '/gastos' */",
         },
         {
           path: "src/screens/A.tsx",
