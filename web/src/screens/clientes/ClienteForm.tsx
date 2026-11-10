@@ -27,6 +27,7 @@ import { useFlash } from '../../flash/useFlash'
 import { useBackOr } from '../../components/useBackOr'
 import { useGoneExit } from '../../components/useGoneExit'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
+import { SheetStackProvider } from '../../components/useSheetStack'
 import { useViewport } from '../../shell/useViewport'
 import { ApiError, NetworkError, UNKNOWN_CODE } from '../../api/client'
 import {
@@ -72,7 +73,16 @@ interface Props {
   mode: 'nuevo' | 'editar'
 }
 
+/** One sheet stack per screen (ADR-0027): the type list is level 1, above the form (new and edit). */
 export default function ClienteForm({ mode }: Props) {
+  return (
+    <SheetStackProvider>
+      <ClienteFormGate mode={mode} />
+    </SheetStackProvider>
+  )
+}
+
+function ClienteFormGate({ mode }: Props) {
   const { id } = useParams<{ id: string }>()
   const customerId = id ?? ''
 

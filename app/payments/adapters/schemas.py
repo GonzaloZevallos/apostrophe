@@ -6,10 +6,12 @@ every rule stays the domain's, and every refusal's message is a fixed string
 from __future__ import annotations
 
 from datetime import date
+from decimal import Decimal
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
 
+from app.money_schema import MoneyAmount, MoneyOut
 from app.payments.application.record_payment import CandidateOutcome, RecordedPayment
 from app.payments.application.view_accounts import Debtor, Debtors
 from app.payments.domain.account import Account
@@ -27,34 +29,36 @@ PaymentDate = date
 
 class PaymentPreviewIn(BaseModel):
     paid_on: PaymentDate
-    amount: int
+    amount: MoneyAmount
 
 
 class PaymentIn(BaseModel):
     paid_on: PaymentDate
-    amount: int
+    amount: MoneyAmount
     payment_method_id: int | None = None
 
 
 class AppliedToOut(BaseModel):
     sale_id: int
     sale_date: PaymentDate
-    amount: int
+    amount: MoneyOut
 
     @classmethod
     def of(cls, split: Split) -> AppliedToOut:
-        return cls(sale_id=split.sale_id, sale_date=split.sale_date, amount=split.amount)
+        return cls(sale_id=split.sale_id, sale_date=split.sale_date, amount=Decimal(split.amount))
 
 
 class AfterOut(BaseModel):
-    balance: int
+    balance: MoneyOut
     owing_since: PaymentDate | None
     standing: Standing
 
     @classmethod
     def of(cls, outcome: CandidateOutcome) -> AfterOut:
         return cls(
-            balance=outcome.balance, owing_since=outcome.owing_since, standing=outcome.standing
+            balance=Decimal(outcome.balance),
+            owing_since=outcome.owing_since,
+            standing=outcome.standing,
         )
 
 
@@ -86,11 +90,11 @@ class PaymentMethodRefOut(BaseModel):
 class PaymentRefOut(PaymentMethodRefOut):
     id: int
     paid_on: PaymentDate
-    amount: int
+    amount: MoneyOut
 
     @classmethod
     def build(
-        cls, payment_id: int, paid_on: date, amount: int, label: PaymentMethodLabel
+        cls, payment_id: int, paid_on: date, amount: Decimal, label: PaymentMethodLabel
     ) -> PaymentRefOut:
         return cls(
             id=payment_id,
@@ -136,7 +140,7 @@ class RecordPaymentOut(BaseModel):
     def of(cls, recorded: RecordedPayment) -> RecordPaymentOut:
         return cls(
             payment=PaymentRefOut.build(
-                recorded.id, recorded.paid_on, recorded.amount, recorded.method
+                recorded.id, recorded.paid_on, Decimal(recorded.amount), recorded.method
             ),
             applied_to=[AppliedToOut.of(split) for split in recorded.outcome.applied_to],
             after=AfterOut.of(recorded.outcome),
@@ -145,14 +149,14 @@ class RecordPaymentOut(BaseModel):
 
 class SaleRefOut(BaseModel):
     id: int
-    total: int
+    total: MoneyOut
     how_paid: HowPaidOut
 
 
 class SaleAccountRowOut(BaseModel):
     kind: Literal["sale"] = "sale"
     date: PaymentDate
-    running_balance: int
+    running_balance: MoneyOut
     standing: Standing
     sale: SaleRefOut
 
@@ -160,7 +164,7 @@ class SaleAccountRowOut(BaseModel):
 class PaymentAccountRowOut(BaseModel):
     kind: Literal["payment"] = "payment"
     date: PaymentDate
-    running_balance: int
+    running_balance: MoneyOut
     standing: Standing
     payment: PaymentRefOut
     applied_to: AppliedToOut
@@ -169,10 +173,10 @@ class PaymentAccountRowOut(BaseModel):
 class CreditAccountRowOut(BaseModel):
     kind: Literal["credit"] = "credit"
     date: PaymentDate
-    running_balance: int
+    running_balance: MoneyOut
     standing: Standing
     payment: PaymentRefOut
-    amount: int
+    amount: MoneyOut
 
 
 AccountRowOut = SaleAccountRowOut | PaymentAccountRowOut | CreditAccountRowOut
@@ -182,30 +186,34 @@ def _row_out(row: DomainAccountRow) -> AccountRowOut:
     if isinstance(row, DomainSaleRow):
         return SaleAccountRowOut(
             date=row.date,
-            running_balance=row.running_balance,
+            running_balance=Decimal(row.running_balance),
             standing=row.standing,
-            sale=SaleRefOut(id=row.sale_id, total=row.total, how_paid=_how_paid_out(row.how_paid)),
+            sale=SaleRefOut(
+                id=row.sale_id, total=Decimal(row.total), how_paid=_how_paid_out(row.how_paid)
+            ),
         )
     if isinstance(row, DomainPaymentRow):
         return PaymentAccountRowOut(
             date=row.date,
-            running_balance=row.running_balance,
+            running_balance=Decimal(row.running_balance),
             standing=row.standing,
-            payment=PaymentRefOut.build(row.payment_id, row.paid_on, row.amount, row.method),
+            payment=PaymentRefOut.build(
+                row.payment_id, row.paid_on, Decimal(row.amount), row.method
+            ),
             applied_to=AppliedToOut.of(row.applied_to),
         )
     assert isinstance(row, DomainCreditRow), "AccountRow is exactly these three kinds"
     return CreditAccountRowOut(
         date=row.date,
-        running_balance=row.running_balance,
+        running_balance=Decimal(row.running_balance),
         standing=row.standing,
-        payment=PaymentRefOut.build(row.payment_id, row.paid_on, row.amount, row.method),
-        amount=row.credit_amount,
+        payment=PaymentRefOut.build(row.payment_id, row.paid_on, Decimal(row.amount), row.method),
+        amount=Decimal(row.credit_amount),
     )
 
 
 class AccountOut(BaseModel):
-    balance: int
+    balance: MoneyOut
     owing_since: PaymentDate | None
     standing: Standing
     rows: list[AccountRowOut]
@@ -213,7 +221,7 @@ class AccountOut(BaseModel):
     @classmethod
     def of(cls, account: Account) -> AccountOut:
         return cls(
-            balance=account.balance,
+            balance=Decimal(account.balance),
             owing_since=account.owing_since,
             standing=account.standing,
             rows=[_row_out(row) for row in account.rows],
@@ -227,7 +235,7 @@ class DebtorCustomerOut(BaseModel):
 
 class DebtorOut(BaseModel):
     customer: DebtorCustomerOut
-    balance: int
+    balance: MoneyOut
     owing_since: PaymentDate | None
     standing: Standing
 
@@ -235,21 +243,21 @@ class DebtorOut(BaseModel):
     def of(cls, debtor: Debtor) -> DebtorOut:
         return cls(
             customer=DebtorCustomerOut(id=debtor.customer_id, name=debtor.name),
-            balance=debtor.balance,
+            balance=Decimal(debtor.balance),
             owing_since=debtor.owing_since,
             standing=debtor.standing,
         )
 
 
 class DebtorsOut(BaseModel):
-    total_owed: int
+    total_owed: MoneyOut
     sales_owing_count: int
     debtors: list[DebtorOut]
 
     @classmethod
     def of(cls, debtors: Debtors) -> DebtorsOut:
         return cls(
-            total_owed=debtors.total_owed,
+            total_owed=Decimal(debtors.total_owed),
             sales_owing_count=debtors.sales_owing_count,
             debtors=[DebtorOut.of(debtor) for debtor in debtors.debtors],
         )

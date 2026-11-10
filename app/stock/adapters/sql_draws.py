@@ -17,8 +17,10 @@ from collections.abc import Collection
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.db import money_scale_factor, scaled
 from app.products.adapters.tables import ProductRow
 from app.sales.adapters.tables import SaleLineRow, SaleRow
+from app.shared.money import Money
 from app.shared.quantity import Quantity
 from app.stock.domain.lot_order import SaleLineDraw
 
@@ -29,8 +31,9 @@ class SqlDraws:
         self._business_id = business_id
 
     def for_varieties(self, variety_ids: Collection[int] | None) -> list[SaleLineDraw]:
+        factor = money_scale_factor(self._session, self._business_id)
         statement = (
-            select(SaleLineRow, SaleRow, ProductRow.name)
+            select(SaleLineRow, SaleRow, ProductRow.name, scaled(SaleLineRow.line_total, factor))
             .join(
                 SaleRow,
                 (SaleRow.id == SaleLineRow.sale_id) & (SaleRow.business_id == self._business_id),
@@ -54,8 +57,8 @@ class SqlDraws:
                 position=line.position,
                 quantity=Quantity(line.grams_hundredths),
                 variety_name=variety_name,
-                line_total=line.line_total,
+                line_total=Money(line_total).whole_units(),
                 pricing_rule=line.pricing_rule,
             )
-            for line, sale, variety_name in rows
+            for line, sale, variety_name, line_total in rows
         ]

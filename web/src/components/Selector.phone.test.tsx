@@ -83,7 +83,7 @@ describe('picking', () => {
     unmount()
     renderForm(<Controlled {...base} emptyWording="No type" options={numbered(3)} />)
     await user.click(field())
-    expect(screen.getByRole('button', { name: 'No type' })).toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Option 1' })).toHaveFocus()
   })
 })
 
@@ -129,7 +129,7 @@ describe('search', () => {
 
   test('the clearing row is never filtered and No results shows below it', async () => {
     const user = userEvent.setup()
-    renderForm(<Controlled {...base} emptyWording="No type" options={numbered(9)} />)
+    renderForm(<Controlled {...base} emptyWording="No type" initial="v1" options={numbered(9)} />)
     await user.click(field())
     await user.type(screen.getByRole('searchbox'), 'qqq')
     expect(screen.getByRole('button', { name: 'No type' })).toBeInTheDocument()
@@ -218,6 +218,32 @@ describe('clearing row and empty set', () => {
     await user.click(field())
     expect(screen.queryByRole('button', { name: 'No type' })).not.toBeInTheDocument()
     expect(rowTexts()).toHaveLength(4)
+  })
+
+  test('an optional field with no choice has no clearing row, and the field reads the wording', async () => {
+    const user = userEvent.setup()
+    renderForm(<Controlled {...base} emptyWording="No type" options={numbered(3)} />)
+    expect(field()).toHaveTextContent('No type')
+    await user.click(field())
+    expect(rowTexts()).toEqual(['', 'Option 1', 'Option 2', 'Option 3'])
+    expect(within(screen.getByRole('dialog')).queryByText('No type')).not.toBeInTheDocument()
+  })
+
+  test('an optional field with no choice and an empty set shows the message alone', async () => {
+    const user = userEvent.setup()
+    renderForm(<Controlled {...base} emptyWording="No type" options={[]} />)
+    await user.click(field())
+    expect(rowTexts()).toEqual([''])
+    expect(screen.getByText(base.emptySetMessage)).toBeInTheDocument()
+  })
+
+  test('with search and no choice the focus is on the search field and the first row is an option', async () => {
+    const user = userEvent.setup()
+    renderForm(<Controlled {...base} emptyWording="No type" options={numbered(9)} />)
+    await user.click(field())
+    expect(screen.getByRole('searchbox')).toHaveFocus()
+    expect(rowTexts()[1]).toBe('Option 1')
+    expect(within(screen.getByRole('dialog')).queryByText('No type')).not.toBeInTheDocument()
   })
 
   test('an optional field takes its clearing wording from the noType key', async () => {

@@ -159,7 +159,7 @@ classDiagram
     phone : str #124; None
   }
   class CustomerOut {
-    balance : int
+    balance
     customer_type_id : int #124; None
     id : int
     name : str

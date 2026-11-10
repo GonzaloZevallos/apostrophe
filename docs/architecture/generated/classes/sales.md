@@ -266,8 +266,11 @@ classDiagram
   class LineInput {
     gift : bool
     quantity : Quantity
-    special_price : int #124; None
+    special_price : Decimal #124; None
     variety_id : int
+  }
+  class MoneyFormatReader {
+    current() MoneyFormat
   }
   class OnTheSpotPayments {
     assign_customer(sale_id: int, customer_id: int) None
@@ -337,14 +340,14 @@ classDiagram
     method_name : str #124; None
     model_config : ConfigDict
     state : Literal
-    still_owed : int #124; None
+    still_owed : MoneyOut #124; None
     of(payment: BillPayment) 'BillPaymentOut'
   }
   class DeleteSaleOut {
     returned : list~ReturnedQuantityOut~
   }
   class LineCostOut {
-    costed : int #124; None
+    costed : MoneyOut #124; None
     pending_quantity
     of(cost: LineCost) 'LineCostOut'
   }
@@ -352,7 +355,7 @@ classDiagram
     gift : bool
     product_id : int
     quantity
-    special_price : int #124; None
+    special_price : MoneyAmount #124; None
   }
   class MethodsByName {
     ensure_by_name(raw_name: str) int
@@ -384,24 +387,24 @@ classDiagram
     quantity
   }
   class SaleBillLineOut {
-    amount : int
+    amount
     model_config : ConfigDict
     product : str
     quantity
     rule : BillRule #124; None
-    unit_price : int #124; None
+    unit_price : MoneyOut #124; None
     of(line: SaleBillLine) 'SaleBillLineOut'
   }
   class SaleBillOut {
-    balance : int #124; None
+    balance : MoneyOut #124; None
     business_name : str
     date : date
     lines : list~SaleBillLineOut~
     model_config : ConfigDict
     number : int
     payment
-    shipping_charged : int
-    total : int
+    shipping_charged
+    total
     of(bill: SaleBill) 'SaleBillOut'
   }
   class SaleCustomerOut {
@@ -419,9 +422,9 @@ classDiagram
     note : str #124; None
     number : int
     payment
-    shipping_charged : int
+    shipping_charged
     still_owing : bool
-    total : int
+    total
     total_quantity
     of(detail: SaleDetail) 'SaleDetailOut'
   }
@@ -431,12 +434,12 @@ classDiagram
     lines : list~LineIn~
     note : str #124; None
     payment : PaymentIn #124; None
-    shipping_charged : int
+    shipping_charged
   }
   class SaleLineDetailOut {
     cost
-    line_total : int
-    price_per_gram : int
+    line_total
+    price_per_gram
     pricing_rule : PricingRule
     product_id : int
     product_name : str
@@ -444,8 +447,8 @@ classDiagram
     of(view_line: SaleViewLine, cost: LineCost) 'SaleLineDetailOut'
   }
   class SaleLineOut {
-    line_total : int
-    price_per_gram : int
+    line_total
+    price_per_gram
     pricing_rule : PricingRule
     product_id : int
     product_name : str
@@ -471,9 +474,9 @@ classDiagram
     note : str #124; None
     number : int
     payment
-    shipping_charged : int
+    shipping_charged
     still_owing : bool
-    total : int
+    total
     of(view: SaleView, still_owing: bool) 'SaleOut'
   }
   class SaleRow {
@@ -517,6 +520,9 @@ classDiagram
   }
   class _FixedVip {
     get(customer_id: int) CustomerFact #124; None
+  }
+  class _SheetAmounts {
+    current() MoneyFormat
   }
   SaleBillOut --> BillPaymentOut : payment
   SaleLineDetailOut --> LineCostOut : cost

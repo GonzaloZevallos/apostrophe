@@ -237,6 +237,9 @@ classDiagram
     for_customer(customer_id: int) Ledger #124; None
     for_customers(customer_ids: Collection~int~) Mapping~int, Ledger~
   }
+  class MoneyFormatReader {
+    current() MoneyFormat
+  }
   class NamedLedger {
     id : int
     ledger : Ledger
@@ -272,30 +275,30 @@ classDiagram
 ```mermaid
 classDiagram
   class AccountOut {
-    balance : int
+    balance
     owing_since : PaymentDate #124; None
     rows : list~AccountRowOut~
     standing : Literal
     of(account: Account) AccountOut
   }
   class AfterOut {
-    balance : int
+    balance
     owing_since : PaymentDate #124; None
     standing : Literal
     of(outcome: CandidateOutcome) AfterOut
   }
   class AppliedToOut {
-    amount : int
+    amount
     sale_date : date
     sale_id : int
     of(split: Split) AppliedToOut
   }
   class CreditAccountRowOut {
-    amount : int
+    amount
     date : date
     kind : Literal~'credit'~
     payment
-    running_balance : int
+    running_balance
     standing : Literal
   }
   class DebtorCustomerOut {
@@ -303,7 +306,7 @@ classDiagram
     name : str
   }
   class DebtorOut {
-    balance : int
+    balance
     customer
     owing_since : PaymentDate #124; None
     standing : Literal
@@ -312,7 +315,7 @@ classDiagram
   class DebtorsOut {
     debtors : list~DebtorOut~
     sales_owing_count : int
-    total_owed : int
+    total_owed
     of(debtors: Debtors) DebtorsOut
   }
   class HowPaidMethodOut {
@@ -329,11 +332,11 @@ classDiagram
     date : date
     kind : Literal~'payment'~
     payment
-    running_balance : int
+    running_balance
     standing : Literal
   }
   class PaymentIn {
-    amount : int
+    amount
     paid_on : date
     payment_method_id : int #124; None
   }
@@ -344,7 +347,7 @@ classDiagram
     of(label: PaymentMethodLabel) PaymentMethodRefOut
   }
   class PaymentPreviewIn {
-    amount : int
+    amount
     paid_on : date
   }
   class PaymentPreviewOut {
@@ -353,10 +356,10 @@ classDiagram
     of(outcome: CandidateOutcome) PaymentPreviewOut
   }
   class PaymentRefOut {
-    amount : int
+    amount
     id : int
     paid_on : date
-    build(payment_id: int, paid_on: date, amount: int, label: PaymentMethodLabel) PaymentRefOut
+    build(payment_id: int, paid_on: date, amount: Decimal, label: PaymentMethodLabel) PaymentRefOut
   }
   class PaymentRow {
     amount : Mapped~int~
@@ -381,14 +384,14 @@ classDiagram
   class SaleAccountRowOut {
     date : date
     kind : Literal~'sale'~
-    running_balance : int
+    running_balance
     sale
     standing : Literal
   }
   class SaleRefOut {
     how_paid
     id : int
-    total : int
+    total
   }
   class SqlBalances {
     for_customers(customer_ids: Collection~int~) Mapping~int, CustomerBalance~

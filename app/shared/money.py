@@ -38,6 +38,16 @@ class MoneyNotRepresentable(ValueError):
     code: ClassVar[str] = "money.not_representable"
 
 
+class TooManyDecimals(ValueError):
+    """An amount has more decimals than the business shows. The message is a fixed
+    literal and never carries the amount (CODING_STANDARDS.md section 9)."""
+
+    code: ClassVar[str] = "money.too_many_decimals"
+
+    def __init__(self) -> None:
+        super().__init__("the amount has more decimals than the business allows")
+
+
 def _exact_hundredths(amount: Decimal) -> int | None:
     """The amount's whole hundredths, or None when it has more than two decimals.
 
@@ -54,6 +64,9 @@ def _exact_hundredths(amount: Decimal) -> int | None:
     if shift >= 0:
         hundredths = magnitude * 10**shift
     else:
+        if -shift > len(digits):
+            # Smaller than a hundredth whatever its digits: nothing to divide by 10**huge.
+            return None if magnitude else 0
         hundredths, remainder = divmod(magnitude, 10**-shift)
         if remainder != 0:
             return None
@@ -79,6 +92,19 @@ class Money:
             raise InvalidMoney("an amount allows at most two decimals")
         return cls(hundredths)
 
+    @classmethod
+    def of_units(cls, units: int) -> Money:
+        """A whole number of currency units as money."""
+        return cls(units * HUNDREDTHS_PER_UNIT)
+
+    def whole_units(self) -> int:
+        """The amount as a whole number of currency units. Exact or it raises
+        `MoneyNotRepresentable`: cents are never truncated and never rounded."""
+        units, remainder = divmod(self.hundredths, HUNDREDTHS_PER_UNIT)
+        if remainder != 0:
+            raise MoneyNotRepresentable("the amount is not a whole number of units")
+        return units
+
     def as_decimal(self) -> Decimal:
         return Decimal(self.hundredths) / HUNDREDTHS_PER_UNIT
 
@@ -99,6 +125,14 @@ class Money:
         return Money(self.hundredths - other.hundredths)
 
 
+def checked_decimals(decimals: int) -> int:
+    """The decimals a business may show: a whole number from 0 to 2 (a bool is not one).
+    The one place the rule lives; `MoneyFormat` and the rescale use case both call it."""
+    if type(decimals) is not int or not 0 <= decimals <= MAX_DECIMALS:
+        raise ValueError("the money decimals must be a whole number from 0 to 2")
+    return decimals
+
+
 @dataclass(frozen=True)
 class MoneyFormat:
     """How a business shows money: its symbol and how many decimals. The scale it stores
@@ -110,8 +144,17 @@ class MoneyFormat:
     def __post_init__(self) -> None:
         if not self.symbol.strip():
             raise ValueError("the money symbol must not be blank")
-        if type(self.decimals) is not int or not 0 <= self.decimals <= MAX_DECIMALS:
-            raise ValueError("the money decimals must be a whole number from 0 to 2")
+        checked_decimals(self.decimals)
+
+
+def money_within(amount: Decimal, money_format: MoneyFormat) -> Money:
+    """A request's amount as `Money`, checked by value against the business's decimals:
+    `10.00` passes at 0 decimals, `10.5` does not. The one place the rule lives; raises
+    `TooManyDecimals`, never rounding what it refuses."""
+    hundredths = _exact_hundredths(amount)
+    if hundredths is None or hundredths % 10 ** (MAX_DECIMALS - money_format.decimals) != 0:
+        raise TooManyDecimals
+    return Money(hundredths)
 
 
 def _round_half_up(value: Fraction, decimals: int) -> int:

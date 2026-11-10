@@ -5085,8 +5085,7 @@ body {
  *   the --superficie group): .inicio__avatar and .ajustes-tema__opcion, plain and --activa (the track is
  *   --superficie, the selected option --papel), and the selected variants
  *   .riel-lateral__item--activo, .riel-lateral__negocio--activo, .bar-inferior__item--activo,
- *   .pestanas__opcion--activa, .variedad-fila--activa and .selector-pago__opcion--activa;
- *   with the --linea cue and the scale as well, .aviso-onboarding (rests on --superficie).
+ *   .pestanas__opcion--activa, .variedad-fila--activa and .selector-pago__opcion--activa.
  * .opcion-interruptor is label-wrapped (its checkbox is stretched over it and must keep the
  * tap), so its cue is the fill only: its own rule below, with no `transform`.
  * A .boton--enlace inside .venta-guardada sits on the bar's own --boton fill, so it takes
@@ -5166,9 +5165,7 @@ body {
     .ajustes-tema__opcion,
     .ajustes-tema__opcion--activa,
     .inicio__avatar,
-    .selector__campo,
-    /* a whole-block control; nothing tappable may be nested in it (it would scale with it). */
-    .aviso-onboarding
+    .selector__campo
   ):active:not(:disabled):not([aria-disabled='true']) {
   transform: scale(0.98);
   background-color: var(--linea);
@@ -5211,7 +5208,6 @@ body {
     .ajustes-tema__opcion,
     .opcion-interruptor,
     .mas-info__boton,
-    .aviso-onboarding,
     .inicio__avatar,
     .variedades__todas,
     .pestanas,
@@ -5464,22 +5460,6 @@ body {
   text-decoration: none;
 }
 
-/* "Arrancá por las variedades": the attention icon beside its title and line. */
-.estado-vacio--atencion {
-  flex-direction: row;
-  align-items: flex-start;
-  text-align: left;
-  gap: 12px;
-}
-
-.estado-vacio--atencion .aviso-ambar__cuerpo {
-  gap: 10px;
-}
-
-.estado-vacio--atencion .estado-vacio__detalle {
-  max-width: none;
-}
-
 /* ===== end gh97-sales-home ===== */
 /* A host element that adds no box of its own: its children lay out as the parent's. */
 .sin-caja {
@@ -5676,8 +5656,9 @@ body {
   cursor: pointer;
 }
 
-/* On a computer the card stops at 560px, as `InicioPrimeraVezCompu.dc.html` draws it
- * (GH-188); it applies to every tappable notice. The same literal is `NOTICE_CAP` in
+/* On a computer the card stops at 560px (GH-188; the drawing that showed it left with the
+ * first-use notices); it applies to every tappable notice, today Inicio's "Your Telegram
+ * catalog is out of date". The same literal is `NOTICE_CAP` in
  * `web/src/architecture/noticeCap.ts`, which guards this block: change both together. */
 @media (min-width: 900px) {
   .boton-aviso {
@@ -5696,17 +5677,6 @@ body {
   flex: 1;
   font-size: 16px;
   font-weight: 600;
-}
-
-.aviso-onboarding__conteo {
-  font-size: 14px;
-  color: var(--tinta2);
-  margin: 3px 0 var(--espacio-md);
-}
-
-.aviso-onboarding__falta {
-  font-size: 13px;
-  margin-top: 10px;
 }
 
 .listo__lista {
@@ -6049,103 +6019,7 @@ body {
   outline: none;
 }
 
-/* The first-run checklist, the after-import notice and the missing line under "+ Nueva venta"
- * (`InicioPrimeraVez.dc.html`, `InicioPrimeraVezCompu.dc.html`), tokens only. */
-.checklist {
-  background: var(--superficie);
-  border-radius: var(--radio-panel-grande);
-  padding: var(--espacio-lg) var(--espacio-lg) var(--espacio-sm);
-  display: flex;
-  flex-direction: column;
-  gap: var(--espacio-sm);
-}
-
-.checklist__titulo {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--tinta);
-}
-
-.checklist__lista {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.checklist__paso {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--espacio-md);
-  padding: 10px 0;
-  border-bottom: 1px solid var(--linea);
-}
-
-.checklist__paso:last-child {
-  border-bottom: none;
-}
-
-.checklist__caja {
-  width: 22px;
-  height: 22px;
-  box-sizing: border-box;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  border: 2px solid var(--tinta2);
-}
-
-.checklist__caja--hecha {
-  background: var(--boton);
-  border-color: var(--boton);
-  color: var(--boton-texto);
-}
-
-.checklist__caja svg {
-  width: 16px;
-  height: 16px;
-}
-
-.checklist__texto {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.checklist__nombre {
-  font-size: 15px;
-  color: var(--tinta);
-}
-
-.checklist__requisito {
-  font-size: 13px;
-  color: var(--tinta2);
-}
-
-.checklist__hecho {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--tinta);
-}
-
-.aviso-importado {
-  flex-direction: row;
-  align-items: center;
-  gap: var(--espacio-md);
-  padding: 14px 16px;
-}
-
-.aviso-importado .aviso-ambar__cuerpo {
-  flex: 1;
-}
-
-.aviso-importado .aviso-ambar__titulo {
-  font-size: 14px;
-}
-
+/* The missing line under "+ Nueva venta", tokens only. */
 .nueva-venta__falta {
   display: block;
   margin: calc(-1 * var(--espacio-sm) + var(--espacio-xs)) var(--margen-pantalla) var(--espacio-md);

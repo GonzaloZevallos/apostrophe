@@ -33,8 +33,15 @@
       "AccountOut": {
         "properties": {
           "balance": {
-            "title": "Balance",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Balance"
           },
           "owing_since": {
             "anyOf": [
@@ -87,8 +94,15 @@
       "AfterOut": {
         "properties": {
           "balance": {
-            "title": "Balance",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Balance"
           },
           "owing_since": {
             "anyOf": [
@@ -124,8 +138,15 @@
         "description": "A money figure (profit) together with the pending grams behind it, for one\nperiod.",
         "properties": {
           "amount": {
-            "title": "Amount",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Amount"
           },
           "pending_quantity": {
             "title": "Pending Quantity",
@@ -186,12 +207,26 @@
             "type": "number"
           },
           "sales": {
-            "title": "Sales",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Sales"
           },
           "sales_without_shipping": {
-            "title": "Sales Without Shipping",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Sales Without Shipping"
           },
           "shortfall": {
             "anyOf": [
@@ -304,8 +339,15 @@
       "AppliedToOut": {
         "properties": {
           "amount": {
-            "title": "Amount",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Amount"
           },
           "sale_date": {
             "format": "date",
@@ -425,6 +467,9 @@
             "anyOf": [
               {
                 "type": "integer"
+              },
+              {
+                "type": "number"
               },
               {
                 "type": "null"
@@ -717,8 +762,15 @@
             "type": "string"
           },
           "subtotal": {
-            "title": "Subtotal",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Subtotal"
           }
         },
         "required": [
@@ -774,8 +826,15 @@
         "description": "A period's stock shortfall cost (CONTEXT.md), `null`\nexactly when the period has none of that line's records. `pending` is decided from\nthat line's own pending grams (plan invariant); no grams cross the wire (PM).",
         "properties": {
           "amount": {
-            "title": "Amount",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Amount"
           },
           "pending": {
             "title": "Pending",
@@ -792,8 +851,15 @@
       "CostOut": {
         "properties": {
           "costed": {
-            "title": "Costed",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Costed"
           },
           "pending_quantity": {
             "title": "Pending Quantity",
@@ -810,8 +876,15 @@
       "CreditAccountRowOut": {
         "properties": {
           "amount": {
-            "title": "Amount",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Amount"
           },
           "date": {
             "format": "date",
@@ -828,8 +901,15 @@
             "$ref": "#/components/schemas/PaymentRefOut"
           },
           "running_balance": {
-            "title": "Running Balance",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Running Balance"
           },
           "standing": {
             "enum": [
@@ -889,8 +969,15 @@
       "CustomerOut": {
         "properties": {
           "balance": {
-            "title": "Balance",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Balance"
           },
           "customer_type_id": {
             "anyOf": [
@@ -1146,8 +1233,15 @@
             "type": "integer"
           },
           "total_owed": {
-            "title": "Total Owed",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Total Owed"
           }
         },
         "required": [
@@ -1184,8 +1278,15 @@
             "type": "array"
           },
           "total_owed": {
-            "title": "Total Owed",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Total Owed"
           }
         },
         "required": [
@@ -1269,7 +1370,11 @@
           "total_cost": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
               },
               {
                 "type": "null"
@@ -1292,6 +1397,9 @@
             "anyOf": [
               {
                 "type": "integer"
+              },
+              {
+                "type": "number"
               },
               {
                 "type": "null"
@@ -1342,6 +1450,9 @@
                 "type": "integer"
               },
               {
+                "type": "number"
+              },
+              {
                 "type": "null"
               }
             ],
@@ -1367,6 +1478,9 @@
             "anyOf": [
               {
                 "type": "integer"
+              },
+              {
+                "type": "number"
               },
               {
                 "type": "null"
@@ -1411,6 +1525,9 @@
                 "type": "integer"
               },
               {
+                "type": "number"
+              },
+              {
                 "type": "null"
               }
             ],
@@ -1441,12 +1558,26 @@
             "type": "array"
           },
           "purchases": {
-            "title": "Purchases",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Purchases"
           },
           "total": {
-            "title": "Total",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Total"
           }
         },
         "required": [
@@ -1468,8 +1599,15 @@
             "type": "string"
           },
           "total": {
-            "title": "Total",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Total"
           }
         },
         "required": [
@@ -1483,8 +1621,16 @@
       "ExpenseIn": {
         "properties": {
           "amount": {
-            "title": "Amount",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Amount"
           },
           "category_id": {
             "title": "Category Id",
@@ -1512,8 +1658,15 @@
       "ExpenseOut": {
         "properties": {
           "amount": {
-            "title": "Amount",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Amount"
           },
           "category_id": {
             "title": "Category Id",
@@ -1746,6 +1899,9 @@
                 "type": "integer"
               },
               {
+                "type": "number"
+              },
+              {
                 "type": "null"
               }
             ],
@@ -1789,7 +1945,11 @@
           "special_price": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
               },
               {
                 "type": "null"
@@ -1827,8 +1987,15 @@
         "description": "A margin in pesos, worked out over costed grams only (ADR-0020): a product's own\nmargin, or the chosen month's average margin. `percent` is `null` when the sales it\nis taken over are $0; `pending_quantity` is the sold-or-gifted grams behind it that are\nnot costed yet.",
         "properties": {
           "amount": {
-            "title": "Amount",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Amount"
           },
           "pending_quantity": {
             "title": "Pending Quantity",
@@ -1886,15 +2053,29 @@
       "MonthRowOut": {
         "properties": {
           "cash": {
-            "title": "Cash",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Cash"
           },
           "cost_of_goods": {
             "$ref": "#/components/schemas/RowCostOut"
           },
           "expenses": {
-            "title": "Expenses",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Expenses"
           },
           "first_day": {
             "format": "date",
@@ -1918,8 +2099,15 @@
             "type": "number"
           },
           "sales": {
-            "title": "Sales",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Sales"
           },
           "shortfall": {
             "anyOf": [
@@ -1969,8 +2157,15 @@
             "type": "string"
           },
           "total": {
-            "title": "Total",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Total"
           }
         },
         "required": [
@@ -2171,8 +2366,15 @@
             "$ref": "#/components/schemas/PaymentRefOut"
           },
           "running_balance": {
-            "title": "Running Balance",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Running Balance"
           },
           "standing": {
             "enum": [
@@ -2197,8 +2399,16 @@
       "PaymentIn": {
         "properties": {
           "amount": {
-            "title": "Amount",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Amount"
           },
           "paid_on": {
             "format": "date",
@@ -2328,8 +2538,16 @@
       "PaymentPreviewIn": {
         "properties": {
           "amount": {
-            "title": "Amount",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Amount"
           },
           "paid_on": {
             "format": "date",
@@ -2367,8 +2585,15 @@
       "PaymentRefOut": {
         "properties": {
           "amount": {
-            "title": "Amount",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Amount"
           },
           "icon": {
             "title": "Icon",
@@ -2430,18 +2655,35 @@
                 "type": "integer"
               },
               {
+                "type": "number"
+              },
+              {
                 "type": "null"
               }
             ],
             "title": "Average Sale"
           },
           "cash": {
-            "title": "Cash",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Cash"
           },
           "cost_of_goods": {
-            "title": "Cost Of Goods",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Cost Of Goods"
           },
           "end": {
             "format": "date",
@@ -2449,24 +2691,45 @@
             "type": "string"
           },
           "expenses": {
-            "title": "Expenses",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Expenses"
           },
           "pending_cost": {
             "title": "Pending Cost",
             "type": "boolean"
           },
           "profit": {
-            "title": "Profit",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Profit"
           },
           "profit_pending": {
             "title": "Profit Pending",
             "type": "boolean"
           },
           "purchases": {
-            "title": "Purchases",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Purchases"
           },
           "quantity_gifted": {
             "title": "Quantity Gifted",
@@ -2477,8 +2740,15 @@
             "type": "number"
           },
           "sales": {
-            "title": "Sales",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Sales"
           },
           "sales_count": {
             "title": "Sales Count",
@@ -2832,7 +3102,11 @@
           "bulk_price": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
               },
               {
                 "type": "null"
@@ -2846,13 +3120,25 @@
             "type": "string"
           },
           "list_price": {
-            "title": "List Price",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "List Price"
           },
           "vip_price": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
               },
               {
                 "type": "null"
@@ -2887,6 +3173,9 @@
                 "type": "integer"
               },
               {
+                "type": "number"
+              },
+              {
                 "type": "null"
               }
             ],
@@ -2902,13 +3191,23 @@
             "type": "integer"
           },
           "list_price": {
-            "title": "List Price",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "List Price"
           },
           "vip_price": {
             "anyOf": [
               {
                 "type": "integer"
+              },
+              {
+                "type": "number"
               },
               {
                 "type": "null"
@@ -3081,8 +3380,15 @@
             "type": "number"
           },
           "sales_without_shipping": {
-            "title": "Sales Without Shipping",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Sales Without Shipping"
           },
           "share_percent": {
             "anyOf": [
@@ -3288,6 +3594,9 @@
                 "type": "integer"
               },
               {
+                "type": "number"
+              },
+              {
                 "type": "null"
               }
             ],
@@ -3431,8 +3740,15 @@
             "type": "boolean"
           },
           "amount": {
-            "title": "Amount",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Amount"
           },
           "pending_quantity": {
             "title": "Pending Quantity",
@@ -3461,8 +3777,15 @@
             "type": "string"
           },
           "running_balance": {
-            "title": "Running Balance",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Running Balance"
           },
           "sale": {
             "$ref": "#/components/schemas/SaleRefOut"
@@ -3490,8 +3813,15 @@
         "additionalProperties": false,
         "properties": {
           "amount": {
-            "title": "Amount",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Amount"
           },
           "product": {
             "title": "Product",
@@ -3522,6 +3852,9 @@
                 "type": "integer"
               },
               {
+                "type": "number"
+              },
+              {
                 "type": "null"
               }
             ],
@@ -3546,6 +3879,9 @@
             "anyOf": [
               {
                 "type": "integer"
+              },
+              {
+                "type": "number"
               },
               {
                 "type": "null"
@@ -3577,12 +3913,26 @@
             "$ref": "#/components/schemas/BillPaymentOut"
           },
           "shipping_charged": {
-            "title": "Shipping Charged",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Shipping Charged"
           },
           "total": {
-            "title": "Total",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Total"
           }
         },
         "required": [
@@ -3698,16 +4048,30 @@
             "title": "Payment"
           },
           "shipping_charged": {
-            "title": "Shipping Charged",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Shipping Charged"
           },
           "still_owing": {
             "title": "Still Owing",
             "type": "boolean"
           },
           "total": {
-            "title": "Total",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Total"
           },
           "total_quantity": {
             "title": "Total Quantity",
@@ -3800,9 +4164,17 @@
             "title": "Payment"
           },
           "shipping_charged": {
-            "default": 0,
-            "title": "Shipping Charged",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "default": "0",
+            "title": "Shipping Charged"
           }
         },
         "required": [
@@ -3818,12 +4190,26 @@
             "$ref": "#/components/schemas/LineCostOut"
           },
           "line_total": {
-            "title": "Line Total",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Line Total"
           },
           "price_per_gram": {
-            "title": "Price Per Gram",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Price Per Gram"
           },
           "pricing_rule": {
             "$ref": "#/components/schemas/PricingRule"
@@ -3856,12 +4242,26 @@
       "SaleLineOut": {
         "properties": {
           "line_total": {
-            "title": "Line Total",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Line Total"
           },
           "price_per_gram": {
-            "title": "Price Per Gram",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Price Per Gram"
           },
           "pricing_rule": {
             "$ref": "#/components/schemas/PricingRule"
@@ -3956,16 +4356,30 @@
             "title": "Payment"
           },
           "shipping_charged": {
-            "title": "Shipping Charged",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Shipping Charged"
           },
           "still_owing": {
             "title": "Still Owing",
             "type": "boolean"
           },
           "total": {
-            "title": "Total",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Total"
           }
         },
         "required": [
@@ -4012,8 +4426,15 @@
             "type": "integer"
           },
           "total": {
-            "title": "Total",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Total"
           }
         },
         "required": [
@@ -4040,19 +4461,40 @@
       "SinceFirstRecordOut": {
         "properties": {
           "cash": {
-            "title": "Cash",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Cash"
           },
           "expenses": {
-            "title": "Expenses",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Expenses"
           },
           "profit": {
             "$ref": "#/components/schemas/AmountWithPendingOut"
           },
           "sales": {
-            "title": "Sales",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Sales"
           },
           "shortfall": {
             "anyOf": [
@@ -4260,15 +4702,29 @@
             "type": "boolean"
           },
           "cash": {
-            "title": "Cash",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Cash"
           },
           "cost_of_goods": {
             "$ref": "#/components/schemas/RowCostOut"
           },
           "expenses": {
-            "title": "Expenses",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Expenses"
           },
           "first_day": {
             "format": "date",
@@ -4288,8 +4744,15 @@
             "type": "number"
           },
           "sales": {
-            "title": "Sales",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Sales"
           },
           "shortfall": {
             "anyOf": [
@@ -4336,8 +4799,15 @@
             "type": "integer"
           },
           "sales": {
-            "title": "Sales",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Sales"
           },
           "weekday": {
             "title": "Weekday",
@@ -4583,8 +5053,15 @@
       "app__payments__adapters__schemas__DebtorOut": {
         "properties": {
           "balance": {
-            "title": "Balance",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Balance"
           },
           "customer": {
             "$ref": "#/components/schemas/DebtorCustomerOut"
@@ -4623,8 +5100,15 @@
       "app__results__adapters__schemas__DebtorOut": {
         "properties": {
           "balance": {
-            "title": "Balance",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Balance"
           },
           "customer_id": {
             "title": "Customer Id",

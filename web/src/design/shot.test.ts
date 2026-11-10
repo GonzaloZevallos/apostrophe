@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
+  BUILT_ONLY_LAUNCH_ARGS,
   CALM_CONTEXT,
   CALM_CSS,
+  CAPTURE_SCALE,
   PROBE_CSS,
   captureContextOptions,
   censusClass,
@@ -10,6 +12,7 @@ import {
   grownHeight,
   hiddenRule,
   innerScrollMiss,
+  launchOptions,
   layerMiss,
   named,
   pinnedClass,
@@ -1042,6 +1045,25 @@ describe('the calm page', () => {
       baseURL: 'http://127.0.0.1:1',
       reducedMotion: 'reduce',
     })
+  })
+
+  it('takes the device scale factor only from its scale argument, which defaults to the capture scale', () => {
+    const row = { width: 390, height: 844, url: 'http://127.0.0.1:1' }
+    expect(captureContextOptions(row).deviceScaleFactor).toBe(CAPTURE_SCALE)
+    expect(captureContextOptions({ ...row, scale: 1 })).toEqual({
+      viewport: { width: 390, height: 844 },
+      deviceScaleFactor: 1,
+      colorScheme: 'light',
+      baseURL: 'http://127.0.0.1:1',
+      reducedMotion: 'reduce',
+    })
+  })
+
+  it('launches the browser with the built-only flags only for a built-only run', () => {
+    expect(BUILT_ONLY_LAUNCH_ARGS).toEqual(['--disable-partial-raster'])
+    expect(launchOptions(true)).toEqual({ args: ['--disable-partial-raster'] })
+    // A Design capture launches exactly as before: no flag at all.
+    expect(launchOptions(false)).toEqual({})
   })
 })
 

@@ -22,7 +22,7 @@ INDEXES = {
 }
 TABLES = ("sale", "sale_line", "payment")
 # `sale` is read by the columns it had at this revision: later revisions add some (0023's
-# `number`; `payment` gets 0029's `payment_method_id`), and a `SELECT *` would fail on every one.
+# `number`; `payment` gets 0030's `payment_method_id`), and a `SELECT *` would fail on every one.
 SELECTED = {
     "sale": "id, business_id, {sale_date}, customer_id, shipping_charged, note, recorded_at",
     "sale_line": "*",

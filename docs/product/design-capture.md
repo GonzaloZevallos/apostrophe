@@ -264,6 +264,8 @@ Esta sección describe la herramienta como la dejaron las partes 1 y 2 de GH-491
   Nada más bajo `app/`, `web/src/` o `tests/` cambia, y cualquier otro test editado significa que la implementación está mal.
 - **No se exige un par AE antes/después**: nada de lo que ve un vendedor cambia, las seis filas son nuevas y las filas Today sólo cambian su recorte.
 
+- **Retirado por GH-560**: los avisos de primer uso salieron de Home, así que se retiraron las nueve filas `InicioPrimeraVez*`, `InicioOnboardingEnCurso*` e `InicioOnboardingCompleto*` del registro, los dos dibujos `InicioPrimeraVez.dc.html` e `InicioPrimeraVezCompu.dc.html` y sus entradas de infractores. Esta sección queda como historia.
+
 ### Captura entera
 
 - "Entera" significa la sección nombrada completa tal como la dibuja el archivo de diseño en `docs/product/design-system/pantallas/`. Para la última pantalla del Onboarding son su título, cada línea de paso ("Done", o "For later" con dónde) y sus dos acciones ("Add my first sale", "Go to Home"). Nunca significa `muestra.md`, que guarda las cifras del negocio de muestra, no el layout.

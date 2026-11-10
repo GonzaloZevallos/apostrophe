@@ -42,6 +42,17 @@ class Business:
             raise ValueError("a business needs a last sale number of zero or more")
 
 
+@dataclass(frozen=True)
+class ExportedMoney:
+    """What the document states about the business's money, beside its tables: the scale
+    its amounts are stored at and the decimals it shows (docs/adr/0058). The amounts in
+    `kinds` stay the stored integers, so a reader divides by `10 ** scale` to get back
+    the amounts the business entered. This hexagon's own view, like `Business`."""
+
+    scale: int
+    decimals: int
+
+
 class UnresolvableLabel(ValueError):
     """A row needed a label and `labels.py` declares none for its table. Reachable
     only if a run skips `unlabelled_tables` first; the fixed message names no data."""
@@ -55,10 +66,12 @@ def build_document(
     schema: Schema,
     rows: Mapping[str, Sequence[Mapping[str, Any]]],
     exported_at: datetime,
+    money: ExportedMoney | None = None,
 ) -> dict[str, Any]:
     """`{"business": {"id", "name", "language"[, "last_sale_number"]}, "exported_at",
-    "kinds": {table: [records]}}`; the counter is in the header whenever the business
-    carries it (docs/adr/0073).
+    ["money": {"scale", "decimals"},] "kinds": {table: [records]}}`; the counter is in the
+    header whenever the business carries it (docs/adr/0073), and `money` whenever the
+    caller read the business's (docs/adr/0058).
     Every owned table in `schema` becomes a kind, its records sorted by id, with
     `EXCLUDED_COLUMNS` dropped, `business_id` never repeated, foreign keys turned
     into `{"id", "name"}` references and `*_hundredths` integers into two-place
@@ -88,11 +101,14 @@ def build_document(
     }
     if business.last_sale_number is not None:
         header["last_sale_number"] = business.last_sale_number
-    return {
+    document: dict[str, Any] = {
         "business": header,
         "exported_at": _format_instant(exported_at),
-        "kinds": kinds,
     }
+    if money is not None:
+        document["money"] = {"scale": money.scale, "decimals": money.decimals}
+    document["kinds"] = kinds
+    return document
 
 
 def id_sets(document: Mapping[str, Any]) -> dict[str, frozenset[int]]:
@@ -135,7 +151,7 @@ def _record(
 
 def _foreign_key_targets(table: Table) -> dict[str, str]:
     """Every column of `table` that references another table, `business_id` aside --
-    for the composite expense foreign key this is `category_id` alone, never
+    for the composite expense foreign key this is `expense_category_id` alone, never
     `business_id` (the plan's invariant)."""
     targets: dict[str, str] = {}
     for foreign_key in table.foreign_keys:

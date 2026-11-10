@@ -18,6 +18,7 @@ Cada capacidad tiene su página en [docs/product/](product/):
 - [Icon and text rule](product/icon-and-text-rule.md)
 - [Import](product/import.md)
 - [Language](product/language.md)
+- [Dinero](product/money.md)
 - [Mobile check](product/mobile-check.md)
 - [Navigation](product/navigation.md)
 - [Onboarding](product/onboarding.md)

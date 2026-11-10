@@ -4,6 +4,7 @@ from datetime import date, datetime
 from typing import Protocol
 
 from app.shared.language import Language
+from app.shared.money import MoneyFormat
 from app.shared.quantity import Quantity
 from app.stock.domain.entry import StockEntry
 from app.stock.domain.lot_order import SaleLineDraw, WithdrawalLineDraw
@@ -11,6 +12,13 @@ from app.stock.domain.threshold import Threshold
 from app.stock.domain.withdrawal import Withdrawal
 from app.stock.domain.withdrawal_reason import ReasonName
 from app.stock.domain.withdrawal_reason import WithdrawalReason as WithdrawalReasonEntity
+
+
+class MoneyFormatReader(Protocol):
+    """How the business shows money: its symbol and decimals, never the scale it stores
+    amounts at (docs/adr/0055, docs/adr/0058). Built for one business."""
+
+    def current(self) -> MoneyFormat: ...
 
 
 class StockEntries(Protocol):

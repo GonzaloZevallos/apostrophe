@@ -122,7 +122,7 @@ export const keys = {
   // The Onboarding's one read (`api/onboarding.ts`), frozen the same way and for the same
   // reason: outside the `Resource`/`PREFIX` system, set by its own writes.
   onboardingProgress: () => ['onboarding-progress'] as const,
-  // The first-run element's one read (`api/firstRun.ts`, ADR-0046): outside the
+  // The first-run element's one read (`api/firstRun.ts`, ADR-0046; the Shell and Variedades): outside the
   // `Resource`/`PREFIX` system, and never frozen, since a write on another screen can
   // change it (`staleTime: 0`, refetched on mount and on focus).
   firstRun: () => ['first-run'] as const,

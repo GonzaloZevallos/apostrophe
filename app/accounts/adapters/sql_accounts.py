@@ -219,10 +219,10 @@ class SqlAccounts:
             UserRow.business_id, UserRow.id, literal(token_digest), literal(created_at)
         ).where(UserRow.id == user_id)
         insert_statement = sqlite_insert(ResetLinkRow).from_select(
-            ["business_id", "user_id", "token_digest", "created_at"], select_statement
+            ["business_id", "app_user_id", "token_digest", "created_at"], select_statement
         )
         statement = insert_statement.on_conflict_do_update(
-            index_elements=["user_id"],
+            index_elements=["app_user_id"],
             set_={
                 "token_digest": insert_statement.excluded.token_digest,
                 "created_at": insert_statement.excluded.created_at,
@@ -243,14 +243,14 @@ class SqlAccounts:
         statement = (
             delete(ResetLinkRow)
             .where(ResetLinkRow.token_digest == token_digest, ResetLinkRow.created_at > cutoff)
-            .returning(ResetLinkRow.user_id)
+            .returning(ResetLinkRow.app_user_id)
         )
         row = self._session.execute(statement).first()
         self._session.flush()
         return None if row is None else int(row[0])
 
     def delete_reset_links_of(self, user_id: int) -> None:
-        statement = delete(ResetLinkRow).where(ResetLinkRow.user_id == user_id)
+        statement = delete(ResetLinkRow).where(ResetLinkRow.app_user_id == user_id)
         self._session.execute(statement)
         self._session.flush()
 

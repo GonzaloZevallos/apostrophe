@@ -10,9 +10,20 @@
 const MONEY_FMT = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 })
 const WHOLE_FMT = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 })
 
-/** `11000` → `"$ 11.000"`. */
+/** The decimals a business shows its money with (Money format): 0 for every business today.
+ * The API carries no decimals, and an amount arrives in currency units, so a figure that is
+ * not whole (`11000.5`) is shown at these decimals, half away from zero. */
+export const MONEY_DECIMALS = 0
+
+/** An amount in currency units at the display decimals, half away from zero (never `-0`). */
+function atDisplayDecimals(amount: number): number {
+  const rounded = Math.sign(amount) * Math.round(Math.abs(amount))
+  return rounded === 0 ? 0 : rounded
+}
+
+/** `11000` → `"$ 11.000"`; a JSON number that is not whole, `11000.5`, → `"$ 11.001"`. */
 export function formatMoney(pesos: number): string {
-  return `$ ${MONEY_FMT.format(Math.round(pesos))}`
+  return `$ ${MONEY_FMT.format(atDisplayDecimals(pesos))}`
 }
 
 /** `350` → `"3,5"`: a quantity from whole hundredths, in integer arithmetic only: the
@@ -62,6 +73,6 @@ export function formatMoneyMagnitude(pesos: number): string {
  * render through formatSignedMoney") — never hidden, floored or shown as a plain
  * hyphen. A non-negative amount formats exactly as `formatMoney`. */
 export function formatSignedMoney(pesos: number): string {
-  const rounded = Math.round(pesos)
+  const rounded = atDisplayDecimals(pesos)
   return rounded < 0 ? `−${formatMoney(Math.abs(rounded))}` : formatMoney(rounded)
 }

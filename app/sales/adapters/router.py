@@ -9,6 +9,7 @@ from app.accounts.adapters.deps import CurrentBusinessId
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
+from app.money_route import MoneyJsonRoute
 from app.sales.adapters.business_name import SqlBusinessNames
 from app.sales.adapters.customer_facts import SqlCustomerFacts
 from app.sales.adapters.price_book import SqlPriceBook
@@ -31,6 +32,7 @@ from app.sales.application.errors import SaleNotFound
 from app.sales.application.ports import (
     BusinessNames,
     LineCosts,
+    MoneyFormatReader,
     OnTheSpotPayments,
     OwingSales,
     PricingSettingsReader,
@@ -44,10 +46,11 @@ from app.sales.domain.sale import (
     UnknownCustomer,
     UnknownVariety,
 )
+from app.shared.money import TooManyDecimals
 from app.shared.payment_method import PaymentMethodUnavailable
 from app.shared.quantity import InvalidQuantity, Quantity
 
-router = APIRouter(prefix="/sales", tags=["sales"])
+router = APIRouter(prefix="/sales", tags=["sales"], route_class=MoneyJsonRoute)
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
@@ -88,6 +91,17 @@ def get_on_the_spot(
     return factory(session, business_id)
 
 
+def get_money_format(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> MoneyFormatReader:
+    # Sales never imports `app.money_format` (docs/adr/0055): `app/main.py` hangs
+    # `SqlMoneyFormat` on `app.state.sales_money_format` as a factory.
+    factory = cast(
+        Callable[[Session, int], MoneyFormatReader], request.app.state.sales_money_format
+    )
+    return factory(session, business_id)
+
+
 SalesDep = Annotated[SqlSales, Depends(get_sales)]
 OnTheSpotDep = Annotated[OnTheSpotPayments, Depends(get_on_the_spot)]
 PriceBookDep = Annotated[SqlPriceBook, Depends(get_price_book)]
@@ -120,6 +134,7 @@ def get_business_names(session: SessionDep, business_id: CurrentBusinessId) -> B
     return SqlBusinessNames(session, business_id)
 
 
+MoneyFormatDep = Annotated[MoneyFormatReader, Depends(get_money_format)]
 LineCostsDep = Annotated[LineCosts, Depends(get_line_costs)]
 PricingSettingsDep = Annotated[PricingSettingsReader, Depends(get_pricing_settings)]
 OwingSalesDep = Annotated[OwingSales, Depends(get_owing_sales)]
@@ -130,7 +145,7 @@ as_http = TranslateErrors(
     [
         (404, (SaleNotFound, UnknownCustomer, UnknownVariety, PaymentMethodUnavailable)),
         (409, (CustomerAlreadyAssigned,)),
-        (422, (SaleRuleBroken, InvalidQuantity)),
+        (422, (SaleRuleBroken, InvalidQuantity, TooManyDecimals)),
     ]
 )
 
@@ -153,6 +168,7 @@ def record_sale(
     customer_facts: CustomerFactsDep,
     pricing_settings: PricingSettingsDep,
     owing_sales: OwingSalesDep,
+    money_format: MoneyFormatDep,
     session: SessionDep,
     today: TodayDep,
     clock: ClockDep,
@@ -165,6 +181,7 @@ def record_sale(
             price_book,
             customer_facts,
             pricing_settings,
+            money_format,
             session,
             sale_date=body.date or today,
             today=today,

@@ -13,11 +13,13 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.customers.adapters.tables import CustomerRow
+from app.db import money_scale_factor, scaled
 from app.payment_methods.adapters.tables import PaymentMethodRow
 from app.payments.adapters.tables import PaymentRow
 from app.payments.application.ports import NamedLedger
 from app.payments.domain.settlement import LaterPaymentEntry, Ledger, OwedSale
 from app.sales.adapters.tables import SaleLineRow, SaleRow
+from app.shared.money import Money
 from app.shared.payment_method import PaymentMethodLabel
 
 
@@ -56,9 +58,10 @@ class SqlLedgers:
         if not ids:
             return {}
 
+        factor = money_scale_factor(self._session, self._business_id)
         line_totals = dict(
             self._session.execute(
-                select(SaleLineRow.sale_id, func.sum(SaleLineRow.line_total))
+                select(SaleLineRow.sale_id, func.sum(scaled(SaleLineRow.line_total, factor)))
                 .where(SaleLineRow.business_id == self._business_id)
                 .group_by(SaleLineRow.sale_id)
             ).all()
@@ -67,8 +70,13 @@ class SqlLedgers:
         on_the_spot_methods: dict[int, PaymentMethodLabel] = {}
         later_by_customer: dict[int, list[LaterPaymentEntry]] = {}
         # Display reads join the method whether or not it is archived (docs/adr/0082).
-        for payment, method_name, method_icon in self._session.execute(
-            select(PaymentRow, PaymentMethodRow.name, PaymentMethodRow.icon)
+        for payment, amount, method_name, method_icon in self._session.execute(
+            select(
+                PaymentRow,
+                scaled(PaymentRow.amount, factor),
+                PaymentMethodRow.name,
+                PaymentMethodRow.icon,
+            )
             .join(
                 PaymentMethodRow,
                 (PaymentMethodRow.id == PaymentRow.payment_method_id)
@@ -91,20 +99,20 @@ class SqlLedgers:
                         id=payment.id,
                         paid_on=payment.paid_on,
                         recorded_at=payment.recorded_at,
-                        amount=payment.amount,
+                        amount=Money(amount).whole_units(),
                         method=label,
                     )
                 )
 
         sales_by_customer: dict[int, list[OwedSale]] = {}
-        for sale in self._session.scalars(
-            select(SaleRow).where(
+        for sale, shipping in self._session.execute(
+            select(SaleRow, scaled(SaleRow.shipping_charged, factor)).where(
                 SaleRow.business_id == self._business_id,
                 SaleRow.customer_id.in_(ids),
             )
         ):
             assert sale.customer_id is not None, "filtered to sales that have one"
-            total = sale.shipping_charged + line_totals.get(sale.id, 0)
+            total = Money(shipping + line_totals.get(sale.id, 0)).whole_units()
             sales_by_customer.setdefault(sale.customer_id, []).append(
                 OwedSale(
                     id=sale.id,

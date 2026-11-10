@@ -8,6 +8,7 @@ use cases' own decisions are under test."""
 
 from collections.abc import Callable, Collection, Sequence
 from datetime import UTC, date, datetime
+from decimal import Decimal
 
 import pytest
 from sqlalchemy.orm import Session
@@ -26,6 +27,7 @@ from app.stock.application import manage_entries
 from app.stock.application.errors import VarietyArchived as StockArchived
 from app.stock.application.errors import VarietyNotFound as StockNotFound
 from app.stock.domain.entry import Origin, StockEntry
+from tests.fakes.money_format import WholeAmounts
 
 DAY = date(2026, 10, 6)
 NOW = datetime(2026, 10, 6, 12, tzinfo=UTC)
@@ -115,11 +117,12 @@ def _record_sale(present: bool, transaction: CountingTransaction) -> Sale:
         AskedAgainPriceBook(present),
         NoCustomers(),
         BothRulesOn(),
+        WholeAmounts(),
         transaction,
         sale_date=DAY,
         today=DAY,
         customer_id=None,
-        shipping_charged=0,
+        shipping_charged=Decimal(0),
         note=None,
         lines=[LineInput(variety_id=7, quantity=Quantity.of("1"), gift=True)],
         payment_method_id=None,
@@ -199,6 +202,7 @@ def _record_entry(then: str, transaction: CountingTransaction) -> StockEntry:
     return manage_entries.record_entry(
         RefusingEntries(),
         catalog,
+        WholeAmounts(),
         transaction,
         entry_date=DAY,
         variety_id=7,
@@ -215,6 +219,7 @@ def _edit_entry(then: str, transaction: CountingTransaction) -> StockEntry:
     return manage_entries.edit_entry(
         RefusingEntries(own_variety_id=3),
         AskedAgainCatalog(then),
+        WholeAmounts(),
         transaction,
         1,
         entry_date=DAY,
@@ -296,10 +301,11 @@ def _record_price(then: Product | None, transaction: CountingTransaction) -> obj
     return manage_prices.record_price_entry(
         RefusingVarieties(then),
         BothRulesOn(),
+        WholeAmounts(),
         transaction,
         7,
         effective_from=DAY,
-        list_price=10_000,
+        list_price=Decimal(10_000),
     )
 
 

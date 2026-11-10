@@ -2,7 +2,7 @@
 
 Los **Product**s que vende un **Business** y el historial de precios de cada uno, que ve solo ese Business (ADR-0004). Toda otra capacidad lee los precios de acá: una **Sale** toma el **Current price** de su día, y el **Catalog** muestra el de hoy.
 
-En pantalla, lo que vende un Business se llama siempre "Product" / "Products", igual para todo Business, los existentes incluidos; no hay ninguna configuración, columna ni campo de la API para elegir otra palabra (decisión del dueño del 2026-10-29, registrada en docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md, que reemplaza solo la oración de pantalla de ADR-0061). El nombre de este archivo, las rutas del front `/varieties/*`, las columnas `variety_id` (hasta #75) y los ids del registro de diseño son identificadores y no cambian (ADR-0061).
+En pantalla, lo que vende un Business se llama siempre "Product" / "Products", igual para todo Business, los existentes incluidos; no hay ninguna configuración, columna ni campo de la API para elegir otra palabra (decisión del dueño del 2026-10-29, registrada en docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md, que reemplaza solo la oración de pantalla de ADR-0061). El nombre de este archivo, las rutas del front `/varieties/*`, las columnas `variety_id` (hasta que se renombre la tabla `variety`) y los ids del registro de diseño son identificadores y no cambian (ADR-0061).
 
 Products es la única pantalla de un Product. Su lista y la página de cada Product reúnen:
 - los precios del Product (acá);
@@ -197,7 +197,7 @@ Criterios de éxito:
     (pinned-catalog.md).
 - **Un Archived product queda afuera de**:
   - la lista de Products y su línea de resumen;
-  - What you have left de Home, y la regla "Start with your products" (results.md);
+  - What you have left de Home (results.md);
   - el selector de Product de New sale (`sales.md`);
   - el selector de Product del formulario de Stock entry (`stock.md`);
   - el formulario de Price entry;
@@ -273,8 +273,8 @@ Criterios de éxito:
   - si no: cada estado que no es ok, contado por palabra, en el orden de Stock status (p. ej. "1 no entries · 1 sold out · 1 low"). Nunca queda en blanco.
   - La redacción exacta es de diseño, siempre que cada estado se diga con palabra.
 - **"Send catalog"** arriba, que abre la pantalla del Catalog (`catalog.md`). Está
-  deshabilitado, con su motivo en palabras, solo mientras se muestra la **First-run checklist** y nada
-  califica (navigation.md).
+  deshabilitado, con su motivo en palabras, solo para un Business anterior al Onboarding que no cumplió los dos pasos
+  obligatorios, mientras nada califica (navigation.md).
 - **"+ Stock entry"**, un botón secundario arriba de la lista (no un botón flotante),
   que abre el formulario de Stock entry con el Product por elegir (`stock.md`).
 - **"Take from stock"**, un botón secundario junto a "+ Stock entry", en celular y
@@ -406,8 +406,7 @@ Criterios de éxito:
   - para la única Price entry, que el Product queda "No price: cannot be sold".
 
   El texto nunca menciona las Sales.
-- **Después de eliminar**, los precios de hoy se actualizan de inmediato en la página y en la lista. Home puede
-  volver a mostrar "Start with your products".
+- **Después de eliminar**, los precios de hoy se actualizan de inmediato en la página y en la lista.
 - **Toasts**: "Product saved", "Price saved", "Price deleted", "Product deleted", "Product archived" y "Product restored", sin nombres ni montos
   (más "Warning saved", "Catalog saved" y el "Entry saved" del formulario de Stock entry).
 - **Rechazos**, como un nombre duplicado, un nombre que tiene un Archived product, una
@@ -647,7 +646,7 @@ Criterios de éxito:
 - Un rechazo por choque de nombre o un estado de error para Restore.
 - Métricas de uso de las páginas archivadas.
 - Una palabra configurable para lo que vende un Business, en cualquier forma: configuración, columna, campo de la API o paso del Onboarding.
-- Renombrar las rutas del front `/varieties/*`, las columnas `variety_id` (#75), los identificadores del código, los nombres de los hexágonos, los ids del registro de diseño o el nombre de este archivo.
+- Renombrar las rutas del front `/varieties/*`, las columnas `variety_id` (mientras no se renombre la tabla `variety`), los identificadores del código, los nombres de los hexágonos, los ids del registro de diseño o el nombre de este archivo.
 - Las demás palabras de flor (gramos, "g", Indica share, Aroma, 🌿): #420 y #390.
 - El copy en español "producto" / "productos": llega con #317.
 - Corregir los dibujos de `pantallas/` que todavía dicen "Variety": diseño lo hace en su propio trabajo.

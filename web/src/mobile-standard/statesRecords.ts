@@ -11,6 +11,7 @@ import {
   CUSTOMER_NEW,
   CUSTOMERS,
   EXPENSE_CATEGORIES,
+  EXPENSE_NEW,
   EXPENSES,
   MORE,
   pathTo,
@@ -27,8 +28,9 @@ import {
   WITHDRAWAL_NEW,
 } from '../routes.ts'
 import { AUTH_TEXT } from '../copy/auth.ts'
-import { common } from './copy.ts'
+import { common, emptyState } from './copy.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
+import { EXPENSES_TEXT } from '../copy/expenses.ts'
 import { PAYMENT_METHODS_TEXT, deleteTitle, rowLabel } from '../copy/paymentMethods.ts'
 import { SETTINGS_TEXT } from '../copy/settings.ts'
 import { STOCK_TEXT } from '../copy/stock.ts'
@@ -97,6 +99,14 @@ const TWELVE_REASONS = Array.from({ length: 12 }, (_unused, index) => ({
   name: index === 11 ? LONG_NAME : `Motivo ${index + 1}`,
 }))
 
+/** Twelve Customer types, one with a 60-character name, seeded for the type list's state only. */
+const TWELVE_TYPES = Array.from({ length: 12 }, (_unused, index) => ({
+  id: 300 + index,
+  name: index === 11 ? LONG_NAME : `Tipo ${index + 1}`,
+  icon: 'star',
+  is_vip: false,
+}))
+
 /** Entry 1 pointed at a Variety that is archived: no listed Variety has this id. */
 const ARCHIVED_ENTRY = {
   id: 1,
@@ -119,6 +129,14 @@ export const RECORDS_STATES: readonly WalkState[] = [
     steps: [{ press: STOCK_TEXT.motivo }],
     visible: 'Motivo 1',
     reads: [{ path: /^\/api\/withdrawal-reasons$/, status: 200, body: TWELVE_REASONS }],
+  },
+  {
+    // The business has no Expense categories: the open Category list shows the empty-set line.
+    screen: 'expense/category-selector-empty',
+    route: EXPENSE_NEW,
+    steps: [{ press: `${common('common:category')} ${EXPENSES_TEXT.pickACategory}` }],
+    visible: emptyState('emptyStates:selectorNoCategories'),
+    reads: [{ path: /^\/expense-categories$/, status: 200, body: [] }],
   },
   {
     // A stored line on a Variety archived since: its 60-character name shows with the mark.
@@ -188,6 +206,14 @@ export const RECORDS_STATES: readonly WalkState[] = [
     steps: [],
     visible: CUSTOMERS_TEXT.typeLabel,
     reads: [{ path: /^\/api\/customer-types$/, status: 200, body: SAMPLE_TYPES }],
+  },
+  {
+    // Twelve types, one of 60 characters: the phone list is open and its search shows.
+    screen: 'customer/type-selector-open',
+    route: CUSTOMER_NEW,
+    steps: [{ press: `${CUSTOMERS_TEXT.typeLabel} ${common('common:noType')}` }],
+    visible: 'Tipo 1',
+    reads: [{ path: /^\/api\/customer-types$/, status: 200, body: TWELVE_TYPES }],
   },
   {
     // A customer in a type, answered by a stub, so the detail page's type line is walked.

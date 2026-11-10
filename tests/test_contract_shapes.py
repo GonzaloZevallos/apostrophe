@@ -331,7 +331,11 @@ def _walk(
         variants = [_deref(variant, components) for variant in schema["anyOf"]]
         non_null = [variant for variant in variants if variant.get("type") != "null"]
         has_null = len(non_null) < len(variants)
-        if has_null and len(non_null) == 1:
+        if has_null and {variant.get("type") for variant in non_null} == {"integer", "number"}:
+            # A nullable amount (`MoneyOut | None`): a JSON integer when whole, otherwise a
+            # number. The fixtures hold whole amounts, so it is declared "integer".
+            acc[prefix] = "integer"
+        elif has_null and len(non_null) == 1:
             other = non_null[0]
             acc[prefix] = _leaf_type(other)
             _walk_object_or_array(other, components, prefix, acc)

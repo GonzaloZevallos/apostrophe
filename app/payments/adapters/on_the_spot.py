@@ -9,8 +9,10 @@ from sqlalchemy import delete as sa_delete
 from sqlalchemy import insert, literal, select, update
 from sqlalchemy.orm import Session
 
+from app.db import money_stored_value
 from app.payment_methods.adapters.tables import PaymentMethodRow
 from app.payments.adapters.tables import PaymentRow
+from app.shared.money import Money
 from app.shared.payment_method import PaymentMethodUnavailable
 
 
@@ -38,7 +40,7 @@ class SqlOnTheSpotPayments:
             literal(customer_id),
             literal(sale_id),
             literal(paid_on),
-            literal(amount),
+            literal(money_stored_value(self._session, self._business_id, Money.of_units(amount))),
             PaymentMethodRow.id,
             literal(recorded_at),
         ).where(

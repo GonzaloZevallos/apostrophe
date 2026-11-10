@@ -61,7 +61,6 @@ export const ONBOARDING_TEXT = {
   publishItFromVarieties: 'Whenever you like, publish it from Products → Send catalog',
   forLaterIn: (later: string | number) => `For later — in ${later}`,
   doneWith: (detail: string | number) => `Done · ${detail}`,
-  goOnToTheSetup: 'Go on to the setup',
   discardWhatYouTyped: 'Discard what you typed?',
   createTheLink: 'Create the link',
   addYourFirstVariety: 'Add your first product',

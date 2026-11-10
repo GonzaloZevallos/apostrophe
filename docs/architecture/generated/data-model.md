@@ -51,7 +51,7 @@ erDiagram
   expense {
     INTEGER id PK
     INTEGER business_id FK
-    INTEGER category_id FK
+    INTEGER expense_category_id FK
     DATE spent_on
     INTEGER amount
     VARCHAR(200) detail
@@ -163,7 +163,7 @@ erDiagram
   reset_link {
     INTEGER id PK
     INTEGER business_id FK
-    INTEGER user_id FK
+    INTEGER app_user_id FK
     VARCHAR(64) token_digest UK
     DATETIME created_at
   }
@@ -236,7 +236,7 @@ erDiagram
     VARCHAR(60) name_key
     INTEGER position
   }
-  app_user ||--o| reset_link : user_id
+  app_user ||--o| reset_link : app_user_id
   business ||--o{ app_user : business_id
   business ||--o{ catalog_attribute : business_id
   business ||--o{ customer : business_id
@@ -265,7 +265,7 @@ erDiagram
   customer ||--o{ payment : customer_id
   customer ||--o{ sale : customer_id
   customer_type ||--o{ customer : customer_type_id
-  expense_category ||--o{ expense : category_id
+  expense_category ||--o{ expense : expense_category_id
   expense_category }o--o{ expense : business_id
   payment_method ||--o{ payment : payment_method_id
   payment_method }o--o{ payment : business_id

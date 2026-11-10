@@ -5,6 +5,7 @@ only tests where the foreign keys and the guarded statement meet a real concurre
 
 from collections.abc import Iterator
 from datetime import UTC, date, datetime
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -38,6 +39,7 @@ from app.stock.application import manage_entries
 from app.stock.application.errors import VarietyNotFound as StockVarietyNotFound
 from app.stock.domain.entry import Origin, StockEntry
 from app.stock.domain.threshold import Threshold
+from tests.fakes.money_format import WholeAmounts
 
 DAY = date(2026, 10, 6)
 NOW = datetime(2026, 10, 6, 12, tzinfo=UTC)
@@ -53,6 +55,12 @@ def engine(request: pytest.FixtureRequest, tmp_path: Path) -> Iterator[Engine]:
     with engine.begin() as connection:
         connection.execute(
             text("INSERT INTO business (id, name, language) VALUES (1, 'Negocio', 'en')")
+        )
+        connection.execute(
+            text(
+                "INSERT INTO money_format (business_id, symbol, decimals, scale)"
+                " VALUES (1, '$', 0, 0)"
+            )
         )
     yield engine
     engine.dispose()
@@ -281,6 +289,7 @@ def test_a_delete_committed_first_makes_the_entry_answer_gone_and_orphans_nothin
             manage_entries.record_entry(
                 SqlStockEntries(late, BUSINESS),
                 _StaleCatalog(SqlVarietyCatalog(late, BUSINESS)),
+                WholeAmounts(),
                 late,
                 entry_date=DAY,
                 variety_id=variety_id,
@@ -309,10 +318,11 @@ def test_a_delete_committed_first_makes_the_price_answer_gone(engine: Engine) ->
             manage_prices.record_price_entry(
                 _ReadsStaleOnce(late, stale),
                 BothRulesOn(),
+                WholeAmounts(),
                 late,
                 variety_id,
                 effective_from=date(2026, 2, 1),
-                list_price=12_000,
+                list_price=Decimal(12_000),
             )
 
     assert _count(engine, "price_entry") == 0
@@ -338,11 +348,12 @@ def _record_sale(session: Session, price_book: SqlPriceBook, variety_id: int) ->
         price_book,
         SqlCustomerFacts(session, BUSINESS),
         BothRulesOn(),
+        WholeAmounts(),
         session,
         sale_date=DAY,
         today=DAY,
         customer_id=None,
-        shipping_charged=0,
+        shipping_charged=Decimal(0),
         note=None,
         lines=[LineInput(variety_id=variety_id, quantity=Quantity.of("1"), gift=True)],
         payment_method_id=None,

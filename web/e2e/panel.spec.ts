@@ -270,7 +270,8 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // An expense, in the business's own default "Other" category.
   await openGastos(page)
   await page.getByRole('link', { name: 'Add expense' }).click()
-  await page.getByLabel('Category').selectOption({ label: 'Other' })
+  await page.getByRole('button', { name: /^Category/ }).click()
+  await page.getByRole('option', { name: 'Other' }).or(page.getByRole('button', { name: 'Other', exact: true })).click()
   await page.getByLabel('Amount').fill('1500')
   await page.getByLabel('Details').fill('Bolsas de regalo')
   await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: 'Save the expense' }).click())

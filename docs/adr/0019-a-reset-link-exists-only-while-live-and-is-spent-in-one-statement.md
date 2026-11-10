@@ -14,15 +14,15 @@ change once links exist in the database.
 
 ## Decision
 
-- **`reset_link` is an owned table** (`id`, `business_id` not null, `user_id` not null
-  with UNIQUE(user_id), `token_digest` unique, `created_at` as `UtcDateTime`). A row
+- **`reset_link` is an owned table** (`id`, `business_id` not null, `app_user_id` not null
+  with UNIQUE(app_user_id), `token_digest` unique, `created_at` as `UtcDateTime`). A row
   exists only while its link could still work: a use, a newer link or any password
   change deletes it. "Used" and "retired" are not columns; expiry
   (`RESET_LINK_LIFETIME = 24h`, `app/accounts/domain/reset_link.py`) is the only check
-  left. One live link per user is the database's UNIQUE(user_id), not a rule in code.
+  left. One live link per user is the database's UNIQUE(app_user_id), not a rule in code.
 - **Issuing is one upsert** whose business comes from the user's own row:
-  `INSERT INTO reset_link (business_id, user_id, token_digest, created_at) SELECT
-  business_id, id, :d, :t FROM app_user WHERE id = :u ON CONFLICT(user_id) DO UPDATE …`.
+  `INSERT INTO reset_link (business_id, app_user_id, token_digest, created_at) SELECT
+  business_id, id, :d, :t FROM app_user WHERE id = :u ON CONFLICT(app_user_id) DO UPDATE …`.
   The port takes no `business_id`. The token is generated and digested by the same
   functions invitations use.
 - **Spending is one guarded statement.** The submit checks the new password's length,

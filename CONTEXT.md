@@ -24,7 +24,7 @@ _Avoid_: signup link, referral, code
 ## Catalog y precios
 
 **Product**:
-Lo que vende un Business, identificado por su nombre dentro de ese Business; es la única palabra para eso en el código, en la API (`/api/products`, `product_id`) y en pantalla, "Product" / "Products" para todo Business, sin ninguna configuración para otra palabra. Su Stock, sus Stock entries, sus precios, su aviso de Stock bajo y sus Catalog attributes están en su propia página, en la pestaña Products; sin Product history se puede eliminar, y con historial se archiva y restaura. Las columnas siguen siendo `variety_id` hasta #75 y los paths del front `/varieties/*` no cambian (ADR-0061).
+Lo que vende un Business, identificado por su nombre dentro de ese Business; es la única palabra para eso en el código, en la API (`/api/products`, `product_id`) y en pantalla, "Product" / "Products" para todo Business, sin ninguna configuración para otra palabra. Su Stock, sus Stock entries, sus precios, su aviso de Stock bajo y sus Catalog attributes están en su propia página, en la pestaña Products; sin Product history se puede eliminar, y con historial se archiva y restaura. Las columnas siguen siendo `variety_id` hasta que se renombre la tabla `variety` y los paths del front `/varieties/*` no cambian (ADR-0061).
 _Avoid_: variety, varieties, strain, item, SKU, article, product word
 _In the app_: Product; la pestaña es Products.
 
@@ -346,7 +346,7 @@ La persona que maneja la instalación desde afuera de la app. Ejecuta scripts/in
 _Avoid_: admin, administrator, superuser, owner, PM
 
 **Business export**:
-Un archivo JSON con cada dato registrado de un Business tal como está guardado, cada registro con el nombre de aquello a lo que se refiere, sin ninguna cifra calculada, hash de contraseña, secreto ni Invitation. Se escribe solo como primer paso de la Business removal.
+Un archivo JSON con cada dato registrado de un Business tal como está guardado, cada registro con el nombre de aquello a lo que se refiere, sin ninguna cifra calculada, hash de contraseña, secreto ni Invitation. Sus montos van a la Money scale del Business, con `money {scale, decimals}` al lado para leerlos. Se escribe solo como primer paso de la Business removal.
 _Avoid_: backup, dump, archive
 
 **Business removal**:
@@ -396,12 +396,11 @@ El único lugar que reúne cada configuración de todo el Business, en grupos: B
 _Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group)
 
 **First-run checklist**:
-Cuatro pasos en Home para un Business que existía antes de que saliera el Onboarding y todavía no hizo las dos cosas: ponerle precio a un Product para hoy y registrar una Stock entry. Esos dos pasos, más publicar el Pinned catalog y sumar un segundo User, que son opcionales. Cada paso se calcula a partir de los datos del Business y dice "Done" cuando se cumple; la First-run checklist desaparece para siempre la primera vez que se cumplen los dos pasos obligatorios y nunca vuelve. Un Business recién creado recibe el Onboarding en su lugar.
-_Avoid_: tour, wizard, setup guide, welcome, Onboarding (that is a brand-new business's first run)
+Término retirado del glosario: Home ya no muestra la lista de cuatro pasos, así que la entrada se borra de CONTEXT.md. Las reglas laterales de "+ New sale" y "Send catalog" para un Business anterior al Onboarding siguen en navigation.md sin este nombre.
 
 **Onboarding**:
-La configuración paso a paso por la que se guía a un Business recién creado una vez que se acepta su Invitation de Business nuevo, en lugar de la First-run checklist. Tiene dos pasos obligatorios (un Product con precio para hoy, su Opening stock) y otros opcionales (Catalog header and footer, bot de Telegram, un socio, Expense categories); nunca pregunta cómo se llama lo que vende el Business ni pide una Unit. Retoma donde quedó, termina para siempre al llegar a su pantalla "Done" o cuando un Spreadsheet import carga el Business, y nunca se ofrece en el Business de un User que se sumó ni en uno que existía antes de que saliera.
-_Avoid_: tour, wizard, welcome screen, setup guide
+La configuración paso a paso por la que se guía a un Business recién creado una vez que se acepta su Invitation de Business nuevo. Tiene dos pasos obligatorios (un Product con precio para hoy, su Opening stock) y otros opcionales (Catalog header and footer, bot de Telegram, un socio, Expense categories); nunca pregunta cómo se llama lo que vende el Business ni pide una Unit, y no pone ningún aviso en Home. Retoma donde quedó solo cuando se vuelve por su propia entrada (el aterrizaje tras la Invitation o la dirección `/onboarding`), termina para siempre al llegar a su pantalla "Done" o cuando un Spreadsheet import carga el Business, y nunca se ofrece en el Business de un User que se sumó ni en uno que existía antes de que saliera.
+_Avoid_: tour, wizard, welcome screen, setup guide, setup notice
 
 **Theme choice**:
 La elección de Automatic, Light o Dark de un dispositivo. Se hace solo en Settings → Appearance, se aplica de inmediato y se conserva solo en ese dispositivo. No está atada a un User ni a un Business, sobrevive al cierre de sesión y no guarda nada más. Sin ninguna guardada, la app sigue al teléfono en vivo; una elección guardada es solo de ese dispositivo y gana sobre el teléfono. _In the app_: Theme (Automatic · Light · Dark).
@@ -422,6 +421,10 @@ _Avoid_: price config, pricing mode, plan, tariff settings
 **Money format**:
 El símbolo de la moneda y los decimales con que un Business muestra su dinero. Todo Business tiene por ahora "$" y 0 decimales. Se guarda en una fila de money_format por Business, junto con la Money scale. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md.
 _Avoid_: currency settings
+
+**Money scale**:
+Si un Business guarda su dinero en unidades enteras de moneda (0) o en centésimos (2): los Businesses que ya existían quedan en 0 y los nuevos empiezan en 2. Es un dato de guardado, no de pantalla, que se aplica solo dentro del SQL del adaptador mediante el único helper de dinero; ningún caso de uso la lee y ningún pedido la lleva. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md.
+_Avoid_: precision, cents mode, decimals
 
 **Promotion**:
 Una Stock withdrawal para dar a conocer el Business, p. ej. gramos compartidos en una fiesta para que los prueben varias personas. Su costo es lo que costaron los gramos sacados de sus Lots tal como están hoy, y se muestra como una línea propia que baja el Profit. _In the app_: Promotion.
@@ -452,7 +455,7 @@ La corrida manual de `ci.yml` en un sha, que usa el workflow y los scripts de ma
 _Avoid_: re-run, manual run, workflow run
 
 **Tappable notice**:
-Un aviso que el vendedor toca para abrir aquello a lo que apunta, como el "Go on to the setup" de Home. Su oración lleva el significado y es su nombre accesible. Su regla completa vive en `docs/product/icon-and-text-rule.md`.
+Un aviso que el vendedor toca para abrir aquello a lo que apunta. Su oración lleva el significado y es su nombre accesible. Su regla completa vive en `docs/product/icon-and-text-rule.md`.
 _Avoid_: banner, card button, row, callout, alert
 
 **Design capture**:
@@ -542,10 +545,6 @@ _Avoid_: amount, grams
 **Business time zone**:
 La zona que decide cuándo empieza y termina el día de un Business; a todo Business existente se le da la de Argentina. Decidido en docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; a cargo de la parte time-zone.
 _Avoid_: locale, region
-
-**Money scale**:
-Si un Business guarda su dinero en unidades enteras de moneda (0) o en centésimos (2); los Businesses existentes quedan en 0 y los nuevos empiezan en 2. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; a cargo de la parte money.
-_Avoid_: precision, cents mode
 
 **Customer-type price**:
 El precio que paga un Customer type por un Product, una fila que rige desde una fecha. Reemplaza al VIP price en las escrituras nuevas; la Price entry conserva su VIP price tal como está, y los VIP prices guardados y las marcas VIP se quedan en su lugar, congelados con los valores que tienen. Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; a cargo de la parte customer-type prices.

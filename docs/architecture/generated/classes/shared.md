@@ -38,6 +38,8 @@ classDiagram
     as_decimal() Decimal
     in_units_of(factor: int) int
     of(value: Decimal #124; int #124; str) Money
+    of_units(units: int) Money
+    whole_units() int
   }
   class MoneyFormat {
     decimals : int
@@ -83,6 +85,9 @@ classDiagram
     of(value: Decimal #124; int #124; str) Quantity
   }
   class ReferenceRefused {
+  }
+  class TooManyDecimals {
+    code : ClassVar~str~
   }
   class Transaction {
     commit() None

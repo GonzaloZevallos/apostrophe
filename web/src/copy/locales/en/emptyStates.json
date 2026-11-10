@@ -2,8 +2,6 @@
   "salesList": "You haven't recorded any sales in this period yet.",
   "customersList": "You have not added any customers yet.",
   "nobodyOwes": "Nobody owes you",
-  "homeVarietiesTitle": "Start with your products",
-  "homeVarietiesDetail": "Add your first product with its price. Without a price it cannot be sold.",
   "stockTitle": "No stock entries",
   "stockDetail": "Enter your initial stock or a purchase",
   "catalogTitle": "Nothing in the catalog today",

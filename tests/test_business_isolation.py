@@ -28,7 +28,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import delete as sa_delete
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
@@ -424,10 +424,32 @@ def business_a(app: FastAPI, engine: Engine, clock: MovableClock) -> Iterator[Te
 
 @pytest.fixture
 def business_b(
-    app: FastAPI, engine: Engine, clock: MovableClock, business_a: TestClient
+    app: FastAPI,
+    engine: Engine,
+    clock: MovableClock,
+    money_scale: int,
+    business_a: TestClient,
 ) -> Iterator[TestClient]:
+    """B is opened at the other scale, so one installation holds a scale-0 and a scale-2
+    business whichever A is. The opening wiring is one per app, so B's empty `money_format`
+    row (no amount exists in it yet) is set to the other scale right after it is opened."""
+    other_scale = 2 - money_scale
     with TestClient(app) as client:
-        yield signed_in(client, open_business(client, engine, clock, "B", "b@b.com"))
+        token = open_business(client, engine, clock, "B", "b@b.com")
+        with engine.begin() as connection:
+            connection.execute(
+                text("UPDATE money_format SET scale = :scale WHERE business_id = 2"),
+                {"scale": other_scale},
+            )
+        assert _scales(engine) == [money_scale, other_scale]
+        yield signed_in(client, token)
+
+
+def _scales(engine: Engine) -> list[int]:
+    """The `money_format.scale` of each business, in the order they were opened."""
+    with engine.connect() as connection:
+        rows = connection.execute(text("SELECT scale FROM money_format ORDER BY business_id"))
+        return [int(row[0]) for row in rows]
 
 
 @pytest.fixture
@@ -1279,3 +1301,42 @@ def test_two_businesses_both_start_at_sale_number_1_and_neither_learns_the_other
     assert "number" not in refused.text
     assert business_b.delete(f"/sales/{sales_a[-1]['id']}").status_code == 404
     assert business_a.get(f"/sales/{sales_a[-1]['id']}").json()["number"] == 3
+
+
+def test_a_scale_0_and_a_scale_2_business_hold_their_own_money_and_neither_shows_a_scale(
+    business_a: TestClient, business_b: TestClient, engine: Engine
+) -> None:
+    """One installation, one business at each scale: the same sale reads back as 11000 in
+    both, each stored at its own scale, and no response of either names a scale."""
+    for client, amount in ((business_a, 11_000), (business_b, 22_000)):
+        variety = client.post("/api/products", json={"name": "Plant"}).json()
+        client.post(
+            f"/api/products/{variety['id']}/prices",
+            json={"effective_from": "2026-01-01", "list_price": amount},
+        )
+        customer = client.post("/customers", json={"name": "Fran", "phone": "11 2345-6789"}).json()
+        sold = client.post(
+            "/sales",
+            json={
+                "payment": {"kind": "owing"},
+                "customer_id": customer["id"],
+                "lines": [{"product_id": variety["id"], "quantity": "1"}],
+            },
+        )
+        assert sold.status_code == 201, sold.text
+
+    with engine.connect() as connection:
+        stored = {
+            int(row[0]): int(row[1])
+            for row in connection.execute(
+                text("SELECT business_id, line_total FROM sale_line ORDER BY business_id")
+            )
+        }
+    scales = _scales(engine)
+    assert stored == {1: 11_000 * 10 ** scales[0], 2: 22_000 * 10 ** scales[1]}
+
+    assert business_a.get("/payments/debtors").json()["total_owed"] == 11_000
+    assert business_b.get("/payments/debtors").json()["total_owed"] == 22_000
+    for client in (business_a, business_b):
+        for path in ("/panel", "/analysis", "/payments/debtors", "/sales", "/business"):
+            assert "scale" not in client.get(path).text, path

@@ -15,7 +15,7 @@ import { EXPENSES, EXPENSE_CATEGORIES } from '../routes'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import { FLOWER_NOTICE } from './Gastos'
 import { CATEGORY_GONE } from './expenses/ExpenseForm'
-import { type FetchImpl, ME, jsonResponse, renderExpenses } from './expenses/renderExpenses'
+import { type FetchImpl, ME, categoryField, chooseCategory, jsonResponse, renderExpenses } from './expenses/renderExpenses'
 
 interface Row {
   id: number
@@ -109,7 +109,7 @@ function failing(match: (url: string, method: string) => boolean, make: () => Re
 }
 
 async function fillAndSave(detail: string, amount: string): Promise<void> {
-  await userEvent.selectOptions(await screen.findByLabelText('Category'), 'Packaging')
+  await chooseCategory('Packaging')
   await userEvent.type(screen.getByLabelText('Amount'), amount)
   await userEvent.type(screen.getByLabelText('Details'), detail)
   await userEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
@@ -370,8 +370,74 @@ test('a category removed mid-form keeps what was typed and empties Categoría', 
   await fillAndSave('Cinta para embalar', '1000')
 
   expect(await screen.findByText(CATEGORY_GONE)).toBeInTheDocument()
-  expect(screen.getByLabelText('Category')).toHaveValue('')
+  expect(await categoryField()).toHaveTextContent('Pick a category')
   expect(screen.getByLabelText('Details')).toHaveValue('Cinta para embalar')
+})
+
+test('the gone refusal is tied to the field, and an inline-created category that is gone is not offered afterwards', async () => {
+  renderExpenses(
+    [EXPENSES],
+    store(
+      [...SEED],
+      // The created category is never kept by the store, so it is dead at the save.
+      async (url, init) => {
+        const method = init?.method ?? 'GET'
+        if (url === '/expense-categories' && method === 'POST') return jsonResponse(201, { id: 3, name: 'Insumos' })
+        if (url === EXPENSES && method === 'POST') {
+          return jsonResponse(404, { detail: 'no category', code: 'expense_category.not_found' })
+        }
+        throw new RangeError('not mine')
+      },
+    ),
+  )
+
+  await userEvent.click(await screen.findByRole('link', { name: 'Add expense' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Create a new category' }))
+  await userEvent.type(screen.getByLabelText('New category name'), 'Insumos')
+  await userEvent.click(screen.getByRole('button', { name: 'Create category' }))
+  await vi.waitFor(async () => expect(await categoryField()).toHaveTextContent('Insumos'))
+  await userEvent.type(screen.getByLabelText('Amount'), '1000')
+  await userEvent.type(screen.getByLabelText('Details'), 'Cinta')
+  await userEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
+
+  const refusal = await screen.findByText(CATEGORY_GONE)
+  const field = await categoryField()
+  expect(field).toHaveTextContent('Pick a category')
+  expect(field).toHaveAttribute('aria-describedby', refusal.id)
+
+  await userEvent.click(field)
+  const list = within(await screen.findByRole('dialog', { name: 'Category options' }))
+  expect(list.getByRole('button', { name: 'Packaging' })).toBeInTheDocument()
+  expect(list.queryByRole('button', { name: 'Insumos' })).not.toBeInTheDocument()
+})
+
+test('creating a category inline after the gone refusal chooses it and clears the error under the field', async () => {
+  renderExpenses(
+    [EXPENSES],
+    store(
+      [...SEED],
+      async (url, init) => {
+        const method = init?.method ?? 'GET'
+        if (url === EXPENSES && method === 'POST') {
+          return jsonResponse(404, { detail: 'no category', code: 'expense_category.not_found' })
+        }
+        if (url === '/expense-categories' && method === 'POST') return jsonResponse(201, { id: 9, name: 'Insumos' })
+        throw new RangeError('not mine')
+      },
+    ),
+  )
+
+  await userEvent.click(await screen.findByRole('link', { name: 'Add expense' }))
+  await fillAndSave('Cinta', '1000')
+  await screen.findByText(CATEGORY_GONE)
+
+  await userEvent.click(screen.getByRole('button', { name: 'Create a new category' }))
+  await userEvent.type(screen.getByLabelText('New category name'), 'Insumos')
+  await userEvent.click(screen.getByRole('button', { name: 'Create category' }))
+
+  await vi.waitFor(async () => expect(await categoryField()).toHaveTextContent('Insumos'))
+  expect(screen.queryByText(CATEGORY_GONE)).not.toBeInTheDocument()
+  expect(await categoryField()).not.toHaveAttribute('aria-describedby')
 })
 
 test('a server error on the expense form shows the generic retry, never the refusal text', async () => {
@@ -401,8 +467,8 @@ test('creating a category inside the expense form keeps what was typed and selec
   await userEvent.type(screen.getByLabelText('New category name'), 'Insumos')
   await userEvent.click(screen.getByRole('button', { name: 'Create category' }))
 
-  await vi.waitFor(() => {
-    expect(screen.getByLabelText('Category')).toHaveValue('3')
+  await vi.waitFor(async () => {
+    expect(await categoryField()).toHaveTextContent('Insumos')
   })
   expect(screen.getByLabelText('Details')).toHaveValue('Sustrato nuevo')
 })
@@ -478,7 +544,7 @@ test('a duplicate category name inside the form is refused, keeping what was typ
   expect(await screen.findByText('Check the details and try again.')).toBeInTheDocument()
   expect(screen.getByLabelText('New category name')).toHaveValue('Packaging')
   expect(screen.getByLabelText('Details')).toHaveValue('Sustrato nuevo')
-  expect(screen.getByLabelText('Category')).toHaveValue('')
+  expect(await categoryField()).toHaveTextContent('Pick a category')
 })
 
 test('if the categories cannot load, the edit overlay still has "Close"', async () => {

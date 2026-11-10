@@ -32,6 +32,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useOutletContext } from 'react-router'
+import { TOO_MANY_DECIMALS_MESSAGE } from '../../api/amountRefusal'
 import { ApiError, NetworkError, UNKNOWN_CODE, get, post } from '../../api/client'
 import type { Customer } from '../../api/customers'
 import { keys } from '../../api/keys'
@@ -164,6 +165,7 @@ const SUBMIT_OVERRIDES: Partial<
   'sale.special_price_invalid': { field: 'form', message: GENERIC_REFUSAL },
   'sale.grams_invalid': { field: 'form', message: GENERIC_REFUSAL },
   'sale.rule_broken': { field: 'form', message: GENERIC_REFUSAL },
+  'money.too_many_decimals': { field: 'form', message: TOO_MANY_DECIMALS_MESSAGE },
   'sale.price_quote_invalid': { field: 'form', message: GENERIC_REFUSAL },
 }
 

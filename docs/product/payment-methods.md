@@ -120,7 +120,7 @@ La lista propia de cada **Business** de las formas en que cobra. Cada **Payment*
 - La tabla nueva `payment_method` lleva `business_id` no nulo y se lee solo a través de un repositorio armado para un Business. El método de otro Business responde 404.
 - `payment.payment_method_id` es obligatorio y referencia un método del mismo Business (clave foránea compuesta con `business_id`, que impide borrar un método en uso).
 - Las rutas `/api/payment-methods` entran en el barrido de aislamiento y en el test de rutas con acceso restringido.
-- Las migraciones (0028, la tabla; 0029, la columna nueva, las filas iniciales y el relleno) solo agregan tablas, columnas y filas o completan columnas nuevas. Nunca cambian el valor de una columna existente, y el comparador M3 compartido de `tests/migrations/` lo prueba. La vuelta atrás de 0029 se niega una vez que existe algún Payment nuevo.
+- Las migraciones (0029, la tabla; 0030, la columna nueva, las filas iniciales y el relleno) solo agregan tablas, columnas y filas o completan columnas nuevas. Nunca cambian el valor de una columna existente, y el comparador M3 compartido de `tests/migrations/` lo prueba. La vuelta atrás de 0030 se niega una vez que existe algún Payment nuevo.
 - Ningún texto de pantalla nuevo vive fuera del **Copy module**, y ningún valor por defecto nuevo lleva una palabra de flor.
 - Ningún conjunto de Payment methods se declara en `fixedSets.ts` (ADR-0074).
 - Un **Business export** incluye las filas de métodos, y una **Business removal** las borra.

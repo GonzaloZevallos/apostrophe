@@ -17,6 +17,7 @@ from app.accounts.adapters.deps import CurrentBusinessId
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
+from app.money_route import MoneyJsonRoute
 from app.payments.adapters.schemas import (
     AccountOut,
     DebtorsOut,
@@ -29,7 +30,7 @@ from app.payments.adapters.sql_ledgers import SqlLedgers
 from app.payments.adapters.sql_payments import SqlPayments
 from app.payments.application.delete_payment import delete_payment as delete_payment_use_case
 from app.payments.application.errors import CustomerNotFound, OnTheSpot, PaymentNotFound
-from app.payments.application.ports import AvailableMethods
+from app.payments.application.ports import AvailableMethods, MoneyFormatReader
 from app.payments.application.record_payment import preview_payment as preview_payment_use_case
 from app.payments.application.record_payment import record_payment as record_payment_use_case
 from app.payments.application.view_accounts import account as account_use_case
@@ -40,14 +41,15 @@ from app.payments.domain.payment import (
     PaymentFutureDate,
     PaymentMethodRequired,
 )
+from app.shared.money import TooManyDecimals
 from app.shared.payment_method import PaymentMethodUnavailable
 
 # Two routers, like `app.sales.adapters.router` and `app.customers.adapters.router`
 # have their own prefixes: payments' own routes under `/payments`, and the two that
 # name a customer under `/customers`. `app.main` includes both behind the session
 # gate.
-router = APIRouter(prefix="/payments", tags=["payments"])
-customers_router = APIRouter(prefix="/customers", tags=["payments"])
+router = APIRouter(prefix="/payments", tags=["payments"], route_class=MoneyJsonRoute)
+customers_router = APIRouter(prefix="/customers", tags=["payments"], route_class=MoneyJsonRoute)
 
 SessionDep = Annotated[Session, Depends(get_session)]
 TodayDep = Annotated[date, Depends(get_today)]
@@ -72,6 +74,20 @@ def get_available_methods(
 
 
 MethodsDep = Annotated[AvailableMethods, Depends(get_available_methods)]
+
+
+def get_money_format(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> MoneyFormatReader:
+    # Payments never imports `app.money_format` (docs/adr/0055): `app/main.py` hangs
+    # `SqlMoneyFormat` on `app.state.payments_money_format` as a factory.
+    factory = cast(
+        Callable[[Session, int], MoneyFormatReader], request.app.state.payments_money_format
+    )
+    return factory(session, business_id)
+
+
+MoneyFormatDep = Annotated[MoneyFormatReader, Depends(get_money_format)]
 LedgersDep = Annotated[SqlLedgers, Depends(get_ledgers)]
 PaymentsDep = Annotated[SqlPayments, Depends(get_payments)]
 
@@ -86,6 +102,7 @@ as_http = TranslateErrors(
                 PaymentFutureDate,
                 PaymentAmountInvalid,
                 PaymentMethodRequired,
+                TooManyDecimals,
             ),
         ),
     ]
@@ -94,10 +111,16 @@ as_http = TranslateErrors(
 
 @customers_router.post("/{customer_id}/payments/preview")
 def preview_payment(
-    customer_id: int, body: PaymentPreviewIn, ledgers: LedgersDep, today: TodayDep
+    customer_id: int,
+    body: PaymentPreviewIn,
+    ledgers: LedgersDep,
+    money_format: MoneyFormatDep,
+    today: TodayDep,
 ) -> PaymentPreviewOut:
     with as_http:
-        outcome = preview_payment_use_case(ledgers, customer_id, body.paid_on, body.amount, today)
+        outcome = preview_payment_use_case(
+            ledgers, money_format, customer_id, body.paid_on, body.amount, today
+        )
         return PaymentPreviewOut.of(outcome)
 
 
@@ -108,6 +131,7 @@ def record_payment(
     ledgers: LedgersDep,
     payments: PaymentsDep,
     methods: MethodsDep,
+    money_format: MoneyFormatDep,
     session: SessionDep,
     today: TodayDep,
     clock: ClockDep,
@@ -117,6 +141,7 @@ def record_payment(
             ledgers,
             payments,
             methods,
+            money_format,
             session,
             customer_id,
             body.paid_on,

@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { tmpdir } from 'node:os'
@@ -322,6 +322,44 @@ describe('comparisons.mjs --census', () => {
 
 // Exit codes and the capture fields. The registry is a fixture: the `Reset` row's real design with
 // no route, so only the design side is taken and the built side is a screen not built yet.
+describe('comparisons.mjs --built-only', () => {
+  const pngWidth = (file: string): number => readFileSync(file).readUInt32BE(16)
+
+  it('writes only the built PNG and index.json, at a device scale factor of 1', async () => {
+    const { entries, status, output } = await run('built-only', 'NegocioNuevo', ['--built-only', '--strict'])
+    expect(status, output).toBe(0)
+    expect(readdirSync(join(dir, 'built-only')).sort()).toEqual(['NegocioNuevo.built.png', 'index.json'])
+    const [entry] = entries as [Entry]
+    expect(entry).toMatchObject({ screen: 'NegocioNuevo', file: null, design: null, capture: 'captured' })
+    expect(entry.built).toBe(join(dir, 'built-only', 'NegocioNuevo.built.png'))
+    expect(entry.reasons).toBeUndefined()
+    // The phone is 390 CSS px wide: one device px each, where a default run gives 780.
+    expect(pngWidth(join(dir, 'built-only', 'NegocioNuevo.built.png'))).toBe(390)
+  }, CENSUS_TEST_MS)
+
+  it('keeps the default run as it was: both PNGs, the sheet, and a device scale factor of 2', async () => {
+    const { entries, status, output } = await run('built-default', 'NegocioNuevo', ['--strict'])
+    expect(status, output).toBe(0)
+    expect(readdirSync(join(dir, 'built-default')).sort()).toEqual([
+      'NegocioNuevo.built.png',
+      'NegocioNuevo.design.png',
+      'NegocioNuevo.png',
+      'index.json',
+    ])
+    expect(entries[0]?.capture).toBe('captured')
+    expect(pngWidth(join(dir, 'built-default', 'NegocioNuevo.built.png'))).toBe(780)
+  }, CENSUS_TEST_MS)
+
+  it('names a built side that could not be captured, with no design reason and no PNG', async () => {
+    const { entries, status, output } = await run('built-only-miss', 'Invitacion', ['--built-only', '--strict'], 'never')
+    expect(status, output).toBe(1)
+    expect(readdirSync(join(dir, 'built-only-miss'))).toEqual(['index.json'])
+    const [entry] = entries as [Entry]
+    expect(entry).toMatchObject({ built: null, design: null, capture: 'not-captured' })
+    expect(entry.reasons).toEqual({ built: 'shot: did not settle (built)' })
+  }, CENSUS_TEST_MS)
+})
+
 describe('comparisons.mjs exit status and capture', () => {
   const NOT_BUILT = 'shot: no built screen yet (built)'
   const fixture = (name: string): string => {

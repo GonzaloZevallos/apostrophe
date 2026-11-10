@@ -65,7 +65,7 @@ def _seed(path: Path, *, payment_at: datetime, expense_at: datetime) -> None:
         session.add(
             ExpenseRow(
                 business_id=business.id,
-                category_id=category.id,
+                expense_category_id=category.id,
                 spent_on=expense_at.date(),
                 amount=500,
                 detail="Flete semanal",

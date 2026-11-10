@@ -13,6 +13,7 @@ from typing import Protocol
 
 from app.sales.domain.pricing import VarietyPricing
 from app.sales.domain.sale import CustomerFact, Sale, SaleLine
+from app.shared.money import MoneyFormat
 from app.shared.pricing_settings import PricingSettings
 from app.shared.quantity import Quantity
 
@@ -66,6 +67,13 @@ class OnTheSpotPayments(Protocol):
     def assign_customer(self, sale_id: int, customer_id: int) -> None:
         """The sale's payment follows its customer, when it has none yet."""
         ...
+
+
+class MoneyFormatReader(Protocol):
+    """How the business shows money: its symbol and decimals, never the scale it stores
+    amounts at (docs/adr/0055, docs/adr/0058). Built for one business."""
+
+    def current(self) -> MoneyFormat: ...
 
 
 class Sales(Protocol):

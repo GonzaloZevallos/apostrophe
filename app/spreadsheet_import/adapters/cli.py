@@ -36,6 +36,7 @@ from app.customers.adapters.import_port import CustomersImport
 from app.db import make_engine
 from app.expenses.adapters.import_port import ExpensesImport
 from app.migrations.runner import upgrade_to_head
+from app.money_format.adapters.reader import SqlMoneyFormat
 from app.onboarding.adapters.import_port import OnboardingEnding
 from app.payment_methods.adapters.import_port import PaymentMethodsImport
 from app.payments.adapters.import_port import PaymentsImport
@@ -135,10 +136,11 @@ def _run(
         instant = clock()
         today = business_day(instant)
 
-        varieties = SqlProductsImport(session, args.business_id)
-        stock = SqlStockImport(session, args.business_id)
+        money_format = SqlMoneyFormat(session, args.business_id)
+        varieties = SqlProductsImport(session, args.business_id, money_format)
+        stock = SqlStockImport(session, args.business_id, money_format)
         catalog = CatalogImport(session, args.business_id)
-        expenses = ExpensesImport(session, args.business_id)
+        expenses = ExpensesImport(session, args.business_id, money_format)
         customers = CustomersImport(session, args.business_id)
         vip_type = VipTypeImport(session, args.business_id)
         sales = SalesImport(
@@ -146,6 +148,7 @@ def _run(
             args.business_id,
             SqlOnTheSpotPayments(session, args.business_id),
             PaymentMethodsImport(session, args.business_id),
+            money_format,
         )
         payments = PaymentsImport(session, args.business_id)
         onboarding = OnboardingEnding(session, args.business_id)
