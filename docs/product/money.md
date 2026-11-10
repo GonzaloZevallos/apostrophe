@@ -32,6 +32,7 @@ Antes de esta parte, el peso entero era la única opción y nadie la rodeaba a m
 - Todo campo de dinero de un pedido usa `MoneyAmount` y se lee como Decimal exacto, nunca como float (invariante 7). Rechaza lo que no es un número, los infinitos y los que tienen demasiados dígitos (`money.invalid`).
 - Todo campo de dinero de una respuesta usa `MoneyOut`: un entero JSON cuando el valor es entero, y si no un número JSON exacto; nunca un string ni un float.
 - Ningún pedido lleva decimales ni escala.
+- El contrato publicado de `MoneyOut` es `entero o número`, porque el serializador puede enviar las dos formas. Para `oasdiff` esto ensancha el tipo de cada campo de dinero de una respuesta (el CI `docs` lo marca como cambio incompatible, ADR-0066): la pull request lo declara con una línea `Breaking-API:`. Ninguna respuesta de hoy cambia de valor.
 - Hoy toda respuesta es un entero en las dos escalas, así que un Business en escala 0 conserva sus enteros byte por byte. El front acepta también un número no entero sin cambiar nada de lo que muestra en escala 0.
 
 ### Cifras que dividen
