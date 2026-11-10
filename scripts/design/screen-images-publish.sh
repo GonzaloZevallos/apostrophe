@@ -32,7 +32,7 @@ note() { printf '%s\n' "$1" >> "$summary"; }
 git add -A -- "$target"
 
 # Anything else in the work tree, tracked or not, is a bug upstream: nothing is committed.
-stray="$(git status --porcelain --untracked-files=all | cut -c4- | grep -v -F -e "$target/" || true)"
+stray="$(git status --porcelain --untracked-files=all | cut -c4- | awk -v t="$target/" 'index($0, t) != 1' || true)"
 if [ -n "$stray" ]; then
   echo "screen-images-publish: paths outside $target:" >&2
   echo "$stray" >&2

@@ -11,6 +11,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -19,7 +20,8 @@ PR_FILE = WORKFLOWS / "screen-images-pr.yml"
 MASTER_FILE = WORKFLOWS / "screen-images.yml"
 PUBLISH_FILE = ROOT / "scripts" / "design" / "screen-images-publish.sh"
 PATHS_IGNORE = ["docs/assets/screens/**"]
-ARTIFACT_PATHS = ["plan.json", "summary.md", "*.webp"]
+OUT = "${{ runner.temp }}/screen-images"
+ARTIFACT_PATHS = [f"{OUT}/plan.json", f"{OUT}/summary.md", f"{OUT}/*.webp"]
 
 Workflow = dict[Any, Any]
 
@@ -203,9 +205,7 @@ def pin_uploads(workflow: Workflow, label: str) -> list[str]:
             if options.get("retention-days") != 7:
                 broken.append(f"{where} retention-days is not 7")
             paths = [
-                line.strip().rsplit("/", 1)[-1]
-                for line in str(options.get("path", "")).split("\n")
-                if line.strip()
+                line.strip() for line in str(options.get("path", "")).split("\n") if line.strip()
             ]
             if paths != ARTIFACT_PATHS:
                 broken.append(f"{where} uploads {paths}")
@@ -393,7 +393,19 @@ def test_an_upload_that_differs_is_rejected() -> None:
         "master/capture upload is not @v4",
         "master/capture upload is not if: always()",
         "master/capture retention-days is not 7",
-        "master/capture uploads ['plan.json', 'summary.md', '*.webp', 'index.json']",
+        f"master/capture uploads {[*ARTIFACT_PATHS, f'{OUT}/index.json']}",
+    ]
+
+
+@pytest.mark.parametrize("bad", ["**/*.webp", "capture-1/*.webp"])
+def test_an_upload_that_reaches_into_the_capture_folders_is_rejected(bad: str) -> None:
+    master, _ = real()
+    wrong = f"{OUT}/{bad}"
+    for step in steps(jobs(master)["capture"]):
+        if str(step.get("uses", "")).startswith("actions/upload-artifact"):
+            step["with"]["path"] = "\n".join([ARTIFACT_PATHS[0], ARTIFACT_PATHS[1], wrong])
+    assert pin_uploads(master, "master") == [
+        f"master/capture uploads {[ARTIFACT_PATHS[0], ARTIFACT_PATHS[1], wrong]}"
     ]
 
 

@@ -78,6 +78,15 @@ def test_a_stray_file_outside_the_images_fails_and_is_named(repo: Repo) -> None:
     assert repo.origin_head() == repo.sha
 
 
+def test_a_path_that_only_contains_the_images_folder_is_stray(repo: Repo) -> None:
+    nested = repo.work / "web" / SCREENS
+    nested.mkdir(parents=True)
+    (nested / "x.webp").write_bytes(b"x")
+    done = repo.publish()
+    assert done.returncode != 0
+    assert f"web/{SCREENS}/x.webp" in done.stderr
+
+
 def test_a_modified_tracked_file_outside_the_images_fails(repo: Repo) -> None:
     (repo.work / "README.md").write_text("one")
     git(repo.work, "add", "README.md")
