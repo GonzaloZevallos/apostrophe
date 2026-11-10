@@ -159,15 +159,15 @@ Criterios de éxito:
     - con más de 8 tipos, la lista tiene búsqueda;
     - en el celular, la lista se abre en una Sheet como su propia entrada del historial sobre el formulario (dentro de un `SheetStackProvider` montado en la raíz de `ClienteForm`); volver o "Close" con la lista abierta cierra solo la lista, nunca el formulario. En la computadora es un desplegable con teclado, y Escape cierra solo el desplegable.
   - **Mientras los tipos se están cargando**, o después de una carga fallida, el campo está presente y cargando (deshabilitado, con su esqueleto), sin "No type" ni el aviso, porque todavía no se sabe si hay tipos. Guardar igual funciona y conserva el tipo que tiene el formulario, sin borrarlo por la carga fallida.
-  - **Si la carga de los tipos falla**, debajo del campo se muestra la línea de falla que ya tiene la app: "No connection" sin red, o el reintento genérico ante un error del servidor (accounts.md), con el Attention icon y asociada al campo como su descripción, sin ningún texto nuevo. Los tipos se vuelven a pedir cuando la app vuelve a consultar (al recuperar la conexión o al volver a la pantalla) y, si la línea genérica ofrece reintentar con un toque, también con ese toque. Cuando los tipos llegan, la línea desaparece y el campo pasa a ser el Selector, o el aviso si no hay ninguno.
+  - **Si la carga de los tipos falla**, debajo del campo se muestra la línea de falla que ya tiene la app: "No connection" sin red, o el reintento genérico ante un error del servidor (accounts.md), con el Attention icon y asociada al campo como su descripción, sin ningún texto nuevo. Los tipos no se vuelven a pedir solos (ni al recuperar la conexión ni al volver a la ventana) y la línea no ofrece reintentar con un toque: se vuelven a pedir al salir del formulario y volver a abrirlo. Cuando los tipos llegan, la línea desaparece y el campo pasa a ser el Selector, o el aviso si no hay ninguno.
   - **Sin ningún tipo en el Business** (una vez que la carga respondió con éxito), el campo muestra, en lugar del Selector, el **Tappable notice** "Add a customer type", que lleva a Settings → Prices → Customer types; el Customer queda sin tipo. Desaparece en cuanto existe al menos un tipo. Los tipos se crean solo en Settings; el vendedor vuelve al formulario por el camino de vuelta habitual, sin el tipo nuevo preelegido.
   - Ir a Settings desde el aviso sale del formulario: con cambios sin guardar, se pide la confirmación habitual de descartar, y lo que se escribió se pierde.
-  - Si al guardar el tipo elegido ya no existe, un error en línea bajo el campo, asociado al campo como su descripción, dice "That type no longer exists. Pick another one.", la elección vuelve a "No type" (sin la marca "no longer available") y el vendedor elige de nuevo.
+  - Si al guardar el tipo elegido ya no existe, un error en línea bajo el campo, asociado al campo como su descripción, dice "That type no longer exists. Pick another one.", la elección vuelve a "No type" (sin la marca "no longer available") y el vendedor elige de nuevo. El campo se asocia a un solo mensaje por vez: este rechazo o, si no lo hay, la línea de carga fallida.
   - Es un formulario: "Close", y una confirmación al salir con cambios sin guardar. Un formulario sin tocar se cierra de inmediato y vuelve a la pantalla madre.
 - **Si sale bien**, el toast "Customer saved". Nunca lleva un nombre ni un número.
 - **Los rechazos** se muestran en línea sobre el campo, con el string fijo del dominio, y conservan lo que se escribió. Nunca repiten el número ni el nombre.
 - **Cómo se dibuja el ícono de un tipo**: en la lista de Customer types y en el selector de íconos, con los glifos del componente `Icono`; en la lista del Selector del formulario y en la ficha, con un símbolo de texto por clave (`glyphOf`). Para algunas claves (Bell, Tag) los dos dibujos no coinciden; unificarlos queda para una tarea posterior.
-- **Diseño**: Customers, `ClienteFicha`, `Payment` y `NuevaVentaCliente` coinciden con `docs/product/design-system/pantallas/` en celular y computadora, en los dos temas. El campo "Customer type" se muestra cerrado como Selector en `ClienteNuevo`. Una diferencia de texto respecto de los docs se lista en el PR. Ningún estado se dice solo con color.
+- **Diseño**: Customers, `ClienteFicha`, `Payment` y `NuevaVentaCliente` coinciden con `docs/product/design-system/pantallas/` en celular y computadora, en los dos temas. El campo "Customer type" se muestra cerrado como Selector, diciendo "No type", en el bloque "Nuevo cliente" de `ClienteNuevo`, que dibuja ClienteNuevo, ClienteNuevoCompu, ClienteEditar y ClienteEditarCompu. Una diferencia de texto respecto de los docs se lista en el PR. Ningún estado se dice solo con color.
 - **Respuesta de la app**: sin red muestra "No connection", un error del servidor el reintento genérico, y un Customer o un Customer type que ya no existe sigue la regla "That is gone." de accounts.md.
 
 ### En pantalla: Settings → Prices → Customer types
@@ -231,7 +231,7 @@ Criterios de éxito:
   - con 12 o más tipos sembrados, el Selector está presente y no hay ningún `<select>`, grupo de radios ni botón `aria-pressed` para el campo; tipear parte de un nombre en la búsqueda encuentra el tipo y tocarlo lo elige;
   - sin tipo elegido, la lista no tiene fila para borrar; con un tipo elegido, la fila para borrar deja "No type";
   - sin tipos, se muestra el aviso; mientras los tipos se cargan y después de una carga fallida, no se muestra "No type", ni el aviso, ni ningún texto de conjunto vacío;
-  - con la carga fallida, la línea de falla existente aparece bajo el campo, asociada como su descripción, guardar conserva el tipo que tenía el formulario, y la línea desaparece cuando los tipos llegan;
+  - con la carga fallida, la línea de falla existente aparece bajo el campo, asociada como su descripción, guardar conserva el tipo que tenía el formulario, y al volver a abrir el formulario con la carga exitosa la línea desaparece y queda el Selector, o el aviso si no hay tipos;
   - el rechazo por un tipo que ya no existe vuelve la elección a "No type" y muestra su línea;
   - al dar de alta y al editar: formulario sin tocar, volver va a la pantalla madre; con cambios sin guardar, volver pide la confirmación de descarte; con la lista abierta, volver cierra solo la lista; en la computadora, Escape cierra solo el desplegable.
 
@@ -253,7 +253,7 @@ Criterios de éxito:
 - Mostrar el nombre o el ícono del Customer type en las filas de Customers, en Pick a customer o en Sales.
 - Crear un Customer type desde el formulario del Customer, o volver al formulario con el tipo nuevo preelegido o con lo escrito conservado.
 - Un campo "Customer type" en el creador de "Pick a customer" de New sale.
-- Un texto nuevo para la carga fallida de los tipos en el formulario del Customer.
+- Un texto nuevo, o un reintento con un toque, para la carga fallida de los tipos en el formulario del Customer.
 - Mover en bloque los Customers de un tipo a otro.
 - Precios por Customer type (parte customer-type prices, ADR-0059).
 - Que la Spreadsheet import resuelva sola un choque con un tipo del vendedor llamado "VIP" (adoptarlo, renombrarlo o crear el VIP type con otro nombre).
