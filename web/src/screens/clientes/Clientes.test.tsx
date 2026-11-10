@@ -20,6 +20,7 @@ import { LIMITS, SAMPLES } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { stubViewport } from '../../test-viewport'
 import { Outlet, createMemoryRouter, RouterProvider } from 'react-router'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 import type { InitialEntry } from 'react-router'
 import FlashProvider from '../../flash/FlashProvider'
 import ClienteFicha from './ClienteFicha'
@@ -450,7 +451,9 @@ function renderApp(entries: string[] = [CUSTOMERS]) {
       {
         element: (
           <FlashProvider>
-            <Outlet context={{ email: 'a@b.com', business_name: 'N', today: '2026-10-03' }} />
+            <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
+              <Outlet context={{ email: 'a@b.com', business_name: 'N', today: '2026-10-03', money: { symbol: '$', decimals: 0 } }} />
+            </MoneyFormatProvider>
           </FlashProvider>
         ),
         children: [
