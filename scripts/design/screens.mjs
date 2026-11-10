@@ -22,6 +22,8 @@ const PANTALLAS = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'doc
 export function assertScreens(screens, pantallas = PANTALLAS) {
   const all = new Set(screens.map((s) => s.screen))
   const seen = new Set()
+  /** @type {Map<string, unknown>} */
+  const foldedNames = new Map()
   for (const s of screens) {
     if ('color_scheme' in s) throw new Error(`${s.screen}: color_scheme is retired, use tema: 'oscuro'`)
     if ('tema' in s && s.tema !== 'oscuro') throw new Error(`${s.screen}: unknown tema ${JSON.stringify(s.tema)}`)
@@ -31,6 +33,13 @@ export function assertScreens(screens, pantallas = PANTALLAS) {
     }
     if (seen.has(s.screen)) throw new Error(`${s.screen}: screen is not unique across the file`)
     seen.add(s.screen)
+    if (typeof s.screen !== 'string' || !SCREEN_NAME.test(s.screen)) {
+      throw new Error(`${s.screen}: screen must match ${SCREEN_NAME.source}`)
+    }
+    const folded = String(s.screen).toLowerCase()
+    const first = foldedNames.get(folded)
+    if (first !== undefined) throw new Error(`${s.screen}: screen is equal to ${first} ignoring case`)
+    foldedNames.set(folded, s.screen)
     if ('text_scale' in s && s.text_scale !== TEXT_SCALE) {
       throw new Error(`${s.screen}: text_scale must be exactly ${TEXT_SCALE}`)
     }
@@ -49,6 +58,52 @@ export function assertScreens(screens, pantallas = PANTALLAS) {
       throw new Error(`${s.screen}: an entry that reaches ${LISTO} must name an account of its own`)
     }
   }
+}
+
+// A screen name is a file name (`docs/assets/screens/<screen>.webp`) and a URL part: letters,
+// digits and hyphens, and two names that differ only in case would be one file on a
+// case-insensitive disk.
+const SCREEN_NAME = /^[A-Za-z0-9-]+$/
+
+// The widest phone: the width from which the app shows the computer layout.
+const COMPUTER_WIDTH = 900
+
+// The rows that get a screen image (docs/product/screen-images.md): light theme, phone width,
+// normal text size, and a route to open. File order. The one definition of the inclusion rule.
+/**
+ * @param {ReadonlyArray<Readonly<Record<string, unknown>>>} screens
+ * @returns {Array<Readonly<Record<string, unknown>>>}
+ */
+export function screenImageRows(screens) {
+  return screens.filter(
+    (s) =>
+      !('tema' in s) &&
+      !('text_scale' in s) &&
+      s.route !== null &&
+      (!('viewport' in s) || Number(/** @type {ArrayLike<number>} */ (s.viewport)[0]) < COMPUTER_WIDTH),
+  )
+}
+
+// The rows a capture of the screen images has to run: the image rows plus every row they `needs`,
+// transitively (a capture runs a row over the state its `needs` row left). File order, each once,
+// because the result is a filter of `screens`.
+/**
+ * @param {ReadonlyArray<Readonly<Record<string, unknown>>>} screens
+ * @returns {Array<Readonly<Record<string, unknown>>>}
+ */
+export function captureSelection(screens) {
+  const byName = new Map(screens.map((s) => [s.screen, s]))
+  /** @type {Set<unknown>} */
+  const included = new Set()
+  for (const row of screenImageRows(screens)) {
+    /** @type {Readonly<Record<string, unknown>> | undefined} */
+    let current = row
+    while (current !== undefined && !included.has(current.screen)) {
+      included.add(current.screen)
+      current = typeof current.needs === 'string' ? byName.get(current.needs) : undefined
+    }
+  }
+  return screens.filter((s) => included.has(s.screen))
 }
 
 // The phone every row is captured at unless it names a `viewport`.

@@ -810,27 +810,6 @@
     "issue": 48
   },
   {
-    "screen": "InicioChecklist",
-    "rule": "touch-action",
-    "target": "button:Today",
-    "issue": 45,
-    "reason": "computed touch-action of the button \"Today\" is not manipulation"
-  },
-  {
-    "screen": "InicioChecklist",
-    "rule": "touch-action",
-    "target": "button:Month",
-    "issue": 45,
-    "reason": "computed touch-action of the button \"Month\" is not manipulation"
-  },
-  {
-    "screen": "InicioChecklist",
-    "rule": "touch-action",
-    "target": "button:Week",
-    "issue": 45,
-    "reason": "computed touch-action of the button \"Week\" is not manipulation"
-  },
-  {
     "screen": "InicioHoy",
     "rule": "touch-action",
     "target": "button:Month",
@@ -847,27 +826,6 @@
     "rule": "touch-action",
     "target": "button:Week",
     "issue": 45
-  },
-  {
-    "screen": "InicioImportado",
-    "rule": "touch-action",
-    "target": "button:Today",
-    "issue": 45,
-    "reason": "computed touch-action of the button \"Today\" is not manipulation"
-  },
-  {
-    "screen": "InicioImportado",
-    "rule": "touch-action",
-    "target": "button:Month",
-    "issue": 45,
-    "reason": "computed touch-action of the button \"Month\" is not manipulation"
-  },
-  {
-    "screen": "InicioImportado",
-    "rule": "touch-action",
-    "target": "button:Week",
-    "issue": 45,
-    "reason": "computed touch-action of the button \"Week\" is not manipulation"
   },
   {
     "screen": "InicioOnboardingCompleto",

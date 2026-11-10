@@ -17,11 +17,11 @@ erDiagram
     VARCHAR(35) language
     INTEGER last_sale_number
   }
-  catalog_attributes {
+  catalog_attribute {
     INTEGER id PK
     INTEGER business_id FK
     INTEGER variety_id FK
-    BOOLEAN shown
+    BOOLEAN is_shown
     VARCHAR(64) emoji "nullable"
     INTEGER indica_share "nullable"
     VARCHAR(200) aroma "nullable"
@@ -37,7 +37,7 @@ erDiagram
     INTEGER business_id FK
     VARCHAR(60) name
     VARCHAR(16) phone "nullable"
-    BOOLEAN vip
+    BOOLEAN is_vip
     INTEGER customer_type_id FK "nullable"
   }
   customer_type {
@@ -228,7 +228,7 @@ erDiagram
   }
   app_user ||--o| reset_link : user_id
   business ||--o{ app_user : business_id
-  business ||--o{ catalog_attributes : business_id
+  business ||--o{ catalog_attribute : business_id
   business ||--o{ customer : business_id
   business ||--o{ customer_type : business_id
   business ||--o{ expense : business_id
@@ -259,7 +259,7 @@ erDiagram
   sale ||--o{ payment : sale_id
   sale ||--o{ sale_line : sale_id
   stock_withdrawal ||--o{ stock_withdrawal_line : stock_withdrawal_id
-  variety ||--o{ catalog_attributes : variety_id
+  variety ||--o{ catalog_attribute : variety_id
   variety ||--o{ price_entry : variety_id
   variety ||--o{ sale_line : variety_id
   variety ||--o{ stock_entry : variety_id
