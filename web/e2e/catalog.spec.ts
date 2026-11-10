@@ -22,7 +22,7 @@ import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
-import { openCatalog } from './helpers/openMas.js'
+import { openCatalog } from './helpers/openScreens.js'
 import { uniqueTag } from './helpers/unique.js'
 
 // What Copiar and Compartir must hand out for the data below, written by hand: the header's

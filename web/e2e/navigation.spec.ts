@@ -8,7 +8,23 @@
 
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { CUSTOMER, CUSTOMER_EDIT, HOME, LOGIN, SALE, STOCK_ENTRY, VARIETY, pathTo } from '../src/routes.js'
+import {
+  ANALYSIS,
+  CUSTOMER,
+  CUSTOMER_EDIT,
+  EXPENSE_NEW,
+  EXPENSES,
+  HOME,
+  LOGIN,
+  SALE,
+  SETTINGS,
+  STOCK_ENTRY,
+  VARIETIES,
+  VARIETY,
+  WITHDRAWAL_NEW,
+  pathTo,
+} from '../src/routes.js'
+import { expectPath } from './helpers/url.js'
 import { expect, test, withToastRecorder } from './fixtures.js'
 import type { Locator, Page } from '@playwright/test'
 import { watchConsole } from './console.js'
@@ -150,6 +166,34 @@ test.describe.serial('navigation', () => {
       other.getByRole('link', { name: 'Back to Sales' }).or(other.getByRole('button', { name: 'Back to Sales' })),
     ).toBeVisible()
     await context.close()
+  })
+
+  test('from the phone, each place the retired tab led to opens through the control that now holds it', async () => {
+    await page.setViewportSize({ width: 390, height: 844 })
+
+    // Settings: the avatar in the header, one tap from a tab root.
+    await page.goto(HOME)
+    await page.getByRole('link', { name: 'Settings', exact: true }).click()
+    await expectPath(page, SETTINGS)
+
+    // Analysis: Home's Today | Analysis segment.
+    await page.goto(HOME)
+    await page.getByRole('group', { name: 'Home view' }).getByRole('link', { name: 'Analysis' }).click()
+    await expectPath(page, ANALYSIS)
+
+    // Expenses and Add expense: the card on Analysis.
+    const card = page.getByRole('group', { name: 'Expenses' })
+    await card.getByRole('link', { name: 'See the expenses' }).click()
+    await expectPath(page, EXPENSES)
+    await page.goBack()
+    await expectPath(page, ANALYSIS)
+    await card.getByRole('link', { name: 'Add expense' }).click()
+    await expectPath(page, EXPENSE_NEW)
+
+    // Take from stock: Products, next to the entry action.
+    await page.goto(VARIETIES)
+    await page.getByRole('link', { name: 'Take from stock' }).click()
+    await expectPath(page, WITHDRAWAL_NEW)
   })
 
   test('an unknown address goes to Inicio', async () => {
