@@ -61,6 +61,13 @@ class CustomerNameTooLong(CustomerRuleBroken):
         super().__init__(f"a customer name has at most {NAME_MAX_LENGTH} characters")
 
 
+def _argentine_marks(rule: PhoneCountryRule) -> tuple[str, str]:
+    """Argentina's mobile nine and local fifteen, which only its rule in the shared table has."""
+    if rule.mobile_nine is None or rule.local_mobile_fifteen is None:
+        raise ValueError("Argentina's rule carries the mobile nine and the local fifteen")
+    return rule.mobile_nine, rule.local_mobile_fifteen
+
+
 @dataclass(frozen=True)
 class PhoneNumber:
     """A canonical international phone number: ``+`` and 8 to 15 digits, with no
@@ -180,17 +187,23 @@ class PhoneNumber:
 
     @classmethod
     def _argentine(cls, rest: str) -> str:
-        """Argentina's rule, as it has always been: every number is a mobile."""
-        if rest.startswith("54"):
-            return cls._from_54(rest[2:])
+        """Argentina's rule, as it has always been: every number is a mobile. Its code,
+        its mobile nine, its local fifteen, its trunk prefix and its length are read
+        from the shared table."""
+        code = PhoneCountry.AR.rule.calling_code
+        if rest.startswith(code):
+            return cls._from_54(rest[len(code) :])
         return cls._from_local(rest)
 
     @staticmethod
     def _from_54(remainder: str) -> str:
-        if len(remainder) == 10:
-            return "+549" + remainder
-        if len(remainder) == 11 and remainder[0] == "9":
-            return "+549" + remainder[1:]
+        rule = PhoneCountry.AR.rule
+        nine, _ = _argentine_marks(rule)
+        (length,) = rule.national_lengths
+        if len(remainder) == length:
+            return f"+{rule.calling_code}{nine}{remainder}"
+        if len(remainder) == length + len(nine) and remainder.startswith(nine):
+            return f"+{rule.calling_code}{nine}{remainder[len(nine) :]}"
         raise InvalidPhoneNumber()
 
     @staticmethod
@@ -201,18 +214,22 @@ class PhoneNumber:
 
     @staticmethod
     def _from_local(digits: str) -> str:
-        local = digits[1:] if digits.startswith("0") else digits
-        if len(local) == 12:
-            local = PhoneNumber._without_15(local)
-        if len(local) != 10:
+        rule = PhoneCountry.AR.rule
+        nine, fifteen = _argentine_marks(rule)
+        (length,) = rule.national_lengths
+        trunk = rule.trunk_prefix or ""
+        local = digits[len(trunk) :] if trunk and digits.startswith(trunk) else digits
+        if len(local) == length + len(fifteen):
+            local = PhoneNumber._without_15(local, fifteen)
+        if len(local) != length:
             raise InvalidPhoneNumber()
-        return "+549" + local
+        return f"+{rule.calling_code}{nine}{local}"
 
     @staticmethod
-    def _without_15(local: str) -> str:
+    def _without_15(local: str, fifteen: str) -> str:
         for index in (2, 3, 4):
-            if local[index : index + 2] == "15":
-                return local[:index] + local[index + 2 :]
+            if local[index : index + len(fifteen)] == fifteen:
+                return local[:index] + local[index + len(fifteen) :]
         raise InvalidPhoneNumber()
 
     @property
