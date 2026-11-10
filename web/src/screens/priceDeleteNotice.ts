@@ -7,7 +7,7 @@
  */
 
 import { formatDateShort } from '../format/dates'
-import { formatMoney } from '../format/money'
+import type { MoneyFormatter } from '../format/money'
 import { NO_PRICE_TODAY } from './Variedades'
 import type { TFunction } from 'i18next'
 
@@ -18,13 +18,13 @@ export interface HistoryEntry {
 }
 
 /** The caller passes its `t`, so the wording is resolved on its render and follows a language switch. */
-export function deleteNotice(history: readonly HistoryEntry[], entryId: number, t: TFunction): string {
+export function deleteNotice(history: readonly HistoryEntry[], entryId: number, t: TFunction, money: MoneyFormatter): string {
   const chronological = [...history].sort((a, b) => (a.effective_from < b.effective_from ? -1 : 1))
   const index = chronological.findIndex((entry) => entry.id === entryId)
   const earlier = index > 0 ? chronological[index - 1] : undefined
   if (earlier !== undefined) {
     return t('common:returnsTo', {
-      amount: formatMoney(earlier.list_price),
+      amount: money.money(earlier.list_price),
       date: formatDateShort(earlier.effective_from),
     })
   }

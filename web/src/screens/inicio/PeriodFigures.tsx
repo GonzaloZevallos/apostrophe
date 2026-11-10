@@ -61,7 +61,7 @@ function listFigures(period: PanelPeriod, money: MoneyFormatter): ListFigure[] {
       ? []
       : [{ key: 'shortfall', label: SHORTFALL_LABEL, value: money.money(shortfall.amount), pending: shortfall.pending }]
   const reasonLines: ListFigure[] = period.withdrawals.map((line) => {
-    const { amount, marker } = reasonCostParts(line)
+    const { amount, marker } = reasonCostParts(line, money)
     return {
       key: `reason-${line.reason_id}`,
       label: line.name,

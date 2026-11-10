@@ -32,7 +32,7 @@ import Selector from '../components/Selector'
 import SinConexion from '../components/SinConexion'
 import { useViewport } from '../shell/useViewport'
 import { formatDate } from '../format/dates'
-import { formatGrams, formatMoney, type MoneyFormat } from '../format/money'
+import { formatGrams, type MoneyFormat } from '../format/money'
 import { useMoney } from '../format/moneyContext'
 import { parseMoney, parseSignedGrams } from '../format/parse'
 import type { Variety } from './Variedades'
@@ -498,7 +498,7 @@ export default function StockEntryForm({
           {offline && <SinConexion />}
           {preview !== null && (
             <span className="pie" data-copy="help">
-              {perGramPreview(formatMoney(preview))}
+              {perGramPreview(money.money(preview))}
             </span>
           )}
           {pinned && phone && deleteButton}

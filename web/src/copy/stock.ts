@@ -29,7 +29,7 @@ export function onHandHelp(grams: string): string {
 }
 
 /** The per-gram cost previewed while typing; `perGram` is the front's preview, already
- * formatted (`formatMoney`), so the registry can measure it with `SAMPLES.amount`. */
+ * formatted (`money.money`), so the registry can measure it with `SAMPLES.amount`. */
 export function perGramPreview(perGram: string): string {
   return `It comes to ${perGram} per gram`
 }

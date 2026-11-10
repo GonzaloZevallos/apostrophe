@@ -20,7 +20,8 @@ import GoneNotice from '../../components/GoneNotice'
 import SinConexion from '../../components/SinConexion'
 import { useFlash } from '../../flash/useFlash'
 import { formatDateShort } from '../../format/dates'
-import { formatGrams, formatMoney, keepMoneyTogether } from '../../format/money'
+import { formatGrams } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { deleteNotice } from '../priceDeleteNotice'
 import { VARIETIES_TEXT } from '../../copy/varieties'
 import { OUT_OF_DATE_JOINER } from '../../copy/pinnedCatalog'
@@ -45,6 +46,7 @@ interface Props {
 }
 
 export default function PriceRows({ varietyId, history, currentPriceId, limit, readOnly = false }: Props) {
+  const money = useMoney()
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   // Until the switches are known (or if they cannot be read) nothing about a rule shows.
@@ -96,14 +98,14 @@ export default function PriceRows({ varietyId, history, currentPriceId, limit, r
               {currentPriceId === entry.id && <span className="historial-fila__vigente">{VARIETIES_TEXT.vigenteHoy}</span>}
             </span>
             <span>
-              <span className="historial-fila__precio cifra-s">{keepMoneyTogether(formatMoney(entry.list_price))}</span>
+              <span className="historial-fila__precio cifra-s">{money.keepTogether(money.money(entry.list_price))}</span>
               {showBulk && entry.bulk_price !== null && entry.bulk_minimum !== null && (
                 <span className="historial-fila__detalle">
-                  {VARIETIES_TEXT.desde}{formatGrams(entry.bulk_minimum)}{OUT_OF_DATE_JOINER}{keepMoneyTogether(formatMoney(entry.bulk_price))}
+                  {VARIETIES_TEXT.desde}{formatGrams(entry.bulk_minimum)}{OUT_OF_DATE_JOINER}{money.keepTogether(money.money(entry.bulk_price))}
                 </span>
               )}
               {showVip && entry.vip_price !== null && (
-                <span className="historial-fila__detalle">{VARIETIES_TEXT.precioVip2}{keepMoneyTogether(formatMoney(entry.vip_price))}</span>
+                <span className="historial-fila__detalle">{VARIETIES_TEXT.precioVip2}{money.keepTogether(money.money(entry.vip_price))}</span>
               )}
             </span>
             {!readOnly && (
@@ -115,7 +117,7 @@ export default function PriceRows({ varietyId, history, currentPriceId, limit, r
       {deleting !== null && (
         <ConfirmDialog
           title={VARIETIES_TEXT.borrasElPrecioDesde(formatDateShort(deleting.effective_from))}
-          detail={deleteNotice(history, deleting.id, t)}
+          detail={deleteNotice(history, deleting.id, t, money)}
           confirmText={COMMON_TEXT.yesDelete}
           cancelText={COMMON_TEXT.noKeep}
           onConfirm={() => {
