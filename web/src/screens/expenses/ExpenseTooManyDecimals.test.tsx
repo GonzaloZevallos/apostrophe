@@ -11,7 +11,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { moneyTooManyDecimals } from '../../copy/settings'
 import { EXPENSE_NEW, EXPENSES } from '../../routes'
 import { stubViewport } from '../../test-viewport'
-import { type FetchImpl, ME, jsonResponse, renderExpenses } from './renderExpenses'
+import { type FetchImpl, ME, chooseCategory, jsonResponse, renderExpenses } from './renderExpenses'
 
 const DETAIL_FROM_THE_SERVER = 'server words that must never reach the screen'
 
@@ -37,7 +37,7 @@ test('a refused amount shows the whole-amounts copy under the field and keeps wh
   stubViewport('phone')
   renderExpenses([EXPENSE_NEW], api())
 
-  await userEvent.selectOptions(await screen.findByLabelText('Category'), 'Packaging')
+  await chooseCategory('Packaging')
   await userEvent.type(screen.getByLabelText('Amount'), '1000')
   await userEvent.type(screen.getByLabelText('Details'), 'Cinta')
   await userEvent.click(screen.getByRole('button', { name: 'Save the expense' }))

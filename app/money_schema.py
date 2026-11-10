@@ -99,8 +99,8 @@ MoneyAmount = Annotated[Decimal, BeforeValidator(_as_decimal), AfterValidator(_c
 MoneyOut = Annotated[
     Decimal,
     PlainSerializer(_on_the_wire, return_type=int | float, when_used="json"),
-    # Every amount answered until the opening flip is whole, so the contract names one JSON
-    # type; a non-whole amount (scale 2) moves this and the nullable declarations to number.
+    # The serializer sends a JSON integer when the value is whole and an exact JSON number
+    # otherwise, so the published contract names both.
     WithJsonSchema({"anyOf": [{"type": "integer"}, {"type": "number"}]}, mode="serialization"),
 ]
 """A response's money field: the value in currency units, as a JSON integer when whole
