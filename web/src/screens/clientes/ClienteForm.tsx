@@ -53,6 +53,7 @@ import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
 export const SAVED_TOAST = 'common:customerSaved'
 export const NAME_REQUIRED = CUSTOMERS_TEXT.giveItAName
 export const PHONE_INVALID = CUSTOMERS_TEXT.notAPhone
+export const PHONE_NEEDS_COUNTRY_CODE = CUSTOMERS_TEXT.needsCountryCode
 export const PHONE_TAKEN = CUSTOMERS_TEXT.phoneTaken
 export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 
@@ -64,6 +65,7 @@ const FIELD_OVERRIDES: Partial<Record<RefusalCode, { field: Field; message: stri
   'customer.name_missing': { field: 'name', message: NAME_REQUIRED },
   'customer.name_too_long': { field: 'name', message: COMMON_TEXT.nameTooLong },
   'customer.phone_invalid': { field: 'phone', message: PHONE_INVALID },
+  'customer.phone_needs_country_code': { field: 'phone', message: PHONE_NEEDS_COUNTRY_CODE },
   'customer.phone_taken': { field: 'phone', message: PHONE_TAKEN },
 }
 

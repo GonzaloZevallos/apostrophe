@@ -15,6 +15,7 @@
   "customer.required_field_cleared": "refusals:generic",
   "customer.rule_broken": "refusals:generic",
   "customer.phone_invalid": "refusals:generic",
+  "customer.phone_needs_country_code": "refusals:generic",
   "customer.name_missing": "refusals:generic",
   "customer.name_too_long": "refusals:generic",
   "customer_type.rule_broken": "refusals:generic",

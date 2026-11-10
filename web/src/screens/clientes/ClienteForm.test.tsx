@@ -226,6 +226,35 @@ test('a duplicate phone is refused on the phone field, keeping what was typed', 
   expect(screen.getByLabelText('Name')).toHaveValue('Nico')
 })
 
+test('a number without + in a business with no Phone country asks for + and the country code', async () => {
+  api.mockResolvedValue(
+    jsonResponse(422, { detail: 'refused', code: 'customer.phone_needs_country_code' }),
+  )
+  renderForm(CUSTOMER_NEW)
+
+  await userEvent.type(screen.getByLabelText('Phone'), '099 123 456')
+  await userEvent.type(screen.getByLabelText('Name'), 'Nico')
+  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+
+  expect(await screen.findByRole('alert')).toHaveTextContent('Start the number with + and the country code.')
+  expect(screen.getByLabelText('Phone')).toHaveValue('099 123 456')
+})
+
+test('a number that does not fit asks for its area code, or + and the country code', async () => {
+  api.mockResolvedValue(
+    jsonResponse(422, { detail: 'refused', code: 'customer.phone_invalid' }),
+  )
+  renderForm(CUSTOMER_NEW)
+
+  await userEvent.type(screen.getByLabelText('Phone'), '2345')
+  await userEvent.type(screen.getByLabelText('Name'), 'Nico')
+  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+
+  expect(await screen.findByRole('alert')).toHaveTextContent(
+    'Enter the number with its area code, or start with + and the country code.',
+  )
+})
+
 test('edit loads the existing customer and saves the change', async () => {
   api.mockResolvedValueOnce(
     jsonResponse(200, {
