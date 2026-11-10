@@ -23,95 +23,12 @@ from tests.conftest import (
     TODAY,
     MovableClock,
     open_business,
-    reason_id,
     signed_in,
 )
 from tests.fakes.telegram import FakeTelegram
+from tests.results.entered_figures import enter
 
 TODAY_TEXT = TODAY.isoformat()
-
-
-def _enter(client: TestClient) -> dict[str, Any]:
-    """The same data in either business; answers the withdrawal's own answer."""
-    lavanda = client.post("/api/products", json={"name": "Lavanda"}).json()["id"]
-    rosa = client.post("/api/products", json={"name": "Rosa"}).json()["id"]
-    for product_id, price in ((lavanda, 10_000), (rosa, 3_333)):
-        client.post(
-            f"/api/products/{product_id}/prices",
-            json={"effective_from": "2026-01-01", "list_price": price},
-        )
-    # A purchase with an uneven cost: 1000 over 3 does not divide.
-    for product_id, quantity, cost in ((lavanda, "3", 1_000), (rosa, "10", 7_000)):
-        entry = client.post(
-            "/stock/entries",
-            json={
-                "product_id": product_id,
-                "origin": "purchase",
-                "quantity": quantity,
-                "total_cost": cost,
-            },
-        )
-        assert entry.status_code == 201, entry.text
-    adjustment = client.post(
-        "/stock/entries",
-        json={"product_id": lavanda, "origin": "adjustment", "quantity": "-1"},
-    )
-    assert adjustment.status_code == 201, adjustment.text
-
-    customer = client.post("/customers", json={"name": "Ana", "phone": "11 5555-5555"}).json()
-    sales = [
-        {
-            "payment": "cash",
-            "shipping_charged": 500,
-            "lines": [{"product_id": lavanda, "quantity": "1"}],
-        },
-        {
-            "payment": "cash",
-            "lines": [
-                {"product_id": rosa, "quantity": "1", "gift": True},
-                {"product_id": rosa, "quantity": "2"},
-            ],
-        },
-        {
-            "payment": "cash",
-            "lines": [{"product_id": lavanda, "quantity": "1", "special_price": 9_000}],
-        },
-        {
-            "payment": "owing",
-            "customer_id": customer["id"],
-            "lines": [{"product_id": rosa, "quantity": "3"}],
-        },
-    ]
-    for body in sales:
-        made = client.post("/sales", json=body)
-        assert made.status_code == 201, made.text
-    paid = client.post(
-        f"/customers/{customer['id']}/payments",
-        json={"paid_on": TODAY_TEXT, "amount": 4_000, "method": "cash"},
-    )
-    assert paid.status_code == 201, paid.text
-
-    category = client.post("/expense-categories", json={"name": "Envases"}).json()["id"]
-    expense = client.post(
-        "/expenses",
-        json={"spent_on": TODAY_TEXT, "category_id": category, "amount": 1_500, "detail": "Cajas"},
-    )
-    assert expense.status_code == 201, expense.text
-
-    withdrawal = client.post(
-        "/stock/withdrawals",
-        json={
-            "reason_id": reason_id(client, "Marketing"),
-            "lines": [{"product_id": rosa, "quantity": "2"}],
-        },
-    )
-    assert withdrawal.status_code == 201, withdrawal.text
-    # A second negative adjustment, so the shortfall is a sum of costed lots.
-    shortfall = client.post(
-        "/stock/entries", json={"product_id": rosa, "origin": "adjustment", "quantity": "-3"}
-    )
-    assert shortfall.status_code == 201, shortfall.text
-    return {"withdrawal": withdrawal.json(), "customer_id": customer["id"]}
 
 
 def _without_ids(node: Any) -> Any:
@@ -154,7 +71,7 @@ def test_every_figure_is_the_same_at_scale_0_and_scale_2(
         zero, two = clients
         assert _scales(engine) == [0, 2]
 
-        entered = [_enter(zero), _enter(two)]
+        entered = [enter(zero), enter(two)]
 
         for path in ("/panel", "/analysis"):
             at_zero, at_two = zero.get(path), two.get(path)

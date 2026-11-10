@@ -9,7 +9,7 @@ column added later is covered without touching this file.
 from __future__ import annotations
 
 import pytest
-from sqlalchemy import func, insert, literal, select, text
+from sqlalchemy import func, insert, literal, select
 from sqlalchemy.orm import Session
 
 from app.money_format.domain.rescale import (

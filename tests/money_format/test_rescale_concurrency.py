@@ -47,7 +47,7 @@ def second(world: World) -> Iterator[Engine]:
 
 
 def _short_timeout(dbapi_connection: object, _record: object) -> None:
-    getattr(dbapi_connection, "execute")("PRAGMA busy_timeout=50")
+    dbapi_connection.execute("PRAGMA busy_timeout=50")
 
 
 def _record_sale(session: Session, business_id: int, category_id: int) -> None:
