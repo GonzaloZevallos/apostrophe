@@ -33,10 +33,11 @@ import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import ContentArea from '../../components/ContentArea'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 const VARIETY_ONE = pathTo(VARIETY, { id: 1 })
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 const VARIETY_ROW = {
   id: 1,
@@ -134,7 +135,7 @@ function renderPage(path: string, overrides: Answers = {}, state: unknown = null
         element: (
           <QueryClientProvider client={queryClient}>
             <FlashProvider>
-              <Outlet context={ME} />
+              <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
               <Where />
             </FlashProvider>
           </QueryClientProvider>

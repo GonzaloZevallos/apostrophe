@@ -20,6 +20,7 @@ import { LIMITS, SAMPLES } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { stubViewport } from '../../test-viewport'
 import { Outlet, createMemoryRouter, RouterProvider } from 'react-router'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 import type { InitialEntry } from 'react-router'
 import FlashProvider from '../../flash/FlashProvider'
 import ClienteFicha from './ClienteFicha'
@@ -74,6 +75,7 @@ function renderClientes() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
+<MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
       <MemoryRouter initialEntries={[CUSTOMERS]}>
         <Routes>
           <Route element={<ClientesLayout />}>
@@ -81,7 +83,8 @@ function renderClientes() {
           </Route>
         </Routes>
       </MemoryRouter>
-    </QueryClientProvider>,
+    </MoneyFormatProvider>
+</QueryClientProvider>,
   )
 }
 
@@ -450,7 +453,9 @@ function renderApp(entries: string[] = [CUSTOMERS]) {
       {
         element: (
           <FlashProvider>
-            <Outlet context={{ email: 'a@b.com', business_name: 'N', today: '2026-10-03' }} />
+            <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
+              <Outlet context={{ email: 'a@b.com', business_name: 'N', today: '2026-10-03', money: { symbol: '$', decimals: 0 } }} />
+            </MoneyFormatProvider>
           </FlashProvider>
         ),
         children: [
@@ -579,7 +584,9 @@ function renderTwoPanes(entries: InitialEntry[]) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
+        <RouterProvider router={router} />
+      </MoneyFormatProvider>
     </QueryClientProvider>,
   )
   return router
@@ -655,14 +662,16 @@ test('tapping "New customer" opens the customer form', async () => {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[CUSTOMERS]}>
-        <Routes>
-          <Route element={<ClientesLayout />}>
-            <Route path={CUSTOMERS} element={<Clientes />} />
-          </Route>
-          <Route path={CUSTOMER_NEW} element={<span>customer form</span>} />
-        </Routes>
-      </MemoryRouter>
+      <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
+        <MemoryRouter initialEntries={[CUSTOMERS]}>
+          <Routes>
+            <Route element={<ClientesLayout />}>
+              <Route path={CUSTOMERS} element={<Clientes />} />
+            </Route>
+            <Route path={CUSTOMER_NEW} element={<span>customer form</span>} />
+          </Routes>
+        </MemoryRouter>
+      </MoneyFormatProvider>
     </QueryClientProvider>,
   )
 

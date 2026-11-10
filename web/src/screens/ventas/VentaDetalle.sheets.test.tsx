@@ -14,6 +14,7 @@ import SALE_DETAIL from '../../api/fixtures/sale-detail.json'
 import { SheetRouterProvider, sheetDepth } from '../../components/useSheetStack'
 import { CUSTOMERS, pathTo, SALE, SALES } from '../../routes'
 import VentaDetalle from './VentaDetalle'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -45,10 +46,12 @@ test('back with Assign customer open closes only the sheet and stays on the deta
   )
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+<MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
       <SheetRouterProvider router={router}>
         <RouterProvider router={router} />
       </SheetRouterProvider>
-    </QueryClientProvider>,
+    </MoneyFormatProvider>
+</QueryClientProvider>,
   )
 
   await user.click(await screen.findByRole('button', { name: 'Assign customer' }))
@@ -70,10 +73,12 @@ test('"Close" on the sheet is the same move as back', async () => {
   })
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+<MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
       <SheetRouterProvider router={router}>
         <RouterProvider router={router} />
       </SheetRouterProvider>
-    </QueryClientProvider>,
+    </MoneyFormatProvider>
+</QueryClientProvider>,
   )
 
   await user.click(await screen.findByRole('button', { name: 'Assign customer' }))

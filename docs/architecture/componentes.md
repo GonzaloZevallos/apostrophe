@@ -36,9 +36,9 @@ El diagrama de clases de cada capacidad lo genera [scripts/docs/generate.py](../
 
 | Capacidad | Puertos (clases de `application/ports.py`) | Diagrama de clases |
 | --- | --- | --- |
-| accounts | [accounts](../../app/accounts/application/ports.py) `Accounts` `BusinessOpening` | [accounts](generated/classes/accounts.md) |
+| accounts | [accounts](../../app/accounts/application/ports.py) `Accounts` `BusinessOpening` `AccountsMoneyFormat` | [accounts](generated/classes/accounts.md) |
 | business_removal | sin `ports.py`: sus contratos están en [schema_rows](../../app/business_removal/application/schema_rows.py) y [money_format_read](../../app/business_removal/application/money_format_read.py) `MoneyFormatRead`, que implementa [export_reader](../../app/money_format/adapters/export_reader.py) `SqlMoneyFormatRead` de money_format | [business_removal](generated/classes/business_removal.md) |
-| catalog | [catalog](../../app/catalog/application/ports.py) `CatalogVarieties` `CatalogStock` | [catalog](generated/classes/catalog.md) |
+| catalog | [catalog](../../app/catalog/application/ports.py) `CatalogVarieties` `CatalogStock` `CatalogMoneyFormat` | [catalog](generated/classes/catalog.md) |
 | customer_types | [customer_types](../../app/customer_types/application/ports.py) `CustomerTypes` `CustomersInType` | [customer_types](generated/classes/customer_types.md) |
 | customers | [customers](../../app/customers/application/ports.py) `Customers` `Balances` `CustomerTypes` `PhoneCountryReader` | [customers](generated/classes/customers.md) |
 | expenses | [expenses](../../app/expenses/application/ports.py) `Expenses` `ExpenseCategories` | [expenses](generated/classes/expenses.md) |

@@ -23,6 +23,7 @@ import Notice from '../../components/Notice'
 import { readFeedback, saleJustSaved } from '../../components/feedback'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import VentaDetalle from './VentaDetalle'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 /** Stands in for the real `Ventas` screen, just enough to show what `VentaDetalle`
  * navigated back with (plan, invariants: history state is only ever read through
@@ -61,10 +62,12 @@ function renderDetalle(initialState?: unknown) {
   )
   render(
     <QueryClientProvider client={queryClient}>
+<MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
       <SheetRouterProvider router={router}>
         <RouterProvider router={router} />
       </SheetRouterProvider>
-    </QueryClientProvider>,
+    </MoneyFormatProvider>
+</QueryClientProvider>,
   )
 }
 

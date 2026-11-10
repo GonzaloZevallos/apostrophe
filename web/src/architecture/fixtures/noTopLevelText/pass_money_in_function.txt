@@ -1,0 +1,6 @@
+// expect: none
+import { moneyFormatter } from '../format/money'
+export function zero(format) {
+  return moneyFormatter(format).money(0)
+}
+export const hint = (money) => money.attached(0)

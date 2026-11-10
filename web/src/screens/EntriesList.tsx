@@ -32,7 +32,8 @@ import Boton from '../components/Boton'
 import BotonLink from '../components/BotonLink'
 import { useFlash } from '../flash/useFlash'
 import { formatDate } from '../format/dates'
-import { formatGrams, formatMoney } from '../format/money'
+import { formatGrams } from '../format/money'
+import { useMoney } from '../format/moneyContext'
 import { STOCK_ENTRY, VARIETIES, WITHDRAWAL, pathTo } from '../routes'
 import { useBackParent } from '../shell/useBackParent'
 import type { Variety } from './Variedades'
@@ -197,6 +198,7 @@ export function EntryRows({
   readOnly: boolean
   onDelete: (entry: StockEntry) => void
 }) {
+  const money = useMoney()
   const { t } = useTranslation()
   return (
     <ul className="lista-entradas">
@@ -237,10 +239,10 @@ export function EntryRows({
                 <span className="fila-entrada__costo fila-entrada__costo--sin">{STOCK_TEXT.sinCosto}</span>
               ) : (
                 <>
-                  <span className="fila-entrada__costo cifra-s">{formatMoney(entry.total_cost)}</span>
+                  <span className="fila-entrada__costo cifra-s">{money.money(entry.total_cost)}</span>
                   {entry.cost_per_gram !== null && (
                     <span className="fila-entrada__linea2 cifra-n">
-                      {formatMoney(entry.cost_per_gram)}
+                      {money.money(entry.cost_per_gram)}
                       {COMMON_TEXT.perGram}
                     </span>
                   )}

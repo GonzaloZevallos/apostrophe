@@ -1,0 +1,3 @@
+// expect: money-at-module-scope@3
+import { tooManyDecimalsMessage } from '../api/amountRefusal'
+export const REFUSAL = tooManyDecimalsMessage({ symbol: '$', decimals: 0 })

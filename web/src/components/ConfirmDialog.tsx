@@ -5,7 +5,7 @@
  * screen builds its own dialog markup.
  */
 
-import { keepMoneyTogether } from '../format/money'
+import { useMoney } from '../format/moneyContext'
 import AnswerButton from './AnswerButton'
 
 export interface ConfirmDialogProps {
@@ -25,10 +25,11 @@ export default function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const money = useMoney()
   return (
     <div className="confirmacion" role="alertdialog" aria-modal="true" aria-label={title}>
-      <span className="confirmacion__titulo">{keepMoneyTogether(title)}</span>
-      <span className="confirmacion__detalle">{keepMoneyTogether(detail)}</span>
+      <span className="confirmacion__titulo">{money.keepTogether(title)}</span>
+      <span className="confirmacion__detalle">{money.keepTogether(detail)}</span>
       <div className="confirmacion__acciones">
         <AnswerButton kind="keep" onClick={onCancel}>
           {cancelText}

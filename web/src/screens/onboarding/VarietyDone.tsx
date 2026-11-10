@@ -18,7 +18,7 @@ import Boton from '../../components/Boton'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
-import { formatMoney } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { ONBOARDING_STOCK } from '../../routes'
 import type { Variety } from '../Variedades'
 import { COMMON_TEXT } from '../../copy/common'
@@ -32,6 +32,7 @@ export interface VarietyDoneProps {
 }
 
 export default function VarietyDone({ target, onStale }: VarietyDoneProps) {
+  const money = useMoney()
   const navigate = useNavigate()
   const query = useQuery({
     queryKey: [...keys.variety(String(target.id)), 'step-one'],
@@ -59,7 +60,7 @@ export default function VarietyDone({ target, onStale }: VarietyDoneProps) {
       <div className="onboarding__tarjeta">
         <span className="onboarding__tarjeta-nombre">{target.name}</span>
         <span className="onboarding__tarjeta-detalle">
-          {price === null ? '' : COMMON_TEXT.pricePerGram(formatMoney(price.list_price))}
+          {price === null ? '' : COMMON_TEXT.pricePerGram(money.money(price.list_price))}
         </span>
         <span className="onboarding__tarjeta-detalle">{CHECKLIST_DONE}</span>
       </div>

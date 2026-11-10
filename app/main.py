@@ -278,6 +278,8 @@ def create_app(
     app.state.customers_phone_country = SqlPhoneCountry
     app.state.owing_sales = SqlOwingSales
     # How money is shown, read through each hexagon's own `MoneyFormatReader` port (docs/adr/0055).
+    app.state.accounts_money_format = SqlMoneyFormat
+    app.state.catalog_money_format = SqlMoneyFormat
     app.state.sales_money_format = SqlMoneyFormat
     app.state.products_money_format = SqlMoneyFormat
     app.state.payments_money_format = SqlMoneyFormat
