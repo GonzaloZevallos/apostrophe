@@ -23,7 +23,7 @@ class PaymentRow(Base):
     __tablename__ = "payment"
     __table_args__ = (
         Index(None, "sale_id"),
-        Index(None, "business_id", "payment_method_id"),
+        Index(None, "payment_method_id", "business_id"),
         ForeignKeyConstraint(
             ["business_id", "payment_method_id"],
             ["payment_method.business_id", "payment_method.id"],

@@ -170,7 +170,7 @@ BILL = {
             "unit_price": 9_000,
         }
     ],
-    "payment": {"state": "cash", "still_owed": None},
+    "payment": {"state": "paid", "still_owed": None},
     "balance": None,
 }
 

@@ -69,7 +69,7 @@ def _sale(
 ) -> None:
     body: dict[str, Any] = {
         "date": on,
-        "payment": payment_body(payment),
+        "payment": payment_body(payment, client),
         "lines": [{"product_id": variety_id, "quantity": quantity, "gift": gift}],
     }
     if customer_id is not None:

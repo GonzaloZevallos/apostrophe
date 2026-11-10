@@ -113,7 +113,7 @@ def test_record_sale_without_a_customer_paid_cash(client: TestClient) -> None:
     assert response.status_code == 201, response.text
     body = response.json()
     assert body["customer"] is None
-    assert body["payment"] == "cash"
+    assert body["payment"] == "paid"
     assert body["total"] == 100_000
     assert body["lines"] == [
         {

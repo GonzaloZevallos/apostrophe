@@ -13,8 +13,14 @@ from tests.conftest import TODAY, reason_id
 TODAY_TEXT = TODAY.isoformat()
 
 
+def _cash(client: TestClient) -> int:
+    """The first method the business offers: ids differ between two businesses."""
+    return int(client.get("/api/payment-methods").json()[0]["id"])
+
+
 def enter(client: TestClient) -> dict[str, Any]:
     """The same data in either business; answers the withdrawal's own answer."""
+    cash = _cash(client)
     lavanda = client.post("/api/products", json={"name": "Lavanda"}).json()["id"]
     rosa = client.post("/api/products", json={"name": "Rosa"}).json()["id"]
     for product_id, price in ((lavanda, 10_000), (rosa, 3_333)):
@@ -43,19 +49,19 @@ def enter(client: TestClient) -> dict[str, Any]:
     customer = client.post("/customers", json={"name": "Ana", "phone": "11 5555-5555"}).json()
     sales = [
         {
-            "payment": {"kind": "paid", "payment_method_id": 1},
+            "payment": {"kind": "paid", "payment_method_id": cash},
             "shipping_charged": 500,
             "lines": [{"product_id": lavanda, "quantity": "1"}],
         },
         {
-            "payment": {"kind": "paid", "payment_method_id": 1},
+            "payment": {"kind": "paid", "payment_method_id": cash},
             "lines": [
                 {"product_id": rosa, "quantity": "1", "gift": True},
                 {"product_id": rosa, "quantity": "2"},
             ],
         },
         {
-            "payment": {"kind": "paid", "payment_method_id": 1},
+            "payment": {"kind": "paid", "payment_method_id": cash},
             "lines": [{"product_id": lavanda, "quantity": "1", "special_price": 9_000}],
         },
         {
@@ -69,7 +75,7 @@ def enter(client: TestClient) -> dict[str, Any]:
         assert made.status_code == 201, made.text
     paid = client.post(
         f"/customers/{customer['id']}/payments",
-        json={"paid_on": TODAY_TEXT, "amount": 4_000, "payment_method_id": 1},
+        json={"paid_on": TODAY_TEXT, "amount": 4_000, "payment_method_id": cash},
     )
     assert paid.status_code == 201, paid.text
 
@@ -99,9 +105,10 @@ def enter(client: TestClient) -> dict[str, Any]:
 def enter_extras(client: TestClient, customer_id: int) -> None:
     """What `enter` leaves out: a later partial payment of what a customer owes, and a
     sale that draws from a stock entry whose cost is still pending."""
+    cash = _cash(client)
     paid = client.post(
         f"/customers/{customer_id}/payments",
-        json={"paid_on": TODAY_TEXT, "amount": 1_250, "payment_method_id": 1},
+        json={"paid_on": TODAY_TEXT, "amount": 1_250, "payment_method_id": cash},
     )
     assert paid.status_code == 201, paid.text
     jazmin = client.post("/api/products", json={"name": "Jazmin"}).json()["id"]
@@ -117,7 +124,7 @@ def enter_extras(client: TestClient, customer_id: int) -> None:
     sale = client.post(
         "/sales",
         json={
-            "payment": {"kind": "paid", "payment_method_id": 1},
+            "payment": {"kind": "paid", "payment_method_id": cash},
             "lines": [{"product_id": jazmin, "quantity": "2"}],
         },
     )

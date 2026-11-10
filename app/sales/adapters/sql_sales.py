@@ -73,6 +73,7 @@ class SqlSales:
 
         for position, line in enumerate(sale.lines):
             self._session.add(self._line_row(row.id, line, position))
+        flush_or_refuse(self._session)
 
         if sale.payment is not None:
             self._insert_payment(row.id, sale.payment, sale.recorded_at)

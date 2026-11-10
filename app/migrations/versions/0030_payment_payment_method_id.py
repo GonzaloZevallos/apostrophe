@@ -87,9 +87,9 @@ def _swap(*, linked: bool, copied: str, from_columns: str) -> None:
     op.create_index(op.f("ix_payment_sale_id"), "payment", ["sale_id"])
     if linked:
         op.create_index(
-            op.f("ix_payment_business_id_payment_method_id"),
+            op.f("ix_payment_payment_method_id_business_id"),
             "payment",
-            ["business_id", "payment_method_id"],
+            ["payment_method_id", "business_id"],
         )
 
 
@@ -125,6 +125,6 @@ def downgrade() -> None:
         raise PaymentWithoutMethodColumn(
             "a payment recorded with a payment method id has no method value to restore"
         )
-    op.drop_index(op.f("ix_payment_business_id_payment_method_id"), table_name="payment")
+    op.drop_index(op.f("ix_payment_payment_method_id_business_id"), table_name="payment")
     columns = "id, business_id, paid_on, amount, method, customer_id, sale_id, recorded_at"
     _swap(linked=False, copied=columns, from_columns=columns)
