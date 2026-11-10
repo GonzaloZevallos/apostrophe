@@ -22,6 +22,7 @@ subgraph src["src"]
     src_api_onboarding_ts["onboarding.ts"]
     src_api_panel_ts["panel.ts"]
     src_api_payments_ts["payments.ts"]
+    src_api_phoneCountry_ts["phoneCountry.ts"]
     src_api_pricingSettings_ts["pricingSettings.ts"]
     src_api_refusals_ts["refusals.ts"]
     src_api_sales_ts["sales.ts"]
@@ -50,6 +51,8 @@ src_api_panel_ts-->src_api_keys_ts
 src_api_panel_ts-->src_api_stock_ts
 src_api_payments_ts-->src_api_client_ts
 src_api_payments_ts-->src_api_keys_ts
+src_api_phoneCountry_ts-->src_api_client_ts
+src_api_phoneCountry_ts-->src_api_keys_ts
 src_api_pricingSettings_ts-->src_api_client_ts
 src_api_pricingSettings_ts-->src_api_keys_ts
 src_api_refusals_ts-->src_api_contract_json
