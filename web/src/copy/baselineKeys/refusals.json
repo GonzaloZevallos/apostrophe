@@ -397,5 +397,11 @@
   },
   "refusals.ts:REFUSAL_BY_CODE[\"money.too_many_decimals\"]": {
     "key": "refusals:generic"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"money_format.decimals_below_recorded\"]": {
+    "key": "refusals:moneyDecimalsBelowRecorded"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"money_format.symbol_invalid\"]": {
+    "key": "refusals:moneySymbolInvalid"
   }
 }
