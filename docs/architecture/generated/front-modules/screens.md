@@ -37,6 +37,7 @@ subgraph src["src"]
       src_screens_clientes_accountRows_ts["accountRows.ts"]
     end
     subgraph src_screens_expenses["expenses"]
+      src_screens_expenses_ExpenseEditSheet_tsx["ExpenseEditSheet.tsx"]
       src_screens_expenses_ExpenseForm_tsx["ExpenseForm.tsx"]
       src_screens_expenses_ExpenseNewRoute_tsx["ExpenseNewRoute.tsx"]
       src_screens_expenses_ExpensesBehind_tsx["ExpensesBehind.tsx"]
@@ -192,7 +193,7 @@ src_screens_EntradaStock_tsx-->src_screens_StockEntryForm_tsx
 src_screens_Entrar_tsx-->src_screens_ForgotSheet_tsx
 src_screens_EntriesList_tsx-->src_screens_Variedades_tsx
 src_screens_EntriesList_tsx-->src_screens_originLabel_ts
-src_screens_Gastos_tsx-->src_screens_expenses_ExpenseForm_tsx
+src_screens_Gastos_tsx-->src_screens_expenses_ExpenseEditSheet_tsx
 src_screens_Gastos_tsx-->src_screens_expenses_MonthBody_tsx
 src_screens_Inicio_tsx-->src_screens_inicio_InicioPanel_tsx
 src_screens_StockEntryForm_tsx-->src_screens_Variedades_tsx
@@ -231,6 +232,7 @@ src_screens_clientes_CustomerCardBehind_tsx-->src_screens_clientes_accountRows_t
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_ClienteFila_tsx
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_CustomerSearch_ts
 src_screens_clientes_TeDeben_tsx-->src_screens_clientes_ClienteFila_tsx
+src_screens_expenses_ExpenseEditSheet_tsx-->src_screens_expenses_ExpenseForm_tsx
 src_screens_expenses_ExpenseNewRoute_tsx-->src_screens_expenses_ExpenseForm_tsx
 src_screens_expenses_ExpenseNewRoute_tsx-->src_screens_expenses_ExpensesBehind_tsx
 src_screens_expenses_ExpensesBehind_tsx-->src_screens_expenses_MonthBody_tsx

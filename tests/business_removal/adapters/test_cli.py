@@ -267,7 +267,10 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     assert expense["amount"] == EXPENSE_AMOUNT
     assert expense["spent_on"] == days.expense.isoformat()
     assert expense["detail"] == EXPENSE_DETAIL
-    assert expense["category_id"] == {"id": categories["Servicios"]["id"], "name": "Servicios"}
+    assert expense["expense_category_id"] == {
+        "id": categories["Servicios"]["id"],
+        "name": "Servicios",
+    }
 
     sale_line_total = sale_line["line_total"]
     assert document["exported_at"] == removed_at.strftime("%Y-%m-%dT%H:%M:%SZ")

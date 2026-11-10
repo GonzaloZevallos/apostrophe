@@ -55,16 +55,16 @@ afterAll(async () => {
   await browser.close()
 })
 
-async function context(): Promise<BrowserContext> {
-  const made = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: CAPTURE_SCALE, ...CALM_CONTEXT })
+async function context(scale: number = CAPTURE_SCALE): Promise<BrowserContext> {
+  const made = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: scale, ...CALM_CONTEXT })
   await pauseClock(made)
   await addProbe(made)
   return made
 }
 
 // One fixture, one fresh context: its settled page, then the shot.
-async function shoot(markup: string, block: string | null = null) {
-  const made = await context()
+async function shoot(markup: string, block: string | null = null, scale: number = CAPTURE_SCALE) {
+  const made = await context(scale)
   try {
     const page = await made.newPage()
     await page.setContent(markup)
@@ -80,8 +80,8 @@ type Rgb = [number, number, number]
 const rgb = (hex: string): Rgb => [1, 3, 5].map((at) => Number.parseInt(hex.slice(at, at + 2), 16)) as Rgb
 
 // The colour at a CSS y (the middle of the row's device pixels), in the middle of the width.
-function colourAt(png: PNG, cssY: number): Rgb {
-  const at = (Math.floor(cssY * CAPTURE_SCALE) * png.width + Math.floor(png.width / 2)) * 4
+function colourAt(png: PNG, cssY: number, scale: number = CAPTURE_SCALE): Rgb {
+  const at = (Math.floor(cssY * scale) * png.width + Math.floor(png.width / 2)) * 4
   return [png.data[at] ?? -1, png.data[at + 1] ?? -1, png.data[at + 2] ?? -1]
 }
 
@@ -236,6 +236,22 @@ describe('takeShot on a phone page (scroll and stitch)', () => {
     expect(colourAt(png, 200)).toEqual(rgb(GREEN))
     expect(colourAt(png, 2)).toEqual(rgb(GREEN))
     expect(colourAt(png, 398)).toEqual(rgb(GREEN))
+  }, TAKE_SHOT_TEST_MS)
+
+  it('crops a section to its CSS size at deviceScaleFactor 1, the scale of the screen images', async () => {
+    const shot = await shoot(
+      html(
+        `${bands([900, RED])}<div id="card" style="margin-left:51.4px;width:200.2px;height:400px;background:${GREEN}"></div>${bands([900, BLUE])}`,
+      ),
+      '#card',
+      1,
+    )
+    const png = decode(shot)
+    // The same CSS crop as at scale 2, columns 51 to 252 and rows 900 to 1300, with one device px per CSS px.
+    expect(png.width).toBe(201)
+    expect(png.height).toBe(400)
+    expect(colourAt(png, 200, 1)).toEqual(rgb(GREEN))
+    expect(colourAt(png, 398, 1)).toEqual(rgb(GREEN))
   }, TAKE_SHOT_TEST_MS)
 
   it('takes a page whose textarea holds more text than its box, as the grow path did', async () => {

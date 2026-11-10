@@ -2,7 +2,7 @@
 // sample app, at the same width, one PNG per screen.
 //
 //   node scripts/design/comparisons.mjs --facts <sample.json> --out <dir> [--only A,B] [--strict]
-//                                  [--census] [--step-timeout <ms>] [--registry <screens.json>]
+//                                  [--census] [--step-timeout <ms>] [--registry <screens.json>] [--built-only]
 //
 // Every capture, phone and desktop, both sides, runs on a calm page (`shot.mjs`: `CALM_CONTEXT`,
 // `CALM_CSS`, `PROBE_CSS`): reduced motion in the context, animation and transition durations
@@ -45,6 +45,11 @@
 // never changes a PNG, a failure or the exit code: a census that could not be read is a fixed
 // English `census_error`.
 //
+// `--built-only` (screen images, docs/product/screen-images.md, ADR-0079; read in one place, above the run loop): the run
+// skips the design side and the sheet, captures at a device scale factor of 1, and writes only
+// `<screen>.built.png` and `index.json`. Each entry keeps its shape; its `design` and `file` are null and
+// `capture` says whether the built PNG exists. Without it everything runs as before.
+//
 // `--step-timeout <ms>` (an integer of at least 1; default 8000) is the wall-clock bound of one
 // step of a capture. It bounds `withinTimeout` and the built page's Playwright default; the design
 // page's default is the larger of 30000 and it. The settle bounds count frames and do not change.
@@ -70,7 +75,7 @@ import {
   retrySummary,
   sideOutcome,
 } from './settle.mjs'
-import { CAPTURE_SCALE, captureContextOptions, named, rowCapture, shotReason, staleFiles } from './shot.mjs'
+import { CAPTURE_SCALE, captureContextOptions, launchOptions, named, rowCapture, shotReason, staleFiles } from './shot.mjs'
 import {
   addProbe,
   configureShot,
@@ -100,11 +105,12 @@ const { values } = parseArgs({
     census: { type: 'boolean', default: false },
     'step-timeout': { type: 'string' },
     registry: { type: 'string' },
+    'built-only': { type: 'boolean', default: false },
   },
 })
 if (!values.facts || !values.out) {
   console.error(
-    'usage: comparisons.mjs --facts <sample.json> --out <dir> [--only A,B] [--strict] [--census] [--step-timeout <ms>] [--registry <screens.json>]',
+    'usage: comparisons.mjs --facts <sample.json> --out <dir> [--only A,B] [--strict] [--census] [--step-timeout <ms>] [--registry <screens.json>] [--built-only]',
   )
   process.exit(2)
 }
@@ -443,7 +449,10 @@ async function attempt(label, side, ctx, makeCensus, capture) {
   }
 }
 
-const browser = await chromium.launch()
+// `--built-only` is read here and nowhere else: it picks the browser's launch flags (`launchOptions`) and, in the run
+// loop below, the device scale factor of 1, the only place a run passes `scale`.
+const builtOnly = values['built-only']
+const browser = await chromium.launch(launchOptions(builtOnly))
 const results = []
 let failed = false
 // The rows with a side captured more than once, and those sides' attempts: the run's summary line.
@@ -460,8 +469,9 @@ try {
     // Each side has its own context options: the design side's size is `design_viewport` when the
     // row has one, the built side's is always `viewport ?? PHONE` (screens.mjs, `viewportsOf`).
     const sizes = viewportsOf(s)
-    const designOptions = captureContextOptions({ width: sizes.design[0], height: sizes.design[1], url: facts.url })
-    const builtOptions = captureContextOptions({ width: sizes.built[0], height: sizes.built[1], url: facts.url })
+    const scale = builtOnly ? 1 : undefined
+    const designOptions = captureContextOptions({ width: sizes.design[0], height: sizes.design[1], url: facts.url, scale })
+    const builtOptions = captureContextOptions({ width: sizes.built[0], height: sizes.built[1], url: facts.url, scale })
     // A row's side PNGs come only from this run's own buffers: the previous run's are deleted first.
     for (const file of staleFiles(readdirSync(out), [s.screen])) unlinkSync(join(out, file))
     const ctx = { notes: [], failures: [], census: values.census ? { design: null, built: null } : null, retried: [] }
@@ -470,13 +480,15 @@ try {
     // What each side recorded: a path only once its PNG write has returned, else a fixed reason.
     const sides = { design: { path: null, reason: null }, built: { path: null, reason: null } }
     try {
-      const design = await attempt(
-        'el diseño',
-        'design',
-        ctx,
-        () => censusSide(designOptions, true),
-        (census, probe) => captureDesign(browser, s, designOptions, ctx, census, probe),
-      )
+      const design = builtOnly
+        ? { png: null, reason: null }
+        : await attempt(
+            'el diseño',
+            'design',
+            ctx,
+            () => censusSide(designOptions, true),
+            (census, probe) => captureDesign(browser, s, designOptions, ctx, census, probe),
+          )
       let built = { png: null, reason: named('no built screen yet', 'built') }
       if (s.route === null) notes.push('todavía no existe en la app')
       else {
@@ -500,17 +512,20 @@ try {
         writeFileSync(path, built.png)
         entry.built = sides.built.path = path
       }
-      const file = join(out, `${s.screen}.png`)
-      await composeSheet(browser, s, sizes.design[0], sizes.built[0], design.png, built.png, notes, file)
-      entry.file = file
+      if (!builtOnly) {
+        const file = join(out, `${s.screen}.png`)
+        await composeSheet(browser, s, sizes.design[0], sizes.built[0], design.png, built.png, notes, file)
+        entry.file = file
+      }
     } catch (error) {
       fail(ctx, `la pantalla falló: ${firstLine(error)}`)
     }
     // A side with no path and no reason threw before it could record one.
-    for (const side of ['design', 'built']) {
+    for (const side of builtOnly ? ['built'] : ['design', 'built']) {
       if (sides[side].path === null && !sides[side].reason) sides[side].reason = named('could not take the shot', side)
     }
-    Object.assign(entry, rowCapture(sides))
+    // A built-only row is captured when its built PNG exists: the design side is not asked for.
+    Object.assign(entry, rowCapture(builtOnly ? { design: { path: sides.built.path, reason: null }, built: sides.built } : sides))
     if (ctx.census) {
       const censusSides = Object.entries(ctx.census).filter(
         ([, side]) => side !== null && Object.keys(side.record).length > 0,

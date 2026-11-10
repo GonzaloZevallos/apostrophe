@@ -2,7 +2,7 @@
 
 Los **Product**s que vende un **Business** y el historial de precios de cada uno, que ve solo ese Business (ADR-0004). Toda otra capacidad lee los precios de acá: una **Sale** toma el **Current price** de su día, y el **Catalog** muestra el de hoy.
 
-En pantalla, lo que vende un Business se llama siempre "Product" / "Products", igual para todo Business, los existentes incluidos; no hay ninguna configuración, columna ni campo de la API para elegir otra palabra (decisión del dueño del 2026-10-29, registrada en docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md, que reemplaza solo la oración de pantalla de ADR-0061). El nombre de este archivo, las rutas del front `/varieties/*`, las columnas `variety_id` (hasta #75) y los ids del registro de diseño son identificadores y no cambian (ADR-0061).
+En pantalla, lo que vende un Business se llama siempre "Product" / "Products", igual para todo Business, los existentes incluidos; no hay ninguna configuración, columna ni campo de la API para elegir otra palabra (decisión del dueño del 2026-10-29, registrada en docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md, que reemplaza solo la oración de pantalla de ADR-0061). El nombre de este archivo, las rutas del front `/varieties/*`, las columnas `variety_id` (hasta que se renombre la tabla `variety`) y los ids del registro de diseño son identificadores y no cambian (ADR-0061).
 
 Products es la única pantalla de un Product. Su lista y la página de cada Product reúnen:
 - los precios del Product (acá);
@@ -646,7 +646,7 @@ Criterios de éxito:
 - Un rechazo por choque de nombre o un estado de error para Restore.
 - Métricas de uso de las páginas archivadas.
 - Una palabra configurable para lo que vende un Business, en cualquier forma: configuración, columna, campo de la API o paso del Onboarding.
-- Renombrar las rutas del front `/varieties/*`, las columnas `variety_id` (#75), los identificadores del código, los nombres de los hexágonos, los ids del registro de diseño o el nombre de este archivo.
+- Renombrar las rutas del front `/varieties/*`, las columnas `variety_id` (mientras no se renombre la tabla `variety`), los identificadores del código, los nombres de los hexágonos, los ids del registro de diseño o el nombre de este archivo.
 - Las demás palabras de flor (gramos, "g", Indica share, Aroma, 🌿): #420 y #390.
 - El copy en español "producto" / "productos": llega con #317.
 - Corregir los dibujos de `pantallas/` que todavía dicen "Variety": diseño lo hace en su propio trabajo.

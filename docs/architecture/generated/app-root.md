@@ -27,6 +27,9 @@ classDiagram
   }
   class MoneyFormatMissing {
   }
+  class MoneyJsonRoute {
+    get_route_handler() Callable~~Request~, Coroutine~Any, Any, Response~~
+  }
   class Refused {
     code : str
     fields : Mapping~str, object~
@@ -71,6 +74,9 @@ classDiagram
   }
   class _Coded {
     code : ClassVar~str~
+  }
+  class _DecimalJsonRequest {
+    json() Any
   }
   class _Detailed {
     refusal_fields : Mapping~str, object~

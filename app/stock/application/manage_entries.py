@@ -1,10 +1,12 @@
 from datetime import date, datetime
+from decimal import Decimal
 
+from app.shared.money import money_within
 from app.shared.quantity import Quantity
 from app.shared.reference import ReferenceRefused
 from app.shared.transaction import Transaction
 from app.stock.application.errors import VarietyNotFound
-from app.stock.application.ports import StockEntries, VarietyCatalog
+from app.stock.application.ports import MoneyFormatReader, StockEntries, VarietyCatalog
 from app.stock.application.variety_use import require_usable
 from app.stock.domain.entry import Origin, StockEntry
 from app.stock.domain.errors import EntryNotFound
@@ -26,16 +28,25 @@ def _check_variety(catalog: VarietyCatalog, variety_id: int, *, keeps: bool = Fa
     require_usable(catalog, variety_id, keeps=keeps)
 
 
+def _whole_cost(money_format: MoneyFormatReader, total_cost: Decimal | None) -> int | None:
+    """A request's cost as a domain amount, checked by value against the business's own
+    decimals (docs/adr/0058); `None` stays `None`."""
+    if total_cost is None:
+        return None
+    return money_within(total_cost, money_format.current()).whole_units()
+
+
 def record_entry(
     entries: StockEntries,
     catalog: VarietyCatalog,
+    money_format: MoneyFormatReader,
     transaction: Transaction,
     *,
     entry_date: date,
     variety_id: int,
     origin: Origin,
     quantity: Quantity,
-    total_cost: int | None,
+    total_cost: Decimal | None,
     note: str | None,
     today: date,
     recorded_at: datetime,
@@ -44,7 +55,14 @@ def record_entry(
     foreign or unknown variety never reaches the grams, cost or date rules."""
     _check_variety(catalog, variety_id)
     entry = StockEntry.of(
-        entry_date, variety_id, origin, quantity, total_cost, note, today, recorded_at
+        entry_date,
+        variety_id,
+        origin,
+        quantity,
+        _whole_cost(money_format, total_cost),
+        note,
+        today,
+        recorded_at,
     )
     try:
         stored = entries.add(entry)
@@ -59,6 +77,7 @@ def record_entry(
 def edit_entry(
     entries: StockEntries,
     catalog: VarietyCatalog,
+    money_format: MoneyFormatReader,
     transaction: Transaction,
     entry_id: int,
     *,
@@ -66,7 +85,7 @@ def edit_entry(
     variety_id: int,
     origin: Origin,
     quantity: Quantity,
-    total_cost: int | None,
+    total_cost: Decimal | None,
     note: str | None,
     today: date,
 ) -> StockEntry:
@@ -80,7 +99,7 @@ def edit_entry(
         variety_id,
         origin,
         quantity,
-        total_cost,
+        _whole_cost(money_format, total_cost),
         note,
         today,
         existing.recorded_at,

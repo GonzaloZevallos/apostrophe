@@ -82,7 +82,7 @@ class SqlExpenseCategories:
             .select_from(ExpenseRow)
             .where(
                 ExpenseRow.business_id == self._business_id,
-                ExpenseRow.category_id == category_id,
+                ExpenseRow.expense_category_id == category_id,
             )
         )
         return self._session.scalar(statement) or 0

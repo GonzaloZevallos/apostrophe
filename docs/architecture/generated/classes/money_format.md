@@ -12,13 +12,19 @@ classDiagram
   }
   class domain {
   }
+  class export_reader {
+  }
   class money_format {
   }
   class opening {
   }
+  class reader {
+  }
   class tables {
   }
+  export_reader --> tables
   opening --> tables
+  reader --> tables
 ```
 
 ## domain
@@ -42,5 +48,11 @@ classDiagram
     id : Mapped~int~
     scale : Mapped~int~
     symbol : Mapped~str~
+  }
+  class SqlMoneyFormat {
+    current() MoneyFormat
+  }
+  class SqlMoneyFormatRead {
+    of(business_id: int) ExportedMoney
   }
 ```

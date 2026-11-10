@@ -1,7 +1,7 @@
-"""The columns #75 renamed stay out of the code that talks to the database by name
-(CODING_STANDARDS §11, docs/adr/0077): the domain and the API keep `locked_until`,
-`window_start`, `effective_from`, `sale_date` and `entry_date`; the adapters and the
-removal use the stored names.
+"""The columns renamed for CODING_STANDARDS §11 (docs/adr/0077) stay out of the code that
+talks to the database by name: the domain and the API keep `locked_until`, `window_start`,
+`effective_from`, `sale_date`, `entry_date`, `category_id` and `user_id`; the adapters and
+the removal use the stored names.
 
 (a) under `app/*/adapters/**` (except `router.py` and `schemas.py`) and
 `app/business_removal/**`, no string constant (a `text()` statement, an `order_by`, a
@@ -23,13 +23,26 @@ from pathlib import Path
 
 from tests.architecture.hexagon import REPO_ROOT
 
-OLD_NAMES = frozenset({"locked_until", "window_start", "effective_from", "sale_date", "entry_date"})
+OLD_NAMES = frozenset(
+    {
+        "locked_until",
+        "window_start",
+        "effective_from",
+        "sale_date",
+        "entry_date",
+        "category_id",
+        "user_id",
+    }
+)
 _OLD_WORD = re.compile(rf"(?<![A-Za-z0-9_])({'|'.join(sorted(OLD_NAMES))})(?![A-Za-z0-9_])")
-# The API side of an adapter package, matched by file name.
-API_SIDE_FILES = frozenset({"router.py", "schemas.py"})
+# The API side of an adapter package, matched by file name: `assemble.py` builds the
+# `*Out` schemas of the results API from domain figures, so it speaks the API's names.
+API_SIDE_FILES = frozenset({"router.py", "schemas.py", "assemble.py"})
 # Callees whose keyword arguments are the domain's or the application's names, matched by
 # exact name; each one is added by name when the build needs it.
-DOMAIN_CALLS = frozenset({"PriceEntry", "Sale", "StockEntry", "record_sale"})
+DOMAIN_CALLS = frozenset(
+    {"Expense", "PriceEntry", "Sale", "StockEntry", "record_expense", "record_sale"}
+)
 GUARD_ROWS = frozenset({"LoginGuardRow", "LoginAddressGuardRow"})
 _ALLOWED_LAYERS = re.compile(r"^app\.[a-z_]+\.(domain|application)(\.|$)")
 

@@ -11,6 +11,7 @@ from datetime import date, datetime
 from typing import Protocol
 
 from app.payments.domain.settlement import Ledger, PaymentMethod
+from app.shared.money import MoneyFormat
 
 
 @dataclass(frozen=True)
@@ -32,6 +33,13 @@ class StoredPayment:
 
     id: int
     sale_id: int | None
+
+
+class MoneyFormatReader(Protocol):
+    """How the business shows money: its symbol and decimals, never the scale it stores
+    amounts at (docs/adr/0055, docs/adr/0058). Built for one business."""
+
+    def current(self) -> MoneyFormat: ...
 
 
 class Ledgers(Protocol):

@@ -12,11 +12,13 @@ from sqlalchemy import CursorResult, func, insert, literal, null, select
 from sqlalchemy import delete as sa_delete
 from sqlalchemy.orm import Session
 
+from app.db import money_scale_factor, money_stored_value, scaled
 from app.payments.adapters.tables import LATER, PaymentRow
 from app.payments.application.ports import StoredPayment
 from app.payments.domain.payment import PaymentAboveBalance
 from app.payments.domain.settlement import PaymentMethod
 from app.sales.adapters.tables import SaleLineRow, SaleRow
+from app.shared.money import Money
 
 
 class SqlPayments:
@@ -54,8 +56,14 @@ class SqlPayments:
         statement itself inserts the row correctly; `RETURNING` works the same way on
         both drivers.
         """
+        # The guard compares in hundredths on both sides: the sums are read through
+        # `scaled()` and the amount is bound as the hundredths it is, while the row is
+        # written with the integer the business's column holds (docs/adr/0058).
+        money = Money.of_units(amount)
+        stored = money_stored_value(self._session, self._business_id, money)
+        factor = money_scale_factor(self._session, self._business_id)
         shipping = (
-            select(func.coalesce(func.sum(SaleRow.shipping_charged), 0))
+            select(func.coalesce(func.sum(scaled(SaleRow.shipping_charged, factor)), 0))
             .where(
                 SaleRow.business_id == self._business_id,
                 SaleRow.customer_id == customer_id,
@@ -63,7 +71,7 @@ class SqlPayments:
             .scalar_subquery()
         )
         line_totals = (
-            select(func.coalesce(func.sum(SaleLineRow.line_total), 0))
+            select(func.coalesce(func.sum(scaled(SaleLineRow.line_total, factor)), 0))
             .select_from(SaleLineRow)
             .join(SaleRow, SaleRow.id == SaleLineRow.sale_id)
             .where(
@@ -73,7 +81,7 @@ class SqlPayments:
             .scalar_subquery()
         )
         paid = (
-            select(func.coalesce(func.sum(PaymentRow.amount), 0))
+            select(func.coalesce(func.sum(scaled(PaymentRow.amount, factor)), 0))
             .where(
                 PaymentRow.business_id == self._business_id,
                 PaymentRow.customer_id == customer_id,
@@ -86,10 +94,10 @@ class SqlPayments:
             literal(customer_id),
             null(),
             literal(paid_on),
-            literal(amount),
+            literal(stored),
             literal(method.value),
             literal(recorded_at),
-        ).where(literal(amount) <= (shipping + line_totals) - paid)
+        ).where(literal(money.hundredths) <= (shipping + line_totals) - paid)
 
         statement = (
             insert(PaymentRow)

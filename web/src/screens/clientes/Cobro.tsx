@@ -23,6 +23,7 @@
 import { type FormEvent, type RefObject, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { TOO_MANY_DECIMALS_CODE, TOO_MANY_DECIMALS_MESSAGE } from '../../api/amountRefusal'
 import { ApiError, NetworkError } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
 import {
@@ -99,6 +100,7 @@ const AMOUNT_MESSAGES: Partial<Record<PaymentRefusalCode, string>> = {
  * narrows it enough to index `AMOUNT_MESSAGES` safely, never asserting it is a
  * `payment.*` code the backend actually answers. */
 function amountMessage(code: string): string | undefined {
+  if (code === TOO_MANY_DECIMALS_CODE) return TOO_MANY_DECIMALS_MESSAGE
   return Object.prototype.hasOwnProperty.call(AMOUNT_MESSAGES, code)
     ? AMOUNT_MESSAGES[code as PaymentRefusalCode]
     : undefined

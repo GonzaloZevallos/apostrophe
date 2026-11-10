@@ -19,6 +19,7 @@ import { type FormEvent, Fragment, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { TOO_MANY_DECIMALS_MESSAGE } from '../api/amountRefusal'
 import { ApiError, NetworkError, UNKNOWN_CODE, get } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import { isGone, resolveOverride, type RefusalCode } from '../api/refusals'
@@ -59,6 +60,7 @@ const FIELD_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'stock.date_in_future': DATE_IN_FUTURE,
   'stock.grams_invalid': GRAMS_INVALID,
   'stock.cost_invalid': GENERIC_REFUSAL,
+  'money.too_many_decimals': TOO_MANY_DECIMALS_MESSAGE,
   'stock.note_too_long': GENERIC_REFUSAL,
 }
 

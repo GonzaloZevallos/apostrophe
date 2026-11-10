@@ -15,6 +15,12 @@ export const RENAME_SUCCESS = 'Business renamed'
 export const PASSWORD_CHANGED_SUCCESS = 'Password changed · we signed out your other sessions'
 export const BUSINESS_NAME_INVALID_MESSAGE = 'Give the business a name, without extra spaces'
 export const GENERIC_REFUSAL_MESSAGE = 'Check the details and try again.'
+
+/** Under an amount field the API refused with `money.too_many_decimals`: what to do, by the
+ * decimals the business shows its money with. It names no currency, and the amount typed is
+ * never repeated. */
+export const moneyTooManyDecimals = (decimals: number): string =>
+  decimals === 0 ? 'Use whole amounts only.' : `Use up to ${decimals} decimals.`
 export const CATALOG_SAVED = 'Catalog saved'
 export const PRICES_SAVED = 'Prices saved'
 export const HEADER_TOO_LONG_MESSAGE = 'The header is too long'
@@ -32,6 +38,8 @@ export const CATEGORIES_SAVE_AT_ONCE = 'Adding, renaming or removing a category 
 const LIMITED_COPY_0: readonly LimitedCopy[] = [
   { kind: 'help', text: inviteExpiry(SAMPLES.date) },
   { kind: 'help', text: CATEGORIES_SAVE_AT_ONCE },
+  { kind: 'notice', text: moneyTooManyDecimals(0) },
+  { kind: 'notice', text: moneyTooManyDecimals(2) },
 ]
 /**
  * The fixed words of Configuración → Integraciones, shared with its test (no JSX). The
@@ -69,6 +77,7 @@ const { date: D } = FIXTURE
 /** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
 export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   inviteExpiry: [[D]],
+  moneyTooManyDecimals: [[0], [2]],
   'SETTINGS_TEXT.nameOf': [['Rosa']],
   'SETTINGS_TEXT.moveReasonUp': [['Marketing']],
   'SETTINGS_TEXT.moveReasonDown': [['Marketing']],
