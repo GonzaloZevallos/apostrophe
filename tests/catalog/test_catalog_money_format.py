@@ -65,15 +65,11 @@ def test_a_new_symbol_is_what_the_catalog_prints(client: TestClient) -> None:
     assert _catalog_line(client) == "• Price per gram: US$11.000"
 
 
-@pytest.fixture
-def money_scale() -> int:
-    """This module's adapter test needs a business that stores hundredths."""
-    return 2
-
-
 def test_a_price_with_cents_is_read_and_written_with_its_cents(
-    client: TestClient, engine: Engine
+    client: TestClient, engine: Engine, money_scale: int
 ) -> None:
+    if money_scale != 2:
+        pytest.skip("a price with cents is stored only by a business at scale 2")
     product_id = _priced_and_stocked(client)
     with engine.begin() as connection:
         connection.execute(
