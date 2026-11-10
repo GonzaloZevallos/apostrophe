@@ -21,6 +21,7 @@ import { SHOWN_EN } from '../test/shownLanguage'
 import { expectIconAndTextRule, iconAndTextProblems } from '../test/iconAndTextRule'
 import { inAppState } from '../components/inAppState'
 import InAppLink from '../components/InAppLink'
+import SettingsAvatar from '../components/SettingsAvatar'
 import {
   ANALYSIS,
   CATALOG,
@@ -72,9 +73,14 @@ function Landed() {
   return <div>{`en ${location.pathname} inApp=${String(inApp)}`}</div>
 }
 
-/** A stand-in for Inicio's teaser: an in-app link into a customer's card. */
+/** A stand-in for Inicio: the real Settings avatar of its header and a teaser, an in-app link into a customer's card. */
 function Teaser() {
-  return <InAppLink to={pathTo(CUSTOMER, { id: 3 })}>Collect from Ana</InAppLink>
+  return (
+    <>
+      <SettingsAvatar />
+      <InAppLink to={pathTo(CUSTOMER, { id: 3 })}>Collect from Ana</InAppLink>
+    </>
+  )
 }
 
 /** Every registered screen as a leaf; Inicio holds the teaser, Más its real list. */
@@ -389,15 +395,19 @@ test('the business row leads to Configuración, carrying inApp, one tap from Ini
   expect(screen.getByText(`en ${SETTINGS} inApp=true`)).toBeInTheDocument()
 })
 
-test('the phone reaches Configuración in two taps: the Más tab, then its Configuración entry', async () => {
-  const { container } = renderShell([HOME])
+test('the phone reaches Configuración in one tap: the Settings avatar in the header', async () => {
+  renderShell([HOME])
 
-  await userEvent.click(within(bar(container)).getByRole('link', { name: 'More' }))
-  await userEvent.click(
-    within(screen.getByRole('navigation', { name: 'More' })).getByRole('link', { name: /^Settings/ }),
-  )
+  await userEvent.click(screen.getByRole('link', { name: 'Settings' }))
 
   expect(screen.getByText(`en ${SETTINGS} inApp=true`)).toBeInTheDocument()
+})
+
+test('a computer draws no Settings avatar: its way to Configuración is the business row', () => {
+  const { container } = renderShell([HOME], { computer: true })
+
+  expect(screen.queryByRole('link', { name: 'Settings' })).not.toBeInTheDocument()
+  expect(within(rail(container)).getByRole('link', { name: 'Settings for La Huerta' })).toBeInTheDocument()
 })
 
 test('Inicio\'s teaser opens the card with inApp state; the card reads "‹ Customers" and Back lands on Inicio', async () => {

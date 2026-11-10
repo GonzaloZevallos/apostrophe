@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { StrictMode } from 'react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
-import { CUSTOMERS, HOME, MORE, SETTINGS, STOCK, STOCK_ENTRY, VARIETIES, pathTo } from '../routes'
+import { ANALYSIS, CUSTOMERS, HOME, SETTINGS, STOCK, STOCK_ENTRY, VARIETIES, pathTo } from '../routes'
 import { stubViewport } from '../test-viewport'
 import { inAppState } from './inAppState'
 import { normalisePath, useGoneExit } from './useGoneExit'
@@ -48,7 +48,7 @@ function setup(entries: (string | { pathname: string; state: unknown })[], index
       { path: STOCK_ENTRY, element: <Form /> },
       { path: CUSTOMERS, element: <Page name="Customers" /> },
       { path: SETTINGS, element: <SettingsForm /> },
-      { path: MORE, element: <Page name="More" /> },
+      { path: ANALYSIS, element: <Page name="Analysis" /> },
       { path: HOME, element: <Page name="Home" /> },
     ],
     { initialEntries: entries, initialIndex: index },
@@ -122,8 +122,8 @@ test('a from with a query string or a trailing slash still counts as the parent'
 
 test('the parent is the one of the viewport the user leaves in, not the one it opened in', async () => {
   stubViewport('phone')
-  const router = setup([MORE, { pathname: SETTINGS, state: inAppState({ pathname: MORE }) }], 1)
-  // On a computer Configuración's parent is Inicio, so the entry behind (Más) is not it.
+  const router = setup([ANALYSIS, { pathname: SETTINGS, state: inAppState({ pathname: ANALYSIS }) }], 1)
+  // On a computer Configuración's parent is Inicio, so the entry behind (Análisis) is not it.
   stubViewport('computer')
 
   await userEvent.click(screen.getByRole('button', { name: 'Salir' }))

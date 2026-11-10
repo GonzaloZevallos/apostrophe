@@ -10,13 +10,15 @@
  * is at that moment).
  */
 
-import { EXPENSES, HOME, LOGIN, MORE, SALE, SALES, SALE_NEW, pathTo } from './routes'
-import { act, render, screen, within } from '@testing-library/react'
+import { ANALYSIS, EXPENSES, HOME, LOGIN, SALE, SALES, SALE_NEW, pathTo } from './routes'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import SALE_DETAIL from './api/fixtures/sale-detail.json'
 import App from './App'
 import { queryClient } from './queryClient'
 import { router } from './router'
+import { stubViewport } from './test-viewport'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -108,13 +110,29 @@ function fetchFor(view: unknown) {
   })
 }
 
-test('Más renders Más under the gated shell', async () => {
-  vi.stubGlobal('fetch', fetchFor({}))
-  await act(() => router.navigate(MORE))
+test('the Analysis segment on Home reaches Analysis under the gated shell', async () => {
+  stubViewport('phone')
+  // Only /auth/me answers: Home and Analysis draw their segment while their own data is pending.
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockImplementation((input: RequestInfo | URL) =>
+      String(input).includes('/auth/me')
+        ? Promise.resolve(
+            jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }),
+          )
+        : new Promise<Response>(() => undefined),
+    ),
+  )
+  await act(() => router.navigate(HOME))
 
   render(<App />)
 
-  expect(await within(await screen.findByRole('main')).findByText('More')).toBeInTheDocument()
+  const main = await screen.findByRole('main')
+  await userEvent.click(within(main).getByRole('link', { name: 'Analysis' }))
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(ANALYSIS))
+  const group = await within(await screen.findByRole('main')).findByRole('group', { name: 'Home view' })
+  expect(within(group).getByRole('link', { name: 'Analysis' })).toHaveAttribute('aria-current', 'page')
 })
 
 test('Gastos renders Gastos, with its month, under the gated shell', async () => {

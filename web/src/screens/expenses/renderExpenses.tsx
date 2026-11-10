@@ -1,24 +1,26 @@
 /**
  * Test harness for the expense screens: the real data router (`createMemoryRouter`)
  * with the gated layout's flash provider and `Shell`, `Gastos` and the form route
- * mounted as `router.tsx` mounts them, `fetch` faked, and a stand-in for Más (the
- * screen that opens the form in the app, built by another subtask).
+ * mounted as `router.tsx` mounts them, `fetch` faked, and a stand-in for Analysis that holds
+ * the real Expenses card (the phone's entry that opens the form).
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render } from '@testing-library/react'
-import InAppLink from '../../components/InAppLink'
 import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { vi } from 'vitest'
 import type { Me } from '../../api/me'
 import type { ShownLanguage } from '../../api/language'
 import FlashProvider from '../../flash/FlashProvider'
-import { EXPENSES, EXPENSE_NEW, MORE, relative } from '../../routes'
+import { ANALYSIS, EXPENSES, EXPENSE_NEW, relative } from '../../routes'
 import Shell from '../../shell/Shell'
 import Gastos from '../Gastos'
 import ExpenseNewRoute from './ExpenseNewRoute'
-import { EXPENSES_TEXT } from '../../copy/expenses'
+import ExpensesCard from '../analisis/ExpensesCard'
 import ContentArea from '../../components/ContentArea'
+
+/** What the Analysis stand-in says, so a test can tell it is the screen the form went back to. */
+export const ANALYSIS_SCREEN = 'Analysis screen'
 
 export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en' as ShownLanguage }
 
@@ -47,14 +49,12 @@ export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl) {
             element: <Shell />,
             children: [
               {
-                path: relative(MORE),
-                handle: { screen: 'more' },
+                path: relative(ANALYSIS),
+                handle: { screen: 'analysis' },
                 element: (
                   <ContentArea as="main">
-                    <span>{EXPENSES_TEXT.moreScreen}</span>
-                    <InAppLink to={EXPENSE_NEW}>
-                      {EXPENSES_TEXT.addExpenseFromMore}
-                    </InAppLink>
+                    <span>{ANALYSIS_SCREEN}</span>
+                    <ExpensesCard />
                   </ContentArea>
                 ),
               },
