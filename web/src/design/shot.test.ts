@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   CALM_CONTEXT,
   CALM_CSS,
+  CAPTURE_SCALE,
   PROBE_CSS,
   captureContextOptions,
   censusClass,
@@ -1038,6 +1039,18 @@ describe('the calm page', () => {
     expect(captureContextOptions({ width: 390, height: 844, url: 'http://127.0.0.1:1' })).toEqual({
       viewport: { width: 390, height: 844 },
       deviceScaleFactor: 2,
+      colorScheme: 'light',
+      baseURL: 'http://127.0.0.1:1',
+      reducedMotion: 'reduce',
+    })
+  })
+
+  it('takes the device scale factor only from its scale argument, which defaults to the capture scale', () => {
+    const row = { width: 390, height: 844, url: 'http://127.0.0.1:1' }
+    expect(captureContextOptions(row).deviceScaleFactor).toBe(CAPTURE_SCALE)
+    expect(captureContextOptions({ ...row, scale: 1 })).toEqual({
+      viewport: { width: 390, height: 844 },
+      deviceScaleFactor: 1,
       colorScheme: 'light',
       baseURL: 'http://127.0.0.1:1',
       reducedMotion: 'reduce',

@@ -83,9 +83,9 @@ export const CALM_CONTEXT: Readonly<{ reducedMotion: 'reduce' }>;
 export const CAPTURE_SCALE: 2;
 export const CALM_CSS: string;
 export const PROBE_CSS: string;
-export function captureContextOptions(row: { width: number; height: number; url: string }): {
+export function captureContextOptions(row: { width: number; height: number; url: string; scale?: number }): {
   viewport: Viewport;
-  deviceScaleFactor: 2;
+  deviceScaleFactor: number;
   colorScheme: 'light';
   baseURL: string;
   reducedMotion: 'reduce';
