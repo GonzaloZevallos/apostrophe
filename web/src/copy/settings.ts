@@ -27,11 +27,18 @@ export const inviteExpiry = (date: string): string => `A one-time link, it expir
  * adding, renaming and removing each save at once, through the owner's own routes. */
 export const CATEGORIES_SAVE_AT_ONCE = 'Adding, renaming or removing a category saves right away.'
 
+/** The line that names a stored language the Copy module has no name for; not exported, so
+ * `SETTINGS_TEXT.currentLanguage` is its one public key. */
+function currentLanguageLine(tag: string): string {
+  return `Current: ${tag}`
+}
+
 /** Every always-visible help line of these groups, measured with `SAMPLES`; the screens
  * render `inviteExpiry` itself. Checked by `copy/copyLimits.test.ts`. */
 const LIMITED_COPY_0: readonly LimitedCopy[] = [
   { kind: 'help', text: inviteExpiry(SAMPLES.date) },
   { kind: 'help', text: CATEGORIES_SAVE_AT_ONCE },
+  { kind: 'help', text: currentLanguageLine('xx') },
 ]
 /**
  * The fixed words of Configuración → Integraciones, shared with its test (no JSX). The
@@ -142,7 +149,7 @@ export const SETTINGS_TEXT = {
   reasonNameDuplicate: 'You already have a reason with that name.',
   deleteReasonConfirm: (name: string) => `Delete the reason ${name}?`,
   reasonMoveFailed: 'The order wasn\'t saved. Try again.',
-  currentLanguage: (tag: string) => `Current: ${tag}`,
+  currentLanguage: currentLanguageLine,
 } as const
 
 /** Each language's own name, fixed and the same whatever language is shown (invariant 7):

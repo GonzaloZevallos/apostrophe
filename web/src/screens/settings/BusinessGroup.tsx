@@ -198,9 +198,6 @@ function LanguageControl({ language, selectable }: { language: StoredLanguage; s
 
   const known = LANGUAGES.some((option) => sameLanguage(language, option.value))
   const selectableNow = selectable.includes(language)
-  const shown = LANGUAGES.filter(
-    (option) => selectable.includes(option.value) || (known && sameLanguage(language, option.value)),
-  )
 
   async function choose(tag: LanguageTag): Promise<void> {
     if (saving || sameLanguage(language, tag)) {
@@ -239,7 +236,9 @@ function LanguageControl({ language, selectable }: { language: StoredLanguage; s
       <span className="rotulo ajustes-tema__rotulo">{SETTINGS_TEXT.language}</span>
       {!known && <span className="campo__ayuda">{SETTINGS_TEXT.currentLanguage(language)}</span>}
       <div className="ajustes-tema" role="radiogroup" aria-label={SETTINGS_TEXT.languageGroupName}>
-        {shown.map((option) => {
+        {LANGUAGES.filter(
+          (option) => selectable.includes(option.value) || (known && sameLanguage(language, option.value)),
+        ).map((option) => {
           const checked = sameLanguage(language, option.value)
           return (
             <button
