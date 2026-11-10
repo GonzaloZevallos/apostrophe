@@ -106,6 +106,11 @@ def _enter(client: TestClient) -> dict[str, Any]:
         },
     )
     assert withdrawal.status_code == 201, withdrawal.text
+    # A second negative adjustment, so the shortfall is a sum of costed lots.
+    shortfall = client.post(
+        "/stock/entries", json={"product_id": rosa, "origin": "adjustment", "quantity": "-3"}
+    )
+    assert shortfall.status_code == 201, shortfall.text
     return {"withdrawal": withdrawal.json(), "customer_id": customer["id"]}
 
 
@@ -159,6 +164,13 @@ def test_every_figure_is_the_same_at_scale_0_and_scale_2(
         month = zero.get("/panel").json()["periods"]["month"]
         assert month["sales"] > 0 and month["expenses"] == 1_500 and month["cost_of_goods"] > 0
         assert _without_ids(entered[0]["withdrawal"]) == _without_ids(entered[1]["withdrawal"])
+        # A Stock shortfall is really there in both businesses: 1000 over 3 rounded, plus 3 of Rosa.
+        shortfalls = [client.get("/analysis").json()["month"]["shortfall"] for client in clients]
+        assert shortfalls[0] is not None and shortfalls[0]["amount"] == 2_433
+        assert shortfalls[0] == shortfalls[1]
+        panel_lines = [client.get("/panel").json()["periods"]["month"] for client in clients]
+        assert panel_lines[0]["shortfall"] is not None
+        assert panel_lines[0]["shortfall"] == panel_lines[1]["shortfall"]
         # Total owed, a customer's balance and the debtors list.
         owed = [client.get("/panel").json()["debts"] for client in clients]
         balances = [
