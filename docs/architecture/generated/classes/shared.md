@@ -47,6 +47,21 @@ classDiagram
   class OperatorText {
     rendered : set~str~
   }
+  class PhoneCountry {
+    name
+    rule : 'PhoneCountryRule'
+    parse(code: str) 'PhoneCountry'
+  }
+  class PhoneCountryRule {
+    calling_code : str
+    carrier_code_length : int
+    international_lengths : frozenset~int~
+    legacy_mobile_one : str #124; None
+    local_mobile_fifteen : str #124; None
+    mobile_nine : str #124; None
+    national_lengths : frozenset~int~
+    trunk_prefix : str #124; None
+  }
   class PricingSettings {
     is_bulk_pricing : bool
     is_vip_customers : bool
@@ -64,6 +79,9 @@ classDiagram
     rollback() None
   }
   class UnknownLanguage {
+  }
+  class UnknownPhoneCountry {
+    code : ClassVar~str~
   }
   class Week {
     first_day : date

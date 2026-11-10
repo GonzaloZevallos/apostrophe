@@ -86,11 +86,13 @@ classDiagram
 ```mermaid
 classDiagram
   class Business {
+    default_phone_country : str #124; None
     id : int
     language : str
     name : str
   }
   class BusinessRef {
+    default_phone_country : str #124; None
     id : int
     language : str
     name : str
