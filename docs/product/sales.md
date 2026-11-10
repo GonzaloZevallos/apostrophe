@@ -36,7 +36,7 @@ Lo que un cliente se lleva de una vez, con cada línea cotizada con los precios 
 - qué Pricing rules usa el negocio, de las Pricing settings (pricing-settings.md);
 - los **Payment method**s activos del negocio, en su orden, de payment-methods.md.
 
-Los pagos (`payments.md`) saldan lo que una venta deja debiendo y dicen si cada venta sigue debiendo; el On-the-spot payment de una venta lo registra pagos a través del puerto `OnTheSpotPayments` (ADR-0078). El stock (`stock.md`) saca los gramos de cada línea de los **Lot**s de su producto y le da a la línea su **Cost of goods sold**, que sigue a los Lots y nunca queda congelado (ADR-0009). Esta capacidad cubre también las pantallas de ventas: New sale, Sales y el detalle de una venta, en el teléfono y en la computadora, y el Sale bill que se comparte desde el detalle de una venta. Dónde se ubican es navigation.md.
+Los pagos (`payments.md`) saldan lo que una venta deja debiendo y dicen si cada venta sigue debiendo; el On-the-spot payment de una venta lo registra pagos a través del puerto `OnTheSpotPayments` (ADR-0082). El stock (`stock.md`) saca los gramos de cada línea de los **Lot**s de su producto y le da a la línea su **Cost of goods sold**, que sigue a los Lots y nunca queda congelado (ADR-0009). Esta capacidad cubre también las pantallas de ventas: New sale, Sales y el detalle de una venta, en el teléfono y en la computadora, y el Sale bill que se comparte desde el detalle de una venta. Dónde se ubican es navigation.md.
 
 La protagonista de las historias del teléfono es la vendedora. Los diseños de computadora (`NuevaVentaCompu`, `VentasCompu`) son las mismas historias en una pantalla más grande. Antes del rediseño para teléfono, la vendedora registraba ventas en el teléfono con fricción (bajar para encontrar el botón de guardar, hacer zoom para acertar controles chicos, a veces registrar después de memoria), sin ninguna alternativa fuera de la app.
 
@@ -171,7 +171,7 @@ Criterios de éxito, Sale number:
 - **Total**: la suma de los totales redondeados de las líneas más el Shipping charged. Las líneas se redondean de a una, nunca como suma.
 - **Shipping charged**: pesos enteros, cero o más, $0 por defecto. Un valor negativo se rechaza.
 - **Cómo se pagó** (en el cuerpo, `{"kind":"method","payment_method_id"}`, `{"kind":"owing"}` o nada para una venta de $0):
-  - **Pagada entera en el momento, con uno de los Payment methods activos del negocio.** Registra un On-the-spot payment por el total, en la fecha de la venta, vinculado a ese método (ADR-0007, ADR-0078, payment-methods.md). Salda solo esta venta (`payments.md`).
+  - **Pagada entera en el momento, con uno de los Payment methods activos del negocio.** Registra un On-the-spot payment por el total, en la fecha de la venta, vinculado a ese método (ADR-0007, ADR-0082, payment-methods.md). Salda solo esta venta (`payments.md`).
   - **Queda debiendo**: sin medio, y la venta necesita cliente. Los pagos posteriores la saldan empezando por la deuda más vieja (`payments.md`). "Owing" es un estado, nunca un Payment method.
   - **Total de $0**: queda saldada sin medio y sin nada debido. Un medio enviado con ella se ignora y no se guarda.
   - Un total por encima de $0 necesita un medio o "queda debiendo".
