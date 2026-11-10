@@ -196,6 +196,17 @@ def seed_withdrawal_reasons(client: TestClient) -> dict[str, int]:
     return {"reason_id": reason.json()["id"]}
 
 
+def seed_payment_methods(client: TestClient) -> dict[str, int]:
+    """An offered method and an archived one, both named with `MARKER`."""
+    offered = client.post("/api/payment-methods", json={"name": f"{MARKER} offered method"})
+    assert offered.status_code == 201, offered.text
+    archived = client.post("/api/payment-methods", json={"name": f"{MARKER} archived method"})
+    assert archived.status_code == 201, archived.text
+    done = client.post(f"/api/payment-methods/{archived.json()['id']}/archive")
+    assert done.status_code == 204, done.text
+    return {"method_id": offered.json()["id"], "archived_method_id": archived.json()["id"]}
+
+
 def seed_pinned_catalog(client: TestClient) -> dict[str, int]:
     tested = client.post(
         "/pinned-catalog/test",
@@ -262,6 +273,7 @@ SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_sales,
     seed_stock,
     seed_withdrawal_reasons,
+    seed_payment_methods,
     seed_catalog,
     seed_pinned_catalog,
     seed_payments,
@@ -329,6 +341,9 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "lines": [{"product_id": 1, "quantity": "2"}],
     },
     ("PUT", "/stock/products/{product_id}/threshold"): {"quantity": "15"},
+    ("POST", "/api/payment-methods"): {"name": "Another method"},
+    ("PATCH", "/api/payment-methods/{method_id}"): {"name": "Another method name"},
+    ("POST", "/api/payment-methods/{method_id}/move"): {"direction": "up"},
     ("POST", "/api/withdrawal-reasons"): {"name": "Another reason"},
     ("POST", "/api/withdrawal-reasons/{reason_id}/move"): {"direction": "up"},
     ("PATCH", "/api/withdrawal-reasons/{reason_id}"): {"name": "Another name"},
@@ -751,6 +766,44 @@ def test_another_business_lists_none_of_the_reasons_seeded_in_the_first(
 
     assert f"{MARKER} reason" in mine
     assert theirs == ["Marketing", "Own use"]
+
+
+@pytest.mark.parametrize(
+    ("method", "path", "body"),
+    [
+        ("PATCH", "/api/payment-methods/{archived_method_id}", {"name": "Taken over"}),
+        ("POST", "/api/payment-methods/{archived_method_id}/move", {"direction": "up"}),
+        ("POST", "/api/payment-methods/{archived_method_id}/restore", None),
+        ("DELETE", "/api/payment-methods/{archived_method_id}", None),
+    ],
+)
+def test_another_business_cannot_reach_an_archived_payment_method(
+    business_a: TestClient,
+    business_b: TestClient,
+    seeded: dict[str, int],
+    method: str,
+    path: str,
+    body: dict[str, Any] | None,
+) -> None:
+    before = _lists_snapshot(business_a)
+
+    response = business_b.request(method, _concrete(path, seeded), json=body)
+
+    assert response.status_code == 404, response.text
+    _assert_a_lists_unchanged(business_a, before)
+    archived = [m["name"] for m in business_a.get("/api/payment-methods/archived").json()]
+    assert archived == [f"{MARKER} archived method"]
+
+
+def test_another_business_lists_none_of_the_payment_methods_seeded_in_the_first(
+    business_a: TestClient, business_b: TestClient, seeded: dict[str, int]
+) -> None:
+    mine = [method["name"] for method in business_a.get("/api/payment-methods").json()]
+    theirs = [method["name"] for method in business_b.get("/api/payment-methods").json()]
+
+    assert f"{MARKER} offered method" in mine
+    assert theirs == ["Cash", "Transfer"]
+    assert business_b.get("/api/payment-methods/archived").json() == []
 
 
 def test_business_a_sees_its_own_catalog_seed(

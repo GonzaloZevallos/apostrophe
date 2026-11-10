@@ -46,6 +46,10 @@ from app.money_format.adapters.reader import SqlMoneyFormat
 from app.onboarding.adapters.first_run_router import router as first_run_router
 from app.onboarding.adapters.opening import OnboardingOpening
 from app.onboarding.adapters.router import router as onboarding_router
+from app.payment_methods.adapters.babel_defaults import BabelMethodDefaults
+from app.payment_methods.adapters.opening import PaymentMethodsOpening
+from app.payment_methods.adapters.router import router as payment_methods_router
+from app.payment_methods.adapters.usage import NoPaymentUsesAMethodYet
 from app.payments.adapters.payments_ledger import SqlPaymentsLedger
 from app.payments.adapters.results_ports import SqlDebtSummary
 from app.payments.adapters.router import customers_router as payments_customers_router
@@ -233,9 +237,11 @@ def create_app(
     category_defaults = BabelCategoryDefaults(copy_catalog)
     header_footer_defaults = BabelHeaderFooterDefaults(copy_catalog)
     reason_defaults = BabelReasonDefaults(copy_catalog)
+    method_defaults = BabelMethodDefaults(copy_catalog)
     app.state.business_opening = CompositeOpening(
         partial(ExpenseCategoriesOpening, defaults=category_defaults),
         partial(WithdrawalReasonsOpening, defaults=reason_defaults),
+        partial(PaymentMethodsOpening, defaults=method_defaults),
         partial(CatalogHeaderFooterOpening, defaults=header_footer_defaults),
         PricingSettingsOpening,
         partial(MoneyFormatOpening, scale=opening_money_scale),
@@ -248,6 +254,11 @@ def create_app(
     # `get_business_opening` already does for `business_opening` — not added here, so
     # this line is the one seam the sales-costs subtask reaches it through.
     app.state.line_costs = SqlLineCosts
+    # Which payment methods have payments, read through the payment methods hexagon's own
+    # `PaymentMethodUsage` port, never `app.payments` (docs/adr/0082). No payment can point at
+    # a method until payments link by id, so this stub answers that none is in use; the
+    # piece that adds `payment.payment_method_id` replaces it with a payments adapter.
+    app.state.payment_method_usage = NoPaymentUsesAMethodYet
     # The same shape again: sales reads the switches only through its own
     # `PricingSettingsReader` port, never `app.pricing_settings` (docs/adr/0034).
     app.state.pricing_settings = SqlPricingSettings
@@ -344,6 +355,7 @@ def create_app(
     app.include_router(stock_router, dependencies=upkeep_gated)
     app.include_router(stock_reasons_router, dependencies=gated)
     app.include_router(catalog_router, dependencies=upkeep_gated)
+    app.include_router(payment_methods_router, dependencies=gated)
     app.include_router(payments_router, dependencies=gated)
     app.include_router(payments_customers_router, dependencies=gated)
     app.include_router(pinned_catalog_router, dependencies=gated)

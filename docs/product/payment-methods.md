@@ -75,6 +75,14 @@ Criterios de éxito:
 
 ### API y restricciones
 
+- Rutas de gestión, todas con sesión (`/api/payment-methods`):
+  - `GET` ofrecidos, en orden de posición, como `[{id, name, icon, position, in_use}]`; `GET /archived` los archivados.
+  - `POST {name, icon?}` agrega el medio al final (201).
+  - `PATCH /{id} {name?, icon?}` renombra o cambia el ícono.
+  - `POST /{id}/move {direction: "up"|"down"}` intercambia con el vecino ofrecido; en un extremo no cambia nada.
+  - `POST /{id}/archive` y `POST /{id}/restore` (204); un medio restaurado vuelve a su propia posición guardada.
+  - `DELETE /{id}` (204).
+- Rechazos: `payment_method.name_required` y `name_too_long` (422); `name_taken`, `name_taken_archived`, `last_offered` e `in_use` (409); id desconocido o de otro Business, 404 `payment_method.not_found`.
 - `payment_methods` lleva `business_id` no nulo y se lee solo mediante un repositorio construido para un Business. El medio de otro Business responde 404.
 - Payments y Sales llevan `payment_method_id` en lugar de `method`, y el pago de una Sale pasa a ser una unión por `kind` (pagada con un medio, queda debiendo). Es un quiebre real de la API: el cuerpo del PR lleva una línea `Breaking-API: <motivo>` (ADR-0066, ADR-0082).
 - Un medio archivado se rechaza para un Payment nuevo con código propio; un medio de otro Business o inexistente responde 404.
