@@ -23,6 +23,7 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { queryClient, setCurrentPath, setNavigate } from '../../queryClient'
 import ClienteForm from './ClienteForm'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
+import { CUSTOMERS_TEXT } from '../../copy/customers'
 
 
 function ListStub() {
@@ -662,4 +663,25 @@ test('a type deleted meanwhile (404 customer_type.not_found) shows the inline er
   expect(screen.getByLabelText('Name')).toHaveValue('Ana')
   expect(screen.getByLabelText('Customer type')).toHaveValue('')
   expect(screen.queryByText('la ficha')).not.toBeInTheDocument()
+})
+
+const PLACEHOLDERS: readonly (readonly [string | null, string])[] = [
+  ['AR', CUSTOMERS_TEXT.phoneHintAR],
+  ['UY', CUSTOMERS_TEXT.phoneHintUY],
+  ['CL', CUSTOMERS_TEXT.phoneHintCL],
+  ['PY', CUSTOMERS_TEXT.phoneHintPY],
+  ['BR', CUSTOMERS_TEXT.phoneHintBR],
+  ['MX', CUSTOMERS_TEXT.phoneHintMX],
+  ['ES', CUSTOMERS_TEXT.phoneHintES],
+  ['US', CUSTOMERS_TEXT.phoneHintUS],
+  [null, CUSTOMERS_TEXT.phoneHintNone],
+]
+
+test.each(PLACEHOLDERS)('the phone field shows the example of the business Phone country %s', async (country, hint) => {
+  stubFetchWithSettings(true, true, [], country)
+  renderForm(CUSTOMER_NEW)
+
+  await waitFor(() => {
+    expect(screen.getByLabelText('Phone')).toHaveAttribute('placeholder', hint)
+  })
 })

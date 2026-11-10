@@ -934,6 +934,20 @@ body {
   color: var(--tinta2);
 }
 
+/* The Phone country control: the same options, stacked, one per row (nine do not fit across). */
+.ajustes-tema--columna {
+  flex-direction: column;
+  border-radius: var(--radio-campo);
+}
+
+.ajustes-tema--columna .ajustes-tema__opcion {
+  flex: none;
+  justify-content: flex-start;
+  padding-inline: var(--espacio-md);
+  border-radius: var(--radio-campo);
+  text-align: start;
+}
+
 /* The language control under the name form: the same segments, at least 44px tall. */
 .ajustes-idioma {
   margin-top: var(--espacio-xxl);

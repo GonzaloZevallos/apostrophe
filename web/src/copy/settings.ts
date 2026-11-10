@@ -11,7 +11,7 @@ import { STOCK_TEXT } from './stock.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
-export const RENAME_SUCCESS = 'Business renamed'
+export const RENAME_SUCCESS = 'Saved'
 export const PASSWORD_CHANGED_SUCCESS = 'Password changed · we signed out your other sessions'
 export const BUSINESS_NAME_INVALID_MESSAGE = 'Give the business a name, without extra spaces'
 export const GENERIC_REFUSAL_MESSAGE = 'Check the details and try again.'
@@ -19,6 +19,8 @@ export const CATALOG_SAVED = 'Catalog saved'
 export const PRICES_SAVED = 'Prices saved'
 export const HEADER_TOO_LONG_MESSAGE = 'The header is too long'
 export const FOOTER_TOO_LONG_MESSAGE = 'The footer is too long'
+/** The always-visible line under the Phone country control (a help line, <= 80). */
+export const PHONE_COUNTRY_HELP = 'Applies to numbers you type from now on. Saved numbers don\'t change.'
 
 /** The line under a fresh invitation link: one sentence, a help line (<= 80). `date` is `dd/mm`. */
 export const inviteExpiry = (date: string): string => `A one-time link, it expires on ${date}`
@@ -32,6 +34,7 @@ export const CATEGORIES_SAVE_AT_ONCE = 'Adding, renaming or removing a category 
 const LIMITED_COPY_0: readonly LimitedCopy[] = [
   { kind: 'help', text: inviteExpiry(SAMPLES.date) },
   { kind: 'help', text: CATEGORIES_SAVE_AT_ONCE },
+  { kind: 'help', text: PHONE_COUNTRY_HELP },
 ]
 /**
  * The fixed words of Configuración → Integraciones, shared with its test (no JSX). The
@@ -74,6 +77,8 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'SETTINGS_TEXT.moveReasonDown': [['Marketing']],
   'SETTINGS_TEXT.deleteReasonConfirm': [['Marketing']],
   languageName: [['en'], ['de'], ['xx']],
+  phoneCountryName: [['AR'], ['xx']],
+  'SETTINGS_TEXT.phoneCountryOption': [['Uruguay', '598']],
 })
 
 /** Every text a person reads in this area that is not a named message above, by key. */
@@ -110,7 +115,7 @@ export const SETTINGS_TEXT = {
   automaticFollowsYourPhone: 'Automatic follows your phone.',
   light: 'Light',
   dark: 'Dark',
-  discardTheName: 'Discard the name?',
+  discardTheName: 'Discard changes?',
   saveTheMessage: 'Save the message',
   discardTheMessage: 'Discard the message?',
   cannotDeleteStillHasExpenses: 'It can\'t be deleted: it still has expenses. You can rename it.',
@@ -141,7 +146,37 @@ export const SETTINGS_TEXT = {
   reasonNameDuplicate: 'You already have a reason with that name.',
   deleteReasonConfirm: (name: string) => `Delete the reason ${name}?`,
   reasonMoveFailed: 'The order wasn\'t saved. Try again.',
+  phoneCountryLabel: 'Phone country',
+  phoneCountryHelp: PHONE_COUNTRY_HELP,
+  phoneCountryNone: 'No country',
+  phoneCountryAR: 'Argentina',
+  phoneCountryUY: 'Uruguay',
+  phoneCountryCL: 'Chile',
+  phoneCountryPY: 'Paraguay',
+  phoneCountryBR: 'Brazil',
+  phoneCountryMX: 'Mexico',
+  phoneCountryES: 'Spain',
+  phoneCountryUS: 'United States',
+  /** One option of the Phone country control: the country's name and its calling code, which the
+   * API sends (the front never holds a code of its own). */
+  phoneCountryOption: (name: string | number, calling_code: string | number) => `${name} (+${calling_code})`,
 } as const
+
+/** Each Phone country's name, keyed by its ISO code. A code with no entry shows the code itself. */
+const PHONE_COUNTRY_NAMES: ReadonlyMap<string, string> = new Map([
+  ['AR', SETTINGS_TEXT.phoneCountryAR],
+  ['UY', SETTINGS_TEXT.phoneCountryUY],
+  ['CL', SETTINGS_TEXT.phoneCountryCL],
+  ['PY', SETTINGS_TEXT.phoneCountryPY],
+  ['BR', SETTINGS_TEXT.phoneCountryBR],
+  ['MX', SETTINGS_TEXT.phoneCountryMX],
+  ['ES', SETTINGS_TEXT.phoneCountryES],
+  ['US', SETTINGS_TEXT.phoneCountryUS],
+])
+
+export function phoneCountryName(code: string): string {
+  return PHONE_COUNTRY_NAMES.get(code) ?? code
+}
 
 /** Each language's own name, fixed and the same whatever language is shown (invariant 7):
  * never translated per shown language. A tag with no entry shows the tag itself. */
