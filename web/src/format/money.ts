@@ -40,25 +40,32 @@ function withDotThousands(whole: number): string {
   return String(whole).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
 }
 
-/** The magnitude of an amount in currency units as the smallest units of the current
- * decimals, half away from zero. */
-function scaledMagnitude(amount: number): number {
-  return Math.round(Math.abs(amount) * 10 ** current.decimals)
+/** The magnitude of an amount in currency units as the smallest units of `decimals`,
+ * half away from zero. */
+function scaledMagnitude(amount: number, decimals: number): number {
+  return Math.round(Math.abs(amount) * 10 ** decimals)
 }
 
-function writtenMagnitude(scaled: number): string {
-  const factor = 10 ** current.decimals
+function writtenMagnitude(scaled: number, decimals: number): string {
+  const factor = 10 ** decimals
   const whole = withDotThousands(Math.floor(scaled / factor))
-  if (current.decimals === 0) return whole
-  return `${whole},${String(scaled % factor).padStart(current.decimals, '0')}`
+  if (decimals === 0) return whole
+  return `${whole},${String(scaled % factor).padStart(decimals, '0')}`
+}
+
+/** `11000` → `"US$ 11.000,50"`-style text in an explicit format: what the Currency and decimals
+ * Example shows from values that are not saved yet. It validates nothing; `formatMoney` is
+ * this with the Business's own format. */
+export function formatMoneyIn(amount: number, format: MoneyFormat): string {
+  const scaled = scaledMagnitude(amount, format.decimals)
+  const sign = amount < 0 && scaled !== 0 ? '-' : ''
+  return `${format.symbol} ${sign}${writtenMagnitude(scaled, format.decimals)}`
 }
 
 /** `11000` → `"$ 11.000"` at 0 decimals, `"US$ 11.000,50"` at 2; a figure with more
  * decimals than the Business shows is rounded half away from zero. */
 export function formatMoney(amount: number): string {
-  const scaled = scaledMagnitude(amount)
-  const sign = amount < 0 && scaled !== 0 ? '-' : ''
-  return `${current.symbol} ${sign}${writtenMagnitude(scaled)}`
+  return formatMoneyIn(amount, current)
 }
 
 /** `350` → `"3,5"`: a quantity from whole hundredths, in integer arithmetic only: the
@@ -110,5 +117,5 @@ export function formatMoneyMagnitude(pesos: number): string {
  * render through formatSignedMoney") — never hidden, floored or shown as a plain
  * hyphen. A non-negative amount formats exactly as `formatMoney`. */
 export function formatSignedMoney(pesos: number): string {
-  return pesos < 0 && scaledMagnitude(pesos) !== 0 ? `−${formatMoney(Math.abs(pesos))}` : formatMoney(Math.abs(pesos))
+  return pesos < 0 && scaledMagnitude(pesos, current.decimals) !== 0 ? `−${formatMoney(Math.abs(pesos))}` : formatMoney(Math.abs(pesos))
 }

@@ -101,3 +101,13 @@ describe('refusalText with a language that lacks the refusals', () => {
     expect(text).not.toBe(key)
   })
 })
+
+describe('the money format refusals', () => {
+  test('a refused symbol and a refused lowering each have their own text, the rest stay generic', async () => {
+    const { REFUSAL_KEY } = await import('./refusalTable')
+
+    expect(REFUSAL_KEY['money_format.symbol_invalid']).toBe('refusals:moneySymbolInvalid')
+    expect(REFUSAL_KEY['money_format.decimals_below_recorded']).toBe('refusals:moneyDecimalsBelowRecorded')
+    expect(REFUSAL_KEY['money_format.busy']).toBe('refusals:generic')
+  })
+})

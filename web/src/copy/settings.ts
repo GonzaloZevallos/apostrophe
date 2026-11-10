@@ -21,6 +21,8 @@ export const GENERIC_REFUSAL_MESSAGE = 'Check the details and try again.'
  * never repeated. */
 export const moneyTooManyDecimals = (decimals: number): string =>
   decimals === 0 ? 'Use whole amounts only.' : `Use up to ${decimals} decimals.`
+/** The help line under the Symbol field: examples, no list of currencies. */
+export const CURRENCY_SYMBOL_HINT = '1 to 4 characters, like US$ or EUR.'
 export const CATALOG_SAVED = 'Catalog saved'
 export const PRICES_SAVED = 'Prices saved'
 export const HEADER_TOO_LONG_MESSAGE = 'The header is too long'
@@ -38,6 +40,7 @@ export const CATEGORIES_SAVE_AT_ONCE = 'Adding, renaming or removing a category 
 const LIMITED_COPY_0: readonly LimitedCopy[] = [
   { kind: 'help', text: inviteExpiry(SAMPLES.date) },
   { kind: 'help', text: CATEGORIES_SAVE_AT_ONCE },
+  { kind: 'help', text: CURRENCY_SYMBOL_HINT },
   { kind: 'notice', text: moneyTooManyDecimals(0) },
   { kind: 'notice', text: moneyTooManyDecimals(2) },
 ]
@@ -150,6 +153,15 @@ export const SETTINGS_TEXT = {
   reasonNameDuplicate: 'You already have a reason with that name.',
   deleteReasonConfirm: (name: string) => `Delete the reason ${name}?`,
   reasonMoveFailed: 'The order wasn\'t saved. Try again.',
+  currencySymbol: 'Symbol',
+  currencySymbolHint: CURRENCY_SYMBOL_HINT,
+  currencyDecimals: 'Decimals',
+  currencyDecimals0: '0',
+  currencyDecimals1: '1',
+  currencyDecimals2: '2',
+  currencyExample: 'Example',
+  currencySaved: 'Currency and decimals saved',
+  discardTheCurrency: 'Discard the changes?',
 } as const
 
 /** Each language's own name, fixed and the same whatever language is shown (invariant 7):

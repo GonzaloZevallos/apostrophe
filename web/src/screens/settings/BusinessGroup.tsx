@@ -23,7 +23,7 @@ import AvisoExito from '../../components/AvisoExito'
 import Boton from '../../components/Boton'
 import Icono from '../../components/Icono'
 import InAppLink from '../../components/InAppLink'
-import { SETTINGS_WITHDRAWAL_REASONS } from '../../routes'
+import { SETTINGS_CURRENCY, SETTINGS_WITHDRAWAL_REASONS } from '../../routes'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
@@ -169,6 +169,15 @@ function BusinessForm({ initialName, language, selectable }: BusinessFormProps) 
       </form>
       {selectable.length > 1 && <LanguageControl language={language} selectable={selectable} />}
       <div className="ajustes__lista">
+        <InAppLink to={SETTINGS_CURRENCY} className="ajustes__item">
+          <span className="ajustes__item-icono">
+            <Icono nombre="precio" />
+          </span>
+          <span className="ajustes__item-rotulo">{COMMON_TEXT.currencyAndDecimals}</span>
+          <span className="ajustes__item-flecha">
+            <Icono nombre="chevron" />
+          </span>
+        </InAppLink>
         <InAppLink to={SETTINGS_WITHDRAWAL_REASONS} className="ajustes__item">
           <span className="ajustes__item-icono">
             <Icono nombre="salidaStock" />
