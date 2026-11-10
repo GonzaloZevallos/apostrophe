@@ -9,9 +9,9 @@ import pytest
 from app.catalog.adapters.babel_words import BabelCatalogWords
 from app.catalog.domain.text import catalog_text, pinned_catalog_text
 from app.settings import DEFAULT_LOCALES_DIR
-from app.shared.money import MoneyFormat
 from app.shared.copy import CopyCatalog, MissingCatalogKey, compile_po
 from app.shared.language import ENGLISH, TEST_LOCALE, Language
+from app.shared.money import MoneyFormat
 from tests.catalog.reference_texts import CASES, Case
 
 

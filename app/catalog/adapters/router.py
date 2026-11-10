@@ -22,8 +22,8 @@ from app.catalog.application.errors import CatalogVarietyArchived, CatalogVariet
 from app.catalog.application.ports import (
     CatalogLanguage,
     CatalogPricingSettings,
-    MoneyFormatReader,
     CatalogWordsSource,
+    MoneyFormatReader,
 )
 from app.catalog.application.read_archived import read_archived
 from app.catalog.application.read_catalog import read_catalog

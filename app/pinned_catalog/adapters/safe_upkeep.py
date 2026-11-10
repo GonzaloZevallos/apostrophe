@@ -21,8 +21,8 @@ from starlette.datastructures import State
 from app.catalog.application.ports import (
     CatalogLanguage,
     CatalogPricingSettings,
-    MoneyFormatReader,
     CatalogWordsSource,
+    MoneyFormatReader,
 )
 from app.clock import Clock
 from app.pinned_catalog.adapters.sql_recorder import SqlPinRecorder

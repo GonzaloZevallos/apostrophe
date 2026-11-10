@@ -16,8 +16,8 @@ from sqlalchemy.orm import Session
 from app.catalog.application.ports import (
     CatalogLanguage,
     CatalogPricingSettings,
-    MoneyFormatReader,
     CatalogWordsSource,
+    MoneyFormatReader,
 )
 from app.pinned_catalog.adapters.publishable_catalog import publishable_text
 from app.pinned_catalog.adapters.sql_settings import settings_from_row
