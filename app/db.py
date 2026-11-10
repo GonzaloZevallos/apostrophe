@@ -188,6 +188,43 @@ def _forget_money_scale_factors(session: Session, transaction: SessionTransactio
         session.info.pop(_FACTORS_KEY, None)
 
 
+class MoneyScaleChanged(LookupError):
+    """A business's money scale changed between the write's read of it and its commit
+    (docs/adr/0058). It has no code and a fixed literal message (CODING_STANDARDS.md
+    section 9); it surfaces as FastAPI's default 500. A caller that catches it must call
+    `rollback()` on the session: nothing was committed."""
+
+    def __init__(self) -> None:
+        super().__init__("the money scale changed during the write")
+
+
+@event.listens_for(Session, "before_commit")
+def _refuse_a_stale_money_scale(session: Session) -> None:
+    """Re-reads, at commit, the stored scale of every business whose factor this session
+    cached, with its own select (never `money_scale_factor`). A write that read the old
+    scale and commits after the rescale raises `MoneyScaleChanged` and stores nothing.
+
+    The flush comes first: it takes SQLite's write lock, so the re-read cannot be stale.
+    An empty or absent cache issues no statement; a business with no row is skipped (its
+    writer already failed with `MoneyFormatMissing`). On a mismatch the whole cache is
+    forgotten. A caller that catches the error must call `rollback()`."""
+    cache: dict[int, int] | None = session.info.get(_FACTORS_KEY)
+    if not cache or session.in_nested_transaction():
+        # A savepoint releasing is not a commit: only the outer transaction's counts.
+        return
+    session.flush()
+    changed = False
+    for business_id, factor in cache.items():
+        scale = session.execute(
+            select(_money_format.c.scale).where(_money_format.c.business_id == business_id)
+        ).scalar_one_or_none()
+        if scale is not None and _FACTOR_BY_SCALE.get(scale) != factor:
+            changed = True
+    if changed:
+        session.info.pop(_FACTORS_KEY, None)
+        raise MoneyScaleChanged
+
+
 def money_scale_factor(session: Session, business_id: int) -> int:
     """The hundredths one stored unit of the business's amounts is worth: 100 at scale 0,
     1 at scale 2. An adapter reads an amount in hundredths by selecting
