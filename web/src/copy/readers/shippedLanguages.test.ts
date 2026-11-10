@@ -4,8 +4,8 @@ import { PSEUDO } from '../limits'
 import { languageName } from '../settings'
 import { SHIPPED_LANGUAGE_TAGS } from './shippedLanguages'
 
-const folders = Object.keys(import.meta.glob('/src/copy/locales/*/*.json'))
-const localeTags = [...new Set(folders.map((path) => path.split('/')[4]))]
+const folders = Object.keys(import.meta.glob('../locales/*/*.json'))
+const localeTags = [...new Set(folders.flatMap((path) => path.match(/locales\/([^/]+)\//)?.[1] ?? []))]
 
 test('the shipped languages are exactly the real locale folders, the Test locale aside', () => {
   const real = localeTags.filter((tag) => tag !== PSEUDO).sort()
