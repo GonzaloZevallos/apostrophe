@@ -112,8 +112,9 @@ test('while "me" is held nothing shows a digit or a symbol; then the screen writ
     </QueryClientProvider>,
   )
 
-  expect(container).toBeEmptyDOMElement()
-  expect(screen.queryByText(/\d|\$/)).not.toBeInTheDocument()
+  expect(screen.getByRole('progressbar')).toHaveAttribute('aria-busy', 'true')
+  expect(container.textContent).not.toMatch(/\d|\$/)
+  expect(screen.queryByText('US$ 11.000,50')).not.toBeInTheDocument()
 
   await act(async () => {
     answer(

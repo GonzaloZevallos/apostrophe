@@ -148,7 +148,10 @@ export default function Cobro({
   // shows the choice: a passive effect leaves a window in which a Back leaves unasked.
   useLayoutEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange])
 
-  const previewAmount = amount !== null && Number.isSafeInteger(amount) && amount > 0 ? amount : null
+  const previewAmount =
+    amount !== null && Number.isSafeInteger(Math.round(amount * 10 ** currentMoneyFormat().decimals)) && amount > 0
+      ? amount
+      : null
 
   // Debounced 150 ms behind the amount/date the seller is typing (same delay as
   // `Clientes`' search box): the preview's own query key only moves once typing

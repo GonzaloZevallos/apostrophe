@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from 'vitest'
 import { resetMoneyFormat, setMoneyFormat } from './money'
-import { parseGrams, parseMoney, parseSignedGrams, readMoneyInput } from './parse'
+import { parseGrams, parseMoney, parseNonNegativeMoney, parseSignedGrams, readMoneyInput } from './parse'
 
 describe('parseMoney', () => {
   test('reads whole pesos with a dot as the thousands separator', () => {
@@ -159,5 +159,29 @@ describe('readMoneyInput after a deletion', () => {
 
   test('typed or pasted text keeps the cents rule', () => {
     expect(readMoneyInput('$ 20.00')).toBe(20)
+  })
+})
+
+describe('parseNonNegativeMoney', () => {
+  afterEach(() => resetMoneyFormat())
+
+  test.each([
+    [0, '0', 0],
+    [0, '1.500', 1500],
+    [2, '0', 0],
+    [2, '1.500,25', 1500.25],
+  ])('%i decimals reads %s as %f', (decimals, text, value) => {
+    setMoneyFormat({ symbol: '$', decimals })
+    expect(parseNonNegativeMoney(text)).toEqual({ ok: true, value })
+  })
+
+  test.each([
+    [0, '1,5'],
+    [2, '1,555'],
+    [2, '-1'],
+    [2, ''],
+  ])('%i decimals refuses %s', (decimals, text) => {
+    setMoneyFormat({ symbol: '$', decimals })
+    expect(parseNonNegativeMoney(text)).toEqual({ ok: false })
   })
 })

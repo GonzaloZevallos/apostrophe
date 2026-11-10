@@ -25,11 +25,17 @@ const SIGNED_GRAMS_RE = /^-?\d+([.,]\d{1,2})?$/
  * decimals, a comma for the decimals (`1.250,5`). Rejects more decimals than the Business has,
  * a negative sign, zero and anything that is not digits, dots and one comma. */
 export function parseMoney(input: string): ParseResult<number> {
+  const parsed = parseNonNegativeMoney(input)
+  return parsed.ok && parsed.value > 0 ? parsed : { ok: false }
+}
+
+/** The same reading as `parseMoney`, but zero is a value: for an amount that is `0` by default and
+ * valid to save so (shipping charged). */
+export function parseNonNegativeMoney(input: string): ParseResult<number> {
   const trimmed = input.trim()
   if (!moneyPattern(currentMoneyFormat().decimals).test(trimmed)) return { ok: false }
   const value = Number(trimmed.replace(/\./g, '').replace(',', '.'))
-  const smallestUnits = Math.round(value * 10 ** currentMoneyFormat().decimals)
-  if (value <= 0 || !Number.isSafeInteger(smallestUnits)) return { ok: false }
+  if (!Number.isSafeInteger(Math.round(value * 10 ** currentMoneyFormat().decimals))) return { ok: false }
   return { ok: true, value }
 }
 

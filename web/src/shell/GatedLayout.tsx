@@ -1,6 +1,6 @@
 /**
  * The gated branch of the router (plan, "Session": "Only the gated layout runs
- * `me`"). While `me` is pending, nothing under it renders yet. A 401 is already
+ * `me`"). While `me` is pending, nothing under it renders yet: the loading shape stands in. A 401 is already
  * handled by `queryClient.ts`'s global boundary, which redirects before anything
  * below needs to render; this layout renders nothing for it rather than flash a
  * retry panel on top of that redirect. A dropped network shows "Sin conexión"
@@ -9,7 +9,7 @@
  * that never recovers. A successful `me` mounts the flash toast's provider
  * (`flash/`) above everything nested, so a toast armed before `navigate(-1)` shows on
  * the screen history returns to. Nothing under it renders in a language other than the
- * business's: while a chunk for `shown_language` loads it renders nothing, and a load that
+ * business's: while a chunk for `shown_language` loads it renders the loading shape, and a load that
  * fails or times out ends in English (`i18n/language.ts`); an English business mounts in the
  * same commit its `me` arrives in. Money is the same: nothing renders before `me`, and the module-level
  * money format (`format/money.ts`) is set from it in the render that mounts the outlet, so no child
@@ -27,12 +27,23 @@ import FlashProvider from '../flash/FlashProvider'
 import { setMoneyFormat } from '../format/money'
 import { useShownLanguage } from '../i18n/language'
 import ContentArea from '../components/ContentArea'
+import Loading from '../components/Loading'
+
+// The existing loading shape (bars and cards, no text, `aria-busy`): nothing money-bearing renders
+// before `me` and the language are ready, and nothing a person could read as data shows meanwhile.
+const loadingShape = (
+  <ContentArea as="main" className="pantalla">
+    <div className="cuerpo">
+      <Loading />
+    </div>
+  </ContentArea>
+)
 
 export default function GatedLayout() {
   const { data, isPending, isError, error } = useQuery({ queryKey: keys.me(), queryFn: getMe })
   const languageReady = useShownLanguage(data)
 
-  if (isPending) return null
+  if (isPending) return loadingShape
   if (isError) {
     if (error instanceof NetworkError) {
       return (
@@ -52,7 +63,7 @@ export default function GatedLayout() {
       </ContentArea>
     )
   }
-  if (data === undefined || !languageReady) return null
+  if (data === undefined || !languageReady) return loadingShape
   // Idempotent and before the children render: the one place the format is taken from `me`.
   setMoneyFormat(data.money_format)
   return (
