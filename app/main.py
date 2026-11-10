@@ -19,8 +19,10 @@ from sqlalchemy.orm import Session
 from app.accounts.adapters.deps import require_session
 from app.accounts.adapters.language_router import router as language_router
 from app.accounts.adapters.onboarding_facts import SqlUserFacts
+from app.accounts.adapters.phone_country_router import router as phone_country_router
 from app.accounts.adapters.router import public_router as accounts_public_router
 from app.accounts.adapters.router import router as accounts_router
+from app.accounts.adapters.sql_phone_country import SqlPhoneCountry
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.session_token import SessionSigner
 from app.catalog.adapters.babel_defaults import BabelHeaderFooterDefaults
@@ -258,6 +260,7 @@ def create_app(
     # (docs/adr/0006, docs/adr/0034).
     app.state.varieties_pricing_settings = SqlPricingSettings
     app.state.customers_pricing_settings = SqlPricingSettings
+    app.state.customers_phone_country = SqlPhoneCountry
     app.state.owing_sales = SqlOwingSales
     # Another factory of the same shape: results reaches stock's rows and draws only
     # through its own `StockFigures` port, never `app.stock` directly (ADR-0006). The
@@ -311,6 +314,7 @@ def create_app(
     # then `en -> en` would still sync. Only a changed language can owe the pin an edit, so
     # the router schedules upkeep itself when it did (ADR-0014, as pricing settings does).
     app.include_router(language_router, dependencies=gated)
+    app.include_router(phone_country_router, dependencies=gated)
     app.include_router(products_router, dependencies=upkeep_gated)
     app.include_router(customers_router, dependencies=gated)
     # `customer_types` never imports `customers`: the count of customers in a type
