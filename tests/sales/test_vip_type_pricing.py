@@ -13,10 +13,10 @@ from sqlalchemy.orm import Session
 
 from app.customers.adapters.tables import CustomerRow
 from tests.pricing_switches import set_switches
-from tests.vip_type import make_type, put_in_type
+from tests.vip_type import make_type, price_type, put_in_type
 
 
-def _variety(client: TestClient, *, vip_price: int | None = 700) -> int:
+def _variety(client: TestClient) -> int:
     variety = client.post("/api/products", json={"name": "Lavanda"}).json()
     entry: dict[str, object] = {
         "effective_from": "2026-01-01",
@@ -24,8 +24,6 @@ def _variety(client: TestClient, *, vip_price: int | None = 700) -> int:
         "bulk_price": 800,
         "bulk_minimum": "10",
     }
-    if vip_price is not None:
-        entry["vip_price"] = vip_price
     created = client.post(f"/api/products/{variety['id']}/prices", json=entry)
     assert created.status_code == 201, created.text
     return int(variety["id"])
@@ -64,8 +62,10 @@ def _setup(
 ) -> tuple[int, int, int]:
     """(product, customer in the VIP type, the VIP type), the switches both on."""
     set_switches(engine, bulk=True, vip=True)
-    product_id = _variety(client, vip_price=vip_price)
+    product_id = _variety(client)
     vip_type = make_type(engine, is_vip=True)
+    if vip_price is not None:
+        price_type(engine, product_id, vip_type, vip_price)
     customer_id = _customer(client)
     put_in_type(engine, customer_id, vip_type)
     return product_id, customer_id, vip_type
@@ -76,7 +76,7 @@ def test_a_member_below_the_bulk_minimum_gets_the_vip_price(
 ) -> None:
     product_id, customer_id, _ = _setup(client, engine)
 
-    assert _rule(_sold(client, product_id, customer_id, "5")) == ("vip", 700)
+    assert _rule(_sold(client, product_id, customer_id, "5")) == ("type", 700)
 
 
 def test_a_member_above_the_bulk_minimum_gets_the_vip_price(
@@ -84,7 +84,7 @@ def test_a_member_above_the_bulk_minimum_gets_the_vip_price(
 ) -> None:
     product_id, customer_id, _ = _setup(client, engine)
 
-    assert _rule(_sold(client, product_id, customer_id, "12")) == ("vip", 700)
+    assert _rule(_sold(client, product_id, customer_id, "12")) == ("type", 700)
 
 
 def test_a_member_on_an_entry_without_a_vip_price_gets_list_then_bulk(
@@ -125,11 +125,11 @@ def test_moving_a_customer_in_or_out_of_the_vip_type_changes_the_rule_from_the_n
     back = _sold(client, product_id, customer_id, "5")
 
     assert [_rule(first), _rule(out), _rule(back)] == [
-        ("vip", 700),
+        ("type", 700),
         ("list", 1_000),
-        ("vip", 700),
+        ("type", 700),
     ]
-    assert _rule(client.get(f"/sales/{first['id']}").json()) == ("vip", 700)
+    assert _rule(client.get(f"/sales/{first['id']}").json()) == ("type", 700)
 
 
 def test_a_type_the_seller_named_vip_gives_nothing(client: TestClient, engine: Engine) -> None:

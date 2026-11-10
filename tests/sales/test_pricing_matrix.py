@@ -78,7 +78,6 @@ def _stored_rule(rule: str) -> str:
     return "type" if rule == "vip" else rule
 
 
-
 @pytest.mark.parametrize("case", MATRIX["lines"], ids=lambda c: c["name"])
 def test_price_line_matches_the_shared_matrix(case: dict[str, Any]) -> None:
     expect = case["expect"]
