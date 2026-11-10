@@ -35,6 +35,8 @@ def _stored(client: TestClient) -> str | None:
 def test_a_new_business_starts_with_no_phone_country_and_lists_the_eight_in_order(
     client: TestClient,
 ) -> None:
+    _change(client, None)  # the suite's clients are set to Argentina; a new business has none
+
     business = client.get("/business").json()
 
     assert business["phone_country"] is None
@@ -94,6 +96,7 @@ def test_a_language_change_keeps_the_phone_country(client: TestClient) -> None:
 def test_one_business_changing_its_country_leaves_the_other(
     client: TestClient, other_client: TestClient
 ) -> None:
+    _change(client, None)
     _change(other_client, "MX")
 
     assert _stored(other_client) == "MX"

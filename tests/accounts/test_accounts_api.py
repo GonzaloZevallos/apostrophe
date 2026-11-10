@@ -271,6 +271,7 @@ def test_get_business_shows_its_name_and_its_users_sorted_by_email(
     client: TestClient, other_client: TestClient
 ) -> None:
     client.post("/invitations")
+    client.put("/business/phone-country", json={"phone_country": None})
 
     business = client.get("/business")
 
