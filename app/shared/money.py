@@ -11,10 +11,11 @@ whose remainder must be 0, and a rounding goes through `round_half_up`.
 
 from __future__ import annotations
 
+import unicodedata
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from fractions import Fraction
-from typing import ClassVar
+from typing import ClassVar, Literal
 
 HUNDREDTHS_PER_UNIT = 100
 MAX_DECIMALS = 2
@@ -133,18 +134,58 @@ def checked_decimals(decimals: int) -> int:
     return decimals
 
 
+SYMBOL_MAX_CODE_POINTS = 4
+# Categories that move or hide text without showing anything: control, format (zero-width
+# and direction marks), line and paragraph separators. A price line must read as written.
+_INVISIBLE_CATEGORIES = frozenset({"Cc", "Cf", "Zl", "Zp"})
+_BOLD_MARK = "**"
+
+
+class InvalidMoneyFormat(ValueError):
+    """A money format was invalid; `field` names the part (`symbol` or `decimals`). The
+    message is a fixed literal and never repeats what was submitted
+    (CODING_STANDARDS.md section 9)."""
+
+    def __init__(self, field: Literal["symbol", "decimals"], message: str) -> None:
+        super().__init__(message)
+        self.field = field
+
+
 @dataclass(frozen=True)
 class MoneyFormat:
     """How a business shows money: its symbol and how many decimals. The scale it stores
-    amounts at is a storage fact and is not here (docs/adr/0058)."""
+    amounts at is a storage fact and is not here (docs/adr/0058).
+
+    The symbol rules live only here (docs/adr/0080): 1 to 4 code points, none of them
+    control, format or line/paragraph separator characters, and never two asterisks in a
+    row (they would pair across the catalog's price lines as bold). `of` trims a raw
+    symbol first; the constructor checks the symbol as it is given."""
 
     symbol: str
     decimals: int
 
     def __post_init__(self) -> None:
         if not self.symbol.strip():
-            raise ValueError("the money symbol must not be blank")
-        checked_decimals(self.decimals)
+            raise InvalidMoneyFormat("symbol", "the money symbol must not be blank")
+        if len(self.symbol) > SYMBOL_MAX_CODE_POINTS:
+            raise InvalidMoneyFormat("symbol", "the money symbol must be 1 to 4 characters")
+        if any(unicodedata.category(char) in _INVISIBLE_CATEGORIES for char in self.symbol):
+            raise InvalidMoneyFormat(
+                "symbol", "the money symbol must not hold a control or invisible character"
+            )
+        if _BOLD_MARK in self.symbol:
+            raise InvalidMoneyFormat(
+                "symbol", "the money symbol must not hold two asterisks in a row"
+            )
+        try:
+            checked_decimals(self.decimals)
+        except ValueError as exc:
+            raise InvalidMoneyFormat("decimals", str(exc)) from exc
+
+    @classmethod
+    def of(cls, raw_symbol: str, decimals: int) -> MoneyFormat:
+        """A format from a symbol as typed: trimmed at both ends, then checked."""
+        return cls(raw_symbol.strip(), decimals)
 
 
 def money_within(amount: Decimal, money_format: MoneyFormat) -> Money:

@@ -1,6 +1,6 @@
 """The rescale against a writer on another connection (docs/adr/0080, amending docs/adr/0058).
 
-Seam: the `ApplyDecimals` use case with the real adapter, and `GET /sales` and
+Seam: the `ApplyMoneyFormat` use case with the real adapter, and `GET /sales` and
 `GET /expenses` through `TestClient` for the figures, over a file-backed SQLite database,
 two engines in one thread and a short busy timeout on the test engines only. The amount
 write is a real sale, recorded by `record_sale` with the real adapters: it reads the stored
@@ -26,6 +26,7 @@ from app.db import MoneyScaleChanged, make_engine
 from app.money_format.adapters.reader import SqlMoneyFormat
 from app.money_format.adapters.sql_money_format_writer import SqlMoneyFormatWriter
 from app.money_format.domain.rescale import RescaleBusy
+from app.shared.money import MoneyFormat
 from app.pricing_settings.adapters.sql_pricing_settings import SqlPricingSettings
 from app.sales.adapters.customer_facts import SqlCustomerFacts
 from app.sales.adapters.price_book import SqlPriceBook
@@ -130,7 +131,7 @@ def _sale_totals(world: World) -> list[Decimal]:
 def _rescaling(second: Engine, business_id: int) -> Session:
     """A session on the other connection that has run the rescale and not committed."""
     session = Session(second)
-    SqlMoneyFormatWriter(session).apply_decimals(business_id, 2)
+    SqlMoneyFormatWriter(session).apply(business_id, MoneyFormat("$", 2))
     return session
 
 

@@ -7,6 +7,7 @@ import pytest
 
 from app.shared.money import (
     InvalidMoney,
+    InvalidMoneyFormat,
     Money,
     MoneyFormat,
     MoneyNotRepresentable,
@@ -266,3 +267,64 @@ def test_whole_units_raises_instead_of_truncating_or_rounding(hundredths: int) -
         Money(hundredths).whole_units()
 
     assert str(raised.value) == "the amount is not a whole number of units"
+
+
+@pytest.mark.parametrize(
+    "symbol",
+    ["US$", "R$", "EUR", "🇦🇷", "❤️", "😀😀😀😀", "*", "US $", "  $  "],
+)
+def test_money_format_of_accepts_a_visible_symbol_of_one_to_four_code_points(symbol: str) -> None:
+    assert MoneyFormat.of(symbol, 2) == MoneyFormat(symbol.strip(), 2)
+
+
+def test_money_format_of_trims_the_symbol_at_both_ends() -> None:
+    assert MoneyFormat.of("  US$ \t", 0).symbol == "US$"
+
+
+@pytest.mark.parametrize(
+    "symbol",
+    ["\u200b", "a\nb", "\u202e", "a\tb", "ABCDE", "**", "x**", "", "  ", "a\u2028b", "a\u200db"],
+)
+def test_money_format_of_refuses_a_symbol_that_breaks_the_rule_and_names_the_symbol_field(
+    symbol: str,
+) -> None:
+    with pytest.raises(InvalidMoneyFormat) as raised:
+        MoneyFormat.of(symbol, 0)
+
+    assert raised.value.field == "symbol"
+
+
+@pytest.mark.parametrize(
+    ("symbol", "message"),
+    [
+        ("  ", "the money symbol must not be blank"),
+        ("ABCDE", "the money symbol must be 1 to 4 characters"),
+        ("a\tb", "the money symbol must not hold a control or invisible character"),
+        ("x**", "the money symbol must not hold two asterisks in a row"),
+    ],
+)
+def test_money_format_of_refuses_each_symbol_rule_with_its_own_fixed_message(
+    symbol: str, message: str
+) -> None:
+    with pytest.raises(InvalidMoneyFormat) as raised:
+        MoneyFormat.of(symbol, 0)
+
+    assert str(raised.value) == message
+
+
+@pytest.mark.parametrize("decimals", [-1, 3])
+def test_money_format_of_refuses_decimals_outside_0_to_2_and_names_the_decimals_field(
+    decimals: int,
+) -> None:
+    with pytest.raises(InvalidMoneyFormat) as raised:
+        MoneyFormat.of("$", decimals)
+
+    assert raised.value.field == "decimals"
+    assert str(raised.value) == "the money decimals must be a whole number from 0 to 2"
+
+
+def test_the_symbol_is_refused_before_the_decimals() -> None:
+    with pytest.raises(InvalidMoneyFormat) as raised:
+        MoneyFormat.of("**", 3)
+
+    assert raised.value.field == "symbol"

@@ -1,6 +1,6 @@
 """A rescale changes no figure (docs/adr/0080, amending docs/adr/0058).
 
-Seam: the HTTP read routes through `TestClient`, before and after `ApplyDecimals(b, 2)`
+Seam: the HTTP read routes through `TestClient`, before and after `ApplyMoneyFormat(b, '$', 2)`
 over a business opened at scale 0. Each answer is parsed with `Decimal` for every number, so
 `1500` and `1500.0` are the same value and nothing is compared as a float. The documents
 must be equal, ids included: it is the same business.
@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 
 from app.main import create_app
 from app.money_format.adapters.sql_money_format_writer import SqlMoneyFormatWriter
-from app.money_format.application.apply_decimals import ApplyDecimals
+from app.money_format.application.apply_money_format import ApplyMoneyFormat
 from tests.conftest import (
     SETTINGS,
     TEST_HASHER,
@@ -79,7 +79,7 @@ def test_every_figure_is_equal_before_and_after_the_rescale(
             business_id = int(
                 session.execute(text("SELECT business_id FROM money_format")).scalar_one()
             )
-            ApplyDecimals(SqlMoneyFormatWriter(session), session).execute(business_id, 2)
+            ApplyMoneyFormat(SqlMoneyFormatWriter(session), session).execute(business_id, "$", 2)
 
         assert _scale(engine) == 2
         after = _documents(client, entered["customer_id"], sale_id)
