@@ -237,7 +237,7 @@ describe('the list', () => {
     expect(link).toHaveClass('boton--suave')
   })
 
-  test('the bar has no Stock tab: Inicio, Ventas, Clientes, Variedades and Más', async () => {
+  test('the bar has no Stock tab: Inicio, Ventas, Clientes and Variedades', async () => {
     renderApp(VARIETIES_PATH)
 
     await screen.findByText('24K Gold')
@@ -247,7 +247,6 @@ describe('the list', () => {
       'Sales',
       'Customers',
       'Products',
-      'More',
     ])
   })
 

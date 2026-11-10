@@ -139,7 +139,7 @@ test('reached by an in-app link, back goes back in history', async () => {
   const { router } = renderApp([SALES])
   await act(() => router.navigate(SETTINGS, { state: inAppState({ pathname: SALES }) }))
 
-  await user.click(await screen.findByRole('button', { name: '‹ More' }))
+  await user.click(await screen.findByRole('button', { name: '‹ Home' }))
 
   expect(router.state.location.pathname).toBe(SALES)
 })
