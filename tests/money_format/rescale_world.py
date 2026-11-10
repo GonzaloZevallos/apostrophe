@@ -8,7 +8,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 from fastapi.testclient import TestClient
 from sqlalchemy import Table, event, select, text
@@ -22,7 +22,17 @@ from tests.business_removal.adapters.seed import PINNED, build_app, seed
 from tests.conftest import MovableClock
 
 Dump = dict[str, list[dict[str, Any]]]
-World = tuple[Engine, int, int]
+
+
+class World(NamedTuple):
+    """The engine, the id of the business to rescale, the id of the other one, the session
+    token of the first and the database file."""
+
+    engine: Engine
+    target: int
+    other: int
+    token: str
+    path: Path
 
 
 def money_columns() -> list[tuple[Table, str, bool]]:
@@ -90,7 +100,7 @@ def build_world(tmp_path: Path) -> Iterator[World]:
             _top_up(client)
     with engine.connect() as connection:
         ids = list(connection.execute(text("SELECT business_id FROM money_format ORDER BY id")))
-    yield engine, ids[1][0], ids[0][0]
+    yield World(engine, ids[1][0], ids[0][0], token_target, db_path)
     engine.dispose()
 
 

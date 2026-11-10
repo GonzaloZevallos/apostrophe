@@ -29,7 +29,7 @@ from tests.statement_log import captured_statements
 
 
 def test_the_seed_reaches_every_tagged_column_and_every_nullable_one(world: World) -> None:
-    engine, target, _ = world
+    engine, target, *_ = world
     columns = money_columns()
     assert len(columns) >= 9
     with Session(engine) as session:
@@ -49,7 +49,7 @@ def test_the_seed_reaches_every_tagged_column_and_every_nullable_one(world: Worl
 def test_the_rescale_multiplies_every_tagged_column_by_100_and_leaves_the_rest(
     world: World,
 ) -> None:
-    engine, target, other = world
+    engine, target, other, *_ = world
     before, other_before = dump(engine, target), dump(engine, other)
     assert money_format_of(engine, target) == (0, 0)
 
@@ -72,7 +72,7 @@ def test_the_rescale_multiplies_every_tagged_column_by_100_and_leaves_the_rest(
 
 
 def test_an_amount_too_large_to_rescale_rolls_everything_back(world: World) -> None:
-    engine, target, other = world
+    engine, target, other, *_ = world
     run(engine, f"UPDATE expense SET amount = {2**62} WHERE business_id = {target}")
     before, other_before = dump(engine, target), dump(engine, other)
 
@@ -86,7 +86,7 @@ def test_an_amount_too_large_to_rescale_rolls_everything_back(world: World) -> N
 
 
 def test_after_the_rescale_only_a_different_decimals_is_written(world: World) -> None:
-    engine, target, other = world
+    engine, target, other, *_ = world
     apply(engine, target, 2)
     amounts = {name: rows for name, rows in dump(engine, target).items() if name != "money_format"}
 
@@ -104,7 +104,7 @@ def test_after_the_rescale_only_a_different_decimals_is_written(world: World) ->
 
 
 def test_lowering_at_scale_0_to_0_writes_nothing(world: World) -> None:
-    engine, target, _ = world
+    engine, target, *_ = world
     with updates(engine) as seen:
         apply(engine, target, 0)
     assert sum(rows for _, rows in seen) == 0
@@ -112,7 +112,7 @@ def test_lowering_at_scale_0_to_0_writes_nothing(world: World) -> None:
 
 
 def test_a_lower_below_the_recorded_amounts_is_refused_and_stores_nothing(world: World) -> None:
-    engine, target, _ = world
+    engine, target, *_ = world
     apply(engine, target, 2)
     run(engine, f"UPDATE expense SET amount = 150050 WHERE business_id = {target}")
     before = dump(engine, target)
@@ -133,7 +133,7 @@ def test_a_lower_below_the_recorded_amounts_is_refused_and_stores_nothing(world:
 
 
 def test_a_lower_within_the_recorded_amounts_is_written(world: World) -> None:
-    engine, target, _ = world
+    engine, target, *_ = world
     apply(engine, target, 2)
     run(engine, f"UPDATE expense SET amount = 150050 WHERE business_id = {target}")
 
@@ -145,7 +145,7 @@ def test_a_lower_within_the_recorded_amounts_is_written(world: World) -> None:
 def test_the_rescale_issues_the_conditional_update_and_one_multiply_per_tagged_column(
     world: World,
 ) -> None:
-    engine, target, _ = world
+    engine, target, *_ = world
     with captured_statements(engine) as statements:
         apply(engine, target, 2)
 
@@ -156,7 +156,7 @@ def test_the_rescale_issues_the_conditional_update_and_one_multiply_per_tagged_c
 
 
 def test_amounts_whose_rescaled_sum_overflows_are_refused_and_roll_back(world: World) -> None:
-    engine, target, other = world
+    engine, target, other, *_ = world
     expense = next(table for table, name, _ in money_columns() if table.name == "expense")
     names = [column.name for column in expense.columns if column.name != "id"]
     chosen = [literal(9 * 10**16) if name == "amount" else expense.c[name] for name in names]
