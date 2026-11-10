@@ -9,6 +9,7 @@ import userEvent from '@testing-library/user-event'
 import { choosePaid, choosePaymentMethod } from '../../components/selectorTestKit'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import App from '../../App'
+import { paymentMethodsResponse } from '../../test/paymentMethods'
 import { stubViewport } from '../../test-viewport'
 import { sheetDepth } from '../../components/useSheetStack'
 import { queryClient } from '../../queryClient'
@@ -32,6 +33,7 @@ function jsonResponse(status: number, body: unknown): Response {
 function stubShop(): ReturnType<typeof vi.fn> {
   const fetchMock = vi.fn((path: string, init?: RequestInit) => {
     const method = init?.method ?? 'GET'
+    if (method === 'GET' && path === '/api/payment-methods') return Promise.resolve(paymentMethodsResponse())
     if (method === 'GET' && path === '/auth/me') return Promise.resolve(jsonResponse(200, ME))
     if (method === 'GET' && path.startsWith('/api/products?on=')) {
       return Promise.resolve(jsonResponse(200, [ROSA, FREE]))
@@ -75,7 +77,7 @@ afterEach(async () => {
   await act(() => router.navigate(HOME))
 })
 
-test('the method is a Selector with Cash and Transfer under Paid only, with no radio, no pressed button and no clearing row', async () => {
+test('the method is a Selector with the business own methods under Paid only, with no radio, no pressed button and no clearing row', async () => {
   const user = userEvent.setup()
   stubShop()
   await openSale()
@@ -85,7 +87,7 @@ test('the method is a Selector with Cash and Transfer under Paid only, with no r
   expect(document.querySelector('[aria-pressed]')).toBeNull()
   expect(screen.queryByRole('radio', { name: 'Cash' })).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: /^Payment method/ }))
-  expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual(['Cash', 'Transfer'])
+  expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual(['Cash', 'Transfer', 'Mercado Pago'])
 })
 
 test('Owing is disabled with its description when there is no Customer, and shows no method field once chosen', async () => {
@@ -126,7 +128,7 @@ test('saving under Paid above $0 with no method is refused at the field: sentenc
   expect(screen.queryByText('Choose how they paid.')).not.toBeInTheDocument()
   await user.click(save)
   await waitFor(() => expect(posted(fetchMock)).toHaveLength(1))
-  expect(JSON.parse(posted(fetchMock)[0]!.body as string)).toMatchObject({ payment: 'transfer' })
+  expect(JSON.parse(posted(fetchMock)[0]!.body as string)).toMatchObject({ payment: { kind: 'method', payment_method_id: 2 } })
 })
 
 test('a Paid sale of $0 saves with no method, and sends none', async () => {

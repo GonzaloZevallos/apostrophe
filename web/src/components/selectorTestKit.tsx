@@ -67,7 +67,7 @@ export function renderForm(ui: ReactNode, { level = 0 }: { level?: number } = {}
  * Chooses a Payment method the way a person does: opens the "Payment method" field, then picks the
  * option, in the computer's dropdown (`option`) or the phone's list (a button in the list).
  */
-export async function choosePaymentMethod(user: Pick<UserEvent, 'click'>, method: 'Cash' | 'Transfer'): Promise<void> {
+export async function choosePaymentMethod(user: Pick<UserEvent, 'click'>, method: string): Promise<void> {
   await user.click(await screen.findByRole('button', { name: /^Payment method/ }))
   const option = screen.queryByRole('option', { name: method }) ?? (await screen.findByRole('button', { name: method }))
   await user.click(option)

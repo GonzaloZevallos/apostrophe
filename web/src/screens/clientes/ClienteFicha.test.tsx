@@ -13,6 +13,7 @@
  * number.
  */
 
+import { paymentMethodsResponse } from '../../test/paymentMethods'
 import { choosePaymentMethod } from '../../components/selectorTestKit'
 import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, SALE_NEW, pathTo } from '../../routes'
 import { consumePaymentReturn, setPaymentReturn } from '../../paymentReturn'
@@ -731,6 +732,7 @@ test('a payment deleted by a partner meanwhile shows the gone notice, never the 
   api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
+      'GET /api/payment-methods': () => paymentMethodsResponse(),
       'GET /customers/1/account': () =>
         jsonResponse(200, {
           balance: 6000,
@@ -1103,6 +1105,7 @@ test('the card and its form follow the icon and text rule: Delete payment is ico
 
   await userEvent.click(registrar)
   await screen.findByRole('button', { name: 'Save' })
+  await screen.findByRole('button', { name: /^Payment method/ })
   expectIconAndTextRule(document.body, RULE)
 })
 

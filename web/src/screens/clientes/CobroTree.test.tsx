@@ -404,7 +404,7 @@ describe('the form as drawn', () => {
   async function openForm(answers: Answers = {}) {
     const router = renderApp([{ pathname: PAYMENT }], 'phone', answers)
     await screen.findByRole('button', { name: 'Save' })
-    await screen.findByRole('radio', { name: 'Cash' })
+    await screen.findByRole('button', { name: /^Payment method/ })
     return router
   }
 
@@ -497,7 +497,7 @@ describe('the form as drawn', () => {
     await userEvent.click(field)
     const list = await screen.findByRole('dialog', { name: 'Payment method options' })
     // Exactly the two methods and Close: no clearing row, no search.
-    expect(within(list).getAllByRole('button').map((button) => button.getAttribute('aria-label') ?? button.textContent)).toEqual(['Close', 'Cash', 'Transfer'])
+    expect(within(list).getAllByRole('button').map((button) => button.getAttribute('aria-label') ?? button.textContent)).toEqual(['Close', 'Cash', 'Transfer', 'Mercado Pago'])
     expect(within(list).queryByRole('searchbox')).toBeNull()
     await userEvent.click(within(list).getByRole('button', { name: 'Transfer' }))
     await waitFor(() => expect(screen.getByRole('button', { name: /^Payment method/ })).toHaveTextContent('Transfer'))

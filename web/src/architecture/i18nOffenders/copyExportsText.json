@@ -8,6 +8,7 @@
   {"file":"expenses.ts","issue":351},
   {"file":"inicio.ts","issue":350},
   {"file":"onboarding.ts","issue":350},
+  {"file":"paymentMethods.ts","issue":353},
   {"file":"payments.ts","issue":351},
   {"file":"pinnedCatalog.ts","issue":352},
   {"file":"sales.ts","issue":351},

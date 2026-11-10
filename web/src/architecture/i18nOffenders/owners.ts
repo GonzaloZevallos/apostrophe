@@ -21,6 +21,7 @@ export const COPY_OWNER: Record<string, Owner> = {
   'catalog.ts': 352,
   'pinnedCatalog.ts': 352,
   'settings.ts': 353,
+  'paymentMethods.ts': 353,
   'analysis.ts': 353,
   'dates.ts': 353,
   'emptyStates.ts': 'none',

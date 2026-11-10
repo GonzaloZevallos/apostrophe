@@ -510,9 +510,10 @@ export default function Selector(props: SelectorProps) {
             <span id={valueId} className="selector__valor">
               {valueArea}
             </span>
-            {/* The built-in Payment method field, empty, shows only its label (outside the button): its text is that label, hidden,
-                so tools that read a button's text find one. `aria-labelledby` still names it. */}
-            {props.builtIn === true && value === null && placeholder === undefined && (
+            {/* An empty field with no placeholder (the built-in sets, the payment-method list) shows only its label (outside
+                the button): its text is that label, hidden, so tools that read a button's text find one.
+                `aria-labelledby` still names it. */}
+            {value === null && placeholder === undefined && (
               <span className="visualmente-oculto">{label}</span>
             )}
             <span className="selector__chevron">

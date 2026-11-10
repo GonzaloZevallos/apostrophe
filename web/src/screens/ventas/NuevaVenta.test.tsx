@@ -59,7 +59,7 @@ async function openForm(handlers: Record<string, () => Response>): Promise<Retur
   await act(() => router.navigate(SALE_NEW))
   render(<App />)
   await screen.findByText('New sale')
-  await screen.findByRole('radio', { name: 'Cash' })
+  await screen.findByRole('radio', { name: 'Paid' })
   // The varieties arrive after the form mounts; a test that picks one straight away
   // races the fetch on a loaded machine, so wait until the first line can offer them.
   if (Object.keys(handlers).some((key) => key.startsWith('GET /api/products'))) {
@@ -411,9 +411,10 @@ test('the sale is posted with the id of the chosen method, or as owing, or with 
     'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
     'POST /sales': () => jsonResponse(201, { id: 10 }),
   })
-  await user.selectOptions(screen.getByLabelText('Line 1 product'), '1')
+  await pickProduct(user, 1, 'Rosa')
   await user.type(screen.getByLabelText('Line 1 grams'), '2')
-  await user.click(screen.getByRole('radio', { name: 'Mercado Pago' }))
+  await choosePaid(user)
+  await choosePaymentMethod(user, 'Mercado Pago')
   await user.click(screen.getByRole('button', { name: 'Save sale' }))
   await waitFor(() => expect(fetchMock.mock.calls.some(([path]) => path === '/sales')).toBe(true))
   expect(posted(fetchMock)).toMatchObject({ payment: { kind: 'method', payment_method_id: 3 } })
@@ -431,16 +432,16 @@ test('a method archived meanwhile keeps what was typed, refetches the list, clea
     },
     'POST /sales': () => jsonResponse(404, { detail: 'gone', code: 'payment_method.unavailable' }),
   })
-  await user.selectOptions(screen.getByLabelText('Line 1 product'), '1')
+  await pickProduct(user, 1, 'Rosa')
   await user.type(screen.getByLabelText('Line 1 grams'), '2')
   await user.type(screen.getByLabelText('Note'), 'una nota')
-  await user.click(screen.getByRole('radio', { name: 'Transfer' }))
+  await choosePaid(user)
+  await choosePaymentMethod(user, 'Transfer')
   await user.click(screen.getByRole('button', { name: 'Save sale' }))
 
   const notice = await screen.findByText("That payment method isn't available any more. Pick another one.")
   expect(notice.closest('[role="alert"]')?.querySelector('svg')).not.toBeNull()
-  await waitFor(() => expect(screen.queryByRole('radio', { name: 'Transfer' })).not.toBeInTheDocument())
-  for (const radio of screen.getAllByRole('radio')) expect(radio).toHaveAttribute('aria-checked', 'false')
+  await waitFor(() => expect(screen.queryByRole('button', { name: 'Payment method, Transfer' })).not.toBeInTheDocument())
   expect(screen.getByLabelText('Line 1 grams')).toHaveValue('2')
   expect(screen.getByLabelText('Note')).toHaveValue('una nota')
   expect(screen.getByText('New sale')).toBeInTheDocument()

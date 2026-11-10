@@ -5,6 +5,7 @@
  * later save. Routed through the real app, as `NuevaVenta.test.tsx` is.
  */
 
+import { paymentMethodsResponse } from '../../test/paymentMethods'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { choosePaid, choosePaymentMethod } from '../../components/selectorTestKit'
@@ -37,7 +38,8 @@ async function openForm(varieties: (call: number) => unknown): Promise<void> {
     'fetch',
     vi.fn((path: string, init?: RequestInit) => {
       const method = init?.method ?? 'GET'
-      if (method === 'GET' && path === '/auth/me') return Promise.resolve(jsonResponse(200, ME))
+      if (method === 'GET' && path === '/api/payment-methods') return Promise.resolve(paymentMethodsResponse())
+    if (method === 'GET' && path === '/auth/me') return Promise.resolve(jsonResponse(200, ME))
       if (method === 'GET' && path === '/api/products?on=2026-10-02') {
         varietiesCalls += 1
         return Promise.resolve(jsonResponse(200, varieties(varietiesCalls)))

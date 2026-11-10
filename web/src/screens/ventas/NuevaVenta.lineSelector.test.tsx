@@ -6,6 +6,7 @@
  * gone-Product and no-Products states.
  */
 
+import { paymentMethodsResponse } from '../../test/paymentMethods'
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { choosePaid, choosePaymentMethod } from '../../components/selectorTestKit'
@@ -46,6 +47,7 @@ interface Stubs {
 function stubFetch({ products }: Stubs): ReturnType<typeof vi.fn> {
   const fetchMock = vi.fn((path: string, init?: RequestInit) => {
     const method = init?.method ?? 'GET'
+    if (method === 'GET' && path === '/api/payment-methods') return Promise.resolve(paymentMethodsResponse())
     if (method === 'GET' && path === '/auth/me') return Promise.resolve(jsonResponse(200, ME))
     if (method === 'GET' && path.startsWith('/api/products?on=')) {
       return Promise.resolve(products(path.slice('/api/products?on='.length)))

@@ -4,6 +4,7 @@
  * the list, a clean form goes to its parent and a dirty one (a method alone counts) asks first.
  */
 
+import { paymentMethodsResponse } from '../../test/paymentMethods'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -42,6 +43,7 @@ function json(status: number, body: unknown): Response {
 function renderApp(pathname: string, viewport: Viewport) {
   const table: Record<string, () => Response> = {
     'GET /auth/me': () => json(200, ME),
+    'GET /api/payment-methods': () => paymentMethodsResponse(),
     'GET /pricing-settings': () => json(200, { is_bulk_pricing: true, is_vip_customers: true }),
     'GET /customers': () => json(200, [OWING]),
     'GET /customers/1': () => json(200, OWING),

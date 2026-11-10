@@ -431,6 +431,7 @@
   {"source":"paymentMethods.ts:PAYMENT_METHODS_TEXT.loadError","args":null,"text":"We couldn't load your payment methods."},
   {"source":"paymentMethods.ts:PAYMENT_METHODS_TEXT.loading","args":null,"text":"Loading payment methods"},
   {"source":"paymentMethods.ts:PAYMENT_METHODS_TEXT.methodGroupLabel","args":null,"text":"Payment method"},
+  {"source":"paymentMethods.ts:PAYMENT_METHODS_TEXT.methodsEmpty","args":null,"text":"No payment methods yet. Add one in Settings."},
   {"source":"paymentMethods.ts:PAYMENT_METHODS_TEXT.methodsLoading","args":null,"text":"Loading payment methods"},
   {"source":"paymentMethods.ts:PAYMENT_METHODS_TEXT.moveDown","args":null,"text":"Move down"},
   {"source":"paymentMethods.ts:PAYMENT_METHODS_TEXT.moveUp","args":null,"text":"Move up"},

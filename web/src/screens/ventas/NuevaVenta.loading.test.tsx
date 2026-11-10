@@ -84,8 +84,8 @@ async function openAndPriceToday() {
   renderForm()
   answer(`/api/products?on=2026-10-02`, [ROSA_TODAY])
   await screen.findByRole('button', { name: 'Save sale' })
-  // The payment methods list is answered at once; wait for it so the form is settled.
-  await screen.findByRole('radiogroup', { name: 'Payment method' })
+  // The form is settled once its Paid · Owing choice is drawn.
+  await screen.findByRole('radiogroup', { name: 'How it was paid' })
 }
 
 function noFigure(element: HTMLElement): void {
