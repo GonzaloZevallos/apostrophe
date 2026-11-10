@@ -134,7 +134,7 @@ def test_removing_a_category_with_a_filed_expense_is_refused_until_it_has_none(
             business_id=1,
             category_id=category["id"],
             spent_on=date(2026, 10, 1),
-            amount=money_stored_value(session, 1, Money(100)),
+            amount=money_stored_value(session, 1, Money.of_units(100)),
             detail="una compra",
             recorded_at=datetime(2026, 10, 1, tzinfo=UTC),
         )

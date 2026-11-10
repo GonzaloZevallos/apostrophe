@@ -95,7 +95,7 @@ def test_the_monthly_view_and_the_ledger_sum_the_same_at_both_scales(
 
 @pytest.mark.parametrize("verb", ["post", "put"])
 def test_an_amount_with_a_decimal_is_refused_and_nothing_is_saved(
-    client: TestClient, engine: Engine, verb: str
+    client: TestClient, engine: Engine, verb: str, money_scale: int
 ) -> None:
     existing = client.post("/expenses", json=_body(client, 1_500)).json()
     url = "/expenses" if verb == "post" else f"/expenses/{existing['id']}"
@@ -105,7 +105,7 @@ def test_an_amount_with_a_decimal_is_refused_and_nothing_is_saved(
     assert refused.status_code == 422
     assert refused.json()["code"] == "money.too_many_decimals"
     assert "10.5" not in refused.text
-    assert _raw(engine, "SELECT amount FROM expense") == [(1_500,)]
+    assert _raw(engine, "SELECT amount FROM expense") == [(_stored(1_500, money_scale),)]
 
 
 def test_a_stored_amount_with_cents_is_an_integrity_failure_not_a_rounded_figure(

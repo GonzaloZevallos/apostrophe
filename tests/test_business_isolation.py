@@ -414,27 +414,23 @@ def business_a(app: FastAPI, engine: Engine, clock: MovableClock) -> Iterator[Te
 
 @pytest.fixture
 def business_b(
+    app: FastAPI,
     engine: Engine,
     clock: MovableClock,
-    settings: Settings,
-    telegram: FakeTelegram,
     money_scale: int,
     business_a: TestClient,
 ) -> Iterator[TestClient]:
-    """B is opened at the other scale, by a second app on the same database: one
-    installation then holds a scale-0 and a scale-2 business whichever A is."""
+    """B is opened at the other scale, so one installation holds a scale-0 and a scale-2
+    business whichever A is. The opening wiring is one per app, so B's empty `money_format`
+    row (no amount exists in it yet) is set to the other scale right after it is opened."""
     other_scale = 2 - money_scale
-    other_app = create_app(
-        settings,
-        engine=engine,
-        clock=clock,
-        hasher=TEST_HASHER,
-        telegram=telegram,
-        upkeep_ticker=False,
-        opening_money_scale=other_scale,
-    )
-    with TestClient(other_app) as client:
+    with TestClient(app) as client:
         token = open_business(client, engine, clock, "B", "b@b.com")
+        with engine.begin() as connection:
+            connection.execute(
+                text("UPDATE money_format SET scale = :scale WHERE business_id = 2"),
+                {"scale": other_scale},
+            )
         assert _scales(engine) == [money_scale, other_scale]
         yield signed_in(client, token)
 

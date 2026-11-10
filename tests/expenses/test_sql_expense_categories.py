@@ -40,7 +40,7 @@ def test_remove_raises_category_in_use_when_an_expense_is_filed_under_it(
                 business_id=BUSINESS_ID,
                 category_id=category.id,
                 spent_on=date(2026, 10, 1),
-                amount=money_stored_value(session, BUSINESS_ID, Money(100)),
+                amount=money_stored_value(session, BUSINESS_ID, Money.of_units(100)),
                 detail="una compra",
                 recorded_at=datetime(2026, 10, 1, tzinfo=UTC),
             )
