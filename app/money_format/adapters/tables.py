@@ -1,6 +1,7 @@
 """The `money_format` table: one row per business (CONTEXT.md: Money format), holding the
 symbol and decimals its money is shown with and the scale its amount columns are stored
-at (docs/adr/0058). Only this hexagon writes it (docs/adr/0034). Two readers take `scale`:
+at (docs/adr/0058). Only this hexagon writes it, and only its
+rescale writer sets `scale` (docs/adr/0080, amending docs/adr/0058). Two readers take `scale`:
 `app/db.py`'s money helper, and `export_reader.py`, which hands the business removal the
 `{scale, decimals}` its export states beside the tables."""
 

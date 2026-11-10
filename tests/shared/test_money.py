@@ -11,6 +11,7 @@ from app.shared.money import (
     MoneyFormat,
     MoneyNotRepresentable,
     TooManyDecimals,
+    checked_decimals,
     money_within,
     round_half_up,
     round_half_up_to_units,
@@ -126,6 +127,19 @@ def test_money_format_refuses_a_blank_symbol(symbol: str) -> None:
 def test_money_format_refuses_decimals_outside_0_to_2(decimals: Any) -> None:
     with pytest.raises(ValueError, match="the money decimals must be a whole number from 0 to 2"):
         MoneyFormat("$", decimals)
+
+
+@pytest.mark.parametrize("decimals", [0, 1, 2])
+def test_checked_decimals_answers_a_valid_decimals_unchanged(decimals: int) -> None:
+    assert checked_decimals(decimals) == decimals
+
+
+@pytest.mark.parametrize("decimals", [-1, 3, True, False, 1.0])
+def test_checked_decimals_refuses_decimals_outside_0_to_2_with_a_fixed_message(
+    decimals: Any,
+) -> None:
+    with pytest.raises(ValueError, match="the money decimals must be a whole number from 0 to 2"):
+        checked_decimals(decimals)
 
 
 @pytest.mark.parametrize(

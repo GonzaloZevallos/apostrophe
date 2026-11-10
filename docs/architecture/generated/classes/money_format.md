@@ -10,6 +10,8 @@ classDiagram
   }
   class application {
   }
+  class apply_decimals {
+  }
   class domain {
   }
   class export_reader {
@@ -20,20 +22,44 @@ classDiagram
   }
   class reader {
   }
+  class rescale {
+  }
+  class sql_money_format_writer {
+  }
   class tables {
   }
   export_reader --> tables
   opening --> tables
   reader --> tables
+  sql_money_format_writer --> rescale
+  sql_money_format_writer --> tables
 ```
 
 ## domain
 
-No classes in this layer.
+```mermaid
+classDiagram
+  class AmountTooLargeToRescale {
+  }
+  class DecimalsBelowRecordedAmounts {
+  }
+  class RescaleBusy {
+  }
+  class RescaleCheckFailed {
+  }
+```
 
 ## application
 
-No classes in this layer.
+```mermaid
+classDiagram
+  class ApplyDecimals {
+    execute(business_id: int, decimals: int) None
+  }
+  class MoneyFormatWriter {
+    apply_decimals(business_id: int, decimals: int) None
+  }
+```
 
 ## adapters
 
@@ -54,5 +80,8 @@ classDiagram
   }
   class SqlMoneyFormatRead {
     of(business_id: int) ExportedMoney
+  }
+  class SqlMoneyFormatWriter {
+    apply_decimals(business_id: int, decimals: int) None
   }
 ```
