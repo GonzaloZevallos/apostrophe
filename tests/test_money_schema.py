@@ -171,3 +171,9 @@ def test_money_out_refuses_a_figure_a_json_number_cannot_carry_exactly() -> None
         TypeAdapter(MoneyOut).dump_json(Decimal("1234567890123456.78"))
 
     assert "1234567" not in str(raised.value)
+
+
+def test_money_out_publishes_an_integer_or_a_number_never_integer_alone() -> None:
+    schema = TypeAdapter(MoneyOut).json_schema(mode="serialization")
+
+    assert schema == {"anyOf": [{"type": "integer"}, {"type": "number"}]}
