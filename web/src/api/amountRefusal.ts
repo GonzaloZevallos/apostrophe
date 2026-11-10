@@ -9,7 +9,7 @@ import { moneyTooManyDecimals } from '../copy/settings'
 import type { MoneyFormat } from '../format/money'
 import type { RefusalCode } from './refusals'
 
-export const TOO_MANY_DECIMALS_CODE: RefusalCode = 'money.too_many_decimals'
+export const AMOUNT_REFUSAL_CODE: RefusalCode = 'money.too_many_decimals'
 
 /** The refusal text for the business's decimals: "Use whole amounts only." at 0, "Use up to {decimals}
  * decimals." otherwise. A function of the format, never a constant: the decimals are known only once

@@ -42,7 +42,7 @@ import { useMoney } from '../../format/moneyContext'
 import { EXPENSES_TEXT } from '../../copy/expenses'
 import { COMMON_TEXT } from '../../copy/common'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
-import { TOO_MANY_DECIMALS_CODE, tooManyDecimalsMessage } from '../../api/amountRefusal'
+import { AMOUNT_REFUSAL_CODE, tooManyDecimalsMessage } from '../../api/amountRefusal'
 
 export const CATEGORY_GONE = EXPENSES_TEXT.categoryGone
 export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
@@ -200,7 +200,7 @@ export default function ExpenseForm({
       } else if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateResource(queryClient, 'expenses')
         onGone?.()
-      } else if (caught instanceof ApiError && caught.code === TOO_MANY_DECIMALS_CODE) {
+      } else if (caught instanceof ApiError && caught.code === AMOUNT_REFUSAL_CODE) {
         setAmountError(tooManyDecimalsMessage(money.format))
       } else if (isRefusal(caught)) {
         setFormError(GENERIC_REFUSAL)

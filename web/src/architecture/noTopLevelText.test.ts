@@ -15,7 +15,13 @@ const fixtures = import.meta.glob('./fixtures/noTopLevelText/*.txt', {
   eager: true,
 }) as Record<string, string>
 
-const RULES: readonly TopLevelFinding['rule'][] = ['t-outside-function', 'locale-import', 'resource-read']
+const RULES: readonly TopLevelFinding['rule'][] = [
+  't-outside-function',
+  'locale-import',
+  'resource-read',
+  'money-at-module-scope',
+  'money-constant',
+]
 
 /** Where a fixture is checked: outside `src/i18n/` and as `.ts`, unless the case needs otherwise. */
 const DEFAULT_PATH = 'web/src/screens/Fixture.ts'
@@ -25,6 +31,8 @@ const CHECKED_UNDER: Readonly<Record<string, string>> = {
   fail_json_element_read: 'web/src/i18n/probe.ts',
   pass_bundle_by_reference: 'web/src/i18n/probe.ts',
   fail_jsx_child: 'web/src/screens/Fixture.tsx',
+  // The constant rule reads only the format and API folders.
+  fail_decimals_constant: 'web/src/format/probe.ts',
 }
 
 function expected(source: string): TopLevelFinding[] | undefined {
