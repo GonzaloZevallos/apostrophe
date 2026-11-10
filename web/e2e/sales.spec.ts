@@ -11,7 +11,7 @@
  * the design's own 900px breakpoint.
  *
  * One business proves the PRD's own metrics in sequence:
- * - The shell: the bar shows exactly Inicio, Ventas, Clientes, Variedades and Más.
+ * - The shell: the bar shows exactly Inicio, Ventas, Clientes and Variedades.
  * - "Caught before save" (3): Debiendo disabled with no customer, and a line whose
  *   variety has no price that day, both shown before any save is attempted.
  * - "Under a minute" (1): each of the three sales below — a new customer, an

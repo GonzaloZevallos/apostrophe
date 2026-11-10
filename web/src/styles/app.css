@@ -509,7 +509,7 @@ body {
 
 .bar-inferior__item {
   /* Sized by the label, then the spare room shared out: the longest word ("Variedades")
-   * never has to give up a letter to the shortest ("Más"). */
+   * never has to give up a letter to the shortest ("Ventas"). */
   flex: 1 1 auto;
   min-width: min-content;
   min-height: var(--alto-tocable);

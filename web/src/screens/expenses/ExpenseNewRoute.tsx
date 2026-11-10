@@ -1,6 +1,6 @@
 /**
  * `ExpenseNewRoute`: the host of the expense form on its own route (`GastoNuevo.dc.html`),
- * opened from Más and from Gastos. It owns how the form is left (the form itself knows
+ * opened from the Analysis Expenses card and from Gastos. It owns how the form is left (the form itself knows
  * nothing of the router):
  *
  * - "Cerrar" and a save leave through `useBackOr(EXPENSES)`: by history to whichever screen
