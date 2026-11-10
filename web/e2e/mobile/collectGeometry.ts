@@ -238,6 +238,9 @@ export function collectGeometry({
     else if (/negocio/.test(name) && /^(nombre|negocio)/.test(name)) expected = 'organization'
     if (own === null || own === '' || (expected !== null && own !== expected)) add('autocomplete', element)
 
+    // Money takes `numeric` with a Money format of 0 decimals and `decimal` with decimals. The pinned
+    // fixture business is "$"/0 decimals, so the check expects `numeric`; the decimals case is
+    // guarded by the Testing Library test of MoneyInput.
     const mode = element.getAttribute('inputmode')
     const grams = /gramos|\(g\)/.test(name)
     const pesos = !grams && /precio|monto|importe|costo|pesos|\$|env[ií]o|cobr/.test(name)

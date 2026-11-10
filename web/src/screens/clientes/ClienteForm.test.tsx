@@ -11,11 +11,11 @@ import { readFeedback } from '../../components/feedback'
 import Notice from '../../components/Notice'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { stubViewport } from '../../test-viewport'
-import { StrictMode } from 'react'
+import { type ReactElement, type ReactNode, StrictMode } from 'react'
 import { inAppState } from '../../components/inAppState'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, render, screen, waitFor, within } from '@testing-library/react'
+import { act, render as renderBare, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Link, Outlet, RouterProvider, useLocation } from 'react-router'
 import FlashProvider from '../../flash/FlashProvider'
@@ -23,6 +23,16 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { queryClient, setCurrentPath, setNavigate } from '../../queryClient'
 import ClienteForm from './ClienteForm'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
+
+function Business({ children }: { children: ReactNode }) {
+  return <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>{children}</MoneyFormatProvider>
+}
+
+/** Rendered for a "$"/0-decimals business, the one the strings below were written for. */
+function render(ui: ReactElement) {
+  return renderBare(ui, { wrapper: Business })
+}
 
 
 function ListStub() {

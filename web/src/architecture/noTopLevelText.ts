@@ -13,6 +13,15 @@
  *   or element access on a binding imported from a locale JSON file or `i18n/englishStatic`.
  *   Passing such a binding on by reference is not a read.
  *
+ * Two more rules keep the business's Money format out of module scope (it is known only once
+ * `me` has arrived, and differs per business):
+ *
+ * - `money-at-module-scope`: a call at module scope to `moneyFormatter`, `tooManyDecimalsMessage`,
+ *   one of the old whole-peso formatters, or a writer taken off an identifier named `money`
+ *   (`money.money(...)`, `.attached`, `.signed`, `.magnitude`, `.keepTogether`).
+ * - `money-constant`: in `src/format/` or `src/api/`, an exported module-level constant whose name
+ *   holds `DECIMALS` or `SYMBOL`, the shape of the old `MONEY_DECIMALS`.
+ *
  * Inside a function is the body of a function declaration or expression, an arrow, a method, an
  * accessor (object getters and setters too) or a constructor. Module scope is everything else:
  * class field initialisers, `static {}` blocks, default parameters, decorators, the arguments of
@@ -23,7 +32,12 @@
 
 import ts from 'typescript'
 
-export type TopLevelRule = 't-outside-function' | 'locale-import' | 'resource-read'
+export type TopLevelRule =
+  | 't-outside-function'
+  | 'locale-import'
+  | 'resource-read'
+  | 'money-at-module-scope'
+  | 'money-constant'
 
 export interface TopLevelFinding {
   line: number
@@ -50,6 +64,16 @@ const SLASH = '\u002F'
 const I18N_OBJECTS: readonly string[] = ['i18n', 'i18next']
 const RESOURCE_CALLS: readonly string[] = ['getResource', 'getResourceBundle', 'getFixedT', 'resolveKey']
 const RESOURCE_MEMBERS: readonly string[] = ['store', 'services']
+const MONEY_CALLS: readonly string[] = [
+  'moneyFormatter',
+  'tooManyDecimalsMessage',
+  'formatMoney',
+  'formatSignedMoney',
+  'formatMoneyMagnitude',
+]
+const MONEY_WRITERS: readonly string[] = ['money', 'attached', 'signed', 'magnitude', 'keepTogether']
+const MONEY_CONSTANT_NAME = /DECIMALS|SYMBOL/
+const MONEY_CONSTANT_DIRS: readonly string[] = ['src/format/', 'src/api/']
 
 /** `path` normalised to start at `src/`, with `/` separators. */
 function fromSrc(path: string): string {
@@ -142,6 +166,7 @@ export function findTopLevelText(path: string, source: string): TopLevelFinding[
   const file = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true, kind)
   const mayImportLocales = isInsideI18n(path)
   const bindings = importedBindings(file)
+  const holdsMoneyConstant = MONEY_CONSTANT_DIRS.some((dir) => fromSrc(path).startsWith(dir))
   const seen = new Set<string>()
   const found: TopLevelFinding[] = []
   const add = (node: ts.Node, rule: TopLevelRule): void => {
@@ -212,10 +237,23 @@ export function findTopLevelText(path: string, source: string): TopLevelFinding[
         const callee = node.expression
         const calleeName = ts.isIdentifier(callee) ? callee.text : ts.isPropertyAccessExpression(callee) ? callee.name.text : undefined
         if (calleeName !== undefined && RESOURCE_CALLS.includes(calleeName)) add(node, 'resource-read')
+        const isMoneyWriter =
+          ts.isPropertyAccessExpression(callee) && isNamed(callee.expression, ['money']) && MONEY_WRITERS.includes(callee.name.text)
+        if ((ts.isIdentifier(callee) && MONEY_CALLS.includes(callee.text)) || isMoneyWriter) {
+          add(node, 'money-at-module-scope')
+        }
         if (isNamed(callee, ['t']) || isI18nT(callee)) {
           add(node, 't-outside-function')
           for (const argument of node.arguments) visit(argument, inFunction)
           return
+        }
+      }
+    }
+    if (!inFunction && ts.isVariableStatement(node) && holdsMoneyConstant) {
+      const exported = node.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword) === true
+      for (const declaration of node.declarationList.declarations) {
+        if (exported && ts.isIdentifier(declaration.name) && MONEY_CONSTANT_NAME.test(declaration.name.text)) {
+          add(declaration, 'money-constant')
         }
       }
     }

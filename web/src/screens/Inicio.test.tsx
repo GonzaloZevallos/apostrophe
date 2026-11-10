@@ -31,6 +31,7 @@ import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import Inicio, { PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
 import { baselineText } from '../i18n/testing'
 import { SIN_CONEXION_MENSAJE } from '../copy/common'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
 const NOBODY_OWES = baselineText('inicio.ts:NOBODY_OWES')
 
@@ -46,10 +47,10 @@ function jsonResponse(status: number, body: unknown): Response {
 /** Every call the stub saw on the two reads Home no longer makes, as "METHOD url". */
 const forbiddenCalls: string[] = []
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 function Provide() {
-  return <Outlet context={ME} />
+  return <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
 }
 
 function SettingsLanding() {

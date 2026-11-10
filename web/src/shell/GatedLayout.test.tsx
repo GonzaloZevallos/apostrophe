@@ -24,6 +24,7 @@ import { missingKeys } from '../i18n/missingKeys'
 import { loadLocale, type LocaleBundle } from '../i18n/resources'
 import common from '../copy/locales/en/common.json'
 import GatedLayout from './GatedLayout'
+import { useMoney } from '../format/moneyContext'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -78,13 +79,50 @@ test('a successful "me" renders what is nested under the gated layout', async ()
   vi.stubGlobal(
     'fetch',
     vi.fn().mockResolvedValue(
-      jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }),
+      jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }),
     ),
   )
 
   renderGated()
 
   expect(await screen.findByText('contenido del negocio')).toBeInTheDocument()
+})
+
+function Price() {
+  const money = useMoney()
+  return <p>{`${money.money(11000.5)} / ${money.attached(11000)}`}</p>
+}
+
+test.each([
+  [{ symbol: '$', decimals: 0 }, '$ 11.001 / $11.000'],
+  [{ symbol: 'US$', decimals: 2 }, 'US$ 11.000,50 / US$11.000,00'],
+])('a screen under the gated layout writes amounts in the business money format %o', async (money, text) => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue(
+      jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money }),
+    ),
+  )
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[HOME]}>
+        <Routes>
+          <Route element={<GatedLayout />}>
+            <Route index element={<Price />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+
+  expect(await screen.findByText(text)).toBeInTheDocument()
+})
+
+test('useMoney outside the gated layout refuses instead of guessing a format', () => {
+  const quiet = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+  expect(() => render(<Price />)).toThrow('useMoney() needs a MoneyFormatProvider above it')
+  quiet.mockRestore()
 })
 
 // The language of the business: what `GatedLayout` waits for before it mounts the outlet.
@@ -130,7 +168,7 @@ function answerMe(language: string): void {
     'fetch',
     vi.fn().mockImplementation(() =>
       Promise.resolve(
-        jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: language }),
+        jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: language, money: { symbol: '$', decimals: 0 } }),
       ),
     ),
   )
@@ -255,7 +293,7 @@ test('after "Sign out" nothing asks /auth/me again on the way to Entrar', async 
   const fetchMock = vi.fn().mockImplementation((url: string) =>
     Promise.resolve(
       String(url).endsWith('/auth/me')
-        ? jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en' })
+        ? jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en', money: { symbol: '$', decimals: 0 } })
         : new Response(null, { status: 204 }),
     ),
   )

@@ -1,0 +1,3 @@
+// expect: money-at-module-scope@3
+import { useMoney } from '../format/moneyContext'
+export const ZERO = money.money(0)

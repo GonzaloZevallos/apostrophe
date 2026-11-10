@@ -1,0 +1,3 @@
+// expect: none
+export const NAME_DECIMALS = 2
+const SYMBOL_ORDER = 1

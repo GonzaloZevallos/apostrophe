@@ -202,7 +202,7 @@ _Avoid_: cash flow, balance, profit
 ## Telegram
 
 **Catalog**:
-El texto que ofrece cada Product sin archivar y visible, con Stock mayor que cero y un Current price hoy: su emoji, nombre, Indica share, Aroma y precios, entre las dos partes del Catalog header and footer del Business. Conserva sus marcadores **bold** y su propio formato de dinero ($11.000). _In the app_: Catalog.
+El texto que ofrece cada Product sin archivar y visible, con Stock mayor que cero y un Current price hoy: su emoji, nombre, Indica share, Aroma y precios, entre las dos partes del Catalog header and footer del Business. Conserva sus marcadores **bold** y escribe su dinero con el símbolo del Money format del Business pegado a la cifra y exactamente sus decimales ($11.000). _In the app_: Catalog.
 _Avoid_: menu, price list, flyer
 _In the app_: Catalog
 
@@ -414,7 +414,7 @@ Cuáles de Bulk price y Customer types usa un Business: dos interruptores indepe
 _Avoid_: price config, pricing mode, plan, tariff settings
 
 **Money format**:
-El símbolo de la moneda y los decimales con que un Business muestra su dinero. Todo Business tiene por ahora "$" y 0 decimales. Se guarda en una fila de money_format por Business, junto con la Money scale. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md.
+El símbolo de la moneda y los decimales con que un Business muestra y acepta su dinero, leídos por la app, la vista previa de precios, el Catalog y el texto del bot, nunca fijados en el código. La app escribe el símbolo, un espacio y la cifra ($ 11.000), y el Catalog el símbolo pegado a la cifra ($11.000), siempre con exactamente sus decimales y en formato argentino. Todo Business tiene por ahora "$" y 0 decimales, en una fila de money_format por Business junto con la Money scale (ADR-0058).
 _Avoid_: currency settings
 
 **Money scale**:

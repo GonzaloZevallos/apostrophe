@@ -153,7 +153,8 @@ doc may record a deliberate exception; without one, this standard wins over an a
      an `autocomplete` value on every visible input: `username` on the login email,
      `organization` on the business name, `current-password`, `new-password`, and `off` on a
      customer's name and phone (`autocomplete`); `inputmode="decimal"` on grams and
-     `inputmode="numeric"` on pesos (`inputmode`); `type="email"` and `type="tel"`
+     on money when the Money format has decimals, `inputmode="numeric"` on money when it has
+     0 decimals (`inputmode`); `type="email"` and `type="tel"`
      (`input-type`).
    - Review: `enterkeyhint`, except on Nueva venta's lines, which sales.md's tests check.
      The keyboard is by outcome only: the focused field stays in view and the submit is

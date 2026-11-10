@@ -54,3 +54,17 @@ test('the copy names the decimals the business allows when it allows any', () =>
   expect(moneyTooManyDecimals(0)).toBe('Use whole amounts only.')
   expect(moneyTooManyDecimals(2)).toBe('Use up to 2 decimals.')
 })
+
+test('a business with 2 decimals sees the up-to-2-decimals copy under the field', async () => {
+  stubViewport('phone')
+  renderExpenses([EXPENSE_NEW], api(), { ...ME, money: { symbol: 'US$', decimals: 2 } })
+
+  await chooseCategory('Packaging')
+  await userEvent.type(screen.getByLabelText('Amount'), '1000')
+  await userEvent.type(screen.getByLabelText('Details'), 'Cinta')
+  await userEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
+
+  const alert = await screen.findByRole('alert')
+  expect(alert).toHaveTextContent('Use up to 2 decimals.')
+  expect(alert).not.toHaveTextContent('Use whole amounts only.')
+})

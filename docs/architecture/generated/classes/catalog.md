@@ -170,6 +170,9 @@ classDiagram
   class CatalogLanguage {
     language_of(business_id: int) Language
   }
+  class CatalogMoneyFormat {
+    current() MoneyFormat
+  }
   class CatalogPricingSettings {
     current() PricingSettings
   }

@@ -1959,6 +1959,9 @@
             "title": "Email",
             "type": "string"
           },
+          "money": {
+            "$ref": "#/components/schemas/MoneyFormatOut"
+          },
           "shown_language": {
             "title": "Shown Language",
             "type": "string"
@@ -1973,9 +1976,28 @@
           "email",
           "business_name",
           "today",
-          "shown_language"
+          "shown_language",
+          "money"
         ],
         "title": "MeOut",
+        "type": "object"
+      },
+      "MoneyFormatOut": {
+        "properties": {
+          "decimals": {
+            "title": "Decimals",
+            "type": "integer"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "decimals"
+        ],
+        "title": "MoneyFormatOut",
         "type": "object"
       },
       "MonthRowOut": {

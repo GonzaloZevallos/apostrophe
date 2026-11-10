@@ -27,8 +27,9 @@ import {
 } from '../routes'
 import Shell from './Shell'
 import { BackParentContext, useBackParent } from './useBackParent'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 interface Detail {
   id: number
@@ -111,7 +112,7 @@ function renderAt(entries: string[]) {
   const router = createMemoryRouter(
     [
       {
-        element: <Outlet context={ME} />,
+        element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>,
         children: [{ element: <Shell />, children: SCREENS.map((entry) => leaf(entry.path, entry.id)) }],
       },
     ],
@@ -224,7 +225,7 @@ test("a declaration for another record or another screen is ignored, even if it 
   const router = createMemoryRouter(
     [
       {
-        element: <Outlet context={ME} />,
+        element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>,
         children: [
           {
             element: <Shell />,
