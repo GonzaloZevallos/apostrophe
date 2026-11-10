@@ -21,4 +21,5 @@ end
 src_format_MoneyFormatProvider_tsx-->src_format_moneyContext_ts
 src_format_MoneyFormatProvider_tsx-->src_format_money_ts
 src_format_moneyContext_ts-->src_format_money_ts
+src_format_parse_ts-->src_format_money_ts
 ```
