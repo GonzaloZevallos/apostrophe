@@ -41,7 +41,7 @@ import { parseMoney } from '../../format/parse'
 import { EXPENSES_TEXT } from '../../copy/expenses'
 import { COMMON_TEXT } from '../../copy/common'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
-import { TOO_MANY_DECIMALS_CODE, TOO_MANY_DECIMALS_MESSAGE } from '../../api/amountRefusal'
+import { TOO_MANY_DECIMALS_CODE, tooManyDecimalsMessage } from '../../api/amountRefusal'
 
 export const CATEGORY_GONE = EXPENSES_TEXT.categoryGone
 export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
@@ -199,7 +199,7 @@ export default function ExpenseForm({
         invalidateResource(queryClient, 'expenses')
         onGone?.()
       } else if (caught instanceof ApiError && caught.code === TOO_MANY_DECIMALS_CODE) {
-        setAmountError(TOO_MANY_DECIMALS_MESSAGE)
+        setAmountError(tooManyDecimalsMessage())
       } else if (isRefusal(caught)) {
         setFormError(GENERIC_REFUSAL)
       } else {

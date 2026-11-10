@@ -5,7 +5,7 @@
  * "Mínimo en gramos". Kept apart from `PriceFields` so that file exports only components.
  */
 
-import { TOO_MANY_DECIMALS_MESSAGE } from '../../api/amountRefusal'
+import { tooManyDecimalsMessage } from '../../api/amountRefusal'
 import type { PricingSettings } from '../../api/pricingSettings'
 import { VARIETY_REFUSAL_TEXT, type RefusalCode } from '../../api/refusals'
 import { parseGrams, parseMoney } from '../../format/parse'
@@ -30,7 +30,7 @@ const FIELD_OF_CODE: Partial<Record<RefusalCode, { field: PriceField; message: R
   'variety.duplicate_effective_date': { field: 'effectiveFrom', message: DUPLICATE_DATE_MESSAGE },
   'variety.price_entry_invalid': { field: 'listPrice', message: PRICE_INVALID_MESSAGE },
   'grams.invalid': { field: 'bulkMinimum', message: GRAMS_INVALID },
-  'money.too_many_decimals': { field: 'listPrice', message: TOO_MANY_DECIMALS_MESSAGE },
+  'money.too_many_decimals': { field: 'listPrice', get message() { return tooManyDecimalsMessage() } },
   'variety.vip_price_not_below_list': {
     field: 'vipPrice',
     message: VARIETY_REFUSAL_TEXT['variety.vip_price_not_below_list'] ?? PRICE_INVALID_MESSAGE,
