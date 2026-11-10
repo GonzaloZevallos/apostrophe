@@ -36,7 +36,7 @@ def test_remove_raises_category_in_use_when_an_expense_is_filed_under_it(
         session.add(
             ExpenseRow(
                 business_id=BUSINESS_ID,
-                category_id=category.id,
+                expense_category_id=category.id,
                 spent_on=date(2026, 10, 1),
                 amount=100,
                 detail="una compra",

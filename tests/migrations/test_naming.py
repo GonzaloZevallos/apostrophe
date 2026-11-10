@@ -2,8 +2,8 @@
 follows the database naming rules, checked against a real SQLite schema (never an
 object's `.name` in the metadata).
 
-(a) checks the migrated schema's breaks against `ALLOWLIST`, the exact, literal set of
-breaks the rules find today: a new break and a stale allowlist entry both fail. (b)
+(a) checks the migrated schema's breaks against `ALLOWLIST`, which is empty since #75
+renamed the last two: any break fails, and a break is fixed in the schema, never listed. (b)
 checks that the migrated schema and the one `app.tables.metadata.create_all` builds
 agree on every key and its name. (c) is the synthetic suite: a small `MetaData` that
 breaks one rule at a time, caught by `breaks`, plus one that stays clean.
@@ -35,14 +35,9 @@ from app.migrations.runner import upgrade_to_head
 from app.tables import metadata as declared_metadata
 from tests.migrations.naming import Break, Schema, breaks, reflect
 
-# The exact set of breaks the first run found on the migrated schema. #75 renames each
-# of these; until then, a new break and a stale entry here both fail this test.
-ALLOWLIST: frozenset[Break] = frozenset(
-    {
-        ("expense", "foreign_key", ("business_id", "category_id"), "fk_name"),
-        ("reset_link", "foreign_key", ("user_id",), "fk_name"),
-    }
-)
+# The exact set of breaks the rules find on the migrated schema: none. A new break is
+# fixed, never listed; a test that finds one fails.
+ALLOWLIST: frozenset[Break] = frozenset()
 
 
 def _create_and_reflect(metadata: MetaData) -> Schema:

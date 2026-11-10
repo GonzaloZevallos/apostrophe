@@ -29,20 +29,20 @@ class ExpenseRow(Base):
     __tablename__ = "expense"
     # The composite FK is the backstop for `ExpenseCategory.check_removable`: no
     # expense can ever be left pointing at a category removed out from under it, and a
-    # category_id of another business can never be attached to this business's expense.
+    # category of another business can never be attached to this business's expense.
     __table_args__ = (
         ForeignKeyConstraint(
-            ["business_id", "category_id"],
+            ["business_id", "expense_category_id"],
             ["expense_category.business_id", "expense_category.id"],
             ondelete="RESTRICT",
         ),
-        Index("ix_expense_business_id_category_id", "business_id", "category_id"),
-        Index("ix_expense_business_id_spent_on", "business_id", "spent_on"),
+        Index(None, "business_id", "expense_category_id"),
+        Index(None, "business_id", "spent_on"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
-    category_id: Mapped[int]
+    expense_category_id: Mapped[int]
     spent_on: Mapped[date] = mapped_column(Date)
     amount: Mapped[int] = money_column()
     detail: Mapped[str] = mapped_column(String(DETAIL_MAX_LENGTH))

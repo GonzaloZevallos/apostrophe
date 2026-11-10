@@ -20,20 +20,18 @@ class SqlExpensesLedger:
             select(
                 ExpenseRow.spent_on,
                 ExpenseRow.amount,
-                ExpenseRow.category_id,
+                ExpenseRow.expense_category_id,
                 ExpenseCategoryRow.name,
                 ExpenseCategoryRow.name_key,
             )
             .join(
                 ExpenseCategoryRow,
-                (ExpenseCategoryRow.id == ExpenseRow.category_id)
+                (ExpenseCategoryRow.id == ExpenseRow.expense_category_id)
                 & (ExpenseCategoryRow.business_id == self._business_id),
             )
             .where(ExpenseRow.business_id == self._business_id)
         )
         return [
-            ExpenseRecord(
-                day=day, amount=amount, category_id=category_id, name=name, name_key=name_key
-            )
+            ExpenseRecord(day, amount, category_id, name, name_key)
             for day, amount, category_id, name, name_key in self._session.execute(statement).all()
         ]
