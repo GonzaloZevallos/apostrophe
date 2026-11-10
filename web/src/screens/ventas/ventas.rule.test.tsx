@@ -102,9 +102,11 @@ function renderDetalle(state?: unknown) {
   })
   return render(
     <QueryClientProvider client={client()}>
-      <SheetRouterProvider router={router}>
-        <RouterProvider router={router} />
-      </SheetRouterProvider>
+      <MoneyFormatProvider format={ME.money}>
+        <SheetRouterProvider router={router}>
+          <RouterProvider router={router} />
+        </SheetRouterProvider>
+      </MoneyFormatProvider>
     </QueryClientProvider>,
   )
 }

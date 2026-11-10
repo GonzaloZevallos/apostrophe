@@ -75,6 +75,7 @@ function renderClientes() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
+<MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
       <MemoryRouter initialEntries={[CUSTOMERS]}>
         <Routes>
           <Route element={<ClientesLayout />}>
@@ -82,7 +83,8 @@ function renderClientes() {
           </Route>
         </Routes>
       </MemoryRouter>
-    </QueryClientProvider>,
+    </MoneyFormatProvider>
+</QueryClientProvider>,
   )
 }
 
@@ -582,7 +584,9 @@ function renderTwoPanes(entries: InitialEntry[]) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
+        <RouterProvider router={router} />
+      </MoneyFormatProvider>
     </QueryClientProvider>,
   )
   return router
@@ -658,14 +662,16 @@ test('tapping "New customer" opens the customer form', async () => {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[CUSTOMERS]}>
-        <Routes>
-          <Route element={<ClientesLayout />}>
-            <Route path={CUSTOMERS} element={<Clientes />} />
-          </Route>
-          <Route path={CUSTOMER_NEW} element={<span>customer form</span>} />
-        </Routes>
-      </MemoryRouter>
+      <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
+        <MemoryRouter initialEntries={[CUSTOMERS]}>
+          <Routes>
+            <Route element={<ClientesLayout />}>
+              <Route path={CUSTOMERS} element={<Clientes />} />
+            </Route>
+            <Route path={CUSTOMER_NEW} element={<span>customer form</span>} />
+          </Routes>
+        </MemoryRouter>
+      </MoneyFormatProvider>
     </QueryClientProvider>,
   )
 
