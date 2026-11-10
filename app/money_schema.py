@@ -101,7 +101,7 @@ MoneyOut = Annotated[
     PlainSerializer(_on_the_wire, return_type=int | float, when_used="json"),
     # Every amount answered until the opening flip is whole, so the contract names one JSON
     # type; a non-whole amount (scale 2) moves this and the nullable declarations to number.
-    WithJsonSchema({"type": "integer"}, mode="serialization"),
+    WithJsonSchema({"anyOf": [{"type": "integer"}, {"type": "number"}]}, mode="serialization"),
 ]
 """A response's money field: the value in currency units, as a JSON integer when whole
 (`11000`) and otherwise an exact JSON number (`11000.5`), never a string."""
