@@ -167,6 +167,12 @@ describe('the retired More scan', () => {
     expect(findRetired(files)).toEqual([])
   })
 
+  test('its own file is the only one the scan leaves out', () => {
+    const all = ROOTS.flatMap(walk)
+    expect(all.filter((file) => file === SELF)).toEqual([SELF])
+    expect(all.filter((file) => file !== SELF).length).toBe(all.length - 1)
+  })
+
   describe.each(RULES.map((rule) => [rule.name, rule] as const))('%s', (_name, rule) => {
     const type = rule.types[0] as FileType
     const path = `x.${type}`
