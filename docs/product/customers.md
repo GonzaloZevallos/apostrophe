@@ -149,7 +149,7 @@ Criterios de éxito:
   - Los resultados se ordenan por nombre.
   - No hay paginación, ni largo mínimo de consulta, ni filtro VIP ni por tipo, ni filtro para los Customers sin número.
 - **Almacenamiento**: la columna del teléfono admite nulos; la unicidad dentro de un Business se aplica solo a los números guardados. Los Customers que existían antes de que el número fuera opcional conservaron sus números. La columna del canal se elimina con una migración en la cadena única de Alembic; todas las demás columnas y el nombre, el número, el VIP, las Sales, los Payments y el Balance de cada Customer quedan exactamente como estaban.
-- **Migración del Phone country** (revisión `0023`, GH-409): agrega la columna nula `business.default_phone_country` (dos letras, sin valor por defecto) y la completa con `AR` para cada Business existente. Nunca cambia el valor de una columna que ya existía, ningún número guardado incluido; el comparador M3 compartido de `tests/migrations/` lo prueba.
+- **Migración del Phone country** (revisión `0029`, con `down_revision` `0028`, GH-409): agrega la columna nula `business.default_phone_country` (dos letras, sin valor por defecto) y la completa con `AR` para cada Business existente. Nunca cambia el valor de una columna que ya existía, ningún número guardado incluido; el comparador M3 compartido de `tests/migrations/` lo prueba.
 - **Migración de los Customer types** (revisión `0020`, ADR-0059): agrega la tabla `customer_type` y la columna nula `customer.customer_type_id`, y nunca cambia el valor de una columna que ya existía.
   - Cada Business existente recibe un tipo "VIP" con el ícono `star`: su VIP type. Lo recibe incluso sin ningún VIP customer, así puede seguir dando el VIP price.
   - Solo los Customers con la marca VIP reciben ese tipo; ningún otro Customer recibe tipo.
@@ -189,6 +189,7 @@ Criterios de éxito:
   - Sus campos son "Name" (el único marcado como obligatorio), el teléfono (opcional, y se puede borrar al editar) y "Customer type". El antiguo interruptor VIP ya no está. No hay campo de canal.
   - **El teléfono** acepta el número tal como lo dice el vendedor en el país de su Business; después de guardar se muestra en su forma internacional. El formulario no agrega ningún selector de país: el país es el del Business.
   - **El ejemplo del teléfono** (su placeholder) sigue al Phone country, un texto del Copy module por país: AR `11 2345-6789`, UY `099 123 456`, CL `9 1234 5678`, PY `0981 123 456`, BR `(11) 91234-5678`, MX `55 1234 5678`, ES `612 34 56 78`, US `(212) 555-0123`; sin país, "+ and country code, then the number". Mientras el Business no cargó, el campo no muestra ningún ejemplo, nunca uno equivocado.
+  - Al editar, el teléfono muestra el número internacional guardado tal cual (p. ej. `+5491155550101`), así que guardar sin tocarlo lo manda exactamente como está.
   - El creador de "Pick a customer" dentro de New sale (`NuevaVentaCliente`) usa los mismos campos de nombre y teléfono, sin "Customer type"; el Customer creado ahí no tiene tipo, y ese Customer se usa para la Sale.
   - **"Customer type"** se muestra solo mientras Customer types está activado. Desde la parte 6 de GH-581 es un Selector opcional (selector.md) sobre los tipos del Business:
     - cada opción muestra el nombre del tipo con su glifo (`glyphOf(type.icon)`) delante;
@@ -208,6 +209,10 @@ Criterios de éxito:
 - **Diseño**: Customers, `ClienteFicha`, `Payment` y `NuevaVentaCliente` coinciden con `docs/product/design-system/pantallas/` en celular y computadora, en los dos temas. El campo "Customer type" se muestra cerrado como Selector, diciendo "No type", en el bloque "Nuevo cliente" de `ClienteNuevo`, que dibuja ClienteNuevo, ClienteNuevoCompu, ClienteEditar y ClienteEditarCompu. Una diferencia de texto respecto de los docs se lista en el PR. Ningún estado se dice solo con color.
 - **Respuesta de la app**: sin red muestra "No connection", un error del servidor el reintento genérico, y un Customer o un Customer type que ya no existe sigue la regla "That is gone." de accounts.md.
 
+![Alta de un Customer en el teléfono](../assets/screens/ClienteNuevo.webp)
+
+![Edición de un Customer en el teléfono](../assets/screens/ClienteEditar.webp)
+
 ### En pantalla: Settings → Business → Phone country
 
 - **Lugar**: un segundo campo "Phone country" en el formulario del grupo Business de Settings (`/settings/business`, la pantalla `ConfiguracionNegocio` del registro), debajo de "Business name". No se agrega ninguna fila nueva a Settings. Cualquier User del Business lo cambia. En el celular el formulario es una **Sheet**; en la computadora conserva su marco, sin pulido propio.
@@ -217,6 +222,8 @@ Criterios de éxito:
 - **Si falla**: el formulario sigue abierto con la elección conservada y un error bajo el control; sin red, "No connection". El nombre y el país son dos pedidos: si el nombre se guarda y el país no, se muestra el error del país y el vendedor vuelve a guardar.
 - Cambiarlo no toca ningún Customer.
 - Todo texto vive en el **Copy module** (la etiqueta, "No country", los nombres de los ocho países por código ISO y la línea de ayuda), `en-XA` se regenera, y ningún valor por defecto nuevo lleva una palabra de flor; los nombres de país son texto del producto, no datos del vendedor.
+
+![Settings → Business con el Phone country, en el teléfono](../assets/screens/ConfiguracionNegocio.webp)
 
 ### En pantalla: Settings → Prices → Customer types
 
