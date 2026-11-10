@@ -158,12 +158,12 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.goto(legacyFor(ANALYSIS))
   await expectPath(page, ANALYSIS)
   await expect(
-    page.getByRole('button', { name: 'Previous month' }),
+    page.getByText('There is nothing to analyze yet.'),
   ).toBeVisible()
   await page.reload()
   await expectPath(page, ANALYSIS)
   await expect(
-    page.getByRole('button', { name: 'Previous month' }),
+    page.getByText('There is nothing to analyze yet.'),
   ).toBeVisible()
 
   // Add and remove an expense category. "Growing supplies", "Packaging",

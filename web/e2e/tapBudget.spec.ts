@@ -68,7 +68,7 @@ async function openExpenseForm(page: Page, computer: boolean): Promise<number> {
     // The phone: Home's segment leads to Analysis, whose Expenses card holds "Add expense".
     if (here !== HOME) await viaTab(page, counter, false, 'Home')
     await tap(counter, analysisOption(page))
-    await tap(counter, page.getByRole('group', { name: 'Expenses' }).getByRole('link', { name: 'Add expense' }))
+    await tap(counter, page.getByRole('link', { name: 'Add expense' }))
   }
   await expectPath(page, EXPENSE_NEW)
   await expect(page.getByRole('button', { name: 'Close' })).toBeVisible()
@@ -117,13 +117,12 @@ test('a seller records an expense from the Expenses card and Close goes back to 
 
   await signUpNewBusiness(page, { businessName: `Flores de la Tarjeta ${uniqueTag()}`, email: `duena-tarjeta-${uniqueTag()}@example.com` })
 
-  const card = page.getByRole('group', { name: 'Expenses' })
   await analysisOption(page).click()
-  await card.getByRole('link', { name: 'Add expense' }).click()
+  await page.getByRole('link', { name: 'Add expense' }).click()
   await page.getByRole('button', { name: 'Close' }).click()
   await expectPath(page, ANALYSIS)
 
-  await card.getByRole('link', { name: 'Add expense' }).click()
+  await page.getByRole('link', { name: 'Add expense' }).click()
   await page.getByRole('combobox', { name: 'Category' }).selectOption({ label: 'Packaging' })
   await page.getByLabel('Amount').fill('3200')
   await page.getByLabel('Details').fill('Cajas de cartón')
@@ -132,7 +131,7 @@ test('a seller records an expense from the Expenses card and Close goes back to 
     await expectPath(page, ANALYSIS)
   })
 
-  await card.getByRole('link', { name: 'See the expenses' }).click()
+  await page.getByRole('link', { name: 'See the expenses' }).click()
   await expectPath(page, EXPENSES)
   await expect(page.getByText('Cajas de cartón')).toBeVisible()
   expect(consoleMessages).toEqual([])

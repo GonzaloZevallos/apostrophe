@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
 /**
  * The catalog task's own end-to-end run (plan, "Testing": the Playwright main flow
- * Más → Catálogo → edit → Copiar). A seller adds a variety with a price and stock,
+ * Productos → Catálogo → edit → Copiar). A seller adds a variety with a price and stock,
  * opens Catálogo, edits that variety's attributes and, in Configuración, the
  * business's header and footer, then copies and shares the result — all through the built front, against the real
  * backend (PRD, M1: "no `curl` at any point"; "No curl" metric: "the clipboard

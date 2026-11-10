@@ -29,7 +29,7 @@ export async function openAnalysis(page: Page): Promise<void> {
   await onPhone(page, async () => {
     await analysisOption(page).click()
     await expectPath(page, ANALYSIS)
-    await expect(page.getByRole('group', { name: 'Expenses' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'See the expenses' })).toBeVisible()
   })
 }
 
@@ -37,7 +37,7 @@ export async function openAnalysis(page: Page): Promise<void> {
 export async function openGastos(page: Page): Promise<void> {
   await onPhone(page, async () => {
     await analysisOption(page).click()
-    await page.getByRole('group', { name: 'Expenses' }).getByRole('link', { name: 'See the expenses' }).click()
+    await page.getByRole('link', { name: 'See the expenses' }).click()
     await expectPath(page, EXPENSES)
     await expect(page.getByRole('link', { name: 'Add expense' })).toBeVisible()
   })

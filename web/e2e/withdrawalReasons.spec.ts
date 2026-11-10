@@ -42,7 +42,7 @@ test('a seller adds a withdrawal reason, records a withdrawal with it and reads 
 
   // Settings → Business → Withdrawal reasons: add "Gifts".
   await page.goto(HOME)
-  await page.getByRole('link', { name: /^Settings for / }).click()
+  await page.getByRole('link', { name: /^Settings for / }).or(page.getByRole('link', { name: 'Settings', exact: true })).click()
   await page.getByRole('link', { name: 'Business', exact: true }).click()
   await page.getByRole('link', { name: 'Withdrawal reasons', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Add reason' })).toBeVisible()

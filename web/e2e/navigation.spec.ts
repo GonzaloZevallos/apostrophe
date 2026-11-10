@@ -182,12 +182,11 @@ test.describe.serial('navigation', () => {
     await expectPath(page, ANALYSIS)
 
     // Expenses and Add expense: the card on Analysis.
-    const card = page.getByRole('group', { name: 'Expenses' })
-    await card.getByRole('link', { name: 'See the expenses' }).click()
+    await page.getByRole('link', { name: 'See the expenses' }).click()
     await expectPath(page, EXPENSES)
     await page.goBack()
     await expectPath(page, ANALYSIS)
-    await card.getByRole('link', { name: 'Add expense' }).click()
+    await page.getByRole('link', { name: 'Add expense' }).click()
     await expectPath(page, EXPENSE_NEW)
 
     // Take from stock: Products, next to the entry action.
