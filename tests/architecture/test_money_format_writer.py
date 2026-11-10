@@ -24,6 +24,9 @@ STATEMENT = re.compile(r"\b(update|insert\s+(or\s+\w+\s+)?into)\s+money_format\b
 
 
 def _is_money_format(node: ast.expr) -> bool:
+    if isinstance(node, ast.Attribute):
+        # `MoneyFormatRow.__table__`, the mapped table spelled through its class.
+        return _is_money_format(node.value)
     return (isinstance(node, ast.Name) and node.id == "MoneyFormatRow") or (
         isinstance(node, ast.Constant) and node.value == "money_format"
     )
@@ -60,6 +63,9 @@ def test_the_checker_flags_each_write_it_bans() -> None:
     ]
     assert findings_in("s.execute(sa.insert('money_format'))\n") == [(1, "insert(money_format)")]
     assert findings_in("s.execute(delete(MoneyFormatRow))\n") == [(1, "delete(money_format)")]
+    assert findings_in("s.execute(update(MoneyFormatRow.__table__))\n") == [
+        (1, "update(money_format)")
+    ]
     assert findings_in("text('UPDATE money_format SET scale = 2')\n") == [
         (1, "a money_format statement")
     ]
