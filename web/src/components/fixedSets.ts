@@ -109,6 +109,51 @@ export const LANGUAGES = fixedSet(
   SHIPPED_LANGUAGE_TAGS.map((tag) => ({ value: tag, label: () => languageName(tag) })),
 )
 
+/** A screen that draws a declared set as chips itself, not through SegmentedChoice or Pestanas. */
+export interface RawChipSite {
+  /** The path from `web/`. */
+  readonly file: string
+  /** The set the site maps to draw its chips. */
+  readonly set: keyof typeof FIXED_SETS
+  /** Why the site draws the chips itself. */
+  readonly reason: string
+}
+
+function rawSites(sites: readonly RawChipSite[]): readonly RawChipSite[] {
+  for (const site of sites) {
+    if (site.reason.trim() === '') throw new Error(`A raw chip site needs a reason: ${site.file}`)
+  }
+  return sites
+}
+
+/**
+ * The only screens besides SegmentedChoice and Pestanas that may carry a chip class, a radio or
+ * tab role or a pressed state (`architecture/choiceControls.ts` reads this list). In each, the
+ * markup maps the registered set and nothing else.
+ */
+export const RAW_CHIP_SITES = rawSites([
+  {
+    file: 'src/screens/settings/AppearanceGroup.tsx',
+    set: 'THEME_CHOICES',
+    reason: 'the Theme choice draws its own radio chips with the theme swatch classes',
+  },
+  {
+    file: 'src/screens/settings/BusinessGroup.tsx',
+    set: 'LANGUAGES',
+    reason: 'the language control narrows the set by the server list and disables the saving state itself',
+  },
+  {
+    file: 'src/screens/settings/CustomerTypeForm.tsx',
+    set: 'CUSTOMER_TYPE_ICON_SET',
+    reason: 'the icon grid draws each option as an icon button with its own accessible name',
+  },
+  {
+    file: 'src/screens/StockEntryForm.tsx',
+    set: 'STOCK_ENTRY_ORIGINS',
+    reason: 'the origin pills and the fixed Initial stock pill share the form origin layout',
+  },
+])
+
 /** Every declared set and the reason it is fixed, readable in one place. */
 export const FIXED_SETS = {
   HOME_PERIODS: PERIODS_REASON,

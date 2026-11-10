@@ -14,6 +14,7 @@ import {
   FIXED_SETS,
   HOME_PERIODS,
   PAYMENT_STATES,
+  RAW_CHIP_SITES,
   SALES_PERIODS,
   STOCK_ENTRY_ORIGINS,
   THEME_CHOICES,
@@ -64,8 +65,8 @@ test('the Stock entry origins are Purchase, Harvest, Initial stock, Adjustment i
 test('the payment states are Paid and Owing, and never a method', () => {
   expect(values(PAYMENT_STATES)).toEqual(['paid', 'owing'])
   expect(labels(PAYMENT_STATES)).toEqual(['Paid', 'Owing'])
-  const everyValue = Object.values(registry).flatMap((set) =>
-    Array.isArray(set) ? values(set as readonly FixedOption<string>[]) : [],
+  const everyValue = Object.entries(registry).flatMap(([name, set]) =>
+    name !== 'RAW_CHIP_SITES' && Array.isArray(set) ? values(set as readonly FixedOption<string>[]) : [],
   )
   expect(everyValue).not.toContain('cash')
   expect(everyValue).not.toContain('transfer')
@@ -91,7 +92,10 @@ test('every icon of the registry is one Icono draws', () => {
 
 test('FIXED_SETS gives every exported set a non-empty reason, and names nothing else', () => {
   const exportedSets = Object.entries(registry)
-    .filter(([name, exported]) => name !== 'FIXED_SETS' && Array.isArray(exported))
+    .filter(
+      ([name, exported]) =>
+        name !== 'FIXED_SETS' && name !== 'RAW_CHIP_SITES' && Array.isArray(exported),
+    )
     .map(([name]) => name)
   expect(Object.keys(FIXED_SETS).sort()).toEqual(exportedSets.sort())
   for (const [name, reason] of Object.entries(FIXED_SETS)) {
@@ -107,6 +111,22 @@ test('FIXED_SETS gives every exported set a non-empty reason, and names nothing 
     LANGUAGES:
       'fixed set: the languages the Copy module has texts for; adding one is a code change in the Copy module',
   })
+})
+
+test('every raw chip site names a registered set, a real file and a reason', () => {
+  const sources = new Set(Object.keys(import.meta.glob('/src/**/*.tsx')))
+  const declared = Object.keys(FIXED_SETS)
+  expect(RAW_CHIP_SITES.map((site) => [site.file, site.set])).toEqual([
+    ['src/screens/settings/AppearanceGroup.tsx', 'THEME_CHOICES'],
+    ['src/screens/settings/BusinessGroup.tsx', 'LANGUAGES'],
+    ['src/screens/settings/CustomerTypeForm.tsx', 'CUSTOMER_TYPE_ICON_SET'],
+    ['src/screens/StockEntryForm.tsx', 'STOCK_ENTRY_ORIGINS'],
+  ])
+  for (const site of RAW_CHIP_SITES) {
+    expect(site.reason.trim(), site.file).not.toBe('')
+    expect(declared, site.file).toContain(site.set)
+    expect(sources.has(`/${site.file}`), site.file).toBe(true)
+  }
 })
 
 test('a language switch moves the icon names and leaves the period and theme words', async () => {
