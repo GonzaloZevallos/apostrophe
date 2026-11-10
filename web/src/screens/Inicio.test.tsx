@@ -503,7 +503,7 @@ const SETUP_STATES: [string, Record<string, unknown>][] = [
 ]
 
 for (const theme of ['claro', 'oscuro'] as const) {
-  test.each(SETUP_STATES)('%s sees the panel and no first-use notice, and Home asks for neither read (%s)', async (_state, shown) => {
+  test.each(SETUP_STATES)(`%s sees the panel and no first-use notice, and Home asks for neither read (${theme})`, async (_state, shown) => {
     chooseTheme(theme)
     stubFetch(PANEL, { status: null }, shown)
     const { container } = renderInicio()
