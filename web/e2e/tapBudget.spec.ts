@@ -179,6 +179,10 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
           page.locator('.riel-lateral').getByRole('link', { name: /New sale$/ }),
           label,
         ).toHaveCount(0)
+      } else if (!computer && root === EXPENSES) {
+        // On the phone Gastos is a card under Analysis: a card never shows "+ New sale", so
+        // the sale is not one tap from here; the computer, where it stays a root, measures it.
+        await expect(page.getByRole('link', { name: /New sale$/ }), label).toHaveCount(0)
       } else {
         await tap(counter, page.getByRole('link', { name: /New sale$/ }).filter({ visible: true }).first())
         await expectPath(page, SALE_NEW)
@@ -249,6 +253,12 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
 
   expect(Object.keys(taps).length).toBeGreaterThan(10)
   for (const [key, { phone, computer }] of Object.entries(taps)) {
+    if (key === `sale ${EXPENSES}`) {
+      // Phone-less on purpose (a card shows no "+ New sale"): the computer's one tap stands alone.
+      expect(phone, `phone: ${key}`).toBe(0)
+      expect(computer, `computer: ${key}`).toBe(1)
+      continue
+    }
     expect(phone, `phone: ${key}`).toBeGreaterThan(0)
     expect(phone, `phone: ${key}`).toBeLessThanOrEqual(
       key.startsWith('sale') || key.startsWith('payment') || key.startsWith('settings') ? 1 : 2,
