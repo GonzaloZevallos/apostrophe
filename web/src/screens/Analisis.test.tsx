@@ -29,6 +29,7 @@ import Analisis, {
   SINCE_FIRST_RECORD_LABEL,
 } from './Analisis'
 import { baselineText } from '../i18n/testing'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
 const EMPTY_MONTH_LINE = baselineText('analysis.ts:EMPTY_MONTH_LINE')
 const NO_HISTORY_LINE = baselineText('analysis.ts:NO_HISTORY_LINE')
@@ -78,7 +79,7 @@ function jsonResponse(status: number, body: unknown): Response {
 }
 
 function Provide() {
-  return <Outlet context={ME} />
+  return <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
 }
 
 function renderAnalisis(

@@ -21,6 +21,7 @@ import ExpenseNewRoute from './ExpenseNewRoute'
 import { EXPENSES_TEXT } from '../../copy/expenses'
 import ContentArea from '../../components/ContentArea'
 import { SheetRouterProvider } from '../../components/useSheetStack'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en' as ShownLanguage, money: { symbol: '$', decimals: 0 } }
 
@@ -41,7 +42,7 @@ export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl) {
       {
         element: (
           <FlashProvider>
-            <Outlet context={ME} />
+            <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
           </FlashProvider>
         ),
         children: [

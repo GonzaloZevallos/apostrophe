@@ -41,6 +41,7 @@ import { CHECKLIST_DONE } from '../../copy/inicio'
 import { ONBOARDING_TEXT } from '../../copy/onboarding'
 import { stepInfo } from './steps'
 import { SheetRouterProvider } from '../../components/useSheetStack'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 const ORDER: StepSlug[] = ['variety', 'stock', 'header_footer', 'bot', 'partner', 'categories']
@@ -99,7 +100,7 @@ function NewSaleStub() {
 }
 
 function Provide() {
-  return <Outlet context={ME} />
+  return <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
 }
 
 function Spy({ onMount }: { onMount: () => void }) {

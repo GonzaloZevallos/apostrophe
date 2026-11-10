@@ -15,6 +15,7 @@ import { SHOWN_EN } from '../../test/shownLanguage'
 import { inAppState } from '../../components/inAppState'
 import { SETTINGS, SETTINGS_CUSTOMER_TYPES } from '../../routes'
 import CustomerTypes from './CustomerTypes'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
@@ -44,7 +45,7 @@ function renderScreen(types: CustomerType[], handler: Handler = () => undefined)
   const router = createMemoryRouter(
     [
       {
-        element: <Outlet context={ME} />,
+        element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>,
         children: [
           { path: SETTINGS, element: <div>Lista de grupos</div> },
           { path: SETTINGS_CUSTOMER_TYPES, element: <CustomerTypes /> },

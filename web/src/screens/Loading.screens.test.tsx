@@ -35,6 +35,7 @@ import UsersGroup from './settings/UsersGroup'
 import Ventas from './ventas/Ventas'
 import VentaDetalle from './ventas/VentaDetalle'
 import { SIN_CONEXION_MENSAJE } from '../copy/common'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
 const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
@@ -42,7 +43,7 @@ const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03
 function Context() {
   return (
     <FlashProvider>
-      <Outlet context={ME} />
+      <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
     </FlashProvider>
   )
 }

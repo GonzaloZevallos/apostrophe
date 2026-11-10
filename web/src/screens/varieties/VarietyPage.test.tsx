@@ -33,6 +33,7 @@ import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import ContentArea from '../../components/ContentArea'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 const VARIETY_ONE = pathTo(VARIETY, { id: 1 })
 
@@ -134,7 +135,7 @@ function renderPage(path: string, overrides: Answers = {}, state: unknown = null
         element: (
           <QueryClientProvider client={queryClient}>
             <FlashProvider>
-              <Outlet context={ME} />
+              <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
               <Where />
             </FlashProvider>
           </QueryClientProvider>

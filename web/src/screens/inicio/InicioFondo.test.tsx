@@ -13,6 +13,7 @@ import type { Me } from '../../api/me'
 import { SHOWN_EN } from '../../test/shownLanguage'
 import type { PanelAnswer } from '../../api/panel'
 import InicioFondo from './InicioFondo'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
@@ -52,7 +53,7 @@ function renderFondo() {
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>
         <Routes>
-          <Route element={<Outlet context={ME} />}>
+          <Route element={<MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>}>
             <Route path="*" element={<InicioFondo />} />
           </Route>
         </Routes>

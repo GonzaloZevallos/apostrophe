@@ -29,6 +29,7 @@ import { LIMITS } from '../copy/limits'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import Shell from '../shell/Shell'
 import { baselineText } from '../i18n/testing'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
 const STOCK_EMPTY_TITLE = baselineText('stock.ts:EMPTY_STATE_TITLE')
 const STOCK_EMPTY_DETAIL = baselineText('stock.ts:EMPTY_STATE_DETAIL')
@@ -71,7 +72,7 @@ const STOCK = {
 }
 
 function Provide() {
-  return <Outlet context={ME} />
+  return <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
 }
 
 function Where({ opens }: { opens?: string }) {

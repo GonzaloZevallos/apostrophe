@@ -31,7 +31,7 @@ import {
 } from '../varieties/priceFieldRules'
 import { SAVE_OVERRIDES } from '../varieties/varietyForms'
 import { hasAnotherVariety } from './anotherVariety'
-import { useMoney } from '../../format/useMoney'
+import { useMoney } from '../../format/moneyContext'
 import { useTranslation } from 'react-i18next'
 import { messageText, type Translate } from '../../i18n/refusalKeys'
 

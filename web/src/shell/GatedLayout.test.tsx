@@ -24,7 +24,7 @@ import { missingKeys } from '../i18n/missingKeys'
 import { loadLocale, type LocaleBundle } from '../i18n/resources'
 import common from '../copy/locales/en/common.json'
 import GatedLayout from './GatedLayout'
-import { useMoney } from '../format/useMoney'
+import { useMoney } from '../format/moneyContext'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {

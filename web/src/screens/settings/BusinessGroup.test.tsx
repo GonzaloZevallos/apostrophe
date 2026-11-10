@@ -19,6 +19,7 @@ import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import BusinessGroup from './BusinessGroup'
 import { BUSINESS_NAME_INVALID_MESSAGE, RENAME_SUCCESS } from '../../copy/settings'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -36,7 +37,7 @@ const ME: Me = {
 }
 
 function Provide() {
-  return <Outlet context={ME} />
+  return <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
 }
 
 const BUSINESS = {

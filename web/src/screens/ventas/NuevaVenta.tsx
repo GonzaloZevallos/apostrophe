@@ -56,7 +56,7 @@ import { SheetStackProvider, useSheet } from '../../components/useSheetStack'
 import { useVisualViewport } from '../../components/useVisualViewport'
 import { formatDateLong, formatDateShort, maxSaleDate } from '../../format/dates'
 import { formatGrams, formatMoney, type MoneyFormat } from '../../format/money'
-import { useMoney } from '../../format/useMoney'
+import { useMoney } from '../../format/moneyContext'
 import { parseGrams, parseMoney } from '../../format/parse'
 import {
   type LineValidation,

@@ -19,6 +19,7 @@ import ClientesLayout from './clientes/ClientesLayout'
 import Clientes from './clientes/Clientes'
 import Inicio from './Inicio'
 import { jsonResponse, renderWithdrawals, REASONS, VARIETIES } from './withdrawals/renderWithdrawals'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
 const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
@@ -59,7 +60,7 @@ function renderScreen(path: string, element: ReactElement, layout?: ReactElement
           <Route
             element={
               <FlashProvider>
-                <Outlet context={ME} />
+                <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
               </FlashProvider>
             }
           >

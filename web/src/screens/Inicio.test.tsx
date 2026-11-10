@@ -36,6 +36,7 @@ import type { OnboardingProgress } from '../api/onboarding'
 import Inicio, { PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
 import { baselineText } from '../i18n/testing'
 import { SIN_CONEXION_MENSAJE } from '../copy/common'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
 const EMPTY_TITLE = baselineText('inicio.ts:EMPTY_TITLE')
 const EMPTY_DETAIL = baselineText('inicio.ts:EMPTY_DETAIL')
@@ -84,7 +85,7 @@ let advanced: OnboardingProgress | null = null
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 function Provide() {
-  return <Outlet context={ME} />
+  return <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
 }
 
 function SettingsLanding() {

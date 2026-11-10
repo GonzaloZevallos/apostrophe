@@ -23,6 +23,7 @@ import { OnboardingEntry, OnboardingStepRoute } from './OnboardingRoutes'
 import { DISCARD_DETAIL, PARTLY_SAVED_DETAIL } from '../../copy/onboarding'
 import { CHECKLIST_DONE } from '../../copy/inicio'
 import { SheetRouterProvider } from '../../components/useSheetStack'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
@@ -135,7 +136,7 @@ function count(key: string): number {
 function renderAt(entries: Parameters<typeof createMemoryRouter>[1]) {
   const routes: RouteObject[] = [
     {
-      element: <Outlet context={ME} />,
+      element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>,
       children: [
         { index: true, element: <span>pantalla inicio</span> },
         {

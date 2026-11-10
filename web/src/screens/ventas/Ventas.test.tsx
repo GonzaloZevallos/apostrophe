@@ -19,6 +19,7 @@ import { stubFetchWithSettings } from '../stubFetchWithSettings'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { gone } from '../../components/feedback'
 import { baselineText } from '../../i18n/testing'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -31,7 +32,7 @@ function jsonResponse(status: number, body: unknown): Response {
 const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 function Context() {
-  return <Outlet context={ME} />
+  return <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
 }
 
 function renderVentas(state?: unknown) {

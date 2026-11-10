@@ -25,7 +25,7 @@ import ErrorGenerico from '../components/ErrorGenerico'
 import FlashProvider from '../flash/FlashProvider'
 import { useShownLanguage } from '../i18n/language'
 import ContentArea from '../components/ContentArea'
-import { MoneyFormatProvider } from '../format/useMoney'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
 export default function GatedLayout() {
   const { data, isPending, isError, error } = useQuery({ queryKey: keys.me(), queryFn: getMe })

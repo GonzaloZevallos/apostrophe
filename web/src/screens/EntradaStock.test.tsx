@@ -27,6 +27,7 @@ import EntradaStock from './EntradaStock'
 import { LIMITS } from '../copy/limits'
 import emptyStates from '../copy/locales/en/emptyStates.json'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
@@ -59,7 +60,7 @@ async function renderFromVariety() {
 function Provide() {
   return (
     <FlashProvider>
-      <Outlet context={ME} />
+      <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
     </FlashProvider>
   )
 }
