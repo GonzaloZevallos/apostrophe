@@ -40,7 +40,7 @@ def _count(table: str) -> int:
 
 
 def _create_payment(name: str, *, linked: bool) -> None:
-    columns: list[sa.SchemaItem] = [
+    columns: list[sa.Column[object] | sa.schema.SchemaItem] = [
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("business_id", sa.Integer(), nullable=False),
         sa.Column("paid_on", sa.Date(), nullable=False),
