@@ -359,11 +359,11 @@ classDiagram
     today : date
   }
   class ResetLinkRow {
+    app_user_id : Mapped~int~
     business_id : Mapped~int~
     created_at : Mapped~datetime~
     id : Mapped~int~
     token_digest : Mapped~str~
-    user_id : Mapped~int~
   }
   class ResetSubmitIn {
     new_password : str
