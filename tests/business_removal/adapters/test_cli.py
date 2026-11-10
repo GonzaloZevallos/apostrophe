@@ -826,6 +826,29 @@ def test_the_export_carries_the_stored_language_of_the_removed_business(
     assert remaining == [("Otro Negocio",)]
 
 
+def test_the_export_carries_the_phone_country_of_the_removed_business(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    db_path = tmp_path / "apostrophe.db"
+    export_dir = tmp_path / "exports"
+    clock = MovableClock(PINNED)
+    seed(db_path, clock)
+    set_env(monkeypatch, db_path, export_dir)
+    with sqlite3.connect(db_path) as connection:
+        connection.execute(
+            "UPDATE business SET default_phone_country = 'UY' WHERE name = 'La Huerta'"
+        )
+
+    result = main(
+        [EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO(), clock=clock
+    )
+
+    assert result == 0
+    (written,) = export_dir.glob("*.json")
+    document = json.loads(written.read_text())
+    assert document["business"]["default_phone_country"] == "UY"
+
+
 def test_an_invalid_forced_language_prints_one_refused_line_before_any_handler_is_installed(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -31,6 +31,7 @@ class Business:
     id: int
     name: str
     language: str
+    default_phone_country: str | None
 
     def __post_init__(self) -> None:
         if not self.name:
@@ -53,7 +54,8 @@ def build_document(
     rows: Mapping[str, Sequence[Mapping[str, Any]]],
     exported_at: datetime,
 ) -> dict[str, Any]:
-    """`{"business": {"id", "name", "language"}, "exported_at", "kinds": {table: [records]}}`.
+    """`{"business": {"id", "name", "language", "default_phone_country"}, "exported_at",
+    "kinds": {table: [records]}}`.
     Every owned table in `schema` becomes a kind, its records sorted by id, with
     `EXCLUDED_COLUMNS` dropped, `business_id` never repeated, foreign keys turned
     into `{"id", "name"}` references and `*_hundredths` integers into two-place
@@ -81,6 +83,7 @@ def build_document(
             "id": business.id,
             "name": business.name,
             "language": business.language,
+            "default_phone_country": business.default_phone_country,
         },
         "exported_at": _format_instant(exported_at),
         "kinds": kinds,
