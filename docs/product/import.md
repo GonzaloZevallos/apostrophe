@@ -6,7 +6,7 @@
 
 **Cuando** configuro cómo pone precios mi negocio, registro el precio de un producto o entrego un pedido, **quiero** que la app use solo las Pricing rules que tiene mi negocio, **para poder** cobrarle a cada cliente exactamente lo que quiero, sin que el precio de nadie cambie por sorpresa. (Lo sirve acá activar las reglas que usa la planilla y sumar sus VIP al **VIP type**; definido en pricing-settings.md y customers.md.)
 
-**Cuando** abro la app entre pedidos o al final del día, **quiero** ver qué vendí hoy, quién me debe y qué se está terminando, y actuar en el acto (cobrarle a un deudor, abrir un producto que está bajo, arreglar lo que me dice un aviso), **para poder** volver con el cliente sin recorrer Customers y Products uno por uno ni hacer cuentas. (Lo sirve acá registrar que el Business fue importado, para que le llegue el aviso de Home posterior a la Spreadsheet import; definido en navigation.md y results.md.)
+**Cuando** abro la app entre pedidos o al final del día, **quiero** ver qué vendí hoy, quién me debe y qué se está terminando, y actuar en el acto (cobrarle a un deudor, abrir un producto que está bajo, arreglar lo que me dice un aviso), **para poder** volver con el cliente sin recorrer Customers y Products uno por uno ni hacer cuentas. (Lo sirve acá registrar que el Business fue importado, lo que termina su Onboarding; ningún aviso de Home sigue de eso; definido en navigation.md y results.md.)
 
 # Spreadsheet import
 
@@ -38,7 +38,7 @@ Criterios de éxito:
 4. **Un Business, una vez, sin mezclar.** Importa solo en un Business que todavía no tiene registros, y nunca toca un Business con datos. Todo lo importado pertenece solo a ese Business (ADR-0004). La planilla real y los datos de sus clientes nunca entran al repositorio.
 5. **Una planilla sin números de teléfono se importa completa.** La corrida sale sin archivo de correspondencias o con uno parcial. El informe dice cuántos Customers entraron sin número y nunca repite un número. Un número que la correspondencia sí da se sigue verificando, y uno mal formado sigue bloqueando.
 6. **Los precios de la planilla siguen funcionando.** Un Business cuya planilla usa precios por cantidad o filas `"Amigo"` arranca con esas reglas activadas y con sus VIP en el VIP type, así sus precios y las próximas Sales de sus VIP customers salen como los ponía la planilla.
-7. **La app sabe que fue importado.** Una corrida real exitosa registra, en su único commit, que el Business fue cargado por la Spreadsheet import y cuándo, así el aviso de Home posterior a la Spreadsheet import se muestra para él y para ningún otro Business.
+7. **La app sabe que fue importado.** Una corrida real exitosa registra, en su único commit, que el Business fue cargado por la Spreadsheet import y cuándo, y con eso termina su Onboarding. Ningún aviso de Home sigue de eso: nada en pantalla dice que hubo una Spreadsheet import.
 
 ## Comportamiento
 
@@ -75,7 +75,7 @@ Criterios de éxito:
 - **El registro guarda** solo el Business y ese instante: ningún dato personal, ninguna cantidad y nada de la planilla.
 - **Nunca se borra ni se mueve**, y nada más lo escribe. Una corrida rechazada y una corrida de prueba no escriben ninguno de los dos.
 - **No es un registro para la elegibilidad**: nunca hace que la Spreadsheet import se rechace.
-- **Antes de que existiera**: un Business importado antes de que existiera este registro no tiene ninguno, y no se completa hacia atrás; nunca ve el aviso posterior a la Spreadsheet import.
+- **Antes de que existiera**: un Business importado antes de que existiera este registro no tiene ninguno, y no se completa hacia atrás.
 
 ### Elegibilidad
 
