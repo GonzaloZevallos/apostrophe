@@ -35,29 +35,32 @@ Antes de estas partes, "$" y el peso entero estaban fijos en el código y nadie 
 - Ningún pedido lleva decimales ni escala.
 - El contrato publicado de `MoneyOut` es `entero o número`, porque el serializador puede enviar las dos formas. Para `oasdiff` esto ensancha el tipo de cada campo de dinero de una respuesta (el CI `docs` lo marca como cambio incompatible, ADR-0066): la pull request lo declara con una línea `Breaking-API:`. Ninguna respuesta de hoy cambia de valor.
 - Hoy toda respuesta es un entero en las dos escalas, así que un Business en escala 0 conserva sus enteros byte por byte. El front acepta también un número no entero sin cambiar nada de lo que muestra en escala 0.
+- `GET /auth/me` lleva `money: {symbol, decimals}`, el Money format del Business de la Session, nunca la escala. Es la única fuente del formato para el front; no hay ruta nueva.
 
 ### Cómo se muestra un monto
 
-- El símbolo y los decimales salen del Money format del Business, nunca del código: ningún formateador de dinero del front ni del Catalog fija un símbolo ni una cantidad de decimales (Assume nothing).
-- **En la app**: el símbolo, un espacio y la cifra (`$ 11.000`), en todas las pantallas, la vista previa de precios del formulario de Price incluida.
+- El símbolo y los decimales salen del Money format del Business, nunca del código: ningún formateador de dinero del front ni del Catalog fija un símbolo ni una cantidad de decimales (Assume nothing). En el front, cada pantalla escribe sus montos con `useMoney()`, que da `GatedLayout` a partir del `money` de `/auth/me`.
+- **En la app**: el símbolo, un espacio y la cifra (`$ 11.000`), en todas las pantallas, la vista previa de precios del formulario de Price incluida. Un monto negativo lleva el signo menos (U+2212) delante de esa forma.
 - **Montos dentro de una oración de un mensaje existente**: conservan la forma que tienen hoy y solo toman del Business el símbolo y los decimales. El rechazo de un Special price de cero sigue diciendo "The special price must be more than $0", con el símbolo pegado a la cifra: "$0" con "$" y 0 decimales, "<símbolo>0,00" con 2 decimales. Para un Business con "$" y 0 decimales el texto no cambia ni un carácter. Unificar estas oraciones con la forma `$ 11.000` de la app es un cambio de redacción de otra tarea.
 - **En el Catalog y el texto del bot**: el símbolo pegado a la cifra, sin espacio (`$11.000`; catalog.md). Los arma el servidor, que lee el Money format por el puerto propio del Catalog (ADR-0055), nunca la escala.
 - Cada superficie conserva su disposición; solo el símbolo viene del Business. No se ofrece un símbolo después de la cifra.
 - Todo monto muestra exactamente los decimales del Business, también cuando es entero: con 2 decimales, `$ 11.000,00` y `$ 11.000,50` en la app y `$11.000,00` en el Catalog. Con 0 decimales no cambia nada.
+- El front y el Catalog formatean a partir de centésimos enteros, agrupan los miles a mano con punto desde cuatro dígitos, redondean mitad hacia arriba alejándose del cero y nunca muestran `-0`. Un único archivo de vectores (`web/src/format/money.vectors.json`) lo prueban vitest y pytest por igual.
 - Las cifras siguen el formato argentino: coma antes de los decimales y punto entre los miles (Product language). El formato de dinero sigue al Money format del Business, nunca al idioma.
 - Los montos conservan las Tabular figures.
 - Las cantidades conservan su propia regla de quitar los ceros finales (quantity.md); no la toca esta regla.
-- **Antes de conocer el formato**: mientras el Money format se está cargando, los montos muestran el mismo estado de carga que la pantalla usa para sus otros datos; si no se puede leer, la pantalla muestra su estado de error existente. Nunca se muestra un "$" ni una cantidad de decimales por defecto, ni siquiera dentro de un mensaje, y un campo de monto no se puede enviar hasta que se conoce el formato.
+- **Antes de conocer el formato**: nada de lo que está detrás del inicio de sesión se dibuja hasta que llega `/auth/me` con el Money format, igual que antes; si no se puede leer, se muestra el error genérico existente. Nunca se muestra un "$" ni una cantidad de decimales por defecto, ni siquiera dentro de un mensaje, y ningún campo de monto existe antes de conocerse el formato.
 
 ### Cómo se tipea un monto
 
-- El teclado del teléfono sigue al Money format: un campo de monto de un Business con decimales abre un teclado que puede escribir el separador decimal; uno de un Business con 0 decimales abre un teclado solo de dígitos.
-- Con decimales, un único lector de montos del front, compartido por todos los campos de monto:
+- El teclado del teléfono sigue al Money format: un campo de monto de un Business con decimales usa `inputmode="decimal"`; uno de un Business con 0 decimales usa `inputmode="numeric"`, solo de dígitos (CODING_STANDARDS.md §10 Phone 3). Lo decide `moneyInputMode`, y ningún campo de monto fija su teclado a mano.
+- Un único lector de montos del front (`parseMoneyInput`), compartido por todos los campos de monto: Record payment, Expense, costo de una Stock entry, formulario de Price y precio del Onboarding, y en New sale el Shipping charged y el Special price. Con decimales:
   - lee la coma como separador decimal, como en el campo de gramos;
   - lee también como separador decimal un único punto seguido de 1 a `decimals` dígitos, para los teclados que solo ofrecen punto;
   - lee un punto seguido de exactamente 3 dígitos como separador de miles (`11.000`), nunca como decimales;
   - rechaza más dígitos después del separador que los decimales del Business, con "Use up to {decimals} decimals.";
-  - al salir del campo, muestra el valor de nuevo con coma.
+  - rechaza como inválida una coma antes de un punto (`1,234.5`);
+  - al salir del campo, muestra el valor de nuevo con coma y exactamente `decimals` dígitos, sin puntos de miles (`formatMoneyInput`, la única forma de precargar un campo de monto).
 - Con 0 decimales el campo se comporta exactamente como antes, incluido el rechazo "Use whole amounts only.", y las reglas del punto no se aplican.
 
 ### Cifras que dividen
@@ -75,13 +78,13 @@ Algunas cifras dividen: el total de una Sale line, el costo por unidad que se to
 
 - El límite son los decimales que muestra el Business (Money format), no su escala. Hoy son 0 en todos, así que 10.5 se rechaza incluso en un Business de escala 2; con 2 decimales, 10.505 se rechazaría. Se controla por valor: 10.00 se acepta con 0 decimales.
 - El control vive en una sola función del dominio, `money_within`, que cada caso de uso llama con el Money format del Business, leído por su propio puerto (que nunca lee la escala). Rechaza con 422 `money.too_many_decimals` y un `detail` fijo, sin ningún monto. No se redondea ni se guarda nada. El lector de montos del front aplica el mismo límite antes de enviar, pero el servidor sigue siendo la autoridad.
-- El vendedor ve un mensaje del Copy module que sigue los decimales del Business: "Use whole amounts only." con 0 decimales y "Use up to {decimals} decimals." en otro caso. No nombra ninguna moneda (Assume nothing) ni lleva ninguna palabra de flor, y el `detail` de la API nunca se muestra (Product language).
+- El vendedor ve un mensaje del Copy module que sigue los decimales del Business (`tooManyDecimalsMessage`): "Use whole amounts only." con 0 decimales y "Use up to {decimals} decimals." en otro caso. No nombra ninguna moneda (Assume nothing) ni lleva ninguna palabra de flor, y el `detail` de la API nunca se muestra (Product language).
 - El valor tipeado queda en el campo para corregirlo y volver a guardar.
 - Dónde se ve hoy:
   - Record payment ("Collect"), el formulario de Expense y el costo de una Stock entry: debajo del campo de monto, en la línea de error de Campo, sin Attention icon.
   - El formulario de Price y el precio del Onboarding: siempre debajo del List price, aunque el monto rechazado sea el Bulk price o el VIP price.
-  - New sale: como mensaje del formulario, no debajo del Shipping charged, el Special price o el monto pagado en el acto.
-  - Las Sheets de precio de promoción, Settings → Prices y el paso de Stock del Onboarding: todavía muestran el genérico "Check the details and try again."; el monto igual se rechaza y no se guarda nada.
+  - New sale: como mensaje del formulario, no debajo del Shipping charged ni del Special price.
+  - Settings → Prices y el paso de Stock del Onboarding: todavía muestran el genérico "Check the details and try again."; el monto igual se rechaza y no se guarda nada.
 
 ### Business export
 
@@ -94,11 +97,13 @@ Algunas cifras dividen: el total de una Sale line, el costo por unidad que se to
 
 - El Catalog y el Sale bill son lecturas de dinero.
 - El Catalog y el texto del bot escriben el dinero con el símbolo y los decimales del Money format del Business, con el símbolo pegado a la cifra. Un Business con "$" y 0 decimales produce exactamente el mismo texto que antes (`$11.000`), en escala 0 o en escala 2.
-- El Sale bill conserva por ahora su texto de dinero actual, igual en las dos escalas; no sigue todavía al Money format.
+- Los precios del Catalog siguen llegando en unidades enteras y se completan con ceros hasta los decimales del Business, nunca se dividen: un precio con fracción se publicaría con `,00`. Ningún Business tiene decimales hoy; lo resuelve la parte que deje cambiar los decimales.
+- El Sale bill conserva por ahora su texto de dinero actual, igual en las dos escalas y con su propio formato fijo; no sigue todavía al Money format.
 
 ### Aislamiento
 
 - Un Business de escala 2 y uno de escala 0 en la misma instalación nunca cambian ni exponen el dinero, la escala ni el Money format del otro.
+- `/auth/me` devuelve solo el Money format del Business de la Session.
 - Ningún User, link ni error revela al otro Business.
 - Los seeders de aislamiento tienen un Business de cada escala en una misma instalación.
 
@@ -107,6 +112,7 @@ Algunas cifras dividen: el total de una Sale line, el costo por unidad que se to
 - Una configuración para elegir el símbolo o los decimales; los centavos se podrán tipear recién cuando una parte posterior la agregue y un Business tenga decimales.
 - Un símbolo después de la cifra.
 - Cambiar la redacción de los mensajes que nombran un monto dentro de una oración, como el rechazo del Special price de cero, para que usen la forma `$ 11.000` de la app.
+- Cambiar la ayuda "Per gram, in whole pesos" del formulario de Price (#330 / #318).
 - La regla de cómo se muestran las cantidades.
 - El dinero del Sale bill y de la salida de los scripts del Operator.
 - El rescale de escala 0 a escala 2.
@@ -124,7 +130,7 @@ Algunas cifras dividen: el total de una Sale line, el costo por unidad que se to
 - Módulos de caso de uso o de dominio que importan el helper de dinero o leen la escala, y adaptadores que tocan una columna de dinero sin el helper: 0.
 - Respuestas que filtran el dinero, la escala o el Money format de otro Business: 0.
 - **Sin cambio para los Businesses existentes**: con "$" y 0 decimales, los tests de formato de vitest dan `$ 11.000`, el rechazo del Special price de cero dice "The special price must be more than $0" y el texto del Catalog de referencia da `$11.000`, con 0 diferencias.
-- **Sigue al formato del Business**: con otro símbolo y 2 decimales, los tests de formato de vitest y la vista previa de precios dan `<símbolo> 11.000,00` y `<símbolo> 11.000,50`, el rechazo del Special price de cero lleva `<símbolo>0,00`, y un segundo texto del Catalog de referencia da `<símbolo>11.000,00`, con 0 diferencias. 100% de aprobación.
-- **Tipeo en el teléfono**: cada campo de monto usa un teclado con separador decimal con decimales y uno solo de dígitos con 0 decimales. Los tests de vitest del lector de montos cubren la coma, el punto de 1 a `decimals` dígitos, el punto de miles de 3 dígitos y el rechazo por demasiados decimales. 100% de aprobación, y el Mobile check pasa en las pantallas tocadas.
-- **Sin formato fijo**: símbolos de moneda o cantidades de decimales literales en los formateadores de dinero del front, en los mensajes del Copy module que nombran un monto y en el formato de dinero del Catalog: 0. Montos mostrados con un "$" por defecto mientras se carga el formato: 0.
+- **Sigue al formato del Business**: con otro símbolo y 2 decimales, los tests de formato de vitest y la vista previa de precios dan `<símbolo> 11.000,00` y `<símbolo> 11.000,50`, el rechazo del Special price de cero lleva `<símbolo>0,00`, y un segundo texto del Catalog de referencia (`US$`, 2 decimales) da `<símbolo>11.000,00`, con 0 diferencias. 100% de aprobación.
+- **Tipeo en el teléfono**: cada campo de monto usa un teclado con separador decimal con decimales y uno solo de dígitos con 0 decimales. Los tests de vitest del lector de montos cubren la coma, el punto de 1 a `decimals` dígitos, el punto de miles de 3 dígitos y el rechazo por demasiados decimales, y la ida y vuelta `parseMoneyInput(formatMoneyInput(x))` sobre los vectores. 100% de aprobación, y el Mobile check pasa en las pantallas tocadas.
+- **Sin formato fijo**: símbolos de moneda o cantidades de decimales literales en los formateadores de dinero del front, en los mensajes del Copy module que nombran un monto y en el formato de dinero del Catalog: 0, con el Sale bill como única excepción nombrada. Montos mostrados con un "$" por defecto mientras se carga el formato: 0.
 - Gate (pytest, vitest, e2e): pasa.
