@@ -31,8 +31,9 @@ import Loading from '../components/Loading'
 
 // The existing loading shape (bars and cards, no text, `aria-busy`): nothing money-bearing renders
 // before `me` and the language are ready, and nothing a person could read as data shows meanwhile.
+// A `div`, not a `main`: the screen's own `main` is the only landmark, and it is the one that mounts next.
 const loadingShape = (
-  <ContentArea as="main" className="pantalla">
+  <ContentArea as="div" className="pantalla">
     <div className="cuerpo">
       <Loading />
     </div>
