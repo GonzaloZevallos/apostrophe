@@ -17,8 +17,10 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import event, text
 from sqlalchemy.engine import Engine
+from sqlalchemy.engine.interfaces import DBAPIConnection
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
+from sqlalchemy.pool import ConnectionPoolEntry
 
 from app.db import MoneyScaleChanged, make_engine, money_scale_factor
 from app.expenses.adapters.sql_expenses import SqlExpenses
@@ -46,7 +48,7 @@ def second(world: World) -> Iterator[Engine]:
     other.dispose()
 
 
-def _short_timeout(dbapi_connection: object, _record: object) -> None:
+def _short_timeout(dbapi_connection: DBAPIConnection, _record: ConnectionPoolEntry) -> None:
     dbapi_connection.execute("PRAGMA busy_timeout=50")
 
 

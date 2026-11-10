@@ -19,6 +19,8 @@ never from a list written by hand, and every statement filters on the one busine
 
 from __future__ import annotations
 
+from typing import cast
+
 from sqlalchemy import Table, func, select, update
 from sqlalchemy.engine import Connection
 from sqlalchemy.exc import OperationalError
@@ -39,7 +41,7 @@ _HUNDREDTHS_SCALE = 2
 _FACTOR = SCALE_FACTORS[1]
 _LARGEST_STORED = 2**63 - 1
 _LARGEST_BEFORE_RESCALE, _ = divmod(_LARGEST_STORED, _FACTOR)
-_money_format = MoneyFormatRow.__table__
+_money_format = cast(Table, MoneyFormatRow.__table__)
 
 
 def _looks_locked(text: str) -> bool:

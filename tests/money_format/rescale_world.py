@@ -38,7 +38,7 @@ class World(NamedTuple):
 def money_columns() -> list[tuple[Table, str, bool]]:
     """Every column tagged `info["money"]`: its table, its name, whether it may be NULL."""
     return [
-        (table, column.name, column.nullable)
+        (table, column.name, bool(column.nullable))
         for table in metadata.sorted_tables
         for column in table.columns
         if column.info.get("money") is True
