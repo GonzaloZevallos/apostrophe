@@ -8,12 +8,15 @@ import json
 from typing import Any
 
 import pytest
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
 from app.pinned_catalog.domain.errors import TelegramUnreachable
+from app.shared.money import MoneyNotRepresentable
 from tests.fakes.telegram import FakeTelegram
+from tests.money_format.rescale_world import money_columns
 
 TOKEN = "123456789:top-secret-bot-token"
 PATH = "/api/money-format"
@@ -189,9 +192,9 @@ def _as_json(body: dict[str, Any]) -> str:
     return json.dumps(body).replace('"10.50"', "10.50")
 
 
-def _bodies(client: TestClient) -> list[tuple[str, str, dict[str, Any]]]:
+def _bodies(client: TestClient) -> list[tuple[str, str, str, dict[str, Any]]]:
     """One write per money route, each carrying an amount with cents, over records that
-    exist at 2 decimals."""
+    exist at 2 decimals: its label, method, path and body."""
     product = client.post("/api/products", json={"name": "Rosa"}).json()["id"]
     client.post(
         f"/api/products/{product}/prices",
@@ -209,42 +212,55 @@ def _bodies(client: TestClient) -> list[tuple[str, str, dict[str, Any]]]:
     sale_line = {"product_id": product, "quantity": "1"}
     return [
         (
+            "price",
             "POST",
             f"/api/products/{product}/prices",
             {"effective_from": "2026-02-01", "list_price": "10.50"},
         ),
         (
+            "expense",
             "POST",
             "/expenses",
             {"spent_on": "2026-10-01", "category_id": category, "amount": "10.50", "detail": "b"},
         ),
         (
+            "expense edit",
             "PUT",
             f"/expenses/{expense}",
             {"spent_on": "2026-10-01", "category_id": category, "amount": "10.50", "detail": "c"},
         ),
-        ("POST", "/sales", {"payment": "cash", "shipping_charged": "10.50", "lines": [sale_line]}),
         (
+            "sale shipping",
+            "POST",
+            "/sales",
+            {"payment": "cash", "shipping_charged": "10.50", "lines": [sale_line]},
+        ),
+        (
+            "sale special price",
             "POST",
             "/sales",
             {"payment": "cash", "lines": [{**sale_line, "special_price": "10.50"}]},
         ),
         (
+            "stock entry",
             "POST",
             "/stock/entries",
             {"product_id": product, "origin": "purchase", "quantity": 2, "total_cost": "10.50"},
         ),
         (
+            "stock entry edit",
             "PUT",
             f"/stock/entries/{entry['id']}",
             {"product_id": product, "origin": "purchase", "quantity": 2, "total_cost": "10.50"},
         ),
         (
+            "customer payment",
             "POST",
             f"/customers/{customer}/payments",
             {"paid_on": "2026-10-02", "amount": "10.50", "method": "cash"},
         ),
         (
+            "customer payment preview",
             "POST",
             f"/customers/{customer}/payments/preview",
             {"paid_on": "2026-10-02", "amount": "10.50"},
@@ -252,18 +268,69 @@ def _bodies(client: TestClient) -> list[tuple[str, str, dict[str, Any]]]:
     ]
 
 
-def test_an_amount_with_cents_after_raising_is_kept_or_refused_as_too_many_decimals_never_a_500(
-    client: TestClient,
+# The list of the cents gap (docs/product/money.md, "Brecha: centavos en el dominio"): the
+# domain still turns every amount into whole units, so no money write keeps 10.50 yet and
+# each refuses it. A route that learns to keep cents moves from here to `KEEPS_CENTS`, which
+# reads the amount back; until then a route that answers 2xx fails this test.
+REFUSES_CENTS = {
+    "price",
+    "expense",
+    "expense edit",
+    "sale shipping",
+    "sale special price",
+    "stock entry",
+    "stock entry edit",
+    "customer payment",
+    "customer payment preview",
+}
+KEEPS_CENTS: set[str] = set()
+
+
+def _stored_money(engine: Engine) -> set[int]:
+    """Every value held by a column tagged `info["money"]`, whatever the table."""
+    held: set[int] = set()
+    with engine.connect() as connection:
+        for table, name, _ in money_columns():
+            rows = connection.execute(text(f'SELECT "{name}" FROM "{table.name}"'))
+            held.update(int(row[0]) for row in rows if row[0] is not None)
+    return held
+
+
+def test_an_amount_with_cents_after_raising_is_refused_as_too_many_decimals_and_stored_nowhere(
+    client: TestClient, engine: Engine
 ) -> None:
     assert _put(client, "$", 2).status_code == 200
-    answers = [
-        (method, path, client.request(method, path, content=_as_json(body), headers=JSON))
-        for method, path, body in _bodies(client)
-    ]
+    bodies = _bodies(client)
+    assert {label for label, *_ in bodies} == REFUSES_CENTS | KEEPS_CENTS
 
-    for method, path, answer in answers:
-        assert answer.status_code < 500, (method, path, answer.text)
-        if answer.status_code >= 400:
-            assert answer.status_code == 422, (method, path, answer.text)
-            assert answer.json()["code"] == "money.too_many_decimals", (method, path)
-            assert "10.5" not in answer.text
+    for label, method, path, body in bodies:
+        answer = client.request(method, path, content=_as_json(body), headers=JSON)
+        if label in KEEPS_CENTS:
+            assert answer.status_code < 300, (label, answer.text)
+            continue
+        assert answer.status_code == 422, (label, answer.text)
+        assert answer.json()["code"] == "money.too_many_decimals", label
+        assert "10.5" not in answer.text, label
+
+    # Nothing was rounded or cut: no money column holds 10.50 or either whole neighbour,
+    # at the scale it is stored in (hundredths) or as whole units.
+    assert _stored_money(engine).isdisjoint({10, 11, 1000, 1050, 1100})
+
+
+def test_only_a_write_with_a_body_turns_a_not_whole_amount_into_422(app: FastAPI) -> None:
+    """A DELETE carries no amount, so a stored non-whole one there is an integrity failure
+    (500), while a POST is the request's amount being refused (422)."""
+
+    def fail() -> None:
+        raise MoneyNotRepresentable("the amount is not a whole number of units")
+
+    for method in ("POST", "DELETE", "GET"):
+        app.add_api_route("/__not_whole", fail, methods=[method])
+
+    with TestClient(app, raise_server_exceptions=False) as probe:
+        assert probe.post("/__not_whole").status_code == 422
+        assert probe.post("/__not_whole").json()["code"] == "money.too_many_decimals"
+        for method in ("DELETE", "GET"):
+            answer = probe.request(method, "/__not_whole")
+            assert answer.status_code == 500, method
+            assert answer.json()["code"] == "money.not_representable", method

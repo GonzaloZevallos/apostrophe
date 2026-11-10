@@ -158,5 +158,6 @@ Algunas cifras dividen: el total de una Sale line, el costo por unidad que se to
 ### Brecha: centavos en el dominio
 
 - Cada caso de uso todavía convierte un monto a unidades enteras con `Money.whole_units()` (42 usos en 21 archivos de `app/`). Después de subir los decimales, `money_within` deja pasar `10.50` y esa conversión no puede guardarlo.
-- En una ruta de escritura, ese rechazo se responde `422 money.too_many_decimals` con el mensaje existente, nunca un 500 y nunca un redondeo. Una lectura que encuentra un monto guardado que no es entero sigue respondiendo 500.
+- En una ruta de escritura con cuerpo (POST, PUT, PATCH), ese rechazo se responde `422 money.too_many_decimals` con el mensaje existente, nunca un 500 y nunca un redondeo. Una lectura o un DELETE que encuentra un monto guardado que no es entero sigue respondiendo 500.
+- Rutas que hoy rechazan `10.50` con ese 422 después de subir a 2 decimales (las nueve que recorre `tests/money_format/test_money_format_route.py`, y ninguna lo guarda): `POST /api/products/{id}/prices`, `POST /expenses`, `PUT /expenses/{id}`, `POST /sales` (con `shipping_charged` y con `special_price` en una línea), `POST /stock/entries`, `PUT /stock/entries/{id}`, `POST /customers/{id}/payments` y `POST /customers/{id}/payments/preview`. Ninguna conserva los centavos todavía.
 - Que el dominio guarde centavos es un trabajo aparte que decide el humano; esta parte no lo hace.

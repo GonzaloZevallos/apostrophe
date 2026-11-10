@@ -164,15 +164,17 @@ async def _refused(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(status_code=exc.status_code, content=content)
 
 
-_WRITE_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
+_METHODS_WITH_AMOUNT = frozenset({"POST", "PUT", "PATCH"})
 
 
 async def _stored_amount_not_whole(request: Request, exc: Exception) -> JSONResponse:
     assert isinstance(exc, MoneyNotRepresentable)
-    if request.method in _WRITE_METHODS:
-        # A write whose amount the domain cannot hold as whole units (the domain keeps no
-        # cents yet) is the request's amount being refused, never a failure of ours: 422
-        # with the code the front already maps, and nothing is rounded.
+    if request.method in _METHODS_WITH_AMOUNT:
+        # A write carrying a body whose amount the domain cannot hold as whole units (the
+        # domain keeps no cents yet) is the request's amount being refused, never a failure
+        # of ours: 422 with the code the front already maps, and nothing is rounded. A
+        # DELETE carries no amount, so a stored non-whole one there stays the integrity
+        # failure below.
         return JSONResponse(
             status_code=422,
             content={
