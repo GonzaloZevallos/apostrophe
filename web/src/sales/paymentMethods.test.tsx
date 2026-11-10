@@ -1,58 +1,39 @@
 /**
- * `usePaymentMethodOptions`: the one list of Payment methods both screens read until GH-318.
- * Its test renders the Selector from the hook's whole result, so a widened type fails `tsc`.
+ * The Payment method options a Selector draws: the business's active methods as the API lists
+ * them, in that order, each option's value the id as text, loading while the query is pending.
  */
 
-import { screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { useState } from 'react'
-import { beforeEach, expect, test } from 'vitest'
-import Selector from '../components/Selector'
-import { renderForm } from '../components/selectorTestKit'
-import { stubViewport } from '../test-viewport'
-import { paymentMethodOf, usePaymentMethodOptions } from './paymentMethods'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { renderHook, waitFor } from '@testing-library/react'
+import type { ReactNode } from 'react'
+import { afterEach, expect, test, vi } from 'vitest'
+import { paymentMethodsResponse } from '../test/paymentMethods'
+import { paymentMethodIdOf, usePaymentMethodOptions } from './paymentMethods'
 
-beforeEach(() => stubViewport('computer'))
+afterEach(() => vi.unstubAllGlobals())
 
-function Field() {
-  const [value, setValue] = useState<string | null>(null)
-  return <Selector {...usePaymentMethodOptions()} label="Payment method" value={value} onChange={setValue} />
+function wrapper({ children }: { children: ReactNode }) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  return <QueryClientProvider client={client}>{children}</QueryClientProvider>
 }
 
-test('the Selector built from the hook lists Cash then Transfer, with no clearing row', async () => {
-  const user = userEvent.setup()
-  renderForm(<Field />)
-  await user.click(screen.getByRole('button', { name: /^Payment method/ }))
-  const options = screen.getAllByRole('option')
-  expect(options.map((option) => option.textContent)).toEqual(['Cash', 'Transfer'])
+test('the hook lists the API methods in order, loading first, with the id as the value', async () => {
+  vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(paymentMethodsResponse())))
+  const { result } = renderHook(() => usePaymentMethodOptions(), { wrapper })
+  expect(result.current.loading).toBe(true)
+  await waitFor(() => expect(result.current.loading).toBe(false))
+  expect(result.current.required).toBe(true)
+  expect(result.current.options).toEqual([
+    { value: '1', label: 'Cash' },
+    { value: '2', label: 'Transfer' },
+    { value: '3', label: 'Mercado Pago' },
+  ])
 })
 
-test('a list with options never shows empty-set or loading text', async () => {
-  const user = userEvent.setup()
-  renderForm(<Field />)
-  const field = screen.getByRole('button', { name: /^Payment method/ })
-  expect(field).toBeEnabled()
-  expect(field).not.toHaveAttribute('aria-busy')
-  await user.click(field)
-  expect(document.querySelector('.selector-lista__mensaje')).toBeNull()
-})
-
-test('the hook returns exactly the API values, cash then transfer, and a required built-in list', () => {
-  function Probe() {
-    const { options, builtIn, required } = usePaymentMethodOptions()
-    return (
-      <p>
-        {options.map((option) => option.value).join(',')} builtIn={String(builtIn)} required={String(required)}
-      </p>
-    )
-  }
-  renderForm(<Probe />)
-  expect(screen.getByText('cash,transfer builtIn=true required=true')).toBeInTheDocument()
-})
-
-test('a value that is not a method is never taken for one', () => {
-  expect(paymentMethodOf('cash')).toBe('cash')
-  expect(paymentMethodOf('transfer')).toBe('transfer')
-  expect(paymentMethodOf('owing')).toBeNull()
-  expect(paymentMethodOf(null)).toBeNull()
+test('a value that is not a method id is never taken for one', () => {
+  expect(paymentMethodIdOf('2')).toBe(2)
+  expect(paymentMethodIdOf(null)).toBeNull()
+  expect(paymentMethodIdOf('cash')).toBeNull()
+  expect(paymentMethodIdOf('2x')).toBeNull()
+  expect(paymentMethodIdOf('')).toBeNull()
 })

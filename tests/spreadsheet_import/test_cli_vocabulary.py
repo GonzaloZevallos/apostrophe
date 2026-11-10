@@ -73,7 +73,7 @@ def _linked_methods(engine: Engine, business_id: int) -> dict[date, tuple[str, s
     `payment.method` column (which a new payment leaves NULL)."""
     with Session(engine) as session:
         rows = session.execute(
-            select(SaleRow.sale_date, PaymentMethodRow.name, PaymentRow.method)
+            select(SaleRow.sold_on, PaymentMethodRow.name, PaymentRow.method)
             .join(PaymentRow, PaymentRow.sale_id == SaleRow.id)
             .join(
                 PaymentMethodRow,

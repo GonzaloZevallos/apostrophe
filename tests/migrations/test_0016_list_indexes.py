@@ -12,7 +12,7 @@ from sqlalchemy import inspect, text
 from sqlalchemy.engine import Connection, Engine
 
 from app.db import make_engine
-from app.migrations.runner import MIGRATIONS_ROOT
+from app.migrations.runner import MIGRATIONS_ROOT, upgrade_to_head
 
 NOW = "2026-01-01 12:00:00"
 INDEXES = {
@@ -22,11 +22,11 @@ INDEXES = {
 }
 TABLES = ("sale", "sale_line", "payment")
 # `sale` is read by the columns it had at this revision: later revisions add some (0023's
-# `number`), and a `SELECT *` would fail on every one.
+# `number`; `payment` gets 0029's `payment_method_id`), and a `SELECT *` would fail on every one.
 SELECTED = {
     "sale": "id, business_id, {sale_date}, customer_id, shipping_charged, note, recorded_at",
     "sale_line": "*",
-    "payment": "*",
+    "payment": "id, business_id, paid_on, amount, method, customer_id, sale_id, recorded_at",
 }
 
 
@@ -156,7 +156,7 @@ def _walk(engine: Engine) -> None:
     assert [len(rows) for rows in before.values()] == [6, 18, 6]
     assert all(INDEXES[table] not in names for table, names in _index_names(engine).items())
 
-    _migrate(engine, "up", "0016")
+    upgrade_to_head(engine)
 
     assert _rows(engine) == before
     assert all(INDEXES[table] in names for table, names in _index_names(engine).items())
@@ -173,7 +173,7 @@ def _walk(engine: Engine) -> None:
     assert _rows(engine) == before
     assert all(INDEXES[table] not in names for table, names in _index_names(engine).items())
 
-    _migrate(engine, "up", "0016")
+    upgrade_to_head(engine)
     assert _rows(engine) == before
     assert all(INDEXES[table] in names for table, names in _index_names(engine).items())
 

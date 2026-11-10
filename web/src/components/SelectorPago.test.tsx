@@ -9,16 +9,29 @@ import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { beforeEach, expect, test, vi } from 'vitest'
 import type { PayState } from '../sales/pricing'
-import type { PaymentMethod } from '../api/payments'
 import { stubViewport } from '../test-viewport'
 import SelectorPago, { type SelectorPagoProps } from './SelectorPago'
 import { renderForm } from './selectorTestKit'
+
+// The list is the business's own, read from the API; this seam gives it fixed so the component alone is tested.
+vi.mock('../sales/paymentMethods', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../sales/paymentMethods')>()),
+  usePaymentMethodOptions: () => ({
+    required: true as const,
+    loading: false,
+    emptySetMessage: 'none',
+    options: [
+      { value: '1', label: 'Cash' },
+      { value: '2', label: 'Transfer' },
+    ],
+  }),
+}))
 
 beforeEach(() => stubViewport('computer'))
 
 function Harness(props: Partial<SelectorPagoProps> & { initial?: PayState | null }) {
   const [payState, setPayState] = useState<PayState | null>(props.initial ?? null)
-  const [method, setMethod] = useState<PaymentMethod | null>(null)
+  const [method, setMethod] = useState<number | null>(null)
   return (
     <SelectorPago
       payState={payState}
@@ -63,7 +76,7 @@ test('choosing a method in the list reports it', async () => {
   renderForm(<Harness initial="paid" onMethod={onMethod} />)
   await user.click(screen.getByRole('button', { name: /^Payment method/ }))
   await user.click(screen.getByRole('option', { name: 'Cash' }))
-  expect(onMethod).toHaveBeenCalledWith('cash')
+  expect(onMethod).toHaveBeenCalledWith(1)
 })
 
 test('a disabled Owing carries the caller\'s description as its accessible description', () => {

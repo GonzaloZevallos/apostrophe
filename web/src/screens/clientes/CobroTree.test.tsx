@@ -22,7 +22,7 @@ import { peekPaymentReturn } from '../../paymentReturn'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { choosePaymentMethod } from '../../components/selectorTestKit'
 
-import { PAYMENT_METHODS_FIXTURE, paymentMethodsResponse } from '../../test/paymentMethods'
+import { paymentMethodsResponse } from '../../test/paymentMethods'
 
 const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
 const OWING = { id: 1, name: 'Ana Pérez', phone: '+5491122334455', vip: false, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }

@@ -33,7 +33,7 @@ def _seed(connection: Connection) -> None:
         )
     for customer_id, business_id in ((1, 1), (2, 2)):
         connection.execute(
-            text("INSERT INTO customer (id, business_id, name, vip) VALUES (:i, :b, 'C', 0)"),
+            text("INSERT INTO customer (id, business_id, name, is_vip) VALUES (:i, :b, 'C', 0)"),
             {"i": customer_id, "b": business_id},
         )
     payments = (
