@@ -43,8 +43,6 @@ subgraph src["src"]
       src_screens_expenses_MonthBody_tsx["MonthBody.tsx"]
     end
     subgraph src_screens_inicio["inicio"]
-      src_screens_inicio_FirstRunChecklist_tsx["FirstRunChecklist.tsx"]
-      src_screens_inicio_ImportNotice_tsx["ImportNotice.tsx"]
       src_screens_inicio_InicioFondo_tsx["InicioFondo.tsx"]
       src_screens_inicio_InicioPanel_tsx["InicioPanel.tsx"]
       src_screens_inicio_PeriodFigures_tsx["PeriodFigures.tsx"]
@@ -55,7 +53,6 @@ subgraph src["src"]
       src_screens_onboarding_CategoriesStep_tsx["CategoriesStep.tsx"]
       src_screens_onboarding_Listo_tsx["Listo.tsx"]
       src_screens_onboarding_OnboardingLayout_tsx["OnboardingLayout.tsx"]
-      src_screens_onboarding_OnboardingNotice_tsx["OnboardingNotice.tsx"]
       src_screens_onboarding_OnboardingRoutes_tsx["OnboardingRoutes.tsx"]
       src_screens_onboarding_OnboardingStep_tsx["OnboardingStep.tsx"]
       src_screens_onboarding_PartnerStep_tsx["PartnerStep.tsx"]
@@ -164,7 +161,6 @@ subgraph src["src"]
     src_screens_analisisCards_ts["analisisCards.ts"]
     src_screens_analisisCost_ts["analisisCost.ts"]
     src_screens_catalogCopy_ts["catalogCopy.ts"]
-    src_screens_inicioNotices_ts["inicioNotices.ts"]
     src_screens_originLabel_ts["originLabel.ts"]
     src_screens_priceDeleteNotice_ts["priceDeleteNotice.ts"]
     src_screens_stockEntryChoice_ts["stockEntryChoice.ts"]
@@ -198,11 +194,7 @@ src_screens_EntriesList_tsx-->src_screens_Variedades_tsx
 src_screens_EntriesList_tsx-->src_screens_originLabel_ts
 src_screens_Gastos_tsx-->src_screens_expenses_ExpenseForm_tsx
 src_screens_Gastos_tsx-->src_screens_expenses_MonthBody_tsx
-src_screens_Inicio_tsx-->src_screens_inicioNotices_ts
-src_screens_Inicio_tsx-->src_screens_inicio_FirstRunChecklist_tsx
-src_screens_Inicio_tsx-->src_screens_inicio_ImportNotice_tsx
 src_screens_Inicio_tsx-->src_screens_inicio_InicioPanel_tsx
-src_screens_Inicio_tsx-->src_screens_onboarding_OnboardingNotice_tsx
 src_screens_StockEntryForm_tsx-->src_screens_Variedades_tsx
 src_screens_StockEntryForm_tsx-->src_screens_stockEntryChoice_ts
 src_screens_Variedades_tsx-->src_screens_varieties_archivedVarieties_ts
@@ -262,9 +254,6 @@ src_screens_onboarding_Listo_tsx-->src_screens_onboarding_onboardingContext_ts
 src_screens_onboarding_Listo_tsx-->src_screens_onboarding_steps_ts
 src_screens_onboarding_OnboardingLayout_tsx-->src_screens_onboarding_afterProgress_ts
 src_screens_onboarding_OnboardingLayout_tsx-->src_screens_onboarding_onboardingContext_ts
-src_screens_onboarding_OnboardingNotice_tsx-->src_screens_onboarding_StepIndicator_tsx
-src_screens_onboarding_OnboardingNotice_tsx-->src_screens_onboarding_afterProgress_ts
-src_screens_onboarding_OnboardingNotice_tsx-->src_screens_onboarding_steps_ts
 src_screens_onboarding_OnboardingRoutes_tsx-->src_screens_onboarding_OnboardingStep_tsx
 src_screens_onboarding_OnboardingRoutes_tsx-->src_screens_onboarding_afterProgress_ts
 src_screens_onboarding_OnboardingRoutes_tsx-->src_screens_onboarding_onboardingContext_ts
