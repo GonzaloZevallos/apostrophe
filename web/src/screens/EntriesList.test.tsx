@@ -33,7 +33,7 @@ import { baselineText } from '../i18n/testing'
 const STOCK_EMPTY_TITLE = baselineText('stock.ts:EMPTY_STATE_TITLE')
 const STOCK_EMPTY_DETAIL = baselineText('stock.ts:EMPTY_STATE_DETAIL')
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-06', shown_language: SHOWN_EN }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-06', shown_language: SHOWN_EN, money_format: { symbol: '$', decimals: 0 } }
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {

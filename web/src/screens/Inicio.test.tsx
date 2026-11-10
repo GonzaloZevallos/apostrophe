@@ -81,7 +81,7 @@ const firstRunCalls: string[] = []
 /** What a POST to `/onboarding-progress/advance` answers; the read's answer when null. */
 let advanced: OnboardingProgress | null = null
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money_format: { symbol: '$', decimals: 0 } }
 
 function Provide() {
   return <Outlet context={ME} />

@@ -34,7 +34,7 @@ function renderLine(line: SaleBillLine, text: BillText): string {
         formatMoney(line.amount),
       )
     case 'gift':
-      return text.gift(line.product, quantity, text.unit)
+      return text.gift(line.product, quantity, text.unit, formatMoney(0))
   }
   return assertNever(rule)
 }

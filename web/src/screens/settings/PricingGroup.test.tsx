@@ -26,7 +26,7 @@ function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
-const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN }
+const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money_format: { symbol: '$', decimals: 0 } }
 
 const SETTINGS: PricingSettings = { is_bulk_pricing: true, is_vip_customers: false }
 

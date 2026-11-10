@@ -19,7 +19,7 @@ import Variedades from '../Variedades'
 import WithdrawalDetail from './WithdrawalDetail'
 import WithdrawalFormRoute from './WithdrawalFormRoute'
 
-export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-06', shown_language: 'en' as ShownLanguage }
+export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-06', shown_language: 'en' as ShownLanguage, money_format: { symbol: '$', decimals: 0 } }
 
 export function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {

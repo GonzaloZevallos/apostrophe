@@ -6,9 +6,12 @@
  */
 
 import { moneyTooManyDecimals } from '../copy/settings'
-import { MONEY_DECIMALS } from '../format/money'
+import { currentMoneyFormat } from '../format/money'
 import type { RefusalCode } from './refusals'
 
 export const TOO_MANY_DECIMALS_CODE: RefusalCode = 'money.too_many_decimals'
 
-export const TOO_MANY_DECIMALS_MESSAGE: string = moneyTooManyDecimals(MONEY_DECIMALS)
+/** Read when a refusal is shown, never at import: the decimals are the Business's, set from `me`. */
+export function tooManyDecimalsMessage(): string {
+  return moneyTooManyDecimals(currentMoneyFormat().decimals)
+}

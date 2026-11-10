@@ -1,5 +1,6 @@
-import { describe, expect, test } from 'vitest'
-import { parseGrams, parseMoney, parseSignedGrams, readMoneyInput } from './parse'
+import { afterEach, describe, expect, test } from 'vitest'
+import { resetMoneyFormat, setMoneyFormat } from './money'
+import { parseGrams, parseMoney, parseNonNegativeMoney, parseSignedGrams, readMoneyInput } from './parse'
 
 describe('parseMoney', () => {
   test('reads whole pesos with a dot as the thousands separator', () => {
@@ -10,7 +11,7 @@ describe('parseMoney', () => {
     expect(parseMoney('4500')).toEqual({ ok: true, value: 4500 })
   })
 
-  test('rejects a decimal amount: money never carries cents', () => {
+  test('rejects a decimal amount at 0 decimals', () => {
     expect(parseMoney('11.00')).toEqual({ ok: false })
   })
 
@@ -25,6 +26,59 @@ describe('parseMoney', () => {
     expect(parseMoney('11,000')).toEqual({ ok: false })
     expect(parseMoney('$ 11.000')).toEqual({ ok: false })
     expect(parseMoney('abc')).toEqual({ ok: false })
+  })
+})
+
+describe('parseMoney at the Business decimals', () => {
+  afterEach(() => resetMoneyFormat())
+
+  test.each([
+    [0, '1.250', 1250],
+    [1, '1.250,5', 1250.5],
+    [1, '7', 7],
+    [2, '1.250,50', 1250.5],
+    [2, '0,05', 0.05],
+    [2, '10,5', 10.5],
+    [2, '11000', 11000],
+  ])('%i decimals reads %s as %f', (decimals, text, value) => {
+    setMoneyFormat({ symbol: '$', decimals })
+    expect(parseMoney(text)).toEqual({ ok: true, value })
+  })
+
+  test.each([
+    [0, '10,5'],
+    [0, '10,0'],
+    [1, '10,55'],
+    [2, '10,555'],
+    [2, '10.50'],
+    [2, '10,'],
+    [2, '0,00'],
+    [2, '-1,50'],
+    [2, ',50'],
+  ])('%i decimals refuses %s', (decimals, text) => {
+    setMoneyFormat({ symbol: '$', decimals })
+    expect(parseMoney(text)).toEqual({ ok: false })
+  })
+})
+
+describe('readMoneyInput at the Business decimals', () => {
+  afterEach(() => resetMoneyFormat())
+
+  test('digits typed are the smallest units, symbol and separators ignored', () => {
+    setMoneyFormat({ symbol: 'US$', decimals: 2 })
+    expect(readMoneyInput('US$ 10,005')).toBe(100.05)
+    expect(readMoneyInput('US$ 10,0', 'delete')).toBe(1)
+    expect(readMoneyInput('US$ 1.000,00')).toBe(1000)
+  })
+
+  test('a symbol with a digit in it is not read as part of the amount', () => {
+    setMoneyFormat({ symbol: '1 $', decimals: 1 })
+    expect(readMoneyInput('1 $ 5,03')).toBe(50.3)
+  })
+
+  test('no digit left is null', () => {
+    setMoneyFormat({ symbol: 'US$', decimals: 2 })
+    expect(readMoneyInput('US$ ')).toBeNull()
   })
 })
 
@@ -105,5 +159,29 @@ describe('readMoneyInput after a deletion', () => {
 
   test('typed or pasted text keeps the cents rule', () => {
     expect(readMoneyInput('$ 20.00')).toBe(20)
+  })
+})
+
+describe('parseNonNegativeMoney', () => {
+  afterEach(() => resetMoneyFormat())
+
+  test.each([
+    [0, '0', 0],
+    [0, '1.500', 1500],
+    [2, '0', 0],
+    [2, '1.500,25', 1500.25],
+  ])('%i decimals reads %s as %f', (decimals, text, value) => {
+    setMoneyFormat({ symbol: '$', decimals })
+    expect(parseNonNegativeMoney(text)).toEqual({ ok: true, value })
+  })
+
+  test.each([
+    [0, '1,5'],
+    [2, '1,555'],
+    [2, '-1'],
+    [2, ''],
+  ])('%i decimals refuses %s', (decimals, text) => {
+    setMoneyFormat({ symbol: '$', decimals })
+    expect(parseNonNegativeMoney(text)).toEqual({ ok: false })
   })
 })

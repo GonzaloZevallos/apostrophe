@@ -32,7 +32,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useOutletContext } from 'react-router'
-import { TOO_MANY_DECIMALS_MESSAGE } from '../../api/amountRefusal'
+import { tooManyDecimalsMessage } from '../../api/amountRefusal'
 import { ApiError, NetworkError, UNKNOWN_CODE, get, post } from '../../api/client'
 import type { Customer } from '../../api/customers'
 import { keys } from '../../api/keys'
@@ -56,7 +56,7 @@ import { SheetStackProvider, useSheet } from '../../components/useSheetStack'
 import { useVisualViewport } from '../../components/useVisualViewport'
 import { formatDateLong, formatDateShort, maxSaleDate } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
-import { parseGrams, parseMoney } from '../../format/parse'
+import { parseGrams, parseMoney, parseNonNegativeMoney } from '../../format/parse'
 import {
   type LineValidation,
   type PayState,
@@ -115,13 +115,11 @@ function quoteOf(variety: Variety): PriceQuote | null {
  * A rule that is off never shows, so the safe side is no rule (`pricing-settings.md`). */
 const NO_RULES: PricingSettings = { bulk: false, vip: false }
 
-/** Whole pesos, zero or more — unlike `parseMoney` (money.ts), which rejects zero:
- * shipping charged is `$0` by default and that is a valid value to save with. */
+/** Zero or more, at the Business's decimals — unlike `parseMoney`, which rejects zero:
+ * shipping charged is zero by default and that is a valid value to save with. */
 function parseShipping(input: string): number | null {
-  const trimmed = input.trim()
-  if (!/^\d{1,3}(\.\d{3})+$|^\d+$/.test(trimmed)) return null
-  const value = Number(trimmed.replace(/\./g, ''))
-  return Number.isSafeInteger(value) && value >= 0 ? value : null
+  const parsed = parseNonNegativeMoney(input)
+  return parsed.ok ? parsed.value : null
 }
 
 interface SavedSale {
@@ -162,7 +160,7 @@ const SUBMIT_OVERRIDES: Partial<
   'sale.special_price_invalid': { field: 'form', message: GENERIC_REFUSAL },
   'sale.grams_invalid': { field: 'form', message: GENERIC_REFUSAL },
   'sale.rule_broken': { field: 'form', message: GENERIC_REFUSAL },
-  'money.too_many_decimals': { field: 'form', message: TOO_MANY_DECIMALS_MESSAGE },
+  'money.too_many_decimals': { field: 'form', get message() { return tooManyDecimalsMessage() } },
   'sale.price_quote_invalid': { field: 'form', message: GENERIC_REFUSAL },
 }
 

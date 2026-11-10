@@ -17,7 +17,7 @@ import { SheetRouterProvider } from '../../components/useSheetStack'
 import { CUSTOMERS, pathTo, SALE_NEW } from '../../routes'
 import NuevaVenta from './NuevaVenta'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money_format: { symbol: '$', decimals: 0 } }
 const price = (list: number) => ({
   id: 9,
   effective_from: '2026-09-01',

@@ -10,6 +10,7 @@ import type { PricingSettings } from '../../api/pricingSettings'
 import type { PriceErrors, PriceValues } from './priceFieldRules'
 import { PRICE_DISCOUNT_HELP, PRICE_FROM_GRAMS_HELP, PRICE_PER_GRAM_HELP, VARIETIES_TEXT } from '../../copy/varieties'
 import { COMMON_TEXT } from '../../copy/common'
+import { currentMoneyFormat } from '../../format/money'
 
 export function FieldError({ message }: { message: string | undefined }) {
   if (message === undefined) return null
@@ -28,16 +29,16 @@ interface AmountInputProps {
 }
 
 /**
- * A pesos input with the "$" before it. The sign is drawn, not typed: it is hidden from the
+ * An amount input with the Business symbol before it. The sign is drawn, not typed: it is hidden from the
  * accessible name and never part of the value, so a fill and a payload see digits only.
  */
 function AmountInput({ className, value, onChange, required }: AmountInputProps) {
   return (
     <span className="campo__monto">
-      <span className="campo__prefijo" aria-hidden="true">$</span>
+      <span className="campo__prefijo" aria-hidden="true">{currentMoneyFormat().symbol}</span>
       <input
         className={className}
-        inputMode="numeric"
+        inputMode={currentMoneyFormat().decimals > 0 ? 'decimal' : 'numeric'}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         required={required}

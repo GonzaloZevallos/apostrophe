@@ -30,7 +30,7 @@ import { EMPTY_DETAIL, EMPTY_TITLE } from '../copy/varieties'
 import { LIMITS, SAMPLES } from '../copy/limits'
 import { chooseTheme } from '../theme'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money_format: { symbol: '$', decimals: 0 } }
 
 function price(list: number) {
   return { id: 1, effective_from: '2026-09-25', list_price: list, bulk_price: null, bulk_minimum: null, vip_price: null }

@@ -17,7 +17,7 @@ import { SALE_NEW } from '../../routes'
 import { stubViewport } from '../../test-viewport'
 import NuevaVenta from './NuevaVenta'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money_format: { symbol: '$', decimals: 0 } }
 
 beforeEach(() => {
   vi.stubGlobal(

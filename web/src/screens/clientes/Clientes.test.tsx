@@ -450,7 +450,7 @@ function renderApp(entries: string[] = [CUSTOMERS]) {
       {
         element: (
           <FlashProvider>
-            <Outlet context={{ email: 'a@b.com', business_name: 'N', today: '2026-10-03' }} />
+            <Outlet context={{ email: 'a@b.com', business_name: 'N', today: '2026-10-03', money_format: { symbol: '$', decimals: 0 } }} />
           </FlashProvider>
         ),
         children: [

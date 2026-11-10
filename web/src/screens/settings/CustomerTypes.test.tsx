@@ -16,7 +16,7 @@ import { inAppState } from '../../components/inAppState'
 import { SETTINGS, SETTINGS_CUSTOMER_TYPES } from '../../routes'
 import CustomerTypes from './CustomerTypes'
 
-const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN }
+const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money_format: { symbol: '$', decimals: 0 } }
 
 const VIP: CustomerType = { id: 1, name: 'VIP', icon: 'star', is_vip: true }
 const REGULARS: CustomerType = { id: 2, name: 'Regulars', icon: 'circle', is_vip: false }

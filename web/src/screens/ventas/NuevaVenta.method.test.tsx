@@ -16,7 +16,7 @@ import { HOME, SALES, SALE_NEW } from '../../routes'
 import { router } from '../../router'
 import { pickProduct } from './lineProduct'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money_format: { symbol: '$', decimals: 0 } }
 const ANA = { id: 7, name: 'Ana', phone: '+5491100000001', vip: false }
 
 function price(list: number) {

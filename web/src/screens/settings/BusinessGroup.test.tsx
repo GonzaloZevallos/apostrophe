@@ -32,6 +32,7 @@ const ME: Me = {
   business_name: 'La Huerta',
   today: '2026-10-02',
   shown_language: SHOWN_EN,
+  money_format: { symbol: '$', decimals: 0 },
 }
 
 function Provide() {

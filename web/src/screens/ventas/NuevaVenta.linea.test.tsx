@@ -14,7 +14,7 @@ import { queryClient } from '../../queryClient'
 import { router } from '../../router'
 import { HOME, pathTo, SALES, SALE_NEW } from '../../routes'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money_format: { symbol: '$', decimals: 0 } }
 const ROSA = {
   id: 1,
   name: 'Rosa',

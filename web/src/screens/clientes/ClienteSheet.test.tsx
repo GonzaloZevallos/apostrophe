@@ -21,7 +21,7 @@ import { behindPane, expectBehindPane, expectBehindPaneEmpty } from '../../test/
 import { flipViewport, renderWithViewport } from '../../test-viewport'
 
 const NOBODY_OWES = baselineText('customers.ts:NOBODY_OWES')
-const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
+const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', money_format: { symbol: '$', decimals: 0 } }
 const ANA = { id: 1, name: 'Ana Pérez', phone: '+5491122334455', vip: false, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }
 const BETO = { id: 2, name: 'Beto Gómez', phone: null, vip: false, balance: 0, owing_since: null, standing: 'settled' }
 const ACCOUNT = {

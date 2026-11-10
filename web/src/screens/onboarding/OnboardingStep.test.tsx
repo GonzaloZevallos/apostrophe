@@ -21,7 +21,7 @@ import type { StepBodyProps } from './stepBodies'
 import { isFirst, isLast, STEPS } from './steps'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money_format: { symbol: '$', decimals: 0 } }
 const ORDER: StepSlug[] = ['variety', 'stock', 'header_footer', 'bot', 'partner', 'categories']
 
 function progress(canSkipRest: boolean): OnboardingProgress {

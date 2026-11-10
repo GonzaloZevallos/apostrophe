@@ -616,7 +616,7 @@
   {"source":"sales.ts:SALE_BILL_TEXT.copy","args":null,"text":"Copy"},
   {"source":"sales.ts:SALE_BILL_TEXT.copyFailed","args":null,"text":"Couldn't copy. Select the text below and copy it by hand."},
   {"source":"sales.ts:SALE_BILL_TEXT.credit","args":["$ 11.000"],"text":"In your favor: $ 11.000"},
-  {"source":"sales.ts:SALE_BILL_TEXT.gift","args":["Rosa","1","g"],"text":"Rosa 1 g · Gift · $ 0"},
+  {"source":"sales.ts:SALE_BILL_TEXT.gift","args":["Rosa","1","g","$ 0"],"text":"Rosa 1 g · Gift · $ 0"},
   {"source":"sales.ts:SALE_BILL_TEXT.header","args":["Flores Test","Sale #1284","28/09"],"text":"Flores Test\nSale #1284 · 28/09"},
   {"source":"sales.ts:SALE_BILL_TEXT.item","args":["Rosa","3,5","g","$ 11.000"],"text":"Rosa 3,5 g · $ 11.000"},
   {"source":"sales.ts:SALE_BILL_TEXT.paid","args":null,"text":"Paid"},

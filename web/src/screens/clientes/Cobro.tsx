@@ -23,7 +23,7 @@
 import { type FormEvent, type RefObject, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { TOO_MANY_DECIMALS_CODE, TOO_MANY_DECIMALS_MESSAGE } from '../../api/amountRefusal'
+import { TOO_MANY_DECIMALS_CODE, tooManyDecimalsMessage } from '../../api/amountRefusal'
 import { ApiError, NetworkError } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
 import {
@@ -41,7 +41,7 @@ import Selector from '../../components/Selector'
 import SinConexion from '../../components/SinConexion'
 import { useFlash } from '../../flash/useFlash'
 import { chipDate, formatDateShort } from '../../format/dates'
-import { formatMoney } from '../../format/money'
+import { currentMoneyFormat, formatMoney } from '../../format/money'
 import { readMoneyInput } from '../../format/parse'
 import { GENERIC_REFUSAL } from './ClienteForm'
 import { paymentMethodOf, usePaymentMethodOptions } from '../../sales/paymentMethods'
@@ -100,7 +100,7 @@ const AMOUNT_MESSAGES: Partial<Record<PaymentRefusalCode, string>> = {
  * narrows it enough to index `AMOUNT_MESSAGES` safely, never asserting it is a
  * `payment.*` code the backend actually answers. */
 function amountMessage(code: string): string | undefined {
-  if (code === TOO_MANY_DECIMALS_CODE) return TOO_MANY_DECIMALS_MESSAGE
+  if (code === TOO_MANY_DECIMALS_CODE) return tooManyDecimalsMessage()
   return Object.prototype.hasOwnProperty.call(AMOUNT_MESSAGES, code)
     ? AMOUNT_MESSAGES[code as PaymentRefusalCode]
     : undefined
@@ -148,7 +148,10 @@ export default function Cobro({
   // shows the choice: a passive effect leaves a window in which a Back leaves unasked.
   useLayoutEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange])
 
-  const previewAmount = amount !== null && Number.isSafeInteger(amount) && amount > 0 ? amount : null
+  const previewAmount =
+    amount !== null && Number.isSafeInteger(Math.round(amount * 10 ** currentMoneyFormat().decimals)) && amount > 0
+      ? amount
+      : null
 
   // Debounced 150 ms behind the amount/date the seller is typing (same delay as
   // `Clientes`' search box): the preview's own query key only moves once typing
@@ -243,7 +246,7 @@ export default function Cobro({
                 const deleting =
                   'inputType' in native && typeof native.inputType === 'string' && native.inputType.startsWith('delete')
                 const next = readMoneyInput(event.target.value, deleting ? 'delete' : 'insert')
-                if (next === null || Number.isSafeInteger(next)) setAmount(next)
+                if (next === null || Number.isSafeInteger(Math.round(next * 10 ** currentMoneyFormat().decimals))) setAmount(next)
               }}
               required
             />

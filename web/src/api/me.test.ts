@@ -10,7 +10,7 @@ test('getMe carries the shown language the API answered', async () => {
     'fetch',
     vi.fn().mockResolvedValue(
       new Response(
-        JSON.stringify({ email: 'a@b.co', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'de' }),
+        JSON.stringify({ email: 'a@b.co', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'de', money_format: { symbol: '$', decimals: 0 } }),
         { status: 200, headers: { 'Content-Type': 'application/json' } },
       ),
     ),
