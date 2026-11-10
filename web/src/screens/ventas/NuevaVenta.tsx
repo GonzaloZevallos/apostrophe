@@ -119,7 +119,7 @@ const NO_RULES: PricingSettings = { bulk: false, vip: false }
 /** Shipping charged: zero or more, unlike `parseMoneyInput`, which rejects zero — `0` is its default
  * and a valid value to save with. Anything else goes through `parseMoneyInput`. */
 function parseShipping(input: string, format: MoneyFormat): number | null {
-  if ((format.decimals === 0 ? /^0+$/ : /^0+(,0*)?$/).test(input.trim())) return 0
+  if ((format.decimals === 0 ? /^0+$/ : /^0+([,.]0*)?$/).test(input.trim())) return 0
   const parsed = parseMoneyInput(input, format)
   return parsed.ok ? parsed.value : null
 }
@@ -531,7 +531,10 @@ function NuevaVentaForm() {
     }
     const shippingCharged = parseShipping(shipping, money.format)
     if (shippingCharged === null) {
-      setShippingError(SALES_TEXT.shippingNotNegative)
+      const refused = parseMoneyInput(shipping, money.format)
+      setShippingError(
+        !refused.ok && refused.tooManyDecimals ? tooManyDecimalsMessage(money.format) : SALES_TEXT.shippingNotNegative,
+      )
       return
     }
     // Paid above $0 with no method: the refusal draws at the field and nothing is sent, so the
