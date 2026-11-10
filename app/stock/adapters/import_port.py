@@ -15,10 +15,12 @@ never leaves the call (the plan's invariant); it is never returned, stored or co
 from __future__ import annotations
 
 from datetime import date, datetime
+from decimal import Decimal
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.shared.money import TooManyDecimals, money_within
 from app.shared.quantity import Quantity
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.application.ports import Refusal
@@ -26,6 +28,7 @@ from app.spreadsheet_import.domain.rows import EntradaRow
 from app.stock.adapters.sql_stock_entries import SqlStockEntries
 from app.stock.adapters.sql_thresholds import SqlThresholds
 from app.stock.adapters.tables import StockEntryRow
+from app.stock.application.ports import MoneyFormatReader
 from app.stock.domain.entry import Origin, StockEntry
 from app.stock.domain.errors import (
     EntryCostInvalid,
@@ -69,9 +72,10 @@ class SqlStockImport:
     """`StockImport` over `SqlStockEntries` and `SqlThresholds`, for one business
     (ADR-0004)."""
 
-    def __init__(self, session: Session, business_id: int) -> None:
+    def __init__(self, session: Session, business_id: int, money_format: MoneyFormatReader) -> None:
         self._session = session
         self._business_id = business_id
+        self._money_format = money_format
         self._entries = SqlStockEntries(session, business_id)
         self._thresholds = SqlThresholds(session, business_id)
 
@@ -105,14 +109,21 @@ class SqlStockImport:
                 _CHECK_VARIETY_ID,
                 origin,
                 row.quantity,
-                row.total_cost,
+                self._whole_cost(row.total_cost),
                 row.note,
                 today,
                 _CHECK_RECORDED_AT,
             )
-        except _ENTRY_ERRORS as exc:
+        except (*_ENTRY_ERRORS, TooManyDecimals) as exc:
             return Refusal(exc.code)
         return None
+
+    def _whole_cost(self, total_cost: int | None) -> int | None:
+        """A sheet's cost as a domain amount, checked by value against the business's own
+        decimals like a typed one (docs/adr/0058); `None` stays `None`."""
+        if total_cost is None:
+            return None
+        return money_within(Decimal(total_cost), self._money_format.current()).whole_units()
 
     def write_threshold(
         self, variety_id: int, quantity: Quantity, transaction: Transaction
@@ -137,7 +148,7 @@ class SqlStockImport:
             variety_id,
             origin,
             row.quantity,
-            row.total_cost,
+            self._whole_cost(row.total_cost),
             row.note,
             today,
             recorded_at,

@@ -6,6 +6,7 @@ import {
   formatMoneyMagnitude,
   formatQuantity,
   formatSignedMoney,
+  MONEY_DECIMALS,
 } from './money'
 
 describe('formatMoney', () => {
@@ -27,6 +28,33 @@ describe('formatMoney', () => {
 
   test('zero', () => {
     expect(formatMoney(0)).toBe('$ 0')
+  })
+
+  test('a JSON number that is not whole is shown at the display decimals, half away from zero', () => {
+    expect(formatMoney(11000.5)).toBe('$ 11.001')
+    expect(formatMoney(11000.49)).toBe('$ 11.000')
+    expect(formatMoney(0.25)).toBe('$ 0')
+    expect(formatMoney(-0.25)).toBe('$ 0')
+  })
+
+  test('a whole amount reads the same as before', () => {
+    expect(formatMoney(1)).toBe('$ 1')
+    expect(formatMoney(999999)).toBe('$ 999.999')
+  })
+
+  test('the display decimals are 0 today', () => {
+    expect(MONEY_DECIMALS).toBe(0)
+  })
+})
+
+describe('the signed and magnitude forms with a figure that is not whole', () => {
+  test('a negative half rounds away from zero', () => {
+    expect(formatSignedMoney(-4500.5)).toBe('−$ 4.501')
+    expect(formatMoneyMagnitude(-2000.5)).toBe('$ 2.001')
+  })
+
+  test('a negative figure that rounds to zero shows no minus sign', () => {
+    expect(formatSignedMoney(-0.4)).toBe('$ 0')
   })
 })
 

@@ -8,6 +8,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
+from app.money_schema import MoneyAmount, MoneyOut
 from app.products.adapters.schemas import QuantityOut
 from app.sales.application.ports import LineCost, SaleView, SaleViewCustomer, SaleViewLine
 from app.sales.application.view_sales import SaleDetail
@@ -31,13 +32,13 @@ class LineIn(BaseModel):
     product_id: int
     quantity: Decimal
     gift: bool = False
-    special_price: int | None = None
+    special_price: MoneyAmount | None = None
 
 
 class SaleIn(BaseModel):
     date: SaleDate | None = None
     customer_id: int | None = None
-    shipping_charged: int = 0
+    shipping_charged: MoneyAmount = Decimal(0)
     note: str | None = None
     # Optional (docs/adr/0011): omitted means no method and not left owing, so a $0
     # sale can be sent with no payment at all and `sale.payment_required` is
@@ -65,8 +66,8 @@ class SaleLineOut(BaseModel):
     product_name: str
     quantity: QuantityOut
     pricing_rule: PricingRule
-    price_per_gram: int
-    line_total: int
+    price_per_gram: MoneyOut
+    line_total: MoneyOut
 
     @classmethod
     def of(cls, view_line: SaleViewLine) -> "SaleLineOut":
@@ -76,8 +77,8 @@ class SaleLineOut(BaseModel):
             product_name=view_line.variety_name,
             quantity=line.quantity.as_decimal(),
             pricing_rule=line.pricing_rule,
-            price_per_gram=line.price_per_gram,
-            line_total=line.line_total,
+            price_per_gram=Decimal(line.price_per_gram),
+            line_total=Decimal(line.line_total),
         )
 
 
@@ -86,10 +87,10 @@ class SaleOut(BaseModel):
     number: int
     date: SaleDate
     customer: SaleCustomerOut | None
-    shipping_charged: int
+    shipping_charged: MoneyOut
     note: str | None
     payment: PaymentOut
-    total: int
+    total: MoneyOut
     lines: list[SaleLineOut]
     still_owing: bool
 
@@ -102,13 +103,17 @@ class SaleOut(BaseModel):
             number=view.number,
             date=sale.date,
             customer=None if view.customer is None else SaleCustomerOut.of(view.customer),
-            shipping_charged=sale.shipping_charged,
+            shipping_charged=Decimal(sale.shipping_charged),
             note=sale.note,
             payment=_payment_out(sale),
-            total=sale.total,
+            total=Decimal(sale.total),
             lines=[SaleLineOut.of(line) for line in view.lines],
             still_owing=still_owing,
         )
+
+
+def _money_or_none(units: int | None) -> Decimal | None:
+    return None if units is None else Decimal(units)
 
 
 def _payment_out(sale: Sale) -> PaymentOut:
@@ -122,12 +127,14 @@ class LineCostOut(BaseModel):
     the line's grams is costed yet; `pending_quantity` is the part with no lot behind it,
     never folded into `costed` as a $0 cost."""
 
-    costed: int | None
+    costed: MoneyOut | None
     pending_quantity: QuantityOut
 
     @classmethod
     def of(cls, cost: LineCost) -> "LineCostOut":
-        return cls(costed=cost.costed, pending_quantity=cost.pending_quantity.as_decimal())
+        return cls(
+            costed=_money_or_none(cost.costed), pending_quantity=cost.pending_quantity.as_decimal()
+        )
 
 
 class SaleLineDetailOut(BaseModel):
@@ -137,8 +144,8 @@ class SaleLineDetailOut(BaseModel):
     product_name: str
     quantity: QuantityOut
     pricing_rule: PricingRule
-    price_per_gram: int
-    line_total: int
+    price_per_gram: MoneyOut
+    line_total: MoneyOut
     cost: LineCostOut
 
     @classmethod
@@ -149,8 +156,8 @@ class SaleLineDetailOut(BaseModel):
             product_name=view_line.variety_name,
             quantity=line.quantity.as_decimal(),
             pricing_rule=line.pricing_rule,
-            price_per_gram=line.price_per_gram,
-            line_total=line.line_total,
+            price_per_gram=Decimal(line.price_per_gram),
+            line_total=Decimal(line.line_total),
             cost=LineCostOut.of(cost),
         )
 
@@ -159,11 +166,11 @@ class BillPaymentOut(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     state: BillState
-    still_owed: int | None
+    still_owed: MoneyOut | None
 
     @classmethod
     def of(cls, payment: BillPayment) -> "BillPaymentOut":
-        return cls(state=payment.state, still_owed=payment.still_owed)
+        return cls(state=payment.state, still_owed=_money_or_none(payment.still_owed))
 
 
 class SaleBillLineOut(BaseModel):
@@ -171,18 +178,18 @@ class SaleBillLineOut(BaseModel):
 
     product: str
     quantity: QuantityOut
-    amount: int
+    amount: MoneyOut
     rule: BillRule | None
-    unit_price: int | None
+    unit_price: MoneyOut | None
 
     @classmethod
     def of(cls, line: SaleBillLine) -> "SaleBillLineOut":
         return cls(
             product=line.product,
             quantity=line.quantity.as_decimal(),
-            amount=line.amount,
+            amount=Decimal(line.amount),
             rule=line.rule,
-            unit_price=line.unit_price,
+            unit_price=_money_or_none(line.unit_price),
         )
 
 
@@ -196,11 +203,11 @@ class SaleBillOut(BaseModel):
     business_name: str
     number: int
     date: SaleDate
-    shipping_charged: int
-    total: int
+    shipping_charged: MoneyOut
+    total: MoneyOut
     lines: list[SaleBillLineOut]
     payment: BillPaymentOut
-    balance: int | None
+    balance: MoneyOut | None
 
     @classmethod
     def of(cls, bill: SaleBill) -> "SaleBillOut":
@@ -208,11 +215,11 @@ class SaleBillOut(BaseModel):
             business_name=bill.business_name,
             number=bill.number,
             date=bill.date,
-            shipping_charged=bill.shipping_charged,
-            total=bill.total,
+            shipping_charged=Decimal(bill.shipping_charged),
+            total=Decimal(bill.total),
             lines=[SaleBillLineOut.of(line) for line in bill.lines],
             payment=BillPaymentOut.of(bill.payment),
-            balance=bill.balance,
+            balance=_money_or_none(bill.balance),
         )
 
 
@@ -226,10 +233,10 @@ class SaleDetailOut(BaseModel):
     number: int
     date: SaleDate
     customer: SaleCustomerOut | None
-    shipping_charged: int
+    shipping_charged: MoneyOut
     note: str | None
     payment: PaymentOut
-    total: int
+    total: MoneyOut
     lines: list[SaleLineDetailOut]
     total_quantity: QuantityOut
     still_owing: bool
@@ -246,10 +253,10 @@ class SaleDetailOut(BaseModel):
             number=view.number,
             date=sale.date,
             customer=None if view.customer is None else SaleCustomerOut.of(view.customer),
-            shipping_charged=sale.shipping_charged,
+            shipping_charged=Decimal(sale.shipping_charged),
             note=sale.note,
             payment=_payment_out(sale),
-            total=sale.total,
+            total=Decimal(sale.total),
             lines=[
                 SaleLineDetailOut.of(line, cost)
                 for line, cost in zip(view.lines, costs, strict=True)

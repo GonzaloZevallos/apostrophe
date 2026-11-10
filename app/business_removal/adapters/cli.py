@@ -32,6 +32,7 @@ from sqlalchemy.pool import ConnectionPoolEntry
 from app.business_removal.adapters.export_file import FileExportFile
 from app.business_removal.adapters.operator_words import TranslatedOperatorWords
 from app.business_removal.adapters.sql_schema_rows import SqlSchemaRows
+from app.business_removal.application.money_format_read import MoneyFormatRead
 from app.business_removal.application.operator_words import OperatorWords
 from app.business_removal.application.remove_business import (
     Interrupted,
@@ -42,10 +43,12 @@ from app.business_removal.application.remove_business import (
 )
 from app.business_removal.application.schema_rows import DeletedIds, SchemaRows
 from app.business_removal.domain.business_ref import BusinessRef
+from app.business_removal.domain.export_document import ExportedMoney
 from app.business_removal.domain.schema import Schema
 from app.clock import Clock, system_clock
 from app.db import make_engine
 from app.migrations.runner import upgrade_to_head
+from app.money_format.adapters.export_reader import SqlMoneyFormatRead
 from app.settings import Settings
 
 _T = TypeVar("_T")
@@ -109,6 +112,17 @@ class _BusyTranslatingSchemaRows:
             if _looks_locked(exc):
                 raise StorageBusy("the database was locked") from exc
             raise
+
+
+class _BusyTranslatingMoneyFormat:
+    """The same translation for the money format read: it is one of the reads of the
+    export step, so a locked database is a busy one here too."""
+
+    def __init__(self, inner: MoneyFormatRead) -> None:
+        self._inner = inner
+
+    def of(self, business_id: int) -> ExportedMoney:
+        return _BusyTranslatingSchemaRows._call(lambda: self._inner.of(business_id))
 
 
 def _looks_locked(exc: OperationalError) -> bool:
@@ -179,7 +193,15 @@ def main(
                     return dry_run(schema_rows, output, words, args.email)
                 confirm = _StdinConfirm(stdin, stdout)
                 return remove_business(
-                    schema_rows, export_file, confirm, session, output, words, clock, args.email
+                    schema_rows,
+                    export_file,
+                    confirm,
+                    session,
+                    output,
+                    words,
+                    clock,
+                    args.email,
+                    money_format=_BusyTranslatingMoneyFormat(SqlMoneyFormatRead(session)),
                 )
         except SystemExit:
             raise

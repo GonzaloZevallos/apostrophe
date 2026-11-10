@@ -9,6 +9,7 @@ from app.accounts.adapters.deps import CurrentBusinessId
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
+from app.money_route import MoneyJsonRoute
 from app.products.adapters.schemas import (
     PriceEntryIn,
     PriceEntryOut,
@@ -24,7 +25,7 @@ from app.products.application.errors import (
     ProductHasHistory,
     ProductNotFound,
 )
-from app.products.application.ports import PricingSettingsReader, ProductLeaving
+from app.products.application.ports import MoneyFormatReader, PricingSettingsReader, ProductLeaving
 from app.products.domain.product import (
     DuplicateEffectiveDate,
     ProductArchived,
@@ -32,9 +33,10 @@ from app.products.domain.product import (
     UnknownPriceEntry,
     VipPriceNotBelowList,
 )
+from app.shared.money import TooManyDecimals
 from app.shared.quantity import InvalidQuantity, Quantity
 
-router = APIRouter(prefix="/api/products", tags=["products"])
+router = APIRouter(prefix="/api/products", tags=["products"], route_class=MoneyJsonRoute)
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
@@ -56,6 +58,17 @@ def get_pricing_settings(
     return factory(session, business_id)
 
 
+def get_money_format(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> MoneyFormatReader:
+    # Products never imports `app.money_format` (docs/adr/0055): `app/main.py` hangs
+    # `SqlMoneyFormat` on `app.state.products_money_format` as a factory.
+    factory = cast(
+        Callable[[Session, int], MoneyFormatReader], request.app.state.products_money_format
+    )
+    return factory(session, business_id)
+
+
 def get_leaving(
     request: Request, session: SessionDep, business_id: CurrentBusinessId
 ) -> ProductLeaving:
@@ -68,6 +81,7 @@ def get_leaving(
 
 ProductsDep = Annotated[SqlProducts, Depends(get_products)]
 SettingsDep = Annotated[PricingSettingsReader, Depends(get_pricing_settings)]
+MoneyFormatDep = Annotated[MoneyFormatReader, Depends(get_money_format)]
 LeavingDep = Annotated[ProductLeaving, Depends(get_leaving)]
 TodayDep = Annotated[date, Depends(get_today)]
 ClockDep = Annotated[Clock, Depends(get_clock)]
@@ -77,7 +91,7 @@ as_http = TranslateErrors(
     [
         (404, (ProductNotFound, ProductArchived, UnknownPriceEntry)),
         (409, (NameTaken, NameHeldByArchived, ProductHasHistory, DuplicateEffectiveDate)),
-        (422, (ProductRuleBroken, VipPriceNotBelowList, InvalidQuantity)),
+        (422, (ProductRuleBroken, VipPriceNotBelowList, InvalidQuantity, TooManyDecimals)),
     ]
 )
 
@@ -170,6 +184,7 @@ def record_price_entry(
     body: PriceEntryIn,
     products: ProductsDep,
     settings: SettingsDep,
+    money_format: MoneyFormatDep,
     session: SessionDep,
 ) -> PriceEntryOut:
     with as_http:
@@ -177,6 +192,7 @@ def record_price_entry(
         entry = manage_prices.record_price_entry(
             products,
             settings,
+            money_format,
             session,
             product_id=product_id,
             effective_from=body.effective_from,

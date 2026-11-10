@@ -3,7 +3,8 @@
 Money on the wire is the value in currency units, `11000` or `11000.50`, read as a
 `Decimal` and never kept as a float. No request carries decimals or a scale, and whether
 an amount has more places than the business's own decimals is checked where that business
-is known, not here.
+is known, not here: `money_within` in `app/shared/money.py` is the one place that rule
+lives, and a request type checks only that the value is a finite number of sane size.
 
 It lives beside `app/db.py` rather than in `app/shared/` because it is a pydantic type:
 `app/shared/` is imported by the domain, which imports no framework.
@@ -20,9 +21,15 @@ import math
 from decimal import Decimal
 from typing import Annotated, Any
 
-from pydantic import AfterValidator, BeforeValidator, ValidationInfo
+from pydantic import (
+    AfterValidator,
+    BeforeValidator,
+    PlainSerializer,
+    ValidationInfo,
+    WithJsonSchema,
+)
 
-from app.shared.money import Money
+from app.shared.money import MAX_INTEGER_DIGITS
 
 # A double round-trips every decimal literal of up to 15 significant digits.
 MAX_FLOAT_DIGITS = 15
@@ -52,11 +59,49 @@ def _from_json_float(value: float) -> Decimal:
 
 
 def _checked(value: Decimal) -> Decimal:
-    # Money.of raises InvalidMoney, a ValueError with a fixed message, which pydantic
-    # reports as a validation error.
-    # Back through hundredths, so the value is canonical: no negative zero, no positive
-    # exponent such as 1E+3, and no trailing zeros from a float's repr.
-    return Money.of(value).as_decimal()
+    """The value in canonical form: finite, of sane size, no negative zero, no positive
+    exponent such as 1E+3 and no trailing zeros. Digits are rearranged, never multiplied,
+    so no arithmetic context rounds a long amount. How many decimals it has is not judged
+    here."""
+    if not value.is_finite():
+        raise ValueError("the amount must be a number")
+    if value.adjusted() >= MAX_INTEGER_DIGITS:
+        raise ValueError("the amount is too large")
+    sign, digits, exponent = value.as_tuple()
+    assert isinstance(exponent, int)  # finite
+    if not any(digits):
+        return Decimal(0)
+    kept = list(digits)
+    while exponent < 0 and len(kept) > 1 and kept[-1] == 0:
+        kept.pop()
+        exponent += 1
+    if exponent > 0:
+        kept.extend([0] * exponent)
+        exponent = 0
+    return Decimal((sign, tuple(kept), exponent))
+
+
+def _on_the_wire(value: Decimal) -> int | float:
+    """A whole amount as a JSON integer, any other as an exact JSON number. The float
+    only carries a value proven to round-trip: at most 15 significant digits, the same
+    bound a request is held to, and its shortest repr reads back as the very same decimal.
+    Never a string."""
+    if value == value.to_integral_value():
+        return int(value)
+    carrier = float(value)
+    if len(_checked(value).as_tuple().digits) > MAX_FLOAT_DIGITS or Decimal(repr(carrier)) != value:
+        raise ValueError("the amount cannot be written exactly as a JSON number")
+    return carrier
 
 
 MoneyAmount = Annotated[Decimal, BeforeValidator(_as_decimal), AfterValidator(_checked)]
+
+MoneyOut = Annotated[
+    Decimal,
+    PlainSerializer(_on_the_wire, return_type=int | float, when_used="json"),
+    # The serializer sends a JSON integer when the value is whole and an exact JSON number
+    # otherwise, so the published contract names both.
+    WithJsonSchema({"anyOf": [{"type": "integer"}, {"type": "number"}]}, mode="serialization"),
+]
+"""A response's money field: the value in currency units, as a JSON integer when whole
+(`11000`) and otherwise an exact JSON number (`11000.5`), never a string."""

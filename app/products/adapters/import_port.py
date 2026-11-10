@@ -12,6 +12,7 @@ back through `VarietiesImport`: a row's result is its own rule's code, or nothin
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from decimal import Decimal
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -20,7 +21,7 @@ from app.products.adapters.sql_products import SqlProducts
 from app.products.adapters.tables import PriceEntryRow, ProductRow
 from app.products.application.manage_prices import record_imported_price_entry
 from app.products.application.manage_products import register_product
-from app.products.application.ports import Products
+from app.products.application.ports import MoneyFormatReader, Products
 from app.products.domain.product import (
     InvalidName,
     PriceEntry,
@@ -28,6 +29,7 @@ from app.products.domain.product import (
     ProductName,
     ProductRuleBroken,
 )
+from app.shared.money import MoneyFormat, TooManyDecimals, money_within
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.application.ports import Refusal, VarietyKey
 from app.spreadsheet_import.domain.rows import PriceHistoryRow
@@ -36,9 +38,10 @@ from app.spreadsheet_import.domain.rows import PriceHistoryRow
 class ProductsImport:
     """`VarietiesImport` for one business."""
 
-    def __init__(self, session: Session, business_id: int) -> None:
+    def __init__(self, session: Session, business_id: int, money_format: MoneyFormatReader) -> None:
         self._session = session
         self._business_id = business_id
+        self._money_format = money_format
 
     def has_records(self) -> bool:
         statement = (
@@ -67,6 +70,7 @@ class ProductsImport:
     ) -> Sequence[Refusal | None]:
         varieties: dict[str, Product] = {}
         results: list[Refusal | None] = []
+        shown = self._money_format.current()
         for row in rows:
             key = keys[row.variety]
             variety = varieties.get(key)
@@ -74,15 +78,16 @@ class ProductsImport:
                 variety = Product(ProductName.of(row.variety))
                 varieties[key] = variety
             try:
+                bulk_price = None if row.bulk_price is None else _whole(row.bulk_price, shown)
                 entry = PriceEntry.of(
                     row.effective,
-                    row.list_price,
-                    row.bulk_price,
+                    _whole(row.list_price, shown),
+                    bulk_price,
                     row.bulk_minimum,
-                    vip_price=row.bulk_price,
+                    vip_price=bulk_price,
                 )
                 variety.record_price(entry)
-            except ProductRuleBroken as exc:
+            except (ProductRuleBroken, TooManyDecimals) as exc:
                 results.append(Refusal(code=exc.code))
                 continue
             results.append(None)
@@ -106,6 +111,7 @@ class ProductsImport:
         # leaves Clientes VIP on: a rule that is off stores nothing (docs/adr/0034).
         record_imported_price_entry(
             self._varieties(),
+            self._money_format,
             transaction,
             variety_id,
             row.effective,
@@ -117,3 +123,9 @@ class ProductsImport:
 
     def _varieties(self) -> Products:
         return SqlProducts(self._session, self._business_id)
+
+
+def _whole(amount: int, shown: MoneyFormat) -> int:
+    """A sheet's amount as a domain amount, checked by value against the business's
+    decimals (docs/adr/0058)."""
+    return money_within(Decimal(amount), shown).whole_units()

@@ -41,6 +41,7 @@ import { parseMoney } from '../../format/parse'
 import { EXPENSES_TEXT } from '../../copy/expenses'
 import { COMMON_TEXT } from '../../copy/common'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
+import { TOO_MANY_DECIMALS_CODE, TOO_MANY_DECIMALS_MESSAGE } from '../../api/amountRefusal'
 
 export const CATEGORY_GONE = EXPENSES_TEXT.categoryGone
 export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
@@ -113,6 +114,7 @@ export default function ExpenseForm({
   const [form, setForm] = useState<FormState>(initial)
   const [categoryError, setCategoryError] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
+  const [amountError, setAmountError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
   const [sending, setSending] = useState(false)
   const [extraCategories, setExtraCategories] = useState<ExpenseCategory[]>([])
@@ -163,6 +165,7 @@ export default function ExpenseForm({
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
     setFormError(null)
+    setAmountError(null)
     setCategoryError(null)
     setOffline(false)
     const parsedAmount = parseMoney(form.amount)
@@ -195,6 +198,8 @@ export default function ExpenseForm({
       } else if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateResource(queryClient, 'expenses')
         onGone?.()
+      } else if (caught instanceof ApiError && caught.code === TOO_MANY_DECIMALS_CODE) {
+        setAmountError(TOO_MANY_DECIMALS_MESSAGE)
       } else if (isRefusal(caught)) {
         setFormError(GENERIC_REFUSAL)
       } else {
@@ -308,6 +313,11 @@ export default function ExpenseForm({
             onChange={(event) => setForm((previous) => ({ ...previous, amount: event.target.value }))}
             required
           />
+          {amountError !== null && (
+            <span className="campo__error" role="alert">
+              {amountError}
+            </span>
+          )}
         </label>
         <label className="campo">
           <span className="campo__rotulo">{EXPENSES_TEXT.details}</span>

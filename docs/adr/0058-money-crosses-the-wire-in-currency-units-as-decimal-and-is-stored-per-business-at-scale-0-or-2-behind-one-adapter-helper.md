@@ -65,7 +65,20 @@ This records it. No code changes here.
 - **Half-up rounding goes through `round_half_up` in `app/shared/money.py`.** The file does not exist
   at this commit; the first money part creates it with `round_half_up` and `money_column()`. It rounds an exact
   `Fraction` or ratio to the stored unit, half up, in integer arithmetic. No literal `// 100`, no
-  `round(` and no whole-peso assumption stays outside it.
+  `round(` and no whole-peso assumption stays outside it. Rounding goes to the business's display
+  decimals, never finer than its scale: a figure that divides rounds to `decimals` and the stored
+  unit can only be as fine as the scale, so a business at scale 0 and one at scale 2 with the same
+  amounts give the same figures. docs/adr/0007-a-sale-stores-its-line-totals-and-its-on-the-spot-payment.md's
+  line totals and docs/adr/0010-cost-of-goods-is-allocated-on-read-rounded-along-lot-order.md's cost
+  rounding read "to the stored unit" as this rule.
+- **The read path, as built.** An adapter reads an amount column through `scaled()`, which multiplies
+  it in SQL by the business's factor (hundredths per stored unit: 100 at scale 0, 1 at scale 2), so
+  every amount reaches Python in hundredths. The domain holds whole units through `Money.whole_units()`,
+  which raises `MoneyNotRepresentable` instead of truncating or rounding, until the part that
+  introduces the decimals. A request amount becomes a domain amount only through `money_within`,
+  which refuses more decimals than the business allows (`money.too_many_decimals`, a fixed message
+  that carries no amount); a response amount is a JSON integer when whole and otherwise a number
+  that reads back exactly.
 - **The business export carries `{scale, decimals}`.** Its amounts are at that scale, with the
   business's scale and decimals beside them, so a restore reads them back unchanged. An export written
   before a rescale reads correctly as scale-0 values.

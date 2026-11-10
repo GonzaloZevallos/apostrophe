@@ -7,8 +7,11 @@ Over an in-memory SQLite with a throwaway `money_format` table, so no hexagon is
 from __future__ import annotations
 
 from collections.abc import Iterator
+from typing import Annotated
 
 import pytest
+from fastapi import Depends, FastAPI
+from fastapi.testclient import TestClient
 from sqlalchemy import (
     Column,
     Connection,
@@ -18,10 +21,20 @@ from sqlalchemy import (
     UniqueConstraint,
     event,
     insert,
+    select,
+    update,
 )
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.db import MoneyFormatMissing, make_engine, money_scale_factor, money_stored_value
+from app.db import (
+    MoneyFormatMissing,
+    get_session,
+    make_engine,
+    money_scale_factor,
+    money_stored_value,
+    scaled,
+)
 from app.shared.money import Money, MoneyNotRepresentable
 
 _metadata = MetaData()
@@ -48,6 +61,7 @@ def session() -> Iterator[Session]:
                 {"business_id": 3, "scale": 1},
             ],
         )
+        db.commit()
         yield db
 
 
@@ -115,3 +129,154 @@ def test_the_lookup_searches_the_unique_index_instead_of_scanning(session: Sessi
     assert "USING INDEX" in details
     assert "(business_id=?)" in details
     assert "SCAN" not in details
+
+
+class _Statements:
+    """The `money_format` lookups an engine is sent, counted off the connection."""
+
+    def __init__(self, engine: Engine) -> None:
+        self._engine = engine
+        self.lookups = 0
+
+    def _count(self, *args: object) -> None:
+        if "SELECT" in str(args[2]) and "money_format.business_id = ?" in str(args[2]):
+            self.lookups += 1
+
+    def __enter__(self) -> _Statements:
+        event.listen(self._engine, "before_cursor_execute", self._count)
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        event.remove(self._engine, "before_cursor_execute", self._count)
+
+
+def _engine_of(session: Session) -> Engine:
+    bind = session.get_bind()
+    assert isinstance(bind, Engine)
+    return bind
+
+
+def _set_scale(engine: Engine, business_id: int, scale: int) -> None:
+    with Session(engine) as other, other.begin():
+        other.execute(
+            update(_money_format)
+            .where(_money_format.c.business_id == business_id)
+            .values(scale=scale)
+        )
+
+
+def test_a_lookup_is_cached_until_the_outer_transaction_commits(session: Session) -> None:
+    engine = _engine_of(session)
+    with _Statements(engine) as sent:
+        assert money_scale_factor(session, 1) == 100
+        assert money_scale_factor(session, 1) == 100
+        assert sent.lookups == 1
+        session.rollback()  # ends the read-only transaction; another unit of work changes it
+        _set_scale(engine, 1, 2)
+        assert money_scale_factor(session, 1) == 1
+        assert sent.lookups == 2
+
+
+def test_a_commit_makes_the_next_read_look_again(session: Session) -> None:
+    engine = _engine_of(session)
+    assert money_scale_factor(session, 1) == 100
+    session.commit()
+    _set_scale(engine, 1, 2)
+    assert money_scale_factor(session, 1) == 1
+
+
+def test_a_read_before_the_row_exists_raises_and_is_not_cached(session: Session) -> None:
+    with pytest.raises(MoneyFormatMissing):
+        money_scale_factor(session, 10)
+    session.execute(insert(_money_format).values(business_id=10, scale=2))
+
+    assert money_scale_factor(session, 10) == 1
+    with pytest.raises(MoneyFormatMissing):
+        money_scale_factor(session, 11)
+
+
+def test_a_rollback_forces_a_new_lookup(session: Session) -> None:
+    engine = _engine_of(session)
+    with _Statements(engine) as sent:
+        assert money_scale_factor(session, 1) == 100
+        session.rollback()
+        _set_scale(engine, 1, 2)
+        assert money_scale_factor(session, 1) == 1
+        assert sent.lookups == 2
+
+
+def test_a_released_savepoint_between_two_reads_costs_one_lookup(session: Session) -> None:
+    with _Statements(_engine_of(session)) as sent:
+        assert money_scale_factor(session, 1) == 100
+        with session.begin_nested():
+            session.execute(select(_money_format.c.id))
+        assert money_scale_factor(session, 1) == 100
+        with session.begin_nested():
+            assert money_scale_factor(session, 2) == 1
+        assert money_scale_factor(session, 2) == 1
+        assert sent.lookups == 2
+
+
+def test_two_readers_on_one_session_share_one_lookup(session: Session) -> None:
+    def read_many(business_id: int) -> list[int]:
+        factor = money_scale_factor(session, business_id)
+        rows = session.execute(select(scaled(_money_format.c.scale, factor))).scalars()
+        return list(rows)
+
+    with _Statements(_engine_of(session)) as sent:
+        first = read_many(1)
+        second = read_many(1)
+
+    assert first == second
+    assert sent.lookups == 1
+
+
+def test_scaled_multiplies_the_column_inside_the_statement(session: Session) -> None:
+    rows = session.execute(
+        select(scaled(_money_format.c.scale, 100)).where(_money_format.c.business_id == 2)
+    ).scalars()
+
+    assert list(rows) == [200]
+
+
+def test_scaled_takes_only_the_two_known_factors(session: Session) -> None:
+    with pytest.raises(ValueError, match="the money scale factor must be 1 or 100"):
+        scaled(_money_format.c.scale, 10)
+
+
+def test_each_request_makes_its_own_lookup() -> None:
+    engine = make_engine("sqlite://")
+    _metadata.create_all(engine)
+    with Session(engine) as seed, seed.begin():
+        seed.execute(insert(_money_format).values(business_id=1, scale=0))
+    probe = FastAPI()
+
+    @probe.get("/factor")
+    def factor(session: Annotated[Session, Depends(get_session)]) -> int:
+        return money_scale_factor(session, 1)
+
+    probe.state.engine = engine
+    with TestClient(probe) as http, _Statements(engine) as sent:
+        assert http.get("/factor").json() == 100
+        assert sent.lookups == 1
+        _set_scale(engine, 1, 2)
+        assert http.get("/factor").json() == 1
+        assert sent.lookups == 2
+
+
+def test_a_stored_amount_that_is_not_whole_units_answers_500_with_a_fixed_literal(
+    app: FastAPI,
+) -> None:
+    @app.get("/__probe/not-whole")
+    def not_whole() -> int:
+        return Money(1150).whole_units()
+
+    with TestClient(app, raise_server_exceptions=False) as http:
+        response = http.get("/__probe/not-whole")
+
+    assert response.status_code == 500
+    assert response.json() == {
+        "detail": "the amount is not a whole number of units",
+        "code": "money.not_representable",
+    }
+    assert "1150" not in response.text

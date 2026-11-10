@@ -10,10 +10,12 @@ from sqlalchemy import func, select, update
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from app.db import money_stored_value
 from app.payments.adapters.tables import PaymentRow
 from app.pricing_settings.adapters.tables import PricingSettingsRow
 from app.products.adapters.tables import PriceEntryRow
 from app.sales.adapters.tables import SaleLineRow, SaleRow
+from app.shared.money import Money
 from tests.conftest import TODAY
 from tests.contract_shapes import assert_matches_fixture
 from tests.fakes.archive import archive_by_hand
@@ -609,7 +611,10 @@ def _switches(engine: Engine, *, bulk: bool, vip: bool) -> None:
 
 def _vip_price(engine: Engine, vip_price: int) -> None:
     with Session(engine) as session:
-        session.execute(update(PriceEntryRow).values(vip_price=vip_price))
+        business_id = session.scalars(select(PriceEntryRow.business_id)).first()
+        assert business_id is not None
+        stored = money_stored_value(session, business_id, Money.of_units(vip_price))
+        session.execute(update(PriceEntryRow).values(vip_price=stored))
         session.commit()
 
 
