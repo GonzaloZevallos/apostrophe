@@ -37,7 +37,7 @@ El diagrama de clases de cada capacidad lo genera [scripts/docs/generate.py](../
 | Capacidad | Puertos (clases de `application/ports.py`) | Diagrama de clases |
 | --- | --- | --- |
 | accounts | [accounts](../../app/accounts/application/ports.py) `Accounts` `BusinessOpening` | [accounts](generated/classes/accounts.md) |
-| business_removal | sin `ports.py`: sus contratos están en [schema_rows](../../app/business_removal/application/schema_rows.py) y [money_format_read](../../app/business_removal/application/money_format_read.py) `MoneyFormatRead`, que implementa `SqlMoneyFormatRead` de money_format | [business_removal](generated/classes/business_removal.md) |
+| business_removal | sin `ports.py`: sus contratos están en [schema_rows](../../app/business_removal/application/schema_rows.py) y [money_format_read](../../app/business_removal/application/money_format_read.py) `MoneyFormatRead`, que implementa [export_reader](../../app/money_format/adapters/export_reader.py) `SqlMoneyFormatRead` de money_format | [business_removal](generated/classes/business_removal.md) |
 | catalog | [catalog](../../app/catalog/application/ports.py) `CatalogVarieties` `CatalogStock` | [catalog](generated/classes/catalog.md) |
 | customer_types | [customer_types](../../app/customer_types/application/ports.py) `CustomerTypes` `CustomersInType` | [customer_types](generated/classes/customer_types.md) |
 | customers | [customers](../../app/customers/application/ports.py) `Customers` `Balances` `CustomerTypes` | [customers](generated/classes/customers.md) |
@@ -51,7 +51,7 @@ El diagrama de clases de cada capacidad lo genera [scripts/docs/generate.py](../
 | results | [results](../../app/results/application/ports.py) `StockFigures` `SalesLedger` `DebtSummary` `WithdrawalReasons` | [results](generated/classes/results.md) |
 | sales | [sales](../../app/sales/application/ports.py) `Sales` `PriceBook` `CustomerFacts` | [sales](generated/classes/sales.md) |
 | spreadsheet_import | [spreadsheet_import](../../app/spreadsheet_import/application/ports.py) `VarietiesImport` `SalesImport` `VipTypeImport` | [spreadsheet_import](generated/classes/spreadsheet_import.md) |
-| stock | [stock](../../app/stock/application/ports.py) `StockEntries` `Withdrawals` `VarietyCatalog` `WithdrawalReasons` `ReasonDefaults` `MoneyFormatReader` (en [ports.py](../../app/stock/application/ports.py), implementado por `SqlMoneyFormat` y cableado como `app.state.stock_money_format` en `app/main.py`) | [stock](generated/classes/stock.md) |
+| stock | [stock](../../app/stock/application/ports.py) `StockEntries` `Withdrawals` `VarietyCatalog` `WithdrawalReasons` `ReasonDefaults` `MoneyFormatReader` (en [ports.py](../../app/stock/application/ports.py), implementado por [reader](../../app/money_format/adapters/reader.py) `SqlMoneyFormat` y cableado como `app.state.stock_money_format` en `app/main.py`) | [stock](generated/classes/stock.md) |
 | shared | sin puertos de negocio: [transaction.py](../../app/shared/transaction.py) `Transaction` | [shared](generated/classes/shared.md) |
 
 Un ejemplo de punta a punta, con las llamadas en orden, está en [flujos-clave.md](flujos-clave.md).

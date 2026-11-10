@@ -3,8 +3,8 @@
 Seam: the results HTTP routes (`/panel`, `/analysis`) and the routes that answer a balance,
 through `TestClient`. One installation holds two businesses, one opened at scale 0 and one
 at scale 2 through the app's own opening wiring; both enter the same data and every
-figure, the ones that divide included, must come out equal. The suite's `SCALES` stays
-`(0,)` until the flip, so the two scales are opened here.
+figure, the ones that divide included, must come out equal. The two scales are opened here
+on purpose, whatever the suite's `SCALES` is.
 """
 
 from __future__ import annotations
