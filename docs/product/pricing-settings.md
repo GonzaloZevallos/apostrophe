@@ -36,8 +36,8 @@ Criterios de éxito:
    - el Customer-type price de su tipo para ese Product en la fecha de la Sale, cuando Customer types está activado y el tipo tiene uno vigente.
 
    Un tipo sin precio vigente para un Product le cobra a su Customer como a cualquier otro, y lo mismo un Customer sin tipo o una Sale sin Customer. La vista previa en vivo muestra el mismo precio antes de guardar.
-3. **El precio de nadie se mueve por sorpresa.** Después de cada cambio, a cada VIP customer existente se le cobra exactamente lo que se le cobraba antes, por el mismo Product, día y gramos: el mismo precio por gramo, el mismo total y la misma insignia mostrada. Vale también después de la actualización que pasó la marca VIP al VIP type, después de la que pasó los VIP prices a filas de Customer-type price, y para los VIP prices registrados después. No cambia el precio, la regla ni el total de ninguna Sale pasada, hagan lo que hagan después los interruptores, los tipos, sus nombres o sus precios.
-4. **Cambiar de interruptor no pierde nada.** Desactivar una regla y volver a activarla trae de vuelta cada Bulk price, Customer-type price, Customer type y pertenencia guardados. Solo las Sales y las Price entries registradas mientras estaba desactivada quedan sin ella.
+3. **El precio de nadie se mueve por sorpresa.** Después de cada cambio, a cada VIP customer existente se le cobra exactamente lo que se le cobraba antes, por el mismo Product, día y gramos: el mismo precio por gramo, el mismo total y la misma insignia mostrada. Vale también después de la actualización que pasó la marca VIP al VIP type, después de la que pasó los VIP prices a filas de Customer-type price, y para los VIP prices registrados después. No cambia el precio, la regla ni el total de ninguna Sale pasada, hagan lo que hagan después los interruptores, los tipos, sus nombres o sus precios. Un Business sin VIP type no tiene VIP customers, así que sus VIP prices congelados no le cobraban nada a nadie y siguen sin cobrarle nada a nadie.
+4. **Cambiar de interruptor no pierde nada.** Desactivar una regla y volver a activarla trae de vuelta cada Bulk price, Customer-type price, Customer type y pertenencia guardados. Solo las Sales y las Price entries registradas mientras estaba desactivada quedan sin ella. Los VIP prices congelados de un Business sin VIP type no se muestran con ninguna posición del interruptor, porque nunca pudieron aplicarse; siguen guardados en su columna.
 5. **Los Customers nunca ven un precio de tipo.** El Catalog nunca muestra el VIP price ni ningún Customer-type price, y el **Sale bill** nunca nombra el tipo. La línea de Bulk del Catalog se muestra solo mientras Bulk price está activado.
 6. **Rápido.** Cada interruptor se cambia en pocos toques desde Settings → Prices. Registrar una Sale sigue llevando menos de un minuto.
 7. **Los Businesses nunca se mezclan** (ADR-0004). Los interruptores, los Customer types y los Customer-type prices de un Business nunca afectan los precios, las pantallas ni el Catalog de otro.
@@ -76,14 +76,15 @@ Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-
   - El campo se muestra mientras Customer types está activado y el Business tiene su VIP type; en un Business sin VIP type (todo Business nuevo, o uno que eliminó el suyo) no se muestra.
   - Su etiqueta, su lugar, su "$" y su rechazo no cambian.
   - Lo tipeado se guarda como una fila del VIP type con la fecha de la Price entry y atada a ella. La columna `price_entry.vip_price` no se vuelve a escribir.
-  - La sección Prices de la página del Product y el historial de precios leen el VIP price de esa fila, así que en pantalla no cambia nada.
+  - La sección Prices de la página del Product y el historial de precios leen el VIP price de esa fila, así que en pantalla no cambia nada para un Business con VIP type.
   - Una Price entry registrada mientras Customer types está desactivado no guarda ninguna fila, mande lo que mande el pedido.
   - Los demás tipos no tienen precio hasta la parte de la pantalla de precios por tipo. La línea de ayuda bajo el interruptor lo sigue diciendo.
 - **Al eliminar**:
   - eliminar una Price entry se lleva sus filas, y vuelve a regir la Price entry anterior con sus propias filas;
   - eliminar un Customer type (solo se puede sin Customers, customers.md) se lleva sus filas;
   - en los dos casos, las Sales registradas conservan su precio, su regla y su copia del nombre del tipo.
-- **La migración**: una fila del VIP type por cada Price entry con VIP price, con la misma fecha, el mismo monto y atada a esa Price entry. Solo agrega una tabla y filas: ningún valor existente cambia, y `customer.is_vip` y `price_entry.vip_price` quedan congeladas en su lugar, como historia, sin que nadie las vuelva a leer ni escribir. Un Business sin VIP prices queda sin ningún Customer-type price, y cada línea se cotiza como antes: es lo normal, no un error.
+- **La migración**: una fila del VIP type por cada Price entry con VIP price de un Business que tiene su VIP type en ese momento, con la misma fecha, el mismo monto y atada a esa Price entry. Solo agrega una tabla y filas: ningún valor existente cambia, y `customer.is_vip` y `price_entry.vip_price` quedan congeladas en su lugar, como historia, sin que nadie las vuelva a leer ni escribir. Un Business sin VIP prices queda sin ningún Customer-type price, y cada línea se cotiza como antes: es lo normal, no un error.
+- **Un Business sin VIP type con VIP prices congelados** (abierto después de los Customer types, o que eliminó su VIP type): esos VIP prices no se migran a ninguna fila, no cotizan ninguna línea y su sección Prices y su historial de precios dejan de mostrarlos, porque ningún Customer pudo ni puede pagarlos. Un tipo propio llamado "VIP" no los recibe. Siguen guardados tal cual en `price_entry.vip_price` y salen en el **Business export**. No hay aviso.
 - **La regla en una línea**: cómo un Customer-type price entra en la cotización de una Sale line, y qué se guarda en ella, está en sales.md.
 
 ### Valores iniciales
@@ -92,7 +93,7 @@ Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-
   - Cada Price entry con un Bulk price recibió VIP price = Bulk price, así cada VIP customer pagó exactamente lo que pagaba antes; la migración de los Customer-type prices pasó esos VIP prices a filas del VIP type.
   - Un Bulk price ya es menor que el List price, así que el VIP price copiado cumple su propia regla.
 - **Businesses existentes** (en la migración de los Customer types, ADR-0059): cada uno recibe su VIP type, con el ícono `star` y los Customers que tenían la marca VIP; ningún interruptor cambia.
-- **Businesses existentes** (en la migración de los Customer-type prices): una fila del VIP type por cada VIP price, como dice arriba; ningún interruptor cambia.
+- **Businesses existentes** (en la migración de los Customer-type prices): una fila del VIP type por cada VIP price, solo en los Businesses con VIP type, como dice arriba; ningún interruptor cambia.
 - **Un Business nuevo**: los dos interruptores desactivados, hasta que el issue del **Onboarding** decida otra cosa, ningún Customer type y ningún Customer-type price.
 - **Un Business cargado por la Spreadsheet import**: la Spreadsheet import activa lo que usa la planilla y nunca desactiva nada (import.md).
 
@@ -117,7 +118,7 @@ Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-
 
 ### Exportación
 
-El **Business export** (accounts.md) guarda los dos interruptores tal como están guardados, y los Customer types y los Customer-type prices por reflexión del esquema (ADR-0015).
+El **Business export** (accounts.md) guarda los dos interruptores tal como están guardados, y los Customer types, los Customer-type prices y las columnas congeladas (`price_entry.vip_price` incluida) por reflexión del esquema (ADR-0015).
 
 ### Restricciones
 
@@ -133,7 +134,8 @@ El **Business export** (accounts.md) guarda los dos interruptores tal como está
   - para cada VIP customer existente, el precio, la regla y el total de una Sale son iguales a lo que eran antes, por el mismo Product, día y gramos: 0 diferencias.
 - **Migración de los Customer types (criterio 3)**: ningún interruptor cambia de valor; cada Business existente tiene su VIP type con exactamente los Customers de `vip = 1`; para cada uno de ellos el precio, la regla y el total de una Sale nueva son iguales antes y después: 0 diferencias; el comparador M3 compartido encuentra 0 valores cambiados.
 - **Migración de los Customer-type prices (criterio 3)**:
-  - cada Price entry con un VIP price tiene exactamente una fila del VIP type con su fecha, su monto y su id, y ninguna sin VIP price la tiene;
+  - en un Business con VIP type, cada Price entry con un VIP price tiene exactamente una fila del VIP type con su fecha, su monto y su id, y ninguna sin VIP price la tiene;
+  - en un Business sin VIP type, ninguna Price entry recibe fila, su `vip_price` queda igual, y su sección Prices y su historial no muestran ningún VIP price;
   - el comparador M3 compartido de `tests/migrations/` encuentra 0 valores cambiados en las columnas que ya existían;
   - para cada Customer del VIP type, cada Product, día y cantidad, el precio por gramo, el total y la insignia mostrada de una línea nueva son iguales antes y después: 0 diferencias.
 - **Paridad VIP después de la migración (criterio 3)**: un test registra, para un Product, una Price entry con VIP price y después otra sin VIP price; desde la fecha de la segunda, un Customer del VIP type paga lista o bulk, igual que antes de esta parte. Otro registra un VIP price desde el formulario y comprueba que se guarda como fila del VIP type y que `price_entry.vip_price` queda vacío.
@@ -160,6 +162,7 @@ El **Business export** (accounts.md) guarda los dos interruptores tal como está
 - Precios promocionales por fecha.
 - Una pantalla para fijar o gestionar los precios de los Customer types que no son el VIP type, o de cualquier tipo fuera de una Price entry (la parte de la pantalla de precios por tipo).
 - Un aviso cuando un List price baja hasta un Customer-type price o por debajo.
+- Mostrar, migrar o avisar sobre los VIP prices congelados de un Business sin VIP type.
 - El Onboarding, incluido con qué arranca un Business nuevo.
 - Rechazar o avisar en una Sale porque los interruptores cambiaron en medio de la Sale.
 - Un aviso o conteo de Products sin VIP price.
