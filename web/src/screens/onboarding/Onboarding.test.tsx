@@ -7,9 +7,9 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { useEffect } from 'react'
+import { StrictMode, useEffect } from 'react'
 import {
   createMemoryRouter,
   Outlet,
@@ -17,6 +17,7 @@ import {
   type RouteObject,
 } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { NetworkError } from '../../api/client'
 import type { Me } from '../../api/me'
 import { SHOWN_EN } from '../../test/shownLanguage'
 import type { OnboardingProgress, StepSlug, StepState } from '../../api/onboarding'
@@ -107,12 +108,18 @@ function Spy({ onMount }: { onMount: () => void }) {
   return null
 }
 
-function renderAt(initial: string | { pathname: string; state: unknown }, index = 0, before: string[] = []) {
+function renderAt(
+  initial: string | { pathname: string; state: unknown },
+  index = 0,
+  before: string[] = [],
+  strict = false,
+) {
   const routes: RouteObject[] = [
     {
       element: <Provide />,
       children: [
         { index: true, element: <span>pantalla inicio</span> },
+        { path: 'settings', element: <span>pantalla ajustes</span> },
         { path: SALE_NEW, element: <NewSaleStub /> },
         {
           path: 'onboarding',
@@ -131,13 +138,14 @@ function renderAt(initial: string | { pathname: string; state: unknown }, index 
   ]
   const router = createMemoryRouter(routes, { initialEntries: [...before, initial], initialIndex: index })
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  render(
+  const tree = (
     <QueryClientProvider client={queryClient}>
       <SheetRouterProvider router={router}>
         <RouterProvider router={router} />
       </SheetRouterProvider>
-    </QueryClientProvider>,
+    </QueryClientProvider>
   )
+  render(strict ? <StrictMode>{tree}</StrictMode> : tree)
   return router
 }
 
@@ -422,4 +430,188 @@ test('"Done" obeys the icon and text rule and closes with the icon-only "Close"'
   expect(screen.getByRole('button', { name: 'Add my first sale' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Go to Home' })).toBeInTheDocument()
   expectIconAndTextRule(document.body)
+})
+
+// The `finish` entry: opening `/onboarding` with every step done or passed sends `advance`.
+const FINISH = answer(['done', 'done', 'done', 'skipped', 'skipped', 'done'])
+const OVER = answer(['done', 'done', 'done', 'skipped', 'skipped', 'done'], { over: true, resume: null })
+const STEP_2 = answer(['done', 'pending', 'pending', 'pending', 'pending', 'pending'])
+
+/** Reads answer in turn (the last one repeats); `advance` runs `onAdvance`. */
+function stubSequence(reads: OnboardingProgress[], onAdvance: () => Response | Promise<Response>) {
+  let read = 0
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input)
+      const method = init?.method ?? 'GET'
+      calls.push(`${method} ${url}`)
+      if (method === 'POST' && url === '/onboarding-progress/advance') {
+        try {
+          return Promise.resolve(onAdvance())
+        } catch (caught) {
+          return Promise.reject(caught instanceof Error ? caught : new Error('stub'))
+        }
+      }
+      const next = reads[Math.min(read, reads.length - 1)]
+      read += 1
+      return Promise.resolve(json(next))
+    }),
+  )
+}
+
+const advances = () => calls.filter((call) => call === 'POST /onboarding-progress/advance').length
+const reads = () => calls.filter((call) => call === 'GET /onboarding-progress').length
+
+function refusal(status: number, code: string): Response {
+  return new Response(JSON.stringify({ code }), { status, headers: { 'Content-Type': 'application/json' } })
+}
+
+test('opening /onboarding with every step done or passed sends advance once and shows "Done"', async () => {
+  stubSequence([FINISH], () => json(OVER))
+  renderAt(ONBOARDING)
+
+  expect(await screen.findByRole('heading', { name: 'Done' })).toBeInTheDocument()
+  expect(advances()).toBe(1)
+})
+
+test('while advance is in flight the entry shows the loading shape and no step', async () => {
+  let release: (response: Response) => void = () => undefined
+  const fetchStub = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+    const method = init?.method ?? 'GET'
+    calls.push(`${method} ${String(input)}`)
+    if (method === 'POST') return new Promise<Response>((resolve) => (release = resolve))
+    return Promise.resolve(json(FINISH))
+  })
+  vi.stubGlobal('fetch', fetchStub)
+  renderAt(ONBOARDING)
+
+  await waitFor(() => expect(advances()).toBe(1))
+  expect(screen.getByRole('progressbar')).toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: 'Done' })).not.toBeInTheDocument()
+  expect(screen.queryByText('pantalla inicio')).not.toBeInTheDocument()
+  release(json(OVER))
+  expect(await screen.findByRole('heading', { name: 'Done' })).toBeInTheDocument()
+})
+
+test('the same entry under StrictMode still sends one advance', async () => {
+  stubSequence([FINISH], () => json(OVER))
+  renderAt(ONBOARDING, 0, [], true)
+
+  expect(await screen.findByRole('heading', { name: 'Done' })).toBeInTheDocument()
+  expect(advances()).toBe(1)
+})
+
+test('after "Done", reopening /onboarding on an ended Onboarding goes to Inicio with no new advance', async () => {
+  stubSequence([FINISH, OVER], () => json(OVER))
+  const router = renderAt(ONBOARDING)
+  await screen.findByRole('heading', { name: 'Done' })
+
+  await act(() => router.navigate(HOME))
+  await screen.findByText('pantalla inicio')
+  await act(() => router.navigate(ONBOARDING))
+
+  expect(await screen.findByText('pantalla inicio')).toBeInTheDocument()
+  expect(advances()).toBe(1)
+})
+
+test.each([
+  ['a business with nothing left to resume', { ...OVER, resume: null }],
+  ['a business never offered the Onboarding', { ...FRESH, offered: false, resume: null, steps: [] }],
+])('opening /onboarding for %s goes to Inicio and sends no request but the read', async (_name, read) => {
+  stubSequence([read], () => json(OVER))
+  renderAt(ONBOARDING)
+
+  expect(await screen.findByText('pantalla inicio')).toBeInTheDocument()
+  expect(calls).toEqual(['GET /onboarding-progress'])
+})
+
+test('opening /onboarding with a step to resume opens it and sends no advance', async () => {
+  stubSequence([STEP_2], () => json(OVER))
+  renderAt(ONBOARDING)
+
+  expect(await screen.findByText('Step 2 of 6')).toBeInTheDocument()
+  expect(advances()).toBe(0)
+})
+
+test('an advance that answers not over with nothing to resume goes to Inicio, with one request', async () => {
+  stubSequence([FINISH], () => json({ ...FINISH, resume: 'finish' }))
+  renderAt(ONBOARDING)
+
+  expect(await screen.findByText('pantalla inicio')).toBeInTheDocument()
+  expect(advances()).toBe(1)
+})
+
+test('an advance that answers not over with a step to resume opens that step', async () => {
+  stubSequence([FINISH], () => json(STEP_2))
+  renderAt(ONBOARDING)
+
+  expect(await screen.findByText('Step 2 of 6')).toBeInTheDocument()
+  expect(advances()).toBe(1)
+})
+
+test('an advance that fails offline shows the offline state, and reopening it can reach "Done"', async () => {
+  let attempt = 0
+  stubSequence([FINISH], () => {
+    attempt += 1
+    if (attempt === 1) throw new NetworkError()
+    return json(OVER)
+  })
+  const router = renderAt(ONBOARDING)
+
+  expect(await screen.findByRole('status')).toBeInTheDocument()
+  expect(screen.queryByText('pantalla inicio')).not.toBeInTheDocument()
+  expect(advances()).toBe(1)
+
+  await act(() => router.navigate(HOME))
+  await screen.findByText('pantalla inicio')
+  await act(() => router.navigate(ONBOARDING))
+
+  expect(await screen.findByRole('heading', { name: 'Done' })).toBeInTheDocument()
+  expect(advances()).toBe(2)
+})
+
+test('an advance refused as gone goes to Inicio', async () => {
+  stubSequence([FINISH], () => refusal(404, 'account.invitation_not_usable'))
+  renderAt(ONBOARDING)
+
+  expect(await screen.findByText('pantalla inicio')).toBeInTheDocument()
+})
+
+test('an advance refused any other way shows the generic error and stays on the entry', async () => {
+  stubSequence([FINISH], () => refusal(500, 'unknown'))
+  renderAt(ONBOARDING)
+
+  expect(await screen.findByRole('alert')).toBeInTheDocument()
+  expect(screen.queryByText('pantalla inicio')).not.toBeInTheDocument()
+  expect(advances()).toBe(1)
+})
+
+test('"Done" replaces the entry in history: back lands on the screen before /onboarding', async () => {
+  stubSequence([FINISH], () => json(OVER))
+  const router = renderAt(ONBOARDING, 1, ['/settings'])
+  await screen.findByRole('heading', { name: 'Done' })
+  expect(router.state.location.pathname).toBe(ONBOARDING_DONE)
+
+  await act(() => router.navigate(-1))
+
+  expect(await screen.findByText('pantalla ajustes')).toBeInTheDocument()
+  expect(router.state.location.pathname).toBe('/settings')
+  await act(() => router.navigate(1))
+  expect(router.state.location.pathname).toBe(ONBOARDING_DONE)
+})
+
+test('a second visit that finds every step done sends its own advance and shows "Done"', async () => {
+  stubSequence([STEP_2, FINISH], () => json(OVER))
+  const router = renderAt(ONBOARDING)
+  await screen.findByText('Step 2 of 6')
+  expect(advances()).toBe(0)
+
+  await act(() => router.navigate(HOME))
+  await screen.findByText('pantalla inicio')
+  await act(() => router.navigate(ONBOARDING))
+
+  expect(await screen.findByRole('heading', { name: 'Done' })).toBeInTheDocument()
+  expect(advances()).toBe(1)
+  expect(reads()).toBe(2)
 })
