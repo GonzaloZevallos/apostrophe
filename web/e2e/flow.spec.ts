@@ -157,10 +157,14 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText(/Flower purchases don't go here/)).toBeVisible()
   await page.goto(legacyFor(ANALYSIS))
   await expectPath(page, ANALYSIS)
-  await expect(page.getByRole('button', { name: 'Previous month' })).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Previous month' }),
+  ).toBeVisible()
   await page.reload()
   await expectPath(page, ANALYSIS)
-  await expect(page.getByRole('button', { name: 'Previous month' })).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Previous month' }),
+  ).toBeVisible()
 
   // Add and remove an expense category. "Growing supplies", "Packaging",
   // "Shipping and transport" and "Other" are the four the business starts with
