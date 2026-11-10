@@ -1978,6 +1978,82 @@
         "title": "MeOut",
         "type": "object"
       },
+      "MethodIn": {
+        "properties": {
+          "icon": {
+            "$ref": "#/components/schemas/PaymentMethodIcon",
+            "default": "other"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "MethodIn",
+        "type": "object"
+      },
+      "MethodOut": {
+        "properties": {
+          "icon": {
+            "$ref": "#/components/schemas/PaymentMethodIcon"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "in_use": {
+            "title": "In Use",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "icon",
+          "position",
+          "in_use"
+        ],
+        "title": "MethodOut",
+        "type": "object"
+      },
+      "MethodPatch": {
+        "properties": {
+          "icon": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethodIcon"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "MethodPatch",
+        "type": "object"
+      },
       "MonthRowOut": {
         "properties": {
           "cash": {
@@ -2102,6 +2178,23 @@
           "categories"
         ],
         "title": "MonthlyViewOut",
+        "type": "object"
+      },
+      "MoveIn": {
+        "properties": {
+          "direction": {
+            "enum": [
+              "up",
+              "down"
+            ],
+            "title": "Direction",
+            "type": "string"
+          }
+        },
+        "required": [
+          "direction"
+        ],
+        "title": "MoveIn",
         "type": "object"
       },
       "Origin": {
@@ -2355,6 +2448,21 @@
           "transfer"
         ],
         "title": "PaymentMethod",
+        "type": "string"
+      },
+      "PaymentMethodIcon": {
+        "description": "The closed, neutral set a method's icon is chosen from: nothing here is a\ncountry, a bank or a brand.",
+        "enum": [
+          "banknote",
+          "coins",
+          "card",
+          "bank",
+          "phone",
+          "wallet",
+          "qr",
+          "other"
+        ],
+        "title": "PaymentMethodIcon",
         "type": "string"
       },
       "PaymentPreviewIn": {
@@ -5090,6 +5198,346 @@
         "summary": "Edit Customer Type",
         "tags": [
           "customer-types"
+        ]
+      }
+    },
+    "/api/payment-methods": {
+      "get": {
+        "operationId": "list_offered_api_payment_methods_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MethodOut"
+                  },
+                  "title": "Response List Offered Api Payment Methods Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Offered",
+        "tags": [
+          "payment-methods"
+        ]
+      },
+      "post": {
+        "operationId": "add_method_api_payment_methods_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MethodIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MethodOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Method",
+        "tags": [
+          "payment-methods"
+        ]
+      }
+    },
+    "/api/payment-methods/archived": {
+      "get": {
+        "operationId": "list_archived_api_payment_methods_archived_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MethodOut"
+                  },
+                  "title": "Response List Archived Api Payment Methods Archived Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Archived",
+        "tags": [
+          "payment-methods"
+        ]
+      }
+    },
+    "/api/payment-methods/{method_id}": {
+      "delete": {
+        "operationId": "delete_method_api_payment_methods__method_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "method_id",
+            "required": true,
+            "schema": {
+              "title": "Method Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Method",
+        "tags": [
+          "payment-methods"
+        ]
+      },
+      "patch": {
+        "operationId": "update_method_api_payment_methods__method_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "method_id",
+            "required": true,
+            "schema": {
+              "title": "Method Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MethodPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MethodOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Method",
+        "tags": [
+          "payment-methods"
+        ]
+      }
+    },
+    "/api/payment-methods/{method_id}/archive": {
+      "post": {
+        "operationId": "archive_method_api_payment_methods__method_id__archive_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "method_id",
+            "required": true,
+            "schema": {
+              "title": "Method Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Archive Method",
+        "tags": [
+          "payment-methods"
+        ]
+      }
+    },
+    "/api/payment-methods/{method_id}/move": {
+      "post": {
+        "operationId": "move_method_api_payment_methods__method_id__move_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "method_id",
+            "required": true,
+            "schema": {
+              "title": "Method Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MethodOut"
+                  },
+                  "title": "Response Move Method Api Payment Methods  Method Id  Move Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Move Method",
+        "tags": [
+          "payment-methods"
+        ]
+      }
+    },
+    "/api/payment-methods/{method_id}/restore": {
+      "post": {
+        "operationId": "restore_method_api_payment_methods__method_id__restore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "method_id",
+            "required": true,
+            "schema": {
+              "title": "Method Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Restore Method",
+        "tags": [
+          "payment-methods"
         ]
       }
     },
