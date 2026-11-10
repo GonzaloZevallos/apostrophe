@@ -12,7 +12,12 @@ import { queryClient } from '../../queryClient'
 import { router } from '../../router'
 import { HOME, SALE_NEW } from '../../routes'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = {
+  email: 'ana@x.com',
+  business_name: 'La Huerta',
+  today: '2026-10-02',
+  money: { symbol: '$', decimals: 0 },
+}
 
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
