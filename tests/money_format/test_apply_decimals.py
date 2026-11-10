@@ -8,136 +8,24 @@ column added later is covered without touching this file.
 
 from __future__ import annotations
 
-from collections.abc import Iterator
-from contextlib import contextmanager
-from pathlib import Path
-from typing import Any
-
 import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import Table, event, func, select, text
-from sqlalchemy.engine import Engine
+from sqlalchemy import func, insert, literal, select, text
 from sqlalchemy.orm import Session
 
-from app.money_format.adapters.sql_money_format_writer import SqlMoneyFormatWriter
-from app.money_format.application.apply_decimals import ApplyDecimals
 from app.money_format.domain.rescale import (
     AmountTooLargeToRescale,
     DecimalsBelowRecordedAmounts,
 )
-from app.tables import metadata
-from tests.business_removal.adapters.seed import PINNED, build_app, seed
-from tests.conftest import MovableClock
+from tests.money_format.rescale_world import (
+    World,
+    apply,
+    dump,
+    money_columns,
+    money_format_of,
+    run,
+    updates,
+)
 from tests.statement_log import captured_statements
-
-Dump = dict[str, list[dict[str, Any]]]
-World = tuple[Engine, int, int]
-
-
-def money_columns() -> list[tuple[Table, str, bool]]:
-    """Every column tagged `info["money"]`: its table, its name, whether it may be NULL."""
-    return [
-        (table, column.name, column.nullable)
-        for table in metadata.sorted_tables
-        for column in table.columns
-        if column.info.get("money") is True
-    ]
-
-
-def dump(engine: Engine, business_id: int) -> Dump:
-    """Every row of the business, in every table that has a business_id, by id."""
-    found: Dump = {}
-    with engine.connect() as connection:
-        for table in metadata.sorted_tables:
-            if "business_id" not in table.c:
-                continue
-            rows = connection.execute(
-                select(table).where(table.c.business_id == business_id).order_by(table.c.id)
-            )
-            found[table.name] = [dict(row._mapping) for row in rows]
-    return found
-
-
-def _top_up(client: TestClient) -> None:
-    """What the seed misses: a price with a bulk and a VIP price, and a stock entry with no
-    cost, so every tagged column holds a value somewhere and every nullable one holds NULL."""
-    switches = client.put(
-        "/pricing-settings", json={"is_bulk_pricing": True, "is_vip_customers": True}
-    )
-    assert switches.status_code == 200, switches.text
-    product = client.post("/api/products", json={"name": "Rosa"})
-    assert product.status_code == 201, product.text
-    price = client.post(
-        f"/api/products/{product.json()['id']}/prices",
-        json={
-            "effective_from": "2026-01-01",
-            "list_price": 4000,
-            "bulk_price": 3500,
-            "bulk_minimum": 10,
-            "vip_price": 3000,
-        },
-    )
-    assert price.status_code == 201, price.text
-    entry = client.post(
-        "/stock/entries",
-        json={"product_id": product.json()["id"], "origin": "adjustment", "quantity": 5},
-    )
-    assert entry.status_code == 201, entry.text
-
-
-@pytest.fixture
-def world(tmp_path: Path) -> Iterator[World]:
-    """A scale-0 database with two businesses; answers the engine, the id of the business
-    to rescale (the one `seed` opens last) and the id of the other."""
-    db_path = tmp_path / "rescale.db"
-    clock = MovableClock(PINNED)
-    # `seed` answers the business it opened last (the leaving one) first.
-    token_target, token_other = seed(db_path, clock)
-    application, engine = build_app(db_path, clock, 0)
-    with TestClient(application) as client:
-        for token in (token_target, token_other):
-            client.headers["Authorization"] = f"Bearer {token}"
-            _top_up(client)
-    with engine.connect() as connection:
-        ids = list(connection.execute(text("SELECT business_id FROM money_format ORDER BY id")))
-    yield engine, ids[1][0], ids[0][0]
-    engine.dispose()
-
-
-def apply(engine: Engine, business_id: int, decimals: int) -> None:
-    with Session(engine) as session:
-        ApplyDecimals(SqlMoneyFormatWriter(session), session).execute(business_id, decimals)
-
-
-def money_format_of(engine: Engine, business_id: int) -> tuple[int, int]:
-    """The business's stored `(scale, decimals)`, read on a fresh connection."""
-    with engine.connect() as connection:
-        row = connection.execute(
-            text("SELECT scale, decimals FROM money_format WHERE business_id = :b"),
-            {"b": business_id},
-        ).one()
-    return int(row[0]), int(row[1])
-
-
-def run(engine: Engine, statement: str) -> None:
-    with Session(engine) as session, session.begin():
-        session.execute(text(statement))
-
-
-@contextmanager
-def updates(engine: Engine) -> Iterator[list[tuple[str, int]]]:
-    """The `(statement, rows changed)` of every UPDATE the engine runs inside the block."""
-    seen: list[tuple[str, int]] = []
-
-    def _after(conn: Any, cursor: Any, statement: str, *args: object) -> None:
-        if statement.lstrip().upper().startswith("UPDATE"):
-            seen.append((statement, cursor.rowcount))
-
-    event.listen(engine, "after_cursor_execute", _after)
-    try:
-        yield seen
-    finally:
-        event.remove(engine, "after_cursor_execute", _after)
 
 
 def test_the_seed_reaches_every_tagged_column_and_every_nullable_one(world: World) -> None:
@@ -265,3 +153,25 @@ def test_the_rescale_issues_the_conditional_update_and_one_multiply_per_tagged_c
     assert updated[0].startswith("UPDATE money_format SET scale")
     multiplied = [s for s in updated if "*" in s]
     assert len(multiplied) == len(money_columns())
+
+
+def test_amounts_whose_rescaled_sum_overflows_are_refused_and_roll_back(world: World) -> None:
+    engine, target, other = world
+    expense = next(table for table, name, _ in money_columns() if table.name == "expense")
+    names = [column.name for column in expense.columns if column.name != "id"]
+    chosen = [literal(9 * 10**16) if name == "amount" else expense.c[name] for name in names]
+    copy = insert(expense).from_select(
+        names, select(*chosen).where(expense.c.business_id == target).limit(1)
+    )
+    for _ in range(2):
+        with Session(engine) as session, session.begin():
+            session.execute(copy)
+    run(engine, f"UPDATE expense SET amount = {9 * 10**16} WHERE business_id = {target}")
+    before, other_before = dump(engine, target), dump(engine, other)
+
+    with pytest.raises(AmountTooLargeToRescale):
+        apply(engine, target, 2)
+
+    assert dump(engine, target) == before
+    assert dump(engine, other) == other_before
+    assert money_format_of(engine, target) == (0, 0)

@@ -38,7 +38,7 @@ from app.tables import metadata
 _HUNDREDTHS_SCALE = 2
 _FACTOR = SCALE_FACTORS[1]
 _LARGEST_STORED = 2**63 - 1
-_LARGEST_BEFORE_RESCALE = _LARGEST_STORED // _FACTOR
+_LARGEST_BEFORE_RESCALE, _ = divmod(_LARGEST_STORED, _FACTOR)
 _money_format = MoneyFormatRow.__table__
 
 
