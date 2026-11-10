@@ -11,6 +11,7 @@ subgraph src["src"]
     subgraph src_copy_readers["readers"]
       src_copy_readers_customerTypeIcons_ts["customerTypeIcons.ts"]
       src_copy_readers_paymentStates_ts["paymentStates.ts"]
+      src_copy_readers_shippedLanguages_ts["shippedLanguages.ts"]
     end
     src_copy_analysis_ts["analysis.ts"]
     src_copy_auth_ts["auth.ts"]

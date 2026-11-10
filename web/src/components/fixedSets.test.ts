@@ -104,6 +104,8 @@ test('FIXED_SETS gives every exported set a non-empty reason, and names nothing 
     CUSTOMER_TYPE_ICON_SET: 'fixed set: the neutral icon set ships with the app',
     STOCK_ENTRY_ORIGINS: 'fixed set: Stock entry origins',
     PAYMENT_STATES: 'fixed set: payment state, which is not a method',
+    LANGUAGES:
+      'fixed set: the languages the Copy module has texts for; adding one is a code change in the Copy module',
   })
 })
 
