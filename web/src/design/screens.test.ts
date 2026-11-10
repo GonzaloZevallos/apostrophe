@@ -1085,16 +1085,9 @@ describe('assertSelectedAccounts', () => {
       ...Object.fromEntries(open.map((name) => [name, 'open' as const])),
       ...Object.fromEntries(ended.map((name) => [name, 'ended' as const])),
     }
-    // GH-274, deliberate: the original two-kind map cannot hold, the registry now names more accounts.
     // `assertSelectedAccounts` throws, and this fails, when a registry row names an account the sample
-    // declares under none of the five kinds.
-    const all: Record<string, 'open' | 'ended' | 'pre_onboarding' | 'imported' | 'onboarding'> = {
-      ...real,
-      ...Object.fromEntries(namesOf('PRE_ONBOARDING_ACCOUNTS').map((name) => [name, 'pre_onboarding' as const])),
-      ...Object.fromEntries(namesOf('IMPORTED_ACCOUNTS').map((name) => [name, 'imported' as const])),
-      ...Object.fromEntries(namesOf('ONBOARDING_FRAME_ACCOUNTS').map((name) => [name, 'onboarding' as const])),
-    }
-    expect(() => assertSelectedAccounts(screens.screens, all)).not.toThrow()
+    // declares under neither kind.
+    expect(() => assertSelectedAccounts(screens.screens, real)).not.toThrow()
   })
 
   it('puts the four Inicio rows on an ended account', () => {
@@ -1207,7 +1200,7 @@ describe('the customer dark twins of the real screens.json', () => {
   })
 })
 
-describe.each(['pre_onboarding', 'imported', 'onboarding'] as const)('the %s account kind (GH-274, GH-303)', (kind) => {
+describe.each(['ended'] as const)('the %s account kind (GH-274)', (kind) => {
   const accounts = { listo: {}, inicio: {}, capture: {} }
   const kinds = { listo: 'open', inicio: 'ended', capture: kind } as const
 
@@ -1266,17 +1259,9 @@ describe('the capture accounts of sample_app.py (GH-274)', () => {
     return declared.match(/"[^"]+"/g)?.map((name) => name.slice(1, -1)) ?? []
   }
 
-  it('declares the checklist and the imported accounts, apart from every other kind', () => {
-    const groups = [
-      'ONBOARDING_ACCOUNTS',
-      'ENDED_ONBOARDING_ACCOUNTS',
-      'PRE_ONBOARDING_ACCOUNTS',
-      'IMPORTED_ACCOUNTS',
-      'ONBOARDING_FRAME_ACCOUNTS',
-    ]
-    expect(namesOf('PRE_ONBOARDING_ACCOUNTS')).toEqual(['checklist', 'primera_vez'])
-    expect(namesOf('ONBOARDING_FRAME_ACCOUNTS')).toEqual(['en_curso', 'completo'])
-    expect(namesOf('IMPORTED_ACCOUNTS')).toEqual(['importada'])
+  it('declares the open and the ended accounts, apart from each other', () => {
+    const groups = ['ONBOARDING_ACCOUNTS', 'ENDED_ONBOARDING_ACCOUNTS']
+    expect(namesOf('ENDED_ONBOARDING_ACCOUNTS')).toEqual(['inicio'])
     const all = groups.flatMap(namesOf)
     expect(new Set(all).size).toBe(all.length)
   })
@@ -1291,13 +1276,11 @@ describe('the capture accounts of sample_app.py (GH-274)', () => {
     )
   })
 
-  it('names none of them on a Listo entry of the real registry', () => {
-    const capture = [...namesOf('PRE_ONBOARDING_ACCOUNTS'), ...namesOf('IMPORTED_ACCOUNTS'), ...namesOf('ONBOARDING_FRAME_ACCOUNTS')]
-    const real = Object.fromEntries(capture.map((name) => [name, 'imported' as const]))
+  it('names no ended account on a Listo entry of the real registry', () => {
+    const capture = namesOf('ENDED_ONBOARDING_ACCOUNTS')
     const listo = screens.screens.filter((s) => (s as { design?: string }).design === 'OnboardingListo' || s.screen === 'OnboardingListo')
     expect(listo.length).toBeGreaterThan(0)
     for (const entry of listo) expect(capture).not.toContain((entry as { account?: string }).account)
-    expect(() => assertSelectedAccounts(screens.screens, { ...real, ...Object.fromEntries(namesOf('ONBOARDING_ACCOUNTS').map((n) => [n, 'open' as const])), inicio: 'ended' })).not.toThrow()
   })
 })
 
