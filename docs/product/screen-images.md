@@ -38,6 +38,7 @@ Una pantalla sin imagen (tema oscuro, computadora, texto agrandado o sin ruta) s
 Lo decide `docs/adr/0079-screen-images-are-built-only-lossless-webp-at-dpr-1-on-the-pinned-instant-in-the-pinned-playwright-container.md`.
 
 - **Captura.** `scripts/design/comparisons.mjs --built-only` captura solo la app construida, sin el lado del diseño ni la hoja, con `deviceScaleFactor: 1`, y escribe solo `<screen>.built.png` e `index.json`. Sin la marca, la Design capture corre igual que antes.
+- **Contenedor.** La captura corre siempre en el contenedor de Playwright fijado al lockfile, así las imágenes tomadas en máquinas distintas son iguales píxel a píxel; correr el script exige Docker en esa máquina. Nunca se captura fuera del contenedor: sin Docker, la corrida cuenta como una app que no arrancó (`plan.json` con `appStarted: false`, el motivo nombrado en `summary.md`, nada cambia en `docs/assets/screens/` y termina con error).
 - **Codificación.** Cada PNG se codifica a webp sin pérdida con `sharp` (versión fija exacta en `web/`), con un `effort` fijo y sin metadatos; el mismo PNG da siempre los mismos bytes. Solo `effort` se puede ajustar para el tamaño; cualquier cambio a la codificación sin pérdida, al DPR o al viewport es una pregunta al dueño.
 - **"Cambiada" se decide por píxeles.** Una fila cuenta como cambiada solo cuando sus píxeles decodificados (RGBA y dimensiones) difieren de la imagen guardada; si son iguales, la imagen guardada se conserva tal cual.
 - **Plan.** `planPublish` decide qué se escribe, qué se borra y qué se conserva:
@@ -48,7 +49,7 @@ Lo decide `docs/adr/0079-screen-images-are-built-only-lossless-webp-at-dpr-1-on-
   - si la app no arrancó, no cambia nada, ni siquiera se borra.
 - **Script.** `scripts/design/screen-images.sh` levanta `sample-app.sh --pinned`, captura `captureSelection`, codifica y planifica contra `docs/assets/screens/`, y escribe `plan.json` (siempre con `appStarted` y las fallas), `summary.md` y los webp en una carpeta de salida. Con `--apply` aplica el plan (crea la carpeta si falta): escribe cada fila que salió bien y cambió, borra los nombres viejos y conserva la imagen de cada fila fallida. Con `--twice` captura dos veces e informa cuántas filas difieren en píxeles decodificados. Termina con error cuando falló una fila o no arrancó la app, después de escribir todo.
 - **Resumen.** `summary.md` lista las filas nuevas, cambiadas, borradas y fallidas (cada fallida por nombre), el tamaño total de `docs/assets/screens/` y el de cada imagen. En modo `pr` agrega el SHA base y la advertencia de que un cambio listado puede venir de un merge cuyas imágenes todavía no se guardaron.
-- Hasta la parte 3, las imágenes se actualizan a mano con `screen-images.sh --apply`.
+- **Quién lo corre hasta la parte 3.** La tarea que entrega esta herramienta corre `--apply` una vez y guarda el primer conjunto completo. Después, hasta que la parte 3 lo lleve al CI, lo corre a mano quien mantiene la documentación (el dueño o un agente del sistema al que se le pida) cuando quiere refrescar las imágenes. No es una obligación de cada tarea que cambia una pantalla: una imagen desactualizada nunca bloquea.
 
 ## La misma imagen en cada corrida
 
