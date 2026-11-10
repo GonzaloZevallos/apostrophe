@@ -9,7 +9,7 @@ Hasta esta parte, un pago hecho de cualquier otra forma (una billetera virtual, 
 Criterios de éxito:
 
 1. **Se maneja desde el celular**: el vendedor agrega, renombra, reordena y saca métodos en Settings → Business → Payment methods, sin ayuda y sin el **Operator**.
-2. **Se ofrece exactamente esa lista**: New sale y Record payment ofrecen los métodos activos, en ese orden, sin ningún paso de más. Una Sale se sigue registrando desde el celular en menos de un minuto.
+2. **Se ofrece exactamente esa lista**: New sale y Record payment ofrecen los métodos activos, en ese orden, y esta parte no suma ningún paso: el medio se sigue eligiendo como desde la parte 5 de GH-581, abriendo el campo "Payment method" y tocando la opción. Una Sale se sigue registrando desde el celular en menos de un minuto.
 3. **La historia no se reescribe**: los Payments registrados antes de esta parte conservan su método ("Cash" o "Transfer"). Cambiar la lista después nunca altera el monto, la fecha ni el significado de un Payment registrado. Todo Business, existente o nuevo, arranca con "Cash" y "Transfer".
 4. **Assume nothing**: nada en la app depende de que un Business conserve "Cash" o "Transfer" por nombre. Un Business que no cobra de ninguna de las dos formas registra todos sus Payments con sus propios métodos.
 
@@ -73,14 +73,20 @@ La lista propia de cada **Business** de las formas en que cobra. Cada **Payment*
 
 ### Al registrar: New sale y Record payment
 
-- **Los métodos activos** reemplazan las opciones "Cash · Transfer" de antes, en el mismo lugar y con la misma cantidad de toques.
-  - Van en el orden del vendedor, un toque cada uno, con ícono y nombre, en un grupo con nombre accesible "Payment method". El elegido lleva un tilde, nunca solo color.
-  - En el celular pasan a la línea siguiente cuando no entran. Nunca hay desplazamiento horizontal ni un nombre recortado, y cada opción mide al menos 44 px.
-  - Mientras se lee la lista, se muestran opciones de carga.
-- **Preselección**: ninguna. Igual que antes, cómo se pagó arranca sin elegir, en New sale y en Record payment. Ningún cambio en el formulario vuelve solo a un método.
-- **Owing** (no pagada) en New sale sigue siendo una opción aparte, después de los métodos y sin ícono, y no es un método. Una Sale que queda debiendo no registra método. Record payment no tiene Owing.
+- **Dónde se elige**: los Payment methods son un **Growable set**, así que se eligen con el **Selector** (selector.md), nunca con chips. En New sale, cómo se pagó es primero el estado Paid · Owing (un Fixed set, en chips) y, bajo Paid y solo ahí, el campo obligatorio "Payment method". Record payment muestra el mismo campo "Payment method", sin Owing. Esta regla de selector.md (parte 5 de GH-581) ganó sobre el dibujo anterior de una opción por método.
+- **Las opciones** del campo son los métodos activos del negocio, leídos de `GET /api/payment-methods` por `usePaymentMethodOptions()` (`web/src/sales/paymentMethods.ts`), que comparten New sale y Record payment:
+  - van en el orden del vendedor; el Selector nunca las reordena;
+  - cada opción muestra el nombre del método tal como lo escribió el vendedor, sin su ícono; el valor de la opción es el id del método;
+  - con más de 8 métodos, la lista tiene búsqueda;
+  - mientras se lee la lista, el campo muestra el estado de carga del Selector, nunca un conjunto vacío;
+  - si una carga exitosa no trae ningún método, la lista muestra "No payment methods yet. Add one in Settings." Es un respaldo: un negocio siempre conserva un método activo.
+- **Toques**: elegir el medio es abrir el campo y tocar la opción, el mismo paso que sumó la parte 5 de GH-581. Esta parte no suma ningún paso, y el presupuesto de toques (`web/e2e/tapBudget.spec.ts`) pasa sin editarse.
+- **Preselección**: ninguna. El campo arranca vacío al abrir New sale o Record payment y cada vez que New sale vuelve a Paid. Ningún cambio en el formulario vuelve solo a un método, y sacar el cliente con Owing elegido deja cómo se pagó sin elegir.
+- **Sin medio**: guardar con Paid (o en Record payment) sin método no guarda nada, muestra "Choose how they paid." junto al campo con el Attention icon y le da el foco al campo. Una Sale de $0 se guarda sin medio.
+- **Owing** (no pagada) en New sale sigue siendo un estado aparte, nunca un método: está deshabilitado con su explicación cuando no hay Customer, y una Sale que queda debiendo no registra método. Record payment no tiene Owing.
 - **Los métodos archivados** nunca se ofrecen.
-- **Un método que ya no está**: si un socio archivó o eliminó un método mientras el formulario estaba abierto, o el método es de otro Business, el guardado se rechaza con su código (404 `PaymentMethodUnavailable`) y no se guarda nada. Todo lo escrito se conserva, la lista se vuelve a leer y un aviso con el Attention icon pide elegir otro método; tocar otro lo limpia.
+- **Un método que ya no está**: si un socio archivó o eliminó un método mientras el formulario estaba abierto, o el método es de otro Business, el guardado se rechaza con su código (404 `PaymentMethodUnavailable`) y no se guarda nada. Todo lo escrito se conserva (en Record payment, el monto y la fecha), la lista se vuelve a leer, un método elegido que ya no está se limpia, y un aviso con el Attention icon pide elegir otro método; elegir otro lo limpia.
+- **Lo que viaja**: una Sale manda `{"kind":"method","payment_method_id"}` o `{"kind":"owing"}` (o nada para una Sale de $0); un Payment posterior manda `payment_method_id` (sales.md, payments.md).
 
 ### Dónde se muestra el método de un Payment registrado
 
@@ -114,8 +120,9 @@ La lista propia de cada **Business** de las formas en que cobra. Cada **Payment*
 - La tabla nueva `payment_method` lleva `business_id` no nulo y se lee solo a través de un repositorio armado para un Business. El método de otro Business responde 404.
 - `payment.payment_method_id` es obligatorio y referencia un método del mismo Business (clave foránea compuesta con `business_id`, que impide borrar un método en uso).
 - Las rutas `/api/payment-methods` entran en el barrido de aislamiento y en el test de rutas con acceso restringido.
-- Las migraciones (0025, la tabla; 0026, la columna nueva, las filas iniciales y el relleno) solo agregan tablas, columnas y filas o completan columnas nuevas. Nunca cambian el valor de una columna existente, y el comparador M3 compartido de `tests/migrations/` lo prueba. La vuelta atrás de 0026 se niega una vez que existe algún Payment nuevo.
+- Las migraciones (0028, la tabla; 0029, la columna nueva, las filas iniciales y el relleno) solo agregan tablas, columnas y filas o completan columnas nuevas. Nunca cambian el valor de una columna existente, y el comparador M3 compartido de `tests/migrations/` lo prueba. La vuelta atrás de 0029 se niega una vez que existe algún Payment nuevo.
 - Ningún texto de pantalla nuevo vive fuera del **Copy module**, y ningún valor por defecto nuevo lleva una palabra de flor.
+- Ningún conjunto de Payment methods se declara en `fixedSets.ts` (ADR-0074).
 - Un **Business export** incluye las filas de métodos, y una **Business removal** las borra.
 - Tests: tests de TestClient, el comparador M3 y los de aislamiento.
 
@@ -126,7 +133,7 @@ La lista propia de cada **Business** de las formas en que cobra. Cada **Payment*
   - el comparador M3 no muestra ningún cambio en ninguna columna existente;
   - todo Business existente, también uno sin Payments, tiene exactamente "Cash" y "Transfer" después de la migración, y un Business recién abierto los tiene desde el principio.
 - **Orden y oferta (criterio 2)**:
-  - tests del front muestran que New sale y Record payment listan exactamente los métodos activos, en el orden de Settings, y nunca uno archivado;
+  - tests del front (`paymentMethods.test.tsx`, `NuevaVenta.method.test.tsx` y los de Record payment) muestran que el campo "Payment method" lista exactamente los métodos activos, en el orden de Settings, con el id como valor, cargando primero, y nunca uno archivado;
   - el presupuesto de toques (`web/e2e/tapBudget.spec.ts`) pasa sin editarse.
 - **Manejo desde el celular (criterio 1)**: una corrida end-to-end en un viewport de celular (`web/e2e/paymentMethods.spec.ts`) agrega un método, lo renombra, le cambia el ícono, lo sube y lo baja, lo archiva, lo restaura y elimina uno sin uso. La pantalla pasa el Mobile check sin infractores nuevos.
 - **Matriz de archivar y eliminar (criterios 1, 3)**: 100 % aprobada. Cubre:
@@ -152,4 +159,5 @@ La lista propia de cada **Business** de las formas en que cobra. Cada **Payment*
 - Cualquier procesador de tarjetas o proveedor de pagos.
 - Un paso de Payment methods en el Onboarding o en la First-run checklist.
 - Íconos subidos por el vendedor o fuera del juego fijo.
-- El ícono del método en el detalle de la Sale y en la cuenta del Customer, y el pulido de la lista de Settings según el dibujo (tarjeta blanca con filas de 60 px, "+ Add method" como botón de ancho completo, la fila "Archived" solo con uno o más, el error con "Try again"): pulido posible para después.
+- Recordar el último método o proponer uno por defecto al registrar.
+- El ícono del método en las opciones del campo "Payment method", en el detalle de la Sale y en la cuenta del Customer, y el pulido de la lista de Settings según el dibujo (tarjeta blanca con filas de 60 px, "+ Add method" como botón de ancho completo, la fila "Archived" solo con uno o más, carga con tres filas, el error con "Try again"): pulido posible para después.
