@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  BUILT_ONLY_LAUNCH_ARGS,
   CALM_CONTEXT,
   CALM_CSS,
   CAPTURE_SCALE,
@@ -11,6 +12,7 @@ import {
   grownHeight,
   hiddenRule,
   innerScrollMiss,
+  launchOptions,
   layerMiss,
   named,
   pinnedClass,
@@ -1055,6 +1057,13 @@ describe('the calm page', () => {
       baseURL: 'http://127.0.0.1:1',
       reducedMotion: 'reduce',
     })
+  })
+
+  it('launches the browser with the built-only flags only for a built-only run', () => {
+    expect(BUILT_ONLY_LAUNCH_ARGS).toEqual(['--disable-partial-raster'])
+    expect(launchOptions(true)).toEqual({ args: ['--disable-partial-raster'] })
+    // A Design capture launches exactly as before: no flag at all.
+    expect(launchOptions(false)).toEqual({})
   })
 })
 

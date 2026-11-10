@@ -23,6 +23,17 @@ export function captureContextOptions({ width, height, url, scale = CAPTURE_SCAL
   return { viewport: { width, height }, deviceScaleFactor: scale, colorScheme: 'light', baseURL: url, ...CALM_CONTEXT }
 }
 
+// The flags the browser of a `--built-only` run launches with (ADR-0079): the pinned container's Chromium
+// repaints a changed tile over its old pixels (partial raster), and the edge of a curve or of a glyph comes out
+// of one of two renderings from one run to the next. Only a built-only run passes them, so a Design capture
+// launches as before.
+export const BUILT_ONLY_LAUNCH_ARGS = Object.freeze(['--disable-partial-raster'])
+
+// The options `chromium.launch` takes: the built-only flags for a built-only run, none otherwise.
+export function launchOptions(builtOnly) {
+  return builtOnly ? { args: [...BUILT_ONLY_LAUNCH_ARGS] } : {}
+}
+
 // The height the viewport grows to so a tall page fits it: the document's own, same width.
 // Null when the document already fits.
 export function grownHeight(metrics, viewport) {
