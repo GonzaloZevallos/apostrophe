@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from typing import Annotated, Literal, TypedDict
 
-from fastapi import APIRouter, Depends, Header, Response
+from fastapi import APIRouter, Depends, Header, Request, Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -13,6 +13,7 @@ from app.accounts.adapters.deps import (
     get_accounts,
     get_business_opening,
     get_hasher,
+    get_money_format,
     get_public_url,
     get_settings,
     get_signer,
@@ -66,6 +67,11 @@ class SessionOut(BaseModel):
     token: str
 
 
+class MoneyFormatOut(BaseModel):
+    symbol: str
+    decimals: int
+
+
 class MeOut(BaseModel):
     email: str
     business_name: str
@@ -75,6 +81,9 @@ class MeOut(BaseModel):
     # The language screens are rendered in: the forced one when the operator set it, else
     # the stored one (docs/adr/0050). Never what the Settings control shows.
     shown_language: str
+    # How the business shows money: its symbol and decimals, never the scale it stores
+    # amounts at (docs/adr/0058). Every User of the business reads the same.
+    money_format: MoneyFormatOut
 
 
 class UserOut(BaseModel):
@@ -235,12 +244,20 @@ def _business_out(profile: manage_business.BusinessProfile, settings: Settings) 
 
 
 @router.get("/auth/me")
-def me(signed_in: CurrentSession, today: TodayDep, settings: SettingsDep) -> MeOut:
+def me(
+    signed_in: CurrentSession,
+    today: TodayDep,
+    settings: SettingsDep,
+    request: Request,
+    session: SessionDep,
+) -> MeOut:
+    money_format = get_money_format(request, session, signed_in.business_id).current()
     return MeOut(
         email=signed_in.user.email.value,
         business_name=signed_in.business.name.value,
         today=today,
         shown_language=shown_language(signed_in.business.language, settings.forced_language).tag,
+        money_format=MoneyFormatOut(symbol=money_format.symbol, decimals=money_format.decimals),
     )
 
 

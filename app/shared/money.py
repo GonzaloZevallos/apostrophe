@@ -142,13 +142,25 @@ _BOLD_MARK = "**"
 
 
 class InvalidMoneyFormat(ValueError):
-    """A money format was invalid; `field` names the part (`symbol` or `decimals`). The
-    message is a fixed literal and never repeats what was submitted
-    (CODING_STANDARDS.md section 9)."""
+    """A money format was invalid. `field` names the part, `symbol` or `decimals`, in the
+    subclass that carries its own `code`. The message is a fixed literal and never repeats
+    what was submitted (CODING_STANDARDS.md section 9)."""
 
-    def __init__(self, field: Literal["symbol", "decimals"], message: str) -> None:
+    field: ClassVar[Literal["symbol", "decimals"]]
+
+    def __init__(self, message: str) -> None:
         super().__init__(message)
-        self.field = field
+        self.refusal_fields = {"field": self.field}
+
+
+class InvalidMoneySymbol(InvalidMoneyFormat):
+    field: ClassVar[Literal["symbol", "decimals"]] = "symbol"
+    code: ClassVar[str] = "money_format.symbol_invalid"
+
+
+class InvalidMoneyDecimals(InvalidMoneyFormat):
+    field: ClassVar[Literal["symbol", "decimals"]] = "decimals"
+    code: ClassVar[str] = "money_format.decimals_invalid"
 
 
 @dataclass(frozen=True)
@@ -166,21 +178,19 @@ class MoneyFormat:
 
     def __post_init__(self) -> None:
         if not self.symbol.strip():
-            raise InvalidMoneyFormat("symbol", "the money symbol must not be blank")
+            raise InvalidMoneySymbol("the money symbol must not be blank")
         if len(self.symbol) > SYMBOL_MAX_CODE_POINTS:
-            raise InvalidMoneyFormat("symbol", "the money symbol must be 1 to 4 characters")
+            raise InvalidMoneySymbol("the money symbol must be 1 to 4 characters")
         if any(unicodedata.category(char) in _INVISIBLE_CATEGORIES for char in self.symbol):
-            raise InvalidMoneyFormat(
-                "symbol", "the money symbol must not hold a control or invisible character"
+            raise InvalidMoneySymbol(
+                "the money symbol must not hold a control or invisible character"
             )
         if _BOLD_MARK in self.symbol:
-            raise InvalidMoneyFormat(
-                "symbol", "the money symbol must not hold two asterisks in a row"
-            )
+            raise InvalidMoneySymbol("the money symbol must not hold two asterisks in a row")
         try:
             checked_decimals(self.decimals)
         except ValueError as exc:
-            raise InvalidMoneyFormat("decimals", str(exc)) from exc
+            raise InvalidMoneyDecimals(str(exc)) from exc
 
     @classmethod
     def of(cls, raw_symbol: str, decimals: int) -> MoneyFormat:

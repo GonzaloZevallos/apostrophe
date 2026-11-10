@@ -5,6 +5,7 @@ from typing import Protocol
 from app.accounts.domain.account import Business, Email, User
 from app.accounts.domain.invitation import Invitation
 from app.shared.language import BusinessLanguage
+from app.shared.money import MoneyFormat
 
 
 @dataclass(frozen=True)
@@ -25,6 +26,14 @@ class BusinessOpening(Protocol):
     single commit."""
 
     def opened(self, business_id: int, language: BusinessLanguage) -> None: ...
+
+
+class MoneyFormatReader(Protocol):
+    """How the signed-in business shows money, for `GET /auth/me` (docs/adr/0055).
+    Accounts declares this port and never imports `app.money_format`; `app/main.py` wires
+    the real reader in as `app.state.accounts_money_format`."""
+
+    def current(self) -> MoneyFormat: ...
 
 
 class Accounts(Protocol):

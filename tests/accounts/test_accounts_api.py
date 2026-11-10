@@ -33,6 +33,7 @@ def test_a_new_business_invitation_opens_a_business_and_signs_its_user_in(
         "business_name": "La Huerta",
         "today": "2026-10-02",
         "shown_language": "en",
+        "money_format": {"symbol": "$", "decimals": 0},
     }
 
 

@@ -245,6 +245,12 @@ def seed_pricing_settings(client: TestClient) -> dict[str, int]:
     return {}
 
 
+def seed_money_format(client: TestClient) -> dict[str, int]:
+    saved = client.put("/api/money-format", json={"symbol": "US$", "decimals": 0})
+    assert saved.status_code == 200, saved.text
+    return {}
+
+
 def seed_first_run(client: TestClient) -> dict[str, int]:
     # `/first-run` has no record to name and nothing a client can write but the dismissal,
     # which stamps only an imported business. Its rows are stamped by the import, so the
@@ -266,6 +272,7 @@ SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_pinned_catalog,
     seed_payments,
     seed_pricing_settings,
+    seed_money_format,
     seed_first_run,
 ]
 
@@ -356,6 +363,7 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
     },
     ("POST", "/onboarding-progress/passes"): {"step": "header_footer", "as": "done"},
     ("PUT", "/pricing-settings"): {"is_bulk_pricing": False, "is_vip_customers": False},
+    ("PUT", "/api/money-format"): {"symbol": "ZZ", "decimals": 0},
     ("POST", "/auth/password"): {
         "current_password": "the wrong current password",
         "new_password": "a new password of some length",

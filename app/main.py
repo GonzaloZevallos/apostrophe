@@ -43,6 +43,7 @@ from app.http_errors import Refused
 from app.migrations.runner import upgrade_to_head
 from app.money_format.adapters.opening import MoneyFormatOpening
 from app.money_format.adapters.reader import SqlMoneyFormat
+from app.money_format.adapters.router import router as money_format_router
 from app.onboarding.adapters.first_run_router import router as first_run_router
 from app.onboarding.adapters.opening import OnboardingOpening
 from app.onboarding.adapters.router import router as onboarding_router
@@ -71,7 +72,7 @@ from app.sales.adapters.sales_ledger import SqlSalesLedger
 from app.settings import Settings
 from app.shared.copy import CopyCatalog
 from app.shared.language import BusinessLanguage
-from app.shared.money import MoneyNotRepresentable
+from app.shared.money import MoneyNotRepresentable, TooManyDecimals
 from app.static_spa import FrontNavigation, MissingBuiltFront, ShellPage, SpaStatic, api_segments
 from app.stock.adapters.babel_defaults import BabelReasonDefaults
 from app.stock.adapters.draw_costs import SqlDrawCosts
@@ -163,10 +164,24 @@ async def _refused(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(status_code=exc.status_code, content=content)
 
 
+_WRITE_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
+
+
 async def _stored_amount_not_whole(request: Request, exc: Exception) -> JSONResponse:
+    assert isinstance(exc, MoneyNotRepresentable)
+    if request.method in _WRITE_METHODS:
+        # A write whose amount the domain cannot hold as whole units (the domain keeps no
+        # cents yet) is the request's amount being refused, never a failure of ours: 422
+        # with the code the front already maps, and nothing is rounded.
+        return JSONResponse(
+            status_code=422,
+            content={
+                "detail": str(TooManyDecimals()),
+                "code": TooManyDecimals.code,
+            },
+        )
     # A stored amount a read cannot hold as whole units is an integrity failure, never a
     # refusal of the request: 500, with the exception's own fixed literal and no amount.
-    assert isinstance(exc, MoneyNotRepresentable)
     return JSONResponse(
         status_code=500, content={"detail": str(exc), "code": MoneyNotRepresentable.code}
     )
@@ -275,6 +290,7 @@ def create_app(
     app.state.customers_pricing_settings = SqlPricingSettings
     app.state.owing_sales = SqlOwingSales
     # How money is shown, read through each hexagon's own `MoneyFormatReader` port (docs/adr/0055).
+    app.state.accounts_money_format = SqlMoneyFormat
     app.state.sales_money_format = SqlMoneyFormat
     app.state.products_money_format = SqlMoneyFormat
     app.state.payments_money_format = SqlMoneyFormat
@@ -353,6 +369,9 @@ def create_app(
     # Not `upkeep_gated`: only a PUT that changed a switch may touch the pin, and its
     # router decides that itself (ADR-0014).
     app.include_router(pricing_settings_router, dependencies=gated)
+    # Not `upkeep_gated` either: only a save that changed the symbol or the decimals may
+    # touch the pin, and its router decides (ADR-0014).
+    app.include_router(money_format_router, dependencies=gated)
 
     if settings.web_dist is not None:
         if not (settings.web_dist / "index.html").is_file():

@@ -26,13 +26,13 @@ from app.db import MoneyScaleChanged, make_engine
 from app.money_format.adapters.reader import SqlMoneyFormat
 from app.money_format.adapters.sql_money_format_writer import SqlMoneyFormatWriter
 from app.money_format.domain.rescale import RescaleBusy
-from app.shared.money import MoneyFormat
 from app.pricing_settings.adapters.sql_pricing_settings import SqlPricingSettings
 from app.sales.adapters.customer_facts import SqlCustomerFacts
 from app.sales.adapters.price_book import SqlPriceBook
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.application.record_sale import LineInput, record_sale
 from app.sales.domain.sale import PaymentMethod, Sale
+from app.shared.money import MoneyFormat
 from app.shared.quantity import Quantity
 from tests.business_removal.adapters.seed import PINNED, build_app
 from tests.conftest import MovableClock

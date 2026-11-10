@@ -118,6 +118,12 @@
     "onboarding.required_steps_unmet": { "kind": "refusal" },
     "onboarding.not_found": { "kind": "gone" },
     "money.too_many_decimals": { "kind": "refusal" },
+    "money_format.symbol_invalid": { "kind": "refusal" },
+    "money_format.decimals_invalid": { "kind": "refusal" },
+    "money_format.decimals_below_recorded": { "kind": "refusal" },
+    "money_format.amount_too_large": { "kind": "refusal" },
+    "money_format.busy": { "kind": "refusal" },
+    "money_format.rescale_check_failed": { "kind": "refusal" },
     "RequestInvalid": { "kind": "refusal" }
   },
   "frontSegments": [
