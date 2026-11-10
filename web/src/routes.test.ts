@@ -402,9 +402,11 @@ function registryDisagreements(
     for (const viewport of VIEWPORTS) {
       const have = parentOf(entry.id, viewport)?.path ?? null;
       const want =
-        viewport === "computer" && row.computerParent !== null
-          ? row.computerParent
-          : row.parent;
+        viewport === "computer" && row.computerKind === "root"
+          ? null
+          : viewport === "computer" && row.computerParent !== null
+            ? row.computerParent
+            : row.parent;
       const agree =
         have === null || want === null ? have === want : patternsMatch(have, want);
       if (!agree)
@@ -494,7 +496,7 @@ describe("the registry against screens.json", () => {
 
   test("a Configuración group registered as a card, or with a card row, is refused", () => {
     const asCard = SCREENS.map((s) =>
-      s.id === "settings-integrations" ? { ...s, kind: "card" as const } : s,
+      s.id === "settings-integrations" ? { ...s, declaredKind: "card" as const } : s,
     );
     expect(settingsGroupsNotForms(ROUTE_REGISTRY, asCard)).toEqual([
       `${routes.SETTINGS_INTEGRATIONS}: screen kind card`,
