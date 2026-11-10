@@ -94,7 +94,10 @@ def _record_and_delete_two_sales(client: TestClient) -> None:
     for _ in range(2):
         sale = client.post(
             "/sales",
-            json={"payment": "cash", "lines": [{"product_id": product["id"], "quantity": "1"}]},
+            json={
+                "payment": {"kind": "paid", "payment_method_id": 1},
+                "lines": [{"product_id": product["id"], "quantity": "1"}],
+            },
         ).json()
         assert client.delete(f"/sales/{sale['id']}").status_code == 200
     assert client.delete(f"/api/products/{product['id']}").status_code == 204

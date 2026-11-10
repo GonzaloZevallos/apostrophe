@@ -160,7 +160,7 @@ def seed(db_path: Path, clock: MovableClock | None = None, money_scale: int = 0)
                 "customer_id": customer_id,
                 "shipping_charged": SHIPPING_CHARGED,
                 "note": SALE_NOTE,
-                "payment": "owing",
+                "payment": {"kind": "owing"},
                 "lines": [{"product_id": variety_id, "quantity": 10, "special_price": 6000}],
             },
         )
@@ -168,7 +168,11 @@ def seed(db_path: Path, clock: MovableClock | None = None, money_scale: int = 0)
 
         payment = client.post(
             f"/customers/{customer_id}/payments",
-            json={"paid_on": days.payment.isoformat(), "amount": PAYMENT_AMOUNT, "method": "cash"},
+            json={
+                "paid_on": days.payment.isoformat(),
+                "amount": PAYMENT_AMOUNT,
+                "payment_method_id": 1,
+            },
         )
         assert payment.status_code == 201, payment.text
 

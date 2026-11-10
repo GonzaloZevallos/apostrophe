@@ -37,7 +37,7 @@ def _owing_sale(
         "/sales",
         json={
             "customer_id": customer_id,
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "date": date,
             "lines": [{"product_id": variety_id, "quantity": quantity}],
         },
@@ -70,7 +70,7 @@ def test_read_matches_get_payments_debtors(client: TestClient, engine: Engine) -
     settled_balance = client.get(f"/customers/{settled_id}/account").json()["balance"]
     settle_payment = client.post(
         f"/customers/{settled_id}/payments",
-        json={"paid_on": "2026-09-15", "amount": settled_balance, "method": "cash"},
+        json={"paid_on": "2026-09-15", "amount": settled_balance, "payment_method_id": 1},
     )
     assert settle_payment.status_code == 201, settle_payment.text
     settled_account = client.get(f"/customers/{settled_id}/account").json()
@@ -85,7 +85,7 @@ def test_read_matches_get_payments_debtors(client: TestClient, engine: Engine) -
     credit_balance = client.get(f"/customers/{credit_id}/account").json()["balance"]
     overpay = client.post(
         f"/customers/{credit_id}/payments",
-        json={"paid_on": "2026-09-15", "amount": credit_balance, "method": "cash"},
+        json={"paid_on": "2026-09-15", "amount": credit_balance, "payment_method_id": 1},
     )
     assert overpay.status_code == 201, overpay.text
     deleted = client.delete(f"/sales/{credit_sale_id}")

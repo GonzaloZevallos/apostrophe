@@ -21,8 +21,8 @@ from app.payments.adapters.sql_ledgers import SqlLedgers
 from app.payments.adapters.sql_payments import SqlPayments
 from app.payments.adapters.tables import PaymentRow
 from app.payments.domain.payment import PaymentAboveBalance
-from app.payments.domain.settlement import PaymentMethod
 from app.shared.money import Money, MoneyNotRepresentable
+from app.shared.payment_method import PaymentMethodId
 from tests.conftest import NOW
 from tests.money_wire import assert_money_is_int
 
@@ -60,7 +60,7 @@ def _owing_customer(client: TestClient) -> int:
         "/sales",
         json={
             "customer_id": customer["id"],
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "date": "2026-09-14",
             "shipping_charged": 500,
             "lines": [{"product_id": product["id"], "quantity": "10"}],
@@ -73,7 +73,7 @@ def _owing_customer(client: TestClient) -> int:
 def _pay(client: TestClient, customer_id: int, amount: Any) -> Any:
     return client.post(
         f"/customers/{customer_id}/payments",
-        json={"paid_on": "2026-09-20", "amount": amount, "method": "cash"},
+        json={"paid_on": "2026-09-20", "amount": amount, "payment_method_id": 1},
     )
 
 
@@ -117,8 +117,8 @@ def test_the_balance_guard_compares_in_hundredths_at_both_scales(
     with Session(engine) as session:
         payments = SqlPayments(session, business_id)
         with pytest.raises(PaymentAboveBalance):
-            payments.insert_later(customer_id, NOW.date(), 10_501, PaymentMethod.CASH, NOW)
-        payments.insert_later(customer_id, NOW.date(), 10_500, PaymentMethod.CASH, NOW)
+            payments.insert_later(customer_id, NOW.date(), 10_501, PaymentMethodId(1), NOW)
+        payments.insert_later(customer_id, NOW.date(), 10_500, PaymentMethodId(1), NOW)
         session.commit()
 
     assert _raw(engine, "SELECT amount FROM payment") == [(_stored(10_500, money_scale),)]
@@ -148,7 +148,7 @@ def test_an_amount_with_a_decimal_is_refused_and_nothing_is_saved(
 
     refused = client.post(
         f"/customers/{customer_id}/payments" + ("/preview" if route == "preview" else ""),
-        json={"paid_on": "2026-09-20", "amount": 10.5, "method": "cash"},
+        json={"paid_on": "2026-09-20", "amount": 10.5, "payment_method_id": 1},
     )
 
     assert refused.status_code == 422

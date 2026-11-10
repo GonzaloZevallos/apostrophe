@@ -73,7 +73,7 @@ def _sell(client: TestClient, product_id: int, **body: Any) -> dict[str, Any]:
         "/sales",
         json={
             "lines": [{"product_id": product_id, "quantity": "2"}],
-            "payment": "cash",
+            "payment": {"kind": "paid", "payment_method_id": 1},
             "date": DAY,
             **body,
         },
@@ -373,7 +373,7 @@ def test_a_money_field_with_a_decimal_is_refused_over_http_and_nothing_is_saved(
             "/sales",
             json={
                 "lines": [line],
-                "payment": "cash",
+                "payment": {"kind": "paid", "payment_method_id": 1},
                 "date": DAY,
                 **({"shipping_charged": 10.5} if where == "shipping_charged" else {}),
             },

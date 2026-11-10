@@ -81,7 +81,7 @@ def _sale(
 def _pay(client: TestClient, customer_id: int, amount: int) -> None:
     response = client.post(
         f"/customers/{customer_id}/payments",
-        json={"paid_on": TODAY.isoformat(), "amount": amount, "method": "cash"},
+        json={"paid_on": TODAY.isoformat(), "amount": amount, "payment_method_id": 1},
     )
     assert response.status_code == 201, response.text
 
@@ -201,7 +201,7 @@ def test_a_bulk_line_carries_its_rule_and_unit_price_and_a_gift_its_rule_and_no_
     response = client.post(
         "/sales",
         json={
-            "payment": "cash",
+            "payment": {"kind": "paid", "payment_method_id": 1},
             "shipping_charged": 700,
             "lines": [
                 {"product_id": plain, "quantity": "1.25"},
@@ -249,7 +249,7 @@ def test_the_bill_leaks_nothing_internal(client: TestClient, engine: Engine) -> 
     response = client.post(
         "/sales",
         json={
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "customer_id": customer,
             "note": note,
             "shipping_charged": 300,

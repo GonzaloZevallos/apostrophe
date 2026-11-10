@@ -38,7 +38,10 @@ def _sale_and_withdrawal(client: TestClient, variety_id: int) -> None:
     _post(
         client,
         "/sales",
-        {"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "1"}]},
+        {
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "1"}],
+        },
     )
     _post(
         client,

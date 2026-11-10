@@ -43,7 +43,7 @@ def _sold(
     client: TestClient, product_id: int, customer_id: int | None, quantity: str
 ) -> dict[str, Any]:
     body: dict[str, object] = {
-        "payment": "cash",
+        "payment": {"kind": "paid", "payment_method_id": 1},
         "lines": [{"product_id": product_id, "quantity": quantity}],
     }
     if customer_id is not None:

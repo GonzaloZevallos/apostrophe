@@ -40,7 +40,7 @@ def _record(client: TestClient, variety_id: int, **overrides: Any) -> dict[str, 
 
 def _sale(client: TestClient, variety_id: int, quantity: str, **overrides: Any) -> dict[str, Any]:
     body: dict[str, Any] = {
-        "payment": "cash",
+        "payment": {"kind": "paid", "payment_method_id": 1},
         "lines": [{"product_id": variety_id, "quantity": quantity}],
     }
     body.update(overrides)

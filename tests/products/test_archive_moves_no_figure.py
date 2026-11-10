@@ -95,7 +95,7 @@ def _seed(client: TestClient, clock: MovableClock) -> Seed:
     _ok(
         client.post(
             f"/customers/{customer['id']}/payments",
-            json={"paid_on": "2026-10-01", "amount": 1_000, "method": "cash"},
+            json={"paid_on": "2026-10-01", "amount": 1_000, "payment_method_id": 1},
         ),
         201,
     )
