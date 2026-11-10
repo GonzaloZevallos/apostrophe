@@ -13,7 +13,7 @@
  *
  * Home shows no first-use notice (`registro-unificado.md`, "Se sacan los avisos de primer uso"):
  * it reads neither `GET /first-run` nor `GET /onboarding-progress`, whatever the setup state, and
- * nothing replaces what they drew (ADR-0078, which retires ADR-0046's Home slot). The panel's
+ * nothing replaces what they drew (ADR-0080, which retires ADR-0046's Home slot). The panel's
  * failure shows the existing "Sin conexión" or the retry.
  *
  * The pinned-catalog notice (plan, "Front"; accounts.md's Inicio rule): a fixed

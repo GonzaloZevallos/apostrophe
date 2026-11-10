@@ -182,7 +182,7 @@ Criterios de éxito:
 
 - El estado del Onboarding lleva `business_id`, tomado de la sesión. Sus rutas entran en el barrido de aislamiento y en el test de rutas protegidas; el estado de otro Business no existe (404 o ausente).
 - `/onboarding-progress` sigue existiendo y lo lee solo `OnboardingLayout`; Home no lo lee.
-- Abrir `/onboarding` con cada paso hecho o pasado manda `advance` una sola vez por montaje y puede terminar solo el Onboarding del Business de la Session; el pedido no nombra ningún Business, y en cualquier otro estado no escribe nada (ADR-0078).
+- Abrir `/onboarding` con cada paso hecho o pasado manda `advance` una sola vez por montaje y puede terminar solo el Onboarding del Business de la Session; el pedido no nombra ningún Business, y en cualquier otro estado no escribe nada (ADR-0080).
 - La **Business removal** lo exporta y lo borra mediante la reflexión de esquema de ADR-0015, y la corrida de prueba lo cuenta.
 - Cada paso llama a los casos de uso y códigos de rechazo propios de su dueño (`contract.json`, ADR-0008); no hay copia de ninguna regla.
 - Nada sobre él va a los logs, la consola ni el almacenamiento del navegador (ADR-0005, ADR-0026). No se guarda ni se registra nada sobre el tiempo que llevó ni sobre dónde se fue quien vende.
