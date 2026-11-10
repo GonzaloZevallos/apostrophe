@@ -10,18 +10,15 @@
 import type { BillRule, BillState, SaleBill, SaleBillLine } from '../api/sales'
 import { SALE_BILL_TEXT, SALES_TEXT } from '../copy/sales'
 import { formatDateShort } from '../format/dates'
-import { formatQuantity } from '../format/money'
+import { formatQuantity, moneyFormatter } from '../format/money'
 import { hundredthsOfApiGrams } from './pricing'
 
 type BillText = typeof SALE_BILL_TEXT
 
 /** The Sale bill is out of scope for the business's Money format (PRD): it keeps the whole-peso
  * form it always had, in this module-private writer, the one named exception to the literal guards. */
-const SALE_BILL_AMOUNT = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 })
-
 function saleBillFixedMoney(pesos: number): string {
-  const rounded = Math.sign(pesos) * Math.round(Math.abs(pesos))
-  return `$ ${SALE_BILL_AMOUNT.format(rounded === 0 ? 0 : rounded)}`
+  return moneyFormatter({ symbol: '$', decimals: 0 }).money(pesos)
 }
 
 function assertNever(value: never): never {
