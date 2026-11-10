@@ -137,6 +137,32 @@ describe('stitch', () => {
     }
   })
 
+  it('crops a section at dpr 1 to its columns and rows, each copied exactly once', () => {
+    // dpr 1: a page 8 px wide, a section from CSS px 1 to 3 (columns 1 to 3), rows 100 to 501 over two frames.
+    const source = page(1200, 8)
+    const planned = scrollPlan(
+      { scrollHeight: 600 },
+      { width: 4, height: 300 },
+      1,
+      { x: 1.2, y: 100.5, width: 1.3, height: 400, right: 2.5, bottom: 500.5 },
+      [],
+      'built',
+    )
+    if (!('frames' in planned)) throw new Error('fixture plan refused')
+    expect(planned.frames.length).toBe(2)
+    expect(planned.frames.every((frame) => frame.cropLeft === 1 && frame.cropWidth === 2)).toBe(true)
+    const out = PNG.sync.read(stitch(frames(source, planned.frames, 300, 1), planned.frames, 1))
+    expect(out.width).toBe(2)
+    expect(out.height).toBe(501 - 100)
+    for (let row = 0; row < out.height; row++) {
+      for (let column = 0; column < out.width; column++) {
+        const at = (row * out.width + column) * 4
+        const sourceRow = 100 + row
+        expect([...out.data.subarray(at, at + 3)]).toStrictEqual([sourceRow % 256, Math.floor(sourceRow / 256), column + 1])
+      }
+    }
+  })
+
   it('throws on columns that are not whole, differ between frames, are missing on some, or lie outside', () => {
     const { shots } = one()
     const columned: ScrollFrame = { ...whole, cropLeft: 1, cropWidth: 2 }
