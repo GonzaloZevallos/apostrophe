@@ -14,6 +14,7 @@ import pytest
 
 from app.sales.domain.pricing import (
     BulkQuote,
+    CustomerTypeFact,
     GiftWithSpecialPrice,
     InvalidSpecialPrice,
     LinePricing,
@@ -26,6 +27,7 @@ from app.sales.domain.pricing import (
 from app.shared.pricing_settings import PricingSettings
 from app.shared.quantity import Quantity
 
+CUSTOMER_TYPE = CustomerTypeFact(id=1, name="VIP")
 MATRIX_PATH = (
     Path(__file__).resolve().parent.parent.parent / "web" / "src" / "sales" / "pricing-matrix.json"
 )
@@ -52,14 +54,14 @@ def _quote(raw: dict[str, Any] | None) -> PriceQuote | None:
         if bulk_raw is None
         else BulkQuote(price=bulk_raw["price"], minimum=Quantity(bulk_raw["minimumHundredths"]))
     )
-    return PriceQuote(list_price=raw["listPrice"], bulk=bulk, vip_price=raw["vipPrice"])
+    return PriceQuote(list_price=raw["listPrice"], bulk=bulk, type_price=raw["vipPrice"])
 
 
 def _price(raw: dict[str, Any]) -> LinePricing:
     return price_line(
         gift=raw["gift"],
         special_price=raw["specialPrice"],
-        customer_is_vip=raw["customerIsVip"],
+        customer_type=CUSTOMER_TYPE if raw["customerIsVip"] else None,
         settings=PricingSettings(
             is_bulk_pricing=raw["settings"]["bulk"], is_vip_customers=raw["settings"]["vip"]
         ),
@@ -71,6 +73,12 @@ def _price(raw: dict[str, Any]) -> LinePricing:
 MATRIX = _load_matrix()
 
 
+def _stored_rule(rule: str) -> str:
+    """The matrix still names the type rule `vip`; the domain now records `type`."""
+    return "type" if rule == "vip" else rule
+
+
+
 @pytest.mark.parametrize("case", MATRIX["lines"], ids=lambda c: c["name"])
 def test_price_line_matches_the_shared_matrix(case: dict[str, Any]) -> None:
     expect = case["expect"]
@@ -79,7 +87,7 @@ def test_price_line_matches_the_shared_matrix(case: dict[str, Any]) -> None:
             _price(case["input"])
         return
     priced = _price(case["input"])
-    assert priced.rule.value == expect["rule"]
+    assert priced.rule.value == _stored_rule(expect["rule"])
     assert priced.price_per_gram == expect["pricePerGram"]
     assert priced.line_total == expect["lineTotal"]
 
@@ -88,7 +96,7 @@ def test_price_line_matches_the_shared_matrix(case: dict[str, Any]) -> None:
 def test_totals_match_the_shared_matrix(case: dict[str, Any]) -> None:
     priced = [_price(line) for line in case["lines"]]
     if "expectRules" in case:
-        assert [p.rule.value for p in priced] == case["expectRules"]
+        assert [p.rule.value for p in priced] == [_stored_rule(r) for r in case["expectRules"]]
     total = sum((p.line_total for p in priced), 0) + case["shippingCharged"]
     assert total == case["expectTotal"]
 
@@ -102,7 +110,7 @@ def test_a_wrong_expectation_in_the_matrix_would_fail_this_suite() -> None:
         c for c in MATRIX["lines"] if c["name"] == "list price applies when nothing else does"
     )
     priced = _price(case["input"])
-    assert priced.rule.value == case["expect"]["rule"]  # sanity: the real case passes
+    assert priced.rule.value == _stored_rule(case["expect"]["rule"])  # sanity: the real case passes
 
     wrong_rule = "vip"
     assert wrong_rule != case["expect"]["rule"]
