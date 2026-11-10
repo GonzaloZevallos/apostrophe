@@ -3,9 +3,11 @@
  * (ADR-0074). A control that draws chips takes a `FixedSet`, and a `FixedSet` can only be built
  * here, by the unexported `fixedSet(reason, options)`, which refuses a blank reason: the type
  * carries an unexported `unique symbol` brand, so a mapped array or a hand-written object does
- * not compile. A set read from the business's data or settings (languages the business offers,
- * Payment methods, Customer types, reasons, categories) can grow, so it is never declared here:
- * the Selector is the control for those.
+ * not compile. A set read from the business's data or settings (which languages a business may
+ * choose, which is the server's Selectable list, Payment methods, Customer types, reasons,
+ * categories) can grow, so it is never declared here: the Selector is the control for those. The
+ * shipped languages are fixed (adding one is a code change in the Copy module) and the server's
+ * list only narrows them.
  *
  * An option holds only what is fixed: its `value`, a `label` getter and an optional icon. A
  * getter reads the same copy source its site read before and runs in render, never at load,
@@ -19,8 +21,9 @@
 import { COMMON_TEXT } from '../copy/common'
 import { CUSTOMER_TYPE_ICON_NAME } from '../copy/readers/customerTypeIcons'
 import { PAYMENT_STATE_NAME } from '../copy/readers/paymentStates'
+import { SHIPPED_LANGUAGE_TAGS } from '../copy/readers/shippedLanguages'
 import { SALES_TEXT } from '../copy/sales'
-import { SETTINGS_TEXT } from '../copy/settings'
+import { languageName, SETTINGS_TEXT } from '../copy/settings'
 import type { NombreIcono } from './Icono'
 
 export interface FixedOption<T extends string> {
@@ -49,6 +52,8 @@ const THEME_REASON = 'fixed set: theme choice'
 const ICONS_REASON = 'fixed set: the neutral icon set ships with the app'
 const ORIGINS_REASON = 'fixed set: Stock entry origins'
 const PAYMENT_STATE_REASON = 'fixed set: payment state, which is not a method'
+const LANGUAGES_REASON =
+  'fixed set: the languages the Copy module has texts for; adding one is a code change in the Copy module'
 
 /** Home's period tabs. */
 export const HOME_PERIODS = fixedSet(PERIODS_REASON, [
@@ -98,6 +103,12 @@ export const PAYMENT_STATES = fixedSet(PAYMENT_STATE_REASON, [
   { value: 'owing', label: PAYMENT_STATE_NAME.owing },
 ])
 
+/** Settings' language choice: the shipped languages, which the server's Selectable list narrows. */
+export const LANGUAGES = fixedSet(
+  LANGUAGES_REASON,
+  SHIPPED_LANGUAGE_TAGS.map((tag) => ({ value: tag, label: () => languageName(tag) })),
+)
+
 /** Every declared set and the reason it is fixed, readable in one place. */
 export const FIXED_SETS = {
   HOME_PERIODS: PERIODS_REASON,
@@ -106,4 +117,5 @@ export const FIXED_SETS = {
   CUSTOMER_TYPE_ICON_SET: ICONS_REASON,
   STOCK_ENTRY_ORIGINS: ORIGINS_REASON,
   PAYMENT_STATES: PAYMENT_STATE_REASON,
+  LANGUAGES: LANGUAGES_REASON,
 } as const

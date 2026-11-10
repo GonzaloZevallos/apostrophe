@@ -25,6 +25,7 @@ import Icono from '../../components/Icono'
 import InAppLink from '../../components/InAppLink'
 import { SETTINGS_WITHDRAWAL_REASONS } from '../../routes'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
+import { LANGUAGES } from '../../components/fixedSets'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
 import {
@@ -32,7 +33,6 @@ import {
   GENERIC_REFUSAL_MESSAGE,
   RENAME_SUCCESS,
   SETTINGS_TEXT,
-  languageName,
 } from '../../copy/settings'
 import SettingsGroup from './SettingsGroup'
 import { COMMON_TEXT } from '../../copy/common'
@@ -196,8 +196,11 @@ function LanguageControl({ language, selectable }: { language: StoredLanguage; s
   const [message, setMessage] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
 
-  const offList = !selectable.some((tag) => sameLanguage(language, tag))
-  const segments: readonly LanguageTag[] = offList ? [language, ...selectable] : selectable
+  const known = LANGUAGES.some((option) => sameLanguage(language, option.value))
+  const selectableNow = selectable.includes(language)
+  const shown = LANGUAGES.filter(
+    (option) => selectable.includes(option.value) || (known && sameLanguage(language, option.value)),
+  )
 
   async function choose(tag: LanguageTag): Promise<void> {
     if (saving || sameLanguage(language, tag)) {
@@ -234,23 +237,23 @@ function LanguageControl({ language, selectable }: { language: StoredLanguage; s
   return (
     <div className="ajustes-idioma">
       <span className="rotulo ajustes-tema__rotulo">{SETTINGS_TEXT.language}</span>
+      {!known && <span className="campo__ayuda">{SETTINGS_TEXT.currentLanguage(language)}</span>}
       <div className="ajustes-tema" role="radiogroup" aria-label={SETTINGS_TEXT.languageGroupName}>
-        {segments.map((tag) => {
-          const checked = sameLanguage(language, tag)
-          const untappable = offList && checked
+        {shown.map((option) => {
+          const checked = sameLanguage(language, option.value)
           return (
             <button
-              key={tag}
+              key={option.value}
               type="button"
               role="radio"
               aria-checked={checked}
-              disabled={saving || untappable}
+              disabled={saving || (checked && !selectableNow)}
               className={checked ? 'ajustes-tema__opcion ajustes-tema__opcion--activa' : 'ajustes-tema__opcion'}
               onClick={() => {
-                void choose(tag)
+                void choose(option.value)
               }}
             >
-              {languageName(tag)}
+              {option.label()}
             </button>
           )
         })}

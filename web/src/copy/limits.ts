@@ -65,7 +65,7 @@ export interface CopyModule {
 export type Locales = Readonly<Record<string, Bundle>>
 
 /** The forced pseudo-locale: generated, never a language, so never read by a check. */
-const PSEUDO = 'en-XA'
+export const PSEUDO = 'en-XA'
 
 /** `en` always (a key missing there is a problem), then every other real folder. */
 function realTags(locales: Locales): string[] {
