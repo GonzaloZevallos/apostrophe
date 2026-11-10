@@ -268,9 +268,10 @@ A partir de fixtures de test, sin telemetría:
   - Una planilla sin VIP no hace el chequeo.
   - Ninguna corrida escribe la marca VIP congelada `customer.vip`, probado con un registro de sentencias.
 - **Spreadsheet import registrada (criterio 7)**: 100% aprobado.
-  - Una corrida real exitosa registra el hecho de la Spreadsheet import con el instante de la corrida, en el mismo commit que todo lo demás.
+  - Una corrida real exitosa registra el hecho de la Spreadsheet import con el instante de la corrida, en el mismo commit que todo lo demás, y termina el Onboarding del Business.
   - Una corrida de prueba y una corrida real rechazada no registran nada.
   - El registro nunca hace que un chequeo de elegibilidad posterior se rechace.
+  - Home de un Business importado no muestra ningún aviso sobre la Spreadsheet import (results.md).
   - La Business removal lo exporta y lo elimina, y es invisible desde otro Business en el barrido de aislamiento.
 - **Nada inventado (criterio 3)**:
   - una matriz de cada caso que bloquea pasa al 100%, incluidas una columna que falta y una fila completa de Ventas con el `Total` vacío;
@@ -293,7 +294,7 @@ A partir de fixtures de test, sin telemetría:
 ## Fuera de alcance
 
 - Importar en un Business que ya tiene registros; volver a correrla, retomarla o unir.
-- Una pantalla o ruta de Spreadsheet import en la app.
+- Una pantalla o ruta de Spreadsheet import en la app, o un aviso en pantalla de que hubo una.
 - Importar columnas derivadas, o reproducir el Profit y el Cash de la planilla.
 - Importar filas que la planilla marca como no terminadas, o lo que nombran.
 - Inventar Customers, Phone numbers, categorías o Products para que una Spreadsheet import pase.

@@ -182,6 +182,7 @@ Criterios de éxito:
 
 - El estado del Onboarding lleva `business_id`, tomado de la sesión. Sus rutas entran en el barrido de aislamiento y en el test de rutas protegidas; el estado de otro Business no existe (404 o ausente).
 - `/onboarding-progress` sigue existiendo y lo lee solo `OnboardingLayout`; Home no lo lee.
+- Abrir `/onboarding` con cada paso hecho o pasado manda `advance` una sola vez por montaje y puede terminar solo el Onboarding del Business de la Session; el pedido no nombra ningún Business, y en cualquier otro estado no escribe nada (ADR-0078).
 - La **Business removal** lo exporta y lo borra mediante la reflexión de esquema de ADR-0015, y la corrida de prueba lo cuenta.
 - Cada paso llama a los casos de uso y códigos de rechazo propios de su dueño (`contract.json`, ADR-0008); no hay copia de ninguna regla.
 - Nada sobre él va a los logs, la consola ni el almacenamiento del navegador (ADR-0005, ADR-0026). No se guarda ni se registra nada sobre el tiempo que llevó ni sobre dónde se fue quien vende.
@@ -199,7 +200,7 @@ No hay telemetría.
     - los pasos opcionales pasados recordados;
     - "Done" para datos que ya existen;
     - ningún final antes de que se cumplan los dos pasos obligatorios, y ninguno por un cambio hecho fuera del Onboarding;
-    - cada paso hecho o pasado fuera de él: abrir `/onboarding` abre "Done", y llegar a "Done" lo termina;
+    - cada paso hecho o pasado fuera de él: abrir `/onboarding` abre "Done" con un solo `advance` (también en StrictMode), y llegar a "Done" lo termina; una segunda apertura lleva a Home;
     - el final al llegar a "Done".
 - **Un dato, un lugar (criterio 4)**: un valor guardado en cada paso se lee igual en Settings o en la página del Product, y al revés.
 - **Solo la venta es obligatoria (criterio 2)**: tests del front muestran:
