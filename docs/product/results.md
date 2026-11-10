@@ -161,6 +161,8 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 
 ### En pantalla (Home; `InicioOscuro`, Home en el tema oscuro; `InicioCompu`, Home en la disposición de computadora)
 
+![Home, pestaña Today, en el teléfono](../assets/screens/InicioHoy.webp)
+
 - Home es el Panel y una Tab root (navigation.md), y sigue siendo la pantalla de llegada después del login y después de aceptar una Invitation para sumarse. Aceptar una Invitation de Business nuevo lleva, en cambio, al Onboarding (onboarding.md).
 - **Arriba de todo**: el avatar del Business, que abre Settings.
 - **De arriba abajo, encima de las cifras**:

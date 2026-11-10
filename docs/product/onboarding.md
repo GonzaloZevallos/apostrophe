@@ -136,6 +136,8 @@ Criterios de éxito:
 
 ### "Done"
 
+!["Done" del Onboarding en el teléfono](../assets/screens/OnboardingListo.webp)
+
 - Una vez que los dos pasos obligatorios están hechos y cada paso opcional está pasado, la siguiente pantalla que muestra el Onboarding es "Done", y **llegar a "Done" termina el Onboarding**. Por lo general eso pasa con el toque que pasa el último paso opcional (su propia acción, o "Skip the rest"); cuando cada paso quedó hecho o pasado fuera de él, pasa al abrir `/onboarding`. Si nunca se vuelve a abrir, el Onboarding queda sin terminar sin que nada lo muestre.
 - Desde ahí terminó para siempre: salir de "Done" por cualquier medio, o cerrar la app en esa pantalla, nunca trae de vuelta el Onboarding. No hace falta tocar nada en "Done".
 - **Una línea por paso**:
