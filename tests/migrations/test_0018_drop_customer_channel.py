@@ -32,7 +32,7 @@ OTHER_TABLES = ("sale", "sale_line", "payment")
 SELECTED = {
     "sale": "id, business_id, {sale_date}, customer_id, shipping_charged, note, recorded_at",
     "sale_line": "*",
-    "payment": "*",
+    "payment": "id, business_id, paid_on, amount, method, customer_id, sale_id, recorded_at",
 }
 
 

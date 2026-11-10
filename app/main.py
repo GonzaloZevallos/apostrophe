@@ -49,7 +49,7 @@ from app.onboarding.adapters.router import router as onboarding_router
 from app.payment_methods.adapters.babel_defaults import BabelMethodDefaults
 from app.payment_methods.adapters.opening import PaymentMethodsOpening
 from app.payment_methods.adapters.router import router as payment_methods_router
-from app.payment_methods.adapters.usage import NoPaymentUsesAMethodYet
+from app.payments.adapters.method_usage import PaymentsUsingAMethod
 from app.payments.adapters.payments_ledger import SqlPaymentsLedger
 from app.payments.adapters.results_ports import SqlDebtSummary
 from app.payments.adapters.router import customers_router as payments_customers_router
@@ -255,10 +255,9 @@ def create_app(
     # this line is the one seam the sales-costs subtask reaches it through.
     app.state.line_costs = SqlLineCosts
     # Which payment methods have payments, read through the payment methods hexagon's own
-    # `PaymentMethodUsage` port, never `app.payments` (docs/adr/0082). No payment can point at
-    # a method until payments link by id, so this stub answers that none is in use; the
-    # piece that adds `payment.payment_method_id` replaces it with a payments adapter.
-    app.state.payment_method_usage = NoPaymentUsesAMethodYet
+    # `PaymentMethodUsage` port, never `app.payments` (docs/adr/0082): the payments adapter
+    # answers it from `payment.payment_method_id`.
+    app.state.payment_method_usage = PaymentsUsingAMethod
     # The same shape again: sales reads the switches only through its own
     # `PricingSettingsReader` port, never `app.pricing_settings` (docs/adr/0034).
     app.state.pricing_settings = SqlPricingSettings

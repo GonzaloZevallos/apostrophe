@@ -15,19 +15,20 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from datetime import date, datetime
 from decimal import Decimal
-from typing import assert_never
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.payment_methods.adapters.import_port import Holder, PaymentMethodsForImport
 from app.sales.adapters.price_book import PlannedPriceBook, SqlPriceBook
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.adapters.tables import SaleRow
 from app.sales.application.ports import MoneyFormatReader
 from app.sales.application.record_sale import LineInput, record_sale
 from app.sales.domain.pricing import SaleRuleBroken
-from app.sales.domain.sale import CustomerFact, LineRequest, PaymentMethod, Sale
+from app.sales.domain.sale import CustomerFact, LineRequest, Sale
 from app.shared.money import MoneyFormat
+from app.shared.payment_method import PaymentMethodId, PaymentMethodUnavailable
 from app.shared.pricing_settings import PricingSettings
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.application.ports import Refusal, SaleCheck, SaleCheckInput
@@ -44,20 +45,15 @@ _UNUSED_RECORDED_AT = datetime(1970, 1, 1)
 _CHECK_CUSTOMER_ID = 1
 
 
-def _payment_method(method: OnTheSpotMethod | None) -> PaymentMethod | None:
-    """`method` is already closed to `OnTheSpotMethod | None` by every hop before this
-    one (the plan's invariant), so this is the only place `PaymentMethod` is ever built
-    from an import value, and it can never raise: `assert_never` makes a third sheet
-    word unreachable rather than a `ValueError` at runtime."""
-    match method:
-        case None:
-            return None
-        case "cash":
-            return PaymentMethod.CASH
-        case "transfer":
-            return PaymentMethod.TRANSFER
-        case _:
-            assert_never(method)
+# The sheet's own words are the only place "cash" and "transfer" survive: each names the
+# default method the business holds under that English name (docs/adr/0082).
+_DEFAULT_NAMES = {"cash": "Cash", "transfer": "Transfer"}
+# Stands in for a method id while a plan is only checked: nothing is written then.
+_CHECKED_METHOD = PaymentMethodId(1)
+
+
+def _check_method(method: OnTheSpotMethod | None) -> PaymentMethodId | None:
+    return None if method is None else _CHECKED_METHOD
 
 
 class SalesImport:
@@ -117,7 +113,7 @@ class SalesImport:
                             special_price=sale.special_total,
                         )
                     ],
-                    method=_payment_method(sale.method),
+                    method=_check_method(sale.method),
                     left_owing=sale.left_owing,
                     recorded_at=_UNUSED_RECORDED_AT,
                 )
@@ -126,6 +122,20 @@ class SalesImport:
                 continue
             results.append(SaleCheck(total=built.total, refusal=None))
         return results
+
+    def _method_for(self, word: OnTheSpotMethod | None) -> PaymentMethodId | None:
+        """The business's method for a sheet word: the offered one holding the default
+        name, or one added last when nobody holds it. An archived holder refuses."""
+        if word is None:
+            return None
+        methods = PaymentMethodsForImport(self._session, self._business_id)
+        name = _DEFAULT_NAMES[word]
+        holding = methods.holder_of(name)
+        if holding.holder is Holder.OFFERED and holding.method_id is not None:
+            return PaymentMethodId(holding.method_id)
+        if holding.holder is Holder.ARCHIVED:
+            raise PaymentMethodUnavailable()
+        return PaymentMethodId(methods.add(name))
 
     def write_sale(
         self,
@@ -159,7 +169,7 @@ class SalesImport:
                     ),
                 )
             ],
-            method=_payment_method(sale.method),
+            method=self._method_for(sale.method),
             left_owing=sale.left_owing,
             recorded_at=recorded_at,
         )

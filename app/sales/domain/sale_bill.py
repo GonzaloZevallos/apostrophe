@@ -12,10 +12,10 @@ from datetime import date
 from typing import Literal, assert_never
 
 from app.sales.domain.pricing import PricingRule
-from app.sales.domain.sale import PaymentMethod
+from app.shared.payment_method import PaymentMethodId
 from app.shared.quantity import Quantity
 
-BillState = Literal["cash", "transfer", "paid", "owed", "none"]
+BillState = Literal["paid", "owed", "none"]
 BillRule = Literal["bulk", "gift"]
 
 # `SaleBill.date` names the sale's own date; a bare `date` inside the class body would
@@ -43,7 +43,7 @@ class BillPayment:
 
 def bill_payment(
     total: int,
-    on_the_spot_method: PaymentMethod | None,
+    on_the_spot_method: PaymentMethodId | None,
     has_customer: bool,
     still_owed: int | None,
 ) -> BillPayment:
@@ -54,7 +54,7 @@ def bill_payment(
     if on_the_spot_method is not None:
         if still_owed is not None:
             raise SaleBillInconsistent("a sale paid on the spot is never reported as owed")
-        return BillPayment(_spot_state(on_the_spot_method), None)
+        return BillPayment("paid", None)
     if not has_customer:
         raise SaleBillInconsistent("a sale with no customer is paid on the spot or is a gift")
     if still_owed is None:
@@ -62,16 +62,6 @@ def bill_payment(
     if still_owed > 0:
         return BillPayment("owed", still_owed)
     return BillPayment("paid", None)
-
-
-def _spot_state(method: PaymentMethod) -> BillState:
-    match method:
-        case PaymentMethod.CASH:
-            return "cash"
-        case PaymentMethod.TRANSFER:
-            return "transfer"
-        case _:
-            assert_never(method)
 
 
 def bill_balance(has_customer: bool, balance: int) -> int | None:

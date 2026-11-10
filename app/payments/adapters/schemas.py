@@ -19,7 +19,8 @@ from app.payments.domain.account import AccountRow as DomainAccountRow
 from app.payments.domain.account import CreditRow as DomainCreditRow
 from app.payments.domain.account import PaymentRow as DomainPaymentRow
 from app.payments.domain.account import SaleRow as DomainSaleRow
-from app.payments.domain.settlement import PaymentMethod, Split, Standing
+from app.payments.domain.settlement import Split, Standing
+from app.shared.payment_method import PaymentMethodLabel
 
 # A row's own `date` field shadows the `date` type for any field declared after it in
 # the same class body (the same trap `app.sales.adapters.schemas.SaleDate` sidesteps).
@@ -34,7 +35,7 @@ class PaymentPreviewIn(BaseModel):
 class PaymentIn(BaseModel):
     paid_on: PaymentDate
     amount: MoneyAmount
-    method: PaymentMethod | None = None
+    payment_method_id: int | None = None
 
 
 class AppliedToOut(BaseModel):
@@ -73,11 +74,30 @@ class PaymentPreviewOut(BaseModel):
         )
 
 
+class PaymentMethodLabelOut(BaseModel):
+    """A method as a read shows it: its current name and icon, archived or not."""
+
+    id: int
+    name: str
+    icon: str
+
+    @classmethod
+    def of(cls, label: PaymentMethodLabel) -> PaymentMethodLabelOut:
+        return cls(id=label.id, name=label.name, icon=label.icon)
+
+
 class PaymentRefOut(BaseModel):
     id: int
     paid_on: PaymentDate
     amount: MoneyOut
-    method: PaymentMethod
+    payment_method_id: int
+
+
+class AccountPaymentRefOut(BaseModel):
+    id: int
+    paid_on: PaymentDate
+    amount: MoneyOut
+    payment_method: PaymentMethodLabelOut
 
 
 class RecordPaymentOut(BaseModel):
@@ -92,7 +112,7 @@ class RecordPaymentOut(BaseModel):
                 id=recorded.id,
                 paid_on=recorded.paid_on,
                 amount=Decimal(recorded.amount),
-                method=recorded.method,
+                payment_method_id=recorded.method.value,
             ),
             applied_to=[AppliedToOut.of(split) for split in recorded.outcome.applied_to],
             after=AfterOut.of(recorded.outcome),
@@ -102,7 +122,8 @@ class RecordPaymentOut(BaseModel):
 class SaleRefOut(BaseModel):
     id: int
     total: MoneyOut
-    how_paid: Literal["cash", "transfer", "owing", "none"]
+    how_paid: Literal["paid", "owing", "none"]
+    payment_method: PaymentMethodLabelOut | None
 
 
 class SaleAccountRowOut(BaseModel):
@@ -118,7 +139,7 @@ class PaymentAccountRowOut(BaseModel):
     date: PaymentDate
     running_balance: MoneyOut
     standing: Standing
-    payment: PaymentRefOut
+    payment: AccountPaymentRefOut
     applied_to: AppliedToOut
 
 
@@ -127,7 +148,7 @@ class CreditAccountRowOut(BaseModel):
     date: PaymentDate
     running_balance: MoneyOut
     standing: Standing
-    payment: PaymentRefOut
+    payment: AccountPaymentRefOut
     amount: MoneyOut
 
 
@@ -140,18 +161,25 @@ def _row_out(row: DomainAccountRow) -> AccountRowOut:
             date=row.date,
             running_balance=Decimal(row.running_balance),
             standing=row.standing,
-            sale=SaleRefOut(id=row.sale_id, total=Decimal(row.total), how_paid=row.how_paid),
+            sale=SaleRefOut(
+                id=row.sale_id,
+                total=Decimal(row.total),
+                how_paid=row.how_paid,
+                payment_method=None
+                if row.payment_method is None
+                else PaymentMethodLabelOut.of(row.payment_method),
+            ),
         )
     if isinstance(row, DomainPaymentRow):
         return PaymentAccountRowOut(
             date=row.date,
             running_balance=Decimal(row.running_balance),
             standing=row.standing,
-            payment=PaymentRefOut(
+            payment=AccountPaymentRefOut(
                 id=row.payment_id,
                 paid_on=row.paid_on,
                 amount=Decimal(row.amount),
-                method=row.method,
+                payment_method=PaymentMethodLabelOut.of(row.method),
             ),
             applied_to=AppliedToOut.of(row.applied_to),
         )
@@ -160,8 +188,11 @@ def _row_out(row: DomainAccountRow) -> AccountRowOut:
         date=row.date,
         running_balance=Decimal(row.running_balance),
         standing=row.standing,
-        payment=PaymentRefOut(
-            id=row.payment_id, paid_on=row.paid_on, amount=Decimal(row.amount), method=row.method
+        payment=AccountPaymentRefOut(
+            id=row.payment_id,
+            paid_on=row.paid_on,
+            amount=Decimal(row.amount),
+            payment_method=PaymentMethodLabelOut.of(row.method),
         ),
         amount=Decimal(row.credit_amount),
     )

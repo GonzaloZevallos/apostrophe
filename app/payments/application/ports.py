@@ -10,8 +10,9 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Protocol
 
-from app.payments.domain.settlement import Ledger, PaymentMethod
+from app.payments.domain.settlement import Ledger
 from app.shared.money import MoneyFormat
+from app.shared.payment_method import PaymentMethodId
 
 
 @dataclass(frozen=True)
@@ -74,12 +75,13 @@ class Payments(Protocol):
         customer_id: int,
         paid_on: date,
         amount: int,
-        method: PaymentMethod,
+        method: PaymentMethodId,
         recorded_at: datetime,
     ) -> int:
         """One guarded `INSERT … SELECT`: raises `PaymentAboveBalance` and inserts no
-        row when `amount` exceeds the customer's current balance, never a read
-        followed by an unconditional insert. Answers the new row's id."""
+        row when `amount` exceeds the customer's current balance, and
+        `PaymentMethodUnavailable` when the method is not an offered one of this business,
+        never a read followed by an unconditional insert. Answers the new row's id."""
         ...
 
     def delete_later(self, payment_id: int) -> int:
