@@ -722,6 +722,14 @@ body {
   gap: var(--espacio-md);
 }
 
+/* "See the expenses" is a text link: it keeps the phone's tap height like the other link-shaped
+ * buttons, shrinks to its words and leaves the underline to the text, not to the 44 px box. */
+.tarjeta-gastos .boton--enlace {
+  align-self: flex-start;
+  min-height: var(--alto-tocable);
+  box-shadow: none;
+}
+
 .inicio__avatar {
   display: flex;
   align-items: center;
