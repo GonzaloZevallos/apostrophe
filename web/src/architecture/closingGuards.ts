@@ -189,7 +189,7 @@ export function findRawButtons(files: readonly SourceFile[]): string[] {
 }
 
 /**
- * The entries of a list that carry an icon and are not an action: the rows of the old catch-all list and of the
+ * The entries of a list that carry an icon and are not an action: the rows of the
  * settings. A shell entry (the bar, the sidebar) is covered by `aria-current` on its opening
  * tag instead, so a shell class is never added here. The list is closed: it does not grow.
  */

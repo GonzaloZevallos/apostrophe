@@ -68,8 +68,6 @@ export const COMMON_TEXT = {
   noKeepTyping: 'No, keep typing',
   /** @deprecated read `common:yesDiscard` */
   yesDiscard: 'Yes, discard it',
-  /** @deprecated read `common:more` */
-  more: 'More',
   /** @deprecated read `common:discardTheChange` */
   discardTheChange: 'Discard the change?',
   /** @deprecated read `common:newVariety` */
