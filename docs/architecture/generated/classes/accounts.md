@@ -273,6 +273,9 @@ classDiagram
     address_locked_until : datetime #124; None
     email_locked_until : datetime #124; None
   }
+  class MoneyFormatReader {
+    current() MoneyFormat
+  }
   class SignedIn {
     business : Business
     business_id : int
@@ -355,8 +358,13 @@ classDiagram
   class MeOut {
     business_name : str
     email : str
+    money_format
     shown_language : str
     today : date
+  }
+  class MoneyFormatOut {
+    decimals : int
+    symbol : str
   }
   class ResetLinkRow {
     app_user_id : Mapped~int~
@@ -416,4 +424,5 @@ classDiagram
     samesite : Literal~'lax'~
     secure : bool
   }
+  MeOut --> MoneyFormatOut : money_format
 ```

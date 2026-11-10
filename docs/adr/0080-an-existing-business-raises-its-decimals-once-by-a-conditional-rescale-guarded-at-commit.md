@@ -12,7 +12,7 @@ left open how an existing business moves from one to the other. This records it.
 
 ## Decision
 
-- **The scale goes from 0 to 2 once, never back.** `ApplyDecimals(business_id, decimals)` is the one
+- **The scale goes from 0 to 2 once, never back.** `ApplyMoneyFormat(business_id, symbol, decimals)` is the one
   use case that sets a business's decimals. Raising above 0 runs `UPDATE money_format SET scale = 2
   WHERE business_id = :b AND scale = 0`. That statement takes SQLite's write lock and changes a row
   only the first time; only then is every column tagged `info["money"]` in `app.tables.metadata`
@@ -41,7 +41,7 @@ left open how an existing business moves from one to the other. This records it.
   changes. The first live use is the owner's decision.
 - **Who writes `money_format`.** No code outside `app/money_format/adapters/` inserts or updates
   it (`tests/architecture/test_money_format_writer.py`). Business removal's reflected delete is the
-  one exception. The Settings part must call `ApplyDecimals` and never write `decimals` or `scale`
+  one exception. The Settings part must call `ApplyMoneyFormat` and never write `decimals` or `scale`
   itself. ADR-0034 was cited for this rule by mistake.
 - **libsql is unproven.** The locking behaviour of libsql (Turso) is not exercised locally. The
   commit-time re-read is the protection that does not depend on it.

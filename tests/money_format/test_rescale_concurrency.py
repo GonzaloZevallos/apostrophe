@@ -140,10 +140,14 @@ def test_a_sale_that_read_the_old_scale_fails_loudly_and_a_retry_stores_the_righ
 ) -> None:
     target = world.target
     already = _sale_totals(world)
+
+    def raise_decimals() -> None:
+        apply(second, target, 2)
+
     with Session(world.engine) as sale:
         with pytest.raises(MoneyScaleChanged):
             # The sale has read its prices at scale 0; the rescale commits; the sale writes.
-            _sell(sale, target, before_write=lambda: apply(second, target, 2))
+            _sell(sale, target, before_write=raise_decimals)
         sale.rollback()
 
         _sell(sale, target)

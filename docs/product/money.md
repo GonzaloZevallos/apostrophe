@@ -5,7 +5,7 @@
 - Cuando mi negocio guarda su dinero a una escala más fina que unidades enteras, quiero que cada monto que registro, veo y se exporta salga exactamente como lo ingresé, así confío en mis saldos, Profit y Cash sin revisarlos a mano. (GH-318, parte 18; ADR-0058.)
 - Cuando mi negocio cuenta la plata en otra moneda o con centavos, quiero elegir yo mismo, desde Settings, el símbolo de la moneda y la cantidad de decimales, para que cada pantalla muestre y acepte la plata como la contamos mis clientes y yo, sin que ningún monto que ya registré cambie de valor. (GH-318, parte 20.)
   - Disparadores: un Business en otra moneda quiere su propio símbolo; un Business que cobra con centavos sube los decimales; un vendedor que los subió por error, o que nunca usó centavos, los vuelve a bajar.
-  - La parte 20 cumple el primer disparador. Subir los decimales queda cerrado hasta la parte de GH-318 que hace que cada capacidad guarde centavos; esa parte cumple el segundo disparador y el criterio de éxito 2, y con ella el tercero pasa a tener algo que bajar.
+  - La parte 20 cumple los tres disparadores: cambia el símbolo, sube los decimales por el rescale (#402) y los baja de vuelta. Queda una brecha abierta, descrita en "Brecha: centavos en el dominio": después de subir, la mayoría de las rutas todavía no puede guardar un monto con centavos.
 
 ## Qué es hoy
 
@@ -13,9 +13,9 @@ Cada Business tiene una Money scale (ADR-0058):
 
 - Los Businesses que ya existían están en escala 0 y guardan unidades enteras de moneda.
 - Todo Business abierto desde la parte 18 empieza en escala 2 y guarda centésimos: la apertura del Business (`app/money_format/adapters/opening.py`) escribe su fila de `money_format` con "$", 0 decimales y escala 2.
-- El rescale de escala 0 a escala 2 (#402) existe, pero todavía nada lo llama: lo va a llamar la subida de decimales cuando se abra.
+- El rescale de escala 0 a escala 2 (#402) lo llama la subida de decimales de Settings, en el mismo guardado que el símbolo (ADR-0080).
 
-La escala es un dato de guardado, no de pantalla. Lo que ve el vendedor es el Money format del Business: un símbolo y sus decimales, "$" y 0 por defecto. Cualquier User del Business cambia el símbolo en Settings → Business → Currency and decimals. Los decimales siguen en 0 en todo Business, porque la lógica de cada capacidad (precios, ventas, pagos, gastos, costos de stock) todavía trabaja en unidades enteras.
+La escala es un dato de guardado, no de pantalla. Lo que ve el vendedor es el Money format del Business: un símbolo y sus decimales, "$" y 0 por defecto. Cualquier User del Business cambia el símbolo en Settings → Business → Currency and decimals. Cualquier User también sube o baja los decimales, de 0 a 2.
 
 Antes de la parte 20, todo Business estaba fijo en "$": un vendedor en otra moneda veía "$" en todas partes, también en el Catalog y el Sale bill que leen sus clientes.
 
@@ -36,27 +36,25 @@ Antes de la parte 20, todo Business estaba fijo en "$": un vendedor en otra mone
     Como consecuencia, un emoji compuesto con un unión de ancho cero (p. ej. una familia) se rechaza.
   - Uno en blanco, demasiado largo, con `**` o con uno de esos caracteres se rechaza con un mensaje simple del Copy module junto al campo, que no nombra ninguna moneda. El formulario queda abierto con lo tipeado y no se guarda nada, ni siquiera decimales cambiados en el mismo Save.
 - **Decimales**: el formulario muestra un número entero de 0 a 2.
-- **Subir** los decimales por encima de 0 se rechaza por ahora:
-  - una sola oración fija con el Attention icon, del Copy module, que no nombra ninguna moneda ni lleva palabras de flor (p. ej. "Amounts with decimals can't be used yet, so the decimals stay at 0.");
-  - el formulario queda abierto con lo que tipeó el vendedor y no se guarda nada, ni siquiera un símbolo cambiado en el mismo Save;
-  - un Save con 0 decimales y un símbolo nuevo se guarda normalmente.
-  - Se abre en la parte de GH-318 que hace que cada capacidad guarde centavos. Esa parte llama al rescale (#402) en el mismo guardado cuando la escala todavía es 0, y hace que después de subir se puedan tipear montos con esos decimales y se guarden tal como se ingresaron.
+- **Subir** los decimales por encima de 0 llama al rescale (#402) en el mismo guardado cuando la escala todavía es 0 (el rescale multiplica por 100 cada columna de dinero sin cambiar el valor de ningún monto). Un Business que ya está en escala 2 solo cambia el valor de `decimals`. Subir nunca corre el control de la bajada.
+- **Se aplica todo o nada**: el símbolo, los decimales y el rescale se guardan en una sola transacción con un solo commit; cualquier rechazo deja el símbolo y los decimales como estaban.
+- **Rutas**: `GET` y `PUT /api/money-format` llevan `{symbol, decimals}` y nunca una escala. Los rechazos son `422 money_format.symbol_invalid` (campo `symbol`), `422 money_format.decimals_invalid` (campo `decimals`), `409 money_format.decimals_below_recorded`, `409 money_format.amount_too_large`, `503 money_format.busy` y `500 money_format.rescale_check_failed`. `GET /auth/me` lleva `money_format: {symbol, decimals}`.
 - **Bajar** los decimales se rechaza cuando algún monto registrado del Business tiene más decimales de los que permite el valor nuevo.
   - El control es un EXISTS por cada columna de dinero declarada con `money_column()`, filtrado por `business_id`, dentro de un adaptador; su costo es lineal en las filas de dinero del Business y corre solo en esta acción rara. Ningún caso de uso lee la escala.
   - El control y el guardado van en una misma transacción, así que un monto con centavos guardado al mismo tiempo nunca queda debajo de una configuración más baja.
   - El rechazo es una sola oración fija con el Attention icon (p. ej. "Some recorded amounts have more decimals than that, so the decimals stay as they were."). No lista montos ni nombra el tipo de registro.
   - El formulario queda abierto con lo que tipeó el vendedor, y la configuración guardada queda como estaba. Si cambiaron el símbolo y los decimales y la bajada se rechaza, no se guarda nada, ni siquiera el símbolo.
-  - Mientras subir esté cerrado, ningún Business tiene decimales que bajar: el control se construye ahora y se prueba plantando montos directamente.
+  - Hoy casi ninguna capacidad guarda centavos, así que el control se prueba plantando montos con centavos directamente, columna por columna.
 - Un cambio guardado cuenta como un cambio que puede afectar el texto del Catalog: dispara la Upkeep del Pinned catalog, que solo edita en el lugar, nunca envía ni fija, y una falla muestra Out of date como hoy.
 - Cada User del Business ve el formato nuevo la próxima vez que carga una pantalla. Nada se configura por User ni por dispositivo.
 
 ### Cómo se escribe un monto
 
 - El símbolo, después el monto con exactamente los decimales del Business, coma decimal y punto para los miles. Los formatos numéricos siguen siendo argentinos hasta #317.
-- En la app: `$ 11.000` con los valores por defecto, `US$ 11.000` con "US$". Con 2 decimales, cuando se abran, se va a leer `US$ 11.000,50`.
+- En la app: `$ 11.000` con los valores por defecto, `US$ 11.000` con "US$". Con 2 decimales se lee `US$ 11.000,50`.
 - En el Catalog: su estilo propio, con el símbolo pegado a la cifra (`$11.000`, `US$11.000`), catalog.md.
 - En el Sale bill: como en la app, sale-bill.md.
-- Los formateadores de la app, del Catalog y del Sale bill ya aceptan de 0 a 2 decimales y se prueban así, aunque en la app hoy solo cambia el símbolo.
+- Los formateadores de la app, del Catalog y del Sale bill aceptan de 0 a 2 decimales y se prueban así.
 - Con los valores por defecto ("$", 0 decimales), cada pantalla, el Catalog y el Sale bill quedan idénticos byte a byte a como estaban.
 
 ### Dónde se aplica la escala
@@ -86,7 +84,7 @@ Algunas cifras dividen: el total de una Sale line, el costo por unidad que se to
 - Lo que el vendedor debe es siempre un monto que puede tipear. Ningún total de línea deja una fracción imposible de cobrar, y cobrar lo que muestra la pantalla nunca crea un Credit.
 - Toda cifra, con división o sin ella (totales, Balance, Total owed, Profit, Cash, Cost of goods sold, Stock shortfall, costos de retiro, Margin, Margin %, Average sale, el Panel y Analysis), da exactamente lo mismo en un Business de escala 0 y en uno de escala 2 con los mismos datos.
 - Esta regla está en la enmienda de ADR-0058, que también aclara cómo leer "a la unidad guardada" en ADR-0007 y ADR-0010.
-- **Después de un cambio de decimales**, cuando se abra la subida: una cifra guardada cuando se registró conserva su valor; una calculada después se redondea mitad hacia arriba a los decimales vigentes; una que solo se calcula al leerla (Margin, Average sale, Profit, etc.) no es un monto registrado y se muestra redondeada a los decimales vigentes.
+- **Después de un cambio de decimales**: una cifra guardada cuando se registró conserva su valor; una calculada después se redondea mitad hacia arriba a los decimales vigentes; una que solo se calcula al leerla (Margin, Average sale, Profit, etc.) no es un monto registrado y se muestra redondeada a los decimales vigentes.
 
 ### Rechazo por demasiados decimales
 
@@ -156,3 +154,9 @@ Algunas cifras dividen: el total de una Sale line, el costo por unidad que se to
 - **Para todos los Users (criterio 4)**: después de que un User guarda, la sesión de un segundo User del mismo Business lee el símbolo nuevo en su próxima carga: 100%.
 - **Upkeep**: un cambio de formato guardado dispara la Upkeep del Pinned catalog: 100%.
 - Gate (pytest, vitest, e2e): pasa.
+
+### Brecha: centavos en el dominio
+
+- Cada caso de uso todavía convierte un monto a unidades enteras con `Money.whole_units()` (42 usos en 21 archivos de `app/`). Después de subir los decimales, `money_within` deja pasar `10.50` y esa conversión no puede guardarlo.
+- En una ruta de escritura, ese rechazo se responde `422 money.too_many_decimals` con el mensaje existente, nunca un 500 y nunca un redondeo. Una lectura que encuentra un monto guardado que no es entero sigue respondiendo 500.
+- Que el dominio guarde centavos es un trabajo aparte que decide el humano; esta parte no lo hace.
