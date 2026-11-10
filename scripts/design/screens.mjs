@@ -240,8 +240,8 @@ function assertAccount(s) {
 
 // The entry that reaches the closing screen "Listo" ends its business's Onboarding for
 // good (ADR-0036), so each `open` business can serve one such entry per sample run. Every
-// other kind (`ended`, `pre_onboarding`, `imported`, `onboarding`) is read-only: it serves entries that
-// change nothing, which several rows may share, and no Listo entry (ADR-0042, GH-274).
+// other kind (`ended`) is read-only: it serves entries that change nothing, which several
+// rows may share, and no Listo entry (ADR-0042, GH-274).
 const LISTO = 'OnboardingListo'
 const DEFAULT_ACCOUNT = 'La Huerta'
 
@@ -300,7 +300,7 @@ function isOnboardingComputer(name) {
 // capture. The messages are fixed text: they name the screens, never a credential.
 /**
  * @param {ReadonlyArray<Readonly<Record<string, unknown>>>} selected
- * @param {Readonly<Record<string, 'open' | 'ended' | 'pre_onboarding' | 'imported' | 'onboarding'>>} kinds
+ * @param {Readonly<Record<string, 'open' | 'ended'>>} kinds
  * @returns {void}
  */
 export function assertSelectedAccounts(selected, kinds) {

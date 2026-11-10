@@ -1085,60 +1085,28 @@ describe('assertSelectedAccounts', () => {
       ...Object.fromEntries(open.map((name) => [name, 'open' as const])),
       ...Object.fromEntries(ended.map((name) => [name, 'ended' as const])),
     }
-    // GH-274, deliberate: the original two-kind map cannot hold, the registry now names more accounts.
     // `assertSelectedAccounts` throws, and this fails, when a registry row names an account the sample
-    // declares under none of the five kinds.
-    const all: Record<string, 'open' | 'ended' | 'pre_onboarding' | 'imported' | 'onboarding'> = {
-      ...real,
-      ...Object.fromEntries(namesOf('PRE_ONBOARDING_ACCOUNTS').map((name) => [name, 'pre_onboarding' as const])),
-      ...Object.fromEntries(namesOf('IMPORTED_ACCOUNTS').map((name) => [name, 'imported' as const])),
-      ...Object.fromEntries(namesOf('ONBOARDING_FRAME_ACCOUNTS').map((name) => [name, 'onboarding' as const])),
-    }
-    expect(() => assertSelectedAccounts(screens.screens, all)).not.toThrow()
+    // declares under neither kind.
+    expect(() => assertSelectedAccounts(screens.screens, real)).not.toThrow()
   })
 
-  it('puts the four Inicio rows on an ended account and each first-run frame on its own account', () => {
+  it('puts the four Inicio rows on an ended account', () => {
     const accountOf = (key: string) => (screens.screens.find((s) => s.screen === key) as { account?: string }).account
     for (const key of ['InicioHoy', 'InicioOscuro', 'InicioHoyCompu', 'InicioHoyCompuOscuro']) {
       expect(accountOf(key), key).toBe('inicio')
     }
-    const frames: Record<string, string[]> = {
-      primera_vez: ['InicioPrimeraVez', 'InicioPrimeraVezCompu', 'InicioPrimeraVezOscuro'],
-      en_curso: ['InicioOnboardingEnCurso', 'InicioOnboardingEnCursoCompu', 'InicioOnboardingEnCursoOscuro'],
-      completo: ['InicioOnboardingCompleto', 'InicioOnboardingCompletoCompu', 'InicioOnboardingCompletoOscuro'],
-    }
-    for (const [account, keys] of Object.entries(frames)) {
-      for (const key of keys) expect(accountOf(key), key).toBe(account)
-    }
   })
 
-  it('names a section and an account on every row drawn against a first-run file, and refuses one that does not', () => {
-    const firstRunRows = (rows: { screen: string; design?: string; section?: string; account?: string }[]) =>
-      rows.filter((s) => ['InicioPrimeraVez', 'InicioPrimeraVezCompu'].includes(s.design ?? s.screen))
-    const missing = (rows: { screen: string; design?: string; section?: string; account?: string }[]) =>
-      firstRunRows(rows)
-        .filter((s) => !s.section || !s.account)
-        .map((s) => s.screen)
-    const rows = screens.screens as { screen: string; design?: string; section?: string; account?: string }[]
-    expect(firstRunRows(rows).map((s) => s.screen)).toHaveLength(9)
-    expect(missing(rows)).toEqual([])
-    // the check itself: a row with no account, or no section, is caught.
+  it('names a section and an account on every row drawn against a multi-state file, and refuses one that does not', () => {
+    // The check itself: a row with no account, or no section, is caught (synthetic names, no drawing read).
+    const needsBoth = (rows: { screen: string; design?: string; section?: string; account?: string }[]) =>
+      rows.filter((s) => !s.section || !s.account).map((s) => s.screen)
     const broken = [
-      { screen: 'InicioPrimeraVez', section: 'x' },
-      { screen: 'InicioOnboardingEnCurso', design: 'InicioPrimeraVez', account: 'en_curso' },
+      { screen: 'Alfa', section: 'x' },
+      { screen: 'Beta', design: 'Alfa', account: 'una_cuenta' },
+      { screen: 'Gamma', design: 'Alfa', section: 'x', account: 'una_cuenta' },
     ]
-    expect(missing(broken)).toEqual(['InicioPrimeraVez', 'InicioOnboardingEnCurso'])
-  })
-
-  it('draws each Onboarding frame from its own block: the dark rows from the "· tema oscuro" one, the others not', () => {
-    const rows = screens.screens as { screen: string; section?: string; tema?: string }[]
-    for (const key of ['InicioOnboardingEnCurso', 'InicioOnboardingCompleto']) {
-      for (const suffix of ['', 'Compu', 'Oscuro']) {
-        const row = rows.find((s) => s.screen === key + suffix)
-        expect(row?.section?.endsWith('· tema oscuro'), key + suffix).toBe(suffix === 'Oscuro')
-        expect(row?.tema === 'oscuro', key + suffix).toBe(suffix === 'Oscuro')
-      }
-    }
+    expect(needsBoth(broken)).toEqual(['Alfa', 'Beta'])
   })
 })
 
@@ -1232,7 +1200,7 @@ describe('the customer dark twins of the real screens.json', () => {
   })
 })
 
-describe.each(['pre_onboarding', 'imported', 'onboarding'] as const)('the %s account kind (GH-274, GH-303)', (kind) => {
+describe.each(['ended'] as const)('the %s account kind (GH-274)', (kind) => {
   const accounts = { listo: {}, inicio: {}, capture: {} }
   const kinds = { listo: 'open', inicio: 'ended', capture: kind } as const
 
@@ -1291,49 +1259,28 @@ describe('the capture accounts of sample_app.py (GH-274)', () => {
     return declared.match(/"[^"]+"/g)?.map((name) => name.slice(1, -1)) ?? []
   }
 
-  it('declares the checklist and the imported accounts, apart from every other kind', () => {
-    const groups = [
-      'ONBOARDING_ACCOUNTS',
-      'ENDED_ONBOARDING_ACCOUNTS',
-      'PRE_ONBOARDING_ACCOUNTS',
-      'IMPORTED_ACCOUNTS',
-      'ONBOARDING_FRAME_ACCOUNTS',
-    ]
-    expect(namesOf('PRE_ONBOARDING_ACCOUNTS')).toEqual(['checklist', 'primera_vez'])
-    expect(namesOf('ONBOARDING_FRAME_ACCOUNTS')).toEqual(['en_curso', 'completo'])
-    expect(namesOf('IMPORTED_ACCOUNTS')).toEqual(['importada'])
+  it('declares the open and the ended accounts, apart from each other', () => {
+    const groups = ['ONBOARDING_ACCOUNTS', 'ENDED_ONBOARDING_ACCOUNTS']
+    expect(namesOf('ENDED_ONBOARDING_ACCOUNTS')).toEqual(['inicio'])
     const all = groups.flatMap(namesOf)
     expect(new Set(all).size).toBe(all.length)
   })
 
-  it('names each of them on exactly its three rows, each cropped to a label of its own drawing', () => {
-    const rows = screens.screens as { screen: string; account?: string; design?: string; section?: string }[]
-    const named = (account: string) => rows.filter((r) => r.account === account).map((r) => r.screen)
-    expect(named('primera_vez')).toEqual(['InicioPrimeraVez', 'InicioPrimeraVezCompu', 'InicioPrimeraVezOscuro'])
-    expect(named('en_curso')).toEqual(['InicioOnboardingEnCurso', 'InicioOnboardingEnCursoCompu', 'InicioOnboardingEnCursoOscuro'])
-    expect(named('completo')).toEqual(['InicioOnboardingCompleto', 'InicioOnboardingCompletoCompu', 'InicioOnboardingCompletoOscuro'])
-    for (const r of rows.filter((x) => ['primera_vez', 'en_curso', 'completo'].includes(x.account ?? ''))) {
-      expect(typeof r.section, r.screen).toBe('string')
-    }
-  })
-
-  it('refuses a first-run row whose label is not in its drawing, or occurs twice', () => {
-    const row = { screen: 'InicioPrimeraVez', route: 'ruta', account: 'primera_vez' }
+  it('refuses a row whose label is not in its drawing, or occurs twice', () => {
+    const row = { screen: 'Inicio', route: 'ruta' }
     expect(() => assertScreens([{ ...row, section: 'Una etiqueta que no está dibujada' }])).toThrow(
-      /^InicioPrimeraVez: section "Una etiqueta que no está dibujada" is not in InicioPrimeraVez\.dc\.html$/,
+      /^Inicio: section "Una etiqueta que no está dibujada" is not in Inicio\.dc\.html$/,
     )
     expect(() => assertScreens([{ screen: 'InicioHoyCompu', design: 'InicioCompu', route: 'ruta', section: 'Hoy' }])).toThrow(
       /InicioHoyCompu: section "Hoy" occurs \d+ times in InicioCompu\.dc\.html, expected exactly once/,
     )
   })
 
-  it('names none of them on a Listo entry of the real registry', () => {
-    const capture = [...namesOf('PRE_ONBOARDING_ACCOUNTS'), ...namesOf('IMPORTED_ACCOUNTS'), ...namesOf('ONBOARDING_FRAME_ACCOUNTS')]
-    const real = Object.fromEntries(capture.map((name) => [name, 'imported' as const]))
+  it('names no ended account on a Listo entry of the real registry', () => {
+    const capture = namesOf('ENDED_ONBOARDING_ACCOUNTS')
     const listo = screens.screens.filter((s) => (s as { design?: string }).design === 'OnboardingListo' || s.screen === 'OnboardingListo')
     expect(listo.length).toBeGreaterThan(0)
     for (const entry of listo) expect(capture).not.toContain((entry as { account?: string }).account)
-    expect(() => assertSelectedAccounts(screens.screens, { ...real, ...Object.fromEntries(namesOf('ONBOARDING_ACCOUNTS').map((n) => [n, 'open' as const])), inicio: 'ended' })).not.toThrow()
   })
 })
 

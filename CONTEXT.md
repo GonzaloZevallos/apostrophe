@@ -391,12 +391,11 @@ El único lugar que reúne cada configuración de todo el Business, en grupos: B
 _Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group)
 
 **First-run checklist**:
-Cuatro pasos en Home para un Business que existía antes de que saliera el Onboarding y todavía no hizo las dos cosas: ponerle precio a un Product para hoy y registrar una Stock entry. Esos dos pasos, más publicar el Pinned catalog y sumar un segundo User, que son opcionales. Cada paso se calcula a partir de los datos del Business y dice "Done" cuando se cumple; la First-run checklist desaparece para siempre la primera vez que se cumplen los dos pasos obligatorios y nunca vuelve. Un Business recién creado recibe el Onboarding en su lugar.
-_Avoid_: tour, wizard, setup guide, welcome, Onboarding (that is a brand-new business's first run)
+Término retirado del glosario: Home ya no muestra la lista de cuatro pasos, así que la entrada se borra de CONTEXT.md. Las reglas laterales de "+ New sale" y "Send catalog" para un Business anterior al Onboarding siguen en navigation.md sin este nombre.
 
 **Onboarding**:
-La configuración paso a paso por la que se guía a un Business recién creado una vez que se acepta su Invitation de Business nuevo, en lugar de la First-run checklist. Tiene dos pasos obligatorios (un Product con precio para hoy, su Opening stock) y otros opcionales (Catalog header and footer, bot de Telegram, un socio, Expense categories); nunca pregunta cómo se llama lo que vende el Business ni pide una Unit. Retoma donde quedó, termina para siempre al llegar a su pantalla "Done" o cuando un Spreadsheet import carga el Business, y nunca se ofrece en el Business de un User que se sumó ni en uno que existía antes de que saliera.
-_Avoid_: tour, wizard, welcome screen, setup guide
+La configuración paso a paso por la que se guía a un Business recién creado una vez que se acepta su Invitation de Business nuevo. Tiene dos pasos obligatorios (un Product con precio para hoy, su Opening stock) y otros opcionales (Catalog header and footer, bot de Telegram, un socio, Expense categories); nunca pregunta cómo se llama lo que vende el Business ni pide una Unit, y no pone ningún aviso en Home. Retoma donde quedó solo cuando se vuelve por su propia entrada (el aterrizaje tras la Invitation o la dirección `/onboarding`), termina para siempre al llegar a su pantalla "Done" o cuando un Spreadsheet import carga el Business, y nunca se ofrece en el Business de un User que se sumó ni en uno que existía antes de que saliera.
+_Avoid_: tour, wizard, welcome screen, setup guide, setup notice
 
 **Theme choice**:
 La elección de Automatic, Light o Dark de un dispositivo. Se hace solo en Settings → Appearance, se aplica de inmediato y se conserva solo en ese dispositivo. No está atada a un User ni a un Business, sobrevive al cierre de sesión y no guarda nada más. Sin ninguna guardada, la app sigue al teléfono en vivo; una elección guardada es solo de ese dispositivo y gana sobre el teléfono. _In the app_: Theme (Automatic · Light · Dark).
@@ -451,7 +450,7 @@ La corrida manual de `ci.yml` en un sha, que usa el workflow y los scripts de ma
 _Avoid_: re-run, manual run, workflow run
 
 **Tappable notice**:
-Un aviso que el vendedor toca para abrir aquello a lo que apunta, como el "Go on to the setup" de Home. Su oración lleva el significado y es su nombre accesible. Su regla completa vive en `docs/product/icon-and-text-rule.md`.
+Un aviso que el vendedor toca para abrir aquello a lo que apunta. Su oración lleva el significado y es su nombre accesible. Su regla completa vive en `docs/product/icon-and-text-rule.md`.
 _Avoid_: banner, card button, row, callout, alert
 
 **Design capture**:

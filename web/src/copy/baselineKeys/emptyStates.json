@@ -17,12 +17,6 @@
   "customers.ts:NOBODY_OWES": {
     "key": "emptyStates:nobodyOwes"
   },
-  "inicio.ts:EMPTY_DETAIL": {
-    "key": "emptyStates:homeVarietiesDetail"
-  },
-  "inicio.ts:EMPTY_TITLE": {
-    "key": "emptyStates:homeVarietiesTitle"
-  },
   "inicio.ts:NOBODY_OWES": {
     "key": "emptyStates:nobodyOwes"
   },
@@ -53,12 +47,6 @@
   "emptyStates.ts:EMPTY_STATES.homeNobodyOwes": {
     "key": "emptyStates:nobodyOwes"
   },
-  "emptyStates.ts:EMPTY_STATES.homeVarietiesDetail": {
-    "key": "emptyStates:homeVarietiesDetail"
-  },
-  "emptyStates.ts:EMPTY_STATES.homeVarietiesTitle": {
-    "key": "emptyStates:homeVarietiesTitle"
-  },
   "emptyStates.ts:EMPTY_STATES.salesList": {
     "key": "emptyStates:salesList"
   },
@@ -76,12 +64,6 @@
   },
   "emptyStates.ts:EMPTY_STATE_WORDINGS[2]": {
     "key": "emptyStates:nobodyOwes"
-  },
-  "emptyStates.ts:EMPTY_STATE_WORDINGS[3]": {
-    "key": "emptyStates:homeVarietiesTitle"
-  },
-  "emptyStates.ts:EMPTY_STATE_WORDINGS[4]": {
-    "key": "emptyStates:homeVarietiesDetail"
   },
   "emptyStates.ts:EMPTY_STATE_WORDINGS[5]": {
     "key": "emptyStates:stockTitle"

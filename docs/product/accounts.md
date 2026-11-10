@@ -660,7 +660,7 @@ Estos estados los dibuja `Estados` (GH-49), con el estilo renovado a partir del 
 - **Nada inventado (criterio 7)**:
   - la barra, la barra lateral, More y Settings muestran exactamente los accesos que lista navigation.md;
   - cada cifra de Home es igual a la respuesta de la API, con ceros reales para un período sin actividad (results.md);
-  - Home no muestra otros avisos que la **First-run checklist**, "Start with your products", el del **Pinned catalog** y el aviso posterior al **Spreadsheet import**.
+  - Home no muestra otro aviso que el del **Pinned catalog** ("Your Telegram catalog is out of date"); ningún elemento de primer uso (navigation.md).
 - **Password change (criterio 18)**:
   - después de un Change, cada token anterior del User responde 401;
   - el token nuevo del dispositivo que actuó funciona, y el token de un socio en el mismo Business sigue funcionando;

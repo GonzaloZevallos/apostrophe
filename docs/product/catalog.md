@@ -119,7 +119,7 @@ Criterios de éxito:
 
 - **Ruta**: `/varieties/catalog`. El viejo `/catalogo` redirige ahí de forma permanente (navigation.md).
 - **Se abre desde**: "Send catalog" en Products, y el aviso "Your Telegram catalog is out of date" de Home. Es un detalle (navigation.md): la barra o la barra lateral y "‹ Products", sin "+ New sale".
-- **Siempre se abre**, también cuando nada califica: muestra entonces el estado vacío, y el Pinned catalog conserva su propio mensaje vacío y "Up to date" (pinned-catalog.md). "Send catalog" está desactivado, con su motivo en palabras (p. ej. "Add a product with a price and its stock"), solo mientras se muestra la First-run checklist y nada califica (navigation.md).
+- **Siempre se abre**, también cuando nada califica: muestra entonces el estado vacío, y el Pinned catalog conserva su propio mensaje vacío y "Up to date" (pinned-catalog.md). "Send catalog" está desactivado, con su motivo en palabras (p. ej. "Add a product with a price and its stock"), solo para un Business anterior al Onboarding que no cumplió los dos pasos obligatorios, mientras nada califica (navigation.md).
 - **"How it looks in Telegram"**: el texto como lo lee un cliente. No cambia por cómo funciona Copy.
   - La negrita sigue la regla de emparejamiento de arriba.
   - Cada otra línea, salto, línea en blanco, emoji y precio es idéntico a la versión plana de Copy.
@@ -208,7 +208,7 @@ Criterios de éxito:
   - Share no escribe nada en el portapapeles en ningún resultado;
   - ningún mensaje lleva texto del Catalog.
 - **Share en el iPhone (criterio 3)**: antes del merge, el dueño comparte desde el iPhone por el link HTTPS a un contacto de Telegram, un contacto de WhatsApp y una nota; donde la hoja gira, la cierra y confirma que Share y Copy siguen funcionando. El resultado se registra en el PR, y una hoja que se cuelga solo con cierto contenido es un hallazgo que se devuelve, nunca un cambio en el contenido.
-- **Siempre se abre**: la pantalla del Catalog se abre sin nada que califique fuera del primer uso, y "Send catalog" está desactivado solo mientras se muestra la First-run checklist y nada califica.
+- **Siempre se abre**: la pantalla del Catalog se abre sin nada que califique fuera del primer uso, y "Send catalog" está desactivado solo para un Business anterior al Onboarding que no cumplió los dos pasos obligatorios, mientras nada califica (navigation.md).
 - **Dirección**: `/varieties/catalog` abre la pantalla del Catalog, también al recargar; `/catalogo` responde una redirección permanente a ella.
 - **Lugar provisorio**: mientras no existan los grupos de Settings, una prueba del front muestra que los Bot settings y el header y el footer se guardan desde ahí, que los dos enlaces lo abren, que no muestra estado del Pinned catalog ni Publish, y que ninguna pestaña, More ni Settings lleva a él.
 - **Sin curl (criterio 3)**: la corrida de punta a punta del front edita los atributos de un Product en su página y el header y el footer (en Settings, o en el lugar provisorio hasta que exista), abre Products → "Send catalog" y toca Copy. La parte plana del portapapeles es igual al texto de la API con los marcadores emparejados quitados.

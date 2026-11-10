@@ -59,7 +59,7 @@ Las dos listas son cerradas. Agregar a cualquiera de las dos cambia este archivo
 - **Ícono + texto**: todo lo demás, p. ej. "+ New sale", "+ Stock entry", "Take from stock", "Send catalog", Collect (el nombre accesible sigue siendo "Collect from <name>"), Publish, Test it, Find my chat, Archive, Restore, "Invite a partner", "Change password", "Sign out", Copy y el Share principal. Una acción nueva que no encaja en ninguna de las dos listas es ícono + texto. El ícono junto a una palabra es decorativo y se oculta para la tecnología asistiva, así que el nombre accesible sigue siendo la palabra.
   - **El "+" de los docs es el ícono**: en "+ New sale", "+ Add expense", "+ Stock entry", "+ Entry" y cualquier otra etiqueta escrita con un "+" al principio, el "+" representa al ícono `agregar`. En pantalla lo dibuja el ícono y el texto visible es solo la palabra, nunca un "+" literal junto al ícono. El nombre accesible no cambia.
 - **Una acción nunca parece un enlace**: solo un enlace (`enlace`) se dibuja como tal (subrayado, con el estilo de enlace). Una acción, en cualquier forma, incluida una que abre otra pantalla como "New sale" o "New sale to <name>", se dibuja como la acción que es.
-- **Tappable notice**: un aviso que el vendedor toca para abrir aquello a lo que apunta, como el "Go on to the setup" de Home. No es una fila de acción ni un control de ninguna de las dos listas cerradas, y no las cambia.
+- **Tappable notice**: un aviso que el vendedor toca para abrir aquello a lo que apunta. No es una fila de acción ni un control de ninguna de las dos listas cerradas, y no las cambia.
   - Conserva su tarjeta exactamente como fue diseñada: su superficie, sus esquinas redondeadas y su propio padding, sin espaciado de fila ni divisor de fila.
   - Su oración lleva el significado, y su nombre accesible es su texto visible.
   - Su chevron es la marca decorativa de que abre algo; no lleva ningún otro ícono, y el Attention icon solo cuando Avisos, más abajo, lo lista.
@@ -107,13 +107,11 @@ Las dos listas son cerradas. Agregar a cualquiera de las dos cambia este archivo
 - Un único Attention icon, el mismo en todas partes y decorativo, va junto a la oración de todo aviso o estado que le pide al vendedor que actúe o dice que algo falló:
   - el "Your Telegram catalog is out of date" de Home;
   - "Out of date" con su motivo;
-  - "Start with your products";
-  - el "Connect the bot…" posterior a la Spreadsheet import;
   - "No connection";
   - el reintento genérico por error del servidor.
 - La oración lleva el estado; el ícono nunca la reemplaza ni aparece sin ella. El color y la redacción no cambian.
-- Sin ícono en: "Up to date"; "That is gone." y su forma de lista; los toasts; el First-run checklist (conserva sus casillas y "Done"); las líneas de ayuda; los estados vacíos.
-- Un aviso que el vendedor toca para abrir algo es un Tappable notice (ver arriba): conserva su tarjeta diseñada, nunca el marco de una fila. El "Go on to the setup" de Home es uno; lleva su chevron y ningún Attention icon.
+- Sin ícono en: "Up to date"; "That is gone." y su forma de lista; los toasts; las líneas de ayuda; los estados vacíos.
+- Un aviso que el vendedor toca para abrir algo es un Tappable notice (ver arriba): conserva su tarjeta diseñada, nunca el marco de una fila.
 
 ### Acciones que cambian su palabra según el estado
 
@@ -138,8 +136,8 @@ Sin telemetría; sale de los tests y del chequeo de diseño.
   - las líneas de ayuda y los avisos ≤ 80 caracteres, los títulos de estado vacío ≤ 40 con una línea ≤ 80, afirmado sobre el copy fijo; los rechazos de más de 80 se listan para revisión;
   - More info se abre cerrada, alterna `aria-expanded`, nunca dispara la confirmación de salir y no guarda ninguna consecuencia ni solución;
   - una lista en el PR muestra cada texto acortado o movido y adónde fue su forma larga. 0 borrados en silencio.
-- **Familia de íconos y estados (criterio 4)**: un guardia para trazo 1.6, 22 px y sin emoji; los tests de front muestran que cada estado conserva su palabra o su forma en ambos temas; el Attention icon está en los seis avisos listados y en ninguno de los informativos.
-- **Tappable notice**: el "Go on to the setup" de Home se dibuja como una tarjeta tocable, sin espaciado ni divisor de fila, con su texto visible como nombre accesible y sin Attention icon; `compare.sh` lo muestra sin cambios, en celular y en computadora, en ambos temas.
+- **Familia de íconos y estados (criterio 4)**: un guardia para trazo 1.6, 22 px y sin emoji; los tests de front muestran que cada estado conserva su palabra o su forma en ambos temas; el Attention icon está en los cuatro avisos listados y en ninguno de los informativos.
+- **Tappable notice**: cada Tappable notice se dibuja como una tarjeta tocable, sin espaciado ni divisor de fila y con su texto visible como nombre accesible; `compare.sh` lo muestra sin cambios, en celular y en computadora, en ambos temas.
 - **Nada más cambia (criterio 5)**: las suites existentes pasan; los únicos tests editados son el copy acortado y las búsquedas de texto a rol y nombre de controles que pasaron a ser solo ícono, cada uno listado en el PR; los presupuestos de toques y la tabla de redirecciones no cambian; los textos de seguridad no agregan información.
 - **Se ve como fue diseñado (criterio 6)**: `compare.sh` antes y después para cada pantalla, en celular y en computadora, en ambos temas, juzgado a ojo; a 320 px con el texto al 130 %, ningún ícono ni etiqueta se recorta y la barra todavía entra.
 - **Solo el chevron final de una fila de registro (criterio 7)**, según los tests propios del guardia de cierre y el Gate:
