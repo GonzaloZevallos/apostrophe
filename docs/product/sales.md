@@ -146,7 +146,7 @@ Criterios de éxito, Sale number:
 - **Total**: la suma de los totales redondeados de las líneas más el Shipping charged. Las líneas se redondean de a una, nunca como suma.
 - **Shipping charged**: pesos enteros, cero o más, $0 por defecto. Un valor negativo se rechaza.
 - **Cómo se pagó** (en el cuerpo, `{"kind":"method","payment_method_id"}`, `{"kind":"owing"}` o nada para una venta de $0):
-  - **Pagada entera en el momento, con uno de los Payment methods activos del negocio.** Registra un On-the-spot payment por el total, en la fecha de la venta, vinculado a ese método (ADR-0007, ADR-0076, payment-methods.md). Salda solo esta venta (`payments.md`).
+  - **Pagada entera en el momento, con uno de los Payment methods activos del negocio.** Registra un On-the-spot payment por el total, en la fecha de la venta, vinculado a ese método (ADR-0007, ADR-0078, payment-methods.md). Salda solo esta venta (`payments.md`).
   - **Queda debiendo**: sin medio, y la venta necesita cliente. Los pagos posteriores la saldan empezando por la deuda más vieja (`payments.md`). "Owing" es un estado, nunca un Payment method.
   - **Total de $0**: queda saldada sin medio y sin nada debido. Un medio enviado con ella se ignora y no se guarda.
   - Un total por encima de $0 necesita un medio o "queda debiendo".
