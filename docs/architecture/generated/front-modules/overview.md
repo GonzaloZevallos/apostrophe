@@ -41,6 +41,7 @@ src_Root_tsx-->src_components
 src_Root_tsx-->src_queryClient_ts
 src_Root_tsx-->src_shell
 src_Root_tsx-->src_useOnline_ts
+src_api-->src_components
 src_api-->src_copy
 src_api-->src_format
 src_api-->src_i18n
