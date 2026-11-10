@@ -161,7 +161,6 @@ export const SETTINGS_TEXT = {
   currencyDecimals2: '2',
   currencyExample: 'Example',
   currencySaved: 'Currency and decimals saved',
-  discardTheCurrency: 'Discard the changes?',
 } as const
 
 /** Each language's own name, fixed and the same whatever language is shown (invariant 7):

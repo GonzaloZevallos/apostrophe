@@ -35,7 +35,7 @@ import SettingsGroup from './SettingsGroup'
 type DecimalsChoice = FixedValue<typeof MONEY_DECIMALS>
 
 const LEAVE = {
-  question: SETTINGS_TEXT.discardTheCurrency,
+  question: COMMON_TEXT.discardTheChanges,
   detail: COMMON_TEXT.losesWhatYouEntered,
   keepLabel: COMMON_TEXT.noKeepEditing,
   discardLabel: COMMON_TEXT.yesDiscard,

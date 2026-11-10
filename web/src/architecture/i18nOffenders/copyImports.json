@@ -70,6 +70,7 @@
   {"file":"src/screens/settings/BusinessGroup.tsx","imports":["settings.ts"],"issue":353},
   {"file":"src/screens/settings/CatalogMessageForm.tsx","imports":["settings.ts"],"issue":353},
   {"file":"src/screens/settings/CatalogMessageGroup.tsx","imports":["settings.ts"],"issue":353},
+  {"file":"src/screens/settings/CurrencyAndDecimals.tsx","imports":["settings.ts"],"issue":353},
   {"file":"src/screens/settings/CustomerTypeForm.tsx","imports":["settings.ts"],"issue":353},
   {"file":"src/screens/settings/ExpenseCategoriesEditor.tsx","imports":["settings.ts"],"issue":353},
   {"file":"src/screens/settings/ExpenseCategoriesGroup.tsx","imports":["settings.ts"],"issue":353},

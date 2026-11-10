@@ -309,12 +309,6 @@ export const RECORDS_STATES: readonly WalkState[] = [
     visible: 'Delete the category?',
   },
   {
-    screen: 'ConfiguracionMoneda',
-    route: SETTINGS_CURRENCY,
-    steps: [],
-    visible: SETTINGS_TEXT.currencyExample,
-  },
-  {
     screen: 'ConfiguracionMonedaSimboloInvalido',
     route: SETTINGS_CURRENCY,
     steps: [{ click: common('common:save') }],

@@ -9,7 +9,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
-import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi, type Mock } from 'vitest'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import { COMMON_TEXT } from '../../copy/common'
@@ -30,6 +30,14 @@ const ME: Me = {
 const SYMBOL_REFUSAL = 'Use 1 to 4 visible characters, and no two asterisks in a row.'
 const LOWERING_REFUSAL = 'Some recorded amounts have more decimals than that, so the decimals stay as they were.'
 
+type FetchMock = Mock<(url: string, init?: RequestInit) => Promise<Response>>
+
+function fetchReturning(response: Response | null): FetchMock {
+  return vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(() =>
+    Promise.resolve(response ?? jsonResponse(200, {})),
+  )
+}
+
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 }
@@ -43,7 +51,7 @@ afterEach(() => {
   resetMoneyFormat()
 })
 
-function renderForm(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
+function renderForm(fetchMock: FetchMock): QueryClient {
   vi.stubGlobal('fetch', fetchMock)
   const queryClient = new QueryClient()
   queryClient.setQueryData(keys.me(), ME)
@@ -58,15 +66,15 @@ function renderForm(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
   return queryClient
 }
 
-function lastPutBody(fetchMock: ReturnType<typeof vi.fn>): unknown {
-  const call = fetchMock.mock.calls.find((args: [string, RequestInit?]) => args[1]?.method === 'PUT')
+function lastPutBody(fetchMock: FetchMock): unknown {
+  const call = fetchMock.mock.calls.find(([, init]) => init?.method === 'PUT')
   if (call === undefined) throw new Error('no PUT was sent')
-  return JSON.parse(String((call[1] as RequestInit).body))
+  return JSON.parse(String(call[1]?.body))
 }
 
 test('the Example is written from the unsaved symbol and decimals as they are typed', async () => {
   const user = userEvent.setup()
-  renderForm(vi.fn())
+  renderForm(fetchReturning(null))
 
   expect(screen.getByRole('status')).toHaveTextContent('$ 11.001')
 
@@ -80,7 +88,7 @@ test('the Example is written from the unsaved symbol and decimals as they are ty
 
 test('Save sends the symbol and the decimals only, sets the front format and the me cache', async () => {
   const user = userEvent.setup()
-  const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, { symbol: 'US$', decimals: 0 }))
+  const fetchMock = fetchReturning(jsonResponse(200, { symbol: 'US$', decimals: 0 }))
   const queryClient = renderForm(fetchMock)
 
   const symbol = screen.getByRole('textbox', { name: new RegExp(SETTINGS_TEXT.currencySymbol) })
@@ -97,9 +105,9 @@ test('Save sends the symbol and the decimals only, sets the front format and the
 
 test('a symbol refusal shows the API refusal next to the field and keeps what was typed', async () => {
   const user = userEvent.setup()
-  const fetchMock = vi
-    .fn()
-    .mockResolvedValue(jsonResponse(422, { code: 'money_format.symbol_invalid', field: 'symbol' }))
+  const fetchMock = fetchReturning(
+    jsonResponse(422, { code: 'money_format.symbol_invalid', field: 'symbol' }),
+  )
   renderForm(fetchMock)
 
   const symbol = screen.getByRole('textbox', { name: new RegExp(SETTINGS_TEXT.currencySymbol) })
@@ -114,7 +122,7 @@ test('a symbol refusal shows the API refusal next to the field and keeps what wa
 
 test('a refused lowering shows the fixed sentence with the Attention icon and changes nothing', async () => {
   const user = userEvent.setup()
-  const fetchMock = vi.fn().mockResolvedValue(jsonResponse(409, { code: 'money_format.decimals_below_recorded' }))
+  const fetchMock = fetchReturning(jsonResponse(409, { code: 'money_format.decimals_below_recorded' }))
   const queryClient = renderForm(fetchMock)
 
   await user.click(screen.getByRole('radio', { name: SETTINGS_TEXT.currencyDecimals1 }))
