@@ -139,7 +139,7 @@ describe('planPublish', () => {
     expect(plan.appStarted).toBe(false)
     expect([plan.write, plan.remove, plan.keep]).toEqual([[], [], []])
     expect(plan.failures.map((f) => f.row)).toEqual(['a', 'b', 'c'])
-    expect(plan.failures[0].reason).toBe(NOT_STARTED['docker-unavailable'])
+    expect(plan.failures[0]?.reason).toBe(NOT_STARTED['docker-unavailable'])
   })
 
   it('refuses a not-started reason it does not know', () => {
@@ -321,6 +321,6 @@ describe('containerArgs', () => {
   it('has no mount target inside the checkout', () => {
     const targets = mounts.map((m) => m.split(':')[1])
     expect(targets).toEqual(['/work/repo', '/work/node_modules', '/work/facts.json', '/out'])
-    for (const target of targets.slice(1)) expect(target.startsWith('/work/repo/')).toBe(false)
+    for (const target of targets.slice(1)) expect(target?.startsWith('/work/repo/')).toBe(false)
   })
 })
