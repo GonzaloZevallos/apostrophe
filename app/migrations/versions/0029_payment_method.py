@@ -73,4 +73,10 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    # The first downgrade a walk from head runs. Foreign keys go off before its first write,
+    # the way 0028 does: SQLite ignores the pragma inside a write transaction, and the later
+    # downgrades that rebuild a table (0023) need it already off.
+    raw = op.get_bind().connection.dbapi_connection
+    assert raw is not None
+    raw.execute("PRAGMA foreign_keys=OFF")
     op.drop_table("payment_method")
