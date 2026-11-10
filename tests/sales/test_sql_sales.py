@@ -62,7 +62,7 @@ CASH_ID = 1  # the first business's Cash: one business is open in these tests
 
 class _Sales(SqlSales):
     """`SqlSales` plus what the `record_sale` use case does after `add`: sales never writes
-    the payment row itself, `OnTheSpotPayments` does (docs/adr/0078)."""
+    the payment row itself, `OnTheSpotPayments` does (docs/adr/0082)."""
 
     def __init__(self, session: Session, business_id: int) -> None:
         super().__init__(session, business_id)

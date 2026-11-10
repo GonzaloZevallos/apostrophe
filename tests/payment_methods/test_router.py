@@ -1,4 +1,4 @@
-"""`/api/payment-methods/*` and the places a method is chosen (docs/adr/0078), through
+"""`/api/payment-methods/*` and the places a method is chosen (docs/adr/0082), through
 `TestClient` with the real adapters: the archive/delete matrix, a rename showing in every
 display, an unavailable method committing nothing, the figures not depending on a method,
 and a business that keeps only a method of its own."""

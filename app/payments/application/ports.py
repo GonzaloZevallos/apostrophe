@@ -54,7 +54,7 @@ class Ledgers(Protocol):
 
 
 class AvailableMethods(Protocol):
-    """The payment methods a payment can be recorded with (docs/adr/0078), for one
+    """The payment methods a payment can be recorded with (docs/adr/0082), for one
     business: payments never imports `app.payment_methods`, `app/main.py` wires it."""
 
     def available(self, payment_method_id: int) -> PaymentMethodLabel | None:
