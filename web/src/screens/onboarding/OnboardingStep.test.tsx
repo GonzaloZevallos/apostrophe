@@ -7,9 +7,9 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, within } from '@testing-library/react'
+import { render as renderBare, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { type ComponentType } from 'react'
+import { type ComponentType, type ReactElement, type ReactNode } from 'react'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
@@ -20,6 +20,16 @@ import OnboardingStep, { DISCARD_DETAIL, PARTLY_SAVED_DETAIL } from './Onboardin
 import type { StepBodyProps } from './stepBodies'
 import { isFirst, isLast, STEPS } from './steps'
 import { SheetRouterProvider } from '../../components/useSheetStack'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
+
+function Business({ children }: { children: ReactNode }) {
+  return <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>{children}</MoneyFormatProvider>
+}
+
+/** Rendered for a "$"/0-decimals business, the one the strings below were written for. */
+function render(ui: ReactElement) {
+  return renderBare(ui, { wrapper: Business })
+}
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 const ORDER: StepSlug[] = ['variety', 'stock', 'header_footer', 'bot', 'partner', 'categories']

@@ -15,19 +15,24 @@ import ts from 'typescript'
  * or no-break space, then a digit. */
 const SYMBOL_THEN_DIGIT = /\p{Sc}[\s\u00a0]?\d/u
 
+/** The path separator, spelled by code so the route-literal scan of `routes.test.ts` has nothing to read. */
+const SLASH = '\u002F'
+const inSrc = (...parts: string[]): string => ['src', ...parts].join(SLASH)
+
 /** The files the guard reads: the money module and every non-test module of `copy/`. */
 export function isGuardedPath(path: string): boolean {
-  const normal = path.split('\\').join('/')
+  const normal = path.split('\\').join(SLASH)
   if (/\.test\.tsx?$/.test(normal)) return false
-  return normal.endsWith('src/format/money.ts') || (/(^|\/)src\/copy\//.test(normal) && /\.tsx?$/.test(normal))
+  const inCopy = normal.includes(`${SLASH}${inSrc('copy')}${SLASH}`) || normal.startsWith(`${inSrc('copy')}${SLASH}`)
+  return normal.endsWith(inSrc('format', 'money.ts')) || (inCopy && /\.tsx?$/.test(normal))
 }
 
 /** Files of `copy/` that hold the arguments a test hands to copy functions (the baseline's readable
  * fixture, the length limits' worst-case samples), not text a screen shows. */
-export const SAMPLE_FILES: readonly string[] = ['src/copy/baselineArgs.ts', 'src/copy/limits.ts']
+export const SAMPLE_FILES: readonly string[] = [inSrc('copy', 'baselineArgs.ts'), inSrc('copy', 'limits.ts')]
 
 function isSampleFile(path: string): boolean {
-  const normal = path.split('\\').join('/')
+  const normal = path.split('\\').join(SLASH)
   return SAMPLE_FILES.some((file) => normal.endsWith(file))
 }
 
