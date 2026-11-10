@@ -118,6 +118,15 @@ erDiagram
     INTEGER sale_id FK "nullable"
     DATETIME recorded_at
   }
+  payment_method {
+    INTEGER id PK
+    INTEGER business_id FK
+    VARCHAR(60) name
+    VARCHAR(60) name_key
+    VARCHAR(16) icon
+    INTEGER position
+    DATETIME archived_at "nullable"
+  }
   pinned_catalog {
     INTEGER id PK
     INTEGER business_id FK
@@ -235,6 +244,7 @@ erDiagram
   business ||--o{ expense_category : business_id
   business ||--o{ invitation : business_id
   business ||--o{ payment : business_id
+  business ||--o{ payment_method : business_id
   business ||--o{ price_entry : business_id
   business ||--o{ reset_link : business_id
   business ||--o{ sale : business_id

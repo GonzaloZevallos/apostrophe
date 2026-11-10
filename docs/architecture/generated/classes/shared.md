@@ -65,6 +65,17 @@ classDiagram
   class OperatorText {
     rendered : set~str~
   }
+  class PaymentMethodId {
+    value : int
+  }
+  class PaymentMethodLabel {
+    icon : str
+    id : int
+    name : str
+  }
+  class PaymentMethodUnavailable {
+    code : ClassVar~str~
+  }
   class PricingSettings {
     is_bulk_pricing : bool
     is_vip_customers : bool
