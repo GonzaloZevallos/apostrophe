@@ -42,7 +42,7 @@ Antes de la parte 20, todo Business estaba fijo en "$": un vendedor en otra mone
 - **Bajar** los decimales se rechaza cuando algún monto registrado del Business tiene más decimales de los que permite el valor nuevo.
   - El control es un EXISTS por cada columna de dinero declarada con `money_column()`, filtrado por `business_id`, dentro de un adaptador; su costo es lineal en las filas de dinero del Business y corre solo en esta acción rara. Ningún caso de uso lee la escala.
   - El control y el guardado van en una misma transacción, así que un monto con centavos guardado al mismo tiempo nunca queda debajo de una configuración más baja.
-  - El rechazo es una sola oración fija con el Attention icon (p. ej. "Some recorded amounts have more decimals, so the decimals stay as they were."). No lista montos ni nombra el tipo de registro.
+  - El rechazo es una sola oración fija con el Attention icon (p. ej. "Some amounts have more decimals than that, so the decimals stay as they were."). No lista montos ni nombra el tipo de registro.
   - El formulario queda abierto con lo que tipeó el vendedor, y la configuración guardada queda como estaba. Si cambiaron el símbolo y los decimales y la bajada se rechaza, no se guarda nada, ni siquiera el símbolo.
   - Hoy casi ninguna capacidad guarda centavos, así que el control se prueba plantando montos con centavos directamente, columna por columna.
 - Un cambio guardado cuenta como un cambio que puede afectar el texto del Catalog: dispara la Upkeep del Pinned catalog, que solo edita en el lugar, nunca envía ni fija, y una falla muestra Out of date como hoy.

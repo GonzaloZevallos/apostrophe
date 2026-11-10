@@ -31,7 +31,7 @@ const ME: Me = {
 }
 
 const SYMBOL_REFUSAL = 'Use 1 to 4 visible characters, and no two asterisks in a row.'
-const LOWERING_REFUSAL = 'Some recorded amounts have more decimals, so the decimals stay as they were.'
+const LOWERING_REFUSAL = 'Some amounts have more decimals than that, so the decimals stay as they were.'
 
 type FetchMock = Mock<(url: string, init?: RequestInit) => Promise<Response>>
 

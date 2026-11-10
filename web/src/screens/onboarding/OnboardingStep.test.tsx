@@ -117,6 +117,10 @@ test('the first step says the Business\'s money format, with the defaults and wi
 
   renderFrame('variety', { me: { ...ME, money_format: { symbol: 'US$', decimals: 2 } } })
   expect(await screen.findByText('Currency: US$, 2 decimals')).toBeInTheDocument()
+  cleanup()
+
+  renderFrame('variety', { me: { ...ME, money_format: { symbol: 'US$', decimals: 1 } } })
+  expect(await screen.findByText('Currency: US$, 1 decimal')).toBeInTheDocument()
 })
 
 test('no other step says the currency', async () => {

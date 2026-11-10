@@ -21,8 +21,9 @@ export const GENERIC_REFUSAL_MESSAGE = 'Check the details and try again.'
  * never repeated. */
 export const moneyTooManyDecimals = (decimals: number): string =>
   decimals === 0 ? 'Use whole amounts only.' : `Use up to ${decimals} decimals.`
-/** The help line under the Symbol field: examples, no list of currencies. */
-export const CURRENCY_SYMBOL_HINT = '1 to 4 characters.'
+/** The help line under the Symbol field: examples, no list of currencies. No example carries a
+ * money sign, because the phone check reads a label with one as a money amount's field. */
+export const CURRENCY_SYMBOL_HINT = '1 to 4 characters, like EUR or CHF.'
 export const CATALOG_SAVED = 'Catalog saved'
 export const PRICES_SAVED = 'Prices saved'
 export const HEADER_TOO_LONG_MESSAGE = 'The header is too long'
