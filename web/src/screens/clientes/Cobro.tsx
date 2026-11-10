@@ -43,7 +43,7 @@ import { useFlash } from '../../flash/useFlash'
 import { chipDate, formatDateShort } from '../../format/dates'
 import type { MoneyFormat } from '../../format/money'
 import { useMoney } from '../../format/moneyContext'
-import { readMoneyInput } from '../../format/parse'
+import { formatMoneyInput, moneyInputMode, parseMoneyInput, readMoneyInput } from '../../format/parse'
 import { GENERIC_REFUSAL } from './ClienteForm'
 import { paymentMethodOf, usePaymentMethodOptions } from '../../sales/paymentMethods'
 import { COMMON_TEXT } from '../../copy/common'
@@ -130,6 +130,10 @@ export default function Cobro({
   const balance = customer.balance
   // The number the API receives: the field's text is only how it is shown (`money.money`).
   const [amount, setAmount] = useState<number | null>(balance)
+  // What was typed, while the business keeps decimals: there the field shows the text as typed (and
+  // as `formatMoneyInput` writes it on leaving it), not a figure re-formatted on every key.
+  const [typed, setTyped] = useState<string | null>(null)
+  const { decimals } = money.format
   const [date, setDate] = useState(today)
   const [method, setMethod] = useState<PaymentMethod | null>(null)
   const [amountError, setAmountError] = useState<string | null>(null)
@@ -150,7 +154,14 @@ export default function Cobro({
   // shows the choice: a passive effect leaves a window in which a Back leaves unasked.
   useLayoutEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange])
 
-  const previewAmount = amount !== null && Number.isSafeInteger(amount) && amount > 0 ? amount : null
+  const previewAmount =
+    amount !== null && Number.isSafeInteger(Math.round(amount * 10 ** decimals)) && amount > 0 ? amount : null
+  const shownAmount =
+    decimals === 0
+      ? amount === null
+        ? ''
+        : money.money(amount)
+      : (typed ?? (amount === null ? '' : formatMoneyInput(amount, money.format)))
 
   // Debounced 150 ms behind the amount/date the seller is typing (same delay as
   // `Clientes`' search box): the preview's own query key only moves once typing
@@ -185,7 +196,12 @@ export default function Cobro({
     setMethodRefused(false)
     setOffline(false)
     if (previewAmount === null) {
-      setAmountError(PAYMENTS_TEXT.enterValidAmount)
+      const refused = typed === null ? undefined : parseMoneyInput(typed, money.format)
+      setAmountError(
+        refused?.ok === false && refused.tooManyDecimals
+          ? tooManyDecimalsMessage(money.format)
+          : PAYMENTS_TEXT.enterValidAmount,
+      )
       return
     }
     if (method === null) {
@@ -237,10 +253,20 @@ export default function Cobro({
             <input
               className="campo__input cobro__monto"
               type="text"
-              inputMode="numeric"
+              inputMode={moneyInputMode(money.format)}
               autoComplete={phoneAutoComplete}
-              value={amount === null ? '' : money.money(amount)}
+              value={shownAmount}
+              onBlur={() => {
+                const parsed = typed === null ? undefined : parseMoneyInput(typed, money.format)
+                if (parsed?.ok) setTyped(formatMoneyInput(parsed.value, money.format))
+              }}
               onChange={(event) => {
+                if (decimals > 0) {
+                  const parsed = parseMoneyInput(event.target.value, money.format)
+                  setTyped(event.target.value)
+                  setAmount(parsed.ok ? parsed.value : null)
+                  return
+                }
                 const native = event.nativeEvent
                 const deleting =
                   'inputType' in native && typeof native.inputType === 'string' && native.inputType.startsWith('delete')
@@ -251,7 +277,7 @@ export default function Cobro({
             />
           </label>
           <div className="cobro__todo">
-            <Boton variant="link" onClick={() => setAmount(balance)}>
+            <Boton variant="link" onClick={() => { setAmount(balance); setTyped(null) }}>
               {PAYMENTS_TEXT.all}{money.money(balance)}
             </Boton>
           </div>

@@ -57,7 +57,8 @@ import { useVisualViewport } from '../../components/useVisualViewport'
 import { formatDateLong, formatDateShort, maxSaleDate } from '../../format/dates'
 import { formatGrams, type MoneyFormat } from '../../format/money'
 import { useMoney } from '../../format/moneyContext'
-import { parseGrams, parseMoney } from '../../format/parse'
+import MoneyInput from '../../components/MoneyInput'
+import { parseGrams, parseMoneyInput } from '../../format/parse'
 import {
   type LineValidation,
   type PayState,
@@ -115,13 +116,12 @@ function quoteOf(variety: Variety): PriceQuote | null {
  * A rule that is off never shows, so the safe side is no rule (`pricing-settings.md`). */
 const NO_RULES: PricingSettings = { bulk: false, vip: false }
 
-/** Whole pesos, zero or more — unlike `parseMoney` (money.ts), which rejects zero:
- * shipping charged is `$0` by default and that is a valid value to save with. */
-function parseShipping(input: string): number | null {
-  const trimmed = input.trim()
-  if (!/^\d{1,3}(\.\d{3})+$|^\d+$/.test(trimmed)) return null
-  const value = Number(trimmed.replace(/\./g, ''))
-  return Number.isSafeInteger(value) && value >= 0 ? value : null
+/** Shipping charged: zero or more, unlike `parseMoneyInput`, which rejects zero — `0` is its default
+ * and a valid value to save with. Anything else goes through `parseMoneyInput`. */
+function parseShipping(input: string, format: MoneyFormat): number | null {
+  if ((format.decimals === 0 ? /^0+$/ : /^0+(,0*)?$/).test(input.trim())) return 0
+  const parsed = parseMoneyInput(input, format)
+  return parsed.ok ? parsed.value : null
 }
 
 interface SavedSale {
@@ -347,11 +347,11 @@ function NuevaVentaForm() {
 
   function specialPriceOf(line: LineState): number | null {
     if (line.specialPrice.trim() === '') return null
-    const parsed = parseMoney(line.specialPrice)
+    const parsed = parseMoneyInput(line.specialPrice, money.format)
     return parsed.ok ? parsed.value : null
   }
 
-  /** `parseMoney` (money.ts) already rejects `$0`, a decimal or a negative amount —
+  /** `parseMoneyInput` already rejects `$0`, a decimal or a negative amount —
    * but today's code must still never fall silently back to list/bulk pricing for
    * such a line (sales.md: "Precio especial doesn't accept $0"). A line with
    * something typed in `specialPrice` that doesn't parse is its own error, distinct
@@ -359,7 +359,11 @@ function NuevaVentaForm() {
    * `validateSale`'s own errors do. */
   function specialPriceErrorFor(line: LineState): string | null {
     if (line.specialPrice.trim() === '') return null
-    return parseMoney(line.specialPrice).ok ? null : SALES_TEXT.specialPriceAboveZero(money.attached(0))
+    const parsed = parseMoneyInput(line.specialPrice, money.format)
+    if (parsed.ok) return null
+    return parsed.tooManyDecimals
+      ? tooManyDecimalsMessage(money.format)
+      : SALES_TEXT.specialPriceAboveZero(money.attached(0))
   }
 
   const lineValidations: LineValidation[] = lines
@@ -434,7 +438,7 @@ function NuevaVentaForm() {
         lineTotal: preview?.lineTotal ?? 0,
       }
     }),
-    parseShipping(shipping) ?? 0,
+    parseShipping(shipping, money.format) ?? 0,
   )
 
   const errors = validateSale({
@@ -525,7 +529,7 @@ function NuevaVentaForm() {
       setFormError(NO_LINES_MESSAGE)
       return
     }
-    const shippingCharged = parseShipping(shipping)
+    const shippingCharged = parseShipping(shipping, money.format)
     if (shippingCharged === null) {
       setShippingError(SALES_TEXT.shippingNotNegative)
       return
@@ -698,13 +702,12 @@ function NuevaVentaForm() {
 
               <div className="nueva-venta__fila-dato">
                 <span>{SALES_TEXT.shippingCharged}</span>
-                <input
+                <MoneyInput
                   className="campo__input"
                   aria-label={SALES_TEXT.shipping}
                   type="text"
-                  inputMode="numeric"
                   value={shipping}
-                  onChange={(event) => setShipping(event.target.value)}
+                  onChange={setShipping}
                 />
               </div>
               {shippingError !== null && (

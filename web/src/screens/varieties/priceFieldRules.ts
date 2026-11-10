@@ -9,7 +9,7 @@ import { tooManyDecimalsMessage } from '../../api/amountRefusal'
 import type { PricingSettings } from '../../api/pricingSettings'
 import { VARIETY_REFUSAL_TEXT, type RefusalCode } from '../../api/refusals'
 import type { MoneyFormat } from '../../format/money'
-import { parseGrams, parseMoney } from '../../format/parse'
+import { parseGrams, parseMoneyInput } from '../../format/parse'
 import { GRAMS_INVALID } from '../../copy/stock'
 import { VARIETIES_TEXT } from '../../copy/varieties'
 import type { Refusal } from '../../i18n/refusalKeys'
@@ -47,6 +47,11 @@ export function fieldOfCode(code: string, format: MoneyFormat): FieldOfCode | un
   return (fieldsOfCodes(format) as Record<string, FieldOfCode | undefined>)[code]
 }
 
+/** What a refused amount says: the decimals rule when it was typed with too many, the price message otherwise. */
+function refusalOf(parsed: { ok: false; tooManyDecimals: boolean } | { ok: true }, format: MoneyFormat): string {
+  return !parsed.ok && parsed.tooManyDecimals ? tooManyDecimalsMessage(format) : PRICE_INVALID_MESSAGE
+}
+
 /** What a price entry carries besides its date: the amounts that were typed and are in force. */
 export interface PriceAmounts {
   list_price: number
@@ -59,19 +64,19 @@ export type PriceRead = { ok: true; amounts: PriceAmounts } | { ok: false; error
 
 /** Reads what was typed under the pricing switches: a rule that is off has no field and
  * nothing about it is sent. A bad amount is an error under its field and nothing is read. */
-export function readPriceValues(values: PriceValues, settings: PricingSettings): PriceRead {
+export function readPriceValues(values: PriceValues, settings: PricingSettings, format: MoneyFormat): PriceRead {
   const { listPrice, bulkPrice, bulkMinimum, vipPrice } = values
-  const money = parseMoney(listPrice)
+  const money = parseMoneyInput(listPrice, format)
   const hasBulk = settings.is_bulk_pricing && (bulkPrice.trim() !== '' || bulkMinimum.trim() !== '')
   const hasVip = settings.is_vip_customers && vipPrice.trim() !== ''
-  const vipMoney = parseMoney(vipPrice)
-  const bulkMoney = parseMoney(bulkPrice)
+  const vipMoney = parseMoneyInput(vipPrice, format)
+  const bulkMoney = parseMoneyInput(bulkPrice, format)
   const bulkGrams = parseGrams(bulkMinimum)
   const errors: PriceErrors = {}
-  if (!money.ok) errors.listPrice = PRICE_INVALID_MESSAGE
-  if (hasBulk && !bulkMoney.ok) errors.bulkPrice = PRICE_INVALID_MESSAGE
+  if (!money.ok) errors.listPrice = refusalOf(money, format)
+  if (hasBulk && !bulkMoney.ok) errors.bulkPrice = refusalOf(bulkMoney, format)
   if (hasBulk && !bulkGrams.ok) errors.bulkMinimum = GRAMS_INVALID
-  if (hasVip && !vipMoney.ok) errors.vipPrice = PRICE_INVALID_MESSAGE
+  if (hasVip && !vipMoney.ok) errors.vipPrice = refusalOf(vipMoney, format)
   if (!money.ok || (hasBulk && (!bulkMoney.ok || !bulkGrams.ok)) || (hasVip && !vipMoney.ok)) {
     return { ok: false, errors }
   }

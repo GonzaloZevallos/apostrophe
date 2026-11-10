@@ -9,6 +9,7 @@
 
 import type { FocusEvent, KeyboardEvent, RefObject } from 'react'
 import Boton from '../../components/Boton'
+import MoneyInput from '../../components/MoneyInput'
 import Loading from '../../components/Loading'
 import OpcionInterruptor from '../../components/OpcionInterruptor'
 import ReglaInsignia from '../../components/ReglaInsignia'
@@ -220,11 +221,10 @@ export default function NuevaVentaLinea({
             onChange={(gift) => onChange({ gift })}
           />
         )}
-        <input
+        <MoneyInput
           className="campo__input"
           aria-label={SALES_TEXT.lineSpecialPrice(n)}
           type="text"
-          inputMode="numeric"
           enterKeyHint="done"
           placeholder={SALES_TEXT.specialPrice}
           value={line.specialPrice}
@@ -232,7 +232,7 @@ export default function NuevaVentaLinea({
           ref={specialPriceRef}
           onKeyDown={(event) => onEnter(event, () => specialPriceRef.current?.blur())}
           onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
-          onChange={(event) => onChange({ specialPrice: event.target.value })}
+          onChange={(specialPrice) => onChange({ specialPrice })}
         />
       </div>
       {error !== null && (

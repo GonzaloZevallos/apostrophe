@@ -92,7 +92,7 @@ export default function PriceForm({
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
     setOffline(false)
-    const read = readPriceValues(values, settings)
+    const read = readPriceValues(values, settings, money.format)
     if (!read.ok) {
       setErrors(read.errors)
       return

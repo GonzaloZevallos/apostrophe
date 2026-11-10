@@ -138,7 +138,7 @@ export function useVarietyWithPrice({
     if (inFlight.current) return
     setNameError(null)
     setOffline(false)
-    const read = readPriceValues(values, settings)
+    const read = readPriceValues(values, settings, money.format)
     setPriceErrors(read.ok ? {} : read.errors)
     if (!read.ok) return
     inFlight.current = true
