@@ -4,10 +4,13 @@ shared comparator), and the column is nullable with no default."""
 
 from pathlib import Path
 
+from alembic import command
+from alembic.config import Config
 from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine
 
 from app.db import make_engine
+from app.migrations.runner import MIGRATIONS_ROOT
 from tests.migrations.comparator import upgrade_and_compare, upgrade_to
 
 
@@ -69,4 +72,24 @@ def test_the_column_is_nullable_two_letters_and_keeps_no_default(tmp_path: Path)
             text("SELECT default_phone_country FROM business WHERE name = 'Nuevo'")
         ).scalar_one()
     assert stored is None
+    engine.dispose()
+
+
+def test_the_downgrade_drops_the_column_and_keeps_every_business(tmp_path: Path) -> None:
+    engine = _engine_at_0022(tmp_path)
+    upgrade_to(engine, "0023")
+
+    with engine.connect() as connection:
+        config = Config()
+        config.set_main_option("script_location", str(MIGRATIONS_ROOT))
+        config.attributes["connection"] = connection
+        with connection.begin():
+            command.downgrade(config, "0022")
+
+    assert "default_phone_country" not in {
+        c["name"] for c in inspect(engine).get_columns("business")
+    }
+    with engine.connect() as connection:
+        names = connection.execute(text("SELECT name FROM business ORDER BY id")).scalars().all()
+    assert names == ["Uno", "Dos", "Tres"]
     engine.dispose()
