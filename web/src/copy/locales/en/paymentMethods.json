@@ -1,0 +1,12 @@
+{
+  "icon": {
+    "banknote": "Cash",
+    "coins": "Coins",
+    "card": "Card",
+    "bank": "Bank",
+    "phone": "Phone",
+    "wallet": "Wallet",
+    "qr": "QR code",
+    "other": "Other"
+  }
+}
