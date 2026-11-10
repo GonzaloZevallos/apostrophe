@@ -411,6 +411,35 @@ test('the gone refusal is tied to the field, and an inline-created category that
   expect(list.queryByRole('button', { name: 'Insumos' })).not.toBeInTheDocument()
 })
 
+test('creating a category inline after the gone refusal chooses it and clears the error under the field', async () => {
+  renderExpenses(
+    [EXPENSES],
+    store(
+      [...SEED],
+      async (url, init) => {
+        const method = init?.method ?? 'GET'
+        if (url === EXPENSES && method === 'POST') {
+          return jsonResponse(404, { detail: 'no category', code: 'expense_category.not_found' })
+        }
+        if (url === '/expense-categories' && method === 'POST') return jsonResponse(201, { id: 9, name: 'Insumos' })
+        throw new RangeError('not mine')
+      },
+    ),
+  )
+
+  await userEvent.click(await screen.findByRole('link', { name: 'Add expense' }))
+  await fillAndSave('Cinta', '1000')
+  await screen.findByText(CATEGORY_GONE)
+
+  await userEvent.click(screen.getByRole('button', { name: 'Create a new category' }))
+  await userEvent.type(screen.getByLabelText('New category name'), 'Insumos')
+  await userEvent.click(screen.getByRole('button', { name: 'Create category' }))
+
+  await vi.waitFor(async () => expect(await categoryField()).toHaveTextContent('Insumos'))
+  expect(screen.queryByText(CATEGORY_GONE)).not.toBeInTheDocument()
+  expect(await categoryField()).not.toHaveAttribute('aria-describedby')
+})
+
 test('a server error on the expense form shows the generic retry, never the refusal text', async () => {
   renderExpenses(
     [EXPENSES],

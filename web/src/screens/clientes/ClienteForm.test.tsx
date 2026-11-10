@@ -800,6 +800,8 @@ describe('history', () => {
       expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
       expect(router.state.location.pathname).toBe(here)
       expect((screen.getByLabelText('Name') as HTMLInputElement).value).toContain('Sol')
+      await act(() => router.navigate(-1))
+      expect(screen.getByRole('alertdialog')).toHaveTextContent('Discard the customer?')
     })
   })
 

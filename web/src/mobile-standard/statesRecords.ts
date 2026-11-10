@@ -200,7 +200,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
     // Twelve types, one of 60 characters: the phone list is open and its search shows.
     screen: 'customer/type-selector-open',
     route: CUSTOMER_NEW,
-    steps: [{ press: CUSTOMERS_TEXT.typeLabel }],
+    steps: [{ press: `${CUSTOMERS_TEXT.typeLabel} ${common('common:noType')}` }],
     visible: 'Tipo 1',
     reads: [{ path: /^\/api\/customer-types$/, status: 200, body: TWELVE_TYPES }],
   },
