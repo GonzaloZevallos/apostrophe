@@ -108,30 +108,6 @@
     "issue": 48
   },
   {
-    "screen": "GastoDesdeMas",
-    "rule": "autocomplete",
-    "target": "combobox:Category",
-    "issue": 48
-  },
-  {
-    "screen": "GastoDesdeMas",
-    "rule": "autocomplete",
-    "target": "textbox:Amount",
-    "issue": 48
-  },
-  {
-    "screen": "GastoDesdeMas",
-    "rule": "autocomplete",
-    "target": "textbox:Date",
-    "issue": 48
-  },
-  {
-    "screen": "GastoDesdeMas",
-    "rule": "autocomplete",
-    "target": "textbox:Details",
-    "issue": 48
-  },
-  {
     "screen": "GastoEditar",
     "rule": "autocomplete",
     "target": "combobox:Category",

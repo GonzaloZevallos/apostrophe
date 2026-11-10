@@ -116,16 +116,6 @@
     "web/e2e/onboarding.spec.ts",
     "web/e2e/theme.spec.ts"
   ],
-  "Mas": [
-    "web/e2e/analysis.spec.ts",
-    "web/e2e/flow.spec.ts",
-    "web/e2e/insets.spec.ts",
-    "web/e2e/navigation.spec.ts",
-    "web/e2e/phoneChrome.spec.ts",
-    "web/e2e/pressed.spec.ts",
-    "web/e2e/tapBudget.spec.ts",
-    "web/e2e/withdrawals.spec.ts"
-  ],
   "PinPublish": [
     "web/e2e/flow.spec.ts",
     "web/e2e/insets.spec.ts",

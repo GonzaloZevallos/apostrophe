@@ -83,7 +83,6 @@ export const STATE_NAMES: readonly string[] = [
   'VariedadRenombrar',
   'VariedadUmbral',
   'CatalogoAtributos',
-  'GastoDesdeMas',
   'GastoDesdeGastos',
   'GastoEditar',
   'GastoConfirmarBorrado',
@@ -227,7 +226,10 @@ export function skippedScreens(
 /** One front route of the registry's `registry[]` list: the one place the route patterns live. */
 export interface RouteRegistryEntry {
   path: string
+  /** The PHONE's kind: the Mobile check judges only the phone. */
   kind: 'root' | 'card' | 'form'
+  /** The kind on a computer, when it is not the phone's (Gastos: a card on the phone, a root there). */
+  computerKind: 'root' | 'card' | 'form' | null
   parent: string | null
   /** The parent on a computer, when it is not the phone's. */
   computerParent: string | null
@@ -259,11 +261,21 @@ export function parseRouteRegistry(raw: unknown): readonly RouteRegistryEntry[] 
     if (kind !== 'root' && kind !== 'card' && kind !== 'form') {
       throw new Error(`${path}: kind is not root, card or form`)
     }
+    const computerKind = row['computer_kind']
+    if (
+      computerKind !== undefined &&
+      computerKind !== 'root' &&
+      computerKind !== 'card' &&
+      computerKind !== 'form'
+    ) {
+      throw new Error(`${path}: computer_kind is not root, card or form`)
+    }
     const parent = optionalText(row, 'parent', path)
     if (kind !== 'root' && parent === null) throw new Error(`${path}: a ${kind} needs a parent`)
     return {
       path,
       kind,
+      computerKind: computerKind ?? null,
       parent,
       computerParent: optionalText(row, 'computer_parent', path),
       archivedParent: optionalText(row, 'archived_parent', path),

@@ -16,7 +16,7 @@ import Boton from '../components/Boton'
 import { SheetRouterProvider } from '../components/useSheetStack'
 import WITHDRAWAL from '../api/fixtures/withdrawal.json'
 import { router } from '../router'
-import { SALE as SALE_PATH, SCREENS, pathTo, type ScreenId } from '../routes'
+import { SALE as SALE_PATH, SCREENS, kindOf, pathTo, type ScreenId } from '../routes'
 import { HISTORY, SETTINGS_ON, VARIETY_ROW, jsonResponse } from '../screens/varieties/renderVarieties'
 import Shell from '../shell/Shell'
 import { CARDS_EXEMPT } from './backExempt'
@@ -69,6 +69,7 @@ const LOADED: Partial<Record<ScreenId, string>> = {
   sale: 'Lines',
   customer: 'Ana Pérez',
   settings: 'Settings',
+  expenses: 'Add expense',
   variety: '24K Gold',
   'variety-prices': 'Prices',
   'variety-entries': 'Entries',
@@ -122,7 +123,7 @@ function fakeApi(): void {
   )
 }
 
-const cards = SCREENS.filter((entry) => entry.kind === 'card')
+const cards = SCREENS.filter((entry) => kindOf(entry, 'phone') === 'card')
 const exempt = new Set<string>(CARDS_EXEMPT.map((entry) => entry.id))
 
 function backs(): HTMLElement[] {

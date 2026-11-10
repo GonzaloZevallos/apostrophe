@@ -30,7 +30,6 @@ import {
   EXPENSES,
   EXPENSE_NEW,
   HOME,
-  MORE,
   SALE,
   SALE_NEW,
   SALES,
@@ -43,7 +42,6 @@ import {
   pathTo,
   type Screen,
 } from '../routes'
-import Mas from '../screens/Mas'
 import { chooseTheme } from '../theme'
 import Shell from './Shell'
 
@@ -83,18 +81,17 @@ function Teaser() {
   )
 }
 
-/** Every registered screen as a leaf; Inicio holds the teaser, Más its real list. */
+/** Every registered screen as a leaf; Inicio holds the teaser. */
 function leaf(entry: Screen): RouteObject {
   const element =
     entry.id === 'home' ? (
       <Teaser />
-    ) : entry.id === 'more' ? (
-      <Mas />
     ) : (
       <Landed />
     )
   return { path: entry.path, element, handle: { screen: entry.id } }
 }
+
 
 /** What the stubbed `GET /first-run` answers; a failed read when it is `undefined`. */
 function stubFirstRun(answer: FirstRunAnswer | 'pending' | undefined): void {

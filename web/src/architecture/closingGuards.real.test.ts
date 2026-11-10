@@ -82,7 +82,7 @@ test('the link scanner still finds the links it guards', () => {
   const has = (path: string, to?: string) =>
     tags.some((tag) => tag.path === path && (to === undefined || tag.to === to))
   expect(has('/src/shell/Shell.tsx', '{item.to}')).toBe(true)
-  expect(has('/src/screens/Mas.tsx')).toBe(true)
+  expect(has('/src/screens/Inicio.tsx')).toBe(true)
   expect(has('/src/screens/Gastos.tsx', '{EXPENSE_NEW}')).toBe(true)
 })
 

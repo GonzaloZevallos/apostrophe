@@ -17,7 +17,6 @@
   {"file":"src/screens/Inicio.tsx","imports":["inicio.ts"],"issue":350},
   {"file":"src/screens/Invitacion.tsx","imports":["auth.ts"],"issue":350},
   {"file":"src/screens/Invitacion.tsx","imports":["settings.ts"],"issue":353},
-  {"file":"src/screens/Mas.tsx","imports":["settings.ts"],"issue":353},
   {"file":"src/screens/PinPublish.tsx","imports":["pinnedCatalog.ts"],"issue":352},
   {"file":"src/screens/PinPublish.tsx","imports":["settings.ts"],"issue":353},
   {"file":"src/screens/Reset.tsx","imports":["auth.ts"],"issue":350},

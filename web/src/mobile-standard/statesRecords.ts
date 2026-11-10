@@ -12,7 +12,6 @@ import {
   CUSTOMERS,
   EXPENSE_CATEGORIES,
   EXPENSES,
-  MORE,
   pathTo,
   SETTINGS_ACCOUNT,
   SETTINGS_WITHDRAWAL_REASONS,
@@ -244,12 +243,6 @@ export const RECORDS_STATES: readonly WalkState[] = [
     visible: VARIETIES_TEXT.guardaElCatalogo,
   },
 
-  {
-    screen: 'GastoDesdeMas',
-    route: MORE,
-    steps: [{ click: common('common:addExpense') }],
-    visible: 'Save the expense',
-  },
   {
     screen: 'GastoDesdeGastos',
     route: EXPENSES,
