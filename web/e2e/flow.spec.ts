@@ -185,7 +185,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   const renamedTo = `${businessName} Renombrado`
   await page.getByLabel('Business name').fill(renamedTo)
   await expectToast(page, 'Saved', () => page.getByRole('button', { name: 'Save' }).click())
-  await expect(page.getByText('Saved')).toBeVisible()
+  await expect(page.getByText('Saved', { exact: true })).toBeVisible()
 
   // Create a join link and accept it as a second user, from a separate browser
   // context (its own cookie jar — a second device).
