@@ -32,6 +32,7 @@ from app.shared.quantity import Quantity
 from tests.conftest import NOW
 from tests.fakes.money_format import WholeAmounts
 from tests.money_wire import assert_money_is_int
+from tests.payment_body import payment_body
 
 DAY = "2026-10-02"
 
@@ -75,7 +76,7 @@ def _sell(client: TestClient, product_id: int, **body: Any) -> dict[str, Any]:
             "lines": [{"product_id": product_id, "quantity": "2"}],
             "payment": {"kind": "paid", "payment_method_id": 1},
             "date": DAY,
-            **body,
+            **{**body, **({"payment": payment_body(body["payment"])} if "payment" in body else {})},
         },
     )
     assert response.status_code == 201, response.text

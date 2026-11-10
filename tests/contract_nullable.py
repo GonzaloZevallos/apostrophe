@@ -37,6 +37,7 @@ class ShapeOf:
 NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
     "account": {
         "owing_since": "string",
+        "rows[sale].sale.payment_method": ShapeOf("sale-detail-gift", "payment_method"),
     },
     "analysis": {
         "first_record": "string",
@@ -142,10 +143,12 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
     },
     "sale": {
         "customer": ShapeOf("sale", "customer"),
+        "payment_method": ShapeOf("sale-detail-gift", "payment_method"),
         "note": "string",
     },
     "sale-detail": {
         "customer": ShapeOf("sale-detail", "customer"),
+        "payment_method": ShapeOf("sale-detail-gift", "payment_method"),
         "note": "string",
         "lines[].cost.costed": "integer",
         "bill": ShapeOf("sale-detail", "bill"),
@@ -155,6 +158,7 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
         "bill.balance": "integer",
     },
     "sale-detail-gift": {
+        "payment_method": ShapeOf("sale-detail-gift", "payment_method"),
         # `sale-detail-gift.json`'s own `customer` is `null`: the sibling fixture
         # `sale-detail` is the one that shows the object non-null.
         "customer": ShapeOf("sale-detail", "customer"),

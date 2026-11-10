@@ -5,7 +5,8 @@
   "customer": null,
   "shipping_charged": 0,
   "note": null,
-  "payment": "cash",
+  "payment": "paid",
+  "payment_method": { "id": 1, "name": "Cash", "icon": "banknote" },
   "total": 3500,
   "lines": [
     {

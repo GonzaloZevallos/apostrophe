@@ -6,6 +6,7 @@
   "shipping_charged": 500,
   "note": null,
   "payment": "owing",
+  "payment_method": null,
   "total": 11000,
   "lines": [
     {

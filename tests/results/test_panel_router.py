@@ -21,6 +21,7 @@ from app.results.domain.periods import periods as compute_periods
 from tests.conftest import PASSWORD, TODAY, MovableClock, reason_id, signed_in
 from tests.contract_shapes import assert_matches_fixture
 from tests.fakes.archive import archive_by_hand
+from tests.payment_body import payment_body
 from tests.statement_log import captured_statements
 
 
@@ -68,7 +69,7 @@ def _sale(
 ) -> None:
     body: dict[str, Any] = {
         "date": on,
-        "payment": payment,
+        "payment": payment_body(payment),
         "lines": [{"product_id": variety_id, "quantity": quantity, "gift": gift}],
     }
     if customer_id is not None:

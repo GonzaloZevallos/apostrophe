@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 from app.payments.adapters.settlements import SqlOwingSales
 from app.sales.application.ports import CustomerSettlement, OwingSales
 from tests.conftest import TODAY
+from tests.payment_body import payment_body
 from tests.pricing_switches import set_switches
 from tests.vip_type import make_type, put_in_type
 
@@ -70,7 +71,7 @@ def _sale(
 ) -> int:
     body: dict[str, Any] = {"lines": [{"product_id": variety_id, "quantity": "1", "gift": gift}]}
     if payment is not None:
-        body["payment"] = payment
+        body["payment"] = payment_body(payment)
     if customer_id is not None:
         body["customer_id"] = customer_id
     response = client.post("/sales", json=body)
@@ -165,14 +166,14 @@ ROWS = [
     pytest.param(_gifts_no_customer, "none", None, None, id="gifts-no-customer"),
     pytest.param(_gifts_customer_even, "none", None, None, id="gifts-customer-even"),
     pytest.param(_gifts_customer_owes, "none", None, PRICE, id="gifts-customer-owes"),
-    pytest.param(_cash, "cash", None, None, id="cash"),
-    pytest.param(_transfer, "transfer", None, None, id="transfer"),
-    pytest.param(_cash_owes_elsewhere, "cash", None, PRICE, id="cash-owes-elsewhere"),
+    pytest.param(_cash, "paid", None, None, id="cash"),
+    pytest.param(_transfer, "paid", None, None, id="transfer"),
+    pytest.param(_cash_owes_elsewhere, "paid", None, PRICE, id="cash-owes-elsewhere"),
     pytest.param(_fully_owed, "owed", PRICE, PRICE, id="fully-owed"),
     pytest.param(_partly_owed, "owed", 6_000, 6_000, id="partly-owed"),
     pytest.param(_paid_later, "paid", None, None, id="paid-by-later-payment"),
     pytest.param(_paid_by_credit, "paid", None, None, id="paid-by-credit"),
-    pytest.param(_credit_balance, "cash", None, -PRICE, id="credit-balance"),
+    pytest.param(_credit_balance, "paid", None, -PRICE, id="credit-balance"),
 ]
 
 

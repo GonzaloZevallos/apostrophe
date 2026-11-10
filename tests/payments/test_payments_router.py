@@ -303,4 +303,6 @@ def test_a_payment_s_fields_are_unchanged_after_a_sale_is_later_deleted(
         if row["kind"] == "payment" and row["payment"]["id"] == payment["id"]
     ]
 
-    assert row["payment"] == payment
+    shown = dict(row["payment"])
+    assert shown.pop("payment_method")["id"] == payment.pop("payment_method_id")
+    assert shown == payment
