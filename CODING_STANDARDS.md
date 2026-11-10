@@ -236,9 +236,8 @@ keyboard and the real-device pass stay by eye (accounts.md, ADR-0028).
 `tests/migrations/test_naming.py` machine-checks every rule below stated as **checked**,
 against a real SQLite schema reflected two ways (`upgrade_to_head` and
 `app.tables.metadata.create_all`), never against an object's `.name` in the metadata. A
-name on its allowlist is a known break, not a rule: #75 renames it, so it is never
-renamed as a side effect of another task, and no task other than #75 touches the
-allowlist.
+allowlist is empty, since #75 renamed the last two breaks: a new break is fixed in the
+schema, never listed, and no allowlist exists to put it on.
 
 ### Checked
 
@@ -267,8 +266,6 @@ allowlist.
 
 - Singular table names (`customer`, not `customers`); a junction table is `<a>_<b>`,
   with its own surrogate `id` and a `uq_<a>_<b>_<a>_id_<b>_id` on the pair.
-- `catalog_attributes` keeps its plural name until #75: no code can flag it, since the
-  rules above have nothing to say about plurals.
 - No `_until`, `_from` or `_start` for a moment in time or a calendar date (`_at` and
   `_on` say both, with no third option): a reviewer reads it, since a column bearing one
   of these and no date or datetime type (where the `_on`/`_at` rules would already catch
@@ -288,11 +285,7 @@ allowlist.
 ### Scope
 
 - §11 applies to every new table, column, index and constraint, and to the ones a task
-  otherwise touches — except a name already on `test_naming.py`'s allowlist, which stays
-  as it is even when the task changes its column. Only #75 removes an allowlist entry;
-  no other task adds or empties one.
-- A new index or unique constraint on an allowlisted column is named from that column's
-  current name.
-- Old and new names coexist until #75 removes the last allowlist entry: new code uses the
-  new name and leaves an allowlisted name as it is. Existing hand-written names
-  (`uq_customer_business_phone`, `expense`'s two indexes) are not rewritten either.
+  otherwise touches. A name that breaks a checked rule is renamed in the task that finds it,
+  with a migration, never listed.
+- Existing hand-written names (`uq_customer_business_phone`, the `spent_on` index of
+  `expense`) keep the names they reflect today; they pass the checked rules as they are.

@@ -24,7 +24,7 @@ _Avoid_: signup link, referral, code
 ## Catalog y precios
 
 **Product**:
-Lo que vende un Business, identificado por su nombre dentro de ese Business; es la única palabra para eso en el código, en la API (`/api/products`, `product_id`) y en pantalla, "Product" / "Products" para todo Business, sin ninguna configuración para otra palabra. Su Stock, sus Stock entries, sus precios, su aviso de Stock bajo y sus Catalog attributes están en su propia página, en la pestaña Products; sin Product history se puede eliminar, y con historial se archiva y restaura. Las columnas siguen siendo `variety_id` hasta #75 y los paths del front `/varieties/*` no cambian (ADR-0061).
+Lo que vende un Business, identificado por su nombre dentro de ese Business; es la única palabra para eso en el código, en la API (`/api/products`, `product_id`) y en pantalla, "Product" / "Products" para todo Business, sin ninguna configuración para otra palabra. Su Stock, sus Stock entries, sus precios, su aviso de Stock bajo y sus Catalog attributes están en su propia página, en la pestaña Products; sin Product history se puede eliminar, y con historial se archiva y restaura. Las columnas siguen siendo `variety_id` hasta que se renombre la tabla `variety` y los paths del front `/varieties/*` no cambian (ADR-0061).
 _Avoid_: variety, varieties, strain, item, SKU, article, product word
 _In the app_: Product; la pestaña es Products.
 
