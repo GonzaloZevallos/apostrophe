@@ -872,7 +872,7 @@ def test_a_pin_bump_breaks_every_version_position_in_the_real_workflows() -> Non
     venv_lines = sum(
         len(re.findall(r"uv venv --python \S+", path.read_text())) for path in workflow_files()
     )
-    assert positions >= venv_lines > 0
+    assert positions == venv_lines > 0
 
 
 def test_master_capture_steps_out_of_order_are_rejected() -> None:
