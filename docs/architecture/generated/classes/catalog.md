@@ -106,8 +106,8 @@ classDiagram
   }
   class CatalogPrice {
     bulk_minimum : Quantity #124; None
-    bulk_price : int #124; None
-    list_price : int
+    bulk_price : Money #124; None
+    list_price : Money
   }
   class CatalogProduct {
     id : int
@@ -207,6 +207,9 @@ classDiagram
   }
   class HeaderFooterDefaults {
     for_language(language: Language) CatalogHeaderFooter
+  }
+  class MoneyFormatReader {
+    current() MoneyFormat
   }
 ```
 
