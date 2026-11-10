@@ -77,13 +77,13 @@ start_app() {
   setsid bash -c 'cd "$1" && shift && exec "$@"' _ "$work" "$PWD/scripts/design/sample-app.sh" --pinned --dir "$work/app" > "$log" 2>&1 &
   app_pid=$!
   facts=""
-  for _ in $(seq 1 240); do
+  for _ in $(seq 1 600); do
     facts="$(sed -n 's/^facts: //p' "$log" | head -1)"
     [ -n "$facts" ] && break
     kill -0 "$app_pid" 2>/dev/null || { cat "$log" >&2; echo "screen-images: the sample app stopped before it was ready" >&2; not_started app-not-started; }
     sleep 0.5
   done
-  [ -n "$facts" ] || { cat "$log" >&2; echo "screen-images: the sample app was not ready in 120 s" >&2; not_started app-not-started; }
+  [ -n "$facts" ] || { cat "$log" >&2; echo "screen-images: the sample app was not ready in 300 s" >&2; not_started app-not-started; }
 }
 
 # One pass: a fresh app, one container run into `$out/capture-N`. A later pass differs on purpose in
