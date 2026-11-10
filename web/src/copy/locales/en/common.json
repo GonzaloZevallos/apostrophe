@@ -116,5 +116,9 @@
   "paid": "Paid",
   "paymentMethod": "Payment method",
   "chooseHowTheyPaid": "Choose how they paid.",
-  "noType": "No type"
+  "noType": "No type",
+  "homeViewSwitchLabel": "Home view",
+  "homeSegmentToday": "Today",
+  "homeSegmentAnalysis": "Analysis",
+  "seeExpenses": "See the expenses"
 }

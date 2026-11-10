@@ -181,7 +181,7 @@ test('each row carries the chevron icon', async () => {
   api.mockResolvedValue(jsonResponse(200, [saleFixture]))
   renderVentas()
 
-  const row = await screen.findByRole('link')
+  const row = await screen.findByRole('link', { name: /^(?!Settings$)/ })
   expect(row.querySelector('svg')).not.toBeNull()
 })
 
@@ -214,7 +214,7 @@ test('a sale still owing shows its total in amber with "owes you" under it, from
   api.mockResolvedValue(jsonResponse(200, [saleFixture]))
   renderVentas()
 
-  const row = await screen.findByRole('link')
+  const row = await screen.findByRole('link', { name: /^(?!Settings$)/ })
   expect(within(row).getByText('owes you')).toBeInTheDocument()
   expect(within(row).getByText('$ 11.000')).toHaveClass('monto-deuda')
 })
@@ -225,7 +225,7 @@ test('a sale paid in full shows no "owes you" mark', async () => {
   )
   renderVentas()
 
-  const row = await screen.findByRole('link')
+  const row = await screen.findByRole('link', { name: /^(?!Settings$)/ })
   expect(within(row).queryByText('owes you')).not.toBeInTheDocument()
 })
 

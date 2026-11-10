@@ -35,6 +35,7 @@ import Loading from '../components/Loading'
 import MarcaEstado from '../components/MarcaEstado'
 import Notice from '../components/Notice'
 import PaneRowLink from '../components/PaneRowLink'
+import SettingsAvatar from '../components/SettingsAvatar'
 import SinConexion from '../components/SinConexion'
 import { readFeedback } from '../components/feedback'
 import { formatGrams, formatMoney } from '../format/money'
@@ -119,7 +120,10 @@ export default function Variedades() {
   return (
     <ContentArea as="main" className="pantalla variedades">
       <div className="cuerpo">
-        <h1 className="encabezado__titulo">{COMMON_TEXT.varieties}</h1>
+        <div className="cabecera-fila cabecera-fila--envoltura">
+          <h1 className="encabezado__titulo">{COMMON_TEXT.varieties}</h1>
+          <SettingsAvatar />
+        </div>
         {summary !== null && <p className="pie variedades__resumen">{summary}</p>}
         <div className="variedades__acciones">
           {catalogDisabled ? (
