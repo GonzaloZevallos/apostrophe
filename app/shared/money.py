@@ -125,6 +125,14 @@ class Money:
         return Money(self.hundredths - other.hundredths)
 
 
+def checked_decimals(decimals: int) -> int:
+    """The decimals a business may show: a whole number from 0 to 2 (a bool is not one).
+    The one place the rule lives; `MoneyFormat` and the rescale use case both call it."""
+    if type(decimals) is not int or not 0 <= decimals <= MAX_DECIMALS:
+        raise ValueError("the money decimals must be a whole number from 0 to 2")
+    return decimals
+
+
 @dataclass(frozen=True)
 class MoneyFormat:
     """How a business shows money: its symbol and how many decimals. The scale it stores
@@ -136,8 +144,7 @@ class MoneyFormat:
     def __post_init__(self) -> None:
         if not self.symbol.strip():
             raise ValueError("the money symbol must not be blank")
-        if type(self.decimals) is not int or not 0 <= self.decimals <= MAX_DECIMALS:
-            raise ValueError("the money decimals must be a whole number from 0 to 2")
+        checked_decimals(self.decimals)
 
 
 def money_within(amount: Decimal, money_format: MoneyFormat) -> Money:

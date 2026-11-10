@@ -30,6 +30,8 @@ classDiagram
   class MoneyJsonRoute {
     get_route_handler() Callable~~Request~, Coroutine~Any, Any, Response~~
   }
+  class MoneyScaleChanged {
+  }
   class Refused {
     code : str
     fields : Mapping~str, object~
