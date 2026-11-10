@@ -14,3 +14,9 @@ export function viewportsOf(s: Readonly<Record<string, unknown>>): {
   design: readonly [number, number];
   built: readonly [number, number];
 };
+export function screenImageRows(
+  screens: ReadonlyArray<Readonly<Record<string, unknown>>>,
+): Array<Readonly<Record<string, unknown>>>;
+export function captureSelection(
+  screens: ReadonlyArray<Readonly<Record<string, unknown>>>,
+): Array<Readonly<Record<string, unknown>>>;

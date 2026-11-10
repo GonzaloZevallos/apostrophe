@@ -8,7 +8,7 @@ from sqlalchemy import select, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.catalog.adapters.tables import CatalogAttributesRow, CatalogHeaderFooterRow
+from app.catalog.adapters.tables import CatalogAttributeRow, CatalogHeaderFooterRow
 from app.db import make_engine
 from app.migrations.runner import MIGRATIONS_ROOT, upgrade_to_head
 
@@ -41,4 +41,4 @@ def test_an_existing_business_gets_the_default_header_and_footer_with_no_attribu
             (1, DEFAULT_HEADER, DEFAULT_FOOTER),
             (2, DEFAULT_HEADER, DEFAULT_FOOTER),
         ]
-        assert session.scalars(select(CatalogAttributesRow)).all() == []
+        assert session.scalars(select(CatalogAttributeRow)).all() == []

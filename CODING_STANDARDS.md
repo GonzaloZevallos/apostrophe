@@ -291,10 +291,8 @@ allowlist.
   otherwise touches — except a name already on `test_naming.py`'s allowlist, which stays
   as it is even when the task changes its column. Only #75 removes an allowlist entry;
   no other task adds or empties one.
-- A new index or unique constraint added on an allowlisted column is still named from
-  that column's current (unrenamed) name, e.g. `ix_sale_business_id_sale_date` next to
-  the allowlisted `sale.sale_date`.
-- Old and new names coexist until #75: new code says `app_user_id` while
-  `reset_link.user_id` stays as it is, and a new date column ends in `_on` while
-  `sale.sale_date` stays `sale_date`. Existing hand-written names
+- A new index or unique constraint on an allowlisted column is named from that column's
+  current name.
+- Old and new names coexist until #75 removes the last allowlist entry: new code uses the
+  new name and leaves an allowlisted name as it is. Existing hand-written names
   (`uq_customer_business_phone`, `expense`'s two indexes) are not rewritten either.

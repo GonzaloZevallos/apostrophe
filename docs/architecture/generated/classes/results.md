@@ -47,7 +47,6 @@ classDiagram
   analyse --> ports
   assemble --> figures
   assemble --> schemas
-  costed_sales --> rounding
   period_figures --> costed_sales
   period_figures --> figures
   period_figures --> ledger

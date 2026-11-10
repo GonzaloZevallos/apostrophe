@@ -29,7 +29,6 @@ export const PAYMENTS_TEXT = {
   amountOverBalance: 'The amount is more than they owe you.',
   dateInFuture: 'The date cannot be in the future.',
   enterValidAmount: 'Enter a valid amount.',
-  chooseAMethod: 'Pick a payment method.',
   savedStillOwing: (balance: string): `Payment saved · still owing ${string}` => `Payment saved · still owing ${balance}`,
   saved: 'Payment saved',
 } as const

@@ -59,6 +59,8 @@ export const STATE_NAMES: readonly string[] = [
   'VentasFechas',
   // Getting in and the shared Estados (`states-getting-in`).
   'EntrarFreno',
+  'EntrarOlvido',
+  'EntrarFrenoOlvido',
   'InvitacionMuerta',
   'ResetMuerto',
   'EstadosReintento',
@@ -72,6 +74,8 @@ export const STATE_NAMES: readonly string[] = [
   'MediosPagoUnico',
   'MediosPagoBorrar',
   'stock-entry/variety-selector-open',
+  'new-sale/line-variety-selector-open',
+  'new-sale/method-selector-open',
   'stock-entry/edit-archived-variety',
   'stock-entry/edit-archived-variety-failed',
   'withdrawal/reason-selector-open',

@@ -10,3 +10,12 @@ export async function paidWith(page: Page, name: string): Promise<{ kind: 'metho
   if (method === undefined) throw new Error(`${name} missing from GET /api/payment-methods`)
   return { kind: 'method', payment_method_id: method.id }
 }
+
+/**
+ * Chooses a Payment method as a person does: opens the "Payment method" field, then picks the
+ * option, in the computer's dropdown (an `option`) or the phone's list (a button in the list).
+ */
+export async function choosePaymentMethod(page: Page, method: string): Promise<void> {
+  await page.getByRole('button', { name: /^Payment method/ }).click()
+  await page.getByRole('option', { name: method }).or(page.getByRole('dialog', { name: 'Payment method options' }).getByRole('button', { name: method })).click()
+}

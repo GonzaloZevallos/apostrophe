@@ -58,7 +58,7 @@ class SqlSales:
         row = SaleRow(
             business_id=self._business_id,
             number=number,
-            sale_date=sale.date,
+            sold_on=sale.date,
             customer_id=sale.customer_id,
             shipping_charged=sale.shipping_charged,
             note=sale.note,
@@ -81,10 +81,10 @@ class SqlSales:
     def list(self, date_from: date | None, date_to: date | None) -> list[Sale]:
         statement = select(SaleRow).where(SaleRow.business_id == self._business_id)
         if date_from is not None:
-            statement = statement.where(SaleRow.sale_date >= date_from)
+            statement = statement.where(SaleRow.sold_on >= date_from)
         if date_to is not None:
-            statement = statement.where(SaleRow.sale_date <= date_to)
-        statement = statement.order_by(SaleRow.sale_date.desc(), SaleRow.id.desc())
+            statement = statement.where(SaleRow.sold_on <= date_to)
+        statement = statement.order_by(SaleRow.sold_on.desc(), SaleRow.id.desc())
         return [self._assemble(row) for row in self._session.scalars(statement)]
 
     def assign_customer(self, sale_id: int, customer_id: int) -> None:
@@ -170,8 +170,8 @@ class SqlSales:
         )
         if sale_ids is not None:
             statement = statement.where(SaleRow.id.in_(sale_ids))
-        statement = statement.where(*_dated_conditions(SaleRow.sale_date, date_from, date_to))
-        statement = statement.order_by(SaleRow.sale_date.desc(), SaleRow.id.desc())
+        statement = statement.where(*_dated_conditions(SaleRow.sold_on, date_from, date_to))
+        statement = statement.order_by(SaleRow.sold_on.desc(), SaleRow.id.desc())
 
         rows = self._session.execute(statement).all()
         vip_type_id = SqlVipType(self._session, self._business_id).id()
@@ -207,7 +207,7 @@ class SqlSales:
             )
             lines = lines_by_sale.get(sale_row.id, ())
             sale = Sale(
-                date=sale_row.sale_date,
+                date=sale_row.sold_on,
                 customer_id=sale_row.customer_id,
                 shipping_charged=sale_row.shipping_charged,
                 note=sale_row.note,
@@ -299,7 +299,7 @@ class SqlSales:
         lines = tuple(_sale_line(r) for r in self._line_rows(row.id))
         payment = self._find_payment(row.id)
         return Sale(
-            date=row.sale_date,
+            date=row.sold_on,
             customer_id=row.customer_id,
             shipping_charged=row.shipping_charged,
             note=row.note,

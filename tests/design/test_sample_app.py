@@ -2,6 +2,7 @@
 through the front it exists to compare, so a redesigned screen cannot break it. Every
 state the design's screens show has to exist after seeding."""
 
+import ast
 import importlib.util
 import json
 import os
@@ -750,3 +751,138 @@ def test_the_vip_type_is_made_from_a_fresh_interpreter_that_loaded_no_app_module
     with sqlite3.connect(tmp_path / "sample.db") as conn:
         rows = conn.execute("SELECT id, name, is_vip FROM customer_type").fetchall()
     assert rows == [(int(done.stdout), "VIP", 1)]
+
+
+def test_the_argv_builders_without_pinned_are_today_s_argv() -> None:
+    sample_app = load_script()
+    repo = sample_app.REPO
+
+    assert sample_app.server_command(False, 8123) == [
+        "uv",
+        "run",
+        "--no-project",
+        "uvicorn",
+        "app.main:create_app",
+        "--factory",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8123",
+        "--no-access-log",
+    ]
+    assert sample_app.operator_command(False, "reset-password", "a@b.c") == [
+        "uv",
+        "run",
+        "--no-project",
+        "python",
+        "-m",
+        "app.accounts.adapters.cli",
+        "reset-password",
+        "a@b.c",
+    ]
+    assert sample_app.import_command(False, 7, Path("/w/x.xlsx"), dry_run=True) == [
+        str(repo / "scripts" / "import-spreadsheet.sh"),
+        "7",
+        "/w/x.xlsx",
+        "--dry-run",
+    ]
+    assert sample_app.import_command(False, 7, Path("/w/x.xlsx"), dry_run=False) == [
+        str(repo / "scripts" / "import-spreadsheet.sh"),
+        "7",
+        "/w/x.xlsx",
+    ]
+
+
+def test_the_argv_builders_with_pinned_name_the_factory_and_the_pinned_command_line() -> None:
+    sample_app = load_script()
+
+    server = sample_app.server_command(True, 8123)
+    assert "tests.e2e_app:create_mobile_e2e_app" in server
+    assert "app.main:create_app" not in server
+    assert sample_app.operator_command(True, "invite-business")[3:] == [
+        "python",
+        "-m",
+        "tests.e2e_app",
+        "pinned",
+        "invite-business",
+    ]
+    pinned_import = sample_app.import_command(True, 7, Path("/w/x.xlsx"), dry_run=True)
+    assert pinned_import[3:] == [
+        "python",
+        "-m",
+        "tests.e2e_app",
+        "pinned-import",
+        "7",
+        "/w/x.xlsx",
+        "--dry-run",
+    ]
+    assert sample_app.pinned_date_command()[3:] == ["python", "-m", "tests.e2e_app", "pinned-date"]
+
+
+BUILDERS = {"server_command", "operator_command", "import_command", "pinned_date_command"}
+
+
+def starts_without_a_builder(source: str) -> list[int]:
+    """The lines of `subprocess.run` / `subprocess.Popen` calls whose argv is not the result
+    of a builder (called there, or assigned from one in the same function)."""
+    tree = ast.parse(source)
+    functions = [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)]
+
+    def from_builder(value: ast.expr) -> bool:
+        return (
+            isinstance(value, ast.Call)
+            and isinstance(value.func, ast.Name)
+            and (value.func.id in BUILDERS)
+        )
+
+    refused: list[int] = []
+    for node in ast.walk(tree):
+        if not (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "subprocess"
+            and node.func.attr in {"run", "Popen"}
+        ):
+            continue
+        argument = node.args[0]
+        if isinstance(argument, ast.Name):
+            scope = next(f for f in functions if f.lineno <= node.lineno <= (f.end_lineno or 0))
+            assigned = [
+                n.value
+                for n in ast.walk(scope)
+                if isinstance(n, ast.Assign)
+                and any(isinstance(t, ast.Name) and t.id == argument.id for t in n.targets)
+            ]
+            if assigned and all(from_builder(v) for v in assigned):
+                continue
+        elif from_builder(argument):
+            continue
+        refused.append(node.lineno)
+    return refused
+
+
+def test_every_process_the_sample_starts_takes_its_argv_from_a_builder() -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+
+    assert starts_without_a_builder(source) == []
+    assert source.count("subprocess.run(") + source.count("subprocess.Popen(") == 4
+
+
+def test_the_builder_guard_refuses_a_list_literal_and_an_unbuilt_name() -> None:
+    literal = 'import subprocess\nsubprocess.run(["uv", "run"])\n'
+    unbuilt = "def f():\n    cmd = ['uv']\n    subprocess.Popen(cmd)\n"
+    built = "def f():\n    cmd = server_command(True, 1)\n    subprocess.Popen(cmd)\n"
+
+    assert starts_without_a_builder(literal) == [2]
+    assert starts_without_a_builder(unbuilt) == [3]
+    assert starts_without_a_builder(built) == []
+
+
+def test_the_pinned_today_is_the_pinned_instant_s_date() -> None:
+    from tests.e2e_app import PINNED_INSTANT
+
+    sample_app = load_script()
+    env = {k: v for k, v in os.environ.items() if not k.startswith("APOSTROPHE_")}
+
+    assert sample_app.sample_today(env, True) == PINNED_INSTANT.date()

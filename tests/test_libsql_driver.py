@@ -185,7 +185,7 @@ def test_an_upsert_with_returning_works_on_login_guard_on_libsql(engine: Engine)
     ahead of the login-brakes subtask that writes it for real."""
     upsert = text(
         """
-        INSERT INTO login_guard (email, failures, locked_until)
+        INSERT INTO login_guard (email, failures, unlocks_at)
         VALUES (:email, 1, NULL)
         ON CONFLICT(email) DO UPDATE SET failures = login_guard.failures + 1
         RETURNING failures

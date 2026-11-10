@@ -8,7 +8,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
@@ -19,6 +19,8 @@ import panelFixture from '../../api/fixtures/panel.json'
 import { flipViewport, renderWithViewport } from '../../test-viewport'
 import { inAppState } from '../../components/inAppState'
 import { peekPaymentReturn } from '../../paymentReturn'
+import { SheetRouterProvider } from '../../components/useSheetStack'
+import { choosePaymentMethod } from '../../components/selectorTestKit'
 
 import { PAYMENT_METHODS_FIXTURE, paymentMethodsResponse } from '../../test/paymentMethods'
 
@@ -76,7 +78,9 @@ function renderApp(entries: { pathname: string; state?: unknown }[], viewport: V
   renderWithViewport(viewport, () =>
     render(
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+        <SheetRouterProvider router={router}>
+          <RouterProvider router={router} />
+        </SheetRouterProvider>
       </QueryClientProvider>,
     ),
   )
@@ -125,7 +129,7 @@ describe('on a computer', () => {
   test('with something typed, Escape asks first and does not leave', async () => {
     const router = renderApp([{ pathname: PAYMENT }], 'computer')
     await screen.findByRole('dialog', { name: 'Record payment' })
-    await userEvent.click(await screen.findByRole('radio', { name: 'Cash' }))
+    await choosePaymentMethod(userEvent, 'Cash')
 
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(await screen.findByText('Discard the payment?')).toBeInTheDocument()
@@ -160,7 +164,7 @@ describe('on a phone', () => {
   test('with something typed, Escape asks first and does not leave', async () => {
     const router = renderApp([{ pathname: PAYMENT }], 'phone')
     await screen.findByRole('dialog', { name: 'Record payment' })
-    await userEvent.click(await screen.findByRole('radio', { name: 'Cash' }))
+    await choosePaymentMethod(userEvent, 'Cash')
 
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(await screen.findByText('Discard the payment?')).toBeInTheDocument()
@@ -169,7 +173,8 @@ describe('on a phone', () => {
 
   test('a Back sent right after the choice, before any scheduled effect has run, still asks', async () => {
     const router = renderApp([{ pathname: CUSTOMERS }, { pathname: PAYMENT }], 'phone')
-    const cash = await screen.findByRole('radio', { name: 'Cash' })
+    await userEvent.click(await screen.findByRole('button', { name: /^Payment method/ }))
+    const cash = await screen.findByRole('button', { name: 'Cash' })
 
     // Outside `act`, so no scheduled effect is flushed for the test.
     const env = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -267,7 +272,7 @@ describe.each<Viewport>(['phone', 'computer'])('what sits behind Record payment,
   test('opened from Customers: the live list is behind, inert and aria-hidden', async () => {
     renderApp([{ pathname: HOME }, { pathname: CUSTOMERS }], viewport)
     await userEvent.click((await screen.findAllByRole('link', { name: 'Collect from Ana Pérez' }))[0]!)
-    await screen.findByRole('radio', { name: 'Cash' })
+    await screen.findByRole('button', { name: /^Payment method/ })
 
     expect(behindLink('Collect from Ana Pérez')).not.toBeNull()
     expect(behind().some((element) => element.textContent?.includes('Customers') === true)).toBe(true)
@@ -278,7 +283,7 @@ describe.each<Viewport>(['phone', 'computer'])('what sits behind Record payment,
   test('opened from Home: the Today figures are behind, inert and aria-hidden', async () => {
     renderApp([{ pathname: HOME }], viewport, PANEL)
     await userEvent.click(await screen.findByRole('link', { name: 'Collect from Ana Pérez' }))
-    await screen.findByRole('radio', { name: 'Cash' })
+    await screen.findByRole('button', { name: /^Payment method/ })
 
     await waitFor(() => expect(behindLink('Collect from Ana Pérez')).not.toBeNull())
     expect(screen.queryAllByRole('link', { name: 'Collect from Ana Pérez' })).toHaveLength(0)
@@ -290,7 +295,7 @@ describe.each<Viewport>(['phone', 'computer'])('what sits behind Record payment,
       viewport,
     )
     await userEvent.click(await screen.findByRole('link', { name: 'Record payment' }))
-    await screen.findByRole('radio', { name: 'Cash' })
+    await screen.findByRole('button', { name: /^Payment method/ })
 
     expect(router.state.location.pathname).toBe(PAYMENT)
     const card = behindLink('Record payment')?.closest('[inert]')
@@ -301,14 +306,14 @@ describe.each<Viewport>(['phone', 'computer'])('what sits behind Record payment,
 
   test('with no state (a direct link or a reload) the card is behind', async () => {
     renderApp([{ pathname: PAYMENT }], viewport)
-    await screen.findByRole('radio', { name: 'Cash' })
+    await screen.findByRole('button', { name: /^Payment method/ })
 
     await waitFor(() => expect(behindLink('Record payment')).not.toBeNull())
   })
 
   test('a state naming a screen outside the set puts the card behind', async () => {
     renderApp([{ pathname: PAYMENT, state: { underneath: 'sales' } }], viewport)
-    await screen.findByRole('radio', { name: 'Cash' })
+    await screen.findByRole('button', { name: /^Payment method/ })
 
     await waitFor(() => expect(behindLink('Record payment')).not.toBeNull())
   })
@@ -350,7 +355,7 @@ describe.each<Viewport>(['phone', 'computer'])('opened from a list, on a %s', (v
   test('from Clientes: a save lands on Clientes with the toast, and one back afterwards leaves', async () => {
     const router = renderApp([{ pathname: HOME }, { pathname: CUSTOMERS }], viewport)
     await userEvent.click((await screen.findAllByRole('link', { name: 'Collect from Ana Pérez' }))[0]!)
-    await userEvent.click(await screen.findByRole('radio', { name: 'Cash' }))
+    await choosePaymentMethod(userEvent, 'Cash')
     await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
     await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
@@ -365,7 +370,7 @@ describe.each<Viewport>(['phone', 'computer'])('opened from a list, on a %s', (v
       viewport,
       { 'GET /panel': () => jsonResponse(200, { debtors: [] }) },
     )
-    await userEvent.click(await screen.findByRole('radio', { name: 'Cash' }))
+    await choosePaymentMethod(userEvent, 'Cash')
     await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
     await waitFor(() => expect(router.state.location.pathname).toBe(HOME))
@@ -379,11 +384,11 @@ test('a customer answered as settled opens without an error, and the save is ref
   })
 
   const save = await screen.findByRole('button', { name: 'Save' })
-  await userEvent.click(await screen.findByRole('radio', { name: 'Cash' }))
+  await choosePaymentMethod(userEvent, 'Cash')
   await userEvent.click(save)
 
   expect(await screen.findByRole('alert')).toBeInTheDocument()
-  expect(screen.getByRole('radio', { name: 'Cash' })).toBeChecked()
+  expect(screen.getByRole('button', { name: /^Payment method/ })).toHaveTextContent('Cash')
 })
 
 test('a customer that is gone shows "That is gone." with a way back to Clientes', async () => {
@@ -422,7 +427,7 @@ describe('the form as drawn', () => {
     await userEvent.type(amount, '5000')
     expect(amount).toHaveValue('$ 5.000')
 
-    await userEvent.click(screen.getByRole('radio', { name: 'Cash' }))
+    await choosePaymentMethod(userEvent, 'Cash')
     await userEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => expect(postedBody('POST /customers/1/payments')).toBeDefined())
     expect(postedBody('POST /customers/1/payments')).toEqual({ paid_on: '2026-10-03', amount: 5000, payment_method_id: 1 })
@@ -435,7 +440,7 @@ describe('the form as drawn', () => {
     expect(amount).toHaveValue('')
     await userEvent.type(amount, '0')
     expect(amount).toHaveValue('$ 0')
-    await userEvent.click(screen.getByRole('radio', { name: 'Cash' }))
+    await choosePaymentMethod(userEvent, 'Cash')
     await userEvent.click(screen.getByRole('button', { name: 'Save' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('Enter a valid amount')
     expect(postedBody('POST /customers/1/payments')).toBeUndefined()
@@ -473,7 +478,7 @@ describe('the form as drawn', () => {
   test('a future-date refusal shows beside the date, and the date input points at it', async () => {
     await openForm({ 'POST /customers/1/payments': () => jsonResponse(422, { code: 'payment.future_date' }) })
     const date = screen.getByLabelText('Date')
-    await userEvent.click(screen.getByRole('radio', { name: 'Cash' }))
+    await choosePaymentMethod(userEvent, 'Cash')
     await userEvent.click(screen.getByRole('button', { name: 'Save' }))
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent('The date cannot be in the future.')
@@ -481,54 +486,55 @@ describe('the form as drawn', () => {
     expect(date).toHaveAccessibleDescription(/Today 03\/10.*The date cannot be in the future/)
   })
 
-  test('the method is one radiogroup holding the business\'s methods and no Owing, none chosen', async () => {
+  test('the method is a Selector holding Cash and Transfer, none chosen, with no radio or pressed button', async () => {
     await openForm()
-    const group = screen.getByRole('radiogroup', { name: 'Payment method' })
-    expect(group).toHaveAttribute('aria-required', 'true')
-    const radios = within(group).getAllByRole('radio')
-    expect(radios.map((radio) => radio.textContent)).toEqual(['Cash', 'Transfer', 'Mercado Pago'])
-    for (const radio of radios) expect(radio).toHaveAttribute('aria-checked', 'false')
+    const field = screen.getByRole('button', { name: /^Payment method/ })
+    expect(field).toHaveAttribute('aria-haspopup', 'dialog')
+    expect(screen.queryByRole('radiogroup')).toBeNull()
+    expect(screen.queryAllByRole('radio')).toHaveLength(0)
+    expect(document.querySelectorAll('[aria-pressed]')).toHaveLength(0)
 
-    await userEvent.click(screen.getByRole('radio', { name: 'Transfer' }))
-    expect(screen.getByRole('radio', { name: 'Transfer' })).toHaveAttribute('aria-checked', 'true')
-    expect(screen.getByRole('radio', { name: 'Cash' })).toHaveAttribute('aria-checked', 'false')
+    await userEvent.click(field)
+    const list = await screen.findByRole('dialog', { name: 'Payment method options' })
+    // Exactly the two methods and Close: no clearing row, no search.
+    expect(within(list).getAllByRole('button').map((button) => button.getAttribute('aria-label') ?? button.textContent)).toEqual(['Close', 'Cash', 'Transfer'])
+    expect(within(list).queryByRole('searchbox')).toBeNull()
+    await userEvent.click(within(list).getByRole('button', { name: 'Transfer' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: /^Payment method/ })).toHaveTextContent('Transfer'))
   })
 
-  test('a method archived meanwhile keeps what was typed, refetches the list, clears the choice and shows the notice', async () => {
-    let listCalls = 0
-    await openForm({
-      'GET /api/payment-methods': () => {
-        listCalls += 1
-        return paymentMethodsResponse(listCalls === 1 ? undefined : PAYMENT_METHODS_FIXTURE.filter((method) => method.id !== 2))
-      },
-      'POST /customers/1/payments': () => jsonResponse(404, { code: 'payment_method.unavailable' }),
-    })
-    const amount = screen.getByLabelText('Amount')
-    await userEvent.clear(amount)
-    await userEvent.type(amount, '4000')
-    await userEvent.click(screen.getByRole('radio', { name: 'Transfer' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
-
-    const notice = await screen.findByText("That payment method isn't available any more. Pick another one.")
-    expect(notice.closest('[role="alert"]')?.querySelector('svg')).not.toBeNull()
-    await waitFor(() => expect(screen.queryByRole('radio', { name: 'Transfer' })).not.toBeInTheDocument())
-    expect(screen.getByRole('radio', { name: 'Cash' })).toHaveAttribute('aria-checked', 'false')
-    expect(screen.getByLabelText('Amount')).toHaveValue('$ 4.000')
-    expect(listCalls).toBeGreaterThanOrEqual(2)
-
-    await userEvent.click(screen.getByRole('radio', { name: 'Cash' }))
-    expect(screen.queryByText("That payment method isn't available any more. Pick another one.")).not.toBeInTheDocument()
-  })
-
-  test('saving without a method shows the alert, and the group points at it', async () => {
+  test('saving without a method shows the sentence with a hidden icon at the field, focuses it and sends nothing', async () => {
     await openForm()
-    const group = screen.getByRole('radiogroup', { name: 'Payment method' })
-    expect(group).not.toHaveAttribute('aria-describedby')
+    const field = screen.getByRole('button', { name: /^Payment method/ })
+    expect(field).not.toHaveAttribute('aria-describedby')
 
     await userEvent.click(screen.getByRole('button', { name: 'Save' }))
     const alert = await screen.findByRole('alert')
-    expect(group).toHaveAccessibleDescription(alert.textContent ?? '')
-    expect(group.getAttribute('aria-describedby')).toBe(alert.id)
+    expect(alert).toHaveTextContent('Choose how they paid.')
+    expect(alert.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+    expect(field).toHaveAccessibleDescription('Choose how they paid.')
+    expect(field).toHaveFocus()
     expect(postedBody('POST /customers/1/payments')).toBeUndefined()
+    // A refused save never enters the pending state: Save stays enabled.
+    expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled()
+
+    await choosePaymentMethod(userEvent, 'Cash')
+    expect(screen.queryByText('Choose how they paid.')).toBeNull()
+  })
+
+  test('the API refusing a missing method shows the same sentence at the field', async () => {
+    await openForm({ 'POST /customers/1/payments': () => jsonResponse(422, { code: 'payment.method_required' }) })
+    await choosePaymentMethod(userEvent, 'Cash')
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Choose how they paid.')
+  })
+
+  test('the form always opens with the method empty', async () => {
+    const first = await openForm()
+    await choosePaymentMethod(userEvent, 'Transfer')
+    first.dispose()
+    cleanup()
+    await openForm()
+    expect(screen.getByRole('button', { name: /^Payment method/ })).not.toHaveTextContent('Transfer')
   })
 })

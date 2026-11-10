@@ -1,9 +1,3 @@
-# Onboarding
-
-La configuración paso a paso por la que se guía a un **Business** recién creado una vez que se acepta su **Invitation** de Business nuevo. Para ese Business ocupa el lugar de la **First-run checklist**. Pide lo que necesita una primera **Sale** (un **Product** con precio para hoy y su **Opening stock**) y ofrece las configuraciones de todo el Business que quien vende recién empieza tendría que salir a buscar (**Catalog header and footer**, el bot de Telegram, un socio, **Expense category**s). Cada paso guarda exactamente lo que guarda su dueño: varieties.md, stock.md, catalog.md, pinned-catalog.md, accounts.md y expenses.md. El Onboarding no tiene ninguna configuración propia; solo recuerda qué pasos opcionales se pasaron. Lo ve solo su Business (ADR-0004). Dónde se ubica está en navigation.md; su aviso de Home sigue el orden de results.md.
-
-El Onboarding nunca pregunta cómo se llama lo que vende el Business: en pantalla es siempre "Product" / "Products" para todo Business (varieties.md, docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md), y no existe ningún paso "What you sell".
-
 ## Jobs
 
 **Cuando** acabo de abrir mi negocio y todavía está vacío, **quiero** que me guíen por lo que necesita, un paso corto por vez, con los valores por defecto ya completos, **para** registrar mi primera venta el mismo día sin buscar entre Settings, Products y la pantalla del Catalog.
@@ -19,6 +13,12 @@ Antes, quien vendía caía en un Home vacío y abría Products, la pantalla del 
 Este afina el criterio 5 y su métrica de diseño; no es un job de producto nuevo. Su protagonista es quien revisa en nombre del mantenedor y, al final, Zeta, como en design-capture.md y en el criterio 11 de pinned-catalog.md. Quien vende se ve afectado solo de forma indirecta. Salió del seguimiento de GH-144, donde la etiqueta "Origin" sobre el chip del paso 2 estaba sin decidir y la evidencia de comparación no tenía corrida de antes, ni pasos oscuros, ni el aviso de Home.
 
 **Cuando** trabajo en la app desde el celular, venda lo que venda, **quiero** que llame "products" a lo que vendo, **para** que la app se ajuste a mi negocio sin que yo traduzca sus palabras ni le elija una. (Se define en varieties.md; lo sirve acá su segunda situación, el primer uso: el Onboarding dice "Product" en sus pasos y nunca pregunta "What you sell".)
+
+# Onboarding
+
+La configuración paso a paso por la que se guía a un **Business** recién creado una vez que se acepta su **Invitation** de Business nuevo. Para ese Business ocupa el lugar de la **First-run checklist**. Pide lo que necesita una primera **Sale** (un **Product** con precio para hoy y su **Opening stock**) y ofrece las configuraciones de todo el Business que quien vende recién empieza tendría que salir a buscar (**Catalog header and footer**, el bot de Telegram, un socio, **Expense category**s). Cada paso guarda exactamente lo que guarda su dueño: varieties.md, stock.md, catalog.md, pinned-catalog.md, accounts.md y expenses.md. El Onboarding no tiene ninguna configuración propia; solo recuerda qué pasos opcionales se pasaron. Lo ve solo su Business (ADR-0004). Dónde se ubica está en navigation.md; su aviso de Home sigue el orden de results.md.
+
+El Onboarding nunca pregunta cómo se llama lo que vende el Business: en pantalla es siempre "Product" / "Products" para todo Business (varieties.md, docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md), y no existe ningún paso "What you sell".
 
 Criterios de éxito:
 
@@ -40,18 +40,18 @@ Criterios de éxito:
 
 - Solo a un Business recién abierto con una Invitation de Business nuevo, desde el momento en que se acepta la Invitation.
 - **Nunca se ofrece a**:
-  - un Business importado. Una vez que la **Spreadsheet import** carga un Business, el Onboarding terminó para él: su aviso nunca se muestra y "Done" nunca se muestra. Sus pasos recordados como pasados no son registros para el control de elegibilidad de la importación (import.md);
+  - un Business importado. Una vez que la **Spreadsheet import** carga un Business, el Onboarding terminó para él: su aviso nunca se muestra y "Done" nunca se muestra. Sus pasos recordados como pasados no son registros para el control de elegibilidad de la Spreadsheet import (import.md);
   - un Business al que un **User** se sumó con una Invitation para sumarse;
   - un Business que existía antes de que saliera el Onboarding.
 - **Sin "hacerlo de nuevo"**: una vez que terminó, nada en la app vuelve a apuntar a él.
 - **Un estado por Business**: un socio que se suma a mitad de camino ve el mismo aviso y puede seguir. Sin roles.
 
-### Relación con la First-run checklist y el aviso posterior a la importación
+### Relación con la First-run checklist y el aviso posterior a la Spreadsheet import
 
 - Para un Business recién creado el Onboarding reemplaza por completo a la checklist; las dos nunca rigen a la vez.
 - Mientras no terminó, no se muestran ni la checklist ni "Start with your products". "Start with your products" toma el lugar una vez que terminó.
 - **Sin reglas laterales propias**: "+ New sale" y "Send catalog" se comportan mientras corre el Onboarding como para cualquier Business. Lo que falta lo dice el aviso de Home ("Missing: …"), el propio "<product> has no price for that date" de New sale antes de guardar y el estado vacío propio de la pantalla del Catalog. Las reglas laterales de la checklist (navigation.md) son de la checklist.
-- **El Onboarding no arma ni la checklist ni el aviso posterior a la importación**: la checklist "To get started" de Home y el aviso "Connect the bot…" los arma la capacidad de primer uso (navigation.md, results.md), que lee `/first-run`. Un Business que existía antes del Onboarding y un Business importado ven el elemento que decide esa capacidad, no un aviso del Onboarding.
+- **El Onboarding no arma ni la checklist ni el aviso posterior a la Spreadsheet import**: la checklist "To get started" de Home y el aviso "Connect the bot…" los arma la capacidad de primer uso (navigation.md, results.md), que lee `/first-run`. Un Business que existía antes del Onboarding y un Business importado ven el elemento que decide esa capacidad, no un aviso del Onboarding.
 
 ### Entrada y el aviso de Home
 
@@ -87,7 +87,7 @@ Criterios de éxito:
 |---|---|---|---|
 | 1 | A product with today's price | Sí | Un Product y una **Price entry** que rige desde hoy (**List price**, opcionalmente un **Bulk price** y su mínimo), bajo las reglas y los rechazos de Products (varieties.md) |
 | 2 | Its opening stock | Sí | Una **Stock entry** con origen Initial stock, gramos, la fecha de hoy y un costo total opcional (stock.md) |
-| 3 | Catalog header and footer | No | El encabezado y el pie del Business, mostrados con sus valores por defecto (catalog.md) |
+| 3 | Catalog header and footer | No | El Catalog header and footer del Business, mostrados con sus valores por defecto (catalog.md) |
 | 4 | Telegram bot | No | Token, chat del canal, chat propio (con Find my chat) y Test it, exactamente como Integrations (pinned-catalog.md) |
 | 5 | A partner | No | Un link para sumarse por toque, para copiar o compartir (accounts.md) |
 | 6 | Expense categories | No | Agregar, renombrar y quitar, como en Expense categories (expenses.md) |
@@ -126,7 +126,7 @@ Criterios de éxito:
 
 | Paso | Se pasa con |
 |---|---|
-| 3. Encabezado y pie | "Save" (editado) o "Leave as is" (valores por defecto conservados) |
+| 3. Catalog header and footer | "Save" (editado) o "Leave as is" (valores por defecto conservados) |
 | 4. Bot | Un Test it exitoso (la única forma de guardarlo) muestra "Done". "Skip" pasa el paso sin bot. Un Test it fallido muestra su motivo y no guarda nada |
 | 5. Socio | "Continue" una vez creado un link, o "Skip" |
 | 6. Categorías | Solo "Continue". Agregar, renombrar o quitar una categoría guarda de inmediato pero nunca pasa el paso |
@@ -167,7 +167,7 @@ Criterios de éxito:
 - **La matriz de evidencia**: cada celda se captura en la base de la tarea (antes) y en el head (después) con `scripts/design/comparisons.mjs --strict`. Un solo script desde una sola instalación toma los dos lados, en el mismo día de Argentina, con las fuentes fijadas (ADR-0042). El PR registra la versión instalada de `@fontsource/plus-jakarta-sans`. Las celdas son:
   - cada paso del Onboarding y "Done", claro y oscuro, celular y computadora;
   - el aviso "Go on to the setup" en Home, `InicioOscuro` (tema oscuro) e `InicioCompu` (disposición de computadora);
-  - cuando el cambio toca el chip del paso 2, el formulario de Stock entry abierto desde un Product sin entradas ("Initial stock" preseleccionado), claro y oscuro, celular y computadora.
+  - cuando el cambio toca el chip del paso 2, el formulario de Stock entry abierto desde un Product sin Stock entries ("Initial stock" preseleccionado), claro y oscuro, celular y computadora.
 
   Las pantallas que el cambio no toca quedan afuera.
 - **Filas del registro**: una celda sin fila en `scripts/design/screens.json` recibe una bajo las reglas de design-capture.md:
@@ -224,9 +224,9 @@ No hay telemetría.
   0 hallazgos abiertos sobre la etiqueta.
 - **A quién le toca**:
   - a un Business recién creado le toca;
-  - un Business importado (incluido uno que cayó en el Onboarding antes de la importación) nunca lo vuelve a ver;
+  - un Business importado (incluido uno que cayó en el Onboarding antes de la Spreadsheet import) nunca lo vuelve a ver;
   - el Business de un User que se sumó y un Business preexistente nunca lo ven;
-  - los pasos pasados recordados nunca hacen que la importación rechace.
+  - los pasos pasados recordados nunca hacen que la Spreadsheet import rechace.
 - **Home y marco**, tests del front en celular y computadora:
   - el aviso va arriba de todo con sus palabras, no se puede descartar y conserva su conteo en los pasos 1–2 mientras se agregan Products;
   - "Start with your products" nunca se muestra junto a él;
@@ -257,7 +257,7 @@ No hay telemetría.
 - Hacerlo de nuevo, o cualquier entrada que vuelva a apuntar a él una vez que terminó.
 - "Finish for now" como segunda salida.
 - Ofrecerlo a Businesses importados, de un User que se sumó o preexistentes.
-- Armar la First-run checklist, sus reglas laterales ("+ New sale" diciendo qué falta, "Send catalog" deshabilitado) o el aviso posterior a la importación: su propia tarea (navigation.md).
+- Armar la First-run checklist, sus reglas laterales ("+ New sale" diciendo qué falta, "Send catalog" deshabilitado) o el aviso posterior a la Spreadsheet import: su propia tarea (navigation.md).
 - Terminar el Onboarding desde afuera, sin llegar a "Done".
 - Publicar el Catalog desde el Onboarding.
 - Esperar a que se sume un socio.
@@ -277,7 +277,7 @@ Todavía no está construido. Hasta que salga la parte nombrada, las secciones d
 
 Cada pasaje nombra el ADR que lo decide, la parte que lo va a entregar y la oración actual que va a reemplazar. La parte que entrega un pasaje lo quita de acá y edita Comportamiento y Fuera de alcance en el mismo diff.
 
-### Setup
+### Configuración inicial
 
 Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md y docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md y docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; lo entrega la parte onboarding setup.
 

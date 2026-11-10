@@ -456,8 +456,12 @@ Un aviso que el vendedor toca para abrir aquello a lo que apunta, como el "Go on
 _Avoid_: banner, card button, row, callout, alert
 
 **Design capture**:
-La captura lado a lado del archivo de diseño de una pantalla y la app construida, adjunta a un PR como evidencia de revisión y juzgada a ojo contra el Drawing as guide. Nunca es un paso del Gate. Su regla completa vive en `docs/product/design-capture.md`.
+La captura lado a lado del archivo de diseño de una pantalla y la app construida, adjunta a un PR como evidencia de revisión y juzgada a ojo contra el Drawing as guide. Nunca es un paso del Gate. En el teléfono la captura se toma en el viewport real del teléfono, sin agrandarlo nunca (scroll y unión); una pantalla que la herramienta no puede capturar queda not-captured y se informa como "not compared", nunca como AE 0 ni como un pase, y nunca bloquea. Su regla completa vive en `docs/product/design-capture.md`.
 _Avoid_: screenshot test, visual regression test, snapshot, gate step
+
+**Screen image**:
+La imagen de una pantalla del teléfono, tomada de la app construida sobre el negocio de muestra el 16/09/2026, que acompaña a la definición escrita en `docs/product/`. Su nombre es el de su fila en el registro de pantallas. Es la misma en cada corrida. Ayuda a leer y nunca es una especificación, un paso del Gate ni evidencia de revisión; si el texto y la imagen difieren, gana el texto. Su regla completa vive en `docs/product/screen-images.md`. En la app: no tiene palabra propia.
+_Avoid_: screenshot test, snapshot, mockup, Design capture
 
 **Product language**:
 El idioma en que el producto escribe lo que una persona lee. El inglés es el texto fuente y, hasta que salga un segundo idioma (#317), el único Selectable language. Abarca pantallas, nombres accesibles, mensajes de la API, la salida de los scripts del Operator y las líneas fijas del Catalog, nunca los datos propios del vendedor. El `detail` de un rechazo de la API es un diagnóstico en inglés, nunca se muestra. Los formatos numéricos y de fecha siguen siendo argentinos.

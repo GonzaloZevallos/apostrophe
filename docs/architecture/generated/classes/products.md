@@ -191,7 +191,7 @@ classDiagram
     bulk_minimum_hundredths : Mapped~int #124; None~
     bulk_price : Mapped~int #124; None~
     business_id : Mapped~int~
-    effective_from : Mapped~date~
+    effective_on : Mapped~date~
     id : Mapped~int~
     list_price : Mapped~int~
     variety : Mapped~ProductRow~

@@ -2,7 +2,7 @@
  * "Registrar cobro" (`Cobro`, `payments.md`): the form, drawn inside `CobroFrame` by its host
  * `CobroRoute` (`Cobro.dc.html` on a phone, `CobroCompu.dc.html` on a computer). "All: $ X"
  * fills the amount with the customer's own `balance` (never typed in by the seller for that
- * case); the date defaults to today; Cash · Transfer is required. The host owns how it
+ * case); the date defaults to today; the Payment method (a Selector, no default) is required. The host owns how it
  * is left (the leave guard, Escape, the backdrop, where "Cerrar" goes): this form only says
  * through `onDone`, `onCancel`, `onGone`, `onDirtyChange` and `onSendingChange` what happened.
  *
@@ -20,7 +20,7 @@
  * through `refusals.ts`'s contract-backed `RefusalCode`.
  */
 
-import { type FormEvent, type RefObject, useEffect, useId, useLayoutEffect, useState } from 'react'
+import { type FormEvent, type RefObject, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError } from '../../api/client'
@@ -35,18 +35,19 @@ import {
 import Boton from '../../components/Boton'
 import { SheetActions } from '../../components/Sheet'
 import { useViewport } from '../../shell/useViewport'
-import AvisoAmbar from '../../components/AvisoAmbar'
-import SelectorPago from '../../components/SelectorPago'
+import FieldRefusal from '../../components/FieldRefusal'
+import Selector from '../../components/Selector'
 import SinConexion from '../../components/SinConexion'
 import { useFlash } from '../../flash/useFlash'
 import { chipDate, formatDateShort } from '../../format/dates'
 import { formatMoney } from '../../format/money'
 import { readMoneyInput } from '../../format/parse'
 import { GENERIC_REFUSAL } from './ClienteForm'
+import { paymentMethodIdOf, usePaymentMethodOptions } from '../../sales/paymentMethods'
 import { COMMON_TEXT } from '../../copy/common'
 import { PAYMENT_METHODS_TEXT } from '../../copy/paymentMethods'
 import { PAYMENTS_TEXT } from '../../copy/payments'
-import type { PaymentChoice } from '../../sales/pricing'
+import AvisoAmbar from '../../components/AvisoAmbar'
 
 /** The "owes you" line with its amount in one box, so a narrow screen never breaks "$" from its digits. */
 function owesLine(balance: string, since: string) {
@@ -95,7 +96,6 @@ const AMOUNT_MESSAGES: Partial<Record<PaymentRefusalCode, string>> = {
   'payment.above_balance': PAYMENTS_TEXT.amountOverBalance,
   'payment.amount_invalid': PAYMENTS_TEXT.enterValidAmount,
 }
-const METHOD_REQUIRED_MESSAGE = PAYMENTS_TEXT.chooseAMethod
 
 /** `code` comes off the wire as a plain `string` (`ApiError.code`): this only
  * narrows it enough to index `AMOUNT_MESSAGES` safely, never asserting it is a
@@ -129,11 +129,13 @@ export default function Cobro({
   // The number the API receives: the field's text is only how it is shown (`formatMoney`).
   const [amount, setAmount] = useState<number | null>(balance)
   const [date, setDate] = useState(today)
-  const [method, setMethod] = useState<PaymentChoice | null>(null)
+  const [method, setMethod] = useState<number | null>(null)
+  const [methodUnavailable, setMethodUnavailable] = useState(false)
   const [amountError, setAmountError] = useState<string | null>(null)
   const [dateError, setDateError] = useState<string | null>(null)
-  const [methodError, setMethodError] = useState<string | null>(null)
-  const [methodUnavailable, setMethodUnavailable] = useState(false)
+  const [methodRefused, setMethodRefused] = useState(false)
+  const methodField = useRef<HTMLButtonElement>(null)
+  const methodOptions = usePaymentMethodOptions()
   const [offline, setOffline] = useState(false)
   const queryClient = useQueryClient()
   const flash = useFlash()
@@ -179,19 +181,20 @@ export default function Cobro({
     event.preventDefault()
     setAmountError(null)
     setDateError(null)
-    setMethodError(null)
+    setMethodRefused(false)
     setMethodUnavailable(false)
     setOffline(false)
     if (previewAmount === null) {
       setAmountError(PAYMENTS_TEXT.enterValidAmount)
       return
     }
-    if (method === null || method.kind !== 'method') {
-      setMethodError(METHOD_REQUIRED_MESSAGE)
+    if (method === null) {
+      setMethodRefused(true)
+      methodField.current?.focus()
       return
     }
     try {
-      const recorded = await record.mutateAsync({ paid_on: date, amount: previewAmount, payment_method_id: method.id })
+      const recorded = await record.mutateAsync({ paid_on: date, amount: previewAmount, payment_method_id: method })
       invalidateResource(queryClient, 'payments')
       flash.armAfterLeaving(
         recorded.after.standing === 'owes'
@@ -206,11 +209,11 @@ export default function Cobro({
         // Typed values stay; the list is read again and a chosen method that is gone is cleared.
         const fresh = await refreshPaymentMethods(queryClient)
         setMethod((current) =>
-          current?.kind === 'method' && !fresh.some((item) => item.id === current.id) ? null : current,
+          current !== null && !fresh.some((item) => item.id === current) ? null : current,
         )
         setMethodUnavailable(true)
       } else if (caught instanceof ApiError) {
-        if (caught.code === 'payment.method_required') setMethodError(METHOD_REQUIRED_MESSAGE)
+        if (caught.code === 'payment.method_required') setMethodRefused(true)
         else if (caught.code === 'payment.future_date') setDateError(PAYMENTS_TEXT.dateInFuture)
         else setAmountError(amountMessage(caught.code) ?? GENERIC_REFUSAL)
       } else if (caught instanceof NetworkError) {
@@ -290,21 +293,19 @@ export default function Cobro({
           )}
 
           <div className="cobro__metodo">
-            <SelectorPago
-              value={method}
-              onChange={(choice) => {
-                setMethod(choice)
+            <Selector
+              {...methodOptions}
+              label={t('common:paymentMethod')}
+              value={method === null ? null : String(method)}
+              onChange={(next) => {
+                setMethod(paymentMethodIdOf(next))
+                setMethodRefused(false)
                 setMethodUnavailable(false)
               }}
-              allowOwing={false}
-              required
-              describedBy={methodError !== null ? methodErrorId : undefined}
+              fieldRef={methodField}
+              describedBy={methodRefused ? methodErrorId : undefined}
             />
-            {methodError !== null && (
-              <span id={methodErrorId} className="campo__error" role="alert">
-                {methodError}
-              </span>
-            )}
+            {methodRefused && <FieldRefusal id={methodErrorId}>{t('common:chooseHowTheyPaid')}</FieldRefusal>}
             {methodUnavailable && (
               <AvisoAmbar attention role="alert">
                 {PAYMENT_METHODS_TEXT.errorMethodUnavailable}

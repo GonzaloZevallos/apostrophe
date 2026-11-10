@@ -126,6 +126,23 @@ def test_line_total_rounds_half_up_to_the_peso(
     assert line_total(price_per_gram, Quantity.of(grams)) == expected
 
 
+@pytest.mark.parametrize(
+    ("price_per_gram", "grams", "expected"),
+    [
+        (1, "0.50", 1),  # a tie: 0.5 goes up
+        (1, "0.49", 0),  # just below the tie
+        (5, "0.50", 3),  # 2.5 goes up
+        (5, "0.49", 2),  # 2.45 goes down
+        (101, "1.50", 152),  # 151.5 goes up
+        (101, "1.49", 150),  # 150.49 goes down
+    ],
+)
+def test_line_total_ties_go_up_and_the_value_just_below_goes_down(
+    price_per_gram: int, grams: str, expected: int
+) -> None:
+    assert line_total(price_per_gram, Quantity.of(grams)) == expected
+
+
 # -- special_rate -----------------------------------------------------------------------
 
 
@@ -140,6 +157,23 @@ def test_line_total_rounds_half_up_to_the_peso(
     ],
 )
 def test_special_rate_rounds_half_up(total: int, grams: str, expected: int) -> None:
+    assert special_rate(total, Quantity.of(grams)) == expected
+
+
+@pytest.mark.parametrize(
+    ("total", "grams", "expected"),
+    [
+        (1, "2.00", 1),  # a tie: 0.5 goes up
+        (99, "200.00", 0),  # 0.495 goes down
+        (5, "4.00", 1),  # 1.25 goes down
+        (3, "2.00", 2),  # 1.5 goes up
+        (299, "200.00", 1),  # 1.495 goes down
+        (301, "200.00", 2),  # 1.505 goes up
+    ],
+)
+def test_special_rate_ties_go_up_and_the_value_just_below_goes_down(
+    total: int, grams: str, expected: int
+) -> None:
     assert special_rate(total, Quantity.of(grams)) == expected
 
 

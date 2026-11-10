@@ -9,6 +9,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { choosePaid, choosePaymentMethod } from '../../components/selectorTestKit'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { SheetRouterProvider } from '../../components/useSheetStack'
@@ -62,7 +63,8 @@ test('Save is the secondary button until a payment is chosen, then the primary o
   expect(save).toHaveAttribute('type', 'submit')
   expect(save).toHaveClass('boton--suave')
 
-  await userEvent.click(await screen.findByRole('radio', { name: 'Cash' }))
+  await choosePaid(userEvent)
+  await choosePaymentMethod(userEvent, 'Cash')
 
   const after = screen.getByRole('button', { name: 'Save sale' })
   expect(after).toBe(save)

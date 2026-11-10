@@ -78,6 +78,7 @@ classDiagram
   class Quantity {
     hundredths : int
     is_positive : bool
+    units : Fraction
     as_decimal() Decimal
     of(value: Decimal #124; int #124; str) Quantity
   }

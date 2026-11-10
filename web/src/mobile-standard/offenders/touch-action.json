@@ -522,24 +522,6 @@
     "issue": 78
   },
   {
-    "screen": "DescartarVenta",
-    "rule": "touch-action",
-    "target": "radio:Cash",
-    "issue": 78
-  },
-  {
-    "screen": "DescartarVenta",
-    "rule": "touch-action",
-    "target": "radio:Owing",
-    "issue": 78
-  },
-  {
-    "screen": "DescartarVenta",
-    "rule": "touch-action",
-    "target": "radio:Transfer",
-    "issue": 78
-  },
-  {
     "screen": "ElegirCliente",
     "rule": "touch-action",
     "target": "button:Add another product",
@@ -585,24 +567,6 @@
     "screen": "ElegirCliente",
     "rule": "touch-action",
     "target": "button:No customer",
-    "issue": 78
-  },
-  {
-    "screen": "ElegirCliente",
-    "rule": "touch-action",
-    "target": "radio:Cash",
-    "issue": 78
-  },
-  {
-    "screen": "ElegirCliente",
-    "rule": "touch-action",
-    "target": "radio:Owing",
-    "issue": 78
-  },
-  {
-    "screen": "ElegirCliente",
-    "rule": "touch-action",
-    "target": "radio:Transfer",
     "issue": 78
   },
   {
@@ -652,30 +616,6 @@
     "rule": "touch-action",
     "target": "button:Delete@#/# · Variedad sin ventasPurch",
     "issue": 47
-  },
-  {
-    "screen": "Entrar",
-    "rule": "touch-action",
-    "target": "button:Sign in",
-    "issue": 49
-  },
-  {
-    "screen": "Entrar",
-    "rule": "touch-action",
-    "target": "button:Show",
-    "issue": 49
-  },
-  {
-    "screen": "EntrarFreno",
-    "rule": "touch-action",
-    "target": "button:Sign in",
-    "issue": 49
-  },
-  {
-    "screen": "EntrarFreno",
-    "rule": "touch-action",
-    "target": "button:Show",
-    "issue": 49
   },
   {
     "screen": "EstadosConfirmar",
@@ -870,27 +810,6 @@
     "issue": 48
   },
   {
-    "screen": "InicioChecklist",
-    "rule": "touch-action",
-    "target": "button:Today",
-    "issue": 45,
-    "reason": "computed touch-action of the button \"Today\" is not manipulation"
-  },
-  {
-    "screen": "InicioChecklist",
-    "rule": "touch-action",
-    "target": "button:Month",
-    "issue": 45,
-    "reason": "computed touch-action of the button \"Month\" is not manipulation"
-  },
-  {
-    "screen": "InicioChecklist",
-    "rule": "touch-action",
-    "target": "button:Week",
-    "issue": 45,
-    "reason": "computed touch-action of the button \"Week\" is not manipulation"
-  },
-  {
     "screen": "InicioHoy",
     "rule": "touch-action",
     "target": "button:Month",
@@ -907,27 +826,6 @@
     "rule": "touch-action",
     "target": "button:Week",
     "issue": 45
-  },
-  {
-    "screen": "InicioImportado",
-    "rule": "touch-action",
-    "target": "button:Today",
-    "issue": 45,
-    "reason": "computed touch-action of the button \"Today\" is not manipulation"
-  },
-  {
-    "screen": "InicioImportado",
-    "rule": "touch-action",
-    "target": "button:Month",
-    "issue": 45,
-    "reason": "computed touch-action of the button \"Month\" is not manipulation"
-  },
-  {
-    "screen": "InicioImportado",
-    "rule": "touch-action",
-    "target": "button:Week",
-    "issue": 45,
-    "reason": "computed touch-action of the button \"Week\" is not manipulation"
   },
   {
     "screen": "InicioOnboardingCompleto",
@@ -1032,24 +930,6 @@
     "issue": 78
   },
   {
-    "screen": "NuevaVenta",
-    "rule": "touch-action",
-    "target": "radio:Cash",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVenta",
-    "rule": "touch-action",
-    "target": "radio:Owing",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVenta",
-    "rule": "touch-action",
-    "target": "radio:Transfer",
-    "issue": 78
-  },
-  {
     "screen": "NuevaVentaCliente",
     "rule": "touch-action",
     "target": "button:Add another product",
@@ -1122,24 +1002,6 @@
     "issue": 78
   },
   {
-    "screen": "NuevaVentaCliente",
-    "rule": "touch-action",
-    "target": "radio:Cash",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaCliente",
-    "rule": "touch-action",
-    "target": "radio:Owing",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaCliente",
-    "rule": "touch-action",
-    "target": "radio:Transfer",
-    "issue": 78
-  },
-  {
     "screen": "NuevaVentaConLinea",
     "rule": "touch-action",
     "target": "button:Add another product",
@@ -1176,24 +1038,6 @@
     "issue": 78
   },
   {
-    "screen": "NuevaVentaConLinea",
-    "rule": "touch-action",
-    "target": "radio:Cash",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaConLinea",
-    "rule": "touch-action",
-    "target": "radio:Owing",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaConLinea",
-    "rule": "touch-action",
-    "target": "radio:Transfer",
-    "issue": 78
-  },
-  {
     "screen": "NuevaVentaConLineaYPago",
     "rule": "touch-action",
     "target": "button:Add another product",
@@ -1227,24 +1071,6 @@
     "screen": "NuevaVentaConLineaYPago",
     "rule": "touch-action",
     "target": "button:Save sale",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaConLineaYPago",
-    "rule": "touch-action",
-    "target": "radio:Cash",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaConLineaYPago",
-    "rule": "touch-action",
-    "target": "radio:Owing",
-    "issue": 78
-  },
-  {
-    "screen": "NuevaVentaConLineaYPago",
-    "rule": "touch-action",
-    "target": "radio:Transfer",
     "issue": 78
   },
   {
@@ -1317,24 +1143,6 @@
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-action",
     "target": "button:Tincho Aguirre+#",
-    "issue": 78
-  },
-  {
-    "screen": "NuevoClienteEnVenta",
-    "rule": "touch-action",
-    "target": "radio:Cash",
-    "issue": 78
-  },
-  {
-    "screen": "NuevoClienteEnVenta",
-    "rule": "touch-action",
-    "target": "radio:Owing",
-    "issue": 78
-  },
-  {
-    "screen": "NuevoClienteEnVenta",
-    "rule": "touch-action",
-    "target": "radio:Transfer",
     "issue": 78
   },
   {

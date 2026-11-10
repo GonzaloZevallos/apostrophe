@@ -1,0 +1,5 @@
+// expect: t-outside-function@3
+import { t } from 'i18next'
+export function show(text = t('a')) {
+  return text
+}

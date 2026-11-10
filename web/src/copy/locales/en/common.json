@@ -117,5 +117,6 @@
   "optionsOf": "{{name}} options",
   "paid": "Paid",
   "paymentMethod": "Payment method",
+  "chooseHowTheyPaid": "Choose how they paid.",
   "noType": "No type"
 }

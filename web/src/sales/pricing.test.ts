@@ -9,6 +9,7 @@ import {
   type PricingRule,
   fromHundredths,
   hundredthsOfApiGrams,
+  paymentChoiceOf,
   priceLine,
   saleTotals,
   toHundredths,
@@ -98,10 +99,12 @@ describe('fromHundredths', () => {
   })
 })
 
+const NO_PAYMENT = { payState: null, method: null, total: 0 } as const
+
 describe('validateSale', () => {
   test('flags a line with no price that day, naming the variety from the screen\'s own line', () => {
     const errors = validateSale({
-      method: null,
+      ...NO_PAYMENT,
       hasCustomer: false,
       lines: [
         { id: 'a', varietyName: 'Sativa', gift: false, specialPrice: null, quote: null },
@@ -114,7 +117,7 @@ describe('validateSale', () => {
 
   test('does not flag a gift line or a special-price line with no quote', () => {
     const errors = validateSale({
-      method: null,
+      ...NO_PAYMENT,
       hasCustomer: false,
       lines: [
         { id: 'a', varietyName: 'Sativa', gift: true, specialPrice: null, quote: null },
@@ -125,20 +128,55 @@ describe('validateSale', () => {
   })
 
   test('flags Debiendo with no customer', () => {
-    const errors = validateSale({ method: { kind: 'owing' }, hasCustomer: false, lines: [] })
+    const errors = validateSale({ ...NO_PAYMENT, payState: 'owing', hasCustomer: false, lines: [] })
     expect(errors).toEqual([
       { field: 'customer', message: 'To leave it owing, pick a customer' },
     ])
   })
 
   test('does not flag Debiendo once a customer is chosen', () => {
-    const errors = validateSale({ method: { kind: 'owing' }, hasCustomer: true, lines: [] })
+    const errors = validateSale({ ...NO_PAYMENT, payState: 'owing', hasCustomer: true, lines: [] })
     expect(errors).toEqual([])
   })
 
-  test('does not flag a method, with or without a customer', () => {
-    expect(validateSale({ method: { kind: 'method', id: 1 }, hasCustomer: false, lines: [] })).toEqual([])
-    expect(validateSale({ method: null, hasCustomer: false, lines: [] })).toEqual([])
+  test('does not flag a Paid sale with a method, or a sale with no state chosen', () => {
+    expect(validateSale({ payState: 'paid', method: 'cash', total: 500, hasCustomer: false, lines: [] })).toEqual([])
+    expect(validateSale({ ...NO_PAYMENT, hasCustomer: false, lines: [] })).toEqual([])
+  })
+
+  test('flags Paid above $0 with no method, on the method field', () => {
+    const errors = validateSale({ payState: 'paid', method: null, total: 500, hasCustomer: false, lines: [] })
+    expect(errors).toEqual([{ field: 'method' }])
+  })
+
+  test('a Paid sale of $0 needs no method', () => {
+    expect(validateSale({ payState: 'paid', method: null, total: 0, hasCustomer: false, lines: [] })).toEqual([])
+  })
+
+  test('a method held under Owing is not a missing method', () => {
+    expect(validateSale({ payState: 'owing', method: null, total: 500, hasCustomer: true, lines: [] })).toEqual([])
+  })
+})
+
+describe('paymentChoiceOf', () => {
+  test('Owing is owing, whatever method is still held', () => {
+    expect(paymentChoiceOf('owing', null, 500)).toBe('owing')
+    expect(paymentChoiceOf('owing', 'cash', 500)).toBe('owing')
+  })
+
+  test('Paid sends the chosen method', () => {
+    expect(paymentChoiceOf('paid', 'cash', 500)).toBe('cash')
+    expect(paymentChoiceOf('paid', 'transfer', 500)).toBe('transfer')
+  })
+
+  test('Paid with no method sends nothing (allowed only at $0)', () => {
+    expect(paymentChoiceOf('paid', null, 0)).toBeNull()
+    expect(paymentChoiceOf('paid', null, 500)).toBeNull()
+  })
+
+  test('no state chosen sends nothing, even with a method held', () => {
+    expect(paymentChoiceOf(null, null, 500)).toBeNull()
+    expect(paymentChoiceOf(null, 'transfer', 500)).toBeNull()
   })
 })
 

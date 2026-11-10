@@ -9,7 +9,7 @@
 
 import type { Page } from '@playwright/test'
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMERS, HOME, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
-import { expect, test } from './fixtures.js'
+import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { expectPath } from './helpers/url.js'
@@ -118,7 +118,7 @@ for (const viewport of VIEWPORTS) {
         await openFrom(page, origin)
 
         await page.getByLabel('Amount').fill('2000')
-        await page.getByRole('radio', { name: 'Cash' }).check()
+        await choosePaymentMethod(page, 'Cash')
         await page.getByRole('button', { name: 'Save' }).click()
 
         await expectPath(page, ORIGIN_PATH[origin])
@@ -131,7 +131,7 @@ for (const viewport of VIEWPORTS) {
         await openFrom(page, origin)
 
         await page.getByRole('button', { name: 'All: $ 5.000' }).click()
-        await page.getByRole('radio', { name: 'Transfer' }).check()
+        await choosePaymentMethod(page, 'Transfer')
         await page.getByRole('button', { name: 'Save' }).click()
 
         await expectPath(page, ORIGIN_PATH[origin])
@@ -143,7 +143,7 @@ for (const viewport of VIEWPORTS) {
         await makeDebtor(page)
         await openFrom(page, origin)
 
-        await page.getByRole('radio', { name: 'Cash' }).check()
+        await choosePaymentMethod(page, 'Cash')
         await page.getByRole('button', { name: 'Close' }).click()
         await expect(page.getByText('Discard the payment?')).toBeVisible()
         await page.getByRole('button', { name: 'No, keep entering' }).click()
@@ -273,7 +273,7 @@ for (const viewport of VIEWPORTS) {
           } else {
             const pays = how === 'partial' ? 2000 : owed
             await page.getByLabel('Amount').fill(String(pays))
-            await page.getByRole('radio', { name: 'Cash' }).check()
+            await choosePaymentMethod(page, 'Cash')
             await page.getByRole('button', { name: 'Save' }).click()
             owed -= pays
           }
@@ -315,7 +315,7 @@ test.describe('Record payment on a phone over a long breakdown', () => {
     await openFrom(page, 'card')
 
     await page.getByLabel('Amount').fill('13000')
-    await page.getByRole('radio', { name: 'Cash' }).check()
+    await choosePaymentMethod(page, 'Cash')
     const save = page.getByRole('button', { name: 'Save' })
     await save.scrollIntoViewIfNeeded()
     await expect(save).toBeInViewport()

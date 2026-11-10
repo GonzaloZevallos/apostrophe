@@ -28,7 +28,7 @@ class SqlSalesLedger:
         statement = (
             select(
                 SaleRow.id,
-                SaleRow.sale_date,
+                SaleRow.sold_on,
                 SaleRow.shipping_charged,
                 func.coalesce(line_totals.c.lines_total, 0),
             )

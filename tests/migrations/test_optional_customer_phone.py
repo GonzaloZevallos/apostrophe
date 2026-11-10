@@ -162,7 +162,7 @@ def test_the_unique_constraint_still_carries_its_name(tmp_path: Path) -> None:
 
     inspector = inspect(engine)
     assert [c["name"] for c in inspector.get_unique_constraints("customer")] == [
-        "uq_customer_business_phone"
+        "uq_customer_business_id_phone"
     ]
     engine.dispose()
 
@@ -174,13 +174,13 @@ def test_two_customers_with_no_phone_coexist_after_the_upgrade(tmp_path: Path) -
     with engine.begin() as connection:
         connection.execute(
             text(
-                "INSERT INTO customer (id, business_id, name, phone, vip) "
+                "INSERT INTO customer (id, business_id, name, phone, is_vip) "
                 "VALUES (1, 1, 'Primero', NULL, 0)"
             )
         )
         connection.execute(
             text(
-                "INSERT INTO customer (id, business_id, name, phone, vip) "
+                "INSERT INTO customer (id, business_id, name, phone, is_vip) "
                 "VALUES (2, 1, 'Segundo', NULL, 0)"
             )
         )
@@ -199,7 +199,7 @@ def test_downgrade_fails_loudly_on_a_null_phone(tmp_path: Path) -> None:
     with engine.begin() as connection:
         connection.execute(
             text(
-                "INSERT INTO customer (id, business_id, name, phone, vip) "
+                "INSERT INTO customer (id, business_id, name, phone, is_vip) "
                 "VALUES (1, 1, 'Sin Numero', NULL, 0)"
             )
         )

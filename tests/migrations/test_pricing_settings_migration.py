@@ -290,7 +290,7 @@ def test_a_raw_insert_without_a_vip_price_succeeds_and_reads_back_null(tmp_path:
 
     _exec(
         engine,
-        "INSERT INTO price_entry (id, business_id, variety_id, effective_from, list_price) "
+        "INSERT INTO price_entry (id, business_id, variety_id, effective_on, list_price) "
         "VALUES (1, 1, 1, '2026-01-01', 500)",
     )
 

@@ -9,14 +9,14 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import inspect, text
-from sqlalchemy.engine import Engine
+from sqlalchemy.engine import Connection, Engine
 
 from app.db import make_engine
 from app.migrations.runner import MIGRATIONS_ROOT
 
 NOW = "2026-01-01 12:00:00"
 INDEXES = {
-    "sale": "ix_sale_business_id_sale_date",
+    "sale": "ix_sale_business_id_sold_on",
     "sale_line": "ix_sale_line_sale_id",
     "payment": "ix_payment_sale_id",
 }
@@ -24,10 +24,16 @@ TABLES = ("sale", "sale_line", "payment")
 # `sale` is read by the columns it had at this revision: later revisions add some (0023's
 # `number`), and a `SELECT *` would fail on every one.
 SELECTED = {
-    "sale": "id, business_id, sale_date, customer_id, shipping_charged, note, recorded_at",
+    "sale": "id, business_id, {sale_date}, customer_id, shipping_charged, note, recorded_at",
     "sale_line": "*",
     "payment": "*",
 }
+
+
+def _sale_date_column(connection: Connection) -> str:
+    """The stored name of the sale date: `sale_date` before 0026, `sold_on` after."""
+    names = {column["name"] for column in inspect(connection).get_columns("sale")}
+    return "sold_on" if "sold_on" in names else "sale_date"
 
 
 def _migrate(engine: Engine, direction: str, revision: str) -> None:
@@ -126,7 +132,10 @@ def _rows(engine: Engine) -> dict[str, list[tuple[object, ...]]]:
             table: [
                 tuple(row)
                 for row in connection.execute(
-                    text(f"SELECT {SELECTED[table]} FROM {table} ORDER BY id")
+                    text(
+                        f"SELECT {SELECTED[table].format(sale_date=_sale_date_column(connection))} "
+                        f"FROM {table} ORDER BY id"
+                    )
                 )
             ]
             for table in TABLES
@@ -155,7 +164,7 @@ def _walk(engine: Engine) -> None:
         table: [index["column_names"] for index in inspect(engine).get_indexes(table)]
         for table in TABLES
     }
-    assert ["business_id", "sale_date"] in columns["sale"]
+    assert ["business_id", "sold_on"] in columns["sale"]
     assert ["sale_id"] in columns["sale_line"]
     assert ["sale_id"] in columns["payment"]
 

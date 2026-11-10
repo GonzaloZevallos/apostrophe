@@ -84,7 +84,7 @@ Criterios de éxito:
   - Sigue las mismas reglas que cualquier tipo: una vez sin Customers se puede eliminar, y desde entonces nadie recibe el VIP price.
   - El campo `vip` de un Customer en la API es la pertenencia al VIP type, sea cual sea el interruptor; las pantallas lo ocultan mientras está apagado.
   - En la lista de Sales, la insignia VIP de una Sale muestra si el Customer está hoy en el VIP type, no cómo se fijó el precio de esa Sale (sales.md).
-- **La marca VIP congelada** (`customer.vip`): se conserva con el valor que tenía, ya no se lee y nunca se vuelve a escribir para ningún Customer después de la actualización, por ningún camino (la API, la Spreadsheet import, la apertura de un Business). Un pedido que todavía manda `vip` se completa bien y el campo se ignora.
+- **La marca VIP congelada** (`customer.is_vip`): se conserva con el valor que tenía, ya no se lee y nunca se vuelve a escribir para ningún Customer después de la actualización, por ningún camino (la API, la Spreadsheet import, la apertura de un Business). Un pedido que todavía manda `vip` se completa bien y el campo se ignora.
 - **Phone number**: opcional, único dentro del Business entre los Customers que tienen uno, guardado en una sola forma internacional.
   - **Ninguno**: un valor faltante, `null`, o uno en blanco tras recortar significa que el Customer no tiene número. Se guarda como sin número, nunca como string vacío.
   - **Con `+` y un código de país distinto de 54**: un número extranjero. Se guarda como `+` y sus dígitos, y debe tener de 8 a 15 dígitos.
@@ -212,7 +212,7 @@ Criterios de éxito:
   - las Sales, las Price entries, los Balances y los Settlements registrados quedan sin cambios: 0 diferencias.
 - **Reglas de los tipos**: tests de la API cubren crear, renombrar y cambiar el ícono; el rechazo de un nombre en blanco, de más de 40 caracteres y repetido sin importar mayúsculas ni espacios (también al renombrar); el rechazo de un ícono desconocido; que un `is_vip` enviado se ignora; el rechazo de eliminar un tipo con Customers, que lleva la cantidad; y eliminar un tipo vacío, el VIP type incluido. Cada rechazo tiene su `code` en `contract.json`, verificado por `tests/test_refusal_codes.py`.
 - **Formulario del tipo**: los tests del front muestran que el tipo se elige, se cambia y se quita con "No type"; que el interruptor VIP ya no está; que "Add a customer type" aparece solo sin tipos y lleva a Settings → Prices → Customer types.
-- **La marca congelada**: después de la actualización, ningún camino de escritura (API, Spreadsheet import, apertura de un Business) cambia `customer.vip`, probado con un registro de sentencias que no encuentra ningún INSERT ni UPDATE que la nombre.
+- **La marca congelada**: después de la actualización, ningún camino de escritura (API, Spreadsheet import, apertura de un Business) cambia `customer.is_vip`, probado con un registro de sentencias que no encuentra ningún INSERT ni UPDATE que la nombre.
 - **Spreadsheet import y el VIP type**: tests del import cubren que los VIP de la planilla entran al VIP type existente aunque esté renombrado; que sin VIP type se crea uno; y que sin VIP type y con un tipo del vendedor llamado "VIP" (también " vip ") el import se detiene con su texto fijo y deja 0 filas nuevas en todas las tablas.
 - **Textos**: todo texto nuevo está en el Copy module, `en-XA` está regenerado, y ningún valor por defecto nuevo lleva una palabra de flor.
 - **Sin regresiones**: las suites existentes de customers, payments y navigation pasan sin aflojar ninguna aserción.

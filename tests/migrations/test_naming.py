@@ -39,19 +39,8 @@ from tests.migrations.naming import Break, Schema, breaks, reflect
 # of these; until then, a new break and a stale entry here both fail this test.
 ALLOWLIST: frozenset[Break] = frozenset(
     {
-        ("catalog_attributes", "column", ("shown",), "is_"),
-        ("customer", "column", ("vip",), "is_"),
-        ("customer", "unique", ("business_id", "phone"), "uq_name"),
         ("expense", "foreign_key", ("business_id", "category_id"), "fk_name"),
-        ("login_address_guard", "column", ("locked_until",), "_at"),
-        ("login_address_guard", "column", ("window_start",), "_at"),
-        ("login_address_guard", "primary_key", ("address_digest",), "pk_id"),
-        ("login_guard", "column", ("locked_until",), "_at"),
-        ("login_guard", "primary_key", ("email",), "pk_id"),
-        ("price_entry", "column", ("effective_from",), "_on"),
         ("reset_link", "foreign_key", ("user_id",), "fk_name"),
-        ("sale", "column", ("sale_date",), "_on"),
-        ("stock_entry", "column", ("entry_date",), "_on"),
     }
 )
 

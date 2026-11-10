@@ -460,15 +460,15 @@ def test_rows_parses_bool_date_and_naive_datetime_columns(tmp_path: Path) -> Non
         [customer_row] = rows.rows("customer", business.id)
         assert customer_row["id"] == customer["id"]
         # The frozen mark is read back as a bool and never written: it stays False.
-        assert type(customer_row["vip"]) is bool
-        assert customer_row["vip"] is False
+        assert type(customer_row["is_vip"]) is bool
+        assert customer_row["is_vip"] is False
         [settings_row] = rows.rows("pricing_settings", business.id)
         assert settings_row["is_vip_customers"] is True
 
         [entry_row] = rows.rows("stock_entry", business.id)
         assert entry_row["id"] == entry["id"]
-        assert type(entry_row["entry_date"]) is date
-        assert entry_row["entry_date"] == date(2026, 1, 1)
+        assert type(entry_row["entered_on"]) is date
+        assert entry_row["entered_on"] == date(2026, 1, 1)
 
         recorded_at = entry_row["recorded_at"]
         assert type(recorded_at) is datetime

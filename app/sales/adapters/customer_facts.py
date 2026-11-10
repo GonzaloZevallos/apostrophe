@@ -1,6 +1,6 @@
 """`CustomerFacts` for one business (docs/adr/0004): a customer of another business reads
 back as none. Whether a customer is VIP is membership in the business's VIP type
-(docs/adr/0070), asked once through `SqlVipType`; the frozen `customer.vip` is not read."""
+(docs/adr/0070), asked once through `SqlVipType`; the frozen `customer.is_vip` is not read."""
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session

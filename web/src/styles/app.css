@@ -224,6 +224,13 @@ body {
   color: var(--deuda);
 }
 
+/* A field's own refusal (`FieldRefusal`): the Attention icon beside the sentence. */
+.campo__error:has(> .aviso-ambar__icono) {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-xs);
+}
+
 /* The customer form's focus state (`NuevaVentaCliente.dc.html`): a heavy inset ring on
  * the focused field. Only `CustomerFields` carries the class; the outline stays (made
  * transparent, so forced-colors still draws it) and is never removed. */
@@ -544,7 +551,8 @@ body {
   padding-bottom: 2px;
 }
 
-/* The "‹ parent" arrow a card shows above its own header (`navigation.md`, "Chrome and back"). */
+/* The "‹ parent" arrow a card shows above its own header (`navigation.md`,
+   "Marco y camino de vuelta"). */
 .flecha-atras {
   display: flex;
   padding: var(--espacio-md) var(--margen-pantalla) 0;
@@ -1799,6 +1807,8 @@ body {
   font-size: 14px;
   text-align: center;
   cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .selector-pago__nombre {
@@ -2404,6 +2414,11 @@ body {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+}
+
+.nueva-venta__agregar,
+.nueva-venta__lista {
+  display: contents;
 }
 
 .nueva-venta__disposicion {
@@ -3962,6 +3977,48 @@ body {
   letter-spacing: -0.03em;
   margin: var(--espacio-xs) 0 0;
 }
+/* "Forgot your password?" (GH-521): right-aligned under the password, a 44 px target at least 8 px
+ * from Show and from Sign in (the form's 14 px gap, no margin of its own), a tap and never a zoom or
+ * a selection. */
+.auth-page__olvido {
+  align-self: flex-end;
+}
+
+.auth-page__olvido .boton--enlace {
+  min-height: var(--alto-tocable);
+  min-width: var(--alto-tocable);
+  padding-inline: var(--espacio-sm);
+  box-shadow: none;
+  font-size: 14px;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.auth-page__olvido .boton--enlace:active {
+  opacity: 0.6;
+}
+
+/* Sign in's own form only: the other getting-in screens render as before. */
+.formulario--entrar .boton,
+.formulario--entrar .campo__mostrar .boton--enlace {
+  touch-action: manipulation;
+  user-select: none;
+}
+
+/* The Forgot sheet's paragraphs: plain text in the ink colour, nothing else. */
+.olvido {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-lg);
+  font-size: 16px;
+  color: var(--tinta);
+}
+
+.olvido p {
+  margin: 0;
+}
+
 /* ===== end auth-layout ===== */
 
 /* A variety's page (VariedadDetalle.dc.html): one summary line, two equal actions and the
@@ -4694,6 +4751,7 @@ body {
   /* "Agregar otra variedad" and a line's "Quitar": the link buttons of this screen's
    * body and lines, at least 44 px tall. */
   .nueva-venta__cuerpo > .boton--enlace,
+  .nueva-venta__agregar > .boton--enlace,
   .nueva-venta__linea .boton--enlace {
     display: flex;
     align-items: center;
@@ -4762,6 +4820,7 @@ body {
  * items) keep their own height, and the body scrolls. */
 @media (max-width: 899.98px) {
   .nueva-venta__cuerpo > *,
+  .nueva-venta__agregar > *,
   .nueva-venta__resumen > * {
     flex-shrink: 0;
   }
@@ -5909,25 +5968,11 @@ body {
   opacity: 0;
 }
 
-/* The method: the picker on the form's own surface, the chosen one on paper. */
+/* The method: the Payment method Selector and, under it, its refusal. */
 .cobro__metodo {
   display: flex;
   flex-direction: column;
   gap: var(--espacio-xs);
-}
-
-.cobro__metodo > .selector-pago {
-  background: var(--superficie);
-}
-
-.cobro__metodo .selector-pago__opcion {
-  touch-action: manipulation;
-  font-size: 15px;
-}
-
-.cobro__metodo .selector-pago__opcion--activa,
-.cobro__metodo .selector-pago__esqueleto {
-  background: var(--papel);
 }
 
 .cobro__resumen {

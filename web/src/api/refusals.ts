@@ -5,10 +5,11 @@
  * rename on either side fails a check instead of quietly falling back here.
  */
 
-import enRefusals from '../copy/locales/en/refusals.json' with { type: 'json' }
-import refusalKeys from '../copy/refusalKeys.json' with { type: 'json' }
-import { buildRefusalKeys, type Refusal, type RefusalKey } from '../i18n/refusalKeys.ts'
+import type { Refusal, RefusalKey } from '../i18n/refusalKeys.ts'
+import { isRefusalCode, REFUSAL_KEY } from '../i18n/refusalTable.ts'
 import contract from './contract.json' with { type: 'json' }
+
+export { REFUSAL_KEY }
 
 export type RefusalKind = 'refusal' | 'gone'
 
@@ -22,19 +23,6 @@ export type RefusalCode = keyof (typeof contract)['refusalCodes']
 // needs this assertion. `RefusalCode` above is derived before this cast and is never
 // itself widened: it stays exactly contract.json's own set of keys.
 const refusalCodes = contract.refusalCodes as Record<RefusalCode, { kind: RefusalKind }>
-
-function isRefusalCode(code: string): code is RefusalCode {
-  return code in refusalCodes
-}
-
-/** The key of every code in `copy/refusalKeys.json`, the one hand-kept code-to-key table:
- * built at import, so a code with no key, or a key `locales/en/refusals.json` lacks, stops the
- * app at load instead of showing the wrong words. */
-export const REFUSAL_KEY: Record<RefusalCode, RefusalKey> = buildRefusalKeys(
-  refusalKeys,
-  enRefusals,
-  Object.keys(refusalCodes).filter(isRefusalCode),
-)
 
 /** Shown after a save or a delete lands on a record that is gone (plan, "Gone
  * records"): no id, name, date or amount, so it reads the same whatever was

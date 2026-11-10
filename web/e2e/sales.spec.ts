@@ -50,7 +50,7 @@
 import { CUSTOMERS, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expectToast } from './helpers/toast.js'
-import { expect, test, withToastRecorder } from './fixtures.js'
+import { choosePaymentMethod, expect, test, withToastRecorder } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { setPriceDate } from './helpers/priceDate.js'
 import { watchConsole } from './console.js'
@@ -201,7 +201,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   // Choosing a customer turns Debiendo back on; Efectivo is used here instead.
   await expect(page.getByRole('radio', { name: 'Owing' })).toBeEnabled()
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await page.getByRole('radio', { name: 'Paid' }).check(); await choosePaymentMethod(page, 'Cash')
 
   // The live preview, before saving — every line, not only the sale's own total:
   // PRD metric 2, "0 differences" against what the detail shows after saving.
@@ -213,7 +213,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(previewJazmin.getByText('$ 500 x g', { exact: true })).toBeVisible()
   await expect(previewJazmin.getByText('$ 5.000', { exact: true })).toBeVisible()
 
-  const previewLirio = page.locator('.nueva-venta__linea--abierta').filter({ has: page.getByLabel('Line 2 product') })
+  const previewLirio = page.locator('.nueva-venta__linea--abierta').filter({ has: page.getByRole('button', { name: /^Line 2 product/ }) })
   await expect(previewLirio.locator('.insignia')).toHaveText('list')
   await expect(previewLirio.getByText('$ 300 x g', { exact: true })).toBeVisible()
   await expect(previewLirio.getByText('$ 6.000', { exact: true })).toBeVisible()
@@ -277,7 +277,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await page.goto(SALES)
   await page.getByRole('link', { name: 'New sale' }).last().click()
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '2' })
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await page.getByRole('radio', { name: 'Paid' }).check(); await choosePaymentMethod(page, 'Cash')
   await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()

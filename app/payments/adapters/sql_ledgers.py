@@ -108,7 +108,7 @@ class SqlLedgers:
             sales_by_customer.setdefault(sale.customer_id, []).append(
                 OwedSale(
                     id=sale.id,
-                    date=sale.sale_date,
+                    date=sale.sold_on,
                     recorded_at=sale.recorded_at,
                     total=total,
                     on_the_spot_method=on_the_spot_methods.get(sale.id),

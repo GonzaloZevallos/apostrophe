@@ -9,11 +9,15 @@ used, so the two screens can no longer disagree."""
 
 from __future__ import annotations
 
+from fractions import Fraction
+
+from app.shared.money import round_half_up_to_units
+
 
 def average_sale(total: int, count: int) -> int | None:
     """`None` when `count` is 0 (PRD: "Average sale shows nothing when the period has
-    no sales"), otherwise `total / count` rounded half up to the whole peso, via
-    integer arithmetic only: `(2*total + count) // (2*count)`."""
+    no sales"), otherwise `total / count` rounded half up to the whole peso
+    through `round_half_up_to_units`."""
     if count == 0:
         return None
-    return (2 * total + count) // (2 * count)
+    return round_half_up_to_units(Fraction(total, count))

@@ -13,6 +13,7 @@ import {
   CUSTOMER_TYPE_ICON_SET,
   FIXED_SETS,
   HOME_PERIODS,
+  PAYMENT_STATES,
   SALES_PERIODS,
   STOCK_ENTRY_ORIGINS,
   THEME_CHOICES,
@@ -60,6 +61,16 @@ test('the Stock entry origins are Purchase, Harvest, Initial stock, Adjustment i
   expect(STOCK_ENTRY_ORIGINS.every((option) => option.icon === undefined)).toBe(true)
 })
 
+test('the payment states are Paid and Owing, and never a method', () => {
+  expect(values(PAYMENT_STATES)).toEqual(['paid', 'owing'])
+  expect(labels(PAYMENT_STATES)).toEqual(['Paid', 'Owing'])
+  const everyValue = Object.values(registry).flatMap((set) =>
+    Array.isArray(set) ? values(set as readonly FixedOption<string>[]) : [],
+  )
+  expect(everyValue).not.toContain('cash')
+  expect(everyValue).not.toContain('transfer')
+})
+
 test('the customer-type icons keep their order, glyphs and accessible names', () => {
   expect(values(CUSTOMER_TYPE_ICON_SET)).toEqual([
     'circle', 'star', 'heart', 'diamond', 'flag', 'tag', 'crown', 'bell',
@@ -92,6 +103,7 @@ test('FIXED_SETS gives every exported set a non-empty reason, and names nothing 
     THEME_CHOICES: 'fixed set: theme choice',
     CUSTOMER_TYPE_ICON_SET: 'fixed set: the neutral icon set ships with the app',
     STOCK_ENTRY_ORIGINS: 'fixed set: Stock entry origins',
+    PAYMENT_STATES: 'fixed set: payment state, which is not a method',
   })
 })
 

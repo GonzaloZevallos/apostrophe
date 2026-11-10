@@ -67,6 +67,7 @@
     "web/e2e/passwords.spec.ts",
     "web/e2e/pressed.spec.ts",
     "web/e2e/settings.spec.ts",
+    "web/e2e/signIn.spec.ts",
     "web/e2e/theme.spec.ts"
   ],
   "EntriesList": [
@@ -99,6 +100,12 @@
     "web/e2e/tapBudget.spec.ts",
     "web/e2e/toastRecorder.spec.ts",
     "web/e2e/withdrawals.spec.ts"
+  ],
+  "ForgotSheet": [
+    "web/e2e/flow.spec.ts",
+    "web/e2e/insets.spec.ts",
+    "web/e2e/navigation.spec.ts",
+    "web/e2e/signIn.spec.ts"
   ],
   "Invitacion": [
     "web/e2e/firstRun.spec.ts",

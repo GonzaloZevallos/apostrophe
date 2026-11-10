@@ -1,112 +1,106 @@
 /**
- * `SelectorPago` at the component seam: a `role="radiogroup"` named "Payment method" with one
- * `role="radio"` chip per active method of the business (read from `GET /payment-methods`),
- * then the "Owing" chip. Roles and accessible names are what a native radio group gives.
+ * `SelectorPago` at the component seam: the fixed Paid · Owing choice and, under Paid only, the
+ * required Payment method Selector. Owing keeps its native `disabled` and its description when
+ * there is no Customer (PM, adjustment 2 of the original swap), so `toBeDisabled()` still reads it.
  */
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, beforeEach, expect, test, vi } from 'vitest'
-import { paymentMethodsResponse } from '../test/paymentMethods'
-import type { PaymentChoice } from '../sales/pricing'
-import SelectorPago from './SelectorPago'
+import { useState } from 'react'
+import { beforeEach, expect, test, vi } from 'vitest'
+import type { PayState } from '../sales/pricing'
+import type { PaymentMethod } from '../api/payments'
+import { stubViewport } from '../test-viewport'
+import SelectorPago, { type SelectorPagoProps } from './SelectorPago'
+import { renderForm } from './selectorTestKit'
 
-type Props = Partial<React.ComponentProps<typeof SelectorPago>>
+beforeEach(() => stubViewport('computer'))
 
-function renderSelector(props: Props = {}, list: unknown = undefined) {
-  vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(list === undefined ? paymentMethodsResponse() : paymentMethodsResponse(list))))
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <SelectorPago value={null} onChange={() => {}} {...props} />
-    </QueryClientProvider>,
+function Harness(props: Partial<SelectorPagoProps> & { initial?: PayState | null }) {
+  const [payState, setPayState] = useState<PayState | null>(props.initial ?? null)
+  const [method, setMethod] = useState<PaymentMethod | null>(null)
+  return (
+    <SelectorPago
+      payState={payState}
+      onPayState={setPayState}
+      method={method}
+      onMethod={setMethod}
+      {...props}
+    />
   )
 }
 
-beforeEach(() => {
-  vi.unstubAllGlobals()
+test('Paid · Owing is a radiogroup of exactly two radios, with none checked', () => {
+  renderForm(<Harness />)
+  expect(screen.getByRole('radiogroup', { name: 'How it was paid' })).toBeInTheDocument()
+  expect(screen.getAllByRole('radio').map((radio) => radio.textContent)).toEqual(['Paid', 'Owing'])
+  for (const radio of screen.getAllByRole('radio')) expect(radio).toHaveAttribute('aria-checked', 'false')
 })
 
-afterEach(() => {
-  vi.unstubAllGlobals()
-})
-
-test('while the methods load, the group is a busy progress bar named "Loading payment methods"', () => {
-  renderSelector()
-  const loading = screen.getByRole('progressbar', { name: 'Loading payment methods' })
-  expect(loading).toHaveAttribute('aria-busy', 'true')
-  expect(screen.queryByRole('radio')).not.toBeInTheDocument()
-})
-
-test('is a radiogroup named "Payment method": one radio per method in the seller\'s order, then Owing', async () => {
-  renderSelector()
-  expect(await screen.findByRole('radiogroup', { name: 'Payment method' })).toBeInTheDocument()
-  const names = screen.getAllByRole('radio').map((radio) => radio.textContent)
-  expect(names).toEqual(['Cash', 'Transfer', 'Mercado Pago', 'Owing'])
-  expect(screen.getByRole('radio', { name: 'Mercado Pago' })).toBeInTheDocument()
-})
-
-test('Record payment passes allowOwing={false}: no Owing chip', async () => {
-  renderSelector({ allowOwing: false })
-  await screen.findByRole('radio', { name: 'Cash' })
-  expect(screen.queryByRole('radio', { name: 'Owing' })).not.toBeInTheDocument()
-})
-
-test('allows no selection: none of the chips is checked', async () => {
-  renderSelector()
-  await screen.findByRole('radio', { name: 'Cash' })
-  for (const radio of screen.getAllByRole('radio')) {
-    expect(radio).toHaveAttribute('aria-checked', 'false')
-  }
-})
-
-test('marks the chosen method checked, and only that one, with a check mark beside its name', async () => {
-  const value: PaymentChoice = { kind: 'method', id: 1 }
-  renderSelector({ value })
-  const cash = await screen.findByRole('radio', { name: 'Cash' })
-  expect(cash).toHaveAttribute('aria-checked', 'true')
-  expect(screen.getByRole('radio', { name: 'Transfer' })).toHaveAttribute('aria-checked', 'false')
-  expect(screen.getByRole('radio', { name: 'Owing' })).toHaveAttribute('aria-checked', 'false')
-  expect(cash.querySelectorAll('svg')).toHaveLength(2)
-  expect(screen.getByRole('radio', { name: 'Transfer' }).querySelectorAll('svg')).toHaveLength(1)
-})
-
-test('marks Owing checked when it is the choice', async () => {
-  renderSelector({ value: { kind: 'owing' } })
-  expect(await screen.findByRole('radio', { name: 'Owing' })).toHaveAttribute('aria-checked', 'true')
-  expect(screen.getByRole('radio', { name: 'Cash' })).toHaveAttribute('aria-checked', 'false')
-})
-
-test('a method the seller renamed shows the name the list carries, whole', async () => {
-  renderSelector({}, [{ id: 7, name: 'Billetera de la abuela Rosa', icon: 'wallet', position: 1, is_used: false }])
-  expect(await screen.findByRole('radio', { name: 'Billetera de la abuela Rosa' })).toBeInTheDocument()
-})
-
-test('a disabled Owing carries the caller\'s description as its accessible description', async () => {
-  renderSelector({ owingDisabled: true, owingDescription: 'Pick a customer to leave it owing' })
-  const owing = await screen.findByRole('radio', { name: 'Owing' })
-  expect(owing).toBeDisabled()
-  expect(screen.getByText('Pick a customer to leave it owing')).toBeInTheDocument()
-  const describedBy = owing.getAttribute('aria-describedby')
-  expect(describedBy).not.toBeNull()
-  expect(document.getElementById(describedBy as string)?.textContent).toBe('Pick a customer to leave it owing')
-})
-
-test('a disabled Owing never fires onChange', async () => {
-  const onChange = vi.fn()
-  renderSelector({ onChange, owingDisabled: true, owingDescription: 'x' })
-  const owing = await screen.findByRole('radio', { name: 'Owing' })
-  owing.click()
-  expect(onChange).not.toHaveBeenCalled()
-})
-
-test('clicking a method fires onChange with its id, and Owing with the owing choice', async () => {
+test('no Payment method field shows until Paid is chosen, and none shows under Owing', async () => {
   const user = userEvent.setup()
-  const onChange = vi.fn()
-  renderSelector({ onChange })
-  await user.click(await screen.findByRole('radio', { name: 'Transfer' }))
-  expect(onChange).toHaveBeenCalledWith({ kind: 'method', id: 2 })
+  renderForm(<Harness owingDescription="Pick a customer" />)
+  expect(screen.queryByRole('button', { name: /^Payment method/ })).toBeNull()
   await user.click(screen.getByRole('radio', { name: 'Owing' }))
-  expect(onChange).toHaveBeenCalledWith({ kind: 'owing' })
+  expect(screen.queryByRole('button', { name: /^Payment method/ })).toBeNull()
+  await user.click(screen.getByRole('radio', { name: 'Paid' }))
+  expect(screen.getByRole('button', { name: /^Payment method/ })).toBeInTheDocument()
+})
+
+test('the method is a Selector with Cash and Transfer, no clearing row, and no radio or pressed button holds them', async () => {
+  const user = userEvent.setup()
+  renderForm(<Harness initial="paid" />)
+  expect(screen.queryByRole('radio', { name: 'Cash' })).toBeNull()
+  expect(screen.queryByRole('radio', { name: 'Transfer' })).toBeNull()
+  expect(document.querySelector('[aria-pressed]')).toBeNull()
+  await user.click(screen.getByRole('button', { name: /^Payment method/ }))
+  expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual(['Cash', 'Transfer'])
+})
+
+test('choosing a method in the list reports it', async () => {
+  const user = userEvent.setup()
+  const onMethod = vi.fn()
+  renderForm(<Harness initial="paid" onMethod={onMethod} />)
+  await user.click(screen.getByRole('button', { name: /^Payment method/ }))
+  await user.click(screen.getByRole('option', { name: 'Cash' }))
+  expect(onMethod).toHaveBeenCalledWith('cash')
+})
+
+test('a disabled Owing carries the caller\'s description as its accessible description', () => {
+  renderForm(<Harness owingDisabled owingDescription="Para dejar debiendo elegí un cliente" />)
+  const owing = screen.getByRole('radio', { name: 'Owing' })
+  expect(owing).toBeDisabled()
+  expect(owing).toHaveAccessibleDescription('Para dejar debiendo elegí un cliente')
+  expect(screen.getByRole('radio', { name: 'Paid' })).toBeEnabled()
+})
+
+test('a disabled Owing never fires onPayState', async () => {
+  const user = userEvent.setup()
+  const onPayState = vi.fn()
+  renderForm(<Harness owingDisabled owingDescription="x" onPayState={onPayState} />)
+  await user.click(screen.getByRole('radio', { name: 'Owing' }))
+  expect(onPayState).not.toHaveBeenCalled()
+})
+
+test('clicking Paid fires onPayState with paid', async () => {
+  const user = userEvent.setup()
+  const onPayState = vi.fn()
+  renderForm(<Harness onPayState={onPayState} />)
+  await user.click(screen.getByRole('radio', { name: 'Paid' }))
+  expect(onPayState).toHaveBeenCalledWith('paid')
+})
+
+test('the refusal shows at the method field with the sentence, linked to the field', () => {
+  renderForm(<Harness initial="paid" methodRefused />)
+  const alert = screen.getByRole('alert')
+  expect(alert).toHaveTextContent('Choose how they paid.')
+  expect(alert.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expect(screen.getByRole('button', { name: /^Payment method/ })).toHaveAccessibleDescription(
+    'Choose how they paid.',
+  )
+})
+
+test('no refusal shows when the method is not refused', () => {
+  renderForm(<Harness initial="paid" />)
+  expect(screen.queryByRole('alert')).toBeNull()
 })

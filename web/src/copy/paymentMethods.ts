@@ -34,6 +34,8 @@ export const PAYMENT_METHODS_TEXT = {
   methodGroupLabel: 'Payment method',
   /** The accessible name of the placeholder while the list loads. */
   methodsLoading: 'Loading payment methods',
+  /** The picker's empty-set message: a business always keeps one active method, so it is a fallback. */
+  methodsEmpty: 'No payment methods yet. Add one in Settings.',
   /** The notice after a save was refused for a method that is gone. */
   errorMethodUnavailable: "That payment method isn't available any more. Pick another one.",
 

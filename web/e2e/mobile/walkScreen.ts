@@ -6,6 +6,7 @@
  * matches, since no kind says which chrome it owes.
  */
 
+import type { Bundle } from '../../src/i18n/resolve.ts'
 import { LOGIN } from '../../src/routes.ts'
 import type { Page } from '@playwright/test'
 import { expectationFor } from '../../src/mobile-standard/chrome.ts'
@@ -27,6 +28,7 @@ export async function walkScreen(
   cell: CellId,
   held: boolean,
   facts: Facts,
+  bundle: Bundle,
 ): Promise<Violation[]> {
   const found: Violation[] = []
   const hold = held ? await holdApi(page.context()) : null
@@ -49,7 +51,7 @@ export async function walkScreen(
     }
     if (hold !== null && fetched) found.push(...(await collect(page, 'released', cell)))
     if (hold === null) {
-      if (!(await runSteps(page, screen, facts))) return [pageViolation(cell, 'unreachable')]
+      if (!(await runSteps(page, screen, facts, bundle))) return [pageViolation(cell, 'unreachable')]
       found.push(...(await collect(page, 'loaded', cell)))
       // The kind is read where the steps left the page: a sheet keeps its screen's path, a form route has its own row.
       const expectation = expectationFor(screen.signedOut, new URL(page.url()).pathname, ROUTE_REGISTRY)
@@ -72,12 +74,13 @@ export async function walkState(
   state: WalkState,
   cell: CellId,
   facts: Facts,
+  bundle: Bundle,
 ): Promise<Violation[]> {
   const context = page.context()
   const undoWrites = await guardWrites(context, state.writes ?? [])
   const undoReads = await stubReads(context, state.reads ?? [])
   try {
-    return await walkScreen(page, asScreen(state), cell, false, facts)
+    return await walkScreen(page, asScreen(state), cell, false, facts, bundle)
   } finally {
     await undoReads()
     await undoWrites()

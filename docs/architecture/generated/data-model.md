@@ -17,11 +17,11 @@ erDiagram
     VARCHAR(35) language
     INTEGER last_sale_number
   }
-  catalog_attributes {
+  catalog_attribute {
     INTEGER id PK
     INTEGER business_id FK
     INTEGER variety_id FK
-    BOOLEAN shown
+    BOOLEAN is_shown
     VARCHAR(64) emoji "nullable"
     INTEGER indica_share "nullable"
     VARCHAR(200) aroma "nullable"
@@ -37,7 +37,7 @@ erDiagram
     INTEGER business_id FK
     VARCHAR(60) name
     VARCHAR(16) phone "nullable"
-    BOOLEAN vip
+    BOOLEAN is_vip
     INTEGER customer_type_id FK "nullable"
   }
   customer_type {
@@ -79,15 +79,17 @@ erDiagram
     DATETIME used_at "nullable"
   }
   login_address_guard {
-    VARCHAR(64) address_digest PK
+    INTEGER id PK
+    VARCHAR(64) address_digest UK
     INTEGER failures
-    DATETIME window_start
-    DATETIME locked_until "nullable"
+    DATETIME window_started_at
+    DATETIME unlocks_at "nullable"
   }
   login_guard {
-    VARCHAR(254) email PK
+    INTEGER id PK
+    VARCHAR(254) email UK
     INTEGER failures
-    DATETIME locked_until "nullable"
+    DATETIME unlocks_at "nullable"
   }
   money_format {
     INTEGER id PK
@@ -146,7 +148,7 @@ erDiagram
     INTEGER id PK
     INTEGER business_id FK
     INTEGER variety_id FK
-    DATE effective_from
+    DATE effective_on
     INTEGER list_price
     INTEGER bulk_price "nullable"
     INTEGER bulk_minimum_hundredths "nullable"
@@ -169,7 +171,7 @@ erDiagram
     INTEGER id PK
     INTEGER business_id FK
     INTEGER number
-    DATE sale_date
+    DATE sold_on
     INTEGER customer_id FK "nullable"
     INTEGER shipping_charged
     VARCHAR(200) note "nullable"
@@ -189,7 +191,7 @@ erDiagram
   stock_entry {
     INTEGER id PK
     INTEGER business_id FK
-    DATE entry_date
+    DATE entered_on
     INTEGER variety_id FK
     VARCHAR(20) origin
     INTEGER grams_hundredths
@@ -236,7 +238,7 @@ erDiagram
   }
   app_user ||--o| reset_link : user_id
   business ||--o{ app_user : business_id
-  business ||--o{ catalog_attributes : business_id
+  business ||--o{ catalog_attribute : business_id
   business ||--o{ customer : business_id
   business ||--o{ customer_type : business_id
   business ||--o{ expense : business_id
@@ -270,7 +272,7 @@ erDiagram
   sale ||--o{ payment : sale_id
   sale ||--o{ sale_line : sale_id
   stock_withdrawal ||--o{ stock_withdrawal_line : stock_withdrawal_id
-  variety ||--o{ catalog_attributes : variety_id
+  variety ||--o{ catalog_attribute : variety_id
   variety ||--o{ price_entry : variety_id
   variety ||--o{ sale_line : variety_id
   variety ||--o{ stock_entry : variety_id

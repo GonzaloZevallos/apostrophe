@@ -4,7 +4,8 @@
  * prices, and shows no badge or mark for a rule that is off. Testing Library, `fetch` faked.
  */
 
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { pickProduct, productField } from './lineProduct'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import App from '../../App'
@@ -61,9 +62,8 @@ async function openFor(handlers: Record<string, () => Response>): Promise<Return
 async function line(grams: string) {
   const user = userEvent.setup()
   // The varieties arrive after the form mounts: wait until the line can offer them.
-  const picker = await screen.findByLabelText('Line 1 product')
-  await waitFor(() => expect(within(picker).getAllByRole('option').length).toBeGreaterThan(1))
-  await user.selectOptions(picker, '3')
+  await waitFor(() => expect(productField(1)).toBeEnabled())
+  await pickProduct(user, 1, 'Jazmín')
   await user.type(screen.getByLabelText('Line 1 grams'), grams)
 }
 

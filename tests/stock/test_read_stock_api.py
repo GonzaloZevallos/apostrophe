@@ -338,3 +338,27 @@ def test_entries_sort_by_date_then_recorded_at_then_id_newest_first(
     assert [entry["id"] for entry in stock["entries"]] == [b, c, f, e, a, archived_entry]
     assert stock["total"] == 35.0
     assert [row["product_id"] for row in stock["products"]] == [kept]
+
+
+def test_a_backdated_entry_keeps_its_own_date_and_sorts_by_it_in_stock(
+    client: TestClient,
+) -> None:
+    # Dates differ from each other and from the clock's today (2026-10-02). The later-dated
+    # purchase is recorded first, so recording order and entry date disagree.
+    later, earlier = "2026-09-20", "2026-08-10"
+    variety_id = _priced_variety_id(client)
+    later_entry = _record(
+        client, variety_id, origin="purchase", quantity="10", total_cost=5_000, date=later
+    )
+    earlier_entry = _record(
+        client, variety_id, origin="purchase", quantity="10", total_cost=1_000, date=earlier
+    )
+    _sale(client, variety_id, "4", date="2026-09-05")
+
+    stock = client.get("/stock").json()
+
+    assert _variety_row(stock, variety_id)["quantity"] == 16.0
+    assert [(entry["id"], entry["date"]) for entry in stock["entries"]] == [
+        (later_entry["id"], later),
+        (earlier_entry["id"], earlier),
+    ]

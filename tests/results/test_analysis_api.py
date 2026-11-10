@@ -119,6 +119,41 @@ def test_a_purchase_is_its_own_line_never_inside_expenses(client: TestClient) ->
     assert analysis["month_expenses"]["total"] == 0
 
 
+def test_a_sale_costs_from_the_lot_with_the_earliest_entry_date_not_the_first_recorded(
+    client: TestClient,
+) -> None:
+    # D1 < sale date < D2, all different from the clock's today (2026-10-02). The D2 lot is
+    # recorded first and at a dearer cost per gram; only the entry date puts D1 first in
+    # Lot order, so 4 g of the sale cost 4 x 100 and not 4 x 500.
+    variety_id = _variety_with_price(client, "Flor", 1_000)
+    for entry_date, total_cost in (("2026-09-20", 5_000), ("2026-08-10", 1_000)):
+        recorded = client.post(
+            "/stock/entries",
+            json={
+                "product_id": variety_id,
+                "origin": "purchase",
+                "quantity": "10",
+                "total_cost": total_cost,
+                "date": entry_date,
+            },
+        )
+        assert recorded.status_code == 201, recorded.text
+    sale = client.post(
+        "/sales",
+        json={
+            "date": "2026-09-05",
+            "payment": "cash",
+            "lines": [{"product_id": variety_id, "quantity": "4"}],
+        },
+    )
+    assert sale.status_code == 201, sale.text
+
+    september = client.get("/analysis", params={"month": "2026-09"}).json()
+
+    [product] = september["month"]["products"]
+    assert product["cost"]["costed"] == 400
+
+
 def test_a_backdated_stock_entry_moves_only_the_affected_week_month_and_variety(
     client: TestClient,
 ) -> None:

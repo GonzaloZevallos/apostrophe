@@ -9,6 +9,7 @@ flowchart LR
 subgraph src["src"]
   subgraph src_sales["sales"]
     src_sales_grams_ts["grams.ts"]
+    src_sales_paymentMethods_ts["paymentMethods.ts"]
     src_sales_pricing_ts["pricing.ts"]
     src_sales_saleBill_ts["saleBill.ts"]
   end
