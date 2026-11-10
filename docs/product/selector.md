@@ -128,7 +128,7 @@ La parte 7 no agrega ni cambia ningún texto que vea el usuario.
 
 Desde la parte 7 de GH-581, la guarda de `web/src/architecture/choiceControls.ts` (con su prueba) aplica dos reglas en los `.tsx` del producto, sin contar las pruebas. Cada una falla cerrada y nombra `archivo:línea`:
 
-1. `role="radio"`, `role="tab"`, `aria-pressed` y las clases de chip `pildora` y `selector-pago__opcion` aparecen solo en `SegmentedChoice.tsx`, en `Pestanas.tsx` y en los sitios crudos registrados en `fixedSets.ts` (`RAW_CHIP_SITES`: archivo, nombre del conjunto y motivo). En un sitio crudo, el identificador que se recorre para dibujar esos controles se importa de `fixedSets`.
+1. `role="radio"`, `role="tab"`, `aria-pressed` y las clases de chip `pildora`, `selector-pago__opcion` y `ajustes-tema__opcion` (cada una con sus modificadores), y un `role={…}` cuyo valor no se puede leer o puede ser `radio` o `tab`, aparecen solo en `SegmentedChoice.tsx`, en `Pestanas.tsx` y en los sitios crudos registrados en `fixedSets.ts` (`RAW_CHIP_SITES`: archivo, nombre del conjunto y motivo). En un sitio crudo, cada uno queda dentro de un `.map` cuyo receptor es el conjunto registrado para ese archivo, importado de `fixedSets` (o un `.filter` directo de él); un arreglo local, un spread, una prop o el resultado de una llamada fallan.
 2. No hay ningún `<select>` nativo en los fuentes del producto.
 
 Los sitios crudos registrados son `AppearanceGroup` (Theme choice), `BusinessGroup` (idioma), `CustomerTypeForm` (íconos del Customer type) y `StockEntryForm` (orígenes y signo de la Stock entry). Cada uno lee su tupla del registro.

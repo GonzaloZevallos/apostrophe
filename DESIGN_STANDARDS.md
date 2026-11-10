@@ -52,6 +52,16 @@ The owner's fourth criterion: the app never hard-codes one business's way of wor
 - It works alongside "Drawing as guide" and does not reopen it.
 - Test: Would this still be right for a business that sells something else, in other units, other ways? If not, it is a finding.
 
+## Choosing from a set
+
+How a screen lets the owner pick from a set of options. The Selector is the control for every set that can grow (`docs/product/selector.md`); chips are the exception.
+
+- A Growable set (options read from the business's data or settings) is always chosen with the Selector, whatever its size. Two options is not an exception.
+- Chips and segmented buttons are only for Fixed sets declared in `web/src/components/fixedSets.ts` with a reason. A control that draws chips takes a `FixedSet`; it never maps business data or settings.
+- The guard in `web/src/architecture/choiceControls.ts` fails, naming `file:line`, on a chip class, `role="radio"`, `role="tab"` or `aria-pressed` outside `SegmentedChoice`, `Pestanas` and the raw sites registered in `fixedSets.ts`, and on any native `<select>`.
+- The guard does not catch a data-mapped list of plain buttons used as a choice, with no pressed state, role or chip class, nor a class name built away from the markup. Review enforces those. The reviewer asks: "Does any new choice map business data or settings to buttons instead of the Selector?" A yes is a finding that blocks the merge.
+- Any later picker over business data or settings (GH-318: units, time zone, Money format, Payment methods) is built on the Selector, because the guard bans the native select.
+
 ## Icon and text rule
 
 How every screen labels its entries, actions and notices: which controls are icon-only, which are text only and which are icon + text; how long an always-visible line may be; and what may move behind More info. It decides how things are labelled, never what they do.
