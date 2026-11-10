@@ -110,7 +110,7 @@ export default function CurrencyAndDecimals() {
           <AvisoExito texto={SETTINGS_TEXT.currencySaved} />
         </div>
       )}
-      <form className="formulario" onSubmit={(event) => void onSave(event)}>
+      <form className="formulario moneda-pantalla" onSubmit={(event) => void onSave(event)}>
         <label className="campo">
           <span className="campo__rotulo">{SETTINGS_TEXT.currencySymbol}</span>
           <input
@@ -133,7 +133,7 @@ export default function CurrencyAndDecimals() {
             </span>
           )}
         </label>
-        <div className="campo">
+        <div className="campo moneda-decimales">
           <span className="campo__rotulo">{SETTINGS_TEXT.currencyDecimals}</span>
           <SegmentedChoice
             options={MONEY_DECIMALS}
