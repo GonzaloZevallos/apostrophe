@@ -77,9 +77,7 @@ def _block(words: CatalogWords, money: MoneyFormat, entry: CatalogEntry) -> str:
     lines.append(words.price_per_gram(_money(entry.price.list_price, money)))
     if entry.price.bulk_price is not None and entry.price.bulk_minimum is not None:
         lines.append(
-            words.bulk(
-                _quantity(entry.price.bulk_minimum), _money(entry.price.bulk_price, money)
-            )
+            words.bulk(_quantity(entry.price.bulk_minimum), _money(entry.price.bulk_price, money))
         )
     return "\n".join(lines)
 

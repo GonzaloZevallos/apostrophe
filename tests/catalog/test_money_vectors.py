@@ -14,8 +14,9 @@ from app.catalog.domain.text import _money
 from app.shared.money import MoneyFormat, round_half_up
 
 VECTORS: list[dict[str, Any]] = json.loads(
-    (Path(__file__).resolve().parents[2] / "web" / "src" / "format" / "money.vectors.json")
-    .read_text(encoding="utf-8")
+    (
+        Path(__file__).resolve().parents[2] / "web" / "src" / "format" / "money.vectors.json"
+    ).read_text(encoding="utf-8")
 )
 WHOLE_ROWS = [row for row in VECTORS if "." not in row["amount"] and row["attached"] is not None]
 MINUS = "−"

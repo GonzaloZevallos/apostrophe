@@ -28,7 +28,7 @@ import { LIMITS } from '../copy/limits'
 import emptyStates from '../copy/locales/en/emptyStates.json'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {

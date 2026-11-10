@@ -34,7 +34,7 @@ import { VARIETIES_TEXT } from '../../copy/varieties'
 import { COMMON_TEXT } from '../../copy/common'
 import ContentArea from '../../components/ContentArea'
 
-export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en' as ShownLanguage }
+export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en' as ShownLanguage, money: { symbol: '$', decimals: 0 } }
 
 export const VARIETY_ROW = {
   id: 1,

@@ -83,7 +83,10 @@ def test_the_catalog_text_leaves_no_letter_outside_the_segments() -> None:
 
 
 def test_the_pinned_catalog_text_with_and_without_entries_leaves_no_letter() -> None:
-    assert leftover_letters(pinned_catalog_text(pseudo_words(), DOLLARS, HEADER, FOOTER, entries())) == ""
+    assert (
+        leftover_letters(pinned_catalog_text(pseudo_words(), DOLLARS, HEADER, FOOTER, entries()))
+        == ""
+    )
     assert leftover_letters(pinned_catalog_text(pseudo_words(), DOLLARS, HEADER, FOOTER, [])) == ""
 
 

@@ -24,7 +24,7 @@ import { DISCARD_DETAIL, PARTLY_SAVED_DETAIL } from '../../copy/onboarding'
 import { CHECKLIST_DONE } from '../../copy/inicio'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 interface Stored {
   id: number

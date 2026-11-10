@@ -36,7 +36,7 @@ import Ventas from './ventas/Ventas'
 import VentaDetalle from './ventas/VentaDetalle'
 import { SIN_CONEXION_MENSAJE } from '../copy/common'
 
-const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN }
+const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 // The gated layout's providers: a screen may raise a flash (`GatedLayout`).
 function Context() {

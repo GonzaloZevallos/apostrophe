@@ -20,13 +20,19 @@ ENGLISH_WORDS = CatalogWords(
 
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case.name)
 def test_catalog_text_writes_the_reference_literal(case: Case) -> None:
-    assert catalog_text(ENGLISH_WORDS, DOLLARS, case.header, case.footer, case.entries) == case.expected
+    assert (
+        catalog_text(ENGLISH_WORDS, DOLLARS, case.header, case.footer, case.entries)
+        == case.expected
+    )
 
 
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case.name)
 def test_pinned_catalog_text_writes_the_reference_literal(case: Case) -> None:
     expected = case.expected if case.expected is not None else case.expected_pinned
-    assert pinned_catalog_text(ENGLISH_WORDS, DOLLARS, case.header, case.footer, case.entries) == expected
+    assert (
+        pinned_catalog_text(ENGLISH_WORDS, DOLLARS, case.header, case.footer, case.entries)
+        == expected
+    )
 
 
 def test_words_with_reordered_holes_reorder_the_line_and_keep_the_formatted_values() -> None:

@@ -42,7 +42,7 @@ import { ONBOARDING_TEXT } from '../../copy/onboarding'
 import { stepInfo } from './steps'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 const ORDER: StepSlug[] = ['variety', 'stock', 'header_footer', 'bot', 'partner', 'categories']
 
 function answer(

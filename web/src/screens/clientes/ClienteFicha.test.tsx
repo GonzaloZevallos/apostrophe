@@ -44,7 +44,7 @@ import Shell from '../../shell/Shell'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
 
 
-const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN }
+const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 function Context() {
   return <Outlet context={ME} />

@@ -116,9 +116,7 @@ def get_money_format(request: Request) -> Callable[[Session, int], CatalogMoneyF
     )
 
 
-MoneyFormatDep = Annotated[
-    Callable[[Session, int], CatalogMoneyFormat], Depends(get_money_format)
-]
+MoneyFormatDep = Annotated[Callable[[Session, int], CatalogMoneyFormat], Depends(get_money_format)]
 
 
 def get_words(request: Request) -> CatalogWordsSource:
