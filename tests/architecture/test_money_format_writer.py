@@ -1,4 +1,4 @@
-"""Only the money_format adapters write the `money_format` table (the rescale ADR).
+"""Only the money_format adapters write the `money_format` table (docs/adr/0080).
 
 Every module under `app/` outside `app/money_format/adapters/` and `app/migrations/` is
 parsed with `ast` and flagged when it:

@@ -1,4 +1,4 @@
-"""A rescale changes no figure (docs/adr/0058, the rescale ADR).
+"""A rescale changes no figure (docs/adr/0080, amending docs/adr/0058).
 
 Seam: the HTTP read routes through `TestClient`, before and after `ApplyDecimals(b, 2)`
 over a business opened at scale 0. Each answer is parsed with `Decimal` for every number, so

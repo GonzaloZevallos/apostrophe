@@ -1,5 +1,5 @@
 """Sets how many decimals a business shows, rescaling its stored amounts once when it
-first raises them above 0 (docs/adr/0058, the rescale ADR).
+first raises them above 0 (docs/adr/0080, amending docs/adr/0058).
 
 This is the one use case that writes a business's decimals: nothing else may write
 `money_format`. It never reads the stored scale (the adapter's SQL does, in the same

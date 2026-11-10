@@ -1,4 +1,4 @@
-"""The rescale against a writer on another connection (docs/adr/0058, the rescale ADR).
+"""The rescale against a writer on another connection (docs/adr/0080, amending docs/adr/0058).
 
 Seam: the `ApplyDecimals` use case with the real adapter, and `GET /sales` and
 `GET /expenses` through `TestClient` for the figures, over a file-backed SQLite database,

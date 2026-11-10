@@ -1,4 +1,4 @@
-"""`ApplyDecimals` over stored values (docs/adr/0058, the rescale ADR).
+"""`ApplyDecimals` over stored values (docs/adr/0080, amending docs/adr/0058).
 
 Seam: the `ApplyDecimals` use case with the real adapter, over a file-backed SQLite
 database seeded through the app's own routes at scale 0. The columns that are rescaled are

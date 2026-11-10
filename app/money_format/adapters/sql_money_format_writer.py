@@ -1,6 +1,6 @@
 """Implements the `MoneyFormatWriter` port: a business's decimals, and the one-time rescale
-of its stored amounts from whole units (scale 0) to hundredths (scale 2) (docs/adr/0058, the
-rescale ADR).
+of its stored amounts from whole units (scale 0) to hundredths (scale 2) (docs/adr/0080, amending
+docs/adr/0058).
 
 All in the caller's transaction, which it never commits:
 

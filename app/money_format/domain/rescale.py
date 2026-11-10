@@ -1,4 +1,4 @@
-"""Why a change of a business's decimals did not happen (docs/adr/0058, the rescale ADR).
+"""Why a change of a business's decimals did not happen (docs/adr/0080, amending docs/adr/0058).
 
 Every message is a fixed literal and carries no business id, amount or driver text
 (CODING_STANDARDS.md section 9). None has a `code`: the part that wires a route decides
