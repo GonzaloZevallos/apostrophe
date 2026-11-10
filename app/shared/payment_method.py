@@ -26,7 +26,7 @@ class PaymentMethodLabel:
 class PaymentMethodUnavailable(LookupError):
     """A sale or a payment named a method that cannot take a payment: unknown, archived or
     another business's. One refusal for all three, so a method id of another business
-    reveals nothing (docs/adr/0076)."""
+    reveals nothing (docs/adr/0078)."""
 
     code: ClassVar[str] = "payment_method.unavailable"
 

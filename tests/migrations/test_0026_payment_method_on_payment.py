@@ -1,4 +1,4 @@
-"""0026 links every payment to a method by id and freezes `payment.method` (docs/adr/0076).
+"""0026 links every payment to a method by id and freezes `payment.method` (docs/adr/0078).
 The shared comparator proves no pre-existing value changed; the rest is what 0026 adds."""
 
 from __future__ import annotations

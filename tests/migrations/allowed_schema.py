@@ -1,4 +1,4 @@
-"""The allowed-schema comparator (docs/adr/0076; the plan's invariant 1), beside comparator.py.
+"""The allowed-schema comparator (docs/adr/0078; the plan's invariant 1), beside comparator.py.
 
 It proves a migration changed no value of any pre-existing column.
 

@@ -1,4 +1,4 @@
-"""A payment links to a payment method by id (docs/adr/0055, docs/adr/0076).
+"""A payment links to a payment method by id (docs/adr/0055, docs/adr/0078).
 
 In this order: add `payment.payment_method_id` (nullable); give every business, one with
 no payment included, its "Cash" and "Transfer"; fill the new column from the frozen

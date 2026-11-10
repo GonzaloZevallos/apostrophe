@@ -70,7 +70,7 @@ class SqlSales:
         for position, line in enumerate(sale.lines):
             self._session.add(self._line_row(row.id, line, position))
 
-        # The payment row is written by `OnTheSpotPayments`, never here (docs/adr/0076).
+        # The payment row is written by `OnTheSpotPayments`, never here (docs/adr/0078).
         flush_or_refuse(self._session)
         return replace(sale, id=row.id, number=number)
 

@@ -44,7 +44,7 @@ class PricingSettingsReader(Protocol):
 
 
 class OnTheSpotPayments(Protocol):
-    """The one writer of a sale's on-the-spot payment row (docs/adr/0076): sales never
+    """The one writer of a sale's on-the-spot payment row (docs/adr/0078): sales never
     writes a `payment` row itself. Built for one business; never commits."""
 
     def record(
