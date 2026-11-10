@@ -199,7 +199,7 @@ def create_app(
     hasher: PasswordHasher | None = None,
     telegram: TelegramBackend | None = None,
     upkeep_ticker: bool = True,
-    opening_money_scale: int = 0,
+    opening_money_scale: int = 2,
 ) -> FastAPI:
     settings = settings or Settings.from_env()
     app = FastAPI(title="apostrophe", lifespan=lifespan)

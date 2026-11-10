@@ -1,9 +1,9 @@
 """Implements accounts' `BusinessOpening` port (docs/adr/0006): a new business gets its
-`money_format` row, `"$"`, 0 decimals, scale 0, inside the same transaction that opens
-it. Scale 0 for every business (the default of `scale`; the tests' `money_scale` fixture
-passes another through `create_app`) until the part that routes every amount statement through
-`app/db.py`'s money helper moves new businesses to scale 2 (docs/adr/0058). Accounts never
-imports this module; `app/main.py` wires it into `CompositeOpening`.
+`money_format` row, `"$"`, 0 decimals, scale 2 (hundredths, docs/adr/0058), inside the
+same transaction that opens it. Every amount statement goes through `app/db.py`'s money helper,
+so a new business stores its amounts at scale 2 while the existing ones stay at 0; the tests'
+`money_scale` fixture passes another scale through `create_app`. Accounts never imports this
+module; `app/main.py` wires it into `CompositeOpening`.
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from app.shared.language import BusinessLanguage
 
 
 class MoneyFormatOpening:
-    def __init__(self, session: Session, scale: int = 0) -> None:
+    def __init__(self, session: Session, scale: int = 2) -> None:
         self._session = session
         self._scale = scale
 

@@ -26,9 +26,9 @@ PASSWORD = "correct horse battery staple"
 SETTINGS = Settings(secret_key="test-secret-key", database_url="sqlite://")
 # Cheap enough for a suite that opens two businesses per test; never used outside tests.
 TEST_HASHER = PasswordHasher(ScryptParams(n=16, r=1, p=1))
-# The money scales the suite runs at. (0,) until the flip subtask makes it (0, 2) together
-# with the opening flip (docs/adr/0058).
-SCALES: tuple[int, ...] = (0,)
+# The money scales the suite runs at: a business opened before the flip stores whole units
+# (0), a business opened now stores hundredths (2) (docs/adr/0058).
+SCALES: tuple[int, ...] = (0, 2)
 
 
 class MovableClock:
@@ -111,17 +111,13 @@ def money_scale(request: pytest.FixtureRequest) -> int:
 
 @pytest.fixture
 def app(
-    request: pytest.FixtureRequest,
+    money_scale: int,
     engine: Engine,
     clock: MovableClock,
     telegram: FakeTelegram,
     settings: Settings,
 ) -> FastAPI:
-    # Only a test that asks for `money_scale` (or a fixture that does) changes it; the
-    # others keep the opening's default.
-    scale: int = (
-        request.getfixturevalue("money_scale") if "money_scale" in request.fixturenames else 0
-    )
+    # Every test that builds the app runs once per scale, the whole suite at both.
     return create_app(
         settings,
         engine=engine,
@@ -129,7 +125,7 @@ def app(
         hasher=TEST_HASHER,
         telegram=telegram,
         upkeep_ticker=False,
-        opening_money_scale=scale,
+        opening_money_scale=money_scale,
     )
 
 
