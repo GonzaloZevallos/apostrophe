@@ -12,6 +12,8 @@ classDiagram
   }
   class domain {
   }
+  class export_reader {
+  }
   class money_format {
   }
   class opening {
@@ -20,6 +22,7 @@ classDiagram
   }
   class tables {
   }
+  export_reader --> tables
   opening --> tables
   reader --> tables
 ```
@@ -48,5 +51,8 @@ classDiagram
   }
   class SqlMoneyFormat {
     current() MoneyFormat
+  }
+  class SqlMoneyFormatRead {
+    of(business_id: int) ExportedMoney
   }
 ```
