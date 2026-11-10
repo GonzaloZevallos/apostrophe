@@ -12,12 +12,11 @@ import { invalidateResource } from '../../api/keys'
 import { archivedPaymentMethodsQueryOptions, restorePaymentMethod } from '../../api/paymentMethods'
 import { isGone } from '../../api/refusals'
 import Boton from '../../components/Boton'
-import ContentArea from '../../components/ContentArea'
 import GoneNotice from '../../components/GoneNotice'
 import Loading from '../../components/Loading'
 import PaymentMethodGlyph from '../../components/PaymentMethodGlyph'
 import SinConexion from '../../components/SinConexion'
-import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
+import SettingsGroup from './SettingsGroup'
 
 export default function PaymentMethodsArchived() {
   const { t } = useTranslation()
@@ -44,11 +43,8 @@ export default function PaymentMethodsArchived() {
   }
 
   return (
-    <ContentArea as="main" className="pantalla">
-      <div className="cuerpo ajustes">
-        <div className="ajustes__titulos">
-          <h1 className="ajustes__titulo">{t('paymentMethods:archived.title')}</h1>
-        </div>
+    <SettingsGroup title={t('paymentMethods:archived.title')} dirty={false}>
+      <>
         {list.isPending && <Loading />}
         {list.isError &&
           (list.error instanceof NetworkError ? (
@@ -64,7 +60,7 @@ export default function PaymentMethodsArchived() {
             </>
           ))}
         {list.data !== undefined && list.data.length === 0 && (
-          <span className="campo__rotulo">{t(EMPTY_STATE_KEYS.paymentMethodsArchived)}</span>
+          <span className="campo__rotulo">{t('paymentMethods:archived.empty')}</span>
         )}
         {list.data !== undefined && (
           <ul className="ajustes__lista">
@@ -93,7 +89,7 @@ export default function PaymentMethodsArchived() {
         )}
         {offline && <SinConexion />}
         {gone && <GoneNotice />}
-      </div>
-    </ContentArea>
+      </>
+    </SettingsGroup>
   )
 }

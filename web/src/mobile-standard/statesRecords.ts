@@ -16,6 +16,9 @@ import {
   MORE,
   pathTo,
   SETTINGS_ACCOUNT,
+  SETTINGS_PAYMENT_METHODS,
+  SETTINGS_PAYMENT_METHODS_ARCHIVED,
+  SETTINGS_PAYMENTS,
   SETTINGS_WITHDRAWAL_REASONS,
   SETTINGS_CUSTOMER_TYPES,
   STOCK,
@@ -52,6 +55,13 @@ const ENTRY_ROUTE = pathTo(STOCK_ENTRY, { id: 1 })
 
 /** The variety the sample app seeds below its stock threshold, by the registry's placeholder. */
 const LOW_VARIETY = VARIETY.replace(':id', '{low}')
+
+const PAYMENT_METHODS_BODY = [
+  { id: 1, name: 'Cash', icon: 'banknote', position: 1, in_use: true },
+  { id: 2, name: 'Transfer', icon: 'bank', position: 2, in_use: false },
+]
+
+const PAYMENT_METHODS_READ = { path: /^\/api\/payment-methods$/, status: 200, body: PAYMENT_METHODS_BODY }
 
 const SAMPLE_TYPES = [
   { id: 1, name: 'Friends', icon: 'heart', is_vip: false },
@@ -358,6 +368,86 @@ export const RECORDS_STATES: readonly WalkState[] = [
     route: SETTINGS_CUSTOMER_TYPES,
     steps: [],
     visible: 'Customer types',
+  },
+  {
+    screen: 'ConfiguracionPagosGrupo',
+    route: SETTINGS_PAYMENTS,
+    steps: [],
+    visible: 'Payment methods',
+    reads: [PAYMENT_METHODS_READ],
+  },
+  {
+    screen: 'ConfiguracionMediosPagoLista',
+    route: SETTINGS_PAYMENT_METHODS,
+    steps: [],
+    visible: 'Add method',
+    reads: [PAYMENT_METHODS_READ],
+  },
+  {
+    screen: 'ConfiguracionMediosPagoNuevo',
+    route: SETTINGS_PAYMENT_METHODS,
+    steps: [{ click: 'Add method' }],
+    visible: 'New payment method',
+    reads: [PAYMENT_METHODS_READ],
+  },
+  {
+    screen: 'ConfiguracionMediosPagoEditar',
+    route: SETTINGS_PAYMENT_METHODS,
+    steps: [{ press: 'Edit Cash' }],
+    visible: 'Past payments will show the new name.',
+    reads: [PAYMENT_METHODS_READ],
+  },
+  {
+    screen: 'ConfiguracionMediosPagoNombreRepetido',
+    route: SETTINGS_PAYMENT_METHODS,
+    steps: [{ click: 'Add method' }, { fill: { label: 'Name', value: 'Cash' } }, { click: 'Save' }],
+    visible: 'You already have a method with that name.',
+    reads: [PAYMENT_METHODS_READ],
+    writes: [{ method: 'POST', path: /^\/api\/payment-methods$/, status: 409, body: { code: 'payment_method.name_taken' } }],
+  },
+  {
+    screen: 'ConfiguracionMediosPagoConfirmarArchivar',
+    route: SETTINGS_PAYMENT_METHODS,
+    steps: [{ press: 'Archive Cash' }],
+    visible: 'Keep it',
+    reads: [PAYMENT_METHODS_READ],
+  },
+  {
+    screen: 'ConfiguracionMediosPagoConfirmarBorrado',
+    route: SETTINGS_PAYMENT_METHODS,
+    steps: [{ press: 'Delete Transfer' }],
+    visible: 'Keep it',
+    reads: [PAYMENT_METHODS_READ],
+  },
+  {
+    screen: 'ConfiguracionMediosPagoUltimo',
+    route: SETTINGS_PAYMENT_METHODS,
+    steps: [{ press: 'Archive Cash' }, { press: 'Archive' }],
+    visible: 'You need at least one payment method. Add another one first.',
+    reads: [{ path: /^\/api\/payment-methods$/, status: 200, body: [PAYMENT_METHODS_BODY[0]] }],
+    writes: [
+      { method: 'POST', path: /^\/api\/payment-methods\/\d+\/archive$/, status: 409, body: { code: 'payment_method.last_offered' } },
+    ],
+  },
+  {
+    screen: 'ConfiguracionMediosPagoArchivados',
+    route: SETTINGS_PAYMENT_METHODS_ARCHIVED,
+    steps: [],
+    visible: 'Restore Wallet app',
+    reads: [
+      {
+        path: /^\/api\/payment-methods\/archived$/,
+        status: 200,
+        body: [{ id: 3, name: 'Wallet app', icon: 'wallet', position: 3, in_use: true }],
+      },
+    ],
+  },
+  {
+    screen: 'ConfiguracionMediosPagoArchivadosVacio',
+    route: SETTINGS_PAYMENT_METHODS_ARCHIVED,
+    steps: [],
+    visible: 'No archived payment methods.',
+    reads: [{ path: /^\/api\/payment-methods\/archived$/, status: 200, body: [] }],
   },
   {
     screen: 'ConfiguracionContrasena',

@@ -1,6 +1,6 @@
 /**
  * `PaymentsGroup`, Settings → Payments and expenses (`ConfiguracionCobros.dc.html`, Decision 21):
- * a card route with the shell's "‹ Settings" arrow. It holds one row today, "Payment methods",
+ * a Configuración group like its siblings (title and "Close"; `routes.test.ts` requires every group to be a form). It holds one row today, "Payment methods",
  * whose subtitle is the offered names joined by ", " (truncated by CSS). The Expense categories
  * and Withdrawal reasons rows stay where they are (`docs/product/payment-methods.md`).
  */
@@ -8,10 +8,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { paymentMethodsQueryOptions } from '../../api/paymentMethods'
-import ContentArea from '../../components/ContentArea'
 import Icono from '../../components/Icono'
 import InAppLink from '../../components/InAppLink'
 import { SETTINGS_PAYMENT_METHODS } from '../../routes'
+import SettingsGroup from './SettingsGroup'
 
 export default function PaymentsGroup() {
   const { t } = useTranslation()
@@ -19,11 +19,7 @@ export default function PaymentsGroup() {
   const names = methods.data?.map((method) => method.name).join(', ')
 
   return (
-    <ContentArea as="main" className="pantalla">
-      <div className="cuerpo ajustes">
-        <div className="ajustes__titulos">
-          <h1 className="ajustes__titulo">{t('paymentMethods:group.title')}</h1>
-        </div>
+    <SettingsGroup title={t('paymentMethods:group.title')} dirty={false}>
         <nav className="ajustes__lista" aria-label={t('paymentMethods:group.title')} data-menu>
           <InAppLink to={SETTINGS_PAYMENT_METHODS} className="ajustes__item">
             <span className="ajustes__item-icono">
@@ -38,7 +34,6 @@ export default function PaymentsGroup() {
             </span>
           </InAppLink>
         </nav>
-      </div>
-    </ContentArea>
+    </SettingsGroup>
   )
 }

@@ -45,7 +45,7 @@ Criterios de éxito:
   - Archivarlo lo saca de todo Selector para Payments nuevos.
   - Los Payments pasados lo siguen mostrando con su nombre.
   - Conserva reservado su nombre: no se puede crear otro medio con ese nombre; se restaura el archivado.
-  - Se ve y se restaura solo desde "Archived", dentro de Settings → Business → Payment methods. Al restaurarlo vuelve exactamente como estaba, con su nombre y su ícono, al final del orden de los ofrecidos salvo que conserve su posición.
+  - Se ve y se restaura solo desde "Archived", dentro de Settings → Payments and expenses → Payment methods. Al restaurarlo vuelve exactamente como estaba, con su nombre y su ícono, al final del orden de los ofrecidos salvo que conserve su posición.
 - **"Paid later" no es un medio**: que una Sale quede debiendo (Owing) es un estado, nunca un medio. La vendedora no puede agregarlo a la lista ni archivarlo.
 
 ### Elegir un medio (New sale y Record payment)
@@ -64,9 +64,11 @@ Criterios de éxito:
 - El **Sale bill** informa una Sale pagada en el momento como `paid`, sin nombrar el medio (sale-bill.md).
 - **Cash** sigue contando todo Payment como hoy, sea cual sea su medio.
 
-### En pantalla: Settings → Business → Payment methods
+### En pantalla: Settings → Payments and expenses → Payment methods
 
-- Un grupo de **Settings**, dentro de Business, junto a los Withdrawal reasons.
+- Camino (decisión 21 del humano, como el dibujo `ConfiguracionCobros`): Settings → **Payments and expenses** → **Payment methods**, 3 toques desde cualquier pantalla principal (avatar → Payments and expenses → Payment methods). No está dentro de Business.
+- **Payments and expenses** es un grupo nuevo de Settings (`/settings/payments`) con una sola fila hoy, "Payment methods" (`/settings/payments/methods`), cuyo subtítulo son los nombres ofrecidos unidos por ", " y cortados con puntos suspensivos. Archived está en `/settings/payments/methods/archived`.
+- Mover las filas de Expense categories y Withdrawal reasons a este grupo, como lo dibuja la pantalla, no es parte de esta tarea: queda como hallazgo para el Tech Lead.
 - Lista los medios ofrecidos en su orden, cada uno con su ícono y su nombre. Cada fila tiene mover arriba y mover abajo (en el teléfono, sin arrastrar; el primero no sube y el último no baja), y abre su edición.
 - **Agregar** y **editar** se hacen en un formulario (una **Sheet** en el teléfono) con nombre e ícono. Al volver a abrir la edición después de guardar, muestra lo guardado (decisión 1 del humano).
 - Desde la edición: archivar (si tiene Payments) o eliminar (si no tiene), con confirmación; el último ofrecido no ofrece ninguna de las dos y dice por qué.
