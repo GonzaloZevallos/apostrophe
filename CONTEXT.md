@@ -65,7 +65,7 @@ _Avoid_: client, buyer, contact, user
 _In the app_: Customer
 
 **Phone number**:
-Dato de contacto opcional de un Customer, en formato internacional: un número argentino siempre como celular (+54 9 y 10 dígitos con código de área), uno extranjero como + y su código de país y dígitos. Un valor en blanco significa que no hay ninguno. Dos Customers de un Business nunca comparten uno cuando ambos tienen uno; cualquier cantidad de Customers puede no tener ninguno.
+Dato de contacto opcional de un Customer, guardado en una sola forma internacional: uno tipeado con + y el código de un país de la lista sigue la regla de ese país, uno con otro código se guarda como + y 8 a 15 dígitos, y uno sin + se lee con la regla del Phone country del Business (la de Argentina sigue siendo la de hoy: siempre celular, +54 9 y 10 dígitos), o se rechaza si no hay ninguno. Un valor en blanco significa que no hay ninguno. Dos Customers de un Business nunca comparten uno, se haya tipeado como se haya tipeado. En la app: Phone.
 _Avoid_: contact, handle, username, identifier
 _In the app_: Phone
 
@@ -591,3 +591,7 @@ _Avoid_: category, type, tag, cause, Promotion (old name of one default reason)
 **VIP type**:
 El Customer type "VIP" que la actualización creó en cada Business existente, con los Customers que tenían la marca VIP. Hasta la parte customer-type prices es el único tipo cuya pertenencia da el VIP price; lo identifica la actualización, nunca su nombre, así que renombrarlo no cambia nada y un tipo del vendedor llamado "VIP" no da ningún precio. En la app: no tiene palabra propia; se ve como un tipo más.
 _Avoid_: VIP mark, VIP flag, default type
+
+**Phone country**:
+El país con el que un Business lee un Phone number tipeado sin + ni código de país: uno de una lista fija (Argentina, Uruguay, Chile, Paraguay, Brazil, Mexico, Spain, United States), cada uno con su propia regla, o ninguno. Los Businesses existentes quedan en Argentina y uno nuevo arranca sin ninguno; se cambia solo en Settings → Business y nunca reescribe un número guardado. En la app: Phone country.
+_Avoid_: default country, locale, region, country setting
