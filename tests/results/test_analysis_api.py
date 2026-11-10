@@ -142,7 +142,7 @@ def test_a_sale_costs_from_the_lot_with_the_earliest_entry_date_not_the_first_re
         "/sales",
         json={
             "date": "2026-09-05",
-            "payment": "cash",
+            "payment": {"kind": "method", "payment_method_id": 1},
             "lines": [{"product_id": variety_id, "quantity": "4"}],
         },
     )

@@ -439,7 +439,7 @@ def test_each_sale_s_date_is_read_back_in_the_list_and_in_the_detail(
     for sale_date in ("2026-09-03", "2026-09-21"):
         body = {
             "date": sale_date,
-            "payment": "cash",
+            "payment": {"kind": "method", "payment_method_id": 1},
             "lines": [{"product_id": variety_id, "quantity": "10"}],
         }
         ids[sale_date] = int(client.post("/sales", json=body).json()["id"])
