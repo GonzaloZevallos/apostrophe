@@ -466,7 +466,7 @@
   {"source":"refusals.ts:REFUSAL_BY_CODE[\"expense_category.not_found\"]","args":null,"text":"That is gone. The list is up to date."},
   {"source":"refusals.ts:REFUSAL_BY_CODE[\"grams.invalid\"]","args":null,"text":"Check the details and try again."},
   {"source":"refusals.ts:REFUSAL_BY_CODE[\"money.too_many_decimals\"]","args":null,"text":"Check the details and try again."},
-  {"source":"refusals.ts:REFUSAL_BY_CODE[\"money_format.decimals_below_recorded\"]","args":null,"text":"Some recorded amounts have more decimals than that, so the decimals stay as they were."},
+  {"source":"refusals.ts:REFUSAL_BY_CODE[\"money_format.decimals_below_recorded\"]","args":null,"text":"Some recorded amounts have more decimals, so the decimals stay as they were."},
   {"source":"refusals.ts:REFUSAL_BY_CODE[\"money_format.symbol_invalid\"]","args":null,"text":"Use 1 to 4 visible characters, and no two asterisks in a row."},
   {"source":"refusals.ts:REFUSAL_BY_CODE[\"onboarding.not_found\"]","args":null,"text":"That is gone. The list is up to date."},
   {"source":"refusals.ts:REFUSAL_BY_CODE[\"onboarding.required_steps_unmet\"]","args":null,"text":"Check the details and try again."},

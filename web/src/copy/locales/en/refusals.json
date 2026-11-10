@@ -1,7 +1,7 @@
 {
   "generic": "Check the details and try again.",
   "moneySymbolInvalid": "Use 1 to 4 visible characters, and no two asterisks in a row.",
-  "moneyDecimalsBelowRecorded": "Some recorded amounts have more decimals than that, so the decimals stay as they were.",
+  "moneyDecimalsBelowRecorded": "Some recorded amounts have more decimals, so the decimals stay as they were.",
   "goneNotice": "That is gone. The list is up to date.",
   "goneDetail": "That is gone.",
   "nameArchived": "That name belongs to an archived product. Look for it in Archived.",
