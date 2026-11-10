@@ -63,7 +63,10 @@ def record_sale(
             raise UnknownCustomer()
 
     settings = pricing_settings.current()
-    requests = [_resolve_line(price_book, sale_date, line, shown) for line in lines]
+    type_id = (
+        None if customer is None or customer.customer_type is None else customer.customer_type.id
+    )
+    requests = [_resolve_line(price_book, sale_date, type_id, line, shown) for line in lines]
 
     sale = Sale.record(
         sale_date=sale_date,
@@ -84,7 +87,7 @@ def record_sale(
         # A variety deleted since it was priced: undo, then ask again. Gone is the
         # sale's own refusal; any other cause is re-raised as it came.
         transaction.rollback()
-        if any(price_book.for_variety(r.variety_id, sale_date) is None for r in requests):
+        if any(price_book.for_variety(r.variety_id, sale_date, type_id) is None for r in requests):
             raise UnknownVariety from None
         raise
     transaction.commit()
@@ -96,9 +99,13 @@ def _whole_amount(amount: Decimal, shown: MoneyFormat) -> int:
 
 
 def _resolve_line(
-    price_book: PriceBook, sale_date: date, line: LineInput, shown: MoneyFormat
+    price_book: PriceBook,
+    sale_date: date,
+    customer_type_id: int | None,
+    line: LineInput,
+    shown: MoneyFormat,
 ) -> LineRequest:
-    pricing = price_book.for_variety(line.variety_id, sale_date)
+    pricing = price_book.for_variety(line.variety_id, sale_date, customer_type_id)
     if pricing is None:
         raise UnknownVariety()
     return LineRequest(

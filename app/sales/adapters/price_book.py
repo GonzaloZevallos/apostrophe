@@ -13,15 +13,12 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from datetime import date
 
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db import money_scale_factor, scaled
+from app.customer_types.adapters.sql_customer_type_prices import SqlCustomerTypePrices
 from app.products.adapters.sql_products import SqlProducts
-from app.products.adapters.tables import PriceEntryRow
 from app.products.domain.product import PriceEntry, Product, ProductName, ProductRuleBroken
 from app.sales.domain.pricing import BulkQuote, PriceQuote, VarietyPricing
-from app.shared.money import Money
 from app.spreadsheet_import.domain.rows import PriceHistoryRow
 
 
@@ -30,8 +27,11 @@ class SqlPriceBook:
         self._session = session
         self._business_id = business_id
         self._varieties = SqlProducts(session, business_id)
+        self._type_prices = SqlCustomerTypePrices(session, business_id)
 
-    def for_variety(self, variety_id: int, day: date) -> VarietyPricing | None:
+    def for_variety(
+        self, variety_id: int, day: date, customer_type_id: int | None = None
+    ) -> VarietyPricing | None:
         variety = self._varieties.get(variety_id)
         # An archived variety takes no new sale line: it answers as a missing one
         # (docs/adr/0032).
@@ -39,21 +39,16 @@ class SqlPriceBook:
             return None
         entry = variety.current_price(day)
         return VarietyPricing(
-            variety_id=variety_id, current=_quote(entry, self._vip_price_of(entry))
+            variety_id=variety_id,
+            current=_quote(entry, self._type_price_of(entry, customer_type_id)),
         )
 
-    def _vip_price_of(self, entry: PriceEntry | None) -> int | None:
-        """The stored VIP price of the current entry, read from its row until the
-        varieties domain carries it: `None` when the entry has none."""
-        if entry is None or entry.id is None:
+    def _type_price_of(self, entry: PriceEntry | None, customer_type_id: int | None) -> int | None:
+        """The type's price in the row tied to the Current price entry: a row of an
+        earlier entry is not in force once a later entry is Current (docs/adr/0059)."""
+        if entry is None or entry.id is None or customer_type_id is None:
             return None
-        factor = money_scale_factor(self._session, self._business_id)
-        hundredths = self._session.scalar(
-            select(scaled(PriceEntryRow.vip_price, factor)).where(
-                PriceEntryRow.id == entry.id, PriceEntryRow.business_id == self._business_id
-            )
-        )
-        return None if hundredths is None else Money(hundredths).whole_units()
+        return self._type_prices.tied_price(entry.id, customer_type_id)
 
 
 class PlannedPriceBook:
@@ -84,18 +79,24 @@ class PlannedPriceBook:
             ordinal: _build_variety(names[ordinal], rows) for ordinal, rows in grouped.items()
         }
 
-    def for_variety(self, variety_id: int, day: date) -> VarietyPricing | None:
-        return _planned_pricing(self._varieties.get(variety_id), variety_id, day)
+    def for_variety(
+        self, variety_id: int, day: date, customer_type_id: int | None = None
+    ) -> VarietyPricing | None:
+        return _planned_pricing(
+            self._varieties.get(variety_id), variety_id, day, customer_type_id is not None
+        )
 
 
-def _planned_pricing(variety: Product | None, variety_id: int, day: date) -> VarietyPricing | None:
+def _planned_pricing(
+    variety: Product | None, variety_id: int, day: date, type_asked: bool
+) -> VarietyPricing | None:
     if variety is None:
         return None
     entry = variety.current_price(day)
-    # The import writes every entry with a bulk price with VIP price = bulk price
-    # (docs/adr/0034), so the plan prices it the same way.
-    vip_price = None if entry is None or entry.bulk is None else entry.bulk.price
-    return VarietyPricing(variety_id=variety_id, current=_quote(entry, vip_price))
+    # The import writes the VIP type's price of every entry with a bulk price as that bulk
+    # price (docs/adr/0034), so the plan prices a type the same way.
+    type_price = None if not type_asked or entry is None or entry.bulk is None else entry.bulk.price
+    return VarietyPricing(variety_id=variety_id, current=_quote(entry, type_price))
 
 
 def _build_variety(name_source: str, rows: Sequence[PriceHistoryRow]) -> Product:
@@ -109,8 +110,8 @@ def _build_variety(name_source: str, rows: Sequence[PriceHistoryRow]) -> Product
     return variety
 
 
-def _quote(entry: PriceEntry | None, vip_price: int | None) -> PriceQuote | None:
+def _quote(entry: PriceEntry | None, type_price: int | None) -> PriceQuote | None:
     if entry is None:
         return None
     bulk = None if entry.bulk is None else BulkQuote(entry.bulk.price, entry.bulk.minimum)
-    return PriceQuote(list_price=entry.list_price, bulk=bulk, vip_price=vip_price)
+    return PriceQuote(list_price=entry.list_price, bulk=bulk, type_price=type_price)
