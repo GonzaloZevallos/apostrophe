@@ -10,6 +10,12 @@
  *
  * A navigation that keeps the pathname and search and changes only the `sheet` depth is
  * never blocked: it opens or closes a sheet, not the form (ADR-0027).
+ *
+ * The one exception is a form that is itself drawn as a sheet entry (an in-page sheet on the
+ * phone, ADR-0078): it passes `{ sheetFloor }`, the depth of its own entry, and then a
+ * sheet-only navigation whose next depth falls below that floor is blocked too, because it
+ * closes the form. Without the option, behaviour is exactly as above. Whoever passes it must
+ * leave through a single exit that calls `disarm()` before it pops.
  */
 
 import { useCallback, useLayoutEffect, useRef } from 'react'
@@ -21,7 +27,12 @@ export interface LeaveGuard {
   disarm: () => void
 }
 
-export function useLeaveGuard(dirty: boolean): LeaveGuard {
+export interface LeaveGuardOptions {
+  /** The sheet depth of the form's own entry: a sheet-only navigation below it leaves the form. */
+  sheetFloor?: number
+}
+
+export function useLeaveGuard(dirty: boolean, { sheetFloor }: LeaveGuardOptions = {}): LeaveGuard {
   const dirtyRef = useRef(dirty)
   // A layout effect: it runs in the commit that shows the typed value, so no Back can arrive
   // between the screen showing it and the guard counting it.
@@ -37,8 +48,10 @@ export function useLeaveGuard(dirty: boolean): LeaveGuard {
       currentLocation.pathname === nextLocation.pathname &&
       currentLocation.search === nextLocation.search &&
       sheetDepth(currentLocation.state) !== sheetDepth(nextLocation.state)
-    return !onlySheetChanges && !disarmedRef.current && dirtyRef.current
-  }, [])
+    const leavesTheSheet =
+      onlySheetChanges && sheetFloor !== undefined && sheetDepth(nextLocation.state) < sheetFloor
+    return (!onlySheetChanges || leavesTheSheet) && !disarmedRef.current && dirtyRef.current
+  }, [sheetFloor])
   const blocker = useBlocker(shouldBlock)
   return { blocker, disarm }
 }

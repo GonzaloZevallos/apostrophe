@@ -11,7 +11,9 @@
  * - On a computer the field opens an inline dropdown, kept in local state and never in the sheet
  *   stack. Its Escape stops the event so the form's own Escape does not fire.
  * - Search folds text only through `selectorSearch.ts` and matches `label` only. The clearing row
- *   and the empty-set message sit outside the filter.
+ *   and the empty-set message sit outside the filter. An optional field shows its clearing row only
+ *   while it holds a choice: with none, the field already reads the empty wording, so the list
+ *   starts at the first option and never repeats the wording as a row.
  * - Every button is `type="button"`, and Enter in the search field never submits the form.
  */
 
@@ -158,7 +160,7 @@ export default function Selector(props: SelectorProps) {
   const effectiveQuery = showSearch ? query : ''
   const visible = options.filter((option) => matchesQuery(option.label, effectiveQuery))
   const items: Item[] = [
-    ...(emptyWording === null ? [] : [{ key: CLEAR, value: null, label: emptyWording }]),
+    ...(emptyWording === null || value === null ? [] : [{ key: CLEAR, value: null, label: emptyWording }]),
     ...visible.map((option) => ({ key: option.value, value: option.value, label: option.label, glyph: option.glyph })),
   ]
   const activeIndex = Math.max(0, items.findIndex((item) => item.key === activeKey))
@@ -336,7 +338,7 @@ export default function Selector(props: SelectorProps) {
   const initialKey = !showSearch
     ? current !== undefined
       ? current.value
-      : emptyWording !== null
+      : value !== null && emptyWording !== null
         ? CLEAR
         : (options[0]?.value ?? null)
     : null
