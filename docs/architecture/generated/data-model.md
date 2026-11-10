@@ -55,7 +55,7 @@ erDiagram
     INTEGER customer_type_id FK
     INTEGER price
     DATE effective_on
-    INTEGER entry_id "nullable"
+    INTEGER price_entry_id FK "nullable"
   }
   expense {
     INTEGER id PK
@@ -267,6 +267,7 @@ erDiagram
   customer_type ||--o{ customer_type_price : customer_type_id
   expense_category ||--o{ expense : expense_category_id
   expense_category }o--o{ expense : business_id
+  price_entry ||--o{ customer_type_price : price_entry_id
   sale ||--o{ payment : sale_id
   sale ||--o{ sale_line : sale_id
   stock_withdrawal ||--o{ stock_withdrawal_line : stock_withdrawal_id

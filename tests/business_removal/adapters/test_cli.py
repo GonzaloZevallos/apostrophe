@@ -898,7 +898,7 @@ def test_a_customer_type_price_is_exported_with_its_references_and_emptied(
         type_id = connection.execute("SELECT id FROM customer_type").fetchone()[0]
         connection.execute(
             "INSERT INTO customer_type_price (business_id, variety_id, customer_type_id, "
-            "price, effective_on, entry_id) VALUES (?, ?, ?, 4000, '2026-10-01', ?)",
+            "price, effective_on, price_entry_id) VALUES (?, ?, ?, 4000, '2026-10-01', ?)",
             (business_id, variety_id, type_id, entry_id),
         )
         connection.commit()

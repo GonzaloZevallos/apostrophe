@@ -42,7 +42,7 @@ def test_the_rows_are_the_entries_with_a_vip_price_in_a_business_with_a_vip_type
         rows = connection.execute(
             text(
                 "SELECT business_id, variety_id, customer_type_id, price, effective_on, "
-                "entry_id FROM customer_type_price ORDER BY entry_id"
+                "price_entry_id FROM customer_type_price ORDER BY price_entry_id"
             )
         ).all()
     assert [tuple(row) for row in rows] == [

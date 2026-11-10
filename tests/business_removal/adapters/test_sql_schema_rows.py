@@ -211,7 +211,7 @@ def seeded(
         connection.execute(
             text(
                 "INSERT INTO customer_type_price (business_id, variety_id, customer_type_id, "
-                "price, effective_on, entry_id) "
+                "price, effective_on, price_entry_id) "
                 "SELECT price_entry.business_id, price_entry.variety_id, customer_type.id, "
                 "price_entry.list_price / 2, price_entry.effective_on, price_entry.id "
                 "FROM price_entry JOIN customer_type "

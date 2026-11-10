@@ -3,11 +3,9 @@ table and rows. It changes no value that existed before it.
 
 - `customer_type_price`: `business_id`, `variety_id`, `customer_type_id`, `price` (an
   amount, stored at the business's money scale like every amount), `effective_on` and a
-  nullable `entry_id`, the Price entry it was saved with. Unique per business, type,
-  variety and day; indexed by business and entry for the lookup of the row tied to an
-  entry. `entry_id` is a plain integer, not a foreign key (the name `price_entry_id`
-  that a foreign key to `price_entry` needs is read as an amount by the money-name
-  guard); nothing cascades: the code deletes the rows before the entry.
+  nullable `price_entry_id`, the Price entry it was saved with. Unique per business,
+  type, variety and day; indexed by business and entry for the lookup of the row tied to
+  an entry. No foreign key cascades: the code deletes the rows before the entry.
 - One row for every `price_entry` with a `vip_price`, in a business that has its VIP type
   (`customer_type.is_vip`): the entry's business, variety, date and id, the VIP type's id
   and the amount copied raw (the same scale as the entry's). An entry of a business
@@ -38,7 +36,7 @@ def upgrade() -> None:
         sa.Column("customer_type_id", sa.Integer(), nullable=False),
         sa.Column("price", sa.Integer(), nullable=False),
         sa.Column("effective_on", sa.Date(), nullable=False),
-        sa.Column("entry_id", sa.Integer(), nullable=True),
+        sa.Column("price_entry_id", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["business_id"],
             ["business.id"],
@@ -54,6 +52,11 @@ def upgrade() -> None:
             ["customer_type.id"],
             name=op.f("fk_customer_type_price_customer_type_id_customer_type"),
         ),
+        sa.ForeignKeyConstraint(
+            ["price_entry_id"],
+            ["price_entry.id"],
+            name=op.f("fk_customer_type_price_price_entry_id_price_entry"),
+        ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_customer_type_price")),
         sa.UniqueConstraint(
             "business_id",
@@ -66,13 +69,13 @@ def upgrade() -> None:
         ),
     )
     op.create_index(
-        op.f("ix_customer_type_price_business_id_entry_id"),
+        op.f("ix_customer_type_price_business_id_price_entry_id"),
         "customer_type_price",
-        ["business_id", "entry_id"],
+        ["business_id", "price_entry_id"],
     )
     op.execute(
         "INSERT INTO customer_type_price "
-        "(business_id, variety_id, customer_type_id, price, effective_on, entry_id) "
+        "(business_id, variety_id, customer_type_id, price, effective_on, price_entry_id) "
         "SELECT price_entry.business_id, price_entry.variety_id, customer_type.id, "
         "price_entry.vip_price, price_entry.effective_on, price_entry.id "
         "FROM price_entry JOIN customer_type "
@@ -90,7 +93,7 @@ def downgrade() -> None:
     assert raw is not None
     raw.execute("PRAGMA foreign_keys=OFF")
     op.drop_index(
-        op.f("ix_customer_type_price_business_id_entry_id"),
+        op.f("ix_customer_type_price_business_id_price_entry_id"),
         table_name="customer_type_price",
     )
     op.drop_table("customer_type_price")

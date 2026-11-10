@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from sqlalchemy import ForeignKey, Index, Integer, String, UniqueConstraint, false, text
+from sqlalchemy import ForeignKey, Index, String, UniqueConstraint, false, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.customer_types.domain.customer_type import NAME_MAX_LENGTH
@@ -38,7 +38,7 @@ class CustomerTypePriceRow(Base):
     __tablename__ = "customer_type_price"
     __table_args__ = (
         UniqueConstraint("business_id", "customer_type_id", "variety_id", "effective_on"),
-        Index(None, "business_id", "entry_id"),
+        Index(None, "business_id", "price_entry_id"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -47,9 +47,6 @@ class CustomerTypePriceRow(Base):
     customer_type_id: Mapped[int] = mapped_column(ForeignKey("customer_type.id"))
     price: Mapped[int] = money_column()
     effective_on: Mapped[date]
-    # The Price entry this row was saved with, if any. The column is `entry_id` because the
-    # money-name guard (tests/migrations/test_money_columns.py) reads `price` in
-    # `price_entry_id` as an untagged amount, and a foreign key to `price_entry` must be
-    # named `price_entry_id` (CODING_STANDARDS section 11), so it is a plain integer, as
-    # `sale_line.customer_type_id` is: the use cases delete the rows before the entry.
-    price_entry_id: Mapped[int | None] = mapped_column("entry_id", Integer)
+    # The Price entry this row was saved with, if any. Deleting the entry deletes its rows
+    # first, in the same use case; the foreign key has no cascade.
+    price_entry_id: Mapped[int | None] = mapped_column(ForeignKey("price_entry.id"))
