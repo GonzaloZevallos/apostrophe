@@ -9,7 +9,7 @@
  */
 
 import { readdirSync, readFileSync } from 'node:fs'
-import { join, relative, sep } from 'node:path'
+import { join, posix, relative, sep } from 'node:path'
 import { describe, expect, test } from 'vitest'
 
 type FileType = 'ts' | 'json' | 'py'
@@ -64,7 +64,7 @@ const RULES: readonly Rule[] = [
     types: ['ts'],
     pattern: /(?:(['"`])\/(?:more|mas)(?:\1|[/?]|$))|(?:\\\/(?:more|mas)(?![\w-]))/,
     refuses: ["goto('/more')", 'page.goto("/mas")', "path: '/more/x'", "url = '/mas?x=1'", 'toHaveURL(/\\/more$/)'],
-    accepts: ["goto('/moreover')", "path: '/masters'", "goto('/ventas')", "'/more-info'"],
+    accepts: ["goto('/moreover')", "path: '/masters'", "goto('/helpers')", "'/more-info'"],
   },
   {
     name: 'the Mas screen',
@@ -106,7 +106,7 @@ const RULES: readonly Rule[] = [
     types: ['json'],
     pattern: /"\/(?:more|mas)"/,
     refuses: ['{ "path": "/more" }', '{ "/mas": "/" }'],
-    accepts: ['{ "path": "/masters" }', '{ "path": "/ventas" }'],
+    accepts: ['{ "path": "/masters" }', '{ "path": "/helpers" }'],
   },
   {
     name: 'the Mas.tsx file in JSON',
@@ -120,7 +120,7 @@ const RULES: readonly Rule[] = [
     types: ['py'],
     pattern: /["']\/(?:more|mas)(?![\w-])/,
     refuses: ['client.get("/more")', "assert path == '/mas'", 'client.get("/more/x")'],
-    accepts: ['inputs["more"] = {"type": "string"}', 'client.get("/moreover")', 'client.get("/ventas")'],
+    accepts: ['inputs["more"] = {"type": "string"}', 'client.get("/moreover")', 'client.get("/helpers")'],
   },
 ]
 
@@ -159,7 +159,7 @@ describe('the retired More scan', () => {
   test('nothing under web/src, web/e2e or tests names the More screen, its route or its tab', () => {
     const files = ROOTS.flatMap(walk)
       .filter((file) => file !== SELF)
-      .map((file) => ({ path: relative(join(WEB, '..'), file).split(sep).join('/'), content: readFileSync(file, 'utf8') }))
+      .map((file) => ({ path: relative(join(WEB, '..'), file).split(sep).join(posix.sep), content: readFileSync(file, 'utf8') }))
 
     expect(files.some(({ path }) => path === 'web/src/routes.ts')).toBe(true)
     expect(files.some(({ path }) => path.startsWith('web/e2e/'))).toBe(true)
