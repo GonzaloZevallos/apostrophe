@@ -35,12 +35,6 @@ class SqlExpensesLedger:
             .where(ExpenseRow.business_id == self._business_id)
         )
         return [
-            ExpenseRecord(
-                day=day,
-                amount=Money(amount).whole_units(),
-                category_id=category_id,
-                name=name,
-                name_key=name_key,
-            )
+            ExpenseRecord(day, Money(amount).whole_units(), category_id, name, name_key)
             for day, amount, category_id, name, name_key in self._session.execute(statement).all()
         ]

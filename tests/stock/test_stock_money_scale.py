@@ -189,7 +189,7 @@ def test_a_stored_cost_with_cents_is_an_integrity_failure_not_a_rounded_figure(
         session.add(
             StockEntryRow(
                 business_id=business_id,
-                entry_date=NOW.date(),
+                entered_on=NOW.date(),
                 variety_id=product_id,
                 origin="purchase",
                 grams_hundredths=400,

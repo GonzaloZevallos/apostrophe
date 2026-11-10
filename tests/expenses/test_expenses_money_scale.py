@@ -118,7 +118,7 @@ def test_a_stored_amount_with_cents_is_an_integrity_failure_not_a_rounded_figure
         session.add(
             ExpenseRow(
                 business_id=business_id,
-                category_id=_category_id(client),
+                expense_category_id=_category_id(client),
                 spent_on=NOW.date(),
                 amount=money_stored_value(session, business_id, Money(150)),
                 detail="fletes",
