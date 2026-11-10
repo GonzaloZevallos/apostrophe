@@ -15,6 +15,7 @@ import {
   HOME_PERIODS,
   PAYMENT_STATES,
   RAW_CHIP_SITES,
+  rawSites,
   SALES_PERIODS,
   STOCK_ENTRY_ORIGINS,
   THEME_CHOICES,
@@ -140,4 +141,15 @@ test('a language switch moves the icon names and leaves the period and theme wor
   for (const option of CUSTOMER_TYPE_ICON_SET) {
     expect(option.label()).toBe(`de:customerTypes.icon.${option.value}`)
   }
+})
+
+test('a raw chip site with a blank reason is refused at build, naming its file', () => {
+  const site = { file: 'src/screens/Somewhere.tsx', set: 'THEME_CHOICES' } as const
+  expect(() => rawSites([{ ...site, reason: '' }])).toThrow(
+    'A raw chip site needs a reason: src/screens/Somewhere.tsx',
+  )
+  expect(() => rawSites([{ ...site, reason: '   ' }])).toThrow(
+    'A raw chip site needs a reason: src/screens/Somewhere.tsx',
+  )
+  expect(rawSites([{ ...site, reason: 'draws its own chips' }])).toHaveLength(1)
 })

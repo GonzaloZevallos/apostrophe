@@ -119,7 +119,7 @@ export interface RawChipSite {
   readonly reason: string
 }
 
-function rawSites(sites: readonly RawChipSite[]): readonly RawChipSite[] {
+export function rawSites(sites: readonly RawChipSite[]): readonly RawChipSite[] {
   for (const site of sites) {
     if (site.reason.trim() === '') throw new Error(`A raw chip site needs a reason: ${site.file}`)
   }
