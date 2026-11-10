@@ -35,6 +35,7 @@ import {
   ONBOARDING_DONE,
   SALE_NEW,
   SALES,
+  SETTINGS,
 } from '../../routes'
 import { useBackOr } from '../../components/useBackOr'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
@@ -589,14 +590,14 @@ test('an advance refused any other way shows the generic error and stays on the 
 
 test('"Done" replaces the entry in history: back lands on the screen before /onboarding', async () => {
   stubSequence([FINISH], () => json(OVER))
-  const router = renderAt(ONBOARDING, 1, ['/settings'])
+  const router = renderAt(ONBOARDING, 1, [SETTINGS])
   await screen.findByRole('heading', { name: 'Done' })
   expect(router.state.location.pathname).toBe(ONBOARDING_DONE)
 
   await act(() => router.navigate(-1))
 
   expect(await screen.findByText('pantalla ajustes')).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe('/settings')
+  expect(router.state.location.pathname).toBe(SETTINGS)
   await act(() => router.navigate(1))
   expect(router.state.location.pathname).toBe(ONBOARDING_DONE)
 })
