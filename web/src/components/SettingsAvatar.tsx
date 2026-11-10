@@ -16,11 +16,12 @@ import InAppLink from './InAppLink'
 
 export default function SettingsAvatar() {
   const { t } = useTranslation()
-  const me = useOutletContext<Me>()
+  // A screen rendered on its own (without the shell's outlet) has no business to take initials from.
+  const me = useOutletContext<Me | null | undefined>()
   if (useViewport() === 'computer') return null
   return (
     <InAppLink to={SETTINGS} aria-label={t('common:settings')} className="inicio__avatar">
-      {initialsOf(me.business_name)}
+      {me == null ? '' : initialsOf(me.business_name)}
     </InAppLink>
   )
 }

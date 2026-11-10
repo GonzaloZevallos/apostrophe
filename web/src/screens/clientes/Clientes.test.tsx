@@ -76,8 +76,10 @@ function renderClientes() {
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={[CUSTOMERS]}>
         <Routes>
-          <Route element={<ClientesLayout />}>
-            <Route path={CUSTOMERS} element={<Clientes />} />
+          <Route element={<Outlet context={{ email: 'a@b.com', business_name: 'N', today: '2026-10-03' }} />}>
+            <Route element={<ClientesLayout />}>
+              <Route path={CUSTOMERS} element={<Clientes />} />
+            </Route>
           </Route>
         </Routes>
       </MemoryRouter>
@@ -617,7 +619,7 @@ test('on a phone, picking a customer pushes, so Back returns to the list and not
 })
 
 // A customer's row is a record row: it keeps its layout and takes no icon (the rule's out of scope).
-const RULE = { limits: LIMITS, samples: { name: SAMPLES.name }, optionClasses: ['lista-clientes__fila'] }
+const RULE = { limits: LIMITS, samples: { name: SAMPLES.name }, optionClasses: ['lista-clientes__fila', 'inicio__avatar'] }
 
 test('every action on the list and in Te deben is icon + text, and Cobrar keeps its accessible name', async () => {
   vi.mocked(fetch).mockImplementation(
