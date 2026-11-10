@@ -96,6 +96,8 @@ capture_pass() {
   temp_dirs+=("$work")
   start_app "$work"
   local capture="$out/capture-$number"
+  # An earlier run's capture in a reused --out must not be read as this run's.
+  rm -rf "$capture"
   mkdir -p "$capture"
   chmod 0777 "$capture"
   # The container reads the facts as another user too: a copy anyone can read.
@@ -108,6 +110,7 @@ capture_pass() {
 }
 
 SECONDS=0
+rm -f "$out/index.json"
 capture_pass 1 0
 index="$out/capture-1/index.json"
 if [ -n "$twice" ] || [ -n "$apply" ]; then

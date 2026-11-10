@@ -162,11 +162,14 @@ export function exitCode({ plan }) {
 
 /**
  * @param {string} file
- * @returns {Promise<any>} the parsed JSON, or null when the file is missing or not JSON
+ * @returns {Promise<ReadonlyArray<import('./screenImages.mjs').IndexEntry> | null>} the entries of an
+ *   `index.json`, or null when the file is missing, not JSON or not an array
  */
-async function readJson(file) {
+async function readIndex(file) {
   try {
-    return JSON.parse(await readFile(file, 'utf-8'))
+    /** @type {unknown} */
+    const parsed = JSON.parse(await readFile(file, 'utf-8'))
+    return Array.isArray(parsed) ? /** @type {ReadonlyArray<import('./screenImages.mjs').IndexEntry>} */ (parsed) : null
   } catch {
     return null
   }
@@ -179,8 +182,8 @@ async function readJson(file) {
  * @param {string} dirB
  */
 async function compareCaptures(dirA, dirB) {
-  const a = await readJson(join(dirA, 'index.json'))
-  if (!Array.isArray(a)) return { index: null, unstable: [], captured: 0 }
+  const a = await readIndex(join(dirA, 'index.json'))
+  if (a === null) return { index: null, unstable: [], captured: 0 }
   /** @type {string[]} */
   const unstable = []
   let captured = 0
@@ -270,8 +273,7 @@ export async function main(argv) {
       return usage('plan needs --index, --built-dir and --committed')
     }
     const registry = await loadRegistry(values.registry)
-    const index = await readJson(indexFile)
-    const known = Array.isArray(index) ? index : null
+    const known = await readIndex(indexFile)
     const changed = known === null ? new Map() : await classify({ index: known, builtDir, committedDir: committed })
     const plan = planPublish({ registry, committed: await readCommitted(committed), index: known, changed, appStarted: true })
     await mkdir(out, { recursive: true })
