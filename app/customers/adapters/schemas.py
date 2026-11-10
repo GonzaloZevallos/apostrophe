@@ -6,6 +6,7 @@ for `name`. A `vip` in a body is ignored, like any extra field: membership in th
 type is `customer_type_id`'s to say."""
 
 from datetime import date
+from decimal import Decimal
 from typing import Literal
 
 from pydantic import BaseModel
@@ -14,6 +15,7 @@ from app.customers.application.errors import RequiredFieldCleared
 from app.customers.application.manage_customers import UNCHANGED, CustomerChanges, Unchanged
 from app.customers.application.ports import CustomerBalance, Standing
 from app.customers.domain.customer import Customer
+from app.money_schema import MoneyOut
 
 
 class CustomerIn(BaseModel):
@@ -50,7 +52,7 @@ class CustomerOut(BaseModel):
     phone: str | None
     vip: bool
     customer_type_id: int | None
-    balance: int
+    balance: MoneyOut
     owing_since: date | None
     standing: Standing
 
@@ -70,7 +72,7 @@ class CustomerOut(BaseModel):
             phone=customer.phone.value if customer.phone is not None else None,
             vip=vip_type_id is not None and customer.customer_type_id == vip_type_id,
             customer_type_id=customer.customer_type_id,
-            balance=balance.balance,
+            balance=Decimal(balance.balance),
             owing_since=balance.owing_since,
             standing=balance.standing,
         )

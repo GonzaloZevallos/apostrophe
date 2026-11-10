@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.business_removal.adapters.sql_schema_rows import SqlSchemaRows
@@ -76,7 +77,7 @@ def test_delete_order_covers_every_owned_table() -> None:
 
 def test_expense_to_expense_category_fk_reflects_as_one_composite_key() -> None:
     """`expense`'s migration (0003) declares a two-column `ForeignKeyConstraint` on
-    `(business_id, category_id)` targeting `expense_category`'s `(business_id, id)`,
+    `(business_id, expense_category_id)` targeting `expense_category`'s `(business_id, id)`,
     alongside its separate single-column key to `business`. Reflection must keep the
     composite key as one `ForeignKey` with two columns, never split it into two
     single-column ones, or `delete_order` could place `expense` wrongly."""
@@ -90,7 +91,7 @@ def test_expense_to_expense_category_fk_reflects_as_one_composite_key() -> None:
     assert len(foreign_key.columns) == 2
     assert set(zip(foreign_key.columns, foreign_key.target_columns, strict=True)) == {
         ("business_id", "business_id"),
-        ("category_id", "id"),
+        ("expense_category_id", "id"),
     }
 
 
@@ -99,7 +100,68 @@ def test_every_business_column_but_id_is_a_key_of_the_export_header() -> None:
     columns = {column.name for column in schema.table("business").columns} - {"id"}
 
     document = build_document(
-        Business(1, "La Flor", "en", None), schema, {}, datetime(2026, 1, 1, 12, 0, 0)
+        Business(1, "La Flor", "en", None, 0), schema, {}, datetime(2026, 1, 1, 12, 0, 0)
     )
 
     assert columns <= set(document["business"]), columns - set(document["business"])
+
+
+def test_a_locked_email_of_a_removed_business_s_user_is_counted_and_deleted() -> None:
+    """`login_guard` now has an `id` but still no `business_id` (docs/adr/0077), so the
+    removal reaches it by the emails `app_user`'s delete returned, never by `id`."""
+    engine = make_engine("sqlite://")
+    upgrade_to_head(engine)
+    with engine.begin() as connection:
+        for business_id, email in ((1, "leaving@example.com"), (2, "staying@example.com")):
+            connection.execute(
+                text("INSERT INTO business (id, name, language) VALUES (:id, 'Negocio', 'en')"),
+                {"id": business_id},
+            )
+            connection.execute(
+                text(
+                    "INSERT INTO app_user (id, business_id, email, password_hash) "
+                    "VALUES (:id, :id, :email, 'x')"
+                ),
+                {"id": business_id, "email": email},
+            )
+            connection.execute(
+                text(
+                    "INSERT INTO login_guard (email, failures, unlocks_at) "
+                    "VALUES (:email, 2, '2026-10-02 18:10:00.000000')"
+                ),
+                {"email": email},
+            )
+        connection.execute(
+            text("INSERT INTO login_guard (email, failures) VALUES ('stranger@example.com', 1)")
+        )
+
+    with Session(engine) as session:
+        rows = SqlSchemaRows(session)
+        deleted = rows.delete_business(1, delete_order(rows.schema()))
+        session.commit()
+
+    assert deleted.login_guard_count == 1
+    with engine.connect() as connection:
+        left = connection.execute(text("SELECT email FROM login_guard ORDER BY email")).scalars()
+        assert list(left) == ["staying@example.com", "stranger@example.com"]
+
+
+def test_the_export_carries_the_renamed_date_columns_and_neither_old_name() -> None:
+    schema = _schema_rows().schema()
+
+    columns = {table.name: {column.name for column in table.columns} for table in schema.tables}
+
+    assert "sold_on" in columns["sale"]
+    assert "entered_on" in columns["stock_entry"]
+    assert not {"sale_date", "entry_date"} & {name for names in columns.values() for name in names}
+
+
+def test_the_export_carries_catalog_attribute_with_is_shown_and_is_vip_on_customer() -> None:
+    schema = _schema_rows().schema()
+
+    columns = {table.name: {column.name for column in table.columns} for table in schema.tables}
+
+    assert "is_shown" in columns["catalog_attribute"]
+    assert "is_vip" in columns["customer"]
+    assert "catalog_attributes" not in columns
+    assert not {"shown", "vip"} & (columns["catalog_attribute"] | columns["customer"])

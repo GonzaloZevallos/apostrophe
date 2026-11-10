@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from datetime import date, datetime
+from decimal import Decimal
 from typing import assert_never
 
 from sqlalchemy import func, select
@@ -22,9 +23,11 @@ from sqlalchemy.orm import Session
 from app.sales.adapters.price_book import PlannedPriceBook, SqlPriceBook
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.adapters.tables import SaleRow
+from app.sales.application.ports import MoneyFormatReader
 from app.sales.application.record_sale import LineInput, record_sale
 from app.sales.domain.pricing import SaleRuleBroken
 from app.sales.domain.sale import CustomerFact, LineRequest, PaymentMethod, Sale
+from app.shared.money import MoneyFormat
 from app.shared.pricing_settings import PricingSettings
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.application.ports import Refusal, SaleCheck, SaleCheckInput
@@ -60,9 +63,14 @@ def _payment_method(method: OnTheSpotMethod | None) -> PaymentMethod | None:
 class SalesImport:
     """`SalesImport` for one business."""
 
-    def __init__(self, session: Session, business_id: int) -> None:
+    def __init__(
+        self, session: Session, business_id: int, money_format: MoneyFormatReader | None = None
+    ) -> None:
         self._session = session
         self._business_id = business_id
+        # The command line hangs the business's own format here; a caller that has none
+        # gets the whole-amount one, which accepts a sheet's whole amounts all the same.
+        self._money_format: MoneyFormatReader = money_format or _SheetAmounts()
 
     def has_records(self) -> bool:
         statement = (
@@ -134,18 +142,21 @@ class SalesImport:
             SqlPriceBook(self._session, self._business_id),
             _FixedVip(sale.vip),
             _FixedSettings(settings),
+            self._money_format,
             transaction,
             sale_date=sale.sale_date,
             today=today,
             customer_id=customer_id,
-            shipping_charged=sale.shipping,
+            shipping_charged=Decimal(sale.shipping),
             note=sale.note,
             lines=[
                 LineInput(
                     variety_id=variety_id,
                     quantity=sale.quantity,
                     gift=sale.gift,
-                    special_price=sale.special_total,
+                    special_price=(
+                        None if sale.special_total is None else Decimal(sale.special_total)
+                    ),
                 )
             ],
             method=_payment_method(sale.method),
@@ -194,3 +205,12 @@ def _assign_ordinals(
         if sale.variety_key not in ordinals:
             ordinals[sale.variety_key] = len(ordinals) + 1
     return ordinals
+
+
+class _SheetAmounts:
+    """A sheet's amounts are whole currency units already, so any format accepts them: the
+    use case's check passes by value, and this hexagon never reads the money format table
+    it does not own (docs/adr/0055)."""
+
+    def current(self) -> MoneyFormat:
+        return MoneyFormat(symbol="#", decimals=0)

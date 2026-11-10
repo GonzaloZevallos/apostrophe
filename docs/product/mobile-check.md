@@ -2,32 +2,32 @@
 
 ## Jobs
 
-- When a rule written for a change turns out to be impossible for screens the checks always walk, I want the rule and its tests to say what truly holds, with the reason next to it, so the change can be approved, and later changes can be reviewed, without arguing the same contradiction again. (Maintainer job, GH-305, a follow-up of GH-274.)
+- Cuando una regla escrita para un cambio resulta imposible para pantallas que los chequeos recorren siempre, quiero que la regla y sus tests digan lo que de verdad se cumple, con el motivo al lado, para que el cambio se pueda aprobar, y los cambios posteriores se puedan revisar, sin volver a discutir la misma contradicción. (Job del mantenedor, GH-305, seguimiento de GH-274.)
 
-## What it is
+## Qué es
 
-The mobile check is part of the Gate. It walks the phone rows of the screens registry and fails on any mobile-standard offence not listed in the offender lists under `web/src/mobile-standard/offenders/`. Sellers never see it. How the offender lists may change is written in one place only, `docs/product/gate.md` ("Mobile standard offender lists"), and this file does not repeat that rule.
+El **Mobile check** es parte del **Gate**. Recorre las filas de teléfono del registro de pantallas y falla ante cualquier infracción del estándar móvil que no figure en las listas de infractores de `web/src/mobile-standard/offenders/`. Los vendedores nunca lo ven. Cómo pueden cambiar las listas de infractores está escrito en un solo lugar, `docs/product/gate.md` ("Listas de infractores del estándar móvil"), y este archivo no repite esa regla.
 
-## Invariants that hold
+## Invariantes que se cumplen
 
-1. **Offender lists.** They grow only as gate.md allows. The `InicioChecklist` (Home with the first-run checklist) and `InicioImportado` (Home with the after-import notice) entries in `touch-action.json` are a new-registry-row growth from GH-274, each carrying its reason. GH-305 added no other entry and removed none.
-2. **Registry assertions.** In `web/src/design/screens.test.ts`, every assertion stays as it was before GH-274 except these two, each marked deliberate with its reason:
-   - the `InicioHoyCompuOscuro` section is `HOY_PHONE`, no longer undefined;
-   - the real-map `assertSelectedAccounts` call runs over the extended all map.
+1. **Listas de infractores.** Crecen solo como lo permite gate.md. Las entradas `InicioChecklist` (Home con la **First-run checklist**) e `InicioImportado` (Home con el aviso posterior a la **Spreadsheet import**) de `touch-action.json` son un crecimiento por fila nueva del registro de GH-274, y cada una lleva su motivo. GH-305 no agregó ninguna otra entrada y no quitó ninguna. GH-650 (parte 1 de GH-560) retiró esas dos filas del registro junto con sus dibujos, y sus entradas de `touch-action.json` salieron en el mismo cambio.
+2. **Aserciones del registro.** En `web/src/design/screens.test.ts`, toda aserción queda como estaba antes de GH-274 salvo estas dos, cada una marcada como deliberada con su motivo:
+   - la sección `InicioHoyCompuOscuro` es `HOY_PHONE`, ya no undefined;
+   - la llamada `assertSelectedAccounts` del mapa real corre sobre el mapa completo extendido.
 
-   Each of the two still fails if the screen or map it guards regresses.
-3. **Nothing hidden or weakened.** Nothing is hidden or weakened to make a written rule hold. A green Gate means no regression, and a red one means a product regression.
-4. **Where corrected rules live.** They sit next to the code they govern, in the offender entries, the tests and gate.md. A past plan stays a closed record and is not amended.
+   Cada una de las dos sigue fallando si la pantalla o el mapa que protege retrocede.
+3. **Nada oculto ni aflojado.** No se oculta ni se afloja nada para que una regla escrita se cumpla. Un Gate en verde significa que no hay regresión, y uno en rojo significa una regresión del producto.
+4. **Dónde viven las reglas corregidas.** Están junto al código que gobiernan: en las entradas de las listas de infractores, en los tests y en gate.md. Un plan pasado queda como registro cerrado y no se enmienda.
 
-## Out of scope
+## Fuera de alcance
 
-- Any seller-visible screen, copy or behaviour.
-- Design captures. They are review evidence and never a step of the Gate.
+- Cualquier pantalla, copy o comportamiento que vea el vendedor.
+- Las **Design capture**s. Son evidencia de revisión y nunca un paso del Gate.
 
-## Metrics
+## Métricas
 
-- **Gate:** green on the change, with no offender hidden.
-- **Offender-list growth:** compared with GH-274's base, the lists grow by exactly the entries for `InicioChecklist` and `InicioImportado`, each with a reason. Removals: 0.
-- **Rewritten registry assertions:** exactly 2. Both are marked deliberate with a reason, and each is shown to fail on a regressed input.
-- **Open findings:** 0 open `important` findings on GH-274 about these two invariants.
-- **Seller-visible changes:** 0 (screens, copy, behaviour).
+- **Gate:** en verde con el cambio, sin ningún infractor oculto.
+- **Crecimiento de las listas de infractores:** comparadas con la base de GH-274, las listas crecen exactamente por las entradas de `InicioChecklist` e `InicioImportado`, cada una con su motivo. Quitadas: 0.
+- **Aserciones del registro reescritas:** exactamente 2. Las dos están marcadas como deliberadas con su motivo, y a cada una se la muestra fallando sobre una entrada con regresión.
+- **Findings abiertos:** 0 findings `important` abiertos en GH-274 sobre estos dos invariantes.
+- **Cambios visibles al vendedor:** 0 (pantallas, copy, comportamiento).

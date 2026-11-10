@@ -1,0 +1,4 @@
+// expect: t-outside-function@3
+import i18next from 'i18next'
+const tt = i18next.t
+export const title = tt('a')

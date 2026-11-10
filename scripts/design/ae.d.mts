@@ -8,7 +8,13 @@ export type BoxSizeMismatch = {
   b: { width: number; height: number };
 };
 export type Decoded = { ok: true; image: Image } | { ok: false; reason: 'unreadable' };
-export type IndexEntry = { screen: string; built: string | null; design: string | null };
+export type IndexEntry = {
+  screen: string;
+  built: string | null;
+  design: string | null;
+  capture?: 'captured' | 'not-captured';
+  reasons?: { design?: string; built?: string };
+};
 export type Comparison = { lines: string[]; failed: boolean };
 export function ae(a: Image, b: Image): AeResult;
 export function box(a: Image, b: Image): Box | BoxSizeMismatch | null;

@@ -67,6 +67,7 @@
     "web/e2e/passwords.spec.ts",
     "web/e2e/pressed.spec.ts",
     "web/e2e/settings.spec.ts",
+    "web/e2e/signIn.spec.ts",
     "web/e2e/theme.spec.ts"
   ],
   "EntriesList": [
@@ -87,7 +88,6 @@
     "web/e2e/barFit.spec.ts",
     "web/e2e/cobroHoja.spec.ts",
     "web/e2e/cobroModal.spec.ts",
-    "web/e2e/firstRun.spec.ts",
     "web/e2e/flow.spec.ts",
     "web/e2e/inicioCobrar.spec.ts",
     "web/e2e/insets.spec.ts",
@@ -100,8 +100,13 @@
     "web/e2e/toastRecorder.spec.ts",
     "web/e2e/withdrawals.spec.ts"
   ],
+  "ForgotSheet": [
+    "web/e2e/flow.spec.ts",
+    "web/e2e/insets.spec.ts",
+    "web/e2e/navigation.spec.ts",
+    "web/e2e/signIn.spec.ts"
+  ],
   "Invitacion": [
-    "web/e2e/firstRun.spec.ts",
     "web/e2e/flow.spec.ts",
     "web/e2e/insets.spec.ts",
     "web/e2e/leaveWithBack.spec.ts",
@@ -195,7 +200,6 @@
     "web/e2e/barFit.spec.ts",
     "web/e2e/cobroHoja.spec.ts",
     "web/e2e/cobroModal.spec.ts",
-    "web/e2e/firstRun.spec.ts",
     "web/e2e/flow.spec.ts",
     "web/e2e/inicioCobrar.spec.ts",
     "web/e2e/insets.spec.ts",
@@ -209,7 +213,6 @@
     "web/e2e/withdrawals.spec.ts"
   ],
   "onboarding": [
-    "web/e2e/firstRun.spec.ts",
     "web/e2e/flow.spec.ts",
     "web/e2e/insets.spec.ts",
     "web/e2e/navigation.spec.ts",
@@ -217,7 +220,6 @@
   ],
   "settings": [
     "web/e2e/catalog.spec.ts",
-    "web/e2e/firstRun.spec.ts",
     "web/e2e/flow.spec.ts",
     "web/e2e/insets.spec.ts",
     "web/e2e/navigation.spec.ts",

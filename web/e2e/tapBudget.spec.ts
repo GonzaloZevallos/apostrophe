@@ -99,7 +99,8 @@ test('a seller records an expense from Más and Cerrar goes back to where the fo
   await expectPath(page, MORE)
 
   await page.getByRole('link', { name: /^\+ Add expense/ }).click()
-  await page.getByRole('combobox', { name: 'Category' }).selectOption({ label: 'Packaging' })
+  await page.getByRole('button', { name: /^Category/ }).click()
+  await page.getByRole('button', { name: 'Packaging', exact: true }).click()
   await page.getByLabel('Amount').fill('3200')
   await page.getByLabel('Details').fill('Cajas de cartón')
   await expectToast(page, 'Expense saved', async () => {
@@ -146,7 +147,7 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
       let counter: Counter = { taps: 0 }
       if (computer && root === VARIETIES) {
         // Variedades selects its first variety on its own, and a variety's page is a card: a
-        // card never shows "+ Nueva venta" (navigation.md, "Chrome and back"), the rail
+        // card never shows "+ Nueva venta" (navigation.md, "Marco y camino de vuelta"), the rail
         // included. So the sale is not one tap from here on a computer; the tab roots that
         // stay roots (the others) are measured below.
         await settled(page, computer)
@@ -183,7 +184,7 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
 
       await page.goto(root)
       counter = { taps: 0 }
-      if (root !== VARIETIES) await viaTab(page, counter, computer, 'Varieties')
+      if (root !== VARIETIES) await viaTab(page, counter, computer, 'Products')
       await settled(page, computer)
       await tap(counter, page.getByRole('link', { name: 'Send catalog' }))
       await expectPath(page, CATALOG)
@@ -191,7 +192,7 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
 
       await page.goto(root)
       counter = { taps: 0 }
-      if (root !== VARIETIES) await viaTab(page, counter, computer, 'Varieties')
+      if (root !== VARIETIES) await viaTab(page, counter, computer, 'Products')
       await settled(page, computer)
       await tap(counter, page.getByRole('link', { name: '+ Stock entry' }))
       await expectPath(page, STOCK_ENTRY_NEW)

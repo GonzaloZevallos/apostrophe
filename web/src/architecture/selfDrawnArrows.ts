@@ -1,8 +1,8 @@
 /**
- * The scan behind "exactly one ‹ per card" (GH-135, navigation.md, "Chrome and back"): the shell
- * draws a card's back arrow from the registry, so no screen draws one of its own. It reads source
- * text, one line per offence, comments blanked first (newlines kept, so a line number is the
- * file's own):
+ * The scan behind "exactly one ‹ per card" (GH-135, navigation.md, "Marco y camino de vuelta"):
+ * the shell draws a card's back arrow from the registry, so no screen draws one of its own. It
+ * reads source text, one line per offence, comments blanked first (newlines kept, so a line
+ * number is the file's own):
  *
  * - `variant="back"` on a `Boton` or `BotonLink`;
  * - a literal `‹` (in JSX text or in a string a screen hands to its own arrow);

@@ -20,6 +20,9 @@ class BusinessRow(Base):
     language: Mapped[str] = mapped_column(String(35))
     # An ISO 3166-1 alpha-2 code from app.shared.phone_country, or null (docs/adr/0082).
     default_phone_country: Mapped[str | None] = mapped_column(String(2))
+    # The highest Sale number this business ever gave (docs/adr/0073); only
+    # `SqlSales.add` raises it, so deleting a sale never frees a number.
+    last_sale_number: Mapped[int] = mapped_column(server_default="0")
 
 
 class UserRow(Base):
@@ -52,7 +55,7 @@ class ResetLinkRow(Base):
     # UNIQUE, not a rule in code.
     id: Mapped[int] = mapped_column(primary_key=True)
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
-    user_id: Mapped[int] = mapped_column(ForeignKey("app_user.id"), unique=True)
+    app_user_id: Mapped[int] = mapped_column(ForeignKey("app_user.id"), unique=True)
     token_digest: Mapped[str] = mapped_column(String(64), unique=True)
     created_at: Mapped[datetime] = mapped_column(UtcDateTime)
 
@@ -60,10 +63,13 @@ class ResetLinkRow(Base):
 class LoginGuardRow(Base):
     __tablename__ = "login_guard"
 
-    # Keyed by the email tried, known or not, so the brake never tells which exist.
-    email: Mapped[str] = mapped_column(String(EMAIL_MAX_LENGTH), primary_key=True)
+    # Keyed by the email tried, known or not, so the brake never tells which exist: the
+    # `id` carries no meaning, the UNIQUE on `email` is the upsert's conflict target
+    # (docs/adr/0077).
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String(EMAIL_MAX_LENGTH), unique=True)
     failures: Mapped[int]
-    locked_until: Mapped[datetime | None] = mapped_column(UtcDateTime)
+    unlocks_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
 
 
 class LoginAddressGuardRow(Base):
@@ -73,7 +79,10 @@ class LoginAddressGuardRow(Base):
     # never the raw IP: the brake only ever needs to tell two addresses apart. Like
     # `login_guard`, it decides who is let in rather than belonging to a business, so
     # it carries no `business_id` (tests/migrations/test_business_ownership.py).
-    address_digest: Mapped[str] = mapped_column(String(64), primary_key=True)
+    # The `id` carries no meaning; the UNIQUE on `address_digest` is the upsert's
+    # conflict target (docs/adr/0077).
+    id: Mapped[int] = mapped_column(primary_key=True)
+    address_digest: Mapped[str] = mapped_column(String(64), unique=True)
     failures: Mapped[int]
-    window_start: Mapped[datetime] = mapped_column(UtcDateTime)
-    locked_until: Mapped[datetime | None] = mapped_column(UtcDateTime)
+    window_started_at: Mapped[datetime] = mapped_column(UtcDateTime)
+    unlocks_at: Mapped[datetime | None] = mapped_column(UtcDateTime)

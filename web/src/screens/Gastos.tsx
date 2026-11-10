@@ -27,8 +27,7 @@ import type { Me } from '../api/me'
 import { formatDate, formatMonthLong, parseMonth, shiftMonth } from '../format/dates'
 import { formatMoney } from '../format/money'
 import { isGone } from '../api/refusals'
-import ConfirmDialog from '../components/ConfirmDialog'
-import Sheet from '../components/Sheet'
+import { SheetStackProvider } from '../components/useSheetStack'
 import GoneNotice from '../components/GoneNotice'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import Icono from '../components/Icono'
@@ -36,11 +35,11 @@ import SinConexion from '../components/SinConexion'
 import Loading from '../components/Loading'
 import { useFlash } from '../flash/useFlash'
 import { EXPENSE_CATEGORIES, EXPENSE_NEW } from '../routes'
-import ExpenseForm from './expenses/ExpenseForm'
+import ExpenseEditSheet from './expenses/ExpenseEditSheet'
 import MonthBody from './expenses/MonthBody'
-import { useViewport } from '../shell/useViewport'
 import { FLOWER_NOTICE, EXPENSES_TEXT } from '../copy/expenses'
 import { COMMON_TEXT } from '../copy/common'
+import ContentArea from '../components/ContentArea'
 
 export { FLOWER_NOTICE }
 export const NO_DISCARD_TITLE = COMMON_TEXT.noKeep
@@ -117,32 +116,24 @@ function DeleteConfirm({
 }
 
 export default function Gastos() {
+  return (
+    <SheetStackProvider>
+      <GastosScreen />
+    </SheetStackProvider>
+  )
+}
+
+function GastosScreen() {
   const me = useOutletContext<Me>()
   const flash = useFlash()
-  const computer = useViewport() === 'computer'
   const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
   const month = parseMonth(searchParams, me.today)
   const [editTarget, setEditTarget] = useState<Expense | null>(null)
-  const [editDirty, setEditDirty] = useState(false)
-  const [confirmingDiscard, setConfirmingDiscard] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null)
   const [goneNotice, setGoneNotice] = useState(false)
 
   const view = useQuery({ queryKey: keys.expenses(month), queryFn: () => monthlyView(month) })
-  // On a computer it is the last child of `.capa__contenido`, as it always was; on a phone it sits
-  // beside the sheet's body.
-  const discardDialog = confirmingDiscard && (
-    <ConfirmDialog
-      title={COMMON_TEXT.discardTheChanges}
-      detail={EXPENSES_TEXT.whatYouChangedIsLost}
-      confirmText={EXPENSES_TEXT.yesDiscardThem}
-      cancelText={COMMON_TEXT.noKeepEditing}
-      onConfirm={closeEdit}
-      onCancel={() => setConfirmingDiscard(false)}
-    />
-  )
-
   // The gone notice clears itself after 2.5 s; a pending timer must not outlive the screen.
   const timers = useRef<number[]>([])
   useEffect(() => {
@@ -159,19 +150,13 @@ export default function Gastos() {
     timers.current.push(window.setTimeout(() => setGoneNotice(false), 2500))
   }
 
-  function closeEdit(): void {
-    setEditTarget(null)
-    setEditDirty(false)
-    setConfirmingDiscard(false)
-  }
-
   function categoryNameOf(categoryId: number): string {
     const found = view.data?.categories.find((category) => category.id === categoryId)
     return found?.name ?? ''
   }
 
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <div className="cuerpo gastos">
         <div className="gastos__cabecera">
           <span className="encabezado__titulo gastos__titulo">{COMMON_TEXT.expenses}</span>
@@ -217,40 +202,23 @@ export default function Gastos() {
       </div>
 
       {editTarget !== null && (
-        // An in-page sheet (ADR-0062): Expenses itself is behind it, so no `BehindPane`. On a
-        // computer it is the `.capa` it always was, a `div` since the screen is already the `main`.
-        <Sheet
-          computer={computer}
-          computerClass="capa"
-          computerBodyClass="capa__contenido"
-          computerDialog={false}
-          frameTag="div"
-          label={EXPENSES_TEXT.editExpense}
-          touched={editDirty}
-          onClose={() => (editDirty ? setConfirmingDiscard(true) : closeEdit())}
-          computerFrameRole="presentation"
-          aside={!computer && discardDialog}
-        >
-          <ExpenseForm
-            target={editTarget}
-            onDirtyChange={setEditDirty}
-            onCancel={() => (editDirty ? setConfirmingDiscard(true) : closeEdit())}
-            onDone={(saved) => {
-              invalidateResource(queryClient, 'expenses')
-              closeEdit()
-              flash.showNow(saved)
-            }}
-            onGone={() => {
-              closeEdit()
-              flashGone()
-            }}
-            onRequestDelete={(expense) => {
-              closeEdit()
-              setDeleteTarget(expense)
-            }}
-          />
-          {computer && discardDialog}
-        </Sheet>
+        <ExpenseEditSheet
+          target={editTarget}
+          words={{
+            title: EXPENSES_TEXT.editExpense,
+            question: COMMON_TEXT.discardTheChanges,
+            keep: COMMON_TEXT.noKeepEditing,
+            lost: EXPENSES_TEXT.whatYouChangedIsLost,
+            discard: EXPENSES_TEXT.yesDiscardThem,
+          }}
+          onClosed={() => setEditTarget(null)}
+          onSaved={(saved) => {
+            invalidateResource(queryClient, 'expenses')
+            flash.showNow(saved)
+          }}
+          onGone={flashGone}
+          onRequestDelete={setDeleteTarget}
+        />
       )}
       {deleteTarget !== null && (
         <DeleteConfirm
@@ -273,6 +241,6 @@ export default function Gastos() {
           <GoneNotice />
         </div>
       )}
-    </main>
+    </ContentArea>
   )
 }

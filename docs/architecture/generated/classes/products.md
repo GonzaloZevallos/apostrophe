@@ -136,6 +136,9 @@ classDiagram
 
 ```mermaid
 classDiagram
+  class MoneyFormatReader {
+    current() MoneyFormat
+  }
   class NameHeldByArchived {
     code : ClassVar~str~
   }
@@ -173,25 +176,25 @@ classDiagram
 classDiagram
   class PriceEntryIn {
     bulk_minimum : Decimal #124; None
-    bulk_price : int #124; None
+    bulk_price : MoneyAmount #124; None
     effective_from : date
-    list_price : int
-    vip_price : int #124; None
+    list_price
+    vip_price : MoneyAmount #124; None
   }
   class PriceEntryOut {
     bulk_minimum : QuantityOut #124; None
-    bulk_price : int #124; None
+    bulk_price : MoneyOut #124; None
     effective_from : date
     id : int
-    list_price : int
-    vip_price : int #124; None
+    list_price
+    vip_price : MoneyOut #124; None
     of(entry: PriceEntry) 'PriceEntryOut'
   }
   class PriceEntryRow {
     bulk_minimum_hundredths : Mapped~int #124; None~
     bulk_price : Mapped~int #124; None~
     business_id : Mapped~int~
-    effective_from : Mapped~date~
+    effective_on : Mapped~date~
     id : Mapped~int~
     list_price : Mapped~int~
     variety : Mapped~ProductRow~

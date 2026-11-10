@@ -2,6 +2,7 @@
 through the front it exists to compare, so a redesigned screen cannot break it. Every
 state the design's screens show has to exist after seeding."""
 
+import ast
 import importlib.util
 import json
 import os
@@ -11,12 +12,11 @@ import sys
 import threading
 import time
 from collections.abc import Iterator
-from contextlib import closing, contextmanager
+from contextlib import contextmanager
 from pathlib import Path
 from types import ModuleType
 from typing import Any, cast
 
-import openpyxl
 import pytest
 import uvicorn
 from fastapi import FastAPI
@@ -313,373 +313,13 @@ def test_the_ended_and_the_onboarding_accounts_share_no_name() -> None:
     assert set(sample_app.ENDED_ONBOARDING_ACCOUNTS).isdisjoint(sample_app.ONBOARDING_ACCOUNTS)
 
 
-COUNT_ROWS = {
-    "onboarding": "SELECT COUNT(*) FROM onboarding WHERE business_id = ?",
-    "first_run": "SELECT COUNT(*) FROM first_run WHERE business_id = ?",
-}
-
-
-def rows_of(db_path: Path, table: str, business_id: int) -> int:
-    with closing(sqlite3.connect(db_path, timeout=30)) as conn:
-        found: int = conn.execute(COUNT_ROWS[table], (business_id,)).fetchone()[0]
-    return found
-
-
-def test_the_checklist_account_is_a_business_with_no_onboarding_and_one_priced_variety(
-    tmp_path: Path,
-) -> None:
-    db_path = tmp_path / "sample.db"
-    with running_sample(tmp_path) as (sample_app, env, base):
-        account = sample_app.pre_onboarding_account(
-            env, base, TODAY, db_path, "checklist", priced=True
-        )
-
-        api = sign_in(sample_app, base, account.email, account.password)
-        shown = api.call("GET", "/first-run")
-        assert shown["kind"] == "checklist"
-        assert [(step["step"], step["done"]) for step in shown["checklist"]] == [
-            ("priced_variety", True),
-            ("stock_entry", False),
-            ("published", False),
-            ("second_user", False),
-        ]
-        assert shown["import_notice"] is False
-        business = sample_app.business_id_of(db_path, account.email)
-        assert rows_of(db_path, "onboarding", business) == 0
-        assert rows_of(db_path, "first_run", business) == 0
-        assert len(api.call("GET", "/api/products")) == 1
-
-
-def test_the_imported_account_is_a_business_the_real_import_loaded(tmp_path: Path) -> None:
-    db_path = tmp_path / "sample.db"
-    with running_sample(tmp_path) as (sample_app, env, base):
-        account = sample_app.imported_account(env, base, TODAY, db_path)
-
-        api = sign_in(sample_app, base, account.email, account.password)
-        shown = api.call("GET", "/first-run")
-        assert shown["kind"] == "none"
-        assert shown["checklist"] == []
-        assert shown["import_notice"] is True
-        assert api.call("GET", "/onboarding-progress")["over"] is True
-        assert len(api.call("GET", "/api/products")) == 1
-        business = sample_app.business_id_of(db_path, account.email)
-        with closing(sqlite3.connect(db_path, timeout=30)) as conn:
-            stamps = conn.execute(
-                "SELECT imported_at, import_notice_over_at, checklist_gone_at"
-                " FROM first_run WHERE business_id = ?",
-                (business,),
-            ).fetchall()
-        assert len(stamps) == 1
-        imported_at, notice_over_at, checklist_gone_at = stamps[0]
-        assert imported_at is not None
-        assert notice_over_at is None
-        assert checklist_gone_at is None
-
-
-def test_the_sample_refuses_a_dotenv_that_would_send_the_import_to_another_database(
-    tmp_path: Path,
-) -> None:
+def test_no_account_name_has_two_kinds() -> None:
     sample_app = load_script()
-    dotenv = tmp_path / ".env"
+    groups = (sample_app.ONBOARDING_ACCOUNTS, sample_app.ENDED_ONBOARDING_ACCOUNTS)
 
-    sample_app.refuse_database_override(dotenv)
-    dotenv.write_text("APOSTROPHE_SECRET_KEY=a\nAPOSTROPHE_PUBLIC_URL=b\n", encoding="utf-8")
-    sample_app.refuse_database_override(dotenv)
-
-    for line in (
-        "APOSTROPHE_DATABASE_URL=sqlite:///mine.db",
-        "export APOSTROPHE_DATABASE_URL = sqlite:///mine.db",
-    ):
-        dotenv.write_text(f"APOSTROPHE_SECRET_KEY=a\n{line}\n", encoding="utf-8")
-        with pytest.raises(SystemExit) as refused:
-            sample_app.refuse_database_override(dotenv)
-        assert "mine.db" not in str(refused.value)
-        assert "APOSTROPHE_DATABASE_URL" in str(refused.value)
-
-
-def test_expect_first_run_stops_the_sample_on_any_other_answer_without_naming_data() -> None:
-    sample_app = load_script()
-
-    class Answers:
-        def __init__(self, answer: dict[str, Any]) -> None:
-            self.answer = answer
-
-        def call(self, method: str, path: str, body: object | None = None) -> Any:
-            assert (method, path) == ("GET", "/first-run")
-            return self.answer
-
-    def step(name: str, done: bool) -> dict[str, Any]:
-        return {"step": name, "required": True, "done": done}
-
-    both: dict[str, Any] = {
-        "kind": "checklist",
-        "import_notice": False,
-        "checklist": [step("a", True), step("b", False)],
-    }
-    wanted = (("a", True), ("b", False))
-    sample_app.expect_first_run(
-        Answers(both), "checklist", account="pre_onboarding", steps=wanted, import_notice=False
-    )
-    none = {"kind": "none", "import_notice": True, "checklist": []}
-    sample_app.expect_first_run(Answers(none), "none", account="imported", import_notice=True)
-
-    wrong: dict[str, tuple[dict[str, Any], str]] = {
-        "kind": ({**both, "kind": "none"}, "kind"),
-        "step flipped": ({**both, "checklist": [step("a", True), step("b", True)]}, "step b"),
-        "step missing": ({**both, "checklist": [step("a", True)]}, "step b"),
-        "step extra": ({**both, "checklist": [*both["checklist"], step("c", False)]}, "steps"),
-        "notice": ({**both, "import_notice": True}, "import_notice"),
-    }
-    for answer, check in wrong.values():
-        with pytest.raises(SystemExit) as refused:
-            sample_app.expect_first_run(
-                Answers(answer),
-                "checklist",
-                account="pre_onboarding",
-                steps=wanted,
-                import_notice=False,
-            )
-        assert str(refused.value) == (
-            f"sample-app: the pre_onboarding account's first run is wrong: {check}"
-        )
-    with pytest.raises(SystemExit) as refused:
-        sample_app.expect_first_run(
-            Answers(both), "checklist", account="pre_onboarding", import_notice=False
-        )
-    assert str(refused.value).endswith("steps")
-
-
-def test_no_account_name_has_two_kinds_and_the_capture_accounts_are_declared() -> None:
-    sample_app = load_script()
-    groups = (
-        sample_app.ONBOARDING_ACCOUNTS,
-        sample_app.ENDED_ONBOARDING_ACCOUNTS,
-        sample_app.PRE_ONBOARDING_ACCOUNTS,
-        sample_app.IMPORTED_ACCOUNTS,
-        sample_app.ONBOARDING_FRAME_ACCOUNTS,
-    )
-
-    assert sample_app.PRE_ONBOARDING_ACCOUNTS == ("checklist", "primera_vez")
-    assert sample_app.ONBOARDING_FRAME_ACCOUNTS == ("en_curso", "completo")
-    assert sample_app.IMPORTED_ACCOUNTS == ("importada",)
     names = [name for group in groups for name in group]
     assert len(names) == len(set(names))
-
-
-def test_run_import_stops_the_sample_on_a_failed_import_and_on_a_reported_problem(
-    tmp_path: Path,
-) -> None:
-    db_path = tmp_path / "sample.db"
-    with running_sample(tmp_path) as (sample_app, env, base):
-        account, _ = sample_app.accept_new_business(env, base, "importada")
-        business = sample_app.business_id_of(db_path, account.email)
-        good = tmp_path / "good.xlsx"
-        sample_app.load_import_workbook().build(good, TODAY)
-
-        # A business the import does not know: the command exits non-zero.
-        with pytest.raises(SystemExit) as failed:
-            sample_app.run_import(env, business + 100, good, dry_run=True)
-        assert str(failed.value) == "sample-app: the import dry run failed"
-
-        # A stock entry with an origin the import does not know: the dry run exits 0 but
-        # reports a blocking problem, and the sample stops on the report's heading.
-        unknown_origin = tmp_path / "unknown-origin.xlsx"
-        workbook = openpyxl.load_workbook(good)
-        workbook["Entradas"]["D2"] = "Regalo"
-        workbook.save(unknown_origin)
-        with pytest.raises(SystemExit) as reported:
-            sample_app.run_import(env, business, unknown_origin, dry_run=True)
-        assert str(reported.value) == "sample-app: the import dry run reported a problem"
-
-        # Nothing was written by either refusal, and the good workbook still imports.
-        sample_app.run_import(env, business, good, dry_run=True)
-        assert rows_of(db_path, "first_run", business) == 0
-
-
-def test_the_direct_row_write_is_refused_for_a_business_it_must_not_touch(tmp_path: Path) -> None:
-    db_path = tmp_path / "sample.db"
-    message = "sample-app: the pre_onboarding account's Onboarding row was not removed"
-    with running_sample(tmp_path) as (sample_app, env, base):
-        checklist = sample_app.pre_onboarding_account(
-            env, base, TODAY, db_path, "checklist", priced=True
-        )
-        imported = sample_app.imported_account(env, base, TODAY, db_path)
-
-        # No Onboarding row left to delete: the delete removes zero rows.
-        gone = sample_app.business_id_of(db_path, checklist.email)
-        with pytest.raises(SystemExit) as nothing:
-            sample_app.drop_onboarding_row(db_path, gone)
-        assert str(nothing.value) == message
-
-        # A business with a first_run row is refused before anything is deleted.
-        stamped = sample_app.business_id_of(db_path, imported.email)
-        assert rows_of(db_path, "onboarding", stamped) == 1
-        with pytest.raises(SystemExit) as stamped_refusal:
-            sample_app.drop_onboarding_row(db_path, stamped)
-        assert str(stamped_refusal.value) == message
-        assert rows_of(db_path, "onboarding", stamped) == 1
-
-
-def test_primera_vez_is_a_business_with_no_onboarding_and_nothing_priced(tmp_path: Path) -> None:
-    db_path = tmp_path / "sample.db"
-    with running_sample(tmp_path) as (sample_app, env, base):
-        account = sample_app.pre_onboarding_account(
-            env, base, TODAY, db_path, "primera_vez", priced=False
-        )
-
-        api = sign_in(sample_app, base, account.email, account.password)
-        shown = api.call("GET", "/first-run")
-        assert shown["kind"] == "checklist"
-        assert [(step["step"], step["done"]) for step in shown["checklist"]] == [
-            ("priced_variety", False),
-            ("stock_entry", False),
-            ("published", False),
-            ("second_user", False),
-        ]
-        assert shown["import_notice"] is False
-        business = sample_app.business_id_of(db_path, account.email)
-        assert rows_of(db_path, "onboarding", business) == 0
-        assert rows_of(db_path, "first_run", business) == 0
-        assert api.call("GET", "/api/products") == []
-
-
-def test_the_en_curso_account_is_an_onboarding_with_one_step_done(tmp_path: Path) -> None:
-    with running_sample(tmp_path) as (sample_app, env, base):
-        account = sample_app.onboarding_frame_account(env, base, TODAY, "en_curso")
-
-        api = sign_in(sample_app, base, account.email, account.password)
-        shown = api.call("GET", "/first-run")
-        assert (shown["kind"], shown["checklist"], shown["import_notice"]) == (
-            "onboarding",
-            [],
-            False,
-        )
-        progress = api.call("GET", "/onboarding-progress")
-        assert progress["offered"] is True
-        assert progress["over"] is False
-        assert (progress["count"], progress["resume"]) == (1, "stock")
-        assert [(item["step"], item["state"]) for item in progress["steps"]] == [
-            ("variety", "done"),
-            ("stock", "pending"),
-            ("header_footer", "pending"),
-            ("bot", "pending"),
-            ("partner", "pending"),
-            ("categories", "pending"),
-        ]
-        assert len(api.call("GET", "/api/products")) == 1
-
-
-def test_the_completo_account_has_every_step_answered_and_its_onboarding_still_open(
-    tmp_path: Path,
-) -> None:
-    db_path = tmp_path / "sample.db"
-    with running_sample(tmp_path) as (sample_app, env, base):
-        account = sample_app.onboarding_frame_account(env, base, TODAY, "completo")
-
-        api = sign_in(sample_app, base, account.email, account.password)
-        assert api.call("GET", "/first-run")["kind"] == "onboarding"
-        progress = api.call("GET", "/onboarding-progress")
-        assert (progress["count"], progress["resume"], progress["over"]) == (6, "finish", False)
-        assert progress["can_skip_rest"] is True
-        assert [(item["step"], item["state"]) for item in progress["steps"]] == [
-            ("variety", "done"),
-            ("stock", "done"),
-            ("header_footer", "skipped"),
-            ("bot", "skipped"),
-            ("partner", "skipped"),
-            ("categories", "skipped"),
-        ]
-        # Nothing wrote the database directly: the business keeps its own Onboarding row.
-        business = sample_app.business_id_of(db_path, account.email)
-        assert rows_of(db_path, "onboarding", business) == 1
-        assert rows_of(db_path, "first_run", business) == 0
-
-
-STEP_SLUGS = ("variety", "stock", "header_footer", "bot", "partner", "categories")
-
-
-def progress_answer(**changes: Any) -> dict[str, Any]:
-    """The `GET /onboarding-progress` answer of the `en_curso` account, then changed."""
-    states = ("done", "pending", "pending", "pending", "pending", "pending")
-    answer: dict[str, Any] = {
-        "offered": True,
-        "over": False,
-        "count": 1,
-        "resume": "stock",
-        "can_skip_rest": False,
-        "steps": [
-            {"step": slug, "state": state} for slug, state in zip(STEP_SLUGS, states, strict=True)
-        ],
-    }
-    return {**answer, **changes}
-
-
-def test_expect_onboarding_progress_stops_the_sample_on_any_other_answer_without_naming_data() -> (
-    None
-):
-    sample_app = load_script()
-
-    class Answers:
-        def __init__(self, answer: dict[str, Any]) -> None:
-            self.answer = answer
-
-        def call(self, method: str, path: str, body: object | None = None) -> Any:
-            assert (method, path) == ("GET", "/onboarding-progress")
-            return self.answer
-
-    wanted = (
-        ("variety", "done"),
-        ("stock", "pending"),
-        ("header_footer", "pending"),
-        ("bot", "pending"),
-        ("partner", "pending"),
-        ("categories", "pending"),
-    )
-
-    def check(answer: dict[str, Any]) -> None:
-        sample_app.expect_onboarding_progress(
-            Answers(answer),
-            account="onboarding",
-            steps=wanted,
-            count=1,
-            resume="stock",
-            over=False,
-            can_skip_rest=False,
-        )
-
-    check(progress_answer())
-
-    steps = progress_answer()["steps"]
-    wrong: dict[str, tuple[dict[str, Any], str]] = {
-        "offered": (progress_answer(offered=False), "offered"),
-        "over": (progress_answer(over=True), "over"),
-        "resume": (progress_answer(resume="bot"), "resume"),
-        "count": (progress_answer(count=2), "count"),
-        "can_skip_rest": (progress_answer(can_skip_rest=True), "can_skip_rest"),
-        "can_skip_rest missing": (
-            {k: v for k, v in progress_answer().items() if k != "can_skip_rest"},
-            "can_skip_rest",
-        ),
-        "step flipped": (
-            progress_answer(steps=[*steps[:1], {"step": "stock", "state": "done"}, *steps[2:]]),
-            "step stock",
-        ),
-        "step missing": (progress_answer(steps=steps[:5]), "step categories"),
-        "step extra": (
-            progress_answer(steps=[*steps, {"step": "extra", "state": "pending"}]),
-            "steps",
-        ),
-        "step renamed": (
-            progress_answer(steps=[{"step": "mystery", "state": "done"}, *steps[1:]]),
-            "step variety",
-        ),
-    }
-    for answer, failed in wrong.values():
-        with pytest.raises(SystemExit) as refused:
-            check(answer)
-        assert str(refused.value) == (
-            f"sample-app: the onboarding account's progress is wrong: {failed}"
-        )
+    assert set(sample_app.ACCOUNT_KINDS) == {"open", "ended"}
 
 
 def test_the_kinds_the_sample_can_write_are_the_account_kinds_of_screens_json() -> None:
@@ -750,3 +390,138 @@ def test_the_vip_type_is_made_from_a_fresh_interpreter_that_loaded_no_app_module
     with sqlite3.connect(tmp_path / "sample.db") as conn:
         rows = conn.execute("SELECT id, name, is_vip FROM customer_type").fetchall()
     assert rows == [(int(done.stdout), "VIP", 1)]
+
+
+def test_the_argv_builders_without_pinned_are_today_s_argv() -> None:
+    sample_app = load_script()
+    repo = sample_app.REPO
+
+    assert sample_app.server_command(False, 8123) == [
+        "uv",
+        "run",
+        "--no-project",
+        "uvicorn",
+        "app.main:create_app",
+        "--factory",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8123",
+        "--no-access-log",
+    ]
+    assert sample_app.operator_command(False, "reset-password", "a@b.c") == [
+        "uv",
+        "run",
+        "--no-project",
+        "python",
+        "-m",
+        "app.accounts.adapters.cli",
+        "reset-password",
+        "a@b.c",
+    ]
+    assert sample_app.import_command(False, 7, Path("/w/x.xlsx"), dry_run=True) == [
+        str(repo / "scripts" / "import-spreadsheet.sh"),
+        "7",
+        "/w/x.xlsx",
+        "--dry-run",
+    ]
+    assert sample_app.import_command(False, 7, Path("/w/x.xlsx"), dry_run=False) == [
+        str(repo / "scripts" / "import-spreadsheet.sh"),
+        "7",
+        "/w/x.xlsx",
+    ]
+
+
+def test_the_argv_builders_with_pinned_name_the_factory_and_the_pinned_command_line() -> None:
+    sample_app = load_script()
+
+    server = sample_app.server_command(True, 8123)
+    assert "tests.e2e_app:create_mobile_e2e_app" in server
+    assert "app.main:create_app" not in server
+    assert sample_app.operator_command(True, "invite-business")[3:] == [
+        "python",
+        "-m",
+        "tests.e2e_app",
+        "pinned",
+        "invite-business",
+    ]
+    pinned_import = sample_app.import_command(True, 7, Path("/w/x.xlsx"), dry_run=True)
+    assert pinned_import[3:] == [
+        "python",
+        "-m",
+        "tests.e2e_app",
+        "pinned-import",
+        "7",
+        "/w/x.xlsx",
+        "--dry-run",
+    ]
+    assert sample_app.pinned_date_command()[3:] == ["python", "-m", "tests.e2e_app", "pinned-date"]
+
+
+BUILDERS = {"server_command", "operator_command", "import_command", "pinned_date_command"}
+
+
+def starts_without_a_builder(source: str) -> list[int]:
+    """The lines of `subprocess.run` / `subprocess.Popen` calls whose argv is not the result
+    of a builder (called there, or assigned from one in the same function)."""
+    tree = ast.parse(source)
+    functions = [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)]
+
+    def from_builder(value: ast.expr) -> bool:
+        return (
+            isinstance(value, ast.Call)
+            and isinstance(value.func, ast.Name)
+            and (value.func.id in BUILDERS)
+        )
+
+    refused: list[int] = []
+    for node in ast.walk(tree):
+        if not (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "subprocess"
+            and node.func.attr in {"run", "Popen"}
+        ):
+            continue
+        argument = node.args[0]
+        if isinstance(argument, ast.Name):
+            scope = next(f for f in functions if f.lineno <= node.lineno <= (f.end_lineno or 0))
+            assigned = [
+                n.value
+                for n in ast.walk(scope)
+                if isinstance(n, ast.Assign)
+                and any(isinstance(t, ast.Name) and t.id == argument.id for t in n.targets)
+            ]
+            if assigned and all(from_builder(v) for v in assigned):
+                continue
+        elif from_builder(argument):
+            continue
+        refused.append(node.lineno)
+    return refused
+
+
+def test_every_process_the_sample_starts_takes_its_argv_from_a_builder() -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+
+    assert starts_without_a_builder(source) == []
+    assert source.count("subprocess.run(") + source.count("subprocess.Popen(") == 3
+
+
+def test_the_builder_guard_refuses_a_list_literal_and_an_unbuilt_name() -> None:
+    literal = 'import subprocess\nsubprocess.run(["uv", "run"])\n'
+    unbuilt = "def f():\n    cmd = ['uv']\n    subprocess.Popen(cmd)\n"
+    built = "def f():\n    cmd = server_command(True, 1)\n    subprocess.Popen(cmd)\n"
+
+    assert starts_without_a_builder(literal) == [2]
+    assert starts_without_a_builder(unbuilt) == [3]
+    assert starts_without_a_builder(built) == []
+
+
+def test_the_pinned_today_is_the_pinned_instant_s_date() -> None:
+    from tests.e2e_app import PINNED_INSTANT
+
+    sample_app = load_script()
+    env = {k: v for k, v in os.environ.items() if not k.startswith("APOSTROPHE_")}
+
+    assert sample_app.sample_today(env, True) == PINNED_INSTANT.date()

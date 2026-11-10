@@ -8,6 +8,10 @@ Only edges between files inside `copy/` are drawn; edges between folders are in 
 flowchart LR
 subgraph src["src"]
   subgraph src_copy["copy"]
+    subgraph src_copy_readers["readers"]
+      src_copy_readers_customerTypeIcons_ts["customerTypeIcons.ts"]
+      src_copy_readers_paymentStates_ts["paymentStates.ts"]
+    end
     src_copy_analysis_ts["analysis.ts"]
     src_copy_auth_ts["auth.ts"]
     src_copy_baselineArgs_ts["baselineArgs.ts"]

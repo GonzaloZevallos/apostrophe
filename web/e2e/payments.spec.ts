@@ -25,7 +25,7 @@
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
 import type { Page } from '@playwright/test'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from './fixtures.js'
+import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
@@ -59,9 +59,9 @@ test('a seller records, settles, undoes and traces payments, from the front alon
 
   // One priced variety, $1.000/g — round figures for every assertion below.
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByRole('link', { name: 'New product' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('1000')
@@ -96,7 +96,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // --- Registrar cobro: "All" fills and settles the whole balance. ---
   await page.getByRole('link', { name: 'Record payment' }).click()
   await page.getByRole('button', { name: 'All: $ 5.000' }).click()
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await choosePaymentMethod(page, 'Cash')
   await expect(page.getByText('Taken from the oldest debt')).toBeVisible()
   await expect(page.getByText(`$ 5.000 to the sale of ${today}`)).toBeVisible()
   await expect(page.getByText(/They still owe/)).toHaveCount(0) // nothing left.
@@ -127,7 +127,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // saving, and the toast after saving carries the same figure (PRD metric 2). ---
   await page.getByRole('link', { name: 'Record payment' }).click()
   await page.getByLabel('Amount').fill('3000')
-  await page.getByRole('radio', { name: 'Transfer' }).check()
+  await choosePaymentMethod(page, 'Transfer')
   await expect(page.getByText(`$ 3.000 to the sale of ${today}`)).toBeVisible()
   await expect(page.getByText('They still owe $ 5.000')).toBeVisible()
   await expectToast(page, 'Payment saved · still owing $ 5.000', () =>
@@ -195,7 +195,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await page.getByRole('link', { name: 'Record payment' }).click()
   await page.getByRole('button', { name: 'All: $ 5.000' }).click()
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await choosePaymentMethod(page, 'Cash')
   await expectToast(page, 'Payment saved', () => page.getByRole('button', { name: 'Save' }).click())
 
   await page.goto(creditSaleUrl)

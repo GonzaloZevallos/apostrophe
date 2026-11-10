@@ -37,14 +37,13 @@ subgraph src["src"]
       src_screens_clientes_accountRows_ts["accountRows.ts"]
     end
     subgraph src_screens_expenses["expenses"]
+      src_screens_expenses_ExpenseEditSheet_tsx["ExpenseEditSheet.tsx"]
       src_screens_expenses_ExpenseForm_tsx["ExpenseForm.tsx"]
       src_screens_expenses_ExpenseNewRoute_tsx["ExpenseNewRoute.tsx"]
       src_screens_expenses_ExpensesBehind_tsx["ExpensesBehind.tsx"]
       src_screens_expenses_MonthBody_tsx["MonthBody.tsx"]
     end
     subgraph src_screens_inicio["inicio"]
-      src_screens_inicio_FirstRunChecklist_tsx["FirstRunChecklist.tsx"]
-      src_screens_inicio_ImportNotice_tsx["ImportNotice.tsx"]
       src_screens_inicio_InicioFondo_tsx["InicioFondo.tsx"]
       src_screens_inicio_InicioPanel_tsx["InicioPanel.tsx"]
       src_screens_inicio_PeriodFigures_tsx["PeriodFigures.tsx"]
@@ -55,7 +54,6 @@ subgraph src["src"]
       src_screens_onboarding_CategoriesStep_tsx["CategoriesStep.tsx"]
       src_screens_onboarding_Listo_tsx["Listo.tsx"]
       src_screens_onboarding_OnboardingLayout_tsx["OnboardingLayout.tsx"]
-      src_screens_onboarding_OnboardingNotice_tsx["OnboardingNotice.tsx"]
       src_screens_onboarding_OnboardingRoutes_tsx["OnboardingRoutes.tsx"]
       src_screens_onboarding_OnboardingStep_tsx["OnboardingStep.tsx"]
       src_screens_onboarding_PartnerStep_tsx["PartnerStep.tsx"]
@@ -152,6 +150,7 @@ subgraph src["src"]
     src_screens_EntradaStock_tsx["EntradaStock.tsx"]
     src_screens_Entrar_tsx["Entrar.tsx"]
     src_screens_EntriesList_tsx["EntriesList.tsx"]
+    src_screens_ForgotSheet_tsx["ForgotSheet.tsx"]
     src_screens_Gastos_tsx["Gastos.tsx"]
     src_screens_Inicio_tsx["Inicio.tsx"]
     src_screens_Invitacion_tsx["Invitacion.tsx"]
@@ -163,9 +162,9 @@ subgraph src["src"]
     src_screens_analisisCards_ts["analisisCards.ts"]
     src_screens_analisisCost_ts["analisisCost.ts"]
     src_screens_catalogCopy_ts["catalogCopy.ts"]
-    src_screens_inicioNotices_ts["inicioNotices.ts"]
     src_screens_originLabel_ts["originLabel.ts"]
     src_screens_priceDeleteNotice_ts["priceDeleteNotice.ts"]
+    src_screens_stockEntryChoice_ts["stockEntryChoice.ts"]
     src_screens_telegramPreview_ts["telegramPreview.ts"]
   end
 end
@@ -191,17 +190,14 @@ src_screens_Catalogo_tsx-->src_screens_PinPublish_tsx
 src_screens_Catalogo_tsx-->src_screens_catalogCopy_ts
 src_screens_Catalogo_tsx-->src_screens_telegramPreview_ts
 src_screens_EntradaStock_tsx-->src_screens_StockEntryForm_tsx
+src_screens_Entrar_tsx-->src_screens_ForgotSheet_tsx
 src_screens_EntriesList_tsx-->src_screens_Variedades_tsx
 src_screens_EntriesList_tsx-->src_screens_originLabel_ts
-src_screens_Gastos_tsx-->src_screens_expenses_ExpenseForm_tsx
+src_screens_Gastos_tsx-->src_screens_expenses_ExpenseEditSheet_tsx
 src_screens_Gastos_tsx-->src_screens_expenses_MonthBody_tsx
-src_screens_Inicio_tsx-->src_screens_inicioNotices_ts
-src_screens_Inicio_tsx-->src_screens_inicio_FirstRunChecklist_tsx
-src_screens_Inicio_tsx-->src_screens_inicio_ImportNotice_tsx
 src_screens_Inicio_tsx-->src_screens_inicio_InicioPanel_tsx
-src_screens_Inicio_tsx-->src_screens_onboarding_OnboardingNotice_tsx
 src_screens_StockEntryForm_tsx-->src_screens_Variedades_tsx
-src_screens_StockEntryForm_tsx-->src_screens_varieties_varietiesByName_ts
+src_screens_StockEntryForm_tsx-->src_screens_stockEntryChoice_ts
 src_screens_Variedades_tsx-->src_screens_varieties_archivedVarieties_ts
 src_screens_Variedades_tsx-->src_screens_varieties_varietiesByName_ts
 src_screens_analisisCards_ts-->src_screens_analisisCost_ts
@@ -236,6 +232,7 @@ src_screens_clientes_CustomerCardBehind_tsx-->src_screens_clientes_accountRows_t
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_ClienteFila_tsx
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_CustomerSearch_ts
 src_screens_clientes_TeDeben_tsx-->src_screens_clientes_ClienteFila_tsx
+src_screens_expenses_ExpenseEditSheet_tsx-->src_screens_expenses_ExpenseForm_tsx
 src_screens_expenses_ExpenseNewRoute_tsx-->src_screens_expenses_ExpenseForm_tsx
 src_screens_expenses_ExpenseNewRoute_tsx-->src_screens_expenses_ExpensesBehind_tsx
 src_screens_expenses_ExpensesBehind_tsx-->src_screens_expenses_MonthBody_tsx
@@ -259,10 +256,8 @@ src_screens_onboarding_Listo_tsx-->src_screens_onboarding_onboardingContext_ts
 src_screens_onboarding_Listo_tsx-->src_screens_onboarding_steps_ts
 src_screens_onboarding_OnboardingLayout_tsx-->src_screens_onboarding_afterProgress_ts
 src_screens_onboarding_OnboardingLayout_tsx-->src_screens_onboarding_onboardingContext_ts
-src_screens_onboarding_OnboardingNotice_tsx-->src_screens_onboarding_StepIndicator_tsx
-src_screens_onboarding_OnboardingNotice_tsx-->src_screens_onboarding_afterProgress_ts
-src_screens_onboarding_OnboardingNotice_tsx-->src_screens_onboarding_steps_ts
 src_screens_onboarding_OnboardingRoutes_tsx-->src_screens_onboarding_OnboardingStep_tsx
+src_screens_onboarding_OnboardingRoutes_tsx-->src_screens_onboarding_afterProgress_ts
 src_screens_onboarding_OnboardingRoutes_tsx-->src_screens_onboarding_onboardingContext_ts
 src_screens_onboarding_OnboardingRoutes_tsx-->src_screens_onboarding_stepBodies_tsx
 src_screens_onboarding_OnboardingRoutes_tsx-->src_screens_onboarding_steps_ts
@@ -319,6 +314,8 @@ src_screens_settings_PricingGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_UsersGroup_tsx-->src_screens_settings_InvitePartner_tsx
 src_screens_settings_UsersGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_WithdrawalReasons_tsx-->src_screens_settings_SettingsGroup_tsx
+src_screens_stockEntryChoice_ts-->src_screens_Variedades_tsx
+src_screens_stockEntryChoice_ts-->src_screens_varieties_varietiesByName_ts
 src_screens_varieties_ArchivedIndex_tsx-->src_screens_varieties_ArchivedVarieties_tsx
 src_screens_varieties_ArchivedIndex_tsx-->src_screens_varieties_archivedVarieties_ts
 src_screens_varieties_ArchivedIndex_tsx-->src_screens_varieties_varietiesByName_ts
@@ -381,7 +378,6 @@ src_screens_varieties_useRestore_tsx-->src_screens_Variedades_tsx
 src_screens_varieties_useRestore_tsx-->src_screens_varieties_restoreLanding_ts
 src_screens_varieties_useSelectedVariety_ts-->src_screens_Variedades_tsx
 src_screens_varieties_useSelectedVariety_ts-->src_screens_varieties_varietiesByName_ts
-src_screens_varieties_varietiesByName_ts-->src_screens_Variedades_tsx
 src_screens_varieties_varietyForms_ts-->src_screens_Variedades_tsx
 src_screens_ventas_NuevaVentaCliente_tsx-->src_screens_clientes_ClienteForm_tsx
 src_screens_ventas_NuevaVentaCliente_tsx-->src_screens_clientes_CustomerFields_tsx
@@ -399,4 +395,5 @@ src_screens_withdrawals_WithdrawalFormRoute_tsx-->src_screens_withdrawals_Withdr
 src_screens_withdrawals_WithdrawalFormRoute_tsx-->src_screens_withdrawals_WithdrawalForm_tsx
 src_screens_withdrawals_WithdrawalForm_tsx-->src_screens_Variedades_tsx
 src_screens_withdrawals_WithdrawalForm_tsx-->src_screens_withdrawals_goneLines_ts
+src_screens_withdrawals_goneLines_ts-->src_screens_varieties_varietiesByName_ts
 ```

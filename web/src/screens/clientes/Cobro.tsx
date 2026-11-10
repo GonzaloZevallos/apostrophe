@@ -2,7 +2,7 @@
  * "Registrar cobro" (`Cobro`, `payments.md`): the form, drawn inside `CobroFrame` by its host
  * `CobroRoute` (`Cobro.dc.html` on a phone, `CobroCompu.dc.html` on a computer). "All: $ X"
  * fills the amount with the customer's own `balance` (never typed in by the seller for that
- * case); the date defaults to today; Cash · Transfer is required. The host owns how it
+ * case); the date defaults to today; the Payment method (a Selector, no default) is required. The host owns how it
  * is left (the leave guard, Escape, the backdrop, where "Cerrar" goes): this form only says
  * through `onDone`, `onCancel`, `onGone`, `onDirtyChange` and `onSendingChange` what happened.
  *
@@ -20,9 +20,10 @@
  * through `refusals.ts`'s contract-backed `RefusalCode`.
  */
 
-import { type FormEvent, type RefObject, useEffect, useId, useLayoutEffect, useState } from 'react'
+import { type FormEvent, type RefObject, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { TOO_MANY_DECIMALS_CODE, TOO_MANY_DECIMALS_MESSAGE } from '../../api/amountRefusal'
 import { ApiError, NetworkError } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
 import {
@@ -35,13 +36,15 @@ import {
 import Boton from '../../components/Boton'
 import { SheetActions } from '../../components/Sheet'
 import { useViewport } from '../../shell/useViewport'
-import SegmentedChoice from '../../components/SegmentedChoice'
+import FieldRefusal from '../../components/FieldRefusal'
+import Selector from '../../components/Selector'
 import SinConexion from '../../components/SinConexion'
 import { useFlash } from '../../flash/useFlash'
 import { chipDate, formatDateShort } from '../../format/dates'
 import { formatMoney } from '../../format/money'
 import { readMoneyInput } from '../../format/parse'
 import { GENERIC_REFUSAL } from './ClienteForm'
+import { paymentMethodOf, usePaymentMethodOptions } from '../../sales/paymentMethods'
 import { COMMON_TEXT } from '../../copy/common'
 import { PAYMENTS_TEXT } from '../../copy/payments'
 
@@ -92,12 +95,12 @@ const AMOUNT_MESSAGES: Partial<Record<PaymentRefusalCode, string>> = {
   'payment.above_balance': PAYMENTS_TEXT.amountOverBalance,
   'payment.amount_invalid': PAYMENTS_TEXT.enterValidAmount,
 }
-const METHOD_REQUIRED_MESSAGE = PAYMENTS_TEXT.chooseCashOrTransfer
 
 /** `code` comes off the wire as a plain `string` (`ApiError.code`): this only
  * narrows it enough to index `AMOUNT_MESSAGES` safely, never asserting it is a
  * `payment.*` code the backend actually answers. */
 function amountMessage(code: string): string | undefined {
+  if (code === TOO_MANY_DECIMALS_CODE) return TOO_MANY_DECIMALS_MESSAGE
   return Object.prototype.hasOwnProperty.call(AMOUNT_MESSAGES, code)
     ? AMOUNT_MESSAGES[code as PaymentRefusalCode]
     : undefined
@@ -129,7 +132,9 @@ export default function Cobro({
   const [method, setMethod] = useState<PaymentMethod | null>(null)
   const [amountError, setAmountError] = useState<string | null>(null)
   const [dateError, setDateError] = useState<string | null>(null)
-  const [methodError, setMethodError] = useState<string | null>(null)
+  const [methodRefused, setMethodRefused] = useState(false)
+  const methodField = useRef<HTMLButtonElement>(null)
+  const methodOptions = usePaymentMethodOptions()
   const [offline, setOffline] = useState(false)
   const queryClient = useQueryClient()
   const flash = useFlash()
@@ -175,14 +180,15 @@ export default function Cobro({
     event.preventDefault()
     setAmountError(null)
     setDateError(null)
-    setMethodError(null)
+    setMethodRefused(false)
     setOffline(false)
     if (previewAmount === null) {
       setAmountError(PAYMENTS_TEXT.enterValidAmount)
       return
     }
     if (method === null) {
-      setMethodError(METHOD_REQUIRED_MESSAGE)
+      setMethodRefused(true)
+      methodField.current?.focus()
       return
     }
     try {
@@ -198,7 +204,7 @@ export default function Cobro({
       if (caught instanceof ApiError && isPaymentGone(caught.code)) {
         onGone()
       } else if (caught instanceof ApiError) {
-        if (caught.code === 'payment.method_required') setMethodError(METHOD_REQUIRED_MESSAGE)
+        if (caught.code === 'payment.method_required') setMethodRefused(true)
         else if (caught.code === 'payment.future_date') setDateError(PAYMENTS_TEXT.dateInFuture)
         else setAmountError(amountMessage(caught.code) ?? GENERIC_REFUSAL)
       } else if (caught instanceof NetworkError) {
@@ -278,22 +284,18 @@ export default function Cobro({
           )}
 
           <div className="cobro__metodo">
-            <SegmentedChoice
-              options={[
-                { value: 'cash', label: COMMON_TEXT.cashMethod },
-                { value: 'transfer', label: COMMON_TEXT.transfer },
-              ]}
+            <Selector
+              {...methodOptions}
+              label={t('common:paymentMethod')}
               value={method}
-              onChange={setMethod}
-              ariaLabel={PAYMENTS_TEXT.method}
-              required
-              describedBy={methodError !== null ? methodErrorId : undefined}
+              onChange={(next) => {
+                setMethod(paymentMethodOf(next))
+                setMethodRefused(false)
+              }}
+              fieldRef={methodField}
+              describedBy={methodRefused ? methodErrorId : undefined}
             />
-            {methodError !== null && (
-              <span id={methodErrorId} className="campo__error" role="alert">
-                {methodError}
-              </span>
-            )}
+            {methodRefused && <FieldRefusal id={methodErrorId}>{t('common:chooseHowTheyPaid')}</FieldRefusal>}
           </div>
 
           {previewAmount !== null && preview.data !== undefined && (

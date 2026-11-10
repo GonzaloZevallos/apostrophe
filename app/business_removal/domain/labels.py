@@ -17,11 +17,11 @@ from app.business_removal.domain.schema import Schema
 
 # table -> one of its own columns, used as the label when the table has no `name`.
 LABEL_COLUMN: dict[str, str] = {
-    "sale": "sale_date",
+    "sale": "sold_on",
     "payment": "paid_on",
-    "stock_entry": "entry_date",
+    "stock_entry": "entered_on",
     "stock_withdrawal": "withdrawn_on",
-    "price_entry": "effective_from",
+    "price_entry": "effective_on",
     "expense": "spent_on",
     "app_user": "email",
 }
@@ -29,7 +29,7 @@ LABEL_COLUMN: dict[str, str] = {
 # table -> the foreign-key column whose target's label (recursively) names this row.
 LABEL_VIA: dict[str, str] = {
     "sale_line": "variety_id",
-    "catalog_attributes": "variety_id",
+    "catalog_attribute": "variety_id",
     "stock_threshold": "variety_id",
     "stock_withdrawal_line": "variety_id",
 }
@@ -37,7 +37,14 @@ LABEL_VIA: dict[str, str] = {
 # Tables with exactly one row per business and nothing of their own worth naming: the
 # business's own name stands in for them.
 LABEL_AS_BUSINESS: frozenset[str] = frozenset(
-    {"catalog_header_footer", "pinned_catalog", "onboarding", "pricing_settings", "first_run"}
+    {
+        "catalog_header_footer",
+        "pinned_catalog",
+        "onboarding",
+        "pricing_settings",
+        "first_run",
+        "money_format",
+    }
 )
 
 

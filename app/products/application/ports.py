@@ -1,6 +1,7 @@
 from typing import Protocol
 
 from app.products.domain.product import NameHolder, Product, ProductName
+from app.shared.money import MoneyFormat
 from app.shared.pricing_settings import PricingSettings
 
 
@@ -49,6 +50,13 @@ class ProductLeaving(Protocol):
     threshold, catalog attributes): built for one business, writes without committing."""
 
     def leaving(self, product_id: int) -> None: ...
+
+
+class MoneyFormatReader(Protocol):
+    """How the business shows money: its symbol and decimals, never the scale it stores
+    amounts at (docs/adr/0055, docs/adr/0058). Built for one business."""
+
+    def current(self) -> MoneyFormat: ...
 
 
 class PricingSettingsReader(Protocol):

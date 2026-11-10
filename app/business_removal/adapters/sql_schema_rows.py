@@ -86,6 +86,7 @@ class SqlSchemaRows:
                 business.c.name,
                 business.c.language,
                 business.c.default_phone_country,
+                business.c.last_sale_number,
             )
             .select_from(app_user.join(business, business.c.id == app_user.c.business_id))
             .where(app_user.c.email == normalized)
@@ -94,7 +95,13 @@ class SqlSchemaRows:
         return (
             None
             if row is None
-            else BusinessRef(row.id, row.name, row.language, row.default_phone_country)
+            else BusinessRef(
+                row.id,
+                row.name,
+                row.language,
+                row.default_phone_country,
+                row.last_sale_number,
+            )
         )
 
     def rows(self, table: str, business_id: int) -> list[dict[str, object]]:

@@ -11,6 +11,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router'
+import { SheetRouterProvider } from '../components/useSheetStack'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { router as appRouter } from '../router'
 import { STOCK_ENTRY, STOCK_ENTRY_NEW, pathTo } from '../routes'
@@ -103,7 +104,9 @@ function renderApp(entries: { pathname: string }[], viewport: Viewport, answers:
   renderWithViewport(viewport, () =>
     render(
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+        <SheetRouterProvider router={router}>
+          <RouterProvider router={router} />
+        </SheetRouterProvider>
       </QueryClientProvider>,
     ),
   )

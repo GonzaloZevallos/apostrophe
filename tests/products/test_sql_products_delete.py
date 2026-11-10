@@ -5,6 +5,7 @@ only tests where the foreign keys and the guarded statement meet a real concurre
 
 from collections.abc import Iterator
 from datetime import UTC, date, datetime
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -37,11 +38,12 @@ from app.stock.application import manage_entries
 from app.stock.application.errors import VarietyNotFound as StockVarietyNotFound
 from app.stock.domain.entry import Origin, StockEntry
 from app.stock.domain.threshold import Threshold
+from tests.fakes.money_format import WholeAmounts
 
 DAY = date(2026, 10, 6)
 NOW = datetime(2026, 10, 6, 12, tzinfo=UTC)
 BUSINESS = 1
-DEPENDENTS = ("price_entry", "stock_entry", "stock_threshold", "catalog_attributes", "sale_line")
+DEPENDENTS = ("price_entry", "stock_entry", "stock_threshold", "catalog_attribute", "sale_line")
 
 
 @pytest.fixture(params=["sqlite", "sqlite+libsql"])
@@ -52,6 +54,12 @@ def engine(request: pytest.FixtureRequest, tmp_path: Path) -> Iterator[Engine]:
     with engine.begin() as connection:
         connection.execute(
             text("INSERT INTO business (id, name, language) VALUES (1, 'Negocio', 'en')")
+        )
+        connection.execute(
+            text(
+                "INSERT INTO money_format (business_id, symbol, decimals, scale)"
+                " VALUES (1, '$', 0, 0)"
+            )
         )
     yield engine
     engine.dispose()
@@ -176,9 +184,7 @@ def test_a_rollback_after_the_dependent_deletes_keeps_every_dependent(engine: En
         session.rollback()
 
     assert _count(engine, "variety") == 1
-    assert [
-        _count(engine, t) for t in ("price_entry", "stock_threshold", "catalog_attributes")
-    ] == [
+    assert [_count(engine, t) for t in ("price_entry", "stock_threshold", "catalog_attribute")] == [
         1,
         1,
         1,
@@ -202,9 +208,7 @@ def test_delete_variety_rolls_back_the_dependents_when_the_guarded_delete_remove
         _delete(engine, variety_id, _GuardLosesTheRace)
 
     assert _count(engine, "variety") == 1
-    assert [
-        _count(engine, t) for t in ("price_entry", "stock_threshold", "catalog_attributes")
-    ] == [
+    assert [_count(engine, t) for t in ("price_entry", "stock_threshold", "catalog_attribute")] == [
         1,
         1,
         1,
@@ -233,9 +237,7 @@ def test_an_entry_recorded_first_makes_the_delete_answer_has_history(engine: Eng
 
     assert _count(engine, "variety") == 1
     assert _count(engine, "stock_entry") == 1
-    assert [
-        _count(engine, t) for t in ("price_entry", "stock_threshold", "catalog_attributes")
-    ] == [
+    assert [_count(engine, t) for t in ("price_entry", "stock_threshold", "catalog_attribute")] == [
         1,
         1,
         1,
@@ -286,6 +288,7 @@ def test_a_delete_committed_first_makes_the_entry_answer_gone_and_orphans_nothin
             manage_entries.record_entry(
                 SqlStockEntries(late, BUSINESS),
                 _StaleCatalog(SqlVarietyCatalog(late, BUSINESS)),
+                WholeAmounts(),
                 late,
                 entry_date=DAY,
                 variety_id=variety_id,
@@ -314,10 +317,11 @@ def test_a_delete_committed_first_makes_the_price_answer_gone(engine: Engine) ->
             manage_prices.record_price_entry(
                 _ReadsStaleOnce(late, stale),
                 BothRulesOn(),
+                WholeAmounts(),
                 late,
                 variety_id,
                 effective_from=date(2026, 2, 1),
-                list_price=12_000,
+                list_price=Decimal(12_000),
             )
 
     assert _count(engine, "price_entry") == 0
@@ -342,11 +346,12 @@ def _record_sale(session: Session, price_book: SqlPriceBook, variety_id: int) ->
         price_book,
         SqlCustomerFacts(session, BUSINESS),
         BothRulesOn(),
+        WholeAmounts(),
         session,
         sale_date=DAY,
         today=DAY,
         customer_id=None,
-        shipping_charged=0,
+        shipping_charged=Decimal(0),
         note=None,
         lines=[LineInput(variety_id=variety_id, quantity=Quantity.of("1"), gift=True)],
         method=None,
@@ -388,9 +393,7 @@ def test_a_sale_recorded_first_makes_the_delete_answer_has_history(engine: Engin
 
     assert _count(engine, "variety") == 1
     assert _count(engine, "sale_line") == 1
-    assert [
-        _count(engine, t) for t in ("price_entry", "stock_threshold", "catalog_attributes")
-    ] == [
+    assert [_count(engine, t) for t in ("price_entry", "stock_threshold", "catalog_attribute")] == [
         1,
         1,
         1,

@@ -139,7 +139,7 @@ test('a marked leaf shows no back, and no placeholder word, until its screen dec
   expect(await screen.findByText('Loading')).toBeInTheDocument()
   expect(backs()).toEqual([])
   expect(screen.queryByText('‹')).not.toBeInTheDocument()
-  expect(screen.queryByText(/Variety$/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/Product$/)).not.toBeInTheDocument()
 
   await act(async () => pending.settle(json({ id: 1, name: '24K Gold', archived: false })))
   expect(await screen.findAllByRole('button', { name: /^‹ / })).toHaveLength(1)
@@ -194,7 +194,7 @@ test("from variety A to variety B on the same screen, '‹ A' is gone while B lo
   expect(backs()).toEqual(['‹ Beta'])
 })
 
-test("an archived variety shows only '‹ Archived', never a flash of '‹ Varieties'", async () => {
+test("an archived variety shows only '‹ Archived', never a flash of '‹ Products'", async () => {
   const pending = deferred()
   fakeApi({ 5: pending })
   const seen: string[] = []
@@ -213,7 +213,7 @@ test("an archived variety shows only '‹ Archived', never a flash of '‹ Varie
   expect(seen.filter((word) => word !== '‹ Archived')).toEqual([])
 })
 
-/** Writes the slot for variety 1 once and never clears it: a declaration left behind. */
+/** Writes the slot for product 1 once and never clears it: a declaration left behind. */
 function LeftBehind({ screen: id }: { screen: RecordLabelledScreen }) {
   const write = useContext(BackParentContext)?.write
   useLayoutEffect(() => write?.({ screen: id, param: '1', override: { title: 'Alpha' } }), [write, id])

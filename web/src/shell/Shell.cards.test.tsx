@@ -1,9 +1,9 @@
 /**
- * "Exactly one ‹ per card" (GH-135, navigation.md, "Chrome and back"), through the real route
- * table, the real `Shell` and every card screen, with the API faked at `fetch`: on a phone and on a
- * computer (its two-pane details included) a card shows one "‹ <parent>" button, the shell's, and
- * none on the price form behind its modal. Then the rows of navigation.md's back table this
- * change touches, each with no history to go back to.
+ * "Exactly one ‹ per card" (GH-135, navigation.md, "Marco y camino de vuelta"), through the real
+ * route table, the real `Shell` and every card screen, with the API faked at `fetch`: on a phone
+ * and on a computer (its two-pane details included) a card shows one "‹ <parent>" button, the
+ * shell's, and none on the price form behind its modal. Then the rows of navigation.md's back
+ * table this change touches, each with no history to go back to.
  */
 
 import { act, render, screen, waitFor } from '@testing-library/react'
@@ -111,14 +111,14 @@ async function settled(): Promise<void> {
 
 const CARDS: [string, string, string][] = [
   ['a customer', pathTo(CUSTOMER, { id: 1 }), '‹ Customers'],
-  ['a live variety', pathTo(VARIETY, { id: 1 }), '‹ Varieties'],
+  ['a live variety', pathTo(VARIETY, { id: 1 }), '‹ Products'],
   ['an archived variety', pathTo(VARIETY, { id: 2 }), '‹ Archived'],
-  ['Archived', ARCHIVED_VARIETIES, '‹ Varieties'],
-  ['Catalog', CATALOG, '‹ Varieties'],
-  ['All entries', STOCK, '‹ Varieties'],
+  ['Archived', ARCHIVED_VARIETIES, '‹ Products'],
+  ['Catalog', CATALOG, '‹ Products'],
+  ['All entries', STOCK, '‹ Products'],
   ["a variety's prices", pathTo(VARIETY_PRICES, { id: 1 }), '‹ 24K Gold'],
   ["a variety's entries", pathTo(VARIETY_ENTRIES, { id: 1 }), '‹ 24K Gold'],
-  ["a withdrawal's detail", pathTo(WITHDRAWAL, { id: 1 }), '‹ Varieties'],
+  ["a withdrawal's detail", pathTo(WITHDRAWAL, { id: 1 }), '‹ Products'],
   ['a sale', pathTo(SALE, { id: 1 }), '‹ Sales'],
   ['Settings', SETTINGS, '‹ More'],
 ]
@@ -132,7 +132,7 @@ describe.each(['phone', 'computer'] as const)('on a %s', (size) => {
     await open(path)
     await settled()
 
-    // The label settles with the record (an archived variety first reads "‹ Varieties").
+    // The label settles with the record (an archived variety first reads "‹ Products").
     if (size === 'computer' && label === '‹ More') expect(arrows()).toHaveLength(1)
     else await waitFor(() => expect(arrows()).toEqual([label]))
     expect(document.querySelectorAll('.flecha-atras')).toHaveLength(1)

@@ -1,164 +1,162 @@
 # Icon and text rule
 
-How every screen labels its entries, actions and notices: which controls are icon-only, which are text only and which are icon + text; how long an always-visible line may be; and what may move behind More info. It decides how things are labelled, never what they do. No action, route, entry order, confirmation, toast wording or tap budget is changed by it, and no rule about what a screen reveals (docs/product/accounts.md) is weakened by it. The design-system README states the same rule, the same way. Where each screen sits is docs/product/navigation.md; each screen's own copy stays in its own capability file.
+Cómo cada pantalla rotula sus opciones, acciones y avisos: qué controles son solo ícono, cuáles son solo texto y cuáles son ícono + texto; cuánto puede medir una línea siempre visible; y qué puede pasar detrás de More info. Decide cómo se rotula cada cosa, nunca qué hace. No cambia ninguna acción, ruta, orden de opciones, confirmación, texto de toast ni presupuesto de toques, y no debilita ninguna regla sobre lo que una pantalla revela (docs/product/accounts.md). El README del sistema de diseño enuncia la misma regla, de la misma manera. Dónde está cada pantalla lo dice docs/product/navigation.md; el copy propio de cada pantalla queda en su propio archivo de capacidad.
 
 ## Jobs
 
-**When** I'm on my phone between orders or mid-chat with a customer and I need to find an entry, an action or what a notice is telling me, **I want** to recognise it at a glance by its icon and a short label, and read any help or notice as one short line, **so I can** get to it without reading blocks of text and get back to the customer.
+**Cuando** estoy en el celular entre pedidos o en medio de un chat con un cliente y necesito encontrar una opción, una acción o qué me dice un aviso, **quiero** reconocerlo de un vistazo por su ícono y una etiqueta corta, y leer cualquier ayuda o aviso como una sola línea corta, **para poder** llegar sin leer bloques de texto y volver con el cliente.
 
-This refines the navigation job (docs/product/navigation.md) and the "feels like a phone app" job (docs/product/accounts.md); it is not a new job and adds no capability. Its protagonist is the seller, in busy, one-handed phone use; setup screens (Settings, Integrations, the catalog) follow the same rule and are not designed apart. The computer is the same job on a bigger screen. Before it, the app had 13 icons and screens read as walls of words: finding an entry or an action took reading instead of a glance.
+Esto afina el job de navegación (docs/product/navigation.md) y el job "feels like a phone app" (docs/product/accounts.md); no es un job nuevo y no agrega ninguna capacidad. Su protagonista es el vendedor, en un uso del celular ocupado y con una sola mano; las pantallas de configuración (Settings, Integrations, el Catalog) siguen la misma regla y no se diseñan aparte. La computadora es el mismo job en una pantalla más grande. Antes de esto, la app tenía 13 íconos y las pantallas se leían como paredes de palabras: encontrar una opción o una acción llevaba leer en vez de mirar.
 
-**When** a change adds or edits a link and the gate checks it, **I want** the guard to let through only the links this rule allows to carry a chevron, and to flag every other link that carries an icon, **so I can** trust a green gate and never let an action reach the seller looking like a link.
+**Cuando** un cambio agrega o edita un enlace y el Gate lo revisa, **quiero** que el guardia deje pasar solo los enlaces que esta regla permite que lleven un chevron, y que marque todo otro enlace que lleve un ícono, **para poder** confiar en un Gate en verde y no dejar nunca que una acción llegue al vendedor con pinta de enlace.
 
-- Its protagonist is the maintainer, or the reviewer acting for them, as in docs/product/gate.md's and docs/product/design-capture.md's maintainer jobs. The seller is affected only indirectly.
-- It is served by the closing guard (`findActionLinks`, ADR-0037's "action links" amendment). That guard lets a link carry only a record row's trailing chevron. It never judges whether a link "does" or "opens".
-- No rule of this file changes because of it.
-- Before it (GH-227, follow-up of GH-165), the guard exempted a chevron anywhere in a link. A link that was not a record row, holding a word and a chevron (e.g. "Siguiente ›"), passed the gate, and only a reviewer reading the diff caught it.
+- Su protagonista es el mantenedor, o el revisor que actúa por él, como en los jobs de mantenedor de docs/product/gate.md y docs/product/design-capture.md. El vendedor se ve afectado solo de forma indirecta.
+- Lo sirve el guardia de cierre (`findActionLinks`, la enmienda "action links" de ADR-0037). Ese guardia deja que un enlace lleve solo el chevron final de una fila de registro. Nunca juzga si un enlace "does" o "opens".
+- Ninguna regla de este archivo cambia por esto.
+- Antes de esto (GH-227, seguimiento de GH-165), el guardia eximía un chevron en cualquier parte de un enlace. Un enlace que no era una fila de registro, con una palabra y un chevron (p. ej. "Siguiente ›"), pasaba el Gate, y solo lo detectaba un revisor que leyera el diff.
 
-Success criteria:
+Criterios de éxito:
 
-1. **Found at a glance**: every entry in More, in Settings's list of groups and in action rows, and every action, shows an icon next to its text, except the two closed lists below. Navigation and menus always show icon + text; "no tab is an icon alone" stays.
-2. **One rule, written once**: this file and the design-system README state the same two closed lists, the same length limits, and what may and may never go behind More info. The next screen follows it without asking.
-3. **Short by default, nothing lost**: always-visible help lines, notices and empty states fit the limits, and text that says the same thing twice is cut. A needed longer explanation stays one tap away behind More info and is never deleted silently.
-4. **One icon family, no state by icon or colour alone**: every icon is stroke 1.6 at 22 px, named in `NombreIcono`, in both themes. No emoji as an interface icon. The word or shape that carries a state keeps carrying it.
-5. **Nothing else changes**: actions, routes, entry order, confirmations, toast wording, tap budgets, every rule about what a screen reveals and every accessible name stay. Existing tests pass unchanged, with two named exceptions, each listed in the PR with its screen and control:
-   - copy deliberately shortened: the owning doc and the test change in the same diff;
-   - a word that becomes an icon-only control under the closed list (e.g. "Close", "Edit"): a test that found it by its visible text now finds it by role and its unchanged accessible name, and nothing else in that test changes; no assertion is dropped or loosened.
+1. **Se encuentra de un vistazo**: cada opción de More, de la lista de grupos de Settings y de las filas de acción, y cada acción, muestra un ícono junto a su texto, salvo las dos listas cerradas de abajo. La navegación y los menús siempre muestran ícono + texto; "no tab is an icon alone" sigue valiendo.
+2. **Una regla, escrita una vez**: este archivo y el README del sistema de diseño enuncian las mismas dos listas cerradas, los mismos límites de largo y qué puede y qué nunca puede ir detrás de More info. La próxima pantalla la sigue sin preguntar.
+3. **Corto por defecto, sin perder nada**: las líneas de ayuda, los avisos y los estados vacíos siempre visibles cumplen los límites, y el texto que dice lo mismo dos veces se recorta. Una explicación más larga que haga falta queda a un toque, detrás de More info, y nunca se borra en silencio.
+4. **Una sola familia de íconos, ningún estado solo por ícono o color**: cada ícono es de trazo 1.6 a 22 px, está nombrado en `NombreIcono`, en ambos temas. Ningún emoji como ícono de la interfaz. La palabra o la forma que lleva un estado sigue llevándolo.
+5. **Nada más cambia**: las acciones, las rutas, el orden de las opciones, las confirmaciones, el texto de los toasts, los presupuestos de toques, cada regla sobre lo que una pantalla revela y cada nombre accesible se mantienen. Los tests existentes pasan sin cambios, con dos excepciones con nombre, cada una listada en el PR con su pantalla y su control:
+   - copy acortado a propósito: el doc dueño y el test cambian en el mismo diff;
+   - una palabra que pasa a ser un control solo ícono bajo la lista cerrada (p. ej. "Close", "Edit"): un test que la encontraba por su texto visible ahora la encuentra por rol y por su nombre accesible sin cambios, y nada más en ese test cambia; no se descarta ni se afloja ninguna aserción.
 
-   Any other test edit means the implementation is wrong, not the test.
-6. **Looks as designed**: `scripts/design/compare.sh` runs before and after for every screen, phone and computer, both themes, judged by eye.
-7. **The gate lets a link carry only a record row's trailing chevron.**
-   - A link that is not a record row and holds a word and a chevron (e.g. "Siguiente ›") is flagged. So is a link whose chevron is anywhere other than a record row's trailing mark.
-   - The real tree stays green with no false alarms. Record rows with their trailing chevron, `shell/` navigation with `aria-current`, `mas__item` and `ajustes__item` stay unflagged.
-   - `ACTION_LINKS_LEFT` stays exactly Expenses' "Add expense", and `ENTRY_CLASSES` does not grow.
-   - A real offender found on the tree is fixed, never exempted.
-   - Nothing the seller sees changes.
+   Cualquier otra edición de un test significa que la implementación está mal, no el test.
+6. **Se ve como fue diseñado**: `scripts/design/compare.sh` corre antes y después para cada pantalla, en celular y en computadora, en ambos temas, y se juzga a ojo.
+7. **El Gate deja que un enlace lleve solo el chevron final de una fila de registro.**
+   - Se marca un enlace que no es una fila de registro y que lleva una palabra y un chevron (p. ej. "Siguiente ›"). También se marca un enlace cuyo chevron está en cualquier lugar que no sea la marca final de una fila de registro.
+   - El árbol real sigue en verde, sin falsas alarmas. Las filas de registro con su chevron final, la navegación de `shell/` con `aria-current`, `mas__item` y `ajustes__item` siguen sin marcarse.
+   - `ACTION_LINKS_LEFT` sigue siendo exactamente el "Add expense" de Expenses, y `ENTRY_CLASSES` no crece.
+   - Un infractor real que se encuentre en el árbol se arregla, nunca se exime.
+   - Nada de lo que ve el vendedor cambia.
 
-## Behaviour
+## Comportamiento
 
-### Which form each control takes
+### Qué forma toma cada control
 
-The two lists are closed. Adding to either changes this file and the README, never a single screen.
+Las dos listas son cerradas. Agregar a cualquiera de las dos cambia este archivo y el README, nunca una sola pantalla.
 
-- **Icon-only**: delete ("Delete…"), search ("Search"), close ("Close"), edit ("Edit"), and share ("Share") only where it is not the screen's main action (e.g. the Share under a fresh invitation link in Users, whose main action is "Invite a partner").
-  - The accessible name is the exact current word; "Close", never "Back", still holds through it.
-  - The target is at least 44 px.
-  - Being on the list allows icon-only; it never requires it. A screen's main action always carries its text (Share on the catalog screen keeps its word).
-  - **Close is one form everywhere**: every form and sheet closes with the same icon-only control, accessible name "Close". No form shows the word while another shows the icon.
-  - Back is not on the list: it is navigation and stays "‹ <parent>" (docs/product/navigation.md).
-    - The parent is the fixed one docs/product/navigation.md names for that screen (its "‹ <parent>" and its back-with-no-history table), whatever screen it was reached from. Back still follows history.
-    - A screen shows exactly one back, the one its chrome gives it (the shell's); a screen never draws a second one of its own.
-    - Back is never "‹" alone and never a generic word such as "Back": its visible text and its accessible name both name the parent.
-  - More info's "i" is the one icon-only control outside this list, defined by its own term below.
-- **Text only**:
-  - links (`enlace`), such as "Edit header and footer" and "See all";
-  - the answer pair inside a confirmation, with its exact current words ("No, keep it / Yes, delete it", "No, keep entering / Yes, discard it" and the rest);
-  - the submit of a form or sheet ("Save sale", "Save the warning", "Save the catalog", "Record payment", "Save and sign in", "Sign in" and the rest);
-  - choices among options, which are not actions: the period tabs (Today · Week · Month · Dates), Cash · Transfer · Owing, Promotion · Own use, an entry's origin, Light · Dark, "All: $ X";
-  - Undo inside "Sale saved".
-- **Icon + text**: everything else, e.g. "+ New sale", "+ Stock entry", "Take from stock", "Send catalog", Collect (accessible name still "Collect from <name>"), Publish, Test it, Find my chat, Archive, Restore, "Invite a partner", "Change password", "Sign out", Copy and the main Share. A new action that fits neither list is icon + text. The icon next to a word is decorative and hidden from assistive technology, so the accessible name stays the word.
-  - **The "+" in the docs is the icon**: in "+ New sale", "+ Add expense", "+ Stock entry", "+ Entry" and any other label written with a leading "+", the "+" stands for the `agregar` icon. On screen the icon draws it and the visible text is the word alone, never a literal "+" beside the icon. The accessible name is unchanged.
-- **An action never looks like a link**: only a link (`enlace`) is drawn as one (underlined, in the link style). An action, in any form, including one that opens another screen such as "New sale" or "New sale to <name>", is drawn as the action it is.
-- **Tappable notice**: a notice the seller taps to open what it points to, such as Home's "Go on to the setup". It is neither an action row nor a control of either closed list, and it does not change them.
-  - It keeps its card exactly as designed: its surface, rounded corners and own padding, with no row spacing and no row divider.
-  - Its sentence carries the meaning, and its accessible name is its visible text.
-  - Its chevron is the decorative mark that it opens something; it takes no other icon, and the attention icon only when Notices below lists it.
-- No action is removed or renamed while it gains an icon.
+- **Solo ícono**: borrar ("Delete…"), buscar ("Search"), cerrar ("Close"), editar ("Edit") y compartir ("Share") solo donde no es la acción principal de la pantalla (p. ej. el Share debajo de un enlace de invitación recién creado en Users, cuya acción principal es "Invite a partner").
+  - El nombre accesible es la palabra exacta actual; "Close", nunca "Back", sigue valiendo a través de él.
+  - El objetivo mide al menos 44 px.
+  - Estar en la lista permite el solo ícono; nunca lo exige. La acción principal de una pantalla siempre lleva su texto (el Share de la pantalla del Catalog conserva su palabra).
+  - **Close es una sola forma en todas partes**: todo formulario y toda hoja se cierra con el mismo control solo ícono, de nombre accesible "Close". Ningún formulario muestra la palabra mientras otro muestra el ícono.
+  - Back no está en la lista: es navegación y queda como "‹ <parent>" (docs/product/navigation.md).
+    - El padre es el fijo que docs/product/navigation.md nombra para esa pantalla (su "‹ <parent>" y su tabla de volver sin historial), desde cualquier pantalla desde la que se haya llegado. Back sigue el historial.
+    - Una pantalla muestra exactamente un back, el que le da su marco (el del shell); una pantalla nunca dibuja un segundo por su cuenta.
+    - Back nunca es "‹" solo ni una palabra genérica como "Back": su texto visible y su nombre accesible nombran los dos al padre.
+  - La "i" de More info es el único control solo ícono fuera de esta lista, definido por su propio término más abajo.
+- **Solo texto**:
+  - enlaces (`enlace`), como "Edit header and footer" y "See all";
+  - el par de respuestas dentro de una confirmación, con sus palabras exactas actuales ("No, keep it / Yes, delete it", "No, keep entering / Yes, discard it" y el resto);
+  - el envío de un formulario o una hoja ("Save sale", "Save the warning", "Save the catalog", "Record payment", "Save and sign in", "Sign in" y el resto);
+  - las elecciones entre opciones, que no son acciones: las pestañas de período (Today · Week · Month · Dates), Cash · Transfer · Owing, Promotion · Own use, el origen de un Stock entry, Light · Dark, "All: $ X";
+  - Undo dentro de "Sale saved".
+- **Ícono + texto**: todo lo demás, p. ej. "+ New sale", "+ Stock entry", "Take from stock", "Send catalog", Collect (el nombre accesible sigue siendo "Collect from <name>"), Publish, Test it, Find my chat, Archive, Restore, "Invite a partner", "Change password", "Sign out", Copy y el Share principal. Una acción nueva que no encaja en ninguna de las dos listas es ícono + texto. El ícono junto a una palabra es decorativo y se oculta para la tecnología asistiva, así que el nombre accesible sigue siendo la palabra.
+  - **El "+" de los docs es el ícono**: en "+ New sale", "+ Add expense", "+ Stock entry", "+ Entry" y cualquier otra etiqueta escrita con un "+" al principio, el "+" representa al ícono `agregar`. En pantalla lo dibuja el ícono y el texto visible es solo la palabra, nunca un "+" literal junto al ícono. El nombre accesible no cambia.
+- **Una acción nunca parece un enlace**: solo un enlace (`enlace`) se dibuja como tal (subrayado, con el estilo de enlace). Una acción, en cualquier forma, incluida una que abre otra pantalla como "New sale" o "New sale to <name>", se dibuja como la acción que es.
+- **Tappable notice**: un aviso que el vendedor toca para abrir aquello a lo que apunta. No es una fila de acción ni un control de ninguna de las dos listas cerradas, y no las cambia.
+  - Conserva su tarjeta exactamente como fue diseñada: su superficie, sus esquinas redondeadas y su propio padding, sin espaciado de fila ni divisor de fila.
+  - Su oración lleva el significado, y su nombre accesible es su texto visible.
+  - Su chevron es la marca decorativa de que abre algo; no lleva ningún otro ícono, y el Attention icon solo cuando Avisos, más abajo, lo lista.
+- Ninguna acción se quita ni se renombra al ganar un ícono.
 
-### Navigation, menus and rows
+### Navegación, menús y filas
 
-- The bar, the sidebar, More and Settings's list of groups always show icon + text.
-- Entry rows (More, Settings's groups) and action rows get a leading icon.
-- Record rows keep their layout and state marks: customers, sales, varieties, stock entries, withdrawals, expenses, price entries and the account's rows, with `MarcaEstado`, amber "owes you" and "Credit". Actions on record rows follow the lists above.
-- Within one menu (More, Settings's groups, the bar, the sidebar), no two entries share an icon.
+- La barra, la barra lateral, More y la lista de grupos de Settings siempre muestran ícono + texto.
+- Las filas de opción (More, los grupos de Settings) y las filas de acción llevan un ícono al principio.
+- Las filas de registro conservan su diseño y sus marcas de estado: Customers, Sales, Products, Stock entries, Stock withdrawals, Expenses, Price entries y las filas de la cuenta, con `MarcaEstado`, "owes you" en ámbar y "Credit". Las acciones en las filas de registro siguen las listas de arriba.
+- Dentro de un mismo menú (More, los grupos de Settings, la barra, la barra lateral), dos opciones no comparten ícono.
 
-### Icons
+### Íconos
 
-- One family: stroke 1.6, 22 px, no emoji.
-- **Every icon is specified by its `NombreIcono` name**: nothing is "an icon" without one.
-- `componentes.ts` and `Icono.tsx` name the same set. A name already drawn is reused before a new one is added; no two names draw the same meaning.
-- A specific metaphor over a neutral one (e.g. a plug or a bot for Integrations); never a generic placeholder.
-- The same meaning gets the same icon everywhere.
-- A name joins `NombreIcono` only when a screen uses it; the existing names stay.
-- Each new icon is judged by eye in the design check.
+- Una sola familia: trazo 1.6, 22 px, sin emoji.
+- **Cada ícono se especifica por su nombre en `NombreIcono`**: nada es "an icon" sin uno.
+- `componentes.ts` e `Icono.tsx` nombran el mismo conjunto. Un nombre ya dibujado se reutiliza antes de agregar uno nuevo; dos nombres no dibujan el mismo significado.
+- Una metáfora específica antes que una neutra (p. ej. un enchufe o un bot para Integrations); nunca un marcador genérico.
+- El mismo significado lleva el mismo ícono en todas partes.
+- Un nombre entra a `NombreIcono` solo cuando una pantalla lo usa; los nombres existentes se mantienen.
+- Cada ícono nuevo se juzga a ojo en el chequeo de diseño.
 
-### Length of always-visible text
+### Largo del texto siempre visible
 
-- A help line or notice: one sentence, at most 80 characters.
-- An empty state: a title of at most 40 characters, plus one line of at most 80, plus its action if it has one.
-- Inline refusals and the reasons of Test it and Find my chat aim for 80, stay on screen and keep what the seller must fix, even past 80. They never move behind More info.
-- Consequences the seller would not otherwise expect stay visible in short form: the old pinned message staying as it is, the grams on hand in the archive confirmation, the grams that return to stock on delete.
-- A confirmation question may be shortened, but keeps every fact it names today: date, amount, grams, reason.
-- Fixed security texts (the brake message, the sign-in hint, the dead-link texts) keep their meaning; shortening never adds information, such as an attempt count or why a link is dead.
-- Characters are counted on the copy as shown, as code points after NFC. A placeholder is measured with `SAMPLES` (`web/src/copy/limits.ts`: date `28/09`, amount `$ 999.999` and `−$ 999.999`, grams `999,99 g`, a 24-character name, count `99`), the worst cases, never with fixture or API data. Each copy file (`web/src/copy/`) registers its always-visible strings in `LIMITED_COPY` and the refusals it keeps over 80 in `LONG_REFUSALS`; `web/src/copy/copyLimits.test.ts` fails for a module that has neither, an entry over its limit, or a long refusal not listed.
+- Una línea de ayuda o un aviso: una oración, de 80 caracteres como máximo.
+- Un estado vacío: un título de 40 caracteres como máximo, más una línea de 80 como máximo, más su acción si la tiene.
+- Los rechazos en línea y los motivos de Test it y Find my chat apuntan a 80, se quedan en pantalla y conservan lo que el vendedor tiene que arreglar, incluso pasados los 80. Nunca pasan detrás de More info.
+- Las consecuencias que el vendedor no esperaría de otro modo quedan visibles en forma corta: lo que ya estaba fijado en el chat sigue como está, los gramos disponibles en la confirmación de archivar, los gramos que vuelven al stock al borrar.
+- Una pregunta de confirmación puede acortarse, pero conserva cada dato que nombra hoy: fecha, monto, gramos, motivo.
+- Los textos de seguridad fijos (el mensaje del freno, la pista de inicio de sesión, los textos de enlace muerto) conservan su significado; acortar nunca agrega información, como una cantidad de intentos o por qué un enlace está muerto.
+- Los caracteres se cuentan sobre el copy tal como se muestra, como code points tras NFC. Un placeholder se mide con `SAMPLES` (`web/src/copy/limits.ts`: fecha `28/09`, monto `$ 999.999` y `−$ 999.999`, gramos `999,99 g`, un nombre de 24 caracteres, cantidad `99`), los peores casos, nunca con datos de fixture ni de la API. Cada archivo de copy (`web/src/copy/`) registra sus strings siempre visibles en `LIMITED_COPY` y los rechazos que mantiene por encima de 80 en `LONG_REFUSALS`; `web/src/copy/copyLimits.test.ts` falla si un módulo no tiene ninguno de los dos, si un elemento pasa su límite o si un rechazo largo no está listado.
 
 ### More info
 
-- An "i" from the family, in a 44 px target, at the end of the line it explains.
-- A tap expands the longer text in place under the line; a second tap collapses it. Never a modal or a sheet.
-- It always opens closed, and whether it was opened is never remembered: the browser keeps only the theme choice.
-- Accessible name "More info", with `aria-expanded`.
-- Opening it is never an unsaved change and never triggers the leave confirmation.
-- It holds only the how or why: never a consequence, a refusal's fix or a state.
-- A line whose explanation fits in 80 characters has none.
+- Una "i" de la familia, en un objetivo de 44 px, al final de la línea que explica.
+- Un toque expande el texto más largo en el lugar, debajo de la línea; un segundo toque lo colapsa. Nunca un modal ni una hoja.
+- Siempre se abre cerrada, y nunca se recuerda si se abrió: el navegador guarda solo la elección de tema.
+- Nombre accesible "More info", con `aria-expanded`.
+- Abrirla nunca es un cambio sin guardar y nunca dispara la confirmación de salir.
+- Guarda solo el cómo o el porqué: nunca una consecuencia, la solución de un rechazo ni un estado.
+- Una línea cuya explicación cabe en 80 caracteres no la tiene.
 
-### Notices
+### Avisos
 
-- One attention icon, the same everywhere and decorative, sits next to the sentence of every notice or status that asks the seller to act or says something failed:
-  - Home's "Your Telegram catalog is out of date";
-  - "Out of date" with its reason;
-  - "Start with your varieties";
-  - the after-import "Connect the bot…";
+- Un único Attention icon, el mismo en todas partes y decorativo, va junto a la oración de todo aviso o estado que le pide al vendedor que actúe o dice que algo falló:
+  - el "Your Telegram catalog is out of date" de Home;
+  - "Out of date" con su motivo;
   - "No connection";
-  - the generic server-error retry.
-- The sentence carries the state; the icon never replaces it or appears without it. Colour and wording do not change.
-- No icon on: "Up to date"; "That is gone." and its list form; toasts; the first-run checklist (it keeps its boxes and "Done"); help lines; empty states.
-- A notice the seller taps to open something is a tappable notice (see above): it keeps its designed card, never a row's frame. Home's "Go on to the setup" is one; it carries its chevron and no attention icon.
+  - el reintento genérico por error del servidor.
+- La oración lleva el estado; el ícono nunca la reemplaza ni aparece sin ella. El color y la redacción no cambian.
+- Sin ícono en: "Up to date"; "That is gone." y su forma de lista; los toasts; las líneas de ayuda; los estados vacíos.
+- Un aviso que el vendedor toca para abrir algo es un Tappable notice (ver arriba): conserva su tarjeta diseñada, nunca el marco de una fila.
 
-### Actions that swap their word by state
+### Acciones que cambian su palabra según el estado
 
-- None exists today. Archive and Restore are two actions on two screens, each with its own icon. The low-stock warning's on/off switch is a switch, not a button, and gets no icon.
-- For a future one: the word carries the state; a second icon is allowed only where a screen uses it.
+- Hoy no existe ninguna. Archive y Restore son dos acciones en dos pantallas, cada una con su propio ícono. El interruptor de encendido/apagado del aviso de stock bajo es un interruptor, no un botón, y no lleva ícono.
+- Para una futura: la palabra lleva el estado; un segundo ícono se permite solo donde una pantalla lo usa.
 
-### Where it is written
+### Dónde está escrita
 
-- This file and `docs/product/design-system/README.md`, stated the same way. `componentes.ts` holds the `NombreIcono` names and More info's component type.
-- Copy shortened under this rule changes in its owning capability file, in the same diff as its test.
+- Este archivo y `docs/product/design-system/README.md`, enunciadas de la misma manera. `componentes.ts` guarda los nombres de `NombreIcono` y el tipo de componente de More info.
+- El copy acortado bajo esta regla cambia en su archivo de capacidad dueño, en el mismo diff que su test.
 
-## Metrics
+## Métricas
 
-No telemetry; from tests and the design check.
+Sin telemetría; sale de los tests y del chequeo de diseño.
 
-- **Found at a glance (criterion 1)**: a front test over every screen in `scripts/design/screens.json`: every entry row, action row and action outside the closed lists has an icon and its text; every icon-only control has its exact current accessible name and a 44 px target; the icon next to a word is hidden from assistive technology; no menu repeats an icon; every form and sheet closes with the same icon-only "Close". 0 exceptions.
-- **Icon and word not doubled**: no visible label carries a literal "+" beside an `agregar` icon, and every such control keeps its accessible name. 0 exceptions.
-- **One back per screen**: every card and detail in `scripts/design/screens.json` shows exactly one back control, reading "‹ <parent>" with the fixed parent docs/product/navigation.md names, its accessible name naming that parent; none reads "‹" alone or "Back". 0 exceptions.
-- **Actions are not links**: no action is drawn in the link style; checked by eye in the design check.
-- **One rule (criterion 2)**: this file and the README state the same lists and limits, the tappable notice included; `componentes.ts` and `Icono.tsx` name the same set; every `NombreIcono` name added by this rule is used by a screen. 0 unused new names, 0 mismatches.
-- **Short by default (criterion 3)**:
-  - help lines and notices ≤ 80 characters, empty-state titles ≤ 40 with one line ≤ 80, asserted over the fixed copy; refusals over 80 are listed for review;
-  - More info opens closed, toggles `aria-expanded`, never triggers the leave confirmation and holds no consequence or fix;
-  - a PR list shows every shortened or moved text and where its long form went. 0 silent deletions.
-- **Icon family and states (criterion 4)**: a guard for stroke 1.6, 22 px and no emoji; front tests show every state keeps its word or shape in both themes; the attention icon is on the six listed notices and on none of the informational ones.
-- **Tappable notice**: Home's "Go on to the setup" is drawn as a tappable card, with no row spacing or row divider, its accessible name its visible text and no attention icon; `compare.sh` shows it unchanged, phone and computer, both themes.
-- **Nothing else changes (criterion 5)**: the existing suites pass; the only edited tests are shortened copy and text-to-role-and-name lookups of controls made icon-only, each listed in the PR; tap budgets and the redirect table unchanged; security texts add no information.
-- **Looks as designed (criterion 6)**: `compare.sh` before and after for every screen, phone and computer, both themes, judged by eye; at 320 px with text at 130 %, no icon or label is clipped and the bar still fits.
-- **Only a record row's trailing chevron (criterion 7)**, from the closing guard's own tests and the gate:
-  - gap closed: a link that is not a record row and holds a word and a chevron ("Siguiente ›") fails the guard, and so does a link whose chevron is not a record row's trailing mark;
-  - no false alarms: the guard passes over the real tree, and tests keep record rows with their trailing chevron, `shell/` navigation with `aria-current`, `mas__item` and `ajustes__item` unflagged;
-  - `ACTION_LINKS_LEFT` is exactly Expenses' "Add expense", and `ENTRY_CLASSES` is the same two entries;
-  - the change touches no screen, copy or route; the only edited tests are the guard's own, and they keep every case they guarded;
-  - every real offender found is listed in the PR and shown fixed. Expected: 0.
+- **Se encuentra de un vistazo (criterio 1)**: un test de front sobre cada pantalla de `scripts/design/screens.json`: cada fila de opción, fila de acción y acción fuera de las listas cerradas tiene un ícono y su texto; cada control solo ícono tiene su nombre accesible actual exacto y un objetivo de 44 px; el ícono junto a una palabra está oculto para la tecnología asistiva; ningún menú repite un ícono; todo formulario y toda hoja se cierra con el mismo "Close" solo ícono. 0 excepciones.
+- **Ícono y palabra sin duplicar**: ninguna etiqueta visible lleva un "+" literal junto a un ícono `agregar`, y cada control así conserva su nombre accesible. 0 excepciones.
+- **Un solo back por pantalla**: cada tarjeta y cada detalle de `scripts/design/screens.json` muestra exactamente un control de back, que dice "‹ <parent>" con el padre fijo que nombra docs/product/navigation.md, y su nombre accesible nombra a ese padre; ninguno dice "‹" solo ni "Back". 0 excepciones.
+- **Las acciones no son enlaces**: ninguna acción se dibuja con el estilo de enlace; se comprueba a ojo en el chequeo de diseño.
+- **Una regla (criterio 2)**: este archivo y el README enuncian las mismas listas y límites, el Tappable notice incluido; `componentes.ts` e `Icono.tsx` nombran el mismo conjunto; cada nombre de `NombreIcono` agregado por esta regla lo usa una pantalla. 0 nombres nuevos sin usar, 0 discrepancias.
+- **Corto por defecto (criterio 3)**:
+  - las líneas de ayuda y los avisos ≤ 80 caracteres, los títulos de estado vacío ≤ 40 con una línea ≤ 80, afirmado sobre el copy fijo; los rechazos de más de 80 se listan para revisión;
+  - More info se abre cerrada, alterna `aria-expanded`, nunca dispara la confirmación de salir y no guarda ninguna consecuencia ni solución;
+  - una lista en el PR muestra cada texto acortado o movido y adónde fue su forma larga. 0 borrados en silencio.
+- **Familia de íconos y estados (criterio 4)**: un guardia para trazo 1.6, 22 px y sin emoji; los tests de front muestran que cada estado conserva su palabra o su forma en ambos temas; el Attention icon está en los cuatro avisos listados y en ninguno de los informativos.
+- **Tappable notice**: cada Tappable notice se dibuja como una tarjeta tocable, sin espaciado ni divisor de fila y con su texto visible como nombre accesible; `compare.sh` lo muestra sin cambios, en celular y en computadora, en ambos temas.
+- **Nada más cambia (criterio 5)**: las suites existentes pasan; los únicos tests editados son el copy acortado y las búsquedas de texto a rol y nombre de controles que pasaron a ser solo ícono, cada uno listado en el PR; los presupuestos de toques y la tabla de redirecciones no cambian; los textos de seguridad no agregan información.
+- **Se ve como fue diseñado (criterio 6)**: `compare.sh` antes y después para cada pantalla, en celular y en computadora, en ambos temas, juzgado a ojo; a 320 px con el texto al 130 %, ningún ícono ni etiqueta se recorta y la barra todavía entra.
+- **Solo el chevron final de una fila de registro (criterio 7)**, según los tests propios del guardia de cierre y el Gate:
+  - brecha cerrada: un enlace que no es una fila de registro y lleva una palabra y un chevron ("Siguiente ›") falla el guardia, y también un enlace cuyo chevron no es la marca final de una fila de registro;
+  - sin falsas alarmas: el guardia pasa sobre el árbol real, y los tests mantienen sin marcar las filas de registro con su chevron final, la navegación de `shell/` con `aria-current`, `mas__item` y `ajustes__item`;
+  - `ACTION_LINKS_LEFT` es exactamente el "Add expense" de Expenses, y `ENTRY_CLASSES` son los mismos dos elementos;
+  - el cambio no toca ninguna pantalla, copy ni ruta; los únicos tests editados son los del propio guardia, y conservan cada caso que cubrían;
+  - cada infractor real que se encuentre se lista en el PR y se muestra arreglado. Esperado: 0.
 
-## Out of scope
+## Fuera de alcance
 
-- An icon-only UI; back as icon-only; a screen's main action as icon-only.
-- Adding, removing, renaming or reordering any action or entry; changing a route, a confirmation or toast wording.
-- Icons on record rows.
-- An optional icon on notices; icons no screen uses.
-- Drawing a tappable notice as a list row, or giving it a row's spacing or divider.
-- Moving a consequence, a refusal's fix or a state behind More info.
-- Remembering whether More info was opened.
-- A back label that depends on how a screen was reached (docs/product/navigation.md).
-- A dashboard or any business metric.
-- Closing the closing guard's other known gaps: an icon drawn by a helper component, a link re-exported under another name, an action link with no icon.
-- Judging a link's intent ("does" versus "opens") in the guard.
+- Una interfaz solo de íconos; back como solo ícono; la acción principal de una pantalla como solo ícono.
+- Agregar, quitar, renombrar o reordenar cualquier acción u opción; cambiar una ruta, una confirmación o el texto de un toast.
+- Íconos en las filas de registro.
+- Un ícono opcional en los avisos; íconos que ninguna pantalla usa.
+- Dibujar un Tappable notice como una fila de lista, o darle a un Tappable notice el espaciado o el divisor de una fila.
+- Mover una consecuencia, la solución de un rechazo o un estado detrás de More info.
+- Recordar si More info se abrió.
+- Una etiqueta de back que dependa de cómo se llegó a una pantalla (docs/product/navigation.md).
+- Un dashboard o cualquier métrica de negocio.
+- Cerrar las otras brechas conocidas del guardia de cierre: un ícono dibujado por un componente auxiliar, un enlace reexportado con otro nombre, un enlace de acción sin ícono.
+- Juzgar la intención de un enlace ("does" frente a "opens") en el guardia.

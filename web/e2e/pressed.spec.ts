@@ -27,7 +27,7 @@ import {
 } from '../src/routes.js'
 import { EXEMPT } from '../src/architecture/pressedExempt.js'
 import { composite, contrastRatio, parseColour } from '../src/test/contrast.js'
-import { expect, test } from './fixtures.js'
+import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import type { Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -281,9 +281,9 @@ test.describe('Undo', () => {
         email: `duena-deshacer-${theme}-${uniqueTag()}@example.com`,
       })
       await page.goto(VARIETIES)
-      await page.getByRole('link', { name: 'New variety' }).click()
+      await page.getByRole('link', { name: 'New product' }).click()
       await page.getByLabel('Name').fill('Rosa')
-      await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+      await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
       await page.getByRole('link', { name: /Rosa/ }).click()
       await page.getByRole('link', { name: 'New price' }).click()
       await page.getByLabel(/^List price/).fill('1000')
@@ -297,7 +297,7 @@ test.describe('Undo', () => {
       // notice is up, so it cannot go while the button is read.
       await page.clock.install({ time: PAGE_CLOCK_START })
       await fillSaleLine(page, 1, { variety: 'Rosa', grams: '2' })
-      await page.getByRole('radio', { name: 'Cash' }).check()
+      await page.getByRole('radio', { name: 'Paid' }).check(); await choosePaymentMethod(page, 'Cash')
       await page.getByRole('button', { name: 'Save sale' }).click()
       await expect(page.getByText('Sale saved')).toBeVisible()
       // `performance.now()` counts the fake milliseconds since the install, so the page's

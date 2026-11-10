@@ -13,6 +13,7 @@ from typing import Protocol
 
 from app.sales.domain.pricing import VarietyPricing
 from app.sales.domain.sale import CustomerFact, Sale, SaleLine
+from app.shared.money import MoneyFormat
 from app.shared.pricing_settings import PricingSettings
 from app.shared.quantity import Quantity
 
@@ -41,6 +42,13 @@ class PricingSettingsReader(Protocol):
     once per save, and that one value prices every line of the save."""
 
     def current(self) -> PricingSettings: ...
+
+
+class MoneyFormatReader(Protocol):
+    """How the business shows money: its symbol and decimals, never the scale it stores
+    amounts at (docs/adr/0055, docs/adr/0058). Built for one business."""
+
+    def current(self) -> MoneyFormat: ...
 
 
 class Sales(Protocol):
@@ -100,6 +108,13 @@ class SaleView:
     sale: Sale
     customer: SaleViewCustomer | None
     lines: tuple[SaleViewLine, ...]
+
+    @property
+    def number(self) -> int:
+        """The sale's number in its business (CONTEXT.md: Sale number); a stored sale
+        always has one."""
+        assert self.sale.number is not None, "only stored sales have a number"
+        return self.sale.number
 
 
 class SaleViews(Protocol):

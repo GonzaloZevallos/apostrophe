@@ -1,5 +1,5 @@
 export type Viewport = { width: number; height: number };
-export type Clip = { x: number; y: number; width: number; height: number };
+export type Clip = { x: number; y: number; width: number; height: number; right?: number; bottom?: number };
 export type FixedElement = {
   display: string;
   visibility: string;
@@ -29,7 +29,20 @@ export type CountChange = { path: string; kind: 'count'; before: number; after: 
 export type Side = 'design' | 'built';
 export type Frame = { left: number; top: number; right: number; bottom: number };
 export type Metrics = { scrollWidth: number; scrollHeight: number; innerWidth: number; innerHeight: number };
-export type ShotPlan = { mode: 'layer' } | { mode: 'grow'; height: number };
+export type ShotPlan = { mode: 'layer' } | { mode: 'scroll' } | { mode: 'grow'; height: number };
+export type Inset = number | 'auto';
+export type Pinned = {
+  chain: string;
+  position: 'fixed' | 'sticky';
+  insetTop: Inset;
+  insetBottom: Inset;
+  marginTop: Inset;
+  marginBottom: Inset;
+  transform: string;
+  rect: Frame;
+  container: { contentTop: number; contentBottom: number };
+  natural?: { top: number; bottom: number };
+};
 export type CensusClass = 'layer' | 'grown' | 'wide' | 'neither';
 export function grownHeight(metrics: { scrollHeight: number }, viewport: Viewport): number | null;
 export function coversScreen(fixedElements: ReadonlyArray<FixedElement>, viewport: Viewport): boolean;
@@ -63,3 +76,66 @@ export function viewportUnchanged(atSettle: Viewport, afterShot: Viewport): bool
 export function viewportMovedReason(side: Side): string;
 export function staleFiles(existing: ReadonlyArray<string>, rows: ReadonlyArray<string>): string[];
 export function shotStepReason(kind: string, side: Side): string;
+export type Capture = 'captured' | 'not-captured';
+export type SideRecord = { path: string | null; reason?: string | null };
+export type RowCapture = { capture: Capture; reasons?: { design?: string; built?: string } };
+export const CALM_CONTEXT: Readonly<{ reducedMotion: 'reduce' }>;
+export const CAPTURE_SCALE: 2;
+export const CALM_CSS: string;
+export const PROBE_CSS: string;
+export function captureContextOptions(row: { width: number; height: number; url: string; scale?: number }): {
+  viewport: Viewport;
+  deviceScaleFactor: number;
+  colorScheme: 'light';
+  baseURL: string;
+  reducedMotion: 'reduce';
+};
+export const BUILT_ONLY_LAUNCH_ARGS: readonly string[];
+export function launchOptions(builtOnly: boolean): { args?: string[] };
+export function named(what: string, side: Side): string;
+export function shotReason(failure: string, side: Side): string;
+export function rowCapture(sides: { design: SideRecord; built: SideRecord }): RowCapture;
+export function pinnedClass(pinned: Pick<Pinned, 'position'>): 'chrome' | 'content';
+export function viewportFixed(
+  pinned: Pick<Pinned, 'insetTop' | 'insetBottom' | 'marginTop' | 'marginBottom' | 'rect'>,
+  viewport: Viewport,
+): boolean;
+export function stickyProbeOffset(
+  pinned: Pick<Pinned, 'insetTop' | 'insetBottom' | 'container'>,
+  viewport: Viewport,
+  maxOffset: number,
+): number;
+export type ScrollFrame = { offset: number; cropTop: number; cropHeight: number; cropLeft?: number; cropWidth?: number };
+export type ScrollPlan = { frames: ScrollFrame[] } | { reason: string };
+export function scrollPlan(
+  metrics: { scrollHeight: number },
+  viewport: Viewport,
+  dpr: number,
+  clip: Clip | null | undefined,
+  boundaries: ReadonlyArray<number>,
+  side: Side,
+): ScrollPlan;
+export type PlacedUnit = { chain: string; position: 'fixed' | 'sticky' };
+export type Placement = { units: PlacedUnit[]; assignment: number[] } | { reason: string };
+export function stickyPlacement(
+  pinned: ReadonlyArray<Pinned>,
+  plan: ReadonlyArray<ScrollFrame>,
+  viewport: Viewport,
+  side: Side,
+  dpr?: number,
+): Placement;
+export function hiddenRule(units: ReadonlyArray<PlacedUnit>, frameIndex: number, assignment: ReadonlyArray<number>): string;
+export type FrameRead = {
+  offset: number;
+  scrollTop: number;
+  scrollHeight: number;
+  viewport: Viewport;
+  vvAlto: string | null;
+  snapshot: Snapshot;
+};
+export function shiftMiss(frame0: FrameRead, frameN: FrameRead, side: Side): string | null;
+export function innerScrollMiss(
+  metrics: { scrollHeight: number; innerHeight: number },
+  scrollers: ReadonlyArray<{ scrollHeight: number; clientHeight: number }>,
+  side: Side,
+): string | null;

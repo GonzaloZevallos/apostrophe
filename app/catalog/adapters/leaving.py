@@ -3,7 +3,7 @@
 from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
-from app.catalog.adapters.tables import CatalogAttributesRow
+from app.catalog.adapters.tables import CatalogAttributeRow
 
 
 class SqlCatalogLeaving:
@@ -13,8 +13,8 @@ class SqlCatalogLeaving:
 
     def leaving(self, variety_id: int) -> None:
         self._session.execute(
-            delete(CatalogAttributesRow).where(
-                CatalogAttributesRow.variety_id == variety_id,
-                CatalogAttributesRow.business_id == self._business_id,
+            delete(CatalogAttributeRow).where(
+                CatalogAttributeRow.variety_id == variety_id,
+                CatalogAttributeRow.business_id == self._business_id,
             )
         )

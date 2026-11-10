@@ -32,12 +32,26 @@ class Business:
     name: str
     language: str
     default_phone_country: str | None
+    last_sale_number: int | None = None
 
     def __post_init__(self) -> None:
         if not self.name:
             raise ValueError("a business needs a name")
         if not self.language:
             raise ValueError("a business needs a language")
+        if self.last_sale_number is not None and self.last_sale_number < 0:
+            raise ValueError("a business needs a last sale number of zero or more")
+
+
+@dataclass(frozen=True)
+class ExportedMoney:
+    """What the document states about the business's money, beside its tables: the scale
+    its amounts are stored at and the decimals it shows (docs/adr/0058). The amounts in
+    `kinds` stay the stored integers, so a reader divides by `10 ** scale` to get back
+    the amounts the business entered. This hexagon's own view, like `Business`."""
+
+    scale: int
+    decimals: int
 
 
 class UnresolvableLabel(ValueError):
@@ -53,9 +67,12 @@ def build_document(
     schema: Schema,
     rows: Mapping[str, Sequence[Mapping[str, Any]]],
     exported_at: datetime,
+    money: ExportedMoney | None = None,
 ) -> dict[str, Any]:
-    """`{"business": {"id", "name", "language", "default_phone_country"}, "exported_at",
-    "kinds": {table: [records]}}`.
+    """`{"business": {"id", "name", "language", "default_phone_country"[, "last_sale_number"]},
+    "exported_at", ["money": {"scale", "decimals"},] "kinds": {table: [records]}}`; the counter is in the
+    header whenever the business carries it (docs/adr/0073), and `money` whenever the
+    caller read the business's (docs/adr/0058).
     Every owned table in `schema` becomes a kind, its records sorted by id, with
     `EXCLUDED_COLUMNS` dropped, `business_id` never repeated, foreign keys turned
     into `{"id", "name"}` references and `*_hundredths` integers into two-place
@@ -64,7 +81,7 @@ def build_document(
     `rows` may also carry withheld tables (`invitation`, `login_guard`, `reset_link`)
     the caller read for the delete but that never reach the document; those are never
     indexed here, since no exported table's foreign key ever targets one, and
-    `login_guard` has no `id` column to index by."""
+    `login_guard` has no `business_id`, so it is deleted by email, never exported."""
     owned = exported_tables(schema)
     rows_by_table: dict[str, dict[Any, Mapping[str, Any]]] = {
         name: {row["id"]: row for row in rows[name]} for name in owned if name in rows
@@ -78,16 +95,22 @@ def build_document(
         ]
         records.sort(key=lambda record: record["id"])
         kinds[table_name] = records
-    return {
-        "business": {
-            "id": business.id,
-            "name": business.name,
-            "language": business.language,
-            "default_phone_country": business.default_phone_country,
-        },
-        "exported_at": _format_instant(exported_at),
-        "kinds": kinds,
+    header: dict[str, Any] = {
+        "id": business.id,
+        "name": business.name,
+        "language": business.language,
+        "default_phone_country": business.default_phone_country,
     }
+    if business.last_sale_number is not None:
+        header["last_sale_number"] = business.last_sale_number
+    document: dict[str, Any] = {
+        "business": header,
+        "exported_at": _format_instant(exported_at),
+    }
+    if money is not None:
+        document["money"] = {"scale": money.scale, "decimals": money.decimals}
+    document["kinds"] = kinds
+    return document
 
 
 def id_sets(document: Mapping[str, Any]) -> dict[str, frozenset[int]]:
@@ -130,7 +153,7 @@ def _record(
 
 def _foreign_key_targets(table: Table) -> dict[str, str]:
     """Every column of `table` that references another table, `business_id` aside --
-    for the composite expense foreign key this is `category_id` alone, never
+    for the composite expense foreign key this is `expense_category_id` alone, never
     `business_id` (the plan's invariant)."""
     targets: dict[str, str] = {}
     for foreign_key in table.foreign_keys:

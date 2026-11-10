@@ -22,6 +22,8 @@ const PANTALLAS = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'doc
 export function assertScreens(screens, pantallas = PANTALLAS) {
   const all = new Set(screens.map((s) => s.screen))
   const seen = new Set()
+  /** @type {Map<string, unknown>} */
+  const foldedNames = new Map()
   for (const s of screens) {
     if ('color_scheme' in s) throw new Error(`${s.screen}: color_scheme is retired, use tema: 'oscuro'`)
     if ('tema' in s && s.tema !== 'oscuro') throw new Error(`${s.screen}: unknown tema ${JSON.stringify(s.tema)}`)
@@ -31,11 +33,21 @@ export function assertScreens(screens, pantallas = PANTALLAS) {
     }
     if (seen.has(s.screen)) throw new Error(`${s.screen}: screen is not unique across the file`)
     seen.add(s.screen)
+    if (typeof s.screen !== 'string' || !SCREEN_NAME.test(s.screen)) {
+      throw new Error(`${s.screen}: screen must match ${SCREEN_NAME.source}`)
+    }
+    const folded = String(s.screen).toLowerCase()
+    const first = foldedNames.get(folded)
+    if (first !== undefined) throw new Error(`${s.screen}: screen is equal to ${first} ignoring case`)
+    foldedNames.set(folded, s.screen)
     if ('text_scale' in s && s.text_scale !== TEXT_SCALE) {
       throw new Error(`${s.screen}: text_scale must be exactly ${TEXT_SCALE}`)
     }
     if ('viewport' in s && !isViewport(s.viewport)) {
       throw new Error(`${s.screen}: viewport must be two positive integers, width and height`)
+    }
+    if ('design_viewport' in s && !isViewport(s.design_viewport)) {
+      throw new Error(`${s.screen}: design_viewport must be two positive integers, width and height`)
     }
     if ('steps' in s) assertSteps(s)
     if ('needs' in s) assertNeeds(s, all, seen)
@@ -46,6 +58,70 @@ export function assertScreens(screens, pantallas = PANTALLAS) {
       throw new Error(`${s.screen}: an entry that reaches ${LISTO} must name an account of its own`)
     }
   }
+}
+
+// A screen name is a file name (`docs/assets/screens/<screen>.webp`) and a URL part: letters,
+// digits and hyphens, and two names that differ only in case would be one file on a
+// case-insensitive disk.
+const SCREEN_NAME = /^[A-Za-z0-9-]+$/
+
+// The widest phone: the width from which the app shows the computer layout.
+const COMPUTER_WIDTH = 900
+
+// The rows that get a screen image (docs/product/screen-images.md): light theme, phone width,
+// normal text size, and a route to open. File order. The one definition of the inclusion rule.
+/**
+ * @param {ReadonlyArray<Readonly<Record<string, unknown>>>} screens
+ * @returns {Array<Readonly<Record<string, unknown>>>}
+ */
+export function screenImageRows(screens) {
+  return screens.filter(
+    (s) =>
+      !('tema' in s) &&
+      !('text_scale' in s) &&
+      s.route !== null &&
+      (!('viewport' in s) || Number(/** @type {ArrayLike<number>} */ (s.viewport)[0]) < COMPUTER_WIDTH),
+  )
+}
+
+// The rows a capture of the screen images has to run: the image rows plus every row they `needs`,
+// transitively (a capture runs a row over the state its `needs` row left). File order, each once,
+// because the result is a filter of `screens`.
+/**
+ * @param {ReadonlyArray<Readonly<Record<string, unknown>>>} screens
+ * @returns {Array<Readonly<Record<string, unknown>>>}
+ */
+export function captureSelection(screens) {
+  const byName = new Map(screens.map((s) => [s.screen, s]))
+  /** @type {Set<unknown>} */
+  const included = new Set()
+  for (const row of screenImageRows(screens)) {
+    /** @type {Readonly<Record<string, unknown>> | undefined} */
+    let current = row
+    while (current !== undefined && !included.has(current.screen)) {
+      included.add(current.screen)
+      current = typeof current.needs === 'string' ? byName.get(current.needs) : undefined
+    }
+  }
+  return screens.filter((s) => included.has(s.screen))
+}
+
+// The phone every row is captured at unless it names a `viewport`.
+/** @type {readonly [number, number]} */
+export const PHONE = [390, 844]
+
+// The size of each side's browser context. The built side is `viewport ?? PHONE`, as it has always
+// been. The design side is `design_viewport` when the row has one (a drawing whose own width is not
+// the row's viewport), else the same size as the built side. `design_viewport` is read in three places: the
+// guard above, here (the contexts' sizes), and `composeSheet` (comparisons.mjs), which asks only whether it is set.
+/**
+ * @param {Readonly<Record<string, unknown>>} s
+ * @returns {{ design: readonly [number, number], built: readonly [number, number] }}
+ */
+export function viewportsOf(s) {
+  const built = /** @type {readonly [number, number]} */ (s.viewport ?? PHONE)
+  const design = /** @type {readonly [number, number]} */ (s.design_viewport ?? built)
+  return { design, built }
 }
 
 /** @param {unknown} value */
@@ -164,8 +240,8 @@ function assertAccount(s) {
 
 // The entry that reaches the closing screen "Listo" ends its business's Onboarding for
 // good (ADR-0036), so each `open` business can serve one such entry per sample run. Every
-// other kind (`ended`, `pre_onboarding`, `imported`, `onboarding`) is read-only: it serves entries that
-// change nothing, which several rows may share, and no Listo entry (ADR-0042, GH-274).
+// other kind (`ended`) is read-only: it serves entries that change nothing, which several
+// rows may share, and no Listo entry (ADR-0042, GH-274).
 const LISTO = 'OnboardingListo'
 const DEFAULT_ACCOUNT = 'La Huerta'
 
@@ -224,7 +300,7 @@ function isOnboardingComputer(name) {
 // capture. The messages are fixed text: they name the screens, never a credential.
 /**
  * @param {ReadonlyArray<Readonly<Record<string, unknown>>>} selected
- * @param {Readonly<Record<string, 'open' | 'ended' | 'pre_onboarding' | 'imported' | 'onboarding'>>} kinds
+ * @param {Readonly<Record<string, 'open' | 'ended'>>} kinds
  * @returns {void}
  */
 export function assertSelectedAccounts(selected, kinds) {

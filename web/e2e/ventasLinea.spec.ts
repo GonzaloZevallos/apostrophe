@@ -1,6 +1,6 @@
 /**
  * Nueva venta's open line on a real phone viewport (320, 375 and 430 px, and 246 px, which
- * is 320 px at 130 % text): no field of the line, nor "Add another variety" or the
+ * is 320 px at 130 % text): no field of the line, nor "Add another product" or the
  * shipping field, leaves the screen; every control of them is at least 44 px tall and every
  * input at least 16 px, so iOS never zooms. The header, footer and date belong to the
  * shell's own spec, not to this one.
@@ -21,9 +21,9 @@ const MIN_INPUT_FONT = 16
 async function signUpWithAVariety(page: Page): Promise<void> {
   await signUpNewBusiness(page, { businessName: `Vivero Line ${uniqueTag()}`, email: `duena-linea-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByRole('link', { name: 'New product' }).click()
   await page.getByLabel('Name').fill('Jazmín con un nombre bastante largo')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('500')
@@ -51,11 +51,11 @@ test('the open line fits and is thumb-sized at 320, 375, 430 and at 130 % text',
 
     const line = page.locator('.nueva-venta__linea--abierta')
     const controls = [
-      page.getByLabel('Line 1 variety'),
+      page.getByRole('button', { name: /^Line 1 product/ }),
       page.getByLabel('Line 1 grams'),
       page.getByLabel('Line 1 special price'),
       line.locator('.opcion-interruptor'),
-      page.getByRole('button', { name: 'Add another variety' }),
+      page.getByRole('button', { name: 'Add another product' }),
       page.getByLabel('Shipping'),
     ]
     for (const control of controls) {
@@ -65,7 +65,7 @@ test('the open line fits and is thumb-sized at 320, 375, 430 and at 130 % text',
       expect(rect.height, `height at ${width}`).toBeGreaterThanOrEqual(TOUCH_TARGET)
     }
     for (const input of [
-      page.getByLabel('Line 1 variety'),
+      page.getByRole('button', { name: /^Line 1 product/ }),
       page.getByLabel('Line 1 grams'),
       page.getByLabel('Line 1 special price'),
       page.getByLabel('Shipping'),

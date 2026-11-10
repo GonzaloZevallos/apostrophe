@@ -27,6 +27,19 @@ CUSTOMERS = (
     (5, 2, "Nadie", None, 1, None),
 )
 OTHER_TABLES = ("sale", "sale_line", "payment")
+# `sale` is read by the columns it had at this revision: a later revision adds some (0023's
+# `number`), and a `SELECT *` would fail on each.
+SELECTED = {
+    "sale": "id, business_id, {sale_date}, customer_id, shipping_charged, note, recorded_at",
+    "sale_line": "*",
+    "payment": "*",
+}
+
+
+def _sale_date_column(engine: Engine) -> str:
+    """The stored name of the sale date: `sale_date` before 0026, `sold_on` after."""
+    names = {column["name"] for column in inspect(engine).get_columns("sale")}
+    return "sold_on" if "sold_on" in names else "sale_date"
 
 
 def _config(connection: object) -> Config:
@@ -136,21 +149,33 @@ def _seed(engine: Engine) -> None:
             )
 
 
+def _customer_columns(engine: Engine) -> list[str]:
+    return [column["name"] for column in inspect(engine).get_columns("customer")]
+
+
 def _snapshot(engine: Engine) -> dict[str, list[tuple[Any, ...]]]:
     """Everything that must survive: the customer's columns but the channel, the rows of
     the other tables, and each customer's balance (sold with shipping minus paid)."""
+    # 0027 renamed `vip` to `is_vip`: read whichever the database has.
+    vip = "is_vip" if "is_vip" in _customer_columns(engine) else "vip"
     with engine.connect() as connection:
         snapshot: dict[str, list[tuple[Any, ...]]] = {
             "customer": [
                 tuple(row)
                 for row in connection.execute(
-                    text("SELECT id, business_id, name, phone, vip FROM customer ORDER BY id")
+                    text(f"SELECT id, business_id, name, phone, {vip} FROM customer ORDER BY id")
                 )
             ]
         }
         for table in OTHER_TABLES:
             snapshot[table] = [
-                tuple(row) for row in connection.execute(text(f"SELECT * FROM {table} ORDER BY id"))
+                tuple(row)
+                for row in connection.execute(
+                    text(
+                        f"SELECT {SELECTED[table].format(sale_date=_sale_date_column(engine))} "
+                        f"FROM {table} ORDER BY id"
+                    )
+                )
             ]
         snapshot["balance"] = [
             tuple(row)
@@ -172,10 +197,10 @@ def _snapshot(engine: Engine) -> dict[str, list[tuple[Any, ...]]]:
 
 
 def _assert_dropped_and_whole(engine: Engine) -> None:
-    columns = [column["name"] for column in inspect(engine).get_columns("customer")]
-    assert columns == ["id", "business_id", "name", "phone", "vip", "customer_type_id"]
+    columns = _customer_columns(engine)
+    assert columns == ["id", "business_id", "name", "phone", "is_vip", "customer_type_id"]
     assert [name for name in inspect(engine).get_unique_constraints("customer")] == [
-        {"name": "uq_customer_business_phone", "column_names": ["business_id", "phone"]}
+        {"name": "uq_customer_business_id_phone", "column_names": ["business_id", "phone"]}
     ]
     with engine.connect() as connection:
         dbapi_connection = connection.connection.dbapi_connection

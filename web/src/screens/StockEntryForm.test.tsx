@@ -9,8 +9,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import type { ReactNode } from 'react'
+import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
+import { SheetRouterProvider, SheetStackProvider } from '../components/useSheetStack'
 import type { StockEntry } from '../api/stock'
+import { HOME } from '../routes'
 import StockEntryForm, { type StockEntryFormProps } from './StockEntryForm'
 import type { Variety } from './Variedades'
 
@@ -26,6 +30,21 @@ const VARIETIES = [
   { id: 4, name: 'Gelato', archived: false, current_price: null },
 ] satisfies Variety[]
 const STOCK_VIEW = { total: 0, products: [], entries: [] }
+
+/** The form where its hosts put it: inside the sheet stack of a router. */
+function renderInStack(form: ReactNode) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const router = createMemoryRouter([
+    { path: HOME, element: <SheetStackProvider>{form}</SheetStackProvider> },
+  ])
+  render(
+    <QueryClientProvider client={client}>
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
+    </QueryClientProvider>,
+  )
+}
 
 function renderForm(onSaved: () => void) {
   render(
@@ -80,7 +99,7 @@ test('with a fixed variety and origin it posts the opening stock and offers no o
   expect(screen.queryByRole('button', { name: 'Purchase' })).not.toBeInTheDocument()
   // The variety is named, not chosen.
   expect(await screen.findByText('Sir Jack')).toBeInTheDocument()
-  expect(screen.queryByLabelText('Variety')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Product')).not.toBeInTheDocument()
   expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
 
   await userEvent.type(screen.getByLabelText('Grams'), '30')
@@ -152,14 +171,10 @@ test('without the locked props the form is the owner\'s whole form', async () =>
       return Promise.resolve(jsonResponse(500, {}))
     }),
   )
-  render(
-    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-      <StockEntryForm mode="nuevo" today="2026-10-03" onSaved={vi.fn()} />
-    </QueryClientProvider>,
-  )
+  renderInStack(<StockEntryForm mode="nuevo" today="2026-10-03" onSaved={vi.fn()} />)
 
   expect(await screen.findByLabelText('Date')).toHaveValue('2026-10-03')
-  expect(screen.getByLabelText('Variety')).toBeEnabled()
+  await waitFor(() => expect(screen.getByRole('button', { name: /^Product/ })).toBeEnabled())
   expect(screen.getByLabelText('Note')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Purchase' })).toBeInTheDocument()
   expect(screen.getByText('Required for a purchase')).toBeInTheDocument()
@@ -226,12 +241,8 @@ test("an edit preselects the product whose id is the entry's product_id", async 
       return Promise.resolve(jsonResponse(500, {}))
     }),
   )
-  render(
-    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-      <StockEntryForm mode="editar" initial={entry} today="2026-10-03" onSaved={vi.fn()} />
-    </QueryClientProvider>,
-  )
+  renderInStack(<StockEntryForm mode="editar" initial={entry} today="2026-10-03" onSaved={vi.fn()} />)
 
-  const field = await screen.findByRole('combobox')
-  await waitFor(() => expect(field).toHaveDisplayValue(VARIETIES[1]!.name))
+  const field = await screen.findByRole('button', { name: /^Product/ })
+  await waitFor(() => expect(field).toHaveTextContent(VARIETIES[1]!.name))
 })

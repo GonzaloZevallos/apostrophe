@@ -36,7 +36,7 @@ def test_the_customer_table_has_no_constraint_other_than_the_phone_uniqueness(
 ) -> None:
     """Pins the table `SqlCustomers._flush_or_mark_taken` relies on: translating an
     `IntegrityError` straight into `PhoneTaken` is only correct because
-    `uq_customer_business_phone` is the only unique or check constraint a valid write
+    `uq_customer_business_id_phone` is the only unique or check constraint a valid write
     can break. A second constraint added to the table (and the migration) without
     changing the repository would make this test fail first."""
     upgrade_to_head(engine)
@@ -44,7 +44,7 @@ def test_the_customer_table_has_no_constraint_other_than_the_phone_uniqueness(
     inspector = inspect(engine)
 
     assert [c["name"] for c in inspector.get_unique_constraints("customer")] == [
-        "uq_customer_business_phone"
+        "uq_customer_business_id_phone"
     ]
     assert inspector.get_check_constraints("customer") == []
 

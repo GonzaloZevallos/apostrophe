@@ -7,7 +7,7 @@
 
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMERS, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from './fixtures.js'
+import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { newBusinessInvitationUrl } from './backend.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -30,9 +30,9 @@ test('Back on a dirty Record payment and on a dirty New sale asks, and "No" keep
   await leaveOnboarding(page)
 
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByRole('link', { name: 'New product' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('1000')
@@ -51,13 +51,13 @@ test('Back on a dirty Record payment and on a dirty New sale asks, and "No" keep
   // A dirty Record payment, reached from Customers' "Collect from".
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Collect from Carla Volver' }).first().click()
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await choosePaymentMethod(page, 'Cash')
   // Back only once the form has taken the choice: a Back sent before it counts the form clean leaves unasked.
-  await expect(page.getByRole('radio', { name: 'Cash' })).toBeChecked()
+  await expect(page.getByRole('button', { name: /^Payment method/ })).toHaveText('Cash')
   await page.goBack()
   await expect(page.getByText('Discard the payment?')).toBeVisible()
   await page.getByRole('button', { name: 'No, keep entering' }).click()
-  await expect(page.getByRole('radio', { name: 'Cash' })).toBeChecked()
+  await expect(page.getByRole('button', { name: /^Payment method/ })).toHaveText('Cash')
   await page.getByRole('button', { name: 'Close' }).click()
   await page.getByRole('button', { name: 'Yes, discard it' }).click()
   await expectPath(page, CUSTOMERS)

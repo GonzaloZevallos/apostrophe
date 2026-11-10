@@ -79,7 +79,7 @@ EXPORTED_KINDS = (
     "stock_withdrawal_line",
     "withdrawal_reason",
     "catalog_header_footer",
-    "catalog_attributes",
+    "catalog_attribute",
     "onboarding",
     "first_run",
 )
@@ -210,11 +210,11 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     assert stock_entry["note"] == "stock seed"
     # `seed()` never passes a `date`, so the entry is recorded on the business day
     # of the seed instant.
-    assert stock_entry["entry_date"] == business_day(seed_instant).isoformat()
+    assert stock_entry["entered_on"] == business_day(seed_instant).isoformat()
 
     price_entry = kinds["price_entry"][0]
     assert price_entry["variety_id"] == variety_ref
-    assert price_entry["effective_from"] == days.price.isoformat()
+    assert price_entry["effective_on"] == days.price.isoformat()
     assert price_entry["list_price"] == 5000
 
     threshold = kinds["stock_threshold"][0]
@@ -234,9 +234,9 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     assert header_footer["header"] == CATALOG_HEADER
     assert header_footer["footer"] == CATALOG_FOOTER
 
-    attributes = kinds["catalog_attributes"][0]
+    attributes = kinds["catalog_attribute"][0]
     assert attributes["variety_id"] == variety_ref
-    assert attributes["shown"] is True
+    assert attributes["is_shown"] is True
     assert attributes["aroma"] == "floral"
     assert attributes["indica_share"] == 50
 
@@ -267,7 +267,10 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     assert expense["amount"] == EXPENSE_AMOUNT
     assert expense["spent_on"] == days.expense.isoformat()
     assert expense["detail"] == EXPENSE_DETAIL
-    assert expense["category_id"] == {"id": categories["Servicios"]["id"], "name": "Servicios"}
+    assert expense["expense_category_id"] == {
+        "id": categories["Servicios"]["id"],
+        "name": "Servicios",
+    }
 
     sale_line_total = sale_line["line_total"]
     assert document["exported_at"] == removed_at.strftime("%Y-%m-%dT%H:%M:%SZ")

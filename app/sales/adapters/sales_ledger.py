@@ -6,8 +6,10 @@ from __future__ import annotations
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.db import money_scale_factor, scaled
 from app.results.application.ports import SaleRecord
 from app.sales.adapters.tables import SaleLineRow, SaleRow
+from app.shared.money import Money
 
 
 class SqlSalesLedger:
@@ -16,10 +18,11 @@ class SqlSalesLedger:
         self._business_id = business_id
 
     def all(self) -> list[SaleRecord]:
+        factor = money_scale_factor(self._session, self._business_id)
         line_totals = (
             select(
                 SaleLineRow.sale_id.label("sale_id"),
-                func.sum(SaleLineRow.line_total).label("lines_total"),
+                func.sum(scaled(SaleLineRow.line_total, factor)).label("lines_total"),
             )
             .where(SaleLineRow.business_id == self._business_id)
             .group_by(SaleLineRow.sale_id)
@@ -28,8 +31,8 @@ class SqlSalesLedger:
         statement = (
             select(
                 SaleRow.id,
-                SaleRow.sale_date,
-                SaleRow.shipping_charged,
+                SaleRow.sold_on,
+                scaled(SaleRow.shipping_charged, factor),
                 func.coalesce(line_totals.c.lines_total, 0),
             )
             .select_from(SaleRow)
@@ -37,6 +40,11 @@ class SqlSalesLedger:
             .where(SaleRow.business_id == self._business_id)
         )
         return [
-            SaleRecord(sale_id=sale_id, day=day, shipping=shipping, total=shipping + lines_total)
+            SaleRecord(
+                sale_id=sale_id,
+                day=day,
+                shipping=Money(shipping).whole_units(),
+                total=Money(shipping + lines_total).whole_units(),
+            )
             for sale_id, day, shipping, lines_total in self._session.execute(statement).all()
         ]

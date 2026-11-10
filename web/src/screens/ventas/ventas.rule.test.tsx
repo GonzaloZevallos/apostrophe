@@ -9,6 +9,7 @@
  * exact name kept).
  */
 
+import { pickProduct } from './lineProduct'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -143,9 +144,9 @@ test.each(VIEWPORTS)("NuevaVenta: with two lines, Pick a customer and Nuevo clie
       </SheetRouterProvider>
     </QueryClientProvider>,
   )
-  await user.selectOptions(await screen.findByLabelText('Line 1 variety'), '1')
+  await pickProduct(user, 1, 'Rosa')
   await user.type(screen.getByLabelText('Line 1 grams'), '2')
-  await user.click(await screen.findByRole('button', { name: 'Add another variety' }))
+  await user.click(await screen.findByRole('button', { name: 'Add another product' }))
   expect(screen.getByRole('button', { name: 'Remove line 2' })).toHaveClass('boton-icono')
   expect(screen.getByText(GRAMS_HELP)).toHaveAttribute('data-copy', 'help')
   expectIconAndTextRule(container, OPTIONS)
@@ -158,7 +159,7 @@ test.each(VIEWPORTS)("NuevaVenta: with two lines, Pick a customer and Nuevo clie
   expectIconAndTextRule(container, OPTIONS)
 })
 
-test('the helper rejects a text-only action on these screens (a link-styled "Add another variety" would fail)', () => {
+test('the helper rejects a text-only action on these screens (a link-styled "Add another product" would fail)', () => {
   const { container } = render(
     <div>
       <button type="button" className="boton--fila-x">

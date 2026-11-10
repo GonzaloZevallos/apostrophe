@@ -10,10 +10,12 @@ from sqlalchemy import func, select, update
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from app.db import money_stored_value
 from app.payments.adapters.tables import PaymentRow
 from app.pricing_settings.adapters.tables import PricingSettingsRow
 from app.products.adapters.tables import PriceEntryRow
 from app.sales.adapters.tables import SaleLineRow, SaleRow
+from app.shared.money import Money
 from tests.conftest import TODAY
 from tests.contract_shapes import assert_matches_fixture
 from tests.fakes.archive import archive_by_hand
@@ -394,6 +396,30 @@ def test_list_sales_orders_newest_date_first_then_most_recently_recorded(
     ]
 
 
+def test_each_sale_s_date_is_read_back_in_the_list_and_in_the_detail(
+    client: TestClient,
+) -> None:
+    # Two past dates, different from each other and from the clock's today (2026-10-02).
+    variety_id = _variety(client)
+    ids: dict[str, int] = {}
+    for sale_date in ("2026-09-03", "2026-09-21"):
+        body = {
+            "date": sale_date,
+            "payment": "cash",
+            "lines": [{"product_id": variety_id, "quantity": "10"}],
+        }
+        ids[sale_date] = int(client.post("/sales", json=body).json()["id"])
+
+    listed = client.get("/sales").json()
+
+    assert [(sale["id"], sale["date"]) for sale in listed] == [
+        (ids["2026-09-21"], "2026-09-21"),
+        (ids["2026-09-03"], "2026-09-03"),
+    ]
+    for sale_date, sale_id in ids.items():
+        assert client.get(f"/sales/{sale_id}").json()["date"] == sale_date
+
+
 def test_list_sales_filters_by_an_inclusive_date_range(client: TestClient) -> None:
     variety_id = _variety(client)
 
@@ -585,7 +611,10 @@ def _switches(engine: Engine, *, bulk: bool, vip: bool) -> None:
 
 def _vip_price(engine: Engine, vip_price: int) -> None:
     with Session(engine) as session:
-        session.execute(update(PriceEntryRow).values(vip_price=vip_price))
+        business_id = session.scalars(select(PriceEntryRow.business_id)).first()
+        assert business_id is not None
+        stored = money_stored_value(session, business_id, Money.of_units(vip_price))
+        session.execute(update(PriceEntryRow).values(vip_price=stored))
         session.commit()
 
 

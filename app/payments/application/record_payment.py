@@ -6,12 +6,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime
+from decimal import Decimal
 
 from app.payments.application.errors import CustomerNotFound
-from app.payments.application.ports import Ledgers, Payments
+from app.payments.application.ports import Ledgers, MoneyFormatReader, Payments
 from app.payments.domain.payment import PaymentCandidate, PaymentMethodRequired
 from app.payments.domain.payment import settle_candidate as domain_settle_candidate
 from app.payments.domain.settlement import PaymentMethod, Split, Standing
+from app.shared.money import money_within
 from app.shared.transaction import Transaction
 
 
@@ -45,10 +47,22 @@ def settle_candidate(
     )
 
 
+def _whole_amount(money_format: MoneyFormatReader, amount: Decimal) -> int:
+    """A request's amount as a domain amount, checked by value against the business's own
+    decimals (docs/adr/0058); a refusal precedes every other read."""
+    return money_within(amount, money_format.current()).whole_units()
+
+
 def preview_payment(
-    ledgers: Ledgers, customer_id: int, paid_on: date, amount: int, today: date
+    ledgers: Ledgers,
+    money_format: MoneyFormatReader,
+    customer_id: int,
+    paid_on: date,
+    amount: Decimal,
+    today: date,
 ) -> CandidateOutcome:
-    return settle_candidate(ledgers, customer_id, PaymentCandidate(paid_on, amount), today)
+    whole = _whole_amount(money_format, amount)
+    return settle_candidate(ledgers, customer_id, PaymentCandidate(paid_on, whole), today)
 
 
 @dataclass(frozen=True)
@@ -63,10 +77,11 @@ class RecordedPayment:
 def record_payment(
     ledgers: Ledgers,
     payments: Payments,
+    money_format: MoneyFormatReader,
     transaction: Transaction,
     customer_id: int,
     paid_on: date,
-    amount: int,
+    amount: Decimal,
     method: PaymentMethod | None,
     today: date,
     recorded_at: datetime,
@@ -75,11 +90,12 @@ def record_payment(
     commit (the plan's own order): the future date and above-the-balance refusals
     must be answered before a missing method is, so a candidate that could never be
     recorded never gets to complain about its method instead."""
-    outcome = settle_candidate(ledgers, customer_id, PaymentCandidate(paid_on, amount), today)
+    whole = _whole_amount(money_format, amount)
+    outcome = settle_candidate(ledgers, customer_id, PaymentCandidate(paid_on, whole), today)
     if method is None:
         raise PaymentMethodRequired()
-    payment_id = payments.insert_later(customer_id, paid_on, amount, method, recorded_at)
+    payment_id = payments.insert_later(customer_id, paid_on, whole, method, recorded_at)
     transaction.commit()
     return RecordedPayment(
-        id=payment_id, paid_on=paid_on, amount=amount, method=method, outcome=outcome
+        id=payment_id, paid_on=paid_on, amount=whole, method=method, outcome=outcome
     )

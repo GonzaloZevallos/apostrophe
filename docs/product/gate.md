@@ -54,7 +54,7 @@ Criterios de éxito:
 
 **Cuando** un cambio arregla algunos nodos que fallan en una pantalla y, como resultado, un nodo que falla, no tocado y con el mismo texto enmascarado, cambia su ordinal de target, **quiero** (como el Developer que hace ese cambio, o el revisor que lo aprueba) una regla escrita que deje que el mismo cambio reemplace la clave vieja por la nueva, **para que** arreglar infractores nunca quede bloqueado ni escalado porque el conteo renombró un nodo que nadie tocó.
 
-Antes de esto (GH-297 parte 1), el ordinal de un target (por ejemplo `span:$ #.#.#[2]`) contaba solo los nodos que fallan en la pantalla con el mismo texto enmascarado, en orden de página. Arreglar algunos en Analysis podía renumerar un monto por Variety no tocado, y la clave vieja y la nueva se leían como una entrada quitada más una agregada, algo que las reglas no cubrían.
+Antes de esto (GH-297 parte 1), el ordinal de un target (por ejemplo `span:$ #.#.#[2]`) contaba solo los nodos que fallan en la pantalla con el mismo texto enmascarado, en orden de página. Arreglar algunos en Analysis podía renumerar un monto por Product no tocado, y la clave vieja y la nueva se leían como una entrada quitada más una agregada, algo que las reglas no cubrían.
 
 Criterios de éxito:
 
@@ -122,6 +122,18 @@ Criterios de éxito:
 - Si el pull request no toca ese spec, puede integrarse con el re-run en verde, pero solo después de abrir el issue del flake. El freno de `ci:` se cumple porque todos los jobs están en verde en el head.
 - Si un job `e2e-shard` se cancela o llega a su `timeout-minutes` (30), se vuelve a correr una sola vez, solo para distinguir un flake de una regresión. Un flake recibe su propio issue. El workflow no tiene ningún bucle de re-run.
 
+### Listas de infractores del texto en el front (GH-379, parte 2)
+
+La guarda de textos con key (ADR-0049) guarda dos listas en `web/src/architecture/i18nOffenders/`, ambas derivadas del árbol, un JSON ordenado con una entrada por línea:
+
+- `copyExportsText.json` lista cada archivo de `web/src/copy/` que todavía escribe palabras propias: `{ file, issue }`. `common.ts` es la única entrada con `issue: null`, con su `reason`.
+  - `emptyStates.ts` nunca es entrada: solo exporta keys y los strings de sus límites (`EMPTY_STATE_LIMITS`) no son texto (`NOT_TEXT_EXPORTS` en `owners.ts`, que exime solo ese export: una palabra real agregada a ese archivo sí es infractora).
+- `copyImports.json` lista cada archivo de `screens/`, `shell/` o `components/` que importa esas palabras: `{ file, imports, issue }`, una entrada por par de archivo importador y dueño. Los imports de `common.ts` y `emptyStates.ts` nunca son entradas.
+
+El `issue` sale de `COPY_OWNER` (`owners.ts`), la única tabla que escribe un número de issue para un archivo de copy. `lists.test.ts` recalcula ambas listas desde el árbol y falla ante un infractor sin entrada, una entrada vencida (un archivo borrado incluido), un `issue` distinto del dueño, un `null` fuera de `common.ts` y cualquier hallazgo de `wordsOf`.
+
+Las listas solo se achican: cada parte de área (#350 a #353) borra únicamente sus propias entradas cuando mueve sus palabras a keys. Nunca se agrega una entrada para tapar un infractor nuevo: se lo mueve a una key.
+
 ### Listas de infractores del estándar móvil
 
 El estándar móvil guarda listas de infractores en `web/src/mobile-standard/offenders/`:
@@ -168,7 +180,7 @@ El ordinal de un target (`[n]`) cuenta solo los nodos que fallan en la pantalla 
   3. **Sin crecimiento neto.** Para esa pantalla, regla y texto enmascarado, no hay más entradas después del cambio que antes.
   4. **El nodo no se tocó.** El markup propio del nodo renumerado no está en el diff de código del cambio.
 - **Si no, es crecimiento.** Un cambio de clave que no cumple alguna de estas condiciones es una entrada agregada como cualquier otra. Se arregla en el mismo cambio o se escala, nunca se lista.
-- **Registrado.** GH-297 parte 1 (Analysis) es el primer caso: montos por Variety no tocados podían renumerarse cuando la franja de resumen, las filas de costo y el bloque "since the first record" dejaron de fallar. Esos canjes de clave conservan #48 y se listan en los targets movidos del cambio como `clave vieja → clave nueva`.
+- **Registrado.** GH-297 parte 1 (Analysis) es el primer caso: montos por Product no tocados podían renumerarse cuando la franja de resumen, las filas de costo y el bloque "since the first record" dejaron de fallar. Esos canjes de clave conservan #48 y se listan en los targets movidos del cambio como `clave vieja → clave nueva`.
 
 #### Común a los tres
 

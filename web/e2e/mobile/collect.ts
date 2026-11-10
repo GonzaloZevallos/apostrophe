@@ -12,7 +12,7 @@ import { FIGURE_SOURCES } from '../../src/mobile-standard/figures.ts'
 import { LOGIN } from '../../src/routes.ts'
 import { collectGeometry } from './collectGeometry.js'
 import { COLOUR_COLLECTOR } from './collectColour.js'
-import { LOADING_COLLECTOR, SHIFT_COLLECTOR } from './collectLoading.js'
+import { LOADING_COLLECTOR, SHIFT_COLLECTOR, WAITING_COLLECTOR } from './collectLoading.js'
 
 export type { CellId }
 
@@ -42,6 +42,7 @@ export const COLLECTORS: readonly Collector[] = [
   GEOMETRY_COLLECTOR,
   COLOUR_COLLECTOR,
   LOADING_COLLECTOR,
+  WAITING_COLLECTOR,
   SHIFT_COLLECTOR,
 ]
 

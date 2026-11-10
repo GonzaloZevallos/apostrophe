@@ -14,7 +14,7 @@
  */
 
 import { SALE_NEW, SALES, VARIETIES } from '../src/routes.js'
-import { expect, test, withToastRecorder, type WorkerServer } from './fixtures.js'
+import { choosePaymentMethod, expect, test, withToastRecorder, type WorkerServer } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import type { Browser, BrowserContext, Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -62,9 +62,9 @@ test.use({ ...PHONE_CONTEXT, viewport: { width: 375, height: 812 } })
 async function signUpWithAVariety(page: Page): Promise<void> {
   await signUpNewBusiness(page, { businessName: `Vivero Telefono ${uniqueTag()}`, email: `telefono-venta-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByRole('link', { name: 'New product' }).click()
   await page.getByLabel('Name').fill('Jazmín')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await setPriceDate(page, '2000-01-01')
@@ -97,7 +97,7 @@ test('a sale is recorded from a phone: existing customer, new customer, none', a
       await expect(page.locator('.cliente-sheet')).toHaveCount(0)
       await expect(page.locator('.lista-clientes__nombre')).toHaveText('Luz Díaz')
     }
-    await page.getByRole('radio', { name: 'Cash' }).check()
+    await page.getByRole('radio', { name: 'Paid' }).check(); await choosePaymentMethod(page, 'Cash')
     await expect(page.locator('.nueva-venta__pie')).toContainText('$ 5.000')
     await page.getByRole('button', { name: 'Save sale' }).click()
     await expect(page.getByText('Sale saved')).toBeVisible()
@@ -126,7 +126,7 @@ test.describe('phone sales sweep', () => {
     await signUpWithAVariety(page)
     await page.goto(SALE_NEW)
     await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '10' })
-    await page.getByRole('radio', { name: 'Cash' }).check()
+    await page.getByRole('radio', { name: 'Paid' }).check(); await choosePaymentMethod(page, 'Cash')
     await page.getByRole('button', { name: 'Save sale' }).click()
     await expect(page.getByText('Sale saved')).toBeVisible()
     session = await context.storageState()
@@ -230,7 +230,7 @@ test.describe('phone sales sweep', () => {
 async function sweep(page: Page, { name, scale }: PhoneCase): Promise<void> {
   await page.goto(SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '10' })
-  await page.getByRole('button', { name: 'Add another variety' }).click()
+  await page.getByRole('button', { name: 'Add another product' }).click()
   await expect(page.locator('.nueva-venta__linea-total').first()).toBeVisible()
   await settled(page)
   await expectNoSidewaysOverflow(page, `${name}: Nueva venta`, scale)

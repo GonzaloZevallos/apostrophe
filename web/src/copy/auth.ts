@@ -13,7 +13,7 @@ export const WEAK_PASSWORD_MESSAGE = 'The password needs at least 10 characters'
 export const DEAD_LINK_MESSAGE = 'This link no longer works. Ask whoever sent it for a new one.'
 export const BRAKE_MESSAGE = '5 failed attempts · try again in 15 minutes'
 export const LOGIN_HINT = 'After 5 failed attempts, the email is blocked for 15 minutes'
-export const INVITE_ONLY_LINE = 'To use apostrophe, a business has to invite you.'
+export const INVITE_ONLY_LINE = 'You can only get in with an invitation from your business.'
 export const expiryLine = (isNewBusiness: boolean, expiry: string): string =>
   isNewBusiness
     ? `The invitation can be used once and expires on ${expiry}.`
@@ -47,14 +47,26 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'AUTH_TEXT.joinBusiness': [['Rosa Flowers'], [null]],
 })
 
+/** The Forgot sheet's paragraphs (GH-521): fixed text, the same for everyone, with no function and no
+ * placeholder. A sheet body is none of the always-visible kinds `LIMITS` measures, so none is in
+ * `LIMITED_COPY`. It names no channel, person or contact, and never says a reset lifts a block. */
+export const FORGOT_SHEET_TEXT = {
+  whoGivesLink:
+    "The reset link comes from the person who runs the app for your business, the one who sent you your invitation. It doesn't come by email.",
+  whatToAsk: 'Ask that person for a reset link and tell them the email you sign in with.',
+  whatLinkDoes:
+    'The link works once, for 24 hours. It lets you choose a new password without knowing the current one.',
+} as const
+
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const AUTH_TEXT = {
   currentPassword: 'Current password',
   newPassword: 'New password',
-  tagline: 'Your sales, your stock and what you are owed.',
+  tagline: 'Welcome back. Your business, noted.',
   emailAddress: 'Email address',
   password: 'Password',
   signIn: 'Sign in',
+  forgotPassword: 'Forgot your password?',
   setUpYourBusiness: 'Set up your business',
   createTheBusiness: 'Create the business',
   joinBusiness: (business_name: string | number | null) => `Join ${business_name}`,

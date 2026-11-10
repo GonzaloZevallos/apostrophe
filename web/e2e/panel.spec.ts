@@ -27,7 +27,7 @@
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, HOME, SALES, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, pathTo } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expectToast } from './helpers/toast.js'
-import { expect, test } from './fixtures.js'
+import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { setPriceDate } from './helpers/priceDate.js'
 import { watchConsole } from './console.js'
@@ -181,9 +181,9 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
 
   // A priced variety.
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByRole('link', { name: 'New product' }).click()
   await page.getByLabel('Name').fill('Rosa')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   // Backdated well before this run's own month (sales.spec.ts does the same for
@@ -196,7 +196,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // A purchase: the "Origen" pill defaults to "Purchase" (`EntradaStock.tsx`).
   await page.goto(STOCK_ENTRY_NEW)
   await page.getByLabel('Grams').fill('50')
-  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
+  await pickStockVariety(page, 'Rosa')
   await expect(page.getByRole('button', { name: 'Purchase' })).toHaveAttribute('aria-pressed', 'true')
   await page.getByLabel('Total cost').fill('45000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
@@ -222,7 +222,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.goto(SALES)
   await page.getByRole('link', { name: 'New sale' }).click()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '3' })
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await page.getByRole('radio', { name: 'Paid' }).check(); await choosePaymentMethod(page, 'Cash')
   await page.getByRole('button', { name: 'Save sale' }).click()
   await expect(page.getByText('Sale saved')).toBeVisible()
 
@@ -269,7 +269,8 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // An expense, in the business's own default "Other" category.
   await openGastos(page)
   await page.getByRole('link', { name: 'Add expense' }).click()
-  await page.getByLabel('Category').selectOption({ label: 'Other' })
+  await page.getByRole('button', { name: /^Category/ }).click()
+  await page.getByRole('option', { name: 'Other' }).or(page.getByRole('button', { name: 'Other', exact: true })).click()
   await page.getByLabel('Amount').fill('1500')
   await page.getByLabel('Details').fill('Bolsas de regalo')
   await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: 'Save the expense' }).click())
@@ -399,3 +400,5 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expectOnlyTheThemeStored(page)
   expect(consoleMessages).toEqual([])
 })
+
+import { pickStockVariety } from './helpers/stockVariety.js'

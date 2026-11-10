@@ -1,254 +1,192 @@
-# Expenses
-
-Money a business spends on anything that isn't flower, filed under its own expense
-categories and seen only by that business (ADR-0004). Flower bought is a purchase (stock),
-never an expense. Results (#7) read expenses and purchases separately. Expenses is reached
-from More on the phone and from the sidebar on a computer; categories are managed in
-Settings → Expense categories (navigation.md).
-
 ## Jobs
 
-**When** I pay for something that isn't flower (packaging, a delivery or trip, cultivation
-supplies, anything else), **I want** to note it from my phone with its date, category,
-amount and a short detail, and fix or delete it if I got it wrong, **so I can** see how
-much I spend each month and on what, and have my profit and cash count it.
+**Cuando** pago algo que no es flor (envases, un envío o un viaje, insumos de cultivo, cualquier otra cosa), **quiero** anotarlo desde el teléfono con su fecha, Expense category, monto y un detalle corto, y corregirlo o eliminarlo si me equivoqué, **para** ver cuánta plata se me va cada mes y en qué, y que mi Profit y mi Cash lo cuenten.
 
-**When** I run my business from my phone, **I want to** keep my expenses up to date from
-the phone, **so I can** stop keeping them in the spreadsheet and have real data in place
-when sales arrive.
+**Cuando** llevo mi negocio desde el teléfono, **quiero** mantener mis Expenses al día desde el teléfono, **para** dejar de llevarlas en la planilla y tener datos reales en su lugar cuando lleguen las ventas.
 
-**When** I run my business from my phone between orders or mid-chat with a customer,
-several times a day, **I want** the app laid out around what I actually do and how often,
-with expenses within reach for the weekly or monthly look and every setting in one place,
-**so I can** get back to the customer instead of hunting through menus. (The navigation
-job, navigation.md: served here by "+ Add expense" in More, a way to record from Expenses
-itself, Expenses as the one monthly view, and categories in Settings.)
+**Cuando** llevo mi negocio desde el teléfono entre pedidos o en medio de un chat con un cliente, varias veces por día, **quiero** que la app esté ordenada según lo que hago de verdad y con qué frecuencia, con las Expenses a mano para la mirada semanal o mensual y cada configuración en un solo lugar, **para** volver al cliente en vez de buscar entre menús. (El job de navegación, navigation.md: acá lo sirven "+ Add expense" en More, una forma de registrar desde la misma Expenses, Expenses como la única vista mensual, y las Expense categories en Settings.)
 
-**When** my business works in a language other than English, **I want** a business opened
-in that language to start with its expense categories already in it, **so I** have nothing
-to retype, while nothing changes for a business in English. (Shared with stored-language.md
-and catalog.md: served here by the default categories following the stored language at
-opening.)
+**Cuando** mi negocio trabaja en un idioma que no es el inglés, **quiero** que un negocio abierto en ese idioma arranque con sus Expense categories ya en él, **para** no tener nada que volver a tipear, mientras nada cambia para un negocio en inglés. (Compartido con stored-language.md y catalog.md: acá lo sirven las Expense categories por defecto, que siguen el Stored language al abrirse.)
 
-In practice, these jobs come together like this. The seller pays for something that isn't
-flower between orders, or sits down for the weekly or monthly look at spending. They load
-the expense in at most 2 taps from wherever they are. They find any month's expenses, with
-the total and what each category took, in one obvious place. The computer is the same job
-on a bigger screen.
+**Cuando** registro una Expense o guardo un Customer desde el teléfono, **quiero** elegir su Expense category o su Customer type igual que elijo un Product o un Withdrawal reason (un campo con etiqueta que abre su propia lista, con búsqueda cuando la lista es larga), **para** terminar el formulario en pocos toques y que volver nunca tire lo que ya tipeé. (Parte 6 de GH-581, compartido con customers.md y selector.md: acá lo sirven el campo "Category" del formulario de la Expense y la edición en el lugar como su propia entrada del historial.)
 
-Success criteria:
+En la práctica, estos jobs se juntan así. El vendedor paga algo que no es flor entre pedidos, o se sienta a mirar en qué se fue la plata de la semana o del mes. Carga la Expense en 2 toques como máximo desde donde esté. Encuentra las Expenses de cualquier mes, con el total y lo que se llevó cada Expense category, en un solo lugar evidente. La computadora es el mismo job en una pantalla más grande.
 
-1. An expense is recorded from the phone in under a minute. Its form opens in at most 2
-   taps from any tab root (More → "+ Add expense") and in 1 tap from Expenses. On a
-   computer it takes no more taps than on the phone. The date is already set to today,
-   and the category is picked from the business's list.
-2. For any month, the view shows every expense of that month and the month's total. It
-   breaks them down by category, with a subtotal for each. The totals always equal the sum
-   of the expenses shown, including straight after an edit or a delete.
-3. Flower is never an expense. Nothing here records grams or a variety, and a purchase
-   never appears in the expense lists. That way results can count expenses and purchases
-   separately without counting anything twice.
-4. Everything here is done from the phone with no API call by hand.
-5. **Categories are managed in one place.** Expenses has no add, rename or remove of
-   categories, only a link to Settings → Expense categories. The one exception is
-   creating a category inside the expense form.
-6. **It looks as designed.** More and Expenses, phone and computer, match
-   `docs/product/design-system/pantallas/`, judged by eye.
-7. **Defaults in the business's language.** A new business opened in a language other
-   than English starts with its four default categories in that language. In English they
-   are byte-identical to the baseline, and a later language change never rewrites them.
+Criterios de éxito:
 
-## Behaviour
+1. Una Expense se registra desde el teléfono en menos de un minuto. Su formulario abre en 2 toques como máximo desde cualquier Tab root (More → "+ Add expense") y en 1 toque desde Expenses. En una computadora no lleva más toques que en el teléfono. La fecha ya viene en hoy, y la Expense category se elige de la lista del negocio.
+2. Para cualquier mes, la vista muestra cada Expense de ese mes y el total del mes. Las desglosa por Expense category, con un subtotal para cada una. Los totales siempre son iguales a la suma de las Expenses que se muestran, también justo después de una edición o una eliminación.
+3. La flor nunca es una Expense. Nada de acá registra gramos ni un producto, y una Purchase nunca aparece en las listas de Expenses. Así, los resultados pueden contar las Expenses y las Purchases por separado sin contar nada dos veces.
+4. Todo lo de acá se hace desde el teléfono, sin ninguna llamada a la API a mano.
+5. **Las Expense categories se administran en un solo lugar.** Expenses no agrega, renombra ni elimina Expense categories; solo tiene un link a Settings → Expense categories. La única excepción es crear una Expense category dentro del formulario de la Expense.
+6. **Se ve como en el diseño.** More y Expenses, en teléfono y computadora, coinciden con `docs/product/design-system/pantallas/`, juzgados a ojo.
+7. **Valores por defecto en el idioma del negocio.** Un negocio nuevo abierto en un idioma que no es el inglés arranca con sus cuatro Expense categories por defecto en ese idioma. En inglés son idénticas byte a byte a la línea de base, y un cambio de idioma posterior nunca las reescribe.
+8. **La Expense category se elige con el Selector** (parte 6 de GH-581). Con 12 o más Expense categories, el vendedor encuentra una buscando y la elige; el formulario no tiene ningún otro tipo de selector para ese campo (ni select nativo, ni chips, ni radios, ni botones presionados).
+9. **Volver nunca tira el formulario.** En el teléfono, volver con la lista abierta cierra solo la lista; volver con el formulario sin tocar vuelve a la pantalla madre; volver con algo tipeado pregunta antes de descartar. Vale para la Expense nueva desde Expenses, la Expense nueva desde More y la edición en el lugar dentro de Expenses. En la computadora, Escape cierra solo el desplegable.
+10. **Sin categorías, el vendedor sabe dónde crearlas**: la lista muestra "No categories yet. Add them in Settings → Expense categories.", y nunca mientras las Expense categories se están cargando o después de una carga fallida. Nada de lo que el formulario hacía antes se pierde.
+
+# Expenses
+
+La plata que un negocio paga por cualquier cosa que no sea flor, archivada bajo sus propias Expense categories y vista solo por ese negocio (ADR-0004). La flor que se compra es una Purchase (stock), nunca una Expense. Resultados (#7) lee las Expenses y las Purchases por separado. A Expenses se llega desde More en el teléfono y desde la barra lateral en una computadora; las Expense categories se administran en Settings → Expense categories (navigation.md).
+
+## Comportamiento
 
 ### Expense category
 
-- Category names follow the variety-name rule:
-  - trimmed, inner spaces collapsed, up to 60 characters;
-  - unique within a business whatever the case or spacing;
-  - two businesses may each have a category with the same name.
-- **Default categories**: four, in the business's stored language at opening
-  (stored-language.md).
-  - In English: "Growing supplies", "Packaging", "Shipping and transport" and "Other",
-    byte-identical to the baseline `en.baseline.json`.
-  - A new business opens with them, stored as its own categories. A stored language is
-    never the test locale, so they are never written in `en-XA`.
-  - A later language change never renames them: they are the seller's own data and are
-    never translated.
-  - A business opened before expenses existed received them once, when the app was
-    upgraded. Businesses that existed before the defaults followed the language keep
-    exactly what they have (Spanish names included), with no backfill.
-  - Each business receives the defaults exactly once. A default it removes is never
-    recreated.
-- **Add**: a duplicate name is refused, with the reason.
-- **Rename**: the category's expenses stay under the new name. Renaming to a name another
-  category of the business already has is refused.
-- **Remove**: permanent; there is no archive or restore. Refused while any expense, of any
-  month, is filed under the category.
-  - The refusal says only that it still has expenses and suggests renaming it instead:
-    "It can't be deleted: it still has expenses. You can rename it." No breakdown of where
-    it is used is shown.
-  - Once its expenses are deleted or moved to another category, it can be removed.
-- There is no minimum: a business may remove every category without expenses, defaults
-  included.
-- The category list shows every category of the business, sorted by name.
-- **Adding a category inside the expense form**: the user can create a category while
-  recording an expense, without leaving the form or losing what they already typed.
-  - The new category comes out selected for that expense.
-  - A duplicate name is refused with the reason, and the expense being typed is kept.
+- Los nombres de Expense category siguen la regla del nombre de un Product:
+  - sin espacios al principio ni al final, los espacios internos reducidos a uno, hasta 60 caracteres;
+  - únicos dentro de un negocio, sin importar mayúsculas ni espacios;
+  - dos negocios pueden tener cada uno una Expense category con el mismo nombre.
+- **Expense categories por defecto**: cuatro, en el Stored language del negocio al abrirse (stored-language.md).
+  - En inglés: "Growing supplies", "Packaging", "Shipping and transport" y "Other", idénticas byte a byte a la línea de base `en.baseline.json`.
+  - Un negocio nuevo abre con ellas, guardadas como sus propias Expense categories. Un Stored language nunca es el Test locale, así que nunca se escriben en `en-XA`.
+  - Un cambio de idioma posterior nunca las renombra: son datos propios del vendedor y nunca se traducen.
+  - Un negocio abierto antes de que existieran las Expenses las recibió una vez, cuando se actualizó la app. Los negocios que existían antes de que los valores por defecto siguieran el idioma conservan exactamente lo que tienen (los nombres en español incluidos), sin completar nada hacia atrás.
+  - Cada negocio recibe los valores por defecto exactamente una vez. Uno que el negocio elimina nunca se vuelve a crear.
+- **Agregar**: un nombre repetido se rechaza, con la razón.
+- **Renombrar**: las Expenses de la Expense category quedan bajo el nombre nuevo. Renombrarla a un nombre que ya tiene otra Expense category del negocio se rechaza.
+- **Eliminar**: es para siempre; no hay archivo ni restauración. Se rechaza mientras haya alguna Expense, de cualquier mes, archivada bajo la Expense category.
+  - El rechazo dice solo que todavía tiene Expenses y sugiere renombrarla: "It can't be deleted: it still has expenses. You can rename it." No se muestra ningún desglose de dónde se usa.
+  - Una vez que sus Expenses se eliminan o pasan a otra Expense category, se puede eliminar.
+- No hay mínimo: un negocio puede eliminar cada Expense category sin Expenses, las de por defecto incluidas.
+- La lista de Expense categories muestra cada una del negocio, ordenadas por nombre.
+- **Agregar una Expense category dentro del formulario de la Expense**: el User puede crear una mientras registra una Expense, sin salir del formulario ni perder lo que ya tipeó. Es el link "Create a new category" y su campo de nombre, debajo del campo "Category" (nunca una fila de la lista), y está disponible en todo estado del campo, también cuando el negocio no tiene ninguna Expense category.
+  - La Expense category nueva queda elegida para esa Expense en el acto, sin volver a abrir la lista, y el error de la Expense category se borra.
+  - Un nombre repetido se rechaza con la razón, y se conserva la Expense que se está tipeando.
 
 ### Expense
 
-- **Date**: defaults to today in Argentina time. It can be changed to any earlier day; a
-  future date is refused.
-- **Category**: required, with no default; it is chosen every time. It must be one of the
-  business's own categories. Any other category id answers 404.
-- **Amount**: required, in whole pesos, above zero.
-- **Detail**: required, trimmed, not blank, up to 200 characters.
-- An expense has no grams, no variety and no pending, draft or approval state.
-- **Edit**: all four fields can be edited in place, with the same validation as when
-  recording. No edit history is kept.
-- **Delete**: removes the expense for good.
-- Both an edit and a delete show in the month's totals immediately.
+- **Fecha**: por defecto, hoy en hora argentina. Se puede cambiar a cualquier día anterior; una fecha futura se rechaza.
+- **Expense category**: obligatoria, sin valor por defecto; se elige cada vez. Tiene que ser una de las Expense categories propias del negocio. Cualquier otro id de Expense category responde 404.
+- **Monto**: obligatorio, en pesos enteros, mayor que cero.
+- **Detalle**: obligatorio, sin espacios al principio ni al final, no en blanco, hasta 200 caracteres.
+- Una Expense no tiene gramos, ni producto, ni estado pendiente, de borrador o de aprobación.
+- **Editar**: los cuatro campos se pueden editar en el lugar, con la misma validación que al registrar. No se guarda historial de ediciones.
+- **Eliminar**: borra la Expense para siempre.
+- Tanto una edición como una eliminación se ven de inmediato en los totales del mes.
 
-### Monthly view
+### Vista mensual
 
-- One view per month, opening on the current month in Argentina time.
-- It shows the month's total, then each category that has expenses that month. Each
-  category shows its subtotal and its expenses.
-- Categories with no expenses that month are left out. Categories are sorted by name.
-- Within a category, expenses run newest date first; on the same date, the most recently
-  recorded comes first.
-- A month with no expenses shows a total of $0 and no categories. The flower line and the
-  way to record an expense still show.
-- This view is how a user finds a mistaken expense to fix or delete.
+- Una vista por mes, que abre en el mes en curso en hora argentina.
+- Muestra el total del mes y después cada Expense category que tiene Expenses ese mes. Cada una muestra su subtotal y sus Expenses.
+- Las Expense categories sin Expenses ese mes se dejan afuera. Se ordenan por nombre.
+- Dentro de una Expense category, las Expenses van de la fecha más reciente a la más antigua; en la misma fecha, va primero la registrada más recientemente.
+- Un mes sin Expenses muestra un total de $0 y ninguna Expense category. La línea de la flor y la forma de registrar una Expense se siguen mostrando.
+- Esta vista es como un User encuentra una Expense equivocada para corregirla o eliminarla.
 
-### On screen
+### En pantalla
 
-- **Expenses** (`Expenses`, route `/expenses`; the old `/gastos` redirects there permanently)
-  is a tab root (navigation.md). It shows the bar on the phone or the sidebar on a
-  computer, with Expenses active, and "+ New sale". It is reached from More on the phone
-  and from the sidebar on a computer, under the divider. It holds:
-  - month navigation;
-  - the fixed line "Flower purchases don't go here: enter them in Stock.";
-  - a link that opens Settings → Expense categories. Expenses itself never adds,
-    renames or removes a category;
-  - its own way to record a new expense, opening the expense form with today's date in
-    1 tap:
-    - on the phone, a secondary action in Expenses' body, never a second floating "+"
-      competing with "+ New sale";
-    - on a computer, the "Add expense" button in the page header.
+- **Expenses** (`Expenses`, ruta `/expenses`; la vieja `/gastos` redirige ahí de forma permanente) es una Tab root (navigation.md). Muestra la barra en el teléfono o la barra lateral en una computadora, con Expenses activa, y "+ New sale". Se llega desde More en el teléfono y desde la barra lateral en una computadora, debajo del separador. Tiene:
+  - la navegación por mes;
+  - la línea fija "Flower purchases don't go here: enter them in Stock.";
+  - un link que abre Settings → Expense categories. Expenses nunca agrega, renombra ni elimina una Expense category por sí misma;
+  - su propia forma de registrar una Expense nueva, que abre el formulario de la Expense con la fecha de hoy en 1 toque:
+    - en el teléfono, una acción secundaria en el cuerpo de Expenses, nunca un segundo "+" flotante que compita con "+ New sale";
+    - en una computadora, el botón "Add expense" en la cabecera de la página.
 
-    Its exact look is design's call.
-- **"+ Add expense"**, first in More on the phone (route `/more`; the old `/mas`
-  redirects there permanently), opens the expense form directly with today's date. Its
-  subtitle is design's call.
-- **The expense form** is a form (navigation.md): no bar and no "+ New sale", and it
-  closes with "Close".
-  - "Category", "Amount" and "Details" are marked required.
-  - Submit is blocked while the detail is blank.
-  - The date comes filled with today.
-  - "Close" and a successful save go back by history to the screen that opened it (More
-    or Expenses).
-  - With no history (a direct link), it goes back to Expenses on the current month.
-  - A successful save shows "Expense saved" with no jump elsewhere. After a save from
-    Expenses, Expenses stays on the month it was showing and refreshes.
-  - Leaving with something typed asks before discarding; an untouched form closes at
-    once.
-- **A category gone while the expense form is open** (a partner removed it):
-  - saving keeps the form open and everything typed;
-  - the category list refreshes and "Category" is left empty;
-  - the field shows "That category is gone. Pick another."
-- **Deleting an expense**, from the expense reached in the monthly view:
-  - it is confirmed with "Before deleting", naming the date, category and amount, e.g.
-    "Delete the $ 4.500 expense in Packaging from 28/09?";
-  - there is no undo;
-  - the total and the subtotal update at once, and a category left with no expenses that
-    month disappears.
-- **Categories** are managed in Settings → Expense categories, and nowhere else:
-  add, rename and "Delete". A blocked removal shows the fixed refusal above. Creating
-  one inside the expense form stays as described.
-- **An expense or category that is gone** when it is saved, deleted or opened follows the
-  app's rule in `accounts.md`: "That is gone." Opening one offers "Back to Expenses" on
-  the current month.
-- **Toasts**: "Expense saved", "Expense deleted", "Category saved" and "Category deleted", with no amounts in them.
-- **Refusals** show inline and keep what was typed.
-- **Feedback**: network loss shows "No connection", and a server error shows a generic
-  retry (accounts.md).
+    Su aspecto exacto lo decide diseño.
+- **"+ Add expense"**, primero en More en el teléfono (ruta `/more`; la vieja `/mas` redirige ahí de forma permanente), abre directamente el formulario de la Expense con la fecha de hoy. Su subtítulo lo decide diseño.
+- **El formulario de la Expense** es un formulario (navigation.md): sin barra y sin "+ New sale", y se cierra con "Close".
+  - "Category", "Amount" y "Details" se marcan como obligatorios.
+  - El envío se bloquea mientras el detalle está en blanco o no hay Expense category elegida.
+  - La fecha viene completada con hoy.
+  - "Close" y un guardado exitoso vuelven por el historial a la pantalla que lo abrió (More o Expenses).
+  - Sin historial (un link directo), vuelve a Expenses en el mes en curso.
+  - Un guardado exitoso muestra "Expense saved" sin saltar a otro lado. Después de guardar desde Expenses, Expenses se queda en el mes que mostraba y se actualiza.
+  - Salir con algo tipeado pregunta antes de descartar ("Discard the expense?"); un formulario sin tocar se cierra de inmediato.
+- **La edición en el lugar dentro de Expenses** (desde la parte 6 de GH-581) es, en el teléfono, su propia entrada del historial sobre Expenses, como cualquier formulario o Sheet: volver y "Close" son la misma acción.
+  - Sin tocar, volver cierra la edición y deja Expenses en el mes que mostraba.
+  - Con algo tipeado, volver o "Close" preguntan una sola vez antes de descartar: seguir editando se queda en la edición; descartar vuelve a Expenses en ese mes.
+  - Guardar o eliminar desde la edición la cierran sin preguntar: guardar vuelve a Expenses con "Expense saved", y eliminar abre la confirmación de eliminación sobre el mes.
+  - Pasar de teléfono a computadora, o al revés, con la edición abierta la mantiene abierta con lo tipeado.
+  - Volver nunca saca de Expenses ni tira lo tipeado sin preguntar.
+  - No cambian las rutas de Expenses, la navegación por mes ni cómo se abre o se ve la edición. En la computadora, nada cambia (la edición conserva su propia confirmación de descarte), salvo que Escape con el desplegable de Category abierto cierra solo el desplegable.
+- **El campo "Category"** (desde la parte 6 de GH-581) es un Selector obligatorio (selector.md) con la etiqueta "Category" y el texto "Pick a category" mientras no hay elección, sobre las Expense categories del negocio, en el orden en que las da el negocio:
+  - mientras las Expense categories se están cargando, el formulario muestra solo su cabecera con "Close", así que el vendedor siempre puede salir; el Selector recibe igual `loading` mientras la carga está pendiente o falló, así que nunca muestra un texto de conjunto vacío antes de una carga exitosa;
+  - si la carga falla, el formulario muestra debajo de su cabecera, en lugar de los campos, la línea de falla que ya tiene la app ("No connection" sin red, el reintento genérico ante un error del servidor; accounts.md), sin texto nuevo. Las Expense categories se vuelven a pedir al cerrar el formulario y volver a abrirlo;
+  - en el teléfono abre su lista en una Sheet, como su propia entrada del historial sobre el formulario; con más de 8 Expense categories, la lista tiene búsqueda. En la computadora es un desplegable con teclado, y Escape cierra solo el desplegable;
+  - volver o "Close" con la lista abierta cierra solo la lista, nunca el formulario. Esto vale al registrar desde Expenses, al registrar desde More y al editar en el lugar dentro de Expenses;
+  - sin ninguna Expense category, la lista muestra "No categories yet. Add them in Settings → Expense categories." (`emptyStates:selectorNoCategories`), y crear una dentro del formulario sigue disponible debajo del campo;
+  - elegir una Expense category borra el error del campo;
+  - enviar sin Expense category muestra el error de campo obligatorio, como antes, asociado al campo como su descripción.
+- **Una Expense category que desaparece con el formulario de la Expense abierto** (un socio la eliminó):
+  - guardar deja el formulario abierto con todo lo tipeado;
+  - la lista de Expense categories se actualiza (una creada dentro del formulario que ya no existe deja de ofrecerse) y "Category" queda vacío, sin la marca "no longer available";
+  - el campo muestra "That category is gone. Pick another.", asociado al campo como su descripción.
+- **Eliminar una Expense**, desde la Expense a la que se llega en la vista mensual:
+  - se confirma con "Before deleting", nombrando la fecha, la Expense category y el monto, p. ej. "Delete the $ 4.500 expense in Packaging from 28/09?";
+  - no hay deshacer;
+  - el total y el subtotal se actualizan de inmediato, y una Expense category que queda sin Expenses ese mes desaparece.
+- **Las Expense categories** se administran en Settings → Expense categories, y en ningún otro lado: agregar, renombrar y "Delete". Una eliminación bloqueada muestra el rechazo fijo de arriba. Crear una dentro del formulario de la Expense sigue como se describe.
+- **Una Expense o una Expense category que ya no está** al guardarla, eliminarla o abrirla sigue la regla de la app en `accounts.md`: "That is gone." Abrir una ofrece "Back to Expenses" en el mes en curso.
+- **Toasts**: "Expense saved", "Expense deleted", "Category saved" y "Category deleted", sin montos.
+- **Los rechazos** se muestran en línea y conservan lo tipeado.
+- **Respuesta ante fallas**: la pérdida de red muestra "No connection", y un error del servidor muestra un reintento genérico (accounts.md).
+- **Diseño**: el formulario de la Expense muestra el campo "Category" cerrado como Selector, con "Create a new category" debajo, en `GastoNuevo`, `GastoNuevoOscuro` y `GastoNuevoCompu` de `docs/product/design-system/pantallas/`.
 
-### Constraints
+### Restricciones
 
-- Categories and expenses carry `business_id`, and their routes join the isolation sweep
-  (ADR-0004).
-- No amounts or details are written to logs, the browser console or browser storage.
-- A link from Expenses to Settings → Expense categories appears only once that group
-  exists. No link may point at a screen that doesn't exist, and no seller may lose
-  category management.
-- The expenses domain holds no default names and imports no translation library. The new
-  business's opening takes the defaults through the `BusinessDefaults` port
-  (`for_language(language)`), with the stored language, never the shown one.
+- Las Expense categories y las Expenses llevan `business_id`, y sus rutas entran en el barrido de aislamiento (ADR-0004).
+- Ningún monto ni detalle se escribe en los logs, la consola del navegador ni el almacenamiento del navegador.
+- Un link de Expenses a Settings → Expense categories aparece solo una vez que ese grupo existe. Ningún link puede apuntar a una pantalla que no existe, y ningún vendedor puede perder la administración de las Expense categories.
+- El dominio de expenses no guarda ningún nombre por defecto ni importa ninguna biblioteca de traducción. La apertura del negocio nuevo toma los valores por defecto a través del puerto `BusinessDefaults` (`for_language(language)`), con el Stored language, nunca con el Shown language.
+- Las Expense categories son un Growable set: nunca se declaran en `fixedSets.ts` ni se eligen con chips (selector.md).
+- El formulario monta un `SheetStackProvider` en `ExpenseNewRoute` y en la edición en el lugar de `Gastos`, para que la lista del Selector sea su propia entrada del historial, en el nivel de arriba del formulario.
+- La edición en el lugar del teléfono protege su volver con cambios sin guardar mediante el piso de Sheet de la guarda de salida (ADR-0078).
 
-## Metrics
+## Métricas
 
-Read from the data and from tests; there is no telemetry.
+Se leen de los datos y de las pruebas; no hay telemetría.
 
-- **M1, recorded on the spot (criterion 1)**: the share of expenses whose date equals the
-  Argentina day they were recorded. Target: a majority once the front is in use. Through
-  the front, recording an expense from the phone takes under 60 s.
-- **M2, totals hold (criterion 2)**: totals that differ from the sum of the expenses shown
-  must be 0. This is checked by tests after create, edit and delete, in the API and on
-  screen. A month with no expenses shows $0 and no categories.
-- **M3, "on what" (criterion 2)**: the share of each month's spend filed under "Other".
-  If it stays high, the categories are not helping the user see where the money goes.
-- **M4, use**: businesses with at least one expense in a month, out of active businesses.
-- **M5, flower kept out (criterion 3)**: purchases that appear in the expense lists must be
-  0, by construction. An expense has no field that could hold grams or a variety.
-- **M6, no curl (criterion 4)**: the end-to-end front run:
-  - records an expense from More → "+ Add expense" and one from Expenses;
-  - edits and deletes one;
-  - moves between months;
-  - adds, renames and removes a category in Settings, including a refused removal.
-- **M7, taps (criterion 1)**: the end-to-end run counts the taps to open the expense form,
-  on phone and computer viewports:
-  - from every tab root, ≤2;
-  - from Expenses, 1;
-  - on a computer, never more than on the phone.
+- **M1, registrada en el momento (criterio 1)**: la proporción de Expenses cuya fecha es igual al día argentino en que se registraron. Meta: una mayoría una vez que el front esté en uso. A través del front, registrar una Expense desde el teléfono lleva menos de 60 s.
+- **M2, los totales cierran (criterio 2)**: los totales que difieren de la suma de las Expenses que se muestran tienen que ser 0. Lo controlan pruebas después de crear, editar y eliminar, en la API y en pantalla. Un mes sin Expenses muestra $0 y ninguna Expense category.
+- **M3, "en qué" (criterio 2)**: la proporción de la plata de cada mes archivada bajo "Other". Si se mantiene alta, las Expense categories no le están sirviendo al User para ver adónde se va la plata.
+- **M4, uso**: negocios con al menos una Expense en un mes, sobre los negocios activos.
+- **M5, la flor queda afuera (criterio 3)**: las Purchases que aparecen en las listas de Expenses tienen que ser 0, por construcción. Una Expense no tiene ningún campo que pueda guardar gramos ni un producto.
+- **M6, sin curl (criterio 4)**: la corrida de punta a punta del front:
+  - registra una Expense desde More → "+ Add expense" y una desde Expenses;
+  - edita y elimina una;
+  - se mueve entre meses;
+  - agrega, renombra y elimina una Expense category en Settings, un rechazo de eliminación incluido.
+- **M7, toques (criterio 1)**: la corrida de punta a punta cuenta los toques para abrir el formulario de la Expense, en ventanas de teléfono y de computadora:
+  - desde cada Tab root, ≤2;
+  - desde Expenses, 1;
+  - en una computadora, nunca más que en el teléfono.
 
-  Target: 100% within budget.
-- **M8, Expenses chrome (criteria 1, 5)**: front tests show:
-  - the bar or sidebar, with "+ New sale";
-  - the month navigation and the fixed flower line;
-  - the record action: secondary on the phone (no second floating "+"), the header
-    button on a computer.
-- **M9, categories left Expenses (criterion 5)**: front tests show:
-  - no add, rename or remove of categories in Expenses;
-  - a link that opens Settings → Expense categories;
-  - inline creation in the expense form still working.
-- **M10, form return**: front tests cover:
-  - "Close" and a successful save going back by history to More or to Expenses;
+  Meta: 100% dentro del límite.
+- **M8, el marco de Expenses (criterios 1, 5)**: las pruebas del front muestran:
+  - la barra o la barra lateral, con "+ New sale";
+  - la navegación por mes y la línea fija de la flor;
+  - la acción de registrar: secundaria en el teléfono (sin un segundo "+" flotante), el botón de la cabecera en una computadora.
+- **M9, las Expense categories salieron de Expenses (criterio 5)**: las pruebas del front muestran:
+  - que Expenses no agrega, renombra ni elimina Expense categories;
+  - un link que abre Settings → Expense categories;
+  - la creación en línea en el formulario de la Expense, que sigue funcionando.
+- **M10, vuelta del formulario**: las pruebas del front cubren:
+  - "Close" y un guardado exitoso que vuelven por el historial a More o a Expenses;
   - "Expense saved";
-  - the discard confirmation, and the untouched close;
-  - the no-history fallback to Expenses on the current month.
-- **M11, redirects**: `/gastos` → `/expenses` and `/mas` → `/more` answer a permanent
-  redirect, each tested.
-- **M12, looks as designed (criterion 6)**: before and after comparisons from
-  `scripts/design/compare.sh`, phone and computer, attached to the PR and judged by eye.
-- **M13, defaults follow the language (criterion 7)**: a business opened in `en` gets the
-  four categories byte-identical to `en.baseline.json`; one opened in a fixture `de` gets
-  `de`'s four; after either business changes language, its categories are unchanged; rows
-  changed in existing businesses: 0; businesses opened under the forced `en-XA` with
-  categories in `en-XA`: 0. Under the forced `en-XA`, the defaults rendered from the
-  defaults source leave no letter after removing `⟦…⟧` segments. 100% passing.
+  - la confirmación de descarte y el cierre de un formulario sin tocar;
+  - la vuelta sin historial a Expenses en el mes en curso.
+- **M11, redirecciones**: `/gastos` → `/expenses` y `/mas` → `/more` responden una redirección permanente, cada una con su prueba.
+- **M12, se ve como en el diseño (criterio 6)**: comparaciones de antes y después de `scripts/design/compare.sh`, en teléfono y computadora, adjuntas al PR y juzgadas a ojo.
+- **M13, los valores por defecto siguen el idioma (criterio 7)**: un negocio abierto en `en` recibe las cuatro Expense categories idénticas byte a byte a `en.baseline.json`; uno abierto en un `de` de prueba recibe las cuatro de `de`; después de que cualquiera de los dos negocios cambie de idioma, sus Expense categories no cambian; filas cambiadas en negocios existentes: 0; negocios abiertos bajo el `en-XA` forzado con Expense categories en `en-XA`: 0. Bajo el `en-XA` forzado, los valores por defecto generados desde su fuente no dejan ninguna letra después de sacar los segmentos `⟦…⟧`. 100% de aprobación.
+- **M14, la Expense category con el Selector (criterio 8)**: con 12 o más Expense categories sembradas, las pruebas del front muestran el Selector en el formulario, ningún `<select>`, grupo de radios ni botón `aria-pressed` para ese campo, y que tipear parte de un nombre en la búsqueda de la lista encuentra la Expense category y tocarla la elige. 100% de aprobación.
+- **M15, volver nunca tira el formulario (criterio 9)**: para cada punto de entrada (`ExpenseNewRoute` desde Expenses y desde More, y la edición en el lugar de `Gastos`), las pruebas del front muestran: formulario sin tocar, volver va a la pantalla madre; formulario con algo tipeado, volver pide confirmar el descarte; con la lista abierta, volver cierra solo la lista; en la computadora, Escape cierra solo el desplegable. Para la edición en el lugar, volver sin tocar deja Expenses en el mes que mostraba, un descarte confirmado vuelve a ese mes sin preguntar de nuevo, y pasar de teléfono a computadora conserva lo tipeado. 100% de aprobación.
+- **M16, conjunto vacío y carga (criterio 10)**: las pruebas del front muestran "No categories yet. Add them in Settings → Expense categories." con el conjunto vacío, y ningún texto de conjunto vacío mientras la consulta está pendiente o falló; con la carga fallida, la línea de falla existente en el formulario. El chequeo `mobile` recorre el estado `expense/category-selector-empty` y las entradas `combobox:Category` obsoletas de `autocomplete.json` ya no están, sin ningún infractor nuevo.
+- **M17, nada se pierde (criterio 10)**: las pruebas del front muestran que la Expense category creada dentro del formulario queda elegida y el error se borra, también con el conjunto vacío; que el rechazo por una Expense category que desapareció deja el campo vacío con "That category is gone. Pick another." y conserva lo tipeado; y que el error de campo obligatorio sigue apareciendo.
 
-## Out of scope
+## Fuera de alcance
 
-- Profit, cash and any total across sales, purchases and expenses: the results capability.
-- Importing the spreadsheet's expense tab. Old expenses are typed in with their real dates.
-- Recurring expenses, attachments and receipts.
-- Edit history of an expense.
-- An all-time list of expenses per category.
-- A chronological list of expenses.
-- Archiving a category.
-- Managing categories from Expenses.
-- Building Settings or its groups: navigation.md and their own issues.
-- Translating or renaming a business's stored categories when its language changes, or
-  backfilling defaults in another language for existing businesses.
+- El Profit, el Cash y cualquier total que cruce ventas, Purchases y Expenses: es la capacidad de resultados.
+- Cargar con el Spreadsheet import la pestaña Gastos de la planilla. Las Expenses viejas se tipean con sus fechas reales.
+- Expenses recurrentes, adjuntos y comprobantes.
+- El historial de ediciones de una Expense.
+- Una lista de Expenses de todos los tiempos por Expense category.
+- Una lista cronológica de Expenses.
+- Archivar una Expense category.
+- Administrar las Expense categories desde Expenses.
+- Construir Settings o sus grupos: navigation.md y sus propios issues.
+- Traducir o renombrar las Expense categories guardadas de un negocio cuando cambia su idioma, o completar hacia atrás valores por defecto en otro idioma para negocios existentes.
+- Cambiar el texto del conjunto vacío para que mencione la creación dentro del formulario.
+- Cambiar las rutas de Expenses, su navegación por mes o cómo se abre y se ve la edición en el lugar.
+- Un reintento con un toque para la carga fallida de las Expense categories dentro del formulario.

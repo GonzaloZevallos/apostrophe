@@ -110,15 +110,17 @@ const SCREENS: Case[] = [
     element: () => <ClienteForm mode="editar" />,
     route: pathTo(CUSTOMER_EDIT, { id: 7 }),
     path: CUSTOMER_EDIT,
+    dataRouter: true,
   },
   { name: 'VentaDetalle', element: () => <VentaDetalle />, route: pathTo(SALE, { id: 9 }), path: SALE, dataRouter: true },
-  { name: 'Expenses', element: () => <Gastos />, route: EXPENSES, path: EXPENSES },
+  { name: 'Expenses', element: () => <Gastos />, route: EXPENSES, path: EXPENSES, dataRouter: true },
   { name: 'All entries', element: () => <EntriesList />, route: STOCK, path: STOCK },
   {
     name: 'EntradaStock editing',
     element: () => <EntradaStock mode="editar" />,
     route: pathTo(STOCK_ENTRY, { id: 4 }),
     path: STOCK_ENTRY,
+    dataRouter: true,
   },
 ]
 

@@ -1,11 +1,11 @@
 /**
  * The pure rules behind the withdrawal form's archived-variety handling (`stock.md`,
- * "Take from stock"): who is guilty after a fresh list, what a line's picker offers, and
+ * "Take from stock"): who is guilty after a fresh list, what a line's Selector gets, and
  * whether a preselected variety survives. No cache, no network.
  */
 
 import { expect, test } from 'vitest'
-import { guiltyKeys, keptOptions, preselected } from './goneLines'
+import { guiltyKeys, lineChoice, preselected } from './goneLines'
 
 const LISTED = [
   { id: 1, name: 'Zkittlez' },
@@ -40,7 +40,7 @@ test('guiltyKeys: every line of a duplicated variety is guilty together', () => 
   expect(guiltyKeys(lines, new Set(['1']), new Set())).toEqual(new Set([0, 2]))
 })
 
-test('guiltyKeys: an empty list makes every chosen line guilty, and a line with no variety never', () => {
+test('guiltyKeys: an empty list makes every chosen line guilty, and a line with no product never', () => {
   const lines = [
     { key: 0, varietyId: '1' },
     { key: 1, varietyId: '' },
@@ -49,54 +49,45 @@ test('guiltyKeys: an empty list makes every chosen line guilty, and a line with 
   expect(guiltyKeys(lines, new Set(), new Set())).toEqual(new Set([0]))
 })
 
-test('keptOptions: the listed varieties alone when every line is listed', () => {
-  const lines = [{ key: 0, varietyId: '2' }]
+test('lineChoice: a listed line offers every listed Variety and has no selected', () => {
+  const line = { key: 0, varietyId: '2', varietyName: 'Gelato' }
 
-  expect(keptOptions(lines, LISTED, new Map())).toEqual([
-    { value: '1', label: 'Zkittlez', disabled: false },
-    { value: '2', label: 'Gelato', disabled: false },
-  ])
+  expect(lineChoice(line, LISTED)).toEqual({
+    options: [
+      { value: '2', label: 'Gelato' },
+      { value: '1', label: 'Zkittlez' },
+    ],
+  })
 })
 
-test('keptOptions: a line whose variety is not listed adds one disabled option, named from the map', () => {
-  const lines = [{ key: 0, varietyId: '3' }]
+test('lineChoice: a stored line archived since shows its stored name as selected and never offers it', () => {
+  const line = { key: 0, varietyId: '3', varietyName: 'Gorilla' }
+  const choice = lineChoice(line, LISTED)
 
-  expect(keptOptions(lines, LISTED, new Map([['3', 'Gorilla']]))).toEqual([
-    { value: '1', label: 'Zkittlez', disabled: false },
-    { value: '2', label: 'Gelato', disabled: false },
-    { value: '3', label: 'Gorilla', disabled: true },
-  ])
+  expect(choice.selected).toEqual({ value: '3', label: 'Gorilla' })
+  expect(choice.options.map((option) => option.value)).not.toContain('3')
+  expect(guiltyKeys([line], new Set(['1', '2']), new Set(['3']))).toEqual(new Set())
 })
 
-test('keptOptions: a duplicate variety across lines adds its option once', () => {
-  const lines = [
-    { key: 0, varietyId: '3' },
-    { key: 1, varietyId: '3' },
-  ]
+test('lineChoice: a refused line keeps the name it was picked with', () => {
+  const line = { key: 1, varietyId: '1', varietyName: 'Zkittlez' }
 
-  const options = keptOptions(lines, LISTED, new Map([['3', 'Gorilla']]))
-
-  expect(options.filter((option) => option.value === '3')).toHaveLength(1)
+  expect(lineChoice(line, [{ id: 2, name: 'Gelato' }]).selected).toEqual({ value: '1', label: 'Zkittlez' })
 })
 
-test('keptOptions: with an empty list a stored line still keeps its option', () => {
-  const lines = [{ key: 0, varietyId: '3' }]
-
-  expect(keptOptions(lines, [], new Map([['3', 'Gorilla']]))).toEqual([
-    { value: '3', label: 'Gorilla', disabled: true },
-  ])
+test('lineChoice: with an empty list a stored line still has its selected', () => {
+  expect(lineChoice({ key: 0, varietyId: '3', varietyName: 'Gorilla' }, [])).toEqual({
+    options: [],
+    selected: { value: '3', label: 'Gorilla' },
+  })
 })
 
-test('keptOptions: a missing name leaves an empty label, never the id', () => {
-  const lines = [{ key: 0, varietyId: '3' }]
-
-  expect(keptOptions(lines, LISTED, new Map())[2]).toEqual({ value: '3', label: '', disabled: true })
+test('lineChoice: a missing name gives no selected, never the id', () => {
+  expect(lineChoice({ key: 0, varietyId: '3', varietyName: '' }, LISTED).selected).toBeUndefined()
 })
 
-test('keptOptions: a line with no variety adds nothing', () => {
-  const lines = [{ key: 0, varietyId: '' }]
-
-  expect(keptOptions(lines, LISTED, new Map())).toHaveLength(2)
+test('lineChoice: a line with no product has no selected', () => {
+  expect(lineChoice({ key: 0, varietyId: '', varietyName: '' }, LISTED).selected).toBeUndefined()
 })
 
 test('preselected: a listed id stays, an unlisted or unknown one becomes empty', () => {

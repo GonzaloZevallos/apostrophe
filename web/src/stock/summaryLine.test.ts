@@ -7,8 +7,8 @@ describe('summaryLine', () => {
   })
 
   test('says everything is fine when every variety is ok', () => {
-    expect(summaryLine(['ok', 'ok', 'ok'])).toBe('3 varieties · all ok')
-    expect(summaryLine(['ok'])).toBe('1 variety · all ok')
+    expect(summaryLine(['ok', 'ok', 'ok'])).toBe('3 products · all ok')
+    expect(summaryLine(['ok'])).toBe('1 product · all ok')
   })
 
   test('counts every status that is not ok, by word, in stock-status order', () => {

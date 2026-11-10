@@ -119,6 +119,7 @@
     "onboarding.step_invalid": { "kind": "refusal" },
     "onboarding.required_steps_unmet": { "kind": "refusal" },
     "onboarding.not_found": { "kind": "gone" },
+    "money.too_many_decimals": { "kind": "refusal" },
     "RequestInvalid": { "kind": "refusal" }
   },
   "frontSegments": [

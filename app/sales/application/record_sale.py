@@ -7,14 +7,17 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
+from decimal import Decimal
 
 from app.sales.application.ports import (
     CustomerFacts,
+    MoneyFormatReader,
     PriceBook,
     PricingSettingsReader,
     Sales,
 )
 from app.sales.domain.sale import LineRequest, PaymentMethod, Sale, UnknownCustomer, UnknownVariety
+from app.shared.money import MoneyFormat, money_within
 from app.shared.quantity import Quantity
 from app.shared.reference import ReferenceRefused
 from app.shared.transaction import Transaction
@@ -28,7 +31,7 @@ class LineInput:
     variety_id: int
     quantity: Quantity
     gift: bool = False
-    special_price: int | None = None
+    special_price: Decimal | None = None
 
 
 def record_sale(
@@ -36,18 +39,23 @@ def record_sale(
     price_book: PriceBook,
     customer_facts: CustomerFacts,
     pricing_settings: PricingSettingsReader,
+    money_format: MoneyFormatReader,
     transaction: Transaction,
     *,
     sale_date: date,
     today: date,
     customer_id: int | None,
-    shipping_charged: int,
+    shipping_charged: Decimal,
     note: str | None,
     lines: Sequence[LineInput],
     method: PaymentMethod | None,
     left_owing: bool,
     recorded_at: datetime,
 ) -> Sale:
+    # Amounts arrive as typed and become domain amounts only here, checked by value against
+    # the business's decimals (docs/adr/0058): a refusal precedes every other read.
+    shown = money_format.current()
+    shipping = _whole_amount(shipping_charged, shown)
     customer = None
     if customer_id is not None:
         customer = customer_facts.get(customer_id)
@@ -55,7 +63,7 @@ def record_sale(
             raise UnknownCustomer()
 
     settings = pricing_settings.current()
-    requests = [_resolve_line(price_book, sale_date, line) for line in lines]
+    requests = [_resolve_line(price_book, sale_date, line, shown) for line in lines]
 
     sale = Sale.record(
         sale_date=sale_date,
@@ -63,7 +71,7 @@ def record_sale(
         customer_id=customer_id,
         customer=customer,
         settings=settings,
-        shipping_charged=shipping_charged,
+        shipping_charged=shipping,
         note=note,
         lines=requests,
         method=method,
@@ -83,7 +91,13 @@ def record_sale(
     return stored
 
 
-def _resolve_line(price_book: PriceBook, sale_date: date, line: LineInput) -> LineRequest:
+def _whole_amount(amount: Decimal, shown: MoneyFormat) -> int:
+    return money_within(amount, shown).whole_units()
+
+
+def _resolve_line(
+    price_book: PriceBook, sale_date: date, line: LineInput, shown: MoneyFormat
+) -> LineRequest:
     pricing = price_book.for_variety(line.variety_id, sale_date)
     if pricing is None:
         raise UnknownVariety()
@@ -92,5 +106,7 @@ def _resolve_line(price_book: PriceBook, sale_date: date, line: LineInput) -> Li
         quantity=line.quantity,
         quote=pricing.current,
         gift=line.gift,
-        special_price=line.special_price,
+        special_price=(
+            None if line.special_price is None else _whole_amount(line.special_price, shown)
+        ),
     )

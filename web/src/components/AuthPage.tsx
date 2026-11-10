@@ -11,6 +11,7 @@
 
 import type { ReactNode } from 'react'
 import BrandMark from './BrandMark'
+import ContentArea from './ContentArea'
 
 export default function AuthPage({
   brand = false,
@@ -18,6 +19,7 @@ export default function AuthPage({
   title,
   titleClass,
   subtitle,
+  inert = false,
   children,
 }: {
   brand?: boolean
@@ -25,10 +27,12 @@ export default function AuthPage({
   title?: string
   titleClass?: string
   subtitle?: string
+  /** True while a sheet is over the page: nothing in it can take focus. */
+  inert?: boolean
   children?: ReactNode
 }) {
   return (
-    <main className="pantalla auth-page">
+    <ContentArea as="main" className="pantalla auth-page" inert={inert}>
       <div className="auth-page__columna">
         {brand && <BrandMark variant="lockup" />}
         {title !== undefined && (
@@ -40,6 +44,6 @@ export default function AuthPage({
         )}
         {children}
       </div>
-    </main>
+    </ContentArea>
   )
 }

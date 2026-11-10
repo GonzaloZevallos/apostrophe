@@ -131,7 +131,12 @@ doc may record a deliberate exception; without one, this standard wins over an a
 
 1. **Chrome.**
    - Checked: the bottom bar, the header and "+ Nueva venta" are inside the viewport at load
-     and after scrolling to the middle (`chrome-at-load`, `chrome-mid-scroll`).
+     and after scrolling to the middle (`chrome-at-load`, `chrome-mid-scroll`). Which kind
+     carries which chrome: a tab root has the bar and "+ Nueva venta"; a card or detail has
+     the bar and no "+ Nueva venta"; a form or a getting-in screen has neither; the header is
+     there where the screen has one. A sheet or confirmation is judged by the screen beneath
+     it, and covered chrome (inside `[inert]` or `[aria-hidden="true"]`, or beneath an open
+     modal dialog) passes; forbidden chrome that is present and uncovered is reported.
    - Review: the bar and header are fixed; content is padded so nothing sits behind them.
      Insets and `dvh` are the installed shell's (accounts.md): the `--inset-*` tokens, and
      never `100vh`.
@@ -208,7 +213,9 @@ step that cannot reach its screen is reported as `unreachable`, never skipped.
 
 **The offender list.** A failure the app has today is listed, never skipped:
 `web/src/mobile-standard/offenders/<rule>.json`, one file per rule, each entry one screen,
-rule, target and issue (an area issue from the fixed map #45-#49, #59, #60, #78), with
+rule, target and issue (the allowed numbers are `AREA_ISSUES` in `web/src/mobile-standard/offenders/index.ts`:
+an existing entry keeps its area issue, and a new finding cites the open follow-up opened
+for it), with
 optional `sizes` and `themes`. It can only shrink: the run fails on a new offender, on an
 entry whose cell now passes, and on an entry with no valid issue number. It grows only
 by a trade, or by the real cells of a row new to the screens registry (the conditions are in
@@ -219,7 +226,7 @@ pinned fixture and date (ADR-0048); a change to either is a change to the lists,
 same diff. One rule has no file: `tabular-figures` (a figure outside its figure class) is
 fixed, never listed, and the loader refuses an entry for it.
 
-**Attached.** Every area PR (#45-#49, #59, #60, #78) attaches the check's result: the
+**Attached.** Every area PR (one whose issue is in `AREA_ISSUES`) attaches the check's result: the
 `mobile` project of `npm --prefix web run e2e`, and the offender counts that
 `scripts/design/compare.sh` prints (`COMPARE_MOBILE=1` runs the check there too). The real
 keyboard and the real-device pass stay by eye (accounts.md, ADR-0028).
@@ -229,9 +236,8 @@ keyboard and the real-device pass stay by eye (accounts.md, ADR-0028).
 `tests/migrations/test_naming.py` machine-checks every rule below stated as **checked**,
 against a real SQLite schema reflected two ways (`upgrade_to_head` and
 `app.tables.metadata.create_all`), never against an object's `.name` in the metadata. A
-name on its allowlist is a known break, not a rule: #75 renames it, so it is never
-renamed as a side effect of another task, and no task other than #75 touches the
-allowlist.
+allowlist is empty, since #75 renamed the last two breaks: a new break is fixed in the
+schema, never listed, and no allowlist exists to put it on.
 
 ### Checked
 
@@ -260,8 +266,6 @@ allowlist.
 
 - Singular table names (`customer`, not `customers`); a junction table is `<a>_<b>`,
   with its own surrogate `id` and a `uq_<a>_<b>_<a>_id_<b>_id` on the pair.
-- `catalog_attributes` keeps its plural name until #75: no code can flag it, since the
-  rules above have nothing to say about plurals.
 - No `_until`, `_from` or `_start` for a moment in time or a calendar date (`_at` and
   `_on` say both, with no third option): a reviewer reads it, since a column bearing one
   of these and no date or datetime type (where the `_on`/`_at` rules would already catch
@@ -281,13 +285,7 @@ allowlist.
 ### Scope
 
 - §11 applies to every new table, column, index and constraint, and to the ones a task
-  otherwise touches — except a name already on `test_naming.py`'s allowlist, which stays
-  as it is even when the task changes its column. Only #75 removes an allowlist entry;
-  no other task adds or empties one.
-- A new index or unique constraint added on an allowlisted column is still named from
-  that column's current (unrenamed) name, e.g. `ix_sale_business_id_sale_date` next to
-  the allowlisted `sale.sale_date`.
-- Old and new names coexist until #75: new code says `app_user_id` while
-  `reset_link.user_id` stays as it is, and a new date column ends in `_on` while
-  `sale.sale_date` stays `sale_date`. Existing hand-written names
-  (`uq_customer_business_phone`, `expense`'s two indexes) are not rewritten either.
+  otherwise touches. A name that breaks a checked rule is renamed in the task that finds it,
+  with a migration, never listed.
+- Existing hand-written names (`uq_customer_business_phone`, the `spent_on` index of
+  `expense`) keep the names they reflect today; they pass the checked rules as they are.

@@ -66,9 +66,9 @@ def test_a_month_before_the_first_record_is_refused(client: TestClient) -> None:
 def test_the_month_expense_breakdown_matches_get_expenses_without_purchases(
     client: TestClient,
 ) -> None:
-    # Categories differing in case and accents (docs/product/analysis.md: "sorted by
-    # name as in Gastos"): both endpoints must order, subtotal and total them exactly
-    # the same way, over the stored name_key.
+    # Categories differing in case and accents (docs/product/analysis.md:
+    # "ordenadas por nombre como en Expenses"): both endpoints must order, subtotal and total
+    # them exactly the same way, over the stored name_key.
     names = ["Transporte", "árbol", "ZEPELÍN", "andamios"]
     category_ids = [
         client.post("/expense-categories", json={"name": name}).json()["id"] for name in names
@@ -113,6 +113,41 @@ def test_a_purchase_is_its_own_line_never_inside_expenses(client: TestClient) ->
     assert analysis["month_expenses"]["purchases"] == 20_000
     assert analysis["month_expenses"]["categories"] == []
     assert analysis["month_expenses"]["total"] == 0
+
+
+def test_a_sale_costs_from_the_lot_with_the_earliest_entry_date_not_the_first_recorded(
+    client: TestClient,
+) -> None:
+    # D1 < sale date < D2, all different from the clock's today (2026-10-02). The D2 lot is
+    # recorded first and at a dearer cost per gram; only the entry date puts D1 first in
+    # Lot order, so 4 g of the sale cost 4 x 100 and not 4 x 500.
+    variety_id = _variety_with_price(client, "Flor", 1_000)
+    for entry_date, total_cost in (("2026-09-20", 5_000), ("2026-08-10", 1_000)):
+        recorded = client.post(
+            "/stock/entries",
+            json={
+                "product_id": variety_id,
+                "origin": "purchase",
+                "quantity": "10",
+                "total_cost": total_cost,
+                "date": entry_date,
+            },
+        )
+        assert recorded.status_code == 201, recorded.text
+    sale = client.post(
+        "/sales",
+        json={
+            "date": "2026-09-05",
+            "payment": "cash",
+            "lines": [{"product_id": variety_id, "quantity": "4"}],
+        },
+    )
+    assert sale.status_code == 201, sale.text
+
+    september = client.get("/analysis", params={"month": "2026-09"}).json()
+
+    [product] = september["month"]["products"]
+    assert product["cost"]["costed"] == 400
 
 
 def test_a_backdated_stock_entry_moves_only_the_affected_week_month_and_variety(
@@ -269,7 +304,8 @@ def _statement_count(engine: Engine, client: TestClient) -> int:
 
 
 def _seed_bigger_history(client: TestClient) -> None:
-    """A full seeded year (docs/product/analysis.md's '300 ms... a year of history'),
+    """A full seeded year (docs/product/analysis.md's
+    'menos de 300 ms con un año de unos cientos de ventas'),
     not 25 sales on one day: entries, sales and expenses spread across the last 360
     days, over 8 varieties, so the 8 weeks, 12 months and every day bucket all carry
     real history — not just today's."""

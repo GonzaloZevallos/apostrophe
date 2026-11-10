@@ -43,6 +43,8 @@ from app.expenses.adapters.expenses_ledger import SqlExpensesLedger
 from app.expenses.adapters.router import router as expenses_router
 from app.http_errors import Refused
 from app.migrations.runner import upgrade_to_head
+from app.money_format.adapters.opening import MoneyFormatOpening
+from app.money_format.adapters.reader import SqlMoneyFormat
 from app.onboarding.adapters.first_run_router import router as first_run_router
 from app.onboarding.adapters.opening import OnboardingOpening
 from app.onboarding.adapters.router import router as onboarding_router
@@ -71,6 +73,7 @@ from app.sales.adapters.sales_ledger import SqlSalesLedger
 from app.settings import Settings
 from app.shared.copy import CopyCatalog
 from app.shared.language import BusinessLanguage
+from app.shared.money import MoneyNotRepresentable
 from app.static_spa import FrontNavigation, MissingBuiltFront, ShellPage, SpaStatic, api_segments
 from app.stock.adapters.babel_defaults import BabelReasonDefaults
 from app.stock.adapters.draw_costs import SqlDrawCosts
@@ -162,6 +165,15 @@ async def _refused(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(status_code=exc.status_code, content=content)
 
 
+async def _stored_amount_not_whole(request: Request, exc: Exception) -> JSONResponse:
+    # A stored amount a read cannot hold as whole units is an integrity failure, never a
+    # refusal of the request: 500, with the exception's own fixed literal and no amount.
+    assert isinstance(exc, MoneyNotRepresentable)
+    return JSONResponse(
+        status_code=500, content={"detail": str(exc), "code": MoneyNotRepresentable.code}
+    )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # Starlette's `State` is untyped; `create_app` always assigns an `Engine`.
@@ -189,6 +201,7 @@ def create_app(
     hasher: PasswordHasher | None = None,
     telegram: TelegramBackend | None = None,
     upkeep_ticker: bool = True,
+    opening_money_scale: int = 2,
 ) -> FastAPI:
     settings = settings or Settings.from_env()
     app = FastAPI(title="apostrophe", lifespan=lifespan)
@@ -213,6 +226,7 @@ def create_app(
     app.state.pinned_catalog_upkeep_ticker = upkeep_ticker
     app.add_exception_handler(RequestValidationError, _without_request_data)
     app.add_exception_handler(Refused, _refused)
+    app.add_exception_handler(MoneyNotRepresentable, _stored_amount_not_whole)
     # A factory, not an instance: `get_business_opening` builds it over the request's
     # own `Session`. `CompositeOpening` composes every capability that seeds something
     # at opening, so a new one joins here, not as a second keyword argument on
@@ -226,6 +240,7 @@ def create_app(
         partial(WithdrawalReasonsOpening, defaults=reason_defaults),
         partial(CatalogHeaderFooterOpening, defaults=header_footer_defaults),
         PricingSettingsOpening,
+        partial(MoneyFormatOpening, scale=opening_money_scale),
         partial(OnboardingOpening, clock=clock),
     )
     # A factory, not an instance (the same shape as `business_opening` above): sales
@@ -262,6 +277,12 @@ def create_app(
     app.state.customers_pricing_settings = SqlPricingSettings
     app.state.customers_phone_country = SqlPhoneCountry
     app.state.owing_sales = SqlOwingSales
+    # How money is shown, read through each hexagon's own `MoneyFormatReader` port (docs/adr/0055).
+    app.state.sales_money_format = SqlMoneyFormat
+    app.state.products_money_format = SqlMoneyFormat
+    app.state.payments_money_format = SqlMoneyFormat
+    app.state.expenses_money_format = SqlMoneyFormat
+    app.state.stock_money_format = SqlMoneyFormat
     # Another factory of the same shape: results reaches stock's rows and draws only
     # through its own `StockFigures` port, never `app.stock` directly (ADR-0006). The
     # panel route builds this over the request's own `Session` and business, the way

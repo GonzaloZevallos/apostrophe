@@ -6,10 +6,11 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import InAppLink from '../../components/InAppLink'
 import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
-import { vi } from 'vitest'
+import { expect, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import type { ShownLanguage } from '../../api/language'
 import FlashProvider from '../../flash/FlashProvider'
@@ -18,6 +19,8 @@ import Shell from '../../shell/Shell'
 import Gastos from '../Gastos'
 import ExpenseNewRoute from './ExpenseNewRoute'
 import { EXPENSES_TEXT } from '../../copy/expenses'
+import ContentArea from '../../components/ContentArea'
+import { SheetRouterProvider } from '../../components/useSheetStack'
 
 export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en' as ShownLanguage }
 
@@ -49,12 +52,12 @@ export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl) {
                 path: relative(MORE),
                 handle: { screen: 'more' },
                 element: (
-                  <main>
+                  <ContentArea as="main">
                     <span>{EXPENSES_TEXT.moreScreen}</span>
                     <InAppLink to={EXPENSE_NEW}>
                       {EXPENSES_TEXT.addExpenseFromMore}
                     </InAppLink>
-                  </main>
+                  </ContentArea>
                 ),
               },
               { path: relative(EXPENSES), element: <Gastos />, handle: { screen: 'expenses' } },
@@ -72,8 +75,26 @@ export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl) {
   )
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-      <RouterProvider router={router} />
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
   return router
+}
+
+/** The Category field's button, found by its name (the Selector's field). */
+export async function categoryField(): Promise<HTMLElement> {
+  return screen.findByRole('button', { name: /^Category/ })
+}
+
+/**
+ * Chooses a Category the way a person does: opens the field, then picks the option, in the
+ * computer's dropdown (`option`) or the phone's list (a button in the list).
+ */
+export async function chooseCategory(name: string): Promise<void> {
+  await userEvent.click(await categoryField())
+  const option = screen.queryByRole('option', { name }) ?? (await screen.findByRole('button', { name }))
+  await userEvent.click(option)
+  await waitFor(() => expect(option).not.toBeInTheDocument())
 }

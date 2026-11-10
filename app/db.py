@@ -6,16 +6,37 @@ tests inject an in-memory one without touching the environment.
 
 from collections.abc import Iterator
 from datetime import UTC, datetime
-from typing import Any, cast
+from typing import Any, Literal, cast, overload
 
 from fastapi import Request
-from sqlalchemy import DateTime, Dialect, MetaData, TypeDecorator, create_engine, event
+from sqlalchemy import (
+    ColumnElement,
+    DateTime,
+    Dialect,
+    Integer,
+    MetaData,
+    TypeDecorator,
+    column,
+    create_engine,
+    event,
+    literal,
+    select,
+    table,
+)
 from sqlalchemy.engine import Engine, make_url
 from sqlalchemy.engine.interfaces import DBAPIConnection
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import DeclarativeBase, Session
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    InstrumentedAttribute,
+    MappedColumn,
+    Session,
+    SessionTransaction,
+    mapped_column,
+)
 from sqlalchemy.pool import ConnectionPoolEntry, StaticPool
 
+from app.shared.money import SCALE_FACTORS, Money
 from app.shared.reference import ReferenceRefused
 
 # Deterministic constraint names, so migrations can name what they alter.
@@ -118,3 +139,131 @@ def flush_or_refuse(session: Session) -> None:
         refused = True
     if refused:
         raise ReferenceRefused
+
+
+@overload
+def money_column(*, nullable: Literal[False] = False) -> MappedColumn[int]: ...
+
+
+@overload
+def money_column(*, nullable: Literal[True]) -> MappedColumn[int | None]: ...
+
+
+def money_column(*, nullable: bool = False) -> MappedColumn[int] | MappedColumn[int | None]:
+    """An amount's column: a plain Integer, tagged `info["money"]` so the metadata guards
+    (tests/migrations/test_money_columns.py) can tell an amount from any other integer.
+    The DDL is the one a bare `Mapped[int]` produced. An amount is held only in a column
+    declared here (docs/adr/0058)."""
+    if nullable:
+        return mapped_column(Integer, nullable=True, info={"money": True})
+    return mapped_column(Integer, nullable=False, info={"money": True})
+
+
+class MoneyFormatMissing(LookupError):
+    """A business has no money_format row. The message is a fixed literal and carries no
+    data (CODING_STANDARDS.md section 9)."""
+
+    def __init__(self) -> None:
+        super().__init__("the business has no money format row")
+
+
+# A lightweight table, so this module imports no hexagon: only the two columns read.
+_money_format = table("money_format", column("business_id"), column("scale"))
+
+# Hundredths per stored unit, by scale: scale 0 stores whole currency units, scale 2
+# stores hundredths.
+_FACTOR_BY_SCALE = {0: 100, 2: 1}
+
+
+# Where a session keeps the factors it has read, by business, for its outer transaction only.
+_FACTORS_KEY = "money_scale_factors"
+
+
+@event.listens_for(Session, "after_transaction_end")
+def _forget_money_scale_factors(session: Session, transaction: SessionTransaction) -> None:
+    """A commit or a rollback of the outer transaction forgets every cached factor, so a
+    scale changed by another unit of work is read afresh. A savepoint ending (it has a
+    parent) leaves them alone: the whole unit of work shares one lookup."""
+    if transaction.parent is None:
+        session.info.pop(_FACTORS_KEY, None)
+
+
+class MoneyScaleChanged(LookupError):
+    """A business's money scale changed between the write's read of it and its commit
+    (docs/adr/0058). It has no code and a fixed literal message (CODING_STANDARDS.md
+    section 9); it surfaces as FastAPI's default 500. A caller that catches it must call
+    `rollback()` on the session: nothing was committed."""
+
+    def __init__(self) -> None:
+        super().__init__("the money scale changed during the write")
+
+
+@event.listens_for(Session, "before_commit")
+def _refuse_a_stale_money_scale(session: Session) -> None:
+    """Re-reads, at commit, the stored scale of every business whose factor this session
+    cached, with its own select (never `money_scale_factor`). A write that read the old
+    scale and commits after the rescale raises `MoneyScaleChanged` and stores nothing.
+
+    The flush comes first: it takes SQLite's write lock, so the re-read cannot be stale.
+    An empty or absent cache issues no statement; a business with no row is skipped (its
+    writer already failed with `MoneyFormatMissing`). On a mismatch the whole cache is
+    forgotten. A caller that catches the error must call `rollback()`."""
+    cache: dict[int, int] | None = session.info.get(_FACTORS_KEY)
+    if not cache or session.in_nested_transaction():
+        # A savepoint releasing is not a commit: only the outer transaction's counts.
+        return
+    session.flush()
+    changed = False
+    for business_id, factor in cache.items():
+        scale = session.execute(
+            select(_money_format.c.scale).where(_money_format.c.business_id == business_id)
+        ).scalar_one_or_none()
+        if scale is not None and _FACTOR_BY_SCALE.get(scale) != factor:
+            changed = True
+    if changed:
+        session.info.pop(_FACTORS_KEY, None)
+        raise MoneyScaleChanged
+
+
+def money_scale_factor(session: Session, business_id: int) -> int:
+    """The hundredths one stored unit of the business's amounts is worth: 100 at scale 0,
+    1 at scale 2. An adapter reads an amount in hundredths by selecting
+    `scaled(column, factor)`, and writes one through `money_stored_value`.
+
+    `business_id` is a bound int, never a column: the lookup is one single-row read on
+    the unique index on `money_format.business_id`, constant whatever the data volume. A
+    successful lookup is cached in `session.info` until the outer transaction ends; a
+    missing row is never cached. Raises `MoneyFormatMissing` when the row is absent; it
+    never returns NULL and never falls back to a default scale."""
+    cache: dict[int, int] = session.info.setdefault(_FACTORS_KEY, {})
+    cached = cache.get(business_id)
+    if cached is not None:
+        return cached
+    scale = session.execute(
+        select(_money_format.c.scale).where(_money_format.c.business_id == business_id)
+    ).scalar_one_or_none()
+    if scale is None:
+        raise MoneyFormatMissing
+    factor = _FACTOR_BY_SCALE.get(scale)
+    if factor is None:
+        raise ValueError("the money scale must be 0 or 2")
+    cache[business_id] = factor
+    return factor
+
+
+def scaled[T: int | None](
+    amount: ColumnElement[T] | InstrumentedAttribute[T], factor: int
+) -> ColumnElement[T]:
+    """The amount column in hundredths, inside the statement that loads it or inside the
+    `SUM` over it: `amount * literal(factor)`. The domain reaches a whole-unit int only
+    through `Money.whole_units()`, which never truncates or rounds."""
+    if factor not in SCALE_FACTORS:
+        raise ValueError("the money scale factor must be 1 or 100")
+    return amount * literal(factor)
+
+
+def money_stored_value(session: Session, business_id: int, money: Money) -> int:
+    """The integer to bind when writing `money` to one of the business's amount columns.
+    Exact or it raises `MoneyNotRepresentable`: an amount the scale cannot hold is never
+    stored rounded."""
+    return money.in_units_of(money_scale_factor(session, business_id))

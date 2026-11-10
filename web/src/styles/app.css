@@ -224,6 +224,13 @@ body {
   color: var(--deuda);
 }
 
+/* A field's own refusal (`FieldRefusal`): the Attention icon beside the sentence. */
+.campo__error:has(> .aviso-ambar__icono) {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-xs);
+}
+
 /* The customer form's focus state (`NuevaVentaCliente.dc.html`): a heavy inset ring on
  * the focused field. Only `CustomerFields` carries the class; the outline stays (made
  * transparent, so forced-colors still draws it) and is never removed. */
@@ -544,7 +551,8 @@ body {
   padding-bottom: 2px;
 }
 
-/* The "‹ parent" arrow a card shows above its own header (`navigation.md`, "Chrome and back"). */
+/* The "‹ parent" arrow a card shows above its own header (`navigation.md`,
+   "Marco y camino de vuelta"). */
 .flecha-atras {
   display: flex;
   padding: var(--espacio-md) var(--margen-pantalla) 0;
@@ -1811,6 +1819,8 @@ body {
   color: var(--tinta2);
   font-size: 14px;
   cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .selector-pago__opcion--activa {
@@ -2063,6 +2073,11 @@ body {
 .venta-detalle__subtitulo {
   font-size: 14px;
   color: var(--tinta2);
+}
+
+/* The sale's date, directly under the "Sale #N" title (sales.md, "Detalle de venta"). */
+.venta-detalle__fecha {
+  display: block;
 }
 
 .venta-detalle__encabezado-lineas {
@@ -2394,6 +2409,11 @@ body {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+}
+
+.nueva-venta__agregar,
+.nueva-venta__lista {
+  display: contents;
 }
 
 .nueva-venta__disposicion {
@@ -3952,6 +3972,48 @@ body {
   letter-spacing: -0.03em;
   margin: var(--espacio-xs) 0 0;
 }
+/* "Forgot your password?" (GH-521): right-aligned under the password, a 44 px target at least 8 px
+ * from Show and from Sign in (the form's 14 px gap, no margin of its own), a tap and never a zoom or
+ * a selection. */
+.auth-page__olvido {
+  align-self: flex-end;
+}
+
+.auth-page__olvido .boton--enlace {
+  min-height: var(--alto-tocable);
+  min-width: var(--alto-tocable);
+  padding-inline: var(--espacio-sm);
+  box-shadow: none;
+  font-size: 14px;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.auth-page__olvido .boton--enlace:active {
+  opacity: 0.6;
+}
+
+/* Sign in's own form only: the other getting-in screens render as before. */
+.formulario--entrar .boton,
+.formulario--entrar .campo__mostrar .boton--enlace {
+  touch-action: manipulation;
+  user-select: none;
+}
+
+/* The Forgot sheet's paragraphs: plain text in the ink colour, nothing else. */
+.olvido {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-lg);
+  font-size: 16px;
+  color: var(--tinta);
+}
+
+.olvido p {
+  margin: 0;
+}
+
 /* ===== end auth-layout ===== */
 
 /* A variety's page (VariedadDetalle.dc.html): one summary line, two equal actions and the
@@ -4695,6 +4757,7 @@ body {
   /* "Agregar otra variedad" and a line's "Quitar": the link buttons of this screen's
    * body and lines, at least 44 px tall. */
   .nueva-venta__cuerpo > .boton--enlace,
+  .nueva-venta__agregar > .boton--enlace,
   .nueva-venta__linea .boton--enlace {
     display: flex;
     align-items: center;
@@ -4763,6 +4826,7 @@ body {
  * items) keep their own height, and the body scrolls. */
 @media (max-width: 899.98px) {
   .nueva-venta__cuerpo > *,
+  .nueva-venta__agregar > *,
   .nueva-venta__resumen > * {
     flex-shrink: 0;
   }
@@ -5027,8 +5091,7 @@ body {
  *   the --superficie group): .inicio__avatar and .ajustes-tema__opcion, plain and --activa (the track is
  *   --superficie, the selected option --papel), and the selected variants
  *   .riel-lateral__item--activo, .riel-lateral__negocio--activo, .bar-inferior__item--activo,
- *   .pestanas__opcion--activa, .variedad-fila--activa and .selector-pago__opcion--activa;
- *   with the --linea cue and the scale as well, .aviso-onboarding (rests on --superficie).
+ *   .pestanas__opcion--activa, .variedad-fila--activa and .selector-pago__opcion--activa.
  * .opcion-interruptor is label-wrapped (its checkbox is stretched over it and must keep the
  * tap), so its cue is the fill only: its own rule below, with no `transform`.
  * A .boton--enlace inside .venta-guardada sits on the bar's own --boton fill, so it takes
@@ -5077,7 +5140,8 @@ body {
     .selector-pago__opcion,
     .gastos__mes-boton,
     .encabezado__volver,
-    .historial-fila__borrar
+    .historial-fila__borrar,
+    .selector-lista__fila
   ):active:not(:disabled):not([aria-disabled='true']) {
   transform: scale(0.98);
   background-color: var(--superficie);
@@ -5107,8 +5171,7 @@ body {
     .ajustes-tema__opcion,
     .ajustes-tema__opcion--activa,
     .inicio__avatar,
-    /* a whole-block control; nothing tappable may be nested in it (it would scale with it). */
-    .aviso-onboarding
+    .selector__campo
   ):active:not(:disabled):not([aria-disabled='true']) {
   transform: scale(0.98);
   background-color: var(--linea);
@@ -5121,7 +5184,8 @@ body {
     .bar-inferior__item--activo,
     .pestanas__opcion--activa,
     .variedad-fila--activa,
-    .selector-pago__opcion--activa
+    .selector-pago__opcion--activa,
+    .selector-lista__fila--activa
   ):active:not(:disabled):not([aria-disabled='true']) {
   background-color: var(--linea);
 }
@@ -5150,7 +5214,6 @@ body {
     .ajustes-tema__opcion,
     .opcion-interruptor,
     .mas-info__boton,
-    .aviso-onboarding,
     .inicio__avatar,
     .variedades__todas,
     .pestanas,
@@ -5158,7 +5221,9 @@ body {
     .gastos__mes-boton,
     .encabezado__volver,
     .historial-fila__borrar,
-    .fila-stock--enlace
+    .fila-stock--enlace,
+    .selector__campo,
+    .selector-lista__fila
   ) {
   -webkit-user-select: none;
   user-select: none;
@@ -5401,22 +5466,6 @@ body {
   text-decoration: none;
 }
 
-/* "Arrancá por las variedades": the attention icon beside its title and line. */
-.estado-vacio--atencion {
-  flex-direction: row;
-  align-items: flex-start;
-  text-align: left;
-  gap: 12px;
-}
-
-.estado-vacio--atencion .aviso-ambar__cuerpo {
-  gap: 10px;
-}
-
-.estado-vacio--atencion .estado-vacio__detalle {
-  max-width: none;
-}
-
 /* ===== end gh97-sales-home ===== */
 /* A host element that adds no box of its own: its children lay out as the parent's. */
 .sin-caja {
@@ -5613,8 +5662,9 @@ body {
   cursor: pointer;
 }
 
-/* On a computer the card stops at 560px, as `InicioPrimeraVezCompu.dc.html` draws it
- * (GH-188); it applies to every tappable notice. The same literal is `NOTICE_CAP` in
+/* On a computer the card stops at 560px (GH-188; the drawing that showed it left with the
+ * first-use notices); it applies to every tappable notice, today Inicio's "Your Telegram
+ * catalog is out of date". The same literal is `NOTICE_CAP` in
  * `web/src/architecture/noticeCap.ts`, which guards this block: change both together. */
 @media (min-width: 900px) {
   .boton-aviso {
@@ -5633,17 +5683,6 @@ body {
   flex: 1;
   font-size: 16px;
   font-weight: 600;
-}
-
-.aviso-onboarding__conteo {
-  font-size: 14px;
-  color: var(--tinta2);
-  margin: 3px 0 var(--espacio-md);
-}
-
-.aviso-onboarding__falta {
-  font-size: 13px;
-  margin-top: 10px;
 }
 
 .listo__lista {
@@ -5905,26 +5944,11 @@ body {
   opacity: 0;
 }
 
-/* The method: `SegmentedChoice` on the form's own surface, the chosen one on paper. */
+/* The method: the Payment method Selector and, under it, its refusal. */
 .cobro__metodo {
   display: flex;
   flex-direction: column;
   gap: var(--espacio-xs);
-}
-
-.cobro__metodo > .selector-pago {
-  background: var(--superficie);
-}
-
-.cobro__metodo .selector-pago__opcion {
-  min-height: var(--alto-tocable);
-  touch-action: manipulation;
-  padding: 0;
-  font-size: 15px;
-}
-
-.cobro__metodo .selector-pago__opcion--activa {
-  background: var(--papel);
 }
 
 .cobro__resumen {
@@ -6001,103 +6025,7 @@ body {
   outline: none;
 }
 
-/* The first-run checklist, the after-import notice and the missing line under "+ Nueva venta"
- * (`InicioPrimeraVez.dc.html`, `InicioPrimeraVezCompu.dc.html`), tokens only. */
-.checklist {
-  background: var(--superficie);
-  border-radius: var(--radio-panel-grande);
-  padding: var(--espacio-lg) var(--espacio-lg) var(--espacio-sm);
-  display: flex;
-  flex-direction: column;
-  gap: var(--espacio-sm);
-}
-
-.checklist__titulo {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--tinta);
-}
-
-.checklist__lista {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.checklist__paso {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--espacio-md);
-  padding: 10px 0;
-  border-bottom: 1px solid var(--linea);
-}
-
-.checklist__paso:last-child {
-  border-bottom: none;
-}
-
-.checklist__caja {
-  width: 22px;
-  height: 22px;
-  box-sizing: border-box;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  border: 2px solid var(--tinta2);
-}
-
-.checklist__caja--hecha {
-  background: var(--boton);
-  border-color: var(--boton);
-  color: var(--boton-texto);
-}
-
-.checklist__caja svg {
-  width: 16px;
-  height: 16px;
-}
-
-.checklist__texto {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.checklist__nombre {
-  font-size: 15px;
-  color: var(--tinta);
-}
-
-.checklist__requisito {
-  font-size: 13px;
-  color: var(--tinta2);
-}
-
-.checklist__hecho {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--tinta);
-}
-
-.aviso-importado {
-  flex-direction: row;
-  align-items: center;
-  gap: var(--espacio-md);
-  padding: 14px 16px;
-}
-
-.aviso-importado .aviso-ambar__cuerpo {
-  flex: 1;
-}
-
-.aviso-importado .aviso-ambar__titulo {
-  font-size: 14px;
-}
-
+/* The missing line under "+ Nueva venta", tokens only. */
 .nueva-venta__falta {
   display: block;
   margin: calc(-1 * var(--espacio-sm) + var(--espacio-xs)) var(--margen-pantalla) var(--espacio-md);
@@ -6582,3 +6510,201 @@ body {
 .tipos-cliente > button {
   min-height: 44px;
 }
+
+/* ===== Selector ===== */
+/* `Selector` (`docs/product/selector.md`): a field that opens a list on the phone (the shared
+ * `Sheet`) and a dropdown on a computer. Tokens only. Rows are 44 px, one line cut by an ellipsis;
+ * the rows are the only scroll region, so every row stays reachable above the keyboard. */
+.selector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+  min-width: 0;
+}
+
+.selector__control {
+  position: relative;
+}
+
+.selector__campo {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+  width: 100%;
+  min-height: var(--alto-boton);
+  box-sizing: border-box;
+  padding: 0 var(--espacio-lg);
+  border: 0;
+  border-radius: var(--radio-campo);
+  background: var(--superficie);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 17px;
+  text-align: left;
+  touch-action: manipulation;
+}
+
+.selector__campo:disabled {
+  cursor: default;
+}
+
+.selector__valor {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-xs) var(--espacio-sm);
+  min-width: 0;
+}
+
+.selector__texto {
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selector__glifo {
+  flex: none;
+}
+
+.selector__marca {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--espacio-xs);
+  color: var(--tinta2);
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.selector__esqueleto {
+  display: block;
+}
+
+.selector__chevron {
+  display: inline-flex;
+  flex: none;
+  color: var(--tinta2);
+}
+
+.selector-lista {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--papel);
+}
+
+.selector-lista__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  padding: calc(var(--espacio-lg) + var(--inset-arriba)) 0 var(--espacio-sm);
+}
+
+.selector-lista__buscar {
+  position: sticky;
+  top: var(--inset-arriba);
+  flex: none;
+  height: var(--alto-tocable);
+  box-sizing: border-box;
+  padding: 0 var(--espacio-lg);
+  border: 0;
+  border-radius: var(--radio-campo);
+  background: var(--superficie);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 16px;
+}
+
+/* The default placeholder grey fails contrast on the dark surface: the same ink as the
+ * secondary text, which holds on both themes. */
+.selector-lista__buscar::placeholder {
+  color: var(--tinta2);
+  opacity: 1;
+}
+
+.selector-lista__filas {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.selector-lista__fila {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--espacio-sm);
+  width: 100%;
+  height: var(--alto-tocable);
+  box-sizing: border-box;
+  padding: 0 var(--espacio-lg);
+  border: 0;
+  background: transparent;
+  color: var(--tinta);
+  font: inherit;
+  text-align: left;
+  touch-action: manipulation;
+}
+
+.selector-lista__fila--activa {
+  background: var(--superficie);
+}
+
+.selector-lista__nombre {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selector-lista__marca {
+  display: inline-flex;
+  flex: none;
+  color: var(--acento);
+}
+
+.selector-lista__mensaje {
+  margin: 0;
+  padding: var(--espacio-md) var(--espacio-lg);
+  color: var(--tinta2);
+  font-size: 15px;
+}
+
+@media (max-width: 899.98px) {
+  /* The list owns the body's scrolling: its rows scroll, nothing around them does. */
+  .sheet__body:has(> .selector-lista) {
+    overflow: hidden;
+  }
+}
+
+@media (min-width: 900px) {
+  .selector-desplegable {
+    position: absolute;
+    z-index: 10;
+    top: calc(100% + var(--espacio-xs));
+    right: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(var(--alto-tocable) * 7);
+    overflow: hidden;
+    border-radius: var(--radio-campo);
+    background: var(--papel);
+    box-shadow: 0 0 0 1px var(--linea);
+  }
+
+  .selector-desplegable--arriba {
+    top: auto;
+    bottom: calc(100% + var(--espacio-xs));
+  }
+}
+/* ===== end Selector ===== */

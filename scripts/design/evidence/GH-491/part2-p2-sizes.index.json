@@ -1,0 +1,98 @@
+[
+  {
+    "screen": "InicioHoy_320x568",
+    "file": "InicioHoy_320x568.png",
+    "notes": [],
+    "design": "InicioHoy_320x568.design.png",
+    "built": "InicioHoy_320x568.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioHoy_375x812",
+    "file": "InicioHoy_375x812.png",
+    "notes": [],
+    "design": "InicioHoy_375x812.design.png",
+    "built": "InicioHoy_375x812.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioHoy_430x932",
+    "file": "InicioHoy_430x932.png",
+    "notes": [],
+    "design": "InicioHoy_430x932.design.png",
+    "built": "InicioHoy_430x932.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioOscuro_320x568",
+    "file": "InicioOscuro_320x568.png",
+    "notes": [],
+    "design": "InicioOscuro_320x568.design.png",
+    "built": "InicioOscuro_320x568.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioOscuro_375x812",
+    "file": "InicioOscuro_375x812.png",
+    "notes": [],
+    "design": "InicioOscuro_375x812.design.png",
+    "built": "InicioOscuro_375x812.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioOscuro_430x932",
+    "file": "InicioOscuro_430x932.png",
+    "notes": [],
+    "design": "InicioOscuro_430x932.design.png",
+    "built": "InicioOscuro_430x932.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "Analisis_320x568",
+    "file": "Analisis_320x568.png",
+    "notes": [],
+    "design": "Analisis_320x568.design.png",
+    "built": "Analisis_320x568.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "Analisis_375x812",
+    "file": "Analisis_375x812.png",
+    "notes": [],
+    "design": "Analisis_375x812.design.png",
+    "built": "Analisis_375x812.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "Analisis_430x932",
+    "file": "Analisis_430x932.png",
+    "notes": [],
+    "design": "Analisis_430x932.design.png",
+    "built": "Analisis_430x932.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "AnalisisOscuro_320x568",
+    "file": "AnalisisOscuro_320x568.png",
+    "notes": [],
+    "design": "AnalisisOscuro_320x568.design.png",
+    "built": "AnalisisOscuro_320x568.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "AnalisisOscuro_375x812",
+    "file": "AnalisisOscuro_375x812.png",
+    "notes": [],
+    "design": "AnalisisOscuro_375x812.design.png",
+    "built": "AnalisisOscuro_375x812.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "AnalisisOscuro_430x932",
+    "file": "AnalisisOscuro_430x932.png",
+    "notes": [],
+    "design": "AnalisisOscuro_430x932.design.png",
+    "built": "AnalisisOscuro_430x932.built.png",
+    "capture": "captured"
+  }
+]
