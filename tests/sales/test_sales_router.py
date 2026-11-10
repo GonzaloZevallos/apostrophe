@@ -10,6 +10,7 @@ from sqlalchemy import func, select, update
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from app.customer_types.adapters.tables import CustomerTypePriceRow
 from app.db import money_stored_value
 from app.payments.adapters.tables import PaymentRow
 from app.pricing_settings.adapters.tables import PricingSettingsRow
@@ -609,12 +610,21 @@ def _switches(engine: Engine, *, bulk: bool, vip: bool) -> None:
         session.commit()
 
 
-def _vip_price(engine: Engine, vip_price: int) -> None:
+def _vip_price(engine: Engine, vip_price: int, vip_type_id: int) -> None:
+    """The VIP price of the only price entry, as the VIP-type row the price field writes."""
     with Session(engine) as session:
-        business_id = session.scalars(select(PriceEntryRow.business_id)).first()
-        assert business_id is not None
-        stored = money_stored_value(session, business_id, Money.of_units(vip_price))
-        session.execute(update(PriceEntryRow).values(vip_price=stored))
+        entry = session.scalars(select(PriceEntryRow)).first()
+        assert entry is not None
+        session.add(
+            CustomerTypePriceRow(
+                business_id=entry.business_id,
+                variety_id=entry.variety_id,
+                customer_type_id=vip_type_id,
+                price=money_stored_value(session, entry.business_id, Money.of_units(vip_price)),
+                effective_on=entry.effective_on,
+                price_entry_id=entry.id,
+            )
+        )
         session.commit()
 
 
@@ -649,9 +659,10 @@ def test_a_vip_customer_is_stored_as_vip_once_vip_is_switched_on(
 ) -> None:
     _switches(engine, bulk=True, vip=True)
     variety_id = _variety_with_bulk(client)
-    _vip_price(engine, 7_000)
+    vip_type_id = make_type(engine, is_vip=True)
+    _vip_price(engine, 7_000, vip_type_id)
     customer_id = _customer(client)
-    put_in_type(engine, customer_id, make_type(engine, is_vip=True))
+    put_in_type(engine, customer_id, vip_type_id)
     _switches(engine, bulk=True, vip=False)
     assert _line_of(client, variety_id, customer_id)["pricing_rule"] == "bulk"
 

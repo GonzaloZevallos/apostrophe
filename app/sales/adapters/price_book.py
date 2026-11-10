@@ -13,15 +13,11 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from datetime import date
 
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db import money_scale_factor, scaled
 from app.products.adapters.sql_products import SqlProducts
-from app.products.adapters.tables import PriceEntryRow
 from app.products.domain.product import PriceEntry, Product, ProductName, ProductRuleBroken
 from app.sales.domain.pricing import BulkQuote, PriceQuote, VarietyPricing
-from app.shared.money import Money
 from app.spreadsheet_import.domain.rows import PriceHistoryRow
 
 
@@ -38,22 +34,10 @@ class SqlPriceBook:
         if variety is None or variety.is_archived:
             return None
         entry = variety.current_price(day)
+        # The VIP price is a row of the VIP type, already on the entry (docs/adr/0059).
         return VarietyPricing(
-            variety_id=variety_id, current=_quote(entry, self._vip_price_of(entry))
+            variety_id=variety_id, current=_quote(entry, None if entry is None else entry.vip_price)
         )
-
-    def _vip_price_of(self, entry: PriceEntry | None) -> int | None:
-        """The stored VIP price of the current entry, read from its row until the
-        varieties domain carries it: `None` when the entry has none."""
-        if entry is None or entry.id is None:
-            return None
-        factor = money_scale_factor(self._session, self._business_id)
-        hundredths = self._session.scalar(
-            select(scaled(PriceEntryRow.vip_price, factor)).where(
-                PriceEntryRow.id == entry.id, PriceEntryRow.business_id == self._business_id
-            )
-        )
-        return None if hundredths is None else Money(hundredths).whole_units()
 
 
 class PlannedPriceBook:

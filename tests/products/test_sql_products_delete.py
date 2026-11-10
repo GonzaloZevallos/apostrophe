@@ -19,6 +19,7 @@ from app.catalog.domain.attributes import CatalogAttributes
 from app.db import make_engine
 from app.migrations.runner import upgrade_to_head
 from app.products.adapters.sql_products import SqlProducts
+from app.products.adapters.vip_type_prices import SqlVipTypePrices
 from app.products.application import manage_prices, manage_products
 from app.products.application.errors import ProductHasHistory, ProductNotFound
 from app.products.domain.product import PriceEntry, Product, ProductName
@@ -39,6 +40,7 @@ from app.stock.application.errors import VarietyNotFound as StockVarietyNotFound
 from app.stock.domain.entry import Origin, StockEntry
 from app.stock.domain.threshold import Threshold
 from tests.fakes.money_format import WholeAmounts
+from tests.fakes.vip_prices import NoVipType
 
 DAY = date(2026, 10, 6)
 NOW = datetime(2026, 10, 6, 12, tzinfo=UTC)
@@ -115,6 +117,7 @@ def _delete(engine: Engine, variety_id: int, varieties_class: type[SqlProducts])
         manage_products.delete_product(
             varieties_class(session, BUSINESS),
             _Leaving(session),
+            SqlVipTypePrices(session, BUSINESS),
             session,
             variety_id,
         )
@@ -322,6 +325,7 @@ def test_a_delete_committed_first_makes_the_price_answer_gone(engine: Engine) ->
                 variety_id,
                 effective_from=date(2026, 2, 1),
                 list_price=Decimal(12_000),
+                vip_prices=NoVipType(),
             )
 
     assert _count(engine, "price_entry") == 0

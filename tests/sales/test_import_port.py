@@ -27,6 +27,7 @@ from app.spreadsheet_import.application.no_commit import NoCommit
 from app.spreadsheet_import.application.ports import Refusal, SaleCheck, SaleCheckInput
 from app.spreadsheet_import.domain.plan import OnTheSpotMethod
 from app.spreadsheet_import.domain.rows import PriceHistoryRow, SheetRef
+from tests.vip_type import make_type
 
 BOTH_ON = PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
 TODAY = date(2026, 6, 15)
@@ -261,6 +262,7 @@ def test_write_sale_stores_the_pricing_rule_from_the_row_s_own_vip_fact(
     business_id = _business_id(engine, "uno@example.com")
     customer_id = _customer_id(client)
     run_today = date(2026, 8, 1)
+    make_type(engine, is_vip=True)
     with Session(engine) as session:
         varieties_import = ProductsImport(
             session, business_id, SqlMoneyFormat(session, business_id)
@@ -356,6 +358,7 @@ def test_planned_price_book_matches_what_write_sale_stores_for_bulk_list_vip_and
     business_id = _business_id(engine, "uno@example.com")
     customer_id = _customer_id(client)
     run_today = date(2026, 8, 1)
+    make_type(engine, is_vip=True)
     history = [
         _price_row(
             effective=date(2026, 1, 1),

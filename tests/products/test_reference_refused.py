@@ -28,6 +28,7 @@ from app.stock.application.errors import VarietyArchived as StockArchived
 from app.stock.application.errors import VarietyNotFound as StockNotFound
 from app.stock.domain.entry import Origin, StockEntry
 from tests.fakes.money_format import WholeAmounts
+from tests.fakes.vip_prices import NoVipType
 
 DAY = date(2026, 10, 6)
 NOW = datetime(2026, 10, 6, 12, tzinfo=UTC)
@@ -284,6 +285,7 @@ def _record_price(then: Product | None, transaction: CountingTransaction) -> obj
         7,
         effective_from=DAY,
         list_price=Decimal(10_000),
+        vip_prices=NoVipType(),
     )
 
 

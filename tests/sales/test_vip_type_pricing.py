@@ -64,8 +64,8 @@ def _setup(
 ) -> tuple[int, int, int]:
     """(product, customer in the VIP type, the VIP type), the switches both on."""
     set_switches(engine, bulk=True, vip=True)
-    product_id = _variety(client, vip_price=vip_price)
     vip_type = make_type(engine, is_vip=True)
+    product_id = _variety(client, vip_price=vip_price)
     customer_id = _customer(client)
     put_in_type(engine, customer_id, vip_type)
     return product_id, customer_id, vip_type

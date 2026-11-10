@@ -243,8 +243,10 @@ def _strings(value: object) -> list[str]:
 
 def test_the_bill_leaks_nothing_internal(client: TestClient, engine: Engine) -> None:
     set_switches(engine, bulk=False, vip=True)
+    vip_type = make_type(engine, is_vip=True)
     flowers = _variety(client, "Lavanda", vip_price=9_000)
-    customer = _customer(client, "Marta Quispe", vip_in=engine)
+    customer = _customer(client, "Marta Quispe")
+    put_in_type(engine, customer, vip_type)
     note = "nota privada zzz"
     response = client.post(
         "/sales",

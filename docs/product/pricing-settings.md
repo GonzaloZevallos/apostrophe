@@ -81,6 +81,7 @@ Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-
   - Los demás tipos no tienen precio hasta la parte de la pantalla de precios por tipo. La línea de ayuda bajo el interruptor lo sigue diciendo.
 - **Al eliminar**:
   - eliminar una Price entry se lleva sus filas, y vuelve a regir la Price entry anterior con sus propias filas;
+  - eliminar un Product sin historial se lleva las filas de sus Price entries antes que las entries;
   - eliminar un Customer type (solo se puede sin Customers, customers.md) se lleva sus filas;
   - en los dos casos, las Sales registradas conservan su precio, su regla y su copia del nombre del tipo.
 - **La migración**: una fila del VIP type por cada Price entry con VIP price de un Business que tiene su VIP type en ese momento, con la misma fecha, el mismo monto y atada a esa Price entry. Solo agrega una tabla y filas: ningún valor existente cambia, y `customer.is_vip` y `price_entry.vip_price` quedan congeladas en su lugar, como historia, sin que nadie las vuelva a leer ni escribir. Un Business sin VIP prices queda sin ningún Customer-type price, y cada línea se cotiza como antes: es lo normal, no un error.
@@ -95,7 +96,7 @@ Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-
 - **Businesses existentes** (en la migración de los Customer types, ADR-0059): cada uno recibe su VIP type, con el ícono `star` y los Customers que tenían la marca VIP; ningún interruptor cambia.
 - **Businesses existentes** (en la migración de los Customer-type prices): una fila del VIP type por cada VIP price, solo en los Businesses con VIP type, como dice arriba; ningún interruptor cambia.
 - **Un Business nuevo**: los dos interruptores desactivados, hasta que el issue del **Onboarding** decida otra cosa, ningún Customer type y ningún Customer-type price.
-- **Un Business cargado por la Spreadsheet import**: la Spreadsheet import activa lo que usa la planilla y nunca desactiva nada (import.md).
+- **Un Business cargado por la Spreadsheet import**: la Spreadsheet import activa lo que usa la planilla y nunca desactiva nada (import.md). Crea el VIP type antes de escribir las Price entries, y el VIP price = Bulk price de cada una se guarda como una fila del VIP type, no en `price_entry.vip_price`; sin VIP type (la planilla no tiene VIP customers) no guarda ninguna fila.
 
 ### En pantalla: Settings → Prices
 

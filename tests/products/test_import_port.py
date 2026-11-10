@@ -20,6 +20,7 @@ from app.shared.quantity import Quantity
 from app.spreadsheet_import.application.no_commit import NoCommit
 from app.spreadsheet_import.application.ports import Refusal, VarietyKey
 from app.spreadsheet_import.domain.rows import PriceHistoryRow, SheetRef
+from tests.vip_type import make_type
 
 REF = SheetRef(sheet="Ajustes", row=37)
 
@@ -182,6 +183,7 @@ def test_write_variety_then_write_price_entry_round_trips_through_a_real_session
         bulk_price=700,
         bulk_minimum=Quantity.of(5),
     )
+    make_type(engine, is_vip=True)
     with Session(engine) as session:
         imports = ProductsImport(session, business_id, SqlMoneyFormat(session, business_id))
         variety_id = imports.write_variety("Blue Dream", NoCommit())

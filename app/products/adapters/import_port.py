@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 
 from app.products.adapters.sql_products import SqlProducts
 from app.products.adapters.tables import PriceEntryRow, ProductRow
+from app.products.adapters.vip_type_prices import SqlVipTypePrices
 from app.products.application.manage_prices import record_imported_price_entry
 from app.products.application.manage_products import register_product
 from app.products.application.ports import MoneyFormatReader, Products
@@ -108,7 +109,8 @@ class ProductsImport:
     ) -> None:
         # An imported entry with a bulk price carries VIP price = bulk price, so a VIP
         # customer keeps paying what the sheet charged — but only while the import
-        # leaves Clientes VIP on: a rule that is off stores nothing (docs/adr/0034).
+        # leaves Clientes VIP on: a rule that is off stores nothing (docs/adr/0034). It is
+        # stored as a row of the VIP type, so the type exists before the first entry.
         record_imported_price_entry(
             self._varieties(),
             self._money_format,
@@ -119,6 +121,7 @@ class ProductsImport:
             row.bulk_price,
             row.bulk_minimum,
             vip_price=row.bulk_price if with_vip_price else None,
+            vip_prices=SqlVipTypePrices(self._session, self._business_id),
         )
 
     def _varieties(self) -> Products:

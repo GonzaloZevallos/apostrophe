@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session
 from app.catalog.adapters.sql_catalog_varieties import SqlCatalogVarieties
 from app.catalog.domain.product import CatalogPrice
 from app.products.adapters.sql_products import SqlProducts
+from app.products.adapters.vip_type_prices import SqlVipTypePrices
 from app.products.application.manage_prices import record_price_entry
 from app.products.domain.product import PriceEntry, Product, ProductName
 from app.sales.adapters.sql_sales import SqlSales
@@ -32,6 +33,7 @@ from app.shared.quantity import Quantity
 from tests.conftest import NOW
 from tests.fakes.money_format import WholeAmounts
 from tests.money_wire import assert_money_is_int
+from tests.vip_type import make_type
 
 DAY = "2026-10-02"
 
@@ -283,6 +285,7 @@ class _PricesAnyProduct:
 def test_a_price_with_a_decimal_is_refused_and_nothing_is_saved(
     client: TestClient, engine: Engine, field: str
 ) -> None:
+    make_type(engine, is_vip=True)
     with Session(engine) as session:
         products = SqlProducts(session, _business_id(engine))
         product = products.add(Product(ProductName.of("Lavanda")))
@@ -300,6 +303,7 @@ def test_a_price_with_a_decimal_is_refused_and_nothing_is_saved(
             Decimal("10.5") if field == "bulk_price" else Decimal(9_000),
             Quantity.of("5"),
             vip_price=Decimal("10.5") if field == "vip_price" else Decimal(8_000),
+            vip_prices=SqlVipTypePrices(session, _business_id(engine)),
         )
 
     assert refused.value.code == "money.too_many_decimals"
@@ -323,8 +327,11 @@ def _owing_sale(client: TestClient, product_id: int) -> dict[str, Any]:
     )
 
 
-def test_money_on_every_converted_route_is_a_json_integer(client: TestClient) -> None:
+def test_money_on_every_converted_route_is_a_json_integer(
+    client: TestClient, engine: Engine
+) -> None:
     client.put("/pricing-settings", json={"is_bulk_pricing": True, "is_vip_customers": True})
+    make_type(engine, is_vip=True)
     product_id = _product(client, bulk_price=9_000, bulk_minimum="5", vip_price=8_000)
     client.post(
         "/stock/entries",
@@ -362,6 +369,7 @@ def test_a_money_field_with_a_decimal_is_refused_over_http_and_nothing_is_saved(
     client: TestClient, engine: Engine, where: str
 ) -> None:
     client.put("/pricing-settings", json={"is_bulk_pricing": True, "is_vip_customers": True})
+    make_type(engine, is_vip=True)
     product_id = _product(client)
     sales_before = _raw(engine, "SELECT count(*) FROM sale")
     entries_before = _raw(engine, "SELECT count(*) FROM price_entry")
