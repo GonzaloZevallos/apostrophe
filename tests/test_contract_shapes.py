@@ -109,7 +109,12 @@ def test_account_rows_are_matched_by_their_own_kind_not_by_position() -> None:
                 "date": "2026-09-14",
                 "running_balance": 11000,
                 "standing": "owes",
-                "sale": {"id": 2, "total": 7000, "how_paid": "paid", "payment_method": {"id": 2, "name": "Transfer", "icon": "bank"}},
+                "sale": {
+                    "id": 2,
+                    "total": 7000,
+                    "how_paid": "paid",
+                    "payment_method": {"id": 2, "name": "Transfer", "icon": "bank"},
+                },
             },
         ],
     }

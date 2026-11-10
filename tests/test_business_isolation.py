@@ -64,6 +64,7 @@ from tests.conftest import (
 )
 from tests.fakes.archive import archive_by_hand
 from tests.fakes.telegram import FakeTelegram
+from tests.payment_body import payment_body
 
 MARKER = "zz-isolation-marker"
 
@@ -124,7 +125,7 @@ def seed_sales(client: TestClient) -> dict[str, int]:
     without_customer = client.post(
         "/sales",
         json={
-            "payment": {"kind": "paid", "payment_method_id": 1},
+            "payment": payment_body("cash", client),
             "note": MARKER,
             "lines": [{"product_id": variety["id"], "quantity": "10"}],
         },
@@ -691,7 +692,7 @@ def test_assigning_a_customer_from_another_business_is_refused_the_same_way_as_m
     sale_id = business_b.post(
         "/sales",
         json={
-            "payment": {"kind": "paid", "payment_method_id": 1},
+            "payment": payment_body("cash", business_b),
             "lines": [{"product_id": variety["id"], "quantity": "1"}],
         },
     ).json()["id"]
@@ -1303,7 +1304,7 @@ def _sell_one(client: TestClient, variety_id: int) -> dict[str, Any]:
     response = client.post(
         "/sales",
         json={
-            "payment": {"kind": "paid", "payment_method_id": 1},
+            "payment": payment_body("cash", client),
             "lines": [{"product_id": variety_id, "quantity": "1"}],
         },
     )

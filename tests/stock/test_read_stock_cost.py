@@ -8,6 +8,7 @@ from sqlalchemy.engine import Engine
 
 from tests.conftest import reason_id
 from tests.fakes.archive import archive_by_hand
+from tests.payment_body import payment_body
 from tests.statement_log import captured_statements
 
 
@@ -39,7 +40,7 @@ def _sale_and_withdrawal(client: TestClient, variety_id: int) -> None:
         client,
         "/sales",
         {
-            "payment": {"kind": "paid", "payment_method_id": 1},
+            "payment": payment_body("cash", client),
             "lines": [{"product_id": variety_id, "quantity": "1"}],
         },
     )
