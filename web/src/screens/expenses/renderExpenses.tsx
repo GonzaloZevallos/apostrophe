@@ -35,14 +35,14 @@ export function jsonResponse(status: number, body: unknown): Response {
 export type FetchImpl = (url: string, init?: RequestInit) => Promise<Response>
 
 /** Renders the app at `initialEntries` (the last one is current). */
-export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl) {
+export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl, me: Me = ME) {
   vi.stubGlobal('fetch', vi.fn(fetchImpl))
   const router = createMemoryRouter(
     [
       {
         element: (
           <FlashProvider>
-            <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
+            <MoneyFormatProvider format={me.money}><Outlet context={me} /></MoneyFormatProvider>
           </FlashProvider>
         ),
         children: [
