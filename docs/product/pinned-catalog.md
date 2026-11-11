@@ -142,6 +142,7 @@ La configuración (token, chats, Find my chat, primer Test it y Publish) se juzg
   - Stock withdrawals registradas, editadas o eliminadas;
   - Sales registradas o eliminadas, Undo incluido;
   - un guardado de Settings → Prices que cambia cualquiera de los dos interruptores de Pricing settings (pricing-settings.md), ya que la línea de Bulk price depende de Bulk price;
+  - un guardado de Settings → Business → Currency and decimals que cambia el símbolo o los decimales (money.md), ya que el Catalog escribe el dinero con ellos;
   - el comienzo de un nuevo día en hora argentina, para las Price entries que entran en vigencia ese día.
 - **Regla**: el texto se vuelve a armar ante un disparador. El Pinned catalog se edita solo si el texto nuevo difiere del **Last published text**. Reponer un Product que ya está en el Catalog, o retirar gramos dejándolo con Stock mayor que cero, no envía nada.
 - **Solo edita.** La Upkeep nunca envía un mensaje nuevo, ni siquiera cuando el viejo se eliminó a mano.

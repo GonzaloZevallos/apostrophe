@@ -11,7 +11,7 @@ from typing import Any
 import pytest
 
 from app.catalog.domain.text import _money
-from app.shared.money import MoneyFormat, round_half_up
+from app.shared.money import Money, MoneyFormat, round_half_up
 
 VECTORS: list[dict[str, Any]] = json.loads(
     (
@@ -37,7 +37,7 @@ def _id(row: dict[str, Any]) -> str:
 def test_money_writes_the_attached_form_of_the_vectors(row: dict[str, Any]) -> None:
     money = MoneyFormat(symbol=row["symbol"], decimals=row["decimals"])
 
-    assert _money(int(row["amount"]), money) == row["attached"]
+    assert _money(Money.of_units(int(row["amount"])), money) == row["attached"]
 
 
 @pytest.mark.parametrize("row", VECTORS, ids=_id)
@@ -50,5 +50,5 @@ def test_round_half_up_agrees_with_the_vectors(row: dict[str, Any]) -> None:
 
 
 def test_money_pads_a_whole_amount_to_the_decimals_and_never_divides_it() -> None:
-    assert _money(11000, MoneyFormat(symbol="US$", decimals=2)) == "US$11.000,00"
-    assert _money(0, MoneyFormat(symbol="$", decimals=0)) == "$0"
+    assert _money(Money.of_units(11000), MoneyFormat(symbol="US$", decimals=2)) == "US$11.000,00"
+    assert _money(Money.of_units(0), MoneyFormat(symbol="$", decimals=0)) == "$0"

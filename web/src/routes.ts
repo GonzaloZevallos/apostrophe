@@ -75,6 +75,7 @@ export type ScreenId =
   | 'settings-catalog-message'
   | 'settings-expense-categories'
   | 'settings-withdrawal-reasons'
+  | 'settings-currency'
   | 'settings-appearance'
   | 'settings-account'
   | 'onboarding'
@@ -145,6 +146,7 @@ export const SETTINGS_CUSTOMER_TYPES = '/settings/prices/customer-types'
 export const SETTINGS_INTEGRATIONS = '/settings/integrations'
 export const SETTINGS_CATALOG_MESSAGE = '/settings/catalog-message'
 export const EXPENSE_CATEGORIES = '/settings/expense-categories'
+export const SETTINGS_CURRENCY = '/settings/currency'
 export const SETTINGS_WITHDRAWAL_REASONS = '/settings/withdrawal-reasons'
 export const SETTINGS_APPEARANCE = '/settings/appearance'
 export const SETTINGS_ACCOUNT = '/settings/account'
@@ -363,6 +365,13 @@ export const SCREENS = [
     path: EXPENSE_CATEGORIES,
     kind: 'form',
     titleKey: 'common:expenseCategories',
+    parent: 'settings',
+  }),
+  screen({
+    id: 'settings-currency',
+    path: SETTINGS_CURRENCY,
+    kind: 'form',
+    titleKey: 'common:currencyAndDecimals',
     parent: 'settings',
   }),
   screen({

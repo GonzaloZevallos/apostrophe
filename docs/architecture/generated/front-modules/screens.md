@@ -77,6 +77,7 @@ subgraph src["src"]
       src_screens_settings_BusinessGroup_tsx["BusinessGroup.tsx"]
       src_screens_settings_CatalogMessageForm_tsx["CatalogMessageForm.tsx"]
       src_screens_settings_CatalogMessageGroup_tsx["CatalogMessageGroup.tsx"]
+      src_screens_settings_CurrencyAndDecimals_tsx["CurrencyAndDecimals.tsx"]
       src_screens_settings_CustomerTypeForm_tsx["CustomerTypeForm.tsx"]
       src_screens_settings_CustomerTypes_tsx["CustomerTypes.tsx"]
       src_screens_settings_ExpenseCategoriesEditor_tsx["ExpenseCategoriesEditor.tsx"]
@@ -303,6 +304,7 @@ src_screens_settings_AppearanceGroup_tsx-->src_screens_settings_SettingsGroup_ts
 src_screens_settings_BusinessGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_CatalogMessageGroup_tsx-->src_screens_settings_CatalogMessageForm_tsx
 src_screens_settings_CatalogMessageGroup_tsx-->src_screens_settings_SettingsGroup_tsx
+src_screens_settings_CurrencyAndDecimals_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_CustomerTypeForm_tsx-->src_screens_settings_customerTypeIcons_ts
 src_screens_settings_CustomerTypes_tsx-->src_screens_settings_CustomerTypeForm_tsx
 src_screens_settings_CustomerTypes_tsx-->src_screens_settings_SettingsGroup_tsx

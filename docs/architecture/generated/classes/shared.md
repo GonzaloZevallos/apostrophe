@@ -18,6 +18,18 @@ classDiagram
   class InvalidMoney {
     code : ClassVar~str~
   }
+  class InvalidMoneyDecimals {
+    code : ClassVar~str~
+    field : ClassVar~Literal~'symbol', 'decimals'~~
+  }
+  class InvalidMoneyFormat {
+    field : ClassVar~Literal~'symbol', 'decimals'~~
+    refusal_fields : dict
+  }
+  class InvalidMoneySymbol {
+    code : ClassVar~str~
+    field : ClassVar~Literal~'symbol', 'decimals'~~
+  }
   class InvalidQuantity {
     code : ClassVar~str~
   }
@@ -36,14 +48,17 @@ classDiagram
   class Money {
     hundredths : int
     as_decimal() Decimal
+    in_decimals(decimals: int) int
     in_units_of(factor: int) int
     of(value: Decimal #124; int #124; str) Money
+    of_decimals(units: int, decimals: int) Money
     of_units(units: int) Money
     whole_units() int
   }
   class MoneyFormat {
     decimals : int
     symbol : str
+    of(raw_symbol: str, decimals: int) MoneyFormat
   }
   class MoneyNotRepresentable {
     code : ClassVar~str~
@@ -114,4 +129,6 @@ classDiagram
     containing(day: date) Week
   }
   BusinessLanguage --> Language : language
+  InvalidMoneyDecimals --|> InvalidMoneyFormat
+  InvalidMoneySymbol --|> InvalidMoneyFormat
 ```

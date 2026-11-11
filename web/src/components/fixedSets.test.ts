@@ -103,6 +103,7 @@ test('FIXED_SETS gives every exported set a non-empty reason, and names nothing 
     THEME_CHOICES: 'fixed set: theme choice',
     CUSTOMER_TYPE_ICON_SET: 'fixed set: the neutral icon set ships with the app',
     STOCK_ENTRY_ORIGINS: 'fixed set: Stock entry origins',
+    MONEY_DECIMALS: 'fixed set: the decimals a Business may write money with, 0 to 2',
     PAYMENT_STATES: 'fixed set: payment state, which is not a method',
   })
 })

@@ -26,7 +26,7 @@ from app.sales.adapters.sql_sales import SqlSales
 from app.sales.application.record_sale import LineInput, record_sale
 from app.sales.domain.pricing import PriceQuote, VarietyPricing
 from app.sales.domain.sale import Sale
-from app.shared.money import TooManyDecimals
+from app.shared.money import Money, TooManyDecimals
 from app.shared.pricing_settings import PricingSettings
 from app.shared.quantity import Quantity
 from tests.conftest import NOW
@@ -193,7 +193,9 @@ def test_the_catalog_text_and_its_prices_are_the_same_at_both_scales(
         (shown,) = SqlCatalogVarieties(session, _business_id(engine)).on(date(2026, 10, 2))
 
     assert shown.price == CatalogPrice(
-        list_price=11_000, bulk_price=9_000, bulk_minimum=Quantity.of("5")
+        list_price=Money.of_units(11_000),
+        bulk_price=Money.of_units(9_000),
+        bulk_minimum=Quantity.of("5"),
     )
     assert client.get("/catalog").json()["text"] == CATALOG_TEXT
 

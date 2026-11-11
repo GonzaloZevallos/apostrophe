@@ -2031,6 +2031,24 @@
         "title": "MeOut",
         "type": "object"
       },
+      "MoneyFormatBody": {
+        "properties": {
+          "decimals": {
+            "title": "Decimals",
+            "type": "integer"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "decimals"
+        ],
+        "title": "MoneyFormatBody",
+        "type": "object"
+      },
       "MoneyFormatOut": {
         "properties": {
           "decimals": {
@@ -3487,7 +3505,7 @@
         "type": "object"
       },
       "ReasonCostOut": {
-        "description": "One withdrawal reason's cost line, in the list order `period_figures` answered\nit: Home's Week, Month and Today and every An\u00e1lisis row serialise it through here\nand nowhere else. `amount` is `null` when every gram is pending, never 0.",
+        "description": "One withdrawal reason's cost line, in the list order `period_figures` answered\nit: Home's Week, Month and Today and every Análisis row serialise it through here\nand nowhere else. `amount` is `null` when every gram is pending, never 0.",
         "properties": {
           "amount": {
             "anyOf": [
@@ -3634,7 +3652,7 @@
         "type": "object"
       },
       "RowCostOut": {
-        "description": "One An\u00e1lisis cost line (cost of goods or stock shortfall): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
+        "description": "One Análisis cost line (cost of goods or stock shortfall): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
         "properties": {
           "all_pending": {
             "title": "All Pending",
@@ -3873,7 +3891,7 @@
         "type": "object"
       },
       "SaleDetailOut": {
-        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` \u2014 used by the list and by every write \u2014 never\nallocates.",
+        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` — used by the list and by every write — never\nallocates.",
         "properties": {
           "bill": {
             "anyOf": [
@@ -5199,6 +5217,76 @@
         "summary": "Edit Customer Type",
         "tags": [
           "customer-types"
+        ]
+      }
+    },
+    "/api/money-format": {
+      "get": {
+        "operationId": "get_money_format_api_money_format_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MoneyFormatBody"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Money Format",
+        "tags": [
+          "money-format"
+        ]
+      },
+      "put": {
+        "operationId": "put_money_format_api_money_format_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoneyFormatBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MoneyFormatBody"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Money Format",
+        "tags": [
+          "money-format"
         ]
       }
     },
