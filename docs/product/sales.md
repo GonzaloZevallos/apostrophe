@@ -173,7 +173,7 @@ Criterios de éxito, Sale number:
   - **Total de $0**: queda saldada sin medio y sin nada debido. Un medio enviado con ella se ignora y no se guarda.
   - Un total por encima de $0 necesita un medio o "queda debiendo".
   - No existe el pago parcial en el momento.
-  - Lo que viaja a la API es uno de cash, transfer u owing, igual que antes de la parte 5 de GH-581. En New sale lo deriva una función pura, `paymentChoiceOf` (`web/src/sales/pricing.ts`), a partir del estado Paid · Owing, el medio y el total. Owing da `owing`, Paid con medio da ese medio, y Paid sin medio o sin estado elegido no da nada. Un medio que haya quedado guardado con Owing elegido nunca se manda.
+  - Lo que viaja a la API es `{kind: "owing"}` o `{kind: "paid", payment_method_id}`, con el id de un Payment method que el negocio ofrece (docs/adr/0082). En New sale lo deriva una función pura, `paymentChoiceOf` (`web/src/sales/pricing.ts`), a partir del estado Paid · Owing, el medio y el total. Owing da `{kind: "owing"}`, Paid con medio da `{kind: "paid", payment_method_id}`, y Paid sin medio o sin estado elegido no da nada. Un medio que haya quedado guardado con Owing elegido nunca se manda.
 - **Cliente**:
   - Opcional solo cuando no queda nada debiendo.
   - Tiene que ser del mismo negocio; el cliente de otro negocio no se encuentra.
@@ -273,7 +273,7 @@ Criterios de éxito, Sale number:
   - **En la computadora**: el desplegable del Selector con teclado; Escape cierra solo el desplegable.
   - **Sin medio al guardar**: con Paid y un total por encima de $0, "Save sale" sigue habilitado. Este control corre después de los rechazos de las líneas, del de "sin líneas" y del de envío. Tocar "Save sale" sin medio no guarda nada y no entra en el estado de guardado en curso. Muestra "Choose how they paid." junto al campo, con el **Attention icon** al lado (`FieldRefusal`), y lleva el foco de la vendedora al campo. La frase sale del Copy module y desaparece apenas se elige un medio. Una venta de $0 se guarda sin medio, como antes.
   - **Sin estado elegido**: si no está elegido ni Paid ni Owing, el guardado se rechaza como antes.
-  - Lo que se manda a la API no cambia: cash, transfer u owing.
+  - Lo que se manda a la API es `{kind: "owing"}` o `{kind: "paid", payment_method_id}`; un medio archivado, borrado o de otro negocio responde 404 `payment_method.unavailable`, y el formulario conserva lo escrito y marca el campo.
 - **Gift y Special price se excluyen**:
   - Elegir uno limpia y deshabilita el otro, y apagarlo libera el otro.
   - Special price no acepta $0.
@@ -397,7 +397,7 @@ Un Sale bill corto en texto plano de una venta, que la vendedora le manda al cli
    - regalo: `{product} {quantity} {unit} · Gift · $ 0`.
 3. `Shipping · {amount}`, solo cuando el Shipping charged está por encima de $0.
 4. Una línea en blanco, después `Total · {amount}`.
-5. La línea de pago: "Paid in cash" o "Paid by transfer" para un On-the-spot payment; "Paid" cuando se pagó entera después; `Still owed on this sale: {amount}` cuando todavía se debe algo de ella, en parte o entera; ninguna cuando el estado de pago es none.
+5. La línea de pago: "Paid" cuando la venta se pagó entera, en el momento o después; `Still owed on this sale: {amount}` cuando todavía se debe algo de ella, en parte o entera; ninguna cuando el estado de pago es none.
 6. La línea de Balance: `Your balance: {amount}` cuando el Balance está por encima de $0; `In your favor: {amount}` para un Credit, como su valor absoluto.
 
 **Líneas que pueden faltar**: el envío cuando es $0; la línea de pago cuando el estado es none; la línea de Balance cuando la venta no tiene cliente o el Balance es exactamente $0.
