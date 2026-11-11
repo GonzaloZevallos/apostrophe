@@ -14,7 +14,6 @@ import { getAccount } from '../../api/payments'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { formatDateShort } from '../../format/dates'
 import { useMoney } from '../../format/moneyContext'
-import { formatPhone } from '../../format/phone'
 import AccountRowLine from './AccountRowLine'
 import { rowKey } from './accountRows'
 
@@ -57,10 +56,10 @@ export default function CustomerCardBehind({ customerId }: { customerId: string 
           </div>
         )}
         <div className="formulario">
-          {data.phone !== null && (
+          {data.phone_display !== null && (
             <div className="campo">
               <span className="campo__rotulo">{CUSTOMERS_TEXT.phone}</span>
-              <span>{formatPhone(data.phone)}</span>
+              <span className="campo__valor-telefono">{data.phone_display}</span>
             </div>
           )}
           <CustomerTypeLine typeId={data.customer_type_id} />

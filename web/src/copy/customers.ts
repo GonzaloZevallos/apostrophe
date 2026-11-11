@@ -45,14 +45,6 @@ export const CUSTOMERS_TEXT = {
   creditAmount: (running_balance: string | number) => `Credit ${running_balance}`,
   giveItAName: 'Give them a name',
   notAPhone: 'Enter the number with its area code, or start with + and the country code.',
-  phoneHintAR: '11 2345-6789',
-  phoneHintUY: '099 123 456',
-  phoneHintCL: '9 1234 5678',
-  phoneHintPY: '0981 123 456',
-  phoneHintBR: '(11) 91234-5678',
-  phoneHintMX: '55 1234 5678',
-  phoneHintES: '612 34 56 78',
-  phoneHintUS: '(212) 555-0123',
   phoneHintNone: '+ and country code, then the number',
   needsCountryCode: 'Start the number with + and the country code.',
   phoneTaken: 'That phone number already belongs to another customer',
@@ -75,31 +67,6 @@ export const CUSTOMERS_TEXT = {
   balanceAmount: (running_balance: string | number) => `balance ${running_balance}`,
 } as const
 
-/** The phone field's placeholder: a local example of the business's Phone country, or the "+" form
- * when it has none (or a country this build has no example for). */
-export function phoneHint(country: string | null): string {
-  switch (country) {
-    case 'AR':
-      return CUSTOMERS_TEXT.phoneHintAR
-    case 'UY':
-      return CUSTOMERS_TEXT.phoneHintUY
-    case 'CL':
-      return CUSTOMERS_TEXT.phoneHintCL
-    case 'PY':
-      return CUSTOMERS_TEXT.phoneHintPY
-    case 'BR':
-      return CUSTOMERS_TEXT.phoneHintBR
-    case 'MX':
-      return CUSTOMERS_TEXT.phoneHintMX
-    case 'ES':
-      return CUSTOMERS_TEXT.phoneHintES
-    case 'US':
-      return CUSTOMERS_TEXT.phoneHintUS
-    default:
-      return CUSTOMERS_TEXT.phoneHintNone
-  }
-}
-
 /** The ledger's fixed words, registered with the filled placeholder the screen shows
  * (`SAMPLES`' worst cases), so `copy/copyLimits.test.ts` measures them. */
 export const LIMITED_COPY: readonly LimitedCopy[] = [
@@ -115,7 +82,6 @@ const { money: M, date: D } = FIXTURE
 
 /** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
 export const BASELINE_ARGS = baselineArgs<typeof Self>()({
-  phoneHint: [['AR'], ['UY'], [null]],
   'CUSTOMERS_TEXT.deletePaymentOf': [[M, 'cash', D]],
   'CUSTOMERS_TEXT.paymentTitle': [['cash']],
   'CUSTOMERS_TEXT.onAccountOf': [[D]],

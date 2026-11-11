@@ -16,6 +16,8 @@ export interface Customer {
   id: number
   name: string
   phone: string | null
+  /** The number grouped for reading, worked out by the API; `null` when there is no number. */
+  phone_display: string | null
   vip: boolean
   customer_type_id: number | null
   balance: number

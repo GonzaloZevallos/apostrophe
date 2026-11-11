@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef } from 'react'
-import { usePhoneCountry } from '../../api/phoneCountry'
-import { CUSTOMERS_TEXT, phoneHint } from '../../copy/customers'
+import { usePhoneCountries, usePhoneCountry } from '../../api/phoneCountry'
+import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { COMMON_TEXT } from '../../copy/common'
 /**
  * The shared "Nombre / Teléfono" fields (`NuevaVentaCliente.dc.html`,
@@ -38,6 +38,14 @@ export default function CustomerFields({
   const phoneId = useId()
   const phoneHintId = useId()
   const phoneCountry = usePhoneCountry()
+  const phoneCountries = usePhoneCountries()
+  // Only once both answers are in; a country the list does not carry has no example to show.
+  const phonePlaceholder =
+    !phoneCountry.loaded || phoneCountries === undefined
+      ? undefined
+      : phoneCountry.country === null
+        ? CUSTOMERS_TEXT.phoneHintNone
+        : phoneCountries.find((option) => option.code === phoneCountry.country)?.example
 
   // The drawing opens with Name focused (`NuevaVentaCliente.dc.html`): once, on mount.
   useEffect(() => {
@@ -78,7 +86,7 @@ export default function CustomerFields({
             autoComplete="off"
             value={value.phone}
             aria-describedby={phoneHintId}
-            placeholder={phoneCountry.loaded ? phoneHint(phoneCountry.country) : undefined}
+            placeholder={phonePlaceholder}
             onChange={(event) => onChange({ ...value, phone: event.target.value })}
           />
           {phoneError !== null && (

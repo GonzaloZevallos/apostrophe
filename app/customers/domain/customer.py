@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from app.shared.names import fold
-from app.shared.phone_country import PhoneCountry, PhoneCountryRule, listed_country_of
+from app.shared.phone_country import PhoneCountry, PhoneCountryRule, grouped, listed_country_of
 
 NAME_MAX_LENGTH = 60
 
@@ -235,6 +235,12 @@ class PhoneNumber:
     @property
     def digits(self) -> str:
         return self.value[1:]
+
+    @property
+    def display(self) -> str:
+        """The number grouped by its own country's rule, for a read response only; a
+        number that fits no template is the stored value."""
+        return grouped(self.digits) or self.value
 
 
 @dataclass(frozen=True)
