@@ -6,7 +6,7 @@
  */
 
 import type { Locator } from '@playwright/test'
-import { CUSTOMER, CUSTOMER_NEW, SALE_NEW, SETTINGS_PAYMENT_METHODS, VARIETIES } from '../src/routes.js'
+import { CUSTOMER, CUSTOMER_NEW, HOME, SALE_NEW, SETTINGS_PAYMENT_METHODS, VARIETIES } from '../src/routes.js'
 import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -55,7 +55,7 @@ test('a seller adds, edits, deletes, archives and restores payment methods in Se
   await expectToast(page, 'Payment saved', () => page.getByRole('button', { name: 'Save' }).click())
 
   // Settings → Payments and expenses → Payment methods: three taps from a Tab root.
-  await page.goto('/')
+  await page.goto(HOME)
   const counter: Counter = { taps: 0 }
   await tap(counter, page.getByRole('link', { name: /^Settings for / }))
   await tap(counter, page.getByRole('link', { name: /^Payments and expenses/ }))
