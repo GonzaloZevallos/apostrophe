@@ -15,6 +15,16 @@ TABLE_DEFINITION = "app/payments/adapters/tables.py"
 _SQL_COLUMN = re.compile(r"(?<![A-Za-z0-9_])payment\.method(?![A-Za-z0-9_])")
 
 
+def _dotted(expression: ast.expr) -> str | None:
+    """`a.b.c` as the string "a.b.c"; None for anything that is not a plain dotted name."""
+    if isinstance(expression, ast.Name):
+        return expression.id
+    if isinstance(expression, ast.Attribute):
+        head = _dotted(expression.value)
+        return None if head is None else f"{head}.{expression.attr}"
+    return None
+
+
 def frozen_method_uses(source: str) -> list[str]:
     """The places a source names the frozen column: `PaymentRow.method`, a `method=`
     keyword of a `PaymentRow(...)` call, a string spelling `payment.method`."""
@@ -47,8 +57,7 @@ def frozen_method_uses(source: str) -> list[str]:
         return (
             isinstance(expression, ast.Attribute)
             and expression.attr == "PaymentRow"
-            and isinstance(expression.value, ast.Name)
-            and expression.value.id in module_names
+            and _dotted(expression.value) in module_names
         )
 
     for node in ast.walk(tree):
@@ -135,6 +144,16 @@ def test_the_frozen_column_is_reported_through_an_alias_a_module_or_the_table_ob
         "PaymentRow.method line 4",
         "PaymentRow.method line 5",
     ]
+
+
+def test_the_frozen_column_is_reported_through_an_unaliased_dotted_import() -> None:
+    source = (
+        "import app.payments.adapters.tables\n"
+        "a = app.payments.adapters.tables.PaymentRow.method\n"
+        "b = app.payments.adapters.tables.PaymentRow.payment_method_id\n"
+    )
+
+    assert frozen_method_uses(source) == ["PaymentRow.method line 2"]
 
 
 def test_a_domain_class_that_is_also_called_payment_row_is_not_the_table() -> None:
