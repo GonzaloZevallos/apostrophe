@@ -74,3 +74,24 @@ type-checked locally failed on GitHub's runner.
   (full tier; not in `delivery_checks`). `e2e` is no longer `CI_ONLY` (it is a check
   with a `CI_FORMS` entry), `ci:` is `[ci-ok]`, and e2e is skipped, never unconditional: `ci-ok` reads the
   `changes` flag (ADR-0064, rule 7; ADR-0067). The every-holder rule for `CI_ONLY` commands stays.
+
+## Amendment (GH-699): e2e is judged by GitHub CI only
+
+- **The owner's rule.** End-to-end tests are judged by GitHub CI only. The owner's machine does not run the
+  full e2e suite for a task. `web-e2e` leaves `checks` and `affected_checks` in `.agentic/stack.yaml`, so the
+  full tier and `full_checks` no longer run it, and no local check runs Playwright.
+- **Why.** GH-407 escalated after two `full_checks` failures in e2e on head c12b4df at a load average above 40
+  on 16 cores, while CI's shards on the same branch were green. `ci_covers` (agentic-system GH-453) only
+  deferred a local timeout to CI; a failure caused by load alone counted as a real failure.
+- **What changes.** `npm --prefix web run e2e` is a `CI_ONLY` command again (no `CI_FORMS` entry) and
+  `ci_covers` is removed from `stack.yaml`; the agentic-system loader treats the key as optional. The
+  `ci-ok` `needs` closure is unchanged: `e2e` stays in it, so the merge still waits for CI's `e2e` check-run.
+  `tests/test_stack_ci.py` pins both (`test_no_local_check_runs_playwright`,
+  `test_e2e_has_no_local_cover_and_gates_through_ci_ok`).
+- **Supersedes the GH-476 amendment only where they differ.** "`web-e2e` is restored in `checks` and
+  `affected_checks`" and "`e2e` is a check with a `CI_FORMS` entry" no longer hold. The `ci-ok` `needs`
+  closure, `CI_FORMS` for `tests`, `tests-fast` and `web-tests`, and the skipped-by-flag rule stay.
+- **A single spec by hand** while debugging is a tool, not a gate; `setup.web-browsers` stays for it.
+- **Known risk.** A head that touches only the backend selects no e2e spec, so nothing runs e2e before the
+  merge. The net is the full run on the push to master. A red `e2e` on master is a product regression and
+  gets its own issue naming the run, the sha and the failing spec.
