@@ -15,6 +15,7 @@ import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { seedRecords, signUp } from './helpers/seed.js'
 import { uniqueTag } from './helpers/unique.js'
+import { servedCountry } from './helpers/phoneCountries.js'
 
 
 const PHONE = { width: 390, height: 844 }
@@ -224,18 +225,22 @@ test('a new customer, alone or from Pick a customer, with a local number in the 
   await page.setViewportSize(PHONE)
   await signUpNewBusiness(page, { businessName: `Flores del Pais ${uniqueTag()}`, email: `duena-pais-${uniqueTag()}@example.com` })
 
+  const argentina = await servedCountry(page, 'AR', 'Argentina')
+  const uruguay = await servedCountry(page, 'UY', 'Uruguay')
   const country = page.getByRole('button', { name: /^Phone country/ })
   const phone = page.getByLabel('Phone', { exact: true })
   /** The device is Argentine (the config's pins), so Argentina is the detected country. */
   const awaitDetected = async (): Promise<void> => {
-    await expect(country).toContainText('Argentina (+54)')
+    await expect(country).toContainText(argentina.label)
     await expect(country).not.toHaveAttribute('aria-busy', 'true')
   }
   const pickUruguay = async (counter: Counter): Promise<void> => {
     await tap(counter, country)
-    await tap(counter, page.getByRole('option', { name: 'Uruguay (+598)' }))
+    await tap(counter, page.getByRole('dialog', { name: 'Phone country options' }).getByRole('button', { name: uruguay.label, exact: true }))
   }
 
+  /** The same number twice is a duplicate customer: each form gets its own last digit. */
+  const distinct = (example: string, digit: number): string => `${example.slice(0, -1)}${digit}`
   const measured: Record<string, number> = {}
 
   // From Customers: the link, then Save.
@@ -246,7 +251,7 @@ test('a new customer, alone or from Pick a customer, with a local number in the 
     await page.getByLabel('Name').fill(`Cliente ${key} ${uniqueTag()}`)
     await awaitDetected()
     if (other) await pickUruguay(counter)
-    await phone.fill(other ? '099 123 456' : '11 5555 0150')
+    await phone.fill(distinct(other ? uruguay.example : argentina.example, other ? 2 : 1))
     await tap(counter, page.getByRole('button', { name: 'Save and use' }))
     await expectPath(page, CUSTOMER)
     measured[`customer ${key}`] = counter.taps
@@ -261,7 +266,7 @@ test('a new customer, alone or from Pick a customer, with a local number in the 
     await page.getByLabel('Name').fill(`Cliente venta ${key} ${uniqueTag()}`)
     await awaitDetected()
     if (other) await pickUruguay(counter)
-    await phone.fill(other ? '099 123 457' : '11 5555 0151')
+    await phone.fill(distinct(other ? uruguay.example : argentina.example, other ? 4 : 3))
     await tap(counter, page.getByRole('button', { name: 'Create customer' }))
     await expect(page.getByText('Pick a customer')).toHaveCount(0)
     measured[`sale ${key}`] = counter.taps

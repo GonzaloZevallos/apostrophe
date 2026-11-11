@@ -16,6 +16,7 @@ import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { uniqueTag } from './helpers/unique.js'
+import { servedCountry } from './helpers/phoneCountries.js'
 
 const LOCKED_REASON = 'The + and the code set the country'
 
@@ -23,9 +24,12 @@ const LOCKED_REASON = 'The + and the code set the country'
 const countryField = (page: Page) => page.getByRole('button', { name: /^Phone country/ })
 const phoneField = (page: Page) => page.getByLabel('Phone', { exact: true })
 
+/** The open list: a dialog on the phone, whose choices are buttons. */
+const countryList = (page: Page) => page.getByRole('dialog', { name: 'Phone country options' })
+
 async function pickCountry(page: Page, option: string): Promise<void> {
   await countryField(page).click()
-  await page.getByRole('option', { name: option }).click()
+  await countryList(page).getByRole('button', { name: option, exact: true }).click()
   await expect(countryField(page)).toContainText(option)
 }
 
@@ -52,45 +56,55 @@ test('a Uruguayan device saves a local Uruguayan number, an Argentine one by pic
     email: `duena-pais-${uniqueTag()}@example.com`,
   })
 
+  // The listing as the real backend serves it: the spec states no code and no example itself.
+  const uruguay = await servedCountry(page, 'UY', 'Uruguay')
+  const argentina = await servedCountry(page, 'AR', 'Argentina')
+  const chile = await servedCountry(page, 'CL', 'Chile')
+
   // A local Uruguayan number, with the Selector untouched: detected from the language and the zone.
   await newCustomerForm(page, 'Noe Montevideo')
-  await expect(countryField(page)).toContainText('Uruguay (+598)')
+  await expect(countryField(page)).toContainText(uruguay.label)
   await expect(countryField(page)).not.toHaveAttribute('aria-disabled', 'true')
-  await expect(phoneField(page)).toHaveAttribute('placeholder', '099 123 456')
-  await phoneField(page).fill('099 123 456')
+  await expect(phoneField(page)).toHaveAttribute('placeholder', uruguay.example)
+  await phoneField(page).fill(uruguay.example)
   await saveAndUse(page)
-  await expect(page.getByText(/\+598/)).toBeVisible()
+  await expect(page.getByText(`+${uruguay.callingCode}`)).toBeVisible()
 
   // An Argentine customer: the seller picks Argentina and types the local form; the example follows.
   await newCustomerForm(page, 'Carla Buenos Aires')
-  await pickCountry(page, 'Argentina (+54)')
-  await expect(phoneField(page)).not.toHaveAttribute('placeholder', '099 123 456')
-  await phoneField(page).fill('11 5555 0188')
+  await pickCountry(page, argentina.label)
+  await expect(phoneField(page)).toHaveAttribute('placeholder', argentina.example)
+  await phoneField(page).fill(argentina.example)
   await saveAndUse(page)
-  await expect(page.getByText(/\+54/)).toBeVisible()
+  await expect(page.getByText(`+${argentina.callingCode}`)).toBeVisible()
 
   // A "+" decides the country: the Selector shows it, locked, with its reason; the text is not rewritten.
   await newCustomerForm(page, 'Rosa Santiago')
-  await phoneField(page).fill('+56 9 5555 0177')
-  await expect(countryField(page)).toContainText('Chile (+56)')
+  const plusChile = `+${chile.callingCode} 9 5555 0177`
+  await phoneField(page).fill(plusChile)
+  await expect(countryField(page)).toContainText(chile.label)
   await expect(countryField(page)).toHaveAttribute('aria-disabled', 'true')
   await expect(page.getByText(LOCKED_REASON)).toBeVisible()
-  await expect(phoneField(page)).toHaveValue('+56 9 5555 0177')
-  await countryField(page).click()
-  await expect(page.getByRole('option', { name: 'Argentina (+54)' })).toHaveCount(0)
+  await expect(phoneField(page)).toHaveValue(plusChile)
+  // Locked: neither a tap nor the keys open the list.
+  // Playwright holds back a click on an aria-disabled button, so the tap is forced.
+  await countryField(page).click({ force: true })
+  await countryField(page).press('ArrowDown')
+  await expect(countryList(page)).toHaveCount(0)
+  await expect(countryField(page)).toHaveAttribute('aria-expanded', 'false')
   // Without the "+" it unlocks and keeps the last shown country.
   await phoneField(page).fill('9 5555 0177')
   await expect(countryField(page)).not.toHaveAttribute('aria-disabled', 'true')
-  await expect(countryField(page)).toContainText('Chile (+56)')
-  await phoneField(page).fill('+56 9 5555 0177')
+  await expect(countryField(page)).toContainText(chile.label)
+  await phoneField(page).fill(plusChile)
   await saveAndUse(page)
-  await expect(page.getByText(/\+56/)).toBeVisible()
+  await expect(page.getByText(`+${chile.callingCode}`)).toBeVisible()
 
   // Each edit opens on its own number's country, locked.
   for (const [name, country] of [
-    ['Noe Montevideo', 'Uruguay (+598)'],
-    ['Carla Buenos Aires', 'Argentina (+54)'],
-    ['Rosa Santiago', 'Chile (+56)'],
+    ['Noe Montevideo', uruguay.label],
+    ['Carla Buenos Aires', argentina.label],
+    ['Rosa Santiago', chile.label],
   ] as const) {
     await page.goto(CUSTOMERS)
     await page.getByRole('link', { name: new RegExp(name) }).first().click()
