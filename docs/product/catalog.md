@@ -1,20 +1,3 @@
-# Catalog
-
-El texto que les ofrece a los Customers de un negocio los Products que se pueden vender hoy. Lo ve solo su **Business** (ADR-0004). Se arma a partir de:
-- los **Catalog attributes** de cada **Product**;
-- su **Current price** hoy (varieties.md);
-- su **Stock status** en este momento (stock.md);
-- las **Pricing settings** del Business (pricing-settings.md), para la línea de Bulk price;
-- el **Shown language** del Business, para las líneas fijas (stored-language.md);
-- el **Money format** del Business, para el símbolo y los decimales de la plata (money.md);
-
-entre el **Catalog header and footer** propios del Business. El **Pinned catalog** (pinned-catalog.md) envía exactamente este texto por el bot de Telegram propio del Business y lo mantiene al día. Share y Copy quedan para enviarlo a mano, en una forma que se pega en cualquier app de chat con sus saltos de línea (ver Copy y Share). Un **Archived product** (varieties.md) nunca forma parte de él.
-
-Dónde viven sus partes (navigation.md):
-- la pantalla del **Catalog** (`/varieties/catalog`) se abre desde "Send catalog" en Products;
-- los atributos de un Product se editan en su página, en "In the catalog";
-- el header y el footer se editan en Settings → Catalog message (o, hasta que exista ese grupo, en el lugar provisorio al que se llega desde la pantalla del Catalog; ver más abajo).
-
 ## Jobs
 
 **Cuando** cambia un precio, se agota un producto o empiezo a ofrecer uno, **quiero** abrir el texto del Catalog que la app ya armó a partir de los Current prices y el stock de hoy, revisarlo, y compartirlo o copiarlo con un toque, **para** mandárselo yo mismo a mis clientes (por WhatsApp, Telegram o Instagram) sin volver a tipear un precio ni el nombre de un producto, y que mis clientes nunca vean un precio desactualizado ni un producto que no puedo vender.
@@ -34,6 +17,23 @@ Configurar los Catalog attributes y el Catalog header and footer es el paso de c
 **Cuando** mi negocio trabaja en un idioma que no es el inglés, **quiero** que el Catalog de mis clientes hable ese idioma de punta a punta, incluidas las líneas fijas y no solo el header y el footer que tipeé, y que un negocio abierto en ese idioma arranque con su header, su footer y sus Expense categories ya en él, **para que** lo que leen los clientes sea coherente y yo no tenga nada que traducir ni volver a tipear. Mientras mi negocio está en inglés, no cambia absolutamente nada de lo que vemos yo o mis clientes. (Compartido con stored-language.md: acá lo sirven las líneas fijas, que siguen al Shown language, y los valores por defecto del header y el footer, que siguen al Stored language al abrirse.)
 
 **Cuando** mi negocio cuenta la plata en otra moneda o con centavos, **quiero** elegir yo mismo, desde Settings, el símbolo de la moneda y la cantidad de decimales, **para que** cada pantalla muestre y acepte la plata como la contamos mis clientes y yo, sin que ningún monto que ya registré cambie de valor. (Se define en money.md: acá lo sirve que los precios del Catalog y del Pinned catalog lleven el símbolo y los decimales del Business.)
+
+# Catalog
+
+El texto que les ofrece a los Customers de un negocio los Products que se pueden vender hoy. Lo ve solo su **Business** (ADR-0004). Se arma a partir de:
+- los **Catalog attributes** de cada **Product**;
+- su **Current price** hoy (varieties.md);
+- su **Stock status** en este momento (stock.md);
+- las **Pricing settings** del Business (pricing-settings.md), para la línea de Bulk price;
+- el **Shown language** del Business, para las líneas fijas (stored-language.md);
+- el **Money format** del Business, para el símbolo y los decimales de la plata (money.md);
+
+entre el **Catalog header and footer** propios del Business. El **Pinned catalog** (pinned-catalog.md) envía exactamente este texto por el bot de Telegram propio del Business y lo mantiene al día. Share y Copy quedan para enviarlo a mano, en una forma que se pega en cualquier app de chat con sus saltos de línea (ver Copy y Share). Un **Archived product** (varieties.md) nunca forma parte de él.
+
+Dónde viven sus partes (navigation.md):
+- la pantalla del **Catalog** (`/varieties/catalog`) se abre desde "Send catalog" en Products;
+- los atributos de un Product se editan en su página, en "In the catalog";
+- el header y el footer se editan en Settings → Catalog message (o, hasta que exista ese grupo, en el lugar provisorio al que se llega desde la pantalla del Catalog; ver más abajo).
 
 Criterios de éxito:
 
@@ -175,7 +175,7 @@ Criterios de éxito:
 - Cada ruta entra en el barrido de aislamiento, en la prueba de rutas protegidas y en la prueba de migración de pertenencia.
 - Ningún header, footer, Aroma ni texto del Catalog va a los logs, la consola ni el almacenamiento del navegador.
 - Las versiones plana y enriquecida de Copy se arman en el front a partir del texto de la API con la misma regla de emparejamiento que usa la vista previa; el `catalog.text` del servidor no cambia por ellas.
-- El Money format le llega al Catalog por su propio puerto de lectura, que nunca lee la Money scale (money.md).
+- El Money format le llega al Catalog por su propio puerto de lectura, que nunca lee la Money scale (money.md). Los precios llegan al texto como `Money`, armados de los centésimos que lee el adaptador, así que los centavos se conservan; la plata se escribe con aritmética entera, sin float ni redondeo.
 - **Idioma**:
   - El dominio del Catalog no importa ninguna biblioteca de traducción. Las líneas fijas le llegan como un valor `CatalogWords` simple a través de `CatalogWordsSource`, un puerto en la capa de aplicación del Catalog.
   - El idioma del Business le llega al Catalog solo a través de `CatalogLanguage`, implementado en el adaptador propio del Catalog sobre accounts. Ese adaptador es el único lugar donde se aplica el reemplazo forzado.
