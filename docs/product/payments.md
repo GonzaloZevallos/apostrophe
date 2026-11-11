@@ -29,7 +29,7 @@ Criterios de éxito:
 4. **Quién debe, de un vistazo**: todo Customer que debe, con la deuda más vieja primero, cada uno con su Balance y su Owing since, arriba de Customers. También el **Total owed** y la cantidad de **Sales still owing**, sin calcularlos a partir de las Sales. En Sales, una Sale que todavía se debe aparece marcada como tal.
 5. **Una cuenta que se puede seguir**:
    - La cuenta de cada Customer muestra sus Sales y Payments en orden de fecha, con el Balance corrido.
-   - Cada Sale dice si se pagó o si quedó debiendo.
+   - Cada Sale dice si se pagó y con qué medio, o si quedó debiendo.
    - Cada Payment dice su fecha, su medio y a qué Sale fue.
    - Un Payment equivocado se puede eliminar, y la cuenta y el Balance lo siguen al instante.
 6. **Las fechas de los Payments se conservan**: un Payment conserva su propia fecha y su medio, así que Cash (#7) cuenta el dinero el día en que entró, nunca en la fecha de la Sale.
@@ -101,17 +101,17 @@ Criterios de éxito:
 
 - Muestra "Owes you $ X since dd/mm" como una etiqueta chica sobre una cifra grande. Para un Credit muestra "Credit $ X", de la misma manera, sin "since". Con un Balance de $0 no muestra ninguno de los dos.
 - "Record payment" se muestra solo cuando el Balance es mayor que $0. Si no, está oculto.
-- **La cuenta** abre con la etiqueta "Account · running balance" y lista las Sales y los Payments en orden de fecha, con el Balance corrido. La API trae por cada Sale `how_paid` (`paid`, `owing` o `none`) y, para una Sale pagada en el momento, su `payment_method` (`{id, name, icon}`); por cada Payment, su `payment_method`.
+- **La cuenta** abre con la etiqueta "Account · running balance" y lista las Sales y los Payments en orden de fecha, con el Balance corrido. La API trae por cada Sale `how_paid` (`paid`, `owing` o `none`) y, para una Sale pagada en el momento, su `payment_method` (`{id, name, icon}`); por cada Payment, su `payment_method`. El front lleva `payment_method` en su tipo de fila de Sale y lo usa.
   - Cada fila muestra su fecha, un título con una sublínea debajo, y a la derecha su monto sobre "balance $ X". Un monto nunca se parte entre "$" y su cifra.
   - **Una Sale**: el título "Sale". Su sublínea es una de estas:
-    - "Paid" para una Sale pagada en el momento, que no tiene fila de Payment propia; la fila todavía no nombra su medio (reemplaza a "Paid in cash" / "Paid by transfer");
+    - "Paid · <medio>" para una Sale pagada en el momento, que no tiene fila de Payment propia (reemplaza a "Paid in cash" / "Paid by transfer"); solo una fila pagada que no trae medio dice "Paid" a secas;
     - "Left owing" para una Sale que quedó debiendo;
     - "Nothing to pay" para una Sale cuyo total es $0, saldada sin medio y sin nada debido (sales.md).
 
     La fila no nombra ningún **Product** ni gramos: el detalle de la Sale los tiene (sales.md).
   - **Un Payment posterior**: una fila por cada Sale que alcanza, cada una titulada "Payment · <medio>" con la sublínea "On account of the sale of dd/mm" y el monto aplicado a esa Sale.
   - **Cualquier parte de un Payment más allá de todas las deudas**: titulada "Payment · <medio>" con la sublínea "Credit".
-  - El nombre del medio es siempre el actual, también para un medio archivado.
+  - El nombre del medio es siempre el actual, también para un medio archivado, en las filas de Sales y de Payments. Ninguna fila lee un valor cash o transfer.
   - Lo que se debe se lee en ámbar. Un "Credit $ X" corrido se lee con el tratamiento neutro/azul, nunca ámbar ni verde.
 - **Balance corrido por debajo de cero**: entre un Payment y una Sale de fecha posterior que ese Payment salda, el Balance corrido pasa a ser menor que cero y esa fila dice "Credit $ X".
   - Es solo la cifra corrida, no un Credit, y no cuenta en ninguna cifra.
@@ -146,7 +146,7 @@ Criterios de éxito:
   - el medio, en el campo "Payment method" (abajo), obligatorio.
 - **El medio** (`Cobro`; el control está en selector.md, la lista en payment-methods.md):
   - Es un Selector obligatorio con la etiqueta "Payment method", la misma entrada del Copy module que usa New sale (sales.md). Va después de la fila de la fecha y antes del resumen de lo que queda después del Payment. Sus opciones son los Payment methods ofrecidos del Business, leídos del servidor (`GET /api/payment-methods`), en el orden que fijó la vendedora y cada uno por su nombre; los archivados nunca se ofrecen. New sale y Record payment comparten la misma fuente. Esa lista nunca se declara en `fixedSets.ts`: los Payment methods son un **Growable set** (ADR-0074).
-  - Sin valor por defecto, sin opción "Select…", sin `placeholder` y sin fila para borrar: vacío, el campo muestra solo su etiqueta. Con más de 8 opciones la lista tiene búsqueda. No tiene mensaje de conjunto vacío: siempre hay al menos un medio ofrecido.
+  - Sin valor por defecto, sin opción "Select…", sin `placeholder` y sin fila para borrar: vacío, el campo muestra solo su etiqueta. Con más de 8 opciones la lista tiene búsqueda. El mensaje de conjunto vacío no debería verse nunca: siempre hay al menos un medio ofrecido.
   - **Carga**: mientras la lista no se cargó con éxito, el campo queda en `loading`, deshabilitado y con su esqueleto, y nunca parece vacío.
   - **La lista no carga** (decisión 21 del humano): sin conexión se muestra el aviso "Sin conexión"; con un error del servidor la lista dice "Could not load the payment methods. Tap to try again." y tocar el campo de nuevo vuelve a leerla. Nada de lo escrito se pierde.
   - Record payment abre siempre con el medio vacío. Nada se recuerda entre Payments, ni para el mismo Customer ni entre Customers.
@@ -211,7 +211,7 @@ Criterios de éxito:
 - **Identidad del Balance (criterio 3)**: Balance = comprado e impago − Payments, al peso, después de cada alta y eliminación de Sales y Payments.
 - **Credit**: después de eliminar una Sale saldada, el Credit se muestra como "Credit", queda fuera de la sección Owed to you, del Total owed y de la cantidad, y se aplica a la próxima Sale que quede debiendo.
 - **Totales de quién debe (criterio 4)**: el Total owed, la cantidad de Sales still owing, la sección "Owed to you" de Customers, el bloque de Home y la marca de Sales son iguales a un cálculo directo sobre las Sales y los Payments. 0 diferencias. La línea de cantidad dice "1 sale owing" para una Sale y "N sales owing" para dos o más, las dos cubiertas por los tests del front.
-- **Cuenta (criterio 5)**: las filas y el Balance corrido coinciden con el Settlement en cada caso de la matriz. Los tests del front muestran la etiqueta "Account · running balance", el título y la sublínea de cada fila ("Sale" sobre "Paid", "Left owing" o, para una Sale de $0, "Nothing to pay"; "Payment · <medio>" sobre "On account of the sale of dd/mm" o "Credit"), con el nombre actual del medio después de renombrarlo, el monto sobre "balance $ X" sin corte dentro de un monto, y ningún Product ni gramos en la fila de una Sale.
+- **Cuenta (criterio 5)**: las filas y el Balance corrido coinciden con el Settlement en cada caso de la matriz. Los tests del front (`accountRows.test.ts`) muestran la etiqueta "Account · running balance", el título y la sublínea de cada fila ("Sale" sobre "Paid · <medio>", "Left owing" o, para una Sale de $0, "Nothing to pay"; "Payment · <medio>" sobre "On account of the sale of dd/mm" o "Credit"), con el nombre actual del medio después de renombrarlo (por ejemplo "Paid · Cash" y después "Paid · Mercado Pago"), "Paid" a secas solo para una fila sin medio y nunca una palabra cash o transfer, el monto sobre "balance $ X" sin corte dentro de un monto, y ningún Product ni gramos en la fila de una Sale.
 - **Fechas conservadas (criterio 6)**: después de cualquier recálculo, la fecha, el monto y el medio de cada Payment quedan sin cambios.
 - **Vista previa = guardado (criterios 2, 8)**: la vista previa de Record payment coincide con el Settlement después de guardar. 0 diferencias.
 - **Aislamiento (criterio 7)**: toda ruta de Payment está en el barrido y responde 404 o vacío desde otro Business; un Payment con el medio de otro Business responde 404 y no escribe nada.
@@ -254,7 +254,6 @@ Criterios de éxito:
 - Una clave o un chequeo del registro de pantallas que distinga una Sheet de una página.
 - Restaurar el scroll en cualquier lugar que no sea el cierre de Record payment.
 - Cash y **Profit**: la capacidad results (#7). Cash separado por medio o totales por medio: otro job.
-- Nombrar el medio en la fila de una Sale pagada en el momento ("Paid · <medio>"): pendiente para una tarea posterior.
 - Actualizaciones en vivo entre socios.
 - Los Products o los gramos de una Sale en la cuenta del Customer: el detalle de la Sale los muestra.
 - Administrar la lista de Payment methods: payment-methods.md.
