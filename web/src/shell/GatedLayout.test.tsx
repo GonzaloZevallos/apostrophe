@@ -8,7 +8,7 @@
 
 import { HOME } from '../routes'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
-import { act, render, screen } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import { Profiler, useLayoutEffect } from 'react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -204,7 +204,7 @@ test('a business in another language renders nothing until its chunk is installe
   const { requested, answers } = lateLoader()
 
   renderLanguageGated()
-  await vi.waitFor(() => expect(requested).toEqual(['de']))
+  await waitFor(() => expect(requested).toEqual(['de']))
   await act(async () => {
     await Promise.resolve()
   })
@@ -223,7 +223,7 @@ test('a rejected chunk mounts the outlet in English with one recorded miss', asy
   const { answers } = lateLoader()
 
   renderLanguageGated()
-  await vi.waitFor(() => expect(answers).toHaveLength(1))
+  await waitFor(() => expect(answers).toHaveLength(1))
   await act(async () => {
     answers[0]?.reject(new Error('404'))
   })
@@ -274,7 +274,7 @@ test('a failed load followed by a "me" refetch records one miss and asks for the
   const { requested, answers } = lateLoader()
 
   const queryClient = renderLanguageGated()
-  await vi.waitFor(() => expect(answers).toHaveLength(1))
+  await waitFor(() => expect(answers).toHaveLength(1))
   await act(async () => {
     answers[0]?.reject(new Error('404'))
   })
