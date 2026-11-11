@@ -145,7 +145,7 @@ test('a 404 still takes the not-found path, with no button', async () => {
   expect(screen.queryByText('Sale #2')).not.toBeInTheDocument()
 })
 
-const NICO_SEARCH_RESULT = { id: 5, name: 'Nico', phone: '1111', vip: true }
+const NICO_SEARCH_RESULT = { id: 5, name: 'Nico', phone: '1111', phone_display: '1111', vip: true }
 const NICO = { id: 5, name: 'Nico', vip: true }
 
 /** Serves the sale's reads from a queue the test controls, so a read can be held. */
