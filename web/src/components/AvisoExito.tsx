@@ -43,6 +43,7 @@ export type SuccessToast =
   | (typeof VARIETIES_TEXT)['precioEliminado']
   | (typeof EXPENSES_TEXT)['expenseSaved']
   | (typeof EXPENSES_TEXT)['expenseDeleted']
+  | (typeof SETTINGS_TEXT)['currencySaved']
   | (typeof SETTINGS_TEXT)['categorySaved']
   | (typeof SETTINGS_TEXT)['categoryDeleted']
   | typeof RENAME_SUCCESS

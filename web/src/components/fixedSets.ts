@@ -48,6 +48,7 @@ const PERIODS_REASON = 'fixed view: periods'
 const THEME_REASON = 'fixed set: theme choice'
 const ICONS_REASON = 'fixed set: the neutral icon set ships with the app'
 const ORIGINS_REASON = 'fixed set: Stock entry origins'
+const MONEY_DECIMALS_REASON = 'fixed set: the decimals a Business may write money with, 0 to 2'
 const PAYMENT_STATE_REASON = 'fixed set: payment state, which is not a method'
 
 /** Home's period tabs. */
@@ -98,6 +99,13 @@ export const PAYMENT_STATES = fixedSet(PAYMENT_STATE_REASON, [
   { value: 'owing', label: PAYMENT_STATE_NAME.owing },
 ])
 
+/** Currency and decimals' Decimals choice. */
+export const MONEY_DECIMALS = fixedSet(MONEY_DECIMALS_REASON, [
+  { value: '0', label: () => SETTINGS_TEXT.currencyDecimals0 },
+  { value: '1', label: () => SETTINGS_TEXT.currencyDecimals1 },
+  { value: '2', label: () => SETTINGS_TEXT.currencyDecimals2 },
+])
+
 /** Every declared set and the reason it is fixed, readable in one place. */
 export const FIXED_SETS = {
   HOME_PERIODS: PERIODS_REASON,
@@ -106,4 +114,5 @@ export const FIXED_SETS = {
   CUSTOMER_TYPE_ICON_SET: ICONS_REASON,
   STOCK_ENTRY_ORIGINS: ORIGINS_REASON,
   PAYMENT_STATES: PAYMENT_STATE_REASON,
+  MONEY_DECIMALS: MONEY_DECIMALS_REASON,
 } as const

@@ -1,6 +1,6 @@
-"""`ApplyDecimals` over stored values (docs/adr/0080, amending docs/adr/0058).
+"""`ApplyMoneyFormat` over stored values (docs/adr/0080, amending docs/adr/0058).
 
-Seam: the `ApplyDecimals` use case with the real adapter, over a file-backed SQLite
+Seam: the `ApplyMoneyFormat` use case with the real adapter, over a file-backed SQLite
 database seeded through the app's own routes at scale 0. The columns that are rescaled are
 the ones tagged `info["money"]` in `app.tables.metadata`, read here the same way, so a
 column added later is covered without touching this file.

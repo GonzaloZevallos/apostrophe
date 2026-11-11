@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from app.catalog.domain.attributes import CatalogAttributes
 from app.catalog.domain.product import CatalogPrice
 from app.catalog.domain.words import CatalogWords
-from app.shared.money import MoneyFormat
+from app.shared.money import HUNDREDTHS_PER_UNIT, MAX_DECIMALS, Money, MoneyFormat
 from app.shared.quantity import Quantity
 
 
@@ -88,21 +88,17 @@ def _name_line(entry: CatalogEntry) -> str:
     return f"**{entry.name}**"
 
 
-def _money(amount: int, money: MoneyFormat) -> str:
-    """The business's symbol attached to the figure, then the whole units with a dot every
-    three digits from four digits up and, when the business has decimals, a comma and
-    exactly that many zeros: the amount is whole-unit, padded and never divided. Grouped
-    by hand: no locale library, `float`, `round()` or `Decimal`."""
-    digits = str(amount)
-    groups: list[str] = []
-    while len(digits) > 3:
-        groups.insert(0, digits[-3:])
-        digits = digits[:-3]
-    groups.insert(0, digits)
-    figure = ".".join(groups)
+def _money(amount: Money, money: MoneyFormat) -> str:
+    """`$11.000`, `US$11.000,50`: the business's symbol attached to the figure, a dot every
+    three digits and exactly the business's decimals after a comma. Integer arithmetic
+    only: no `float`, `round()` or `Decimal`. A stored amount never has more decimals than the
+    format shows (lowering is refused otherwise), so the places cut off are always zeros."""
+    sign = "-" if amount.hundredths < 0 else ""
+    units, cents = divmod(abs(amount.hundredths), HUNDREDTHS_PER_UNIT)
+    figure = f"{units:,}".replace(",", ".")
     if money.decimals > 0:
-        figure += "," + "0" * money.decimals
-    return money.symbol + figure
+        figure += "," + f"{cents:0{MAX_DECIMALS}d}"[: money.decimals]
+    return f"{money.symbol}{sign}{figure}"
 
 
 def _quantity(quantity: Quantity) -> str:

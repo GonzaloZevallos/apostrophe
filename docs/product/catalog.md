@@ -1,5 +1,3 @@
-# Catalog
-
 ## Jobs
 
 **Cuando** cambia un precio, se agota un producto o empiezo a ofrecer uno, **quiero** abrir el texto del Catalog que la app ya armó a partir de los Current prices y el stock de hoy, revisarlo, y compartirlo o copiarlo con un toque, **para** mandárselo yo mismo a mis clientes (por WhatsApp, Telegram o Instagram) sin volver a tipear un precio ni el nombre de un producto, y que mis clientes nunca vean un precio desactualizado ni un producto que no puedo vender.
@@ -18,9 +16,9 @@ Configurar los Catalog attributes y el Catalog header and footer es el paso de c
 
 **Cuando** mi negocio trabaja en un idioma que no es el inglés, **quiero** que el Catalog de mis clientes hable ese idioma de punta a punta, incluidas las líneas fijas y no solo el header y el footer que tipeé, y que un negocio abierto en ese idioma arranque con su header, su footer y sus Expense categories ya en él, **para que** lo que leen los clientes sea coherente y yo no tenga nada que traducir ni volver a tipear. Mientras mi negocio está en inglés, no cambia absolutamente nada de lo que vemos yo o mis clientes. (Compartido con stored-language.md: acá lo sirven las líneas fijas, que siguen al Shown language, y los valores por defecto del header y el footer, que siguen al Stored language al abrirse.)
 
-**Cuando** leo, tipeo o publico un monto de dinero de mi negocio, **quiero** verlo con el símbolo de moneda y los decimales propios de mi negocio, **para** leer e ingresar cada monto, en la app y en el Catalog que ven mis clientes, sin convertirlo ni dudar de él. (Se define en money.md: acá lo sirve la plata del texto del Catalog y del bot, que sigue al Money format del Business.)
+**Cuando** mi negocio cuenta la plata en otra moneda o con centavos, **quiero** elegir yo mismo, desde Settings, el símbolo de la moneda y la cantidad de decimales, **para que** cada pantalla muestre y acepte la plata como la contamos mis clientes y yo, sin que ningún monto que ya registré cambie de valor. (Se define en money.md: acá lo sirve que los precios del Catalog y del Pinned catalog lleven el símbolo y los decimales del Business.)
 
-## Qué es
+# Catalog
 
 El texto que les ofrece a los Customers de un negocio los Products que se pueden vender hoy. Lo ve solo su **Business** (ADR-0004). Se arma a partir de:
 - los **Catalog attributes** de cada **Product**;
@@ -37,13 +35,13 @@ Dónde viven sus partes (navigation.md):
 - los atributos de un Product se editan en su página, en "In the catalog";
 - el header y el footer se editan en Settings → Catalog message (o, hasta que exista ese grupo, en el lugar provisorio al que se llega desde la pantalla del Catalog; ver más abajo).
 
-## Criterios de éxito
+Criterios de éxito:
 
 1. **Texto exacto**: el texto del Catalog sigue exactamente el formato de la planilla.
    - El header, después un bloque por Product, después el footer.
    - Cada bloque tiene su emoji y su nombre en negrita, el Indica share, el Aroma, el List price por gramo y la línea de Bulk price.
    - Los marcadores `**bold**` quedan en el texto (`catalog.text` y lo que envía el Pinned catalog; Copy y Share sacan la versión plana, ver más abajo).
-   - La plata se escribe con el símbolo del Money format pegado a la cifra y exactamente sus decimales; para un Business con "$" y 0 decimales, `$11.000`, igual que siempre.
+   - La plata se escribe con el símbolo del Business pegado a la cifra y los decimales del Business: `$11.000` con los valores por defecto, `US$11.000,50` con "US$" y 2 decimales.
    - Una línea se deja afuera cuando le falta su dato (Indica share, Aroma, Bulk price), y la línea de Bulk price también mientras Bulk price está desactivado.
    - Se prueba contra un conjunto de referencia con 0 diferencias.
 2. **Hoy, solo lo que se puede vender**: un Product aparece solo cuando no está archivado, se muestra, tiene un Current price en la fecha de hoy en Argentina y tiene Stock mayor que cero en este momento.
@@ -54,9 +52,9 @@ Dónde viven sus partes (navigation.md):
 5. **Los Businesses nunca se mezclan** (ADR-0004): los atributos, el header, el footer y el Money format pertenecen a un solo Business. El texto y la lista nunca incluyen datos de otro Business.
 6. **Los clientes nunca ven el VIP price**: el texto nunca lo lleva, sean cuales sean los interruptores.
 7. **Un solo idioma de punta a punta**: para un Business cuyo Shown language no es el inglés, cada línea fija del texto (y la línea vacía del Pinned catalog) está en ese idioma, en la pantalla del Catalog, Test it, Publish y la Upkeep por igual. Un Business en inglés en la misma corrida sigue en inglés.
-8. **El inglés sin cambios**: para un Business en inglés, el texto y el header y el footer de un Business nuevo son idénticos byte a byte a la línea de base congelada (`en.baseline.json`). El formato de gramos es el mismo en todos los idiomas, y el de plata sigue al Money format del Business, nunca al idioma.
+8. **El inglés sin cambios**: para un Business en inglés con el Money format por defecto, el texto y el header y el footer de un Business nuevo son idénticos byte a byte a la línea de base congelada (`en.baseline.json`). Los formatos de gramos son los mismos en todos los idiomas, y la plata sigue el Money format del Business, nunca el idioma.
 9. **Se pega como se ve, en cualquier lado**: copiado con Copy y pegado en la caja de mensaje de Telegram en iPhone, el Catalog conserva cada salto de línea y cada línea en blanco que muestra la pantalla (una línea por viñeta, bloques separados como en pantalla) y no muestra ningún `**` literal. La misma copia se sigue leyendo bien en WhatsApp y en un destino de texto plano, sin regresión, y el vendedor envía lo pegado sin editarlo. Telegram, WhatsApp y el texto plano son todos destinos de primera; arreglar uno nunca justifica romper otro.
-10. **La plata del negocio**: un Business con otro símbolo o con decimales ve su propio símbolo, pegado a la cifra, y exactamente sus decimales en cada monto del texto del Catalog y del bot; uno con "$" y 0 decimales ve `$11.000` carácter por carácter como antes.
+10. **La plata del negocio**: después de que el vendedor cambia el símbolo o los decimales, el Catalog de la pantalla y el Pinned catalog muestran la plata con el formato nuevo, sin que ningún precio cambie de valor.
 
 ## Comportamiento
 
@@ -104,13 +102,15 @@ Dónde viven sus partes (navigation.md):
   - Salen del Copy module en el Shown language del Business: la Forced language del Operator cuando hay una, si no el Stored language (stored-language.md). El idioma se calcula al armar el texto, en cada apertura de la pantalla del Catalog y en cada corrida de Test it, Publish y la Upkeep.
   - Cuándo se muestra una línea, y el dato que lleva, no dependen del idioma.
   - Los datos propios del vendedor nunca se traducen: los nombres, los emoji, el Aroma, el header y el footer quedan como se guardaron.
-  - El formato de gramos es el mismo en todos los idiomas; el de plata sigue al Money format del Business, nunca al idioma.
+  - Los formatos de gramos son los mismos en todos los idiomas, y la plata sigue el Money format del Business, nunca el idioma.
   - En inglés, cada línea fija es idéntica byte a byte a la línea de base `en.baseline.json`.
 - **VIP price**: nunca está en el texto, sean cuales sean los interruptores (pricing-settings.md).
-- **Plata**: el símbolo del Money format del Business seguido directamente del monto, sin espacio, con exactamente los decimales del Business, coma antes de los decimales y punto para los miles desde cuatro dígitos. Para un Business con "$" y 0 decimales es `$11.000`, igual que siempre; con 2 decimales, `$11.000,00`. Es el formato propio del Catalog, no el `$ 11.000` de la app: solo el símbolo y los decimales vienen del Business, y no se ofrece un símbolo después de la cifra. El servidor lee el Money format por el puerto propio del Catalog (`CatalogMoneyFormat`, ADR-0055), nunca la Money scale (money.md). El texto del bot es este mismo texto: la lectura, Test it, Publish y la Upkeep pasan por el mismo camino.
-- **Precios con fracción**: los precios del Catalog siguen llegando en unidades enteras y se completan con ceros hasta los decimales del Business, nunca se dividen; un precio con fracción se publicaría con `,00`. Ningún Business tiene decimales hoy; lo resuelve la parte que deje cambiar los decimales (money.md).
+- **Plata**: el estilo propio del Catalog, con el símbolo y los decimales del Money format del Business (money.md). Lleva el símbolo pegado a la cifra, sin espacio, punto para los miles y, con decimales, coma decimal y exactamente los decimales del Business: `$11.000` con los valores por defecto, `US$11.000,50` con "US$" y 2 decimales. No es el `$ 11.000` de la app.
 - **Stock en el texto**: ninguno. Nunca menciona gramos, Stock ni Stock bajo.
-- **Frescura**: el texto se calcula en cada apertura a partir de los datos, las Pricing settings, el Money format y el Shown language tal como están. No se guarda nada, y la pantalla no se actualiza sola mientras está abierta. Un guardado de Prices que cambia cualquiera de los dos interruptores, y un cambio del Stored language, disparan la Upkeep del Pinned catalog (pinned-catalog.md, stored-language.md).
+- **Frescura**: el texto se calcula en cada apertura a partir de los datos, las Pricing settings, el Shown language y el Money format tal como están. No se guarda nada, y la pantalla no se actualiza sola mientras está abierta. Disparan la Upkeep del Pinned catalog (pinned-catalog.md, stored-language.md, money.md):
+  - un guardado de Prices que cambia cualquiera de los dos interruptores;
+  - un cambio del Stored language;
+  - un cambio guardado del símbolo o de los decimales en Settings → Business → Currency and decimals.
 - **Cuando nada califica**: no hay texto, y la pantalla dice que hoy no hay nada en el Catalog. El Pinned catalog envía en cambio su propio mensaje vacío (pinned-catalog.md).
 
 ### Marcadores de negrita
@@ -175,7 +175,7 @@ Dónde viven sus partes (navigation.md):
 - Cada ruta entra en el barrido de aislamiento, en la prueba de rutas protegidas y en la prueba de migración de pertenencia.
 - Ningún header, footer, Aroma ni texto del Catalog va a los logs, la consola ni el almacenamiento del navegador.
 - Las versiones plana y enriquecida de Copy se arman en el front a partir del texto de la API con la misma regla de emparejamiento que usa la vista previa; el `catalog.text` del servidor no cambia por ellas.
-- **Plata**: el Catalog lee el Money format del Business por su propio puerto (`CatalogMoneyFormat`, ADR-0055) y nunca lee la Money scale (invariante 8). `catalog_text` y `pinned_catalog_text` reciben el Money format como argumento obligatorio, y un test de arquitectura falla si `app/catalog/domain/text.py` lleva un literal `"$"`. Ningún símbolo ni cantidad de decimales queda fijo en el código del Catalog.
+- El Money format le llega al Catalog por su propio puerto de lectura, que nunca lee la Money scale (money.md). Los precios llegan al texto como `Money`, armados de los centésimos que lee el adaptador, así que los centavos se conservan; la plata se escribe con aritmética entera, sin float ni redondeo.
 - **Idioma**:
   - El dominio del Catalog no importa ninguna biblioteca de traducción. Las líneas fijas le llegan como un valor `CatalogWords` simple a través de `CatalogWordsSource`, un puerto en la capa de aplicación del Catalog.
   - El idioma del Business le llega al Catalog solo a través de `CatalogLanguage`, implementado en el adaptador propio del Catalog sobre accounts. Ese adaptador es el único lugar donde se aplica el reemplazo forzado.
@@ -192,10 +192,11 @@ Dónde viven sus partes (navigation.md):
   - un Bulk price con Bulk price activado y desactivado;
   - montos con miles;
   - un header en blanco y un footer en blanco;
-  - `**` propios del vendedor en el header, el Aroma y un nombre, incluido uno sin pareja.
+  - `**` propios del vendedor en el header, el Aroma y un nombre, incluido uno sin pareja;
+  - el Money format por defecto, uno con "US$" y 2 decimales (con un precio con centavos y uno entero, que se lee con `,00`) y uno con un símbolo de 1 carácter y 1 decimal.
 
   0 diferencias.
-- **La plata del negocio (criterio 10)**: el conjunto de referencia existente, con "$" y 0 decimales, da 0 diferencias contra antes de este cambio. Un segundo texto de referencia con otro símbolo (`US$`) y 2 decimales da `<símbolo>11.000,00` en la línea de precio y la de Bulk price, con 0 diferencias. El formato de plata del Catalog pasa los mismos vectores (`money.vectors.json`) que el del front. Símbolos o decimales literales en el formato de plata del Catalog: 0.
+- **La plata del negocio (criterio 10)**: un cambio guardado de símbolo o de decimales dispara la Upkeep, y el texto siguiente de la pantalla, Test it, Publish y la Upkeep lleva el formato nuevo, sin que cambie el valor de ningún precio. 100% de aprobación.
 - **Sin VIP price (criterio 6)**: en todo el conjunto de referencia, con Price entries que llevan VIP price y cada combinación de interruptores, el VIP price nunca aparece en el texto. 100% de aprobación.
 - **Emparejamiento de negrita**: la vista previa, con los marcadores quitados, es igual a la versión plana de Copy. La negrita cae entre pares leídos de izquierda a derecha, y un `**` final sin pareja se muestra como se tipeó. 100% de aprobación.
 - **Forma de lo que pone Copy (criterio 9)**: con un portapapeles simulado, en todo el conjunto de referencia:
@@ -225,7 +226,7 @@ Dónde viven sus partes (navigation.md):
 - **Aislamiento (criterio 5)**: cada ruta del Catalog está en el barrido y responde 404 o vacío desde otro Business. Los interruptores, el idioma o el Money format de un Business nunca cambian el texto de otro.
 - **Sin eco**: ninguna negativa ni línea de log contiene el header, el footer, el Aroma ni el emoji tipeados; después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen ningún texto del Catalog.
 - **Diseño**: `scripts/design/compare.sh` corre antes y después para la pantalla del Catalog, en teléfono y computadora, adjunto al PR.
-- **El inglés sin cambios (criterio 8)**: cada línea fija movida y los valores por defecto del header y el footer se muestran en inglés exactamente como en `en.baseline.json`; el conjunto de referencia más el caso vacío muestra 0 diferencias con lo de antes de la mudanza.
+- **El inglés sin cambios (criterio 8)**: cada línea fija movida y los valores por defecto del header y el footer se muestran en inglés exactamente como en `en.baseline.json`; el conjunto de referencia con el Money format por defecto, más el caso vacío, muestra 0 diferencias con lo de antes de la mudanza.
 - **Sigue al idioma (criterio 7)**: con un `de` de prueba (`selectable_languages=("en","de")`), un Business guardado como `de` recibe las líneas fijas de `de` desde `GET /catalog`, Test it, Publish y la corrida de comienzo del día del Ticker, mientras que un Business en `en` en la misma corrida sigue idéntico byte a byte a la línea de base. Las pruebas unitarias del dominio arman `CatalogWords` a mano. 100% de aprobación.
 - **Sin inglés sobrante**: con el `en-XA` forzado, el texto del Catalog, el texto vacío del Pinned catalog y los valores por defecto que muestra la fuente de valores por defecto contienen, después de quitar los segmentos `⟦…⟧`, los datos guardados y los tokens de plata y gramos, 0 letras; un literal plantado hace fallar el control.
 
@@ -251,7 +252,7 @@ Dónde viven sus partes (navigation.md):
 - Rediseñar los Bot settings o la edición del header y el footer.
 - Un VIP price en el Catalog, o un Catalog aparte para los VIP customers.
 - Listar Archived products en la pantalla del Catalog.
-- Un símbolo de moneda después de la cifra, o una configuración para cambiar el símbolo o los decimales del Business.
+- La posición del símbolo (siempre antes de la cifra) y un formato de plata propio del Catalog distinto del Money format del Business.
 
 ## Planificado en GH-318
 

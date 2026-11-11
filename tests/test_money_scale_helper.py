@@ -31,6 +31,7 @@ from app.db import (
     MoneyFormatMissing,
     get_session,
     make_engine,
+    money_decimals,
     money_scale_factor,
     money_stored_value,
     scaled,
@@ -44,6 +45,7 @@ _money_format = Table(
     Column("id", Integer, primary_key=True),
     Column("business_id", Integer, nullable=False),
     Column("scale", Integer, nullable=False),
+    Column("decimals", Integer, nullable=False, server_default="2"),
     UniqueConstraint("business_id", name="uq_money_format_business_id"),
 )
 
@@ -280,3 +282,16 @@ def test_a_stored_amount_that_is_not_whole_units_answers_500_with_a_fixed_litera
         "code": "money.not_representable",
     }
     assert "1150" not in response.text
+
+
+def test_the_factor_and_the_decimals_cost_one_lookup_in_either_order(session: Session) -> None:
+    """A request that binds the decimals and then reads amounts sends one `money_format`
+    statement, the one the scale alone cost (tests/sales/test_list_cost.py pins the count)."""
+    engine = _engine_of(session)
+    with _Statements(engine) as sent:
+        assert money_decimals(session, 1) == 2
+        assert money_scale_factor(session, 1) == 100
+        assert sent.lookups == 1
+        assert money_scale_factor(session, 2) == 1
+        assert money_decimals(session, 2) == 2
+        assert sent.lookups == 2

@@ -44,8 +44,10 @@ from app.expenses.adapters.expenses_ledger import SqlExpensesLedger
 from app.expenses.adapters.router import router as expenses_router
 from app.http_errors import Refused
 from app.migrations.runner import upgrade_to_head
+from app.money_context import bind_money_decimals
 from app.money_format.adapters.opening import MoneyFormatOpening
 from app.money_format.adapters.reader import SqlMoneyFormat
+from app.money_format.adapters.router import router as money_format_router
 from app.onboarding.adapters.first_run_router import router as first_run_router
 from app.onboarding.adapters.opening import OnboardingOpening
 from app.onboarding.adapters.router import router as onboarding_router
@@ -74,7 +76,7 @@ from app.sales.adapters.sales_ledger import SqlSalesLedger
 from app.settings import Settings
 from app.shared.copy import CopyCatalog
 from app.shared.language import BusinessLanguage
-from app.shared.money import MoneyNotRepresentable
+from app.shared.money import MoneyNotRepresentable, TooManyDecimals
 from app.static_spa import FrontNavigation, MissingBuiltFront, ShellPage, SpaStatic, api_segments
 from app.stock.adapters.babel_defaults import BabelReasonDefaults
 from app.stock.adapters.draw_costs import SqlDrawCosts
@@ -166,10 +168,26 @@ async def _refused(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(status_code=exc.status_code, content=content)
 
 
+_METHODS_WITH_AMOUNT = frozenset({"POST", "PUT", "PATCH"})
+
+
 async def _stored_amount_not_whole(request: Request, exc: Exception) -> JSONResponse:
-    # A stored amount a read cannot hold as whole units is an integrity failure, never a
-    # refusal of the request: 500, with the exception's own fixed literal and no amount.
     assert isinstance(exc, MoneyNotRepresentable)
+    if request.method in _METHODS_WITH_AMOUNT:
+        # A write carrying a body whose amount is finer than the business's decimals reaches
+        # here when a use case converts it with `Money.in_decimals`: the request's amount is
+        # being refused, never a failure of ours: 422 with the code the front already maps,
+        # and nothing is rounded. A DELETE carries no amount, so a stored amount finer than
+        # the decimals there stays the integrity failure below.
+        return JSONResponse(
+            status_code=422,
+            content={
+                "detail": str(TooManyDecimals()),
+                "code": TooManyDecimals.code,
+            },
+        )
+    # A stored amount finer than the business's decimals is an integrity failure, never a
+    # refusal of the request: 500, with the exception's own fixed literal and no amount.
     return JSONResponse(
         status_code=500, content={"detail": str(exc), "code": MoneyNotRepresentable.code}
     )
@@ -258,6 +276,9 @@ def create_app(
     # port (ADR-0006); the same `(Session, business_id)` factory shape. The router and the
     # pinned catalog's snapshot both build it from here.
     app.state.catalog_pricing_settings = SqlPricingSettings
+    # The catalog's money style comes from the Business through its own `CatalogMoneyFormat`
+    # port, the same factory shape; the catalog never imports `app.money_format`.
+    app.state.catalog_money_format = SqlMoneyFormat
     # The catalog's fixed lines, built once over the copy module (docs/adr/0050).
     app.state.catalog_words = BabelCatalogWords(copy_catalog)
     # The language those lines are shown in: the forced one read once here, the stored one
@@ -280,7 +301,6 @@ def create_app(
     app.state.owing_sales = SqlOwingSales
     # How money is shown, read through each hexagon's own `MoneyFormatReader` port (docs/adr/0055).
     app.state.accounts_money_format = SqlMoneyFormat
-    app.state.catalog_money_format = SqlMoneyFormat
     app.state.sales_money_format = SqlMoneyFormat
     app.state.products_money_format = SqlMoneyFormat
     app.state.payments_money_format = SqlMoneyFormat
@@ -333,34 +353,40 @@ def create_app(
     # Exactly these four (ADR-0014): a write here may change what the pinned catalog
     # says, so it also schedules upkeep's own post-commit, off-session sync.
     upkeep_gated = [*gated, Depends(schedule_upkeep)]
+    # The routes that answer amounts also bind the business's decimals for the response.
+    money_gated = [*gated, Depends(bind_money_decimals)]
+    money_upkeep_gated = [*upkeep_gated, Depends(bind_money_decimals)]
     app.include_router(accounts_router, dependencies=gated)
     # Not `upkeep_gated`, on purpose: the request wires `Depends(schedule_upkeep)` here, but
     # then `en -> en` would still sync. Only a changed language can owe the pin an edit, so
     # the router schedules upkeep itself when it did (ADR-0014, as pricing settings does).
     app.include_router(language_router, dependencies=gated)
     app.include_router(phone_country_router, dependencies=gated)
-    app.include_router(products_router, dependencies=upkeep_gated)
-    app.include_router(customers_router, dependencies=gated)
+    app.include_router(products_router, dependencies=money_upkeep_gated)
+    app.include_router(customers_router, dependencies=money_gated)
     app.include_router(phone_countries_router, dependencies=gated)
     # `customer_types` never imports `customers`: the count of customers in a type
     # reaches its router from here (the `CustomersInType` port).
     app.include_router(
         build_customer_types_router(customers_in_type=SqlCustomersInType), dependencies=gated
     )
-    app.include_router(expenses_router, dependencies=gated)
-    app.include_router(sales_router, dependencies=upkeep_gated)
-    app.include_router(stock_router, dependencies=upkeep_gated)
+    app.include_router(expenses_router, dependencies=money_gated)
+    app.include_router(sales_router, dependencies=money_upkeep_gated)
+    app.include_router(stock_router, dependencies=money_upkeep_gated)
     app.include_router(stock_reasons_router, dependencies=gated)
     app.include_router(catalog_router, dependencies=upkeep_gated)
-    app.include_router(payments_router, dependencies=gated)
-    app.include_router(payments_customers_router, dependencies=gated)
+    app.include_router(payments_router, dependencies=money_gated)
+    app.include_router(payments_customers_router, dependencies=money_gated)
     app.include_router(pinned_catalog_router, dependencies=gated)
-    app.include_router(results_router, dependencies=gated)
+    app.include_router(results_router, dependencies=money_gated)
     app.include_router(onboarding_router, dependencies=gated)
     app.include_router(first_run_router, dependencies=gated)
     # Not `upkeep_gated`: only a PUT that changed a switch may touch the pin, and its
     # router decides that itself (ADR-0014).
     app.include_router(pricing_settings_router, dependencies=gated)
+    # Not `upkeep_gated` either: only a save that changed the symbol or the decimals may
+    # touch the pin, and its router decides (ADR-0014).
+    app.include_router(money_format_router, dependencies=gated)
 
     if settings.web_dist is not None:
         if not (settings.web_dist / "index.html").is_file():

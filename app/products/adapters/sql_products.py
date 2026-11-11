@@ -1,9 +1,18 @@
 from collections.abc import Sequence
+from dataclasses import dataclass
+from datetime import date
 
 from sqlalchemy import ColumnElement, delete, exists, select
 from sqlalchemy.orm import Session
 
-from app.db import flush_or_refuse, money_scale_factor, money_stored_value, scaled
+from app.db import (
+    domain_amount,
+    flush_or_refuse,
+    money_of_domain,
+    money_scale_factor,
+    money_stored_value,
+    scaled,
+)
 from app.products.adapters.tables import PriceEntryRow, ProductRow
 from app.products.domain.product import NameHolder, PriceEntry, Product, ProductName
 from app.sales.adapters.tables import SaleLineRow
@@ -11,6 +20,18 @@ from app.shared.money import Money
 from app.shared.quantity import Quantity
 from app.shared.reference import ReferenceRefused
 from app.stock.adapters.tables import StockEntryRow, StockWithdrawalLineRow
+
+
+@dataclass(frozen=True)
+class ListedCurrentPrice:
+    """A listed product with the price entry in force on a day, read in hundredths so cents
+    are kept: the catalog's view, which never turns a price into whole units."""
+
+    product_id: int
+    name: str
+    list_price: Money | None
+    bulk_price: Money | None
+    bulk_minimum: Quantity | None
 
 
 class SqlProducts:
@@ -37,6 +58,47 @@ class SqlProducts:
 
     def listed(self) -> list[Product]:
         return self._by_name(ProductRow.archived_at.is_(None))
+
+    def listed_current_prices(self, day: date) -> list[ListedCurrentPrice]:
+        """Every listed product by name key, with the entry in force on `day` (the latest
+        effective on or before it), amounts in hundredths through `scaled`."""
+        factor = money_scale_factor(self._session, self._business_id)
+        products = self._session.execute(
+            select(ProductRow.id, ProductRow.name)
+            .where(ProductRow.business_id == self._business_id, ProductRow.archived_at.is_(None))
+            .order_by(ProductRow.name_key)
+        ).all()
+        entries = self._session.execute(
+            select(
+                PriceEntryRow.variety_id,
+                scaled(PriceEntryRow.list_price, factor),
+                scaled(PriceEntryRow.bulk_price, factor),
+                PriceEntryRow.bulk_minimum_hundredths,
+            )
+            .where(
+                PriceEntryRow.business_id == self._business_id,
+                PriceEntryRow.variety_id.in_([p.id for p in products]),
+                PriceEntryRow.effective_on <= day,
+            )
+            .order_by(PriceEntryRow.effective_on)
+        ).all()
+        in_force = {entry.variety_id: entry for entry in entries}
+        found: list[ListedCurrentPrice] = []
+        for product in products:
+            entry = in_force.get(product.id)
+            if entry is None:
+                found.append(ListedCurrentPrice(product.id, product.name, None, None, None))
+                continue
+            found.append(
+                ListedCurrentPrice(
+                    product_id=product.id,
+                    name=product.name,
+                    list_price=Money(entry[1]),
+                    bulk_price=None if entry[2] is None else Money(entry[2]),
+                    bulk_minimum=None if entry[3] is None else Quantity(entry[3]),
+                )
+            )
+        return found
 
     def archived(self) -> list[Product]:
         return self._by_name(ProductRow.archived_at.is_not(None))
@@ -126,9 +188,21 @@ class SqlProducts:
         )
         return self._session.scalar(statement)
 
+    def _units(self, hundredths: int | None) -> int | None:
+        """A read amount as the domain's int, in the unit of the business's decimals."""
+        return (
+            None
+            if hundredths is None
+            else domain_amount(self._session, self._business_id, hundredths)
+        )
+
     def _stored(self, units: int) -> int:
-        """A domain amount, whole units, as the integer this business's column holds."""
-        return money_stored_value(self._session, self._business_id, Money.of_units(units))
+        """A domain amount as the integer this business's column holds."""
+        return money_stored_value(
+            self._session,
+            self._business_id,
+            money_of_domain(self._session, self._business_id, units),
+        )
 
     def _stored_or_none(self, units: int | None) -> int | None:
         return None if units is None else self._stored(units)
@@ -168,14 +242,11 @@ class SqlProducts:
         grouped: dict[int, list[PriceEntry]] = {}
         for row, list_price, bulk_price, vip_price in self._session.execute(statement).all():
             grouped.setdefault(row.variety_id, []).append(
-                _entry(row, _units(list_price), _units(bulk_price), _units(vip_price))
+                _entry(
+                    row, self._units(list_price), self._units(bulk_price), self._units(vip_price)
+                )
             )
         return {product_id: tuple(entries) for product_id, entries in grouped.items()}
-
-
-def _units(hundredths: int | None) -> int | None:
-    """A read amount as whole units; raises `MoneyNotRepresentable` when it has cents."""
-    return None if hundredths is None else Money(hundredths).whole_units()
 
 
 def _product(row: ProductRow, entries: tuple[PriceEntry, ...]) -> Product:

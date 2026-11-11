@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from app.shared.money import money_within
+from app.shared.money import domain_amount_within
 from app.shared.quantity import Quantity
 from app.shared.reference import ReferenceRefused
 from app.shared.transaction import Transaction
@@ -33,7 +33,7 @@ def _whole_cost(money_format: MoneyFormatReader, total_cost: Decimal | None) -> 
     decimals (docs/adr/0058); `None` stays `None`."""
     if total_cost is None:
         return None
-    return money_within(total_cost, money_format.current()).whole_units()
+    return domain_amount_within(total_cost, money_format.current())
 
 
 def record_entry(

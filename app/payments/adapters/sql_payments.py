@@ -12,13 +12,17 @@ from sqlalchemy import CursorResult, func, insert, literal, null, select
 from sqlalchemy import delete as sa_delete
 from sqlalchemy.orm import Session
 
-from app.db import money_scale_factor, money_stored_value, scaled
+from app.db import (
+    money_of_domain,
+    money_scale_factor,
+    money_stored_value,
+    scaled,
+)
 from app.payments.adapters.tables import LATER, PaymentRow
 from app.payments.application.ports import StoredPayment
 from app.payments.domain.payment import PaymentAboveBalance
 from app.payments.domain.settlement import PaymentMethod
 from app.sales.adapters.tables import SaleLineRow, SaleRow
-from app.shared.money import Money
 
 
 class SqlPayments:
@@ -59,7 +63,7 @@ class SqlPayments:
         # The guard compares in hundredths on both sides: the sums are read through
         # `scaled()` and the amount is bound as the hundredths it is, while the row is
         # written with the integer the business's column holds (docs/adr/0058).
-        money = Money.of_units(amount)
+        money = money_of_domain(self._session, self._business_id, amount)
         stored = money_stored_value(self._session, self._business_id, money)
         factor = money_scale_factor(self._session, self._business_id)
         shipping = (
