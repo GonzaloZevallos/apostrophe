@@ -272,7 +272,8 @@ test('a 404 payment_method.unavailable keeps the form and the chosen method, mar
       return Promise.resolve(jsonResponse(200, { is_bulk_pricing: false, is_vip_customers: false }))
     }
     if (method === 'GET' && path === '/customers') return Promise.resolve(jsonResponse(200, [ANA]))
-    if (method === 'GET' && path.split('?')[0] === '/sales') return Promise.resolve(jsonResponse(200, []))
+    const url = path.split('?')[0]
+    if (method === 'GET' && url === '/sales') return Promise.resolve(jsonResponse(200, []))
     return Promise.reject(new Error(`unexpected request: ${method} ${path}`))
   })
   vi.stubGlobal('fetch', withPaymentMethods(fetchMock, () => offered))
