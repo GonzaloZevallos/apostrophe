@@ -11,7 +11,6 @@ subgraph src["src"]
     src_phone_countryState_ts["countryState.ts"]
     src_phone_detectCountry_ts["detectCountry.ts"]
     src_phone_device_ts["device.ts"]
-    src_phone_served_fixture_ts["served.fixture.ts"]
     src_phone_shownCountry_ts["shownCountry.ts"]
     src_phone_types_ts["types.ts"]
     src_phone_zoneCountries_json["zoneCountries.json"]
@@ -21,6 +20,5 @@ src_phone_countryState_ts-->src_phone_shownCountry_ts
 src_phone_countryState_ts-->src_phone_types_ts
 src_phone_detectCountry_ts-->src_phone_types_ts
 src_phone_detectCountry_ts-->src_phone_zoneCountries_json
-src_phone_served_fixture_ts-->src_phone_types_ts
 src_phone_shownCountry_ts-->src_phone_types_ts
 ```

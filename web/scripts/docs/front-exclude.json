@@ -20,5 +20,6 @@
   "^src/components/selectorTestKit\\.tsx$",
   "^src/components/SelectorTestHost\\.tsx$",
   "^src/components/Selector\\.tsx$",
-  "^src/components/selectorSearch\\.ts$"
+  "^src/components/selectorSearch\\.ts$",
+  "^src/phone/served\\.fixture\\.ts$"
 ]
