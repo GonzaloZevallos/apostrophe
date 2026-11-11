@@ -28,10 +28,9 @@ class BusinessOpening(Protocol):
     def opened(self, business_id: int, language: BusinessLanguage) -> None: ...
 
 
-class MoneyFormatReader(Protocol):
-    """How the signed-in business shows money, for `GET /auth/me` (docs/adr/0055).
-    Accounts declares this port and never imports `app.money_format`; `app/main.py` wires
-    the real reader in as `app.state.accounts_money_format`."""
+class AccountsMoneyFormat(Protocol):
+    """How the signed-in business shows money, for `/auth/me` (docs/adr/0055). Accounts
+    declares it and never imports who implements it; `app/main.py` wires the real one."""
 
     def current(self) -> MoneyFormat: ...
 

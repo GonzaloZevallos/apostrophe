@@ -153,7 +153,7 @@ function OnboardingStepFrame({
           <h1 className="onboarding__titulo">{resolve(info.title)}</h1>
           <p className="onboarding__porque">{info.why}</p>
           {isFirst(slug) && (
-            <p className="pie">{ONBOARDING_TEXT.currencyLine(me.money_format.symbol, me.money_format.decimals)}</p>
+            <p className="pie">{ONBOARDING_TEXT.currencyLine(me.money.symbol, me.money.decimals)}</p>
           )}
         </div>
 

@@ -6,12 +6,23 @@
 
 import { SETTINGS, SETTINGS_BUSINESS } from '../../routes'
 import { inAppState } from '../../components/inAppState'
-import { act, render, screen } from '@testing-library/react'
+import { act, render as renderBare, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Link, RouterProvider, useNavigate } from 'react-router'
 import { expect, test } from 'vitest'
 import SettingsGroup from './SettingsGroup'
 import ContentArea from '../../components/ContentArea'
+import type { ReactElement, ReactNode } from 'react'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
+
+function Business({ children }: { children: ReactNode }) {
+  return <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>{children}</MoneyFormatProvider>
+}
+
+/** Rendered for a "$"/0-decimals business, the one the strings below were written for. */
+function render(ui: ReactElement) {
+  return renderBare(ui, { wrapper: Business })
+}
 
 const LEAVE = {
   question: 'Discard the name?',

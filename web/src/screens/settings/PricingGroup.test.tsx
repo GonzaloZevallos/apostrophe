@@ -18,6 +18,7 @@ import { inAppState } from '../../components/inAppState'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { SETTINGS as SETTINGS_PATH, SETTINGS_PRICES } from '../../routes'
 import PricingGroup, { PAST_SALES_LINE } from './PricingGroup'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -26,7 +27,7 @@ function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
-const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money_format: { symbol: '$', decimals: 0 } }
+const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 const SETTINGS: PricingSettings = { is_bulk_pricing: true, is_vip_customers: false }
 
@@ -40,7 +41,7 @@ function renderGroup(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
   const router = createMemoryRouter(
     [
       {
-        element: <Outlet context={ME} />,
+        element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>,
         children: [
           { path: SETTINGS_PATH, element: <div>Lista de grupos</div> },
           { path: SETTINGS_PRICES, element: <PricingGroup /> },

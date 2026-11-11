@@ -6,11 +6,12 @@
  * `priceFieldRules.ts`, so a second host maps a refusal to a field without restating any rule.
  */
 
+import MoneyInput from '../../components/MoneyInput'
+import { useMoney } from '../../format/moneyContext'
 import type { PricingSettings } from '../../api/pricingSettings'
 import type { PriceErrors, PriceValues } from './priceFieldRules'
 import { PRICE_DISCOUNT_HELP, PRICE_FROM_GRAMS_HELP, PRICE_PER_GRAM_HELP, VARIETIES_TEXT } from '../../copy/varieties'
 import { COMMON_TEXT } from '../../copy/common'
-import { currentMoneyFormat } from '../../format/money'
 
 export function FieldError({ message }: { message: string | undefined }) {
   if (message === undefined) return null
@@ -29,18 +30,18 @@ interface AmountInputProps {
 }
 
 /**
- * An amount input with the Business symbol before it. The sign is drawn, not typed: it is hidden from the
+ * An amount input with the business's symbol before it. The sign is drawn, not typed: it is hidden from the
  * accessible name and never part of the value, so a fill and a payload see digits only.
  */
 function AmountInput({ className, value, onChange, required }: AmountInputProps) {
+  const { symbol } = useMoney().format
   return (
     <span className="campo__monto">
-      <span className="campo__prefijo" aria-hidden="true">{currentMoneyFormat().symbol}</span>
-      <input
+      <span className="campo__prefijo" aria-hidden="true">{symbol}</span>
+      <MoneyInput
         className={className}
-        inputMode={currentMoneyFormat().decimals > 0 ? 'decimal' : 'numeric'}
         value={value}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={onChange}
         required={required}
       />
     </span>

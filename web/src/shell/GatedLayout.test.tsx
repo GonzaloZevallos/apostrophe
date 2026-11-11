@@ -8,11 +8,10 @@
 
 import { HOME } from '../routes'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
-import { act, render, screen } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import { Profiler, useLayoutEffect } from 'react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
-import { formatMoney, resetMoneyFormat } from '../format/money'
 import { keys } from '../api/keys'
 import { getMe } from '../api/me'
 import {
@@ -25,6 +24,7 @@ import { missingKeys } from '../i18n/missingKeys'
 import { loadLocale, type LocaleBundle } from '../i18n/resources'
 import common from '../copy/locales/en/common.json'
 import GatedLayout from './GatedLayout'
+import { useMoney } from '../format/moneyContext'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -51,7 +51,6 @@ function renderGated() {
 }
 
 afterEach(() => {
-  resetMoneyFormat()
   vi.unstubAllGlobals()
   vi.useRealTimers()
   setLocaleLoader(loadLocale)
@@ -80,7 +79,7 @@ test('a successful "me" renders what is nested under the gated layout', async ()
   vi.stubGlobal(
     'fetch',
     vi.fn().mockResolvedValue(
-      jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money_format: { symbol: '$', decimals: 0 } }),
+      jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }),
     ),
   )
 
@@ -90,17 +89,22 @@ test('a successful "me" renders what is nested under the gated layout', async ()
 })
 
 function Price() {
-  return <div>{formatMoney(11000.5)}</div>
+  const money = useMoney()
+  return <p>{`${money.money(11000.5)} / ${money.attached(11000)}`}</p>
 }
 
-test('while "me" is held nothing shows a digit or a symbol; then the screen writes money in the Business format', async () => {
-  let answer: (response: Response) => void = () => undefined
+test.each([
+  [{ symbol: '$', decimals: 0 }, '$ 11.001 / $11.000'],
+  [{ symbol: 'US$', decimals: 2 }, 'US$ 11.000,50 / US$11.000,00'],
+])('a screen under the gated layout writes amounts in the business money format %o', async (money, text) => {
   vi.stubGlobal(
     'fetch',
-    vi.fn().mockReturnValue(new Promise<Response>((resolve) => { answer = resolve })),
+    vi.fn().mockResolvedValue(
+      jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money }),
+    ),
   )
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  const { container } = render(
+  render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={[HOME]}>
         <Routes>
@@ -112,23 +116,13 @@ test('while "me" is held nothing shows a digit or a symbol; then the screen writ
     </QueryClientProvider>,
   )
 
-  expect(screen.getByRole('progressbar')).toHaveAttribute('aria-busy', 'true')
-  expect(container.textContent).not.toMatch(/\d|\$/)
-  expect(screen.queryByText('US$ 11.000,50')).not.toBeInTheDocument()
+  expect(await screen.findByText(text)).toBeInTheDocument()
+})
 
-  await act(async () => {
-    answer(
-      jsonResponse(200, {
-        email: 'ana@x.com',
-        business_name: 'La Huerta',
-        today: '2026-10-02',
-        shown_language: 'en',
-        money_format: { symbol: 'US$', decimals: 2 },
-      }),
-    )
-  })
-
-  expect(await screen.findByText('US$ 11.000,50')).toBeInTheDocument()
+test('useMoney outside the gated layout refuses instead of guessing a format', () => {
+  const quiet = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+  expect(() => render(<Price />)).toThrow('useMoney() needs a MoneyFormatProvider above it')
+  quiet.mockRestore()
 })
 
 // The language of the business: what `GatedLayout` waits for before it mounts the outlet.
@@ -174,7 +168,7 @@ function answerMe(language: string): void {
     'fetch',
     vi.fn().mockImplementation(() =>
       Promise.resolve(
-        jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: language, money_format: { symbol: '$', decimals: 0 } }),
+        jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: language, money: { symbol: '$', decimals: 0 } }),
       ),
     ),
   )
@@ -210,7 +204,7 @@ test('a business in another language renders nothing until its chunk is installe
   const { requested, answers } = lateLoader()
 
   renderLanguageGated()
-  await vi.waitFor(() => expect(requested).toEqual(['de']))
+  await waitFor(() => expect(requested).toEqual(['de']))
   await act(async () => {
     await Promise.resolve()
   })
@@ -229,7 +223,7 @@ test('a rejected chunk mounts the outlet in English with one recorded miss', asy
   const { answers } = lateLoader()
 
   renderLanguageGated()
-  await vi.waitFor(() => expect(answers).toHaveLength(1))
+  await waitFor(() => expect(answers).toHaveLength(1))
   await act(async () => {
     answers[0]?.reject(new Error('404'))
   })
@@ -280,7 +274,7 @@ test('a failed load followed by a "me" refetch records one miss and asks for the
   const { requested, answers } = lateLoader()
 
   const queryClient = renderLanguageGated()
-  await vi.waitFor(() => expect(answers).toHaveLength(1))
+  await waitFor(() => expect(answers).toHaveLength(1))
   await act(async () => {
     answers[0]?.reject(new Error('404'))
   })
@@ -299,7 +293,7 @@ test('after "Sign out" nothing asks /auth/me again on the way to Entrar', async 
   const fetchMock = vi.fn().mockImplementation((url: string) =>
     Promise.resolve(
       String(url).endsWith('/auth/me')
-        ? jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en', money_format: { symbol: '$', decimals: 0 } })
+        ? jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en', money: { symbol: '$', decimals: 0 } })
         : new Response(null, { status: 204 }),
     ),
   )

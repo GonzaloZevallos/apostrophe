@@ -33,15 +33,18 @@ import { isGone, kindOf, resolveOverride, type RefusalCode } from '../../api/ref
 import type { SuccessToast } from '../../components/AvisoExito'
 import Boton from '../../components/Boton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
+import MoneyInput from '../../components/MoneyInput'
 import { SheetActions } from '../../components/Sheet'
 import Selector from '../../components/Selector'
 import SinConexion from '../../components/SinConexion'
 import { useViewport } from '../../shell/useViewport'
-import { parseMoney } from '../../format/parse'
+import { formatMoneyInput, parseMoneyInput } from '../../format/parse'
+import type { MoneyFormat } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { EXPENSES_TEXT } from '../../copy/expenses'
 import { COMMON_TEXT } from '../../copy/common'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
-import { TOO_MANY_DECIMALS_CODE, tooManyDecimalsMessage } from '../../api/amountRefusal'
+import { AMOUNT_REFUSAL_CODE, tooManyDecimalsMessage } from '../../api/amountRefusal'
 
 export const CATEGORY_GONE = EXPENSES_TEXT.categoryGone
 export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
@@ -66,14 +69,14 @@ interface FormState {
   detail: string
 }
 
-function initialForm(target: FormTarget, today: string): FormState {
+function initialForm(target: FormTarget, today: string, format: MoneyFormat): FormState {
   if (target === 'nuevo') {
     return { spent_on: today, category_id: '', amount: '', detail: '' }
   }
   return {
     spent_on: target.spent_on,
     category_id: String(target.category_id),
-    amount: String(target.amount),
+    amount: formatMoneyInput(target.amount, format),
     detail: target.detail,
   }
 }
@@ -105,12 +108,13 @@ export default function ExpenseForm({
   onGone,
 }: ExpenseFormProps) {
   const me = useOutletContext<Me>()
+  const money = useMoney()
   const phone = useViewport() === 'phone'
   const queryClient = useQueryClient()
   const { t } = useTranslation()
   const categoryErrorId = useId()
   const categoriesQuery = useQuery({ queryKey: keys.expenseCategories(), queryFn: listCategories })
-  const [initial] = useState<FormState>(() => initialForm(target, me.today))
+  const [initial] = useState<FormState>(() => initialForm(target, me.today, money.format))
   const [form, setForm] = useState<FormState>(initial)
   const [categoryError, setCategoryError] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
@@ -168,9 +172,10 @@ export default function ExpenseForm({
     setAmountError(null)
     setCategoryError(null)
     setOffline(false)
-    const parsedAmount = parseMoney(form.amount)
+    const parsedAmount = parseMoneyInput(form.amount, money.format)
     if (!parsedAmount.ok) {
-      setFormError(GENERIC_REFUSAL)
+      if (parsedAmount.tooManyDecimals) setAmountError(tooManyDecimalsMessage(money.format))
+      else setFormError(GENERIC_REFUSAL)
       return
     }
     const body: ExpenseInput = {
@@ -198,8 +203,8 @@ export default function ExpenseForm({
       } else if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateResource(queryClient, 'expenses')
         onGone?.()
-      } else if (caught instanceof ApiError && caught.code === TOO_MANY_DECIMALS_CODE) {
-        setAmountError(tooManyDecimalsMessage())
+      } else if (caught instanceof ApiError && caught.code === AMOUNT_REFUSAL_CODE) {
+        setAmountError(tooManyDecimalsMessage(money.format))
       } else if (isRefusal(caught)) {
         setFormError(GENERIC_REFUSAL)
       } else {
@@ -305,12 +310,11 @@ export default function ExpenseForm({
         )}
         <label className="campo">
           <span className="campo__rotulo">{COMMON_TEXT.amount}</span>
-          <input
+          <MoneyInput
             className="campo__input campo__input--monto"
-            inputMode="numeric"
             autoComplete="off"
             value={form.amount}
-            onChange={(event) => setForm((previous) => ({ ...previous, amount: event.target.value }))}
+            onChange={(amount) => setForm((previous) => ({ ...previous, amount }))}
             required
           />
           {amountError !== null && (

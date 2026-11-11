@@ -14,6 +14,8 @@ from app.shared.language import ENGLISH, TEST_LOCALE, Language
 from app.shared.money import MoneyFormat
 from tests.catalog.reference_texts import CASES, Case
 
+DOLLARS = MoneyFormat(symbol="$", decimals=0)
+
 
 def production_words() -> BabelCatalogWords:
     return BabelCatalogWords(CopyCatalog(DEFAULT_LOCALES_DIR))
@@ -23,15 +25,9 @@ def production_words() -> BabelCatalogWords:
 def test_production_english_writes_the_reference_literals(case: Case) -> None:
     words = production_words().words_for(ENGLISH)
 
-    assert (
-        catalog_text(words, case.header, case.footer, case.entries, MoneyFormat("$", 0))
-        == case.expected
-    )
+    assert catalog_text(words, DOLLARS, case.header, case.footer, case.entries) == case.expected
     expected = case.expected if case.expected is not None else case.expected_pinned
-    assert (
-        pinned_catalog_text(words, case.header, case.footer, case.entries, MoneyFormat("$", 0))
-        == expected
-    )
+    assert pinned_catalog_text(words, DOLLARS, case.header, case.footer, case.entries) == expected
 
 
 @pytest.fixture

@@ -26,8 +26,9 @@ import VarietiesIndex from './VarietiesIndex'
 import VarietiesLayout from './VarietiesLayout'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money_format: { symbol: '$', decimals: 0 } }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -115,7 +116,7 @@ function renderAt(path: string | InitialEntry[], overrides: Answers = {}, hidden
         element: (
           <QueryClientProvider client={queryClient}>
             <FlashProvider>
-              <Outlet context={ME} />
+              <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
             </FlashProvider>
           </QueryClientProvider>
         ),
@@ -397,7 +398,7 @@ describe('on a computer (two panes)', () => {
           element: (
             <QueryClientProvider client={queryClient}>
               <FlashProvider>
-                <Outlet context={ME} />
+                <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
               </FlashProvider>
             </QueryClientProvider>
           ),

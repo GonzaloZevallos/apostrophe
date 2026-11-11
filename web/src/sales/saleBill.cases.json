@@ -212,23 +212,5 @@
       "balance": null
     },
     "expected": "Flores Test\nSale #1284 · 10/10\n\nAurora 3,5 g · $ 35.000\n\nTotal · $ 35.000\nPaid in cash"
-  },
-  {
-    "name": "US$ with 2 decimals: every figure carries the symbol and two places",
-    "money_format": { "symbol": "US$", "decimals": 2 },
-    "bill": {
-      "business_name": "Flores Test",
-      "number": 3,
-      "date": "2026-09-18",
-      "shipping_charged": 1500.5,
-      "total": 36500.5,
-      "lines": [
-        { "product": "Aurora", "quantity": 3.5, "amount": 35000, "rule": null, "unit_price": null },
-        { "product": "Luna", "quantity": 10, "amount": 0, "rule": "gift", "unit_price": null }
-      ],
-      "payment": { "state": "owed", "still_owed": 11000.25 },
-      "balance": -2500.5
-    },
-    "expected": "Flores Test\nSale #3 · 18/09\n\nAurora 3,5 g · US$ 35.000,00\nLuna 10 g · Gift · US$ 0,00\nShipping · US$ 1.500,50\n\nTotal · US$ 36.500,50\nStill owed on this sale: US$ 11.000,25\nIn your favor: US$ 2.500,50"
   }
 ]

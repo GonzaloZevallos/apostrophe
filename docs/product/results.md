@@ -6,15 +6,22 @@ El Profit y el Cash no existen en ningún otro lugar del producto, y son la raz�
 
 **Cuando** abro la app entre pedidos o al final del día, **quiero** ver qué vendí hoy, quién me debe y qué se está terminando, y actuar enseguida (cobrarle a un deudor, abrir un Product que está bajo, arreglar lo que me dice un aviso), **para** volver al Customer sin pasar por Customers y Products una por una ni hacer cuentas.
 
-Este job afina el job del Panel de arriba y el job de navegación para Today (GH-45); no es un job nuevo. Su protagonista es el vendedor, en el teléfono y con poco tiempo. Week y Month son para la mirada semanal o mensual, y Analysis para todo lo más profundo. Antes, el vendedor entraba a Customers para cobrar y a Products Product por Product, y configuraba el Business sin guía, muchas veces olvidándose del bot.
+Este job afina el job del Panel de arriba y el job de navegación para Today (GH-45); no es un job nuevo. Su protagonista es el vendedor, en el teléfono y con poco tiempo. Week y Month son para la mirada semanal o mensual, y Analysis para todo lo más profundo. Antes, el vendedor entraba a Customers para cobrar y a Products Product por Product.
+
+**Cuando** abro Home en el celular para ver cómo viene el día, **quiero** ver solo lo que vendí, lo que me deben y mi Stock por Product, **para** llevar el negocio de un vistazo sin avisos de configuración en el medio.
+
+Afina el job del Panel: Home muestra el día, no configura el Business. Antes, Home mostraba arriba un elemento de primer uso (el aviso "Go on to the setup" del Onboarding, la First-run checklist o "Start with your products") y el aviso posterior a la Spreadsheet import, hasta que la configuración se terminaba. El dueño los sacó (`docs/design/redesign/registro-unificado.md`, "Se sacan los avisos de primer uso"). La configuración sigue en el Onboarding (al aceptar la Invitation o abriendo `/onboarding`), en Settings y en la página del Product. Criterios de éxito propios:
+
+1. Home no muestra ningún aviso de primer uso para un Business en Onboarding, uno anterior al Onboarding, uno importado ni uno sin precio hoy; en todos los casos se ve como el de un Business con la configuración terminada.
+2. Un Business nuevo sigue entrando al Onboarding al aceptar su Invitation, y cada acción de configuración sigue alcanzable desde Settings o la página del Product.
+3. Nada en la app ni en sus tests nombra ni muestra los avisos sacados.
+4. El glosario y los docs describen el producto como es ahora.
 
 **Cuando** saco gramos de mi propio stock sin venderlos (para convidar en una fiesta y que la gente conozca el negocio, o para consumo propio), **quiero** registrarlo desde el teléfono en pocos toques (fecha, Products y gramos, Withdrawal reason), **para** mantener bien el stock y ver en el Profit lo que me costó promocionar el negocio y lo que consumí, sin registrar una venta que nadie hizo ni un Adjustment que se lee como flor perdida. (Acá lo sirven las líneas de costo por Withdrawal reason de Week y Month; el Stock withdrawal se define en stock.md.)
 
 **Cuando** saco stock sin venderlo, **quiero** registrarlo bajo un Withdrawal reason con mis propias palabras, **para que** Home y Analysis muestren cuánto me cuesta cada tipo de Stock withdrawal y cuánto baja mi Profit. (GH-318, parte de Withdrawal reasons: acá lo sirve una línea de costo por Withdrawal reason en Week y Month, en el orden de la lista del Business; la lista se define en stock.md.)
 
 **Cuando** llevo el negocio desde el teléfono entre pedidos o en medio de un chat con un Customer, varias veces por día, **quiero** que la app esté ordenada según lo que hago de verdad y con qué frecuencia, **para** volver al Customer en vez de buscar entre menús. (Es el job de navegación, navigation.md. Acá lo sirve Today, que muestra lo que se puede resolver hoy, con "Collect" en cada deudor.)
-
-**Cuando** acabo de abrir mi Business y todavía está vacío, **quiero** que me guíen por lo que necesita, un paso corto a la vez y con valores por defecto ya cargados, **para** registrar mi primera venta el mismo día sin buscar entre Settings, Products y la pantalla del Catalog. (Acá lo sirve el aviso "Go on to the setup" arriba de Home, el único camino de vuelta al Onboarding; se define en onboarding.md.)
 
 **Cuando** un Product que cargué por error, o uno con el que ya no trabajo, sigue apareciendo en mis listas y selectores, **quiero** sacarlo desde el teléfono en pocos toques, eliminándolo si nunca se movió y archivándolo si tiene historial, **para que** mis listas muestren solo lo que todavía vendo, ninguna cifra pasada de ventas, stock, costo o Profit cambie, y pueda volver a tenerla exactamente como estaba si empiezo a venderla de nuevo. (Acá lo sirve What you have left, que deja afuera los Archived products mientras todas las cifras del período siguen iguales; se define en varieties.md.)
 
@@ -47,7 +54,7 @@ Criterios de éxito:
 7. **Un Stock withdrawal no es una venta**: registrar uno deja exactamente como estaban las ventas, la cantidad de ventas, el Average sale, los gramos vendidos, You gave away, el Cost of goods sold, el Stock shortfall y el Cash.
 8. **Cobrar en un toque desde Today**: "Collect" en cada fila de deudor del bloque "Owed to you" abre Record payment con ese Customer elegido, con nombre accesible "Collect from <name>"; volver o "Close" sale con un solo movimiento.
 9. **Today es solo lo que se puede resolver**: lo vendido hoy, después Owed to you, después What you have left; un Product bajo lleva a su página; ninguna cifra de resultado (Profit, Cash, costos, Expenses, You gave away, Purchases) se muestra en Today.
-10. **El primer uso sigue la definición de hoy**: un Business recién creado recibe el aviso del Onboarding; solo un Business que existía antes de que saliera el Onboarding ve la checklist de cuatro pasos; un Business cargado por el Spreadsheet import ve el aviso posterior al Spreadsheet import, que se puede descartar; nunca se muestra más de un elemento de primer uso a la vez (navigation.md).
+10. **Sin primer uso en Home**: Home no muestra ningún elemento de primer uso (ni el aviso del Onboarding, ni la checklist, ni "Start with your products", ni el aviso posterior a la Spreadsheet import) para ningún Business, cualquiera sea el estado de su configuración. Un Business en configuración ve el Panel normal con sus estados vacíos de siempre, sin texto de configuración.
 11. **Cada aviso lleva a su arreglo**: "Your Telegram catalog is out of date" abre la pantalla del Catalog; el avatar del Business abre Settings.
 12. **Como en el diseño**: Home, `InicioOscuro` (Home, tema oscuro) e `InicioCompu` (Home, disposición de computadora) coinciden con `docs/product/design-system/pantallas/`, en teléfono y computadora, en los dos temas.
 13. **Nada cambia para un Business existente** (GH-318, parte de Withdrawal reasons): ve los mismos costos, Profit y Cash; la única diferencia visible es que la línea "Promotion" ahora dice "Marketing".
@@ -61,9 +68,10 @@ Si un Business gana plata y cuánta tiene de verdad, hoy, esta semana y este mes
 - las Expenses, de expenses;
 - las Purchases, de stock;
 - los Payments, los Balances y el Settlement, de payments (ADR-0012);
-- el Stock status y los Days left, de stock.
+- el Stock status y los Days left, de stock;
+- el estado del Pinned catalog, de pinned-catalog.
 
-No calcula nada que esas capacidades ya calculen, más allá de sumarlo. Sus cifras por período salen del único cálculo que también lee Analysis (ADR-0020): el Profit de acá y el de Analysis son la misma cifra. Home también lleva el aviso del Onboarding (onboarding.md), la First-run checklist y el aviso posterior al Spreadsheet import (navigation.md); acá se define su lugar en Home. Un Archived product (varieties.md) sale de What you have left y de "Start with your products", mientras que todas las cifras del período la siguen contando.
+No calcula nada que esas capacidades ya calculen, más allá de sumarlo. Sus cifras por período salen del único cálculo que también lee Analysis (ADR-0020): el Profit de acá y el de Analysis son la misma cifra. Home no lee `/first-run` ni `/onboarding-progress` y no muestra ningún elemento de primer uso. Un Archived product (varieties.md) sale de What you have left, mientras que todas las cifras del período la siguen contando.
 
 ## Comportamiento
 
@@ -153,24 +161,21 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 
 ### En pantalla (Home; `InicioOscuro`, Home en el tema oscuro; `InicioCompu`, Home en la disposición de computadora)
 
+![Home, pestaña Today, en el teléfono](../assets/screens/InicioHoy.webp)
+
 - Home es el Panel y una Tab root (navigation.md), y sigue siendo la pantalla de llegada después del login y después de aceptar una Invitation para sumarse. Aceptar una Invitation de Business nuevo lleva, en cambio, al Onboarding (onboarding.md).
 - **Arriba de todo**: el avatar del Business, que abre Settings.
 - **De arriba abajo, encima de las cifras**:
-  1. el elemento de primer uso del Business, como máximo uno de:
-     - "Go on to the setup", mientras el Onboarding no terminó (onboarding.md): "N of 6 steps" y lo que sigue, sin poder descartarse;
-     - la First-run checklist mientras se muestra (navigation.md), para un Business que existía antes del Onboarding.
-
-     Cuando no corresponde ninguno, "Start with your products" ocupa este lugar siempre que ningún Product sin archivar tenga un Current price hoy. Nunca se muestra junto con el aviso del Onboarding ni con la checklist;
-  2. "Your Telegram catalog is out of date", mientras el Pinned catalog está Out of date (pinned-catalog.md). Abre la pantalla del Catalog (catalog.md);
-  3. "Connect the bot so the pinned catalog updates by itself", para un Business cargado por el Spreadsheet import, hasta que se descarta o se publica el bot por primera vez (navigation.md);
-  4. las cifras de la pestaña, como se listan arriba.
-- El estado de primer uso es del Business: cada User, un socio que se sumó incluido, ve el mismo elemento.
-- Week y Month conservan los mismos avisos encima de sus propias cifras.
-- En una computadora usa la disposición de dos columnas de `InicioCompu` (Home, disposición de computadora), con los mismos avisos en el mismo orden arriba.
+  1. "Your Telegram catalog is out of date", mientras el Pinned catalog está Out of date (pinned-catalog.md). Abre la pantalla del Catalog (catalog.md);
+  2. las cifras de la pestaña, como se listan arriba.
+- **Ningún elemento de primer uso**: ni "Go on to the setup", ni la First-run checklist, ni "Start with your products", ni "Connect the bot so the pinned catalog updates by itself". Nada los reemplaza: ningún aviso, insignia ni recordatorio de configuración, en Home ni en otro lado. Un Business en configuración (a mitad del Onboarding, anterior al Onboarding sin sus dos pasos, importado o sin precio hoy) ve el Panel con sus estados vacíos de siempre ("Nobody owes you", ceros reales, "Add its first entry"), sin texto de configuración.
+- **Cargando**: Home espera solo la lectura del estado del Pinned catalog junto con sus cifras, así que un aviso que llega tarde nunca empuja las cifras hacia abajo, y no se reserva lugar para ningún otro aviso.
+- Week y Month conservan el mismo aviso encima de sus propias cifras.
+- En una computadora usa la disposición de dos columnas de `InicioCompu` (Home, disposición de computadora), con el mismo aviso arriba.
 - Sigue los temas claro y oscuro, y coincide con `docs/product/design-system/pantallas/` en los dos. Las líneas de los Withdrawal reasons usan la fila de resultado existente (la etiqueta a la izquierda y la cifra a la derecha); no tienen dibujo propio.
 - No es un menú de acciones:
   - no registra nada por sí mismo y no tiene toasts propios;
-  - su única acción principal es el "+ New sale" del marco; "Collect" en las filas de deudor es la única otra acción directa, además de los avisos, que solo abren donde está su arreglo.
+  - su única acción principal es el "+ New sale" del marco; "Collect" en las filas de deudor es la única otra acción directa, además del aviso, que solo abre donde está su arreglo.
 - Las cifras se leen al abrir el Panel, sin actualizaciones en vivo.
 - Una red caída muestra "No connection"; un error del servidor muestra el reintento genérico (accounts.md).
 
@@ -178,7 +183,8 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 
 - El Business sale de la Session.
 - La ruta del Panel entra en el barrido de aislamiento y en la prueba de rutas protegidas.
-- Cada cifra se calcula en el servidor, y también qué elemento de primer uso y qué avisos se muestran, la cuenta y el paso siguiente del aviso del Onboarding, cada paso de la checklist, qué líneas de Withdrawal reason se muestran y en qué orden, y si una línea de Withdrawal reason está toda pendiente. El navegador nunca ordena ni suma nada.
+- Cada cifra se calcula en el servidor, y también si se muestra el aviso de desactualizado, qué líneas de Withdrawal reason se muestran y en qué orden, y si una línea de Withdrawal reason está toda pendiente. El navegador nunca ordena ni suma nada.
+- Home no lee `/first-run` ni `/onboarding-progress`. Esas rutas siguen en el backend: `/onboarding-progress` lo lee el Onboarding, y `/first-run` el marco y Products para las reglas laterales de navigation.md.
 - Ninguna cifra ni nombre va a los logs, la consola ni el almacenamiento del navegador.
 
 ## Métricas
@@ -202,22 +208,21 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
   - una línea de Withdrawal reason toda pendiente que muestra sus gramos sin costo, nunca "$ 0";
   - Profit y Cash negativos que se muestran como "−$ X".
 - **Nada cambia para un Business existente (criterio 13)**: sobre una historia sembrada, antes y después de la migración de los Withdrawal reasons, cada cifra de Week y Month es idéntica, y la única etiqueta que difiere es "Promotion" → "Marketing".
-- **Archivar no mueve nada (criterio 3)**: cada cifra del período es idéntica antes de archivar un Product con historial, después de archivarlo y después de restaurarlo; el Archived product no aparece en What you have left y no cuenta para "Start with your products".
+- **Archivar no mueve nada (criterio 3)**: cada cifra del período es idéntica antes de archivar un Product con historial, después de archivarlo y después de restaurarlo; el Archived product no aparece en What you have left.
 - **No es una venta (criterio 7)**: después de registrar un Stock withdrawal, 0 diferencias en ventas, cantidad de ventas, Average sale, gramos vendidos, You gave away, Cost of goods sold, Stock shortfall y Cash.
 - **Pestañas (criterio 9)**: las pruebas del front, en teléfono y computadora, muestran Today solo con lo vendido hoy, Owed to you y What you have left, en ese orden, y el Profit, el Cash, el Cost of goods sold, el Stock shortfall, las líneas de los Withdrawal reasons, las Expenses, You gave away y las Purchases solo en Week y Month, con las líneas de los Withdrawal reasons justo después de Stock shortfall.
 - **Cobrar en un toque (criterio 8)**: la corrida de punta a punta del front, en ventanas de teléfono y de computadora, toca "Collect from <name>" en Today, Record payment abre con ese Customer elegido, se guarda un Payment y un solo movimiento de vuelta regresa a Home.
 - **Actualización después de Collect**: las pruebas del front muestran un Payment parcial que deja al deudor con el Balance nuevo, un Payment total que saca la fila y el avance que se completa hasta 3 según su orden, "Nobody owes you" cuando no queda nadie que deba, y los dos toasts como están especificados, sin nombre de Customer.
-- **El orden de Home (criterios 10, 11)**: las pruebas del front, en teléfono y computadora, muestran como máximo uno entre el aviso del Onboarding, la checklist o "Start with your products" (nunca dos), después el aviso de desactualizado, después el aviso posterior al Spreadsheet import, después las cifras; el aviso de desactualizado abre la pantalla del Catalog y el avatar abre Settings.
-- **Primer uso (criterio 10)**: las matrices de primer uso de navigation.md, 100% de aprobación.
+- **Sin primer uso en Home (criterio 10 y job de Home)**: las pruebas del front, en teléfono y computadora y en los dos temas, muestran Home sin "Go on to the setup", sin checklist, sin "Start with your products" y sin "Connect the bot…" para un Business a mitad del Onboarding, uno anterior al Onboarding sin sus dos pasos, uno importado y uno sin precio hoy; Home no pide `/first-run` ni `/onboarding-progress`. Nada bajo `web/src`, `web/e2e` ni `tests` nombra `OnboardingNotice`, `FirstRunChecklist`, `ImportNotice` ni `inicioNotices`. 0 excepciones.
+- **El aviso de Home (criterio 11)**: las pruebas del front, en teléfono y computadora, muestran el aviso de desactualizado arriba de las cifras mientras rige, que abre la pantalla del Catalog, y el avatar que abre Settings.
 - **Bordes de período**: una semana que cruza un mes y un año, el lunes como primer día y un cambio de día en hora argentina. 100% de aprobación.
 - **Avance de deudores (criterio 4)**: ordenado por Balance, después por Owing since y después por nombre; los Credits excluidos; "Nobody owes you" cuando nadie debe; "Collect" con su nombre accesible en cada fila. Ningún estado se dice solo por color, en los dos temas.
-- **Aislamiento (criterio 5)**: desde otro Business, la ruta del Panel no muestra ninguna cifra, nombre de Withdrawal reason, estado de Onboarding ni estado de primer uso del primer Business. Después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen cifras ni nombres.
+- **Aislamiento (criterio 5)**: desde otro Business, la ruta del Panel no muestra ninguna cifra ni nombre de Withdrawal reason del primer Business. Después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen cifras ni nombres.
 - **Nada inventado (criterio 6)**:
   - un Business vacío muestra $ 0 y 0 g, sin Average sale y sin ninguna línea de Stock shortfall ni de Withdrawal reason;
   - cada cifra en pantalla es igual a la respuesta de la API.
-- **Como en el diseño (criterio 12)**: `scripts/design/compare.sh` corre antes y después para Home, `InicioOscuro` e `InicioCompu`, en teléfono y computadora, con las capturas adjuntas al PR y cada diferencia con el diseño listada. El registro de pantallas no captura Week ni Month: las líneas de los Withdrawal reasons y su nota se cubren con las pruebas del front y la corrida de teléfono.
+- **Como en el diseño (criterio 12)**: `scripts/design/compare.sh` corre antes y después para Home, `InicioOscuro` e `InicioCompu`, en teléfono y computadora, con las capturas adjuntas al PR y cada diferencia con el diseño listada. El registro de pantallas no captura Week ni Month: las líneas de los Withdrawal reasons y su nota se cubren con las pruebas del front y la corrida de teléfono. Las filas `InicioPrimeraVez*`, `InicioOnboardingEnCurso*` e `InicioOnboardingCompleto*` ya no existen, así que el aviso de desactualizado y el Panel vacío de un Business en configuración no tienen captura y se juzgan contra el texto y la regla de icon-and-text-rule.md.
 - **Sin curl**: la corrida de punta a punta del front abre Home, pasa por los tres períodos, lee las líneas de los Withdrawal reasons después de registrar un Stock withdrawal de cada uno (un Withdrawal reason agregado por el dueño incluido), abre Customers desde el título del bloque, un Customer desde el avance y Record payment desde el "Collect" de una fila del avance.
-- **Medida de negocio**, que lee el Operator solo a partir de los registros existentes y nunca se muestra en la app: la proporción de Businesses anteriores al Onboarding que completan la checklist, y la proporción de Businesses cargados por el Spreadsheet import que publican el Catalog.
 
 ## Fuera de alcance
 
@@ -227,11 +232,12 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 - Margin por Product (#8), Stock shortfall por Product, y el costo de cada Withdrawal reason por Product.
 - Gramos pendientes contados en el Panel ("and N g without cost") para una cifra con parte pendiente: la nota del Panel es fija y no lleva gramos; Analysis muestra las cuentas.
 - Los gramos totales del stock en el Panel.
-- Descartar el aviso del Onboarding.
+- Cualquier aviso, insignia, recordatorio o elemento de primer uso en Home, o un reemplazo de los avisos sacados en otra pantalla; un mensaje a los Users existentes de que se fueron.
+- Un link al Onboarding desde Home.
+- Quitar `/first-run` o `/onboarding-progress` del backend, o cambiar las reglas laterales de "+ New sale" y "Send catalog" (navigation.md).
 - Archived products en el Panel.
 - Poner primero los Products bajos en What you have left.
 - Rediseñar Record payment según `Cobro.dc.html`: es trabajo propio de la pantalla de payments.
-- Una checklist para un Business recién creado: recibe el Onboarding.
 - Mostrar una línea en $0 para un Withdrawal reason sin Stock withdrawals en el período.
 
 ## Planificado en GH-318

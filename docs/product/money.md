@@ -108,8 +108,8 @@ Algunas cifras dividen: el total de una Sale line, el costo por unidad que se to
 - Dónde se ve hoy:
   - Record payment ("Collect"), el formulario de Expense y el costo de una Stock entry: debajo del campo de monto, en la línea de error de Campo, sin Attention icon.
   - El formulario de Price y el precio del Onboarding: siempre debajo del List price, aunque el monto rechazado sea el Bulk price o el VIP price.
-  - New sale: como mensaje del formulario, no debajo del Shipping charged, el Special price o el monto pagado en el acto.
-  - Las Sheets de precio de promoción, Settings → Prices y el paso de Stock del Onboarding: todavía muestran el genérico "Check the details and try again."; el monto igual se rechaza y no se guarda nada.
+  - New sale: como mensaje del formulario, no debajo del Shipping charged ni del Special price.
+  - Settings → Prices y el paso de Stock del Onboarding: todavía muestran el genérico "Check the details and try again."; el monto igual se rechaza y no se guarda nada.
 
 ### Business export
 

@@ -458,7 +458,7 @@
   {
     "screen": "ConfiguracionNegocio",
     "rule": "touch-action",
-    "target": "button:Save the name",
+    "target": "button:Save",
     "issue": 60
   },
   {
@@ -823,60 +823,6 @@
   },
   {
     "screen": "InicioHoy",
-    "rule": "touch-action",
-    "target": "button:Week",
-    "issue": 45
-  },
-  {
-    "screen": "InicioOnboardingCompleto",
-    "rule": "touch-action",
-    "target": "button:Month",
-    "issue": 45
-  },
-  {
-    "screen": "InicioOnboardingCompleto",
-    "rule": "touch-action",
-    "target": "button:Today",
-    "issue": 45
-  },
-  {
-    "screen": "InicioOnboardingCompleto",
-    "rule": "touch-action",
-    "target": "button:Week",
-    "issue": 45
-  },
-  {
-    "screen": "InicioOnboardingEnCurso",
-    "rule": "touch-action",
-    "target": "button:Month",
-    "issue": 45
-  },
-  {
-    "screen": "InicioOnboardingEnCurso",
-    "rule": "touch-action",
-    "target": "button:Today",
-    "issue": 45
-  },
-  {
-    "screen": "InicioOnboardingEnCurso",
-    "rule": "touch-action",
-    "target": "button:Week",
-    "issue": 45
-  },
-  {
-    "screen": "InicioPrimeraVez",
-    "rule": "touch-action",
-    "target": "button:Month",
-    "issue": 45
-  },
-  {
-    "screen": "InicioPrimeraVez",
-    "rule": "touch-action",
-    "target": "button:Today",
-    "issue": 45
-  },
-  {
-    "screen": "InicioPrimeraVez",
     "rule": "touch-action",
     "target": "button:Week",
     "issue": 45

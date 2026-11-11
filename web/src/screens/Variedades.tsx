@@ -37,7 +37,8 @@ import Notice from '../components/Notice'
 import PaneRowLink from '../components/PaneRowLink'
 import SinConexion from '../components/SinConexion'
 import { readFeedback } from '../components/feedback'
-import { formatGrams, formatMoney } from '../format/money'
+import { formatGrams } from '../format/money'
+import { useMoney } from '../format/moneyContext'
 import {
   ARCHIVED_VARIETIES,
   CATALOG,
@@ -192,6 +193,7 @@ export function VarietyRows({
   today: string
   computer: boolean
 }) {
+  const money = useMoney()
   return (
     <div className="lista-variedades">
       {rows.map(({ variety, row }) => (
@@ -212,7 +214,7 @@ export function VarietyRows({
             <span className={variety.current_price === null ? 'variedad-fila__precio' : 'variedad-fila__precio cifra-s'}>
               {variety.current_price === null
                 ? NO_PRICE_TODAY
-                : COMMON_TEXT.pricePerGram(formatMoney(variety.current_price.list_price))}
+                : COMMON_TEXT.pricePerGram(money.money(variety.current_price.list_price))}
             </span>
           </span>
         </PaneRowLink>

@@ -17,7 +17,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.sql_accounts import SqlAccounts
-from app.accounts.application.ports import BusinessOpening, MoneyFormatReader
+from app.accounts.application.ports import AccountsMoneyFormat, BusinessOpening
 from app.accounts.application.sign_in import SignedIn, open_session
 from app.accounts.domain.address import address_key
 from app.accounts.domain.password import PasswordHasher
@@ -66,17 +66,6 @@ def get_business_opening(
     return factory(session)
 
 
-def get_money_format(
-    request: Request, session: Annotated[Session, Depends(get_session)], business_id: int
-) -> MoneyFormatReader:
-    # Accounts never imports `app.money_format` (docs/adr/0055): `app/main.py` hangs
-    # `SqlMoneyFormat` on `app.state.accounts_money_format` as a factory.
-    factory = cast(
-        Callable[[Session, int], MoneyFormatReader], request.app.state.accounts_money_format
-    )
-    return factory(session, business_id)
-
-
 def raise_unauthenticated() -> NoReturn:
     raise HTTPException(
         status_code=401, detail="Not authenticated", headers={"WWW-Authenticate": "Bearer"}
@@ -105,6 +94,19 @@ def current_business_id(signed_in: CurrentSession) -> int:
 
 
 CurrentBusinessId = Annotated[int, Depends(current_business_id)]
+
+
+def get_money_format(
+    request: Request,
+    session: Annotated[Session, Depends(get_session)],
+    business_id: CurrentBusinessId,
+) -> AccountsMoneyFormat:
+    # The same factory shape as `business_opening`: `create_app` assigns it, and the
+    # business comes from the session only.
+    factory = cast(
+        Callable[[Session, int], AccountsMoneyFormat], request.app.state.accounts_money_format
+    )
+    return factory(session, business_id)
 
 
 def _parse_ip(raw: str) -> IPv4Address | IPv6Address | None:

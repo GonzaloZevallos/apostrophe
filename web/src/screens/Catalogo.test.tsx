@@ -20,6 +20,7 @@ import Shell from '../shell/Shell'
 import Catalogo from './Catalogo'
 import { iconAndTextProblems } from '../test/iconAndTextRule'
 import { baselineText } from '../i18n/testing'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
 const EMPTY_STATE_TITLE = baselineText('catalog.ts:EMPTY_STATE_TITLE')
 const EMPTY_STATE_DETAIL = baselineText('catalog.ts:EMPTY_STATE_DETAIL')
@@ -47,10 +48,10 @@ function VarietyLanding() {
   )
 }
 
-const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money_format: { symbol: '$', decimals: 0 } }
+const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 function Provide() {
-  return <Outlet context={ME} />
+  return <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
 }
 
 function renderCatalogo(

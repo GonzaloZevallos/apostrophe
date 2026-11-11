@@ -15,8 +15,9 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { SheetRouterProvider, sheetDepth } from '../../components/useSheetStack'
 import { CUSTOMERS, pathTo, SALES, SALE_NEW } from '../../routes'
 import NuevaVenta from './NuevaVenta'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money_format: { symbol: '$', decimals: 0 } }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
 const ROSA = {
   id: 1,
   name: 'Rosa',
@@ -63,7 +64,7 @@ function renderForm() {
   const router = createMemoryRouter(
     [
       { path: SALES, element: <h1>Lista de ventas</h1> },
-      { element: <Outlet context={ME} />, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] },
+      { element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] },
     ],
     { initialEntries: [SALES, SALE_NEW], initialIndex: 1 },
   )

@@ -19,6 +19,7 @@ import { BRAKE_MESSAGE } from '../Entrar'
 import AccountGroup from './AccountGroup'
 import { PASSWORD_CHANGED_SUCCESS } from '../../copy/settings'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 function noContent(): Response {
   return new Response(null, { status: 204 })
@@ -31,10 +32,10 @@ function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
-const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money_format: { symbol: '$', decimals: 0 } }
+const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 function Provide() {
-  return <Outlet context={ME} />
+  return <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
 }
 
 const BUSINESS = {

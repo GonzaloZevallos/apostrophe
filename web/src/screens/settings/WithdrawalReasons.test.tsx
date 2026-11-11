@@ -5,7 +5,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { render as renderBare, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -13,6 +13,17 @@ import { SheetRouterProvider } from '../../components/useSheetStack'
 import { SETTINGS_WITHDRAWAL_REASONS } from '../../routes'
 import { SETTINGS_TEXT } from '../../copy/settings'
 import WithdrawalReasons from './WithdrawalReasons'
+import type { ReactElement, ReactNode } from 'react'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
+
+function Business({ children }: { children: ReactNode }) {
+  return <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>{children}</MoneyFormatProvider>
+}
+
+/** Rendered for a "$"/0-decimals business, the one the strings below were written for. */
+function render(ui: ReactElement) {
+  return renderBare(ui, { wrapper: Business })
+}
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })

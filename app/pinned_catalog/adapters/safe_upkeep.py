@@ -20,9 +20,9 @@ from starlette.datastructures import State
 
 from app.catalog.application.ports import (
     CatalogLanguage,
+    CatalogMoneyFormat,
     CatalogPricingSettings,
     CatalogWordsSource,
-    MoneyFormatReader,
 )
 from app.clock import Clock
 from app.pinned_catalog.adapters.sql_recorder import SqlPinRecorder
@@ -43,7 +43,7 @@ def run_upkeep_safely(state: State, business_id: int, today: date) -> None:
     pricing_settings = cast(
         Callable[[Session, int], CatalogPricingSettings], state.catalog_pricing_settings
     )
-    money_format = cast(Callable[[Session, int], MoneyFormatReader], state.catalog_money_format)
+    money_format = cast(Callable[[Session, int], CatalogMoneyFormat], state.catalog_money_format)
     words = cast(CatalogWordsSource, state.catalog_words)
     language = cast(Callable[[Session], CatalogLanguage], state.catalog_language)
     snapshots = SqlPinSnapshots(engine, cipher, pricing_settings, money_format, words, language)

@@ -516,7 +516,7 @@ Este archivo solo dice dónde se aplica y cómo se mantiene. No repite los requi
 
 Estos grupos de Settings (navigation.md) reemplazan a la antigua pantalla Business, que ya no existe; `/negocio` redirige a Settings. Cada uno es su propia subpantalla, un formulario: "Close", y una confirmación al salir con cambios sin guardar; uno sin tocar se cierra al instante. (Prices, entre Users e Integrations, es pricing-settings.md.)
 
-- **Business**: renombrar el Business. Toast "Business renamed"; rechazos en línea, conservando lo tipeado.
+- **Business**: renombrar el Business y elegir su Phone country, con un solo Save. Toast "Saved"; rechazos en línea, conservando lo tipeado.
 - **Users**:
   - los Users por email, ordenados por email, con el que tiene la sesión iniciada marcado "you"; siempre lista al menos al User con la sesión iniciada;
   - "Invite a partner": cada toque crea un link nuevo para sumarse, para copiar o compartir con el menú de compartir del teléfono.
@@ -579,7 +579,7 @@ Estos estados los dibuja `Estados` (GH-49), con el estilo renovado a partir del 
 
 - **Los toasts de éxito** son cortos, fijos y no llevan datos, con una excepción deliberada.
   - Los toasts de esta capacidad:
-    - "Business renamed";
+    - "Saved";
     - "Invitation ready", salvo que el link se muestre en la pantalla;
     - "Password changed · we signed out your other sessions".
   - Elegir un tema no muestra ningún toast.
@@ -660,7 +660,7 @@ Estos estados los dibuja `Estados` (GH-49), con el estilo renovado a partir del 
 - **Nada inventado (criterio 7)**:
   - la barra, la barra lateral, More y Settings muestran exactamente los accesos que lista navigation.md;
   - cada cifra de Home es igual a la respuesta de la API, con ceros reales para un período sin actividad (results.md);
-  - Home no muestra otros avisos que la **First-run checklist**, "Start with your products", el del **Pinned catalog** y el aviso posterior al **Spreadsheet import**.
+  - Home no muestra otro aviso que el del **Pinned catalog** ("Your Telegram catalog is out of date"); ningún elemento de primer uso (navigation.md).
 - **Password change (criterio 18)**:
   - después de un Change, cada token anterior del User responde 401;
   - el token nuevo del dispositivo que actuó funciona, y el token de un socio en el mismo Business sigue funcionando;

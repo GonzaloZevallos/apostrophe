@@ -19,8 +19,9 @@ import { VARIETIES, VARIETY, pathTo, relative } from '../../routes'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
 import ContentArea from '../../components/ContentArea'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money_format: { symbol: '$', decimals: 0 } }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 const GONE_TEXT = 'That is gone. The list is up to date.'
 const ARCHIVE_DETAIL =
   'You have 12 g left. If you archive it, they stop showing on Home and in the lists, but the stock is kept.'
@@ -94,7 +95,7 @@ function renderPage({ removal = 'archive', grams = 12, overrides = {}, list, com
         element: (
           <QueryClientProvider client={queryClient}>
             <FlashProvider>
-              <Outlet context={ME} />
+              <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
               <Where />
             </FlashProvider>
           </QueryClientProvider>

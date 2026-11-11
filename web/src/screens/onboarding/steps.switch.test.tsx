@@ -28,7 +28,7 @@ import Listo from './Listo'
 import OnboardingStep from './OnboardingStep'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money_format: { symbol: '$', decimals: 0 } }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 const ORDER: StepSlug[] = ['variety', 'stock', 'header_footer', 'bot', 'partner', 'categories']
 
 /** Every common value is its own marker: `de:<key>`. */

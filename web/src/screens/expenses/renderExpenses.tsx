@@ -21,8 +21,9 @@ import ExpenseNewRoute from './ExpenseNewRoute'
 import { EXPENSES_TEXT } from '../../copy/expenses'
 import ContentArea from '../../components/ContentArea'
 import { SheetRouterProvider } from '../../components/useSheetStack'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
-export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en' as ShownLanguage, money_format: { symbol: '$', decimals: 0 } }
+export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en' as ShownLanguage, money: { symbol: '$', decimals: 0 } }
 
 export function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -34,14 +35,14 @@ export function jsonResponse(status: number, body: unknown): Response {
 export type FetchImpl = (url: string, init?: RequestInit) => Promise<Response>
 
 /** Renders the app at `initialEntries` (the last one is current). */
-export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl) {
+export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl, me: Me = ME) {
   vi.stubGlobal('fetch', vi.fn(fetchImpl))
   const router = createMemoryRouter(
     [
       {
         element: (
           <FlashProvider>
-            <Outlet context={ME} />
+            <MoneyFormatProvider format={me.money}><Outlet context={me} /></MoneyFormatProvider>
           </FlashProvider>
         ),
         children: [

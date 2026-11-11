@@ -14,9 +14,9 @@ from sqlalchemy.orm import Session
 from app.accounts.adapters.deps import CurrentBusinessId
 from app.catalog.application.ports import (
     CatalogLanguage,
+    CatalogMoneyFormat,
     CatalogPricingSettings,
     CatalogWordsSource,
-    MoneyFormatReader,
 )
 from app.clock import Clock, get_clock, get_today
 from app.http_errors import TranslateErrors
@@ -110,11 +110,13 @@ PricingSettingsDep = Annotated[
 ]
 
 
-def get_money_format(request: Request) -> Callable[[Session, int], MoneyFormatReader]:
-    return cast(Callable[[Session, int], MoneyFormatReader], request.app.state.catalog_money_format)
+def get_money_format(request: Request) -> Callable[[Session, int], CatalogMoneyFormat]:
+    return cast(
+        Callable[[Session, int], CatalogMoneyFormat], request.app.state.catalog_money_format
+    )
 
 
-MoneyFormatDep = Annotated[Callable[[Session, int], MoneyFormatReader], Depends(get_money_format)]
+MoneyFormatDep = Annotated[Callable[[Session, int], CatalogMoneyFormat], Depends(get_money_format)]
 
 
 def get_words(request: Request) -> CatalogWordsSource:

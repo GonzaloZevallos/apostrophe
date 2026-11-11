@@ -45,8 +45,9 @@ import {
 import Mas from '../screens/Mas'
 import { chooseTheme } from '../theme'
 import Shell from './Shell'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money_format: { symbol: '$', decimals: 0 } }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 const BAR = ['Home', 'Sales', 'Customers', 'Products', 'More']
 const RAIL = ['Home', 'Sales', 'Customers', 'Products', 'Expenses', 'Analysis']
@@ -117,7 +118,7 @@ function renderShell(
   stubFirstRun(options.firstRun)
   viewport.current = options.computer === true ? 'computer' : 'phone'
   const router = createMemoryRouter(
-    [{ element: <Outlet context={ME} />, children: [{ element: <Shell />, children: SCREENS.map(leaf) }] }],
+    [{ element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>, children: [{ element: <Shell />, children: SCREENS.map(leaf) }] }],
     { initialEntries: entries, initialIndex: options.index ?? entries.length - 1 },
   )
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })

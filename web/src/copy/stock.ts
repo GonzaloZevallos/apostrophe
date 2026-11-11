@@ -13,8 +13,11 @@ export const LANGUAGE: 'es' | 'en' = 'en'
 export const COST_REQUIRED_HELP = 'Required for a purchase'
 
 /** The locked (Onboarding) form's line under the cost: the cost is optional and, left out,
- * the lot costs $ 0 (the entry is posted without `total_cost`). */
-export const OPENING_COST_HINT = 'Optional · if you leave it out, the lot costs $ 0'
+ * the lot costs nothing (the entry is posted without `total_cost`). `zero` is the business's
+ * zero amount, already formatted (`useMoney().money(0)`). */
+export function openingCostHint(zero: string): string {
+  return `Optional · if you leave it out, the lot costs ${zero}`
+}
 
 /** The refusal of a bad grams amount, shared by the price, stock entry and withdrawal forms. */
 export const GRAMS_INVALID = 'Check the grams entered'
@@ -26,7 +29,7 @@ export function onHandHelp(grams: string): string {
 }
 
 /** The per-gram cost previewed while typing; `perGram` is the front's preview, already
- * formatted (`formatMoney`), so the registry can measure it with `SAMPLES.amount`. */
+ * formatted (`money.money`), so the registry can measure it with `SAMPLES.amount`. */
 export function perGramPreview(perGram: string): string {
   return `It comes to ${perGram} per gram`
 }
@@ -34,7 +37,7 @@ export function perGramPreview(perGram: string): string {
 /** Checked by `copy/copyLimits.test.ts`: placeholders filled from `SAMPLES`. */
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: COST_REQUIRED_HELP },
-  { kind: 'help', text: OPENING_COST_HINT },
+  { kind: 'help', text: openingCostHint(SAMPLES.amount) },
   { kind: 'help', text: GRAMS_INVALID },
   { kind: 'help', text: onHandHelp(SAMPLES.grams) },
   { kind: 'help', text: perGramPreview(SAMPLES.amount) },
@@ -42,11 +45,12 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
 export const LONG_REFUSALS: readonly string[] = []
 
 
-const { money: M, date: D, grams: G } = FIXTURE
+const { money: M, zero: Z, date: D, grams: G } = FIXTURE
 
 /** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
 export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   onHandHelp: [[G]],
+  openingCostHint: [[Z]],
   perGramPreview: [[M]],
   'STOCK_TEXT.noGramsSince': [[D]],
   'STOCK_TEXT.warnBelow': [[G]],

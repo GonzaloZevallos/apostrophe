@@ -6,7 +6,7 @@
 
 import { LOGIN } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, render, screen, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { SheetRouterProvider } from '../components/useSheetStack'
@@ -121,7 +121,7 @@ test('a successful login clears the whole cache before landing on Inicio', async
   await userEvent.type(screen.getByLabelText('Password'), 'secreta123')
   await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
 
-  await vi.waitFor(() => {
+  await waitFor(() => {
     expect(queryClient.getQueryData(['me'])).toBeUndefined()
   })
   expect(fetch).toHaveBeenCalledWith(
@@ -271,7 +271,7 @@ test('while the sheet is open Sign in is inert and tabbing never leaves the shee
 test('a sheet entry that was not opened here (reload, shared address) draws no sheet and is dropped', async () => {
   const router = renderEntrar(new QueryClient(), [{ pathname: LOGIN, state: { sheet: 1 } }])
 
-  await vi.waitFor(() => expect(router.state.location.state).not.toHaveProperty('sheet'))
+  await waitFor(() => expect(router.state.location.state).not.toHaveProperty('sheet'))
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   expect(screen.getByLabelText('Email address')).toHaveFocus()
   expect(screen.getByRole('button', { name: FORGOT })).not.toHaveFocus()

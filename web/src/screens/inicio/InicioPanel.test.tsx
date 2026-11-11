@@ -24,9 +24,10 @@ import CobroRoute from '../clientes/CobroRoute'
 import Inicio from '../Inicio'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
 import { baselineText } from '../../i18n/testing'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money_format: { symbol: '$', decimals: 0 } }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 const RESULT_LABELS = [
   'Profit',
@@ -115,7 +116,7 @@ function VarietyStub() {
 function Provide() {
   return (
     <FlashProvider>
-      <Outlet context={ME} />
+      <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
     </FlashProvider>
   )
 }

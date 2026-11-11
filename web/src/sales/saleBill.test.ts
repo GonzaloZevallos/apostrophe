@@ -1,5 +1,4 @@
-import { afterEach, describe, expect, test } from 'vitest'
-import { resetMoneyFormat, setMoneyFormat, type MoneyFormat } from '../format/money'
+import { describe, expect, test } from 'vitest'
 import { SALE_BILL_TEXT } from '../copy/sales'
 import type { SaleBill, SaleBillLine } from '../api/sales'
 import cases from './saleBill.cases.json'
@@ -9,16 +8,12 @@ interface Case {
   name: string
   bill: SaleBill
   expected: string
-  money_format?: MoneyFormat
 }
 
 const REFERENCE = cases as Case[]
 
 describe('renderSaleBill against the hand-written reference set', () => {
-  afterEach(() => resetMoneyFormat())
-
   test.each(REFERENCE.map((c) => [c.name, c] as const))('%s', (_name, c) => {
-    if (c.money_format !== undefined) setMoneyFormat(c.money_format)
     expect(renderSaleBill(c.bill)).toBe(c.expected)
   })
 })

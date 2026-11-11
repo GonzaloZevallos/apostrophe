@@ -14,11 +14,11 @@ from app.catalog.application.ports import (
     CatalogAttributesRepository,
     CatalogHeaderFooterRepository,
     CatalogLanguage,
+    CatalogMoneyFormat,
     CatalogPricingSettings,
     CatalogStock,
     CatalogVarieties,
     CatalogWordsSource,
-    MoneyFormatReader,
 )
 from app.catalog.application.read_catalog import CatalogView, read_catalog
 from app.catalog.domain.attributes import CatalogAttributes
@@ -52,7 +52,7 @@ def set_variety_attributes(
     attributes_repo: CatalogAttributesRepository,
     header_footer_repo: CatalogHeaderFooterRepository,
     pricing_settings: CatalogPricingSettings,
-    money_format: MoneyFormatReader,
+    money_format: CatalogMoneyFormat,
     words: CatalogWordsSource,
     language: CatalogLanguage,
     business_id: int,

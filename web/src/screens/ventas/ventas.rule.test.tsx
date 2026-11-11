@@ -30,8 +30,9 @@ import { expectIconAndTextRule, iconAndTextProblems } from '../../test/iconAndTe
 import NuevaVenta from './NuevaVenta'
 import VentaDetalle from './VentaDetalle'
 import Ventas from './Ventas'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money_format: { symbol: '$', decimals: 0 } }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 const ROSA = {
   id: 1,
   name: 'Rosa',
@@ -65,7 +66,7 @@ test.each(VIEWPORTS)("Ventas: an empty period shows its one line, within its lim
     <QueryClientProvider client={client()}>
       <MemoryRouter initialEntries={[SALES]}>
         <Routes>
-          <Route element={<Outlet context={ME} />}>
+          <Route element={<MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>}>
             <Route path={SALES} element={<Ventas />} />
           </Route>
         </Routes>
@@ -84,7 +85,7 @@ test.each(VIEWPORTS)("Ventas: a list of sales passes the rule with its rows kept
     <QueryClientProvider client={client()}>
       <MemoryRouter initialEntries={[SALES]}>
         <Routes>
-          <Route element={<Outlet context={ME} />}>
+          <Route element={<MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>}>
             <Route path={SALES} element={<Ventas />} />
           </Route>
         </Routes>
@@ -101,9 +102,11 @@ function renderDetalle(state?: unknown) {
   })
   return render(
     <QueryClientProvider client={client()}>
-      <SheetRouterProvider router={router}>
-        <RouterProvider router={router} />
-      </SheetRouterProvider>
+      <MoneyFormatProvider format={ME.money}>
+        <SheetRouterProvider router={router}>
+          <RouterProvider router={router} />
+        </SheetRouterProvider>
+      </MoneyFormatProvider>
     </QueryClientProvider>,
   )
 }
@@ -133,7 +136,7 @@ test.each(VIEWPORTS)("NuevaVenta: with two lines, Pick a customer and Nuevo clie
     Promise.resolve(String(path).startsWith(pathTo(CUSTOMERS)) ? json([ANA]) : json([ROSA])),
   )
   const router = createMemoryRouter(
-    [{ element: <Outlet context={ME} />, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] }],
+    [{ element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] }],
     { initialEntries: [SALE_NEW] },
   )
   const user = userEvent.setup()

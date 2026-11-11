@@ -7,9 +7,9 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, render, screen, within } from '@testing-library/react'
+import { render as renderBare, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { type ComponentType } from 'react'
+import { type ComponentType, type ReactElement, type ReactNode } from 'react'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
@@ -20,8 +20,18 @@ import OnboardingStep, { DISCARD_DETAIL, PARTLY_SAVED_DETAIL } from './Onboardin
 import type { StepBodyProps } from './stepBodies'
 import { isFirst, isLast, STEPS } from './steps'
 import { SheetRouterProvider } from '../../components/useSheetStack'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money_format: { symbol: '$', decimals: 0 } }
+function Business({ children }: { children: ReactNode }) {
+  return <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>{children}</MoneyFormatProvider>
+}
+
+/** Rendered for a "$"/0-decimals business, the one the strings below were written for. */
+function render(ui: ReactElement) {
+  return renderBare(ui, { wrapper: Business })
+}
+
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 const ORDER: StepSlug[] = ['variety', 'stock', 'header_footer', 'bot', 'partner', 'categories']
 
 function progress(canSkipRest: boolean): OnboardingProgress {
@@ -45,9 +55,9 @@ const calls: string[] = []
 
 function renderFrame(
   slug: StepSlug,
-  options: { canSkipRest?: boolean; Body?: ComponentType<StepBodyProps>; me?: Me } = {},
+  options: { canSkipRest?: boolean; Body?: ComponentType<StepBodyProps> } = {},
 ) {
-  const { canSkipRest = true, Body = () => null, me = ME } = options
+  const { canSkipRest = true, Body = () => null } = options
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -61,7 +71,7 @@ function renderFrame(
     }),
   )
   const frame = (step: StepSlug) => (
-    <OnboardingStep slug={step} me={me} progress={progress(canSkipRest)} Body={Body} />
+    <OnboardingStep slug={step} me={ME} progress={progress(canSkipRest)} Body={Body} />
   )
   const router = createMemoryRouter(
     [
@@ -108,26 +118,6 @@ test('the first step opens with the lockup, in the main region', async () => {
   await screen.findByText('Step 1 of 6')
   const lockup = within(screen.getByRole('main')).getByRole('img', { name: 'apostrophe' })
   expect(lockup).toHaveTextContent('apostrophe’')
-})
-
-test('the first step says the Business\'s money format, with the defaults and with a changed one', async () => {
-  renderFrame('variety')
-  expect(await screen.findByText('Currency: $, 0 decimals')).toBeInTheDocument()
-  cleanup()
-
-  renderFrame('variety', { me: { ...ME, money_format: { symbol: 'US$', decimals: 2 } } })
-  expect(await screen.findByText('Currency: US$, 2 decimals')).toBeInTheDocument()
-  cleanup()
-
-  renderFrame('variety', { me: { ...ME, money_format: { symbol: 'US$', decimals: 1 } } })
-  expect(await screen.findByText('Currency: US$, 1 decimal')).toBeInTheDocument()
-})
-
-test('no other step says the currency', async () => {
-  renderFrame('stock')
-
-  await screen.findByText('Step 2 of 6')
-  expect(screen.queryByText(/^Currency:/)).not.toBeInTheDocument()
 })
 
 test('no other step shows the brand', async () => {

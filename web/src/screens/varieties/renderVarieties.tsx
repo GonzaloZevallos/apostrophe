@@ -33,8 +33,9 @@ import VarietyRoute from './VarietyRoute'
 import { VARIETIES_TEXT } from '../../copy/varieties'
 import { COMMON_TEXT } from '../../copy/common'
 import ContentArea from '../../components/ContentArea'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
-export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en' as ShownLanguage, money_format: { symbol: '$', decimals: 0 } }
+export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en' as ShownLanguage, money: { symbol: '$', decimals: 0 } }
 
 export const VARIETY_ROW = {
   id: 1,
@@ -84,7 +85,7 @@ export function renderVarieties(initialEntries: string[], fetchImpl: FetchImpl) 
         element: (
           <QueryClientProvider client={queryClient}>
             <FlashProvider>
-              <Outlet context={ME} />
+              <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
             </FlashProvider>
           </QueryClientProvider>
         ),
@@ -170,7 +171,7 @@ export function renderVarietiesInShell(initialEntries: string[], fetchImpl: Fetc
         element: (
           <QueryClientProvider client={queryClient}>
             <FlashProvider>
-              <Outlet context={ME} />
+              <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
             </FlashProvider>
           </QueryClientProvider>
         ),

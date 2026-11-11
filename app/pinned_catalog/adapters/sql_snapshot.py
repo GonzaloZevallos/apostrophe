@@ -15,9 +15,9 @@ from sqlalchemy.orm import Session
 
 from app.catalog.application.ports import (
     CatalogLanguage,
+    CatalogMoneyFormat,
     CatalogPricingSettings,
     CatalogWordsSource,
-    MoneyFormatReader,
 )
 from app.pinned_catalog.adapters.publishable_catalog import publishable_text
 from app.pinned_catalog.adapters.sql_settings import settings_from_row
@@ -55,7 +55,7 @@ class SqlPinSnapshots:
         engine: Engine,
         cipher: TokenCipher,
         pricing_settings: Callable[[Session, int], CatalogPricingSettings],
-        money_format: Callable[[Session, int], MoneyFormatReader],
+        money_format: Callable[[Session, int], CatalogMoneyFormat],
         words: CatalogWordsSource,
         language: Callable[[Session], CatalogLanguage],
     ) -> None:

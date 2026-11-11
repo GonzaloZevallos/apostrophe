@@ -12,11 +12,11 @@ from app.catalog.application.ports import (
     CatalogAttributesRepository,
     CatalogHeaderFooterRepository,
     CatalogLanguage,
+    CatalogMoneyFormat,
     CatalogPricingSettings,
     CatalogStock,
     CatalogVarieties,
     CatalogWordsSource,
-    MoneyFormatReader,
 )
 from app.catalog.domain.attributes import CatalogAttributes
 from app.catalog.domain.product import CatalogPrice, CatalogState, catalog_state
@@ -102,7 +102,7 @@ def read_catalog(
     attributes_repo: CatalogAttributesRepository,
     header_footer_repo: CatalogHeaderFooterRepository,
     pricing_settings: CatalogPricingSettings,
-    money_format: MoneyFormatReader,
+    money_format: CatalogMoneyFormat,
     words: CatalogWordsSource,
     language: CatalogLanguage,
     business_id: int,
@@ -112,10 +112,10 @@ def read_catalog(
     header_footer = header_footer_repo.get()
     text = catalog_text(
         words.words_for(language.language_of(business_id)),
+        money_format.current(),
         header_footer.header,
         header_footer.footer,
         entries,
-        money_format.current(),
     )
     return CatalogView(
         text=text, header=header_footer.header, footer=header_footer.footer, varieties=views
@@ -128,7 +128,7 @@ def read_publishable_text(
     attributes_repo: CatalogAttributesRepository,
     header_footer_repo: CatalogHeaderFooterRepository,
     pricing_settings: CatalogPricingSettings,
-    money_format: MoneyFormatReader,
+    money_format: CatalogMoneyFormat,
     words: CatalogWordsSource,
     language: CatalogLanguage,
     business_id: int,
@@ -140,8 +140,8 @@ def read_publishable_text(
     header_footer = header_footer_repo.get()
     return pinned_catalog_text(
         words.words_for(language.language_of(business_id)),
+        money_format.current(),
         header_footer.header,
         header_footer.footer,
         entries,
-        money_format.current(),
     )

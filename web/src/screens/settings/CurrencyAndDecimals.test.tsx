@@ -17,7 +17,7 @@ import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import { COMMON_TEXT } from '../../copy/common'
 import { SETTINGS_TEXT } from '../../copy/settings'
-import { currentMoneyFormat, formatMoney, resetMoneyFormat } from '../../format/money'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 import { SALES, SETTINGS_CURRENCY } from '../../routes'
 import { SHOWN_EN } from '../../test/shownLanguage'
 import CurrencyAndDecimals from './CurrencyAndDecimals'
@@ -27,7 +27,7 @@ const ME: Me = {
   business_name: 'La Huerta',
   today: '2026-10-02',
   shown_language: SHOWN_EN,
-  money_format: { symbol: '$', decimals: 0 },
+  money: { symbol: '$', decimals: 0 },
 }
 
 const SYMBOL_REFUSAL = 'Use 1 to 4 visible characters, and no two asterisks in a row.'
@@ -46,12 +46,10 @@ function jsonResponse(status: number, body: unknown): Response {
 }
 
 beforeEach(() => {
-  resetMoneyFormat()
 })
 
 afterEach(() => {
   vi.unstubAllGlobals()
-  resetMoneyFormat()
 })
 
 function renderForm(fetchMock: FetchMock): QueryClient {
@@ -63,7 +61,9 @@ function renderForm(fetchMock: FetchMock): QueryClient {
   })
   render(
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <MoneyFormatProvider format={ME.money}>
+        <RouterProvider router={router} />
+      </MoneyFormatProvider>
     </QueryClientProvider>,
   )
   return queryClient
@@ -101,9 +101,7 @@ test('Save sends the symbol and the decimals only, sets the front format and the
 
   expect(await screen.findByText(SETTINGS_TEXT.currencySaved)).toBeInTheDocument()
   expect(lastPutBody(fetchMock)).toEqual({ symbol: 'US$', decimals: 0 })
-  expect(currentMoneyFormat()).toEqual({ symbol: 'US$', decimals: 0 })
-  expect(formatMoney(11000)).toBe('US$ 11.000')
-  expect(queryClient.getQueryData<Me>(keys.me())?.money_format).toEqual({ symbol: 'US$', decimals: 0 })
+  expect(queryClient.getQueryData<Me>(keys.me())?.money).toEqual({ symbol: 'US$', decimals: 0 })
 })
 
 test('a symbol refusal shows the API refusal next to the field and keeps what was typed', async () => {
@@ -120,7 +118,6 @@ test('a symbol refusal shows the API refusal next to the field and keeps what wa
 
   expect(await screen.findByText(SYMBOL_REFUSAL)).toBeInTheDocument()
   expect(symbol).toHaveValue('a**')
-  expect(currentMoneyFormat()).toEqual({ symbol: '$', decimals: 0 })
 })
 
 test('a refused lowering shows the fixed sentence with the Attention icon and changes nothing', async () => {
@@ -135,9 +132,8 @@ test('a refused lowering shows the fixed sentence with the Attention icon and ch
   expect(alert).toHaveTextContent(LOWERING_REFUSAL)
   expect(alert.querySelector('svg')).not.toBeNull()
   expect(screen.getByRole('radio', { name: SETTINGS_TEXT.currencyDecimals1 })).toHaveAttribute('aria-checked', 'true')
-  expect(currentMoneyFormat()).toEqual({ symbol: '$', decimals: 0 })
   await waitFor(() => {
-    expect(queryClient.getQueryData<Me>(keys.me())?.money_format).toEqual({ symbol: '$', decimals: 0 })
+    expect(queryClient.getQueryData<Me>(keys.me())?.money).toEqual({ symbol: '$', decimals: 0 })
   })
 })
 
@@ -157,7 +153,6 @@ test.each([
   expect(alert).toHaveTextContent(sentence)
   expect(alert.querySelector('svg')).not.toBeNull()
   expect(screen.getByRole('radio', { name: SETTINGS_TEXT.currencyDecimals2 })).toHaveAttribute('aria-checked', 'true')
-  expect(currentMoneyFormat()).toEqual({ symbol: '$', decimals: 0 })
 })
 
 test('a mounted Sales list writes its total with the new symbol after Save, without navigating', async () => {
@@ -165,7 +160,7 @@ test('a mounted Sales list writes its total with the new symbol after Save, with
   let stored = { symbol: '$', decimals: 0 }
   const answer = (body: unknown) => Promise.resolve(jsonResponse(200, body))
   vi.stubGlobal('fetch', (input: string, init?: RequestInit) => {
-    if (input === '/auth/me') return answer({ ...ME, money_format: stored })
+    if (input === '/auth/me') return answer({ ...ME, money: stored })
     if (input === '/api/money-format' && init?.method === 'PUT') {
       stored = JSON.parse(String(init.body)) as typeof stored
       return answer(stored)

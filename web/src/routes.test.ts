@@ -828,7 +828,7 @@ describe("screens.json against the English routes", () => {
     expect(
       routeProblems([
         { screen: "Inicio", route: "/", path: "/" },
-        { screen: "InicioPrimeraVez", route: null, path: "/" },
+        { screen: "PantallaSinConstruir", route: null, path: "/" },
         { screen: "Ventas", route: "/sales", path: "/sales/new" },
         { screen: "OnboardingListo", route: "/onboarding/categories", path: "/onboarding/done" },
         {
@@ -839,7 +839,7 @@ describe("screens.json against the English routes", () => {
         },
       ]),
     ).toEqual([
-      "InicioPrimeraVez: route is null, so it is not built",
+      "PantallaSinConstruir: route is null, so it is not built",
       "Ventas: route /sales is not path /sales/new",
       "OnboardingListo: reached by steps, so it needs steps",
     ]);

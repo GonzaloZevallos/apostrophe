@@ -23,6 +23,7 @@ import {
 import { SheetRouterProvider, SheetStackProvider } from '../../components/useSheetStack'
 import WithdrawalForm from './WithdrawalForm'
 import { ME, REASONS, jsonResponse, pickReason, pickVariety, renderWithdrawals, varietyField } from './renderWithdrawals'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -429,7 +430,7 @@ test('the form never calls onGone on variety.archived', async () => {
   const onGone = vi.fn()
   const router = createMemoryRouter([
     {
-      element: <Outlet context={ME} />,
+      element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>,
       children: [
         {
           path: HOME,

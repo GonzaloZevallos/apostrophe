@@ -6,7 +6,7 @@ The rule that says what a screen is lives in `screen_keys` below, and nowhere el
   `ventas`, `settings`...);
 * a file directly under `web/src/screens` is a screen when it is a `.tsx` file that is not a
   `*.test.tsx`; its key is the stem (`Catalogo.tsx` -> `Catalogo`);
-* a `.ts` or `.json` file there (`inicioNotices.ts`, `telegramPreview.cases.json`) is a helper or
+* a `.ts` or `.json` file there (`analisisCards.ts`, `telegramPreview.cases.json`) is a helper or
   a fixture: it keeps no key, so the map says nothing about it, and the selector must treat a
   change to it as a path no rule maps and select every e2e spec;
 * a `*.test.ts(x)` file is a test, not a screen.

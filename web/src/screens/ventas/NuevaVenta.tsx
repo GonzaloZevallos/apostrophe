@@ -55,8 +55,10 @@ import { useViewport } from '../../shell/useViewport'
 import { SheetStackProvider, useSheet } from '../../components/useSheetStack'
 import { useVisualViewport } from '../../components/useVisualViewport'
 import { formatDateLong, formatDateShort, maxSaleDate } from '../../format/dates'
-import { formatGrams, formatMoney } from '../../format/money'
-import { parseGrams, parseMoney, parseNonNegativeMoney } from '../../format/parse'
+import { formatGrams, type MoneyFormat } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
+import MoneyInput from '../../components/MoneyInput'
+import { parseGrams, parseMoneyInput } from '../../format/parse'
 import {
   type LineValidation,
   type PayState,
@@ -82,7 +84,6 @@ export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 export const NO_LINES_MESSAGE = SALES_TEXT.addAtLeastOne
 export { OWING_HINT }
 export const PAYMENT_REQUIRED_MESSAGE = SALES_TEXT.pickHowPaid
-export const SPECIAL_PRICE_INVALID_MESSAGE = SALES_TEXT.specialPriceAboveZero
 export const LINE_GRAMS_INVALID = SALES_TEXT.enterGrams
 export const LINE_VARIETY_MISSING = COMMON_TEXT.pickAVariety
 
@@ -115,10 +116,11 @@ function quoteOf(variety: Variety): PriceQuote | null {
  * A rule that is off never shows, so the safe side is no rule (`pricing-settings.md`). */
 const NO_RULES: PricingSettings = { bulk: false, vip: false }
 
-/** Zero or more, at the Business's decimals — unlike `parseMoney`, which rejects zero:
- * shipping charged is zero by default and that is a valid value to save with. */
-function parseShipping(input: string): number | null {
-  const parsed = parseNonNegativeMoney(input)
+/** Shipping charged: zero or more, unlike `parseMoneyInput`, which rejects zero — `0` is its default
+ * and a valid value to save with. Anything else goes through `parseMoneyInput`. */
+function parseShipping(input: string, format: MoneyFormat): number | null {
+  if ((format.decimals === 0 ? /^0+$/ : /^0+([,.]0*)?$/).test(input.trim())) return 0
+  const parsed = parseMoneyInput(input, format)
   return parsed.ok ? parsed.value : null
 }
 
@@ -142,26 +144,30 @@ interface SaleBody {
   lines: LineBody[]
 }
 
-const SUBMIT_OVERRIDES: Partial<
+type SubmitOverrides = Partial<
   Record<
     RefusalCode,
     { field: 'customer' | 'shipping' | 'note' | 'date' | 'payment' | 'form'; message: string }
   >
-> = {
-  'sale.owing_without_customer': { field: 'customer', message: OWING_HINT },
-  'sale.shipping_negative': { field: 'shipping', message: SALES_TEXT.shippingNotNegative },
-  'sale.note_too_long': { field: 'note', message: SALES_TEXT.noteTooLong },
-  'sale.date_in_future': { field: 'date', message: COMMON_TEXT.dateCannotBeFuture },
-  'sale.payment_required': { field: 'payment', message: PAYMENT_REQUIRED_MESSAGE },
-  'sale.customer_not_found': { field: 'form', message: GENERIC_REFUSAL },
-  'sale.variety_not_found': { field: 'form', message: GENERIC_REFUSAL },
-  'sale.lines_missing': { field: 'form', message: GENERIC_REFUSAL },
-  'sale.gift_with_special_price': { field: 'form', message: GENERIC_REFUSAL },
-  'sale.special_price_invalid': { field: 'form', message: GENERIC_REFUSAL },
-  'sale.grams_invalid': { field: 'form', message: GENERIC_REFUSAL },
-  'sale.rule_broken': { field: 'form', message: GENERIC_REFUSAL },
-  'money.too_many_decimals': { field: 'form', get message() { return tooManyDecimalsMessage() } },
-  'sale.price_quote_invalid': { field: 'form', message: GENERIC_REFUSAL },
+>
+
+function submitOverrides(format: MoneyFormat): SubmitOverrides {
+  return {
+    'sale.owing_without_customer': { field: 'customer', message: OWING_HINT },
+    'sale.shipping_negative': { field: 'shipping', message: SALES_TEXT.shippingNotNegative },
+    'sale.note_too_long': { field: 'note', message: SALES_TEXT.noteTooLong },
+    'sale.date_in_future': { field: 'date', message: COMMON_TEXT.dateCannotBeFuture },
+    'sale.payment_required': { field: 'payment', message: PAYMENT_REQUIRED_MESSAGE },
+    'sale.customer_not_found': { field: 'form', message: GENERIC_REFUSAL },
+    'sale.variety_not_found': { field: 'form', message: GENERIC_REFUSAL },
+    'sale.lines_missing': { field: 'form', message: GENERIC_REFUSAL },
+    'sale.gift_with_special_price': { field: 'form', message: GENERIC_REFUSAL },
+    'sale.special_price_invalid': { field: 'form', message: GENERIC_REFUSAL },
+    'sale.grams_invalid': { field: 'form', message: GENERIC_REFUSAL },
+    'sale.rule_broken': { field: 'form', message: GENERIC_REFUSAL },
+    'money.too_many_decimals': { field: 'form', message: tooManyDecimalsMessage(format) },
+    'sale.price_quote_invalid': { field: 'form', message: GENERIC_REFUSAL },
+  }
 }
 
 /** One sheet stack per screen (ADR-0027): Elegir cliente is level 1, Nuevo cliente level 2. */
@@ -175,6 +181,7 @@ export default function NuevaVenta() {
 
 function NuevaVentaForm() {
   const me = useOutletContext<Me>()
+  const money = useMoney()
   const navigate = useNavigate()
   const location = useLocation()
   const queryClient = useQueryClient()
@@ -340,11 +347,11 @@ function NuevaVentaForm() {
 
   function specialPriceOf(line: LineState): number | null {
     if (line.specialPrice.trim() === '') return null
-    const parsed = parseMoney(line.specialPrice)
+    const parsed = parseMoneyInput(line.specialPrice, money.format)
     return parsed.ok ? parsed.value : null
   }
 
-  /** `parseMoney` (money.ts) already rejects `$0`, a decimal or a negative amount —
+  /** `parseMoneyInput` already rejects `$0`, a decimal or a negative amount —
    * but today's code must still never fall silently back to list/bulk pricing for
    * such a line (sales.md: "Precio especial doesn't accept $0"). A line with
    * something typed in `specialPrice` that doesn't parse is its own error, distinct
@@ -352,7 +359,11 @@ function NuevaVentaForm() {
    * `validateSale`'s own errors do. */
   function specialPriceErrorFor(line: LineState): string | null {
     if (line.specialPrice.trim() === '') return null
-    return parseMoney(line.specialPrice).ok ? null : SPECIAL_PRICE_INVALID_MESSAGE
+    const parsed = parseMoneyInput(line.specialPrice, money.format)
+    if (parsed.ok) return null
+    return parsed.tooManyDecimals
+      ? tooManyDecimalsMessage(money.format)
+      : SALES_TEXT.specialPriceAboveZero(money.attached(0))
   }
 
   const lineValidations: LineValidation[] = lines
@@ -427,7 +438,7 @@ function NuevaVentaForm() {
         lineTotal: preview?.lineTotal ?? 0,
       }
     }),
-    parseShipping(shipping) ?? 0,
+    parseShipping(shipping, money.format) ?? 0,
   )
 
   const errors = validateSale({
@@ -518,9 +529,12 @@ function NuevaVentaForm() {
       setFormError(NO_LINES_MESSAGE)
       return
     }
-    const shippingCharged = parseShipping(shipping)
+    const shippingCharged = parseShipping(shipping, money.format)
     if (shippingCharged === null) {
-      setShippingError(SALES_TEXT.shippingNotNegative)
+      const refused = parseMoneyInput(shipping, money.format)
+      setShippingError(
+        !refused.ok && refused.tooManyDecimals ? tooManyDecimalsMessage(money.format) : SALES_TEXT.shippingNotNegative,
+      )
       return
     }
     // Paid above $0 with no method: the refusal draws at the field and nothing is sent, so the
@@ -581,7 +595,7 @@ function NuevaVentaForm() {
         return
       }
       if (caught instanceof ApiError) {
-        const override = resolveOverride(SUBMIT_OVERRIDES, caught.code)
+        const override = resolveOverride(submitOverrides(money.format), caught.code)
         if (override !== undefined) {
           if (override.field === 'shipping') setShippingError(override.message)
           else if (override.field === 'note') setNoteError(override.message)
@@ -691,13 +705,12 @@ function NuevaVentaForm() {
 
               <div className="nueva-venta__fila-dato">
                 <span>{SALES_TEXT.shippingCharged}</span>
-                <input
+                <MoneyInput
                   className="campo__input"
                   aria-label={SALES_TEXT.shipping}
                   type="text"
-                  inputMode="numeric"
                   value={shipping}
-                  onChange={(event) => setShipping(event.target.value)}
+                  onChange={setShipping}
                 />
               </div>
               {shippingError !== null && (
@@ -758,7 +771,7 @@ function NuevaVentaForm() {
             <div className="nueva-venta__pie">
               <span className="rotulo">{SALES_TEXT.total}</span>
               <span className="cifra-xl">
-                {repricing ? <Loading compacto /> : formatMoney(totals.total)}
+                {repricing ? <Loading compacto /> : money.money(totals.total)}
               </span>
               <span className="rotulo nueva-venta__gramos">
                 {formatGrams(fromHundredths(totals.gramsSoldHundredths))}{COMMON_TEXT.soldSuffix}

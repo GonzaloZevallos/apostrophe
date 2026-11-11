@@ -273,7 +273,8 @@ ADR-0048 ya decidieron un punto, acá se cita y no se repite. El documento de pr
      (`input-font`); un valor de `autocomplete` en todo input visible: `username` en el mail
      del ingreso, `organization` en el nombre del negocio, `current-password`,
      `new-password`, y `off` en el nombre y el teléfono de un cliente (`autocomplete`);
-     `inputmode="decimal"` en gramos e `inputmode="numeric"` en pesos (`inputmode`);
+     `inputmode="decimal"` en gramos y en dinero cuando el Money format tiene decimales,
+     `inputmode="numeric"` en dinero cuando tiene 0 decimales (`inputmode`);
      `type="email"` y `type="tel"` (`input-type`).
    - Revisión: `enterkeyhint`, salvo en las líneas de Nueva venta, que ya prueban las
      pruebas de sales.md. El teclado se pide sólo por resultado: el campo con foco queda a la

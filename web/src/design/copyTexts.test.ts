@@ -27,6 +27,18 @@ describe('textsOf', () => {
     })
   })
 
+  it('throws when a copy function throws on the probe, so it never drops out quietly', () => {
+    const mod = {
+      T: {
+        broken: (name: string) => {
+          throw new Error(`cannot write with ${name}`)
+        },
+      },
+    }
+
+    expect(() => textsOf('a.ts', mod, '?')).toThrow(/^cannot write with \?$/)
+  })
+
   it('does not skip a name that only looks like a registry', () => {
     expect(Object.fromEntries(textsOf('a.ts', { NAMESPACE_OF: 'x', LANGUAGES: 'y' }, '?'))).toEqual({ 'a.ts.NAMESPACE_OF': 'x', 'a.ts.LANGUAGES': 'y' })
   })

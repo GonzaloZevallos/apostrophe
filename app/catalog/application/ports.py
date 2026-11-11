@@ -65,10 +65,10 @@ class CatalogPricingSettings(Protocol):
         ...
 
 
-class MoneyFormatReader(Protocol):
+class CatalogMoneyFormat(Protocol):
     def current(self) -> MoneyFormat:
-        """The symbol and decimals the business writes money with. Read once per catalog
-        read; the scale it stores amounts at is not here."""
+        """How the business shows money: its symbol and decimals, never the scale it
+        stores amounts at. Read once per catalog read (docs/adr/0055, docs/adr/0058)."""
         ...
 
 

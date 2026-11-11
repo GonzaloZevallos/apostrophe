@@ -28,7 +28,8 @@ import SegmentedChoice from '../../components/SegmentedChoice'
 import SinConexion from '../../components/SinConexion'
 import { COMMON_TEXT } from '../../copy/common'
 import { SETTINGS_TEXT } from '../../copy/settings'
-import { currentMoneyFormat, formatMoneyIn, setMoneyFormat } from '../../format/money'
+import { moneyFormatter } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { refusalText } from '../../i18n/refusalKeys'
 import SettingsGroup from './SettingsGroup'
 
@@ -65,7 +66,7 @@ function choiceOf(decimals: number): DecimalsChoice {
 export default function CurrencyAndDecimals() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const [accepted, setAccepted] = useState(currentMoneyFormat)
+  const [accepted, setAccepted] = useState(useMoney().format)
   const [symbol, setSymbol] = useState(accepted.symbol)
   const [decimals, setDecimals] = useState<DecimalsChoice>(choiceOf(accepted.decimals))
   const [symbolError, setSymbolError] = useState<string | null>(null)
@@ -91,8 +92,7 @@ export default function CurrencyAndDecimals() {
     setSaving(true)
     try {
       const answered = await saveMoneyFormat({ symbol, decimals: Number(decimals) })
-      setMoneyFormat(answered)
-      queryClient.setQueryData<Me>(keys.me(), (old) => (old === undefined ? old : { ...old, money_format: answered }))
+      queryClient.setQueryData<Me>(keys.me(), (old) => (old === undefined ? old : { ...old, money: answered }))
       void queryClient.invalidateQueries()
       setAccepted(answered)
       setSymbol(answered.symbol)
@@ -162,10 +162,9 @@ export default function CurrencyAndDecimals() {
         <div className="campo">
           <span className="campo__rotulo">{SETTINGS_TEXT.currencyExample}</span>
           <output className="campo__valor" role="status">
-            {formatMoneyIn(Number(decimals) === 0 ? EXAMPLE_WHOLE : EXAMPLE_WITH_DECIMALS, {
-              symbol: symbol.trim(),
-              decimals: Number(decimals),
-            })}
+            {moneyFormatter({ symbol: symbol.trim(), decimals: Number(decimals) }).money(
+              Number(decimals) === 0 ? EXAMPLE_WHOLE : EXAMPLE_WITH_DECIMALS,
+            )}
           </output>
         </div>
         {loweringRefused && (

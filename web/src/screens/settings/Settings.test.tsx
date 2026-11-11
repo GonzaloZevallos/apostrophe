@@ -39,7 +39,7 @@ function renderApp(entries: string[], index?: number) {
     'fetch',
     vi.fn().mockResolvedValue(
       new Response(
-        JSON.stringify({ email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money_format: { symbol: '$', decimals: 0 } }),
+        JSON.stringify({ email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }),
         { status: 200, headers: { 'Content-Type': 'application/json' } },
       ),
     ),

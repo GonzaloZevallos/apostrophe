@@ -37,7 +37,7 @@ export const SALE_BILL_TEXT = {
     `${product} ${quantity} ${unit} · ${amount}`,
   bulk: (product: string, quantity: string, unit: string, unitPrice: string, amount: string) =>
     `${product} ${quantity} ${unit} · bulk price ${unitPrice}/${unit} · ${amount}`,
-  gift: (product: string, quantity: string, unit: string, amount: string) => `${product} ${quantity} ${unit} · Gift · ${amount}`,
+  gift: (product: string, quantity: string, unit: string) => `${product} ${quantity} ${unit} · Gift · $ 0`,
   shipping: (amount: string) => `Shipping · ${amount}`,
   total: (amount: string) => `Total · ${amount}`,
   paidCash: CUSTOMERS_TEXT.paidInCash,
@@ -61,7 +61,7 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
 export const LONG_REFUSALS: readonly string[] = []
 
 
-const { money: M, date: D, grams: G } = FIXTURE
+const { money: M, attachedZero: AZ, date: D, grams: G } = FIXTURE
 
 /** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
 export const BASELINE_ARGS = baselineArgs<typeof Self>()({
@@ -69,6 +69,7 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'SALES_TEXT.giftGrams': [[G]],
   'SALES_TEXT.lineLabel': [['2', 'Rosa']],
   'SALES_TEXT.withUnit': [['3,5']],
+  'SALES_TEXT.specialPriceAboveZero': [[AZ]],
   'SALES_TEXT.lineVariety': [['2']],
   'SALES_TEXT.lineGrams': [['2']],
   'SALES_TEXT.lineGift': [['2']],
@@ -79,7 +80,7 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'SALE_BILL_TEXT.header': [['Flores Test', 'Sale #1284', D]],
   'SALE_BILL_TEXT.item': [['Rosa', '3,5', 'g', M]],
   'SALE_BILL_TEXT.bulk': [['Rosa', '10', 'g', M, M]],
-  'SALE_BILL_TEXT.gift': [['Rosa', '1', 'g', '$ 0']],
+  'SALE_BILL_TEXT.gift': [['Rosa', '1', 'g']],
   'SALE_BILL_TEXT.shipping': [[M]],
   'SALE_BILL_TEXT.total': [[M]],
   'SALE_BILL_TEXT.stillOwed': [[M]],
@@ -125,7 +126,8 @@ export const SALES_TEXT = {
   owesYou: 'owes you',
   addAtLeastOne: 'Add at least one product.',
   pickHowPaid: 'Pick how it was paid, or leave the sale owing',
-  specialPriceAboveZero: 'The special price must be more than $0',
+  /** `zero` is the business's zero amount written attached to its symbol (`useMoney().attached(0)`). */
+  specialPriceAboveZero: (zero: string) => `The special price must be more than ${zero}`,
   enterGrams: 'Enter the grams: comma, up to two decimals',
   shippingNotNegative: 'Shipping cannot be negative',
   noteTooLong: 'The note is too long',

@@ -178,7 +178,13 @@ def remove_business(
         money = money_format.of(business.id)
         now = _naive_utc(clock())
         document = build_document(
-            Business(business.id, business.name, business.language, business.last_sale_number),
+            Business(
+                business.id,
+                business.name,
+                business.language,
+                business.default_phone_country,
+                business.last_sale_number,
+            ),
             schema,
             rows,
             now,

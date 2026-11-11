@@ -1,7 +1,7 @@
 """The one place the catalog text is written (CONTEXT.md: Catalog; the plan's
-invariant): no other module, front included, formats `$11.000`, catalog grams or
-assembles a variety block. Its money takes the symbol and the decimals from the business's
-`MoneyFormat`; no `$` or whole-peso assumption is written here.
+invariant): no other module, front included, formats an attached amount such as
+`$11.000`, catalog grams or assembles a variety block. The symbol and decimals are the
+business's own `MoneyFormat`; none is written here.
 """
 
 from __future__ import annotations
@@ -25,31 +25,31 @@ class CatalogEntry:
 
 def catalog_text(
     words: CatalogWords,
+    money: MoneyFormat,
     header: str,
     footer: str,
     entries: Sequence[CatalogEntry],
-    money_format: MoneyFormat,
 ) -> str | None:
     """`None` with no entries, even if the header or footer is not blank. Otherwise the
     header (if not `""`), one block per entry in the order given, the footer (if not
     `""`), every section joined by exactly one blank line."""
     if not entries:
         return None
-    return _join(header, [_block(words, entry, money_format) for entry in entries], footer)
+    return _join(header, [_block(words, money, entry) for entry in entries], footer)
 
 
 def pinned_catalog_text(
     words: CatalogWords,
+    money: MoneyFormat,
     header: str,
     footer: str,
     entries: Sequence[CatalogEntry],
-    money_format: MoneyFormat,
 ) -> str:
     """What Telegram needs (#10): `catalog_text`'s text, or — when nothing qualifies —
     the header, the words' nothing-to-offer line and the footer, so the pin
     always has something to show. `GET /catalog` and Copiar keep `catalog_text`'s own
     `None` and their own empty state; this is the only other caller of `_join`."""
-    text = catalog_text(words, header, footer, entries, money_format)
+    text = catalog_text(words, money, header, footer, entries)
     if text is not None:
         return text
     return _join(header, [words.nothing_to_offer], footer)
@@ -67,19 +67,17 @@ def _join(header: str, blocks: Sequence[str], footer: str) -> str:
     return "\n\n".join(sections)
 
 
-def _block(words: CatalogWords, entry: CatalogEntry, money_format: MoneyFormat) -> str:
+def _block(words: CatalogWords, money: MoneyFormat, entry: CatalogEntry) -> str:
     lines = [_name_line(entry)]
     if entry.attributes.indica_share is not None:
         percent = entry.attributes.indica_share.percent
         lines.append(words.indica(str(percent), str(100 - percent)))
     if entry.attributes.aroma is not None:
         lines.append(words.aroma(entry.attributes.aroma.text))
-    lines.append(words.price_per_gram(_money(entry.price.list_price, money_format)))
+    lines.append(words.price_per_gram(_money(entry.price.list_price, money)))
     if entry.price.bulk_price is not None and entry.price.bulk_minimum is not None:
         lines.append(
-            words.bulk(
-                _quantity(entry.price.bulk_minimum), _money(entry.price.bulk_price, money_format)
-            )
+            words.bulk(_quantity(entry.price.bulk_minimum), _money(entry.price.bulk_price, money))
         )
     return "\n".join(lines)
 
@@ -90,7 +88,7 @@ def _name_line(entry: CatalogEntry) -> str:
     return f"**{entry.name}**"
 
 
-def _money(amount: Money, money_format: MoneyFormat) -> str:
+def _money(amount: Money, money: MoneyFormat) -> str:
     """`$11.000`, `US$11.000,50`: the business's symbol attached to the figure, a dot every
     three digits and exactly the business's decimals after a comma. Integer arithmetic
     only: no `float`, `round()` or `Decimal`. A stored amount never has more decimals than the
@@ -98,10 +96,9 @@ def _money(amount: Money, money_format: MoneyFormat) -> str:
     sign = "-" if amount.hundredths < 0 else ""
     units, cents = divmod(abs(amount.hundredths), HUNDREDTHS_PER_UNIT)
     figure = f"{units:,}".replace(",", ".")
-    if money_format.decimals > 0:
-        places = f"{cents:0{MAX_DECIMALS}d}"[: money_format.decimals]
-        figure += "," + places
-    return f"{money_format.symbol}{sign}{figure}"
+    if money.decimals > 0:
+        figure += "," + f"{cents:0{MAX_DECIMALS}d}"[: money.decimals]
+    return f"{money.symbol}{sign}{figure}"
 
 
 def _quantity(quantity: Quantity) -> str:

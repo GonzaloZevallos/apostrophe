@@ -21,9 +21,9 @@ from app.catalog.application import set_variety_attributes as set_variety_attrib
 from app.catalog.application.errors import CatalogVarietyArchived, CatalogVarietyNotFound
 from app.catalog.application.ports import (
     CatalogLanguage,
+    CatalogMoneyFormat,
     CatalogPricingSettings,
     CatalogWordsSource,
-    MoneyFormatReader,
 )
 from app.catalog.application.read_archived import read_archived
 from app.catalog.application.read_catalog import read_catalog
@@ -77,11 +77,11 @@ def get_pricing_settings(
 
 def get_money_format(
     request: Request, session: SessionDep, business_id: CurrentBusinessId
-) -> MoneyFormatReader:
-    # The same shape: `app/main.py` puts the real reader on `app.state.catalog_money_format`
-    # as a factory, so the catalog never imports `app.money_format` (ADR-0006).
+) -> CatalogMoneyFormat:
+    # The catalog reads how money is shown only through its own port; `app/main.py` puts
+    # the real implementation on `app.state.catalog_money_format` as a factory (ADR-0055).
     factory = cast(
-        Callable[[Session, int], MoneyFormatReader], request.app.state.catalog_money_format
+        Callable[[Session, int], CatalogMoneyFormat], request.app.state.catalog_money_format
     )
     return factory(session, business_id)
 
@@ -102,7 +102,7 @@ StockDep = Annotated[StockStatusesFromStock, Depends(get_stock)]
 AttributesDep = Annotated[SqlCatalogAttributes, Depends(get_attributes)]
 HeaderFooterDep = Annotated[SqlCatalogHeaderFooter, Depends(get_header_footer)]
 PricingSettingsDep = Annotated[CatalogPricingSettings, Depends(get_pricing_settings)]
-MoneyFormatDep = Annotated[MoneyFormatReader, Depends(get_money_format)]
+MoneyFormatDep = Annotated[CatalogMoneyFormat, Depends(get_money_format)]
 WordsDep = Annotated[CatalogWordsSource, Depends(get_words)]
 LanguageDep = Annotated[CatalogLanguage, Depends(get_language)]
 
