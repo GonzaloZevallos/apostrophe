@@ -35,6 +35,7 @@ from app.catalog.adapters.router import router as catalog_router
 from app.clock import Clock, system_clock
 from app.customer_types.adapters.router import build_router as build_customer_types_router
 from app.customers.adapters.customers_in_type import SqlCustomersInType
+from app.customers.adapters.phone_countries_router import router as phone_countries_router
 from app.customers.adapters.router import router as customers_router
 from app.db import make_engine
 from app.expenses.adapters.babel_defaults import BabelCategoryDefaults
@@ -340,6 +341,7 @@ def create_app(
     app.include_router(phone_country_router, dependencies=gated)
     app.include_router(products_router, dependencies=upkeep_gated)
     app.include_router(customers_router, dependencies=gated)
+    app.include_router(phone_countries_router, dependencies=gated)
     # `customer_types` never imports `customers`: the count of customers in a type
     # reaches its router from here (the `CustomersInType` port).
     app.include_router(
