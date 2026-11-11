@@ -15,12 +15,15 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import UserRow
+from app.customer_types.adapters.sql_customer_type_prices import SqlCustomerTypePrices
+from app.customer_types.adapters.tables import CustomerTypeRow
 from app.money_format.adapters.reader import SqlMoneyFormat
 from app.products.adapters.import_port import ProductsImport
+from app.products.adapters.tables import PriceEntryRow
 from app.sales.adapters.import_port import SalesImport
 from app.sales.adapters.price_book import PlannedPriceBook
 from app.sales.adapters.sql_sales import SqlSales
-from app.sales.domain.pricing import price_line
+from app.sales.domain.pricing import CustomerTypeFact, price_line
 from app.shared.pricing_settings import PricingSettings
 from app.shared.quantity import Quantity
 from app.spreadsheet_import.application.no_commit import NoCommit
@@ -250,6 +253,32 @@ def test_planned_price_book_agrees_with_the_sql_book_once_written(
     assert planned_total == written_total == 12_000  # 20g at the bulk price of 600
 
 
+def _vip_type_priced_like_bulk(session: Session, business_id: int, variety_id: int) -> None:
+    """The VIP type and its price row on every entry with a bulk price, which the import's
+    price-entry write saves (docs/adr/0034, docs/adr/0059)."""
+    type_row = session.scalars(
+        select(CustomerTypeRow).where(
+            CustomerTypeRow.business_id == business_id, CustomerTypeRow.is_vip.is_(True)
+        )
+    ).first()
+    if type_row is None:
+        type_row = CustomerTypeRow(
+            business_id=business_id, name="VIP", name_key="vip", icon="star", is_vip=True
+        )
+        session.add(type_row)
+        session.flush()
+    prices = SqlCustomerTypePrices(session, business_id)
+    entries = session.execute(
+        select(PriceEntryRow.id, PriceEntryRow.effective_on, PriceEntryRow.bulk_price).where(
+            PriceEntryRow.variety_id == variety_id, PriceEntryRow.bulk_price.is_not(None)
+        )
+    ).all()
+    for entry_id, effective_on, _ in entries:
+        if prices.tied_price(entry_id, type_row.id) is None:
+            prices.add(type_row.id, variety_id, effective_on, 800, entry_id)
+    session.commit()
+
+
 def test_write_sale_stores_the_pricing_rule_from_the_row_s_own_vip_fact(
     client: TestClient, engine: Engine
 ) -> None:
@@ -282,6 +311,7 @@ def test_write_sale_stores_the_pricing_rule_from_the_row_s_own_vip_fact(
             NoCommit(),
         )
         session.commit()
+        _vip_type_priced_like_bulk(session, business_id, variety_id)
 
         sales_import = SalesImport(session, business_id)
         bulk_date = date(2026, 6, 1)
@@ -342,7 +372,7 @@ def test_write_sale_stores_the_pricing_rule_from_the_row_s_own_vip_fact(
     assert amigo_fallback_line.price_per_gram == 1_000
 
     vip_line = by_date[date(2026, 6, 3)].lines[0]
-    assert vip_line.pricing_rule.value == "vip"
+    assert vip_line.pricing_rule.value == "type"
     assert vip_line.price_per_gram == 800
 
 
@@ -380,13 +410,13 @@ def test_planned_price_book_matches_what_write_sale_stores_for_bulk_list_vip_and
     book = PlannedPriceBook(history, keys, ordinals)
     expected = []
     for sale in cases:
-        pricing = book.for_variety(1, sale.sale_date)
+        pricing = book.for_variety(1, sale.sale_date, 1 if sale.vip else None)
         quote = pricing.current if pricing is not None else None
         expected.append(
             price_line(
                 gift=sale.gift,
                 special_price=sale.special_total,
-                customer_is_vip=sale.vip,
+                customer_type=CustomerTypeFact(id=1, name="VIP") if sale.vip else None,
                 settings=BOTH_ON,
                 quote=quote,
                 quantity=sale.quantity,
@@ -400,6 +430,7 @@ def test_planned_price_book_matches_what_write_sale_stores_for_bulk_list_vip_and
         variety_id = varieties_import.write_variety("Blue Dream", NoCommit())
         varieties_import.write_price_entry(variety_id, history[0], NoCommit())
         session.commit()
+        _vip_type_priced_like_bulk(session, business_id, variety_id)
 
         sales_import = SalesImport(session, business_id)
         for sale in cases:

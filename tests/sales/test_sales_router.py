@@ -112,6 +112,7 @@ def test_record_sale_without_a_customer_paid_cash(client: TestClient) -> None:
             "product_name": "Lavanda",
             "quantity": 10.0,
             "pricing_rule": "list",
+            "customer_type_name": None,
             "price_per_gram": 10_000,
             "line_total": 100_000,
         }
