@@ -321,7 +321,7 @@ class SqlSales:
         self, sale_id: int, payment: OnTheSpotPayment, recorded_at: datetime
     ) -> None:
         """The On-the-spot payment row, one guarded `INSERT … SELECT … RETURNING id`: it
-        is written only when the method is an offered one of this business (docs/adr/0084).
+        is written only when the method is an offered one of this business (docs/adr/0085).
         No row means `PaymentMethodUnavailable`, and the use case's single transaction
         leaves the whole sale unwritten."""
         guarded = select(

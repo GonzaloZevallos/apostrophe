@@ -19,7 +19,7 @@ from app.sales.domain.sale_bill import BillPayment, BillRule, BillState, SaleBil
 
 
 class PaidIn(BaseModel):
-    """Money received on the spot, with the method the business chose (docs/adr/0084)."""
+    """Money received on the spot, with the method the business chose (docs/adr/0085)."""
 
     kind: Literal["paid"]
     payment_method_id: int

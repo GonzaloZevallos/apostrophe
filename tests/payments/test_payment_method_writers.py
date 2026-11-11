@@ -1,5 +1,5 @@
 """A sale's On-the-spot payment and a later payment name their method by id
-(docs/adr/0084). The one guarded `INSERT … SELECT` of each writer admits only an offered
+(docs/adr/0085). The one guarded `INSERT … SELECT` of each writer admits only an offered
 method of the session's business; every other id answers 404 `payment_method.unavailable`,
 names nothing, and writes no row. A rename shows on past rows; a method in use cannot be
 deleted; Cash and Settlement keep their figures."""

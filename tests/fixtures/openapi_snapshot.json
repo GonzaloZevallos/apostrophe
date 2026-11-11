@@ -2377,7 +2377,7 @@
         "type": "object"
       },
       "PaidIn": {
-        "description": "Money received on the spot, with the method the business chose (docs/adr/0084).",
+        "description": "Money received on the spot, with the method the business chose (docs/adr/0085).",
         "properties": {
           "kind": {
             "const": "paid",

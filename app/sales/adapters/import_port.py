@@ -46,7 +46,7 @@ _CHECK_CUSTOMER_ID = 1
 
 
 # The sheet's own words are the only place "cash" and "transfer" survive: each names the
-# default method the business holds under its Stored-language default name (docs/adr/0084).
+# default method the business holds under its Stored-language default name (docs/adr/0085).
 # A caller that knows the business's language passes those names; without them English's.
 ENGLISH_DEFAULT_NAMES: Mapping[str, str] = {"cash": "Cash", "transfer": "Transfer"}
 # Stands in for a method id while a plan is only checked: nothing is written then.

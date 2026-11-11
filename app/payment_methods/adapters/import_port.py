@@ -1,6 +1,6 @@
 """What the spreadsheet import needs of the payment methods: who holds a default name,
 and a way to add the method when nobody does. Never commits: the import's own
-transaction covers it (docs/adr/0084)."""
+transaction covers it (docs/adr/0085)."""
 
 from dataclasses import dataclass
 from enum import Enum, auto

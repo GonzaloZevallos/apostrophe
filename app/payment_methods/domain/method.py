@@ -2,7 +2,7 @@
 
 The name follows the shared name rule (`app/shared/names.py`). "In use" is never stored:
 `check_removable` is handed the fact, read at the moment of the call. A payment points
-to its method by id, so renaming never rewrites history (docs/adr/0084).
+to its method by id, so renaming never rewrites history (docs/adr/0085).
 """
 
 from __future__ import annotations
