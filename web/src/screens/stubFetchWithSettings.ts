@@ -1,10 +1,9 @@
 /**
  * Test helper: stands `fetch` in with a mock for every request but `GET /pricing-settings`,
  * which it answers with the switches given (both on by default), `GET /api/customer-types`, which
- * it answers with the list given (none by default), and `GET /business`, which it answers with the
- * Phone country given (none by default), and `GET /phone-countries`, which it answers with the
+ * it answers with the list given (none by default), and `GET /phone-countries`, which it answers with the
  * listing given (`PHONE_COUNTRIES`, eight made-up examples, by default) or, with `'fail'`, with a
- * server error (the phone field's example reads both). For the screens that read the
+ * server error. For the screens that read the
  * switches beside their own data and whose tests fake only their own requests: the test keeps
  * working against the returned `api` mock, and the screen runs against the real answer.
  */
@@ -39,7 +38,6 @@ export function stubFetchWithSettings(
   vip = true,
   bulk = true,
   customerTypes: readonly unknown[] = [],
-  phoneCountry: string | null = null,
   phoneCountries: readonly unknown[] | 'fail' = PHONE_COUNTRIES,
 ): Api {
   const api: Api = vi.fn()
@@ -51,13 +49,6 @@ export function stubFetchWithSettings(
             headers: { 'Content-Type': 'application/json' },
           }),
         )
-      : input === '/business'
-        ? Promise.resolve(
-            new Response(JSON.stringify({ name: 'La Huerta', phone_country: phoneCountry, phone_countries: [] }), {
-              status: 200,
-              headers: { 'Content-Type': 'application/json' },
-            }),
-          )
       : input === '/phone-countries'
         ? Promise.resolve(
             new Response(JSON.stringify(phoneCountries === 'fail' ? { detail: 'boom' } : phoneCountries), {

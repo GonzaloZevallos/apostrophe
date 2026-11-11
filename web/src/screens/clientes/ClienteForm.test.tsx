@@ -981,7 +981,7 @@ describe('the Phone country', () => {
   })
 
   test('a failed list keeps Save off and shows the form load error', async () => {
-    stubFetchWithSettings(true, true, [], null, 'fail')
+    stubFetchWithSettings(true, true, [], 'fail')
     renderForm(CUSTOMER_NEW)
 
     expect(await screen.findByRole('alert')).toBeInTheDocument()

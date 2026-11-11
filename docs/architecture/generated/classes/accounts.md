@@ -38,8 +38,6 @@ classDiagram
   }
   class password {
   }
-  class phone_country_router {
-  }
   class ports {
   }
   class reset_link {
@@ -78,9 +76,6 @@ classDiagram
   manage_business --> account
   manage_business --> ports
   onboarding_facts --> tables
-  phone_country_router --> application
-  phone_country_router --> deps
-  phone_country_router --> sql_accounts
   ports --> account
   ports --> invitation
   reset_password --> account
@@ -95,7 +90,6 @@ classDiagram
   router --> invitation
   router --> invitations
   router --> password
-  router --> phone_country_router
   router --> ports
   router --> reset_link
   router --> session_token
@@ -260,7 +254,6 @@ classDiagram
   class BusinessProfile {
     language : str
     name : str
-    phone_country : str #124; None
     user_emails : list~str~
   }
   class EmailTaken {
@@ -312,17 +305,11 @@ classDiagram
   class BusinessOut {
     language : str
     name : str
-    phone_countries : list~PhoneCountryOption~
-    phone_country : str #124; None
     selectable_languages : list~str~
     users : list~UserOut~
   }
   class BusinessPatchIn {
     name : str
-  }
-  class BusinessPhoneCountryOut {
-    phone_countries : list~PhoneCountryOption~
-    phone_country : str #124; None
   }
   class BusinessRow {
     default_phone_country : Mapped~str #124; None~
@@ -382,13 +369,6 @@ classDiagram
   class MoneyFormatOut {
     decimals : int
     symbol : str
-  }
-  class PhoneCountryIn {
-    phone_country : str #124; None
-  }
-  class PhoneCountryOption {
-    calling_code : str
-    code : str
   }
   class ResetLinkRow {
     app_user_id : Mapped~int~

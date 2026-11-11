@@ -19,7 +19,6 @@ from sqlalchemy.orm import Session
 from app.accounts.adapters.deps import require_session
 from app.accounts.adapters.language_router import router as language_router
 from app.accounts.adapters.onboarding_facts import SqlUserFacts
-from app.accounts.adapters.phone_country_router import router as phone_country_router
 from app.accounts.adapters.router import public_router as accounts_public_router
 from app.accounts.adapters.router import router as accounts_router
 from app.accounts.domain.password import PasswordHasher
@@ -359,7 +358,6 @@ def create_app(
     # then `en -> en` would still sync. Only a changed language can owe the pin an edit, so
     # the router schedules upkeep itself when it did (ADR-0014, as pricing settings does).
     app.include_router(language_router, dependencies=gated)
-    app.include_router(phone_country_router, dependencies=gated)
     app.include_router(products_router, dependencies=money_upkeep_gated)
     app.include_router(customers_router, dependencies=money_gated)
     app.include_router(phone_countries_router, dependencies=gated)

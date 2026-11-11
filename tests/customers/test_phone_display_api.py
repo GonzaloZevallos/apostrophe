@@ -45,12 +45,15 @@ def test_a_number_that_fits_no_template_is_shown_as_stored(client: TestClient) -
 
 
 @pytest.mark.parametrize("country", ["AR", None, "ES"])
-def test_the_business_phone_country_never_decides_the_grouping(
+def test_the_sent_country_never_decides_the_grouping_of_a_plus_number(
     client: TestClient, country: str | None
 ) -> None:
-    assert client.put("/business/phone-country", json={"phone_country": country}).status_code == 200
-
-    created = _register(client, "Uruguayo", "+598 99 123 456")
+    posted = client.post(
+        "/customers",
+        json={"name": "Uruguayo", "phone": "+598 99 123 456", "phone_country": country},
+    )
+    assert posted.status_code == 201, posted.text
+    created = posted.json()
 
     assert created["phone_display"] == "+598 99 123 456"
     assert client.get(f"/customers/{created['id']}").json()["phone_display"] == "+598 99 123 456"
@@ -86,12 +89,12 @@ def test_another_business_gets_the_same_phone_countries(
     assert client.get("/phone-countries").json() == other_client.get("/phone-countries").json()
 
 
-def test_business_and_phone_countries_list_the_same_countries_in_the_same_order(
-    client: TestClient,
-) -> None:
-    in_business = client.get("/business").json()["phone_countries"]
-    listed = client.get("/phone-countries").json()
+def test_get_business_no_longer_carries_a_phone_country(client: TestClient) -> None:
+    business = client.get("/business").json()
 
-    assert [(c["code"], c["calling_code"]) for c in in_business] == [
-        (c["code"], c["calling_code"]) for c in listed
-    ]
+    assert "phone_country" not in business
+    assert "phone_countries" not in business
+    assert client.put("/business/phone-country", json={"phone_country": "UY"}).status_code in (
+        404,
+        405,
+    )
