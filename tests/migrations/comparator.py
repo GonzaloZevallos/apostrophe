@@ -32,6 +32,16 @@ def upgrade_to(engine: Engine, revision: str) -> None:
             command.upgrade(config, revision)
 
 
+def downgrade_to(engine: Engine, revision: str) -> None:
+    """Runs the real downgrades down to `revision` over one connection."""
+    with engine.connect() as connection:
+        config = Config()
+        config.set_main_option("script_location", str(MIGRATIONS_ROOT))
+        config.attributes["connection"] = connection
+        with connection.begin():
+            command.downgrade(config, revision)
+
+
 def snapshot(engine: Engine) -> Snapshot:
     inspector = inspect(engine)
     taken: Snapshot = {}
