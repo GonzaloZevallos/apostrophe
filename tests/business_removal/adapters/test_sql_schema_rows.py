@@ -27,6 +27,7 @@ from app.main import create_app
 from app.settings import Settings
 from tests.conftest import NOW, PASSWORD, TEST_HASHER, MovableClock, open_business, signed_in
 from tests.fakes.telegram import FakeTelegram
+from tests.payment_body import payment_body
 from tests.pricing_switches import set_switches
 
 SETTINGS = Settings(secret_key="removal-test-secret", database_url="sqlite://")
@@ -75,7 +76,7 @@ def _seed_everything(client: TestClient, owner_email: str) -> dict[str, int]:
     cash_sale = client.post(
         "/sales",
         json={
-            "payment": {"kind": "paid", "payment_method_id": 1},
+            "payment": payment_body("cash", client),
             "lines": [{"product_id": variety["id"], "quantity": "5"}],
         },
     ).json()
@@ -89,7 +90,11 @@ def _seed_everything(client: TestClient, owner_email: str) -> dict[str, int]:
     )
     client.post(
         f"/customers/{customer['id']}/payments",
-        json={"paid_on": "2026-09-20", "amount": 1_000, "payment_method_id": 1},
+        json={
+            "paid_on": "2026-09-20",
+            "amount": 1_000,
+            "payment_method_id": client.get("/api/payment-methods").json()[0]["id"],
+        },
     )
     # A failed login against the business's own user: `login_guard` is keyed by email,
     # so this is the row the removal must take along with that user (round-3 Q3's

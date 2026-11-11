@@ -171,7 +171,7 @@ def seed(db_path: Path, clock: MovableClock | None = None, money_scale: int = 0)
             json={
                 "paid_on": days.payment.isoformat(),
                 "amount": PAYMENT_AMOUNT,
-                "payment_method_id": 1,
+                "payment_method_id": client.get("/api/payment-methods").json()[0]["id"],
             },
         )
         assert payment.status_code == 201, payment.text
