@@ -100,7 +100,7 @@ Sin objetivo de tiempo nuevo: la venta en menos de un minuto del criterio 1 sigu
 Criterios de éxito, cómo se pagó (Selector, parte 5 de GH-581):
 
 33. **Un paso más como máximo.** La venta se sigue registrando desde el teléfono en menos de un minuto (criterio 1); el medio suma como máximo un paso: abrir el campo y tocar la opción. Con dos opciones la lista no tiene búsqueda.
-34. **Nunca sin medio, nunca por defecto.** Una venta pagada con total por encima de $0 no se guarda sin medio; Owing nunca muestra ni pide uno. El medio nunca viene puesto: arranca vacío al abrir y cada vez que se vuelve a Paid. Lo que se guarda y lo que se manda a la API no cambian: cash, transfer u owing.
+34. **Nunca sin medio, nunca por defecto.** Una venta pagada con total por encima de $0 no se guarda sin medio; Owing nunca muestra ni pide uno. El medio nunca viene puesto: arranca vacío al abrir y cada vez que se vuelve a Paid. Lo que se manda a la API es la unión por `kind`: `{kind: 'paid', payment_method_id}` (el id del medio del negocio) u `{kind: 'owing'}`; nunca un nombre de medio.
 35. **Volver y Escape predecibles.** Con la lista de medios abierta, volver o "Close" cierran solo la lista y la venta queda intacta; en la computadora, Escape cierra solo el desplegable.
 36. **Nada se pierde.** Owing sigue deshabilitado con "To leave it owing, pick a customer" sin cliente; Paid · Owing conservan su aspecto y su comportamiento; una venta de $0 sigue sin necesitar medio; el Mobile check no gana ningún infractor.
 
@@ -168,7 +168,7 @@ Criterios de éxito, Sale number:
 - **Total**: la suma de los totales redondeados de las líneas más el Shipping charged. Las líneas se redondean de a una, nunca como suma.
 - **Shipping charged**: pesos enteros, cero o más, $0 por defecto. Un valor negativo se rechaza.
 - **Cómo se pagó**:
-  - **Pagada entera en el momento, en efectivo o por transferencia.** Registra un On-the-spot payment por el total, en la fecha de la venta, con su medio (ADR-0007). Salda solo esta venta (`payments.md`).
+  - **Pagada entera en el momento.** Registra un On-the-spot payment por el total, en la fecha de la venta, con el medio del negocio elegido (ADR-0007). Salda solo esta venta (`payments.md`).
   - **Queda debiendo**: sin medio, y la venta necesita cliente. Los pagos posteriores la saldan empezando por la deuda más vieja (`payments.md`).
   - **Total de $0**: queda saldada sin medio y sin nada debido. Un medio enviado con ella se ignora y no se guarda.
   - Un total por encima de $0 necesita un medio o "queda debiendo".
@@ -194,7 +194,7 @@ Criterios de éxito, Sale number:
   - No muestra el Sale number.
 - **Ver una**: el Sale number, fecha, cliente o ninguno, envío, nota, cómo se pagó, total, y de cada línea el producto, los gramos, el precio por gramo guardado, la Pricing rule, el total de la línea y el Cost of goods sold (monto costeado y gramos pendientes). Trae también el Sale bill (abajo), o ninguno.
 - **Sale bill** (los hechos detrás del texto compartido):
-  - El nombre del negocio, el Sale number, la fecha, de cada línea el producto, la cantidad, el monto y la regla (bulk, gift o ninguna: lista, VIP y Special price se leen todas como ninguna), con el precio unitario en las líneas con Bulk price; el Shipping charged; el total; el estado de pago (cash, transfer, paid, owed, none) con lo que todavía se debe de esta venta; y el Balance del cliente, o ninguno cuando la venta no tiene cliente.
+  - El nombre del negocio, el Sale number, la fecha, de cada línea el producto, la cantidad, el monto y la regla (bulk, gift o ninguna: lista, VIP y Special price se leen todas como ninguna), con el precio unitario en las líneas con Bulk price; el Shipping charged; el total; el estado de pago (paid, owed, none) con lo que todavía se debe de esta venta; y el Balance del cliente, o ninguno cuando la venta no tiene cliente.
   - El nombre del negocio y los nombres de los productos son datos de la vendedora, y viajan exactamente como están guardados: nunca se escapan, se recortan ni se reescriben.
   - El estado de pago, lo que todavía se debe y el Balance salen de la única pasada de Settlement detrás del "still owing" del detalle, en la misma respuesta; nada vuelve a calcular el Settlement en otro lado.
   - El Balance es la cuenta entera del cliente al momento de leer el detalle, no en la fecha de la venta.
@@ -241,7 +241,7 @@ Criterios de éxito, Sale number:
   - una o más líneas. Cada línea tiene producto (elegido con el Selector, abajo), gramos, "Gift" y "Special price" (el total de la línea);
   - el Shipping charged;
   - la nota;
-  - cómo se pagó: Paid · Owing y, bajo Paid, el medio en el campo "Payment method" (Cash, Transfer).
+  - cómo se pagó: Paid · Owing y, bajo Paid, el medio en el campo "Payment method" (los medios del negocio).
 - **No hay campo de Sale number**: el número lo asigna la app al guardar, nunca lo tipea la vendedora.
 - **El total de la venta** se muestra con los gramos vendidos y los gramos regalados.
 - **Vista previa en vivo**:
@@ -266,7 +266,7 @@ Criterios de éxito, Sale number:
 - **Cómo se pagó** (`SelectorPago`, desde la parte 5 de GH-581; el control del medio está en selector.md):
   - **El estado**: "Paid · Owing" es un `SegmentedChoice` cuyas opciones salen de un Fixed set declarado en `fixedSets.ts` con el motivo "fixed set: payment state, which is not a method". Conserva el aspecto y el comportamiento de los botones de pago de antes; su único agregado es `touch-action: manipulation` y `user-select: none`, que no cambia cómo se ve. El estado deshabilitado y la descripción de cada opción viven en una capa aparte por valor (`optionState`), nunca en el Fixed set.
   - **Al abrir**: lo que la pantalla elegía al abrir para la opción vieja Cash lo elige ahora para Paid; el medio arranca siempre vacío.
-  - **El medio**: bajo Paid aparece un Selector obligatorio con la etiqueta "Payment method", la misma entrada del Copy module que usa Record payment (payments.md). Sus opciones son "Cash" y "Transfer", en ese orden. Salen de la única lista de opciones de medio, armada a partir del Copy module por `usePaymentMethodOptions()` (`web/src/sales/paymentMethods.ts`), que comparten New sale y Record payment. Esa lista nunca se declara en `fixedSets.ts`. El campo no tiene valor por defecto, ni opción "Select…", ni `placeholder`, ni fila para borrar: vacío, muestra solo su etiqueta. Con dos opciones la lista no tiene búsqueda.
+  - **El medio**: bajo Paid aparece un Selector obligatorio con la etiqueta "Payment method", la misma entrada del Copy module que usa Record payment (payments.md). Sus opciones son los medios ofrecidos del negocio (`GET /api/payment-methods`), en el orden que guarda el servidor; los valores son los ids. Salen de la única lista de opciones de medio, armada por `usePaymentMethodOptions()` (`web/src/sales/paymentMethods.ts`), que comparten New sale y Record payment. Esa lista nunca se declara en `fixedSets.ts`. El campo no tiene valor por defecto, ni opción "Select…", ni `placeholder`, ni fila para borrar: vacío, muestra solo su etiqueta. Con dos opciones la lista no tiene búsqueda.
   - **Bajo Owing** el medio no se muestra ni se pide.
   - **Sin restos**: pasar de Paid a Owing y volver a Paid deja el medio vacío otra vez.
   - **En el teléfono**: la lista de medios es su propia entrada del historial, en el nivel 1 sobre el formulario, dentro del `SheetStackProvider` de `NuevaVenta`. Se dibuja en el mismo `listHost` que las listas de las líneas, fuera del formulario, que mientras tanto queda `inert`. Volver o "Close" con la lista abierta cierran solo la lista; nunca preguntan "Discard the sale?". Elegir un medio no cambia la condición de "Discard the sale?".
@@ -506,9 +506,9 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - **Producto de una línea, carga y conjunto vacío (criterio 32)**: mientras cargan los productos, y con la consulta fallida, el campo tiene `aria-busy`, sin texto, y la lista no se abre; sin productos, la lista abierta muestra "No products yet. Add them in the Products tab." y cerrarla conserva la venta.
 - **Producto de una línea, agregar una línea**: agregar una línea le da el foco a su campo de producto sin abrir la lista.
 - **Chequeo en el teléfono, producto de una línea**: `new-sale/line-variety-selector-open` pasa el chequeo `mobile` sin ningún infractor nuevo, y no queda ninguna entrada `combobox:Line # product` obsoleta.
-- **Medio, es un Selector (criterio 34)**: un test del front (`SelectorPago.test.tsx`, `NuevaVenta.method.test.tsx`) muestra bajo Paid el campo "Payment method" con exactamente Cash y Transfer, ningún grupo de radio ni botón `aria-pressed` con los medios y ninguna fila para borrar; bajo Owing el campo no está.
+- **Medio, es un Selector (criterio 34)**: un test del front (`SelectorPago.test.tsx`, `NuevaVenta.method.test.tsx`) muestra bajo Paid el campo "Payment method" con exactamente los medios ofrecidos del negocio (en el test, Cash y Transfer), ningún grupo de radio ni botón `aria-pressed` con los medios y ninguna fila para borrar; bajo Owing el campo no está.
 - **Medio, sin medio no se guarda (criterio 34)**: con Paid, total por encima de $0 y sin medio, tocar "Save sale" no hace ningún pedido a la API, no entra en el estado de guardado en curso y muestra "Choose how they paid." con el Attention icon junto al campo, que recibe el foco; elegir un medio saca la frase. Una venta de $0 con Paid se guarda sin medio.
-- **Medio, valor enviado (criterio 34)**: tests unitarios de `paymentChoiceOf` y `validateSale` (`pricing.test.ts`) cubren cada valor que viaja (cash, transfer, owing), el caso de $0, un medio que quedó guardado con Owing elegido (nunca se manda) y Owing sin cliente.
+- **Medio, valor enviado (criterio 34)**: tests unitarios de `paymentChoiceOf` y `validateSale` (`pricing.test.ts`) cubren cada valor que viaja (paid con `payment_method_id`, owing), el caso de $0, un medio que quedó guardado con Owing elegido (nunca se manda) y Owing sin cliente.
 - **Medio, sin restos (criterio 34)**: elegir Transfer, pasar a Owing y volver a Paid deja el campo vacío.
 - **Medio, volver y Escape (criterio 35)**: con la lista de medios abierta, volver o "Close" cierran solo la lista y "Discard the sale?" no aparece; en la computadora, Escape cierra solo el desplegable.
 - **Medio, nada se pierde (criterio 36)**: sin cliente, Owing está deshabilitado con "To leave it owing, pick a customer"; los tests existentes de Owing pasan con sus aserciones sin cambios; el `FixedSet` de Paid · Owing declara su motivo y ningún medio está en `fixedSets.ts`.
