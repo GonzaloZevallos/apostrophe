@@ -35,6 +35,7 @@ subgraph src["src"]
       src_screens_clientes_CustomersBehind_tsx["CustomersBehind.tsx"]
       src_screens_clientes_TeDeben_tsx["TeDeben.tsx"]
       src_screens_clientes_accountRows_ts["accountRows.ts"]
+      src_screens_clientes_usePhoneCountryField_ts["usePhoneCountryField.ts"]
     end
     subgraph src_screens_expenses["expenses"]
       src_screens_expenses_ExpenseEditSheet_tsx["ExpenseEditSheet.tsx"]
@@ -213,6 +214,7 @@ src_screens_clientes_ClienteFicha_tsx-->src_screens_clientes_CustomerTypeLine_ts
 src_screens_clientes_ClienteFicha_tsx-->src_screens_clientes_accountRows_ts
 src_screens_clientes_ClienteForm_tsx-->src_screens_clientes_CustomerFields_tsx
 src_screens_clientes_ClienteForm_tsx-->src_screens_clientes_CustomerTypeField_tsx
+src_screens_clientes_ClienteForm_tsx-->src_screens_clientes_usePhoneCountryField_ts
 src_screens_clientes_ClientesLayout_tsx-->src_screens_clientes_Clientes_tsx
 src_screens_clientes_ClientesLayout_tsx-->src_screens_clientes_CobroPanes_tsx
 src_screens_clientes_ClientesLayout_tsx-->src_screens_clientes_CustomerCardBehind_tsx
@@ -230,6 +232,7 @@ src_screens_clientes_Cobro_tsx-->src_screens_clientes_ClienteForm_tsx
 src_screens_clientes_CustomerCardBehind_tsx-->src_screens_clientes_AccountRowLine_tsx
 src_screens_clientes_CustomerCardBehind_tsx-->src_screens_clientes_CustomerTypeLine_tsx
 src_screens_clientes_CustomerCardBehind_tsx-->src_screens_clientes_accountRows_ts
+src_screens_clientes_CustomerFields_tsx-->src_screens_clientes_usePhoneCountryField_ts
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_ClienteFila_tsx
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_CustomerSearch_ts
 src_screens_clientes_TeDeben_tsx-->src_screens_clientes_ClienteFila_tsx
@@ -383,6 +386,7 @@ src_screens_varieties_useSelectedVariety_ts-->src_screens_varieties_varietiesByN
 src_screens_varieties_varietyForms_ts-->src_screens_Variedades_tsx
 src_screens_ventas_NuevaVentaCliente_tsx-->src_screens_clientes_ClienteForm_tsx
 src_screens_ventas_NuevaVentaCliente_tsx-->src_screens_clientes_CustomerFields_tsx
+src_screens_ventas_NuevaVentaCliente_tsx-->src_screens_clientes_usePhoneCountryField_ts
 src_screens_ventas_NuevaVentaLinea_tsx-->src_screens_Variedades_tsx
 src_screens_ventas_NuevaVenta_tsx-->src_screens_Variedades_tsx
 src_screens_ventas_NuevaVenta_tsx-->src_screens_ventas_NuevaVentaCliente_tsx

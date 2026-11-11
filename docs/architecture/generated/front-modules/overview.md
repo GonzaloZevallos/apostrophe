@@ -88,6 +88,7 @@ src_screens-->src_flash
 src_screens-->src_format
 src_screens-->src_i18n
 src_screens-->src_paymentReturn_ts
+src_screens-->src_phone
 src_screens-->src_routes_ts
 src_screens-->src_sales
 src_screens-->src_session_ts
