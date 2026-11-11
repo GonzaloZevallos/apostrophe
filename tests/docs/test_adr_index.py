@@ -58,6 +58,7 @@ def test_a_colon_heavy_value_comes_back_as_written() -> None:
 
 
 def test_a_date_comes_back_as_text_and_the_shared_loader_is_untouched() -> None:
+    assert yaml.safe_load("d: 2026-10-02")["d"] == datetime.date(2026, 10, 2)
     assert read_front_matter("---\ndate: 2026-10-02\n---\n") == {"date": "2026-10-02"}
     assert yaml.safe_load("d: 2026-10-02")["d"] == datetime.date(2026, 10, 2)
 

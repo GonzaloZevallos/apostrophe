@@ -22,6 +22,8 @@ def _linguist_generated(attributes: str) -> list[str]:
     """The paths of the `.gitattributes` lines that carry the token `linguist-generated=true`."""
     found: list[str] = []
     for line in attributes.splitlines():
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
         path, *tokens = line.split()
         if "linguist-generated=true" in tokens:
             found.append(path)
