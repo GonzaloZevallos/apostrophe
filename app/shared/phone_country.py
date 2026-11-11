@@ -15,7 +15,7 @@ from typing import ClassVar
 class UnknownPhoneCountry(Exception):
     """A code that is not one of the listed countries."""
 
-    code: ClassVar[str] = "business.phone_country_unknown"
+    code: ClassVar[str] = "customer.phone_country_unknown"
 
     def __init__(self) -> None:
         super().__init__("The phone country is not one a business can choose")

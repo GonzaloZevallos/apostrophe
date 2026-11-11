@@ -40,7 +40,9 @@ def enter(client: TestClient) -> dict[str, Any]:
     )
     assert adjustment.status_code == 201, adjustment.text
 
-    customer = client.post("/customers", json={"name": "Ana", "phone": "11 5555-5555"}).json()
+    customer = client.post(
+        "/customers", json={"name": "Ana", "phone": "11 5555-5555", "phone_country": "AR"}
+    ).json()
     sales = [
         {
             "payment": "cash",

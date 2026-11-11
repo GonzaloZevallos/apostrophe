@@ -204,7 +204,9 @@ def test_the_sale_bill_and_the_sale_list_are_the_same_at_both_scales(
     client: TestClient, money_scale: int
 ) -> None:
     product_id = _stocked_bulk_product(client)
-    customer = client.post("/customers", json={"name": "Juana", "phone": "11 1000-0000"}).json()
+    customer = client.post(
+        "/customers", json={"name": "Juana", "phone": "11 1000-0000", "phone_country": "AR"}
+    ).json()
     created = _sell(
         client,
         product_id,
@@ -314,7 +316,9 @@ class _BothOn:
 
 
 def _owing_sale(client: TestClient, product_id: int) -> dict[str, Any]:
-    customer = client.post("/customers", json={"name": "Juana", "phone": "11 1000-0000"}).json()
+    customer = client.post(
+        "/customers", json={"name": "Juana", "phone": "11 1000-0000", "phone_country": "AR"}
+    ).json()
     return _sell(
         client,
         product_id,

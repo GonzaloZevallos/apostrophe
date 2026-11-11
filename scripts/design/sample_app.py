@@ -195,7 +195,12 @@ def seed(api: Api, today: date) -> Sample:
         made: int = api.call(
             "POST",
             "/customers",
-            {"name": name, "phone": phone, "customer_type_id": customer_type_id},
+            {
+                "name": name,
+                "phone": phone,
+                "phone_country": "AR",
+                "customer_type_id": customer_type_id,
+            },
         )["id"]
         return made
 
@@ -390,7 +395,13 @@ def stretch(api: Api, today: date) -> None:
     customer: int = api.call(
         "POST",
         "/customers",
-        {"name": named("Cliente"), "phone": "11 5555-0199", "channel": None, "vip": False},
+        {
+            "name": named("Cliente"),
+            "phone": "11 5555-0199",
+            "phone_country": "AR",
+            "channel": None,
+            "vip": False,
+        },
     )["id"]
     api.call(
         "POST",

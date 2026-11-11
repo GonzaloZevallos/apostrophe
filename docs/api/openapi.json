@@ -996,6 +996,17 @@
               }
             ],
             "title": "Phone"
+          },
+          "phone_country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone Country"
           }
         },
         "required": [
@@ -1132,6 +1143,17 @@
               }
             ],
             "title": "Phone"
+          },
+          "phone_country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone Country"
           }
         },
         "title": "CustomerPatchIn",
