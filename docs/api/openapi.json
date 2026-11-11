@@ -91,6 +91,41 @@
         "title": "AccountOut",
         "type": "object"
       },
+      "AccountPaymentRefOut": {
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Amount"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "paid_on": {
+            "format": "date",
+            "title": "Paid On",
+            "type": "string"
+          },
+          "payment_method": {
+            "$ref": "#/components/schemas/PaymentMethodLabelOut"
+          }
+        },
+        "required": [
+          "id",
+          "paid_on",
+          "amount",
+          "payment_method"
+        ],
+        "title": "AccountPaymentRefOut",
+        "type": "object"
+      },
       "AfterOut": {
         "properties": {
           "balance": {
@@ -444,8 +479,6 @@
         "properties": {
           "state": {
             "enum": [
-              "cash",
-              "transfer",
               "paid",
               "owed",
               "none"
@@ -887,7 +920,7 @@
             "type": "string"
           },
           "payment": {
-            "$ref": "#/components/schemas/PaymentRefOut"
+            "$ref": "#/components/schemas/AccountPaymentRefOut"
           },
           "running_balance": {
             "anyOf": [
@@ -2207,6 +2240,20 @@
         "title": "Origin",
         "type": "string"
       },
+      "OwingIn": {
+        "properties": {
+          "kind": {
+            "const": "owing",
+            "title": "Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "OwingIn",
+        "type": "object"
+      },
       "OwnChatLookupIn": {
         "properties": {
           "token": {
@@ -2238,6 +2285,26 @@
           "own_chat"
         ],
         "title": "OwnChatLookupOut",
+        "type": "object"
+      },
+      "PaidIn": {
+        "description": "Money received on the spot, with the method the business chose (docs/adr/0082).",
+        "properties": {
+          "kind": {
+            "const": "paid",
+            "title": "Kind",
+            "type": "string"
+          },
+          "payment_method_id": {
+            "title": "Payment Method Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "payment_method_id"
+        ],
+        "title": "PaidIn",
         "type": "object"
       },
       "PanelOut": {
@@ -2372,7 +2439,7 @@
             "type": "string"
           },
           "payment": {
-            "$ref": "#/components/schemas/PaymentRefOut"
+            "$ref": "#/components/schemas/AccountPaymentRefOut"
           },
           "running_balance": {
             "anyOf": [
@@ -2419,20 +2486,21 @@
             ],
             "title": "Amount"
           },
-          "method": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PaymentMethod"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "paid_on": {
             "format": "date",
             "title": "Paid On",
             "type": "string"
+          },
+          "payment_method_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Method Id"
           }
         },
         "required": [
@@ -2441,14 +2509,6 @@
         ],
         "title": "PaymentIn",
         "type": "object"
-      },
-      "PaymentMethod": {
-        "enum": [
-          "cash",
-          "transfer"
-        ],
-        "title": "PaymentMethod",
-        "type": "string"
       },
       "PaymentMethodIcon": {
         "description": "The closed, neutral set a method's icon is chosen from: nothing here is a\ncountry, a bank or a brand.",
@@ -2464,6 +2524,30 @@
         ],
         "title": "PaymentMethodIcon",
         "type": "string"
+      },
+      "PaymentMethodLabelOut": {
+        "description": "A method as a read shows it: its current name and icon, archived or not.",
+        "properties": {
+          "icon": {
+            "title": "Icon",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "icon"
+        ],
+        "title": "PaymentMethodLabelOut",
+        "type": "object"
       },
       "PaymentPreviewIn": {
         "properties": {
@@ -2529,20 +2613,21 @@
             "title": "Id",
             "type": "integer"
           },
-          "method": {
-            "$ref": "#/components/schemas/PaymentMethod"
-          },
           "paid_on": {
             "format": "date",
             "title": "Paid On",
             "type": "string"
+          },
+          "payment_method_id": {
+            "title": "Payment Method Id",
+            "type": "integer"
           }
         },
         "required": [
           "id",
           "paid_on",
           "amount",
-          "method"
+          "payment_method_id"
         ],
         "title": "PaymentRefOut",
         "type": "object"
@@ -3926,19 +4011,23 @@
             "type": "integer"
           },
           "payment": {
+            "enum": [
+              "paid",
+              "owing",
+              "none"
+            ],
+            "title": "Payment",
+            "type": "string"
+          },
+          "payment_method": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/PaymentMethod"
+                "$ref": "#/components/schemas/PaymentMethodLabelOut"
               },
               {
-                "enum": [
-                  "owing",
-                  "none"
-                ],
-                "type": "string"
+                "type": "null"
               }
-            ],
-            "title": "Payment"
+            ]
           },
           "shipping_charged": {
             "anyOf": [
@@ -3979,6 +4068,7 @@
           "shipping_charged",
           "note",
           "payment",
+          "payment_method",
           "total",
           "lines",
           "total_quantity",
@@ -4034,11 +4124,21 @@
           "payment": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/PaymentMethod"
-              },
-              {
-                "const": "owing",
-                "type": "string"
+                "discriminator": {
+                  "mapping": {
+                    "owing": "#/components/schemas/OwingIn",
+                    "paid": "#/components/schemas/PaidIn"
+                  },
+                  "propertyName": "kind"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/PaidIn"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OwingIn"
+                  }
+                ]
               },
               {
                 "type": "null"
@@ -4217,19 +4317,23 @@
             "type": "integer"
           },
           "payment": {
+            "enum": [
+              "paid",
+              "owing",
+              "none"
+            ],
+            "title": "Payment",
+            "type": "string"
+          },
+          "payment_method": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/PaymentMethod"
+                "$ref": "#/components/schemas/PaymentMethodLabelOut"
               },
               {
-                "enum": [
-                  "owing",
-                  "none"
-                ],
-                "type": "string"
+                "type": "null"
               }
-            ],
-            "title": "Payment"
+            ]
           },
           "shipping_charged": {
             "anyOf": [
@@ -4266,6 +4370,7 @@
           "shipping_charged",
           "note",
           "payment",
+          "payment_method",
           "total",
           "lines",
           "still_owing"
@@ -4277,8 +4382,7 @@
         "properties": {
           "how_paid": {
             "enum": [
-              "cash",
-              "transfer",
+              "paid",
               "owing",
               "none"
             ],
@@ -4288,6 +4392,16 @@
           "id": {
             "title": "Id",
             "type": "integer"
+          },
+          "payment_method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethodLabelOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "total": {
             "anyOf": [
@@ -4304,7 +4418,8 @@
         "required": [
           "id",
           "total",
-          "how_paid"
+          "how_paid",
+          "payment_method"
         ],
         "title": "SaleRefOut",
         "type": "object"

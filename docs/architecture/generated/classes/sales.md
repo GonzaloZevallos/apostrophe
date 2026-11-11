@@ -20,7 +20,6 @@ classDiagram
   }
   sale --> pricing
   sale_bill --> pricing
-  sale_bill --> sale
 ```
 
 #### application
@@ -149,14 +148,12 @@ classDiagram
     amount : int
     customer_id : int #124; None
     id : int #124; None
-    method
+    label : PaymentMethodLabel #124; None
+    method : PaymentMethodId
     paid_on : date
   }
   class OwingWithoutCustomer {
     code : ClassVar~str~
-  }
-  class PaymentMethod {
-    name
   }
   class PaymentRequired {
     code : ClassVar~str~
@@ -237,7 +234,6 @@ classDiagram
   NoPriceThatDay --|> SaleRuleBroken
   NonPositiveQuantity --|> SaleRuleBroken
   NoteTooLong --|> SaleRuleBroken
-  OnTheSpotPayment --> PaymentMethod : method
   OwingWithoutCustomer --|> SaleRuleBroken
   PaymentRequired --|> SaleRuleBroken
   SaleBill --> BillPayment : payment
@@ -354,6 +350,13 @@ classDiagram
     quantity
     special_price : MoneyAmount #124; None
   }
+  class OwingIn {
+    kind : Literal~'owing'~
+  }
+  class PaidIn {
+    kind : Literal~'paid'~
+    payment_method_id : int
+  }
   class PlannedPriceBook {
     for_variety(variety_id: int, day: date) VarietyPricing #124; None
   }
@@ -396,7 +399,8 @@ classDiagram
     lines : list~SaleLineDetailOut~
     note : str #124; None
     number : int
-    payment
+    payment : Literal
+    payment_method : PaymentMethodLabelOut #124; None
     shipping_charged
     still_owing : bool
     total
@@ -448,7 +452,8 @@ classDiagram
     lines : list~SaleLineOut~
     note : str #124; None
     number : int
-    payment
+    payment : Literal
+    payment_method : PaymentMethodLabelOut #124; None
     shipping_charged
     still_owing : bool
     total
