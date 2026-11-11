@@ -5,7 +5,7 @@
 - Cuando mi negocio guarda su dinero a una escala más fina que unidades enteras, quiero que cada monto que registro, veo y se exporta salga exactamente como lo ingresé, así confío en mis saldos, Profit y Cash sin revisarlos a mano. (GH-318, parte 18; ADR-0058.)
 - Cuando mi negocio cuenta la plata en otra moneda o con centavos, quiero elegir yo mismo, desde Settings, el símbolo de la moneda y la cantidad de decimales, para que cada pantalla muestre y acepte la plata como la contamos mis clientes y yo, sin que ningún monto que ya registré cambie de valor. (GH-318, parte 20.)
   - Disparadores: un Business en otra moneda quiere su propio símbolo; un Business que cobra con centavos sube los decimales; un vendedor que los subió por error, o que nunca usó centavos, los vuelve a bajar.
-  - La parte 20 cumple los tres disparadores: cambia el símbolo, sube los decimales por el rescale (#402) y los baja de vuelta. Queda una brecha abierta, descrita en "Brecha: centavos en el dominio": después de subir, la mayoría de las rutas todavía no puede guardar un monto con centavos.
+  - La parte 20 cumple los tres disparadores: cambia el símbolo, sube los decimales por el rescale (#402) y los baja de vuelta. Después de subir, las nueve rutas de escritura de dinero guardan y devuelven un monto con centavos exactamente (sección "Centavos en el dominio").
 
 ## Qué es hoy
 
@@ -44,7 +44,7 @@ Antes de la parte 20, todo Business estaba fijo en "$": un vendedor en otra mone
   - El control y el guardado van en una misma transacción, así que un monto con centavos guardado al mismo tiempo nunca queda debajo de una configuración más baja.
   - El rechazo es una sola oración fija con el Attention icon (p. ej. "Some recorded amounts have more decimals than that, so the decimals stay put."). No lista montos ni nombra el tipo de registro.
   - El formulario queda abierto con lo que tipeó el vendedor, y la configuración guardada queda como estaba. Si cambiaron el símbolo y los decimales y la bajada se rechaza, no se guarda nada, ni siquiera el símbolo.
-  - Hoy casi ninguna capacidad guarda centavos, así que el control se prueba plantando montos con centavos directamente, columna por columna.
+  - El control se prueba plantando montos con centavos directamente, columna por columna, y también con los que las rutas de escritura guardan.
 - Un cambio guardado cuenta como un cambio que puede afectar el texto del Catalog: dispara la Upkeep del Pinned catalog, que solo edita en el lugar, nunca envía ni fija, y una falla muestra Out of date como hoy.
 - Cada User del Business ve el formato nuevo la próxima vez que carga una pantalla. Nada se configura por User ni por dispositivo.
 
@@ -121,7 +121,6 @@ Algunas cifras dividen: el total de una Sale line, el costo por unidad que se to
 
 ## Fuera de alcance
 
-- Que cada capacidad guarde centavos, y con ello abrir la subida de decimales y llamar al rescale (#402): una parte posterior de GH-318.
 - El rescale en sí (#402).
 - Elegir la moneda en el Onboarding.
 - La posición del símbolo y una lista de monedas.
@@ -155,9 +154,8 @@ Algunas cifras dividen: el total de una Sale line, el costo por unidad que se to
 - **Upkeep**: un cambio de formato guardado dispara la Upkeep del Pinned catalog: 100%.
 - Gate (pytest, vitest, e2e): pasa.
 
-### Brecha: centavos en el dominio
+### Centavos en el dominio
 
-- Cada caso de uso todavía convierte un monto a unidades enteras con `Money.whole_units()` (42 usos en 21 archivos de `app/`). Después de subir los decimales, `money_within` deja pasar `10.50` y esa conversión no puede guardarlo.
-- En una ruta de escritura con cuerpo (POST, PUT, PATCH), ese rechazo se responde `422 money.too_many_decimals` con el mensaje existente, nunca un 500 y nunca un redondeo. Una lectura o un DELETE que encuentra un monto guardado que no es entero sigue respondiendo 500.
-- Rutas que hoy rechazan `10.50` con ese 422 después de subir a 2 decimales (las nueve que recorre `tests/money_format/test_money_format_route.py`, y ninguna lo guarda): `POST /api/products/{id}/prices`, `POST /expenses`, `PUT /expenses/{id}`, `POST /sales` (con `shipping_charged` y con `special_price` en una línea), `POST /stock/entries`, `PUT /stock/entries/{id}`, `POST /customers/{id}/payments` y `POST /customers/{id}/payments/preview`. Ninguna conserva los centavos todavía.
-- Que el dominio guarde centavos es un trabajo aparte que decide el humano; esta parte no lo hace.
+- El dominio guarda un monto como un entero en la unidad de los decimales del Business: una unidad entera con 0 decimales, un décimo con 1, un centésimo con 2. Cada caso de uso lo convierte con `Money.in_decimals` y cada adaptador lee con `domain_amount`; la respuesta escribe unidades de moneda con los decimales del Business (`MoneyOut`).
+- Con 2 decimales, `10.50` se guarda como `1050` en su columna `money_column()` y se lee de vuelta exactamente en las nueve rutas que recorre `tests/money_format/test_money_format_route.py`: `POST /api/products/{id}/prices`, `POST /expenses`, `PUT /expenses/{id}`, `POST /sales` (con `shipping_charged` y con `special_price`), `POST /stock/entries`, `PUT /stock/entries/{id}`, `POST /customers/{id}/payments` y su vista previa.
+- Con 0 decimales, un monto con centavos en una ruta de escritura con cuerpo responde `422 money.too_many_decimals` con el mensaje existente: nunca un 500 y nunca un redondeo. Una lectura o un DELETE que encuentra un monto guardado que no es entero sigue respondiendo 500.

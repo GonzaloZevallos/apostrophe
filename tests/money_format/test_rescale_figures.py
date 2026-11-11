@@ -50,6 +50,24 @@ def _documents(client: TestClient, customer_id: int, sale_id: int) -> Documents:
     return found
 
 
+def _differences(before: Any, after: Any, path: str = "") -> list[str]:
+    """Where two parsed documents differ, as `path: before -> after`, so a failure names the
+    figure that moved."""
+    if isinstance(before, dict) and isinstance(after, dict):
+        return [
+            line
+            for name in sorted(before.keys() | after.keys())
+            for line in _differences(before.get(name), after.get(name), f"{path}/{name}")
+        ]
+    if isinstance(before, list) and isinstance(after, list) and len(before) == len(after):
+        return [
+            line
+            for index, (one, other) in enumerate(zip(before, after, strict=True))
+            for line in _differences(one, other, f"{path}[{index}]")
+        ]
+    return [] if before == after else [f"{path}: {before} -> {after}"]
+
+
 def _scale(engine: Engine) -> int:
     with engine.connect() as connection:
         return int(connection.execute(text("SELECT scale FROM money_format")).scalar_one())
@@ -84,7 +102,7 @@ def test_every_figure_is_equal_before_and_after_the_rescale(
         assert _scale(engine) == 2
         after = _documents(client, entered["customer_id"], sale_id)
 
-    assert after == before
+    assert _differences(before, after) == []
     # The data really moved money, the figures the comparison covers included.
     month = before["/panel"]["periods"]["month"]
     assert month["sales"] > 0 and month["cost_of_goods"] > 0 and month["expenses"] == 1_500
