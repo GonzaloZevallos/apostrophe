@@ -7,7 +7,7 @@
  * regeneration. `tests/customers/test_phone_plus_parity.py` runs the same `plusCases.json`
  * against that table.
  */
-import served from './servedCountries.json'
+import served from './servedCountries.json' with { type: 'json' }
 import type { ListedCountry } from './types.ts'
 
 export const SERVED: readonly ListedCountry[] = served.countries

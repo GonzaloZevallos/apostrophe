@@ -2,6 +2,7 @@
 
 import { CUSTOMER, CUSTOMERS, HOME, SALE, SALE_NEW, SALES } from '../routes.ts'
 import { common } from './copy.ts'
+import { DETECTED_COUNTRY_BUTTON } from './countryField.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { SALES_TEXT } from '../copy/sales.ts'
 import type { WalkState } from './states.ts'
@@ -74,7 +75,7 @@ export const SALES_STATES: readonly WalkState[] = [
     steps: [
       { click: SALES_TEXT.pickCustomer },
       { click: common('common:newCustomer') },
-      { press: CUSTOMERS_TEXT.phoneCountryLabel },
+      { press: DETECTED_COUNTRY_BUTTON },
     ],
     visible: CUSTOMERS_TEXT.phoneCountryOther,
   },

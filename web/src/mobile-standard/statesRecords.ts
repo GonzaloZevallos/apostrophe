@@ -28,6 +28,7 @@ import {
   WITHDRAWAL_NEW,
 } from '../routes.ts'
 import { AUTH_TEXT } from '../copy/auth.ts'
+import { DETECTED_COUNTRY_BUTTON } from './countryField.ts'
 import { REFUSAL_KEY } from '../i18n/refusalTable.ts'
 import { common, emptyState, refusal } from './copy.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
@@ -211,7 +212,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
     // The Phone country list open in New customer: the eight served countries and Other, with search.
     screen: 'customer/country-selector-open',
     route: CUSTOMER_NEW,
-    steps: [{ press: CUSTOMERS_TEXT.phoneCountryLabel }],
+    steps: [{ press: DETECTED_COUNTRY_BUTTON }],
     visible: CUSTOMERS_TEXT.phoneCountryOther,
   },
   {

@@ -5,6 +5,7 @@
  * (plan, "Gone records").
  */
 
+import { DETECTED_COUNTRY_BUTTON } from '../../mobile-standard/countryField.ts'
 import { CUSTOMER, CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_NEW, LOGIN, pathTo, SETTINGS_CUSTOMER_TYPES } from '../../routes'
 import { useGoneNotice } from '../../components/goneExit'
 import { readFeedback } from '../../components/feedback'
@@ -863,6 +864,13 @@ describe('the Phone country', () => {
 
     await screen.findByText('la ficha')
     expect(sentBody('POST')).toMatchObject({ phone: '11 3178 5094', phone_country: 'AR' })
+  })
+
+  test('the phone walk names the field by its label and the detected value, and the bare label is not its name', async () => {
+    renderForm(CUSTOMER_NEW)
+
+    expect(await screen.findByRole('button', { name: DETECTED_COUNTRY_BUTTON })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Phone country$/ })).not.toBeInTheDocument()
   })
 
   test('the detection follows the phone language, then the zone', async () => {

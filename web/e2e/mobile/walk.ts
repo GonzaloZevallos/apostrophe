@@ -27,7 +27,9 @@ function clickTarget(page: Page, name: string): Locator {
 
 /** A fill types into an input or textarea, and picks the option with that label in a select. */
 async function fill(page: Page, label: string, value: string, timeout: number): Promise<void> {
-  const field = page.getByLabel(label).first()
+  // The exact label wins: "Phone" is also a part of the "Phone country" field's name, which comes first on a phone.
+  const exact = page.getByLabel(label, { exact: true })
+  const field = (await exact.count()) > 0 ? exact.first() : page.getByLabel(label).first()
   const isSelect = await field.evaluate((element) => element.tagName === 'SELECT', undefined, { timeout })
   if (isSelect) await field.selectOption({ label: value }, { timeout })
   else await field.fill(value, { timeout })
