@@ -360,8 +360,8 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
   const inAccount = within(account as HTMLElement)
   // The joined "Payment · cash · On account of …" line is now two lines: the
   // title, and the sub-line under it.
-  expect(inAccount.getByText('Payment · cash')).toBeInTheDocument()
-  expect(inAccount.getAllByText('Payment · transfer')).toHaveLength(2)
+  expect(inAccount.getByText('Payment · Cash')).toBeInTheDocument()
+  expect(inAccount.getAllByText('Payment · Transfer')).toHaveLength(2)
   expect(inAccount.getAllByText('On account of the sale of 14/09')).toHaveLength(2)
   expect(inAccount.getByText('Credit')).toBeInTheDocument()
   expect(screen.getByRole('heading', { name: 'Account · running balance' })).toBeInTheDocument()
@@ -407,11 +407,11 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
   // Title over sub-line on the left, the sale naming no product and no grams.
   expect(saleFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Sale')
   expect(saleFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent('Left owing')
-  expect(firstPaymentFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · cash')
+  expect(firstPaymentFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · Cash')
   expect(firstPaymentFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent('On account of the sale of 14/09')
-  expect(secondPaymentFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · transfer')
+  expect(secondPaymentFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · Transfer')
   expect(secondPaymentFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent('On account of the sale of 14/09')
-  expect(creditFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · transfer')
+  expect(creditFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · Transfer')
   expect(creditFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent(/^Credit$/)
 
   // Amber marks only what is owed: the owed balance and the settled one are not
@@ -447,7 +447,7 @@ test('Delete payment asks before deleting, then shows "Payment deleted" and refr
                     date: '2026-09-20',
                     running_balance: 6000,
                     standing: 'owes',
-                    payment: { id: 5, paid_on: '2026-09-20', amount: 5000, method: 'cash' },
+                    payment: { id: 5, paid_on: '2026-09-20', amount: 5000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
                     applied_to: { sale_id: 10, sale_date: '2026-09-14', amount: 5000 },
                   },
                 ],
@@ -465,7 +465,7 @@ test('Delete payment asks before deleting, then shows "Payment deleted" and refr
   await userEvent.click(borrar)
 
   expect(
-    screen.getByText('Delete the payment of $ 5.000 (cash) from 20/09?'),
+    screen.getByText('Delete the payment of $ 5.000 (Cash) from 20/09?'),
   ).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
@@ -494,7 +494,7 @@ const CREDIT_ONLY_ACCOUNT = {
       date: '2026-10-06',
       running_balance: -44000,
       standing: 'credit',
-      payment: { id: 7, paid_on: '2026-10-06', amount: 44000, method: 'cash' },
+      payment: { id: 7, paid_on: '2026-10-06', amount: 44000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
       amount: 44000,
     },
   ],
@@ -519,7 +519,7 @@ test('a payment that shows only as "Credit" offers Delete payment, and deleting 
   await userEvent.click(borrar)
 
   expect(
-    screen.getByText('Delete the payment of $ 44.000 (cash) from 06/10?'),
+    screen.getByText('Delete the payment of $ 44.000 (Cash) from 06/10?'),
   ).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
@@ -544,7 +544,7 @@ test('Delete payment on a credit-only payment already gone closes the dialog and
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
   expect(await screen.findByText('That is gone. The list is up to date.')).toBeInTheDocument()
-  expect(screen.queryByText('Delete the payment of $ 44.000 (cash) from 06/10?')).not.toBeInTheDocument()
+  expect(screen.queryByText('Delete the payment of $ 44.000 (Cash) from 06/10?')).not.toBeInTheDocument()
   expect(screen.queryByText('Payment deleted')).not.toBeInTheDocument()
 })
 
@@ -570,7 +570,7 @@ test('a payment split between a sale and a credit offers one Delete payment, on 
               date: '2026-10-05',
               running_balance: 0,
               standing: 'settled',
-              payment: { id: 8, paid_on: '2026-10-05', amount: 8000, method: 'cash' },
+              payment: { id: 8, paid_on: '2026-10-05', amount: 8000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
               applied_to: { sale_id: 10, sale_date: '2026-10-01', amount: 5000 },
             },
             {
@@ -578,7 +578,7 @@ test('a payment split between a sale and a credit offers one Delete payment, on 
               date: '2026-10-05',
               running_balance: -3000,
               standing: 'credit',
-              payment: { id: 8, paid_on: '2026-10-05', amount: 8000, method: 'cash' },
+              payment: { id: 8, paid_on: '2026-10-05', amount: 8000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
               amount: 3000,
             },
           ],
@@ -708,7 +708,7 @@ test('registering a payment that settles everything shows the plain "Payment sav
       'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
       'POST /customers/1/payments': () =>
         jsonResponse(201, {
-          payment: { id: 5, paid_on: '2026-10-03', amount: 11000, method: 'cash' },
+          payment: { id: 5, paid_on: '2026-10-03', amount: 11000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
           applied_to: [{ sale_id: 10, sale_date: '2026-09-14', amount: 11000 }],
           after: { balance: 0, owing_since: null, standing: 'settled' },
         }),
@@ -742,7 +742,7 @@ test('a payment deleted by a partner meanwhile shows the gone notice, never the 
               date: '2026-09-20',
               running_balance: 6000,
               standing: 'owes',
-              payment: { id: 5, paid_on: '2026-09-20', amount: 5000, method: 'cash' },
+              payment: { id: 5, paid_on: '2026-09-20', amount: 5000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
               applied_to: { sale_id: 10, sale_date: '2026-09-14', amount: 5000 },
             },
           ],
@@ -770,7 +770,7 @@ const ACCOUNT_WITH_ONE_PAYMENT = {
       date: '2026-09-20',
       running_balance: 6000,
       standing: 'owes',
-      payment: { id: 5, paid_on: '2026-09-20', amount: 5000, method: 'cash' },
+      payment: { id: 5, paid_on: '2026-09-20', amount: 5000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
       applied_to: { sale_id: 10, sale_date: '2026-09-14', amount: 5000 },
     },
   ],
@@ -1082,7 +1082,7 @@ test('the card and its form follow the icon and text rule: Delete payment is ico
               date: '2026-09-20',
               running_balance: 6000,
               standing: 'owes',
-              payment: { id: 5, paid_on: '2026-09-20', amount: 5000, method: 'cash' },
+              payment: { id: 5, paid_on: '2026-09-20', amount: 5000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
               applied_to: { sale_id: 10, sale_date: '2026-09-14', amount: 5000 },
             },
           ],

@@ -31,11 +31,17 @@ export interface SettledState {
   standing: Standing
 }
 
+export interface PaymentMethodLabel {
+  id: number
+  name: string
+  icon: string
+}
+
 export interface Payment {
   id: number
   paid_on: string
   amount: number
-  method: PaymentMethod
+  payment_method: PaymentMethodLabel
 }
 
 export interface PaymentCandidate {

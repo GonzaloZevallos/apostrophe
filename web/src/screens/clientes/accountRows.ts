@@ -56,7 +56,7 @@ export function ledgerRowView(row: AccountRow): LedgerRowView {
       ...balance,
     }
   }
-  const title = CUSTOMERS_TEXT.paymentTitle(METHOD_LABEL[row.payment.method])
+  const title = CUSTOMERS_TEXT.paymentTitle(row.payment.payment_method.name)
   if (row.kind === 'payment') {
     return {
       title,
