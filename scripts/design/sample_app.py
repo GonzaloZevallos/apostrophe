@@ -139,8 +139,6 @@ def seed(api: Api, today: date) -> Sample:
     # a bulk price and a VIP customer, so the sample switches both on before any price
     # entry (an entry stores nothing for a rule that is off) and gives each bulk-priced
     # variety VIP price = bulk price, as the migration did for existing businesses.
-    # Its customers are typed the Argentine way, and a new business starts with no country.
-    api.call("PUT", "/business/phone-country", {"phone_country": "AR"})
     api.call("PUT", "/pricing-settings", {"is_bulk_pricing": True, "is_vip_customers": True})
     # The VIP type is made only by the migration and the import (docs/adr/0070), never over
     # the API, so the seed asks its runner to make it the import's way and then puts Mica in it.
