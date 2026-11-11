@@ -31,6 +31,7 @@ import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
 import { SheetLevel, useSheet } from '../../components/useSheetStack'
 import CustomerFields, { type CustomerFieldsValue } from '../clientes/CustomerFields'
+import { phoneInvalidText, usePhoneCountryField } from '../clientes/usePhoneCountryField'
 import {
   GENERIC_REFUSAL,
   NAME_REQUIRED,
@@ -70,6 +71,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
   const creator = useSheet(2)
   const [query, setQuery] = useState('')
   const [newCustomer, setNewCustomer] = useState<CustomerFieldsValue>(EMPTY_NEW_CUSTOMER)
+  const country = usePhoneCountryField(null)
   const [nameError, setNameError] = useState<string | null>(null)
   const [phoneError, setPhoneError] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
@@ -95,7 +97,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
     setFormError(null)
     setOffline(false)
     try {
-      const customer = await create.mutateAsync(newCustomer)
+      const customer = await create.mutateAsync({ ...newCustomer, phone_country: country.requestCountry })
       onChosen(customer)
       // Read at call time from the router: a save that resolves after the user already
       // closed the sheets closes nothing more.
@@ -110,8 +112,9 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
         const override = resolveOverride(FIELD_OVERRIDES, caught.code)
         if (override !== undefined) {
           if (override.field === 'name') setNameError(override.message)
-          else if (override.field === 'phone') setPhoneError(override.message)
-          else setFormError(override.message)
+          else if (override.field === 'phone') {
+            setPhoneError(caught.code === 'customer.phone_invalid' ? phoneInvalidText(country) : override.message)
+          } else setFormError(override.message)
         } else {
           setFormError(GENERIC_REFUSAL)
         }
@@ -192,6 +195,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
                 onChange={setNewCustomer}
                 nameError={nameError}
                 phoneError={phoneError}
+                country={country}
               />
               {formError !== null && (
                 <span className="campo__error" role="alert">
@@ -199,7 +203,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
                 </span>
               )}
               {offline && <SinConexion />}
-              <Boton textOnly="submit" type="submit" disabled={create.isPending}>
+              <Boton textOnly="submit" type="submit" disabled={create.isPending || !country.ready}>
                 {SALES_TEXT.createCustomer}
               </Boton>
             </form>

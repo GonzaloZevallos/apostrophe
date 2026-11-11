@@ -12,11 +12,22 @@
 import { vi, type Mock } from 'vitest'
 
 /** What the faked `GET /phone-countries` answers by default: the codes in the API's order with
- * examples made up for the tests, so no test restates a real country's example. */
-export const PHONE_COUNTRIES = ['AR', 'UY', 'CL', 'PY', 'BR', 'MX', 'ES', 'US'].map((code) => ({
+ * calling codes the stub's matching needs (the front reads them from the answer) and lengths and examples made up for the tests, so no test restates a real country's example. */
+const STUBBED: readonly (readonly [string, string, readonly number[]])[] = [
+  ['AR', '54', [10]],
+  ['UY', '598', [8, 9]],
+  ['CL', '56', [9]],
+  ['PY', '595', [9]],
+  ['BR', '55', [10, 11]],
+  ['MX', '52', [10]],
+  ['ES', '34', [8, 9, 10]],
+  ['US', '1', [10]],
+]
+
+export const PHONE_COUNTRIES = STUBBED.map(([code, calling_code, national_lengths]) => ({
   code,
-  calling_code: '0',
-  national_lengths: [1],
+  calling_code,
+  national_lengths,
   example: `example ${code}`,
 }))
 

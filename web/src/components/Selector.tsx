@@ -46,6 +46,8 @@ export interface SelectorOption {
   label: string
   /** Drawn before the name, hidden from assistive technology, never searched. */
   glyph?: string
+  /** The trailing part of `label` that is a figure (a calling code): drawn as one unbreakable run of tabular digits. */
+  figure?: string
 }
 
 type SelectorBase = {
@@ -117,6 +119,18 @@ interface Item {
   value: string | null
   label: string
   glyph?: string
+  figure?: string
+}
+
+/** `label` with its trailing `figure` kept in one unbreakable run. The label stays whole for search and names. */
+function LabelText({ label, figure }: { label: string; figure?: string }) {
+  if (figure === undefined || figure === '' || !label.endsWith(figure)) return <>{label}</>
+  return (
+    <>
+      {label.slice(0, label.length - figure.length)}
+      <span className="cifra-s selector__cifra">{figure}</span>
+    </>
+  )
 }
 
 /** Hands `element` to a caller's ref, whether it is a callback or an object. */
@@ -176,7 +190,7 @@ export default function Selector(props: SelectorProps) {
   const visible = options.filter((option) => matchesQuery(option.label, effectiveQuery))
   const items: Item[] = [
     ...(emptyWording === null || value === null ? [] : [{ key: CLEAR, value: null, label: emptyWording }]),
-    ...visible.map((option) => ({ key: option.value, value: option.value, label: option.label, glyph: option.glyph })),
+    ...visible.map((option) => ({ key: option.value, value: option.value, label: option.label, glyph: option.glyph, figure: option.figure })),
   ]
   const activeIndex = Math.max(0, items.findIndex((item) => item.key === activeKey))
 
@@ -409,7 +423,9 @@ export default function Selector(props: SelectorProps) {
             {item.glyph}
           </span>
         )}
-        <span className="selector-lista__nombre">{item.label}</span>
+        <span className="selector-lista__nombre">
+          <LabelText label={item.label} figure={item.figure} />
+        </span>
         {isCurrent && (
           <>
             <span className="selector-lista__marca">
@@ -487,7 +503,9 @@ export default function Selector(props: SelectorProps) {
           {current.glyph}
         </span>
       )}
-      <span className="selector__texto">{current.label}</span>
+      <span className="selector__texto">
+        <LabelText label={current.label} figure={current.figure} />
+      </span>
     </>
   ) : (
     <>

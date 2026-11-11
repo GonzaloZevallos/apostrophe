@@ -251,6 +251,37 @@ body {
   gap: 10px;
 }
 
+/* Phone country above the Phone field at full width; beside it at a fixed width from 900px. */
+.cliente-fila--telefono {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--espacio-md);
+}
+
+.cliente-fila__pais {
+  min-width: 0;
+}
+
+.cliente-fila--telefono .cliente-fila__telefono {
+  flex: none;
+}
+
+@media (min-width: 900px) {
+  .cliente-fila--telefono {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .cliente-fila__pais {
+    flex: none;
+    width: 240px;
+  }
+
+  .cliente-fila--telefono .cliente-fila__telefono {
+    flex: 1;
+  }
+}
+
 .cliente-fila__telefono {
   flex: 1;
   min-width: 0;
@@ -6605,6 +6636,11 @@ body {
 
 .selector__glifo {
   flex: none;
+}
+
+/* A calling code inside an option's name never breaks across lines. */
+.selector__cifra {
+  white-space: nowrap;
 }
 
 .selector__marca {
