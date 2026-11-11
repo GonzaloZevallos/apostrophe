@@ -8,6 +8,7 @@ import { baselineArgs, FIXTURE } from './baselineArgs.ts'
 import type * as Self from './settings.ts'
 import { SAMPLES, type LimitedCopy } from './limits.ts'
 import { STOCK_TEXT } from './stock.ts'
+import { CUSTOMERS_TEXT } from './customers.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
@@ -167,20 +168,20 @@ export const SETTINGS_TEXT = {
   currencyDecimals2: '2',
   currencyExample: 'Example',
   currencySaved: 'Currency and decimals saved',
-  phoneCountryLabel: 'Phone country',
+  phoneCountryLabel: CUSTOMERS_TEXT.phoneCountryLabel,
   phoneCountryHelp: PHONE_COUNTRY_HELP,
   phoneCountryNone: 'No country',
-  phoneCountryAR: 'Argentina',
-  phoneCountryUY: 'Uruguay',
-  phoneCountryCL: 'Chile',
-  phoneCountryPY: 'Paraguay',
-  phoneCountryBR: 'Brazil',
-  phoneCountryMX: 'Mexico',
-  phoneCountryES: 'Spain',
-  phoneCountryUS: 'United States',
+  phoneCountryAR: CUSTOMERS_TEXT.phoneCountryAR,
+  phoneCountryUY: CUSTOMERS_TEXT.phoneCountryUY,
+  phoneCountryCL: CUSTOMERS_TEXT.phoneCountryCL,
+  phoneCountryPY: CUSTOMERS_TEXT.phoneCountryPY,
+  phoneCountryBR: CUSTOMERS_TEXT.phoneCountryBR,
+  phoneCountryMX: CUSTOMERS_TEXT.phoneCountryMX,
+  phoneCountryES: CUSTOMERS_TEXT.phoneCountryES,
+  phoneCountryUS: CUSTOMERS_TEXT.phoneCountryUS,
   /** One option of the Phone country control: the country's name and its calling code, which the
    * API sends (the front never holds a code of its own). */
-  phoneCountryOption: (name: string | number, calling_code: string | number) => `${name} (+${calling_code})`,
+  phoneCountryOption: CUSTOMERS_TEXT.phoneCountryOption,
 } as const
 
 /** Each Phone country's name, keyed by its ISO code. A code with no entry shows the code itself. */

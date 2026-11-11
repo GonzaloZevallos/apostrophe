@@ -12,7 +12,7 @@ const files = import.meta.glob(['../**/*.ts', '../**/*.tsx', '!../**/*.test.ts',
 }) as Record<string, string>
 
 const DEVICE = './device.ts'
-const READ = /navigator\s*\.\s*languages?\b|resolvedOptions\s*\(\s*\)\s*\.\s*timeZone/
+const READ = /navigator\s*\.\s*languages?\b|resolvedOptions\s*\(\s*\)\s*\.\s*timeZone|Temporal\s*\.\s*Now\s*\.\s*timeZoneId/
 
 function code(source: string): string {
   return source

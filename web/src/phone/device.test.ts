@@ -11,7 +11,12 @@ describe('the device readers', () => {
     const { deviceLanguages, deviceTimeZone } = await real()
 
     expect(deviceLanguages()).toEqual(['es-UY', 'en'])
-    expect(deviceTimeZone()).toBe(Intl.DateTimeFormat().resolvedOptions().timeZone)
+    vi.stubGlobal('Temporal', { Now: { timeZoneId: () => 'America/Montevideo' } })
+    expect(deviceTimeZone()).toBe('America/Montevideo')
+    vi.unstubAllGlobals()
+    vi.stubGlobal('Temporal', undefined)
+    expect(deviceTimeZone()).toBe('')
+    vi.unstubAllGlobals()
   })
 
   it('fall back to the single language when the list is empty', async () => {

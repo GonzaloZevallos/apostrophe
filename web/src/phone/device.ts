@@ -9,9 +9,20 @@ export function deviceLanguages(): readonly string[] {
   return navigator.language === '' ? [] : [navigator.language]
 }
 
+interface TemporalNow {
+  readonly Now: { timeZoneId(): string }
+}
+
+/**
+ * The IANA zone of the device, or '' when the browser cannot say. It is read with
+ * `Temporal.Now.timeZoneId()` because the locale ban (ADR-0049) forbids the date formatter
+ * that the older route (`resolvedOptions().timeZone`) goes through; a browser without
+ * Temporal answers '' and detection falls back to the language alone.
+ */
 export function deviceTimeZone(): string {
+  const temporal = (globalThis as { Temporal?: TemporalNow }).Temporal
   try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone
+    return temporal?.Now.timeZoneId() ?? ''
   } catch {
     return ''
   }
