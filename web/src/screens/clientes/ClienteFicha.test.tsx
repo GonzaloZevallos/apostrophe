@@ -1103,6 +1103,7 @@ test('the card and its form follow the icon and text rule: Delete payment is ico
 
   await userEvent.click(registrar)
   await screen.findByRole('button', { name: 'Save' })
+  await waitFor(() => expect(screen.getByRole('button', { name: /^Payment method/ })).toBeEnabled())
   expectIconAndTextRule(document.body, RULE)
 })
 

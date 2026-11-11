@@ -127,7 +127,7 @@ test('saving under Paid above $0 with no method is refused at the field: sentenc
   expect(screen.queryByText('Choose how they paid.')).not.toBeInTheDocument()
   await user.click(save)
   await waitFor(() => expect(posted(fetchMock)).toHaveLength(1))
-  expect(JSON.parse(posted(fetchMock)[0]!.body as string)).toMatchObject({ payment: 'transfer' })
+  expect(JSON.parse(posted(fetchMock)[0]!.body as string)).toMatchObject({ payment: { kind: 'paid', payment_method_id: 2 } })
 })
 
 test('a Paid sale of $0 saves with no method, and sends none', async () => {
