@@ -128,4 +128,13 @@ Listas ordenadas, tomadas con el árbol del padre del cambio y con el árbol act
 
 Evidencia de regresión solamente: una corrida verde no prueba ausencia de intermitencia.
 
-La corrida completa en primer plano superó el tope de 600 s de la herramienta y no terminó dentro de esta sesión, así que **no hay resultado de la corrida completa en este documento**; no se repitió. La compuerta de entrega ejecuta `web-tests` completo sobre este mismo árbol. Lo que sí se corrió y pasó: los seis archivos tocados, uno por uno (23, 14, 13, 15, 16 y 31 tests verdes, sin avisos `act`), `src/architecture` completo (43 archivos, 479 tests), `npm --prefix web run typecheck` y `npm --prefix web run lint`.
+`npm --prefix web test` (`vitest run`, todo el suite web) sobre el árbol con el cambio de código (`b069b03b`; el commit posterior solo agrega este documento). La corrida pasó el tope de 600 s de la herramienta, siguió en segundo plano y terminó con salida 0:
+
+```
+ Test Files  305 passed | 1 skipped (306)
+      Tests  4931 passed | 4 skipped (4935)
+   Start at  21:35:07
+   Duration  915.06s
+```
+
+La duración (915 s, frente a ~450 s habituales) coincide con una máquina cargada por otras corridas en paralelo. No cuenta como prueba de que la intermitencia desapareció; esa prueba son los pares forzados de arriba. Además pasaron `src/architecture` completo (43 archivos, 479 tests), `npm --prefix web run typecheck` y `npm --prefix web run lint`.
