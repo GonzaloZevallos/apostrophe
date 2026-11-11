@@ -36,18 +36,6 @@
     "issue": 78
   },
   {
-    "screen": "new-sale/method-selector-failed",
-    "rule": "unreachable",
-    "target": "",
-    "issue": 78
-  },
-  {
-    "screen": "payment/method-selector-failed",
-    "rule": "unreachable",
-    "target": "",
-    "issue": 46
-  },
-  {
     "screen": "ConfiguracionMediosPagoArchivados",
     "rule": "unreachable",
     "target": "",
