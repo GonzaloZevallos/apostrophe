@@ -14,6 +14,7 @@ import { HOME, SALE, SALES, SALE_NEW } from '../../routes'
 import { queryClient } from '../../queryClient'
 import { router } from '../../router'
 import { pickProduct, productField, productFieldName } from './lineProduct'
+import { withPaymentMethods } from '../../test-payment-methods'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 const ROSA = {
@@ -35,7 +36,7 @@ async function openForm(varieties: (call: number) => unknown): Promise<void> {
   answerSave = null
   vi.stubGlobal(
     'fetch',
-    vi.fn((path: string, init?: RequestInit) => {
+    vi.fn(withPaymentMethods((path: string, init?: RequestInit) => {
       const method = init?.method ?? 'GET'
       if (method === 'GET' && path === '/auth/me') return Promise.resolve(jsonResponse(200, ME))
       if (method === 'GET' && path === '/api/products?on=2026-10-02') {
@@ -48,7 +49,7 @@ async function openForm(varieties: (call: number) => unknown): Promise<void> {
         })
       }
       return Promise.reject(new Error(`unexpected request: ${method} ${path}`))
-    }),
+    })),
   )
   await act(() => router.navigate(SALES))
   await act(() => router.navigate(SALE_NEW))

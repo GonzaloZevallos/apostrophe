@@ -21,6 +21,7 @@ import { inAppState } from '../../components/inAppState'
 import { peekPaymentReturn } from '../../paymentReturn'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { choosePaymentMethod } from '../../components/selectorTestKit'
+import { withPaymentMethods } from '../../test-payment-methods'
 
 const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
 const OWING = { id: 1, name: 'Ana Pérez', phone: '+5491122334455', vip: false, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }
@@ -65,10 +66,10 @@ function renderApp(entries: { pathname: string; state?: unknown }[], viewport: V
   }
   vi.stubGlobal(
     'fetch',
-    vi.fn((url: string, init?: RequestInit) => {
+    vi.fn(withPaymentMethods((url: string, init?: RequestInit) => {
       const answer = table[`${init?.method ?? 'GET'} ${url}`]
       return answer === undefined ? Promise.resolve(jsonResponse(404, {})) : Promise.resolve(answer())
-    }),
+    })),
   )
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const router = createMemoryRouter(appRouter.routes, { initialEntries: entries, initialIndex: entries.length - 1 })

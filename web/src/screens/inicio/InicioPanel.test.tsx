@@ -24,6 +24,7 @@ import CobroRoute from '../clientes/CobroRoute'
 import Inicio from '../Inicio'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
 import { baselineText } from '../../i18n/testing'
+import { METHODS_ANSWER } from '../../test-payment-methods'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
@@ -155,6 +156,7 @@ beforeEach(() => {
   api.mockImplementation((input, init) => {
     const url = String(input)
     const method = init?.method ?? 'GET'
+    if (url === '/api/payment-methods') return Promise.resolve(jsonResponse(200, METHODS_ANSWER))
     if (url === '/panel') return Promise.resolve(jsonResponse(200, panelNow))
     if (url === '/api/products') return Promise.resolve(jsonResponse(200, [{ current_price: { id: 1 } }]))
     if (url === '/pinned-catalog/status') return Promise.resolve(jsonResponse(200, { status: null }))

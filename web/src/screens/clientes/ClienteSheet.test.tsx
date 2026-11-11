@@ -19,6 +19,7 @@ import { COMMON_TEXT } from '../../copy/common'
 import { baselineText } from '../../i18n/testing'
 import { behindPane, expectBehindPane, expectBehindPaneEmpty } from '../../test/behindPane'
 import { flipViewport, renderWithViewport } from '../../test-viewport'
+import { withPaymentMethods } from '../../test-payment-methods'
 
 const NOBODY_OWES = baselineText('customers.ts:NOBODY_OWES')
 const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
@@ -55,10 +56,10 @@ function renderApp(entries: { pathname: string; state?: unknown }[], viewport: V
   }
   vi.stubGlobal(
     'fetch',
-    vi.fn((url: string, init?: RequestInit) => {
+    vi.fn(withPaymentMethods((url: string, init?: RequestInit) => {
       const answer = table[`${init?.method ?? 'GET'} ${url}`]
       return Promise.resolve(answer === undefined ? jsonResponse(404, {}) : answer())
-    }),
+    })),
   )
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const router = createMemoryRouter(appRouter.routes, { initialEntries: entries, initialIndex: entries.length - 1 })

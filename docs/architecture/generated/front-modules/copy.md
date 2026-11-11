@@ -69,7 +69,6 @@ src_copy_payments_ts-->src_copy_payments_ts
 src_copy_pinnedCatalog_ts-->src_copy_limits_ts
 src_copy_sales_ts-->src_copy_baselineArgs_ts
 src_copy_sales_ts-->src_copy_common_ts
-src_copy_sales_ts-->src_copy_customers_ts
 src_copy_sales_ts-->src_copy_limits_ts
 src_copy_sales_ts-->src_copy_sales_ts
 src_copy_sales_ts-->src_copy_varieties_ts

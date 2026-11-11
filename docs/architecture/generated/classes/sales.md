@@ -470,6 +470,7 @@ classDiagram
     sold_on : Mapped~date~
   }
   class SalesImport {
+    archived_method_words(words: Collection~str~) Collection~str~
     check_sales(price_history: Sequence~PriceHistoryRow~, variety_keys: Mapping~str, str~, sales: Sequence~SaleCheckInput~, today: date, settings: PricingSettings) Sequence~SaleCheck~
     has_records() bool
     write_sale(variety_id: int, customer_id: int #124; None, sale: SaleCheckInput, recorded_at: datetime, today: date, transaction: Transaction, settings: PricingSettings) int

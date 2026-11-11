@@ -7,6 +7,7 @@
  */
 
 import { vi, type Mock } from 'vitest'
+import { METHODS_ANSWER } from '../test-payment-methods'
 
 type Api = Mock<(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>>
 
@@ -20,6 +21,13 @@ export function stubFetchWithSettings(vip = true, bulk = true, customerTypes: re
             headers: { 'Content-Type': 'application/json' },
           }),
         )
+      : input === '/api/payment-methods'
+        ? Promise.resolve(
+            new Response(JSON.stringify(METHODS_ANSWER), {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' },
+            }),
+          )
       : input === '/api/customer-types'
         ? Promise.resolve(
             new Response(JSON.stringify(customerTypes), {

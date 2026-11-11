@@ -21,6 +21,7 @@ import { queryClient } from '../../queryClient'
 import { router } from '../../router'
 import type { SaleLine } from '../../api/sales'
 import type { Variety } from '../Variedades'
+import { withPaymentMethods } from '../../test-payment-methods'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 
@@ -45,7 +46,7 @@ function setupFetch(handlers: Record<string, () => Response>): ReturnType<typeof
     }
     return Promise.resolve(handler())
   })
-  vi.stubGlobal('fetch', fetchMock)
+  vi.stubGlobal('fetch', withPaymentMethods(fetchMock))
   return fetchMock
 }
 

@@ -16,6 +16,7 @@ import { router as appRouter } from '../../router'
 import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, pathTo } from '../../routes'
 import type { Viewport } from '../../routes'
 import { renderWithViewport } from '../../test-viewport'
+import { withPaymentMethods } from '../../test-payment-methods'
 
 const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
 const OWING = { id: 1, name: 'Ana Pérez', phone: '+5491122334455', vip: false, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }
@@ -56,10 +57,10 @@ function renderApp(pathname: string, viewport: Viewport) {
   }
   vi.stubGlobal(
     'fetch',
-    vi.fn((url: string, init?: RequestInit) => {
+    vi.fn(withPaymentMethods((url: string, init?: RequestInit) => {
       const answer = table[`${init?.method ?? 'GET'} ${url}`]
       return Promise.resolve(answer === undefined ? json(404, {}) : answer())
-    }),
+    })),
   )
   const router = createMemoryRouter(appRouter.routes, { initialEntries: [{ pathname: HOME }, { pathname }], initialIndex: 1 })
   renderWithViewport(viewport, () =>

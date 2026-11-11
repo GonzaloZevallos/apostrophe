@@ -11,6 +11,7 @@ import App from '../../App'
 import { queryClient } from '../../queryClient'
 import { router } from '../../router'
 import { HOME, SALE_NEW } from '../../routes'
+import { withPaymentMethods } from '../../test-payment-methods'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 const VIP_ANA = { id: 7, name: 'Ana VIP', phone: '+5491100000001', vip: true }
@@ -28,11 +29,11 @@ async function openChooser(vip: boolean): Promise<ReturnType<typeof userEvent.se
   }
   vi.stubGlobal(
     'fetch',
-    vi.fn((path: string) =>
+    vi.fn(withPaymentMethods((path: string) =>
       `GET ${path}` in answers
         ? Promise.resolve(json(answers[`GET ${path}`]))
         : Promise.reject(new Error(`unexpected request: ${path}`)),
-    ),
+    )),
   )
   await act(() => router.navigate(SALE_NEW))
   render(<App />)

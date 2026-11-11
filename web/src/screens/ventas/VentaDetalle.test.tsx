@@ -156,8 +156,7 @@ test('a sale with no customer and no payment shows "No customer" and drops the p
 })
 
 test.each([
-  ['cash', 'paid'],
-  ['transfer', 'paid by transfer'],
+  ['paid', 'paid'],
   ['owing', 'left owing'],
 ] as const)('the summary line reads "%s" as "%s"', async (payment, words) => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...SALE, payment }))
