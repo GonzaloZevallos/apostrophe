@@ -199,4 +199,4 @@ export const test = base.extend<object, { workerServer: WorkerServer }>({
 
 export { expect }
 
-export { choosePaymentMethod } from './helpers/paymentMethod.js'
+export { choosePaymentMethod, paidInCash } from './helpers/paymentMethod.js'

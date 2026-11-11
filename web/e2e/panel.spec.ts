@@ -24,11 +24,10 @@
  * several amounts through the panel alone.
  */
 
-import { paidInCash } from './helpers/paymentMethod.js'
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, HOME, SALES, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, pathTo } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expectToast } from './helpers/toast.js'
-import { choosePaymentMethod, expect, test } from './fixtures.js'
+import { choosePaymentMethod, expect, paidInCash, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { setPriceDate } from './helpers/priceDate.js'
 import { watchConsole } from './console.js'
