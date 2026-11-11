@@ -173,7 +173,7 @@ Criterios de éxito, Sale number:
   - **Total de $0**: queda saldada sin medio y sin nada debido. Un medio enviado con ella se ignora y no se guarda.
   - Un total por encima de $0 necesita un medio o "queda debiendo".
   - No existe el pago parcial en el momento.
-  - Lo que viaja a la API es `{kind: "owing"}` o `{kind: "paid", payment_method_id}`, con el id de un Payment method que el negocio ofrece (docs/adr/0082). En New sale lo deriva una función pura, `paymentChoiceOf` (`web/src/sales/pricing.ts`), a partir del estado Paid · Owing, el medio y el total. Owing da `{kind: "owing"}`, Paid con medio da `{kind: "paid", payment_method_id}`, y Paid sin medio o sin estado elegido no da nada. Un medio que haya quedado guardado con Owing elegido nunca se manda.
+  - Lo que viaja a la API es `{kind: "owing"}` o `{kind: "paid", payment_method_id}`, con el id de un Payment method que el negocio ofrece (docs/adr/0084). En New sale lo deriva una función pura, `paymentChoiceOf` (`web/src/sales/pricing.ts`), a partir del estado Paid · Owing, el medio y el total. Owing da `{kind: "owing"}`, Paid con medio da `{kind: "paid", payment_method_id}`, y Paid sin medio o sin estado elegido no da nada. Un medio que haya quedado guardado con Owing elegido nunca se manda.
 - **Cliente**:
   - Opcional solo cuando no queda nada debiendo.
   - Tiene que ser del mismo negocio; el cliente de otro negocio no se encuentra.

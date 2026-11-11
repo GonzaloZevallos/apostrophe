@@ -1,4 +1,4 @@
-"""The payment methods of a business (CONTEXT.md: Payment method; docs/adr/0082).
+"""The payment methods of a business (CONTEXT.md: Payment method; docs/adr/0084).
 
 Revision ID: 0029
 Revises: 0028

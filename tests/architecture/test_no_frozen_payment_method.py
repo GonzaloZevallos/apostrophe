@@ -1,4 +1,4 @@
-"""`payment.method` is frozen (docs/adr/0082): nothing under `app/` except the payment
+"""`payment.method` is frozen (docs/adr/0084): nothing under `app/` except the payment
 table's own definition and the migrations names `PaymentRow.method`, builds a `PaymentRow`
 with a `method=` keyword, or spells `payment.method` in a SQL string. A payment's method is
 `payment_method_id`; its label is read through the `payment_method` join."""

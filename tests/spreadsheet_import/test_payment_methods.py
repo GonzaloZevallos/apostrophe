@@ -1,4 +1,4 @@
-"""The import's payment words and the business's own methods (docs/adr/0082): a sheet word
+"""The import's payment words and the business's own methods (docs/adr/0084): a sheet word
 whose default method is archived refuses the whole plan before anything is written, the
 dry run and the real run alike; with the methods offered the run imports."""
 

@@ -1,4 +1,4 @@
-"""A payment links to its method by id (CONTEXT.md: Payment method; docs/adr/0082).
+"""A payment links to its method by id (CONTEXT.md: Payment method; docs/adr/0084).
 
 Revision ID: 0030
 Revises: 0029

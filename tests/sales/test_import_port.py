@@ -429,7 +429,7 @@ def test_planned_price_book_matches_what_write_sale_stores_for_bulk_list_vip_and
         assert stored.total == exp.line_total + sale.shipping
 
 
-# -- the sheet's payment words and the business's methods (docs/adr/0082) -----------------
+# -- the sheet's payment words and the business's methods (docs/adr/0084) -----------------
 
 
 def _write_paid(session: Session, business_id: int, method: OnTheSpotMethod) -> None:
