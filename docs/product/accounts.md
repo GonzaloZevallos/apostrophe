@@ -516,7 +516,7 @@ Este archivo solo dice dónde se aplica y cómo se mantiene. No repite los requi
 
 Estos grupos de Settings (navigation.md) reemplazan a la antigua pantalla Business, que ya no existe; `/negocio` redirige a Settings. Cada uno es su propia subpantalla, un formulario: "Close", y una confirmación al salir con cambios sin guardar; uno sin tocar se cierra al instante. (Prices, entre Users e Integrations, es pricing-settings.md.)
 
-- **Business**: renombrar el Business y elegir su Phone country, con un solo Save. Toast "Saved"; rechazos en línea, conservando lo tipeado.
+- **Business**: renombrar el Business, con un solo Save. Toast "Saved"; rechazos en línea, conservando lo tipeado.
 - **Users**:
   - los Users por email, ordenados por email, con el que tiene la sesión iniciada marcado "you"; siempre lista al menos al User con la sesión iniciada;
   - "Invite a partner": cada toque crea un link nuevo para sumarse, para copiar o compartir con el menú de compartir del teléfono.

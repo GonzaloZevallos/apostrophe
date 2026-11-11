@@ -11,6 +11,11 @@ import { SETTLE_REASON_REJECTED, SETTLE_REASON_UNSETTLED } from './settle.mjs'
 // rule. Only `adoptedStyleSheets` carries it, never a `<style>` node or an attribute, so the
 // probe sees no mutation. Nothing else defines these values.
 export const CALM_CONTEXT = Object.freeze({ reducedMotion: 'reduce' })
+// The device the BUILT side of a capture runs on: Argentine, as every other browser of the product is
+// (ADR-0040). The Phone country is detected from the language and the zone (ADR-0085), so a capture
+// made on a machine with another zone would draw another default country. The Design side is a static
+// drawing and does not read them. `comparisons.mjs` adds this to the built side's context options only.
+export const BUILT_DEVICE_PINS = Object.freeze({ locale: 'es-AR', timezoneId: 'America/Argentina/Buenos_Aires' })
 // The device scale factor of every capture context; `comparisons.mjs` reads it for the sheet's column widths.
 export const CAPTURE_SCALE = 2
 export const CALM_CSS =

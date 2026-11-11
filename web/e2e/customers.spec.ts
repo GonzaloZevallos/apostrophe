@@ -79,7 +79,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // Edited: still no phone number, and the edit form shows no required marker on
   // the phone field while it stays usable.
   await page.getByRole('link', { name: 'Edit' }).click()
-  await expect(page.getByLabel('Phone')).toHaveValue('')
+  await expect(page.getByLabel('Phone', { exact: true })).toHaveValue('')
   await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expect(page.getByText('Customer saved')).toBeVisible()
   await expect(page.getByText('Phone')).toHaveCount(0)

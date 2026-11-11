@@ -43,7 +43,7 @@ test('a seller does everything the backend offers today, from the front alone', 
 
   // Add a customer.
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Phone').fill(PHONE)
+  await page.getByLabel('Phone', { exact: true }).fill(PHONE)
   await page.getByLabel('Name').fill('Marisa Gómez')
   await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expectPath(page, CUSTOMER)

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  BUILT_DEVICE_PINS,
   BUILT_ONLY_LAUNCH_ARGS,
   CALM_CONTEXT,
   CALM_CSS,
@@ -1057,6 +1058,14 @@ describe('the calm page', () => {
       baseURL: 'http://127.0.0.1:1',
       reducedMotion: 'reduce',
     })
+  })
+
+  it('pins the built side to the Argentine device, so the detected Phone country never depends on the machine', () => {
+    expect(BUILT_DEVICE_PINS).toEqual({ locale: 'es-AR', timezoneId: 'America/Argentina/Buenos_Aires' })
+    // The shared options stay free of it: the Design side does not read a locale or a zone.
+    const options = captureContextOptions({ width: 390, height: 844, url: 'http://127.0.0.1:1' })
+    expect(options).not.toHaveProperty('locale')
+    expect(options).not.toHaveProperty('timezoneId')
   })
 
   it('launches the browser with the built-only flags only for a built-only run', () => {

@@ -7,7 +7,7 @@
  */
 
 import { expectPath } from './helpers/url.js'
-import { CATALOG, CUSTOMERS, CUSTOMER_PAYMENT, EXPENSES, EXPENSE_NEW, HOME, MORE, SALES, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, VARIETY } from '../src/routes.js'
+import { CATALOG, CUSTOMER, CUSTOMERS, CUSTOMER_PAYMENT, EXPENSES, EXPENSE_NEW, HOME, MORE, SALES, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, VARIETY } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import type { Locator, Page } from '@playwright/test'
@@ -206,5 +206,72 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
     expect(phone, `phone: ${key}`).toBeLessThanOrEqual(key.startsWith('sale') || key.startsWith('payment') ? 1 : 2)
     expect(computer, `computer: ${key}`).toBeLessThanOrEqual(phone)
   }
+  expect(consoleMessages).toEqual([])
+})
+
+/** What a seller taps to give a new customer a phone number in the country the device detected: the form's
+ * own two buttons and nothing for the Phone country (customers.md, success criterion 5). */
+const NEW_CUSTOMER_TAPS = 2
+const NEW_CUSTOMER_IN_SALE_TAPS = 3
+/** Picking another country: the field, then the option. */
+const COUNTRY_PICK_TAPS = 2
+
+test('a new customer, alone or from Pick a customer, with a local number in the detected country adds no tap; another country adds the two of the Selector', async ({
+  page,
+}) => {
+  const consoleMessages: string[] = []
+  watchConsole(page, consoleMessages)
+  await page.setViewportSize(PHONE)
+  await signUpNewBusiness(page, { businessName: `Flores del Pais ${uniqueTag()}`, email: `duena-pais-${uniqueTag()}@example.com` })
+
+  const country = page.getByRole('button', { name: /^Phone country/ })
+  const phone = page.getByLabel('Phone', { exact: true })
+  /** The device is Argentine (the config's pins), so Argentina is the detected country. */
+  const awaitDetected = async (): Promise<void> => {
+    await expect(country).toContainText('Argentina (+54)')
+    await expect(country).not.toHaveAttribute('aria-busy', 'true')
+  }
+  const pickUruguay = async (counter: Counter): Promise<void> => {
+    await tap(counter, country)
+    await tap(counter, page.getByRole('option', { name: 'Uruguay (+598)' }))
+  }
+
+  const measured: Record<string, number> = {}
+
+  // From Customers: the link, then Save.
+  for (const [key, other] of [['detected', false], ['other', true]] as const) {
+    await page.goto(CUSTOMERS)
+    const counter: Counter = { taps: 0 }
+    await tap(counter, page.getByRole('link', { name: 'New customer' }))
+    await page.getByLabel('Name').fill(`Cliente ${key} ${uniqueTag()}`)
+    await awaitDetected()
+    if (other) await pickUruguay(counter)
+    await phone.fill(other ? '099 123 456' : '11 5555 0150')
+    await tap(counter, page.getByRole('button', { name: 'Save and use' }))
+    await expectPath(page, CUSTOMER)
+    measured[`customer ${key}`] = counter.taps
+  }
+
+  // From the sale: Pick a customer, New customer, Create customer.
+  for (const [key, other] of [['detected', false], ['other', true]] as const) {
+    await page.goto(SALE_NEW)
+    const counter: Counter = { taps: 0 }
+    await tap(counter, page.getByRole('button', { name: 'Pick a customer' }))
+    await tap(counter, page.getByRole('button', { name: 'New customer' }))
+    await page.getByLabel('Name').fill(`Cliente venta ${key} ${uniqueTag()}`)
+    await awaitDetected()
+    if (other) await pickUruguay(counter)
+    await phone.fill(other ? '099 123 457' : '11 5555 0151')
+    await tap(counter, page.getByRole('button', { name: 'Create customer' }))
+    await expect(page.getByText('Pick a customer')).toHaveCount(0)
+    measured[`sale ${key}`] = counter.taps
+  }
+
+  expect(measured).toEqual({
+    'customer detected': NEW_CUSTOMER_TAPS,
+    'customer other': NEW_CUSTOMER_TAPS + COUNTRY_PICK_TAPS,
+    'sale detected': NEW_CUSTOMER_IN_SALE_TAPS,
+    'sale other': NEW_CUSTOMER_IN_SALE_TAPS + COUNTRY_PICK_TAPS,
+  })
   expect(consoleMessages).toEqual([])
 })
