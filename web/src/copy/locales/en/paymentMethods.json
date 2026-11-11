@@ -36,7 +36,8 @@
     "errorTakenArchived": "An archived method already has that name. Restore it from Archived.",
     "discardTitle": "Discard the changes?",
     "discardConfirm": "Discard",
-    "discardKeep": "Keep editing"
+    "discardKeep": "Keep editing",
+    "errorRefused": "Check the details and try again."
   },
   "archived": {
     "title": "Archived payment methods",

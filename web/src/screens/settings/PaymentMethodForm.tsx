@@ -30,7 +30,6 @@ import {
 } from '../../components/paymentMethodIcons'
 import { SheetActions } from '../../components/Sheet'
 import SinConexion from '../../components/SinConexion'
-import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
 
 export type PaymentMethodTarget = 'new' | PaymentMethodItem
 
@@ -99,7 +98,7 @@ export default function PaymentMethodForm({
         caught.code !== UNKNOWN_CODE &&
         kindOf(caught.code) === 'refusal'
       ) {
-        setFormError(GENERIC_REFUSAL_MESSAGE)
+        setFormError(t('paymentMethods:form.errorRefused'))
       } else {
         setFormError(t('common:genericError'))
       }
