@@ -13,6 +13,18 @@ from tests.architecture.hexagon import REPO_ROOT
 
 TABLE_DEFINITION = "app/payments/adapters/tables.py"
 _SQL_COLUMN = re.compile(r"(?<![A-Za-z0-9_])payment\.method(?![A-Za-z0-9_])")
+_SQL_PAYMENT_ALIAS = re.compile(
+    r"\b(?:from|join)\s+payment\s+(?:as\s+)?(?!(?:where|join|on|left|inner|group|order|limit)\b)(\w+)",
+    re.IGNORECASE,
+)
+
+
+def _spells_aliased_column(text: str) -> bool:
+    """`FROM payment p ... p.method`: the column named through the table's alias."""
+    return any(
+        re.search(rf"(?<![A-Za-z0-9_]){re.escape(alias)}\.method(?![A-Za-z0-9_])", text)
+        for alias in _SQL_PAYMENT_ALIAS.findall(text)
+    )
 
 
 def _dotted(expression: ast.expr) -> str | None:
@@ -83,7 +95,7 @@ def frozen_method_uses(source: str) -> list[str]:
         if (
             isinstance(node, ast.Constant)
             and isinstance(node.value, str)
-            and _SQL_COLUMN.search(node.value)
+            and (_SQL_COLUMN.search(node.value) or _spells_aliased_column(node.value))
         ):
             found.append(f"string {node.value!r} line {node.lineno}")
     return sorted(found)
@@ -154,6 +166,20 @@ def test_the_frozen_column_is_reported_through_an_unaliased_dotted_import() -> N
     )
 
     assert frozen_method_uses(source) == ["PaymentRow.method line 2"]
+
+
+def test_the_frozen_column_is_reported_through_a_sql_table_alias() -> None:
+    source = (
+        "a = text('SELECT p.method FROM payment p')\n"
+        "b = text('SELECT x.method FROM payment AS x JOIN sale s ON s.id = x.sale_id')\n"
+        "c = text('SELECT p.payment_method_id FROM payment p')\n"
+        "d = text('SELECT s.method FROM sale s JOIN payment p ON p.sale_id = s.id')\n"
+    )
+
+    assert frozen_method_uses(source) == [
+        "string 'SELECT p.method FROM payment p' line 1",
+        "string 'SELECT x.method FROM payment AS x JOIN sale s ON s.id = x.sale_id' line 2",
+    ]
 
 
 def test_a_domain_class_that_is_also_called_payment_row_is_not_the_table() -> None:
