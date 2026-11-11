@@ -15,7 +15,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { del, get, post } from './client'
 import { keys } from './keys'
 
-/** A payment method of the business, by id (ADR-0082). */
+/** A payment method of the business, by id (ADR-0084). */
 export type PaymentMethod = number
 export type Standing = 'owes' | 'credit' | 'settled'
 export type HowPaid = 'paid' | 'owing' | 'none'
