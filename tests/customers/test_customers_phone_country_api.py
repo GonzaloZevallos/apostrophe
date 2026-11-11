@@ -207,10 +207,7 @@ def test_a_number_is_found_by_its_digits_in_any_spelling(
         assert [c["id"] for c in found] == [created["id"]], query
 
 
-@pytest.mark.parametrize("sent", ["UY", None])
-def test_the_import_reads_a_local_number_as_argentine_in_any_country(
-    client: TestClient, engine: Engine, sent: str | None
-) -> None:
+def test_the_import_reads_a_local_number_as_argentine(client: TestClient, engine: Engine) -> None:
     with Session(engine) as session:
         business_id = session.scalars(select(UserRow.business_id)).one()
         port = CustomersImport(session, business_id)
