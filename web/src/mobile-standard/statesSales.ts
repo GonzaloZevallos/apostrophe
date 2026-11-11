@@ -68,6 +68,17 @@ export const SALES_STATES: readonly WalkState[] = [
     visible: SALES_TEXT.createCustomer,
   },
   {
+    // The Phone country list open inside Pick a customer's new-customer sheet.
+    screen: 'sale/customer-country-selector-open',
+    route: SALE_NEW,
+    steps: [
+      { click: SALES_TEXT.pickCustomer },
+      { click: common('common:newCustomer') },
+      { press: CUSTOMERS_TEXT.phoneCountryLabel },
+    ],
+    visible: CUSTOMERS_TEXT.phoneCountryOther,
+  },
+  {
     screen: 'DescartarVenta',
     route: SALE_NEW,
     steps: [

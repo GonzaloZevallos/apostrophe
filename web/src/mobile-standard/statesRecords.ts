@@ -208,6 +208,27 @@ export const RECORDS_STATES: readonly WalkState[] = [
     reads: [{ path: /^\/api\/customer-types$/, status: 200, body: TWELVE_TYPES }],
   },
   {
+    // The Phone country list open in New customer: the eight served countries and Other, with search.
+    screen: 'customer/country-selector-open',
+    route: CUSTOMER_NEW,
+    steps: [{ press: CUSTOMERS_TEXT.phoneCountryLabel }],
+    visible: CUSTOMERS_TEXT.phoneCountryOther,
+  },
+  {
+    // The Phone country Selector while GET /phone-countries is held: busy, with Save off (the walk's held pass).
+    screen: 'customer/country-selector-loading',
+    route: CUSTOMER_NEW,
+    steps: [],
+    visible: CUSTOMERS_TEXT.phoneCountryLabel,
+  },
+  {
+    // A typed "+" locks the Selector on its country and shows the reason in words.
+    screen: 'customer/country-selector-locked',
+    route: CUSTOMER_NEW,
+    steps: [{ fill: { label: CUSTOMERS_TEXT.phone, value: '+598 99 123 456' } }],
+    visible: CUSTOMERS_TEXT.phoneCountryLockedReason,
+  },
+  {
     // A customer in a type, answered by a stub, so the detail page's type line is walked.
     screen: 'ClienteFichaConTipo',
     route: CUSTOMER.replace(':id', '{debtor}'),
