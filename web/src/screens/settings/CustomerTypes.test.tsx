@@ -5,7 +5,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -96,7 +96,7 @@ test('creates a type with the default circle icon and refreshes the list', async
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   expect(created).toEqual({ name: 'Friends', icon: 'circle' })
-  await vi.waitFor(() => expect(screen.queryByRole('textbox', { name: 'Name' })).not.toBeInTheDocument())
+  await waitFor(() => expect(screen.queryByRole('textbox', { name: 'Name' })).not.toBeInTheDocument())
   expect(fetchMock.mock.calls.filter(([url]) => url === '/api/customer-types').length).toBeGreaterThan(1)
 })
 
@@ -160,7 +160,7 @@ test('renames a type through PATCH', async () => {
   await userEvent.type(name, 'Friends')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
-  await vi.waitFor(() => expect(patched).toEqual({ name: 'Friends', icon: 'circle' }))
+  await waitFor(() => expect(patched).toEqual({ name: 'Friends', icon: 'circle' }))
 })
 
 test('says the type no longer exists when a rename finds it deleted', async () => {
@@ -220,5 +220,5 @@ test('deletes an empty type', async () => {
 
   await userEvent.click(await screen.findByRole('button', { name: 'Delete Regulars' }))
 
-  await vi.waitFor(() => expect(deleted).toBe(true))
+  await waitFor(() => expect(deleted).toBe(true))
 })
