@@ -186,6 +186,8 @@ erDiagram
     INTEGER price_per_gram
     INTEGER line_total
     INTEGER position
+    INTEGER customer_type_id "nullable"
+    VARCHAR(40) customer_type_name "nullable"
   }
   stock_entry {
     INTEGER id PK

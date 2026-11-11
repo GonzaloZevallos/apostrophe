@@ -3046,6 +3046,7 @@
           "list",
           "bulk",
           "vip",
+          "type",
           "gift",
           "special"
         ],
@@ -3986,6 +3987,17 @@
           "cost": {
             "$ref": "#/components/schemas/LineCostOut"
           },
+          "customer_type_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Type Name"
+          },
           "line_total": {
             "anyOf": [
               {
@@ -4029,6 +4041,7 @@
           "product_name",
           "quantity",
           "pricing_rule",
+          "customer_type_name",
           "price_per_gram",
           "line_total",
           "cost"
@@ -4038,6 +4051,17 @@
       },
       "SaleLineOut": {
         "properties": {
+          "customer_type_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Type Name"
+          },
           "line_total": {
             "anyOf": [
               {
@@ -4081,6 +4105,7 @@
           "product_name",
           "quantity",
           "pricing_rule",
+          "customer_type_name",
           "price_per_gram",
           "line_total"
         ],
