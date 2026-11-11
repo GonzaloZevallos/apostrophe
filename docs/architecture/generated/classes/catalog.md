@@ -211,9 +211,6 @@ classDiagram
   class HeaderFooterDefaults {
     for_language(language: Language) CatalogHeaderFooter
   }
-  class MoneyFormatReader {
-    current() MoneyFormat
-  }
 ```
 
 ## adapters

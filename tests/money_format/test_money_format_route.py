@@ -111,8 +111,8 @@ def test_me_shows_each_business_its_own_symbol(
 ) -> None:
     assert _put(client, "US$", 0).status_code == 200
 
-    assert client.get("/auth/me").json()["money_format"] == {"symbol": "US$", "decimals": 0}
-    assert other_client.get("/auth/me").json()["money_format"] == {"symbol": "$", "decimals": 0}
+    assert client.get("/auth/me").json()["money"] == {"symbol": "US$", "decimals": 0}
+    assert other_client.get("/auth/me").json()["money"] == {"symbol": "$", "decimals": 0}
 
 
 def test_another_businesses_save_never_moves_this_one(

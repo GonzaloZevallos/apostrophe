@@ -49,10 +49,10 @@ def test_a_symbol_with_markup_characters_is_written_as_given_and_bold_pairing_is
 ) -> None:
     text = catalog_text(
         WORDS,
+        MoneyFormat(symbol, 0),
         "",
         "",
         [entry("A", list_price=11000, bulk_price=10000, bulk_minimum="10")],
-        MoneyFormat(symbol, 0),
     )
 
     assert text == f"**A**\nPrice: {symbol}11.000\nFrom 10 g: {symbol}10.000"

@@ -83,6 +83,6 @@ def test_a_price_with_cents_is_read_and_written_with_its_cents(
     assert shown.price is not None
     assert shown.price.list_price == Money(1_100_050)
     entry = CatalogEntry(name="Lavanda", attributes=CatalogAttributes.default(), price=shown.price)
-    assert catalog_text(WORDS, "", "", [entry], MoneyFormat("US$", 2)) == (
+    assert catalog_text(WORDS, MoneyFormat("US$", 2), "", "", [entry]) == (
         "**Lavanda**\nUS$11.000,50"
     )
