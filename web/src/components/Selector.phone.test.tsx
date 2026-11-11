@@ -3,7 +3,7 @@
  * its rows, search, clearing row, empty set, the `selected` mark and loading.
  */
 
-import { fireEvent, screen, within } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createRef, useState } from 'react'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
@@ -336,7 +336,7 @@ describe('the field', () => {
     await user.click(field())
     expect(depth()).toBe(1)
     fireEvent.click(screen.getByRole('button', { name: 'Start loading' }))
-    await vi.waitFor(() => expect(depth()).toBe(0))
+    await waitFor(() => expect(depth()).toBe(0))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.getByRole('group', { name: 'Category' })).toHaveFocus()
   })

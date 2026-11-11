@@ -7,8 +7,8 @@ adds: two nullable columns on `sale_line`. It changes no value that existed befo
 
 Lines that existed keep both empty; their `vip` rule stays as stored.
 
-Revision ID: 0030
-Revises: 0029
+Revision ID: 0031
+Revises: 0030
 """
 
 from collections.abc import Sequence
@@ -16,8 +16,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0030"
-down_revision: str | None = "0029"
+revision: str = "0031"
+down_revision: str | None = "0030"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -30,7 +30,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     # The first step of a walk down from head: SQLite ignores `PRAGMA foreign_keys` once a
     # write transaction is open, so foreign keys go off before this step's first write, as
-    # 0029 and 0028 do, for the rebuilds of `sale` and `customer` further down. They are not
+    # 0030 and 0028 do, for the rebuilds of `sale` and `customer` further down. They are not
     # put back: every new connection sets the pragma on again in `app/db.py`.
     raw = op.get_bind().connection.dbapi_connection
     assert raw is not None

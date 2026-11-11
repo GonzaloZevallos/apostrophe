@@ -1,4 +1,4 @@
-"""Migration 0029 adds `customer_type_price` and backfills one VIP-type row for every Price
+"""Migration 0030 adds `customer_type_price` and backfills one VIP-type row for every Price
 entry with a `vip_price` in a business that has its VIP type (docs/adr/0059). The shared M3
 comparator proves no value that existed before it changed; the rows are read back for
 their date, amount and entry; a business without a VIP type gets none."""
@@ -12,7 +12,7 @@ from tests.migrations.m3 import assert_m3
 
 
 def test_it_creates_only_customer_type_price_and_changes_nothing_that_existed() -> None:
-    assert assert_m3("0028", "0029") == frozenset({"customer_type_price"})
+    assert assert_m3("0029", "0030") == frozenset({"customer_type_price"})
 
 
 def test_the_rows_are_the_entries_with_a_vip_price_in_a_business_with_a_vip_type() -> None:
@@ -20,7 +20,7 @@ def test_the_rows_are_the_entries_with_a_vip_price_in_a_business_with_a_vip_type
     upgrade_to(engine, "0019")
     with engine.begin() as connection:
         m3_seed.SEED_INCREMENTS["0019"](connection)
-    upgrade_to(engine, "0028")
+    upgrade_to(engine, "0029")
     with engine.connect() as connection:
         entries = connection.execute(
             text(
@@ -36,7 +36,7 @@ def test_the_rows_are_the_entries_with_a_vip_price_in_a_business_with_a_vip_type
         }
     assert entries
 
-    upgrade_to(engine, "0029")
+    upgrade_to(engine, "0030")
 
     with engine.connect() as connection:
         rows = connection.execute(
@@ -53,7 +53,7 @@ def test_the_rows_are_the_entries_with_a_vip_price_in_a_business_with_a_vip_type
 
 def test_a_business_without_a_vip_type_gets_no_row_and_keeps_its_frozen_price() -> None:
     engine = make_engine("sqlite://")
-    upgrade_to(engine, "0028")
+    upgrade_to(engine, "0029")
     with engine.begin() as connection:
         connection.execute(
             text("INSERT INTO business (id, name, language) VALUES (1, 'Uno', 'en')")
@@ -71,7 +71,7 @@ def test_a_business_without_a_vip_type_gets_no_row_and_keeps_its_frozen_price() 
             )
         )
 
-    upgrade_to(engine, "0029")
+    upgrade_to(engine, "0030")
 
     with engine.connect() as connection:
         assert connection.execute(text("SELECT COUNT(*) FROM customer_type_price")).scalar() == 0

@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import ClassVar
 
 from app.shared.language import BusinessLanguage
+from app.shared.phone_country import PhoneCountry
 
 BUSINESS_NAME_MAX_LENGTH = 60
 EMAIL_MAX_LENGTH = 254
@@ -79,6 +80,14 @@ def check_password_strength(password: str) -> None:
         raise WeakPassword(f"a password has at least {MIN_PASSWORD_LENGTH} characters")
 
 
+class StoredPhoneCountryCorrupt(RuntimeError):
+    """A business's stored Phone country is not a listed code. A broken row, not a broken
+    request: it is no `AccountRuleBroken`. The message never carries the stored value."""
+
+    def __init__(self) -> None:
+        super().__init__("a business's stored phone country is not a listed country")
+
+
 class StoredLanguageCorrupt(RuntimeError):
     """A business's stored language is not a language tag. A broken row, not a broken
     request: it is no `AccountRuleBroken`, so it never maps to a refusal. The message
@@ -90,11 +99,12 @@ class StoredLanguageCorrupt(RuntimeError):
 
 @dataclass(frozen=True)
 class Business:
-    """`language` is required with no default: every write starts from the stored
-    business (`dataclasses.replace`), so a write never resets the language."""
+    """`language` and `phone_country` are required with no default: every write starts
+    from the stored business (`dataclasses.replace`), so a write never resets either."""
 
     name: BusinessName
     language: BusinessLanguage
+    phone_country: PhoneCountry | None
     id: int | None = None
 
 

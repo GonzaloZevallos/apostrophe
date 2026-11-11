@@ -12,8 +12,8 @@ table and rows. It changes no value that existed before it.
   without a VIP type gets no row: no customer there can pay that price. A `vip_price`
   stays where it is, frozen.
 
-Revision ID: 0029
-Revises: 0028
+Revision ID: 0030
+Revises: 0029
 """
 
 from collections.abc import Sequence
@@ -21,8 +21,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0029"
-down_revision: str | None = "0028"
+revision: str = "0030"
+down_revision: str | None = "0029"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

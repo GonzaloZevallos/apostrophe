@@ -89,7 +89,7 @@ SCHEMA = Schema(
     )
 )
 
-BUSINESS = Business(1, "La Flor", "es")
+BUSINESS = Business(1, "La Flor", "es", "AR")
 EXPORTED_AT = datetime(2026, 10, 3, 12, 0, 0)
 
 
@@ -291,9 +291,22 @@ def test_no_password_hash_or_withheld_table_ever_reaches_the_document() -> None:
     assert "business_id" not in user
 
 
-def test_the_header_carries_the_business_s_id_name_and_language() -> None:
+def test_the_header_carries_the_business_s_id_name_language_and_phone_country() -> None:
     document = build_document(
-        Business(1, "La Flor", "de"), SCHEMA, {"app_user": [], "customer": []}, EXPORTED_AT
+        Business(1, "La Flor", "de", "UY"), SCHEMA, {"app_user": [], "customer": []}, EXPORTED_AT
     )
 
-    assert document["business"] == {"id": 1, "name": "La Flor", "language": "de"}
+    assert document["business"] == {
+        "id": 1,
+        "name": "La Flor",
+        "language": "de",
+        "default_phone_country": "UY",
+    }
+
+
+def test_a_business_with_no_phone_country_exports_a_null() -> None:
+    document = build_document(
+        Business(1, "La Flor", "de", None), SCHEMA, {"app_user": [], "customer": []}, EXPORTED_AT
+    )
+
+    assert document["business"]["default_phone_country"] is None

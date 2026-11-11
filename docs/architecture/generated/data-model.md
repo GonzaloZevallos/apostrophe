@@ -15,6 +15,7 @@ erDiagram
     INTEGER id PK
     VARCHAR(60) name
     VARCHAR(35) language
+    VARCHAR(2) default_phone_country "nullable"
     INTEGER last_sale_number
   }
   catalog_attribute {

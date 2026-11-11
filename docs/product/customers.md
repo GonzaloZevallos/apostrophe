@@ -4,6 +4,8 @@
 
 **Cuando** registro a un cliente (desde Customers, en medio de una venta o con la **Spreadsheet import** única) y no tengo su Phone number, **quiero** guardarlo igual con su nombre y agregar el número más adelante si algún día lo consigo, **para poder** registrar cada venta y cada deuda a nombre de la persona que de verdad debe, sin inventar un número ni dejar a esa persona fuera de la app.
 
+**Cuando** agrego o edito el Phone number de un cliente, **quiero** tipearlo como lo diría en mi propio país y que la app lo guarde en forma internacional, **para que** la misma persona nunca quede registrada dos veces y yo nunca tipee a mano un código de país, sea cual sea el país de mi negocio. (GH-409, parte de GH-318: lo sirve el **Phone country** de Settings → Business.)
+
 **Cuando** tengo clientes habituales a los que trato distinto, **quiero** agruparlos en tipos a los que les pongo nombre yo y elegir el tipo de cada uno desde su ficha, **para poder** distinguirlos de un vistazo, y más adelante cobrarles según su tipo, sin depender de la memoria ni de notas. (GH-405, parte de GH-318: lo sirven los Customer types de Settings → Prices y el campo "Customer type" del formulario.)
 
 **Cuando** registro una venta para un cliente que pertenece a uno de mis grupos de clientes, **quiero** que cada línea se cotice al precio que fijé para ese grupo y ese producto, **para** cobrarle a cada grupo su propio precio sin tipearlo ni sacarlo de memoria. (Parte customer-type prices de GH-318: lo sirve acá la pertenencia a un Customer type; los precios están en pricing-settings.md y la cotización de la línea en sales.md.)
@@ -34,6 +36,8 @@ La sección "Owed to you" afina el job de pagos y el job de Navigation de arriba
 
 El job de los Customer types tiene dos momentos: una configuración puntual (el vendedor decide que algunos habituales forman un grupo propio y lo nombra en Settings → Prices → Customer types) y el uso diario (al dar de alta o editar un Customer, dice en qué grupo está). Antes, la única forma de agrupar era la marca VIP de sí o no, y cualquier otro grupo ("mayorista", "amigo") vivía en la cabeza del vendedor o en la Note de una Sale.
 
+El job del **Phone country** (GH-409, ADR-0082) también tiene dos momentos: una configuración puntual (el vendedor elige el país de su negocio en Settings → Business → Phone country) y el uso diario (al dar de alta o editar un Customer, tipea el número como lo dice en voz alta). Antes, todo número tipeado sin `+` se leía como un celular argentino, fuera cual fuera el país del negocio: un vendedor de afuera tenía que tipear la forma internacional completa cada vez, y la regla argentina estaba fija en el código, justo el tipo de supuesto que el criterio 4 (**Assume nothing**) manda volver configurable.
+
 El campo "Customer type" se elige con el Selector desde la parte 6 de GH-581 (selector.md), igual que cualquier otro Growable set. Antes era un select nativo que no se comportaba como el resto: sin búsqueda, sin fila para borrar y sin que volver en el celular actuara sobre la lista.
 
 Criterios de éxito:
@@ -62,6 +66,10 @@ Criterios de éxito:
 16. **El tipo se elige con el Selector** (parte 6 de GH-581). Con 12 o más Customer types, el vendedor encuentra uno buscando y lo elige; el formulario no tiene ningún otro tipo de selector para ese campo (ni select nativo, ni chips, ni radios, ni botones presionados).
 17. **Volver nunca tira el formulario.** En el celular, volver con la lista de tipos abierta cierra solo la lista; volver con el formulario sin tocar vuelve a la pantalla madre; volver con cambios sin guardar pide la confirmación de descarte. Vale al dar de alta y al editar un Customer. En la computadora, Escape cierra solo el desplegable.
 18. **Nada se pierde y nada engaña mientras carga.** El tipo se sigue pudiendo quitar ("No type"), el aviso "Add a customer type" sigue igual cuando no hay tipos, el rechazo por un tipo que ya no existe sigue igual, y mientras los tipos se cargan (o después de una carga fallida) no se muestra ni "No type" ni el aviso; una carga fallida se informa con la línea de falla existente de la app.
+19. **Número local, guardado internacional.** Al dar de alta o editar un Customer en el celular, el vendedor tipea solo el número local, sin código de país, y se guarda y se muestra en forma internacional según el Phone country del Business.
+20. **Una sola persona, se tipee como se tipee.** Un número que ya pertenece a otro Customer del Business se detecta como el mismo número, se haya tipeado en forma local o internacional, y nunca crea un segundo Customer.
+21. **Los Businesses existentes no notan nada.** Argentina sigue siendo su Phone country con la regla de celular de hoy, y ningún número guardado cambia.
+22. **Cada país con su regla.** El Phone country se cambia en Settings → Business → Phone country, y un Business fuera de Argentina recibe la regla de su propio país, no la argentina.
 
 ## Comportamiento
 
@@ -99,20 +107,47 @@ Criterios de éxito:
   - El campo `vip` de un Customer en la API es la pertenencia al VIP type, sea cual sea el interruptor; las pantallas lo ocultan mientras está apagado.
   - En la lista de Sales, la insignia VIP de una Sale muestra si el Customer está hoy en el VIP type, no cómo se fijó el precio de esa Sale (sales.md).
 - **La marca VIP congelada** (`customer.is_vip`): se conserva con el valor que tenía, ya no se lee y nunca se vuelve a escribir para ningún Customer después de la actualización, por ningún camino (la API, la Spreadsheet import, la apertura de un Business). Un pedido que todavía manda `vip` se completa bien y el campo se ignora. Un test de arquitectura impide que el código fuera de las migraciones y de la definición de la tabla la nombre.
-- **Phone number**: opcional, único dentro del Business entre los Customers que tienen uno, guardado en una sola forma internacional.
+- **Phone country** (GH-409, ADR-0082): el país con el que un Business lee un número tipeado sin `+` y su código de país. Se guarda en `business.default_phone_country` como código ISO 3166-1 alfa-2, o nulo cuando no hay ninguno. La columna es de accounts; las reglas de cada país viven en una sola tabla compartida, `app/shared/phone_country.py`, que leen el dominio de customers y accounts.
+  - **La lista** de esta versión, decidida por el dueño el 2026-11-07, en este orden: Argentina (AR), Uruguay (UY), Chile (CL), Paraguay (PY), Brazil (BR), Mexico (MX), Spain (ES) y United States (US). Cada país tiene su propia regla con sus propios tests: código de país, largo o largos válidos del número nacional, y cómo se tipea un número local (su prefijo de larga distancia y, para Argentina, el `15`). La lista crece de a un país sin cambiar ningún número guardado. Ningún código de país de la lista es prefijo de otro.
+
+    | País | Código | Largo nacional | Prefijo de larga distancia | Particularidad |
+    |---|---|---|---|---|
+    | AR | 54 | 10 | 0 | siempre celular: agrega el `9` y descarta el `15` |
+    | UY | 598 | 8 | 0 | |
+    | CL | 56 | 9 | ninguno | |
+    | PY | 595 | 8 o 9 | 0 | |
+    | BR | 55 | 10 u 11 | 0 | admite un código de operadora de 2 dígitos después del 0 |
+    | MX | 52 | 10 | ninguno | descarta el `1` de celular viejo entre el 52 y los 10 dígitos |
+    | ES | 34 | 9 | ninguno | |
+    | US | 1 | 10 | 1 | |
+
+    Solo se controlan los largos, nunca los primeros dígitos del número nacional.
+  - **Los Businesses existentes** quedan en Argentina, con exactamente la regla de hoy.
+  - **Un Business nuevo** arranca sin Phone country (cada camino que abre un Business, la aceptación de una Invitation y el comando del Operator, lo deja nulo): hasta que el vendedor elige uno, solo se acepta la forma internacional con `+`. No hay paso de Onboarding para él, y nunca se adivina a partir del idioma del teléfono.
+  - Cualquier User del Business lo cambia en cualquier momento, sin paso de confirmación, desde Settings → Business → Phone country; también se puede volver a "No country". Ningún número guardado cambia: el país nuevo gobierna solo los números que se tipeen desde entonces.
+  - **API**: `GET /business` agrega `phone_country` (el código o `null`) y `phone_countries`, la lista `[{code, calling_code}]` en el orden de arriba; el front guarda solo los nombres de los países, en el Copy module. `PUT /business/phone-country`, con cuerpo `{"phone_country": "UY"}` o `{"phone_country": null}`, fija el del Business de la Session y nada más, y responde el valor guardado con las opciones. Un código fuera de la lista se rechaza con `business.phone_country_unknown` (422). No dispara ningún Upkeep.
+- **Phone number**: opcional, único dentro del Business entre los Customers que tienen uno, guardado en una sola forma internacional. Se normaliza al dar de alta o editar un Customer, según estas reglas:
   - **Ninguno**: un valor faltante, `null`, o uno en blanco tras recortar significa que el Customer no tiene número. Se guarda como sin número, nunca como string vacío.
-  - **Con `+` y un código de país distinto de 54**: un número extranjero. Se guarda como `+` y sus dígitos, y debe tener de 8 a 15 dígitos.
-  - **Con `+54`, o un `54` a secas**: si lo siguen 10 dígitos, o un `9` y 10 dígitos, es un número argentino con su código de país. Se guarda como `+549` y los 10 dígitos.
-  - **Cualquier otra cosa sin `+`**: un número argentino local. Se descartan un `0` inicial y el `15`, y deben quedar exactamente 10 dígitos, código de área incluido. Se guarda como `+549` y esos 10 dígitos.
-  - **Los teléfonos fijos** no se rechazan: todo número argentino se trata como celular.
-  - **Rechazado**: un valor no en blanco que no encaja en ninguna de estas reglas, como demasiado corto, demasiado largo o sin código de área. El rechazo dice algo como "that doesn't look like a phone number with its area code" y nunca repite lo que se escribió.
-  - `11 2345-6789`, `011 15 2345-6789`, `+54 9 11 2345 6789`, `5491123456789` y `541123456789` pasan todos a ser `+5491123456789`.
-- **Unicidad**: un número ya usado por otro Customer del mismo Business se rechaza, tanto al registrar como al editar. El rechazo nunca repite el número ni el nombre. Cualquier cantidad de Customers puede no tener número. Los números de otros Businesses nunca chocan y nunca se revelan.
+  - **Con `+` y el código de un país de la lista**: se normaliza con la regla de ese país, sea cual sea el Phone country del Business, así coincide con el mismo número tipeado en forma local. Se rechaza si no encaja en esa regla. Por eso un `+1` ya no es "cualquier otro código": sigue la regla de United States (`+1` y exactamente 10 dígitos).
+  - **Con `+` y cualquier otro código**: un número de un país fuera de la lista. Se acepta tal como se escribió, sea cual sea el Phone country: se guarda como `+` y sus dígitos, que deben ser de 8 a 15 y no empezar con 0 (p. ej. `+44345678` y `+443456789012345`).
+  - **Sin `+`, con un Phone country**: se quitan los separadores; los dígitos cuentan como internacionales cuando empiezan con el código del Phone country y tienen uno de los largos internacionales completos de ese país; si no, se leen como un número local de ese país: se descarta su prefijo de larga distancia (y, en Brazil, un código de operadora de 2 dígitos), y lo que queda debe tener un largo nacional válido. Se guarda como `+`, el código y el número nacional.
+  - **Sin `+`, sin Phone country**: se rechaza; solo se acepta la forma con `+`.
+  - **La regla de Argentina**, exactamente la de hoy:
+    - `+54`, o un `54` a secas, seguido de 10 dígitos, o de un `9` y 10 dígitos, es un número argentino con su código de país, y se guarda como `+549` y los 10 dígitos;
+    - cualquier otra cosa sin `+` es un número argentino local: se descartan un `0` inicial y el `15`, y deben quedar exactamente 10 dígitos, código de área incluido; se guarda como `+549` y esos 10 dígitos;
+    - los teléfonos fijos no se rechazan: todo número argentino se trata como celular. Solo Argentina hace esto; los demás países aceptan cualquier número nacional de largo válido, fijos incluidos;
+    - `11 2345-6789`, `011 15 2345-6789`, `+54 9 11 2345 6789`, `5491123456789` y `541123456789` pasan todos a ser `+5491123456789`.
+  - **El resultado es el mismo se tipee como se tipee**, así que una grafía local y una internacional de un mismo número coinciden y la unicidad las detecta. La forma guardada, vuelta a normalizar con cualquier país o sin ninguno, queda igual.
+  - **Un número sin tocar se conserva**: si al editar un Customer el pedido manda exactamente el número que ya tiene guardado, se conserva tal cual, sin volver a normalizarlo, sin chequear la unicidad y sin rechazarlo, aunque el Phone country haya cambiado desde que se guardó o ya no haya ninguno. Un número guardado que hoy ninguna regla produciría (p. ej. un `+521…` o un `+1` de otro largo) sigue cargando y se conserva así. Una grafía distinta del mismo número se vuelve a normalizar, y eso se acepta.
+  - **Rechazado**: un valor no en blanco que no encaja en ninguna regla (demasiado corto, demasiado largo, sin código de área, o sin `+` en un Business sin Phone country). Cada rechazo tiene su `code` en `contract.json` y nunca repite lo que se escribió ni el nombre:
+    - `customer.phone_needs_country_code`: solo para un número sin `+` en un Business sin Phone country; dice "Start the number with + and the country code.";
+    - `customer.phone_invalid`: cualquier otro número que no encaja; dice "Enter the number with its area code, or start with + and the country code.".
+- **Unicidad**: un número ya usado por otro Customer del mismo Business se rechaza (`customer.phone_taken`, "That phone number already belongs to another customer."), tanto al registrar como al editar, se haya tipeado en forma local o internacional. El rechazo nunca repite el número ni el nombre. Cualquier cantidad de Customers puede no tener número. Los números de otros Businesses nunca chocan y nunca se revelan.
 - **Edición**: nombre, Phone number y Customer type (el tipo solo mientras Customer types está activado).
-  - El Phone number pasa por la misma normalización, el mismo chequeo de unicidad y el mismo rechazo que al registrar.
+  - El Phone number pasa por la misma normalización, el mismo chequeo de unicidad y el mismo rechazo que al registrar, salvo el número guardado mandado sin tocar, que se conserva (arriba).
   - Se puede borrar, y el Customer queda sin número.
   - Las Sales, los Payments y el Balance pertenecen al Customer, no al número, así que siguen asociados cuando este cambia o se quita.
-- **Lista y búsqueda**: una sola consulta.
+- **Lista y búsqueda**: una sola consulta. El Phone country no la cambia: la búsqueda compara con los dígitos guardados, así que una grafía local tipeada en la búsqueda no se normaliza.
   - El nombre coincide con la consulta en cualquier parte, sin importar mayúsculas ni acentos.
   - El número coincide con los dígitos de la consulta, sin un 0 inicial, en cualquier parte de los dígitos del número guardado. Un Customer sin número nunca coincide por número, y una consulta sin dígitos no coincide con ningún número.
   - Un Customer coincide si coincide el nombre o el número; un Customer sin número se encuentra por nombre.
@@ -120,20 +155,21 @@ Criterios de éxito:
   - Los resultados se ordenan por nombre.
   - No hay paginación, ni largo mínimo de consulta, ni filtro VIP ni por tipo, ni filtro para los Customers sin número.
 - **Almacenamiento**: la columna del teléfono admite nulos; la unicidad dentro de un Business se aplica solo a los números guardados. Los Customers que existían antes de que el número fuera opcional conservaron sus números. La columna del canal se elimina con una migración en la cadena única de Alembic; todas las demás columnas y el nombre, el número, el VIP, las Sales, los Payments y el Balance de cada Customer quedan exactamente como estaban.
+- **Migración del Phone country** (revisión `0029`, con `down_revision` `0028`, GH-409): agrega la columna nula `business.default_phone_country` (dos letras, sin valor por defecto) y la completa con `AR` para cada Business existente. Nunca cambia el valor de una columna que ya existía, ningún número guardado incluido; el comparador M3 compartido de `tests/migrations/` lo prueba.
 - **Migración de los Customer types** (revisión `0020`, ADR-0059): agrega la tabla `customer_type` y la columna nula `customer.customer_type_id`, y nunca cambia el valor de una columna que ya existía.
   - Cada Business existente recibe un tipo "VIP" con el ícono `star`: su VIP type. Lo recibe incluso sin ningún VIP customer, así puede seguir dando el VIP price.
   - Solo los Customers con la marca VIP reciben ese tipo; ningún otro Customer recibe tipo.
   - La marca VIP queda guardada tal cual. El comparador M3 compartido de `tests/migrations/` lo prueba.
-- **Spreadsheet import** (import.md): un VIP de la planilla entra al VIP type de ese Business; nunca escribe la marca congelada.
+- **Spreadsheet import** (import.md): sigue leyendo los números de la planilla como argentinos (pasa Argentina de forma explícita), sea cual sea el Phone country del Business, y nunca lee ni fija el Phone country. Un VIP de la planilla entra al VIP type de ese Business; nunca escribe la marca congelada.
   - Si el Business ya tiene su VIP type, lo usa, se llame como se llame hoy.
   - Si la planilla tiene al menos un VIP y el Business no tiene VIP type, la Spreadsheet import lo crea con el nombre "VIP", antes de escribir las Price entries, así sus VIP prices se guardan como Customer-type prices de ese tipo.
   - **Si en ese caso el Business ya tiene un tipo propio del vendedor llamado "VIP"** (sin importar mayúsculas ni espacios), la Spreadsheet import se detiene antes de escribir nada y le dice al Operator, con un texto fijo del Copy module en su terminal, que ese tipo existe y hay que renombrarlo o eliminarlo antes de volver a correrla. Nunca toma el tipo del vendedor como VIP type ni crea el VIP type con otro nombre. No es una **Unfinished row**: es un chequeo sobre el Business, previo a toda escritura, y no nombra ningún Customer ni monto.
-- **Business export** (accounts.md, ADR-0015): sigue el esquema por reflexión, así que los Business exports nuevos y el registro de tablas y columnas de la **Business removal** llevan los Customer types, sus Customer-type prices y la pertenencia, y no llevan canal. Los Business exports escritos antes del cambio conservan lo que tenían; nada importa un Business export de vuelta. Las cantidades exportadas siguen siendo iguales a las eliminadas.
+- **Business export** (accounts.md, ADR-0015): las tablas de Customers y de Customer types siguen el esquema por reflexión, así que los Business exports nuevos y el registro de tablas y columnas de la **Business removal** llevan los Customer types, sus Customer-type prices y la pertenencia, y no llevan canal. El encabezado del Business (`{id, name, language, default_phone_country}`, más `last_sale_number` cuando el Business lo lleva) se lista a mano y ahora lleva el Phone country; un test que refleja la tabla `business` exige que el encabezado lleve cada una de sus columnas. Los Business exports escritos antes del cambio conservan lo que tenían; nada importa un Business export de vuelta. Las cantidades exportadas siguen siendo iguales a las eliminadas.
 - **Aislamiento (ADR-0004)**:
-  - El Business sale de la **Session**.
+  - El Business sale de la **Session**, y el Phone country que se aplica es siempre el de ese Business.
   - El Customer de otro Business responde 404 tanto al leer como al editar; el Customer type de otro Business responde 404 al leer, renombrar, cambiar el ícono, eliminar y asignar.
   - Las listas y búsquedas no muestran ninguno de los Customers ni de los Customer types de otro Business, y un Customer-type price de otro Business nunca cotiza una línea.
-  - Las rutas de Customer y de Customer type (`/api/customer-types`) están en `tests/test_business_isolation.py` y en el test de rutas protegidas.
+  - Las rutas de Customer, de Customer type (`/api/customer-types`) y `PUT /business/phone-country` están en `tests/test_business_isolation.py` y en el test de rutas protegidas.
 
 ### En pantalla: Customers
 
@@ -149,7 +185,7 @@ Criterios de éxito:
 - **La marca VIP** se muestra en las filas de la lista y en Pick a customer solo mientras Customer types está activado, y dice si el Customer está en el VIP type; nunca muestra el nombre ni el ícono de un tipo. Mientras está apagado, no se muestra nada en su lugar. Las filas no muestran el Customer type.
 - **Búsqueda** por parte del nombre o del Phone number: mientras se escribe una consulta, las dos secciones se colapsan en una sola lista plana ordenada por nombre, con las coincidencias como arriba; un Customer que debe conserva su Balance, "owes you since dd/mm" y "Collect". Borrar la consulta trae de vuelta las dos secciones.
 - **La ficha de un Customer** (`ClienteFicha`), una tarjeta con "‹ Customers":
-  - teléfono (solo cuando hay uno; sin ninguno, la línea se omite por completo);
+  - teléfono, en su forma internacional guardada (solo cuando hay uno; sin ninguno, la línea se omite por completo). Un número argentino se muestra agrupado (`+54 9 11 2345-6789`); el de cualquier otro país, como la cadena guardada sin agrupar (p. ej. `+59899123456`);
   - debajo, en su propia línea, su Customer type: primero el ícono y después el nombre (solo mientras Customer types está activado y el Customer tiene uno; sin tipo, la línea se omite). El tipo reemplaza el antiguo bloque "VIP / No";
   - "Owes you $ X since dd/mm" o "Credit $ X" (ninguno para un Balance de $0), la cuenta, "Record payment" solo cuando el Balance es mayor que $0, y "Delete payment" en los Payments posteriores (`payments.md`);
   - **"New sale to <name>"**, que abre New sale con ese Customer ya elegido (sales.md). La ficha no muestra "+ New sale".
@@ -157,6 +193,9 @@ Criterios de éxito:
 - **Record payment** (`Payment`) sigue payments.md sin cambios y su diseño, `Cobro.dc.html`, abierto con el Customer elegido desde una fila de deudor o desde la ficha.
 - **Alta y edición** (`ClienteForm`, el formulario "New customer" dibujado en `NuevaVentaCliente` y `ClienteNuevo`): el mismo formulario al dar de alta desde Customers y al editar desde la ficha.
   - Sus campos son "Name" (el único marcado como obligatorio), el teléfono (opcional, y se puede borrar al editar) y "Customer type". El antiguo interruptor VIP ya no está. No hay campo de canal.
+  - **El teléfono** acepta el número tal como lo dice el vendedor en el país de su Business; después de guardar se muestra en su forma internacional. El formulario no agrega ningún selector de país: el país es el del Business.
+  - **El ejemplo del teléfono** (su placeholder) sigue al Phone country, un texto del Copy module por país: AR `11 2345-6789`, UY `099 123 456`, CL `9 1234 5678`, PY `0981 123 456`, BR `(11) 91234-5678`, MX `55 1234 5678`, ES `612 34 56 78`, US `(212) 555-0123`; sin país, "+ and country code, then the number". Mientras el Business no cargó, el campo no muestra ningún ejemplo, nunca uno equivocado.
+  - Al editar, el teléfono muestra el número internacional guardado tal cual (p. ej. `+5491155550101`), así que guardar sin tocarlo lo manda exactamente como está.
   - El creador de "Pick a customer" dentro de New sale (`NuevaVentaCliente`) usa los mismos campos de nombre y teléfono, sin "Customer type"; el Customer creado ahí no tiene tipo, y ese Customer se usa para la Sale.
   - **"Customer type"** se muestra solo mientras Customer types está activado. Desde la parte 6 de GH-581 es un Selector opcional (selector.md) sobre los tipos del Business:
     - cada opción muestra el nombre del tipo con su glifo (`glyphOf(type.icon)`) delante;
@@ -171,10 +210,26 @@ Criterios de éxito:
   - Si al guardar el tipo elegido ya no existe, un error en línea bajo el campo, asociado al campo como su descripción, dice "That type no longer exists. Pick another one.", la elección vuelve a "No type" (sin la marca "no longer available") y el vendedor elige de nuevo. El campo se asocia a un solo mensaje por vez: este rechazo o, si no lo hay, la línea de carga fallida.
   - Es un formulario: "Close", y una confirmación al salir con cambios sin guardar. Un formulario sin tocar se cierra de inmediato y vuelve a la pantalla madre.
 - **Si sale bien**, el toast "Customer saved". Nunca lleva un nombre ni un número.
-- **Los rechazos** se muestran en línea sobre el campo, con el string fijo del dominio, y conservan lo que se escribió. Nunca repiten el número ni el nombre.
+- **Los rechazos** se muestran en línea sobre el campo, con el string fijo del dominio, y conservan lo que se escribió. Nunca repiten el número ni el nombre. Un número rechazado (`customer.phone_invalid`, `customer.phone_needs_country_code` o `customer.phone_taken`) muestra su mensaje bajo el teléfono, tanto en el formulario de Customers como en el "New customer" de una Sale, con el error de campo de siempre (`campo__error`, anunciado con `role="alert"`).
 - **Cómo se dibuja el ícono de un tipo**: en la lista de Customer types y en el selector de íconos, con los glifos del componente `Icono`; en la lista del Selector del formulario y en la ficha, con un símbolo de texto por clave (`glyphOf`). Para algunas claves (Bell, Tag) los dos dibujos no coinciden; unificarlos queda para una tarea posterior.
 - **Diseño**: Customers, `ClienteFicha`, `Payment` y `NuevaVentaCliente` coinciden con `docs/product/design-system/pantallas/` en celular y computadora, en los dos temas. El campo "Customer type" se muestra cerrado como Selector, diciendo "No type", en el bloque "Nuevo cliente" de `ClienteNuevo`, que dibuja ClienteNuevo, ClienteNuevoCompu, ClienteEditar y ClienteEditarCompu. Una diferencia de texto respecto de los docs se lista en el PR. Ningún estado se dice solo con color.
 - **Respuesta de la app**: sin red muestra "No connection", un error del servidor el reintento genérico, y un Customer o un Customer type que ya no existe sigue la regla "That is gone." de accounts.md.
+
+![Alta de un Customer en el teléfono](../assets/screens/ClienteNuevo.webp)
+
+![Edición de un Customer en el teléfono](../assets/screens/ClienteEditar.webp)
+
+### En pantalla: Settings → Business → Phone country
+
+- **Lugar**: un segundo campo "Phone country" en el formulario del grupo Business de Settings (`/settings/business`, la pantalla `ConfiguracionNegocio` del registro), debajo de "Business name". No se agrega ninguna fila nueva a Settings. Cualquier User del Business lo cambia. En el celular el formulario es una **Sheet**; en la computadora conserva su marco, sin pulido propio.
+- **Opciones**: una lista de opciones siempre a la vista, una por fila (el mismo componente de Appearance y del idioma, apilado), que ofrece primero "No country" y después los países de `phone_countries`, en su orden, cada uno con su nombre y su código (p. ej. "Uruguay (+598)"). La opción elegida se marca con un check junto a su texto, nunca solo con color. Muestra el valor guardado: "Argentina (+54)" en un Business existente, "No country" en uno nuevo. Aparece cuando el Business cargó.
+- **Debajo del control**, siempre visible y como su descripción accesible, la línea "Applies to numbers you type from now on. Saved numbers don't change.". No lleva Attention icon ni More info.
+- **Guardar**: el nombre y el país se guardan con un solo "Save" compartido del formulario, sin paso de confirmación; lo que se muestra después es lo que respondió la API, con el toast "Saved". Con el cambio de este campo, los textos del formulario pasaron a ser genéricos: "Save", "Saved" y, al cerrar con cambios sin guardar, "Discard changes?" ("Keep editing" / "Discard"). El control de idioma de la misma pantalla sigue guardándose al tocarlo.
+- **Si falla**: el formulario sigue abierto con la elección conservada y un error bajo el control; sin red, "No connection". El nombre y el país son dos pedidos: si el nombre se guarda y el país no, se muestra el error del país y el vendedor vuelve a guardar.
+- Cambiarlo no toca ningún Customer.
+- Todo texto vive en el **Copy module** (la etiqueta, "No country", los nombres de los ocho países por código ISO y la línea de ayuda), `en-XA` se regenera, y ningún valor por defecto nuevo lleva una palabra de flor; los nombres de país son texto del producto, no datos del vendedor.
+
+![Settings → Business con el Phone country, en el teléfono](../assets/screens/ConfiguracionNegocio.webp)
 
 ### En pantalla: Settings → Prices → Customer types
 
@@ -196,8 +251,17 @@ Criterios de éxito:
 - **Números duplicados**: Customers que comparten un número guardado dentro de un Business, 0. Una restricción de la base de datos lo impone y un test lo cubre. (Criterio 2)
 - **Sin choque sin número**: dos o más Customers sin número coexisten en un Business, probado. (Criterios 2, 5)
 - **Matriz de normalización**: toda forma equivalente se resuelve en un solo número, toda forma inválida no en blanco se rechaza, y un valor en blanco se guarda como sin número. 100% aprobada. (Criterios 2, 6)
-- **Sin eco**: ningún cuerpo de rechazo ni toast contiene el número enviado, ninguna de sus secuencias de dígitos, el nombre de un Customer ni el nombre de un Customer type. Después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen ningún nombre, número ni monto. (Criterios 2, 6)
-- **Cobertura de aislamiento**: toda ruta de Customer y de Customer type está en el barrido de aislamiento y en el test de rutas con acceso restringido, y responde 404 o vacío desde otro Business; asignar un tipo de otro Business responde 404; el barrido siembra Customer-type prices del otro Business. (Criterios 3, 15)
+- **Matriz por país (criterios 19, 22)**: para cada uno de los ocho países, en tests de dominio, las formas local con y sin prefijo de larga distancia, con espacios o guiones, con el código sin `+` y con `+` se resuelven en un solo número guardado, y toda forma inválida no en blanco se rechaza; la forma guardada, vuelta a normalizar con cada país y sin ninguno, queda igual; y un test de propiedades por país muestra que una cadena sin `+` que se lee a la vez como internacional y como local da el mismo resultado. 100% aprobada.
+- **La tabla de países**: un test muestra que cada código de país aparece una sola vez, que ninguno es prefijo de otro, que todo país tiene al menos un largo y que ninguno es prefijo de `44`.
+- **El `+1` y los otros códigos**: los casos de "cualquier otro código" usan `+44345678` y `+443456789012345`, aceptados tal cual; `+12345678` y `+123456789012345` se rechazan, `+1` con 10 dígitos se acepta y da lo mismo que su forma local.
+- **Sin duplicado entre grafías (criterio 20)**: para cada país, tests con TestClient registran un número en forma local y después en forma internacional (y al revés, también al editar), y el segundo se rechaza como ya usado: 0 Customers que comparten número.
+- **Los existentes no notan nada (criterio 21)**: después de la migración, todo Business existente tiene `AR`; el comparador M3 compartido encuentra 0 valores cambiados en columnas existentes, ningún número guardado incluido; la matriz argentina existente pasa sin aflojar ninguna aserción.
+- **El país se respeta (criterio 22)**: tests con TestClient muestran que cambiar el Phone country con `PUT /business/phone-country` hace que el próximo número local siga al país nuevo; que sin país un número local responde 422 `customer.phone_needs_country_code` y uno con `+` se acepta; que un código desconocido responde `business.phone_country_unknown`; y que un Customer cuyo número guardado ya no encaja en el país actual (o en ninguno) se guarda sin cambios cuando no se toca el número.
+- **Desde el celular (criterios 19, 22)**: una corrida end-to-end en un viewport de celular (`web/e2e/phoneCountry.spec.ts`, 390×844) ve "No country" en un Business nuevo, elige Uruguay en Settings → Business, da de alta un Customer tipeando solo `099 123 456` y lo ve en su ficha como `+598…`.
+- **Sin eco**: ningún cuerpo de rechazo ni toast contiene el número enviado, ninguna de sus secuencias de dígitos, el nombre de un Customer ni el nombre de un Customer type. Después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen ningún nombre, número ni monto. (Criterios 2, 6, 17)
+- **Rechazos del número**: tests cubren el mensaje con Phone country y el mensaje sin Phone country, en el formulario de Customers y en el "New customer" de una Sale, cada uno con su `code` en `contract.json`, verificado por `tests/test_refusal_codes.py`.
+- **El control y el ejemplo**: tests del front muestran las opciones del Phone country en orden, guardar, la línea de ayuda, el error al guardar, y el ejemplo del teléfono por país y sin país.
+- **Cobertura de aislamiento**: toda ruta de Customer, de Customer type y `PUT /business/phone-country` está en el barrido de aislamiento y en el test de rutas con acceso restringido, y responde 404 o vacío desde otro Business; asignar un tipo de otro Business responde 404; el barrido siembra Customer-type prices del otro Business. (Criterios 3, 15)
 - **Tiempo de alta o búsqueda**:
   - registrar un Customer nuevo desde el celular se corre a través del front (`web/e2e/customers.spec.ts`) y el presupuesto de toques se cumple (`web/e2e/tapBudget.spec.ts`); su duración no la mide ningún test;
   - una búsqueda responde en menos de 300 ms con unas pocas docenas de Customers;
@@ -214,6 +278,7 @@ Criterios de éxito:
   - un pedido que todavía manda un canal se completa bien y no guarda nada;
   - los campos de canal en pantalla y en la API pasan de 1 a 0 (la medida de negocio de "un campo menos");
   - la suite de Business removal pasa después de la migración: la cantidad exportada es igual a la eliminada para cada tipo, está presente todo campo guardado que lista accounts.md, y no hay ningún canal en el archivo.
+- **El Business export y el Phone country**: el encabezado del Business lleva `default_phone_country`, y un test que refleja la tabla `business` exige que lleve cada una de sus columnas.
 - **El tipo sigue al interruptor (criterio 8)**:
   - los tests del front no muestran ningún tipo en la ficha, ningún campo "Customer type" en el formulario, ninguna fila Customer types en Prices ni ninguna marca VIP en la lista, mientras Customer types está apagado;
   - una edición o un pedido que manda un tipo mientras está apagado deja sin cambios la pertenencia guardada, y un Customer creado entonces no tiene tipo;
@@ -244,10 +309,11 @@ Criterios de éxito:
   El chequeo `mobile` recorre el estado `customer/type-selector-open` sin infractores nuevos. 100% de aprobación.
 - **La marca congelada**: después de la actualización, ningún camino de escritura (API, Spreadsheet import, apertura de un Business) cambia `customer.is_vip`, probado con un registro de sentencias que no encuentra ningún INSERT ni UPDATE que la nombre; el test de arquitectura de columnas congeladas no encuentra ningún módulo fuera de las migraciones y de la definición de la tabla que la nombre.
 - **Spreadsheet import y el VIP type**: tests del import cubren que los VIP de la planilla entran al VIP type existente aunque esté renombrado; que sin VIP type se crea uno; y que sin VIP type y con un tipo del vendedor llamado "VIP" (también " vip ") el import se detiene con su texto fijo y deja 0 filas nuevas en todas las tablas.
+- **Spreadsheet import y el Phone country**: tests del import muestran que lee `011 15 …` como `+549…` en un Business con otro Phone country y en uno sin ninguno, y que no cambia el Phone country.
 - **Textos**: todo texto nuevo está en el Copy module, `en-XA` está regenerado, y ningún valor por defecto nuevo lleva una palabra de flor.
 - **Sin regresiones**: las suites existentes de customers, payments y navigation pasan sin aflojar ninguna aserción.
 - **Sin curl**: la corrida end-to-end del front agrega, encuentra y edita un Customer, agrega uno sin número, le asigna un tipo, abre Record payment desde "Collect" con el Customer elegido, y abre "New sale to <name>" con ese Customer elegido. (Criterio 4)
-- **Diseño**: `scripts/design/compare.sh` se corre antes y después para Customers, `ClienteFicha`, `Payment`, `NuevaVentaCliente`, `ClienteNuevo` y Settings → Prices, celular y computadora, claro y oscuro donde el registro tiene los dos, adjunto al PR y juzgado a ojo, con cada diferencia respecto del diseño listada. La lista y el formulario de Customer types no tienen dibujo y se juzgan contra el diseño escrito.
+- **Diseño**: `scripts/design/compare.sh` se corre antes y después para Customers, `ClienteFicha`, `Payment`, `NuevaVentaCliente`, `ClienteNuevo`, Settings → Prices y Settings → Business, celular y computadora, claro y oscuro donde el registro tiene los dos, adjunto al PR y juzgado a ojo, con cada diferencia respecto del diseño listada. La lista y el formulario de Customer types y el control Phone country no tienen dibujo y se juzgan contra el diseño escrito.
 - El Balance, la cuenta y las métricas de cifras de Owed to you viven en `payments.md`.
 
 ## Fuera de alcance
@@ -267,3 +333,11 @@ Criterios de éxito:
 - Una pantalla Owed to you aparte; una cifra de deuda tocable en la cabecera de Customers; cualquier filtro u orden de Customers más allá de lo definido acá.
 - Importar de vuelta un Business export viejo.
 - Otras reglas VIP (un porcentaje de descuento sobre el **List price**); activar o desactivar Customer types (pricing-settings.md).
+- Hacer obligatorio el Phone number.
+- Cambiar la búsqueda por número, o buscar por número de otra forma.
+- Reescribir un número ya guardado al cambiar el Phone country.
+- Elegir el Phone country en el Onboarding o deducirlo del idioma del teléfono.
+- Países fuera de los ocho de la lista: se siguen tipeando con `+` y su código.
+- Un selector de país por Customer en el formulario.
+- Que la Spreadsheet import use o fije el Phone country.
+- Agrupar para mostrar los números de países que no son Argentina.

@@ -184,7 +184,7 @@ def _seed(engine: Engine) -> None:
         )
 
 
-# The columns `sale_line` had at this revision: later ones (0030's customer type) are not read.
+# The columns `sale_line` had at this revision: later ones (0031's customer type) are not read.
 SALE_LINE_AT_THE_TIME = (
     "SELECT id, business_id, sale_id, variety_id, grams_hundredths, pricing_rule, "
     "price_per_gram, line_total, position FROM sale_line ORDER BY id"

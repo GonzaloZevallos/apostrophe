@@ -4,6 +4,7 @@ from datetime import date
 from typing import Literal, Protocol
 
 from app.customers.domain.customer import Customer, PhoneNumber
+from app.shared.phone_country import PhoneCountry
 from app.shared.pricing_settings import PricingSettings
 
 # The same three values `app.payments.domain.settlement.Standing` declares: customers
@@ -72,3 +73,11 @@ class PricingSettingsReader(Protocol):
     (docs/adr/0006); the pricing_settings hexagon implements it, wired in `app/main.py`."""
 
     def current(self) -> PricingSettings: ...
+
+
+class PhoneCountryReader(Protocol):
+    """The business's Phone country, through the one port customers declares for it
+    (docs/adr/0082); the accounts hexagon implements it, wired in `app/main.py`.
+    `None` is a business that has set none."""
+
+    def current(self) -> PhoneCountry | None: ...
