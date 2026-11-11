@@ -2116,7 +2116,10 @@ body {
   gap: var(--espacio-xs);
 }
 
+/* The figure keeps its width: a long type-name badge beside it is the one that gives up room. */
 .venta-detalle__precio {
+  flex-shrink: 0;
+  white-space: nowrap;
   font-size: 14px;
   color: var(--tinta2);
 }
