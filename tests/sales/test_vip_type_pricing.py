@@ -7,11 +7,10 @@ import itertools
 from typing import Any
 
 from fastapi.testclient import TestClient
-from sqlalchemy import update
+from sqlalchemy import text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.customers.adapters.tables import CustomerRow
 from tests.pricing_switches import set_switches
 from tests.vip_type import make_type, price_type, put_in_type
 
@@ -148,7 +147,7 @@ def test_the_frozen_vip_column_is_not_read(client: TestClient, engine: Engine) -
     make_type(engine, is_vip=True)
     customer_id = _customer(client)
     with Session(engine) as session:
-        session.execute(update(CustomerRow).values(is_vip=True))
+        session.execute(text("update customer set is_vip = 1"))
         session.commit()
 
     sale = _sold(client, product_id, customer_id, "5")

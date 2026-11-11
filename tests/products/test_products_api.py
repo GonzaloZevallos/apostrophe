@@ -4,12 +4,11 @@ from datetime import UTC, date, datetime
 from typing import Any
 
 from fastapi.testclient import TestClient
-from sqlalchemy import select, text, update
+from sqlalchemy import select, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.customer_types.adapters.tables import CustomerTypePriceRow
-from app.products.adapters.tables import PriceEntryRow
 from tests.conftest import MovableClock
 from tests.fakes.archive import archive_by_hand
 from tests.pricing_switches import set_switches
@@ -486,7 +485,7 @@ def test_a_migrated_business_with_no_vip_type_shows_no_vip_price(
     variety_id = _register(client)["id"]
     _price(client, variety_id, **GOLD_WITH_VIP)
     with Session(engine) as session:
-        session.execute(update(PriceEntryRow).values(vip_price=9_000))
+        session.execute(text("update price_entry set vip_price = 9000"))
         session.commit()
 
     shown = client.get(f"/api/products/{variety_id}/prices").json()
