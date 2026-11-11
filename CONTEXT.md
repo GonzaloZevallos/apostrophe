@@ -61,7 +61,7 @@ _Avoid_: client, buyer, contact, user
 _In the app_: Customer
 
 **Phone number**:
-Dato de contacto opcional de un Customer, guardado en una sola forma internacional: uno tipeado con + y el código de un país de la lista sigue la regla de ese país, uno con otro código se guarda como + y 8 a 15 dígitos, y uno sin + se lee con la regla del Phone country del Business (la de Argentina sigue siendo la de hoy: siempre celular, +54 9 y 10 dígitos), o se rechaza si no hay ninguno. Un valor en blanco significa que no hay ninguno, y dos Customers de un Business nunca comparten uno. Se muestra agrupado según el país de su propio código, nunca según el Phone country (p. ej. +598 99 123 456), y tal como está guardado cuando su código no está en la lista o su largo no tiene plantilla; agrupar solo agrega espacios y guiones. En la app: Phone.
+Dato de contacto opcional de un Customer, guardado en una sola forma internacional: uno tipeado con + sigue la regla del país de su código (o se guarda como + y 8 a 15 dígitos si el código no está en la lista), y uno sin + se lee con la regla del Phone country que muestra el formulario, o se rechaza con Other. Un valor en blanco significa que no hay ninguno, dos Customers de un Business nunca comparten uno, y un número mandado sin tocar al editar se conserva sin leer ningún país. Se muestra agrupado según el país de su propio código (p. ej. +598 99 123 456), y tal como está guardado cuando su código no está en la lista o su largo no tiene plantilla; agrupar solo agrega espacios y guiones. En la app: Phone.
 _Avoid_: contact, handle, username, identifier
 _In the app_: Phone
 
@@ -588,15 +588,15 @@ El Customer type "VIP" que la actualización creó en cada Business existente, c
 _Avoid_: VIP mark, VIP flag, default type
 
 **Phone country**:
-El país con el que un Business lee un Phone number tipeado sin + ni código de país: uno de una lista fija (Argentina, Uruguay, Chile, Paraguay, Brazil, Mexico, Spain, United States), cada uno con su propia regla, o ninguno. Los Businesses existentes quedan en Argentina y uno nuevo arranca sin ninguno; se cambia solo en Settings → Business y nunca reescribe un número guardado. En la app: Phone country.
-_Avoid_: default country, locale, region, country setting
+El país con el que se lee un Phone number tipeado sin + ni código de país, elegido por número en el formulario del Customer entre una lista fija (Argentina, Uruguay, Chile, Paraguay, Brazil, Mexico, Spain, United States) o Other. No se guarda, porque la forma internacional del número lo lleva; cuando el número empieza con +, lo decide su código y el campo queda bloqueado. Ya no es una configuración del Business ni está en Settings (ADR-0083, que reemplaza a ADR-0082). En la app: Phone country.
+_Avoid_: default country, business country, locale, region, country setting
 
 **Sale number**:
 El número correlativo de una Sale dentro de su Business, que se asigna una sola vez al guardarla, en orden de guardado, empezando en 1. Nunca cambia ni se reutiliza, aunque se borre la Sale que lo tenía, y no revela nada de ningún otro Business. Las Sales que ya existían se numeraron una sola vez por fecha y después por orden de registro. _In the app_: Sale #N.
 _Avoid_: order number, invoice number, id, ticket, receipt number
 
 **Selector**:
-El único control para elegir una opción de un Growable set: un campo con etiqueta que en el teléfono abre su lista en una Sheet, como su propia entrada del historial, y en la computadora abre un desplegable con teclado. Tiene búsqueda con más de 8 opciones, nunca reordena las opciones, muestra con la marca "no longer available" una elección que ya no se ofrece, y nunca parece vacío mientras carga. _In the app_: no tiene palabra propia; se ve como la etiqueta de su campo.
+El único control para elegir una opción de un Growable set: un campo con etiqueta que en el teléfono abre su lista en una Sheet, como su propia entrada del historial, y en la computadora abre un desplegable con teclado. Tiene búsqueda con más de 8 opciones, nunca reordena las opciones, muestra con la marca "no longer available" una elección que ya no se ofrece, y nunca parece vacío mientras carga. Puede estar bloqueado, con su valor a la vista y un motivo visible en palabras, cuando otra cosa del formulario decide el valor (como el + de un Phone number); bloqueado, su lista nunca se abre. _In the app_: no tiene palabra propia; se ve como la etiqueta de su campo.
 _Avoid_: dropdown, picker, select, chooser, combobox, chips
 
 **Growable set**:
@@ -606,3 +606,7 @@ _Avoid_: dynamic list, open set, custom list, user list
 **Fixed set**:
 Un conjunto de opciones con el que la app viene y que ninguna decisión tomada deja crecer, como Today · Week · Month. Se declara en `web/src/components/fixedSets.ts` con un motivo no vacío, y es lo único de donde chips, pills, Pestanas y controles de radio toman sus opciones. Ningún conjunto leído de los datos o la configuración de un Business es nunca un Fixed set (docs/adr/0074-fixed-chip-sets-are-a-branded-type-declared-in-one-registry-the-native-select-is-banned-and-the-selector-is-the-only-control-for-a-growable-set.md). En la app: no tiene palabra propia.
 _Avoid_: enum, static list, constant set, hard-coded options
+
+**Detected country**:
+El Phone country que el formulario de un Customer propone por defecto, calculado solo en el dispositivo: la primera región de idioma del teléfono que está en la lista; si no hay, el país de su zona horaria, cuando está en la lista; si no, Other. Nunca se guarda ni se envía como tal, no hace ninguna llamada de red, y el formulario nunca recuerda una elección. En la app: no tiene palabra propia; se ve como el valor del campo Phone country.
+_Avoid_: guessed country, auto-detect, geolocation, locale, default country
