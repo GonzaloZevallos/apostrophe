@@ -77,7 +77,9 @@ class AskedAgainPriceBook:
         self._present = present
         self._asked = 0
 
-    def for_variety(self, variety_id: int, day: date) -> VarietyPricing | None:
+    def for_variety(
+        self, variety_id: int, day: date, customer_type_id: int | None = None
+    ) -> VarietyPricing | None:
         self._asked += 1
         if self._asked > 1 and not self._present:
             return None

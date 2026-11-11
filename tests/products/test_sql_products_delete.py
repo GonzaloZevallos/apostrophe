@@ -367,7 +367,9 @@ class _PricesStaleOnce(SqlPriceBook):
         super().__init__(session, BUSINESS)
         self._stale: VarietyPricing | None = stale
 
-    def for_variety(self, variety_id: int, day: date) -> VarietyPricing | None:
+    def for_variety(
+        self, variety_id: int, day: date, customer_type_id: int | None = None
+    ) -> VarietyPricing | None:
         stale, self._stale = self._stale, None
         return stale if stale is not None else super().for_variety(variety_id, day)
 

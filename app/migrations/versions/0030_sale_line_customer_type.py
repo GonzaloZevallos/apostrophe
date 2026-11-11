@@ -28,6 +28,12 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    with op.batch_alter_table("sale_line") as batch:
-        batch.drop_column("customer_type_name")
-        batch.drop_column("customer_type_id")
+    # The first step of a walk down from head: SQLite ignores `PRAGMA foreign_keys` once a
+    # write transaction is open, so foreign keys go off before this step's first write, as
+    # 0029 and 0028 do, for the rebuilds of `sale` and `customer` further down. They are not
+    # put back: every new connection sets the pragma on again in `app/db.py`.
+    raw = op.get_bind().connection.dbapi_connection
+    assert raw is not None
+    raw.execute("PRAGMA foreign_keys=OFF")
+    op.drop_column("sale_line", "customer_type_name")
+    op.drop_column("sale_line", "customer_type_id")
