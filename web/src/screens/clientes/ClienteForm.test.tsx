@@ -23,6 +23,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { queryClient, setCurrentPath, setNavigate } from '../../queryClient'
 import ClienteForm from './ClienteForm'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
+import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 function Business({ children }: { children: ReactNode }) {
@@ -236,6 +237,35 @@ test('a duplicate phone is refused on the phone field, keeping what was typed', 
   expect(await screen.findByRole('alert')).toHaveTextContent('That phone number already belongs to another customer')
   expect(screen.getByLabelText('Phone')).toHaveValue('+5491131785094')
   expect(screen.getByLabelText('Name')).toHaveValue('Nico')
+})
+
+test('a number without + in a business with no Phone country asks for + and the country code', async () => {
+  api.mockResolvedValue(
+    jsonResponse(422, { detail: 'refused', code: 'customer.phone_needs_country_code' }),
+  )
+  renderForm(CUSTOMER_NEW)
+
+  await userEvent.type(screen.getByLabelText('Phone'), '099 123 456')
+  await userEvent.type(screen.getByLabelText('Name'), 'Nico')
+  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+
+  expect(await screen.findByRole('alert')).toHaveTextContent('Start the number with + and the country code.')
+  expect(screen.getByLabelText('Phone')).toHaveValue('099 123 456')
+})
+
+test('a number that does not fit asks for its area code, or + and the country code', async () => {
+  api.mockResolvedValue(
+    jsonResponse(422, { detail: 'refused', code: 'customer.phone_invalid' }),
+  )
+  renderForm(CUSTOMER_NEW)
+
+  await userEvent.type(screen.getByLabelText('Phone'), '2345')
+  await userEvent.type(screen.getByLabelText('Name'), 'Nico')
+  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+
+  expect(await screen.findByRole('alert')).toHaveTextContent(
+    'Enter the number with its area code, or start with + and the country code.',
+  )
 })
 
 test('edit loads the existing customer and saves the change', async () => {
@@ -754,6 +784,27 @@ test('a type deleted meanwhile (404 customer_type.not_found) clears the choice, 
   expect(field).toHaveTextContent('No type')
   expect(field.getAttribute('aria-describedby')).toBe(refusal.id)
   expect(screen.queryByText('la ficha')).not.toBeInTheDocument()
+})
+
+const PLACEHOLDERS: readonly (readonly [string | null, string])[] = [
+  ['AR', CUSTOMERS_TEXT.phoneHintAR],
+  ['UY', CUSTOMERS_TEXT.phoneHintUY],
+  ['CL', CUSTOMERS_TEXT.phoneHintCL],
+  ['PY', CUSTOMERS_TEXT.phoneHintPY],
+  ['BR', CUSTOMERS_TEXT.phoneHintBR],
+  ['MX', CUSTOMERS_TEXT.phoneHintMX],
+  ['ES', CUSTOMERS_TEXT.phoneHintES],
+  ['US', CUSTOMERS_TEXT.phoneHintUS],
+  [null, CUSTOMERS_TEXT.phoneHintNone],
+]
+
+test.each(PLACEHOLDERS)('the phone field shows the example of the business Phone country %s', async (country, hint) => {
+  stubFetchWithSettings(true, true, [], country)
+  renderForm(CUSTOMER_NEW)
+
+  await waitFor(() => {
+    expect(screen.getByLabelText('Phone')).toHaveAttribute('placeholder', hint)
+  })
 })
 
 describe('history', () => {

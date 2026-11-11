@@ -131,7 +131,7 @@ Criterios de éxito, scroll al cambiar de pantalla (GH-480). Se verifican a 320,
 ### Settings
 
 - **Una pantalla que reúne cada configuración de todo el Business, en grupos, y nada más.** Los grupos, en este orden (el comportamiento de cada grupo es de su dueño):
-  - **Business**: el nombre del Business (accounts.md). Toast "Business renamed".
+  - **Business**: el nombre del Business y su Phone country (accounts.md). Toast "Saved".
   - **Users**: los socios por email, ordenados por email, el que inició sesión marcado "you", e "Invite a partner", que crea un link nuevo para sumarse por toque, para copiar o compartir (accounts.md). Sin lista de Invitations, sin revocar, sin roles.
   - **Prices** (pricing-settings.md), en `/settings/prices`:
     - los dos interruptores, Bulk price y VIP customers;

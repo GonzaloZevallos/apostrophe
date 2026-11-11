@@ -19,6 +19,7 @@ from app.accounts.adapters.deps import (
     get_signer,
     raise_unauthenticated,
 )
+from app.accounts.adapters.phone_country_router import PhoneCountryOption, phone_country_options
 from app.accounts.adapters.sql_accounts import SqlAccounts
 from app.accounts.application import invitations, manage_business, reset_password
 from app.accounts.application.invitations import EmailTaken
@@ -97,6 +98,9 @@ class BusinessOut(BaseModel):
     # The stored language and the ones a business may switch to, for the Settings control.
     language: str
     selectable_languages: list[str]
+    # The stored Phone country code (or null) and the countries Settings lists (docs/adr/0082).
+    phone_country: str | None
+    phone_countries: list[PhoneCountryOption]
 
 
 class BusinessPatchIn(BaseModel):
@@ -241,6 +245,8 @@ def _business_out(profile: manage_business.BusinessProfile, settings: Settings) 
         users=[UserOut(email=e) for e in profile.user_emails],
         language=profile.language,
         selectable_languages=[language.tag for language in settings.selectable_languages],
+        phone_country=profile.phone_country,
+        phone_countries=phone_country_options(),
     )
 
 

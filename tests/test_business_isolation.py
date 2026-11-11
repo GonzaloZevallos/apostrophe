@@ -304,6 +304,7 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
     # `de` is selectable in this module (the `settings` fixture below), so the body really
     # changes the stored language of whichever business calls it.
     ("PUT", "/business/language"): {"language": "de"},
+    ("PUT", "/business/phone-country"): {"phone_country": "UY"},
     ("POST", "/sales"): {
         "payment": "owing",
         "customer_id": 1,

@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef } from 'react'
-import { CUSTOMERS_TEXT } from '../../copy/customers'
+import { usePhoneCountry } from '../../api/phoneCountry'
+import { CUSTOMERS_TEXT, phoneHint } from '../../copy/customers'
 import { COMMON_TEXT } from '../../copy/common'
 /**
  * The shared "Nombre / Teléfono" fields (`NuevaVentaCliente.dc.html`,
@@ -36,6 +37,7 @@ export default function CustomerFields({
   const nameRef = useRef<HTMLInputElement>(null)
   const phoneId = useId()
   const phoneHintId = useId()
+  const phoneCountry = usePhoneCountry()
 
   // The drawing opens with Name focused (`NuevaVentaCliente.dc.html`): once, on mount.
   useEffect(() => {
@@ -76,6 +78,7 @@ export default function CustomerFields({
             autoComplete="off"
             value={value.phone}
             aria-describedby={phoneHintId}
+            placeholder={phoneCountry.loaded ? phoneHint(phoneCountry.country) : undefined}
             onChange={(event) => onChange({ ...value, phone: event.target.value })}
           />
           {phoneError !== null && (
