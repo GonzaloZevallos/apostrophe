@@ -116,5 +116,6 @@
   "paid": "Paid",
   "paymentMethod": "Payment method",
   "chooseHowTheyPaid": "Choose how they paid.",
+  "paymentMethodUnavailable": "That payment method is no longer available. Choose another one.",
   "noType": "No type"
 }

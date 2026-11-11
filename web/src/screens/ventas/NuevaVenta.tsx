@@ -71,6 +71,7 @@ import {
   toHundredths,
   validateSale,
 } from '../../sales/pricing'
+import { paymentMethodName } from '../../sales/paymentMethods'
 import { OWING_HINT, SALES_TEXT } from '../../copy/sales'
 import type { Variety } from '../Variedades'
 import NuevaVentaCliente from './NuevaVentaCliente'
@@ -197,6 +198,7 @@ function NuevaVentaForm() {
   // Held only while the state is Paid: leaving Paid empties it, so Paid → Owing → Paid starts empty.
   const [method, setMethod] = useState<PaymentMethod | null>(null)
   const [methodRefused, setMethodRefused] = useState(false)
+  const [methodGone, setMethodGone] = useState<string | null>(null)
   const methodFieldRef = useRef<HTMLButtonElement | null>(null)
   const customerSheet = useSheet(1)
   // `useSheet(1).isOpen` is true for any sheet at level 1, a line's Product list included:
@@ -291,6 +293,7 @@ function NuevaVentaForm() {
     setPayState(next)
     setMethod(null)
     setMethodRefused(false)
+    setMethodGone(null)
   }
 
   function updateLine(key: string, patch: Partial<LineState>): void {
@@ -592,9 +595,9 @@ function NuevaVentaForm() {
           else if (override.field === 'date') setDateError(override.message)
           else if (override.field === 'payment') setPaymentError(override.message)
           else if (override.field === 'method') {
-            // The method was archived or deleted meanwhile: the form stays, the field asks again.
-            setMethod(null)
-            setMethodRefused(true)
+            // The method was archived or deleted meanwhile: the form stays and the field keeps the
+            // chosen method with the "no longer available" mark until the person picks another.
+            if (method !== null) setMethodGone(paymentMethodName(queryClient, method) ?? '')
             void queryClient.invalidateQueries({ queryKey: keys.paymentMethods() })
           }
           else setFormError(override.message)
@@ -751,11 +754,13 @@ function NuevaVentaForm() {
                 onMethod={(next) => {
                   setMethod(next)
                   setMethodRefused(false)
+                  setMethodGone(null)
                 }}
                 owingDisabled={customer === null}
                 owingDescription={OWING_HINT}
                 listHost={listHost}
                 methodRefused={methodRefused}
+                methodGone={methodGone}
                 methodRef={methodFieldRef}
               />
               {paymentError !== null && (

@@ -44,7 +44,12 @@ import { chipDate, formatDateShort } from '../../format/dates'
 import { formatMoney } from '../../format/money'
 import { readMoneyInput } from '../../format/parse'
 import { GENERIC_REFUSAL } from './ClienteForm'
-import { paymentMethodOf, paymentMethodValue, usePaymentMethodOptions } from '../../sales/paymentMethods'
+import {
+  paymentMethodName,
+  paymentMethodOf,
+  paymentMethodValue,
+  usePaymentMethodOptions,
+} from '../../sales/paymentMethods'
 import { COMMON_TEXT } from '../../copy/common'
 import { PAYMENTS_TEXT } from '../../copy/payments'
 
@@ -133,6 +138,7 @@ export default function Cobro({
   const [amountError, setAmountError] = useState<string | null>(null)
   const [dateError, setDateError] = useState<string | null>(null)
   const [methodRefused, setMethodRefused] = useState(false)
+  const [methodGone, setMethodGone] = useState<string | null>(null)
   const methodField = useRef<HTMLButtonElement>(null)
   const methodOptions = usePaymentMethodOptions()
   const [offline, setOffline] = useState(false)
@@ -206,9 +212,9 @@ export default function Cobro({
       } else if (caught instanceof ApiError) {
         if (caught.code === 'payment.method_required') setMethodRefused(true)
         else if (caught.code === 'payment_method.unavailable') {
-          // The method was archived or deleted meanwhile: the form stays, the field asks again.
-          setMethod(null)
-          setMethodRefused(true)
+          // The method was archived or deleted meanwhile: the form stays and the field keeps the
+          // chosen method with the "no longer available" mark until the person picks another.
+          if (method !== null) setMethodGone(paymentMethodName(queryClient, method) ?? '')
           void queryClient.invalidateQueries({ queryKey: keys.paymentMethods() })
         }
         else if (caught.code === 'payment.future_date') setDateError(PAYMENTS_TEXT.dateInFuture)
@@ -299,12 +305,18 @@ export default function Cobro({
                 onChange={(next) => {
                   setMethod(paymentMethodOf(next))
                   setMethodRefused(false)
+                  setMethodGone(null)
                 }}
                 fieldRef={methodField}
-                describedBy={methodRefused ? methodErrorId : undefined}
+                selected={method !== null && methodGone !== null ? { value: String(method), label: methodGone } : undefined}
+                describedBy={methodRefused || methodGone !== null ? methodErrorId : undefined}
               />
             </div>
-            {methodRefused && <FieldRefusal id={methodErrorId}>{t('common:chooseHowTheyPaid')}</FieldRefusal>}
+            {methodGone !== null ? (
+              <FieldRefusal id={methodErrorId}>{t('common:paymentMethodUnavailable')}</FieldRefusal>
+            ) : (
+              methodRefused && <FieldRefusal id={methodErrorId}>{t('common:chooseHowTheyPaid')}</FieldRefusal>
+            )}
           </div>
 
           {previewAmount !== null && preview.data !== undefined && (

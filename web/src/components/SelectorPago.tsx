@@ -32,6 +32,8 @@ export interface SelectorPagoProps {
   listHost?: HTMLElement | null
   /** The seller tried to save under Paid with no method: the field shows its refusal. */
   methodRefused?: boolean
+  /** The server answered that the chosen method is no longer available: its name, kept in the field with the mark. */
+  methodGone?: string | null
   methodRef?: Ref<HTMLButtonElement>
 }
 
@@ -44,6 +46,7 @@ export default function SelectorPago({
   owingDescription,
   listHost,
   methodRefused = false,
+  methodGone = null,
   methodRef,
 }: SelectorPagoProps) {
   const { t } = useTranslation()
@@ -80,10 +83,15 @@ export default function SelectorPago({
               onChange={(next) => onMethod(paymentMethodOf(next))}
               listHost={listHost}
               fieldRef={methodRef}
-              describedBy={methodRefused ? refusalId : undefined}
+              selected={method !== null && methodGone !== null ? { value: String(method), label: methodGone } : undefined}
+              describedBy={methodRefused || methodGone !== null ? refusalId : undefined}
             />
           </div>
-          {methodRefused && <FieldRefusal id={refusalId}>{t('common:chooseHowTheyPaid')}</FieldRefusal>}
+          {methodGone !== null ? (
+            <FieldRefusal id={refusalId}>{t('common:paymentMethodUnavailable')}</FieldRefusal>
+          ) : (
+            methodRefused && <FieldRefusal id={refusalId}>{t('common:chooseHowTheyPaid')}</FieldRefusal>
+          )}
         </div>
       )}
     </div>

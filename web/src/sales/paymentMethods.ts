@@ -9,7 +9,7 @@
  * reads the list again.
  */
 
-import { useQuery } from '@tanstack/react-query'
+import { type QueryClient, useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { type PaymentMethod, readPaymentMethods } from '../api/payments'
 import { keys } from '../api/keys'
@@ -62,4 +62,10 @@ export function paymentMethodOf(value: string | null): PaymentMethod | null {
 /** The Selector value of a chosen method id. */
 export function paymentMethodValue(method: PaymentMethod | null): string | null {
   return method === null ? null : String(method)
+}
+
+/** The name the list showed for a method id, read before the list is read again (never a guess). */
+export function paymentMethodName(queryClient: QueryClient, method: PaymentMethod): string | null {
+  const list = queryClient.getQueryData<readonly { id: number; name: string }[]>(keys.paymentMethods())
+  return list?.find((item) => item.id === method)?.name ?? null
 }

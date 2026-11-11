@@ -417,6 +417,24 @@ describe('the form as drawn', () => {
     expect(screen.getByLabelText('Amount')).toHaveValue('$ 11.000')
   })
 
+  test('a 404 payment_method.unavailable keeps the form and the chosen method, marked as no longer available', async () => {
+    await openForm({
+      'POST /customers/1/payments': () => jsonResponse(404, { detail: 'gone', code: 'payment_method.unavailable' }),
+    })
+    const amount = screen.getByLabelText('Amount')
+    await userEvent.clear(amount)
+    await userEvent.type(amount, '5000')
+    await choosePaymentMethod(userEvent, 'Cash')
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    expect(
+      await screen.findByText('That payment method is no longer available. Choose another one.'),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^Payment method/ })).toHaveTextContent('Cash')
+    expect(screen.queryByText('Choose how they paid.')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Amount')).toHaveValue('$ 5.000')
+  })
+
   test('a typed amount shows with dot thousands and the POST carries the number', async () => {
     await openForm()
     const amount = screen.getByLabelText('Amount')

@@ -10,12 +10,16 @@ export const METHODS_ANSWER = [
   { id: 2, name: 'Transfer', icon: 'bank', position: 2, in_use: false },
 ]
 
-export function withPaymentMethods(handler: (...args: never[]) => unknown): Handler {
+/** `methods` is read at every request, so a test can archive a method between two reads. */
+export function withPaymentMethods(
+  handler: (...args: never[]) => unknown,
+  methods: () => readonly object[] = () => METHODS_ANSWER,
+): Handler {
   const inner = handler as unknown as Handler
   return (path, init) =>
     String(path) === '/api/payment-methods' && (init?.method ?? 'GET') === 'GET'
       ? Promise.resolve(
-          new Response(JSON.stringify(METHODS_ANSWER), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+          new Response(JSON.stringify(methods()), { status: 200, headers: { 'Content-Type': 'application/json' } }),
         )
       : inner(path, init)
 }
