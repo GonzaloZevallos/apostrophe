@@ -38,6 +38,8 @@ export interface LinePreview {
   pricePerGram: number
   lineTotal: number
   gramsHundredths: number
+  /** The Customer's type name, when the rule is `'type'`: the badge's word. */
+  typeName: string | null
 }
 
 /** `scrollIntoView` doesn't exist in the jsdom the component's own tests render
@@ -142,7 +144,7 @@ export default function NuevaVentaLinea({
               {preview.rule !== 'gift' && (
                 <span className="nueva-venta__linea-preciogramo cifra-n">{money.money(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
               )}
-              <ReglaInsignia rule={preview.rule} />
+              <ReglaInsignia rule={preview.rule} typeName={preview.typeName} />
               <span className="nueva-venta__linea-total cifra-s">{money.money(preview.lineTotal)}</span>
             </div>
           )
@@ -250,7 +252,7 @@ export default function NuevaVentaLinea({
           {preview.rule !== 'gift' && (
             <span className="nueva-venta__linea-preciogramo cifra-n">{money.money(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
           )}
-          <ReglaInsignia rule={preview.rule} />
+          <ReglaInsignia rule={preview.rule} typeName={preview.typeName} />
           <span className="nueva-venta__linea-total cifra-s">{money.money(preview.lineTotal)}</span>
         </div>
       )}

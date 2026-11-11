@@ -24,6 +24,7 @@ import SinConexion from '../../components/SinConexion'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
 import Boton from '../../components/Boton'
 import PriceFields, { FieldError } from './PriceFields'
+import { useVipPriceSettings } from './useVipPriceField'
 import { PRICE_SAVED, VARIETIES_TEXT } from '../../copy/varieties'
 import {
   fieldOfCode,
@@ -52,7 +53,7 @@ export interface PriceFormProps {
 export default function PriceForm({
   varietyId,
   today,
-  settings,
+  settings: switches,
   onDone,
   onCancel,
   onDirtyChange,
@@ -61,6 +62,7 @@ export default function PriceForm({
   titleId,
   titleRef,
 }: PriceFormProps) {
+  const settings = useVipPriceSettings(switches)
   const queryClient = useQueryClient()
   const { t } = useTranslation()
   const money = useMoney()

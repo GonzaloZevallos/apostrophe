@@ -23,6 +23,10 @@ const ERRORS = {
   NoPriceThatDay,
 } as const
 
+/** The matrix still names the type rule `vip`; a line priced by a type's price is `type` now
+ * (the same mapping `tests/sales/test_pricing_matrix.py` makes). */
+const storedRule = (rule: string): string => (rule === 'vip' ? 'type' : rule)
+
 // The pricing matrix (`pricing-matrix.json`) is shared with `tests/sales/test_pricing_matrix.py`:
 // a rule change in the domain that isn't mirrored here breaks one side or the other.
 describe('priceLine, against the shared pricing matrix', () => {
@@ -34,7 +38,7 @@ describe('priceLine, against the shared pricing matrix', () => {
         expect(() => priceLine(input)).toThrow(ErrorClass)
       } else {
         const result = priceLine(input)
-        expect(result.rule).toBe(line.expect.rule as PricingRule)
+        expect(result.rule).toBe(storedRule(line.expect.rule) as PricingRule)
         expect(result.pricePerGram).toBe(line.expect.pricePerGram)
         expect(result.lineTotal).toBe(line.expect.lineTotal)
       }
@@ -47,7 +51,7 @@ describe('saleTotals, against the shared pricing matrix', () => {
     test(entry.name, () => {
       const results = entry.lines.map((line) => priceLine(line as LineInput))
       if ('expectRules' in entry) {
-        expect(results.map((r) => r.rule)).toEqual(entry.expectRules)
+        expect(results.map((r) => r.rule)).toEqual(entry.expectRules.map(storedRule))
       }
       const priced = results.map((result, i) => {
         const input = entry.lines[i] as LineInput

@@ -1768,6 +1768,14 @@ body {
   color: var(--acento);
 }
 
+.insignia--truncable {
+  display: inline-block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .insignia--deuda {
   background: var(--deuda-fondo);
   color: var(--deuda);
