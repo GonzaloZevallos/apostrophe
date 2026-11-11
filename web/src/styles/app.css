@@ -2110,13 +2110,15 @@ body {
   letter-spacing: -0.035em;
 }
 
+/* The row wraps when its figures and the badge do not fit side by side, so a narrow screen
+ * never scrolls sideways; each figure stays whole on its own line. */
 .venta-detalle__linea-inferior {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--espacio-xs);
 }
 
-/* The figure keeps its width: a long type-name badge beside it is the one that gives up room. */
 .venta-detalle__precio {
   flex-shrink: 0;
   white-space: nowrap;
