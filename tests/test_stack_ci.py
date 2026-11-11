@@ -9,7 +9,8 @@ the suites are skipped only by their `changes` flag, and the `e2e` aggregator (t
 the always-on ones that carries `always()`) is pinned apart: it needs `changes` and `e2e-shard`,
 reads only `needs.e2e-shard.result` and runs no checkout, no `uv` and no check;
 every job `ci-ok` needs has a judge in `scripts/ci_verdict.py` (except `changes`);
-`ci_covers.web-e2e` names the aggregator, and its `failed` regex is read from `stack.yaml`;
+end-to-end is judged by GitHub CI only (owner's rule, GH-699): `npm --prefix web run e2e` is
+`CI_ONLY`, no local check runs Playwright, `stack.yaml` has no `ci_covers`, and `ci-ok` needs `e2e`;
 the workflow's permissions, concurrency, fetch depth, fork guard, hidden-file uploads and output
 names are pinned.
 When `stack.yaml` has `docs:`, `docs.generate` is a known step that exactly one gated job runs
@@ -128,9 +129,8 @@ CI_ONLY: dict[str, str] = {
         "&& exit 1"
     ): "the coverage job's own failure reason; a warning in ci-ok",
     VERDICT_RUN: "the merge condition: one verdict over every job's result and the `changes` flags",
-    E2E_GATE_RUN: (
-        "the `e2e` aggregator: green only when every `e2e-shard` is; `ci_covers` names it"
-    ),
+    E2E_GATE_RUN: "the `e2e` aggregator: green only when every `e2e-shard` is",
+    E2E_RUN: "end-to-end is judged by GitHub CI only (owner's rule, GH-699)",
     (
         'git diff --exit-code -- docs/architecture/generated docs/api && test -z "$(git status '
         '--porcelain --untracked-files=all -- docs/architecture/generated docs/api)"'
@@ -150,7 +150,6 @@ CI_FORMS: dict[str, str] = {
     "tests": PYTEST_RUN,
     "tests-fast": PYTEST_RUN,
     "web-tests": VITEST_RUN,
-    "web-e2e": E2E_RUN,
 }
 
 # Jobs that always run: no `if:` other than `always()`.
@@ -1075,10 +1074,10 @@ def test_every_output_the_workflow_reads_is_one_a_producer_emits() -> None:
 
 
 def test_an_untied_ci_form_is_refused() -> None:
-    forms = {**CI_FORMS, "web-e2e": "npm --prefix web run e2e -- --shard=1/1"}
+    forms = {**CI_FORMS, "web-tests": "npm --prefix web test -- --shard=1/1"}
     problems = _problems(WORKFLOW, forms=forms)
     assert (
-        "check 'web-e2e': CI_FORMS command (npm --prefix web run e2e -- --shard=1/1) "
+        "check 'web-tests': CI_FORMS command (npm --prefix web test -- --shard=1/1) "
         "is run by no gated job" in problems
     )
 
@@ -1330,7 +1329,7 @@ def test_every_ci_only_entry_has_a_reason(command: str) -> None:
     assert CI_ONLY[command].strip()
 
 
-# --- the e2e aggregator, the judges and ci_covers -------------------------------------------------
+# --- the e2e aggregator, the judges and the CI-only e2e rule (GH-699) ---------------------------
 
 
 def _gate_messages(problems: list[str]) -> list[str]:
@@ -1404,111 +1403,43 @@ def test_a_ci_ok_need_with_no_judge_is_refused() -> None:
     assert "ci-ok needs 'deploy-preview', which scripts/ci_verdict.py does not judge" in problems
 
 
-def ci_covers_problems(stack: Data, workflow: Data) -> list[str]:
-    """What keeps `ci_covers.web-e2e` from naming a job that covers it."""
-    entry = cast("Data", stack.get("ci_covers", {})).get("web-e2e")
-    if entry is None:
-        return ["ci_covers has no web-e2e entry"]
+PLAYWRIGHT_MARKERS = ("playwright", "run e2e", "affected.py e2e")
+
+
+def playwright_problems(stack: Data) -> list[str]:
+    """Every local check or affected form whose command runs Playwright (GH-699)."""
     problems: list[str] = []
-    if "web-e2e" not in stack["checks"]:
-        problems.append("ci_covers.web-e2e is not in checks")
-    if entry.get("job") != E2E_GATE:
-        problems.append(f"ci_covers.web-e2e.job is {entry.get('job')!r}, not {E2E_GATE!r}")
-    if E2E_GATE not in _needs(workflow["jobs"]["ci-ok"]):
-        problems.append(f"{E2E_GATE!r} is not in ci-ok.needs")
-    problems.extend(_failed_regex_problems(str(entry.get("failed", ""))))
+    for section in ("checks", "affected_checks"):
+        for name, command in cast("Data", stack.get(section, {})).items():
+            if any(marker in str(command) for marker in PLAYWRIGHT_MARKERS):
+                problems.append(f"{section}.{name} runs Playwright: {command}")
     return problems
 
 
-SHOULD_MATCH = ("  \u2718  12 [mobile] \u203a sales.spec.ts:40:5 \u203a x", "  3 failed")
-SHOULD_NOT_MATCH = (
-    "  \u2713  217 [mobile] \u203a x (1.2s)",
-    "  217 passed (25.3m)",
-    "  1 flaky",
-)
+def test_no_local_check_runs_playwright() -> None:
+    assert playwright_problems(STACK) == []
+    assert "web-e2e" not in STACK["checks"]
+    assert "web-e2e" not in STACK["affected_checks"]
 
 
-# A group with an unbounded repeat inside it that is itself repeated: GH-453's refused shape.
-NESTED_REPEAT = re.compile(r"\([^()]*[+*][^()]*\)[+*{]")
-
-
-def _failed_regex_problems(pattern: str) -> list[str]:
-    if len(pattern) > 200:
-        return [f"ci_covers.web-e2e.failed is {len(pattern)} characters, over 200"]
-    if NESTED_REPEAT.search(pattern):
-        return ["ci_covers.web-e2e.failed has a nested unbounded repetition"]
-    try:
-        compiled = re.compile(pattern)
-    except re.error as error:
-        return [f"ci_covers.web-e2e.failed does not compile: {error}"]
-    problems = [
-        f"ci_covers.web-e2e.failed does not match {line!r}"
-        for line in SHOULD_MATCH
-        if compiled.search(line) is None
-    ]
-    problems.extend(
-        f"ci_covers.web-e2e.failed matches {line!r}"
-        for line in SHOULD_NOT_MATCH
-        if compiled.search(line) is not None
-    )
-    return problems
-
-
-def test_ci_covers_names_the_aggregator_and_its_regex_separates_failures() -> None:
-    assert ci_covers_problems(STACK, WORKFLOW) == []
-
-
-def test_ci_covers_is_the_last_key_of_stack_yaml() -> None:
-    assert list(STACK)[-1] == "ci_covers"
-    assert STACK["ci_covers"]["web-e2e"]["job"] == E2E_GATE
-
-
-def test_a_ci_covers_job_that_is_the_matrix_is_refused() -> None:
+def test_a_local_check_that_runs_playwright_is_refused() -> None:
     stack = copy.deepcopy(STACK)
-    stack["ci_covers"]["web-e2e"]["job"] = E2E_SHARD
-    assert ci_covers_problems(stack, WORKFLOW) == [
-        "ci_covers.web-e2e.job is 'e2e-shard', not 'e2e'"
+    stack["checks"]["web-e2e"] = "npm --prefix web run e2e"
+    affected = "uv run --no-project python scripts/affected.py e2e {base}"
+    stack["affected_checks"]["web-e2e"] = affected
+    stack["checks"]["browser"] = "npx playwright test"
+    assert playwright_problems(stack) == [
+        "checks.web-e2e runs Playwright: npm --prefix web run e2e",
+        "checks.browser runs Playwright: npx playwright test",
+        f"affected_checks.web-e2e runs Playwright: {affected}",
     ]
 
 
-def test_a_ci_covers_for_a_check_that_is_not_declared_is_refused() -> None:
-    stack = copy.deepcopy(STACK)
-    del stack["checks"]["web-e2e"]
-    assert "ci_covers.web-e2e is not in checks" in ci_covers_problems(stack, WORKFLOW)
-
-
-def test_a_ci_covers_job_outside_ci_ok_needs_is_refused() -> None:
-    workflow = _mutated()
-    workflow["jobs"]["ci-ok"]["needs"].remove(E2E_GATE)
-    assert "'e2e' is not in ci-ok.needs" in ci_covers_problems(STACK, workflow)
-
-
-def test_a_missing_ci_covers_is_refused() -> None:
-    stack = {key: value for key, value in copy.deepcopy(STACK).items() if key != "ci_covers"}
-    assert ci_covers_problems(stack, WORKFLOW) == ["ci_covers has no web-e2e entry"]
-
-
-def test_a_failed_regex_over_200_characters_or_not_compiling_is_refused() -> None:
-    assert _failed_regex_problems("x" * 201) == [
-        "ci_covers.web-e2e.failed is 201 characters, over 200"
-    ]
-    [problem] = _failed_regex_problems("(unclosed")
-    assert problem.startswith("ci_covers.web-e2e.failed does not compile: ")
-
-
-def test_a_failed_regex_that_misses_a_failure_or_matches_a_pass_is_refused() -> None:
-    assert "ci_covers.web-e2e.failed does not match '  3 failed'" in _failed_regex_problems(
-        "\u2718"
-    )
-    assert "ci_covers.web-e2e.failed matches '  1 flaky'" in _failed_regex_problems(
-        "\u2718|failed|flaky"
-    )
-
-
-def test_a_failed_regex_with_a_nested_unbounded_repetition_is_refused() -> None:
-    expected = ["ci_covers.web-e2e.failed has a nested unbounded repetition"]
-    assert _failed_regex_problems("(a+)+") == expected
-    assert _failed_regex_problems("(x*y)*b") == expected
+def test_e2e_has_no_local_cover_and_gates_through_ci_ok() -> None:
+    assert "ci_covers" not in STACK
+    assert E2E_GATE in _needs(WORKFLOW["jobs"]["ci-ok"])
+    assert E2E_RUN in CI_ONLY
+    assert E2E_RUN not in CI_FORMS.values()
 
 
 # --- the dispatch of master's workflow at a head's sha (GH-562) -----------------------------------
@@ -1668,38 +1599,33 @@ def test_a_root_checkout_before_the_guards_is_refused() -> None:
 
 
 def _dispatch_key_problems(stack: Data, workflow: Data) -> list[str]:
-    """`ci_dispatch` is the literal key of agentic-system (commit 0ca8e14c), before `ci_covers`,
-    and names a workflow file and a `workflow_dispatch` input that exist."""
+    """`ci_dispatch` is the literal key of agentic-system (commit 0ca8e14c), after `ci`, and
+    names a workflow file and a `workflow_dispatch` input that exist."""
     problems: list[str] = []
     if stack.get("ci_dispatch") != {"workflow": "ci.yml", "sha_input": "sha"}:
         problems.append("`ci_dispatch` is not workflow: ci.yml, sha_input: sha")
     keys = list(stack)
-    if "ci_dispatch" in keys and not keys.index("ci") < keys.index("ci_dispatch") < keys.index(
-        "ci_covers"
-    ):
-        problems.append("`ci_dispatch` is not between `ci` and `ci_covers`")
+    if "ci_dispatch" in keys and not keys.index("ci") < keys.index("ci_dispatch"):
+        problems.append("`ci_dispatch` is not after `ci`")
     inputs = cast("Data", _triggers(workflow).get("workflow_dispatch") or {}).get("inputs", {})
     if cast("Data", stack.get("ci_dispatch", {})).get("sha_input") not in inputs:
         problems.append("`ci_dispatch.sha_input` is not an input of `workflow_dispatch`")
     return problems
 
 
-def test_the_real_dispatch_key_is_the_literal_one_before_ci_covers() -> None:
+def test_the_real_dispatch_key_is_the_literal_one_after_ci() -> None:
     assert _dispatch_key_problems(STACK, WORKFLOW) == []
     assert (REPO_ROOT / ".github" / "workflows" / STACK["ci_dispatch"]["workflow"]).is_file()
 
 
-def test_a_dispatch_key_that_differs_or_sits_after_ci_covers_is_refused() -> None:
+def test_a_dispatch_key_that_differs_or_sits_before_ci_is_refused() -> None:
     stack = copy.deepcopy(STACK)
     stack["ci_dispatch"]["workflow"] = "other.yml"
     assert "`ci_dispatch` is not workflow: ci.yml, sha_input: sha" in _dispatch_key_problems(
         stack, WORKFLOW
     )
-    stack = {key: value for key, value in STACK.items() if key != "ci_dispatch"}
-    stack["ci_dispatch"] = STACK["ci_dispatch"]
-    assert "`ci_dispatch` is not between `ci` and `ci_covers`" in _dispatch_key_problems(
-        stack, WORKFLOW
-    )
+    stack = {"ci_dispatch": STACK["ci_dispatch"], **STACK}
+    assert "`ci_dispatch` is not after `ci`" in _dispatch_key_problems(stack, WORKFLOW)
     stack = copy.deepcopy(STACK)
     stack["ci_dispatch"]["sha_input"] = "commit"
     assert "`ci_dispatch.sha_input` is not an input of `workflow_dispatch`" in (
