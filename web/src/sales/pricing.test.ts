@@ -51,7 +51,7 @@ describe('saleTotals, against the shared pricing matrix', () => {
     test(entry.name, () => {
       const results = entry.lines.map((line) => priceLine(line as LineInput))
       if ('expectRules' in entry) {
-        expect(results.map((r) => r.rule)).toEqual(entry.expectRules.map(storedRule))
+        expect(results.map((r) => r.rule)).toEqual((entry.expectRules ?? []).map(storedRule))
       }
       const priced = results.map((result, i) => {
         const input = entry.lines[i] as LineInput
