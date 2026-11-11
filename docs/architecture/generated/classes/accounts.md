@@ -54,8 +54,6 @@ classDiagram
   }
   class sql_accounts {
   }
-  class sql_phone_country {
-  }
   class tables {
   }
   cli --> invitations
@@ -113,8 +111,6 @@ classDiagram
   sql_accounts --> invitation
   sql_accounts --> ports
   sql_accounts --> tables
-  sql_phone_country --> account
-  sql_phone_country --> tables
   tables --> account
 ```
 
@@ -430,9 +426,6 @@ classDiagram
     user(user_id: int) User #124; None
     user_by_email(email: Email) User #124; None
     users_of_business(business_id: int) list~User~
-  }
-  class SqlPhoneCountry {
-    current() PhoneCountry #124; None
   }
   class SqlUserFacts {
     user_count() int

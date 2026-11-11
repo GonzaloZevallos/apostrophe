@@ -67,7 +67,7 @@ def test_a_code_that_is_not_listed_is_refused_and_nothing_changes(
     refused = _change(client, code)
 
     assert refused.status_code == 422
-    assert refused.json()["code"] == "business.phone_country_unknown"
+    assert refused.json()["code"] == "customer.phone_country_unknown"
     detail = refused.json()["detail"]
     assert detail, "the refusal names the rule"
     # The sentence is the fixed rule, the same whatever the value was.

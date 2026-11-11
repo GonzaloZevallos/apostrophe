@@ -55,7 +55,9 @@ def _owing_customer(client: TestClient) -> int:
         f"/api/products/{product['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 1_000},
     )
-    customer = client.post("/customers", json={"name": "Juana", "phone": "11 1000-0000"}).json()
+    customer = client.post(
+        "/customers", json={"name": "Juana", "phone": "11 1000-0000", "phone_country": "AR"}
+    ).json()
     sale = client.post(
         "/sales",
         json={

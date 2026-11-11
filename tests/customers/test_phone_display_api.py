@@ -10,6 +10,7 @@ def _register(client: TestClient, name: str, phone: str | None) -> dict[str, Any
     body: dict[str, Any] = {"name": name}
     if phone is not None:
         body["phone"] = phone
+        body["phone_country"] = "AR"
     response = client.post("/customers", json=body)
     assert response.status_code == 201, response.text
     created: dict[str, Any] = response.json()

@@ -21,12 +21,16 @@ from app.money_schema import MoneyOut
 class CustomerIn(BaseModel):
     name: str
     phone: str | None = None
+    # The country a number typed without "+" is read by: a plain string, checked against
+    # the list when it is used (docs/adr/0085).
+    phone_country: str | None = None
     customer_type_id: int | None = None
 
 
 class CustomerPatchIn(BaseModel):
     name: str | None = None
     phone: str | None = None
+    phone_country: str | None = None
     customer_type_id: int | None = None
 
     def to_changes(self) -> CustomerChanges:

@@ -57,7 +57,9 @@ def _row_counts(engine: Engine) -> tuple[int, int, int]:
 
 
 def _customer(client: TestClient) -> int:
-    customer = client.post("/customers", json={"name": "Juana", "phone": "11 2345-6789"}).json()
+    customer = client.post(
+        "/customers", json={"name": "Juana", "phone": "11 2345-6789", "phone_country": "AR"}
+    ).json()
     return int(customer["id"])
 
 
@@ -306,7 +308,7 @@ def test_assign_customer_already_assigned_answers_409(client: TestClient) -> Non
     variety_id = _variety(client)
     first_customer = _customer(client)
     second_customer_response = client.post(
-        "/customers", json={"name": "Otra", "phone": "11 9876-5432"}
+        "/customers", json={"name": "Otra", "phone": "11 9876-5432", "phone_country": "AR"}
     )
     second_customer = second_customer_response.json()["id"]
     sale_id = client.post(

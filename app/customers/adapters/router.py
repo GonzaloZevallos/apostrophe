@@ -16,10 +16,11 @@ from app.customers.application.errors import (
     PhoneTaken,
     RequiredFieldCleared,
 )
-from app.customers.application.ports import Balances, PhoneCountryReader, PricingSettingsReader
+from app.customers.application.ports import Balances, PricingSettingsReader
 from app.customers.domain.customer import Customer, CustomerRuleBroken
 from app.db import get_session
 from app.http_errors import Refused, TranslateErrors
+from app.shared.phone_country import UnknownPhoneCountry
 
 router = APIRouter(prefix="/customers", tags=["customers"])
 
@@ -62,22 +63,9 @@ def get_pricing_settings(
     return factory(session, business_id)
 
 
-def get_phone_country(
-    request: Request, session: SessionDep, business_id: CurrentBusinessId
-) -> PhoneCountryReader:
-    # Same shape as the pricing settings: `app/main.py` hangs the accounts reader on
-    # `app.state` as a `(Session, business_id)` factory (docs/adr/0082).
-    factory = cast(
-        Callable[[Session, int], PhoneCountryReader],
-        request.app.state.customers_phone_country,
-    )
-    return factory(session, business_id)
-
-
 CustomersDep = Annotated[SqlCustomers, Depends(get_customers)]
 BalancesDep = Annotated[Balances, Depends(get_balances)]
 SettingsDep = Annotated[PricingSettingsReader, Depends(get_pricing_settings)]
-PhoneCountryDep = Annotated[PhoneCountryReader, Depends(get_phone_country)]
 
 
 def _out(customer: Customer, balances: Balances, types: SqlCustomerTypeLookup) -> CustomerOut:
@@ -90,7 +78,7 @@ as_http = TranslateErrors(
     [
         (404, (CustomerNotFound,)),
         (409, (PhoneTaken,)),
-        (422, (CustomerRuleBroken, RequiredFieldCleared)),
+        (422, (CustomerRuleBroken, RequiredFieldCleared, UnknownPhoneCountry)),
     ]
 )
 
@@ -120,7 +108,6 @@ def register_customer(
     body: CustomerIn,
     customers: CustomersDep,
     settings: SettingsDep,
-    phone_country: PhoneCountryDep,
     types: CustomerTypesDep,
     balances: BalancesDep,
     session: SessionDep,
@@ -130,11 +117,11 @@ def register_customer(
             customer = manage_customers.register_customer(
                 customers,
                 settings,
-                phone_country,
                 types,
                 session,
                 name=body.name,
                 phone=body.phone,
+                phone_country=body.phone_country,
                 customer_type_id=body.customer_type_id,
             )
         except CustomerTypeNotFound:
@@ -156,7 +143,6 @@ def edit_customer(
     body: CustomerPatchIn,
     customers: CustomersDep,
     settings: SettingsDep,
-    phone_country: PhoneCountryDep,
     types: CustomerTypesDep,
     balances: BalancesDep,
     session: SessionDep,
@@ -167,7 +153,13 @@ def edit_customer(
         changes = body.to_changes()
         try:
             customer = manage_customers.edit_customer(
-                customers, settings, phone_country, types, session, customer_id, changes
+                customers,
+                settings,
+                types,
+                session,
+                customer_id,
+                changes,
+                phone_country=body.phone_country,
             )
         except CustomerTypeNotFound:
             raise _type_not_found() from None

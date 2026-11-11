@@ -22,7 +22,6 @@ from app.accounts.adapters.onboarding_facts import SqlUserFacts
 from app.accounts.adapters.phone_country_router import router as phone_country_router
 from app.accounts.adapters.router import public_router as accounts_public_router
 from app.accounts.adapters.router import router as accounts_router
-from app.accounts.adapters.sql_phone_country import SqlPhoneCountry
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.session_token import SessionSigner
 from app.catalog.adapters.babel_defaults import BabelHeaderFooterDefaults
@@ -297,7 +296,6 @@ def create_app(
     # (docs/adr/0006, docs/adr/0034).
     app.state.varieties_pricing_settings = SqlPricingSettings
     app.state.customers_pricing_settings = SqlPricingSettings
-    app.state.customers_phone_country = SqlPhoneCountry
     app.state.owing_sales = SqlOwingSales
     # How money is shown, read through each hexagon's own `MoneyFormatReader` port (docs/adr/0055).
     app.state.accounts_money_format = SqlMoneyFormat
