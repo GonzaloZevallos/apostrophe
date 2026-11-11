@@ -8,6 +8,13 @@ date: 2026-11-10
 Epic GH-318, part 20 (GH-403). Every front screen wrote money as `$` with 0 decimals. The
 Business's symbol and decimals are now editable (ADR-0080), so the front needs one source for them.
 
+## Note after the merge with master
+
+Master landed GH-404 in parallel with the same purpose, and its front design is the one that shipped:
+`/auth/me` carries `money`, and the front reads it through a provider and a hook, not through a
+module-level format. Read the decision below for the reasons the front needed one source for the
+format; where it names a module-level setter, the provider replaced it.
+
 ## Decision
 
 - **`GET /auth/me` answers `money_format: {symbol, decimals}`.** It never carries the scale
