@@ -80,6 +80,10 @@ def _sell(session: Session, business_id: int, before_write: Callable[[], None] =
         text("SELECT id FROM variety WHERE business_id = :b AND name = 'Rosa'"),
         {"b": business_id},
     ).scalar_one()
+    method = session.execute(
+        text("SELECT id FROM payment_method WHERE business_id = :b AND name_key = 'cash'"),
+        {"b": business_id},
+    ).scalar_one()
     record_sale(
         _SalesWriting(session, business_id, before_write),
         SqlPriceBook(session, business_id),
@@ -93,7 +97,7 @@ def _sell(session: Session, business_id: int, before_write: Callable[[], None] =
         shipping_charged=Decimal(0),
         note=None,
         lines=[LineInput(variety_id=product, quantity=Quantity.of(Decimal(1)))],
-        method=PaymentMethodId(1),
+        method=PaymentMethodId(method),
         left_owing=False,
         recorded_at=PINNED,
     )
