@@ -34,6 +34,13 @@ left open how an existing business moves from one to the other. This records it.
 - **Derived figures are not checked at run time.** This narrows ADR-0058's run-time check of
   derived figures. They are covered by `tests/architecture/test_money_adapters_scaled.py` together
   with the suites that run at both scales and the before/after comparison of the rescale.
+- **What a rescale leaves equal.** Every recorded amount (a price, a line total, a payment, an
+  expense, a lot's cost) reads the same before and after. A figure worked out on read (cost of
+  goods, shortfall, margin, average margin, costed cost) is shared out over the grams drawn, so
+  its exact value is not whole; it shows rounded half up at the business's decimals, a whole unit
+  at 0 and a hundredth at 2. After the rescale it can therefore carry cents it did not carry
+  before. `tests/money_format/test_rescale_figures.py` lists them in `WORKED_OUT_ON_READ` and
+  asserts each equals the value before rounded half up at 2 decimals.
 - **The cost.** The rescale is linear in the business's rows across every tagged column: one
   aggregate before, one UPDATE and one aggregate after. For that time it holds SQLite's file-wide
   write lock, so other businesses' writes wait, and past the driver's busy timeout they fail busy.

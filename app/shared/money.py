@@ -100,7 +100,8 @@ class Money:
 
     def whole_units(self) -> int:
         """The amount as a whole number of currency units. Exact or it raises
-        `MoneyNotRepresentable`: cents are never truncated and never rounded."""
+        `MoneyNotRepresentable`: cents are never truncated and never rounded. No write
+        or read path uses it now (they use `in_decimals`); it stays for whole-unit callers."""
         units, remainder = divmod(self.hundredths, HUNDREDTHS_PER_UNIT)
         if remainder != 0:
             raise MoneyNotRepresentable("the amount is not a whole number of units")

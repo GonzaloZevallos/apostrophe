@@ -171,11 +171,11 @@ _METHODS_WITH_AMOUNT = frozenset({"POST", "PUT", "PATCH"})
 async def _stored_amount_not_whole(request: Request, exc: Exception) -> JSONResponse:
     assert isinstance(exc, MoneyNotRepresentable)
     if request.method in _METHODS_WITH_AMOUNT:
-        # A write carrying a body whose amount the domain cannot hold as whole units (the
-        # domain keeps no cents yet) is the request's amount being refused, never a failure
-        # of ours: 422 with the code the front already maps, and nothing is rounded. A
-        # DELETE carries no amount, so a stored non-whole one there stays the integrity
-        # failure below.
+        # A write carrying a body whose amount is finer than the business's decimals reaches
+        # here when a use case converts it with `Money.in_decimals`: the request's amount is
+        # being refused, never a failure of ours: 422 with the code the front already maps,
+        # and nothing is rounded. A DELETE carries no amount, so a stored amount finer than
+        # the decimals there stays the integrity failure below.
         return JSONResponse(
             status_code=422,
             content={
@@ -183,7 +183,7 @@ async def _stored_amount_not_whole(request: Request, exc: Exception) -> JSONResp
                 "code": TooManyDecimals.code,
             },
         )
-    # A stored amount a read cannot hold as whole units is an integrity failure, never a
+    # A stored amount finer than the business's decimals is an integrity failure, never a
     # refusal of the request: 500, with the exception's own fixed literal and no amount.
     return JSONResponse(
         status_code=500, content={"detail": str(exc), "code": MoneyNotRepresentable.code}

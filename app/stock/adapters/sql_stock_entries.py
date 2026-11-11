@@ -89,7 +89,7 @@ class SqlStockEntries:
         )
 
     def _stored(self, units: int | None) -> int | None:
-        """A domain cost, whole units, as the integer this business's column holds."""
+        """A domain cost as the integer this business's column holds."""
         if units is None:
             return None
         return money_stored_value(
