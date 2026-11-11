@@ -18,8 +18,9 @@ describe('the walked states name no key yet', () => {
 describe('a walked state that holds a read', () => {
   it('holds GET /phone-countries in the Phone country loading state, so the Selector is read busy', () => {
     const state = STATES.find((candidate) => candidate.screen === 'customer/country-selector-loading')
-    expect(state?.holds?.test('/phone-countries')).toBe(true)
-    expect(state?.holds?.test('/customers')).toBe(false)
+    expect(state?.holds?.test('http://api.test/phone-countries')).toBe(true)
+    expect(state?.holds?.test('http://api.test/phone-countries/x')).toBe(false)
+    expect(state?.holds?.test('http://api.test/other')).toBe(false)
   })
 
   it('holds nothing in the open and locked states, which are read loaded', () => {
