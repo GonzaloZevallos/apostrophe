@@ -1631,3 +1631,33 @@ def test_a_dispatch_key_that_differs_or_sits_before_ci_is_refused() -> None:
     assert "`ci_dispatch.sha_input` is not an input of `workflow_dispatch`" in (
         _dispatch_key_problems(stack, WORKFLOW)
     )
+
+
+API_BREAKS = "uv run --no-project python -m scripts.docs.api_breaks"
+
+
+def _generate_before_api_breaks_problems(workflow: Data) -> list[str]:
+    """What keeps `api_breaks` from judging a workspace spec that `generate` has not written."""
+    runs = [str(step.get("run", "")).strip() for step in _steps(workflow["jobs"]["docs"])]
+    generate = [i for i, run in enumerate(runs) if run == GENERATE]
+    breaks = [i for i, run in enumerate(runs) if run == API_BREAKS]
+    if len(generate) != 1 or len(breaks) != 1:
+        return [f"the docs job has {len(generate)} generate and {len(breaks)} api_breaks steps"]
+    if generate[0] > breaks[0]:
+        return ["the docs job runs api_breaks before generate"]
+    return []
+
+
+def test_the_docs_job_generates_the_head_spec_before_api_breaks_reads_it() -> None:
+    assert _generate_before_api_breaks_problems(WORKFLOW) == []
+
+
+def test_a_docs_job_running_api_breaks_before_generate_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["docs"]["steps"]
+    breaks = next(step for step in steps if step.get("run") == API_BREAKS)
+    steps.remove(breaks)
+    steps.insert(next(i for i, step in enumerate(steps) if step.get("run") == GENERATE), breaks)
+    assert _generate_before_api_breaks_problems(workflow) == [
+        "the docs job runs api_breaks before generate"
+    ]
