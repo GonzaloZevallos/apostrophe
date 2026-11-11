@@ -31,7 +31,7 @@ import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
 import { SheetLevel, useSheet } from '../../components/useSheetStack'
 import CustomerFields, { type CustomerFieldsValue } from '../clientes/CustomerFields'
-import { phoneInvalidText, usePhoneCountryField } from '../clientes/usePhoneCountryField'
+import { usePhoneCountryField } from '../clientes/usePhoneCountryField'
 import {
   GENERIC_REFUSAL,
   NAME_REQUIRED,
@@ -74,6 +74,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
   const country = usePhoneCountryField(null)
   const [nameError, setNameError] = useState<string | null>(null)
   const [phoneError, setPhoneError] = useState<string | null>(null)
+  const [phoneInvalid, setPhoneInvalid] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
 
@@ -94,6 +95,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
     event.preventDefault()
     setNameError(null)
     setPhoneError(null)
+    setPhoneInvalid(false)
     setFormError(null)
     setOffline(false)
     try {
@@ -113,7 +115,8 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
         if (override !== undefined) {
           if (override.field === 'name') setNameError(override.message)
           else if (override.field === 'phone') {
-            setPhoneError(caught.code === 'customer.phone_invalid' ? phoneInvalidText(country) : override.message)
+            if (caught.code === 'customer.phone_invalid') setPhoneInvalid(true)
+            else setPhoneError(override.message)
           } else setFormError(override.message)
         } else {
           setFormError(GENERIC_REFUSAL)
@@ -195,6 +198,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
                 onChange={setNewCustomer}
                 nameError={nameError}
                 phoneError={phoneError}
+          phoneInvalid={phoneInvalid}
                 country={country}
               />
               {formError !== null && (

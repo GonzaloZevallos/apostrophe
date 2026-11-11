@@ -3,10 +3,11 @@ import { NetworkError } from '../../api/client'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import Selector from '../../components/Selector'
 import SinConexion from '../../components/SinConexion'
-import { CUSTOMERS_TEXT, phoneCountryName } from '../../copy/customers'
+import { CUSTOMERS_TEXT, phoneAdjective, phoneCountryName, phoneLengthsText } from '../../copy/customers'
 import { COMMON_TEXT } from '../../copy/common'
 import { choiceId, choiceOfId, OTHER_ID } from '../../phone/countryState'
 import type { PhoneCountryField } from './usePhoneCountryField'
+
 /**
  * The shared "Nombre / Teléfono" fields (`NuevaVentaCliente.dc.html`,
  * `ClienteForm.tsx`): split out of `ClienteForm` (plan, "Shape") so the "Nuevo
@@ -31,6 +32,8 @@ export interface CustomerFieldsProps {
   onChange: (value: CustomerFieldsValue) => void
   nameError: string | null
   phoneError: string | null
+  /** The server refused the number as not fitting (`customer.phone_invalid`): the field then names the shown country and its lengths. */
+  phoneInvalid: boolean
   /** The Phone country of this form (`usePhoneCountryField`): the caller sends its `requestCountry`. */
   country: PhoneCountryField
 }
@@ -40,6 +43,7 @@ export default function CustomerFields({
   onChange,
   nameError,
   phoneError,
+  phoneInvalid,
   country,
 }: CustomerFieldsProps) {
   const nameRef = useRef<HTMLInputElement>(null)
@@ -47,6 +51,7 @@ export default function CustomerFields({
   const phoneHintId = useId()
   const countryFailureId = useId()
   const { countries, choice } = country
+  const shownPhoneError = phoneInvalid ? phoneInvalidText(country) : phoneError
   // Kept true until the list loaded: a failed load never looks like a country.
   const loading = !country.ready
   // The example of the shown country; Other has none and says how to type the number.
@@ -138,9 +143,9 @@ export default function CustomerFields({
               onChange({ ...value, phone: event.target.value })
             }}
           />
-          {phoneError !== null && (
+          {shownPhoneError !== null && (
             <span className="campo__error" role="alert">
-              {phoneError}
+              {shownPhoneError}
             </span>
           )}
         </div>
@@ -150,4 +155,13 @@ export default function CustomerFields({
       )}
     </>
   )
+}
+
+/** The text of a `customer.phone_invalid` rejection: it names the shown country and the lengths
+ * the API serves for it; with Other shown there is no country to name, so the generic text. */
+function phoneInvalidText(field: PhoneCountryField): string {
+  const { choice, countries } = field
+  const listing = choice.kind === 'country' ? countries?.find((option) => option.code === choice.code) : undefined
+  if (listing === undefined) return CUSTOMERS_TEXT.notAPhone
+  return CUSTOMERS_TEXT.phoneInvalidFor(phoneAdjective(listing.code), phoneLengthsText(listing.national_lengths))
 }

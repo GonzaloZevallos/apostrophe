@@ -8,7 +8,6 @@
 
 import { useReducer } from 'react'
 import { usePhoneCountries, type PhoneCountryListing } from '../../api/phoneCountries'
-import { CUSTOMERS_TEXT, phoneAdjective, phoneLengthsText } from '../../copy/customers'
 import { detectCountry } from '../../phone/detectCountry'
 import { countryReducer, INITIAL_COUNTRY_STATE, toRequestCountry, type CountryState } from '../../phone/countryState'
 import { deviceLanguages, deviceTimeZone } from '../../phone/device'
@@ -65,13 +64,4 @@ export function usePhoneCountryField(storedPhone: string | null): PhoneCountryFi
     pick: (choice) => dispatch({ type: 'picked', choice }),
     requestCountry: toRequestCountry(shown.choice),
   }
-}
-
-/** The text of a `customer.phone_invalid` rejection: it names the shown country and the lengths
- * the API serves for it; with Other shown there is no country to name, so the generic text. */
-export function phoneInvalidText(field: PhoneCountryField): string {
-  const { choice, countries } = field
-  const listing = choice.kind === 'country' ? countries?.find((option) => option.code === choice.code) : undefined
-  if (listing === undefined) return CUSTOMERS_TEXT.notAPhone
-  return CUSTOMERS_TEXT.phoneInvalidFor(phoneAdjective(listing.code), phoneLengthsText(listing.national_lengths))
 }

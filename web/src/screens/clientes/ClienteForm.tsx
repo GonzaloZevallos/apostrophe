@@ -48,7 +48,7 @@ import SinConexion from '../../components/SinConexion'
 import Loading, { LoadingWhile } from '../../components/Loading'
 import CustomerFields from './CustomerFields'
 import CustomerTypeField from './CustomerTypeField'
-import { phoneInvalidText, usePhoneCountryField } from './usePhoneCountryField'
+import { usePhoneCountryField } from './usePhoneCountryField'
 import { COMMON_TEXT } from '../../copy/common'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
@@ -157,6 +157,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
   const [typeId, setTypeId] = useState(initialTypeId)
   const [nameError, setNameError] = useState<string | null>(null)
   const [phoneError, setPhoneError] = useState<string | null>(null)
+  const [phoneInvalid, setPhoneInvalid] = useState(false)
   const [typeError, setTypeError] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
@@ -186,6 +187,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
     event.preventDefault()
     setNameError(null)
     setPhoneError(null)
+    setPhoneInvalid(false)
     setTypeError(null)
     setFormError(null)
     setOffline(false)
@@ -231,7 +233,8 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
         if (override !== undefined) {
           if (override.field === 'name') setNameError(override.message)
           else if (override.field === 'phone') {
-            setPhoneError(caught.code === 'customer.phone_invalid' ? phoneInvalidText(country) : override.message)
+            if (caught.code === 'customer.phone_invalid') setPhoneInvalid(true)
+            else setPhoneError(override.message)
           } else setFormError(override.message)
         } else if (caught.code !== UNKNOWN_CODE) {
           setFormError(GENERIC_REFUSAL)
@@ -283,6 +286,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
           }}
           nameError={nameError}
           phoneError={phoneError}
+          phoneInvalid={phoneInvalid}
           country={country}
         />
         {vipCustomers && <CustomerTypeField value={typeId} onChange={setTypeId} error={typeError} />}
