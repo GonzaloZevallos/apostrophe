@@ -9,9 +9,8 @@ from datetime import date
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.db import money_scale_factor, scaled
+from app.db import domain_amount, money_scale_factor, scaled
 from app.results.application.ports import PurchaseRecord
-from app.shared.money import Money
 from app.stock.adapters.tables import StockEntryRow
 from app.stock.domain.entry import Origin
 
@@ -30,7 +29,9 @@ class SqlPurchases:
             StockEntryRow.origin == Origin.PURCHASE.value,
         )
         return [
-            PurchaseRecord(day=day, total_cost=Money(hundredths or 0).whole_units())
+            PurchaseRecord(
+                day=day, total_cost=domain_amount(self._session, self._business_id, hundredths or 0)
+            )
             for day, hundredths in self._session.execute(statement).all()
         ]
 

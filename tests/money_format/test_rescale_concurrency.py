@@ -1,6 +1,6 @@
 """The rescale against a writer on another connection (docs/adr/0080, amending docs/adr/0058).
 
-Seam: the `ApplyDecimals` use case with the real adapter, and `GET /sales` and
+Seam: the `ApplyMoneyFormat` use case with the real adapter, and `GET /sales` and
 `GET /expenses` through `TestClient` for the figures, over a file-backed SQLite database,
 two engines in one thread and a short busy timeout on the test engines only. The amount
 write is a real sale, recorded by `record_sale` with the real adapters: it reads the stored
@@ -32,6 +32,7 @@ from app.sales.adapters.price_book import SqlPriceBook
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.application.record_sale import LineInput, record_sale
 from app.sales.domain.sale import Sale
+from app.shared.money import MoneyFormat
 from app.shared.payment_method import PaymentMethodId
 from app.shared.quantity import Quantity
 from tests.business_removal.adapters.seed import PINNED, build_app
@@ -135,7 +136,7 @@ def _sale_totals(world: World) -> list[Decimal]:
 def _rescaling(second: Engine, business_id: int) -> Session:
     """A session on the other connection that has run the rescale and not committed."""
     session = Session(second)
-    SqlMoneyFormatWriter(session).apply_decimals(business_id, 2)
+    SqlMoneyFormatWriter(session).apply(business_id, MoneyFormat("$", 2))
     return session
 
 
@@ -144,10 +145,14 @@ def test_a_sale_that_read_the_old_scale_fails_loudly_and_a_retry_stores_the_righ
 ) -> None:
     target = world.target
     already = _sale_totals(world)
+
+    def raise_decimals() -> None:
+        apply(second, target, 2)
+
     with Session(world.engine) as sale:
         with pytest.raises(MoneyScaleChanged):
             # The sale has read its prices at scale 0; the rescale commits; the sale writes.
-            _sell(sale, target, before_write=lambda: apply(second, target, 2))
+            _sell(sale, target, before_write=raise_decimals)
         sale.rollback()
 
         _sell(sale, target)

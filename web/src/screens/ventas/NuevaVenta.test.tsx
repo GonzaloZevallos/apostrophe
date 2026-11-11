@@ -23,7 +23,7 @@ import type { SaleLine } from '../../api/sales'
 import type { Variety } from '../Variedades'
 import { withPaymentMethods } from '../../test-payment-methods'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
 
 const ROSA = {
   id: 1,

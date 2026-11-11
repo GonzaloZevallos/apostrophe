@@ -8,13 +8,14 @@
  * Every figure is a `role="group"` named by its own label (`aria-labelledby`, an id from
  * `useId`), so a screen reader and a test reach a figure by its name, with its pending note
  * inside it. Nothing here computes, compares or sign-tests an amount: Ganancia and Caja
- * go through `formatSignedMoney`, the rest through `formatMoney` / `formatGrams`.
+ * go through `money.signed`, the rest through `money.money` / `formatGrams`.
  */
 
 import { useId } from 'react'
 import type { PanelPeriod, PanelTab } from '../../api/panel'
 import { salesCount } from '../../format/counts'
-import { formatGrams, formatMoney, formatSignedMoney } from '../../format/money'
+import { formatGrams, type MoneyFormatter } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { COMMON_TEXT } from '../../copy/common'
 import { SHORTFALL_LABEL, COST_OF_GOODS_LABEL } from '../../copy/analysis'
 import { reasonCostParts } from '../analisisCost'
@@ -53,14 +54,14 @@ interface ListFigure {
  * (`null` otherwise), then one line per withdrawal reason exactly as the API answers
  * them, right before Gastos. A fully pending reason has no amount, so it reads as its
  * grams without cost, never `$ 0`. */
-function listFigures(period: PanelPeriod): ListFigure[] {
+function listFigures(period: PanelPeriod, money: MoneyFormatter): ListFigure[] {
   const shortfall = period.shortfall
   const shortfallLines: ListFigure[] =
     shortfall === null
       ? []
-      : [{ key: 'shortfall', label: SHORTFALL_LABEL, value: formatMoney(shortfall.amount), pending: shortfall.pending }]
+      : [{ key: 'shortfall', label: SHORTFALL_LABEL, value: money.money(shortfall.amount), pending: shortfall.pending }]
   const reasonLines: ListFigure[] = period.withdrawals.map((line) => {
-    const { amount, marker } = reasonCostParts(line)
+    const { amount, marker } = reasonCostParts(line, money)
     return {
       key: `reason-${line.reason_id}`,
       label: line.name,
@@ -74,29 +75,30 @@ function listFigures(period: PanelPeriod): ListFigure[] {
     {
       key: 'cost_of_goods',
       label: COST_OF_GOODS_LABEL,
-      value: formatMoney(period.cost_of_goods),
+      value: money.money(period.cost_of_goods),
       pending: period.pending_cost,
     },
     ...costLines,
-    { key: 'expenses', label: COMMON_TEXT.expenses, value: formatMoney(period.expenses), pending: false },
-    { key: 'purchases', label: COMMON_TEXT.flowerPurchases, value: formatMoney(period.purchases), pending: false },
+    { key: 'expenses', label: COMMON_TEXT.expenses, value: money.money(period.expenses), pending: false },
+    { key: 'purchases', label: COMMON_TEXT.flowerPurchases, value: money.money(period.purchases), pending: false },
   ]
 }
 
-function salesSubtitle(period: PanelPeriod): string {
+function salesSubtitle(period: PanelPeriod, money: MoneyFormatter): string {
   const count = salesCount(period.sales_count)
   const grams = formatGrams(period.quantity_sold)
   return period.average_sale === null
     ? `${count} · ${grams}`
-    : INICIO_TEXT.n0Promedio12(count, formatMoney(period.average_sale), grams)
+    : INICIO_TEXT.n0Promedio12(count, money.money(period.average_sale), grams)
 }
 
 function Headline({ tab, period }: { tab: PanelTab; period: PanelPeriod }) {
+  const money = useMoney()
   return (
     <div className="panel-ventas">
       <span className="rotulo">{SALES_HEADING[tab]}</span>
-      <span className="cifra-xl">{formatMoney(period.sales)}</span>
-      <span className="pie">{salesSubtitle(period)}</span>
+      <span className="cifra-xl">{money.money(period.sales)}</span>
+      <span className="pie">{salesSubtitle(period, money)}</span>
     </div>
   )
 }
@@ -122,12 +124,13 @@ export function PeriodFigures({
   tab: Exclude<PanelTab, 'today'>
   period: PanelPeriod
 }) {
+  const money = useMoney()
   return (
     <div className="panel-periodo panel-periodo--con-cifras">
       <Headline tab={tab} period={period} />
       <div className="panel-cifras">
         <div className="panel-lista">
-          {listFigures(period).map(({ key, label, value, pending }) => (
+          {listFigures(period, money).map(({ key, label, value, pending }) => (
             <ListItem key={key} label={label} value={value} pending={pending} />
           ))}
         </div>
@@ -135,11 +138,11 @@ export function PeriodFigures({
         <div className="panel-resultados">
           <ResultCell
             label={COMMON_TEXT.profit}
-            value={formatSignedMoney(period.profit)}
+            value={money.signed(period.profit)}
             accent
             pending={period.profit_pending}
           />
-          <ResultCell label={COMMON_TEXT.cash} value={formatSignedMoney(period.cash)} accent={false} pending={false} />
+          <ResultCell label={COMMON_TEXT.cash} value={money.signed(period.cash)} accent={false} pending={false} />
         </div>
       </div>
     </div>

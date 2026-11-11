@@ -6,7 +6,7 @@
  * the form's refusals, and inline category creation.
  */
 
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
@@ -395,7 +395,7 @@ test('the gone refusal is tied to the field, and an inline-created category that
   await userEvent.click(await screen.findByRole('button', { name: 'Create a new category' }))
   await userEvent.type(screen.getByLabelText('New category name'), 'Insumos')
   await userEvent.click(screen.getByRole('button', { name: 'Create category' }))
-  await vi.waitFor(async () => expect(await categoryField()).toHaveTextContent('Insumos'))
+  await waitFor(async () => expect(await categoryField()).toHaveTextContent('Insumos'))
   await userEvent.type(screen.getByLabelText('Amount'), '1000')
   await userEvent.type(screen.getByLabelText('Details'), 'Cinta')
   await userEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
@@ -435,7 +435,7 @@ test('creating a category inline after the gone refusal chooses it and clears th
   await userEvent.type(screen.getByLabelText('New category name'), 'Insumos')
   await userEvent.click(screen.getByRole('button', { name: 'Create category' }))
 
-  await vi.waitFor(async () => expect(await categoryField()).toHaveTextContent('Insumos'))
+  await waitFor(async () => expect(await categoryField()).toHaveTextContent('Insumos'))
   expect(screen.queryByText(CATEGORY_GONE)).not.toBeInTheDocument()
   expect(await categoryField()).not.toHaveAttribute('aria-describedby')
 })
@@ -467,7 +467,7 @@ test('creating a category inside the expense form keeps what was typed and selec
   await userEvent.type(screen.getByLabelText('New category name'), 'Insumos')
   await userEvent.click(screen.getByRole('button', { name: 'Create category' }))
 
-  await vi.waitFor(async () => {
+  await waitFor(async () => {
     expect(await categoryField()).toHaveTextContent('Insumos')
   })
   expect(screen.getByLabelText('Details')).toHaveValue('Sustrato nuevo')
@@ -495,8 +495,8 @@ test('subtotals and the total stay equal to the sum shown after create, edit and
   await fillAndSave('Etiquetas', '300')
   await screen.findByText('Etiquetas')
   // On a phone the form's sheet still draws Expenses behind it until the save has left it.
-  await vi.waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
-  await vi.waitFor(() => expect(subtotalOf('Packaging')).toBe('$ 6.300'))
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  await waitFor(() => expect(subtotalOf('Packaging')).toBe('$ 6.300'))
   expect(subtotalOf('Otros')).toBe('$ 700')
   expect(totalShown()).toBe('$ 7.000')
   expectTotalIsSumOfSubtotals()
@@ -507,7 +507,7 @@ test('subtotals and the total stay equal to the sum shown after create, edit and
   await userEvent.clear(amount)
   await userEvent.type(amount, '5000')
   await userEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
-  await vi.waitFor(() => expect(subtotalOf('Packaging')).toBe('$ 6.800'))
+  await waitFor(() => expect(subtotalOf('Packaging')).toBe('$ 6.800'))
   expect(subtotalOf('Otros')).toBe('$ 700')
   expect(totalShown()).toBe('$ 7.500')
   expectTotalIsSumOfSubtotals()
@@ -516,7 +516,7 @@ test('subtotals and the total stay equal to the sum shown after create, edit and
   await userEvent.click(screen.getByText('Varios'))
   await userEvent.click(await screen.findByRole('button', { name: 'Delete expense' }))
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
-  await vi.waitFor(() => expect(screen.queryByText('Varios')).not.toBeInTheDocument())
+  await waitFor(() => expect(screen.queryByText('Varios')).not.toBeInTheDocument())
   expect(screen.queryByText('Otros', { selector: '.gastos__categoria-nombre' })).not.toBeInTheDocument()
   expect(subtotalOf('Packaging')).toBe('$ 6.800')
   expect(totalShown()).toBe('$ 6.800')

@@ -13,15 +13,17 @@ from app.accounts.adapters.deps import (
     get_accounts,
     get_business_opening,
     get_hasher,
+    get_money_format,
     get_public_url,
     get_settings,
     get_signer,
     raise_unauthenticated,
 )
+from app.accounts.adapters.phone_country_router import PhoneCountryOption, phone_country_options
 from app.accounts.adapters.sql_accounts import SqlAccounts
 from app.accounts.application import invitations, manage_business, reset_password
 from app.accounts.application.invitations import EmailTaken
-from app.accounts.application.ports import BusinessOpening
+from app.accounts.application.ports import AccountsMoneyFormat, BusinessOpening
 from app.accounts.application.sign_in import LoginLocked, change_password, log_in
 from app.accounts.domain.account import AccountRuleBroken
 from app.accounts.domain.invitation import InvitationKind, InvitationNotUsable
@@ -46,6 +48,7 @@ SignerDep = Annotated[SessionSigner, Depends(get_signer)]
 ClockDep = Annotated[Clock, Depends(get_clock)]
 TodayDep = Annotated[date, Depends(get_today)]
 SettingsDep = Annotated[Settings, Depends(get_settings)]
+MoneyFormatDep = Annotated[AccountsMoneyFormat, Depends(get_money_format)]
 
 as_http = TranslateErrors(
     [
@@ -66,6 +69,13 @@ class SessionOut(BaseModel):
     token: str
 
 
+class MoneyFormatOut(BaseModel):
+    # The symbol and decimals a business shows money with. The scale it stores amounts at
+    # is a storage fact and never leaves the server (docs/adr/0058).
+    symbol: str
+    decimals: int
+
+
 class MeOut(BaseModel):
     email: str
     business_name: str
@@ -75,6 +85,7 @@ class MeOut(BaseModel):
     # The language screens are rendered in: the forced one when the operator set it, else
     # the stored one (docs/adr/0050). Never what the Settings control shows.
     shown_language: str
+    money: MoneyFormatOut
 
 
 class UserOut(BaseModel):
@@ -87,6 +98,9 @@ class BusinessOut(BaseModel):
     # The stored language and the ones a business may switch to, for the Settings control.
     language: str
     selectable_languages: list[str]
+    # The stored Phone country code (or null) and the countries Settings lists (docs/adr/0082).
+    phone_country: str | None
+    phone_countries: list[PhoneCountryOption]
 
 
 class BusinessPatchIn(BaseModel):
@@ -231,16 +245,25 @@ def _business_out(profile: manage_business.BusinessProfile, settings: Settings) 
         users=[UserOut(email=e) for e in profile.user_emails],
         language=profile.language,
         selectable_languages=[language.tag for language in settings.selectable_languages],
+        phone_country=profile.phone_country,
+        phone_countries=phone_country_options(),
     )
 
 
 @router.get("/auth/me")
-def me(signed_in: CurrentSession, today: TodayDep, settings: SettingsDep) -> MeOut:
+def me(
+    signed_in: CurrentSession,
+    today: TodayDep,
+    settings: SettingsDep,
+    money_format: MoneyFormatDep,
+) -> MeOut:
+    money = money_format.current()
     return MeOut(
         email=signed_in.user.email.value,
         business_name=signed_in.business.name.value,
         today=today,
         shown_language=shown_language(signed_in.business.language, settings.forced_language).tag,
+        money=MoneyFormatOut(symbol=money.symbol, decimals=money.decimals),
     )
 
 

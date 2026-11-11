@@ -22,7 +22,14 @@ from sqlalchemy.sql.elements import ColumnElement
 from app.accounts.adapters.tables import BusinessRow
 from app.customer_types.adapters.vip_type import SqlVipType
 from app.customers.adapters.tables import CustomerRow
-from app.db import flush_or_refuse, money_scale_factor, money_stored_value, scaled
+from app.db import (
+    domain_amount,
+    flush_or_refuse,
+    money_of_domain,
+    money_scale_factor,
+    money_stored_value,
+    scaled,
+)
 from app.payment_methods.adapters.tables import PaymentMethodRow
 from app.payments.adapters.tables import PaymentRow
 from app.products.adapters.tables import ProductRow
@@ -35,7 +42,6 @@ from app.sales.domain.sale import (
     Sale,
     SaleLine,
 )
-from app.shared.money import Money
 from app.shared.payment_method import (
     PaymentMethodId,
     PaymentMethodLabel,
@@ -205,7 +211,7 @@ class SqlSales:
 
         views = []
         for row in rows:
-            sale_row, shipping = row[0], _units(row[1])
+            sale_row, shipping = row[0], self._units(row[1])
             customer_id, customer_name, customer_type_id = row[2], row[3], row[4]
             payment_id, paid_on, amount, payment_customer_id, method_row = row[5:10]
             customer = (
@@ -222,7 +228,7 @@ class SqlSales:
                 if payment_id is None
                 else OnTheSpotPayment(
                     paid_on=paid_on,
-                    amount=_units(amount),
+                    amount=self._units(amount),
                     method=PaymentMethodId(method_row.id),
                     customer_id=payment_customer_id,
                     id=payment_id,
@@ -274,15 +280,23 @@ class SqlSales:
         ).all():
             grouped.setdefault(line_row.sale_id, []).append(
                 SaleViewLine(
-                    line=_sale_line(line_row, _units(price_per_gram), _units(line_total)),
+                    line=_sale_line(line_row, self._units(price_per_gram), self._units(line_total)),
                     variety_name=variety_name,
                 )
             )
         return {sale_id: tuple(lines) for sale_id, lines in grouped.items()}
 
+    def _units(self, hundredths: int) -> int:
+        """A read amount as the domain's int, in the unit of the business's decimals."""
+        return domain_amount(self._session, self._business_id, hundredths)
+
     def _stored(self, units: int) -> int:
-        """A domain amount, whole units, as the integer this business's column holds."""
-        return money_stored_value(self._session, self._business_id, Money.of_units(units))
+        """A domain amount as the integer this business's column holds."""
+        return money_stored_value(
+            self._session,
+            self._business_id,
+            money_of_domain(self._session, self._business_id, units),
+        )
 
     def _line_rows(self, sale_id: int) -> Sequence[SaleLine]:
         # A plain `list[...]` return annotation would, under `from __future__ import
@@ -299,7 +313,7 @@ class SqlSales:
             .order_by(SaleLineRow.position)
         )
         return [
-            _sale_line(row, _units(price_per_gram), _units(line_total))
+            _sale_line(row, self._units(price_per_gram), self._units(line_total))
             for row, price_per_gram, line_total in self._session.execute(statement).all()
         ]
 
@@ -351,7 +365,7 @@ class SqlSales:
             PaymentRow.sale_id == sale_id, PaymentRow.business_id == self._business_id
         )
         found = self._session.execute(statement).first()
-        return None if found is None else _payment(found[0], _units(found[1]))
+        return None if found is None else _payment(found[0], self._units(found[1]))
 
     def _line_row(self, sale_id: int, line: SaleLine, position: int) -> SaleLineRow:
         return SaleLineRow(
@@ -378,7 +392,7 @@ class SqlSales:
         return Sale(
             date=row.sold_on,
             customer_id=row.customer_id,
-            shipping_charged=_units(shipping),
+            shipping_charged=self._units(shipping),
             note=row.note,
             lines=tuple(self._line_rows(row.id)),
             payment=self._find_payment(row.id),
@@ -402,11 +416,6 @@ def _dated_conditions(
     if date_to is not None:
         conditions.append(column <= date_to)
     return tuple(conditions)
-
-
-def _units(hundredths: int) -> int:
-    """A read amount as whole units; raises `MoneyNotRepresentable` when it has cents."""
-    return Money(hundredths).whole_units()
 
 
 def _sale_line(row: SaleLineRow, price_per_gram: int, line_total: int) -> SaleLine:

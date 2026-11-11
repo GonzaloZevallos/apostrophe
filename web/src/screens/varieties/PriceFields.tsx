@@ -6,6 +6,8 @@
  * `priceFieldRules.ts`, so a second host maps a refusal to a field without restating any rule.
  */
 
+import MoneyInput from '../../components/MoneyInput'
+import { useMoney } from '../../format/moneyContext'
 import type { PricingSettings } from '../../api/pricingSettings'
 import type { PriceErrors, PriceValues } from './priceFieldRules'
 import { PRICE_DISCOUNT_HELP, PRICE_FROM_GRAMS_HELP, PRICE_PER_GRAM_HELP, VARIETIES_TEXT } from '../../copy/varieties'
@@ -28,18 +30,18 @@ interface AmountInputProps {
 }
 
 /**
- * A pesos input with the "$" before it. The sign is drawn, not typed: it is hidden from the
+ * An amount input with the business's symbol before it. The sign is drawn, not typed: it is hidden from the
  * accessible name and never part of the value, so a fill and a payload see digits only.
  */
 function AmountInput({ className, value, onChange, required }: AmountInputProps) {
+  const { symbol } = useMoney().format
   return (
     <span className="campo__monto">
-      <span className="campo__prefijo" aria-hidden="true">$</span>
-      <input
+      <span className="campo__prefijo" aria-hidden="true">{symbol}</span>
+      <MoneyInput
         className={className}
-        inputMode="numeric"
         value={value}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={onChange}
         required={required}
       />
     </span>

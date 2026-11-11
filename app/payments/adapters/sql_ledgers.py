@@ -13,13 +13,12 @@ from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
 
 from app.customers.adapters.tables import CustomerRow
-from app.db import money_scale_factor, scaled
+from app.db import domain_amount, money_scale_factor, scaled
 from app.payment_methods.adapters.tables import PaymentMethodRow
 from app.payments.adapters.tables import PaymentRow
 from app.payments.application.ports import NamedLedger
 from app.payments.domain.settlement import LaterPaymentEntry, Ledger, OwedSale
 from app.sales.adapters.tables import SaleLineRow, SaleRow
-from app.shared.money import Money
 from app.shared.payment_method import PaymentMethodLabel
 
 
@@ -93,7 +92,7 @@ class SqlLedgers:
                         id=payment.id,
                         paid_on=payment.paid_on,
                         recorded_at=payment.recorded_at,
-                        amount=Money(amount).whole_units(),
+                        amount=domain_amount(self._session, self._business_id, amount),
                         method=method,
                     )
                 )
@@ -106,7 +105,9 @@ class SqlLedgers:
             )
         ):
             assert sale.customer_id is not None, "filtered to sales that have one"
-            total = Money(shipping + line_totals.get(sale.id, 0)).whole_units()
+            total = domain_amount(
+                self._session, self._business_id, shipping + line_totals.get(sale.id, 0)
+            )
             sales_by_customer.setdefault(sale.customer_id, []).append(
                 OwedSale(
                     id=sale.id,

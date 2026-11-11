@@ -90,16 +90,20 @@ classDiagram
   class MissingCustomerName {
     code : ClassVar~str~
   }
+  class PhoneNeedsCountryCode {
+    code : ClassVar~str~
+  }
   class PhoneNumber {
     digits : str
     value : str
-    of(raw: str) PhoneNumber
-    optional(raw: str #124; None) PhoneNumber #124; None
+    of(raw: str, country: PhoneCountry #124; None) PhoneNumber
+    optional(raw: str #124; None, country: PhoneCountry #124; None) PhoneNumber #124; None
   }
   Customer --> CustomerName : name
   CustomerNameTooLong --|> CustomerRuleBroken
   InvalidPhoneNumber --|> CustomerRuleBroken
   MissingCustomerName --|> CustomerRuleBroken
+  PhoneNeedsCountryCode --|> CustomerRuleBroken
 ```
 
 ## application
@@ -134,6 +138,9 @@ classDiagram
     get(customer_id: int) Customer #124; None
     phone_taken(phone: PhoneNumber) bool
     save(customer: Customer) Customer
+  }
+  class PhoneCountryReader {
+    current() PhoneCountry #124; None
   }
   class PhoneTaken {
     code : ClassVar~str~

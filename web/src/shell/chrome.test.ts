@@ -53,6 +53,7 @@ const EXPECTED: Record<ScreenId, readonly [Chrome, Chrome]> = {
   'settings-integrations': [FORM, FORM],
   'settings-catalog-message': [FORM, FORM],
   'settings-expense-categories': [FORM, FORM],
+  'settings-currency': [FORM, FORM],
   'settings-withdrawal-reasons': [FORM, FORM],
   'settings-appearance': [FORM, FORM],
   'settings-account': [FORM, FORM],

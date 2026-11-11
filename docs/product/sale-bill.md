@@ -6,11 +6,13 @@
 
 **Cuando** le comparto un Sale bill a un cliente, o más tarde necesito señalar esa venta exacta en nuestro chat, **quiero** que la venta lleve un número corto propio de mi negocio, **para** que los dos nombremos la misma venta sin confusión, y que el número nunca revele cuántas ventas tiene ningún otro negocio. (El **Sale number**, definido en `sales.md`).
 
+**Cuando** mi negocio cuenta la plata en otra moneda o con centavos, **quiero** elegir yo mismo, desde Settings, el símbolo de la moneda y la cantidad de decimales, **para que** cada pantalla muestre y acepte la plata como la contamos mis clientes y yo, sin que ningún monto que ya registré cambie de valor. (Se define en `money.md`: acá lo sirve que el Sale bill escriba la plata con el símbolo y los decimales del negocio.)
+
 El avance principal es que el cliente vea exactamente las cifras que ve la vendedora, para que nadie discuta el monto. La velocidad viene después. Recordarles a los deudores no es un trabajo propio: un Sale bill puede llevar un Balance debido, pero el producto no manda recordatorios, no programa nada y no escribe ningún texto que presione para pagar. Antes de esto la vendedora copiaba las cifras a mano en Telegram o WhatsApp, sobre todo para deudores y pedidos entregados. Los clientes también piden una confirmación de una venta pagada en el momento, así que toda venta tiene Sale bill. El Sale number le da a la venta compartida un nombre que los dos pueden citar, porque "la venta del 12/10 a Ana" falla cuando hay dos ventas ese día o la venta no tiene cliente.
 
 # Sale bill
 
-Los hechos de una venta registrada que la vendedora puede compartir con el cliente de esa venta. Se calculan en vivo a partir del **Settlement** cuando se lee el detalle de la venta, y nunca se guardan ni se loguean. El servidor manda solo hechos, en una estructura cerrada y sin texto, y el front arma el texto para compartir (ADR-0053). La venta, sus líneas y su Sale number están definidos en `sales.md`; el Settlement, los pagos y los Balances, en `payments.md`. La parte 1 de GH-322 entregó los hechos; la parte 2 (GH-376) entregó el texto, la entrada de unidad y las acciones Share y Copy en el detalle de la venta; GH-519 agregó el Sale number. Con la parte 24 de GH-318 los **Payment methods** son la lista propia de cada negocio (payment-methods.md), y el Sale bill deja de nombrar el medio. El texto exacto, sus líneas que pueden faltar y el botón están en `sales.md`, "Sale bill (en el detalle de la venta)".
+Los hechos de una venta registrada que la vendedora puede compartir con el cliente de esa venta. Se calculan en vivo a partir del **Settlement** cuando se lee el detalle de la venta, y nunca se guardan ni se loguean. El servidor manda solo hechos, en una estructura cerrada y sin texto, y el front arma el texto para compartir (ADR-0053). La venta, sus líneas y su Sale number están definidos en `sales.md`; el Settlement, los pagos y los Balances, en `payments.md`. La parte 1 de GH-322 entregó los hechos; la parte 2 (GH-376) entregó el texto, la entrada de unidad y las acciones Share y Copy en el detalle de la venta; GH-519 agregó el Sale number. La parte 20 de GH-318 hizo que la plata siga el **Money format** del negocio. Con la parte 24 de GH-318 los **Payment methods** son la lista propia de cada negocio (payment-methods.md), y el Sale bill deja de nombrar el medio. El texto exacto, sus líneas que pueden faltar y el botón están en `sales.md`, "Sale bill (en el detalle de la venta)".
 
 ## Comportamiento
 
@@ -55,7 +57,7 @@ Los hechos de una venta registrada que la vendedora puede compartir con el clien
 - Una venta sin cliente lo tiene cuando se pagó en el momento o es una venta de $0 solo de regalos, y nunca lleva Balance.
 - Un cliente asignado después la convierte en una venta común de cliente, Balance incluido. Después de asignar, el detalle se vuelve a leer del servidor para traer ese Balance. El Sale number no cambia.
 - La venta de otro negocio sigue respondiendo 404.
-- No hay configuración ni fecha de corte. Nada depende de las unidades, la moneda o los Payment methods de un negocio: el Sale bill dice que la venta está pagada, nunca con qué medio. Informar el medio es un job de informes por medio, aparte.
+- No hay configuración propia del Sale bill ni fecha de corte. La plata sigue el Money format del negocio (`money.md`). Nada depende de las unidades, la moneda o los Payment methods de un negocio: el Sale bill dice que la venta está pagada, nunca con qué medio. Informar el medio es un job de informes por medio, aparte.
 
 ### Cuando los hechos no coinciden
 
@@ -69,7 +71,8 @@ Los hechos de una venta registrada que la vendedora puede compartir con el clien
 
 - **El texto** lo arma el front a partir del último detalle que tiene la pantalla, con `renderSaleBill` (`web/src/sales/saleBill.ts`): el encabezado (el nombre del negocio, y en la línea siguiente `Sale #N · dd/mm`, sin año), una línea por línea de la venta, el envío solo por encima de $0, el total, la línea de pago (ninguna para none; para una venta pagada en el momento, la misma línea que para paid) y la línea de Balance ("Your balance" por encima de $0, "In your favor" para un Credit como su valor absoluto, ninguna en $0 o sin cliente). El detalle está en `sales.md`.
 - **El Sale number** se lee "Sale #N", sin ceros a la izquierda, sin prefijo y sin separador de miles, y es el mismo que el título del detalle.
-- **Las cantidades** se formatean a partir de centésimos enteros con `formatQuantity`, nunca de un float. La plata se lee `$ 11.000`, nunca con el formato del **Catalog**.
+- **Las cantidades** se formatean a partir de centésimos enteros con `formatQuantity`, nunca de un float.
+- **La plata** se escribe con el formato de la app y el Money format del negocio: el símbolo, un espacio y el monto con exactamente los decimales del negocio, coma decimal y punto para los miles (`$ 11.000` con los valores por defecto, `US$ 11.000,50` con "US$" y 2 decimales). Nunca usa el formato del **Catalog**. Como el texto se arma al compartir, un cambio del símbolo o de los decimales se ve la próxima vez que se comparte.
 - **Las palabras fijas y la unidad** viven en el **Copy module**, en el grupo `saleBill`, "Sale #N" incluido. La unidad es una sola entrada, "g", hasta #318.
 - **Los nombres que tipeó la vendedora** (el del negocio y los de los productos) salen exactamente como están guardados; el Sale bill no agrega formato propio.
 - **El botón** Share o Copy es el primer elemento de la fila de acciones del detalle, nunca dentro del aviso "Sale saved". Si compartir sale bien o se cancela, no muestra nada. Si compartir falla, muestra su línea con el ícono de atención y la etiqueta pasa a Copy. Si copiar sale bien, muestra el aviso "Bill copied". Si copiar falla, muestra su línea con el ícono de atención y debajo el bloque seleccionable "Sale bill". Con `bill: null` el botón no aparece. Mientras carga, conserva la etiqueta, queda deshabilitado y ocupado, y no muestra cifras.
@@ -88,10 +91,11 @@ La nota, el nombre o el id del cliente, el id de la venta (`sale.id`) o de cualq
 6. Los textos esperados del Sale bill se escriben a mano contra esta definición, nunca los genera el renderizador.
 7. Nada del Sale bill se guarda, se loguea, ni se escribe en la consola o en el almacenamiento del navegador. La llamada de compartir o copiar corre de forma sincrónica dentro del clic (ADR-0002).
 8. El Sale number del Sale bill es siempre el mismo que el del detalle de la misma venta.
+9. Ningún módulo del Sale bill tiene un literal `$` ni una cantidad fija de decimales: el símbolo y los decimales salen del Money format del negocio.
 
 ### Fuera de alcance
 
-Recordatorios o textos que presionen para pagar, tomar pedidos o mandar mensajes por un bot, facturas, impuestos y exportaciones contables, nombrar el Payment method, un año en la fecha, una vista previa, un estado de "ya compartido", un recibo de pago, elegir un canal o enviar desde la app, hacer configurable la unidad (#318), cualquier otro idioma (#317) y buscar una venta por su Sale number.
+Recordatorios o textos que presionen para pagar, tomar pedidos o mandar mensajes por un bot, facturas, impuestos y exportaciones contables, nombrar el Payment method, un año en la fecha, una vista previa, un estado de "ya compartido", un recibo de pago, elegir un canal o enviar desde la app, hacer configurable la unidad (#318), cualquier otro idioma (#317), la posición del símbolo de moneda y buscar una venta por su Sale number.
 
 ## Criterios de éxito y métricas
 
@@ -107,3 +111,4 @@ Recordatorios o textos que presionen para pagar, tomar pedidos o mandar mensajes
 5. **Contrato cumplido**: un vitest lee los esquemas `SaleBillOut` de `tests/fixtures/openapi_snapshot.json` y verifica que sus nombres de propiedad y sus enums son iguales a las listas de claves del front, el Sale number incluido.
 6. **Assume nothing**: con la entrada de unidad puesta en "u", el texto dice "3,5 u" y "/u".
 7. **El mismo número**: el Sale number del Sale bill es igual al del título del detalle de la misma venta (criterio 25 de `sales.md`); el juego de referencia incluye Sale #1 y un número de cuatro cifras sin separador de miles en la línea `Sale #N · dd/mm`. En el test de aislamiento con dos negocios, el Sale bill de cada uno lleva su propia numeración desde 1 y nada que dependa del otro (criterio 26 de `sales.md`).
+8. **La plata del negocio**: el juego de referencia incluye el Money format por defecto, con 0 diferencias contra los textos de antes de la parte 20, y uno con "US$" y 2 decimales, con un monto con centavos y uno entero (`US$ 11.000,00`), en 0 diferencias contra textos escritos a mano.

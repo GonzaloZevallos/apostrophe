@@ -43,7 +43,8 @@ import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
 import { formatDateShort } from '../../format/dates'
-import { formatMoney, formatMoneyMagnitude } from '../../format/money'
+import type { MoneyFormatter } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { formatPhone } from '../../format/phone'
 import AccountRowLine from './AccountRowLine'
 import { deleteRowIndices, rowKey } from './accountRows'
@@ -51,8 +52,8 @@ import { COMMON_TEXT } from '../../copy/common'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import ContentArea from '../../components/ContentArea'
 
-function deletePaymentTitle(payment: { amount: number; method: string; paid_on: string }): string {
-  return CUSTOMERS_TEXT.deletePaymentOf(formatMoney(payment.amount), payment.method, formatDateShort(payment.paid_on))
+function deletePaymentTitle(payment: { amount: number; method: string; paid_on: string }, money: MoneyFormatter): string {
+  return CUSTOMERS_TEXT.deletePaymentOf(money.money(payment.amount), payment.method, formatDateShort(payment.paid_on))
 }
 
 function cardHeading(root: HTMLElement): HTMLElement | null {
@@ -60,6 +61,7 @@ function cardHeading(root: HTMLElement): HTMLElement | null {
 }
 
 export default function ClienteFicha() {
+  const money = useMoney()
   const { id } = useParams<{ id: string }>()
   const customerId = id ?? ''
   const location = useLocation()
@@ -184,7 +186,7 @@ export default function ClienteFicha() {
         {data.standing === 'owes' && (
           <div className="ficha-deuda">
             <span className="rotulo ficha-deuda__rotulo">{CUSTOMERS_TEXT.owesYou}</span>
-            <span className="cifra-l monto-deuda">{formatMoney(data.balance)}</span>
+            <span className="cifra-l monto-deuda">{money.money(data.balance)}</span>
             {data.owing_since !== null && (
               <span className="rotulo">{CUSTOMERS_TEXT.since}{formatDateShort(data.owing_since)}</span>
             )}
@@ -198,7 +200,7 @@ export default function ClienteFicha() {
         {data.standing === 'credit' && (
           <div className="ficha-deuda ficha-deuda--credito">
             <span className="rotulo ficha-deuda__rotulo">{CUSTOMERS_TEXT.creditLabel}</span>
-            <span className="cifra-l monto-credito">{formatMoneyMagnitude(data.balance)}</span>
+            <span className="cifra-l monto-credito">{money.magnitude(data.balance)}</span>
           </div>
         )}
 
@@ -246,7 +248,7 @@ export default function ClienteFicha() {
 
       {confirmingDelete !== null && (
         <ConfirmDialog
-          title={deletePaymentTitle(confirmingDelete)}
+          title={deletePaymentTitle(confirmingDelete, money)}
           detail={COMMON_TEXT.cannotUndo}
           confirmText={COMMON_TEXT.yesDelete}
           cancelText={COMMON_TEXT.noKeep}

@@ -10,7 +10,9 @@ classDiagram
   }
   class application {
   }
-  class apply_decimals {
+  class apply_money_format {
+  }
+  class change {
   }
   class domain {
   }
@@ -24,13 +26,21 @@ classDiagram
   }
   class rescale {
   }
+  class router {
+  }
   class sql_money_format_writer {
   }
   class tables {
   }
+  apply_money_format --> change
   export_reader --> tables
   opening --> tables
   reader --> tables
+  router --> apply_money_format
+  router --> reader
+  router --> rescale
+  router --> sql_money_format_writer
+  sql_money_format_writer --> change
   sql_money_format_writer --> rescale
   sql_money_format_writer --> tables
 ```
@@ -40,12 +50,21 @@ classDiagram
 ```mermaid
 classDiagram
   class AmountTooLargeToRescale {
+    code : ClassVar~str~
   }
   class DecimalsBelowRecordedAmounts {
+    code : ClassVar~str~
+  }
+  class MoneyFormatChange {
+    any : bool
+    decimals_changed : bool
+    symbol_changed : bool
   }
   class RescaleBusy {
+    code : ClassVar~str~
   }
   class RescaleCheckFailed {
+    code : ClassVar~str~
   }
 ```
 
@@ -53,11 +72,11 @@ classDiagram
 
 ```mermaid
 classDiagram
-  class ApplyDecimals {
-    execute(business_id: int, decimals: int) None
+  class ApplyMoneyFormat {
+    execute(business_id: int, symbol: str, decimals: int) MoneyFormatChange
   }
   class MoneyFormatWriter {
-    apply_decimals(business_id: int, decimals: int) None
+    apply(business_id: int, money_format: MoneyFormat) MoneyFormatChange
   }
 ```
 
@@ -65,6 +84,11 @@ classDiagram
 
 ```mermaid
 classDiagram
+  class MoneyFormatBody {
+    decimals : int
+    symbol : str
+    of(money_format: MoneyFormat) MoneyFormatBody
+  }
   class MoneyFormatOpening {
     opened(business_id: int, language: BusinessLanguage) None
   }
@@ -82,6 +106,6 @@ classDiagram
     of(business_id: int) ExportedMoney
   }
   class SqlMoneyFormatWriter {
-    apply_decimals(business_id: int, decimals: int) None
+    apply(business_id: int, money_format: MoneyFormat) MoneyFormatChange
   }
 ```

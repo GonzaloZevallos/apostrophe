@@ -62,7 +62,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   const renamedTo = `${businessName} Renombrado`
   await openGroup('Business')
   await page.getByLabel('Business name').fill(renamedTo)
-  await expectToast(page, 'Business renamed', () => page.getByRole('button', { name: 'Save the name' }).click())
+  await expectToast(page, 'Saved', () => page.getByRole('button', { name: 'Save' }).click())
   await close()
 
   // Usuarios: a fresh join link.

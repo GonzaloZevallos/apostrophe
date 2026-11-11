@@ -17,7 +17,7 @@ import { router } from '../../router'
 import { pickProduct } from './lineProduct'
 import { METHODS_ANSWER, withPaymentMethods } from '../../test-payment-methods'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
 const ANA = { id: 7, name: 'Ana', phone: '+5491100000001', vip: false }
 
 function price(list: number) {

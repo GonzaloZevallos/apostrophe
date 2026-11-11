@@ -24,7 +24,7 @@ import PaymentMethods from './PaymentMethods'
 import PaymentMethodsArchived from './PaymentMethodsArchived'
 import PaymentsGroup from './PaymentsGroup'
 
-const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN }
+const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 const method = (id: number, name: string, icon: PaymentMethodItem['icon'], in_use = false): PaymentMethodItem => ({
   id,

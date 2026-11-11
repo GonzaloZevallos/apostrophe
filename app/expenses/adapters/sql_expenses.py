@@ -1,12 +1,17 @@
 from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
-from app.db import money_scale_factor, money_stored_value, scaled
+from app.db import (
+    domain_amount,
+    money_of_domain,
+    money_scale_factor,
+    money_stored_value,
+    scaled,
+)
 from app.expenses.adapters.tables import ExpenseCategoryRow, ExpenseRow
 from app.expenses.domain.expense import Expense
 from app.expenses.domain.month import Month
 from app.expenses.domain.monthly_view import CategorizedExpense
-from app.shared.money import Money
 
 
 class SqlExpenses:
@@ -84,13 +89,21 @@ class SqlExpenses:
             )
         )
         return [
-            CategorizedExpense(_expense(row, amount), name, name_key)
+            CategorizedExpense(_expense(row, self._units(amount)), name, name_key)
             for row, amount, name, name_key in self._session.execute(statement)
         ]
 
+    def _units(self, hundredths: int) -> int:
+        """A read amount as the domain's int, in the unit of the business's decimals."""
+        return domain_amount(self._session, self._business_id, hundredths)
+
     def _stored(self, units: int) -> int:
-        """A domain amount, whole units, as the integer this business's column holds."""
-        return money_stored_value(self._session, self._business_id, Money.of_units(units))
+        """A domain amount as the integer this business's column holds."""
+        return money_stored_value(
+            self._session,
+            self._business_id,
+            money_of_domain(self._session, self._business_id, units),
+        )
 
     def _read(self, expense_id: int) -> Expense | None:
         factor = money_scale_factor(self._session, self._business_id)
@@ -99,7 +112,7 @@ class SqlExpenses:
                 ExpenseRow.id == expense_id, ExpenseRow.business_id == self._business_id
             )
         ).first()
-        return None if found is None else _expense(found[0], found[1])
+        return None if found is None else _expense(found[0], self._units(found[1]))
 
     def _row(self, expense_id: int) -> ExpenseRow | None:
         statement = select(ExpenseRow).where(
@@ -108,12 +121,12 @@ class SqlExpenses:
         return self._session.scalar(statement)
 
 
-def _expense(row: ExpenseRow, hundredths: int) -> Expense:
-    """The row with its amount read in hundredths; whole units or `MoneyNotRepresentable`."""
+def _expense(row: ExpenseRow, amount: int) -> Expense:
+    """The row with its amount, already the domain's int."""
     return Expense(
         spent_on=row.spent_on,
         category_id=row.expense_category_id,
-        amount=Money(hundredths).whole_units(),
+        amount=amount,
         detail=row.detail,
         recorded_at=row.recorded_at,
         id=row.id,

@@ -31,6 +31,7 @@ class Business:
     id: int
     name: str
     language: str
+    default_phone_country: str | None
     last_sale_number: int | None = None
 
     def __post_init__(self) -> None:
@@ -68,10 +69,10 @@ def build_document(
     exported_at: datetime,
     money: ExportedMoney | None = None,
 ) -> dict[str, Any]:
-    """`{"business": {"id", "name", "language"[, "last_sale_number"]}, "exported_at",
-    ["money": {"scale", "decimals"},] "kinds": {table: [records]}}`; the counter is in the
-    header whenever the business carries it (docs/adr/0073), and `money` whenever the
-    caller read the business's (docs/adr/0058).
+    """`{"business": {"id", "name", "language", "default_phone_country"[, "last_sale_number"]},
+    "exported_at", ["money": {"scale", "decimals"},] "kinds": {table: [records]}}`; the counter
+    is in the header whenever the business carries it (docs/adr/0073), and `money` whenever
+    the caller read the business's (docs/adr/0058).
     Every owned table in `schema` becomes a kind, its records sorted by id, with
     `EXCLUDED_COLUMNS` dropped, `business_id` never repeated, foreign keys turned
     into `{"id", "name"}` references and `*_hundredths` integers into two-place
@@ -98,6 +99,7 @@ def build_document(
         "id": business.id,
         "name": business.name,
         "language": business.language,
+        "default_phone_country": business.default_phone_country,
     }
     if business.last_sale_number is not None:
         header["last_sale_number"] = business.last_sale_number

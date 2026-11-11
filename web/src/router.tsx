@@ -68,6 +68,7 @@ import PaymentMethods from './screens/settings/PaymentMethods'
 import PaymentMethodsArchived from './screens/settings/PaymentMethodsArchived'
 import PaymentsGroup from './screens/settings/PaymentsGroup'
 import UsersGroup from './screens/settings/UsersGroup'
+import CurrencyAndDecimals from './screens/settings/CurrencyAndDecimals'
 import WithdrawalReasons from './screens/settings/WithdrawalReasons'
 import WithdrawalDetail from './screens/withdrawals/WithdrawalDetail'
 import WithdrawalFormRoute from './screens/withdrawals/WithdrawalFormRoute'
@@ -129,6 +130,7 @@ const ELEMENTS: Record<ScreenId, ReactElement> = {
   'settings-integrations': <IntegrationsGroup />,
   'settings-catalog-message': <CatalogMessageGroup />,
   'settings-expense-categories': <ExpenseCategoriesGroup />,
+  'settings-currency': <CurrencyAndDecimals />,
   'settings-withdrawal-reasons': <WithdrawalReasons />,
   'settings-appearance': <AppearanceGroup />,
   'settings-account': <AccountGroup />,

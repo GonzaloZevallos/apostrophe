@@ -942,6 +942,27 @@ body {
   color: var(--tinta2);
 }
 
+/* The phone field's example: the secondary ink, fully opaque, so it reads at 4.5:1 in both themes
+   (the browser's own placeholder grey does not in the dark one). */
+.campo__input[type='tel']::placeholder {
+  color: var(--tinta2);
+  opacity: 1;
+}
+
+/* The Phone country control: the same options, stacked, one per row (nine do not fit across). */
+.ajustes-tema--columna {
+  flex-direction: column;
+  border-radius: var(--radio-campo);
+}
+
+.ajustes-tema--columna .ajustes-tema__opcion {
+  flex: none;
+  justify-content: flex-start;
+  padding-inline: var(--espacio-md);
+  border-radius: var(--radio-campo);
+  text-align: start;
+}
+
 /* The language control under the name form: the same segments, at least 44px tall. */
 .ajustes-idioma {
   margin-top: var(--espacio-xxl);
@@ -6478,6 +6499,24 @@ body {
   min-width: 44px;
   min-height: 44px;
   padding: 0;
+}
+
+/* Currency and decimals: every button on the form (its header Close, Save) takes no tap delay,
+ * and the Example's digits are tabular. Scoped to the screen, so no other screen's listed
+ * offender changes. */
+.moneda-pantalla button,
+.ajustes-grupo:has(.moneda-pantalla) .ajustes-grupo__encabezado button {
+  touch-action: manipulation;
+}
+
+.moneda-pantalla output {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Currency and decimals: the decimals radios (0 · 1 · 2) are at least as tall as a touch target. */
+.moneda-decimales .selector-pago__opcion {
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-md);
 }
 
 /* The group's own Close sits in the header above the wrapper; only this group's is scoped. */

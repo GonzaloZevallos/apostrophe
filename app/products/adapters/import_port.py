@@ -29,7 +29,7 @@ from app.products.domain.product import (
     ProductName,
     ProductRuleBroken,
 )
-from app.shared.money import MoneyFormat, TooManyDecimals, money_within
+from app.shared.money import MoneyFormat, TooManyDecimals, domain_amount_within
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.application.ports import Refusal, VarietyKey
 from app.spreadsheet_import.domain.rows import PriceHistoryRow
@@ -128,4 +128,4 @@ class ProductsImport:
 def _whole(amount: int, shown: MoneyFormat) -> int:
     """A sheet's amount as a domain amount, checked by value against the business's
     decimals (docs/adr/0058)."""
-    return money_within(Decimal(amount), shown).whole_units()
+    return domain_amount_within(Decimal(amount), shown)

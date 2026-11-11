@@ -15,6 +15,7 @@ from pathlib import Path
 import pytest
 
 from app.accounts.adapters.language_router import as_http as language_as_http
+from app.accounts.adapters.phone_country_router import as_http as phone_country_as_http
 from app.accounts.adapters.router import as_http as accounts_as_http
 from app.catalog.adapters.router import as_http as catalog_as_http
 from app.customer_types.adapters.router import as_http as customer_types_as_http
@@ -22,6 +23,7 @@ from app.customers.adapters.router import as_http as customers_as_http
 from app.expenses.adapters.router import as_http as expenses_as_http
 from app.http_errors import TranslateErrors
 from app.main import create_app
+from app.money_format.adapters.router import as_http as money_format_as_http
 from app.onboarding.adapters.router import as_http as onboarding_as_http
 from app.payment_methods.adapters.router import as_http as payment_methods_as_http
 from app.payments.adapters.router import as_http as payments_as_http
@@ -39,6 +41,7 @@ CONTRACT_PATH = Path(__file__).resolve().parent.parent / "web" / "src" / "api" /
 TRANSLATORS: list[TranslateErrors] = [
     accounts_as_http,
     language_as_http,
+    phone_country_as_http,
     customers_as_http,
     customer_types_as_http,
     products_as_http,
@@ -51,6 +54,7 @@ TRANSLATORS: list[TranslateErrors] = [
     results_as_http,
     pinned_catalog_as_http,
     onboarding_as_http,
+    money_format_as_http,
 ]
 
 # Added by the app-wide 422 handler (ADR-0005), not by any `TranslateErrors`: still

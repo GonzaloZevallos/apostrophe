@@ -35,7 +35,7 @@ class PaymentRow(Base):
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
     paid_on: Mapped[date]
     amount: Mapped[int] = money_column()
-    # Frozen (docs/adr/0084): rows written before 0030 keep their value, new rows leave it
+    # Frozen (docs/adr/0084): rows written before 0031 keep their value, new rows leave it
     # NULL. Only this module and the migrations name it.
     method: Mapped[str | None] = mapped_column(String(PAYMENT_METHOD_MAX_LENGTH))
     customer_id: Mapped[int | None] = mapped_column(ForeignKey("customer.id"))

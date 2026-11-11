@@ -1,13 +1,13 @@
 """The payment methods of a business (CONTEXT.md: Payment method; docs/adr/0084).
 
-Revision ID: 0029
-Revises: 0028
+Revision ID: 0030
+Revises: 0029
 
 Adds the table and gives every business that already exists the two defaults, English (an
 existing business's stored language is English), at positions 1 and 2. The names, keys and
 icons are literals, not imported from `app`: a revision must not change behaviour if the
 domain ever does. A test asserts each key equals what `PaymentMethodName` derives. Nothing
-that existed is changed, and nothing links a payment to its method yet: revision 0030 does,
+that existed is changed, and nothing links a payment to its method yet: revision 0031 does,
 by the `name_key` written here. Every business is seeded, including one with no payments.
 """
 
@@ -18,8 +18,8 @@ from alembic import op
 
 from app.db import UtcDateTime
 
-revision: str = "0029"
-down_revision: str | None = "0028"
+revision: str = "0030"
+down_revision: str | None = "0029"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

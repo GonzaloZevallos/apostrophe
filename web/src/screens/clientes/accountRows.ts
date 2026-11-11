@@ -8,7 +8,7 @@
 import type { AccountRow, HowPaid, SaleAccountRow } from '../../api/payments'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { formatDateShort } from '../../format/dates'
-import { formatMoney, formatMoneyMagnitude } from '../../format/money'
+import type { MoneyFormatter } from '../../format/money'
 
 /** What a sale row says under "Sale": total, so a new `HowPaid` fails to compile here. A paid
  * sale names its method instead (`saleSub`), from the row's `payment_method`. */
@@ -40,19 +40,19 @@ export interface LedgerRowView {
  * (`payments.md`, "En pantalla: la ficha del cliente"). Reads only `kind`, `how_paid`,
  * `method`, the sale's date and `standing`, never the sign of an amount.
  */
-export function ledgerRowView(row: AccountRow): LedgerRowView {
+export function ledgerRowView(row: AccountRow, money: MoneyFormatter): LedgerRowView {
   const balance =
     row.standing === 'credit'
-      ? { balance: CUSTOMERS_TEXT.creditAmount(formatMoneyMagnitude(row.running_balance)), balanceTone: 'credit' as const }
+      ? { balance: CUSTOMERS_TEXT.creditAmount(money.magnitude(row.running_balance)), balanceTone: 'credit' as const }
       : {
-          balance: CUSTOMERS_TEXT.balanceAmount(formatMoney(row.running_balance)),
+          balance: CUSTOMERS_TEXT.balanceAmount(money.money(row.running_balance)),
           balanceTone: row.standing === 'owes' ? ('debt' as const) : ('neutral' as const),
         }
   if (row.kind === 'sale') {
     return {
       title: CUSTOMERS_TEXT.saleTitle,
       sub: saleSub(row.sale),
-      own: formatMoney(row.sale.total),
+      own: money.money(row.sale.total),
       ...balance,
     }
   }
@@ -61,11 +61,11 @@ export function ledgerRowView(row: AccountRow): LedgerRowView {
     return {
       title,
       sub: CUSTOMERS_TEXT.onAccountOf(formatDateShort(row.applied_to.sale_date)),
-      own: formatMoney(row.applied_to.amount),
+      own: money.money(row.applied_to.amount),
       ...balance,
     }
   }
-  return { title, sub: CUSTOMERS_TEXT.creditLabel, own: formatMoneyMagnitude(row.amount), ...balance }
+  return { title, sub: CUSTOMERS_TEXT.creditLabel, own: money.magnitude(row.amount), ...balance }
 }
 
 /**

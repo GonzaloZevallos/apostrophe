@@ -15,6 +15,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { SheetRouterProvider, SheetStackProvider } from '../components/useSheetStack'
 import type { StockEntry } from '../api/stock'
 import { HOME } from '../routes'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 import StockEntryForm, { type StockEntryFormProps } from './StockEntryForm'
 import type { Variety } from './Variedades'
 
@@ -39,9 +40,11 @@ function renderInStack(form: ReactNode) {
   ])
   render(
     <QueryClientProvider client={client}>
-      <SheetRouterProvider router={router}>
-        <RouterProvider router={router} />
-      </SheetRouterProvider>
+      <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
+        <SheetRouterProvider router={router}>
+          <RouterProvider router={router} />
+        </SheetRouterProvider>
+      </MoneyFormatProvider>
     </QueryClientProvider>,
   )
 }
@@ -49,13 +52,15 @@ function renderInStack(form: ReactNode) {
 function renderForm(onSaved: () => void) {
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-      <StockEntryForm
-        mode="nuevo"
-        today="2026-10-03"
-        fixedVarietyId={3}
-        fixedOrigin="opening_stock"
-        onSaved={onSaved}
-      />
+      <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
+        <StockEntryForm
+          mode="nuevo"
+          today="2026-10-03"
+          fixedVarietyId={3}
+          fixedOrigin="opening_stock"
+          onSaved={onSaved}
+        />
+      </MoneyFormatProvider>
     </QueryClientProvider>,
   )
 }

@@ -4,7 +4,14 @@
 import { expect, test } from 'vitest'
 import type { HowPaid, Standing } from '../../api/payments'
 import type { AccountRow, Payment } from '../../api/payments'
-import { deleteRowIndices, ledgerRowView } from './accountRows'
+import { moneyFormatter } from '../../format/money'
+import { deleteRowIndices, ledgerRowView as ledgerRowViewWith } from './accountRows'
+
+const MONEY = moneyFormatter({ symbol: '$', decimals: 0 })
+
+function ledgerRowView(row: AccountRow) {
+  return ledgerRowViewWith(row, MONEY)
+}
 
 function payment(id: number): Payment {
   return { id, paid_on: '2026-10-05', amount: 8000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } }

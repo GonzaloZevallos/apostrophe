@@ -61,7 +61,7 @@ _Avoid_: client, buyer, contact, user
 _In the app_: Customer
 
 **Phone number**:
-Dato de contacto opcional de un Customer, en formato internacional: un número argentino siempre como celular (+54 9 y 10 dígitos con código de área), uno extranjero como + y su código de país y dígitos. Un valor en blanco significa que no hay ninguno. Dos Customers de un Business nunca comparten uno cuando ambos tienen uno; cualquier cantidad de Customers puede no tener ninguno.
+Dato de contacto opcional de un Customer, guardado en una sola forma internacional: uno tipeado con + y el código de un país de la lista sigue la regla de ese país, uno con otro código se guarda como + y 8 a 15 dígitos, y uno sin + se lee con la regla del Phone country del Business (la de Argentina sigue siendo la de hoy: siempre celular, +54 9 y 10 dígitos), o se rechaza si no hay ninguno. Un valor en blanco significa que no hay ninguno. Dos Customers de un Business nunca comparten uno, se haya tipeado como se haya tipeado. En la app: Phone.
 _Avoid_: contact, handle, username, identifier
 _In the app_: Phone
 
@@ -96,9 +96,9 @@ _Avoid_: sample, freebie
 _In the app_: Gift
 
 **Special price**:
-Un total en pesos enteros mayor que $0, tipeado a mano para una Sale line, que reemplaza al calculado. Una Sale line gratis es un Gift, nunca un Special price de $0.
-_In the app_: Special price
+Un total mayor que 0, con hasta los decimales del Money format del Business, tipeado a mano para una Sale line, que reemplaza al calculado. Una Sale line gratis es un Gift, nunca un Special price de $0. _In the app_: Special price.
 _Avoid_: override, custom price, discount
+_In the app_: Special price
 
 **Pricing rule**:
 Qué regla fijó el precio de una Sale line: list, bulk, VIP, gift o Special price. Exactamente una por Sale line, guardada con su precio cuando se registra la Sale y nunca se vuelve a calcular. VIP significa que se cobró el VIP price, incluso cuando era igual al Bulk price. _In the app_: list, bulk, VIP, gift, special.
@@ -206,7 +206,7 @@ _Avoid_: cash flow, balance, profit
 ## Telegram
 
 **Catalog**:
-El texto que ofrece cada Product sin archivar y visible, con Stock mayor que cero y un Current price hoy: su emoji, nombre, Indica share, Aroma y precios, entre las dos partes del Catalog header and footer del Business. Conserva sus marcadores **bold** y su propio formato de dinero ($11.000). _In the app_: Catalog.
+El texto que ofrece cada Product sin archivar y visible, con Stock mayor que cero y un Current price hoy: su emoji, nombre, Indica share, Aroma y precios, entre las dos partes del Catalog header and footer del Business. Conserva sus marcadores **bold** y su propio estilo de dinero (el símbolo pegado a la cifra, punto para los miles: $11.000), con el símbolo y los decimales del Money format del Business. _In the app_: Catalog.
 _Avoid_: menu, price list, flyer
 _In the app_: Catalog
 
@@ -391,7 +391,7 @@ Una pantalla a la que se llega directo desde la barra o la barra lateral (Home, 
 _Avoid_: home, main screen, section
 
 **Settings**:
-El único lugar que reúne cada configuración de todo el Business, en grupos: Business (con sus Withdrawal reasons), Users, Prices, Payments and expenses (con sus Payment methods), Integrations, Catalog message, Expense categories, Appearance y Your account. La configuración de un solo Product vive en el Product, nunca acá, y nada del Operator está acá. _In the app_: Settings.
+El único lugar que reúne cada configuración de todo el Business, en grupos: Business (con sus Withdrawal reasons y su Currency and decimals), Users, Prices, Payments and expenses (con sus Payment methods), Integrations, Catalog message, Expense categories, Appearance y Your account. La configuración de un solo Product vive en el Product, nunca acá, y nada del Operator está acá. _In the app_: Settings.
 _Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group)
 
 **First-run checklist**:
@@ -410,7 +410,7 @@ Buscar el número del chat propio del vendedor entre los chats privados que le e
 _Avoid_: auto-detect, discovery, getUpdates, chat search, sync
 
 **VIP price**:
-Un precio por gramo opcional en una Price entry, para los VIP customers: un peso entero mayor que $0 y menor que el List price de esa Price entry, independiente del Bulk price. Nunca se muestra en el Catalog. Planned in GH-318 (not yet in the code): lo que cambia junto a esta Price entry se cuenta en el bloque de cierre de abajo. _In the app_: VIP price.
+Un precio por gramo opcional en una Price entry, para los VIP customers: un monto mayor que 0, con hasta los decimales del Money format del Business, y menor que el List price de esa Price entry, independiente del Bulk price. Nunca se muestra en el Catalog. Planned in GH-318 (not yet in the code): lo que cambia junto a esta Price entry se cuenta en el bloque de cierre. _In the app_: VIP price.
 _Avoid_: friend price, discount, Amigo price
 
 **Pricing settings**:
@@ -418,8 +418,8 @@ Cuáles de Bulk price y Customer types usa un Business: dos interruptores indepe
 _Avoid_: price config, pricing mode, plan, tariff settings
 
 **Money format**:
-El símbolo de la moneda y los decimales con que un Business muestra su dinero. Todo Business tiene por ahora "$" y 0 decimales. Se guarda en una fila de money_format por Business, junto con la Money scale. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md.
-_Avoid_: currency settings
+El símbolo de la moneda (de 1 a 4 code points de caracteres visibles, sin dos asteriscos seguidos, siempre antes del monto) y los decimales (de 0 a 2) con que un Business muestra y acepta su dinero, "$" y 0 por defecto. Cualquier User cambia el símbolo en Settings → Business → Currency and decimals; subir los decimales por encima de 0 llama al rescale cuando la escala todavía es 0, bajarlos se rechaza mientras algún monto registrado tenga más, y un cambio nunca cambia el valor de un monto. Se guarda en una fila de money_format por Business, junto con la Money scale (ADR-0058).
+_Avoid_: currency settings, locale, number format
 
 **Money scale**:
 Si un Business guarda su dinero en unidades enteras de moneda (0) o en centésimos (2): los Businesses que ya existían quedan en 0 y los nuevos empiezan en 2. Es un dato de guardado, no de pantalla, que se aplica solo dentro del SQL del adaptador mediante el único helper de dinero; ningún caso de uso la lee y ningún pedido la lleva. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md.
@@ -586,6 +586,10 @@ _Avoid_: category, type, tag, cause, Promotion (old name of one default reason)
 **VIP type**:
 El Customer type "VIP" que la actualización creó en cada Business existente, con los Customers que tenían la marca VIP. Hasta la parte customer-type prices es el único tipo cuya pertenencia da el VIP price; lo identifica la actualización, nunca su nombre, así que renombrarlo no cambia nada y un tipo del vendedor llamado "VIP" no da ningún precio. En la app: no tiene palabra propia; se ve como un tipo más.
 _Avoid_: VIP mark, VIP flag, default type
+
+**Phone country**:
+El país con el que un Business lee un Phone number tipeado sin + ni código de país: uno de una lista fija (Argentina, Uruguay, Chile, Paraguay, Brazil, Mexico, Spain, United States), cada uno con su propia regla, o ninguno. Los Businesses existentes quedan en Argentina y uno nuevo arranca sin ninguno; se cambia solo en Settings → Business y nunca reescribe un número guardado. En la app: Phone country.
+_Avoid_: default country, locale, region, country setting
 
 **Sale number**:
 El número correlativo de una Sale dentro de su Business, que se asigna una sola vez al guardarla, en orden de guardado, empezando en 1. Nunca cambia ni se reutiliza, aunque se borre la Sale que lo tenía, y no revela nada de ningún otro Business. Las Sales que ya existían se numeraron una sola vez por fecha y después por orden de registro. _In the app_: Sale #N.

@@ -9,7 +9,9 @@ All in the caller's transaction, which it never commits:
 2. Only then does every column tagged `info["money"]` in `app.tables.metadata` get
    multiplied by 100, each checked inside the transaction.
 3. `decimals` is written only when it differs; a lower is then checked against the
-   amounts already recorded.
+   amounts already recorded, by one `EXISTS` per tagged column, filtered on the business.
+4. `symbol` is written only when it differs. Both writes tell the caller what changed
+   through their row counts, so a save of the values already stored reports nothing.
 
 The scale is read and written here with this module's own SQL, never through `app.db`'s
 `money_scale_factor`: that would cache a factor, and the commit-time guard would take this
@@ -21,20 +23,21 @@ from __future__ import annotations
 
 from typing import cast
 
-from sqlalchemy import Table, func, select, update
+from sqlalchemy import Table, exists, func, select, update
 from sqlalchemy.engine import Connection
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
 from app.db import MoneyFormatMissing
 from app.money_format.adapters.tables import MoneyFormatRow
+from app.money_format.domain.change import MoneyFormatChange
 from app.money_format.domain.rescale import (
     AmountTooLargeToRescale,
     DecimalsBelowRecordedAmounts,
     RescaleBusy,
     RescaleCheckFailed,
 )
-from app.shared.money import SCALE_FACTORS
+from app.shared.money import SCALE_FACTORS, MoneyFormat
 from app.tables import metadata
 
 _HUNDREDTHS_SCALE = 2
@@ -53,11 +56,11 @@ class SqlMoneyFormatWriter:
     def __init__(self, session: Session) -> None:
         self._session = session
 
-    def apply_decimals(self, business_id: int, decimals: int) -> None:
+    def apply(self, business_id: int, money_format: MoneyFormat) -> MoneyFormatChange:
         busy = False
         overflowed = False
         try:
-            self._apply(self._session.connection(), business_id, decimals)
+            change = self._apply(self._session.connection(), business_id, money_format)
         except OperationalError as exc:
             # The driver's message is read here and never kept: only a flag leaves.
             text = str(exc.orig).lower()
@@ -77,8 +80,12 @@ class SqlMoneyFormatWriter:
             raise RescaleBusy
         if overflowed:
             raise AmountTooLargeToRescale
+        return change
 
-    def _apply(self, connection: Connection, business_id: int, decimals: int) -> None:
+    def _apply(
+        self, connection: Connection, business_id: int, money_format: MoneyFormat
+    ) -> MoneyFormatChange:
+        decimals = money_format.decimals
         if decimals > 0:
             raised = connection.execute(
                 update(_money_format)
@@ -99,6 +106,18 @@ class SqlMoneyFormatWriter:
             raise MoneyFormatMissing
         if written.rowcount == 1 and decimals < scale:
             self._refuse_cents_below(connection, business_id, 10 ** (scale - decimals))
+        symbol_written = connection.execute(
+            update(_money_format)
+            .where(
+                _money_format.c.business_id == business_id,
+                _money_format.c.symbol != money_format.symbol,
+            )
+            .values(symbol=money_format.symbol)
+        )
+        return MoneyFormatChange(
+            symbol_changed=symbol_written.rowcount == 1,
+            decimals_changed=written.rowcount == 1,
+        )
 
     def _rescale(self, connection: Connection, business_id: int) -> None:
         for table in metadata.sorted_tables:
@@ -132,8 +151,8 @@ class SqlMoneyFormatWriter:
                 if column.info.get("money") is not True:
                     continue
                 held = connection.execute(
-                    select(func.count()).where(
-                        table.c.business_id == business_id, column % divisor != 0
+                    select(
+                        exists().where(table.c.business_id == business_id, column % divisor != 0)
                     )
                 ).scalar_one()
                 if held:

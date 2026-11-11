@@ -37,7 +37,7 @@ const viewport = vi.hoisted(() => ({ current: 'phone' as 'phone' | 'computer' })
 
 vi.mock('./useViewport', () => ({ useViewport: () => viewport.current }))
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
 const LIVE = { id: 1, name: '24K Gold', archived: false, removal: null, current_price: null }
 const ARCHIVED = { id: 2, name: 'Vieja', archived: true, removal: null, current_price: null }
 const FIRST_RUN_NONE = { kind: 'none', checklist: [], import_notice: false, nothing_qualifies: false }

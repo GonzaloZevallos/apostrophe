@@ -20,7 +20,7 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.shared.money import TooManyDecimals, money_within
+from app.shared.money import TooManyDecimals, domain_amount_within
 from app.shared.quantity import Quantity
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.application.ports import Refusal
@@ -123,7 +123,7 @@ class SqlStockImport:
         decimals like a typed one (docs/adr/0058); `None` stays `None`."""
         if total_cost is None:
             return None
-        return money_within(Decimal(total_cost), self._money_format.current()).whole_units()
+        return domain_amount_within(Decimal(total_cost), self._money_format.current())
 
     def write_threshold(
         self, variety_id: int, quantity: Quantity, transaction: Transaction

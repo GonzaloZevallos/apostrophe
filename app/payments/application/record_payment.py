@@ -13,7 +13,7 @@ from app.payments.application.ports import Ledgers, MoneyFormatReader, Payments
 from app.payments.domain.payment import PaymentCandidate, PaymentMethodRequired
 from app.payments.domain.payment import settle_candidate as domain_settle_candidate
 from app.payments.domain.settlement import Split, Standing
-from app.shared.money import money_within
+from app.shared.money import domain_amount_within
 from app.shared.payment_method import PaymentMethodId
 from app.shared.transaction import Transaction
 
@@ -51,7 +51,7 @@ def settle_candidate(
 def _whole_amount(money_format: MoneyFormatReader, amount: Decimal) -> int:
     """A request's amount as a domain amount, checked by value against the business's own
     decimals (docs/adr/0058); a refusal precedes every other read."""
-    return money_within(amount, money_format.current()).whole_units()
+    return domain_amount_within(amount, money_format.current())
 
 
 def preview_payment(

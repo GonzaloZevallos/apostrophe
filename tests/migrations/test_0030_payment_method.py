@@ -1,4 +1,4 @@
-"""Migration 0029 gives every existing business the two default payment methods, once,
+"""Migration 0030 gives every existing business the two default payment methods, once,
 through the real revisions from 0019, and changes nothing that existed (the shared
 comparator). The seeded names and keys are literals; they equal what the domain derives."""
 
@@ -33,7 +33,7 @@ def test_every_business_gets_the_two_defaults_and_nothing_that_existed_changes(
 ) -> None:
     engine = _engine_at_0028(tmp_path)
 
-    after = upgrade_and_compare(engine, "0029")
+    after = upgrade_and_compare(engine, "0030")
 
     found: dict[int, list[tuple[str, str, str, int]]] = {}
     for row in after["payment_method"].values():
@@ -48,7 +48,7 @@ def test_every_business_gets_the_two_defaults_and_nothing_that_existed_changes(
 def test_the_comparator_would_catch_a_migration_that_rewrote_a_business(tmp_path: Path) -> None:
     engine = _engine_at_0028(tmp_path)
     before = snapshot(engine)
-    upgrade_to(engine, "0029")
+    upgrade_to(engine, "0030")
     with engine.begin() as connection:
         connection.execute(text("UPDATE business SET name = 'Rewritten' WHERE id = 1"))
 
@@ -64,7 +64,7 @@ def test_each_literal_key_is_what_the_domain_derives_from_its_name() -> None:
 
 def test_the_table_keeps_a_name_once_per_business(tmp_path: Path) -> None:
     engine = _engine_at_0028(tmp_path)
-    upgrade_to(engine, "0029")
+    upgrade_to(engine, "0030")
 
     with pytest.raises(IntegrityError), engine.begin() as connection:
         connection.execute(

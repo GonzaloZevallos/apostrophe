@@ -16,12 +16,12 @@ cómo se enlazan.
   Payments pasados: es deliberado. El `name_key` lo deriva solo el objeto de valor `PaymentMethodName`; la
   migración escribe claves literales y un test las ata a esa derivación.
 - **`payment.method` queda congelada y pasa a ser nullable.** Una migración nunca cambia el valor de una
-  columna que ya existía; la 0030 (pieza `switch`) agrega `payment.payment_method_id`, la llena desde el
+  columna que ya existía; la 0031 (pieza `switch`) agrega `payment.payment_method_id`, la llena desde el
   valor congelado según el Business y relaja `method` a nullable; las filas nuevas escriben NULL. Solo
   `app/payments/adapters/tables.py` y `app/migrations/` nombran esa columna.
 - **Clave foránea compuesta con RESTRICT.** `(business_id, payment_method_id)` referencia
   `payment_method(business_id, id)` con `ON DELETE RESTRICT`. Por eso `payment_method` lleva la unicidad
-  `(business_id, id)` desde la 0029.
+  `(business_id, id)` desde la 0030.
 - **Una sola respuesta para un medio inutilizable.** Desconocido, de otro Business, archivado o eliminado:
   siempre 404 con código `payment_method.unavailable`, sin nombrar el medio. Cada escritor (Payment
   posterior, On-the-spot payment) lo comprueba dentro de su único `INSERT … SELECT` guardado, que mira el

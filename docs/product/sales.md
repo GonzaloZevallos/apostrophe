@@ -145,7 +145,7 @@ Criterios de éxito, Sale number:
 - **Stock**: registrar una venta o un regalo nunca se rechaza por stock (ADR-0009). Sus gramos salen del stock de su producto, que puede quedar negativo.
 - **Cotización**: se calcula cuando se registra la venta y se guarda en la línea con su Pricing rule (ADR-0003). Usa el Current price del producto en la fecha de la venta y las Pricing settings del negocio al momento de guardar. Gana el primer paso que aplica:
   1. **Gift**: $0.
-  2. **Special price**: el total tipeado para la línea, en pesos enteros y por encima de $0.
+  2. **Special price**: el total tipeado para la línea, con hasta los decimales del Money format del Business y por encima de $0.
   3. **Si no, el menor precio por gramo** entre las reglas que aplican a la línea:
      - **List price**: aplica siempre.
      - **Bulk price**: Bulk price está encendido, el Current price tiene Bulk price y los gramos de la línea están en el **Bulk minimum** o por encima. El mínimo se mide por línea, nunca entre líneas.
@@ -169,7 +169,7 @@ Criterios de éxito, Sale number:
   - Una parte o todo puede ser **Pending cost**.
   - No queda congelado como el precio, y un cambio en él nunca mueve el precio ni el total de la línea.
 - **Total**: la suma de los totales redondeados de las líneas más el Shipping charged. Las líneas se redondean de a una, nunca como suma.
-- **Shipping charged**: pesos enteros, cero o más, $0 por defecto. Un valor negativo se rechaza.
+- **Shipping charged**: con hasta los decimales del Money format del Business, cero o más, $0 por defecto. Un valor negativo se rechaza.
 - **Cómo se pagó**:
   - **Pagada entera en el momento.** Registra un On-the-spot payment por el total, en la fecha de la venta, con el medio del negocio elegido (ADR-0007). Salda solo esta venta (`payments.md`).
   - **Queda debiendo**: sin medio, y la venta necesita cliente. Los pagos posteriores la saldan empezando por la deuda más vieja (`payments.md`).

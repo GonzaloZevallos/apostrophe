@@ -16,12 +16,11 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db import money_scale_factor, scaled
+from app.db import domain_amount, money_scale_factor, scaled
 from app.products.adapters.sql_products import SqlProducts
 from app.products.adapters.tables import PriceEntryRow
 from app.products.domain.product import PriceEntry, Product, ProductName, ProductRuleBroken
 from app.sales.domain.pricing import BulkQuote, PriceQuote, VarietyPricing
-from app.shared.money import Money
 from app.spreadsheet_import.domain.rows import PriceHistoryRow
 
 
@@ -53,7 +52,11 @@ class SqlPriceBook:
                 PriceEntryRow.id == entry.id, PriceEntryRow.business_id == self._business_id
             )
         )
-        return None if hundredths is None else Money(hundredths).whole_units()
+        return (
+            None
+            if hundredths is None
+            else domain_amount(self._session, self._business_id, hundredths)
+        )
 
 
 class PlannedPriceBook:

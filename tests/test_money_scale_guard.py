@@ -28,6 +28,7 @@ _money_format = Table(
     Column("id", Integer, primary_key=True),
     Column("business_id", Integer, nullable=False),
     Column("scale", Integer, nullable=False),
+    Column("decimals", Integer, nullable=False, server_default="2"),
     UniqueConstraint("business_id", name="uq_money_format_business_id"),
 )
 _amounts = Table(

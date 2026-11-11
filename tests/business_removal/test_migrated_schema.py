@@ -5,6 +5,8 @@ database must never trip `unowned_tables`, `secret_columns` or a `delete_order` 
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -16,6 +18,7 @@ from app.business_removal.domain.classification import (
     secret_columns,
     unowned_tables,
 )
+from app.business_removal.domain.export_document import Business, build_document
 from app.db import make_engine
 from app.migrations.runner import upgrade_to_head
 
@@ -90,6 +93,17 @@ def test_expense_to_expense_category_fk_reflects_as_one_composite_key() -> None:
         ("business_id", "business_id"),
         ("expense_category_id", "id"),
     }
+
+
+def test_every_business_column_but_id_is_a_key_of_the_export_header() -> None:
+    schema = _schema_rows().schema()
+    columns = {column.name for column in schema.table("business").columns} - {"id"}
+
+    document = build_document(
+        Business(1, "La Flor", "en", None, 0), schema, {}, datetime(2026, 1, 1, 12, 0, 0)
+    )
+
+    assert columns <= set(document["business"]), columns - set(document["business"])
 
 
 def test_a_locked_email_of_a_removed_business_s_user_is_counted_and_deleted() -> None:

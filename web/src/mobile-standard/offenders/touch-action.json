@@ -458,7 +458,7 @@
   {
     "screen": "ConfiguracionNegocio",
     "rule": "touch-action",
-    "target": "button:Save the name",
+    "target": "button:Save",
     "issue": 60
   },
   {

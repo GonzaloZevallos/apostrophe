@@ -25,6 +25,7 @@ from app.catalog.adapters.sql_header_footer import SqlCatalogHeaderFooter
 from app.catalog.adapters.stock_status import StockStatusesFromStock
 from app.catalog.application.read_catalog import read_catalog
 from app.catalog.domain.errors import IndicaShareInvalid
+from app.money_format.adapters.reader import SqlMoneyFormat
 from app.pricing_settings.adapters.sql_pricing_settings import SqlPricingSettings
 from app.settings import DEFAULT_LOCALES_DIR
 from app.shared.copy import CopyCatalog
@@ -158,6 +159,7 @@ def test_write_attributes_writes_through_no_commit_and_reads_back(
             SqlCatalogAttributes(session, business_id=1),
             SqlCatalogHeaderFooter(session, business_id=1),
             SqlPricingSettings(session, business_id=1),
+            SqlMoneyFormat(session, business_id=1),
             BabelCatalogWords(CopyCatalog(DEFAULT_LOCALES_DIR)),
             SqlCatalogLanguage(session, forced=None),
             1,

@@ -16,7 +16,8 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.money_format.adapters.sql_money_format_writer import SqlMoneyFormatWriter
-from app.money_format.application.apply_decimals import ApplyDecimals
+from app.money_format.application.apply_money_format import ApplyMoneyFormat
+from app.money_format.domain.change import MoneyFormatChange
 from app.tables import metadata
 from tests.business_removal.adapters.seed import PINNED, build_app, seed
 from tests.conftest import MovableClock
@@ -104,9 +105,11 @@ def build_world(tmp_path: Path) -> Iterator[World]:
     engine.dispose()
 
 
-def apply(engine: Engine, business_id: int, decimals: int) -> None:
+def apply(engine: Engine, business_id: int, decimals: int, symbol: str = "$") -> MoneyFormatChange:
     with Session(engine) as session:
-        ApplyDecimals(SqlMoneyFormatWriter(session), session).execute(business_id, decimals)
+        return ApplyMoneyFormat(SqlMoneyFormatWriter(session), session).execute(
+            business_id, symbol, decimals
+        )
 
 
 def money_format_of(engine: Engine, business_id: int) -> tuple[int, int]:

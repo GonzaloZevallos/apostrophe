@@ -23,7 +23,7 @@ import { renderWithViewport } from '../../test-viewport'
 import type { Viewport } from '../../routes'
 import { withPaymentMethods } from '../../test-payment-methods'
 
-const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
+const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', money: { symbol: '$', decimals: 0 } }
 const OWING = { id: 1, name: 'Ana Pérez', phone: '+5491122334455', vip: false, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }
 const ACCOUNT = {
   balance: 11000,
