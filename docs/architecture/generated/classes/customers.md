@@ -101,6 +101,7 @@ classDiagram
     value : str
     of(raw: str, country: PhoneCountry #124; None) PhoneNumber
     optional(raw: str #124; None, country: PhoneCountry #124; None) PhoneNumber #124; None
+    plus_digits(raw: str) str #124; None
   }
   Customer --> CustomerName : name
   CustomerNameTooLong --|> CustomerRuleBroken

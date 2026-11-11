@@ -73,6 +73,7 @@ src_copy_sales_ts-->src_copy_limits_ts
 src_copy_sales_ts-->src_copy_sales_ts
 src_copy_sales_ts-->src_copy_varieties_ts
 src_copy_settings_ts-->src_copy_baselineArgs_ts
+src_copy_settings_ts-->src_copy_customers_ts
 src_copy_settings_ts-->src_copy_limits_ts
 src_copy_settings_ts-->src_copy_settings_ts
 src_copy_settings_ts-->src_copy_stock_ts

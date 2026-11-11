@@ -32,6 +32,7 @@ A diagram shows only its own package: classes of other packages, and the edges t
 - [front-modules/format.md](front-modules/format.md)
 - [front-modules/i18n.md](front-modules/i18n.md)
 - [front-modules/overview.md](front-modules/overview.md)
+- [front-modules/phone.md](front-modules/phone.md)
 - [front-modules/root.md](front-modules/root.md)
 - [front-modules/sales.md](front-modules/sales.md)
 - [front-modules/screens.md](front-modules/screens.md)
