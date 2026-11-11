@@ -18,12 +18,12 @@ from tests.migrations.comparator import (
     upgrade_to,
 )
 
-PAYMENTS = [
-    # (id, business_id, method)
-    (1, 1, "cash"),
-    (2, 1, "transfer"),
-    (3, 2, "cash"),
-    (4, 2, "transfer"),
+PAYMENTS: list[tuple[int, int, str, int | None, int | None]] = [
+    # (id, business_id, method, customer_id, sale_id)
+    (1, 1, "cash", 1, None),  # a later payment, linked to its customer
+    (2, 1, "transfer", None, 1),  # an On-the-spot payment, linked to its sale
+    (3, 2, "cash", None, None),
+    (4, 2, "transfer", None, None),
 ]
 
 
@@ -36,14 +36,26 @@ def _engine_at_0029(tmp_path: Path) -> Engine:
                 text("INSERT INTO business (id, name, language) VALUES (:b, :n, 'en')"),
                 {"b": business_id, "n": f"Negocio {business_id}"},
             )
-        for payment_id, business_id, method in PAYMENTS:
+        connection.execute(
+            text(
+                "INSERT INTO customer (id, business_id, name, phone, is_vip) "
+                "VALUES (1, 1, 'Ana', '+5491100000001', 0)"
+            )
+        )
+        connection.execute(
+            text(
+                "INSERT INTO sale (id, business_id, number, sold_on, customer_id, shipping_charged, "
+                "recorded_at) VALUES (1, 1, 1, '2026-09-01', NULL, 0, '2026-09-01 10:00:00')"
+            )
+        )
+        for payment_id, business_id, method, customer_id, sale_id in PAYMENTS:
             connection.execute(
                 text(
                     "INSERT INTO payment (id, business_id, paid_on, amount, method, "
                     "customer_id, sale_id, recorded_at) VALUES "
-                    "(:i, :b, '2026-09-01', 100, :m, NULL, NULL, '2026-09-01 10:00:00')"
+                    "(:i, :b, '2026-09-01', 100, :m, :c, :s, '2026-09-01 10:00:00')"
                 ),
-                {"i": payment_id, "b": business_id, "m": method},
+                {"i": payment_id, "b": business_id, "m": method, "c": customer_id, "s": sale_id},
             )
     upgrade_to(engine, "0029")
     return engine
