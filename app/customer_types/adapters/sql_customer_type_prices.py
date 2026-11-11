@@ -5,16 +5,16 @@ from sqlalchemy import ColumnElement, delete, select
 from sqlalchemy.orm import Session
 
 from app.customer_types.adapters.tables import CustomerTypePriceRow
-from app.db import money_scale_factor, money_stored_value, scaled
-from app.shared.money import Money
+from app.db import domain_amount, money_of_domain, money_scale_factor, money_stored_value, scaled
 
 
 class SqlCustomerTypePrices:
     """The rows of `customer_type_price` for one business (docs/adr/0059). Every statement
     filters on that business: a row of another business is, from here, a row that does not
     exist (docs/adr/0004). A row is never updated, a new price is a new row. Writes flush;
-    the use case commits. Amounts are whole currency units on the way in and out; the
-    scale is applied here, inside the statement or the stored value, and nowhere else."""
+    the use case commits. Amounts are the domain's int, in the unit of the business's
+    decimals, on the way in and out; the scale is applied here, inside the statement or the
+    stored value, and nowhere else."""
 
     def __init__(self, session: Session, business_id: int) -> None:
         self._session = session
@@ -34,14 +34,18 @@ class SqlCustomerTypePrices:
                 customer_type_id=type_id,
                 variety_id=product_id,
                 effective_on=effective_on,
-                price=money_stored_value(self._session, self._business_id, Money.of_units(price)),
+                price=money_stored_value(
+                    self._session,
+                    self._business_id,
+                    money_of_domain(self._session, self._business_id, price),
+                ),
                 price_entry_id=price_entry_id,
             )
         )
         self._session.flush()
 
     def tied_price(self, price_entry_id: int, type_id: int) -> int | None:
-        """The price the type has in the row tied to this Price entry, in whole units."""
+        """The price the type has in the row tied to this Price entry, as the domain's int."""
         factor = money_scale_factor(self._session, self._business_id)
         statement = select(scaled(CustomerTypePriceRow.price, factor)).where(
             CustomerTypePriceRow.business_id == self._business_id,
@@ -49,7 +53,11 @@ class SqlCustomerTypePrices:
             CustomerTypePriceRow.customer_type_id == type_id,
         )
         hundredths = self._session.scalar(statement)
-        return None if hundredths is None else Money(hundredths).whole_units()
+        return (
+            None
+            if hundredths is None
+            else domain_amount(self._session, self._business_id, hundredths)
+        )
 
     def prices_of_type(self, type_id: int, entry_ids: Sequence[int]) -> dict[int, int]:
         """The type's price by Price entry id, for the entries that have one: one
@@ -65,7 +73,7 @@ class SqlCustomerTypePrices:
             CustomerTypePriceRow.price_entry_id.in_(entry_ids),
         )
         return {
-            entry_id: Money(hundredths).whole_units()
+            entry_id: domain_amount(self._session, self._business_id, hundredths)
             for entry_id, hundredths in self._session.execute(statement).all()
             if entry_id is not None
         }

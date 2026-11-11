@@ -190,6 +190,13 @@ classDiagram
     type_prices : list~TypePriceOut~
     with_types(entry: PriceEntry, vip_type_id: int #124; None) 'CurrentPriceOut'
   }
+  class ListedCurrentPrice {
+    bulk_minimum : Quantity #124; None
+    bulk_price : Money #124; None
+    list_price : Money #124; None
+    name : str
+    product_id : int
+  }
   class PriceEntryIn {
     bulk_minimum : Decimal #124; None
     bulk_price : MoneyAmount #124; None
@@ -254,6 +261,7 @@ classDiagram
     get(product_id: int) Product #124; None
     has_history(product_id: int) bool
     listed() list~Product~
+    listed_current_prices(day: date) list~ListedCurrentPrice~
     name_holder(name: ProductName) NameHolder #124; None
     remove_price_entries(product_id: int) None
     remove_unused(product_id: int) bool

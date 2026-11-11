@@ -168,7 +168,7 @@ class MoneyFormatMissing(LookupError):
 
 
 # A lightweight table, so this module imports no hexagon: only the two columns read.
-_money_format = table("money_format", column("business_id"), column("scale"))
+_money_format = table("money_format", column("business_id"), column("scale"), column("decimals"))
 
 # Hundredths per stored unit, by scale: scale 0 stores whole currency units, scale 2
 # stores hundredths.
@@ -177,6 +177,8 @@ _FACTOR_BY_SCALE = {0: 100, 2: 1}
 
 # Where a session keeps the factors it has read, by business, for its outer transaction only.
 _FACTORS_KEY = "money_scale_factors"
+# The same, for the decimals a business shows.
+_DECIMALS_KEY = "money_decimals"
 
 
 @event.listens_for(Session, "after_transaction_end")
@@ -186,6 +188,7 @@ def _forget_money_scale_factors(session: Session, transaction: SessionTransactio
     parent) leaves them alone: the whole unit of work shares one lookup."""
     if transaction.parent is None:
         session.info.pop(_FACTORS_KEY, None)
+        session.info.pop(_DECIMALS_KEY, None)
 
 
 class MoneyScaleChanged(LookupError):
@@ -208,21 +211,55 @@ def _refuse_a_stale_money_scale(session: Session) -> None:
     An empty or absent cache issues no statement; a business with no row is skipped (its
     writer already failed with `MoneyFormatMissing`). On a mismatch the whole cache is
     forgotten. A caller that catches the error must call `rollback()`."""
-    cache: dict[int, int] | None = session.info.get(_FACTORS_KEY)
-    if not cache or session.in_nested_transaction():
+    cache: dict[int, int] = session.info.get(_FACTORS_KEY) or {}
+    decimals: dict[int, int] = session.info.get(_DECIMALS_KEY) or {}
+    if not (cache or decimals) or session.in_nested_transaction():
         # A savepoint releasing is not a commit: only the outer transaction's counts.
         return
     session.flush()
     changed = False
-    for business_id, factor in cache.items():
-        scale = session.execute(
-            select(_money_format.c.scale).where(_money_format.c.business_id == business_id)
-        ).scalar_one_or_none()
-        if scale is not None and _FACTOR_BY_SCALE.get(scale) != factor:
+    for business_id in set(cache) | set(decimals):
+        # One statement per business reads both values the session cached. The decimals fix
+        # the unit a domain amount was held in: a write that read them before they changed
+        # must not commit either.
+        row = session.execute(
+            select(_money_format.c.scale, _money_format.c.decimals).where(
+                _money_format.c.business_id == business_id
+            )
+        ).one_or_none()
+        if row is None:
+            continue
+        scale, shown = row
+        factor = cache.get(business_id)
+        if factor is not None and _FACTOR_BY_SCALE.get(scale) != factor:
+            changed = True
+        held = decimals.get(business_id)
+        if held is not None and shown != held:
             changed = True
     if changed:
         session.info.pop(_FACTORS_KEY, None)
+        session.info.pop(_DECIMALS_KEY, None)
         raise MoneyScaleChanged
+
+
+def _read_the_money_format(session: Session, business_id: int) -> None:
+    """One single-row read of the business's scale and decimals that fills both caches: a
+    request that needs the factor and the decimals pays one statement, the one the scale
+    alone cost before the decimals were read. Raises `MoneyFormatMissing` when the row is
+    absent; a missing row is never cached."""
+    row = session.execute(
+        select(_money_format.c.scale, _money_format.c.decimals).where(
+            _money_format.c.business_id == business_id
+        )
+    ).one_or_none()
+    if row is None:
+        raise MoneyFormatMissing
+    scale, decimals = row
+    factor = _FACTOR_BY_SCALE.get(scale)
+    if factor is None:
+        raise ValueError("the money scale must be 0 or 2")
+    session.info.setdefault(_FACTORS_KEY, {})[business_id] = factor
+    session.info.setdefault(_DECIMALS_KEY, {})[business_id] = int(decimals)
 
 
 def money_scale_factor(session: Session, business_id: int) -> int:
@@ -235,28 +272,42 @@ def money_scale_factor(session: Session, business_id: int) -> int:
     successful lookup is cached in `session.info` until the outer transaction ends; a
     missing row is never cached. Raises `MoneyFormatMissing` when the row is absent; it
     never returns NULL and never falls back to a default scale."""
-    cache: dict[int, int] = session.info.setdefault(_FACTORS_KEY, {})
-    cached = cache.get(business_id)
-    if cached is not None:
-        return cached
-    scale = session.execute(
-        select(_money_format.c.scale).where(_money_format.c.business_id == business_id)
-    ).scalar_one_or_none()
-    if scale is None:
-        raise MoneyFormatMissing
-    factor = _FACTOR_BY_SCALE.get(scale)
-    if factor is None:
-        raise ValueError("the money scale must be 0 or 2")
-    cache[business_id] = factor
-    return factor
+    cached = (session.info.get(_FACTORS_KEY) or {}).get(business_id)
+    if cached is None:
+        _read_the_money_format(session, business_id)
+        cached = session.info[_FACTORS_KEY][business_id]
+    return int(cached)
+
+
+def money_decimals(session: Session, business_id: int) -> int:
+    """The decimals the business shows, which fix the unit a domain amount is held in: a
+    whole currency unit at 0, a tenth at 1, a hundredth at 2. Read in the same statement as
+    the factor, cached and guarded the same way at commit. Raises `MoneyFormatMissing` when
+    the row is absent."""
+    cached = (session.info.get(_DECIMALS_KEY) or {}).get(business_id)
+    if cached is None:
+        _read_the_money_format(session, business_id)
+        cached = session.info[_DECIMALS_KEY][business_id]
+    return int(cached)
+
+
+def domain_amount(session: Session, business_id: int, hundredths: int) -> int:
+    """An amount read in hundredths (`scaled(...)`) as the domain's int, in the unit of
+    the business's decimals. Exact, because every stored amount is a multiple of it."""
+    return Money(hundredths).in_decimals(money_decimals(session, business_id))
+
+
+def money_of_domain(session: Session, business_id: int, amount: int) -> Money:
+    """A domain int, in the unit of the business's decimals, as `Money`."""
+    return Money.of_decimals(amount, money_decimals(session, business_id))
 
 
 def scaled[T: int | None](
     amount: ColumnElement[T] | InstrumentedAttribute[T], factor: int
 ) -> ColumnElement[T]:
     """The amount column in hundredths, inside the statement that loads it or inside the
-    `SUM` over it: `amount * literal(factor)`. The domain reaches a whole-unit int only
-    through `Money.whole_units()`, which never truncates or rounds."""
+    `SUM` over it: `amount * literal(factor)`. The domain reaches its int only through
+    `domain_amount`, which never truncates or rounds."""
     if factor not in SCALE_FACTORS:
         raise ValueError("the money scale factor must be 1 or 100")
     return amount * literal(factor)

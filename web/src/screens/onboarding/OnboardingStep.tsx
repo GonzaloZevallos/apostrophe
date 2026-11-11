@@ -152,6 +152,9 @@ function OnboardingStepFrame({
         <div className="onboarding__titulos">
           <h1 className="onboarding__titulo">{resolve(info.title)}</h1>
           <p className="onboarding__porque">{info.why}</p>
+          {isFirst(slug) && (
+            <p className="pie">{ONBOARDING_TEXT.currencyLine(me.money.symbol, me.money.decimals)}</p>
+          )}
         </div>
 
         <div className="onboarding__cuerpo">

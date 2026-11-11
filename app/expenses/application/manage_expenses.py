@@ -6,12 +6,12 @@ from app.expenses.application.ports import ExpenseCategories, Expenses, MoneyFor
 from app.expenses.domain.expense import Expense, ExpenseNotFound
 from app.expenses.domain.month import Month
 from app.expenses.domain.monthly_view import MonthlyExpenses
-from app.shared.money import money_within
+from app.shared.money import domain_amount_within
 from app.shared.transaction import Transaction
 
 
 def _whole_amount(money_format: MoneyFormatReader, amount: Decimal) -> int:
-    return money_within(amount, money_format.current()).whole_units()
+    return domain_amount_within(amount, money_format.current())
 
 
 def get_expense(expenses: Expenses, expense_id: int) -> Expense:

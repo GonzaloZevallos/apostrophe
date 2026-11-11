@@ -2113,6 +2113,24 @@
         "title": "MeOut",
         "type": "object"
       },
+      "MoneyFormatBody": {
+        "properties": {
+          "decimals": {
+            "title": "Decimals",
+            "type": "integer"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "decimals"
+        ],
+        "title": "MoneyFormatBody",
+        "type": "object"
+      },
       "MoneyFormatOut": {
         "properties": {
           "decimals": {
@@ -5331,6 +5349,76 @@
         "summary": "Edit Customer Type",
         "tags": [
           "customer-types"
+        ]
+      }
+    },
+    "/api/money-format": {
+      "get": {
+        "operationId": "get_money_format_api_money_format_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MoneyFormatBody"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Money Format",
+        "tags": [
+          "money-format"
+        ]
+      },
+      "put": {
+        "operationId": "put_money_format_api_money_format_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoneyFormatBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MoneyFormatBody"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Money Format",
+        "tags": [
+          "money-format"
         ]
       }
     },

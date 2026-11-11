@@ -73,11 +73,12 @@ This records it. No code changes here.
   rounding read "to the stored unit" as this rule.
 - **The read path, as built.** An adapter reads an amount column through `scaled()`, which multiplies
   it in SQL by the business's factor (hundredths per stored unit: 100 at scale 0, 1 at scale 2), so
-  every amount reaches Python in hundredths. The domain holds whole units through `Money.whole_units()`,
-  which raises `MoneyNotRepresentable` instead of truncating or rounding, until the part that
-  introduces the decimals. A request amount becomes a domain amount only through `money_within`,
+  every amount reaches Python in hundredths. The domain holds an integer in the unit of the business's
+  decimals (a whole unit at 0, a tenth at 1, a hundredth at 2) through `Money.in_decimals()`,
+  which raises `MoneyNotRepresentable` instead of truncating or rounding, and `Money.of_decimals()`
+  turns it back. `Money.whole_units()` is no longer on a read or write path. A request amount becomes a domain amount only through `money_within`,
   which refuses more decimals than the business allows (`money.too_many_decimals`, a fixed message
-  that carries no amount); a response amount is a JSON integer when whole and otherwise a number
+  that carries no amount), and `domain_amount_within` then gives the domain integer; a response amount is a JSON integer when whole and otherwise a number
   that reads back exactly.
 - **The business export carries `{scale, decimals}`.** Its amounts are at that scale, with the
   business's scale and decimals beside them, so a restore reads them back unchanged. An export written

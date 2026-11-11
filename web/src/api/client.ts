@@ -29,6 +29,7 @@ export class NetworkError extends Error {
 interface ErrorBody {
   code?: unknown
   count?: unknown
+  field?: unknown
 }
 
 /** `ApiError.code` when the response body carried no recognised `code` field — a
@@ -57,7 +58,10 @@ async function send<T>(method: string, path: string, body?: unknown): Promise<T>
   if (!response.ok) {
     const parsed: ErrorBody = await response.json().catch(() => ({}) as ErrorBody)
     const code = typeof parsed.code === 'string' ? parsed.code : UNKNOWN_CODE
-    throw new ApiError(response.status, code, typeof parsed.count === 'number' ? { count: parsed.count } : {})
+    throw new ApiError(response.status, code, {
+      ...(typeof parsed.count === 'number' ? { count: parsed.count } : {}),
+      ...(typeof parsed.field === 'string' ? { field: parsed.field } : {}),
+    })
   }
   if (response.status === 204) return undefined as T
   return (await response.json()) as T

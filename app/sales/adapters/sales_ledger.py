@@ -6,10 +6,9 @@ from __future__ import annotations
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.db import money_scale_factor, scaled
+from app.db import domain_amount, money_scale_factor, scaled
 from app.results.application.ports import SaleRecord
 from app.sales.adapters.tables import SaleLineRow, SaleRow
-from app.shared.money import Money
 
 
 class SqlSalesLedger:
@@ -43,8 +42,8 @@ class SqlSalesLedger:
             SaleRecord(
                 sale_id=sale_id,
                 day=day,
-                shipping=Money(shipping).whole_units(),
-                total=Money(shipping + lines_total).whole_units(),
+                shipping=domain_amount(self._session, self._business_id, shipping),
+                total=domain_amount(self._session, self._business_id, shipping + lines_total),
             )
             for sale_id, day, shipping, lines_total in self._session.execute(statement).all()
         ]
