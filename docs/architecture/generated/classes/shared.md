@@ -48,8 +48,10 @@ classDiagram
   class Money {
     hundredths : int
     as_decimal() Decimal
+    in_decimals(decimals: int) int
     in_units_of(factor: int) int
     of(value: Decimal #124; int #124; str) Money
+    of_decimals(units: int, decimals: int) Money
     of_units(units: int) Money
     whole_units() int
   }
