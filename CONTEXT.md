@@ -121,7 +121,7 @@ _Avoid_: collection, settlement, receipt, abono
 _In the app_: Payment
 
 **Payment method**:
-Una forma en que le pagan a un Business, de su lista propia: un nombre único en el Business (sin importar mayúsculas ni espacios, archivados incluidos, hasta 60 caracteres), un ícono de un conjunto fijo y neutro y una posición. Todo Business arranca con "Cash" y "Transfer", medios comunes que se renombran, reordenan, archivan o eliminan como cualquiera; uno con Payments solo se archiva, y el último ofrecido no se puede sacar. Un Payment apunta a su medio por id, así que muestra su nombre actual (ADR-0084). _In the app_: Payment method.
+Una forma en que le pagan a un Business, de su lista propia: un nombre único en el Business (sin importar mayúsculas ni espacios, archivados incluidos, hasta 60 caracteres), un ícono de un conjunto fijo y neutro y una posición. Todo Business arranca con "Cash" y "Transfer", medios comunes que se renombran, reordenan, archivan o eliminan como cualquiera; uno con Payments solo se archiva, y el último ofrecido no se puede sacar. Un Payment apunta a su medio por id, así que muestra su nombre actual (ADR-0085). _In the app_: Payment method.
 _Avoid_: payment type, channel, Owing, paid later
 
 **Balance**:

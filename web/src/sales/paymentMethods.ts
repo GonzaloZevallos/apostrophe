@@ -1,6 +1,6 @@
 /**
  * The Payment methods a Selector offers: the business's own offered list (`GET /api/payment-methods`,
- * ADR-0084), in the order the server keeps it, read by New sale and Record payment alike. They are
+ * ADR-0085), in the order the server keeps it, read by New sale and Record payment alike. They are
  * never a fixed set (`fixedSets.ts` never declares them). The Selector's values are the ids as text;
  * `paymentMethodOf` turns one back into the id the API takes.
  *

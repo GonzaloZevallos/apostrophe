@@ -34,7 +34,7 @@ Lo que un cliente se lleva de una vez, con cada línea cotizada con los precios 
 - los Current prices, de los productos;
 - los clientes, con su estado VIP, de clientes;
 - qué Pricing rules usa el negocio, de las Pricing settings (pricing-settings.md);
-- los Payment methods ofrecidos del negocio, de payment-methods.md (ADR-0084).
+- los Payment methods ofrecidos del negocio, de payment-methods.md (ADR-0085).
 
 Los pagos (`payments.md`) saldan lo que una venta deja debiendo y dicen si cada venta sigue debiendo. El stock (`stock.md`) saca los gramos de cada línea de los **Lot**s de su producto y le da a la línea su **Cost of goods sold**, que sigue a los Lots y nunca queda congelado (ADR-0009). Esta capacidad cubre también las pantallas de ventas: New sale, Sales y el detalle de una venta, en el teléfono y en la computadora, y el Sale bill que se comparte desde el detalle de una venta. Dónde se ubican es navigation.md.
 
@@ -42,7 +42,7 @@ La protagonista de las historias del teléfono es la vendedora. Los diseños de 
 
 Antes de la parte 4 de GH-581, cada línea de New sale elegía su producto con un `<select>` nativo, que en el teléfono abre el selector del sistema, sin búsqueda y distinto del resto de las elecciones de la app. Los productos son un **Growable set**, así que se eligen solo con el **Selector** (ADR-0074). No hay registro de errores de producto ni de líneas abandonadas, y esta definición no afirma ninguno.
 
-Antes de la parte 5 de GH-581, cómo se pagó era una fila de tres botones (Cash · Transfer · Owing) que mezclaba el estado (pagada o debiendo) con el medio. Los Payment methods son un Growable set, así que el medio se elige con el Selector; desde la parte 24 de GH-318 son la lista propia de cada negocio (payment-methods.md, ADR-0084), y el estado Paid · Owing no es un medio y sigue siendo una elección fija. Los botones viejos además figuraban como infractores de `touch-action` en el **Mobile check** (zoom por doble toque y selección de texto al tocar). No hay registro de medios mal elegidos, y esta definición no afirma ninguno.
+Antes de la parte 5 de GH-581, cómo se pagó era una fila de tres botones (Cash · Transfer · Owing) que mezclaba el estado (pagada o debiendo) con el medio. Los Payment methods son un Growable set, así que el medio se elige con el Selector; desde la parte 24 de GH-318 son la lista propia de cada negocio (payment-methods.md, ADR-0085), y el estado Paid · Owing no es un medio y sigue siendo una elección fija. Los botones viejos además figuraban como infractores de `touch-action` en el **Mobile check** (zoom por doble toque y selección de texto al tocar). No hay registro de medios mal elegidos, y esta definición no afirma ninguno.
 
 El Sale bill sirve en dos momentos: justo después de guardar, con el cliente todavía esperando en el chat (el principal), y más tarde, cuando el cliente pregunta y la vendedora abre el detalle de esa venta. Supuesto sobre hoy: la vendedora vuelve a tipear el pedido y el total, o manda una captura, y saca el Balance a mano.
 

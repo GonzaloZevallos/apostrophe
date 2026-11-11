@@ -6,7 +6,7 @@
 
 # Payment methods
 
-La lista propia de cada **Business** de las formas en que le pagan sus **Customers**. Es un **Growable set**, así que se elige solo con el **Selector** y nunca se declara en `fixedSets.ts` (ADR-0074). Cada **Payment** apunta a un medio por su id (`payment_method_id`); la columna vieja `payment.method` queda congelada con el valor que tenía y ya no se lee ni se escribe (ADR-0084). La configuración se guarda por Business en su propio hexágono `payment_methods` (ADR-0055). Hasta esta parte los medios eran Cash y Transfer, incorporados en la app; eso fallaba **Assume nothing**, que nombra a los Payment methods como algo que la app no puede fijar en el código. Parte 24 de GH-318.
+La lista propia de cada **Business** de las formas en que le pagan sus **Customers**. Es un **Growable set**, así que se elige solo con el **Selector** y nunca se declara en `fixedSets.ts` (ADR-0074). Cada **Payment** apunta a un medio por su id (`payment_method_id`); la columna vieja `payment.method` queda congelada con el valor que tenía y ya no se lee ni se escribe (ADR-0085). La configuración se guarda por Business en su propio hexágono `payment_methods` (ADR-0055). Hasta esta parte los medios eran Cash y Transfer, incorporados en la app; eso fallaba **Assume nothing**, que nombra a los Payment methods como algo que la app no puede fijar en el código. Parte 24 de GH-318.
 
 Supuesto sobre hoy: la vendedora registra efectivo o transferencia y guarda el canal real en la cabeza o, en una venta, en la **Note**; la información se pierde.
 
@@ -89,7 +89,7 @@ Criterios de éxito:
   - `POST /{id}/archive` y `POST /{id}/restore`; un medio restaurado vuelve a su propia posición guardada.
   - `DELETE /{id}` (204).
 - Rechazos de gestión: `payment_method.name_required` y `name_too_long` (422); `name_taken`, `name_taken_archived`, `last_offered` e `in_use` (409); id desconocido o de otro Business, 404 `payment_method.not_found`.
-- Payments y Sales llevan `payment_method_id` en lugar de `method`, y el pago de una Sale pasa a ser una unión por `kind` (`{kind: "paid", payment_method_id}` o `{kind: "owing"}`). La cuenta del Customer trae `how_paid` (`paid`, `owing` o `none`) y `payment_method` (`{id, name, icon}` o null). Es un quiebre real de la API: el cuerpo del PR lleva una línea `Breaking-API: <motivo>` (ADR-0066, ADR-0084).
+- Payments y Sales llevan `payment_method_id` en lugar de `method`, y el pago de una Sale pasa a ser una unión por `kind` (`{kind: "paid", payment_method_id}` o `{kind: "owing"}`). La cuenta del Customer trae `how_paid` (`paid`, `owing` o `none`) y `payment_method` (`{id, name, icon}` o null). Es un quiebre real de la API: el cuerpo del PR lleva una línea `Breaking-API: <motivo>` (ADR-0066, ADR-0085).
 - Al escribir un Payment o una Sale, todo medio que no se puede usar (archivado, eliminado, inexistente o de otro Business) responde el mismo 404 `payment_method.unavailable`, controlado dentro del mismo `INSERT … SELECT` que escribe, así que no se escribe nada y no se revela nada.
 - `payment.payment_method_id` apunta a `payment_method` con una FK compuesta `(business_id, payment_method_id)` ON DELETE RESTRICT.
 - `payment_method` lleva `business_id` no nulo y se lee solo mediante un repositorio construido para un Business.
