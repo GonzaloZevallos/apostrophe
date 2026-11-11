@@ -16,6 +16,7 @@ import GoneNotice from '../../components/GoneNotice'
 import Loading from '../../components/Loading'
 import PaymentMethodGlyph from '../../components/PaymentMethodGlyph'
 import SinConexion from '../../components/SinConexion'
+import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import SettingsGroup from './SettingsGroup'
 
 export default function PaymentMethodsArchived() {
@@ -60,7 +61,7 @@ export default function PaymentMethodsArchived() {
             </>
           ))}
         {list.data !== undefined && list.data.length === 0 && (
-          <span className="campo__rotulo">{t('paymentMethods:archived.empty')}</span>
+          <span className="campo__rotulo">{t(EMPTY_STATE_KEYS.paymentMethodsArchived)}</span>
         )}
         {list.data !== undefined && (
           <ul className="ajustes__lista">

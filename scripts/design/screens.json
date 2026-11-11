@@ -372,7 +372,7 @@
     { "path": "/settings/prices", "kind": "form", "parent": "/settings" },
     { "path": "/settings/prices/customer-types", "kind": "form", "parent": "/settings/prices" },
     { "path": "/settings/payments", "kind": "form", "parent": "/settings" },
-    { "path": "/settings/payments/methods", "kind": "form", "parent": "/settings/payments" },
+    { "path": "/settings/payments/methods", "kind": "card", "parent": "/settings/payments" },
     { "path": "/settings/payments/methods/archived", "kind": "form", "parent": "/settings/payments/methods" },
     { "path": "/settings/integrations", "kind": "form", "parent": "/settings" },
     { "path": "/settings/catalog-message", "kind": "form", "parent": "/settings" },

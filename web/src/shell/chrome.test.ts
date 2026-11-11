@@ -48,7 +48,7 @@ const EXPECTED: Record<ScreenId, readonly [Chrome, Chrome]> = {
   'settings-prices': [FORM, FORM],
   'settings-customer-types': [FORM, FORM],
   'settings-payments': [FORM, FORM],
-  'settings-payment-methods': [FORM, FORM],
+  'settings-payment-methods': [CARD, CARD],
   'settings-payment-methods-archived': [FORM, FORM],
   'settings-integrations': [FORM, FORM],
   'settings-catalog-message': [FORM, FORM],

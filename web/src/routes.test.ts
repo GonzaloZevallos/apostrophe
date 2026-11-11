@@ -101,7 +101,7 @@ const EXPECTED: Record<ScreenId, Expected> = {
   "settings-prices": expectation("form", "settings", SETTINGS_PLACE),
   "settings-customer-types": expectation("form", "settings-prices", SETTINGS_PLACE),
   "settings-payments": expectation("form", "settings", SETTINGS_PLACE),
-  "settings-payment-methods": expectation("form", "settings-payments", SETTINGS_PLACE),
+  "settings-payment-methods": expectation("card", "settings-payments", SETTINGS_PLACE),
   "settings-payment-methods-archived": expectation("form", "settings-payment-methods", SETTINGS_PLACE),
   "settings-integrations": expectation("form", "settings", SETTINGS_PLACE),
   "settings-catalog-message": expectation("form", "settings", SETTINGS_PLACE),

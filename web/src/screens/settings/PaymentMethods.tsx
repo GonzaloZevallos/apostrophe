@@ -25,6 +25,7 @@ import { isGone } from '../../api/refusals'
 import AvisoAmbar from '../../components/AvisoAmbar'
 import Boton from '../../components/Boton'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import ContentArea from '../../components/ContentArea'
 import GoneNotice from '../../components/GoneNotice'
 import Icono from '../../components/Icono'
 import InAppLink from '../../components/InAppLink'
@@ -34,7 +35,6 @@ import Sheet from '../../components/Sheet'
 import SinConexion from '../../components/SinConexion'
 import { SETTINGS_PAYMENT_METHODS_ARCHIVED } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
-import SettingsGroup from './SettingsGroup'
 import PaymentMethodForm from './PaymentMethodForm'
 
 /** What the Sheet is for: a new method, or the one with this id (read from the cache). */
@@ -140,8 +140,11 @@ export default function PaymentMethods() {
 
   const sheetTarget = target === 'new' ? 'new' : editing
   return (
-    <SettingsGroup title={t('paymentMethods:title')} dirty={false}>
-      <>
+    <ContentArea as="main" className="pantalla">
+      <div className="cuerpo ajustes">
+        <div className="ajustes__titulos">
+          <h1 className="ajustes__titulo">{t('paymentMethods:title')}</h1>
+        </div>
         {list.isPending && <Loading />}
         {list.isError &&
           (list.error instanceof NetworkError ? (
@@ -236,6 +239,7 @@ export default function PaymentMethods() {
             </nav>
           </>
         )}
+      </div>
 
       {pending !== null && (
         <ConfirmDialog
@@ -282,7 +286,6 @@ export default function PaymentMethods() {
           {computer && discardDialog}
         </Sheet>
       )}
-      </>
-    </SettingsGroup>
+    </ContentArea>
   )
 }

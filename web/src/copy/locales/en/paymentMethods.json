@@ -42,8 +42,7 @@
   "archived": {
     "title": "Archived payment methods",
     "restore": "Restore",
-    "restoreNamed": "Restore {{name}}",
-    "empty": "No archived payment methods."
+    "restoreNamed": "Restore {{name}}"
   },
   "icon": {
     "banknote": "Cash",

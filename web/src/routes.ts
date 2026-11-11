@@ -361,7 +361,7 @@ export const SCREENS = [
   screen({
     id: 'settings-payment-methods',
     path: SETTINGS_PAYMENT_METHODS,
-    kind: 'form',
+    kind: 'card',
     titleKey: 'paymentMethods:title',
     parent: 'settings-payments',
   }),
