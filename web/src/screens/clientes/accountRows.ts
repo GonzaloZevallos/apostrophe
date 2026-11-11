@@ -5,16 +5,22 @@
  * over), or both; a sale row is never a later payment.
  */
 
-import type { AccountRow, HowPaid } from '../../api/payments'
+import type { AccountRow, HowPaid, SaleAccountRow } from '../../api/payments'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney, formatMoneyMagnitude } from '../../format/money'
 
-/** What a sale row says under "Sale": total, so a new `HowPaid` fails to compile here. */
-const HOW_PAID_SUB: Record<HowPaid, string> = {
-  paid: CUSTOMERS_TEXT.paid,
+/** What a sale row says under "Sale": total, so a new `HowPaid` fails to compile here. A paid
+ * sale names its method instead (`saleSub`), from the row's `payment_method`. */
+const HOW_PAID_SUB: Record<Exclude<HowPaid, 'paid'>, string> = {
   owing: CUSTOMERS_TEXT.leftOwing,
   none: CUSTOMERS_TEXT.nothingToPay,
+}
+
+function saleSub(sale: SaleAccountRow['sale']): string {
+  if (sale.how_paid !== 'paid') return HOW_PAID_SUB[sale.how_paid]
+  // A paid sale always carries its method; the guard keeps the row readable if it did not.
+  return sale.payment_method === null ? CUSTOMERS_TEXT.paid : CUSTOMERS_TEXT.paidWith(sale.payment_method.name)
 }
 
 export type BalanceTone = 'debt' | 'credit' | 'neutral'
@@ -45,7 +51,7 @@ export function ledgerRowView(row: AccountRow): LedgerRowView {
   if (row.kind === 'sale') {
     return {
       title: CUSTOMERS_TEXT.saleTitle,
-      sub: HOW_PAID_SUB[row.sale.how_paid],
+      sub: saleSub(row.sale),
       own: formatMoney(row.sale.total),
       ...balance,
     }

@@ -16,7 +16,7 @@ function sale(id: number): AccountRow {
     date: '2026-10-01',
     running_balance: 5000,
     standing: 'owes',
-    sale: { id, total: 5000, how_paid: 'owing' },
+    sale: { id, total: 5000, how_paid: 'owing', payment_method: null },
   }
 }
 
@@ -62,18 +62,23 @@ test('two different payments give two indices', () => {
   expect([...deleteRowIndices([sale(1), paymentRow(8, 1), creditRow(9)])]).toEqual([1, 2])
 })
 
-function saleWith(howPaid: HowPaid, standing: Standing, running: number): AccountRow {
+function saleWith(howPaid: HowPaid, standing: Standing, running: number, methodName = 'Cash'): AccountRow {
   return {
     kind: 'sale',
     date: '2026-10-01',
     running_balance: running,
     standing,
-    sale: { id: 1, total: 5000, how_paid: howPaid },
+    sale: {
+      id: 1,
+      total: 5000,
+      how_paid: howPaid,
+      payment_method: howPaid === 'paid' ? { id: 1, name: methodName, icon: 'banknote' } : null,
+    },
   }
 }
 
 const HOW_PAID_SUBS: readonly (readonly [HowPaid, string])[] = [
-  ['paid', 'Paid'],
+  ['paid', 'Paid · Cash'],
   ['owing', 'Left owing'],
   ['none', 'Nothing to pay'],
 ]
@@ -83,6 +88,18 @@ test.each(HOW_PAID_SUBS)('a %s sale reads "Sale" over %s, with its own total', (
   expect(view.title).toBe('Sale')
   expect(view.sub).toBe(sub)
   expect(view.own).toBe('$ 5.000')
+})
+
+test('a sale paid on the spot names its method as the account holds it now, after a rename', () => {
+  expect(ledgerRowView(saleWith('paid', 'settled', 0, 'Mercado Pago')).sub).toBe('Paid · Mercado Pago')
+  expect(ledgerRowView(saleWith('paid', 'settled', 0, 'Wire')).sub).toBe('Paid · Wire')
+})
+
+test('a sale with no method on file falls back to plain "Paid", never a cash or transfer word', () => {
+  const row = saleWith('paid', 'settled', 0)
+  if (row.kind !== 'sale') throw new Error('expected a sale row')
+  const view = ledgerRowView({ ...row, sale: { ...row.sale, payment_method: null } })
+  expect(view.sub).toBe('Paid')
 })
 
 test('a sale names no product and no grams', () => {

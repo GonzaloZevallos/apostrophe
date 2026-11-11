@@ -286,7 +286,7 @@ const OWING_ACCOUNT = {
       date: '2026-09-14',
       running_balance: 11000,
       standing: 'owes',
-      sale: { id: 10, total: 11000, how_paid: 'owing' },
+      sale: { id: 10, total: 11000, how_paid: 'owing', payment_method: null },
     },
   ],
 }
@@ -563,7 +563,7 @@ test('a payment split between a sale and a credit offers one Delete payment, on 
               date: '2026-10-01',
               running_balance: 5000,
               standing: 'owes',
-              sale: { id: 10, total: 5000, how_paid: 'owing' },
+              sale: { id: 10, total: 5000, how_paid: 'owing', payment_method: null },
             },
             {
               kind: 'payment',
@@ -615,7 +615,7 @@ test('a sale paid on the spot offers no Delete payment', async () => {
               date: '2026-10-01',
               running_balance: 0,
               standing: 'settled',
-              sale: { id: 10, total: 5000, how_paid: 'paid' },
+              sale: { id: 10, total: 5000, how_paid: 'paid', payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
             },
           ],
         }),
@@ -623,7 +623,7 @@ test('a sale paid on the spot offers no Delete payment', async () => {
   )
   renderFicha('1')
 
-  expect(await screen.findByText('Paid')).toBeInTheDocument()
+  expect(await screen.findByText('Paid · Cash')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Delete payment' })).not.toBeInTheDocument()
 })
 

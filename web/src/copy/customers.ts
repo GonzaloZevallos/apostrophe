@@ -34,6 +34,7 @@ export const CUSTOMERS_TEXT = {
   saveAndUse: 'Save and use',
   discardTheCustomer: 'Discard the customer?',
   paid: 'Paid',
+  paidWith: (method: string | number) => `Paid · ${method}`,
   leftOwing: 'Left owing',
   deletePaymentOf: (amount: string | number, method: string | number, paid_on: string | number) => `Delete the payment of ${amount} (${method}) from ${paid_on}?`,
   saleTitle: SHELL_TEXT.sale,
@@ -69,6 +70,7 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: CUSTOMERS_TEXT.nothingToPay },
   { kind: 'help', text: CUSTOMERS_TEXT.accountHeading },
   { kind: 'help', text: CUSTOMERS_TEXT.paymentTitle(SAMPLES.name) },
+  { kind: 'help', text: CUSTOMERS_TEXT.paidWith(SAMPLES.name) },
   { kind: 'help', text: CUSTOMERS_TEXT.onAccountOf(SAMPLES.date) },
 ]
 
@@ -79,6 +81,7 @@ const { money: M, date: D } = FIXTURE
 export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'CUSTOMERS_TEXT.deletePaymentOf': [[M, 'cash', D]],
   'CUSTOMERS_TEXT.paymentTitle': [['cash']],
+  'CUSTOMERS_TEXT.paidWith': [['cash']],
   'CUSTOMERS_TEXT.onAccountOf': [[D]],
   'CUSTOMERS_TEXT.creditAmount': [[M]],
   'CUSTOMERS_TEXT.balanceAmount': [[M]],

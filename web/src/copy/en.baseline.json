@@ -217,6 +217,7 @@
   {"source":"customers.ts:CUSTOMERS_TEXT.owesYou","args":null,"text":"Owes you"},
   {"source":"customers.ts:CUSTOMERS_TEXT.owesYouSince","args":null,"text":"owes you since "},
   {"source":"customers.ts:CUSTOMERS_TEXT.paid","args":null,"text":"Paid"},
+  {"source":"customers.ts:CUSTOMERS_TEXT.paidWith","args":["cash"],"text":"Paid · cash"},
   {"source":"customers.ts:CUSTOMERS_TEXT.paymentDeleted","args":null,"text":"Payment deleted"},
   {"source":"customers.ts:CUSTOMERS_TEXT.paymentTitle","args":["cash"],"text":"Payment · cash"},
   {"source":"customers.ts:CUSTOMERS_TEXT.phone","args":null,"text":"Phone"},
