@@ -46,6 +46,31 @@ export const CUSTOMERS_TEXT = {
   giveItAName: 'Give them a name',
   notAPhone: 'Enter the number with its area code, or start with + and the country code.',
   phoneHintNone: '+ and country code, then the number',
+  phoneCountryLabel: 'Phone country',
+  phoneCountryOther: 'Other (type + and the code)',
+  phoneCountryLockedReason: 'The + and the code set the country',
+  phoneCountryAR: 'Argentina',
+  phoneCountryUY: 'Uruguay',
+  phoneCountryCL: 'Chile',
+  phoneCountryPY: 'Paraguay',
+  phoneCountryBR: 'Brazil',
+  phoneCountryMX: 'Mexico',
+  phoneCountryES: 'Spain',
+  phoneCountryUS: 'United States',
+  /** One option of the Phone country Selector: the country's name and its calling code, which the
+   * API sends (the front never holds a code of its own). */
+  phoneCountryOption: (name: string | number, calling_code: string | number) => `${name} (+${calling_code})`,
+  /** The adjective carries its article, so a language can place it as it needs. */
+  phoneAdjectiveAR: 'an Argentine',
+  phoneAdjectiveUY: 'a Uruguayan',
+  phoneAdjectiveCL: 'a Chilean',
+  phoneAdjectivePY: 'a Paraguayan',
+  phoneAdjectiveBR: 'a Brazilian',
+  phoneAdjectiveMX: 'a Mexican',
+  phoneAdjectiveES: 'a Spanish',
+  phoneAdjectiveUS: 'an American',
+  phoneLengthsOr: 'or',
+  phoneInvalidFor: (adjective: string | number, lengths: string | number) => `That doesn't look like ${adjective} number. It needs ${lengths} digits after the country code.`,
   needsCountryCode: 'Start the number with + and the country code.',
   phoneTaken: 'That phone number already belongs to another customer',
   searchCustomer: 'Search customer',
@@ -67,6 +92,48 @@ export const CUSTOMERS_TEXT = {
   balanceAmount: (running_balance: string | number) => `balance ${running_balance}`,
 } as const
 
+/** Each listed Phone country's name and adjective, keyed by its ISO code. A code with no entry
+ * shows the code itself. The lengths, the calling codes and the examples are never here: they
+ * come from `GET /phone-countries`. */
+const PHONE_COUNTRY_NAMES: ReadonlyMap<string, string> = new Map([
+  ['AR', CUSTOMERS_TEXT.phoneCountryAR],
+  ['UY', CUSTOMERS_TEXT.phoneCountryUY],
+  ['CL', CUSTOMERS_TEXT.phoneCountryCL],
+  ['PY', CUSTOMERS_TEXT.phoneCountryPY],
+  ['BR', CUSTOMERS_TEXT.phoneCountryBR],
+  ['MX', CUSTOMERS_TEXT.phoneCountryMX],
+  ['ES', CUSTOMERS_TEXT.phoneCountryES],
+  ['US', CUSTOMERS_TEXT.phoneCountryUS],
+])
+
+const PHONE_ADJECTIVES: ReadonlyMap<string, string> = new Map([
+  ['AR', CUSTOMERS_TEXT.phoneAdjectiveAR],
+  ['UY', CUSTOMERS_TEXT.phoneAdjectiveUY],
+  ['CL', CUSTOMERS_TEXT.phoneAdjectiveCL],
+  ['PY', CUSTOMERS_TEXT.phoneAdjectivePY],
+  ['BR', CUSTOMERS_TEXT.phoneAdjectiveBR],
+  ['MX', CUSTOMERS_TEXT.phoneAdjectiveMX],
+  ['ES', CUSTOMERS_TEXT.phoneAdjectiveES],
+  ['US', CUSTOMERS_TEXT.phoneAdjectiveUS],
+])
+
+export function phoneCountryName(code: string): string {
+  return PHONE_COUNTRY_NAMES.get(code) ?? code
+}
+
+/** The adjective (with its article) of a listed country; a code with none shows the code itself. */
+export function phoneAdjective(code: string): string {
+  return PHONE_ADJECTIVES.get(code) ?? code
+}
+
+/** The served national lengths as words: `9`, `8 or 9`, `8, 9 or 10`. */
+export function phoneLengthsText(lengths: readonly number[]): string {
+  const sorted = [...lengths].sort((a, b) => a - b).map(String)
+  const last = sorted.pop()
+  if (last === undefined) return ''
+  return sorted.length === 0 ? last : `${sorted.join(', ')} ${CUSTOMERS_TEXT.phoneLengthsOr} ${last}`
+}
+
 /** The ledger's fixed words, registered with the filled placeholder the screen shows
  * (`SAMPLES`' worst cases), so `copy/copyLimits.test.ts` measures them. */
 export const LIMITED_COPY: readonly LimitedCopy[] = [
@@ -87,4 +154,9 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'CUSTOMERS_TEXT.onAccountOf': [[D]],
   'CUSTOMERS_TEXT.creditAmount': [[M]],
   'CUSTOMERS_TEXT.balanceAmount': [[M]],
+  'CUSTOMERS_TEXT.phoneCountryOption': [['Uruguay', '598']],
+  'CUSTOMERS_TEXT.phoneInvalidFor': [['an Argentine', '10']],
+  phoneCountryName: [['AR'], ['xx']],
+  phoneAdjective: [['AR'], ['xx']],
+  phoneLengthsText: [[[9]], [[8, 9]], [[8, 9, 10]], [[]]],
 })
