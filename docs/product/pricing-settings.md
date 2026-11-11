@@ -69,7 +69,7 @@ Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-
   - una fila atada a una Price entry rige solo mientras esa Price entry es el **Current price** del Product. Una Price entry posterior sin precio para ese tipo lo termina desde su propia fecha, igual que una Price entry sin VIP price lo terminaba antes. Así a cada VIP customer se le cobra lo mismo que antes;
   - una fila sin Price entry (solo las va a crear la parte de la pantalla de precios por tipo) sigue la regla de la fila más reciente, sin más.
 - **Cuándo es válido**:
-  - un monto entero mayor que $0 en el **Money format** del Business, estrictamente menor que el List price vigente en la fecha de la propia fila; una fila guardada con una Price entry, menor que el List price de esa Price entry;
+  - un monto mayor que $0, con hasta los decimales del **Money format** del Business, estrictamente menor que el List price vigente en la fecha de la propia fila; una fila guardada con una Price entry, menor que el List price de esa Price entry;
   - si no, se rechaza (la regla `CustomerTypePriceNotBelowList`, del dominio de productos), con el mensaje fijo y el código de rechazo que ya usa el VIP price (ADR-0008), sin repetir el monto (ADR-0005);
   - un List price posterior que baja hasta un Customer-type price o por debajo no rechaza ni reescribe nada: la línea toma el List price y se guarda como lista. No hay aviso.
 - **Cómo se fija en esta parte**: solo con el campo "VIP price" del formulario de Price entry (varieties.md), para el VIP type.
