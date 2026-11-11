@@ -184,6 +184,13 @@ def _seed(engine: Engine) -> None:
         )
 
 
+# The columns `sale_line` had at this revision: later ones (0031's customer type) are not read.
+SALE_LINE_AT_THE_TIME = (
+    "SELECT id, business_id, sale_id, variety_id, grams_hundredths, pricing_rule, "
+    "price_per_gram, line_total, position FROM sale_line ORDER BY id"
+)
+
+
 def _rows(engine: Engine, statement: str) -> list[tuple[object, ...]]:
     with engine.connect() as connection:
         return [tuple(row) for row in connection.execute(text(statement))]
@@ -224,12 +231,21 @@ def test_the_vip_price_copies_the_bulk_price_and_the_others_stay_null(tmp_path: 
 
 def test_stored_sale_lines_are_identical_before_and_after(tmp_path: Path) -> None:
     engine = _migrate_seeded(tmp_path)
-    before = _rows(engine, "SELECT * FROM sale_line ORDER BY id")
+    before = _rows(
+        engine,
+        SALE_LINE_AT_THE_TIME,
+    )
     assert len(before) == 3
 
     upgrade_to_head(engine)
 
-    assert _rows(engine, "SELECT * FROM sale_line ORDER BY id") == before
+    assert (
+        _rows(
+            engine,
+            SALE_LINE_AT_THE_TIME,
+        )
+        == before
+    )
     engine.dispose()
 
 

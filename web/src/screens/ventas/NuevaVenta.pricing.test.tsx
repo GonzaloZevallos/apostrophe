@@ -14,7 +14,8 @@ import { router } from '../../router'
 import { HOME, SALE_NEW } from '../../routes'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
-const VIP_ANA = { id: 7, name: 'Ana VIP', phone: '+5491100000001', phone_display: '+54 9 11 0000-0001', vip: true }
+const VIP_ANA = { id: 7, name: 'Ana VIP', phone: '+5491100000001', phone_display: '+54 9 11 0000-0001', vip: true, customer_type_id: 5 }
+const TYPES = [{ id: 5, name: 'Mayoristas', icon: 'star', is_vip: true }]
 
 function variety(vipPrice: number | null) {
   return {
@@ -27,6 +28,7 @@ function variety(vipPrice: number | null) {
       bulk_price: 800,
       bulk_minimum: 10,
       vip_price: vipPrice,
+      type_prices: vipPrice === null ? [] : [{ customer_type_id: 5, price: vipPrice }],
     },
   }
 }
@@ -51,7 +53,7 @@ function stubFetch(handlers: Record<string, () => Response>): ReturnType<typeof 
 }
 
 async function openFor(handlers: Record<string, () => Response>): Promise<ReturnType<typeof vi.fn>> {
-  const mock = stubFetch({ 'GET /auth/me': () => json(ME), 'GET /customers/7': () => json(VIP_ANA), ...handlers })
+  const mock = stubFetch({ 'GET /auth/me': () => json(ME), 'GET /customers/7': () => json(VIP_ANA), 'GET /api/customer-types': () => json(TYPES), ...handlers })
   await act(() => router.navigate(SALE_NEW, { state: { customerId: '7' } }))
   render(<App />)
   await screen.findByText('New sale')
@@ -73,7 +75,7 @@ afterEach(async () => {
   await act(() => router.navigate(HOME))
 })
 
-test('a VIP customer below the bulk minimum is priced at the VIP price, with the VIP mark', async () => {
+test('a customer in a type is priced at the type price, with the type name as the badge', async () => {
   await openFor({
     'GET /api/products?on=2026-10-02': () => json([variety(700)]),
     'GET /pricing-settings': () => settings(true, true),
@@ -81,7 +83,7 @@ test('a VIP customer below the bulk minimum is priced at the VIP price, with the
   await line('1')
 
   expect(await screen.findByText('$ 700 x g')).toBeInTheDocument()
-  expect(screen.getAllByText('VIP').length).toBeGreaterThanOrEqual(2)
+  expect(await screen.findByText('Mayoristas')).toBeInTheDocument()
 })
 
 test('at the bulk minimum the lowest rule wins: a VIP price above the bulk price gives the bulk price', async () => {

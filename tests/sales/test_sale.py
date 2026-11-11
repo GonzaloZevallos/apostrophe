@@ -11,6 +11,7 @@ import pytest
 
 from app.sales.domain.pricing import (
     BulkQuote,
+    CustomerTypeFact,
     GiftWithSpecialPrice,
     InvalidSpecialPrice,
     NonPositiveQuantity,
@@ -45,8 +46,8 @@ RECORDED_AT = datetime(2026, 6, 15, 12, 0, tzinfo=UTC)
 
 LIST_ONLY = PriceQuote(list_price=1_000)
 WITH_BULK = PriceQuote(list_price=1_000, bulk=BulkQuote(price=700, minimum=Quantity.of(10)))
-VIP = CustomerFact(id=1, vip=True)
-NOT_VIP = CustomerFact(id=1, vip=False)
+VIP = CustomerFact(id=1, customer_type=CustomerTypeFact(id=7, name="Wholesale"))
+NOT_VIP = CustomerFact(id=1, customer_type=None)
 ONE_GRAM = Quantity.of(1)
 
 
@@ -235,7 +236,7 @@ def test_vip_prices_every_line_at_its_vip_price_even_without_reaching_the_minimu
     with_vip = PriceQuote(
         list_price=1_000,
         bulk=BulkQuote(price=700, minimum=Quantity.of(10)),
-        vip_price=700,
+        type_price=700,
     )
     sale = _record(
         customer=VIP,
@@ -244,7 +245,22 @@ def test_vip_prices_every_line_at_its_vip_price_even_without_reaching_the_minimu
         method=PaymentMethod.CASH,
     )
 
-    assert sale.lines[0].pricing_rule == PricingRule.VIP
+    line = sale.lines[0]
+    assert line.pricing_rule == PricingRule.CUSTOMER_TYPE
+    assert (line.customer_type_id, line.customer_type_name) == (7, "Wholesale")
+
+
+def test_a_line_not_priced_by_the_type_records_no_type() -> None:
+    sale = _record(
+        customer=VIP,
+        customer_id=1,
+        lines=[_line(quote=PriceQuote(list_price=1_000), quantity=Quantity.of(1))],
+        method=PaymentMethod.CASH,
+    )
+
+    line = sale.lines[0]
+    assert line.pricing_rule == PricingRule.LIST
+    assert (line.customer_type_id, line.customer_type_name) == (None, None)
 
 
 def test_special_line_total_never_feeds_back_into_the_total_via_its_rate() -> None:

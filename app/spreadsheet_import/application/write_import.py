@@ -99,6 +99,8 @@ def write_import(
     pricing_settings.switch_on(plan.needs.is_bulk_pricing, plan.needs.is_vip_customers)
     leaves_vip_on = pricing_settings.current().is_vip_customers
 
+    # The VIP type goes before the price entries: their VIP prices are rows of that type.
+    vip_type_id = vip_type.ensure_vip_type(transaction) if wants_vip_type else None
     variety_ids = _write_varieties(split_result.varieties, varieties, transaction)
     for price_row in split_result.price_history:
         variety_id = variety_ids[_variety_key(price_row.variety, varieties)]
@@ -110,7 +112,6 @@ def write_import(
     catalog.write_header_footer(split_result.header_footer, today, transaction)
     category_ids = _write_categories(split_result.categories, expenses, transaction)
 
-    vip_type_id = vip_type.ensure_vip_type(transaction) if wants_vip_type else None
     customer_ids = _write_customers(plan.customers, customers, vip_type_id, transaction)
 
     for entrada_row in plan.entrada_order:

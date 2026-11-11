@@ -6,6 +6,8 @@
 
 **Cuando** configuro cómo pone precios mi negocio, registro el precio de un producto o entrego un pedido, **quiero** que la app use solo las Pricing rules que tiene mi negocio, **para poder** cobrarle a cada cliente exactamente lo que quiero, sin que el precio de nadie cambie por sorpresa. (Lo sirve acá activar las reglas que usa la planilla y sumar sus VIP al **VIP type**; definido en pricing-settings.md y customers.md.)
 
+**Cuando** registro una venta para un cliente que pertenece a uno de mis grupos de clientes, **quiero** que cada línea se cotice al precio que fijé para ese grupo y ese producto, **para** cobrarle a cada grupo su propio precio sin tipearlo ni sacarlo de memoria. (Parte customer-type prices de GH-318: lo sirve acá guardar los VIP prices de la planilla como **Customer-type price**s del VIP type y cotizar sus filas `"Amigo"` igual que una venta cargada a mano; definido en pricing-settings.md y sales.md.)
+
 **Cuando** abro la app entre pedidos o al final del día, **quiero** ver qué vendí hoy, quién me debe y qué se está terminando, y actuar en el acto (cobrarle a un deudor, abrir un producto que está bajo, arreglar lo que me dice un aviso), **para poder** volver con el cliente sin recorrer Customers y Products uno por uno ni hacer cuentas. (Lo sirve acá registrar que el Business fue importado, lo que termina su Onboarding; ningún aviso de Home sigue de eso; definido en navigation.md y results.md.)
 
 # Spreadsheet import
@@ -13,7 +15,7 @@
 La carga única del historial de un Business desde la planilla `Control_de_ventas_y_gastos` (una exportación `.xlsx`) en ese Business. La corre el **Operator** de la instalación el día en que el Business pasa a la app. Es un script del Operator, no una ruta ni una pantalla.
 
 Escribe:
-- Products e historial de precios (varieties.md);
+- Products e historial de precios (varieties.md), con sus VIP prices como Customer-type prices del VIP type (pricing-settings.md);
 - Catalog attributes, y el Catalog header and footer (catalog.md);
 - Stock entries (stock.md);
 - Expense categories y Expenses (expenses.md);
@@ -37,7 +39,7 @@ Criterios de éxito:
 3. **Nada inventado.** El comando nunca adivina un Phone number, nunca importa una fila que la planilla marcó como no terminada, y nunca toma una columna derivada (las columnas `Total`, `Precio x g` y `Revisar` de la planilla). Las cifras derivadas se recalculan con las reglas del producto. Todo lo que no puede dar por bueno se le informa al Operator, que corrige el archivo o la correspondencia y la vuelve a correr.
 4. **Un Business, una vez, sin mezclar.** Importa solo en un Business que todavía no tiene registros, y nunca toca un Business con datos. Todo lo importado pertenece solo a ese Business (ADR-0004). La planilla real y los datos de sus clientes nunca entran al repositorio.
 5. **Una planilla sin números de teléfono se importa completa.** La corrida sale sin archivo de correspondencias o con uno parcial. El informe dice cuántos Customers entraron sin número y nunca repite un número. Un número que la correspondencia sí da se sigue verificando, y uno mal formado sigue bloqueando.
-6. **Los precios de la planilla siguen funcionando.** Un Business cuya planilla usa precios por cantidad o filas `"Amigo"` arranca con esas reglas activadas y con sus VIP en el VIP type, así sus precios y las próximas Sales de sus VIP customers salen como los ponía la planilla.
+6. **Los precios de la planilla siguen funcionando.** Un Business cuya planilla usa precios por cantidad o filas `"Amigo"` arranca con esas reglas activadas y con sus VIP en el VIP type, así sus precios y las próximas Sales de sus VIP customers salen como los ponía la planilla. Una Sale importada de un VIP es igual a una cargada a mano para el mismo Customer, Product, día y gramos.
 7. **La app sabe que fue importado.** Una corrida real exitosa registra, en su único commit, que el Business fue cargado por la Spreadsheet import y cuándo, y con eso termina su Onboarding. Ningún aviso de Home sigue de eso: nada en pantalla dice que hubo una Spreadsheet import.
 
 ## Comportamiento
@@ -133,7 +135,8 @@ Criterios de éxito:
   - dos Price entries de un Product en una misma fecha bloquean;
   - un Bulk price sin Bulk minimum, o al revés, bloquea;
   - un Bulk price que no es menor que el List price bloquea;
-  - una Price entry con Bulk price recibe además un VIP price igual a él, que reproduce la regla `"Amigo"` de la planilla. La planilla no tiene columna de VIP price.
+  - cuando la planilla tiene algún VIP customer (así que Customer types queda activado), una Price entry con Bulk price recibe además un VIP price igual a él, que reproduce la regla `"Amigo"` de la planilla. La planilla no tiene columna de VIP price.
+  - ese VIP price se guarda como un Customer-type price del VIP type, con la fecha de la Price entry y atado a ella (pricing-settings.md), nunca en `price_entry.vip_price`. Por eso el VIP type se crea, cuando falta, antes de escribir las Price entries. Sin VIP customers en la planilla no se guarda ninguno.
 - **Catálogo** (filas 6–15: producto, mostrada, emoji, % índica, aroma; B18/B19: header y footer):
   - El "Sí" de la planilla significa mostrada y "No" significa Hidden product. Cualquier otro valor bloquea.
   - Una celda de emoji con texto común o más de un emoji bloquea.
@@ -165,8 +168,9 @@ Criterios de éxito:
 
 ### Pricing rules
 
-- **El tipo `""` o `"Lista"` de la planilla**: list o bulk, por la regla del precio más bajo de sales.md, a partir del historial de precios importado en la fecha de la fila y con los gramos de la fila. Nunca VIP, aunque el Customer sea VIP en otra fila.
-- **El `"Amigo"` de la planilla**: la regla VIP (sales.md), con el VIP price igual al Bulk price de ese día. El resultado es el Bulk price de ese día, o el List price cuando ese día no tiene, como en la planilla. Un empate con el Bulk price se guarda como VIP.
+- **El tipo `""` o `"Lista"` de la planilla**: list o bulk, por la regla del precio más bajo de sales.md, a partir del historial de precios importado en la fecha de la fila y con los gramos de la fila. Nunca la regla del Customer type, aunque el Customer sea VIP en otra fila.
+- **El `"Amigo"` de la planilla**: se cotiza con la misma regla que una venta cargada a mano para un Customer del VIP type (sales.md), con el Customer-type price del VIP type igual al Bulk price de ese día. El resultado es el Bulk price de ese día, o el List price cuando ese día no tiene, como en la planilla.
+  - Un empate con el Bulk price se guarda con la regla del Customer type, con el VIP type y una copia de su nombre, igual que a mano. Las Sales importadas antes de esta regla conservan la regla `vip`.
   - Todo Customer con al menos una fila `"Amigo"` terminada se importa como VIP: entra al VIP type del Business (el Customer type que hizo la actualización, que se encuentra por su marca y nunca por su nombre). La Spreadsheet import crea ese tipo, con el nombre "VIP", cuando el Business no tiene ninguno. La marca VIP congelada nunca se escribe.
   - **Un nombre ocupado detiene la corrida.** Cuando la planilla tiene un VIP customer, el Business no tiene VIP type y otro Customer type se llama "VIP" (sin importar mayúsculas ni espacios, así que " vip " también), la corrida se rechaza antes de escribir nada, tanto en la corrida de prueba como en la real, que lo vuelve a verificar antes de la primera escritura. El informe, con un texto fijo del Copy module, nombra el conflicto y la solución (renombrar o eliminar ese tipo y volver a correrla), sin ningún Customer ni monto. No es una fila no terminada. Un Business que ya tiene su VIP type lo usa, se llame como se llame hoy; una planilla sin ningún VIP customer nunca se verifica.
   - Una fila `"Amigo"` sin Customer bloquea.
@@ -226,6 +230,7 @@ Las filas que la planilla marca como no terminadas son la única excepción: se 
 - Dentro de Entradas, y por separado dentro de Ventas, las filas que comparten fecha se registran en el orden de la planilla, de arriba hacia abajo. Ese orden es su orden de registro, así que fija el Lot order (ADR-0010) y el Settlement (ADR-0012) en esa fecha.
 - Entre fechas distintas decide la fecha, así que una planilla desordenada igual queda bien.
 - Las filas del historial de precios y de la pestaña Gastos no necesitan desempate.
+- El VIP type, cuando hay que crearlo, se escribe antes que las Price entries, así cada Customer-type price lleva su id.
 
 ### Restricciones
 
@@ -257,16 +262,17 @@ A partir de fixtures de test, sin telemetría:
   El Profit y el Cash no se comparan con la planilla.
 - **Orden de registro (criterio 2)**: un fixture con filas de Entradas y de Ventas de la misma fecha, en fechas desordenadas, obtiene su Lot order y su Settlement primero por fecha y después por orden de la planilla. 100% aprobado.
 - **Pricing settings (criterio 6)**: 100% aprobado.
-  - Un fixture con precios por cantidad y filas `"Amigo"` termina con los dos interruptores activados y VIP price = Bulk price en cada Price entry con Bulk price, y el informe lista los dos interruptores.
-  - Un fixture sin ninguno de los dos termina con los dos apagados.
+  - Un fixture con precios por cantidad y filas `"Amigo"` termina con los dos interruptores activados y, por cada Price entry con Bulk price, exactamente un Customer-type price del VIP type igual a ese Bulk price, con su fecha y atado a ella; `price_entry.vip_price` queda vacío. El informe lista los dos interruptores.
+  - Un fixture sin ninguno de los dos termina con los dos apagados y sin ningún Customer-type price.
   - Un interruptor ya activado antes de la Spreadsheet import sigue activado.
-  - El precio, la regla y el total guardados de cada fila son iguales a lo que guardaba la Spreadsheet import antes de que existieran los Pricing settings, las filas `"Amigo"` incluidas.
+  - El precio por gramo y el total guardados de cada fila son iguales a lo que guardaba la Spreadsheet import antes de que existieran los Pricing settings, las filas `"Amigo"` incluidas; la regla de una fila `"Amigo"` cotizada por el VIP price es ahora la del Customer type, con la copia del nombre del VIP type.
+  - Una Sale importada de un VIP es igual a una cargada a mano para el mismo Customer, Product, día y gramos: el mismo precio por gramo, total, regla y copia del nombre.
 - **El VIP type (criterio 6)**: 100% aprobado.
   - Los VIP de la planilla entran al VIP type existente, aunque esté renombrado.
   - Sin VIP type, se crea exactamente una fila de VIP type, también cuando el VIP type anterior se había eliminado.
   - Sin VIP type y con un tipo del vendedor llamado "VIP" (también " vip "), la corrida de prueba y la real se rechazan con su texto fijo y dejan 0 filas nuevas en todas las tablas.
   - Una planilla sin VIP no hace el chequeo.
-  - Ninguna corrida escribe la marca VIP congelada `customer.vip`, probado con un registro de sentencias.
+  - Ninguna corrida escribe la marca VIP congelada `customer.vip` ni la columna congelada `price_entry.vip_price`, probado con un registro de sentencias.
 - **Spreadsheet import registrada (criterio 7)**: 100% aprobado.
   - Una corrida real exitosa registra el hecho de la Spreadsheet import con el instante de la corrida, en el mismo commit que todo lo demás, y termina el Onboarding del Business.
   - Una corrida de prueba y una corrida real rechazada no registran nada.
@@ -303,6 +309,6 @@ A partir de fixtures de test, sin telemetría:
 - Agrupar varias filas en una sola Sale con varias líneas.
 - Deshacer una Spreadsheet import una vez hecha.
 - Cómo se lee un Phone number guardado como número en la correspondencia (#54).
-- Una columna de VIP price en la planilla; desactivar un interruptor de precios.
+- Una columna de VIP price en la planilla; precios para otros Customer types; desactivar un interruptor de precios.
 - Resolver sola un choque con un tipo del vendedor llamado "VIP" (adoptarlo, renombrarlo o crear el VIP type con otro nombre).
 - Completar hacia atrás el hecho de la Spreadsheet import para un Business importado antes de que existiera.
