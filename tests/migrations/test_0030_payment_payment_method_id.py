@@ -44,8 +44,9 @@ def _engine_at_0029(tmp_path: Path) -> Engine:
         )
         connection.execute(
             text(
-                "INSERT INTO sale (id, business_id, number, sold_on, customer_id, shipping_charged, "
-                "recorded_at) VALUES (1, 1, 1, '2026-09-01', NULL, 0, '2026-09-01 10:00:00')"
+                "INSERT INTO sale (id, business_id, number, sold_on, customer_id, "
+                "shipping_charged, recorded_at) "
+                "VALUES (1, 1, 1, '2026-09-01', NULL, 0, '2026-09-01 10:00:00')"
             )
         )
         for payment_id, business_id, method, customer_id, sale_id in PAYMENTS:

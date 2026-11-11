@@ -46,8 +46,9 @@ _CHECK_CUSTOMER_ID = 1
 
 
 # The sheet's own words are the only place "cash" and "transfer" survive: each names the
-# default method the business holds under that English name (docs/adr/0082).
-_DEFAULT_NAMES = {"cash": "Cash", "transfer": "Transfer"}
+# default method the business holds under its Stored-language default name (docs/adr/0082).
+# A caller that knows the business's language passes those names; without them English's.
+ENGLISH_DEFAULT_NAMES: Mapping[str, str] = {"cash": "Cash", "transfer": "Transfer"}
 # Stands in for a method id while a plan is only checked: nothing is written then.
 _CHECKED_METHOD = PaymentMethodId(1)
 
@@ -60,8 +61,13 @@ class SalesImport:
     """`SalesImport` for one business."""
 
     def __init__(
-        self, session: Session, business_id: int, money_format: MoneyFormatReader | None = None
+        self,
+        session: Session,
+        business_id: int,
+        money_format: MoneyFormatReader | None = None,
+        default_names: Mapping[str, str] | None = None,
     ) -> None:
+        self._default_names = default_names or ENGLISH_DEFAULT_NAMES
         self._session = session
         self._business_id = business_id
         # The command line hangs the business's own format here; a caller that has none
@@ -81,8 +87,8 @@ class SalesImport:
         return sorted(
             word
             for word in set(words)
-            if word in _DEFAULT_NAMES
-            and methods.holder_of(_DEFAULT_NAMES[word]).holder is Holder.ARCHIVED
+            if word in self._default_names
+            and methods.holder_of(self._default_names[word]).holder is Holder.ARCHIVED
         )
 
     def check_sales(
@@ -138,7 +144,7 @@ class SalesImport:
         if word is None:
             return None
         methods = PaymentMethodsForImport(self._session, self._business_id)
-        name = _DEFAULT_NAMES[word]
+        name = self._default_names[word]
         holding = methods.holder_of(name)
         if holding.holder is Holder.OFFERED and holding.method_id is not None:
             return PaymentMethodId(holding.method_id)

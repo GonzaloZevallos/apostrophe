@@ -19,7 +19,7 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 from openpyxl import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
@@ -156,6 +156,19 @@ def _vocabulary_workbook() -> Workbook:
     return workbook
 
 
+def _on_the_spot_method_names(engine: Engine) -> set[str]:
+    """The names of the business's methods the imported On-the-spot payments point to."""
+    with engine.connect() as connection:
+        rows = connection.execute(
+            text(
+                "SELECT DISTINCT pm.name FROM payment p JOIN payment_method pm "
+                "ON pm.business_id = p.business_id AND pm.id = p.payment_method_id "
+                "WHERE p.sale_id IS NOT NULL"
+            )
+        )
+        return {name for (name,) in rows}
+
+
 def test_the_whole_vocabulary_dry_runs_clean_and_real_runs_as_import_md_says(
     client: TestClient,
     engine: Engine,
@@ -208,8 +221,8 @@ def test_the_whole_vocabulary_dry_runs_clean_and_real_runs_as_import_md_says(
     assert sales["2026-02-03"]["payment"] == "owing"
     assert sales["2026-02-03"]["lines"][0]["pricing_rule"] == "vip"
     assert sales["2026-02-04"]["payment"] == "none"
-    paid_methods = {sales["2026-02-01"]["payment"], sales["2026-02-02"]["payment"]}
-    assert paid_methods == {"cash", "transfer"}
+    assert {sales["2026-02-01"]["payment"], sales["2026-02-02"]["payment"]} == {"paid"}
+    assert _on_the_spot_method_names(engine) == {"Cash", "Transfer"}
 
     customers = {c["name"]: c for c in client.get("/customers").json()}
     assert customers[AMIGO_CUSTOMER]["vip"] is True
@@ -346,7 +359,8 @@ def test_pm_s_own_words_dry_run_clean_real_run_stores_cash_transfer_and_one_owin
     sales = client.get("/sales").json()
     assert len(sales) == 3
     methods = {sale["payment"] for sale in sales}
-    assert methods == {"cash", "transfer", "owing"}
+    assert methods == {"paid", "owing"}
+    assert _on_the_spot_method_names(engine) == {"Cash", "Transfer"}
     assert sum(1 for sale in sales if sale["payment"] == "owing") == 1
 
 

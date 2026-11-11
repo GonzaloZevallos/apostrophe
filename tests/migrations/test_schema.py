@@ -22,7 +22,7 @@ def test_upgrading_twice_changes_nothing() -> None:
     upgrade_to_head(engine)
 
 
-def test_a_payment_points_to_its_business_s_method_by_a_composite_key_and_keeps_the_frozen_method() -> None:
+def test_a_payment_points_to_its_business_s_method_by_a_composite_key() -> None:
     engine = make_engine("sqlite://")
     upgrade_to_head(engine)
 
