@@ -47,6 +47,16 @@ const EXAMPLE_WITH_DECIMALS = 11000.5
 
 const SYMBOL_CODE: RefusalCode = 'money_format.symbol_invalid'
 const LOWERING_CODE: RefusalCode = 'money_format.decimals_below_recorded'
+/** The refusals of the rescale a raise runs: nothing the seller typed is wrong, and nothing was saved. */
+const RESCALE_CODES: readonly RefusalCode[] = [
+  'money_format.amount_too_large',
+  'money_format.busy',
+  'money_format.rescale_check_failed',
+]
+
+function isRescaleCode(code: string): code is RefusalCode {
+  return RESCALE_CODES.some((known) => known === code)
+}
 
 function choiceOf(decimals: number): DecimalsChoice {
   return decimals === 2 ? '2' : decimals === 1 ? '1' : '0'
@@ -60,6 +70,7 @@ export default function CurrencyAndDecimals() {
   const [decimals, setDecimals] = useState<DecimalsChoice>(choiceOf(accepted.decimals))
   const [symbolError, setSymbolError] = useState<string | null>(null)
   const [loweringRefused, setLoweringRefused] = useState(false)
+  const [rescaleRefusal, setRescaleRefusal] = useState<string | null>(null)
   const [failed, setFailed] = useState(false)
   const [offline, setOffline] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -68,6 +79,7 @@ export default function CurrencyAndDecimals() {
   function clearFeedback(): void {
     setSymbolError(null)
     setLoweringRefused(false)
+    setRescaleRefusal(null)
     setFailed(false)
     setOffline(false)
     setSaved(false)
@@ -93,6 +105,8 @@ export default function CurrencyAndDecimals() {
         setSymbolError(refusalText(t, { key: REFUSAL_KEY[SYMBOL_CODE] }))
       } else if (caught instanceof ApiError && caught.code === LOWERING_CODE) {
         setLoweringRefused(true)
+      } else if (caught instanceof ApiError && isRescaleCode(caught.code)) {
+        setRescaleRefusal(refusalText(t, { key: REFUSAL_KEY[caught.code] }))
       } else {
         setFailed(true)
       }
@@ -158,6 +172,12 @@ export default function CurrencyAndDecimals() {
           <div className="motivos__aviso" role="alert">
             <Icono nombre="atencion" />
             <span>{refusalText(t, { key: REFUSAL_KEY[LOWERING_CODE] })}</span>
+          </div>
+        )}
+        {rescaleRefusal !== null && (
+          <div className="motivos__aviso" role="alert">
+            <Icono nombre="atencion" />
+            <span>{rescaleRefusal}</span>
           </div>
         )}
         {failed && <ErrorGenerico />}

@@ -120,8 +120,8 @@
   "money_format.symbol_invalid": "refusals:moneySymbolInvalid",
   "money_format.decimals_invalid": "refusals:generic",
   "money_format.decimals_below_recorded": "refusals:moneyDecimalsBelowRecorded",
-  "money_format.amount_too_large": "refusals:generic",
-  "money_format.busy": "refusals:generic",
-  "money_format.rescale_check_failed": "refusals:generic",
+  "money_format.amount_too_large": "refusals:moneyAmountTooLarge",
+  "money_format.busy": "refusals:moneyBusy",
+  "money_format.rescale_check_failed": "refusals:moneyRescaleCheckFailed",
   "RequestInvalid": "refusals:generic"
 }

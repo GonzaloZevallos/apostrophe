@@ -31,7 +31,7 @@ const ME: Me = {
 }
 
 const SYMBOL_REFUSAL = 'Use 1 to 4 visible characters, and no two asterisks in a row.'
-const LOWERING_REFUSAL = 'Some amounts have more decimals than that, so the decimals stay as they were.'
+const LOWERING_REFUSAL = 'Some recorded amounts have more decimals than that, so the decimals stay put.'
 
 type FetchMock = Mock<(url: string, init?: RequestInit) => Promise<Response>>
 
@@ -139,6 +139,25 @@ test('a refused lowering shows the fixed sentence with the Attention icon and ch
   await waitFor(() => {
     expect(queryClient.getQueryData<Me>(keys.me())?.money_format).toEqual({ symbol: '$', decimals: 0 })
   })
+})
+
+test.each([
+  [503, 'money_format.busy', 'The app is busy right now. Nothing was saved, so try again in a moment.'],
+  [409, 'money_format.amount_too_large', 'An amount is too large to change the decimals. Nothing was saved.'],
+  [500, 'money_format.rescale_check_failed', 'The amounts could not be checked, so nothing was saved. Try again.'],
+])('a refused raise (%s %s) shows its own sentence with the Attention icon and changes nothing', async (status, code, sentence) => {
+  const user = userEvent.setup()
+  const fetchMock = fetchReturning(jsonResponse(status, { code }))
+  renderForm(fetchMock)
+
+  await user.click(screen.getByRole('radio', { name: SETTINGS_TEXT.currencyDecimals2 }))
+  await user.click(screen.getByRole('button', { name: COMMON_TEXT.save }))
+
+  const alert = await screen.findByRole('alert')
+  expect(alert).toHaveTextContent(sentence)
+  expect(alert.querySelector('svg')).not.toBeNull()
+  expect(screen.getByRole('radio', { name: SETTINGS_TEXT.currencyDecimals2 })).toHaveAttribute('aria-checked', 'true')
+  expect(currentMoneyFormat()).toEqual({ symbol: '$', decimals: 0 })
 })
 
 test('a mounted Sales list writes its total with the new symbol after Save, without navigating', async () => {

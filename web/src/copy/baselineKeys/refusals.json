@@ -403,5 +403,14 @@
   },
   "refusals.ts:REFUSAL_BY_CODE[\"money_format.symbol_invalid\"]": {
     "key": "refusals:moneySymbolInvalid"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"money_format.amount_too_large\"]": {
+    "key": "refusals:moneyAmountTooLarge"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"money_format.busy\"]": {
+    "key": "refusals:moneyBusy"
+  },
+  "refusals.ts:REFUSAL_BY_CODE[\"money_format.rescale_check_failed\"]": {
+    "key": "refusals:moneyRescaleCheckFailed"
   }
 }
