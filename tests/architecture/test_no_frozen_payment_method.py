@@ -21,28 +21,51 @@ def frozen_method_uses(source: str) -> list[str]:
     found: list[str] = []
     tree = ast.parse(source)
     # `app/payments/domain/account.py` has its own, unrelated `PaymentRow`: only the
-    # table class, imported from the payments adapters' tables, is the frozen one.
-    is_table = any(
-        isinstance(node, ast.ImportFrom)
-        and node.module == "app.payments.adapters.tables"
-        and any(alias.name == "PaymentRow" for alias in node.names)
-        for node in ast.walk(tree)
-    )
+    # table class, imported from the payments adapters' tables, is the frozen one. It may
+    # come in under another name, or through the tables module (`tables.PaymentRow`).
+    row_names: set[str] = set()
+    module_names: set[str] = set()
     for node in ast.walk(tree):
-        if (
-            is_table
-            and isinstance(node, ast.Attribute)
-            and node.attr == "method"
-            and isinstance(node.value, ast.Name)
-            and node.value.id == "PaymentRow"
-        ):
-            found.append(f"PaymentRow.method line {node.lineno}")
-        if (
-            is_table
-            and isinstance(node, ast.Call)
-            and isinstance(node.func, ast.Name)
-            and node.func.id == "PaymentRow"
-        ):
+        if isinstance(node, ast.ImportFrom) and node.module == "app.payments.adapters.tables":
+            row_names |= {
+                alias.asname or alias.name for alias in node.names if alias.name == "PaymentRow"
+            }
+        if isinstance(node, ast.ImportFrom) and node.module == "app.payments.adapters":
+            module_names |= {
+                alias.asname or alias.name for alias in node.names if alias.name == "tables"
+            }
+        if isinstance(node, ast.Import):
+            module_names |= {
+                alias.asname or alias.name
+                for alias in node.names
+                if alias.name == "app.payments.adapters.tables"
+            }
+
+    def is_row(expression: ast.expr) -> bool:
+        if isinstance(expression, ast.Name):
+            return expression.id in row_names
+        return (
+            isinstance(expression, ast.Attribute)
+            and expression.attr == "PaymentRow"
+            and isinstance(expression.value, ast.Name)
+            and expression.value.id in module_names
+        )
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Attribute) and node.attr == "method":
+            owner = node.value
+            if is_row(owner):
+                found.append(f"PaymentRow.method line {node.lineno}")
+            # `PaymentRow.__table__.c.method`
+            elif (
+                isinstance(owner, ast.Attribute)
+                and owner.attr == "c"
+                and isinstance(owner.value, ast.Attribute)
+                and owner.value.attr == "__table__"
+                and is_row(owner.value.value)
+            ):
+                found.append(f"PaymentRow.__table__.c.method line {node.lineno}")
+        if isinstance(node, ast.Call) and is_row(node.func):
             found += [
                 f"PaymentRow(method=) line {node.lineno}"
                 for keyword in node.keywords
@@ -91,6 +114,26 @@ def test_the_frozen_column_is_reported_in_each_spelling() -> None:
         "PaymentRow(method=) line 3",
         "PaymentRow.method line 2",
         "string 'SELECT payment.method FROM payment' line 4",
+    ]
+
+
+def test_the_frozen_column_is_reported_through_an_alias_a_module_or_the_table_object() -> None:
+    source = (
+        "from app.payments.adapters.tables import PaymentRow as Row\n"
+        "from app.payments.adapters import tables\n"
+        "import app.payments.adapters.tables as t\n"
+        "a = Row.method\n"
+        "b = tables.PaymentRow.method\n"
+        "c = t.PaymentRow(business_id=1, method='cash')\n"
+        "d = Row.__table__.c.method\n"
+        "e = Row.payment_method_id\n"
+    )
+
+    assert frozen_method_uses(source) == [
+        "PaymentRow(method=) line 6",
+        "PaymentRow.__table__.c.method line 7",
+        "PaymentRow.method line 4",
+        "PaymentRow.method line 5",
     ]
 
 
