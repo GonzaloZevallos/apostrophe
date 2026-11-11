@@ -1,6 +1,8 @@
 """Generates the two files the phone country detection reads on the device
 (docs/adr/0085): `web/src/phone/zoneCountries.json`, the listed country of every IANA time
-zone of the eight, and `web/src/phone/listedCodes.json`, the listed codes in their order.
+zone of the eight, and `web/src/phone/listedCodes.json`, the listed codes in their order, and
+`web/src/phone/servedCountries.json`, the code and calling code of each listed country as
+`GET /phone-countries` serves them (the answer vitest stubs; the front writes no code by hand).
 
 The zones come from the installed `tzdata` package (`zone1970.tab`, `zone.tab` as the
 fallback), never from the operating system. Run it with `python -m scripts.phone.zone_countries`;
@@ -22,6 +24,7 @@ ROOT = Path(__file__).resolve().parents[2]
 OUTPUT_DIR = ROOT / "web" / "src" / "phone"
 ZONES_FILE = OUTPUT_DIR / "zoneCountries.json"
 CODES_FILE = OUTPUT_DIR / "listedCodes.json"
+SERVED_FILE = OUTPUT_DIR / "servedCountries.json"
 
 # Names that tzdata keeps only as links and whose country the tab files do not carry. A name
 # ending in "/*" stands for every link tzdata has under that folder.
@@ -129,6 +132,15 @@ def documents() -> dict[Path, str]:
     return {
         ZONES_FILE: render({"generated_by": GENERATED_BY, "zones": zones}),
         CODES_FILE: render({"generated_by": GENERATED_BY, "codes": listed}),
+        SERVED_FILE: render(
+            {
+                "generated_by": GENERATED_BY,
+                "countries": [
+                    {"code": country.value, "calling_code": country.rule.calling_code}
+                    for country in listed_countries()
+                ],
+            }
+        ),
     }
 
 

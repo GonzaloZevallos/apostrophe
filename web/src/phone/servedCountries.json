@@ -1,0 +1,37 @@
+{
+  "generated_by": "scripts/phone/zone_countries.py",
+  "countries": [
+    {
+      "code": "AR",
+      "calling_code": "54"
+    },
+    {
+      "code": "UY",
+      "calling_code": "598"
+    },
+    {
+      "code": "CL",
+      "calling_code": "56"
+    },
+    {
+      "code": "PY",
+      "calling_code": "595"
+    },
+    {
+      "code": "BR",
+      "calling_code": "55"
+    },
+    {
+      "code": "MX",
+      "calling_code": "52"
+    },
+    {
+      "code": "ES",
+      "calling_code": "34"
+    },
+    {
+      "code": "US",
+      "calling_code": "1"
+    }
+  ]
+}

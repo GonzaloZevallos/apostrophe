@@ -105,3 +105,28 @@ def test_both_files_say_which_script_generated_them() -> None:
 
 def test_the_listed_codes_are_the_listed_countries_in_their_order() -> None:
     assert committed("codes")["codes"] == [country.value for country in listed_countries()]
+
+
+def test_the_served_stub_lists_each_country_with_the_calling_code_the_table_declares() -> None:
+    served = json.loads(generator.SERVED_FILE.read_text(encoding="utf-8"))
+
+    assert served["generated_by"] == "scripts/phone/zone_countries.py"
+    assert served["countries"] == [
+        {"code": country.value, "calling_code": country.rule.calling_code}
+        for country in listed_countries()
+    ]
+
+
+def test_a_served_stub_edited_by_hand_differs_from_the_regeneration() -> None:
+    fresh = generator.documents()[generator.SERVED_FILE]
+    tampered = fresh.replace('"calling_code": "598"', '"calling_code": "599"')
+
+    assert tampered != fresh
+    assert tampered != generator.SERVED_FILE.read_text(encoding="utf-8")
+
+
+def test_the_front_test_stub_holds_no_calling_code_of_its_own() -> None:
+    stub = (generator.OUTPUT_DIR / "served.fixture.ts").read_text(encoding="utf-8")
+
+    assert "calling_code:" not in stub
+    assert "servedCountries.json" in stub

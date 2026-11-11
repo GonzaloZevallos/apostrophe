@@ -1,18 +1,13 @@
 /**
  * The answer of `GET /phone-countries` as a test stubs it: the shape the API serves, in its
- * order. A stub of the API, not a second table: the product states each code only in
- * `app/shared/phone_country.py`, and `tests/customers/test_phone_plus_parity.py` runs the same
- * `plusCases.json` against that table.
+ * order. A stub of the API, not a second table: the codes are read from
+ * `servedCountries.json`, which `scripts/phone/zone_countries.py` writes from
+ * `app/shared/phone_country.py` (the only place a calling code is declared), and
+ * `tests/customers/test_zone_countries.py` fails when the committed file differs from a fresh
+ * regeneration. `tests/customers/test_phone_plus_parity.py` runs the same `plusCases.json`
+ * against that table.
  */
+import served from './servedCountries.json'
 import type { ListedCountry } from './types.ts'
 
-export const SERVED: readonly ListedCountry[] = [
-  { code: 'AR', calling_code: '54' },
-  { code: 'UY', calling_code: '598' },
-  { code: 'CL', calling_code: '56' },
-  { code: 'PY', calling_code: '595' },
-  { code: 'BR', calling_code: '55' },
-  { code: 'MX', calling_code: '52' },
-  { code: 'ES', calling_code: '34' },
-  { code: 'US', calling_code: '1' },
-]
+export const SERVED: readonly ListedCountry[] = served.countries
