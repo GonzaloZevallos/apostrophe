@@ -328,3 +328,27 @@ def test_the_symbol_is_refused_before_the_decimals() -> None:
         MoneyFormat.of("**", 3)
 
     assert raised.value.field == "symbol"
+
+
+@pytest.mark.parametrize(
+    ("hundredths", "decimals", "units"),
+    [(1050, 2, 1050), (1050, 1, 105), (1000, 0, 10), (0, 0, 0), (-1050, 2, -1050)],
+)
+def test_money_in_decimals_holds_the_amount_in_the_unit_of_the_business_decimals(
+    hundredths: int, decimals: int, units: int
+) -> None:
+    assert Money(hundredths).in_decimals(decimals) == units
+    assert Money.of_decimals(units, decimals) == Money(hundredths)
+
+
+@pytest.mark.parametrize(("hundredths", "decimals"), [(1050, 0), (1005, 1), (1, 0)])
+def test_money_in_decimals_refuses_an_amount_finer_than_the_decimals_instead_of_rounding(
+    hundredths: int, decimals: int
+) -> None:
+    with pytest.raises(MoneyNotRepresentable):
+        Money(hundredths).in_decimals(decimals)
+
+
+def test_money_in_decimals_refuses_decimals_outside_0_to_2() -> None:
+    with pytest.raises(ValueError):
+        Money(1000).in_decimals(3)

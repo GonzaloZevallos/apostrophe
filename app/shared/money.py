@@ -106,6 +106,24 @@ class Money:
             raise MoneyNotRepresentable("the amount is not a whole number of units")
         return units
 
+    @classmethod
+    def of_decimals(cls, units: int, decimals: int) -> Money:
+        """An amount held in the domain's unit for a business of `decimals` decimals (a
+        tenth of a unit at 1, a hundredth at 2, a whole unit at 0), as money."""
+        return cls(units * 10 ** (MAX_DECIMALS - checked_decimals(decimals)))
+
+    def in_decimals(self, decimals: int) -> int:
+        """The amount in the domain's unit for a business of `decimals` decimals: a whole
+        currency unit at 0, a tenth at 1, a hundredth at 2. Exact or it raises
+        `MoneyNotRepresentable`: an amount finer than the decimals is never truncated and
+        never rounded. This is how a use case and an adapter hand the domain an amount,
+        and the domain arithmetic stays in that one unit throughout."""
+        step: int = 10 ** (MAX_DECIMALS - checked_decimals(decimals))
+        units, remainder = divmod(self.hundredths, step)
+        if remainder != 0:
+            raise MoneyNotRepresentable("the amount has more decimals than the business shows")
+        return units
+
     def as_decimal(self) -> Decimal:
         return Decimal(self.hundredths) / HUNDREDTHS_PER_UNIT
 
@@ -227,11 +245,11 @@ def round_half_up(value: Fraction, money_format: MoneyFormat) -> Money:
 
 
 def round_half_up_to_units(value: Fraction) -> int:
-    """An exact amount in currency units, rounded half up (away from zero on a tie) to the
-    whole unit, as a whole-unit int.
+    """An exact amount, rounded half up (away from zero on a tie) to the domain's own unit.
 
-    It exists because today's domain amounts are whole-unit ints and carry no
-    `MoneyFormat`; the part that turns those amounts into `Money` replaces its callers.
-    Until then the two shapes coexist and no use case reads the money scale."""
+    A domain amount is an int in one unit for the whole request: a currency unit for a
+    business of 0 decimals, a tenth for 1, a hundredth for 2 (`Money.in_decimals`). The
+    caller passes the exact value in that unit, so this rounds to the business's decimals
+    without knowing them."""
     units, _ = divmod(_round_half_up(value, 0), HUNDREDTHS_PER_UNIT)
     return units
