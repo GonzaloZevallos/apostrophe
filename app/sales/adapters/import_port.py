@@ -12,7 +12,7 @@ itself would raise. `write_sale` is always given a vip fact built from the row's
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Collection, Mapping, Sequence
 from datetime import date, datetime
 from decimal import Decimal
 
@@ -75,6 +75,15 @@ class SalesImport:
             .where(SaleRow.business_id == self._business_id)
         )
         return bool(self._session.scalar(statement))
+
+    def archived_method_words(self, words: Collection[str]) -> Collection[str]:
+        methods = PaymentMethodsForImport(self._session, self._business_id)
+        return sorted(
+            word
+            for word in set(words)
+            if word in _DEFAULT_NAMES
+            and methods.holder_of(_DEFAULT_NAMES[word]).holder is Holder.ARCHIVED
+        )
 
     def check_sales(
         self,

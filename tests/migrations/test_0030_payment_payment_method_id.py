@@ -57,7 +57,7 @@ def test_every_payment_points_to_its_own_business_s_method_and_nothing_that_exis
     after = upgrade_and_compare(engine, "0030")
 
     with engine.connect() as connection:
-        names = dict(
+        names: dict[int, str] = dict(
             connection.execute(
                 text("SELECT id, business_id || ':' || name_key FROM payment_method")
             ).all()
