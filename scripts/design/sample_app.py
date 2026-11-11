@@ -90,6 +90,15 @@ class Api(Protocol):
     def call(self, method: str, path: str, body: object | None = None) -> Any: ...
 
 
+def payment_of(api: Api, word: str) -> dict[str, object]:
+    """The sale's `payment` for a word: `owing`, or paid with the business's method of that name."""
+    if word == "owing":
+        return {"kind": "owing"}
+    methods = api.call("GET", "/api/payment-methods")
+    chosen = next(method for method in methods if method["name"].lower() == word)
+    return {"kind": "paid", "payment_method_id": chosen["id"]}
+
+
 @dataclass(frozen=True)
 class Line:
     variety: int
@@ -218,7 +227,7 @@ def seed(api: Api, today: date) -> Sample:
                 "customer_id": customer_id,
                 "shipping_charged": shipping,
                 "note": note,
-                "payment": payment,
+                "payment": payment_of(api, payment),
                 "lines": [
                     {
                         "product_id": line.variety,
@@ -277,7 +286,11 @@ def seed(api: Api, today: date) -> Sample:
     api.call(
         "POST",
         f"/customers/{nico}/payments",
-        {"paid_on": ago(2), "amount": 5_000, "method": "cash"},
+        {
+            "paid_on": ago(2),
+            "amount": 5_000,
+            "payment_method_id": payment_of(api, "cash")["payment_method_id"],
+        },
     )
 
     def category(name: str) -> int:
@@ -398,7 +411,7 @@ def stretch(api: Api, today: date) -> None:
             "customer_id": customer,
             "shipping_charged": 0,
             "note": None,
-            "payment": "cash",
+            "payment": payment_of(api, "cash"),
             "lines": [
                 {"product_id": variety, "quantity": "1", "gift": False, "special_price": None}
             ],
