@@ -23,7 +23,8 @@ from app.sales.adapters.sql_sales import SqlSales
 from app.sales.adapters.tables import SaleRow
 from app.sales.application.record_sale import LineInput, record_sale
 from app.sales.domain.pricing import PriceQuote, PricingRule, VarietyPricing
-from app.sales.domain.sale import CustomerFact, PaymentMethod, Sale, SaleLine
+from app.sales.domain.sale import CustomerFact, Sale, SaleLine
+from app.shared.payment_method import PaymentMethodId
 from app.shared.pricing_settings import PricingSettings
 from app.shared.quantity import Quantity
 from app.shared.reference import ReferenceRefused
@@ -79,7 +80,7 @@ def _record(session: Session, variety_id: int, commit_fails: bool) -> Sale:
         shipping_charged=Decimal(0),
         note=None,
         lines=[LineInput(variety_id=variety_id, quantity=Quantity.of(1))],
-        method=PaymentMethod.CASH,
+        method=PaymentMethodId(1),
         left_owing=False,
         recorded_at=NOW,
     )
@@ -110,7 +111,10 @@ def test_a_save_refused_for_a_missing_variety_uses_no_number(
     assert _counter(engine) == 0
     sale = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "1"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "1"}],
+        },
     ).json()
     assert sale["number"] == 1
     assert _counter(engine) == 1
@@ -131,7 +135,10 @@ def test_a_save_that_fails_after_the_increment_and_is_never_committed_uses_no_nu
         assert session.scalars(select(SaleRow.id)).all() == []
     sale = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "1"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "1"}],
+        },
     ).json()
     assert sale["number"] == 1
     assert _counter(engine) == 1

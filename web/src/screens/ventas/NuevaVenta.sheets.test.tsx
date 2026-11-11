@@ -15,6 +15,7 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { SheetRouterProvider, sheetDepth } from '../../components/useSheetStack'
 import { CUSTOMERS, pathTo, SALES, SALE_NEW } from '../../routes'
 import NuevaVenta from './NuevaVenta'
+import { withPaymentMethods } from '../../test-payment-methods'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 const ROSA = {
@@ -36,7 +37,7 @@ beforeEach(() => {
   releaseCreate = null
   vi.stubGlobal(
     'fetch',
-    vi.fn((path: string, init?: RequestInit) => {
+    vi.fn(withPaymentMethods((path: string, init?: RequestInit) => {
       const method = init?.method ?? 'GET'
       if (method === 'GET' && path === '/api/products?on=2026-10-02') {
         return Promise.resolve(jsonResponse(200, [ROSA]))
@@ -50,7 +51,7 @@ beforeEach(() => {
         })
       }
       return Promise.reject(new Error(`unexpected request: ${method} ${path}`))
-    }),
+    })),
   )
 })
 

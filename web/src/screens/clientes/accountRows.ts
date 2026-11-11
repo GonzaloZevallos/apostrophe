@@ -5,20 +5,14 @@
  * over), or both; a sale row is never a later payment.
  */
 
-import type { AccountRow, HowPaid, PaymentMethod } from '../../api/payments'
+import type { AccountRow, HowPaid } from '../../api/payments'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney, formatMoneyMagnitude } from '../../format/money'
 
-export const METHOD_LABEL: Record<PaymentMethod, string> = {
-  cash: CUSTOMERS_TEXT.methodCash,
-  transfer: CUSTOMERS_TEXT.methodTransfer,
-}
-
 /** What a sale row says under "Sale": total, so a new `HowPaid` fails to compile here. */
 const HOW_PAID_SUB: Record<HowPaid, string> = {
-  cash: CUSTOMERS_TEXT.paidInCash,
-  transfer: CUSTOMERS_TEXT.paidByTransfer,
+  paid: CUSTOMERS_TEXT.paid,
   owing: CUSTOMERS_TEXT.leftOwing,
   none: CUSTOMERS_TEXT.nothingToPay,
 }
@@ -56,7 +50,7 @@ export function ledgerRowView(row: AccountRow): LedgerRowView {
       ...balance,
     }
   }
-  const title = CUSTOMERS_TEXT.paymentTitle(METHOD_LABEL[row.payment.method])
+  const title = CUSTOMERS_TEXT.paymentTitle(row.payment.payment_method.name)
   if (row.kind === 'payment') {
     return {
       title,

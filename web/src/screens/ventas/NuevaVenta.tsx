@@ -60,6 +60,7 @@ import { parseGrams, parseMoney } from '../../format/parse'
 import {
   type LineValidation,
   type PayState,
+  type PaymentChoice,
   paymentChoiceOf,
   type PriceQuote,
   type PricingSettings,
@@ -70,6 +71,7 @@ import {
   toHundredths,
   validateSale,
 } from '../../sales/pricing'
+import { paymentMethodName } from '../../sales/paymentMethods'
 import { OWING_HINT, SALES_TEXT } from '../../copy/sales'
 import type { Variety } from '../Variedades'
 import NuevaVentaCliente from './NuevaVentaCliente'
@@ -140,14 +142,14 @@ interface SaleBody {
   customer_id: number | null
   shipping_charged: number
   note: string | null
-  payment: 'cash' | 'transfer' | 'owing' | null
+  payment: PaymentChoice | null
   lines: LineBody[]
 }
 
 const SUBMIT_OVERRIDES: Partial<
   Record<
     RefusalCode,
-    { field: 'customer' | 'shipping' | 'note' | 'date' | 'payment' | 'form'; message: string }
+    { field: 'customer' | 'shipping' | 'note' | 'date' | 'payment' | 'method' | 'form'; message: string }
   >
 > = {
   'sale.owing_without_customer': { field: 'customer', message: OWING_HINT },
@@ -155,6 +157,7 @@ const SUBMIT_OVERRIDES: Partial<
   'sale.note_too_long': { field: 'note', message: SALES_TEXT.noteTooLong },
   'sale.date_in_future': { field: 'date', message: COMMON_TEXT.dateCannotBeFuture },
   'sale.payment_required': { field: 'payment', message: PAYMENT_REQUIRED_MESSAGE },
+  'payment_method.unavailable': { field: 'method', message: GENERIC_REFUSAL },
   'sale.customer_not_found': { field: 'form', message: GENERIC_REFUSAL },
   'sale.variety_not_found': { field: 'form', message: GENERIC_REFUSAL },
   'sale.lines_missing': { field: 'form', message: GENERIC_REFUSAL },
@@ -195,6 +198,7 @@ function NuevaVentaForm() {
   // Held only while the state is Paid: leaving Paid empties it, so Paid → Owing → Paid starts empty.
   const [method, setMethod] = useState<PaymentMethod | null>(null)
   const [methodRefused, setMethodRefused] = useState(false)
+  const [methodGone, setMethodGone] = useState<string | null>(null)
   const methodFieldRef = useRef<HTMLButtonElement | null>(null)
   const customerSheet = useSheet(1)
   // `useSheet(1).isOpen` is true for any sheet at level 1, a line's Product list included:
@@ -289,6 +293,7 @@ function NuevaVentaForm() {
     setPayState(next)
     setMethod(null)
     setMethodRefused(false)
+    setMethodGone(null)
   }
 
   function updateLine(key: string, patch: Partial<LineState>): void {
@@ -589,6 +594,12 @@ function NuevaVentaForm() {
           else if (override.field === 'note') setNoteError(override.message)
           else if (override.field === 'date') setDateError(override.message)
           else if (override.field === 'payment') setPaymentError(override.message)
+          else if (override.field === 'method') {
+            // The method was archived or deleted meanwhile: the form stays and the field keeps the
+            // chosen method with the "no longer available" mark until the person picks another.
+            if (method !== null) setMethodGone(paymentMethodName(queryClient, method) ?? '')
+            void queryClient.invalidateQueries({ queryKey: keys.paymentMethods() })
+          }
           else setFormError(override.message)
         } else if (caught.code !== UNKNOWN_CODE) {
           setFormError(GENERIC_REFUSAL)
@@ -743,11 +754,13 @@ function NuevaVentaForm() {
                 onMethod={(next) => {
                   setMethod(next)
                   setMethodRefused(false)
+                  setMethodGone(null)
                 }}
                 owingDisabled={customer === null}
                 owingDescription={OWING_HINT}
                 listHost={listHost}
                 methodRefused={methodRefused}
+                methodGone={methodGone}
                 methodRef={methodFieldRef}
               />
               {paymentError !== null && (

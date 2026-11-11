@@ -15,6 +15,7 @@ import { queryClient } from '../../queryClient'
 import { HOME, SALES, SALE_NEW } from '../../routes'
 import { router } from '../../router'
 import { pickProduct } from './lineProduct'
+import { METHODS_ANSWER, withPaymentMethods } from '../../test-payment-methods'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 const ANA = { id: 7, name: 'Ana', phone: '+5491100000001', vip: false }
@@ -45,7 +46,7 @@ function stubShop(): ReturnType<typeof vi.fn> {
     if (method === 'GET' && url === '/sales') return Promise.resolve(jsonResponse(200, []))
     return Promise.reject(new Error(`unexpected request: ${method} ${path}`))
   })
-  vi.stubGlobal('fetch', fetchMock)
+  vi.stubGlobal('fetch', withPaymentMethods(fetchMock))
   return fetchMock
 }
 
@@ -126,7 +127,7 @@ test('saving under Paid above $0 with no method is refused at the field: sentenc
   expect(screen.queryByText('Choose how they paid.')).not.toBeInTheDocument()
   await user.click(save)
   await waitFor(() => expect(posted(fetchMock)).toHaveLength(1))
-  expect(JSON.parse(posted(fetchMock)[0]!.body as string)).toMatchObject({ payment: 'transfer' })
+  expect(JSON.parse(posted(fetchMock)[0]!.body as string)).toMatchObject({ payment: { kind: 'paid', payment_method_id: 2 } })
 })
 
 test('a Paid sale of $0 saves with no method, and sends none', async () => {
@@ -254,4 +255,45 @@ test('on a computer the first Escape closes only the method dropdown; the second
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
   expect(method).not.toHaveTextContent('Cash')
+})
+
+test('a 404 payment_method.unavailable keeps the form and the chosen method, marked as no longer available', async () => {
+  const user = userEvent.setup()
+  let offered = METHODS_ANSWER
+  const fetchMock = vi.fn((path: string, init?: RequestInit) => {
+    const method = init?.method ?? 'GET'
+    if (method === 'POST' && path === '/sales') {
+      offered = METHODS_ANSWER.filter((item) => item.name !== 'Transfer')
+      return Promise.resolve(jsonResponse(404, { detail: 'gone', code: 'payment_method.unavailable' }))
+    }
+    if (method === 'GET' && path === '/auth/me') return Promise.resolve(jsonResponse(200, ME))
+    if (method === 'GET' && path.startsWith('/api/products?on=')) return Promise.resolve(jsonResponse(200, [ROSA, FREE]))
+    if (method === 'GET' && path === '/pricing-settings') {
+      return Promise.resolve(jsonResponse(200, { is_bulk_pricing: false, is_vip_customers: false }))
+    }
+    if (method === 'GET' && path === '/customers') return Promise.resolve(jsonResponse(200, [ANA]))
+    const url = path.split('?')[0]
+    if (method === 'GET' && url === '/sales') return Promise.resolve(jsonResponse(200, []))
+    return Promise.reject(new Error(`unexpected request: ${method} ${path}`))
+  })
+  vi.stubGlobal('fetch', withPaymentMethods(fetchMock, () => offered))
+  await openSale()
+  await pickProduct(user, 1, 'Rosa')
+  await user.type(screen.getByLabelText('Line 1 grams'), '2')
+  await choosePaid(user)
+  await choosePaymentMethod(user, 'Transfer')
+  await user.click(screen.getByRole('button', { name: 'Save sale' }))
+
+  const field = screen.getByRole('button', { name: /^Payment method/ })
+  await waitFor(() => expect(field).toHaveTextContent('Transfer'))
+  await waitFor(() => expect(field).toHaveTextContent('no longer available'))
+  expect(
+    screen.getByText('That payment method is no longer available. Choose another one.'),
+  ).toBeInTheDocument()
+  expect(screen.queryByText('Choose how they paid.')).not.toBeInTheDocument()
+  expect(screen.getByLabelText('Line 1 grams')).toHaveValue('2')
+
+  await choosePaymentMethod(user, 'Cash')
+  expect(screen.queryByText('That payment method is no longer available. Choose another one.')).not.toBeInTheDocument()
+  expect(field).toHaveTextContent('Cash')
 })

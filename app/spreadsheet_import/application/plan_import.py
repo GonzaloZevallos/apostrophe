@@ -148,6 +148,11 @@ def plan_import(
         stored_settings=pricing_settings.current(),
     )
     built = domain_plan.build_plan(split_result, mapping, checks)
+    # A sheet word whose default method is archived would fail mid-write: the plan is
+    # refused whole, before anything is written (docs/adr/0082).
+    used_words = {sale.method for sale in built.sales if sale.method is not None}
+    if used_words and sales.archived_method_words(used_words):
+        return _refused_plan(business_ref, "import.payment_method_archived")
     # After eligibility and the owner checks, once the sheet's customers are known: a VIP
     # of the sheet joins the VIP type, and with none to join and the name taken, the run
     # is refused with that alone (docs/adr/0070). No VIP in the sheet, no check.

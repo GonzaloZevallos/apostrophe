@@ -15,9 +15,10 @@ import { queryOptions } from '@tanstack/react-query'
 import { del, get, post } from './client'
 import { keys } from './keys'
 
-export type PaymentMethod = 'cash' | 'transfer'
+/** A payment method of the business, by id (ADR-0082). */
+export type PaymentMethod = number
 export type Standing = 'owes' | 'credit' | 'settled'
-export type HowPaid = 'cash' | 'transfer' | 'owing' | 'none'
+export type HowPaid = 'paid' | 'owing' | 'none'
 
 export interface AppliedTo {
   sale_id: number
@@ -31,11 +32,17 @@ export interface SettledState {
   standing: Standing
 }
 
+export interface PaymentMethodLabel {
+  id: number
+  name: string
+  icon: string
+}
+
 export interface Payment {
   id: number
   paid_on: string
   amount: number
-  method: PaymentMethod
+  payment_method: PaymentMethodLabel
 }
 
 export interface PaymentCandidate {
@@ -44,7 +51,7 @@ export interface PaymentCandidate {
 }
 
 export interface PaymentIn extends PaymentCandidate {
-  method: PaymentMethod | null
+  payment_method_id: PaymentMethod | null
 }
 
 export interface PaymentPreview {

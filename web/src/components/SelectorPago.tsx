@@ -13,12 +13,13 @@
 import { type Ref, useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PaymentMethod } from '../api/payments'
-import { paymentMethodOf, usePaymentMethodOptions } from '../sales/paymentMethods'
+import { paymentMethodOf, paymentMethodValue, usePaymentMethodOptions } from '../sales/paymentMethods'
 import type { PayState } from '../sales/pricing'
 import FieldRefusal from './FieldRefusal'
 import { PAYMENT_STATES } from './fixedSets'
 import SegmentedChoice from './SegmentedChoice'
 import Selector from './Selector'
+import SinConexion from './SinConexion'
 
 export interface SelectorPagoProps {
   payState: PayState | null
@@ -31,6 +32,8 @@ export interface SelectorPagoProps {
   listHost?: HTMLElement | null
   /** The seller tried to save under Paid with no method: the field shows its refusal. */
   methodRefused?: boolean
+  /** The server answered that the chosen method is no longer available: its name, kept in the field with the mark. */
+  methodGone?: string | null
   methodRef?: Ref<HTMLButtonElement>
 }
 
@@ -43,6 +46,7 @@ export default function SelectorPago({
   owingDescription,
   listHost,
   methodRefused = false,
+  methodGone = null,
   methodRef,
 }: SelectorPagoProps) {
   const { t } = useTranslation()
@@ -69,16 +73,25 @@ export default function SelectorPago({
       )}
       {payState === 'paid' && (
         <div className="selector-pago__metodo">
-          <Selector
-            {...methodOptions}
-            label={t('common:paymentMethod')}
-            value={method}
-            onChange={(next) => onMethod(paymentMethodOf(next))}
-            listHost={listHost}
-            fieldRef={methodRef}
-            describedBy={methodRefused ? refusalId : undefined}
-          />
-          {methodRefused && <FieldRefusal id={refusalId}>{t('common:chooseHowTheyPaid')}</FieldRefusal>}
+          {methodOptions.failure === 'offline' && <SinConexion />}
+          {/* A tap on a field whose list failed reads the list again; what was typed stays. */}
+          <div onClickCapture={methodOptions.failure === null ? undefined : methodOptions.reload}>
+            <Selector
+              {...methodOptions.selector}
+              label={t('common:paymentMethod')}
+              value={paymentMethodValue(method)}
+              onChange={(next) => onMethod(paymentMethodOf(next))}
+              listHost={listHost}
+              fieldRef={methodRef}
+              selected={method !== null && methodGone !== null ? { value: String(method), label: methodGone } : undefined}
+              describedBy={methodRefused || methodGone !== null ? refusalId : undefined}
+            />
+          </div>
+          {methodGone !== null ? (
+            <FieldRefusal id={refusalId}>{t('common:paymentMethodUnavailable')}</FieldRefusal>
+          ) : (
+            methodRefused && <FieldRefusal id={refusalId}>{t('common:chooseHowTheyPaid')}</FieldRefusal>
+          )}
         </div>
       )}
     </div>

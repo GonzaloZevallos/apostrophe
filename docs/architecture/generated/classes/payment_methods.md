@@ -36,8 +36,6 @@ classDiagram
   }
   class tables {
   }
-  class usage {
-  }
   babel_defaults --> method
   import_port --> method
   import_port --> sql_payment_methods
@@ -171,9 +169,6 @@ classDiagram
   }
   class MoveIn {
     direction : Literal~'up', 'down'~
-  }
-  class NoPaymentUsesAMethodYet {
-    in_use_among(method_ids: Sequence~int~) frozenset~int~
   }
   class PaymentMethodRow {
     archived_at : Mapped~datetime #124; None~

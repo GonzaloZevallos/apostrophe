@@ -44,7 +44,12 @@ import { chipDate, formatDateShort } from '../../format/dates'
 import { formatMoney } from '../../format/money'
 import { readMoneyInput } from '../../format/parse'
 import { GENERIC_REFUSAL } from './ClienteForm'
-import { paymentMethodOf, usePaymentMethodOptions } from '../../sales/paymentMethods'
+import {
+  paymentMethodName,
+  paymentMethodOf,
+  paymentMethodValue,
+  usePaymentMethodOptions,
+} from '../../sales/paymentMethods'
 import { COMMON_TEXT } from '../../copy/common'
 import { PAYMENTS_TEXT } from '../../copy/payments'
 
@@ -133,6 +138,7 @@ export default function Cobro({
   const [amountError, setAmountError] = useState<string | null>(null)
   const [dateError, setDateError] = useState<string | null>(null)
   const [methodRefused, setMethodRefused] = useState(false)
+  const [methodGone, setMethodGone] = useState<string | null>(null)
   const methodField = useRef<HTMLButtonElement>(null)
   const methodOptions = usePaymentMethodOptions()
   const [offline, setOffline] = useState(false)
@@ -192,7 +198,7 @@ export default function Cobro({
       return
     }
     try {
-      const recorded = await record.mutateAsync({ paid_on: date, amount: previewAmount, method })
+      const recorded = await record.mutateAsync({ paid_on: date, amount: previewAmount, payment_method_id: method })
       invalidateResource(queryClient, 'payments')
       flash.armAfterLeaving(
         recorded.after.standing === 'owes'
@@ -205,6 +211,12 @@ export default function Cobro({
         onGone()
       } else if (caught instanceof ApiError) {
         if (caught.code === 'payment.method_required') setMethodRefused(true)
+        else if (caught.code === 'payment_method.unavailable') {
+          // The method was archived or deleted meanwhile: the form stays and the field keeps the
+          // chosen method with the "no longer available" mark until the person picks another.
+          if (method !== null) setMethodGone(paymentMethodName(queryClient, method) ?? '')
+          void queryClient.invalidateQueries({ queryKey: keys.paymentMethods() })
+        }
         else if (caught.code === 'payment.future_date') setDateError(PAYMENTS_TEXT.dateInFuture)
         else setAmountError(amountMessage(caught.code) ?? GENERIC_REFUSAL)
       } else if (caught instanceof NetworkError) {
@@ -284,18 +296,27 @@ export default function Cobro({
           )}
 
           <div className="cobro__metodo">
-            <Selector
-              {...methodOptions}
-              label={t('common:paymentMethod')}
-              value={method}
-              onChange={(next) => {
-                setMethod(paymentMethodOf(next))
-                setMethodRefused(false)
-              }}
-              fieldRef={methodField}
-              describedBy={methodRefused ? methodErrorId : undefined}
-            />
-            {methodRefused && <FieldRefusal id={methodErrorId}>{t('common:chooseHowTheyPaid')}</FieldRefusal>}
+            {methodOptions.failure === 'offline' && <SinConexion />}
+            <div onClickCapture={methodOptions.failure === null ? undefined : methodOptions.reload}>
+              <Selector
+                {...methodOptions.selector}
+                label={t('common:paymentMethod')}
+                value={paymentMethodValue(method)}
+                onChange={(next) => {
+                  setMethod(paymentMethodOf(next))
+                  setMethodRefused(false)
+                  setMethodGone(null)
+                }}
+                fieldRef={methodField}
+                selected={method !== null && methodGone !== null ? { value: String(method), label: methodGone } : undefined}
+                describedBy={methodRefused || methodGone !== null ? methodErrorId : undefined}
+              />
+            </div>
+            {methodGone !== null ? (
+              <FieldRefusal id={methodErrorId}>{t('common:paymentMethodUnavailable')}</FieldRefusal>
+            ) : (
+              methodRefused && <FieldRefusal id={methodErrorId}>{t('common:chooseHowTheyPaid')}</FieldRefusal>
+            )}
           </div>
 
           {previewAmount !== null && preview.data !== undefined && (

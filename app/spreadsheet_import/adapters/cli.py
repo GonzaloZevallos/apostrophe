@@ -38,12 +38,14 @@ from app.expenses.adapters.import_port import ExpensesImport
 from app.migrations.runner import upgrade_to_head
 from app.money_format.adapters.reader import SqlMoneyFormat
 from app.onboarding.adapters.import_port import OnboardingEnding
+from app.payment_methods.adapters.babel_defaults import BabelMethodDefaults
 from app.payments.adapters.import_port import PaymentsImport
 from app.pricing_settings.adapters.import_port import PricingSettingsImport
 from app.products.adapters.import_port import ProductsImport as SqlProductsImport
 from app.sales.adapters.import_port import SalesImport
-from app.settings import Settings
-from app.shared.copy import OperatorText
+from app.settings import DEFAULT_LOCALES_DIR, Settings
+from app.shared.copy import CopyCatalog, OperatorText
+from app.shared.language import ENGLISH
 from app.spreadsheet_import.adapters import layout
 from app.spreadsheet_import.adapters.cells import read_workbook
 from app.spreadsheet_import.adapters.mapping import read_mapping
@@ -122,6 +124,15 @@ def _refusal_line(text: OperatorText | None, code: str) -> str:
     return f"refused: {code}"
 
 
+def _default_method_names(session: Session, business_id: int) -> dict[str, str]:
+    """The names the sheet's "cash" and "transfer" stand for: the business's Stored-language
+    default method names (docs/adr/0050), English's for a language with no catalog."""
+    business = SqlAccounts(session).business(business_id)
+    language = ENGLISH if business is None else business.language.language
+    cash, transfer = BabelMethodDefaults(CopyCatalog(DEFAULT_LOCALES_DIR)).for_language(language)
+    return {"cash": cash.value, "transfer": transfer.value}
+
+
 def _run(
     args: argparse.Namespace, engine: Engine, clock: Clock, out: TextIO, text: OperatorText
 ) -> int:
@@ -141,7 +152,12 @@ def _run(
         expenses = ExpensesImport(session, args.business_id, money_format)
         customers = CustomersImport(session, args.business_id)
         vip_type = VipTypeImport(session, args.business_id)
-        sales = SalesImport(session, args.business_id, money_format)
+        sales = SalesImport(
+            session,
+            args.business_id,
+            money_format,
+            _default_method_names(session, args.business_id),
+        )
         payments = PaymentsImport(session, args.business_id)
         onboarding = OnboardingEnding(session, args.business_id)
         pricing_settings = PricingSettingsImport(session, args.business_id)

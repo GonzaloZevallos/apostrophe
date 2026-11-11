@@ -89,7 +89,7 @@ const SALE = {
   customer: { id: 5, name: 'Nico', vip: true },
   shipping_charged: 0,
   note: null,
-  payment: 'cash',
+  payment: 'paid',
   total: 6000,
   lines: [
     { product_id: 1, product_name: 'Blue Dream', quantity: 5, pricing_rule: 'vip', price_per_gram: 1200, line_total: 6000 },

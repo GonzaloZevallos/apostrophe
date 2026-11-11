@@ -10,10 +10,10 @@
       "lines": [
         { "product": "Aurora", "quantity": 3.5, "amount": 35000, "rule": null, "unit_price": null }
       ],
-      "payment": { "state": "cash", "still_owed": null },
+      "payment": { "state": "paid", "still_owed": null },
       "balance": null
     },
-    "expected": "Flores Test\nSale #1 · 18/09\n\nAurora 3,5 g · $ 35.000\n\nTotal · $ 35.000\nPaid in cash"
+    "expected": "Flores Test\nSale #1 · 18/09\n\nAurora 3,5 g · $ 35.000\n\nTotal · $ 35.000\nPaid"
   },
   {
     "name": "bulk line, gift and shipping, partly owed, with a balance",
@@ -44,10 +44,10 @@
       "lines": [
         { "product": "Aurora", "quantity": 2, "amount": 18000, "rule": null, "unit_price": null }
       ],
-      "payment": { "state": "transfer", "still_owed": null },
+      "payment": { "state": "paid", "still_owed": null },
       "balance": null
     },
-    "expected": "Vivero Sur\nSale #3 · 05/12\n\nAurora 2 g · $ 18.000\n\nTotal · $ 18.000\nPaid by transfer"
+    "expected": "Vivero Sur\nSale #3 · 05/12\n\nAurora 2 g · $ 18.000\n\nTotal · $ 18.000\nPaid"
   },
   {
     "name": "paid in full later, balance exactly 0 has no balance line",
@@ -108,10 +108,10 @@
       "lines": [
         { "product": "Luna", "quantity": 1, "amount": 9500, "rule": null, "unit_price": null }
       ],
-      "payment": { "state": "cash", "still_owed": null },
+      "payment": { "state": "paid", "still_owed": null },
       "balance": -3000
     },
-    "expected": "Flores Test\nSale #7 · 04/10\n\nLuna 1 g · $ 9.500\n\nTotal · $ 9.500\nPaid in cash\nIn your favor: $ 3.000"
+    "expected": "Flores Test\nSale #7 · 04/10\n\nLuna 1 g · $ 9.500\n\nTotal · $ 9.500\nPaid\nIn your favor: $ 3.000"
   },
   {
     "name": "a VIP line and a special line read like list lines",
@@ -125,10 +125,10 @@
         { "product": "Aurora", "quantity": 2, "amount": 18000, "rule": null, "unit_price": null },
         { "product": "Luna", "quantity": 1, "amount": 9500, "rule": null, "unit_price": null }
       ],
-      "payment": { "state": "transfer", "still_owed": null },
+      "payment": { "state": "paid", "still_owed": null },
       "balance": null
     },
-    "expected": "Flores Test\nSale #8 · 05/10\n\nAurora 2 g · $ 18.000\nLuna 1 g · $ 9.500\n\nTotal · $ 27.500\nPaid by transfer"
+    "expected": "Flores Test\nSale #8 · 05/10\n\nAurora 2 g · $ 18.000\nLuna 1 g · $ 9.500\n\nTotal · $ 27.500\nPaid"
   },
   {
     "name": "one bulk line without shipping",
@@ -141,10 +141,10 @@
       "lines": [
         { "product": "Luna", "quantity": 10, "amount": 90000, "rule": "bulk", "unit_price": 9000 }
       ],
-      "payment": { "state": "cash", "still_owed": null },
+      "payment": { "state": "paid", "still_owed": null },
       "balance": null
     },
-    "expected": "Flores Test\nSale #9 · 06/10\n\nLuna 10 g · bulk price $ 9.000/g · $ 90.000\n\nTotal · $ 90.000\nPaid in cash"
+    "expected": "Flores Test\nSale #9 · 06/10\n\nLuna 10 g · bulk price $ 9.000/g · $ 90.000\n\nTotal · $ 90.000\nPaid"
   },
   {
     "name": "quantities 0.01, 0.1, 1.05 and 1000",
@@ -160,10 +160,10 @@
         { "product": "Mora", "quantity": 1.05, "amount": 2100, "rule": null, "unit_price": null },
         { "product": "Rosa", "quantity": 1000, "amount": 2000000, "rule": null, "unit_price": null }
       ],
-      "payment": { "state": "cash", "still_owed": null },
+      "payment": { "state": "paid", "still_owed": null },
       "balance": null
     },
-    "expected": "Flores Test\nSale #10 · 07/10\n\nAurora 0,01 g · $ 20\nLuna 0,1 g · $ 200\nMora 1,05 g · $ 2.100\nRosa 1.000 g · $ 2.000.000\n\nTotal · $ 2.002.320\nPaid in cash"
+    "expected": "Flores Test\nSale #10 · 07/10\n\nAurora 0,01 g · $ 20\nLuna 0,1 g · $ 200\nMora 1,05 g · $ 2.100\nRosa 1.000 g · $ 2.000.000\n\nTotal · $ 2.002.320\nPaid"
   },
   {
     "name": "a variety named with an underscore, an asterisk and a backtick goes out unchanged",
@@ -176,10 +176,10 @@
       "lines": [
         { "product": "OG*Kush_`x`", "quantity": 2, "amount": 20000, "rule": null, "unit_price": null }
       ],
-      "payment": { "state": "cash", "still_owed": null },
+      "payment": { "state": "paid", "still_owed": null },
       "balance": null
     },
-    "expected": "Flores Test\nSale #11 · 08/10\n\nOG*Kush_`x` 2 g · $ 20.000\n\nTotal · $ 20.000\nPaid in cash"
+    "expected": "Flores Test\nSale #11 · 08/10\n\nOG*Kush_`x` 2 g · $ 20.000\n\nTotal · $ 20.000\nPaid"
   },
   {
     "name": "shipping only, charged on top of a list line, fully paid later with a balance",
@@ -208,9 +208,9 @@
       "lines": [
         { "product": "Aurora", "quantity": 3.5, "amount": 35000, "rule": null, "unit_price": null }
       ],
-      "payment": { "state": "cash", "still_owed": null },
+      "payment": { "state": "paid", "still_owed": null },
       "balance": null
     },
-    "expected": "Flores Test\nSale #1284 · 10/10\n\nAurora 3,5 g · $ 35.000\n\nTotal · $ 35.000\nPaid in cash"
+    "expected": "Flores Test\nSale #1284 · 10/10\n\nAurora 3,5 g · $ 35.000\n\nTotal · $ 35.000\nPaid"
   }
 ]

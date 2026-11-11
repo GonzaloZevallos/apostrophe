@@ -17,6 +17,8 @@ from app.sales.adapters.schemas import (
     AssignCustomerIn,
     DeleteSaleOut,
     LineIn,
+    OwingIn,
+    PaidIn,
     ReturnedQuantityOut,
     SaleDetailOut,
     SaleIn,
@@ -40,11 +42,11 @@ from app.sales.application.record_sale import record_sale as record_sale_use_cas
 from app.sales.domain.pricing import SaleRuleBroken
 from app.sales.domain.sale import (
     CustomerAlreadyAssigned,
-    PaymentMethod,
     UnknownCustomer,
     UnknownVariety,
 )
 from app.shared.money import TooManyDecimals
+from app.shared.payment_method import PaymentMethodId, PaymentMethodUnavailable
 from app.shared.quantity import InvalidQuantity, Quantity
 
 router = APIRouter(prefix="/sales", tags=["sales"], route_class=MoneyJsonRoute)
@@ -128,7 +130,7 @@ BusinessNamesDep = Annotated[BusinessNames, Depends(get_business_names)]
 
 as_http = TranslateErrors(
     [
-        (404, (SaleNotFound, UnknownCustomer, UnknownVariety)),
+        (404, (SaleNotFound, UnknownCustomer, UnknownVariety, PaymentMethodUnavailable)),
         (409, (CustomerAlreadyAssigned,)),
         (422, (SaleRuleBroken, InvalidQuantity, TooManyDecimals)),
     ]
@@ -158,7 +160,11 @@ def record_sale(
     clock: ClockDep,
 ) -> SaleOut:
     with as_http:
-        method = body.payment if isinstance(body.payment, PaymentMethod) else None
+        method = (
+            PaymentMethodId(body.payment.payment_method_id)
+            if isinstance(body.payment, PaidIn)
+            else None
+        )
         sale = record_sale_use_case(
             sales,
             price_book,
@@ -173,7 +179,7 @@ def record_sale(
             note=body.note,
             lines=[_line_input(line) for line in body.lines],
             method=method,
-            left_owing=body.payment == "owing",
+            left_owing=isinstance(body.payment, OwingIn),
             recorded_at=clock(),
         )
         return _sale_out(sales, owing_sales, sale.id)

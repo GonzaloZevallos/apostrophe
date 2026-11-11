@@ -4,23 +4,35 @@ rule stays the domain's and its message is a fixed string (ADR-0005). Quantity a
 
 from datetime import date
 from decimal import Decimal
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.money_schema import MoneyAmount, MoneyOut
+from app.payments.adapters.schemas import PaymentMethodLabelOut
 from app.products.adapters.schemas import QuantityOut
 from app.sales.application.ports import LineCost, SaleView, SaleViewCustomer, SaleViewLine
 from app.sales.application.view_sales import SaleDetail
 from app.sales.domain.pricing import PricingRule
-from app.sales.domain.sale import PaymentMethod, Sale
+from app.sales.domain.sale import Sale
 from app.sales.domain.sale_bill import BillPayment, BillRule, BillState, SaleBill, SaleBillLine
 
-# "Owing" and "none" are adapter-only words for a sale with no `OnTheSpotPayment`;
-# `PaymentMethod` is still the only declaration of the methods themselves (cash,
-# transfer), never copied here as a string literal.
-PaymentIn = PaymentMethod | Literal["owing"]
-PaymentOut = PaymentMethod | Literal["owing", "none"]
+
+class PaidIn(BaseModel):
+    """Money received on the spot, with the method the business chose (docs/adr/0082)."""
+
+    kind: Literal["paid"]
+    payment_method_id: int
+
+
+class OwingIn(BaseModel):
+    kind: Literal["owing"]
+
+
+# The `kind` union exists only here: the domain sees a method id or a left-owing flag.
+PaymentIn = Annotated[PaidIn | OwingIn, Field(discriminator="kind")]
+# "Owing" and "none" are adapter-only words for a sale with no `OnTheSpotPayment`.
+PaymentOut = Literal["paid", "owing", "none"]
 
 # `SaleIn.date` and `SaleOut.date` name the sale's own date; a bare `date` inside
 # either class body would otherwise resolve to the field, not the type (same trap as
@@ -90,6 +102,7 @@ class SaleOut(BaseModel):
     shipping_charged: MoneyOut
     note: str | None
     payment: PaymentOut
+    payment_method: PaymentMethodLabelOut | None
     total: MoneyOut
     lines: list[SaleLineOut]
     still_owing: bool
@@ -106,6 +119,7 @@ class SaleOut(BaseModel):
             shipping_charged=Decimal(sale.shipping_charged),
             note=sale.note,
             payment=_payment_out(sale),
+            payment_method=_method_out(sale),
             total=Decimal(sale.total),
             lines=[SaleLineOut.of(line) for line in view.lines],
             still_owing=still_owing,
@@ -116,9 +130,15 @@ def _money_or_none(units: int | None) -> Decimal | None:
     return None if units is None else Decimal(units)
 
 
+def _method_out(sale: Sale) -> PaymentMethodLabelOut | None:
+    if sale.payment is None or sale.payment.label is None:
+        return None
+    return PaymentMethodLabelOut.of(sale.payment.label)
+
+
 def _payment_out(sale: Sale) -> PaymentOut:
     if sale.payment is not None:
-        return sale.payment.method
+        return "paid"
     return "none" if sale.total <= 0 else "owing"
 
 
@@ -236,6 +256,7 @@ class SaleDetailOut(BaseModel):
     shipping_charged: MoneyOut
     note: str | None
     payment: PaymentOut
+    payment_method: PaymentMethodLabelOut | None
     total: MoneyOut
     lines: list[SaleLineDetailOut]
     total_quantity: QuantityOut
@@ -256,6 +277,7 @@ class SaleDetailOut(BaseModel):
             shipping_charged=Decimal(sale.shipping_charged),
             note=sale.note,
             payment=_payment_out(sale),
+            payment_method=_method_out(sale),
             total=Decimal(sale.total),
             lines=[
                 SaleLineDetailOut.of(line, cost)

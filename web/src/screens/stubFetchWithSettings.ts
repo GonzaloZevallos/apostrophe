@@ -6,28 +6,45 @@
  * working against the returned `api` mock, and the screen runs against the real answer.
  */
 
-import { vi, type Mock } from 'vitest'
+import { vi, type Mock } from "vitest";
+import { METHODS_ANSWER } from "../test-payment-methods";
 
-type Api = Mock<(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>>
+type Api = Mock<
+  (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+>;
 
-export function stubFetchWithSettings(vip = true, bulk = true, customerTypes: readonly unknown[] = []): Api {
-  const api: Api = vi.fn()
-  vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) =>
-    input === '/pricing-settings'
+export function stubFetchWithSettings(
+  vip = true,
+  bulk = true,
+  customerTypes: readonly unknown[] = [],
+): Api {
+  const api: Api = vi.fn();
+  vi.stubGlobal("fetch", (input: RequestInfo | URL, init?: RequestInit) =>
+    input === "/pricing-settings"
       ? Promise.resolve(
-          new Response(JSON.stringify({ is_bulk_pricing: bulk, is_vip_customers: vip }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          }),
-        )
-      : input === '/api/customer-types'
-        ? Promise.resolve(
-            new Response(JSON.stringify(customerTypes), {
+          new Response(
+            JSON.stringify({ is_bulk_pricing: bulk, is_vip_customers: vip }),
+            {
               status: 200,
-              headers: { 'Content-Type': 'application/json' },
+              headers: { "Content-Type": "application/json" },
+            },
+          ),
+        )
+      : input === "/api/payment-methods"
+        ? Promise.resolve(
+            new Response(JSON.stringify(METHODS_ANSWER), {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
             }),
           )
-        : api(input, init),
-  )
-  return api
+        : input === "/api/customer-types"
+          ? Promise.resolve(
+              new Response(JSON.stringify(customerTypes), {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+              }),
+            )
+          : api(input, init),
+  );
+  return api;
 }

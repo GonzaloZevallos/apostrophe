@@ -16,6 +16,7 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { CUSTOMERS, pathTo, SALE_NEW } from '../../routes'
 import NuevaVenta from './NuevaVenta'
+import { withPaymentMethods } from '../../test-payment-methods'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 const price = (list: number) => ({
@@ -47,14 +48,14 @@ beforeEach(() => {
   pending = new Map()
   vi.stubGlobal(
     'fetch',
-    vi.fn(
+    vi.fn(withPaymentMethods(
       (path: string) =>
         path === '/pricing-settings'
           ? Promise.resolve(jsonResponse({ is_bulk_pricing: true, is_vip_customers: true }))
           : new Promise<Response>((resolve) => {
               pending.set(path, (body) => resolve(jsonResponse(body)))
             }),
-    ),
+    )),
   )
 })
 

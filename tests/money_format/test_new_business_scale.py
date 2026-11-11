@@ -58,7 +58,10 @@ def test_a_business_opened_by_invitation_stores_its_amounts_in_hundredths(
         assert priced.status_code == 201, priced.text
         sold = http.post(
             "/sales",
-            json={"payment": "cash", "lines": [{"product_id": variety["id"], "quantity": "1"}]},
+            json={
+                "payment": {"kind": "paid", "payment_method_id": 1},
+                "lines": [{"product_id": variety["id"], "quantity": "1"}],
+            },
         )
         assert sold.status_code == 201, sold.text
         read = http.get(f"/sales/{sold.json()['id']}")

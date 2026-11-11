@@ -7,7 +7,7 @@ import type { AccountRow, Payment } from '../../api/payments'
 import { deleteRowIndices, ledgerRowView } from './accountRows'
 
 function payment(id: number): Payment {
-  return { id, paid_on: '2026-10-05', amount: 8000, method: 'cash' }
+  return { id, paid_on: '2026-10-05', amount: 8000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } }
 }
 
 function sale(id: number): AccountRow {
@@ -73,8 +73,7 @@ function saleWith(howPaid: HowPaid, standing: Standing, running: number): Accoun
 }
 
 const HOW_PAID_SUBS: readonly (readonly [HowPaid, string])[] = [
-  ['cash', 'Paid in cash'],
-  ['transfer', 'Paid by transfer'],
+  ['paid', 'Paid'],
   ['owing', 'Left owing'],
   ['none', 'Nothing to pay'],
 ]
@@ -87,7 +86,7 @@ test.each(HOW_PAID_SUBS)('a %s sale reads "Sale" over %s, with its own total', (
 })
 
 test('a sale names no product and no grams', () => {
-  const view = ledgerRowView(saleWith('cash', 'owes', 5000))
+  const view = ledgerRowView(saleWith('paid', 'owes', 5000))
   expect(`${view.title} ${view.sub}`).not.toMatch(/\d+(,\d+)? g\b/)
 })
 
@@ -109,7 +108,7 @@ test.each([
 
 test('a payment row reads "Payment · method" over the sale it reached, with the amount applied', () => {
   const view = ledgerRowView(paymentRow(8, 1))
-  expect(view.title).toBe('Payment · cash')
+  expect(view.title).toBe('Payment · Cash')
   expect(view.sub).toBe('On account of the sale of 01/10')
   expect(view.own).toBe('$ 5.000')
 })
@@ -117,21 +116,21 @@ test('a payment row reads "Payment · method" over the sale it reached, with the
 test('a transfer payment names transfer', () => {
   const row = paymentRow(8, 1)
   if (row.kind !== 'payment') throw new Error('expected a payment row')
-  expect(ledgerRowView({ ...row, payment: { ...row.payment, method: 'transfer' } }).title).toBe('Payment · transfer')
+  expect(ledgerRowView({ ...row, payment: { ...row.payment, payment_method: { id: 2, name: 'Transfer', icon: 'bank' } } }).title).toBe('Payment · Transfer')
 })
 
 test('a credit row reads "Payment · method" over "Credit", with the leftover amount without sign', () => {
   const view = ledgerRowView(creditRow(8))
-  expect(view.title).toBe('Payment · cash')
+  expect(view.title).toBe('Payment · Cash')
   expect(view.sub).toBe('Credit')
   expect(view.own).toBe('$ 3.000')
 })
 
 test.each(['owes', 'settled', 'credit'] as const)('payment and credit rows say the same title, sub and own under a %s standing', (standing) => {
   const payment = ledgerRowView({ ...paymentRow(8, 1), standing })
-  expect([payment.title, payment.sub, payment.own]).toEqual(['Payment · cash', 'On account of the sale of 01/10', '$ 5.000'])
+  expect([payment.title, payment.sub, payment.own]).toEqual(['Payment · Cash', 'On account of the sale of 01/10', '$ 5.000'])
   const credit = ledgerRowView({ ...creditRow(8), standing })
-  expect([credit.title, credit.sub, credit.own]).toEqual(['Payment · cash', 'Credit', '$ 3.000'])
+  expect([credit.title, credit.sub, credit.own]).toEqual(['Payment · Cash', 'Credit', '$ 3.000'])
   const sale = ledgerRowView(saleWith('owing', standing, 5000))
   expect([sale.title, sale.sub, sale.own]).toEqual(['Sale', 'Left owing', '$ 5.000'])
 })

@@ -25,14 +25,14 @@ from app.payments.domain.settlement import (
     LaterPaymentEntry,
     Ledger,
     OwedSale,
-    PaymentMethod,
     Split,
     Standing,
     settle,
     standing_of,
 )
+from app.shared.payment_method import PaymentMethodLabel
 
-HowPaid = Literal["cash", "transfer", "owing", "none"]
+HowPaid = Literal["paid", "owing", "none"]
 
 # A row's own `date` field shadows the `date` type for any field declared after it in
 # the same class body; every later annotation in `PaymentRow` and `CreditRow` (e.g.
@@ -42,13 +42,9 @@ RowDate = date
 
 
 def _how_paid(sale: OwedSale) -> HowPaid:
-    match sale.on_the_spot_method:
-        case PaymentMethod.CASH:
-            return "cash"
-        case PaymentMethod.TRANSFER:
-            return "transfer"
-        case None:
-            return "owing" if sale.total > 0 else "none"
+    if sale.on_the_spot_method is not None:
+        return "paid"
+    return "owing" if sale.total > 0 else "none"
 
 
 @dataclass(frozen=True)
@@ -59,6 +55,7 @@ class SaleRow:
     sale_id: int
     total: int
     how_paid: HowPaid
+    payment_method: PaymentMethodLabel | None
     kind: Literal["sale"] = "sale"
 
 
@@ -73,7 +70,7 @@ class PaymentRow:
     payment_id: int
     paid_on: RowDate
     amount: int
-    method: PaymentMethod
+    method: PaymentMethodLabel
     applied_to: Split
     kind: Literal["payment"] = "payment"
 
@@ -88,7 +85,7 @@ class CreditRow:
     payment_id: int
     paid_on: RowDate
     amount: int
-    method: PaymentMethod
+    method: PaymentMethodLabel
     credit_amount: int
     kind: Literal["credit"] = "credit"
 
@@ -122,6 +119,7 @@ def account_of(sales: Sequence[OwedSale], payments: Sequence[LaterPaymentEntry])
             sale_id=sale.id,
             total=sale.total,
             how_paid=_how_paid(sale),
+            payment_method=sale.on_the_spot_method,
         )
         entries.append(((sale.date, 0, sale.recorded_at, sale.id), delta, sale_row))
 

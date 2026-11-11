@@ -213,6 +213,7 @@ def _seed(client: TestClient, sales: int) -> None:
         json={"effective_from": "2026-01-01", "list_price": 10_000},
     )
     assert priced.status_code == 201, priced.text
+    method = client.get("/api/payment-methods").json()[0]["id"]
     customers: list[int] = []
     for number in range(max(sales // 3, 1)):
         created = client.post(
@@ -226,7 +227,9 @@ def _seed(client: TestClient, sales: int) -> None:
         is_owing = customer is not None and number % 2 == 1
         body: dict[str, object] = {
             "date": (date(2026, 9, 1) + timedelta(days=number % 28)).isoformat(),
-            "payment": "owing" if is_owing else "cash",
+            "payment": {"kind": "owing"}
+            if is_owing
+            else {"kind": "paid", "payment_method_id": method},
             "lines": [
                 {"product_id": variety, "quantity": "2"},
                 {"product_id": variety, "quantity": "1"},
@@ -241,7 +244,7 @@ def _seed(client: TestClient, sales: int) -> None:
     for customer in owing[::3]:
         paid = client.post(
             f"/customers/{customer}/payments",
-            json={"paid_on": "2026-10-01", "amount": 1, "method": "cash"},
+            json={"paid_on": "2026-10-01", "amount": 1, "payment_method_id": method},
         )
         assert paid.status_code == 201, paid.text
 

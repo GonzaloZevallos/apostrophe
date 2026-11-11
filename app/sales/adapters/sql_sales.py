@@ -14,7 +14,7 @@ from datetime import date, datetime
 from typing import cast
 
 from sqlalchemy import delete as sa_delete
-from sqlalchemy import select, update
+from sqlalchemy import exists, insert, literal, null, select, update
 from sqlalchemy.engine import CursorResult
 from sqlalchemy.orm import InstrumentedAttribute, Session
 from sqlalchemy.sql.elements import ColumnElement
@@ -23,6 +23,7 @@ from app.accounts.adapters.tables import BusinessRow
 from app.customer_types.adapters.vip_type import SqlVipType
 from app.customers.adapters.tables import CustomerRow
 from app.db import flush_or_refuse, money_scale_factor, money_stored_value, scaled
+from app.payment_methods.adapters.tables import PaymentMethodRow
 from app.payments.adapters.tables import PaymentRow
 from app.products.adapters.tables import ProductRow
 from app.sales.adapters.tables import SaleLineRow, SaleRow
@@ -31,11 +32,15 @@ from app.sales.domain.pricing import PricingRule
 from app.sales.domain.sale import (
     CustomerAlreadyAssigned,
     OnTheSpotPayment,
-    PaymentMethod,
     Sale,
     SaleLine,
 )
 from app.shared.money import Money
+from app.shared.payment_method import (
+    PaymentMethodId,
+    PaymentMethodLabel,
+    PaymentMethodUnavailable,
+)
 from app.shared.quantity import Quantity
 
 
@@ -68,9 +73,10 @@ class SqlSales:
 
         for position, line in enumerate(sale.lines):
             self._session.add(self._line_row(row.id, line, position))
+        flush_or_refuse(self._session)
 
         if sale.payment is not None:
-            self._session.add(self._payment_row(row.id, sale.payment, sale.recorded_at))
+            self._insert_payment(row.id, sale.payment, sale.recorded_at)
 
         flush_or_refuse(self._session)
         stored = self._assemble(row.id)
@@ -168,8 +174,8 @@ class SqlSales:
                 PaymentRow.id,
                 PaymentRow.paid_on,
                 scaled(PaymentRow.amount, factor),
-                PaymentRow.method,
                 PaymentRow.customer_id,
+                PaymentMethodRow,
             )
             .outerjoin(
                 CustomerRow,
@@ -179,6 +185,11 @@ class SqlSales:
             .outerjoin(
                 PaymentRow,
                 (PaymentRow.sale_id == SaleRow.id) & (PaymentRow.business_id == self._business_id),
+            )
+            .outerjoin(
+                PaymentMethodRow,
+                (PaymentMethodRow.id == PaymentRow.payment_method_id)
+                & (PaymentMethodRow.business_id == self._business_id),
             )
             .where(SaleRow.business_id == self._business_id)
         )
@@ -196,7 +207,7 @@ class SqlSales:
         for row in rows:
             sale_row, shipping = row[0], _units(row[1])
             customer_id, customer_name, customer_type_id = row[2], row[3], row[4]
-            payment_id, paid_on, amount, method, payment_customer_id = row[5:10]
+            payment_id, paid_on, amount, payment_customer_id, method_row = row[5:10]
             customer = (
                 None
                 if customer_id is None
@@ -212,9 +223,12 @@ class SqlSales:
                 else OnTheSpotPayment(
                     paid_on=paid_on,
                     amount=_units(amount),
-                    method=PaymentMethod(method),
+                    method=PaymentMethodId(method_row.id),
                     customer_id=payment_customer_id,
                     id=payment_id,
+                    label=PaymentMethodLabel(
+                        id=method_row.id, name=method_row.name, icon=method_row.icon
+                    ),
                 )
             )
             lines = lines_by_sale.get(sale_row.id, ())
@@ -289,18 +303,47 @@ class SqlSales:
             for row, price_per_gram, line_total in self._session.execute(statement).all()
         ]
 
-    def _payment_row(
+    def _insert_payment(
         self, sale_id: int, payment: OnTheSpotPayment, recorded_at: datetime
-    ) -> PaymentRow:
-        return PaymentRow(
-            business_id=self._business_id,
-            paid_on=payment.paid_on,
-            amount=self._stored(payment.amount),
-            method=payment.method.value,
-            customer_id=payment.customer_id,
-            sale_id=sale_id,
-            recorded_at=recorded_at,
+    ) -> None:
+        """The On-the-spot payment row, one guarded `INSERT … SELECT … RETURNING id`: it
+        is written only when the method is an offered one of this business (docs/adr/0082).
+        No row means `PaymentMethodUnavailable`, and the use case's single transaction
+        leaves the whole sale unwritten."""
+        guarded = select(
+            literal(self._business_id),
+            literal(payment.paid_on),
+            literal(self._stored(payment.amount)),
+            literal(payment.method.value),
+            null() if payment.customer_id is None else literal(payment.customer_id),
+            literal(sale_id),
+            literal(recorded_at),
+        ).where(
+            exists().where(
+                PaymentMethodRow.id == payment.method.value,
+                PaymentMethodRow.business_id == self._business_id,
+                PaymentMethodRow.archived_at.is_(None),
+            )
         )
+        statement = (
+            insert(PaymentRow)
+            .from_select(
+                [
+                    "business_id",
+                    "paid_on",
+                    "amount",
+                    "payment_method_id",
+                    "customer_id",
+                    "sale_id",
+                    "recorded_at",
+                ],
+                guarded,
+            )
+            .returning(PaymentRow.id)
+        )
+        if self._session.execute(statement).first() is None:
+            raise PaymentMethodUnavailable()
+        self._session.flush()
 
     def _find_payment(self, sale_id: int) -> OnTheSpotPayment | None:
         factor = money_scale_factor(self._session, self._business_id)
@@ -381,7 +424,7 @@ def _payment(row: PaymentRow, amount: int) -> OnTheSpotPayment:
     return OnTheSpotPayment(
         paid_on=row.paid_on,
         amount=amount,
-        method=PaymentMethod(row.method),
+        method=PaymentMethodId(row.payment_method_id),
         customer_id=row.customer_id,
         id=row.id,
     )

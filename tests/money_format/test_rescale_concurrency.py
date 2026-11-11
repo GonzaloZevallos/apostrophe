@@ -31,7 +31,8 @@ from app.sales.adapters.customer_facts import SqlCustomerFacts
 from app.sales.adapters.price_book import SqlPriceBook
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.application.record_sale import LineInput, record_sale
-from app.sales.domain.sale import PaymentMethod, Sale
+from app.sales.domain.sale import Sale
+from app.shared.payment_method import PaymentMethodId
 from app.shared.quantity import Quantity
 from tests.business_removal.adapters.seed import PINNED, build_app
 from tests.conftest import MovableClock
@@ -92,7 +93,7 @@ def _sell(session: Session, business_id: int, before_write: Callable[[], None] =
         shipping_charged=Decimal(0),
         note=None,
         lines=[LineInput(variety_id=product, quantity=Quantity.of(Decimal(1)))],
-        method=PaymentMethod.CASH,
+        method=PaymentMethodId(1),
         left_owing=False,
         recorded_at=PINNED,
     )

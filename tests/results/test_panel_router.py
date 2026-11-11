@@ -21,6 +21,7 @@ from app.results.domain.periods import periods as compute_periods
 from tests.conftest import PASSWORD, TODAY, MovableClock, reason_id, signed_in
 from tests.contract_shapes import assert_matches_fixture
 from tests.fakes.archive import archive_by_hand
+from tests.payment_body import payment_body
 from tests.statement_log import captured_statements
 
 
@@ -68,7 +69,7 @@ def _sale(
 ) -> None:
     body: dict[str, Any] = {
         "date": on,
-        "payment": payment,
+        "payment": payment_body(payment, client),
         "lines": [{"product_id": variety_id, "quantity": quantity, "gift": gift}],
     }
     if customer_id is not None:
@@ -156,7 +157,7 @@ def test_a_payment_is_counted_on_its_own_paid_on_date_not_the_sale_s_date(
     )
     payment = client.post(
         f"/customers/{customer_id}/payments",
-        json={"paid_on": pay_day.isoformat(), "amount": 20_000, "method": "cash"},
+        json={"paid_on": pay_day.isoformat(), "amount": 20_000, "payment_method_id": 1},
     )
     assert payment.status_code == 201, payment.text
 
@@ -434,7 +435,7 @@ def test_the_panel_agrees_with_analysis_on_shortfall_and_pending_grams(
     _expense(client, amount=800, on="2026-10-01")
     payment = client.post(
         f"/customers/{customer_id}/payments",
-        json={"paid_on": "2026-10-01", "amount": 1_000, "method": "cash"},
+        json={"paid_on": "2026-10-01", "amount": 1_000, "payment_method_id": 1},
     )
     assert payment.status_code == 201, payment.text
 
@@ -901,7 +902,10 @@ def test_an_archived_variety_leaves_the_panel_stock_rows_but_not_the_period_figu
         _entry(client, variety_id, quantity="100", total_cost=None, on="2026-10-01")
         sold = client.post(
             "/sales",
-            json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "10"}]},
+            json={
+                "payment": {"kind": "paid", "payment_method_id": 1},
+                "lines": [{"product_id": variety_id, "quantity": "10"}],
+            },
         )
         assert sold.status_code == 201, sold.text
     before = client.get("/panel").json()

@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session
 from app.customers.adapters.tables import CustomerRow
 from app.payments.adapters.settlements import SqlOwingSales
 from app.sales.application.ports import CustomerSettlement, OwingSales
+from tests.payment_body import payment_body
 
 TODAY = date(2026, 6, 15)
 
@@ -70,7 +71,7 @@ def _customer(client: TestClient, name: str = "Juana") -> int:
 
 def _sale(client: TestClient, variety_id: int, payment: str, customer_id: int | None) -> int:
     body: dict[str, object] = {
-        "payment": payment,
+        "payment": payment_body(payment),
         "lines": [{"product_id": variety_id, "quantity": "1"}],
     }
     if customer_id is not None:
@@ -83,7 +84,7 @@ def _sale(client: TestClient, variety_id: int, payment: str, customer_id: int | 
 def _pay(client: TestClient, customer_id: int, amount: int) -> None:
     response = client.post(
         f"/customers/{customer_id}/payments",
-        json={"paid_on": TODAY.isoformat(), "amount": amount, "method": "cash"},
+        json={"paid_on": TODAY.isoformat(), "amount": amount, "payment_method_id": 1},
     )
     assert response.status_code == 201, response.text
 

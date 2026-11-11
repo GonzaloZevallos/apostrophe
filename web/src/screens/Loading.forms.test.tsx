@@ -14,6 +14,7 @@ import { router as appRouter } from '../router'
 import { CUSTOMER_NEW, EXPENSE_NEW } from '../routes'
 import { renderWithViewport, stubViewport } from '../test-viewport'
 import { type FetchImpl, jsonResponse, renderExpenses } from './expenses/renderExpenses'
+import { withPaymentMethods } from '../test-payment-methods'
 
 const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: 'en' }
 
@@ -58,10 +59,10 @@ describe('the new customer', () => {
     }
     vi.stubGlobal(
       'fetch',
-      vi.fn((url: string, init?: RequestInit) => {
+      vi.fn(withPaymentMethods((url: string, init?: RequestInit) => {
         const answer = table[`${init?.method ?? 'GET'} ${url}`]
         return Promise.resolve(answer === undefined ? jsonResponse(404, {}) : answer())
-      }),
+      })),
     )
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
     const router = createMemoryRouter(appRouter.routes, { initialEntries: [CUSTOMER_NEW] })

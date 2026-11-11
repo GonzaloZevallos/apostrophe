@@ -444,8 +444,6 @@
         "properties": {
           "state": {
             "enum": [
-              "cash",
-              "transfer",
               "paid",
               "owed",
               "none"

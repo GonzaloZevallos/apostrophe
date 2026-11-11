@@ -16,8 +16,9 @@ from app.sales.application.ports import (
     PricingSettingsReader,
     Sales,
 )
-from app.sales.domain.sale import LineRequest, PaymentMethod, Sale, UnknownCustomer, UnknownVariety
+from app.sales.domain.sale import LineRequest, Sale, UnknownCustomer, UnknownVariety
 from app.shared.money import MoneyFormat, money_within
+from app.shared.payment_method import PaymentMethodId
 from app.shared.quantity import Quantity
 from app.shared.reference import ReferenceRefused
 from app.shared.transaction import Transaction
@@ -48,7 +49,7 @@ def record_sale(
     shipping_charged: Decimal,
     note: str | None,
     lines: Sequence[LineInput],
-    method: PaymentMethod | None,
+    method: PaymentMethodId | None,
     left_owing: bool,
     recorded_at: datetime,
 ) -> Sale:

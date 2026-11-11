@@ -21,6 +21,7 @@ import { router as appRouter } from '../../router'
 import { CUSTOMERS, HOME } from '../../routes'
 import { renderWithViewport } from '../../test-viewport'
 import type { Viewport } from '../../routes'
+import { withPaymentMethods } from '../../test-payment-methods'
 
 const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
 const OWING = { id: 1, name: 'Ana Pérez', phone: '+5491122334455', vip: false, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }
@@ -32,7 +33,7 @@ const ACCOUNT = {
 }
 const DEBTORS = { total_owed: 11000, sales_owing_count: 1, debtors: [{ customer: { id: 1, name: 'Ana Pérez' }, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }] }
 const RECORDED = {
-  payment: { id: 5, paid_on: '2026-10-03', amount: 5000, method: 'cash' },
+  payment: { id: 5, paid_on: '2026-10-03', amount: 5000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
   applied_to: [{ sale_id: 10, sale_date: '2026-09-14', amount: 5000 }],
   after: { balance: 6000, owing_since: '2026-09-14', standing: 'owes' },
 }
@@ -62,10 +63,10 @@ function renderFrom(origin: string, viewport: Viewport) {
   vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
   vi.stubGlobal(
     'fetch',
-    vi.fn((url: string, init?: RequestInit) => {
+    vi.fn(withPaymentMethods((url: string, init?: RequestInit) => {
       const answer = ANSWERS[`${init?.method ?? 'GET'} ${url}`]
       return Promise.resolve(answer === undefined ? jsonResponse(404, {}) : answer())
-    }),
+    })),
   )
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const router = createMemoryRouter(appRouter.routes, { initialEntries: [origin] })
