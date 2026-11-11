@@ -29,7 +29,7 @@ Criterios de éxito:
 4. **Quién debe, de un vistazo**: todo Customer que debe, con la deuda más vieja primero, cada uno con su Balance y su Owing since, arriba de Customers. También el **Total owed** y la cantidad de **Sales still owing**, sin calcularlos a partir de las Sales. En Sales, una Sale que todavía se debe aparece marcada como tal.
 5. **Una cuenta que se puede seguir**:
    - La cuenta de cada Customer muestra sus Sales y Payments en orden de fecha, con el Balance corrido.
-   - Cada Sale dice cómo se pagó o que quedó debiendo.
+   - Cada Sale dice si se pagó o si quedó debiendo.
    - Cada Payment dice su fecha, su medio y a qué Sale fue.
    - Un Payment equivocado se puede eliminar, y la cuenta y el Balance lo siguen al instante.
 6. **Las fechas de los Payments se conservan**: un Payment conserva su propia fecha y su medio, así que Cash (#7) cuenta el dinero el día en que entró, nunca en la fecha de la Sale.
@@ -44,7 +44,7 @@ Criterios de éxito:
 ### Payment
 
 - **Campos**: un Customer del mismo Business, una fecha, un monto en pesos enteros mayor que $0 y un Payment method ofrecido del mismo Business (`payment_method_id`, payment-methods.md). No hay **Note**.
-- **Medio**: un Payment apunta a su medio por id, nunca por su texto, así que muestra siempre el nombre actual del medio, archivado o no. La columna vieja `payment.method` queda congelada con su valor y ya no se lee ni se escribe (ADR-0082). Un medio archivado se rechaza para un Payment nuevo; uno de otro Business o inexistente responde 404.
+- **Medio**: un Payment apunta a su medio por id, nunca por su texto, así que muestra siempre el nombre actual del medio, archivado o no. La columna vieja `payment.method` queda congelada con su valor y ya no se lee ni se escribe (ADR-0082). Un medio archivado, eliminado, inexistente o de otro Business se rechaza para un Payment nuevo con el mismo 404 `payment_method.unavailable`.
 - **Fecha**: por defecto es hoy, el día del Business en hora argentina. Se permiten días anteriores; una fecha futura se rechaza.
 - **Customer**: obligatorio. El Customer de otro Business no existe (404).
 - **Por encima del Balance**: un Payment mayor que el Balance actual del Customer se rechaza, así que registrar nunca crea un **Credit**.
@@ -101,10 +101,10 @@ Criterios de éxito:
 
 - Muestra "Owes you $ X since dd/mm" como una etiqueta chica sobre una cifra grande. Para un Credit muestra "Credit $ X", de la misma manera, sin "since". Con un Balance de $0 no muestra ninguno de los dos.
 - "Record payment" se muestra solo cuando el Balance es mayor que $0. Si no, está oculto.
-- **La cuenta** abre con la etiqueta "Account · running balance" y lista las Sales y los Payments en orden de fecha, con el Balance corrido.
+- **La cuenta** abre con la etiqueta "Account · running balance" y lista las Sales y los Payments en orden de fecha, con el Balance corrido. La API trae por cada Sale `how_paid` (`paid`, `owing` o `none`) y, para una Sale pagada en el momento, su `payment_method` (`{id, name, icon}`); por cada Payment, su `payment_method`.
   - Cada fila muestra su fecha, un título con una sublínea debajo, y a la derecha su monto sobre "balance $ X". Un monto nunca se parte entre "$" y su cifra.
   - **Una Sale**: el título "Sale". Su sublínea es una de estas:
-    - "Paid · <medio>" para una Sale pagada en el momento, que no tiene fila de Payment propia; <medio> es el nombre actual de su Payment method (reemplaza a "Paid in cash" / "Paid by transfer");
+    - "Paid" para una Sale pagada en el momento, que no tiene fila de Payment propia; la fila todavía no nombra su medio (reemplaza a "Paid in cash" / "Paid by transfer");
     - "Left owing" para una Sale que quedó debiendo;
     - "Nothing to pay" para una Sale cuyo total es $0, saldada sin medio y sin nada debido (sales.md).
 
@@ -117,11 +117,13 @@ Criterios de éxito:
   - Es solo la cifra corrida, no un Credit, y no cuenta en ninguna cifra.
   - El Balance propio de la ficha dice "Credit" solo cuando el Balance de hoy es menor que cero.
 - **"Delete payment"** existe solo en los Payments posteriores.
-  - Se confirma con "Delete the $ 15.000 payment (<medio>) from 20/09?", "No, keep it / Yes, delete it". La confirmación nombra el Payment y su medio, nunca las Sales que cubría.
+  - Se confirma con "Delete the payment of $ 15.000 (<medio>) from 20/09?", "No, keep it / Yes, delete it". La confirmación nombra el Payment y su medio, nunca las Sales que cubría.
   - Después, el toast "Payment deleted", sin datos, y la cuenta y el Balance se refrescan desde la API.
   - Un Payment que ya no existe sigue la regla "That is gone." de accounts.md.
 
 ### En pantalla: Record payment (`Payment`)
+
+![Record payment en el teléfono](../assets/screens/Cobro.webp)
 
 - **Se abre desde**: "Collect" en una fila de deudor de Customers (cualquiera de las dos secciones, o los resultados de búsqueda) o del bloque "Owed to you" de Home, y "Record payment" en la ficha del Customer. Cada uno lo abre con ese Customer ya elegido.
 - **Una Sheet en el celular, un modal en la computadora** (navigation.md):
@@ -143,13 +145,14 @@ Criterios de éxito:
   - la fecha viene completa con hoy;
   - el medio, en el campo "Payment method" (abajo), obligatorio.
 - **El medio** (`Cobro`; el control está en selector.md, la lista en payment-methods.md):
-  - Es un Selector obligatorio con la etiqueta "Payment method", la misma entrada del Copy module que usa New sale (sales.md). Va después de la fila de la fecha y antes del resumen de lo que queda después del Payment. Sus opciones son los Payment methods ofrecidos del Business, leídos del servidor, en el orden que fijó la vendedora; los archivados nunca se ofrecen. New sale y Record payment comparten la misma fuente. Esa lista nunca se declara en `fixedSets.ts`: los Payment methods son un **Growable set** (ADR-0074).
+  - Es un Selector obligatorio con la etiqueta "Payment method", la misma entrada del Copy module que usa New sale (sales.md). Va después de la fila de la fecha y antes del resumen de lo que queda después del Payment. Sus opciones son los Payment methods ofrecidos del Business, leídos del servidor (`GET /api/payment-methods`), en el orden que fijó la vendedora y cada uno por su nombre; los archivados nunca se ofrecen. New sale y Record payment comparten la misma fuente. Esa lista nunca se declara en `fixedSets.ts`: los Payment methods son un **Growable set** (ADR-0074).
   - Sin valor por defecto, sin opción "Select…", sin `placeholder` y sin fila para borrar: vacío, el campo muestra solo su etiqueta. Con más de 8 opciones la lista tiene búsqueda. No tiene mensaje de conjunto vacío: siempre hay al menos un medio ofrecido.
   - **Carga**: mientras la lista no se cargó con éxito, el campo queda en `loading`, deshabilitado y con su esqueleto, y nunca parece vacío.
+  - **La lista no carga** (decisión 21 del humano): sin conexión se muestra el aviso "Sin conexión"; con un error del servidor la lista dice "Could not load the payment methods. Tap to try again." y tocar el campo de nuevo vuelve a leerla. Nada de lo escrito se pierde.
   - Record payment abre siempre con el medio vacío. Nada se recuerda entre Payments, ni para el mismo Customer ni entre Customers.
   - Elegir un medio cuenta como algo elegido: después, "Close" o volver piden confirmación igual que con un monto o una fecha que escribió el vendedor. Un valor que la pantalla completa sola al abrir (la fecha de hoy) no cuenta.
   - Lo que se guarda es el Payment con su `payment_method_id`.
-  - **Un medio que dejó de ofrecerse** antes de guardar (una socia lo archivó o lo eliminó): el guardado se rechaza, el campo lo muestra con la marca "no longer available" y todo lo escrito se conserva.
+  - **Un medio que dejó de ofrecerse** antes de guardar (una socia lo archivó o lo eliminó): la API responde 404 `payment_method.unavailable`, el guardado se rechaza, el campo lo muestra con la marca "no longer available" y "That payment method is no longer available. Choose another one.", la lista se vuelve a leer y todo lo escrito se conserva.
   - **En el celular**: tocar el campo abre la lista en una Sheet, su propia entrada del historial en el nivel de arriba de Record payment. Hay un `SheetStackProvider` en la raíz de `CobroRoute`. Volver o "Close" con la lista abierta cierran solo la lista, nunca Record payment, desde cualquiera de sus tres accesos, y nunca abren la confirmación de cambios sin guardar.
   - **En la computadora**: el desplegable del Selector con teclado. El primer Escape cierra solo el desplegable y no cierra el modal. El segundo sale si el formulario está sin tocar, o pide confirmación si tiene algo escrito o elegido.
   - **Sin medio al guardar**: la acción principal sigue habilitada. Este control corre después del control del monto. Tocar la acción sin medio no guarda nada y no entra en el estado de guardado en curso. Muestra "Choose how they paid." junto al campo, con el **Attention icon** al lado (`FieldRefusal`, que el campo nombra con su `aria-describedby`), y lleva el foco del vendedor al campo. La frase sale del Copy module y desaparece apenas se elige un medio. Si el monto también es inválido, primero se muestra solo el rechazo del monto.
@@ -170,12 +173,13 @@ Criterios de éxito:
 ### Chequeo en el teléfono
 
 - Las 21 entradas `radio:Cash`, `radio:Transfer` y `radio:Owing` de `touch-action.json` eran todas de estados recorridos de New sale. Record payment no tenía ninguna, así que su cambio al Selector no borró ni agregó ningún infractor.
-- Record payment no tiene un estado de WalkState con la lista de medios abierta (`record-payment/method-selector-open` no se agregó). La lista abierta la cubren los tests del front (`CobroHistory.test.tsx`). El estado `CobroDesdeClientes` elige el medio abriendo el campo y tocando la opción.
+- Record payment no tiene un estado de WalkState con la lista de medios abierta (`record-payment/method-selector-open` no se agregó). La lista abierta la cubren los tests del front (`CobroHistory.test.tsx`). El estado `CobroDesdeClientes` elige el medio abriendo el campo y tocando la opción. Los estados de carga, error del servidor, sin conexión y "no longer available" del campo están registrados en WalkState.
 
 ### Restricciones
 
 - `payment` es la tabla de ADR-0007 y lleva `business_id`. El Business sale de la **Session**.
-- `payment.payment_method_id` apunta a `payment_methods`; `payment.method` queda congelada (ADR-0082). La migración solo agregó y llenó la columna nueva, y el comparador M3 lo prueba.
+- `payment.payment_method_id` apunta a `payment_method` con una FK compuesta `(business_id, payment_method_id)` ON DELETE RESTRICT; `payment.method` queda congelada, ahora admite nulo y las filas nuevas la dejan vacía (ADR-0082). Solo el adaptador de tablas y las migraciones la nombran, y un test de arquitectura lo controla. La migración solo agregó y llenó la columna nueva, y el comparador M3 lo prueba.
+- El medio de un Payment nuevo se controla dentro del mismo `INSERT … SELECT` que lo escribe: si no es un medio ofrecido del Business, no se escribe nada y se responde 404 `payment_method.unavailable`.
 - La API de Payments lleva `payment_method_id` en lugar de `method`; es un quiebre declarado con una línea `Breaking-API:` en el PR (ADR-0066).
 - Las rutas de Payment se suman al barrido de aislamiento, al test de rutas con acceso restringido y al test de migración de pertenencia.
 - Los códigos de rechazo van en `contract.json` (ADR-0008):
@@ -183,11 +187,10 @@ Criterios de éxito:
   - fecha futura;
   - monto menor o igual que $0;
   - falta el medio;
-  - medio archivado;
+  - medio que no se puede usar (archivado, eliminado, inexistente o de otro Business: 404 `payment_method.unavailable`);
   - eliminar un On-the-spot payment;
   - Customer inexistente;
-  - Payment inexistente;
-  - Payment method inexistente o de otro Business (404).
+  - Payment inexistente.
 - Ningún monto ni nombre en los rechazos, los logs, la consola ni el almacenamiento del navegador (ADR-0005).
 - Todo Balance, Owing since, reparto del Settlement, total y cantidad en pantalla se lee de la API.
 - El registro de pantallas no tiene clave para "modal en la computadora"; ningún chequeo del registro distingue una Sheet de una página. La **Design capture** y la corrida e2e son la evidencia.
@@ -208,10 +211,10 @@ Criterios de éxito:
 - **Identidad del Balance (criterio 3)**: Balance = comprado e impago − Payments, al peso, después de cada alta y eliminación de Sales y Payments.
 - **Credit**: después de eliminar una Sale saldada, el Credit se muestra como "Credit", queda fuera de la sección Owed to you, del Total owed y de la cantidad, y se aplica a la próxima Sale que quede debiendo.
 - **Totales de quién debe (criterio 4)**: el Total owed, la cantidad de Sales still owing, la sección "Owed to you" de Customers, el bloque de Home y la marca de Sales son iguales a un cálculo directo sobre las Sales y los Payments. 0 diferencias. La línea de cantidad dice "1 sale owing" para una Sale y "N sales owing" para dos o más, las dos cubiertas por los tests del front.
-- **Cuenta (criterio 5)**: las filas y el Balance corrido coinciden con el Settlement en cada caso de la matriz. Los tests del front muestran la etiqueta "Account · running balance", el título y la sublínea de cada fila ("Sale" sobre "Paid · <medio>", "Left owing" o, para una Sale de $0, "Nothing to pay"; "Payment · <medio>" sobre "On account of the sale of dd/mm" o "Credit"), con el nombre actual del medio después de renombrarlo, el monto sobre "balance $ X" sin corte dentro de un monto, y ningún Product ni gramos en la fila de una Sale.
+- **Cuenta (criterio 5)**: las filas y el Balance corrido coinciden con el Settlement en cada caso de la matriz. Los tests del front muestran la etiqueta "Account · running balance", el título y la sublínea de cada fila ("Sale" sobre "Paid", "Left owing" o, para una Sale de $0, "Nothing to pay"; "Payment · <medio>" sobre "On account of the sale of dd/mm" o "Credit"), con el nombre actual del medio después de renombrarlo, el monto sobre "balance $ X" sin corte dentro de un monto, y ningún Product ni gramos en la fila de una Sale.
 - **Fechas conservadas (criterio 6)**: después de cualquier recálculo, la fecha, el monto y el medio de cada Payment quedan sin cambios.
 - **Vista previa = guardado (criterios 2, 8)**: la vista previa de Record payment coincide con el Settlement después de guardar. 0 diferencias.
-- **Aislamiento (criterio 7)**: toda ruta de Payment está en el barrido y responde 404 o vacío desde otro Business; un Payment con el medio de otro Business responde 404.
+- **Aislamiento (criterio 7)**: toda ruta de Payment está en el barrido y responde 404 o vacío desde otro Business; un Payment con el medio de otro Business responde 404 y no escribe nada.
 - **Sin eco (criterio 7)**: ningún rechazo ni línea de log contiene un monto ni un nombre. Después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen ninguno.
 - **Sin curl (criterio 8)**: una corrida end-to-end solo a través del front:
   - registra un Payment desde "Collect" en Customers y desde "Collect" en Home, eligiendo el medio con el campo "Payment method";
@@ -229,7 +232,7 @@ Criterios de éxito:
 - **Foco y texto escrito (GH-319)**: un test del front muestra el foco en el primer campo cuando se abre la Sheet del celular; un test de cambio de viewport (de celular a computadora y de vuelta) conserva el monto escrito; los tests de cambios sin guardar de Record payment pasan sin editarse sus aserciones; la lista de infractores del **Mobile check** no nombra ningún estado de Sheet recorrido de Record payment.
 - **Lugar conservado (criterio 9)**: una corrida end-to-end desplaza Customers y Home de modo que la fila de deudor tocada quede debajo de la primera pantalla, después abre Record payment y lo cierra, una vez con "Close" y una vez con un guardado parcial. Cada vez el desplazamiento queda sin cambios y el foco está en el "Collect" tocado. Después de un guardado que salda todo el Balance, el desplazamiento queda sin cambios y el foco está en el título "Owed to you" (o "Nobody owes you").
 - **Acuerdo con el diseño (criterio 9)**: la Design capture de Record payment en el celular muestra que el dibujo y la app construida son los dos una Sheet, con el campo "Payment method" cerrado como el Selector dibujado en Registrar cobro (`Cobro`, `CobroOscuro` y `CobroCompu` en `docs/product/design-system/pantallas/`). La nota de evidencia no deja ninguna diferencia abierta; la manija y el asomo del dibujo son una diferencia conocida, descartada a propósito (ADR-0062).
-- **El medio es un Selector con la lista propia (criterio 10)**: un test del front muestra en Record payment el campo "Payment method" con exactamente los medios ofrecidos del Business en su orden (con los valores por defecto, Cash y Transfer), ningún medio archivado, ningún grupo de radio ni botón `aria-pressed` con los medios, ninguna fila para borrar, y el estado `loading` mientras carga.
+- **El medio es un Selector con la lista propia (criterio 10)**: un test del front muestra en Record payment el campo "Payment method" con exactamente los medios ofrecidos del Business en su orden (con los valores por defecto, Cash y Transfer), ningún medio archivado, ningún grupo de radio ni botón `aria-pressed` con los medios, ninguna fila para borrar, y el estado `loading` mientras carga. Otros tests cubren el error del servidor con reintento, el aviso sin conexión y un 404 `payment_method.unavailable` que conserva lo escrito y marca el campo.
 - **Siempre vacío (criterio 10)**: un test del front abre Record payment dos veces seguidas (mismo Customer y otro Customer) después de guardar un Payment con el primer medio, y las dos veces el medio está vacío.
 - **Sin medio no se guarda (criterio 10)**: tocar guardar sin medio no hace ningún pedido a la API, no entra en el estado de guardado en curso y muestra "Choose how they paid." con el Attention icon junto al campo, que recibe el foco; elegir un medio saca la frase.
 - **Historial (criterio 11)**: `CobroHistory.test.tsx` lo cubre desde la fila de deudor de Customers, la de Home y la ficha del Customer:
@@ -251,6 +254,7 @@ Criterios de éxito:
 - Una clave o un chequeo del registro de pantallas que distinga una Sheet de una página.
 - Restaurar el scroll en cualquier lugar que no sea el cierre de Record payment.
 - Cash y **Profit**: la capacidad results (#7). Cash separado por medio o totales por medio: otro job.
+- Nombrar el medio en la fila de una Sale pagada en el momento ("Paid · <medio>"): pendiente para una tarea posterior.
 - Actualizaciones en vivo entre socios.
 - Los Products o los gramos de una Sale en la cuenta del Customer: el detalle de la Sale los muestra.
 - Administrar la lista de Payment methods: payment-methods.md.
