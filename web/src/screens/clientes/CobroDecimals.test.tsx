@@ -9,6 +9,7 @@ import type { Viewport } from '../../routes'
 import { renderWithViewport } from '../../test-viewport'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { choosePaymentMethod } from '../../components/selectorTestKit'
+import { METHODS_ANSWER } from '../../test-payment-methods'
 
 const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', money: { symbol: 'US$', decimals: 2 } }
 const OWING = { id: 1, name: 'Ana Pérez', phone: '+5491122334455', vip: false, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }
@@ -16,7 +17,7 @@ const ACCOUNT = {
   balance: 11000,
   owing_since: '2026-09-14',
   standing: 'owes',
-  rows: [{ kind: 'sale', date: '2026-09-14', running_balance: 11000, standing: 'owes', sale: { id: 10, total: 11000, how_paid: 'owing' } }],
+  rows: [{ kind: 'sale', date: '2026-09-14', running_balance: 11000, standing: 'owes', sale: { id: 10, total: 11000, how_paid: 'owing', payment_method: null } }],
 }
 const DEBTORS = { total_owed: 11000, sales_owing_count: 1, debtors: [{ customer: { id: 1, name: 'Ana Pérez' }, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }] }
 const RECORDED = {
@@ -42,6 +43,7 @@ function renderApp(entries: { pathname: string; state?: unknown }[], viewport: V
     'GET /payments/debtors': () => jsonResponse(200, DEBTORS),
     'POST /customers/1/payments/preview': () => jsonResponse(200, RECORDED),
     'POST /customers/1/payments': () => jsonResponse(201, RECORDED),
+    'GET /api/payment-methods': () => jsonResponse(200, METHODS_ANSWER),
     'GET /first-run': () => jsonResponse(200, { kind: 'none', checklist: [], import_notice: false, nothing_qualifies: false }),
     'GET /api/products': () => jsonResponse(200, [{ current_price: { id: 1 } }]),
     'GET /pinned-catalog/status': () => jsonResponse(200, { status: null }),
@@ -101,7 +103,7 @@ describe('the amount field under a Money format with 2 decimals', () => {
     expect(amount).toHaveValue('11,50')
     await choosePaymentMethod(userEvent, 'Cash')
     await userEvent.click(screen.getByRole('button', { name: 'Save' }))
-    await waitFor(() => expect(posted()).toEqual({ paid_on: '2026-10-03', amount: 11.5, method: 'cash' }))
+    await waitFor(() => expect(posted()).toEqual({ paid_on: '2026-10-03', amount: 11.5, payment_method_id: 1 }))
   })
 
   test('refuses 11,505 on save with the decimals rule, keeps what was typed and sends nothing', async () => {

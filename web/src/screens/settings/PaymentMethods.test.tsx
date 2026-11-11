@@ -6,7 +6,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -19,6 +19,7 @@ import {
   SETTINGS_PAYMENT_METHODS,
   SETTINGS_PAYMENT_METHODS_ARCHIVED,
 } from '../../routes'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 import { SHOWN_EN } from '../../test/shownLanguage'
 import PaymentMethods from './PaymentMethods'
 import PaymentMethodsArchived from './PaymentMethodsArchived'
@@ -111,7 +112,7 @@ function renderAt(path: string, server: Server) {
   const router = createMemoryRouter(
     [
       {
-        element: <Outlet context={ME} />,
+        element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>,
         children: [
           { path: SETTINGS, element: <div>Lista de grupos</div> },
           { path: SETTINGS_PAYMENTS, element: <PaymentsGroup /> },
@@ -250,7 +251,7 @@ test('deleting a method with no payments asks first and removes it for good', as
   expect(screen.getByRole('alertdialog', { name: 'Delete Transfer for good?' })).toBeInTheDocument()
   await userEvent.click(screen.getByRole('button', { name: 'Delete' }))
 
-  await vi.waitFor(() => expect(screen.queryByText('Transfer')).not.toBeInTheDocument())
+  await waitFor(() => expect(screen.queryByText('Transfer')).not.toBeInTheDocument())
   expect(server.calls).toContain('DELETE /api/payment-methods/2')
 })
 
