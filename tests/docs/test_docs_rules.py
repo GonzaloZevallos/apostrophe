@@ -3,8 +3,7 @@
 Links and Mermaid blocks are read only through `scripts/docs/links.py` (`page_problems`
 feeds its output to the rules); this file defines no link or Mermaid pattern of its own. The rules:
 `defined_symbol_problems` (a cited symbol is defined in its linked file),
-`adr_index_problems` (the ADR index equals `docs/adr/` and its marks equal the ADRs' own
-`status:` lines) and `reach_problems` (every page is within two clicks of the entry).
+`reach_problems` (every page is within two clicks of the entry).
 Nothing imports from `app`.
 """
 
@@ -12,11 +11,10 @@ from __future__ import annotations
 
 import posixpath
 import re
-from collections import Counter, deque
-from collections.abc import Callable, Iterable, Mapping, Sequence
+from collections import deque
+from collections.abc import Callable, Iterable, Mapping
 from pathlib import PurePosixPath
 
-from scripts.docs.adr_ids import superseded_by
 from scripts.docs.links import extract_links, mermaid_blocks, participant_aliases
 
 
@@ -55,69 +53,6 @@ def alias_problems(mermaid_source: str, linked_sources: Iterable[str]) -> list[s
             problems.append(f"alias `{alias}` starts with an underscore")
         elif not any(_is_defined(alias, source) for source in sources):
             problems.append(f"alias `{alias}` is not defined in a file linked on the page")
-    return problems
-
-
-def adr_status(adr_markdown: str) -> str | None:
-    """The value of the `status:` line in an ADR's front matter, or None without one."""
-    lines = adr_markdown.splitlines()
-    if not lines or lines[0].strip() != "---":
-        return None
-    for line in lines[1:]:
-        if line.strip() == "---":
-            return None
-        key, _, value = line.partition(":")
-        if key.strip() == "status":
-            return value.strip()
-    return None
-
-
-def adr_index_problems(
-    linked_rows: Sequence[tuple[str, str | None]], adr_statuses: Mapping[str, str | None]
-) -> list[str]:
-    """`linked_rows` is one `(file, mark)` per index table row that links an ADR, in page
-    order: the mark is the id named by `reemplazada por <id>` on that row (None for no
-    mark). A file on N > 1 rows is reported, and then the first row decides its mark.
-    `adr_statuses` maps each file in `docs/adr/` to its front-matter `status:` value. The
-    linked set equals the listing, and a mark equals `superseded by <id>` (read through
-    `scripts/docs/adr_ids.py`, so legacy and dated ids both work), in both directions."""
-    problems: list[str] = []
-    rows = Counter(name for name, _ in linked_rows)
-    problems += [f"{name}: linked on {n} rows" for name, n in sorted(rows.items()) if n > 1]
-    linked_marks: dict[str, str | None] = {}
-    for name, mark in linked_rows:
-        linked_marks.setdefault(name, mark)
-    for name in sorted(set(adr_statuses) - set(linked_marks)):
-        problems.append(f"{name} is in docs/adr/ but not in the index")
-    for name in sorted(set(linked_marks) - set(adr_statuses)):
-        problems.append(f"{name} is in the index but not in docs/adr/")
-    for name in sorted(set(linked_marks) & set(adr_statuses)):
-        status = adr_statuses[name]
-        expected = superseded_by(status)
-        if status is not None and status.startswith("superseded") and expected is None:
-            problems.append(f"{name}: status {status!r} names no ADR id")
-        elif linked_marks[name] != expected:
-            problems.append(
-                f"{name}: index mark {linked_marks[name]!r} does not match status {status!r}"
-            )
-    return problems
-
-
-def doubled_prose_lines(markdown: str) -> list[str]:
-    """The lines outside the table rows (a line whose stripped start is not `|`) that occur
-    twice or more, blank lines aside, one message per such line: `merge=union` can double a
-    line both branches wrote, and a table row is checked by `adr_index_problems` instead."""
-    seen: set[str] = set()
-    reported: set[str] = set()
-    problems: list[str] = []
-    for line in markdown.splitlines():
-        text = line.strip()
-        if not text or text.startswith("|"):
-            continue
-        if text in seen and text not in reported:
-            reported.add(text)
-            problems.append(f"decisiones.md: line repeated outside the table: {text[:60]}")
-        seen.add(text)
     return problems
 
 
@@ -220,80 +155,6 @@ def test_an_underscore_name_is_rejected_even_when_defined() -> None:
     assert problems == ["a.py: `_hidden` starts with an underscore"]
 
 
-def test_an_index_equal_to_the_listing_with_matching_marks_passes() -> None:
-    statuses = {"0030-a.md": "superseded by 0033", "0033-b.md": "accepted"}
-
-    assert adr_index_problems([("0030-a.md", "0033"), ("0033-b.md", None)], statuses) == []
-
-
-def test_a_dated_id_in_a_mark_and_a_status_is_compared_whole() -> None:
-    statuses = {"0030-a.md": "superseded by 20261111-x", "20261111-x.md": "accepted"}
-    rows: list[tuple[str, str | None]] = [("0030-a.md", "20261111-x"), ("20261111-x.md", None)]
-
-    assert adr_index_problems(rows, statuses) == []
-    assert adr_index_problems([("0030-a.md", "2026"), ("20261111-x.md", None)], statuses) == [
-        "0030-a.md: index mark '2026' does not match status 'superseded by 20261111-x'"
-    ]
-
-
-def test_a_superseded_status_that_names_no_id_is_reported() -> None:
-    statuses = {"0030-a.md": "superseded by someone"}
-
-    assert adr_index_problems([("0030-a.md", None)], statuses) == [
-        "0030-a.md: status 'superseded by someone' names no ADR id"
-    ]
-
-
-def test_a_file_linked_on_two_rows_is_reported() -> None:
-    statuses = {"0033-b.md": "accepted"}
-
-    assert adr_index_problems([("0033-b.md", None), ("0033-b.md", None)], statuses) == [
-        "0033-b.md: linked on 2 rows"
-    ]
-
-
-def test_a_file_linked_on_two_rows_with_different_marks_is_reported_too() -> None:
-    statuses = {"0033-b.md": "superseded by 0034", "0034-c.md": "accepted"}
-    rows: list[tuple[str, str | None]] = [
-        ("0033-b.md", "0034"),
-        ("0034-c.md", None),
-        ("0033-b.md", None),
-    ]
-
-    assert adr_index_problems(rows, statuses) == ["0033-b.md: linked on 2 rows"]
-
-
-def test_a_repeated_prose_line_is_reported_and_distinct_lines_are_clean() -> None:
-    table = "| ADR | Qué |\n| --- | --- |\n| a | b |\n| a | b |\n"
-    twice = "# Decisiones\n\nUna frase.\n\n  Una frase.  \n\n" + table
-
-    assert doubled_prose_lines(twice) == [
-        "decisiones.md: line repeated outside the table: Una frase."
-    ]
-    assert doubled_prose_lines("# Decisiones\n\nUna frase.\n\nOtra frase.\n\n" + table) == []
-
-
-def test_a_line_repeated_three_times_is_reported_once_with_its_first_60_characters() -> None:
-    line = "x" * 80
-
-    assert doubled_prose_lines(f"{line}\n{line}\n{line}\n") == [
-        f"decisiones.md: line repeated outside the table: {'x' * 60}"
-    ]
-
-
-def test_a_missing_extra_unmarked_or_wrongly_marked_adr_is_rejected() -> None:
-    statuses = {"0030-a.md": "superseded by 0033", "0033-b.md": "accepted", "0034-c.md": "accepted"}
-    marks: list[tuple[str, str | None]] = [
-        ("0030-a.md", None),
-        ("0033-b.md", "0034"),
-        ("0099-z.md", None),
-    ]
-
-    problems = adr_index_problems(marks, statuses)
-
-    assert len(problems) == 4
-
-
 def test_reach_follows_two_clicks_and_no_further() -> None:
     links = {
         "docs/README.md": ["architecture/README.md"],
@@ -344,19 +205,6 @@ def test_an_alias_undefined_underscored_or_only_in_a_comment_is_rejected() -> No
         "alias `_Hidden` starts with an underscore",
         "alias `Noted` is not defined in a file linked on the page",
     ]
-
-
-def test_adr_status_reads_only_the_front_matter() -> None:
-    assert (
-        adr_status("---\nstatus: superseded by 0033\ndate: 1\n---\n# T\n") == "superseded by 0033"
-    )
-    assert adr_status("---\ndate: 1\n---\nstatus: accepted\n") is None
-    assert adr_status("# T\nstatus: accepted\n") is None
-
-
-def test_an_adr_without_a_status_line_carries_no_mark() -> None:
-    assert adr_index_problems([("0032-a.md", None)], {"0032-a.md": None}) == []
-    assert adr_index_problems([("0032-a.md", "0033")], {"0032-a.md": None}) != []
 
 
 def _reads(files: dict[str, str]) -> Callable[[str], str | None]:

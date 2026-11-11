@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-03
+summary: "el panel se arma con las cifras de cada dueño en un solo pedido"
 ---
 
 # The panel is composed from each owner's own figures, in one `GET /panel`

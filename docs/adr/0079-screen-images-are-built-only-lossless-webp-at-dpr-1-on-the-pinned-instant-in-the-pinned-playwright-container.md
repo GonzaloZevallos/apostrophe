@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-11-10
+summary: "las imágenes de pantalla son solo de lo construido, webp sin pérdida a DPR 1, en el instante fijo, dentro del contenedor fijo de Playwright"
 ---
 
 # ADR-0079: Las imágenes de pantalla son solo de lo construido, webp sin pérdida a DPR 1, en el instante fijo, dentro del contenedor fijo de Playwright

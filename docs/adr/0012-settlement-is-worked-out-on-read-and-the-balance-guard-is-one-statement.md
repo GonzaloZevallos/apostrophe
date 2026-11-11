@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-03
+summary: "la liquidación se calcula al leer; registrar un pago protege el saldo en una sola sentencia"
 ---
 
 # Settlement is worked out on read by payments; recording guards the balance in one statement

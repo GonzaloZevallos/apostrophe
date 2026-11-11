@@ -1,4 +1,4 @@
 *.mo binary
 docs/api/** linguist-generated=true
 docs/architecture/generated/** linguist-generated=true
-docs/architecture/decisiones.md merge=union
+docs/architecture/decisiones.md linguist-generated=true merge=union

@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-11-08
+summary: "las tablas del freno de ingreso tienen un id sustituto y siguen claveadas por una columna única"
 ---
 
 # The login guard tables have a surrogate id and stay keyed by a unique column

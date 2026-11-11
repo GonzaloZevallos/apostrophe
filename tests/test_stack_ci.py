@@ -32,6 +32,7 @@ import yaml
 from scripts.ci_changes import render, select
 from scripts.ci_coverage import MARKER
 from scripts.ci_verdict import ALWAYS_JOBS, CHANGES, SUITES, WARN_JOBS
+from scripts.docs.owned_paths import owned_paths
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -1208,7 +1209,7 @@ def test_a_docs_cache_with_another_path_or_key_or_restore_keys_is_refused() -> N
 
 
 GENERATE = "uv run --no-project python -m scripts.docs.generate"
-DOCS_OWNED = ("docs/architecture/generated", "docs/api")
+DOCS_OWNED = tuple(path.removesuffix("/**") for path in owned_paths(REPO_ROOT))
 
 
 def _without_generate_step(workflow: Data) -> Data:

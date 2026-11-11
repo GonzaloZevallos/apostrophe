@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-25
+summary: "las columnas conservan variety_id mientras el código y la API dicen Product"
 ---
 
 # Columns keep variety_id until the variety table is renamed while code and the API say Product

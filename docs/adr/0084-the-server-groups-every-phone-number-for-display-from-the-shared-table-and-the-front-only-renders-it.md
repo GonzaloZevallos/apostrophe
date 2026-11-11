@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-11-11
+summary: "el servidor agrupa cada número de teléfono para mostrarlo desde la tabla compartida, y el front solo lo muestra"
 ---
 
 # El servidor agrupa cada número de teléfono para mostrarlo, desde la tabla compartida, y el front solo lo muestra

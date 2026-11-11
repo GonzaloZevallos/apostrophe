@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-02
+summary: "las capacidades se encuentran por puertos que declara quien llama"
 ---
 
 # Capabilities meet through ports their caller declares, never by importing each other

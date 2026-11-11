@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-28
+summary: "la zona horaria del Business reemplaza los días de Argentina"
 ---
 
 # The business time zone replaces Argentina days: today is worked out per business, and upkeep is due when its last check was not on the business's own today

@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-25
+summary: "un texto para compartir se arma en el front con datos que envía el servidor"
 ---
 
 # A shareable text is worked out in the front from facts the server sends

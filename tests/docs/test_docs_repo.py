@@ -9,15 +9,8 @@ from __future__ import annotations
 import posixpath
 from pathlib import Path
 
-from scripts.docs.adr_ids import SUPERSEDED_MARK
 from scripts.docs.links import extract_links
-from tests.docs.test_docs_rules import (
-    adr_index_problems,
-    adr_status,
-    doubled_prose_lines,
-    page_problems,
-    reach_problems,
-)
+from tests.docs.test_docs_rules import page_problems, reach_problems
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -48,7 +41,6 @@ def test_every_architecture_page_and_the_docs_entry_obey_the_citation_rules() ->
     assert problems == []
 
 
-ADR_DIR = "docs/adr"
 REQUIRED_PAGES = [
     "docs/README.md",
     "docs/architecture/README.md",
@@ -60,47 +52,6 @@ REQUIRED_PAGES = [
     "docs/architecture/decisiones.md",
 ]
 API_REFERENCE = "docs/api/index.html"
-
-
-def _adr_statuses() -> dict[str, str | None]:
-    return {
-        path.name: adr_status(path.read_text(encoding="utf-8"))
-        for path in sorted((REPO_ROOT / ADR_DIR).glob("*.md"))
-    }
-
-
-def _index_marks(page: str, markdown: str) -> list[tuple[str, str | None]]:
-    """One `(file, mark)` per table row of `page` that links an ADR file, in page order: the
-    id named by `reemplazada por <id>` on that row (None when it carries no mark). A file
-    linked twice on one row is one entry for that row; a link in the prose around the table
-    does not put an ADR in the index."""
-    rows: list[tuple[str, str | None]] = []
-    for line in markdown.splitlines():
-        if not line.lstrip().startswith("|"):
-            continue
-        found = SUPERSEDED_MARK.search(line)
-        names: list[str] = []
-        for link in extract_links(line):
-            path = posixpath.normpath(posixpath.join(posixpath.dirname(page), link.target))
-            name = posixpath.basename(path)
-            if posixpath.dirname(path) == ADR_DIR and path.endswith(".md") and name not in names:
-                names.append(name)
-        rows += [(name, found.group(1) if found else None) for name in names]
-    return rows
-
-
-def test_the_adr_index_lists_every_adr_with_the_mark_its_status_line_gives() -> None:
-    page = "docs/architecture/decisiones.md"
-    markdown = (REPO_ROOT / page).read_text(encoding="utf-8")
-    rows = _index_marks(page, markdown)
-
-    assert adr_index_problems(rows, _adr_statuses()) == []
-    assert doubled_prose_lines(markdown) == []
-    assert {name for name, mark in rows if mark} == {
-        name
-        for name, status in _adr_statuses().items()
-        if status and status.startswith("superseded")
-    }
 
 
 def test_every_doc_page_is_within_two_clicks_of_the_docs_entry() -> None:
@@ -129,58 +80,3 @@ def test_the_required_pages_and_the_api_reference_exist() -> None:
     ]
 
     assert missing == []
-
-
-def test_an_index_with_a_wrong_mark_and_a_missing_adr_is_rejected() -> None:
-    page = "docs/architecture/decisiones.md"
-    index = (
-        "| [0001](../adr/0001-a.md) | uno | reemplazada por 0002 |\n"
-        "| [0002](../adr/0002-b.md) | dos | |\n"
-    )
-    statuses: dict[str, str | None] = {
-        "0001-a.md": "accepted",
-        "0002-b.md": "accepted",
-        "0003-c.md": "superseded by 0002",
-    }
-
-    assert adr_index_problems(_index_marks(page, index), statuses) == [
-        "0003-c.md is in docs/adr/ but not in the index",
-        "0001-a.md: index mark '0002' does not match status 'accepted'",
-    ]
-
-
-def test_an_adr_linked_only_in_the_prose_is_not_in_the_index() -> None:
-    page = "docs/architecture/decisiones.md"
-    index = (
-        "Por ejemplo [0001](../adr/0001-a.md) puede estar enmendada.\n\n"
-        "| [0002](../adr/0002-b.md) | dos | |\n"
-    )
-    statuses: dict[str, str | None] = {"0001-a.md": "accepted", "0002-b.md": "accepted"}
-
-    assert adr_index_problems(_index_marks(page, index), statuses) == [
-        "0001-a.md is in docs/adr/ but not in the index"
-    ]
-
-
-def test_a_dated_adr_row_is_read_like_a_legacy_one() -> None:
-    page = "docs/architecture/decisiones.md"
-    index = (
-        "| [0001](../adr/0001-a.md) | uno | reemplazada por 20261111-b |\n"
-        "| [20261111-b](../adr/20261111-b.md) | dos | |\n"
-    )
-
-    assert _index_marks(page, index) == [("0001-a.md", "20261111-b"), ("20261111-b.md", None)]
-
-
-def test_a_file_linked_on_two_rows_of_the_index_is_rejected() -> None:
-    page = "docs/architecture/decisiones.md"
-    index = (
-        "| [0002](../adr/0002-b.md) | dos | |\n"
-        "| [0002](../adr/0002-b.md) | dos | |\n"
-        "| [0003](../adr/0003-c.md) y [0003](../adr/0003-c.md) | tres | |\n"
-    )
-    statuses: dict[str, str | None] = {"0002-b.md": "accepted", "0003-c.md": "accepted"}
-
-    problems = adr_index_problems(_index_marks(page, index), statuses)
-
-    assert problems == ["0002-b.md: linked on 2 rows"]

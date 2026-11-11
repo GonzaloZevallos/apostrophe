@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-07
+summary: "los interruptores de precios viven en su propia tabla y la regla aplicable más baja fija el precio"
 ---
 
 # Pricing switches live in their own table, and the lowest applicable rule prices a line

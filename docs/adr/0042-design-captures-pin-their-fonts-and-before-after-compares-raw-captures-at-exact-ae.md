@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-14
+summary: "las capturas de diseño fijan sus fuentes y comparan capturas crudas"
 ---
 
 # Design captures pin their fonts, and a before/after compares raw captures at exact AE

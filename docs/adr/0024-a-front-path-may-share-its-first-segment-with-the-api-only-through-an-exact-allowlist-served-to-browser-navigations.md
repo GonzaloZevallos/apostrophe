@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-05
+summary: "una ruta del front comparte su primer segmento con la API solo por una lista exacta"
 ---
 
 # A front path may share its first segment with the API only through an exact allowlist served to browser navigations

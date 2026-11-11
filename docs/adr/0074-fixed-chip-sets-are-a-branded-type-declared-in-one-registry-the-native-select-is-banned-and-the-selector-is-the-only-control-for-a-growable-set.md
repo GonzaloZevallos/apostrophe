@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-11-07
+summary: "los conjuntos fijos de chips son un tipo con marca declarado en un solo registro; el Selector es el único control de un conjunto que crece"
 ---
 
 # Fixed chip sets are a branded type declared in one registry. The native select is banned, and the Selector is the only control for a growable set.
