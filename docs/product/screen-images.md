@@ -2,6 +2,7 @@
 
 - Cuando leo cómo funciona una capacidad en la documentación funcional, quiero ver la pantalla del teléfono que describe, la misma imagen cada vez, para entender lo que el dueño tiene en el teléfono sin correr la app ni abrir un archivo de diseño. Lo lee sobre todo el dueño o quien mantiene el producto; quienes revisan y el sistema agéntico que escribe y controla la documentación se benefician en segundo lugar.
 - Cuando leo la definición escrita de una pantalla del teléfono en `docs/product/` (como dueño, como PM o como agente del sistema), quiero la imagen de la pantalla construida al lado, para entender la definición más rápido sin levantar la app. Cuando actualizo las imágenes, quiero que cambien solo las pantallas que de verdad cambiaron, para que una actualización nunca me haga revisar ruido.
+- Cuando un cambio llega a master, yo, el dueño que mantiene el producto mediante el sistema agéntico, quiero que el workflow de Screen images corra solo y refresque las imágenes que están junto a las definiciones escritas en `docs/product/`, para que una corrida en rojo me diga algo sobre las pantallas o la captura, nunca que al runner le faltaba una herramienta.
 
 ## Qué es una Screen image
 
@@ -52,6 +53,15 @@ Lo decide `docs/adr/0079-screen-images-are-built-only-lossless-webp-at-dpr-1-on-
 - **Resumen.** `summary.md` lista las filas nuevas, cambiadas, borradas y fallidas (cada fallida por nombre), el tamaño total de `docs/assets/screens/` y el de cada imagen. En modo `pr` agrega el SHA base y la advertencia de que un cambio listado puede venir de un merge cuyas imágenes todavía no se guardaron.
 - **Quién lo corre hasta la parte 3.** La tarea que entrega esta herramienta corre `--apply` una vez y guarda el primer conjunto completo. Después, hasta que la parte 3 lo lleve al CI, lo corre a mano quien mantiene la documentación (el dueño o un agente del sistema al que se le pida) cuando quiere refrescar las imágenes. No es una obligación de cada tarea que cambia una pantalla: una imagen desactualizada nunca bloquea.
 
+## Los workflows de Screen images
+
+`.github/workflows/screen-images.yml` (en cada commit de master) y `.github/workflows/screen-images-pr.yml` (en los pull requests) corren la captura en el CI. No son jobs del Gate: una corrida en rojo no bloquea nada.
+
+- **Una corrida en rojo tiene que decir algo.** Debe hablar de las pantallas o de la captura, nunca de una herramienta que le faltaba al runner. Es la misma regla que el glosario fija para el Gate, aplicada a estos workflows aunque estén fuera de él.
+- **Python fijado antes de usarlo.** Cada workflow de `.github/workflows/` instala la versión de Python que fija el proyecto antes de cualquier paso que la use, incluido `uv python find`. El runner no trae esa versión. Todos los workflows la instalan de la misma forma que `ci.yml` y `backup.yml` (`uv venv --python`). El pin del proyecto es `[tool.mypy] python_version` de `pyproject.toml`; cada workflow conserva el literal de esa versión en `uv venv --python`, y el test lo compara con el pin, así que subir el pin hace fallar al test en cada workflow que quedó atrás en lugar de dejarlo pasar.
+- **Control.** Un test de pytest del Gate recorre cada archivo de `.github/workflows/` y falla cuando un workflow usa Python antes de instalar la versión fijada, así que la falla aparece en el pull request que la introduce. El test solo lee los archivos de los workflows. El Gate nunca corre la captura.
+- **Una falla de la captura es un hallazgo, no un arreglo de herramientas.** Una corrida que pasa el control de herramientas y después falla por la app de muestra, Playwright, Docker o el control de dos capturas está en rojo con sentido: se informa como hallazgo con un issue propio que cita la corrida, y no se arregla cambiando qué se captura, cuándo ni qué se publica dentro de la tarea que arregla las herramientas. Una falla causada por cómo se instala Python (versión, dependencias o el entorno que usa la captura) sí es de las herramientas y se arregla ahí.
+
 ## La misma imagen en cada corrida
 
 - Una fila que difiere entre dos corridas se arregla primero en la semilla fijada o en el camino fijado de la app.
@@ -61,7 +71,7 @@ Lo decide `docs/adr/0079-screen-images-are-built-only-lossless-webp-at-dpr-1-on-
 
 ## Qué promete y qué no
 
-- Una Screen image nunca es un paso del Gate, nunca se controla píxel a píxel y queda afuera de todo control de documentación desactualizada. `screen-images.sh` es una herramienta de mantenimiento, nunca un job requerido del CI; solo los tests unitarios del plan y del resumen corren en el Gate.
+- Una Screen image nunca es un paso del Gate, nunca se controla píxel a píxel y queda afuera de todo control de documentación desactualizada. `screen-images.sh` es una herramienta de mantenimiento, nunca un job requerido del CI; en el Gate corren solo los tests unitarios del plan y del resumen, y el test que controla que los workflows instalen el Python fijado.
 - Una fila fallida o una app que no arrancó nunca borran ni reemplazan una imagen guardada.
 - Las imágenes de master pueden ir una corrida de master detrás del código de master.
 - Los artefactos de un PR se conservan 7 días.
@@ -76,3 +86,7 @@ Lo decide `docs/adr/0079-screen-images-are-built-only-lossless-webp-at-dpr-1-on-
 - Tamaño visible: el resumen informa el total de `docs/assets/screens/` y el tamaño de cada imagen, sin tope; la entrega informa cantidad, total, mediana, la más grande y la más chica.
 - Nunca bloquea: cero corridas del Gate en rojo por una imagen desactualizada o faltante.
 - Selección verificable: la entrega informa la cantidad de filas incluidas, la cantidad de filas extra que suma `captureSelection` y las filas incluidas que necesitan una fila fuera del conjunto (se espera ninguna).
+- Corrida de master sin falla de herramientas: la corrida de `Screen images` sobre el commit de merge de la tarea que agregó la instalación del Python fijado pasa el control de herramientas y ningún paso falla por falta de Python, y lo mismo vale para `screen-images-pr.yml`. Se espera verde; si queda en rojo más adelante por una causa ajena a Python, la entrega nombra el paso y su error y abre un issue propio.
+- Rojo con sentido: cero corridas de los workflows de Screen images en rojo porque al runner le faltaba la versión de Python fijada.
+- Sin brecha nueva: el test de workflows cubre el 100 % de los archivos de `.github/workflows/`. Falla ante cualquier workflow que use Python antes de instalar la versión fijada, `backup.yml` lo pasa tal como está, y dos jobs de `ci.yml` (`changes` y `ci-ok`, que corren `uv run --no-project python` sin instalar) pasan solo por la lista declarada de brechas conocidas del test, que solo puede achicarse.
+- Un solo pin: la versión sale de un único lugar, `[tool.mypy] python_version`; subir ese pin hace fallar al test en cada literal de workflow que quedó atrás, así que ninguno se desactualiza sin que se vea.

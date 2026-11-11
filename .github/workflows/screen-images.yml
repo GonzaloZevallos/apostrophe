@@ -33,7 +33,6 @@ jobs:
           node --version
           git --version
           uv --version
-          uv python find 3.13
           docker version
       - uses: actions/checkout@v7
         with:
