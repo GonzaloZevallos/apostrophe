@@ -146,7 +146,7 @@ test('Debiendo is disabled with no customer, enables once one is chosen, and res
 
 test('a customer with no phone shows no phone element in Pick a customer nor the chosen chip', async () => {
   const user = userEvent.setup()
-  const SOL = { id: 6, name: 'Sol', phone: null, vip: false }
+  const SOL = { id: 6, name: 'Sol', phone: null, phone_display: null, vip: false }
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
     'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
