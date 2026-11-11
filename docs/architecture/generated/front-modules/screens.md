@@ -127,6 +127,7 @@ subgraph src["src"]
       src_screens_varieties_restoreLanding_ts["restoreLanding.ts"]
       src_screens_varieties_useRestore_tsx["useRestore.tsx"]
       src_screens_varieties_useSelectedVariety_ts["useSelectedVariety.ts"]
+      src_screens_varieties_useVipPriceField_ts["useVipPriceField.ts"]
       src_screens_varieties_varietiesByName_ts["varietiesByName.ts"]
       src_screens_varieties_varietyForms_ts["varietyForms.ts"]
     end
@@ -339,6 +340,7 @@ src_screens_varieties_PriceFields_tsx-->src_screens_varieties_priceFieldRules_ts
 src_screens_varieties_PriceForm_tsx-->src_screens_Variedades_tsx
 src_screens_varieties_PriceForm_tsx-->src_screens_varieties_PriceFields_tsx
 src_screens_varieties_PriceForm_tsx-->src_screens_varieties_priceFieldRules_ts
+src_screens_varieties_PriceForm_tsx-->src_screens_varieties_useVipPriceField_ts
 src_screens_varieties_PriceHistory_tsx-->src_screens_Variedades_tsx
 src_screens_varieties_PriceHistory_tsx-->src_screens_varieties_PriceRows_tsx
 src_screens_varieties_PriceNew_tsx-->src_screens_Variedades_tsx

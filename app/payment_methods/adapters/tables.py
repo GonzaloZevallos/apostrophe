@@ -15,7 +15,7 @@ class PaymentMethodRow(Base):
     __tablename__ = "payment_method"
     # The casefolded name is what makes two names the same name, within one business,
     # archived methods included. The second constraint is the target of the composite FK
-    # a payment's `payment_method_id` takes (docs/adr/0085).
+    # a payment's `payment_method_id` takes (docs/adr/20261111-payment-methods-by-id).
     __table_args__ = (
         UniqueConstraint("business_id", "name_key"),
         UniqueConstraint("business_id", "id"),

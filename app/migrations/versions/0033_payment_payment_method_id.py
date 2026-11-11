@@ -1,10 +1,11 @@
-"""A payment links to its method by id (CONTEXT.md: Payment method; docs/adr/0085).
+"""A payment links to its method by id (CONTEXT.md: Payment method;
+docs/adr/20261111-payment-methods-by-id).
 
-Revision ID: 0031
-Revises: 0030
+Revision ID: 0033
+Revises: 0032
 
 Adds `payment.payment_method_id` and fills it for every payment from the frozen `method`
-value: the business's own method whose `name_key` is that value (0030 seeded "cash" and
+value: the business's own method whose `name_key` is that value (0032 seeded "cash" and
 "transfer" for every business). Then `payment` is rebuilt once, because SQLite cannot add
 a constraint or relax a column in place: `payment_method_id` becomes NOT NULL with the
 composite foreign key `(business_id, payment_method_id)` to `payment_method`, ON DELETE
@@ -12,7 +13,7 @@ RESTRICT, and `method` becomes nullable. `method` is frozen: no value in it chan
 a payment written from now on leaves it NULL.
 
 The downgrade refuses while any payment has a NULL `method` (it would lose the only record
-of how that payment was made); otherwise it puts back the 0030 table. Foreign keys go off
+of how that payment was made); otherwise it puts back the 0032 table. Foreign keys go off
 before its first write, the way 0028 does, and stay as they are.
 """
 
@@ -21,14 +22,14 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0031"
-down_revision: str | None = "0030"
+revision: str = "0033"
+down_revision: str | None = "0032"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
 
 class PaymentWithoutMethodColumn(RuntimeError):
-    """A payment recorded after 0031 has no `method` value to restore."""
+    """A payment recorded after 0033 has no `method` value to restore."""
 
 
 class RebuildLostRows(RuntimeError):

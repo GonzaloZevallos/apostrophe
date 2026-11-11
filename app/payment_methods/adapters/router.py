@@ -36,7 +36,8 @@ def get_methods(session: SessionDep, business_id: CurrentBusinessId) -> SqlPayme
 def get_usage(
     request: Request, session: SessionDep, business_id: CurrentBusinessId
 ) -> PaymentMethodUsage:
-    # Payment methods never imports `app.payments` (docs/adr/0085): `app/main.py` hangs
+    # Payment methods never imports `app.payments`
+    # (docs/adr/20261111-payment-methods-by-id): `app/main.py` hangs
     # the usage adapter on `app.state.payment_method_usage` as a factory.
     factory = cast(
         Callable[[Session, int], PaymentMethodUsage], request.app.state.payment_method_usage

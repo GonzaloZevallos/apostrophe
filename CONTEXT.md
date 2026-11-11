@@ -71,7 +71,7 @@ _Avoid_: friend, Amigo, preferred customer
 _In the app_: VIP customer
 
 **Customer type**:
-Un grupo de Customers que define el vendedor, con un nombre único en el Business (sin importar mayúsculas ni espacios, hasta 40 caracteres) y un ícono neutro; un Customer está en uno como máximo, o en ninguno. Un Business nuevo arranca sin ninguno, y uno con Customers no se puede eliminar. En esta parte un tipo no tiene precio propio, salvo que la pertenencia al VIP type da el VIP price. _In the app_: Customer type.
+Un grupo de Customers que define el vendedor, con un nombre único en el Business (sin importar mayúsculas ni espacios, hasta 40 caracteres) y un ícono neutro; un Customer está en uno como máximo, o en ninguno. Un Business nuevo arranca sin ninguno, y uno con Customers no se puede eliminar; eliminarlo se lleva sus Customer-type prices. Cada tipo puede tener Customer-type prices, aunque en esta parte solo el VIP type los recibe. _In the app_: Customer type.
 _Avoid_: tier, segment, group, VIP mark
 _In the app_: Customer type
 
@@ -101,7 +101,7 @@ _Avoid_: override, custom price, discount
 _In the app_: Special price
 
 **Pricing rule**:
-Qué regla fijó el precio de una Sale line: list, bulk, VIP, gift o Special price. Exactamente una por Sale line, guardada con su precio cuando se registra la Sale y nunca se vuelve a calcular. VIP significa que se cobró el VIP price, incluso cuando era igual al Bulk price. _In the app_: list, bulk, VIP, gift, special.
+Qué regla fijó el precio de una Sale line: list, bulk, Customer type, gift o Special price, y VIP solo en las líneas guardadas antes de los Customer-type prices. Exactamente una por Sale line, guardada con su precio cuando se registra la Sale y nunca se vuelve a calcular; la de Customer type guarda el tipo y una copia de su nombre, que nunca sigue un renombre ni un borrado, y gana un empate con el Bulk price. _In the app_: list, bulk, el nombre del tipo, VIP, gift, special.
 _Avoid_: type, price type, Amigo
 _In the app_: list, bulk, VIP, gift, special
 
@@ -121,7 +121,7 @@ _Avoid_: collection, settlement, receipt, abono
 _In the app_: Payment
 
 **Payment method**:
-Una forma en que le pagan a un Business, de su lista propia: un nombre único en el Business (sin importar mayúsculas ni espacios, archivados incluidos, hasta 60 caracteres), un ícono de un conjunto fijo y neutro y una posición. Todo Business arranca con "Cash" y "Transfer", medios comunes que se renombran, reordenan, archivan o eliminan como cualquiera; uno con Payments solo se archiva, y el último ofrecido no se puede sacar. Un Payment apunta a su medio por id, así que muestra su nombre actual (ADR-0085). _In the app_: Payment method.
+Una forma en que le pagan a un Business, de su lista propia: un nombre único en el Business (sin importar mayúsculas ni espacios, archivados incluidos, hasta 60 caracteres), un ícono de un conjunto fijo y neutro y una posición. Todo Business arranca con "Cash" y "Transfer", medios comunes que se renombran, reordenan, archivan o eliminan como cualquiera; uno con Payments solo se archiva, y el último ofrecido no se puede sacar. Un Payment apunta a su medio por id, así que muestra su nombre actual (ADR-20261111-payment-methods-by-id). _In the app_: Payment method.
 _Avoid_: payment type, channel, Owing, paid later
 
 **Balance**:
@@ -410,7 +410,7 @@ Buscar el número del chat propio del vendedor entre los chats privados que le e
 _Avoid_: auto-detect, discovery, getUpdates, chat search, sync
 
 **VIP price**:
-Un precio por gramo opcional en una Price entry, para los VIP customers: un monto mayor que 0, con hasta los decimales del Money format del Business, y menor que el List price de esa Price entry, independiente del Bulk price. Nunca se muestra en el Catalog. Planned in GH-318 (not yet in the code): lo que cambia junto a esta Price entry se cuenta en el bloque de cierre. _In the app_: VIP price.
+El precio por gramo opcional que se tipea en una Price entry para el VIP type: un monto mayor que 0, con hasta los decimales del Money format del Business, y menor que el List price de esa Price entry, independiente del Bulk price. Se guarda como el Customer-type price del VIP type, atado a esa Price entry; la columna `price_entry.vip_price` queda congelada y nunca se vuelve a leer ni escribir. Nunca se muestra en el Catalog. _In the app_: VIP price.
 _Avoid_: friend price, discount, Amigo price
 
 **Pricing settings**:
@@ -546,8 +546,8 @@ La zona que decide cuándo empieza y termina el día de un Business; a todo Busi
 _Avoid_: locale, region
 
 **Customer-type price**:
-El precio que paga un Customer type por un Product, una fila que rige desde una fecha. Reemplaza al VIP price en las escrituras nuevas; la Price entry conserva su VIP price tal como está, y los VIP prices guardados y las marcas VIP se quedan en su lugar, congelados con los valores que tienen. Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; a cargo de la parte customer-type prices.
-_Avoid_: tier price, discount
+El precio por gramo que paga un Customer type por un Product, guardado como una fila con fecha de vigencia que nunca se edita, opcionalmente atada a la Price entry con la que se guardó. Rige la fila más reciente en esa fecha o antes, y una atada a una Price entry rige solo mientras esa Price entry es el Current price. Es un entero mayor que $0 y menor que el List price de su fecha; en esta parte solo se fija el del VIP type, con el campo "VIP price" de una Price entry. _In the app_: VIP price (para el VIP type); en una línea, el nombre del tipo.
+_Avoid_: tier price, group price, discount, VIP price column
 
 **Applied promotion**:
 Una Promotion tal como estaba una Sale cuando se guardó, registrada como filas tipadas que nunca se vuelven a calcular. Decidido en docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; a cargo de la parte promotions-at-sale-time, que también define en qué se diferencia de una Promotion.

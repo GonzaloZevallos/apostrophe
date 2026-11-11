@@ -21,6 +21,7 @@ would.
 
 from collections.abc import Callable, Iterator
 from dataclasses import replace
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -35,6 +36,8 @@ from sqlalchemy.orm import Session
 from app.accounts.adapters.tables import BusinessRow
 from app.accounts.application import manage_business
 from app.accounts.application.ports import Accounts
+from app.customer_types.adapters.sql_customer_type_prices import SqlCustomerTypePrices
+from app.customer_types.adapters.tables import CustomerTypePriceRow, CustomerTypeRow
 from app.expenses.adapters.sql_expense_categories import SqlExpenseCategories
 from app.expenses.adapters.tables import ExpenseCategoryRow
 from app.expenses.application import manage_categories
@@ -468,11 +471,29 @@ def _scales(engine: Engine) -> list[int]:
 
 
 @pytest.fixture
-def seeded(business_a: TestClient) -> dict[str, int]:
+def seeded(business_a: TestClient, engine: Engine) -> dict[str, int]:
     names: dict[str, int] = {}
     for seed in SEEDERS:
         names |= seed(business_a)
+    seed_customer_type_price(engine, names)
     return names
+
+
+def seed_customer_type_price(engine: Engine, names: dict[str, int]) -> None:
+    """A's type price for A's seeded type and variety, tied to A's seeded Price entry. No
+    route writes one yet, so it goes through the repository; every route of the sweep then
+    runs with a `customer_type_price` row of A in the database."""
+    with Session(engine) as session:
+        owner = session.get(CustomerTypeRow, names["type_id"])
+        assert owner is not None
+        SqlCustomerTypePrices(session, owner.business_id).add(
+            names["type_id"],
+            names["variety_id"],
+            date(2026, 1, 1),
+            9_000,
+            names["entry_id"],
+        )
+        session.commit()
 
 
 def _concrete(path: str, names: dict[str, int]) -> str:
@@ -1389,3 +1410,32 @@ def test_a_scale_0_and_a_scale_2_business_hold_their_own_money_and_neither_shows
     for client in (business_a, business_b):
         for path in ("/panel", "/analysis", "/payments/debtors", "/sales", "/business"):
             assert "scale" not in client.get(path).text, path
+
+
+def test_another_business_cannot_see_or_remove_a_type_price_of_this_one(
+    business_a: TestClient, business_b: TestClient, seeded: dict[str, int], engine: Engine
+) -> None:
+    """B's repository finds none of A's rows and removes none; B's delete of A's type
+    answers 404 and A's row is still there."""
+    with Session(engine) as session:
+        business_of_b = session.scalars(
+            select(BusinessRow.id).where(BusinessRow.id != _owner(session, seeded["type_id"]))
+        ).one()
+    with Session(engine) as session:
+        theirs = SqlCustomerTypePrices(session, business_of_b)
+        assert theirs.tied_price(seeded["entry_id"], seeded["type_id"]) is None
+        assert theirs.prices_of_type(seeded["type_id"], [seeded["entry_id"]]) == {}
+        theirs.remove_for_entry(seeded["entry_id"])
+        theirs.remove_for_product(seeded["variety_id"])
+        theirs.remove_for_type(seeded["type_id"])
+        session.commit()
+
+    assert business_b.delete(f"/api/customer-types/{seeded['type_id']}").status_code == 404
+    with Session(engine) as session:
+        assert len(session.scalars(select(CustomerTypePriceRow)).all()) == 1
+
+
+def _owner(session: Session, type_id: int) -> int:
+    row = session.get(CustomerTypeRow, type_id)
+    assert row is not None
+    return row.business_id

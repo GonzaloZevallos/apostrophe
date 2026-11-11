@@ -29,6 +29,8 @@ export interface SaleLine {
   product_name: string
   quantity: number
   pricing_rule: PricingRule
+  /** The type's name as it was when the line was saved; `null` unless the rule is `'type'`. */
+  customer_type_name: string | null
   price_per_gram: number
   line_total: number
 }

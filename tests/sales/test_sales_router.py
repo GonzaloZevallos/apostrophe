@@ -10,17 +10,14 @@ from sqlalchemy import func, select, update
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.db import money_stored_value
 from app.payments.adapters.tables import PaymentRow
 from app.pricing_settings.adapters.tables import PricingSettingsRow
-from app.products.adapters.tables import PriceEntryRow
 from app.sales.adapters.tables import SaleLineRow, SaleRow
-from app.shared.money import Money
 from tests.conftest import TODAY
 from tests.contract_shapes import assert_matches_fixture
 from tests.fakes.archive import archive_by_hand
 from tests.pricing_switches import set_switches
-from tests.vip_type import make_type, put_in_type
+from tests.vip_type import make_type, price_type, put_in_type
 
 
 def _variety(client: TestClient, list_price: int = 10_000) -> int:
@@ -121,6 +118,7 @@ def test_record_sale_without_a_customer_paid_cash(client: TestClient) -> None:
             "product_name": "Lavanda",
             "quantity": 10.0,
             "pricing_rule": "list",
+            "customer_type_name": None,
             "price_per_gram": 10_000,
             "line_total": 100_000,
         }
@@ -652,15 +650,6 @@ def _switches(engine: Engine, *, bulk: bool, vip: bool) -> None:
         session.commit()
 
 
-def _vip_price(engine: Engine, vip_price: int) -> None:
-    with Session(engine) as session:
-        business_id = session.scalars(select(PriceEntryRow.business_id)).first()
-        assert business_id is not None
-        stored = money_stored_value(session, business_id, Money.of_units(vip_price))
-        session.execute(update(PriceEntryRow).values(vip_price=stored))
-        session.commit()
-
-
 def _line_of(client: TestClient, variety_id: int, customer_id: int | None) -> dict[str, object]:
     body: dict[str, object] = {
         "payment": {"kind": "paid", "payment_method_id": 1},
@@ -692,16 +681,17 @@ def test_a_vip_customer_is_stored_as_vip_once_vip_is_switched_on(
 ) -> None:
     _switches(engine, bulk=True, vip=True)
     variety_id = _variety_with_bulk(client)
-    _vip_price(engine, 7_000)
     customer_id = _customer(client)
-    put_in_type(engine, customer_id, make_type(engine, is_vip=True))
+    vip_type = make_type(engine, is_vip=True)
+    price_type(engine, variety_id, vip_type, 7_000)
+    put_in_type(engine, customer_id, vip_type)
     _switches(engine, bulk=True, vip=False)
     assert _line_of(client, variety_id, customer_id)["pricing_rule"] == "bulk"
 
     _switches(engine, bulk=True, vip=True)
     line = _line_of(client, variety_id, customer_id)
 
-    assert (line["pricing_rule"], line["price_per_gram"]) == ("vip", 7_000)
+    assert (line["pricing_rule"], line["price_per_gram"]) == ("type", 7_000)
 
 
 def test_switching_a_rule_off_leaves_a_recorded_sale_as_it_was(

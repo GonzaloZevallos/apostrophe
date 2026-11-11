@@ -3,8 +3,8 @@
  * computed only here, in integer hundredths of a gram, with no `Math.round`,
  * `toFixed` or float multiplication on grams anywhere in this module. It mirrors
  * `app/sales/domain/pricing.py` exactly (gift, then special price, then the lowest of
- * list, bulk — measured per line, never summed across a sale — and VIP; a VIP-bulk tie
- * is stored as VIP), so a rule change there is caught here too, through the one matrix both sides run
+ * list, bulk — measured per line, never summed across a sale — and the Customer's type
+ * price; a type-bulk tie is stored as the type, a tie with list cannot arise), so a rule change there is caught here too, through the one matrix both sides run
  * (`pricing-matrix.json`, read by this module's tests and by `tests/sales/test_pricing_matrix.py`).
  *
  * What the API answers after a save, an assign or a delete always wins (plan,
@@ -14,7 +14,9 @@
 import type { PaymentMethod } from '../api/payments'
 import { noPriceMessage, OWING_HINT } from '../copy/sales'
 
-export type PricingRule = 'list' | 'bulk' | 'vip' | 'gift' | 'special'
+/** `'vip'` is only read, from lines saved before customer types; a new line priced by a type's
+ * price is `'type'` and carries the type's name (ADR-0059). */
+export type PricingRule = 'list' | 'bulk' | 'vip' | 'type' | 'gift' | 'special'
 
 /** CONTEXT.md: Bulk price, Bulk minimum. `minimumHundredths` is the bulk minimum in
  * hundredths of a gram, the same unit every grams figure in this module uses. */
@@ -28,7 +30,8 @@ export interface BulkQuote {
 export interface PriceQuote {
   listPrice: number
   bulk: BulkQuote | null
-  /** The VIP price per gram, or `null` for none. Never 0 as a stand-in. */
+  /** The price per gram the Customer's type has in this entry, or `null` for none. Never 0 as a
+   * stand-in. The shared matrix still names it `vipPrice`. */
   vipPrice: number | null
 }
 
@@ -74,6 +77,7 @@ export class NoPriceThatDay extends SaleRuleBroken {
 export interface LineInput {
   gift: boolean
   specialPrice: number | null
+  /** Whether the Customer has a type (the shared matrix still names it `customerIsVip`). */
   customerIsVip: boolean
   settings: PricingSettings
   quote: PriceQuote | null
@@ -111,14 +115,14 @@ export function priceLine(input: LineInput): LinePricing {
     }
   }
   if (quote === null) throw new NoPriceThatDay()
-  // Start from list; bulk replaces it only when strictly lower; VIP replaces whatever
-  // is best when not higher, so a VIP-bulk tie is stored as VIP.
+  // Start from list; bulk replaces it only when strictly lower; the type's price replaces
+  // whatever is best when not higher, so a type-bulk tie is stored as the type.
   let best: { rule: PricingRule; price: number } = { rule: 'list', price: quote.listPrice }
   if (settings.bulk && quote.bulk !== null && gramsHundredths >= quote.bulk.minimumHundredths) {
     if (quote.bulk.price < best.price) best = { rule: 'bulk', price: quote.bulk.price }
   }
   if (settings.vip && customerIsVip && quote.vipPrice !== null) {
-    if (quote.vipPrice <= best.price) best = { rule: 'vip', price: quote.vipPrice }
+    if (quote.vipPrice <= best.price) best = { rule: 'type', price: quote.vipPrice }
   }
   return {
     rule: best.rule,

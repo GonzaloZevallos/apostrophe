@@ -1002,6 +1002,88 @@
         "title": "CreditAccountRowOut",
         "type": "object"
       },
+      "CurrentPriceOut": {
+        "description": "The entry in force, with the price each customer type has in it (docs/adr/0059):\nin this part, only the VIP type's.",
+        "properties": {
+          "bulk_minimum": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bulk Minimum"
+          },
+          "bulk_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bulk Price"
+          },
+          "effective_from": {
+            "format": "date",
+            "title": "Effective From",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "list_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "List Price"
+          },
+          "type_prices": {
+            "items": {
+              "$ref": "#/components/schemas/TypePriceOut"
+            },
+            "title": "Type Prices",
+            "type": "array"
+          },
+          "vip_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vip Price"
+          }
+        },
+        "required": [
+          "id",
+          "effective_from",
+          "list_price",
+          "bulk_price",
+          "bulk_minimum",
+          "vip_price",
+          "type_prices"
+        ],
+        "title": "CurrentPriceOut",
+        "type": "object"
+      },
       "CustomerIn": {
         "properties": {
           "customer_type_id": {
@@ -2389,7 +2471,7 @@
         "type": "object"
       },
       "PaidIn": {
-        "description": "Money received on the spot, with the method the business chose (docs/adr/0085).",
+        "description": "Money received on the spot, with the method the business chose\n(docs/adr/20261111-payment-methods-by-id).",
         "properties": {
           "kind": {
             "const": "paid",
@@ -3387,6 +3469,7 @@
           "list",
           "bulk",
           "vip",
+          "type",
           "gift",
           "special"
         ],
@@ -3422,7 +3505,7 @@
           "current_price": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/PriceEntryOut"
+                "$ref": "#/components/schemas/CurrentPriceOut"
               },
               {
                 "type": "null"
@@ -3485,7 +3568,7 @@
           "current_price": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/PriceEntryOut"
+                "$ref": "#/components/schemas/CurrentPriceOut"
               },
               {
                 "type": "null"
@@ -4342,6 +4425,17 @@
           "cost": {
             "$ref": "#/components/schemas/LineCostOut"
           },
+          "customer_type_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Type Name"
+          },
           "line_total": {
             "anyOf": [
               {
@@ -4385,6 +4479,7 @@
           "product_name",
           "quantity",
           "pricing_rule",
+          "customer_type_name",
           "price_per_gram",
           "line_total",
           "cost"
@@ -4394,6 +4489,17 @@
       },
       "SaleLineOut": {
         "properties": {
+          "customer_type_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Type Name"
+          },
           "line_total": {
             "anyOf": [
               {
@@ -4437,6 +4543,7 @@
           "product_name",
           "quantity",
           "pricing_rule",
+          "customer_type_name",
           "price_per_gram",
           "line_total"
         ],
@@ -4789,6 +4896,31 @@
           "quantity"
         ],
         "title": "ThresholdIn",
+        "type": "object"
+      },
+      "TypePriceOut": {
+        "properties": {
+          "customer_type_id": {
+            "title": "Customer Type Id",
+            "type": "integer"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Price"
+          }
+        },
+        "required": [
+          "customer_type_id",
+          "price"
+        ],
+        "title": "TypePriceOut",
         "type": "object"
       },
       "UserOut": {

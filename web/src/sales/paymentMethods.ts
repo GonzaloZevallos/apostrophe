@@ -1,6 +1,6 @@
 /**
  * The Payment methods a Selector offers: the business's own offered list (`GET /api/payment-methods`,
- * ADR-0085), in the order the server keeps it, read by New sale and Record payment alike. They are
+ * ADR-20261111-payment-methods-by-id), in the order the server keeps it, read by New sale and Record payment alike. They are
  * never a fixed set (`fixedSets.ts` never declares them). The Selector's values are the ids as text;
  * `paymentMethodOf` turns one back into the id the API takes.
  *
@@ -9,95 +9,72 @@
  * reads the list again.
  */
 
-import { type QueryClient, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import type { PaymentMethod } from "../api/payments";
-import { paymentMethodsQueryOptions } from "../api/paymentMethods";
-import { keys } from "../api/keys";
-import { NetworkError } from "../api/client";
-import type { SelectorOption } from "../components/Selector";
+import { type QueryClient, useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { PaymentMethod } from '../api/payments'
+import { paymentMethodsQueryOptions } from '../api/paymentMethods'
+import { keys } from '../api/keys'
+import { NetworkError } from '../api/client'
+import type { SelectorOption } from '../components/Selector'
 
 export interface PaymentMethodOption extends SelectorOption {
-  value: string;
+  value: string
 }
 
 export interface PaymentMethodOptions {
   /** What a `Selector` takes as props. */
   selector: {
-    required: true;
-    options: readonly PaymentMethodOption[];
-    loading: boolean;
-    emptySetMessage: string;
-  };
+    required: true
+    options: readonly PaymentMethodOption[]
+    loading: boolean
+    emptySetMessage: string
+  }
   /** The reading failed: `offline` shows the notice, `server` marks the field. */
-  failure: "offline" | "server" | null;
+  failure: 'offline' | 'server' | null
   /** Reads the list again (a tap on a field that failed). */
-  reload: () => void;
+  reload: () => void
 }
 
 export function usePaymentMethodOptions(): PaymentMethodOptions {
-  const { t } = useTranslation();
-  const query = useQuery(paymentMethodsQueryOptions());
+  const { t } = useTranslation()
+  const query = useQuery(paymentMethodsQueryOptions())
   // A tap on a failed field reads the list again, and the query goes back to pending while it does:
   // the failure is kept until the list arrives or fails again, so the open field never flips to
   // `loading` (which closes it) and the person keeps reading why it is empty.
-  const [lastFailure, setLastFailure] = useState<"offline" | "server" | null>(
-    null,
-  );
+  const [lastFailure, setLastFailure] = useState<'offline' | 'server' | null>(null)
   const observed =
-    query.data !== undefined
-      ? null
-      : query.isError
-        ? query.error instanceof NetworkError
-          ? "offline"
-          : "server"
-        : undefined;
-  if (observed !== undefined && observed !== lastFailure)
-    setLastFailure(observed);
-  const failure = observed === undefined ? lastFailure : observed;
-  const failed = failure !== null;
+    query.data !== undefined ? null : query.isError ? (query.error instanceof NetworkError ? 'offline' : 'server') : undefined
+  if (observed !== undefined && observed !== lastFailure) setLastFailure(observed)
+  const failure = observed === undefined ? lastFailure : observed
+  const failed = failure !== null
   return {
     selector: {
       required: true,
-      options: (query.data ?? []).map((method) => ({
-        value: String(method.id),
-        label: method.name,
-      })),
+      options: (query.data ?? []).map((method) => ({ value: String(method.id), label: method.name })),
       loading: query.isPending && !failed,
-      emptySetMessage: t(
-        failed
-          ? "emptyStates:selectorPaymentMethodsFailed"
-          : "emptyStates:selectorNoPaymentMethods",
-      ),
+      emptySetMessage: t(failed ? 'emptyStates:selectorPaymentMethodsFailed' : 'emptyStates:selectorNoPaymentMethods'),
     },
     failure,
     reload: () => {
-      void query.refetch();
+      void query.refetch()
     },
-  };
+  }
 }
 
 /** The id a Selector value stands for, or null for anything else (never a guess). */
 export function paymentMethodOf(value: string | null): PaymentMethod | null {
-  if (value === null || !/^\d+$/.test(value)) return null;
-  return Number(value);
+  if (value === null || !/^\d+$/.test(value)) return null
+  return Number(value)
 }
 
 /** The Selector value of a chosen method id. */
-export function paymentMethodValue(
-  method: PaymentMethod | null,
-): string | null {
-  return method === null ? null : String(method);
+export function paymentMethodValue(method: PaymentMethod | null): string | null {
+  return method === null ? null : String(method)
 }
 
 /** The name the list showed for a method id, read before the list is read again (never a guess). */
-export function paymentMethodName(
-  queryClient: QueryClient,
-  method: PaymentMethod,
-): string | null {
-  const list = queryClient.getQueryData<
-    readonly { id: number; name: string }[]
-  >(keys.paymentMethods());
-  return list?.find((item) => item.id === method)?.name ?? null;
+export function paymentMethodName(queryClient: QueryClient, method: PaymentMethod): string | null {
+  const list = queryClient.getQueryData<readonly { id: number; name: string }[]>(keys.paymentMethods())
+  return list?.find((item) => item.id === method)?.name ?? null
 }

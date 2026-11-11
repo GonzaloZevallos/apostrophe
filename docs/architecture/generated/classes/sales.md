@@ -105,8 +105,12 @@ classDiagram
     code : ClassVar~str~
   }
   class CustomerFact {
+    customer_type : CustomerTypeFact #124; None
     id : int
-    vip : bool
+  }
+  class CustomerTypeFact {
+    id : int
+    name : str
   }
   class GiftWithSpecialPrice {
     code : ClassVar~str~
@@ -118,6 +122,7 @@ classDiagram
     code : ClassVar~str~
   }
   class LinePricing {
+    customer_type : CustomerTypeFact #124; None
     line_total : int
     price_per_gram : int
     rule
@@ -161,7 +166,7 @@ classDiagram
   class PriceQuote {
     bulk : BulkQuote #124; None
     list_price : int
-    vip_price : int #124; None
+    type_price : int #124; None
   }
   class PricingRule {
     name
@@ -204,6 +209,8 @@ classDiagram
     code : ClassVar~str~
   }
   class SaleLine {
+    customer_type_id : int #124; None
+    customer_type_name : str #124; None
     id : int #124; None
     line_total : int
     price_per_gram : int
@@ -276,7 +283,7 @@ classDiagram
     still_owing(customer_ids: Collection~int~) frozenset~int~
   }
   class PriceBook {
-    for_variety(variety_id: int, day: date) VarietyPricing #124; None
+    for_variety(variety_id: int, day: date, customer_type_id: int #124; None) VarietyPricing #124; None
   }
   class PricingSettingsReader {
     current() PricingSettings
@@ -358,7 +365,7 @@ classDiagram
     payment_method_id : int
   }
   class PlannedPriceBook {
-    for_variety(variety_id: int, day: date) VarietyPricing #124; None
+    for_variety(variety_id: int, day: date, customer_type_id: int #124; None) VarietyPricing #124; None
   }
   class ReturnedQuantityOut {
     product_id : int
@@ -417,6 +424,7 @@ classDiagram
   }
   class SaleLineDetailOut {
     cost
+    customer_type_name : str #124; None
     line_total
     price_per_gram
     pricing_rule : PricingRule
@@ -426,6 +434,7 @@ classDiagram
     of(view_line: SaleViewLine, cost: LineCost) 'SaleLineDetailOut'
   }
   class SaleLineOut {
+    customer_type_name : str #124; None
     line_total
     price_per_gram
     pricing_rule : PricingRule
@@ -436,6 +445,8 @@ classDiagram
   }
   class SaleLineRow {
     business_id : Mapped~int~
+    customer_type_id : Mapped~int #124; None~
+    customer_type_name : Mapped~str #124; None~
     grams_hundredths : Mapped~int~
     id : Mapped~int~
     line_total : Mapped~int~
@@ -482,7 +493,7 @@ classDiagram
     get(customer_id: int) CustomerFact #124; None
   }
   class SqlPriceBook {
-    for_variety(variety_id: int, day: date) VarietyPricing #124; None
+    for_variety(variety_id: int, day: date, customer_type_id: int #124; None) VarietyPricing #124; None
   }
   class SqlSales {
     add(sale: Sale) Sale
@@ -499,7 +510,7 @@ classDiagram
   class _FixedSettings {
     current() PricingSettings
   }
-  class _FixedVip {
+  class _FixedType {
     get(customer_id: int) CustomerFact #124; None
   }
   class _SheetAmounts {

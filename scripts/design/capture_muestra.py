@@ -54,6 +54,7 @@ def how_paid(word: str, method: dict[str, Any] | None) -> str:
         return "Debiendo"
     return _METHOD[method["name"]]
 
+
 _RULE = {
     "list": "Lista",
     "bulk": "Por mayor",
@@ -61,6 +62,16 @@ _RULE = {
     "gift": "Regalo",
     "special": "Especial",
 }
+
+
+def _rule_label(line: dict[str, Any]) -> str:
+    """What the Regla column shows: a line priced by a customer type shows the type's copied
+    name, as the line's badge does (docs/product/sales.md)."""
+    if line["pricing_rule"] == "type":
+        return str(line["customer_type_name"])
+    return _RULE[line["pricing_rule"]]
+
+
 _ENTRY_KIND = {"purchase": "Compra", "harvest": "Cosecha", "adjustment": "Ajuste"}
 _WITHDRAWAL_KIND = {"Marketing": "Promoción", "Own use": "Consumo propio"}
 _MINUS = "\N{MINUS SIGN}"
@@ -362,7 +373,7 @@ def _sales(api: _ClientApi) -> list[str]:
                 line["product_name"],
                 grams(line["quantity"]),
                 f"{money(line['price_per_gram'])} x g",
-                _RULE[line["pricing_rule"]],
+                _rule_label(line),
                 money(line["line_total"]),
             ]
             for line in sale["lines"]

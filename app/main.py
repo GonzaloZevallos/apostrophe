@@ -276,7 +276,8 @@ def create_app(
     # this line is the one seam the sales-costs subtask reaches it through.
     app.state.line_costs = SqlLineCosts
     # Which payment methods have payments, read through the payment methods hexagon's own
-    # `PaymentMethodUsage` port, never `app.payments` (docs/adr/0085): the payments adapter
+    # `PaymentMethodUsage` port, never `app.payments`
+    # (docs/adr/20261111-payment-methods-by-id): the payments adapter
     # answers it from `payment.payment_method_id`.
     app.state.payment_method_usage = PaymentsUsingAMethod
     # The same shape again: sales reads the switches only through its own

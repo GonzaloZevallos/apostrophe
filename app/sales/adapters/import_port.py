@@ -6,8 +6,9 @@ import adapter writes only its own hexagon's tables).
 maps each distinct variety key to a local ordinal that never leaves this call, and
 replays `Sale.record` — the same aggregate constructor `write_sale` uses through
 `record_sale` — so a row's refusal, when there is one, is always the rule `Sale.record`
-itself would raise. `write_sale` is always given a vip fact built from the row's own
-`vip` (the plan's invariant: never from the customer's stored VIP flag).
+itself would raise. `write_sale` is always given a type fact built from the row's own
+`vip` and the business's VIP type (the plan's invariant: never from the customer's stored
+VIP flag).
 """
 
 from __future__ import annotations
@@ -19,13 +20,15 @@ from decimal import Decimal
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.customer_types.adapters.import_port import VIP_TYPE_NAME
+from app.customer_types.adapters.tables import CustomerTypeRow
 from app.payment_methods.adapters.import_port import Holder, PaymentMethodsForImport
 from app.sales.adapters.price_book import PlannedPriceBook, SqlPriceBook
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.adapters.tables import SaleRow
 from app.sales.application.ports import MoneyFormatReader
 from app.sales.application.record_sale import LineInput, record_sale
-from app.sales.domain.pricing import SaleRuleBroken
+from app.sales.domain.pricing import CustomerTypeFact, SaleRuleBroken
 from app.sales.domain.sale import CustomerFact, LineRequest, Sale
 from app.shared.money import MoneyFormat
 from app.shared.payment_method import PaymentMethodId, PaymentMethodUnavailable
@@ -43,10 +46,13 @@ _UNUSED_RECORDED_AT = datetime(1970, 1, 1)
 # resolves a real customer, so any id that is not `None` tells `Sale.record` a customer
 # is present, and never leaves this module (the plan's invariant).
 _CHECK_CUSTOMER_ID = 1
+# The VIP type's id for the duration of one check only: no type exists yet in the plan phase.
+_CHECK_VIP_TYPE = CustomerTypeFact(id=1, name=VIP_TYPE_NAME.value)
 
 
 # The sheet's own words are the only place "cash" and "transfer" survive: each names the
-# default method the business holds under its Stored-language default name (docs/adr/0085).
+# default method the business holds under its Stored-language default name
+# (docs/adr/20261111-payment-methods-by-id).
 # A caller that knows the business's language passes those names; without them English's.
 ENGLISH_DEFAULT_NAMES: Mapping[str, str] = {"cash": "Cash", "transfer": "Transfer"}
 # Stands in for a method id while a plan is only checked: nothing is written then.
@@ -113,7 +119,10 @@ class SalesImport:
                     customer_id=_CHECK_CUSTOMER_ID if sale.has_customer else None,
                     settings=settings,
                     customer=(
-                        CustomerFact(id=_CHECK_CUSTOMER_ID, vip=sale.vip)
+                        CustomerFact(
+                            id=_CHECK_CUSTOMER_ID,
+                            customer_type=_CHECK_VIP_TYPE if sale.vip else None,
+                        )
                         if sale.has_customer
                         else None
                     ),
@@ -165,7 +174,7 @@ class SalesImport:
         stored = record_sale(
             SqlSales(self._session, self._business_id),
             SqlPriceBook(self._session, self._business_id),
-            _FixedVip(sale.vip),
+            _FixedType(self._vip_type_fact() if sale.vip else None),
             _FixedSettings(settings),
             self._money_format,
             transaction,
@@ -190,6 +199,17 @@ class SalesImport:
         )
         return stored.total
 
+    def _vip_type_fact(self) -> CustomerTypeFact | None:
+        """The business's VIP type with its current name, as a hand-entered sale to a VIP
+        customer would read it."""
+        found = self._session.execute(
+            select(CustomerTypeRow.id, CustomerTypeRow.name).where(
+                CustomerTypeRow.business_id == self._business_id,
+                CustomerTypeRow.is_vip.is_(True),
+            )
+        ).first()
+        return None if found is None else CustomerTypeFact(id=found[0], name=found[1])
+
 
 class _FixedSettings:
     """A `PricingSettingsReader` of one fixed answer: the switches the import leaves,
@@ -202,16 +222,16 @@ class _FixedSettings:
         return self._settings
 
 
-class _FixedVip:
-    """A `CustomerFacts` of one fixed answer: `sale.vip`, decided by the sheet's row
-    type ("Amigo") rather than any customer's stored flag (the plan's invariant: a
-    sale is priced with vip = (row type is "Amigo"), never from the stored flag)."""
+class _FixedType:
+    """A `CustomerFacts` of one fixed answer: the customer type decided by the sheet's row
+    type ("Amigo" is the VIP type) rather than any customer's stored flag (the plan's
+    invariant: a sale is priced from the row's own type, never from the stored flag)."""
 
-    def __init__(self, vip: bool) -> None:
-        self._vip = vip
+    def __init__(self, customer_type: CustomerTypeFact | None) -> None:
+        self._customer_type = customer_type
 
     def get(self, customer_id: int) -> CustomerFact | None:
-        return CustomerFact(id=customer_id, vip=self._vip)
+        return CustomerFact(id=customer_id, customer_type=self._customer_type)
 
 
 def _assign_ordinals(

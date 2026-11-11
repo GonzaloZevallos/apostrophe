@@ -1,4 +1,5 @@
-"""The payment methods through the HTTP API, over a real database (docs/adr/0085)."""
+"""The payment methods through the HTTP API, over a real database
+(docs/adr/20261111-payment-methods-by-id)."""
 
 from typing import Any
 

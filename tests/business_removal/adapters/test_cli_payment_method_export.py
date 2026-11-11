@@ -1,4 +1,5 @@
-"""Business removal and the payment methods (docs/adr/0085): the export carries each
+"""Business removal and the payment methods
+(docs/adr/20261111-payment-methods-by-id): the export carries each
 payment's `payment_method_id` as `{id, name}` with the method's current name, `method`
 (frozen) empty, and the methods themselves; the rows exported are the rows deleted; the
 other business keeps every method and payment."""

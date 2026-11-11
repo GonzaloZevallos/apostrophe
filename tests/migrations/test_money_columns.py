@@ -14,7 +14,7 @@ one built here (it must find each offender).
 
 from __future__ import annotations
 
-from sqlalchemy import JSON, Column, Integer, MetaData, String, Table, Text
+from sqlalchemy import JSON, Column, ForeignKey, Integer, MetaData, String, Table, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from app.db import money_column
@@ -34,7 +34,8 @@ def _is_tagged(column: Column[object]) -> bool:
 
 
 def untagged_money_integers(metadata: MetaData) -> list[Offender]:
-    """Integer columns named like money that lack the `money_column()` tag."""
+    """Integer columns named like money that lack the `money_column()` tag. A column that
+    carries a foreign key holds an id, whatever its name says (`price_entry_id`)."""
     return [
         (table.name, column.name)
         for table in metadata.sorted_tables
@@ -42,6 +43,7 @@ def untagged_money_integers(metadata: MetaData) -> list[Offender]:
         if isinstance(column.type, Integer)
         and _has_money_name(column.name)
         and not _is_tagged(column)
+        and not column.foreign_keys
     ]
 
 
@@ -76,6 +78,7 @@ def _throwaway() -> MetaData:
         Column("shipping_note", String(20)),
         Column("discount_payload", JSON),
         Column("x", String(10), info={"money": True}),
+        Column("price_entry_id", Integer, ForeignKey("clean.id")),
     )
     Table(
         "clean",
@@ -102,6 +105,13 @@ def test_every_tagged_column_in_the_product_is_an_integer() -> None:
 
 def test_the_untagged_integer_guard_reports_an_untagged_price() -> None:
     assert untagged_money_integers(_throwaway()) == [("offender", "price")]
+
+
+def test_the_untagged_integer_guard_passes_a_foreign_key_named_like_money() -> None:
+    reported = untagged_money_integers(_throwaway())
+
+    assert ("offender", "price_entry_id") not in reported
+    assert reported == [("offender", "price")]
 
 
 def test_the_text_guard_reports_text_string_and_json_money_names() -> None:

@@ -1,6 +1,7 @@
 """Whether a payment method has payments, read from the `payment` table
-(docs/adr/0085). The payment methods hexagon asks through its own `PaymentMethodUsage`
-protocol; this adapter answers it and is wired in `app/main.py`."""
+
+(docs/adr/20261111-payment-methods-by-id). The payment methods hexagon asks through its own
+`PaymentMethodUsage` protocol; this adapter answers it and is wired in `app/main.py`."""
 
 from collections.abc import Sequence
 

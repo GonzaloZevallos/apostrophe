@@ -333,7 +333,7 @@ function VentaDetalleScreen() {
                   <span className="venta-detalle__precio cifra-n">
                     {money.money(line.price_per_gram)}{SALES_TEXT.perGram}
                   </span>
-                  <ReglaInsignia rule={line.pricing_rule} />
+                  <ReglaInsignia rule={line.pricing_rule} typeName={line.customer_type_name} />
                   <span className="venta-detalle__total cifra-s">{money.money(line.line_total)}</span>
                 </div>
               </div>

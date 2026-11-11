@@ -44,7 +44,8 @@ class PaymentMethods(Protocol):
 
 class PaymentMethodUsage(Protocol):
     """Which methods have payments. `app/main.py` wires the adapter; the payments
-    adapter replaces the stub that answers nothing is in use (docs/adr/0085)."""
+    adapter replaces the stub that answers nothing is in use
+    (docs/adr/20261111-payment-methods-by-id)."""
 
     def in_use_among(self, method_ids: Sequence[int]) -> frozenset[int]: ...
 

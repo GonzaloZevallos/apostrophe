@@ -1,5 +1,5 @@
 """How a payment names its method, for every capability that writes or reads one
-(CONTEXT.md: Payment method; docs/adr/0085).
+(CONTEXT.md: Payment method; docs/adr/20261111-payment-methods-by-id).
 
 A write carries a `PaymentMethodId`; a read carries a `PaymentMethodLabel`. Nothing
 outside the payment methods hexagon decides what a method is: it is only ever an id the
