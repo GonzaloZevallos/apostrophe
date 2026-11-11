@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-11-02
+summary: "un rechazo puede llevar campos con nombre junto a su código"
 ---
 
 # A refusal may carry named fields next to its code

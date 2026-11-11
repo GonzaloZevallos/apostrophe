@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-29
+summary: "los documentos técnicos salen solo del generador y se construyen con herramientas fijas sin red"
 ---
 
 # The technical docs come only from the generator and are built by pinned, offline tools

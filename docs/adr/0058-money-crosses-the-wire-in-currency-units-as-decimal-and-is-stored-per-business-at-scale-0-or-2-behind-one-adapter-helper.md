@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-25
+summary: "el dinero viaja en unidades de moneda como Decimal y se guarda con la escala del Business"
 ---
 
 # Money crosses the wire in currency units as Decimal and is stored per business at scale 0 or 2, behind one adapter helper

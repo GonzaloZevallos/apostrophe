@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-11-10
+summary: "`/auth/me` lleva el formato de dinero del Business y el front lo lee de ahí (el diseño con un formato a nivel de módulo lo reemplazó el proveedor de master)"
 ---
 
 # `/auth/me` carries the Business's money format, and the front keeps one module-level format set from it

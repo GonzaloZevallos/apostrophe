@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-08
+summary: "e2e aísla por worker: un backend y una base por worker"
 ---
 
 # e2e isolates by worker: one backend and one database per Playwright worker

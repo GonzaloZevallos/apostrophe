@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-07
+summary: "una métrica de 300 ms se vigila por plan de consulta y cantidad de sentencias"
 ---
 
 # A "answers in under 300 ms" metric is guarded by query plan and statement count, never by elapsed time

@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-17
+summary: "los datos del primer uso viven en su propia tabla y una lectura los marca en dos fases"
 ---
 
 # The first-run facts live in their own table, and a read stamps them in a second, guarded phase

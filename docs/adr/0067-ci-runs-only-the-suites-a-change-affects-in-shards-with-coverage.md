@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-30
+summary: "la integración continua corre solo las suites que un cambio afecta"
 ---
 
 # CI corre solo las suites que un cambio afecta, en shards y con cobertura

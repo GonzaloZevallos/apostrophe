@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-20
+summary: "las palabras del producto viven en un solo módulo con claves"
 ---
 
 # The product's words live in one keyed module
