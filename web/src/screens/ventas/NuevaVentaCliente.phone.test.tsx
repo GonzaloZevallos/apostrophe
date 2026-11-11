@@ -71,7 +71,7 @@ test('a number that does not fit names the country and the lengths it needs', as
   await refusePhoneWith('customer.phone_invalid')
 
   expect(await screen.findByRole('alert')).toHaveTextContent(
-    "That doesn't look like an Argentine number. It needs 10 digits after the country code.",
+    "That doesn't look like an Argentine number. It needs 7 digits after the country code.",
   )
 })
 

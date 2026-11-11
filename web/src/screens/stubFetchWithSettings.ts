@@ -10,24 +10,26 @@
  */
 
 import { vi, type Mock } from 'vitest'
+import { SERVED } from '../phone/served.fixture'
 
-/** What the faked `GET /phone-countries` answers by default: the codes in the API's order with
- * calling codes the stub's matching needs (the front reads them from the answer) and lengths and examples made up for the tests, so no test restates a real country's example. */
-const STUBBED: readonly (readonly [string, string, readonly number[]])[] = [
-  ['AR', '54', [10]],
-  ['UY', '598', [8, 9]],
-  ['CL', '56', [9]],
-  ['PY', '595', [9]],
-  ['BR', '55', [10, 11]],
-  ['MX', '52', [10]],
-  ['ES', '34', [8, 9, 10]],
-  ['US', '1', [10]],
-]
+/** What the faked `GET /phone-countries` answers by default: the codes in the API's order, the
+ * calling codes of the shared served fixture (the front reads them from the answer), and lengths and
+ * examples made up for the tests, so no test restates a real country's length or example. */
+const MADE_UP_LENGTHS: Readonly<Record<string, readonly number[]>> = {
+  AR: [7],
+  UY: [3, 4],
+  CL: [5],
+  PY: [6],
+  BR: [2, 3],
+  MX: [8],
+  ES: [4, 5, 6],
+  US: [9],
+}
 
-export const PHONE_COUNTRIES = STUBBED.map(([code, calling_code, national_lengths]) => ({
+export const PHONE_COUNTRIES = SERVED.map(({ code, calling_code }) => ({
   code,
   calling_code,
-  national_lengths,
+  national_lengths: MADE_UP_LENGTHS[code] ?? [],
   example: `example ${code}`,
 }))
 

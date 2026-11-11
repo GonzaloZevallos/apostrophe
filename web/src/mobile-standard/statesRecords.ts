@@ -220,6 +220,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
     route: CUSTOMER_NEW,
     steps: [],
     visible: CUSTOMERS_TEXT.phoneCountryLabel,
+    holds: /\/phone-countries$/,
   },
   {
     // A typed "+" locks the Selector on its country and shows the reason in words.

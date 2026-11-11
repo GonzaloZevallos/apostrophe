@@ -273,7 +273,7 @@ test('a number that does not fit names the country and the lengths it needs, not
 
   const alert = await screen.findByRole('alert')
   expect(alert).toHaveTextContent(
-    "That doesn't look like an Argentine number. It needs 10 digits after the country code.",
+    "That doesn't look like an Argentine number. It needs 7 digits after the country code.",
   )
   expect(alert).not.toHaveTextContent('2345')
 })
@@ -1053,7 +1053,7 @@ describe('the Phone country', () => {
 
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent(
-      "That doesn't look like a Spanish number. It needs 8, 9 or 10 digits after the country code.",
+      "That doesn't look like a Spanish number. It needs 4, 5 or 6 digits after the country code.",
     )
     expect(alert).not.toHaveTextContent('12')
   })

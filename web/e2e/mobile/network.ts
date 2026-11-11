@@ -137,6 +137,18 @@ export function holdApi(context: BrowserContext): Promise<Held> {
   )
 }
 
+/** Holds the GETs whose path matches `path` until `release()`; everything else passes, so the rest of the screen loads. */
+export function holdReads(context: BrowserContext, path: RegExp): Promise<Held> {
+  return holdRequests(
+    context,
+    (request) =>
+      request.method() === 'GET' &&
+      ['fetch', 'xhr'].includes(request.resourceType()) &&
+      path.test(new URL(request.url()).pathname),
+    (route) => route.fallback(),
+  )
+}
+
 /**
  * Holds one write until `release()`, then aborts it: the seller's tap is pending while
  * the request is out, and the backend never receives it (invariant 6).

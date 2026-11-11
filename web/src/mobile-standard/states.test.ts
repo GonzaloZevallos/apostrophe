@@ -15,6 +15,20 @@ describe('the walked states name no key yet', () => {
   })
 })
 
+describe('a walked state that holds a read', () => {
+  it('holds GET /phone-countries in the Phone country loading state, so the Selector is read busy', () => {
+    const state = STATES.find((candidate) => candidate.screen === 'customer/country-selector-loading')
+    expect(state?.holds?.test('/phone-countries')).toBe(true)
+    expect(state?.holds?.test('/customers')).toBe(false)
+  })
+
+  it('holds nothing in the open and locked states, which are read loaded', () => {
+    for (const name of ['customer/country-selector-open', 'customer/country-selector-locked']) {
+      expect(STATES.find((candidate) => candidate.screen === name)?.holds, name).toBeUndefined()
+    }
+  })
+})
+
 describe('the walked states and their names', () => {
   it('names every walked state once, and walks every name', () => {
     expect(stateNameProblems(STATES, STATE_NAMES)).toEqual([])
