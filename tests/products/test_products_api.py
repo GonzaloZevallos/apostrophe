@@ -503,3 +503,38 @@ def test_an_entry_of_another_business_answers_404_and_keeps_its_rows(
 
     assert client.delete(f"/api/products/{theirs}/prices/{entry['id']}").status_code == 404
     assert len(_vip_rows(engine)) == 1
+
+
+def test_a_vip_price_with_cents_is_stored_in_hundredths_and_answered_in_currency_units(
+    client: TestClient, engine: Engine
+) -> None:
+    # A business at 2 decimals holds its amounts in the unit of a cent (docs/adr/0058): the
+    # type-price row goes through the same helpers as the list and bulk prices, so the VIP
+    # price compares with them and comes back as typed.
+    assert client.put("/api/money-format", json={"symbol": "$", "decimals": 2}).status_code == 200
+    set_switches(engine, bulk=True, vip=True)
+    vip_type = make_type(engine, is_vip=True)
+    variety_id = _register(client)["id"]
+
+    entry = _price(
+        client,
+        variety_id,
+        effective_from="2026-01-01",
+        list_price=12.5,
+        bulk_price=11.25,
+        bulk_minimum=10,
+        vip_price=10.5,
+    )
+
+    assert entry["vip_price"] == 10.5
+    assert [row[2] for row in _vip_rows(engine)] == [1_050]
+    current = client.get(f"/api/products/{variety_id}").json()["current_price"]
+    assert current["vip_price"] == 10.5
+    assert current["type_prices"] == [{"customer_type_id": vip_type, "price": 10.5}]
+    assert client.get(f"/api/products/{variety_id}/prices").json()[0]["vip_price"] == 10.5
+    refused = client.post(
+        f"/api/products/{variety_id}/prices",
+        json={"effective_from": "2026-02-01", "list_price": 12.5, "vip_price": 12.5},
+    )
+    assert refused.status_code == 422
+    assert refused.json()["code"] == "variety.vip_price_not_below_list"
