@@ -123,6 +123,27 @@ describe('on a phone, a direct address', () => {
     expect(pane).not.toHaveTextContent('+5491122334455')
   })
 
+  test('the card behind shows a Uruguayan number grouped and not as stored', async () => {
+    const uy = { ...ANA, phone: '+59899123456', phone_display: '+598 99 123 456' }
+    renderApp([{ pathname: EDIT }], 'phone', { 'GET /customers/1': () => jsonResponse(200, uy) })
+
+    await screen.findByRole('dialog', { name: COMMON_TEXT.editCustomer })
+    const pane = behindPane()
+    await waitFor(() => expect(pane).toHaveTextContent('+598 99 123 456'))
+    expect(pane).not.toHaveTextContent('+59899123456')
+  })
+
+  test('the card behind shows no Phone line for a Customer with phone_display null', async () => {
+    const without = { ...ANA, phone: null, phone_display: null }
+    renderApp([{ pathname: EDIT }], 'phone', { 'GET /customers/1': () => jsonResponse(200, without) })
+
+    await screen.findByRole('dialog', { name: COMMON_TEXT.editCustomer })
+    const pane = behindPane()
+    await waitFor(() => expect(pane).toHaveTextContent('Ana Pérez'))
+    expect(within(pane).queryByText('Phone')).not.toBeInTheDocument()
+    expect(pane).not.toHaveTextContent('+54')
+  })
+
   test('the list behind the new-customer sheet shows phone_display, not the stored phone', async () => {
     renderApp([{ pathname: CUSTOMER_NEW }], 'phone')
 

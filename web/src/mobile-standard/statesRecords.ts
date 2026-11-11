@@ -62,6 +62,7 @@ const SAMPLE_TYPED_CUSTOMER = {
   id: 1,
   name: 'Ana Pérez',
   phone: null,
+  phone_display: null,
   vip: true,
   customer_type_id: 2,
   balance: 0,

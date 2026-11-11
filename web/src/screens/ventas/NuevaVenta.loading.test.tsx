@@ -28,7 +28,7 @@ const price = (list: number) => ({
 })
 const ROSA_TODAY = { id: 1, name: 'Rosa', current_price: price(1000) }
 const ROSA_YESTERDAY = { id: 1, name: 'Rosa', current_price: price(1500) }
-const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', vip: false }
+const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', phone_display: '+54 9 11 0000-0000', vip: false }
 
 function jsonResponse(body: unknown): Response {
   return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })

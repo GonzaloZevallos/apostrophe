@@ -76,6 +76,7 @@ const OWING_CUSTOMER = {
   id: 1,
   name: 'Ana Pérez',
   phone: '+5491122334455',
+  phone_display: '+54 9 11 2233-4455',
   vip: false,
   balance: 11000,
   owing_since: '2026-09-14',
