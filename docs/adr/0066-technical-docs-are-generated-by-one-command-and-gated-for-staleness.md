@@ -43,16 +43,27 @@ to 6 of ADR-0063 still hold. `.agentic/stack.yaml` declares `docs:` since part 4
    parses `npm ls --all --json mermaid` and fails unless every `mermaid` node is the front's version. The
    script also installs `chrome-headless-shell` explicitly, under `$RUNNER_TEMP/puppeteer-cache`, and the
    renderer runs Chromium with `--no-sandbox`.
-6. **Scripts write only under `$RUNNER_TEMP`** (and `$GITHUB_PATH`); `api_breaks` writes the base spec there too and fails when `RUNNER_TEMP` is unset. Each fails when it processed nothing:
+6. **Scripts write only under `$RUNNER_TEMP`** (and `$GITHUB_PATH`); `api_breaks` writes the base worktree and its spec there too and fails when `RUNNER_TEMP` is unset. Each fails when it processed nothing:
    a missing mmdc, no markdown files, or a count of svg files different from the count of `mermaid` blocks.
-7. **Breaking-change check.** `api_breaks` compares `docs/api/openapi.json` with `origin/$GITHUB_BASE_REF`
-   using `oasdiff breaking --fail-on ERR`. Measured on the pinned binary: exit 0 is no break, 1 a break, 102 a
+7. **Breaking-change check.** `api_breaks` compares two specs generated from code, never a committed copy
+   (GH-692 part 2). The head is the workspace `docs/api/openapi.json` that step 4 just wrote. The base is
+   generated from the tip of `origin/$GITHUB_BASE_REF`: `git worktree add --detach` into a fresh directory
+   under `$RUNNER_TEMP`, `uv sync --locked` into that worktree's own `.venv` (the base's own lockfile; the
+   child environment sets `UV_PROJECT_ENVIRONMENT` to it), then the worktree's python builds the app with
+   `build_docs_app` and writes `export_openapi` of it to a file. Those two names of
+   `scripts/docs/openapi_export.py` are a contract with the base, so renaming either takes two steps. The
+   worktree is removed afterwards (`git worktree remove`, `prune`, then the directory). The comparison is
+   `oasdiff breaking --fail-on ERR`. Measured on the pinned binary: exit 0 is no break, 1 a break, 102 a
    spec it cannot load. Only 0 and 1 are comparisons; any other code (or a missing binary) is `FAIL`, even
    with a declaration. A break passes only when a line of the PR body is `Breaking-API: <reason>` with a
-   non-empty reason. A missing base ref is `FAIL`; a base ref without the spec is a logged skip (the only
-   zero-work success); a non-`pull_request` event is a logged skip. The body is never logged.
-   `PR_BODY` is frozen at the event and `edited` is not a trigger, so a declaration added after the PR is
-   opened counts only after a new push or a re-run.
+   non-empty reason. The only skips are a non-`pull_request` event and a base without
+   `scripts/docs/openapi_export.py`, both logged. A missing base ref, a failed or timed-out worktree, sync
+   or export, an empty export and a missing or empty workspace spec are `FAIL`, and the message names the
+   step (`base sync exited 2`, `base export timed out`). There is no retry: a registry blip while syncing a
+   base lock the head's `uv` cache has not warmed is recovered by re-running the job. The body is never
+   logged, and the environment of every child is built by one function that drops `PR_BODY`, `VIRTUAL_ENV`
+   and `PYTHONPATH`. `PR_BODY` is frozen at the event and `edited` is not a trigger, so a declaration
+   added after the PR is opened counts only after a new push or a re-run.
 8. **Scope of lychee.** Offline, over `docs/architecture` and `docs/api/README.md` (hand-written prose
    included). The measured run checks 46 links (33 unique), all OK. A missing input exits non-zero.
 9. **Language.** By the owner's decision of 2026-10-28, hand-written architecture prose is in Spanish. The
@@ -70,8 +81,10 @@ to 6 of ADR-0063 still hold. `.agentic/stack.yaml` declares `docs:` since part 4
 These are local figures under load, not the runner's. Determinism: a copy of the repository at another path,
 run with `TZ=Pacific/Auckland LC_ALL=C` and another `TMPDIR`, produced a tree identical to the normal run
 (`diff -r`), so the child processes need no extra pinning.
-`api_breaks` on this PR, measured locally: the base (`origin/master`) has the spec and oasdiff reports
-"No changes detected" (exit 0), so the verdict is `PASS`, not `SKIP`.
+`api_breaks` costs about 20 to 30 s more per `docs` run than the committed-copy comparison it replaces: the
+worktree checkout, `uv sync --locked` for the base and the export. On a PR that changes no route, the base
+export and the workspace spec are identical, oasdiff reports "No changes detected" (exit 0) and the
+verdict is `PASS`, not `SKIP`.
 
 ## Pending
 
@@ -83,3 +96,5 @@ ningún check llamado `docs`, y `tests/test_stack_ci.py` ya no lista el generado
 un paso de exactamente un job de `ci:`. Medido el mismo día (16 cores, `generate` solo, 5 corridas bajo carga
 de 16 a 35): mediana 202 s, peor 246 s. Es más que `tests-fast` (94.8 s), así que el check `docs` pasa a ser el
 más lento de una entrega; es el costo conocido de esta parte.
+
+2026-11-11, GH-692 part 2: `api_breaks` generates the base spec from base code in a worktree and reads the head spec from the workspace.
