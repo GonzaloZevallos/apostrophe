@@ -8,7 +8,7 @@
  * lowering the decimals below a recorded amount shows its fixed sentence with the Attention
  * icon. The Example is the amount written by `formatMoneyIn` from the unsaved values, without
  * validating them. A save sets the module format and the `me` cache, then invalidates every
- * query, so every mounted screen writes money with the new format at once (ADR-0081).
+ * query, so every mounted screen writes money with the new format at once (ADR-0083).
  */
 
 import { type FormEvent, useState } from 'react'

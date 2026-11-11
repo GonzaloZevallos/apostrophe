@@ -13,7 +13,7 @@
  * fails or times out ends in English (`i18n/language.ts`); an English business mounts in the
  * same commit its `me` arrives in. Money is the same: nothing renders before `me`, and the module-level
  * money format (`format/money.ts`) is set from it in the render that mounts the outlet, so no child
- * formats an amount in another Business's symbol or decimals (ADR-0081).
+ * formats an amount in another Business's symbol or decimals (ADR-0083).
  */
 
 import { useQuery } from '@tanstack/react-query'

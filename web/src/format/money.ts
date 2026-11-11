@@ -22,7 +22,7 @@ const DEFAULT_MONEY_FORMAT: MoneyFormat = { symbol: '$', decimals: 0 }
 let current: MoneyFormat = DEFAULT_MONEY_FORMAT
 
 /** The one module-level format every screen writes money with: set from `me` by the signed-in
- * shell and by a successful save of Currency and decimals (ADR-0081). */
+ * shell and by a successful save of Currency and decimals (ADR-0083). */
 export function setMoneyFormat(format: MoneyFormat): void {
   current = { symbol: format.symbol, decimals: format.decimals }
 }
