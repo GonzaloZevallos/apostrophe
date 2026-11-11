@@ -2,8 +2,7 @@
   "title": "Payment methods",
   "group": {
     "title": "Payments and expenses",
-    "row": "Payment methods",
-    "subtitle": "How you get paid"
+    "row": "Payment methods"
   },
   "list": {
     "add": "Add method",
@@ -21,7 +20,9 @@
     "retry": "Try again",
     "moveFailed": "Couldn't move it. Try again.",
     "loadError": "Couldn't load your payment methods.",
-    "editNamed": "Edit {{name}}"
+    "editNamed": "Edit {{name}}",
+    "archiveNamed": "Archive {{name}}",
+    "deleteNamed": "Delete {{name}}"
   },
   "form": {
     "titleNew": "New payment method",
