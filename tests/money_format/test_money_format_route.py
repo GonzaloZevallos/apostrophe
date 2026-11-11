@@ -194,7 +194,7 @@ def _as_json(body: dict[str, Any]) -> str:
 
 def _bodies(client: TestClient) -> list[tuple[str, str, str, dict[str, Any]]]:
     """One write per money route, each carrying an amount with cents, over records that
-    exist at 2 decimals: its label, method, path and body."""
+    exist: its label, method, path and body."""
     product = client.post("/api/products", json={"name": "Rosa"}).json()["id"]
     client.post(
         f"/api/products/{product}/prices",
@@ -210,6 +210,11 @@ def _bodies(client: TestClient) -> list[tuple[str, str, str, dict[str, Any]]]:
         json={"spent_on": "2026-10-01", "category_id": category, "amount": 100, "detail": "a"},
     ).json()["id"]
     sale_line = {"product_id": product, "quantity": "1"}
+    owing = client.post(
+        "/sales",
+        json={"customer_id": customer, "payment": "owing", "lines": [sale_line]},
+    )
+    assert owing.status_code == 201, owing.text
     return [
         (
             "price",
@@ -268,11 +273,47 @@ def _bodies(client: TestClient) -> list[tuple[str, str, str, dict[str, Any]]]:
     ]
 
 
-# The list of the cents gap (docs/product/money.md, "Brecha: centavos en el dominio"): the
-# domain still turns every amount into whole units, so no money write keeps 10.50 yet and
-# each refuses it. A route that learns to keep cents moves from here to `KEEPS_CENTS`, which
-# reads the amount back; until then a route that answers 2xx fails this test.
-REFUSES_CENTS = {
+def _numbers(node: Any) -> list[float]:
+    """Every JSON number in an answer, whatever its nesting."""
+    if isinstance(node, bool):
+        return []
+    if isinstance(node, int | float):
+        return [float(node)]
+    if isinstance(node, dict):
+        return [number for value in node.values() for number in _numbers(value)]
+    if isinstance(node, list):
+        return [number for value in node for number in _numbers(value)]
+    return []
+
+
+def _read_back(client: TestClient, label: str, path: str, written: dict[str, Any]) -> Any:
+    """The record a write left, read through the API that lists or shows it."""
+    if label == "price":
+        product = path.split("/")[3]
+        prices = client.get(f"/api/products/{product}/prices").json()
+        return next(p for p in prices if p["effective_from"] == "2026-02-01")
+    if label in ("expense", "expense edit"):
+        month = client.get("/expenses", params={"month": "2026-10"}).json()
+        return [
+            e
+            for category in month["categories"]
+            for e in category["expenses"]
+            if e["id"] == (written["id"] if label == "expense" else int(path.rsplit("/", 1)[1]))
+        ]
+    if label in ("sale shipping", "sale special price"):
+        return client.get(f"/sales/{written['id']}").json()
+    if label == "stock entry":
+        return client.get(f"/stock/entries/{written['id']}").json()
+    if label == "stock entry edit":
+        return client.get(f"/stock/entries/{path.rsplit('/', 1)[1]}").json()
+    if label == "customer payment":
+        return client.get(f"/customers/{path.split('/')[2]}/account").json()
+    return written  # a preview records nothing: its own answer is what carries the amount
+
+
+# The nine money writes, all of which keep an amount with cents once the Business shows 2
+# decimals (docs/product/money.md): saved, and read back as exactly 10.50.
+KEEPS_CENTS = {
     "price",
     "expense",
     "expense edit",
@@ -283,7 +324,6 @@ REFUSES_CENTS = {
     "customer payment",
     "customer payment preview",
 }
-KEEPS_CENTS: set[str] = set()
 
 
 def _stored_money(engine: Engine) -> set[int]:
@@ -296,18 +336,34 @@ def _stored_money(engine: Engine) -> set[int]:
     return held
 
 
-def test_an_amount_with_cents_after_raising_is_refused_as_too_many_decimals_and_stored_nowhere(
+def test_every_money_write_keeps_an_amount_with_cents_after_raising_to_2_decimals(
     client: TestClient, engine: Engine
 ) -> None:
     assert _put(client, "$", 2).status_code == 200
     bodies = _bodies(client)
-    assert {label for label, *_ in bodies} == REFUSES_CENTS | KEEPS_CENTS
+    assert {label for label, *_ in bodies} == KEEPS_CENTS
 
     for label, method, path, body in bodies:
         answer = client.request(method, path, content=_as_json(body), headers=JSON)
-        if label in KEEPS_CENTS:
-            assert answer.status_code < 300, (label, answer.text)
-            continue
+        assert answer.status_code < 300, (label, answer.text)
+        read = _read_back(client, label, path, answer.json())
+        assert 10.5 in _numbers(read), (label, read)
+        assert 10.0 not in _numbers(read) and 11.0 not in _numbers(read), (label, read)
+
+    # The cents are stored as 1050 hundredths, and nothing was rounded to a whole
+    # neighbour (1000 or 1100); the business is at scale 2 once it shows 2 decimals.
+    stored = _stored_money(engine)
+    assert 1050 in stored
+    assert stored.isdisjoint({1000, 1100})
+
+
+def test_an_amount_with_cents_at_0_decimals_is_refused_as_too_many_decimals_and_stored_nowhere(
+    client: TestClient, engine: Engine
+) -> None:
+    bodies = _bodies(client)
+
+    for label, method, path, body in bodies:
+        answer = client.request(method, path, content=_as_json(body), headers=JSON)
         assert answer.status_code == 422, (label, answer.text)
         assert answer.json()["code"] == "money.too_many_decimals", label
         assert "10.5" not in answer.text, label

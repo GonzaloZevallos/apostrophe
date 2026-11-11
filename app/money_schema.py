@@ -18,6 +18,7 @@ it exact, and so do decimal literals of up to 15 significant digits.
 from __future__ import annotations
 
 import math
+from contextvars import ContextVar
 from decimal import Decimal
 from typing import Annotated, Any
 
@@ -94,14 +95,28 @@ def _on_the_wire(value: Decimal) -> int | float:
     return carrier
 
 
+# The decimals of the business whose request is being answered. A response's domain amount
+# is an int in the unit of those decimals (a hundredth at 2), and `MoneyOut` writes it in
+# currency units with them. `app/money_context.py` sets it once per request, before the
+# handler runs; outside a request it is 0, the whole-unit domain.
+MONEY_DECIMALS: ContextVar[int] = ContextVar("money_decimals", default=0)
+
+
+def _domain_on_the_wire(value: Decimal) -> int | float:
+    """A domain amount (`Decimal(int)`, in the unit of the request's decimals) as the JSON
+    number of currency units: `123450` at 2 decimals is `1234.5`."""
+    return _on_the_wire(value.scaleb(-MONEY_DECIMALS.get()))
+
+
 MoneyAmount = Annotated[Decimal, BeforeValidator(_as_decimal), AfterValidator(_checked)]
 
 MoneyOut = Annotated[
     Decimal,
-    PlainSerializer(_on_the_wire, return_type=int | float, when_used="json"),
+    PlainSerializer(_domain_on_the_wire, return_type=int | float, when_used="json"),
     # The serializer sends a JSON integer when the value is whole and an exact JSON number
     # otherwise, so the published contract names both.
     WithJsonSchema({"anyOf": [{"type": "integer"}, {"type": "number"}]}, mode="serialization"),
 ]
-"""A response's money field: the value in currency units, as a JSON integer when whole
-(`11000`) and otherwise an exact JSON number (`11000.5`), never a string."""
+"""A response's money field. It holds the domain amount, an int in the unit of the
+business's decimals (`Decimal(amount)`), and goes out in currency units: a JSON integer
+when whole (`11000`) and otherwise an exact JSON number (`11000.5`), never a string."""

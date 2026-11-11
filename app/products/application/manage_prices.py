@@ -5,7 +5,7 @@ from app.products.application.errors import ProductArchived
 from app.products.application.manage_products import get_product
 from app.products.application.ports import MoneyFormatReader, PricingSettingsReader, Products
 from app.products.domain.product import PriceEntry, Product
-from app.shared.money import MoneyFormat, money_within
+from app.shared.money import MoneyFormat, domain_amount_within
 from app.shared.quantity import Quantity
 from app.shared.reference import ReferenceRefused
 from app.shared.transaction import Transaction
@@ -46,7 +46,7 @@ def record_price_entry(
 
 
 def _whole_amount(amount: Decimal, shown: MoneyFormat) -> int:
-    return money_within(amount, shown).whole_units()
+    return domain_amount_within(amount, shown)
 
 
 def record_imported_price_entry(

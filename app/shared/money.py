@@ -253,3 +253,10 @@ def round_half_up_to_units(value: Fraction) -> int:
     without knowing them."""
     units, _ = divmod(_round_half_up(value, 0), HUNDREDTHS_PER_UNIT)
     return units
+
+
+def domain_amount_within(amount: Decimal, money_format: MoneyFormat) -> int:
+    """A request's amount as the domain's int, in the unit of the format's decimals
+    (`Money.in_decimals`): `1234.50` is 123450 at 2 decimals and `1234.5` is refused by
+    `money_within` at 0. The one conversion every write use case makes; it never rounds."""
+    return money_within(amount, money_format).in_decimals(money_format.decimals)

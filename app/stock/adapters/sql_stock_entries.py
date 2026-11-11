@@ -3,8 +3,14 @@ from collections.abc import Collection
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db import flush_or_refuse, money_scale_factor, money_stored_value, scaled
-from app.shared.money import Money
+from app.db import (
+    domain_amount,
+    flush_or_refuse,
+    money_of_domain,
+    money_scale_factor,
+    money_stored_value,
+    scaled,
+)
 from app.shared.quantity import Quantity
 from app.stock.adapters.tables import StockEntryRow
 from app.stock.domain.entry import Origin, StockEntry
@@ -26,7 +32,7 @@ class SqlStockEntries:
                 StockEntryRow.id == entry_id, StockEntryRow.business_id == self._business_id
             )
         ).first()
-        return None if found is None else _entry(found[0], _units(found[1]))
+        return None if found is None else _entry(found[0], self._units(found[1]))
 
     def add(self, entry: StockEntry) -> StockEntry:
         row = StockEntryRow(
@@ -70,26 +76,33 @@ class SqlStockEntries:
         if variety_ids is not None:
             statement = statement.where(StockEntryRow.variety_id.in_(variety_ids))
         return [
-            _entry(row, _units(hundredths)) for row, hundredths in self._session.execute(statement)
+            _entry(row, self._units(hundredths))
+            for row, hundredths in self._session.execute(statement)
         ]
+
+    def _units(self, hundredths: int | None) -> int | None:
+        """A read amount as the domain's int, in the unit of the business's decimals."""
+        return (
+            None
+            if hundredths is None
+            else domain_amount(self._session, self._business_id, hundredths)
+        )
 
     def _stored(self, units: int | None) -> int | None:
         """A domain cost, whole units, as the integer this business's column holds."""
         if units is None:
             return None
-        return money_stored_value(self._session, self._business_id, Money.of_units(units))
+        return money_stored_value(
+            self._session,
+            self._business_id,
+            money_of_domain(self._session, self._business_id, units),
+        )
 
     def _row(self, entry_id: int) -> StockEntryRow | None:
         statement = select(StockEntryRow).where(
             StockEntryRow.id == entry_id, StockEntryRow.business_id == self._business_id
         )
         return self._session.scalar(statement)
-
-
-def _units(hundredths: int | None) -> int | None:
-    """A cost read in hundredths as whole units; cents in a stored cost raise rather than
-    round."""
-    return None if hundredths is None else Money(hundredths).whole_units()
 
 
 def _entry(row: StockEntryRow, total_cost: int | None) -> StockEntry:

@@ -41,6 +41,7 @@ from app.expenses.adapters.expenses_ledger import SqlExpensesLedger
 from app.expenses.adapters.router import router as expenses_router
 from app.http_errors import Refused
 from app.migrations.runner import upgrade_to_head
+from app.money_context import bind_money_decimals
 from app.money_format.adapters.opening import MoneyFormatOpening
 from app.money_format.adapters.reader import SqlMoneyFormat
 from app.money_format.adapters.router import router as money_format_router
@@ -348,27 +349,30 @@ def create_app(
     # Exactly these four (ADR-0014): a write here may change what the pinned catalog
     # says, so it also schedules upkeep's own post-commit, off-session sync.
     upkeep_gated = [*gated, Depends(schedule_upkeep)]
+    # The routes that answer amounts also bind the business's decimals for the response.
+    money_gated = [*gated, Depends(bind_money_decimals)]
+    money_upkeep_gated = [*upkeep_gated, Depends(bind_money_decimals)]
     app.include_router(accounts_router, dependencies=gated)
     # Not `upkeep_gated`, on purpose: the request wires `Depends(schedule_upkeep)` here, but
     # then `en -> en` would still sync. Only a changed language can owe the pin an edit, so
     # the router schedules upkeep itself when it did (ADR-0014, as pricing settings does).
     app.include_router(language_router, dependencies=gated)
-    app.include_router(products_router, dependencies=upkeep_gated)
-    app.include_router(customers_router, dependencies=gated)
+    app.include_router(products_router, dependencies=money_upkeep_gated)
+    app.include_router(customers_router, dependencies=money_gated)
     # `customer_types` never imports `customers`: the count of customers in a type
     # reaches its router from here (the `CustomersInType` port).
     app.include_router(
         build_customer_types_router(customers_in_type=SqlCustomersInType), dependencies=gated
     )
-    app.include_router(expenses_router, dependencies=gated)
-    app.include_router(sales_router, dependencies=upkeep_gated)
-    app.include_router(stock_router, dependencies=upkeep_gated)
+    app.include_router(expenses_router, dependencies=money_gated)
+    app.include_router(sales_router, dependencies=money_upkeep_gated)
+    app.include_router(stock_router, dependencies=money_upkeep_gated)
     app.include_router(stock_reasons_router, dependencies=gated)
     app.include_router(catalog_router, dependencies=upkeep_gated)
-    app.include_router(payments_router, dependencies=gated)
-    app.include_router(payments_customers_router, dependencies=gated)
+    app.include_router(payments_router, dependencies=money_gated)
+    app.include_router(payments_customers_router, dependencies=money_gated)
     app.include_router(pinned_catalog_router, dependencies=gated)
-    app.include_router(results_router, dependencies=gated)
+    app.include_router(results_router, dependencies=money_gated)
     app.include_router(onboarding_router, dependencies=gated)
     app.include_router(first_run_router, dependencies=gated)
     # Not `upkeep_gated`: only a PUT that changed a switch may touch the pin, and its

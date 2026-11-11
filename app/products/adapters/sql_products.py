@@ -5,7 +5,14 @@ from datetime import date
 from sqlalchemy import ColumnElement, delete, exists, select
 from sqlalchemy.orm import Session
 
-from app.db import flush_or_refuse, money_scale_factor, money_stored_value, scaled
+from app.db import (
+    domain_amount,
+    flush_or_refuse,
+    money_of_domain,
+    money_scale_factor,
+    money_stored_value,
+    scaled,
+)
 from app.products.adapters.tables import PriceEntryRow, ProductRow
 from app.products.domain.product import NameHolder, PriceEntry, Product, ProductName
 from app.sales.adapters.tables import SaleLineRow
@@ -181,9 +188,21 @@ class SqlProducts:
         )
         return self._session.scalar(statement)
 
+    def _units(self, hundredths: int | None) -> int | None:
+        """A read amount as the domain's int, in the unit of the business's decimals."""
+        return (
+            None
+            if hundredths is None
+            else domain_amount(self._session, self._business_id, hundredths)
+        )
+
     def _stored(self, units: int) -> int:
-        """A domain amount, whole units, as the integer this business's column holds."""
-        return money_stored_value(self._session, self._business_id, Money.of_units(units))
+        """A domain amount as the integer this business's column holds."""
+        return money_stored_value(
+            self._session,
+            self._business_id,
+            money_of_domain(self._session, self._business_id, units),
+        )
 
     def _stored_or_none(self, units: int | None) -> int | None:
         return None if units is None else self._stored(units)
@@ -223,14 +242,11 @@ class SqlProducts:
         grouped: dict[int, list[PriceEntry]] = {}
         for row, list_price, bulk_price, vip_price in self._session.execute(statement).all():
             grouped.setdefault(row.variety_id, []).append(
-                _entry(row, _units(list_price), _units(bulk_price), _units(vip_price))
+                _entry(
+                    row, self._units(list_price), self._units(bulk_price), self._units(vip_price)
+                )
             )
         return {product_id: tuple(entries) for product_id, entries in grouped.items()}
-
-
-def _units(hundredths: int | None) -> int | None:
-    """A read amount as whole units; raises `MoneyNotRepresentable` when it has cents."""
-    return None if hundredths is None else Money(hundredths).whole_units()
 
 
 def _product(row: ProductRow, entries: tuple[PriceEntry, ...]) -> Product:
