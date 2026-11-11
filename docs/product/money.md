@@ -24,7 +24,7 @@ Antes de la parte 20, todo Business estaba fijo en "$" y 0 decimales: un vendedo
 ### Currency and decimals (Settings → Business)
 
 - Es una sola configuración por Business, en su fila de `money_format`. Cualquier User del Business la cambia; no hay roles.
-- Se llega desde la fila "Currency and decimals" de la propia lista del grupo Business en Settings (`/settings/currency`), junto a Withdrawal reasons. El formulario del nombre del Business conserva su único campo. La fila no muestra un resumen del formato guardado.
+- Se llega desde la fila "Currency and decimals" de la propia lista del grupo Business en Settings (`/settings/currency`), junto a Withdrawal reasons. El formulario del Business conserva sus propios campos. La fila no muestra un resumen del formato guardado.
 - Un solo formulario con un solo Save y un monto de ejemplo en vivo ("Example") con el formato nuevo mientras el vendedor tipea. No hay paso de confirmación, porque ningún valor cambia. Salir con cambios sin guardar abre el diálogo compartido de descartar.
 - Un Save sin cambios no cambia nada.
 - Un guardado exitoso muestra el aviso "Currency and decimals saved", y las pantallas ya abiertas pasan al formato nuevo sin navegar.
@@ -40,7 +40,7 @@ Antes de la parte 20, todo Business estaba fijo en "$" y 0 decimales: un vendedo
 - **Decimales**: un número entero de 0 a 2, elegido entre 0 · 1 · 2, un Fixed set (`MONEY_DECIMALS`).
 - **Subir** los decimales por encima de 0 llama al rescale (#402) en el mismo guardado cuando la escala todavía es 0 (el rescale multiplica por 100 cada columna de dinero sin cambiar el valor de ningún monto). Un Business que ya está en escala 2 solo cambia el valor de `decimals`. Subir nunca corre el control de la bajada. Cada rechazo del rescale (un monto demasiado grande para reescalar, la base ocupada, una falla del control) tiene su propia oración fija.
 - **Se aplica todo o nada**: el símbolo, los decimales y el rescale se guardan en una sola transacción con un solo commit; cualquier rechazo deja el símbolo y los decimales como estaban.
-- **Rutas**: `GET` y `PUT /api/money-format` llevan `{symbol, decimals}` y nunca una escala. Los rechazos son `422 money_format.symbol_invalid` (campo `symbol`), `422 money_format.decimals_invalid` (campo `decimals`), `409 money_format.decimals_below_recorded`, `409 money_format.amount_too_large`, `503 money_format.busy` y `500 money_format.rescale_check_failed`. `GET /auth/me` lleva `money_format: {symbol, decimals}`.
+- **Rutas**: `GET` y `PUT /api/money-format` llevan `{symbol, decimals}` y nunca una escala. Los rechazos son `422 money_format.symbol_invalid` (campo `symbol`), `422 money_format.decimals_invalid` (campo `decimals`), `409 money_format.decimals_below_recorded`, `409 money_format.amount_too_large`, `503 money_format.busy` y `500 money_format.rescale_check_failed`. `GET /auth/me` lleva el formato del Business en `money: {symbol, decimals}`.
 - **Bajar** los decimales se rechaza cuando algún monto registrado del Business tiene más decimales de los que permite el valor nuevo.
   - El control es un EXISTS por cada columna de dinero declarada con `money_column()`, enumeradas desde la metadata y filtrado por `business_id`, dentro de un adaptador; su costo es lineal en las filas de dinero del Business y corre solo en esta acción rara. Ningún caso de uso lee la escala.
   - El control y el guardado van en una misma transacción, así que un monto con centavos guardado al mismo tiempo nunca queda debajo de una configuración más baja.
@@ -58,7 +58,7 @@ Antes de la parte 20, todo Business estaba fijo en "$" y 0 decimales: un vendedo
 - En la app: `$ 11.000` con los valores por defecto, `US$ 11.000` con "US$". Con 2 decimales se lee `US$ 11.000,50`.
 - En el Catalog: su estilo propio, con el símbolo pegado a la cifra (`$11.000`, `US$11.000,50`), catalog.md.
 - En el Sale bill: como en la app, sale-bill.md.
-- El front guarda un solo formato a nivel de módulo, puesto desde `/auth/me`; ninguna pantalla con plata se dibuja antes de que `me` cargue. Un guardado lo actualiza e invalida todas las consultas.
+- El front toma el formato de `/auth/me` (`me.money`): la parte con sesión (`GatedLayout`) se lo pasa a `MoneyFormatProvider`, y cada pantalla escribe la plata con `useMoney()`. Mientras `me` carga, la parte con sesión no dibuja nada, así que ningún monto se escribe antes de conocer el formato. Un guardado de Currency and decimals pone el formato nuevo en la caché de `me` e invalida todas las consultas, así que las pantallas ya abiertas cambian sin navegar.
 - Los formateadores de la app, del Catalog y del Sale bill aceptan de 0 a 2 decimales y se prueban así.
 - Con los valores por defecto ("$", 0 decimales), cada pantalla, el Catalog y el Sale bill quedan idénticos byte a byte a como estaban.
 
@@ -102,7 +102,7 @@ Algunas cifras dividen: el total de una Sale line, el costo por unidad que se to
 
 - El límite son los decimales que muestra el Business (Money format), no su escala. Con 0 decimales, 10.5 se rechaza incluso en un Business de escala 2; con 2 decimales, 10.50 se guarda y 10.505 se rechaza. Se controla por valor: 10.00 se acepta con 0 decimales.
 - El control vive en una sola función del dominio, `money_within`, que cada caso de uso llama con el Money format del Business, leído por su propio puerto (que nunca lee la escala). Rechaza con 422 `money.too_many_decimals` y un `detail` fijo, sin ningún monto. No se redondea ni se guarda nada.
-- En el front, un monto se acepta con coma decimal y hasta los decimales vigentes; con 0 decimales no se acepta coma.
+- En el front, cada campo de monto (`MoneyInput`) toma del Money format del Business su teclado y su lectura (`parseMoneyInput`): con 0 decimales el teléfono abre el teclado numérico y con decimales el decimal. Un monto se acepta con coma decimal o un solo punto y hasta los decimales vigentes. Con decimales, al salir del campo el monto se reescribe como cifra (`11.5` se lee `11,50`).
 - El vendedor ve un mensaje del Copy module que sigue los decimales del Business: "Use whole amounts only." con 0 decimales y "Use up to {decimals} decimals." en otro caso. No nombra ninguna moneda (Assume nothing) ni lleva ninguna palabra de flor, y el `detail` de la API nunca se muestra (Product language).
 - El valor tipeado queda en el campo para corregirlo y volver a guardar.
 - Dónde se ve hoy:
