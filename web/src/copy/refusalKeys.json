@@ -91,6 +91,7 @@
   "payment_method.name_taken_archived": "refusals:generic",
   "payment_method.last_offered": "refusals:generic",
   "payment_method.in_use": "refusals:generic",
+  "payment_method.unavailable": "refusals:goneNotice",
   "payment_method.not_found": "refusals:goneNotice",
   "catalog.emoji_invalid": "refusals:generic",
   "catalog.indica_share_invalid": "refusals:generic",

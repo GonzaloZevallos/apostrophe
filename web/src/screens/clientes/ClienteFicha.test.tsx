@@ -615,7 +615,7 @@ test('a sale paid on the spot offers no Delete payment', async () => {
               date: '2026-10-01',
               running_balance: 0,
               standing: 'settled',
-              sale: { id: 10, total: 5000, how_paid: 'cash' },
+              sale: { id: 10, total: 5000, how_paid: 'paid' },
             },
           ],
         }),
@@ -623,7 +623,7 @@ test('a sale paid on the spot offers no Delete payment', async () => {
   )
   renderFicha('1')
 
-  expect(await screen.findByText('Paid in cash')).toBeInTheDocument()
+  expect(await screen.findByText('Paid')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Delete payment' })).not.toBeInTheDocument()
 })
 

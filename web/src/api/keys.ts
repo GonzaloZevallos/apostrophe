@@ -19,6 +19,7 @@ export type Resource =
   | 'withdrawalReasons'
   | 'catalog'
   | 'payments'
+  | 'paymentMethods'
   | 'pinnedCatalog'
   | 'pricingSettings'
 
@@ -35,6 +36,7 @@ const PREFIX: Record<Resource, string> = {
   withdrawalReasons: 'withdrawal-reasons',
   catalog: 'catalog',
   payments: 'payments',
+  paymentMethods: 'payment-methods',
   pinnedCatalog: 'pinned-catalog',
   pricingSettings: 'pricing-settings',
 }
@@ -49,6 +51,7 @@ export const keys = {
   customers: (q: string) => [PREFIX.customers, { q }] as const,
   customer: (id: string) => [PREFIX.customers, id] as const,
   customerTypes: () => [PREFIX.customerTypes] as const,
+  paymentMethods: () => [PREFIX.paymentMethods] as const,
   expenses: (month: string) => [PREFIX.expenses, month] as const,
   expenseCategories: () => [PREFIX.expenseCategories] as const,
   // `Nueva venta`'s own prices and customer-by-id fetches (plan, invariants:

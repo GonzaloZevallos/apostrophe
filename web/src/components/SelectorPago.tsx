@@ -13,12 +13,13 @@
 import { type Ref, useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PaymentMethod } from '../api/payments'
-import { paymentMethodOf, usePaymentMethodOptions } from '../sales/paymentMethods'
+import { paymentMethodOf, paymentMethodValue, usePaymentMethodOptions } from '../sales/paymentMethods'
 import type { PayState } from '../sales/pricing'
 import FieldRefusal from './FieldRefusal'
 import { PAYMENT_STATES } from './fixedSets'
 import SegmentedChoice from './SegmentedChoice'
 import Selector from './Selector'
+import SinConexion from './SinConexion'
 
 export interface SelectorPagoProps {
   payState: PayState | null
@@ -69,15 +70,19 @@ export default function SelectorPago({
       )}
       {payState === 'paid' && (
         <div className="selector-pago__metodo">
-          <Selector
-            {...methodOptions}
-            label={t('common:paymentMethod')}
-            value={method}
-            onChange={(next) => onMethod(paymentMethodOf(next))}
-            listHost={listHost}
-            fieldRef={methodRef}
-            describedBy={methodRefused ? refusalId : undefined}
-          />
+          {methodOptions.failure === 'offline' && <SinConexion />}
+          {/* A tap on a field whose list failed reads the list again; what was typed stays. */}
+          <div onClickCapture={methodOptions.failure === null ? undefined : methodOptions.reload}>
+            <Selector
+              {...methodOptions.selector}
+              label={t('common:paymentMethod')}
+              value={paymentMethodValue(method)}
+              onChange={(next) => onMethod(paymentMethodOf(next))}
+              listHost={listHost}
+              fieldRef={methodRef}
+              describedBy={methodRefused ? refusalId : undefined}
+            />
+          </div>
           {methodRefused && <FieldRefusal id={refusalId}>{t('common:chooseHowTheyPaid')}</FieldRefusal>}
         </div>
       )}

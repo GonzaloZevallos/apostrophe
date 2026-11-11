@@ -60,6 +60,7 @@ import { parseGrams, parseMoney } from '../../format/parse'
 import {
   type LineValidation,
   type PayState,
+  type PaymentChoice,
   paymentChoiceOf,
   type PriceQuote,
   type PricingSettings,
@@ -140,14 +141,14 @@ interface SaleBody {
   customer_id: number | null
   shipping_charged: number
   note: string | null
-  payment: 'cash' | 'transfer' | 'owing' | null
+  payment: PaymentChoice | null
   lines: LineBody[]
 }
 
 const SUBMIT_OVERRIDES: Partial<
   Record<
     RefusalCode,
-    { field: 'customer' | 'shipping' | 'note' | 'date' | 'payment' | 'form'; message: string }
+    { field: 'customer' | 'shipping' | 'note' | 'date' | 'payment' | 'method' | 'form'; message: string }
   >
 > = {
   'sale.owing_without_customer': { field: 'customer', message: OWING_HINT },
@@ -155,6 +156,7 @@ const SUBMIT_OVERRIDES: Partial<
   'sale.note_too_long': { field: 'note', message: SALES_TEXT.noteTooLong },
   'sale.date_in_future': { field: 'date', message: COMMON_TEXT.dateCannotBeFuture },
   'sale.payment_required': { field: 'payment', message: PAYMENT_REQUIRED_MESSAGE },
+  'payment_method.unavailable': { field: 'method', message: GENERIC_REFUSAL },
   'sale.customer_not_found': { field: 'form', message: GENERIC_REFUSAL },
   'sale.variety_not_found': { field: 'form', message: GENERIC_REFUSAL },
   'sale.lines_missing': { field: 'form', message: GENERIC_REFUSAL },
@@ -589,6 +591,12 @@ function NuevaVentaForm() {
           else if (override.field === 'note') setNoteError(override.message)
           else if (override.field === 'date') setDateError(override.message)
           else if (override.field === 'payment') setPaymentError(override.message)
+          else if (override.field === 'method') {
+            // The method was archived or deleted meanwhile: the form stays, the field asks again.
+            setMethod(null)
+            setMethodRefused(true)
+            void queryClient.invalidateQueries({ queryKey: keys.paymentMethods() })
+          }
           else setFormError(override.message)
         } else if (caught.code !== UNKNOWN_CODE) {
           setFormError(GENERIC_REFUSAL)

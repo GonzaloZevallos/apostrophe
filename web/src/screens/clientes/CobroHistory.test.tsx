@@ -27,7 +27,7 @@ const ACCOUNT = {
 }
 const DEBTORS = { total_owed: 11000, sales_owing_count: 1, debtors: [{ customer: { id: 1, name: 'Ana Pérez' }, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }] }
 const PREVIEW = {
-  payment: { id: 5, paid_on: '2026-10-03', amount: 5000, method: 'cash' },
+  payment: { id: 5, paid_on: '2026-10-03', amount: 5000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
   applied_to: [{ sale_id: 10, sale_date: '2026-09-14', amount: 5000 }],
   after: { balance: 6000, owing_since: '2026-09-14', standing: 'owes' },
 }

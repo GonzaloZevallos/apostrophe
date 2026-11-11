@@ -25,7 +25,7 @@ const bulkBill: SaleBill = {
   shipping_charged: 0,
   total: 31500,
   lines: [{ product: 'Luna', quantity: 3.5, amount: 31500, rule: 'bulk', unit_price: 9000 }],
-  payment: { state: 'cash', still_owed: null },
+  payment: { state: 'paid', still_owed: null },
   balance: null,
 }
 

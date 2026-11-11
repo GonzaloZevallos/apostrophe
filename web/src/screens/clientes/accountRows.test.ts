@@ -73,8 +73,7 @@ function saleWith(howPaid: HowPaid, standing: Standing, running: number): Accoun
 }
 
 const HOW_PAID_SUBS: readonly (readonly [HowPaid, string])[] = [
-  ['cash', 'Paid in cash'],
-  ['transfer', 'Paid by transfer'],
+  ['paid', 'Paid'],
   ['owing', 'Left owing'],
   ['none', 'Nothing to pay'],
 ]
@@ -87,7 +86,7 @@ test.each(HOW_PAID_SUBS)('a %s sale reads "Sale" over %s, with its own total', (
 })
 
 test('a sale names no product and no grams', () => {
-  const view = ledgerRowView(saleWith('cash', 'owes', 5000))
+  const view = ledgerRowView(saleWith('paid', 'owes', 5000))
   expect(`${view.title} ${view.sub}`).not.toMatch(/\d+(,\d+)? g\b/)
 })
 

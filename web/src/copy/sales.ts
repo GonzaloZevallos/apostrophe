@@ -8,7 +8,6 @@ import { baselineArgs, FIXTURE } from './baselineArgs.ts'
 import type * as Self from './sales.ts'
 import { SAMPLES, type LimitedCopy } from './limits.ts'
 import { COMMON_TEXT } from './common.ts'
-import { CUSTOMERS_TEXT } from './customers.ts'
 import { VARIETIES_TEXT } from './varieties.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
@@ -40,8 +39,6 @@ export const SALE_BILL_TEXT = {
   gift: (product: string, quantity: string, unit: string) => `${product} ${quantity} ${unit} · Gift · $ 0`,
   shipping: (amount: string) => `Shipping · ${amount}`,
   total: (amount: string) => `Total · ${amount}`,
-  paidCash: CUSTOMERS_TEXT.paidInCash,
-  paidTransfer: CUSTOMERS_TEXT.paidByTransfer,
   paid: 'Paid',
   stillOwed: (amount: string) => `Still owed on this sale: ${amount}`,
   balance: (amount: string) => `Your balance: ${amount}`,
@@ -132,8 +129,7 @@ export const SALES_TEXT = {
   noVariety: 'No product',
   saleHasCustomer: 'This sale already has a customer.',
   leftOwing: 'left owing',
-  paidInCash: 'paid in cash',
-  paidByTransfer: 'paid by transfer',
+  paid: 'paid',
   deleteSaleConfirm: (money: string | number, day: string | number, grams: string | number) =>
     `Delete the sale of ${money} from ${day}? ${grams} go back to stock.`,
   dates: 'Dates',

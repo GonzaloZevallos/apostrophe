@@ -81,7 +81,7 @@ test('shows the total, each line with its lowercase rule badge, shipping, note a
   // that every one of these fields renders, so it overrides just those two,
   // keeping everything else — id, lines, total_quantity — as the real answer's shape.
   vi.mocked(fetch).mockResolvedValue(
-    jsonResponse(200, { ...SALE, note: 'Entregar a la tarde', payment: 'cash' }),
+    jsonResponse(200, { ...SALE, note: 'Entregar a la tarde', payment: 'paid' }),
   )
   renderDetalle()
 
@@ -94,7 +94,7 @@ test('shows the total, each line with its lowercase rule badge, shipping, note a
   expect(screen.getByText('$ 10.500')).toBeInTheDocument()
   expect(screen.getByText('$ 500')).toBeInTheDocument()
   expect(screen.getByText('Entregar a la tarde')).toBeInTheDocument()
-  expect(screen.getByText('3,5 g · Ana Pérez · paid in cash')).toBeInTheDocument()
+  expect(screen.getByText('3,5 g · Ana Pérez · paid')).toBeInTheDocument()
 })
 
 test('shows the skeleton while the sale is pending, then the sale in its place', async () => {
@@ -156,7 +156,7 @@ test('a sale with no customer and no payment shows "No customer" and drops the p
 })
 
 test.each([
-  ['cash', 'paid in cash'],
+  ['cash', 'paid'],
   ['transfer', 'paid by transfer'],
   ['owing', 'left owing'],
 ] as const)('the summary line reads "%s" as "%s"', async (payment, words) => {
