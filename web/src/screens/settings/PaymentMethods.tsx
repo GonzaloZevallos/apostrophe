@@ -194,7 +194,7 @@ export default function PaymentMethods() {
                     <Boton
                       variant="secondary"
                       icon="archivar"
-                      ariaLabel={`${t('paymentMethods:list.archive')} ${method.name}`}
+                      ariaLabel={t('paymentMethods:list.archiveNamed', { name: method.name })}
                       onClick={() => setPending({ kind: 'archive', method })}
                     >
                       {t('paymentMethods:list.archive')}
@@ -203,7 +203,7 @@ export default function PaymentMethods() {
                     <Boton
                       variant="icon"
                       action="delete"
-                      ariaLabel={`${t('paymentMethods:list.delete')} ${method.name}`}
+                      ariaLabel={t('paymentMethods:list.deleteNamed', { name: method.name })}
                       onClick={() => setPending({ kind: 'delete', method })}
                     />
                   )}
