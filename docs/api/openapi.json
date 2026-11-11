@@ -920,6 +920,88 @@
         "title": "CreditAccountRowOut",
         "type": "object"
       },
+      "CurrentPriceOut": {
+        "description": "The entry in force, with the price each customer type has in it (docs/adr/0059):\nin this part, only the VIP type's.",
+        "properties": {
+          "bulk_minimum": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bulk Minimum"
+          },
+          "bulk_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bulk Price"
+          },
+          "effective_from": {
+            "format": "date",
+            "title": "Effective From",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "list_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "List Price"
+          },
+          "type_prices": {
+            "items": {
+              "$ref": "#/components/schemas/TypePriceOut"
+            },
+            "title": "Type Prices",
+            "type": "array"
+          },
+          "vip_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vip Price"
+          }
+        },
+        "required": [
+          "id",
+          "effective_from",
+          "list_price",
+          "bulk_price",
+          "bulk_minimum",
+          "vip_price",
+          "type_prices"
+        ],
+        "title": "CurrentPriceOut",
+        "type": "object"
+      },
       "CustomerIn": {
         "properties": {
           "customer_type_id": {
@@ -3081,7 +3163,7 @@
           "current_price": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/PriceEntryOut"
+                "$ref": "#/components/schemas/CurrentPriceOut"
               },
               {
                 "type": "null"
@@ -3144,7 +3226,7 @@
           "current_price": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/PriceEntryOut"
+                "$ref": "#/components/schemas/CurrentPriceOut"
               },
               {
                 "type": "null"
@@ -4418,6 +4500,31 @@
           "quantity"
         ],
         "title": "ThresholdIn",
+        "type": "object"
+      },
+      "TypePriceOut": {
+        "properties": {
+          "customer_type_id": {
+            "title": "Customer Type Id",
+            "type": "integer"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Price"
+          }
+        },
+        "required": [
+          "customer_type_id",
+          "price"
+        ],
+        "title": "TypePriceOut",
         "type": "object"
       },
       "UserOut": {
