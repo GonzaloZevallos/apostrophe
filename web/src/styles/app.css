@@ -6568,8 +6568,22 @@ body {
   touch-action: manipulation;
 }
 
-.selector__campo:disabled {
+.selector__campo:disabled,
+.selector__campo[aria-disabled='true'] {
   cursor: default;
+}
+
+/* The reason a locked field cannot be changed: a visible sentence in the secondary ink (4.5:1 in
+ * both themes), never styled as a disabled label. */
+.selector__razon {
+  margin: 0;
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+/* A locked field has no chevron to invite a tap: the list never opens. */
+.selector__campo[aria-disabled='true'] .selector__chevron {
+  display: none;
 }
 
 .selector__valor {

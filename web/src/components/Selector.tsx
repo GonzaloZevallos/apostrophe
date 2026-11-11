@@ -15,6 +15,9 @@
  *   while it holds a choice: with none, the field already reads the empty wording, so the list
  *   starts at the first option and never repeats the wording as a row.
  * - Every button is `type="button"`, and Enter in the search field never submits the form.
+ * - `locked` shows a value another part of the form decided: normal text token, `aria-disabled`,
+ *   the required `lockedReason` as a visible line that describes the field. The list never opens
+ *   (no history entry) and there is no skeleton; unlocking keeps the value.
  */
 
 import {
@@ -93,7 +96,16 @@ type SelectorBuiltIn = {
   emptyWording?: never
 }
 
-export type SelectorProps = SelectorBase & (SelectorFed | SelectorBuiltIn)
+/**
+ * A field whose value something else on the form decided (the Phone country when the number starts
+ * with "+"). `locked: true` requires the reason, shown in words under the field; it does not
+ * compile without it. The value stays visible in the normal text token.
+ */
+type SelectorLock =
+  | { locked?: false; lockedReason?: never }
+  | { locked: true; /** Visible line under the field; the field's description. */ lockedReason: string }
+
+export type SelectorProps = SelectorBase & SelectorLock & (SelectorFed | SelectorBuiltIn)
 
 /** Above this many options the list has a search field. */
 const SEARCH_ABOVE = 8
@@ -124,6 +136,7 @@ export default function Selector(props: SelectorProps) {
   const emptySetMessage = props.builtIn === true ? null : props.emptySetMessage
   const emptyWording = props.required === true ? null : props.emptyWording
   const placeholder = props.required === true ? props.placeholder : undefined
+  const locked = props.locked === true
   const name = props.accessibleName ?? label
   const { t } = useTranslation()
   // Its skeleton stands where the value will be: the area is waiting while it shows.
@@ -135,6 +148,8 @@ export default function Selector(props: SelectorProps) {
   const labelId = `${ids}-label`
   const nameId = props.accessibleName === undefined ? labelId : `${ids}-name`
   const valueId = `${ids}-value`
+  const reasonId = `${ids}-reason`
+  const describedBy = locked ? [props.describedBy, reasonId].filter(Boolean).join(' ') : props.describedBy
 
   const [mine, setMine] = useState(false)
   const [dropdown, setDropdown] = useState(false)
@@ -214,8 +229,8 @@ export default function Selector(props: SelectorProps) {
       }
     }
   }
-  // A dropdown does not outlive `loading` or the phone layout.
-  if (dropdown && (loading || !computer)) {
+  // A dropdown does not outlive `loading`, a lock or the phone layout.
+  if (dropdown && (loading || locked || !computer)) {
     setDropdown(false)
     setQuery('')
     setFocusTick((tick) => tick + 1)
@@ -236,10 +251,10 @@ export default function Selector(props: SelectorProps) {
     if (focusTick > 0) latest.current.focusField()
   }, [focusTick])
 
-  // What closes an open list without the user asking: `loading`, a resize to the computer.
+  // What closes an open list without the user asking: `loading`, a lock, a resize to the computer.
   useLayoutEffect(() => {
-    if (listOpen && (loading || computer)) latest.current.closeList()
-  }, [listOpen, loading, computer])
+    if (listOpen && (loading || locked || computer)) latest.current.closeList()
+  }, [listOpen, loading, locked, computer])
 
   // Focus that was in the search field moves to the rows instead of falling to the page.
   useLayoutEffect(() => {
@@ -284,7 +299,7 @@ export default function Selector(props: SelectorProps) {
   }, [dropdown, activeIndex, ids])
 
   function openField(): void {
-    if (loading) return
+    if (loading || locked) return
     if (computer) {
       if (dropdown) {
         closeDropdown(true)
@@ -503,7 +518,8 @@ export default function Selector(props: SelectorProps) {
             disabled={loading}
             aria-busy={loading ? 'true' : undefined}
             aria-labelledby={loading ? nameId : `${nameId} ${valueId}`}
-            aria-describedby={props.describedBy}
+            aria-disabled={locked ? 'true' : undefined}
+            aria-describedby={describedBy}
             aria-haspopup={computer ? 'listbox' : 'dialog'}
             aria-expanded={computer ? dropdown : shown}
             onClick={openField}
@@ -536,6 +552,11 @@ export default function Selector(props: SelectorProps) {
             </div>
           )}
         </div>
+        {locked && (
+          <p id={reasonId} className="selector__razon">
+            {props.lockedReason}
+          </p>
+        )}
       </div>
       {shown && inListHost(props.listHost, (
         <SheetLevel.Provider value={level + 1}>
