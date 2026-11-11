@@ -55,6 +55,10 @@ export async function stubReads(context: BrowserContext, stubs: readonly ReadStu
       await route.fallback()
       return
     }
+    if (stub.offline === true) {
+      await route.abort('internetdisconnected')
+      return
+    }
     await route.fulfill({
       status: stub.status,
       contentType: 'application/json',

@@ -35,6 +35,8 @@ export interface ReadStub {
   query?: RegExp
   status: number
   body?: unknown
+  /** The request fails as a dropped connection does (the app sees a network error); `status` is then ignored. */
+  offline?: true
 }
 
 export interface WalkState {
