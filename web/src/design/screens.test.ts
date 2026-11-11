@@ -39,9 +39,9 @@ const MONEY_SYMBOL_SLOT = '\u0002'
 const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /** A text the front's formatters wrote, as the shape of every text they write alike: its digit runs may be
- * any digits, and the symbol slot any symbol. */
+ * any digits, and the symbol slot any run of signs that are no letter, digit, space or separator (a word is no symbol). */
 function shapeOf(written: string): string {
-  return escapeRegExp(written).replace(/\d+/g, '\\d+').replaceAll(MONEY_SYMBOL_SLOT, '[^\\s\\d.,-]+')
+  return escapeRegExp(written).replace(/\d+/g, '\\d+').replaceAll(MONEY_SYMBOL_SLOT, '[^\\s\\w.,-]+')
 }
 
 const shapesOf = (writings: string[]): string[] => [...new Set(writings.map(shapeOf))]
@@ -496,6 +496,14 @@ describe('the registry step rule', () => {
       const copy = { total: (x: string) => `Total ${x}` }
       expect(one([{ wait: `Total ${slotted.money(12500)}` }, { wait: `Total ${slotted.attached(5)}` }], copy)).toEqual([])
       expect(one([{ wait: 'Total a lot' }], copy)).toEqual(['A: step 0 wait "Total a lot" is no copy value'])
+      expect(one([{ wait: 'Total Go 5' }, { wait: 'Total Gelato5' }], copy)).toEqual([
+        'A: step 0 wait "Total Go 5" is no copy value',
+        'A: step 1 wait "Total Gelato5" is no copy value',
+      ])
+      expect(one([{ wait: 'Setup 5' }, { wait: 'Setup 12.345' }], { name: (x: string) => x })).toEqual([
+        'A: step 0 wait "Setup 5" is no copy value',
+        'A: step 1 wait "Setup 12.345" is no copy value',
+      ])
     })
 
     it('takes grams and a dd/mm date in the front\'s own shapes, and refuses a unit alone or a year', () => {
