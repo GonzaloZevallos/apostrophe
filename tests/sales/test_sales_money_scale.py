@@ -274,10 +274,12 @@ class _BothOff:
 
 
 class _PricesAnyProduct:
-    def for_variety(self, variety_id: int, day: date) -> VarietyPricing:
+    def for_variety(
+        self, variety_id: int, day: date, customer_type_id: int | None = None
+    ) -> VarietyPricing:
         return VarietyPricing(
             variety_id=variety_id,
-            current=PriceQuote(list_price=11_000, bulk=None, vip_price=None),
+            current=PriceQuote(list_price=11_000, bulk=None, type_price=None),
         )
 
 

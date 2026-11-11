@@ -320,6 +320,8 @@ class SqlSales:
             price_per_gram=self._stored(line.price_per_gram),
             line_total=self._stored(line.line_total),
             position=position,
+            customer_type_id=line.customer_type_id,
+            customer_type_name=line.customer_type_name,
         )
 
     def _assemble(self, sale_id: int) -> Sale | None:
@@ -374,6 +376,8 @@ def _sale_line(row: SaleLineRow, price_per_gram: int, line_total: int) -> SaleLi
         price_per_gram=price_per_gram,
         line_total=line_total,
         id=row.id,
+        customer_type_id=row.customer_type_id,
+        customer_type_name=row.customer_type_name,
     )
 
 

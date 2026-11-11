@@ -20,7 +20,7 @@ from app.payments.adapters.settlements import SqlOwingSales
 from app.sales.application.ports import CustomerSettlement, OwingSales
 from tests.conftest import TODAY
 from tests.pricing_switches import set_switches
-from tests.vip_type import make_type, put_in_type
+from tests.vip_type import make_type, price_type, put_in_type
 
 PRICE = 10_000
 BILL_KEYS = {
@@ -243,8 +243,9 @@ def _strings(value: object) -> list[str]:
 
 def test_the_bill_leaks_nothing_internal(client: TestClient, engine: Engine) -> None:
     set_switches(engine, bulk=False, vip=True)
-    vip_type = make_type(engine, is_vip=True)
-    flowers = _variety(client, "Lavanda", vip_price=9_000)
+    flowers = _variety(client, "Lavanda")
+    vip_type = make_type(engine, "Mayoristas zzz", is_vip=True)
+    price_type(engine, flowers, vip_type, 9_000)
     customer = _customer(client, "Marta Quispe")
     put_in_type(engine, customer, vip_type)
     note = "nota privada zzz"
@@ -264,7 +265,8 @@ def test_the_bill_leaks_nothing_internal(client: TestClient, engine: Engine) -> 
     assert response.status_code == 201, response.text
     sale_id = response.json()["id"]
     detail = _detail(client, sale_id)
-    assert [line["pricing_rule"] for line in detail["lines"]] == ["vip", "special"]
+    assert [line["pricing_rule"] for line in detail["lines"]] == ["type", "special"]
+    assert detail["lines"][0]["customer_type_name"] == "Mayoristas zzz"
     assert detail["lines"][0]["cost"]["costed"] is None  # pending cost, never in the bill
 
     bill = detail["bill"]
@@ -274,14 +276,24 @@ def test_the_bill_leaks_nothing_internal(client: TestClient, engine: Engine) -> 
     assert set(bill["payment"]) == PAYMENT_KEYS
     assert [line["rule"] for line in bill["lines"]] == [None, None]
     strings = _strings(bill)
-    assert not {"vip", "special", "list"} & set(strings)
+    assert not {"vip", "type", "special", "list", "Mayoristas zzz"} & set(strings)
     assert note not in strings
     assert "Marta Quispe" not in strings
     numbers = [bill["total"], bill["balance"], bill["shipping_charged"]]
     assert customer not in numbers
     assert sale_id not in numbers
     rendered = repr(bill)
-    for word in ("zzz", "Marta", "Quispe", "cost", "margin", "http", "vip", "special"):
+    for word in (
+        "zzz",
+        "Mayoristas",
+        "Marta",
+        "Quispe",
+        "cost",
+        "margin",
+        "http",
+        "vip",
+        "special",
+    ):
         assert word not in rendered
 
 

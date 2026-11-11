@@ -143,11 +143,13 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
     "sale": {
         "customer": ShapeOf("sale", "customer"),
         "note": "string",
+        "lines[].customer_type_name": "string",
     },
     "sale-detail": {
         "customer": ShapeOf("sale-detail", "customer"),
         "note": "string",
         "lines[].cost.costed": "integer",
+        "lines[].customer_type_name": "string",
         "bill": ShapeOf("sale-detail", "bill"),
         "bill.lines[].rule": "string",
         "bill.lines[].unit_price": "integer",
@@ -160,6 +162,7 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
         "customer": ShapeOf("sale-detail", "customer"),
         "note": "string",
         "lines[].cost.costed": "integer",
+        "lines[].customer_type_name": "string",
         "bill": ShapeOf("sale-detail", "bill"),
         "bill.lines[].rule": "string",
         "bill.lines[].unit_price": "integer",

@@ -89,7 +89,7 @@ def bill_rule(rule: PricingRule) -> BillRule | None:
             return "bulk"
         case PricingRule.GIFT:
             return "gift"
-        case PricingRule.LIST | PricingRule.VIP | PricingRule.SPECIAL:
+        case PricingRule.LIST | PricingRule.VIP | PricingRule.CUSTOMER_TYPE | PricingRule.SPECIAL:
             return None
         case _:
             assert_never(rule)

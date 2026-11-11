@@ -14,6 +14,7 @@ from datetime import date, datetime
 from sqlalchemy import ForeignKey, Index, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
+from app.customer_types.domain.customer_type import NAME_MAX_LENGTH as CUSTOMER_TYPE_NAME_MAX
 from app.db import Base, UtcDateTime, money_column
 from app.sales.domain.sale import NOTE_MAX_LENGTH
 
@@ -52,3 +53,7 @@ class SaleLineRow(Base):
     price_per_gram: Mapped[int] = money_column()
     line_total: Mapped[int] = money_column()
     position: Mapped[int]
+    # The type that priced the line and a copy of its name, written once with the line.
+    # No foreign key: deleting a type never touches a recorded line (docs/adr/0059).
+    customer_type_id: Mapped[int | None]
+    customer_type_name: Mapped[str | None] = mapped_column(String(CUSTOMER_TYPE_NAME_MAX))

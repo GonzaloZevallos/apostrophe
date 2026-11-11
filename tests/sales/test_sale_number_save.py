@@ -37,7 +37,9 @@ A_VARIETY_THAT_DOES_NOT_EXIST = 9_999
 class _QuotesAnyVariety:
     """A price book that quotes a variety whether or not it has a row."""
 
-    def for_variety(self, variety_id: int, day: date) -> VarietyPricing | None:
+    def for_variety(
+        self, variety_id: int, day: date, customer_type_id: int | None = None
+    ) -> VarietyPricing | None:
         return VarietyPricing(variety_id, PriceQuote(list_price=10_000))
 
 
