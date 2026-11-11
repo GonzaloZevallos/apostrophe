@@ -102,6 +102,7 @@ const SETTLED_CUSTOMER = {
   id: 3,
   name: 'Fer',
   phone: '+5491158423310',
+  phone_display: '+54 9 11 5842-3310',
   vip: true,
   balance: 0,
   owing_since: null,
@@ -166,11 +167,26 @@ const NO_PHONE_CUSTOMER = {
   id: 4,
   name: 'Caro',
   phone: null,
+  phone_display: null,
   vip: false,
   balance: 0,
   owing_since: null,
   standing: 'settled',
 }
+
+test('the card shows phone_display, never the stored phone, whatever country the number is from', async () => {
+  api.mockImplementation(
+    dispatchFetch({
+      'GET /customers/5': () =>
+        jsonResponse(200, { ...SETTLED_CUSTOMER, id: 5, phone: '+59899123456', phone_display: '+598 99 123 456' }),
+      'GET /customers/5/account': () => jsonResponse(200, EMPTY_ACCOUNT),
+    }),
+  )
+  renderFicha('5')
+
+  expect(await screen.findByText('+598 99 123 456')).toBeInTheDocument()
+  expect(screen.queryByText('+59899123456')).not.toBeInTheDocument()
+})
 
 test('a customer with no phone shows no phone element, no dash, no empty label', async () => {
   api.mockImplementation(
@@ -271,6 +287,7 @@ const OWING_CUSTOMER = {
   id: 1,
   name: 'Ana',
   phone: '+5491122334455',
+  phone_display: '+54 9 11 2233-4455',
   vip: false,
   balance: 11000,
   owing_since: '2026-09-14',
@@ -317,6 +334,7 @@ const CREDIT_CUSTOMER = {
   id: 2,
   name: 'Lu',
   phone: '+5491100000000',
+  phone_display: '+54 9 11 0000-0000',
   vip: false,
   balance: -2000,
   owing_since: null,

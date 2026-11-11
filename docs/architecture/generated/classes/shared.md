@@ -88,6 +88,8 @@ classDiagram
   class PhoneCountryRule {
     calling_code : str
     carrier_code_length : int
+    example : str
+    groupings : Mapping~int, str~
     international_lengths : frozenset~int~
     legacy_mobile_one : str #124; None
     local_mobile_fifteen : str #124; None

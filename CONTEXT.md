@@ -61,7 +61,7 @@ _Avoid_: client, buyer, contact, user
 _In the app_: Customer
 
 **Phone number**:
-Dato de contacto opcional de un Customer, guardado en una sola forma internacional: uno tipeado con + y el código de un país de la lista sigue la regla de ese país, uno con otro código se guarda como + y 8 a 15 dígitos, y uno sin + se lee con la regla del Phone country del Business (la de Argentina sigue siendo la de hoy: siempre celular, +54 9 y 10 dígitos), o se rechaza si no hay ninguno. Un valor en blanco significa que no hay ninguno. Dos Customers de un Business nunca comparten uno, se haya tipeado como se haya tipeado. En la app: Phone.
+Dato de contacto opcional de un Customer, guardado en una sola forma internacional: uno tipeado con + y el código de un país de la lista sigue la regla de ese país, uno con otro código se guarda como + y 8 a 15 dígitos, y uno sin + se lee con la regla del Phone country del Business (la de Argentina sigue siendo la de hoy: siempre celular, +54 9 y 10 dígitos), o se rechaza si no hay ninguno. Un valor en blanco significa que no hay ninguno, y dos Customers de un Business nunca comparten uno. Se muestra agrupado según el país de su propio código, nunca según el Phone country (p. ej. +598 99 123 456), y tal como está guardado cuando su código no está en la lista o su largo no tiene plantilla; agrupar solo agrega espacios y guiones. En la app: Phone.
 _Avoid_: contact, handle, username, identifier
 _In the app_: Phone
 

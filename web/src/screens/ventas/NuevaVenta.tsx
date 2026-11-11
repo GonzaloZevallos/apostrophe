@@ -664,8 +664,8 @@ function NuevaVentaForm() {
                         <span className="lista-clientes__nombre-texto">{customer.name}</span>
                         {settings.vip && customer.vip && <span className="vip-insignia">{COMMON_TEXT.vip}</span>}
                       </span>
-                      {customer.phone !== null && (
-                        <span className="nueva-venta__cliente-telefono">{customer.phone}</span>
+                      {customer.phone_display !== null && (
+                        <span className="nueva-venta__cliente-telefono">{customer.phone_display}</span>
                       )}
                     </div>
                     <span className="nueva-venta__cliente-cambiar">{COMMON_TEXT.change}</span>

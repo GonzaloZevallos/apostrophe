@@ -116,7 +116,7 @@ test('a variety with no price that day shows its message and blocks saving', asy
 
 test('Debiendo is disabled with no customer, enables once one is chosen, and resets on "No customer"', async () => {
   const user = userEvent.setup()
-  const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', vip: false }
+  const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', phone_display: '+54 9 11 0000-0000', vip: false }
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
     'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
@@ -146,7 +146,7 @@ test('Debiendo is disabled with no customer, enables once one is chosen, and res
 
 test('a customer with no phone shows no phone element in Pick a customer nor the chosen chip', async () => {
   const user = userEvent.setup()
-  const SOL = { id: 6, name: 'Sol', phone: null, vip: false }
+  const SOL = { id: 6, name: 'Sol', phone: null, phone_display: null, vip: false }
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
     'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
@@ -568,7 +568,7 @@ test('a $0 special price is refused rather than silently priced at list, and Reg
 
 test('"Nueva venta a <name>" prices a VIP customer at the VIP price below the bulk minimum', async () => {
   const user = userEvent.setup()
-  const VIP_ANA = { id: 7, name: 'Ana VIP', phone: '+5491100000001', vip: true }
+  const VIP_ANA = { id: 7, name: 'Ana VIP', phone: '+5491100000001', phone_display: '+54 9 11 0000-0001', vip: true }
   const WITH_BULK = {
     id: 3,
     name: 'Jazmín',

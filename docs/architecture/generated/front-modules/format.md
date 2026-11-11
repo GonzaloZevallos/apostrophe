@@ -15,7 +15,6 @@ subgraph src["src"]
     src_format_moneyContext_ts["moneyContext.ts"]
     src_format_money_ts["money.ts"]
     src_format_parse_ts["parse.ts"]
-    src_format_phone_ts["phone.ts"]
   end
 end
 src_format_MoneyFormatProvider_tsx-->src_format_moneyContext_ts

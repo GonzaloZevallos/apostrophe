@@ -46,7 +46,6 @@ import Loading from '../../components/Loading'
 import { formatDateShort } from '../../format/dates'
 import type { MoneyFormatter } from '../../format/money'
 import { useMoney } from '../../format/moneyContext'
-import { formatPhone } from '../../format/phone'
 import AccountRowLine from './AccountRowLine'
 import { METHOD_LABEL, deleteRowIndices, rowKey } from './accountRows'
 import { COMMON_TEXT } from '../../copy/common'
@@ -206,10 +205,10 @@ export default function ClienteFicha() {
         )}
 
         <div className="formulario">
-          {data.phone !== null && (
+          {data.phone_display !== null && (
             <div className="campo">
               <span className="campo__rotulo">{CUSTOMERS_TEXT.phone}</span>
-              <span>{formatPhone(data.phone)}</span>
+              <span className="campo__valor-telefono">{data.phone_display}</span>
             </div>
           )}
           <CustomerTypeLine typeId={data.customer_type_id} />

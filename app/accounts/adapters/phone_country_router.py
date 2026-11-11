@@ -13,7 +13,7 @@ from app.accounts.adapters.sql_accounts import SqlAccounts
 from app.accounts.application import manage_business
 from app.db import get_session
 from app.http_errors import TranslateErrors
-from app.shared.phone_country import PhoneCountry, UnknownPhoneCountry
+from app.shared.phone_country import UnknownPhoneCountry, listed_countries
 
 router = APIRouter(tags=["accounts"])
 
@@ -30,7 +30,7 @@ def phone_country_options() -> list[PhoneCountryOption]:
     """Every country a business may choose, in the order Settings lists them."""
     return [
         PhoneCountryOption(code=country.value, calling_code=country.rule.calling_code)
-        for country in PhoneCountry
+        for country in listed_countries()
     ]
 
 

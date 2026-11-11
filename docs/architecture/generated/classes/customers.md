@@ -26,6 +26,8 @@ classDiagram
   }
   class manage_customers {
   }
+  class phone_countries_router {
+  }
   class ports {
   }
   class router {
@@ -95,6 +97,7 @@ classDiagram
   }
   class PhoneNumber {
     digits : str
+    display : str
     value : str
     of(raw: str, country: PhoneCountry #124; None) PhoneNumber
     optional(raw: str #124; None, country: PhoneCountry #124; None) PhoneNumber #124; None
@@ -172,6 +175,7 @@ classDiagram
     name : str
     owing_since : date #124; None
     phone : str #124; None
+    phone_display : str #124; None
     standing : Literal
     vip : bool
     of(customer: Customer, balance: CustomerBalance, vip_type_id: int #124; None) 'CustomerOut'
@@ -194,6 +198,12 @@ classDiagram
     check_customer(name: str, phone: str #124; None) CustomerKey #124; CustomerRefusals
     has_records() bool
     write_customer(name: str, phone_key: str #124; None, customer_type_id: int #124; None, transaction: Transaction) int
+  }
+  class PhoneCountryOut {
+    calling_code : str
+    code : str
+    example : str
+    national_lengths : list~int~
   }
   class SqlCustomerTypeLookup {
     exists(type_id: int) bool
