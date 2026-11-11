@@ -7,6 +7,7 @@
  * already lower; with something typed, Close asks first. Roles, names, text and URLs only.
  */
 
+import { OWING } from './helpers/paymentMethod.js'
 import type { Page } from '@playwright/test'
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMERS, HOME, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { choosePaymentMethod, expect, test } from './fixtures.js'
@@ -175,7 +176,7 @@ async function owingCustomers(page: Page, count: number): Promise<void> {
     const sold = await page.request.post('/sales', {
       data: {
         customer_id: customer.id,
-        payment: 'owing',
+        payment: OWING,
         lines: [{ product_id: rosa.id, quantity: '1', gift: false, special_price: null }],
       },
     })
@@ -206,7 +207,7 @@ async function moreSalesFor(page: Page, name: string, count: number): Promise<vo
     const sold = await page.request.post('/sales', {
       data: {
         customer_id: customer.id,
-        payment: 'owing',
+        payment: OWING,
         lines: [{ product_id: rosa.id, quantity: '1', gift: false, special_price: null }],
       },
     })

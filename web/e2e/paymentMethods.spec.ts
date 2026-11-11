@@ -6,7 +6,7 @@
  */
 
 import type { Locator } from '@playwright/test'
-import { CUSTOMER, CUSTOMER_NEW, HOME, SALE_NEW, SETTINGS_PAYMENT_METHODS, VARIETIES } from '../src/routes.js'
+import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, HOME, SALE_NEW, SETTINGS_PAYMENT_METHODS, VARIETIES } from '../src/routes.js'
 import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -49,6 +49,9 @@ test('a seller adds, edits, deletes, archives and restores payment methods in Se
   await page.getByRole('radio', { name: 'Owing' }).check()
   await page.getByRole('button', { name: 'Save sale' }).click()
   await expect(page.getByText('Sale saved')).toBeVisible()
+  await page.goto(CUSTOMERS)
+  await page.getByRole('link', { name: /Carla Métodos/ }).first().click()
+  await expectPath(page, CUSTOMER)
   await page.getByRole('link', { name: 'Record payment' }).click()
   await page.getByRole('button', { name: /^All:/ }).click()
   await choosePaymentMethod(page, 'Cash')

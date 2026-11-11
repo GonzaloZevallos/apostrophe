@@ -174,5 +174,35 @@
     "themes": [
       "oscuro"
     ]
+  },
+  {
+    "screen": "new-sale/method-no-longer-available",
+    "rule": "contrast",
+    "target": "textbox:Date",
+    "issue": 78
+  },
+  {
+    "screen": "new-sale/method-no-longer-available",
+    "rule": "contrast",
+    "target": "textbox:Line # special price::placeholder",
+    "issue": 78,
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "new-sale/method-selector-offline",
+    "rule": "contrast",
+    "target": "textbox:Line # special price::placeholder",
+    "issue": 78,
+    "themes": [
+      "oscuro"
+    ]
+  },
+  {
+    "screen": "new-sale/method-selector-offline",
+    "rule": "contrast",
+    "target": "textbox:Date",
+    "issue": 78
   }
 ]

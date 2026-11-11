@@ -47,6 +47,7 @@
  * there.
  */
 
+import { paidInCash } from './helpers/paymentMethod.js'
 import { CUSTOMERS, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expectToast } from './helpers/toast.js'
@@ -312,7 +313,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
         customer_id: null,
         shipping_charged: 0,
         note: null,
-        payment: 'cash',
+        payment: await paidInCash(page),
         lines: [{ product_id: jazminId, quantity: grams, gift: false, special_price: null }],
       },
     })

@@ -24,6 +24,7 @@
  * several amounts through the panel alone.
  */
 
+import { paidInCash } from './helpers/paymentMethod.js'
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, HOME, SALES, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, pathTo } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expectToast } from './helpers/toast.js'
@@ -258,7 +259,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
           customer_id: null,
           shipping_charged: 0,
           note: null,
-          payment: 'cash',
+          payment: await paidInCash(page),
           lines: [{ product_id: rosaId, quantity: '1', gift: false, special_price: null }],
         },
       })

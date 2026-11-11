@@ -6,6 +6,7 @@
  * `customerSheet.spec.ts` and `cobroHoja.spec.ts` do.
  */
 
+import { OWING } from './paymentMethod.js'
 import type { Page } from '@playwright/test'
 import { VARIETIES } from '../../src/routes.js'
 import { expect } from '../fixtures.js'
@@ -53,7 +54,7 @@ async function owingSale(page: Page, customerId: number, varietyId: number): Pro
   const sold = await page.request.post('/sales', {
     data: {
       customer_id: customerId,
-      payment: 'owing',
+      payment: OWING,
       lines: [{ product_id: varietyId, quantity: '1', gift: false, special_price: null }],
     },
   })

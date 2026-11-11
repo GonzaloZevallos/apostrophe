@@ -8,6 +8,7 @@
  * nothing overflows the page sideways. On a computer the tabs keep the plain list.
  */
 
+import { paidInCash } from './helpers/paymentMethod.js'
 import { SALES, VARIETIES } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
@@ -76,7 +77,7 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
       customer_id: null,
       shipping_charged: 0,
       note: null,
-      payment: 'cash',
+      payment: await paidInCash(page),
       lines: [{ product_id: jazmin.id, quantity: '10', gift: false, special_price: null }],
     },
   })
