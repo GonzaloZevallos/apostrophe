@@ -41,7 +41,7 @@ const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/
 /** A text the front's formatters wrote, as the shape of every text they write alike: its digit runs may be
  * any digits, and the symbol slot any run of signs that are no letter, digit, space or separator (a word is no symbol). */
 function shapeOf(written: string): string {
-  return escapeRegExp(written).replace(/\d+/g, '\\d+').replaceAll(MONEY_SYMBOL_SLOT, '[^\\s\\w.,-]+')
+  return escapeRegExp(written).replace(/\d+/g, '\\d+').replaceAll(MONEY_SYMBOL_SLOT, '[^\\s\\p{L}\\p{N}_.,-]+')
 }
 
 const shapesOf = (writings: string[]): string[] => [...new Set(writings.map(shapeOf))]
@@ -71,7 +71,7 @@ const HOLE_VOCABULARY: readonly string[] = [
 
 const HOLE_PATTERN = `(?:${HOLE_VOCABULARY.join('|')})`
 
-const templateOf = (text: string): RegExp => new RegExp(`^${text.split(HOLE).map(escapeRegExp).join(HOLE_PATTERN)}$`)
+const templateOf = (text: string): RegExp => new RegExp(`^${text.split(HOLE).map(escapeRegExp).join(HOLE_PATTERN)}$`, 'u')
 
 /** The texts of the copy a step may name: each value of the copy files as a pattern, a hole being a text of
  * `HOLE_VOCABULARY`, and each text of the English bundle (`{{name}}` being a hole), where the copy moves to. */
@@ -496,9 +496,10 @@ describe('the registry step rule', () => {
       const copy = { total: (x: string) => `Total ${x}` }
       expect(one([{ wait: `Total ${slotted.money(12500)}` }, { wait: `Total ${slotted.attached(5)}` }], copy)).toEqual([])
       expect(one([{ wait: 'Total a lot' }], copy)).toEqual(['A: step 0 wait "Total a lot" is no copy value'])
-      expect(one([{ wait: 'Total Go 5' }, { wait: 'Total Gelato5' }], copy)).toEqual([
+      expect(one([{ wait: 'Total Go 5' }, { wait: 'Total Gelato5' }, { wait: 'Total ñandú 5' }], copy)).toEqual([
         'A: step 0 wait "Total Go 5" is no copy value',
         'A: step 1 wait "Total Gelato5" is no copy value',
+        'A: step 2 wait "Total ñandú 5" is no copy value',
       ])
       expect(one([{ wait: 'Setup 5' }, { wait: 'Setup 12.345' }], { name: (x: string) => x })).toEqual([
         'A: step 0 wait "Setup 5" is no copy value',
