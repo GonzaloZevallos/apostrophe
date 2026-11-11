@@ -2,6 +2,7 @@
 `scripts/phone/zone_countries.py` from the installed tzdata, and only by it."""
 
 import json
+from pathlib import Path
 
 import pytest
 
@@ -93,9 +94,17 @@ def test_a_listed_country_after_an_unlisted_one_still_maps() -> None:
     }
 
 
+def stale_files() -> list[Path]:
+    """The generated files whose committed text differs from a fresh regeneration."""
+    return [
+        path
+        for path, text in generator.documents().items()
+        if path.read_text(encoding="utf-8") != text
+    ]
+
+
 def test_the_committed_files_equal_a_fresh_regeneration_byte_for_byte() -> None:
-    for path, text in generator.documents().items():
-        assert path.read_text(encoding="utf-8") == text
+    assert stale_files() == []
 
 
 def test_both_files_say_which_script_generated_them() -> None:
@@ -117,12 +126,17 @@ def test_the_served_stub_lists_each_country_with_the_calling_code_the_table_decl
     ]
 
 
-def test_a_served_stub_edited_by_hand_differs_from_the_regeneration() -> None:
-    fresh = generator.documents()[generator.SERVED_FILE]
-    tampered = fresh.replace('"calling_code": "598"', '"calling_code": "599"')
+def test_a_served_stub_edited_by_hand_is_reported_stale(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    edited = tmp_path / "servedCountries.json"
+    edited.write_text(
+        generator.SERVED_FILE.read_text(encoding="utf-8").replace('"598"', '"599"'),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(generator, "SERVED_FILE", edited)
 
-    assert tampered != fresh
-    assert tampered != generator.SERVED_FILE.read_text(encoding="utf-8")
+    assert stale_files() == [edited]
 
 
 def test_the_front_test_stub_holds_no_calling_code_of_its_own() -> None:
