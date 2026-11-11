@@ -20,7 +20,7 @@ import { pickProduct, productField } from './lineProduct'
 import { withPaymentMethods } from '../../test-payment-methods'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
-const ANA = { id: 7, name: 'Ana', phone: '+5491100000001', vip: false }
+const ANA = { id: 7, name: 'Ana', phone: '+5491100000001', phone_display: '+54 9 11 0000-0001', vip: false }
 
 function price(list: number) {
   return { id: 9, effective_from: '2026-09-01', list_price: list, bulk_price: null, bulk_minimum: null, vip_price: null }

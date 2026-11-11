@@ -1092,6 +1092,17 @@
             ],
             "title": "Phone"
           },
+          "phone_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone Display"
+          },
           "standing": {
             "enum": [
               "owes",
@@ -1110,6 +1121,7 @@
           "id",
           "name",
           "phone",
+          "phone_display",
           "vip",
           "customer_type_id",
           "balance",
@@ -2928,6 +2940,37 @@
           "calling_code"
         ],
         "title": "PhoneCountryOption",
+        "type": "object"
+      },
+      "PhoneCountryOut": {
+        "properties": {
+          "calling_code": {
+            "title": "Calling Code",
+            "type": "string"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "example": {
+            "title": "Example",
+            "type": "string"
+          },
+          "national_lengths": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "National Lengths",
+            "type": "array"
+          }
+        },
+        "required": [
+          "code",
+          "calling_code",
+          "national_lengths",
+          "example"
+        ],
+        "title": "PhoneCountryOut",
         "type": "object"
       },
       "PinStatusOut": {
@@ -8241,6 +8284,36 @@
         "summary": "Delete Payment",
         "tags": [
           "payments"
+        ]
+      }
+    },
+    "/phone-countries": {
+      "get": {
+        "operationId": "list_phone_countries_phone_countries_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PhoneCountryOut"
+                  },
+                  "title": "Response List Phone Countries Phone Countries Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Phone Countries",
+        "tags": [
+          "customers"
         ]
       }
     },

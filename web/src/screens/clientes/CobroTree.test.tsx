@@ -24,7 +24,7 @@ import { choosePaymentMethod } from '../../components/selectorTestKit'
 import { withPaymentMethods } from '../../test-payment-methods'
 
 const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', money: { symbol: '$', decimals: 0 } }
-const OWING = { id: 1, name: 'Ana Pérez', phone: '+5491122334455', vip: false, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }
+const OWING = { id: 1, name: 'Ana Pérez', phone: '+5491122334455', phone_display: '+54 9 11 2233-4455', vip: false, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }
 const SETTLED = { ...OWING, balance: 0, owing_since: null, standing: 'settled' }
 const ACCOUNT = {
   balance: 11000,

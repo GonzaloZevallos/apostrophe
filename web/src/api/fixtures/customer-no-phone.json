@@ -2,6 +2,7 @@
   "id": 4,
   "name": "Caro Núñez",
   "phone": null,
+  "phone_display": null,
   "vip": false,
   "customer_type_id": null,
   "balance": 0,

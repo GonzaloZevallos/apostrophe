@@ -9,6 +9,7 @@ import type { QueryClient } from '@tanstack/react-query'
 export type Resource =
   | 'me'
   | 'business'
+  | 'phoneCountries'
   | 'varieties'
   | 'customers'
   | 'customerTypes'
@@ -26,6 +27,7 @@ export type Resource =
 const PREFIX: Record<Resource, string> = {
   me: 'me',
   business: 'business',
+  phoneCountries: 'phone-countries',
   varieties: 'varieties',
   customers: 'customers',
   customerTypes: 'customer-types',
@@ -44,6 +46,8 @@ const PREFIX: Record<Resource, string> = {
 export const keys = {
   me: () => [PREFIX.me] as const,
   business: () => [PREFIX.business] as const,
+  // `GET /phone-countries`: the same constant for every business, so nothing invalidates it.
+  phoneCountries: () => [PREFIX.phoneCountries] as const,
   varieties: () => [PREFIX.varieties] as const,
   archivedVarieties: () => [PREFIX.varieties, 'archived'] as const,
   variety: (id: string) => [PREFIX.varieties, id] as const,

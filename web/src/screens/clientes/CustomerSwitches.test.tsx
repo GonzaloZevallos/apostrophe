@@ -74,6 +74,7 @@ const FER = {
   id: 3,
   name: 'Fer',
   phone: '+5491158423310',
+  phone_display: '+54 9 11 5842-3310',
   vip: true,
   customer_type_id: 2,
   balance: 0,

@@ -15,7 +15,7 @@ import { HOME, SALE_NEW } from '../../routes'
 import { withPaymentMethods } from '../../test-payment-methods'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
-const VIP_ANA = { id: 7, name: 'Ana VIP', phone: '+5491100000001', vip: true }
+const VIP_ANA = { id: 7, name: 'Ana VIP', phone: '+5491100000001', phone_display: '+54 9 11 0000-0001', vip: true }
 
 function variety(vipPrice: number | null) {
   return {

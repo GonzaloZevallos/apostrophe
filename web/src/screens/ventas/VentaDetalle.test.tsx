@@ -258,7 +258,7 @@ test('a sale with a customer already never shows Assign customer', async () => {
   expect(screen.queryByRole('button', { name: 'Assign customer' })).not.toBeInTheDocument()
 })
 
-const NICO_SEARCH_RESULT = { id: 5, name: 'Nico', phone: '1111', vip: true }
+const NICO_SEARCH_RESULT = { id: 5, name: 'Nico', phone: '1111', phone_display: '1111', vip: true }
 const NICO = { id: 5, name: 'Nico', vip: true }
 
 /** Dispatches on method and path instead of call order: the sheet's own search
