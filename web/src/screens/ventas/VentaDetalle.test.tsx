@@ -442,3 +442,17 @@ test('a sale keeps its recorded "VIP" and "bulk" badges while both pricing switc
   expect(screen.getByText('VIP')).toBeInTheDocument()
   expect(screen.getByText('bulk')).toBeInTheDocument()
 })
+
+test('a recorded type line shows the type name copied when it was saved', async () => {
+  const line = SALE.lines[0]
+  const recorded = {
+    ...SALE,
+    customer: { id: 5, name: 'Ana Pérez', vip: false },
+    lines: [{ ...line, pricing_rule: 'type', customer_type_name: 'Mayoristas' }],
+  }
+  vi.mocked(fetch).mockImplementation(() => Promise.resolve(jsonResponse(200, recorded)))
+  renderDetalle()
+
+  expect(await screen.findByText('Sale #2')).toBeInTheDocument()
+  expect(screen.getByText('Mayoristas')).toBeInTheDocument()
+})

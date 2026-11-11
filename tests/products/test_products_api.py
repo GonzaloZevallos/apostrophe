@@ -4,7 +4,7 @@ from datetime import UTC, date, datetime
 from typing import Any
 
 from fastapi.testclient import TestClient
-from sqlalchemy import select, update
+from sqlalchemy import select, text, update
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
@@ -429,7 +429,7 @@ def test_the_vip_field_writes_one_vip_type_row_and_never_the_frozen_column(
 
     assert [(r[0], r[1]) for r in _vip_rows(engine)] == [(entry["id"], date(2026, 1, 1))]
     with Session(engine) as session:
-        assert session.scalars(select(PriceEntryRow.vip_price)).all() == [None]
+        assert session.scalars(text("select vip_price from price_entry")).all() == [None]
     current = client.get(f"/api/products/{variety_id}").json()["current_price"]
     assert current["type_prices"] == [{"customer_type_id": vip_type, "price": 9_000}]
 

@@ -201,3 +201,42 @@ describe('hundredthsOfApiGrams', () => {
     expect(() => hundredthsOfApiGrams(Number.NaN)).toThrow()
   })
 })
+
+// The type candidate, one case per way the preview can go (ADR-0059): the tie order is type,
+// bulk, list, so the preview names the same rule the save records.
+describe('priceLine, the Customer type candidate', () => {
+  const BOTH_ON = { bulk: true, vip: true }
+  const quote = (typePrice: number | null) => ({
+    listPrice: 12000,
+    bulk: { price: 10000, minimumHundredths: 10000 },
+    vipPrice: typePrice,
+  })
+  const price = (over: Partial<LineInput>) =>
+    priceLine({
+      gift: false,
+      specialPrice: null,
+      customerIsVip: true,
+      settings: BOTH_ON,
+      quote: quote(9000),
+      gramsHundredths: 5000,
+      ...over,
+    })
+
+  test('the type price is lowest: the line is the type', () => {
+    expect(price({})).toMatchObject({ rule: 'type', pricePerGram: 9000 })
+  })
+
+  test('the type price ties with bulk at the minimum: the line is the type', () => {
+    expect(price({ quote: quote(10000), gramsHundredths: 10000 })).toMatchObject({ rule: 'type', pricePerGram: 10000 })
+  })
+
+  test('the type price above bulk at a large quantity: the line is bulk', () => {
+    expect(price({ quote: quote(11000), gramsHundredths: 15000 })).toMatchObject({ rule: 'bulk', pricePerGram: 10000 })
+  })
+
+  test('a customer with no type, no customer, or the switch off: priced as list or bulk', () => {
+    expect(price({ customerIsVip: false })).toMatchObject({ rule: 'list', pricePerGram: 12000 })
+    expect(price({ settings: { bulk: true, vip: false } })).toMatchObject({ rule: 'list', pricePerGram: 12000 })
+    expect(price({ quote: quote(null) })).toMatchObject({ rule: 'list', pricePerGram: 12000 })
+  })
+})

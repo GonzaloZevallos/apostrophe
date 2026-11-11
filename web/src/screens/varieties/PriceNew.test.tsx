@@ -410,3 +410,26 @@ test('another day counts as typed: leaving asks first', async () => {
 
   expect(await screen.findByText('Discard the price?')).toBeInTheDocument()
 })
+
+test('the "VIP price" field shows with Customer types on and a VIP type', async () => {
+  await renderOpened(api())
+
+  expect(await screen.findByLabelText(/^VIP price/)).toBeInTheDocument()
+})
+
+test('the "VIP price" field is hidden in a business without its VIP type, and nothing about it is sent', async () => {
+  const user = userEvent.setup()
+  const { fetchMock } = await renderOpened(
+    api({
+      'GET /api/customer-types': () => jsonResponse(200, [{ id: 3, name: 'Amigos', icon: 'heart', is_vip: false }]),
+      'POST /api/products/1/prices': () => CREATED.clone(),
+    }),
+  )
+
+  await user.type(await screen.findByLabelText(/^List price/), '12000')
+  expect(screen.queryByLabelText(/^VIP price/)).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Save the price' }))
+
+  await screen.findByText('Price saved')
+  expect(writes(fetchMock)[0]?.body).toEqual({ effective_from: ME.today, list_price: 12000 })
+})
