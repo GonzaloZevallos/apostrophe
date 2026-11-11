@@ -139,11 +139,17 @@ def _request_amount_fields(app: FastAPI) -> list[tuple[str, str, tuple[str, ...]
 
 
 def test_every_request_amount_field_refuses_ten_and_a_half_with_the_fixed_code(
-    app: FastAPI, client: TestClient
+    app: FastAPI, client: TestClient, engine: Engine
 ) -> None:
     names: dict[str, int] = {}
     for seed in SEEDERS:
         names |= seed(client)
+    # A VIP price is kept only by a business that has its VIP type (docs/adr/0059); without
+    # one it is dropped before it is checked, so the sweep gives the seeded type that role.
+    with engine.begin() as connection:
+        connection.execute(
+            text("UPDATE customer_type SET is_vip = 1 WHERE id = :id"), {"id": names["type_id"]}
+        )
     fields = _request_amount_fields(app)
     assert fields, "no request amount field found"
 

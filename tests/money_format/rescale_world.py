@@ -15,6 +15,7 @@ from sqlalchemy import Table, event, select, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from app.customer_types.adapters.tables import CustomerTypeRow
 from app.money_format.adapters.sql_money_format_writer import SqlMoneyFormatWriter
 from app.money_format.application.apply_decimals import ApplyDecimals
 from app.tables import metadata
@@ -59,6 +60,33 @@ def dump(engine: Engine, business_id: int) -> Dump:
     return found
 
 
+def _give_vip_type(engine: Engine, business_id: int) -> None:
+    """The VIP type the upgrade or the import makes (docs/adr/0070), set on the row: without
+    it the VIP price of a Price entry has nowhere to be kept and is dropped (docs/adr/0059)."""
+    with Session(engine) as session:
+        session.add(
+            CustomerTypeRow(
+                business_id=business_id,
+                name="VIP",
+                name_key="vip",
+                icon="star",
+                is_vip=True,
+            )
+        )
+        session.commit()
+
+
+def _freeze_legacy_vip_price(engine: Engine, business_id: int) -> None:
+    """The frozen `price_entry.vip_price` is never written by the app any more, so a value
+    in it is what an earlier version left: set on the rows, so the rescale is still seen to
+    multiply it."""
+    run(
+        engine,
+        f"UPDATE price_entry SET vip_price = 3000 WHERE business_id = {business_id}"
+        " AND vip_price IS NULL AND bulk_price IS NOT NULL",
+    )
+
+
 def _top_up(client: TestClient) -> None:
     """What the seed misses: a price with a bulk and a VIP price, and a stock entry with no
     cost, so every tagged column holds a value somewhere and every nullable one holds NULL."""
@@ -94,12 +122,16 @@ def build_world(tmp_path: Path) -> Iterator[World]:
     # `seed` answers the business it opened last (the leaving one) first.
     token_target, token_other = seed(db_path, clock)
     application, engine = build_app(db_path, clock, 0)
+    with engine.connect() as connection:
+        ids = list(connection.execute(text("SELECT business_id FROM money_format ORDER BY id")))
+    for (business_id,) in ids:
+        _give_vip_type(engine, business_id)
     with TestClient(application) as client:
         for token in (token_target, token_other):
             client.headers["Authorization"] = f"Bearer {token}"
             _top_up(client)
-    with engine.connect() as connection:
-        ids = list(connection.execute(text("SELECT business_id FROM money_format ORDER BY id")))
+    for (business_id,) in ids:
+        _freeze_legacy_vip_price(engine, business_id)
     yield World(engine, ids[1][0], ids[0][0], token_target, db_path)
     engine.dispose()
 
