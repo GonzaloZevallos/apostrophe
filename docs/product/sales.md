@@ -262,9 +262,11 @@ Criterios de éxito, Sale number:
 - **El total de la venta** se muestra con los gramos vendidos y los gramos regalados.
 - **Vista previa en vivo**:
   - Cada línea muestra su precio por gramo, su insignia de regla (lista, Bulk price, el nombre del Customer type, regalo, especial) y su total. El total de la venta se actualiza mientras la vendedora escribe.
+  - La insignia con el nombre de un Customer type usa el mismo tono de acento que usaba la insignia VIP, y su texto es el nombre que puso la vendedora.
   - Aplica exactamente las reglas de cotización, redondeo y total de arriba, con las Pricing settings del negocio, el Customer type del cliente elegido y los Customer-type prices de la fecha.
   - Muestra solo reglas que pueden aplicar ahora: con una regla apagada, su insignia nunca aparece.
   - Los precios (los Customer-type prices incluidos) y las Pricing settings se cargan al abrir el formulario y otra vez al cambiar la fecha; un cambio de fecha vuelve a cotizar cada línea con los Current prices de ese día. Elegir otro cliente vuelve a cotizar cada línea con su tipo.
+  - El nombre del tipo de la insignia sale de la lista de Customer types; hasta que esa lista responde, una línea cotizada por su tipo muestra ya su precio y su total, sin insignia, y el precio no salta cuando aparece la insignia.
   - Los precios nunca se vuelven a consultar en vivo mientras la vendedora escribe.
 - **Esperando precios**: mientras el formulario espera los precios al abrirse, muestra el estado de carga compartido (accounts.md, `Estados`). Al cambiar la fecha, el formulario queda en pantalla con todo lo tipeado; el precio, la regla y el total de cada línea muestran el estado de carga, nunca una cifra de relleno, hasta que llegan los precios de ese día, y entonces se vuelve a cotizar cada línea. Un cambio de fecha con la lista de productos de una línea abierta la deja abierta.
 - **El producto de una línea** (`NuevaVentaLinea`, desde la parte 4 de GH-581; el control está en selector.md):
@@ -333,7 +335,7 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
 - **Encabezado**: fijo, nunca se va al desplazar; "Close" y la fecha. El campo de fecha tiene al menos 16 px y al menos 44 px de alto.
 - **Cuerpo**: se desplaza entre encabezado y pie, en este orden: el cliente, las líneas, el Shipping charged, la nota y, al final, cómo se pagó (Paid · Owing y, bajo Paid, el campo "Payment method"). Se desplaza de modo que cómo se pagó, el campo del medio con su frase de rechazo, y la línea "To leave it owing, pick a customer" debajo, quedan enteros a la vista por encima del pie; esa línea tiene el margen lateral normal de la pantalla.
 - **Pie**: fijo al alcance del pulgar, por encima del teclado y del indicador de inicio. Contiene el total de la venta, los gramos vendidos y regalados en una línea compacta, y "Save sale". Con el teclado abierto se achica al total y el botón y sigue visible. Su aspecto exacto lo decide diseño.
-- **Una línea**: un único diseño fijo en todo ancho de teléfono de 320 a 430 px y con el texto al 130 %, nunca elegido midiendo la pantalla. Primera fila: el producto (el campo del Selector, con la etiqueta "Product", el valor y un chevron) y los gramos. Debajo: "Gift", una fila con interruptor de al menos 44 px de alto, y "Special price". Debajo de eso: el precio por gramo, la insignia de regla y el total de la línea. La insignia con el nombre de un Customer type nunca desborda: un nombre largo se corta dentro de la insignia, nunca empuja el total fuera de la línea.
+- **Una línea**: un único diseño fijo en todo ancho de teléfono de 320 a 430 px y con el texto al 130 %, nunca elegido midiendo la pantalla. Primera fila: el producto (el campo del Selector, con la etiqueta "Product", el valor y un chevron) y los gramos. Debajo: "Gift", una fila con interruptor de al menos 44 px de alto, y "Special price". Debajo de eso: el precio por gramo, la insignia de regla y el total de la línea. La insignia con el nombre de un Customer type nunca desborda: un nombre largo se corta con puntos suspensivos dentro de la insignia (un modificador de la insignia compartida, solo con tokens), nunca empuja el total fuera de la línea, y el nombre completo sigue siendo el texto de la insignia y su nombre accesible.
 - **Ningún campo desborda ni queda recortado** a 320 px ni con el texto al 130 %.
 - **Objetivos táctiles**: las opciones Paid · Owing, "Add another product" y los botones de diálogo miden al menos 44 px de alto; todo campo tiene al menos 16 px. La lista de productos de una línea y la de medios siguen las medidas del Selector (filas y búsqueda de 44 px, texto de 16 px).
 - **Teclados**: gramos `inputmode="decimal"`; pesos (envío, Special price) `inputmode="numeric"`; los campos de una línea llevan `enterkeyhint` para que la tecla de acción del teclado avance entre ellos.
@@ -342,6 +344,7 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
   - Paid · Owing y, bajo Paid, el campo "Payment method" aparecen en los dibujos de computadora `NuevaVentaCompu`, `NuevaVentaClienteCompu` y sus versiones oscuras. Es el único cambio de esos dibujos.
   - Las listas abiertas no se dibujan: las juzga el chequeo `mobile`.
   - El dibujo del paso de cobro del teléfono (`NuevaVentaCobrar`, `NuevaVentaCobrarOscuro`) no se actualizó. Todavía muestra un select "Cómo paga" con Efectivo por defecto, medios que la app no tiene, "Queda debiendo" como medio y una línea "10 % pagando en efectivo" sin regla escrita.
+  - El encabezado "Prices of <type>" del dibujo sugiere un solo juego de precios para toda la venta; la cotización es por línea, y gana esta definición.
   - Ante una diferencia, ganan esta definición y los ADRs (Drawing as guide).
 
 ### En pantalla: Sales (`Sales`, `VentasCompu`)
@@ -383,6 +386,9 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
   - el total;
   - de cada línea el producto, los gramos, el precio por gramo, la insignia de regla y el total de la línea;
   - el envío, la nota, cómo se pagó, y el cliente o "No customer".
+- **La fila inferior de una línea** (el precio por gramo, la insignia de regla y el total de la línea):
+  - un nombre de Customer type largo se corta con puntos suspensivos dentro de la insignia, igual que en New sale, y el nombre completo sigue siendo su texto y su nombre accesible;
+  - cuando no entra a lo ancho (por ejemplo a 246 px), la fila pasa a una segunda línea y la insignia baja sola debajo, en lugar de ensanchar la pantalla: el detalle nunca se desplaza en horizontal, y el precio por gramo y el total quedan cada uno entero en una línea, nunca partidos.
 - **Las insignias de regla registradas** ("VIP", "bulk", y el nombre del Customer type tal como estaba al guardar) muestran siempre lo que se registró, diga lo que diga hoy las Pricing settings, y aunque el tipo se haya renombrado o eliminado. Son historia (ADR-0003).
 - **Compartir el Sale bill** (Share / Copy): ver "Sale bill" abajo.
 - **Assign customer**:
@@ -459,6 +465,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - El cambio al Selector borró de `autocomplete.json` las siete entradas `combobox:Line # product` que quedaron obsoletas (DescartarVenta, ElegirCliente, NuevaVenta, NuevaVentaCliente, NuevaVentaConLinea, NuevaVentaConLineaYPago y NuevoClienteEnVenta), y no agregó ningún infractor.
 - Desde la parte 5 de GH-581 recorre también la lista de medios abierta en el estado `new-sale/method-selector-open` (`statesSales.ts`). Los estados `new-sale/*` que eligen un medio, como `NuevaVentaConLineaYPago`, lo hacen con Paid, después el campo y después la opción.
 - El cambio del medio al Selector borró de `touch-action.json` las 21 entradas `radio:Cash`, `radio:Transfer` y `radio:Owing`: tres por cada estado DescartarVenta, ElegirCliente, NuevaVenta, NuevaVentaCliente, NuevaVentaConLinea, NuevaVentaConLineaYPago y NuevoClienteEnVenta. También borró cualquier otra entrada que dejó obsoleta y no agregó ningún infractor. Las celdas nuevas `radio:Paid` y `radio:Owing` pasan gracias al agregado de CSS de `SegmentedChoice`.
+- La insignia con el nombre de un Customer type se comprueba en un navegador con su propia corrida (`web/e2e/typeBadge.spec.ts`): un cliente en un tipo de nombre de 40 caracteres y una venta cotizada por él, en la vista previa de New sale y en el detalle, a 320 y a 246 px, sin desplazamiento horizontal, sin nombre que desborde y sin cifra partida. El fixture de muestra fijado no cambia, y el chequeo `mobile` del detalle a 246x437 no gana ningún infractor.
 
 ## Métricas
 
@@ -503,7 +510,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
   - la vista previa del front pasa la misma matriz de cotización que el dominio, para cada combinación de llaves, con y sin Customer type con precio;
   - la corrida de punta a punta compara la vista previa con el detalle guardado: 0 diferencias.
 - **Llaves en pantalla (criterio 17)**: tests del front muestran, para cada llave apagada, ninguna insignia ni campo de esa regla en New sale, ninguna insignia VIP en Sales y ninguna marca VIP en Pick a customer, mientras el detalle de una venta conserva sus insignias registradas.
-- **Insignia del tipo (criterios 37, 39)**: tests del front muestran el nombre del Customer type en la insignia de la vista previa y en el detalle; después de renombrar o eliminar el tipo, el detalle sigue mostrando el nombre guardado; una insignia con un nombre largo no desborda a 320 px ni con el texto al 130 %.
+- **Insignia del tipo (criterios 37, 39)**: tests del front muestran el nombre del Customer type en la insignia de la vista previa y en el detalle; después de renombrar o eliminar el tipo, el detalle sigue mostrando el nombre guardado; una insignia con un nombre largo no desborda a 320 px ni con el texto al 130 %, y en el navegador, a 320 y a 246 px, ni la vista previa ni el detalle se desplazan en horizontal ni parten una cifra.
 - **Detectado antes de guardar**: (Criterio 7)
   - Owing deshabilitado sin cliente, y sacar el cliente reinicia cómo se pagó;
   - una línea sin precio muestra su mensaje antes de guardar;
