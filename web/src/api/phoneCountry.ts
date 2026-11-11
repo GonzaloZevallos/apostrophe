@@ -25,6 +25,24 @@ export function savePhoneCountry(phoneCountry: string | null): Promise<BusinessP
   return put<BusinessPhoneCountry>('/business/phone-country', { phone_country: phoneCountry })
 }
 
+/** One listed Phone country as `GET /phone-countries` answers it: the same list for every business,
+ * in the order Settings shows. `example` is the local form a seller types. */
+export interface PhoneCountryListing {
+  code: string
+  calling_code: string
+  national_lengths: readonly number[]
+  example: string
+}
+
+/** The listed countries with their examples. Until the answer comes, and if it fails, `data` is
+ * undefined: the phone field then shows no example rather than a wrong one. */
+export function usePhoneCountries(): readonly PhoneCountryListing[] | undefined {
+  return useQuery({
+    queryKey: keys.phoneCountries(),
+    queryFn: () => get<PhoneCountryListing[]>('/phone-countries'),
+  }).data
+}
+
 /** The stored Phone country for the screens that follow it (the phone field's placeholder). Until
  * the answer comes, and if it fails, `loaded` is false: the field then shows no example rather
  * than a wrong one. */

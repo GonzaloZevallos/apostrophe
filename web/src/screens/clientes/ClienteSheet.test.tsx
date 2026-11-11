@@ -22,8 +22,8 @@ import { flipViewport, renderWithViewport } from '../../test-viewport'
 
 const NOBODY_OWES = baselineText('customers.ts:NOBODY_OWES')
 const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', money: { symbol: '$', decimals: 0 } }
-const ANA = { id: 1, name: 'Ana Pérez', phone: '+5491122334455', vip: false, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }
-const BETO = { id: 2, name: 'Beto Gómez', phone: null, vip: false, balance: 0, owing_since: null, standing: 'settled' }
+const ANA = { id: 1, name: 'Ana Pérez', phone: '+5491122334455', phone_display: '+54 9 11 2233-4455', vip: false, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }
+const BETO = { id: 2, name: 'Beto Gómez', phone: null, phone_display: null, vip: false, balance: 0, owing_since: null, standing: 'settled' }
 const ACCOUNT = {
   balance: 11000,
   owing_since: '2026-09-14',
@@ -112,6 +112,24 @@ describe('on a phone, a direct address', () => {
     expect(pane).toHaveTextContent('$ 11.000')
     expect(pane).toHaveTextContent('Owes you')
     expect(pane).not.toContainElement(dialog)
+  })
+
+  test('the card behind shows phone_display, not the stored phone', async () => {
+    renderApp([{ pathname: EDIT }], 'phone')
+
+    await screen.findByRole('dialog', { name: COMMON_TEXT.editCustomer })
+    const pane = behindPane()
+    await waitFor(() => expect(pane).toHaveTextContent('+54 9 11 2233-4455'))
+    expect(pane).not.toHaveTextContent('+5491122334455')
+  })
+
+  test('the list behind the new-customer sheet shows phone_display, not the stored phone', async () => {
+    renderApp([{ pathname: CUSTOMER_NEW }], 'phone')
+
+    await screen.findByRole('dialog', { name: COMMON_TEXT.newCustomer })
+    const pane = behindPane()
+    await waitFor(() => expect(pane).toHaveTextContent('+54 9 11 2233-4455'))
+    expect(pane).not.toHaveTextContent('+5491122334455')
   })
 
   test('the pane is empty while the data is pending', async () => {

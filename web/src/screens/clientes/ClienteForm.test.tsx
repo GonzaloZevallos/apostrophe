@@ -22,7 +22,7 @@ import FlashProvider from '../../flash/FlashProvider'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { queryClient, setCurrentPath, setNavigate } from '../../queryClient'
 import ClienteForm from './ClienteForm'
-import { stubFetchWithSettings } from '../stubFetchWithSettings'
+import { PHONE_COUNTRIES, stubFetchWithSettings } from '../stubFetchWithSettings'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
@@ -787,14 +787,7 @@ test('a type deleted meanwhile (404 customer_type.not_found) clears the choice, 
 })
 
 const PLACEHOLDERS: readonly (readonly [string | null, string])[] = [
-  ['AR', CUSTOMERS_TEXT.phoneHintAR],
-  ['UY', CUSTOMERS_TEXT.phoneHintUY],
-  ['CL', CUSTOMERS_TEXT.phoneHintCL],
-  ['PY', CUSTOMERS_TEXT.phoneHintPY],
-  ['BR', CUSTOMERS_TEXT.phoneHintBR],
-  ['MX', CUSTOMERS_TEXT.phoneHintMX],
-  ['ES', CUSTOMERS_TEXT.phoneHintES],
-  ['US', CUSTOMERS_TEXT.phoneHintUS],
+  ...PHONE_COUNTRIES.map((option): readonly [string | null, string] => [option.code, option.example]),
   [null, CUSTOMERS_TEXT.phoneHintNone],
 ]
 
@@ -805,6 +798,24 @@ test.each(PLACEHOLDERS)('the phone field shows the example of the business Phone
   await waitFor(() => {
     expect(screen.getByLabelText('Phone')).toHaveAttribute('placeholder', hint)
   })
+})
+
+test('the phone field takes its example from what GET /phone-countries answers', async () => {
+  const listing = [{ code: 'UY', calling_code: '598', national_lengths: [8], example: 'whatever the API says' }]
+  stubFetchWithSettings(true, true, [], 'UY', listing)
+  renderForm(CUSTOMER_NEW)
+
+  await waitFor(() => {
+    expect(screen.getByLabelText('Phone')).toHaveAttribute('placeholder', 'whatever the API says')
+  })
+})
+
+test('when GET /phone-countries fails the phone field has no placeholder', async () => {
+  stubFetchWithSettings(true, true, [], 'UY', 'fail')
+  renderForm(CUSTOMER_NEW)
+  const field = await screen.findByLabelText('Phone')
+  await new Promise((resolve) => setTimeout(resolve, 50))
+  expect(field).not.toHaveAttribute('placeholder')
 })
 
 describe('history', () => {

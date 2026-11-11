@@ -369,6 +369,16 @@ test('with nobody owing, a fixed "Nobody owes you" with nothing to tap sits abov
   expect(within(everyone).getByText('Lu')).toBeInTheDocument()
 })
 
+test('a row shows phone_display, never the stored phone, whatever country the number is from', async () => {
+  const uy = { ...customerFixture, id: 9, name: 'Uri', balance: 0, owing_since: null, standing: 'settled', phone: '+59899123456', phone_display: '+598 99 123 456' }
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [uy])))
+  renderClientes()
+
+  const row = await screen.findByRole('link', { name: /Uri/ })
+  expect(within(row).getByText('+598 99 123 456')).toBeInTheDocument()
+  expect(screen.queryByText('+59899123456')).not.toBeInTheDocument()
+})
+
 test('a customer with no phone shows no phone element, no dash, no empty label', async () => {
   vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerNoPhoneFixture])))
   renderClientes()

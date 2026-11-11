@@ -135,6 +135,11 @@ body {
   color: var(--tinta2);
 }
 
+/* The Customer's number on the card and the card behind: whole, on one line, never cut. */
+.campo__valor-telefono {
+  white-space: nowrap;
+}
+
 /* The price form's "Rige desde" chip (`PrecioNuevoCompu.dc.html`): a 52 px rounded surface
  * with a calendar and the date, left-aligned, over `Boton`'s secondary look. */
 .precio-chip .boton {
@@ -1351,6 +1356,7 @@ body {
 .lista-clientes__telefono {
   font-size: 13px;
   color: var(--tinta2);
+  white-space: nowrap;
 }
 
 .vip-insignia {
@@ -2527,6 +2533,7 @@ body {
 .nueva-venta__cliente-telefono {
   font-size: 14px;
   color: var(--tinta2);
+  white-space: nowrap;
 }
 
 .nueva-venta__cliente-cambiar {
@@ -6217,9 +6224,8 @@ body {
     flex-shrink: 0;
   }
 
+  /* A number is never cut: it stays on one line whole (the names above keep their ellipsis). */
   .lista-clientes__telefono {
-    overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
   }
 
