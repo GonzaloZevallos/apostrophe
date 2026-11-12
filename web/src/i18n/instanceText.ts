@@ -13,6 +13,8 @@ export type InstanceTextKey =
   | Exclude<Extract<CopyKey, `customerTypes:icon.${string}`>, 'customerTypes:icon.label'>
   | 'common:paid'
   | 'common:owing'
+  | 'common:homeSegmentToday'
+  | 'common:homeSegmentAnalysis'
 
 export function instanceText(key: InstanceTextKey): string {
   return i18n.t(key)

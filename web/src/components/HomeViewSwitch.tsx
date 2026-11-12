@@ -9,6 +9,7 @@
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { ANALYSIS, HOME } from '../routes'
+import { HOME_VIEWS } from './fixedSets'
 import { useViewport } from '../shell/useViewport'
 
 export type HomeView = 'today' | 'analysis'
@@ -16,20 +17,17 @@ export type HomeView = 'today' | 'analysis'
 export default function HomeViewSwitch({ selected }: { selected: HomeView }) {
   const { t } = useTranslation()
   if (useViewport() === 'computer') return null
-  const options = [
-    { view: 'today', to: HOME, label: t('common:homeSegmentToday') },
-    { view: 'analysis', to: ANALYSIS, label: t('common:homeSegmentAnalysis') },
-  ] as const
+  const target = { today: HOME, analysis: ANALYSIS } as const
   return (
     <div role="group" aria-label={t('common:homeViewSwitchLabel')} className="ajustes-tema">
-      {options.map((option) => (
+      {HOME_VIEWS.map((option) => (
         <Link
-          key={option.view}
-          to={option.to}
-          aria-current={option.view === selected ? 'page' : undefined}
-          className={option.view === selected ? 'ajustes-tema__opcion ajustes-tema__opcion--activa' : 'ajustes-tema__opcion'}
+          key={option.value}
+          to={target[option.value]}
+          aria-current={option.value === selected ? 'page' : undefined}
+          className={option.value === selected ? 'ajustes-tema__opcion ajustes-tema__opcion--activa' : 'ajustes-tema__opcion'}
         >
-          {option.label}
+          {option.label()}
         </Link>
       ))}
     </div>

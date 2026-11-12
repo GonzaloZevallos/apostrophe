@@ -36,11 +36,18 @@ export const inviteExpiry = (date: string): string => `A one-time link, it expir
  * adding, renaming and removing each save at once, through the owner's own routes. */
 export const CATEGORIES_SAVE_AT_ONCE = 'Adding, renaming or removing a category saves right away.'
 
+/** The line that names a stored language the Copy module has no name for; not exported, so
+ * `SETTINGS_TEXT.currentLanguage` is its one public key. */
+function currentLanguageLine(tag: string): string {
+  return `Current: ${tag}`
+}
+
 /** Every always-visible help line of these groups, measured with `SAMPLES`; the screens
  * render `inviteExpiry` itself. Checked by `copy/copyLimits.test.ts`. */
 const LIMITED_COPY_0: readonly LimitedCopy[] = [
   { kind: 'help', text: inviteExpiry(SAMPLES.date) },
   { kind: 'help', text: CATEGORIES_SAVE_AT_ONCE },
+  { kind: 'help', text: currentLanguageLine('xx') },
   { kind: 'help', text: CURRENCY_SYMBOL_HINT },
   { kind: 'notice', text: moneyTooManyDecimals(0) },
   { kind: 'notice', text: moneyTooManyDecimals(2) },
@@ -87,6 +94,7 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'SETTINGS_TEXT.moveReasonDown': [['Marketing']],
   'SETTINGS_TEXT.deleteReasonConfirm': [['Marketing']],
   languageName: [['en'], ['de'], ['xx']],
+  'SETTINGS_TEXT.currentLanguage': [['xx']],
 })
 
 /** Every text a person reads in this area that is not a named message above, by key. */
@@ -149,6 +157,7 @@ export const SETTINGS_TEXT = {
   reasonNameDuplicate: 'You already have a reason with that name.',
   deleteReasonConfirm: (name: string) => `Delete the reason ${name}?`,
   reasonMoveFailed: 'The order wasn\'t saved. Try again.',
+  currentLanguage: currentLanguageLine,
   currencySymbol: 'Symbol',
   currencySymbolHint: CURRENCY_SYMBOL_HINT,
   currencyDecimals: 'Decimals',

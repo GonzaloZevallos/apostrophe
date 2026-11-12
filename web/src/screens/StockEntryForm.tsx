@@ -384,7 +384,11 @@ export default function StockEntryForm({
             </label>
             <div className="campo">
               <div className="origen-pildoras">
-                <span className="pildora pildora--activa pildora--fija">{COMMON_TEXT.initialStock}</span>
+                {STOCK_ENTRY_ORIGINS.filter((option) => option.value === 'opening_stock').map((option) => (
+                  <span key={option.value} className="pildora pildora--activa pildora--fija">
+                    {option.label()}
+                  </span>
+                ))}
               </div>
             </div>
             <label className="campo">

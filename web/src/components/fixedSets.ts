@@ -3,9 +3,11 @@
  * (ADR-0074). A control that draws chips takes a `FixedSet`, and a `FixedSet` can only be built
  * here, by the unexported `fixedSet(reason, options)`, which refuses a blank reason: the type
  * carries an unexported `unique symbol` brand, so a mapped array or a hand-written object does
- * not compile. A set read from the business's data or settings (languages the business offers,
- * Payment methods, Customer types, reasons, categories) can grow, so it is never declared here:
- * the Selector is the control for those.
+ * not compile. A set read from the business's data or settings (which languages a business may
+ * choose, which is the server's Selectable list, Payment methods, Customer types, reasons,
+ * categories) can grow, so it is never declared here: the Selector is the control for those. The
+ * shipped languages are fixed (adding one is a code change in the Copy module) and the server's
+ * list only narrows them.
  *
  * An option holds only what is fixed: its `value`, a `label` getter and an optional icon. A
  * getter reads the same copy source its site read before and runs in render, never at load,
@@ -18,9 +20,11 @@
 
 import { COMMON_TEXT } from '../copy/common'
 import { CUSTOMER_TYPE_ICON_NAME } from '../copy/readers/customerTypeIcons'
+import { HOME_VIEW_NAME } from '../copy/readers/homeViews'
 import { PAYMENT_STATE_NAME } from '../copy/readers/paymentStates'
+import { SHIPPED_LANGUAGE_TAGS } from '../copy/readers/shippedLanguages'
 import { SALES_TEXT } from '../copy/sales'
-import { SETTINGS_TEXT } from '../copy/settings'
+import { languageName, SETTINGS_TEXT } from '../copy/settings'
 import type { NombreIcono } from './Icono'
 
 export interface FixedOption<T extends string> {
@@ -44,18 +48,27 @@ function fixedSet<const T extends string>(
   return Object.assign([...options], { [brand]: true as const })
 }
 
+const HOME_VIEWS_REASON = 'fixed set: the two views of Home, Today and Analysis'
 const PERIODS_REASON = 'fixed view: periods'
 const THEME_REASON = 'fixed set: theme choice'
 const ICONS_REASON = 'fixed set: the neutral icon set ships with the app'
 const ORIGINS_REASON = 'fixed set: Stock entry origins'
 const MONEY_DECIMALS_REASON = 'fixed set: the decimals a Business may write money with, 0 to 2'
 const PAYMENT_STATE_REASON = 'fixed set: payment state, which is not a method'
+const LANGUAGES_REASON =
+  'fixed set: the languages the Copy module has texts for; adding one is a code change in the Copy module'
 
 /** Home's period tabs. */
 export const HOME_PERIODS = fixedSet(PERIODS_REASON, [
   { value: 'today', label: () => COMMON_TEXT.today },
   { value: 'week', label: () => COMMON_TEXT.week },
   { value: 'month', label: () => COMMON_TEXT.month },
+])
+
+/** Home's Today | Analysis switch on the phone. */
+export const HOME_VIEWS = fixedSet(HOME_VIEWS_REASON, [
+  { value: 'today', label: HOME_VIEW_NAME.today },
+  { value: 'analysis', label: HOME_VIEW_NAME.analysis },
 ])
 
 /** Sales' period tabs. */
@@ -99,6 +112,62 @@ export const PAYMENT_STATES = fixedSet(PAYMENT_STATE_REASON, [
   { value: 'owing', label: PAYMENT_STATE_NAME.owing },
 ])
 
+/** Settings' language choice: the shipped languages, which the server's Selectable list narrows. */
+export const LANGUAGES = fixedSet(
+  LANGUAGES_REASON,
+  SHIPPED_LANGUAGE_TAGS.map((tag) => ({ value: tag, label: () => languageName(tag) })),
+)
+
+/** A screen that draws a declared set as chips itself, not through SegmentedChoice or Pestanas. */
+export interface RawChipSite {
+  /** The path from `web/`. */
+  readonly file: string
+  /** The set the site maps to draw its chips. */
+  readonly set: keyof typeof FIXED_SETS
+  /** Why the site draws the chips itself. */
+  readonly reason: string
+}
+
+export function rawSites(sites: readonly RawChipSite[]): readonly RawChipSite[] {
+  for (const site of sites) {
+    if (site.reason.trim() === '') throw new Error(`A raw chip site needs a reason: ${site.file}`)
+  }
+  return sites
+}
+
+/**
+ * The only screens besides SegmentedChoice and Pestanas that may carry a chip class, a radio or
+ * tab role or a pressed state (`architecture/choiceControls.ts` reads this list). In each, the
+ * markup maps the registered set and nothing else.
+ */
+export const RAW_CHIP_SITES = rawSites([
+  {
+    file: 'src/components/HomeViewSwitch.tsx',
+    set: 'HOME_VIEWS',
+    reason: 'the switch draws its two segments as links to the Home routes, which a button chip cannot be',
+  },
+  {
+    file: 'src/screens/settings/AppearanceGroup.tsx',
+    set: 'THEME_CHOICES',
+    reason: 'the Theme choice draws its own radio chips with the theme swatch classes',
+  },
+  {
+    file: 'src/screens/settings/BusinessGroup.tsx',
+    set: 'LANGUAGES',
+    reason: 'the language control narrows the set by the server list and disables the saving state itself',
+  },
+  {
+    file: 'src/screens/settings/CustomerTypeForm.tsx',
+    set: 'CUSTOMER_TYPE_ICON_SET',
+    reason: 'the icon grid draws each option as an icon button with its own accessible name',
+  },
+  {
+    file: 'src/screens/StockEntryForm.tsx',
+    set: 'STOCK_ENTRY_ORIGINS',
+    reason: 'the origin pills and the fixed Initial stock pill share the form origin layout',
+  },
+])
+
 /** Currency and decimals' Decimals choice. */
 export const MONEY_DECIMALS = fixedSet(MONEY_DECIMALS_REASON, [
   { value: '0', label: () => SETTINGS_TEXT.currencyDecimals0 },
@@ -109,10 +178,12 @@ export const MONEY_DECIMALS = fixedSet(MONEY_DECIMALS_REASON, [
 /** Every declared set and the reason it is fixed, readable in one place. */
 export const FIXED_SETS = {
   HOME_PERIODS: PERIODS_REASON,
+  HOME_VIEWS: HOME_VIEWS_REASON,
   SALES_PERIODS: PERIODS_REASON,
   THEME_CHOICES: THEME_REASON,
   CUSTOMER_TYPE_ICON_SET: ICONS_REASON,
   STOCK_ENTRY_ORIGINS: ORIGINS_REASON,
   PAYMENT_STATES: PAYMENT_STATE_REASON,
+  LANGUAGES: LANGUAGES_REASON,
   MONEY_DECIMALS: MONEY_DECIMALS_REASON,
 } as const
