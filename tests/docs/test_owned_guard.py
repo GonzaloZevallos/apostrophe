@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts.docs import owned_guard
 from scripts.docs.owned_guard import annotations, main
 
 GENERATED = "docs/architecture/generated/reference/routes.md"
@@ -111,3 +112,17 @@ def test_outside_a_git_repository_the_guard_warns_and_passes(
     monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(tmp_path.parent))
     assert main("base") == 0
     assert capsys.readouterr().out == "::warning::owned-path guard: git merge-base failed\n"
+
+
+def test_a_failed_git_diff_prints_one_warning_naming_the_step_and_passes(
+    repo: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    real_git = owned_guard._git
+
+    def failing_diff(*args: str) -> str | None:
+        return None if args[0] == "diff" else real_git(*args)
+
+    _commit(repo, API)
+    monkeypatch.setattr(owned_guard, "_git", failing_diff)
+    assert main("base") == 0
+    assert capsys.readouterr().out == "::warning::owned-path guard: git diff failed\n"
