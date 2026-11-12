@@ -142,6 +142,8 @@ Lo que entra a un **Business** (**Stock entries**), lo que sale de él sin una v
 
 ### En pantalla (en Products y Settings)
 
+![Products en el teléfono, con "+ Stock entry" y "Take from stock"](../assets/screens/Variedades.webp)
+
 - **No hay pestaña Stock.** El stock vive en Products (varieties.md, navigation.md); el path viejo de Stock redirige ahí.
 - **Por Product**, en la lista de Products y arriba de su página: sus gramos, su marca de estado y su detalle ("No grams since 30/09", "You are warned below 20 g", "At the pace of the last 30 days", y "Add its first entry" solo cuando no tiene movimientos), más los Days left.
 - **Marcas de estado** (`MarcaEstado`): se distinguen por forma y palabra, nunca solo por color.

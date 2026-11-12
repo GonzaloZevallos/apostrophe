@@ -23,6 +23,8 @@ Afina el job del Panel: Home muestra el día, no configura el Business. Antes, H
 
 **Cuando** llevo el negocio desde el teléfono entre pedidos o en medio de un chat con un Customer, varias veces por día, **quiero** que la app esté ordenada según lo que hago de verdad y con qué frecuencia, **para** volver al Customer en vez de buscar entre menús. (Es el job de navegación, navigation.md. Acá lo sirve Today, que muestra lo que se puede resolver hoy, con "Collect" en cada deudor.)
 
+**Cuando** necesito registrar una Expense, sacar flor del stock, ver cómo va el negocio o cambiar una configuración desde el celular, **quiero** encontrarlo donde ya vive ese contexto (Analysis en Home, "Take from stock" en la vista de stock de Products, Settings en el encabezado), **para** terminar en pocos toques sin pasar por un menú que lo junta todo. (GH-651, el retiro de More, navigation.md: acá lo sirven el avatar "Settings" del encabezado de Home y el segmento Today | Analysis.)
+
 **Cuando** un Product que cargué por error, o uno con el que ya no trabajo, sigue apareciendo en mis listas y selectores, **quiero** sacarlo desde el teléfono en pocos toques, eliminándolo si nunca se movió y archivándolo si tiene historial, **para que** mis listas muestren solo lo que todavía vendo, ninguna cifra pasada de ventas, stock, costo o Profit cambie, y pueda volver a tenerla exactamente como estaba si empiezo a venderla de nuevo. (Acá lo sirve What you have left, que deja afuera los Archived products mientras todas las cifras del período siguen iguales; se define en varieties.md.)
 
 Criterios de éxito:
@@ -55,9 +57,10 @@ Criterios de éxito:
 8. **Cobrar en un toque desde Today**: "Collect" en cada fila de deudor del bloque "Owed to you" abre Record payment con ese Customer elegido, con nombre accesible "Collect from <name>"; volver o "Close" sale con un solo movimiento.
 9. **Today es solo lo que se puede resolver**: lo vendido hoy, después Owed to you, después What you have left; un Product bajo lleva a su página; ninguna cifra de resultado (Profit, Cash, costos, Expenses, You gave away, Purchases) se muestra en Today.
 10. **Sin primer uso en Home**: Home no muestra ningún elemento de primer uso (ni el aviso del Onboarding, ni la checklist, ni "Start with your products", ni el aviso posterior a la Spreadsheet import) para ningún Business, cualquiera sea el estado de su configuración. Un Business en configuración ve el Panel normal con sus estados vacíos de siempre, sin texto de configuración.
-11. **Cada aviso lleva a su arreglo**: "Your Telegram catalog is out of date" abre la pantalla del Catalog; el avatar del Business abre Settings.
+11. **Cada aviso lleva a su arreglo**: "Your Telegram catalog is out of date" abre la pantalla del Catalog; en el teléfono, el avatar "Settings" del encabezado abre Settings, y en una computadora la fila del Business de la barra lateral.
 12. **Como en el diseño**: Home, `InicioOscuro` (Home, tema oscuro) e `InicioCompu` (Home, disposición de computadora) coinciden con `docs/product/design-system/pantallas/`, en teléfono y computadora, en los dos temas.
 13. **Nada cambia para un Business existente** (GH-318, parte de Withdrawal reasons): ve los mismos costos, Profit y Cash; la única diferencia visible es que la línea "Promotion" ahora dice "Marketing".
+14. **Analysis a un toque** (GH-651): en el teléfono, el segmento Today | Analysis de Home abre Analysis en 1 toque, y Home siempre abre en Today; las pestañas Today · Week · Month del Panel no cambian.
 
 # Resultados
 
@@ -164,7 +167,9 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 ![Home, pestaña Today, en el teléfono](../assets/screens/InicioHoy.webp)
 
 - Home es el Panel y una Tab root (navigation.md), y sigue siendo la pantalla de llegada después del login y después de aceptar una Invitation para sumarse. Aceptar una Invitation de Business nuevo lleva, en cambio, al Onboarding (onboarding.md).
-- **Arriba de todo**: el avatar del Business, que abre Settings.
+- **Encabezado del teléfono** (GH-651): la marca, el nombre del Business y "Home", y al final de la fila el avatar "Settings": un botón con las iniciales del Business, nombre accesible "Settings" (nunca el nombre del Business), de al menos 44×44, que abre Settings en 1 toque. Reemplaza al avatar del Business que tenía Home, así que la pantalla tiene una sola entrada a Settings. El título se corta con puntos suspensivos antes de que el avatar se achique, y nada se desplaza de costado a 320 px.
+- **El segmento Today | Analysis** (solo en el teléfono, GH-651): debajo del encabezado y encima del Panel, un control de navegación, un grupo con nombre accesible "Home view" de dos links de al menos 44 px, con "Today" elegido (`aria-current="page"` y peso, nunca solo color). "Analysis" abre `/analysis` (analysis.md), que muestra el mismo segmento con "Analysis" elegido. Está en todos los estados de Home (cargando, vacío, error, con datos) y nunca se desactiva. Home siempre abre en Today y no recuerda nada. Es otro nivel que las pestañas Today · Week · Month del Panel, que no cambian.
+- **En una computadora** no hay avatar ni segmento: Settings se abre desde la fila del Business de la barra lateral, y Analysis desde la barra lateral (navigation.md).
 - **De arriba abajo, encima de las cifras**:
   1. "Your Telegram catalog is out of date", mientras el Pinned catalog está Out of date (pinned-catalog.md). Abre la pantalla del Catalog (catalog.md);
   2. las cifras de la pestaña, como se listan arriba.
@@ -175,7 +180,7 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 - Sigue los temas claro y oscuro, y coincide con `docs/product/design-system/pantallas/` en los dos. Las líneas de los Withdrawal reasons usan la fila de resultado existente (la etiqueta a la izquierda y la cifra a la derecha); no tienen dibujo propio.
 - No es un menú de acciones:
   - no registra nada por sí mismo y no tiene toasts propios;
-  - su única acción principal es el "+ New sale" del marco; "Collect" en las filas de deudor es la única otra acción directa, además del aviso, que solo abre donde está su arreglo.
+  - su única acción principal es el "+ New sale" del marco; "Collect" en las filas de deudor es la única otra acción directa, además del aviso, que solo abre donde está su arreglo. El avatar "Settings" y el segmento solo llevan a otras pantallas.
 - Las cifras se leen al abrir el Panel, sin actualizaciones en vivo.
 - Una red caída muestra "No connection"; un error del servidor muestra el reintento genérico (accounts.md).
 
@@ -186,6 +191,7 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 - Cada cifra se calcula en el servidor, y también si se muestra el aviso de desactualizado, qué líneas de Withdrawal reason se muestran y en qué orden, y si una línea de Withdrawal reason está toda pendiente. El navegador nunca ordena ni suma nada.
 - Home no lee `/first-run` ni `/onboarding-progress`. Esas rutas siguen en el backend: `/onboarding-progress` lo lee el Onboarding, y `/first-run` el marco y Products para las reglas laterales de navigation.md.
 - Ninguna cifra ni nombre va a los logs, la consola ni el almacenamiento del navegador.
+- Las palabras del avatar y del segmento ("Settings", "Today", "Analysis", "Home view") salen del Copy module.
 
 ## Métricas
 
@@ -214,7 +220,8 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 - **Cobrar en un toque (criterio 8)**: la corrida de punta a punta del front, en ventanas de teléfono y de computadora, toca "Collect from <name>" en Today, Record payment abre con ese Customer elegido, se guarda un Payment y un solo movimiento de vuelta regresa a Home.
 - **Actualización después de Collect**: las pruebas del front muestran un Payment parcial que deja al deudor con el Balance nuevo, un Payment total que saca la fila y el avance que se completa hasta 3 según su orden, "Nobody owes you" cuando no queda nadie que deba, y los dos toasts como están especificados, sin nombre de Customer.
 - **Sin primer uso en Home (criterio 10 y job de Home)**: las pruebas del front, en teléfono y computadora y en los dos temas, muestran Home sin "Go on to the setup", sin checklist, sin "Start with your products" y sin "Connect the bot…" para un Business a mitad del Onboarding, uno anterior al Onboarding sin sus dos pasos, uno importado y uno sin precio hoy; Home no pide `/first-run` ni `/onboarding-progress`. Nada bajo `web/src`, `web/e2e` ni `tests` nombra `OnboardingNotice`, `FirstRunChecklist`, `ImportNotice` ni `inicioNotices`. 0 excepciones.
-- **El aviso de Home (criterio 11)**: las pruebas del front, en teléfono y computadora, muestran el aviso de desactualizado arriba de las cifras mientras rige, que abre la pantalla del Catalog, y el avatar que abre Settings.
+- **El aviso de Home (criterio 11)**: las pruebas del front, en teléfono y computadora, muestran el aviso de desactualizado arriba de las cifras mientras rige, que abre la pantalla del Catalog. En ancho de teléfono hay exactamente un link llamado "Settings", el avatar, y tocarlo lleva a `/settings`; en ancho de computadora el avatar no está y Settings se abre desde la fila del Business de la barra lateral.
+- **Analysis a un toque (criterio 14)**: pruebas de Testing Library a través del router real, en ancho de teléfono: tocar "Analysis" en el segmento de Home lleva a `/analysis`, "Today" lleva elegido `aria-current="page"` en Home, y en ancho de computadora el segmento no está. 100% de aprobación.
 - **Bordes de período**: una semana que cruza un mes y un año, el lunes como primer día y un cambio de día en hora argentina. 100% de aprobación.
 - **Avance de deudores (criterio 4)**: ordenado por Balance, después por Owing since y después por nombre; los Credits excluidos; "Nobody owes you" cuando nadie debe; "Collect" con su nombre accesible en cada fila. Ningún estado se dice solo por color, en los dos temas.
 - **Aislamiento (criterio 5)**: desde otro Business, la ruta del Panel no muestra ninguna cifra ni nombre de Withdrawal reason del primer Business. Después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen cifras ni nombres.
@@ -239,6 +246,8 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 - Poner primero los Products bajos en What you have left.
 - Rediseñar Record payment según `Cobro.dc.html`: es trabajo propio de la pantalla de payments.
 - Mostrar una línea en $0 para un Withdrawal reason sin Stock withdrawals en el período.
+- Recordar la última vista de Home (Today o Analysis), cambiar las pestañas Today · Week · Month del Panel, y el segundo link dibujado a Analysis ("Ver análisis del mes →"); el Home rediseñado completo lo construye su propio issue de rediseño.
+- Un avatar en el encabezado o el segmento Today | Analysis en una computadora.
 
 ## Planificado en GH-318
 

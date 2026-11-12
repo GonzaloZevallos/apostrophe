@@ -150,10 +150,12 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 
 ### En pantalla (`Analisis`, `AnalisisCompu`)
 
+![Analysis en el teléfono](../assets/screens/Analisis.webp)
+
 - **Dónde**: en el teléfono, una Tab root a la que se llega con el segmento Today | Analysis de Home: muestra la barra con Home marcada como activa y "+ New sale". En la computadora, "Analysis" en la barra lateral, debajo del separador (navigation.md). More ya no existe (GH-651).
 - **Encabezado del teléfono**: el título "Analysis" con el avatar "Settings" al final de la fila (navigation.md); el título se corta con puntos suspensivos antes de que el avatar se achique.
 - **El segmento Today | Analysis** (solo en el teléfono): debajo del encabezado, el mismo control de navegación de Home, un grupo con nombre accesible "Home view" de dos links de al menos 44 px, con "Analysis" elegido (`aria-current="page"` y peso, nunca solo color). "Today" vuelve a Home.
-- **La tarjeta Expenses** (solo en el teléfono): debajo del segmento, con el título "Expenses", "Add expense" (abre el formulario de la Expense con la fecha de hoy) y "See the expenses" (abre Expenses), cada una de al menos 44 px (expenses.md). No espera las cifras: está en los estados cargando, error, vacío y con datos. Es solo una entrada; no muestra ninguna cifra.
+- **La tarjeta Expenses** (solo en el teléfono): debajo del segmento y antes de las cifras, con el título "Expenses", "Add expense" (abre el formulario de la Expense con la fecha de hoy) y "See the expenses" (abre Expenses), cada una de al menos 44 px (expenses.md). No espera las cifras: está en los estados cargando, error, vacío y con datos. Es solo una entrada; no muestra ninguna cifra.
 - **Computadora**: la disposición de `AnalisisCompu`, con las tres secciones como tablas. La disposición del teléfono nunca la cambia: su captura sigue igual, y el segmento, el avatar y la tarjeta Expenses no se dibujan.
 - **Filas de semana y de mes**: en el teléfono son tarjetas (ver En el teléfono); en la computadora, cómo se ubican en una fila el Cost of goods sold, el Stock shortfall y las líneas de los Withdrawal reasons (líneas o subfilas) lo decide diseño. Cada cifra va en palabras, y lo pendiente y lo negativo se dicen con una palabra o un signo, nunca solo con el color, en los dos temas.
 - **Gráficos**: solo el acento y los tokens; cada barra lleva su cifra. Las marcas de mejor, las marcas de pendiente y los negativos se dicen con una palabra o una forma, nunca solo con el color.
@@ -295,7 +297,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 - Mostrar una línea en $0 para un Withdrawal reason sin Stock withdrawals en el período.
 - En el teléfono: secciones plegables, saltos entre secciones, o textos nuevos para las tarjetas o la semana actual.
 - La barra inferior, el "+ New sale" flotante y las etiquetas de la barra en Analysis (son de Navigation, parte 1 de GH-319).
-- La pantalla Analysis rediseñada completa (sus pestañas Day/Week/Month/Year y la sección Gastos después de los resúmenes) y un conteo de Expenses en la tarjeta: los construye su propio issue de rediseño.
+- La pantalla Analysis rediseñada completa (sus pestañas Day/Week/Month/Year, la tarjeta Expenses con superficie propia y ubicada después de los resúmenes) y un conteo de Expenses en la tarjeta: los construye su propio issue de rediseño.
 
 ## Planificado en GH-318
 

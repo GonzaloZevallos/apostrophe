@@ -78,7 +78,9 @@ La plata que un negocio paga por cualquier cosa que no sea flor, archivada bajo 
 
 ### En pantalla
 
-- **La tarjeta Expenses de Analysis** (solo en el teléfono, debajo del corte de 900 px; GH-651): en Analysis, debajo del segmento Today | Analysis, una tarjeta titulada "Expenses" con dos acciones de al menos 44 px:
+![Expenses en el teléfono](../assets/screens/Gastos.webp)
+
+- **La tarjeta Expenses de Analysis** (solo en el teléfono, debajo del corte de 900 px; GH-651): en Analysis, debajo del segmento Today | Analysis y antes de las cifras, una tarjeta titulada "Expenses" con dos acciones de al menos 44 px:
   - "Add expense", un botón con el ícono de agregar, que abre el formulario de la Expense con la fecha de hoy;
   - "See the expenses", un link de texto, sin conteo, que abre Expenses.
 
