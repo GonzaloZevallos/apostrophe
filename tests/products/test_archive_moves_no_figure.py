@@ -67,7 +67,12 @@ def _seed(client: TestClient, clock: MovableClock) -> Seed:
     clock.set(datetime(2026, 10, 15, 18, 0, tzinfo=UTC))
     a = _variety(client, "Criolla", 1_000)
     b = _variety(client, "Indica", 2_000)
-    customer = _ok(client.post("/customers", json={"name": "Juana", "phone": "11 2345-6789"}), 201)
+    customer = _ok(
+        client.post(
+            "/customers", json={"name": "Juana", "phone": "11 2345-6789", "phone_country": "AR"}
+        ),
+        201,
+    )
     _entry(client, a, "100", "2026-09-10", origin="purchase", total_cost=20_000)
     _entry(client, b, "50", "2026-09-10", origin="purchase", total_cost=10_000)
     sales = [

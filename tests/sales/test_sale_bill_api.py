@@ -52,7 +52,10 @@ _phones = iter(range(1000, 9999))
 
 def _customer(client: TestClient, name: str = "Juana", *, vip_in: Engine | None = None) -> int:
     """`vip_in` is the engine to put the customer in the business's VIP type through."""
-    response = client.post("/customers", json={"name": name, "phone": f"11 {next(_phones)}-0000"})
+    response = client.post(
+        "/customers",
+        json={"name": name, "phone": f"11 {next(_phones)}-0000", "phone_country": "AR"},
+    )
     assert response.status_code == 201, response.text
     customer_id = int(response.json()["id"])
     if vip_in is not None:

@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest'
 import { configure } from '@testing-library/react'
-import { afterEach, beforeEach } from 'vitest'
+import { afterEach, beforeEach, vi } from 'vitest'
 // The app's one i18next instance, installed through the i18n folder's own test helper (as
 // `main.tsx` installs it for the app): a component test renders keys
 // through it without any module outside `i18n/` importing the instance.
@@ -24,3 +24,12 @@ if (typeof window !== 'undefined') window.scrollTo = () => undefined
 // test that leaves an English miss fails: English is the language every key is written in.
 beforeEach(clearMissingKeys)
 afterEach(() => assertNoEnglishMisses(missingKeys()))
+
+// Where the app "is used", for every test: an Argentine phone. The device readers are the only code
+// that asks the browser (`src/phone/device.ts`); a test that needs another place overrides
+// them with `vi.mocked(deviceLanguages).mockReturnValue(...)`, and the test of the readers
+// themselves loads the real module with `vi.importActual`.
+vi.mock('./phone/device.ts', () => ({
+  deviceLanguages: vi.fn(() => ['es-AR']),
+  deviceTimeZone: vi.fn(() => 'America/Argentina/Buenos_Aires'),
+}))

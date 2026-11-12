@@ -21,6 +21,7 @@ subgraph src["src"]
   src_i18n["i18n"]
   src_main_tsx["main.tsx"]
   src_paymentReturn_ts["paymentReturn.ts"]
+  src_phone["phone"]
   src_queryClient_ts["queryClient.ts"]
   src_router_tsx["router.tsx"]
   src_routes_ts["routes.ts"]
@@ -89,6 +90,7 @@ src_screens-->src_flash
 src_screens-->src_format
 src_screens-->src_i18n
 src_screens-->src_paymentReturn_ts
+src_screens-->src_phone
 src_screens-->src_routes_ts
 src_screens-->src_sales
 src_screens-->src_session_ts

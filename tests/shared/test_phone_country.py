@@ -85,7 +85,7 @@ def test_a_listed_code_parses_and_an_unknown_one_is_refused() -> None:
     for bad in ("", "uy", "XX", "ARG", " AR", "54"):
         with pytest.raises(UnknownPhoneCountry) as refused:
             PhoneCountry.parse(bad)
-        assert refused.value.code == "business.phone_country_unknown"
+        assert refused.value.code == "customer.phone_country_unknown"
         assert bad not in str(refused.value) or bad == ""
 
 

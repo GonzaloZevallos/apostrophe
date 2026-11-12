@@ -64,11 +64,6 @@ def open_business(
 def signed_in(client: TestClient, token: str) -> TestClient:
     client.cookies.clear()
     client.headers["Authorization"] = f"Bearer {token}"
-    # A new business starts with no Phone country (docs/adr/0082); the suite's customers
-    # are typed the Argentine way, so the businesses it opens are set to Argentina, as
-    # every business that existed before the setting is. A test of "no country" clears it.
-    set_argentina = client.put("/business/phone-country", json={"phone_country": "AR"})
-    assert set_argentina.status_code == 200, set_argentina.text
     return client
 
 

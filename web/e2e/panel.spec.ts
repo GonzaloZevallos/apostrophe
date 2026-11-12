@@ -203,7 +203,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
 
   // A customer, for the sale left owing.
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Phone').fill('+5491155550077')
+  await page.getByLabel('Phone', { exact: true }).fill('+5491155550077')
   await page.getByLabel('Name').fill('Carla Pérez')
   await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expectPath(page, CUSTOMER)

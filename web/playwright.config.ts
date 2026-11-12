@@ -115,7 +115,15 @@ export default defineConfig({
     // original specs, which keep the first server and the real clock, never match it.
     {
       name: 'secure-origin',
-      testIgnore: [/catalogInsecureOrigin\.spec\.ts/, /mobile\.(spec|setup)\.ts/],
+      testIgnore: [/catalogInsecureOrigin\.spec\.ts/, /mobile\.(spec|setup)\.ts/, /phoneCountry\.spec\.ts/],
+    },
+    // GH-686: the Phone country is detected from the device's language and zone, so its spec
+    // needs a device that is not Argentine. A non-default locale is a project here, never a
+    // `test.use` in the spec (ADR-0040): the other projects keep the global es-AR pins.
+    {
+      name: 'phone-country-uy',
+      testMatch: /phoneCountry\.spec\.ts/,
+      use: { locale: 'es-UY', timezoneId: 'America/Montevideo', viewport: { width: 390, height: 844 } },
     },
     {
       name: 'insecure-origin',

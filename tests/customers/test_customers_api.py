@@ -24,6 +24,7 @@ def _register(
     body_in: dict[str, Any] = {"name": name, **rest}
     if phone is not None:
         body_in["phone"] = phone
+        body_in["phone_country"] = "AR"
     response = client.post("/customers", json=body_in)
     assert response.status_code == 201, response.text
     body: dict[str, Any] = response.json()
@@ -163,7 +164,13 @@ def test_registering_with_a_channel_in_the_body_succeeds_and_stores_nothing(
     client: TestClient, sent: str | None
 ) -> None:
     created = client.post(
-        "/customers", json={"name": "Fran Araujo", "phone": "11 2345-6789", "channel": sent}
+        "/customers",
+        json={
+            "name": "Fran Araujo",
+            "phone": "11 2345-6789",
+            "phone_country": "AR",
+            "channel": sent,
+        },
     )
 
     assert created.status_code == 201, created.text
@@ -195,7 +202,9 @@ def test_a_customer_that_does_not_exist_is_not_found(client: TestClient) -> None
 def test_two_customers_of_one_business_cannot_share_a_phone_number(client: TestClient) -> None:
     _register(client, "Fran Araujo", "11 2345-6789")
 
-    again = client.post("/customers", json={"name": "Another Fran", "phone": "5491123456789"})
+    again = client.post(
+        "/customers", json={"name": "Another Fran", "phone": "5491123456789", "phone_country": "AR"}
+    )
 
     assert again.status_code == 409
     assert "2345" not in again.text
@@ -210,14 +219,17 @@ def test_two_businesses_may_each_register_the_same_phone_number(
 
     assert (
         other_client.post(
-            "/customers", json={"name": "Fran Araujo", "phone": "11 2345-6789"}
+            "/customers",
+            json={"name": "Fran Araujo", "phone": "11 2345-6789", "phone_country": "AR"},
         ).status_code
         == 201
     )
 
 
 def test_an_invalid_phone_number_is_refused_without_repeating_it(client: TestClient) -> None:
-    response = client.post("/customers", json={"name": "Fran", "phone": "2345-6789"})
+    response = client.post(
+        "/customers", json={"name": "Fran", "phone": "2345-6789", "phone_country": "AR"}
+    )
 
     assert response.status_code == 422
     assert response.json()["detail"] == "that doesn't look like a phone number with its area code"
@@ -226,7 +238,9 @@ def test_an_invalid_phone_number_is_refused_without_repeating_it(client: TestCli
 
 
 def test_a_missing_name_is_refused(client: TestClient) -> None:
-    response = client.post("/customers", json={"name": "   ", "phone": "11 2345-6789"})
+    response = client.post(
+        "/customers", json={"name": "   ", "phone": "11 2345-6789", "phone_country": "AR"}
+    )
 
     assert response.status_code == 422
     assert response.json()["detail"] == "a customer needs a name"
@@ -372,7 +386,9 @@ def test_editing_a_customers_phone_to_one_already_taken_is_refused(client: TestC
     _register(client, "Fran Araujo", "11 2345-6789")
     other = _register(client, "Zoe", "11 1111-1111")
 
-    response = client.patch(f"/customers/{other['id']}", json={"phone": "11 2345-6789"})
+    response = client.patch(
+        f"/customers/{other['id']}", json={"phone": "11 2345-6789", "phone_country": "AR"}
+    )
 
     assert response.status_code == 409
     assert "2345" not in response.text
@@ -442,7 +458,9 @@ def test_a_malformed_phone_is_still_refused_when_most_customers_have_none(
 ) -> None:
     client.post("/customers", json={"name": "Sin Numero"})
 
-    response = client.post("/customers", json={"name": "Otro", "phone": "2345-6789"})
+    response = client.post(
+        "/customers", json={"name": "Otro", "phone": "2345-6789", "phone_country": "AR"}
+    )
 
     assert response.status_code == 422
     assert response.json()["code"] == "customer.phone_invalid"

@@ -78,7 +78,7 @@ describe('the projects of the e2e run', () => {
     // on purpose: Playwright queues projects in this order, and the eight phone cells are the
     // longest tests (about 4 min alone, 6 under load), so queued last they left workers idle
     // and the run crossed the gate's 1500 s with every test green.
-    expect(names).toEqual(['mobile-setup', 'mobile', 'secure-origin', 'insecure-origin'])
+    expect(names).toEqual(['mobile-setup', 'mobile', 'secure-origin', 'phone-country-uy', 'insecure-origin'])
   })
 
   it('selects specs only with RegExp values taken from the config', () => {
@@ -117,10 +117,20 @@ describe('the projects of the e2e run', () => {
   it('pins the browser zone and locale once, in the top-level use', () => {
     expect(config.use?.timezoneId).toBe('America/Argentina/Buenos_Aires')
     expect(config.use?.locale).toBe('es-AR')
+    // The one non-default device is a project (GH-686, invariant: a spec never sets its own).
     for (const project of config.projects ?? []) {
+      if (project.name === 'phone-country-uy') continue
       expect(project.use?.timezoneId).toBeUndefined()
       expect(project.use?.locale).toBeUndefined()
     }
+  })
+
+  it('runs the Phone country spec only in its own Uruguayan project', () => {
+    expect(projectsRunning(config, 'phoneCountry.spec.ts')).toEqual(['phone-country-uy'])
+    const uy = (config.projects ?? []).find((project) => project.name === 'phone-country-uy')
+    expect(uy?.use?.locale).toBe('es-UY')
+    expect(uy?.use?.timezoneId).toBe('America/Montevideo')
+    expect(uy?.use?.viewport).toEqual({ width: 390, height: 844 })
   })
 
   it('keeps a trace and a screenshot of a failing test only', () => {

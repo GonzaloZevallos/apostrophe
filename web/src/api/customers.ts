@@ -30,6 +30,8 @@ export interface CustomerIn {
   phone: string | null
   /** Sent only while Customer types is on; `null` clears the type. */
   customer_type_id?: number | null
+  /** The ISO code of the country that reads a number typed without "+"; `null` is Other. Sent with the phone. */
+  phone_country?: string | null
 }
 
 export type CustomerPatchIn = Partial<CustomerIn>

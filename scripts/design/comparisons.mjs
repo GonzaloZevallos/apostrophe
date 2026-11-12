@@ -75,7 +75,7 @@ import {
   retrySummary,
   sideOutcome,
 } from './settle.mjs'
-import { CAPTURE_SCALE, captureContextOptions, launchOptions, named, rowCapture, shotReason, staleFiles } from './shot.mjs'
+import { BUILT_DEVICE_PINS, CAPTURE_SCALE, captureContextOptions, launchOptions, named, rowCapture, shotReason, staleFiles } from './shot.mjs'
 import {
   addProbe,
   configureShot,
@@ -319,7 +319,7 @@ async function captureDesign(browser, s, options, ctx, census, probe) {
 
 // The built screen in the state its entry asks for; what could not be reached is the side's failure.
 async function captureBuilt(browser, s, options, census, probe) {
-  const context = await browser.newContext(options)
+  const context = await browser.newContext({ ...options, ...BUILT_DEVICE_PINS })
   try {
     return await captureBuiltIn(context, s, census, probe)
   } finally {
