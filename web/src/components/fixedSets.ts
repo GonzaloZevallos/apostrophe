@@ -24,7 +24,7 @@ import { HOME_VIEW_NAME } from '../copy/readers/homeViews'
 import { PAYMENT_STATE_NAME } from '../copy/readers/paymentStates'
 import { SHIPPED_LANGUAGE_TAGS } from '../copy/readers/shippedLanguages'
 import { SALES_TEXT } from '../copy/sales'
-import { languageName, SETTINGS_TEXT } from '../copy/settings'
+import { languageName, phoneCountryName, SETTINGS_TEXT } from '../copy/settings'
 import type { NombreIcono } from './Icono'
 
 export interface FixedOption<T extends string> {
@@ -49,6 +49,8 @@ function fixedSet<const T extends string>(
 }
 
 const HOME_VIEWS_REASON = 'fixed set: the two views of Home, Today and Analysis'
+const PHONE_COUNTRIES_REASON =
+  'fixed set: the Phone countries the shared rules table holds and the Copy module names; adding one is a code change'
 const PERIODS_REASON = 'fixed view: periods'
 const THEME_REASON = 'fixed set: theme choice'
 const ICONS_REASON = 'fixed set: the neutral icon set ships with the app'
@@ -69,6 +71,15 @@ export const HOME_PERIODS = fixedSet(PERIODS_REASON, [
 export const HOME_VIEWS = fixedSet(HOME_VIEWS_REASON, [
   { value: 'today', label: HOME_VIEW_NAME.today },
   { value: 'analysis', label: HOME_VIEW_NAME.analysis },
+])
+
+/** The value of the "No country" option of the Phone country control. */
+export const NO_COUNTRY = 'none'
+
+/** Settings' Phone country choice: "No country", then the countries the Copy module names; the API's list narrows it. */
+export const PHONE_COUNTRIES = fixedSet<string>(PHONE_COUNTRIES_REASON, [
+  { value: NO_COUNTRY, label: () => SETTINGS_TEXT.phoneCountryNone },
+  ...['AR', 'UY', 'CL', 'PY', 'BR', 'MX', 'ES', 'US'].map((code) => ({ value: code, label: () => phoneCountryName(code) })),
 ])
 
 /** Sales' period tabs. */
@@ -142,6 +153,11 @@ export function rawSites(sites: readonly RawChipSite[]): readonly RawChipSite[] 
  */
 export const RAW_CHIP_SITES = rawSites([
   {
+    file: 'src/screens/settings/PhoneCountryControl.tsx',
+    set: 'PHONE_COUNTRIES',
+    reason: 'the control narrows the set by the API list and shows a check beside the selected row',
+  },
+  {
     file: 'src/components/HomeViewSwitch.tsx',
     set: 'HOME_VIEWS',
     reason: 'the switch draws its two segments as links to the Home routes, which a button chip cannot be',
@@ -179,6 +195,7 @@ export const MONEY_DECIMALS = fixedSet(MONEY_DECIMALS_REASON, [
 export const FIXED_SETS = {
   HOME_PERIODS: PERIODS_REASON,
   HOME_VIEWS: HOME_VIEWS_REASON,
+  PHONE_COUNTRIES: PHONE_COUNTRIES_REASON,
   SALES_PERIODS: PERIODS_REASON,
   THEME_CHOICES: THEME_REASON,
   CUSTOMER_TYPE_ICON_SET: ICONS_REASON,

@@ -15,7 +15,7 @@
  * shows what the API answered; its options are the API's, after "No country".
  */
 
-import { type FormEvent, useId, useState } from 'react'
+import { type FormEvent, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE, get, patch, put } from '../../api/client'
 import { type PhoneCountryOption, savePhoneCountry } from '../../api/phoneCountry'
@@ -25,6 +25,7 @@ import { LANGUAGE_NOT_SELECTABLE_MESSAGE, kindOf, resolveOverride, type RefusalC
 import AvisoExito from '../../components/AvisoExito'
 import Boton from '../../components/Boton'
 import Icono from '../../components/Icono'
+import PhoneCountryControl from './PhoneCountryControl'
 import InAppLink from '../../components/InAppLink'
 import { SETTINGS_CURRENCY, SETTINGS_WITHDRAWAL_REASONS } from '../../routes'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
@@ -36,7 +37,6 @@ import {
   GENERIC_REFUSAL_MESSAGE,
   RENAME_SUCCESS,
   SETTINGS_TEXT,
-  phoneCountryName,
 } from '../../copy/settings'
 import SettingsGroup from './SettingsGroup'
 import { COMMON_TEXT } from '../../copy/common'
@@ -354,67 +354,3 @@ function LanguageControl({ language, selectable }: { language: StoredLanguage; s
   )
 }
 
-interface PhoneCountryControlProps {
-  options: readonly PhoneCountryOption[]
-  value: string | null
-  onChange: (value: string | null) => void
-  error: string | null
-  disabled: boolean
-}
-
-/**
- * The Phone country control: "No country" first, then the API's countries in its order, each as
- * its name and calling code. A single-choice group whose selected row carries a check beside its
- * text, never colour alone. It only chooses; the form's Save sends it. The help line is its
- * accessible description.
- */
-function PhoneCountryControl({ options, value, onChange, error, disabled }: PhoneCountryControlProps) {
-  const labelId = useId()
-  const helpId = useId()
-  const rows: readonly { code: string | null; text: string }[] = [
-    { code: null, text: SETTINGS_TEXT.phoneCountryNone },
-    ...options.map((option) => ({
-      code: option.code,
-      text: SETTINGS_TEXT.phoneCountryOption(phoneCountryName(option.code), option.calling_code),
-    })),
-  ]
-  return (
-    <div className="ajustes-idioma">
-      <span className="rotulo ajustes-tema__rotulo" id={labelId}>
-        {SETTINGS_TEXT.phoneCountryLabel}
-      </span>
-      <div
-        className="ajustes-tema ajustes-tema--columna"
-        role="radiogroup"
-        aria-labelledby={labelId}
-        aria-describedby={helpId}
-      >
-        {rows.map((row) => {
-          const checked = row.code === value
-          return (
-            <button
-              key={row.code ?? ''}
-              type="button"
-              role="radio"
-              aria-checked={checked}
-              disabled={disabled}
-              className={checked ? 'ajustes-tema__opcion ajustes-tema__opcion--activa' : 'ajustes-tema__opcion'}
-              onClick={() => onChange(row.code)}
-            >
-              {checked && <Icono nombre="hecho" />}
-              {row.text}
-            </button>
-          )
-        })}
-      </div>
-      <p className="ajustes-tema__ayuda" id={helpId}>
-        {SETTINGS_TEXT.phoneCountryHelp}
-      </p>
-      {error !== null && (
-        <span className="campo__error" role="alert">
-          {error}
-        </span>
-      )}
-    </div>
-  )
-}
