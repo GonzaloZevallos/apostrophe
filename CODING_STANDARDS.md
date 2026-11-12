@@ -294,10 +294,8 @@ schema, never listed, and no allowlist exists to put it on.
 
 ## 12. Generated documentation
 
-- The files under `docs/architecture/generated/**` and `docs/api/**`, and
-  `docs/architecture/decisiones.md`, are written only by `scripts.docs.generate`.
-- They are never edited by hand and never committed in a feature pull request.
-- Master regenerates them after each merge (docs/adr/0066).
-- A branch that changed one of them restores it from its merge-base with master.
-- The CI `docs` job runs `generate`, which fails only when generation fails, and warns
-  on a pull request that touches one of these paths (`scripts.docs.owned_guard`).
+- `docs/architecture/generated/**`, `docs/api/**` and `docs/architecture/decisiones.md` are
+  written only by `scripts.docs.generate`: never edited by hand, never committed in a feature
+  pull request. Master regenerates them after each merge (docs/adr/0066).
+- A branch that changed one restores it from its merge-base with master; the CI `docs` job
+  warns on a pull request that touches them (`scripts.docs.owned_guard`).
