@@ -655,6 +655,7 @@
   {"source":"settings.ts:SETTINGS_TEXT.channelChat","args":null,"text":"Channel chat"},
   {"source":"settings.ts:SETTINGS_TEXT.closingQuoteCannotUndo","args":null,"text":"”. This can't be undone."},
   {"source":"settings.ts:SETTINGS_TEXT.currentLanguage","args":["xx"],"text":"Current: xx"},
+  {"source":"settings.ts:SETTINGS_TEXT.currentPhoneCountry","args":["XX"],"text":"Current: XX"},
   {"source":"settings.ts:SETTINGS_TEXT.dark","args":null,"text":"Dark"},
   {"source":"settings.ts:SETTINGS_TEXT.delete","args":null,"text":"Delete"},
   {"source":"settings.ts:SETTINGS_TEXT.deleteReasonConfirm","args":["Marketing"],"text":"Delete the reason Marketing?"},

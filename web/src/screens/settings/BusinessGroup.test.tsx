@@ -289,6 +289,28 @@ test('the Phone country control lists "No country" first, then the API countries
   expect(screen.getByRole('radio', { name: 'No country' })).toHaveAttribute('aria-checked', 'false')
 })
 
+test('a stored Phone country the app has no row for is plain text, never a radio, even if the API lists it', async () => {
+  renderBusiness(
+    vi.fn().mockResolvedValue(
+      jsonResponse(200, {
+        ...BUSINESS,
+        phone_country: 'FR',
+        phone_countries: [...PHONE_COUNTRIES, { code: 'FR', calling_code: '33' }],
+      }),
+    ),
+  )
+
+  const group = await screen.findByRole('radiogroup', { name: 'Phone country' })
+  const current = screen.getByText('Current: FR')
+  expect(current).not.toHaveAttribute('role')
+  expect(current.closest('button')).toBeNull()
+  expect(group).not.toContainElement(current)
+  expect(screen.queryByRole('radio', { name: /France|FR/ })).not.toBeInTheDocument()
+  for (const radio of within(group).getAllByRole('radio')) {
+    expect(radio).toHaveAttribute('aria-checked', 'false')
+  }
+})
+
 test('the help line is always visible and is the control\'s accessible description', async () => {
   renderBusiness(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
 

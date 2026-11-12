@@ -1,7 +1,10 @@
 /**
  * The Phone country control of the Business group: a radio group over the `PHONE_COUNTRIES` fixed
  * set (the countries the shared rules table holds and the Copy module names). The API's list only
- * narrows it and gives each country its calling code, which the front never holds.
+ * narrows it and gives each country its calling code, which the front never holds. A stored
+ * country the set does not hold is plain text before the group: no role, no pressed state, no
+ * chip class, never offered (`tests/test_phone_country_front_names.py` keeps the set equal to the
+ * server's enum).
  */
 
 import { useId } from 'react'
@@ -19,7 +22,7 @@ interface PhoneCountryControlProps {
 }
 
 /**
- * The Phone country control: "No country" first, then the API's countries in its order, each as
+ * The Phone country control: "No country" first, then the set's countries (the server's enum order) that the API lists, each as
  * its name and calling code. A single-choice group whose selected row carries a check beside its
  * text, never colour alone. It only chooses; the form's Save sends it. The help line is its
  * accessible description.
@@ -27,12 +30,14 @@ interface PhoneCountryControlProps {
 export default function PhoneCountryControl({ options, value, onChange, error, disabled }: PhoneCountryControlProps) {
   const labelId = useId()
   const helpId = useId()
+  const known = value === null || PHONE_COUNTRIES.some((option) => option.value === value)
   const calling = new Map(options.map((option) => [option.code, option.calling_code]))
   return (
     <div className="ajustes-idioma">
       <span className="rotulo ajustes-tema__rotulo" id={labelId}>
         {SETTINGS_TEXT.phoneCountryLabel}
       </span>
+      {value !== null && !known && <span className="campo__ayuda">{SETTINGS_TEXT.currentPhoneCountry(value)}</span>}
       <div
         className="ajustes-tema ajustes-tema--columna"
         role="radiogroup"

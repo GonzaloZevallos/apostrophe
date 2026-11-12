@@ -24,7 +24,7 @@ import { HOME_VIEW_NAME } from '../copy/readers/homeViews'
 import { PAYMENT_STATE_NAME } from '../copy/readers/paymentStates'
 import { SHIPPED_LANGUAGE_TAGS } from '../copy/readers/shippedLanguages'
 import { SALES_TEXT } from '../copy/sales'
-import { languageName, phoneCountryName, SETTINGS_TEXT } from '../copy/settings'
+import { languageName, PHONE_COUNTRY_CODES, phoneCountryName, SETTINGS_TEXT } from '../copy/settings'
 import type { NombreIcono } from './Icono'
 
 export interface FixedOption<T extends string> {
@@ -76,10 +76,10 @@ export const HOME_VIEWS = fixedSet(HOME_VIEWS_REASON, [
 /** The value of the "No country" option of the Phone country control. */
 export const NO_COUNTRY = 'none'
 
-/** Settings' Phone country choice: "No country", then the countries the Copy module names; the API's list narrows it. */
+/** Settings' Phone country choice: "No country", then the countries the Copy module names (the server's enum order); the API's list narrows it. */
 export const PHONE_COUNTRIES = fixedSet<string>(PHONE_COUNTRIES_REASON, [
   { value: NO_COUNTRY, label: () => SETTINGS_TEXT.phoneCountryNone },
-  ...['AR', 'UY', 'CL', 'PY', 'BR', 'MX', 'ES', 'US'].map((code) => ({ value: code, label: () => phoneCountryName(code) })),
+  ...PHONE_COUNTRY_CODES.map((code) => ({ value: code, label: () => phoneCountryName(code) })),
 ])
 
 /** Sales' period tabs. */

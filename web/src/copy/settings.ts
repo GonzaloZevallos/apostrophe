@@ -44,12 +44,19 @@ function currentLanguageLine(tag: string): string {
   return `Current: ${tag}`
 }
 
+/** The line that names a stored Phone country the app has no row for; not exported, so
+ * `SETTINGS_TEXT.currentPhoneCountry` is its one public key. */
+function currentPhoneCountryLine(code: string): string {
+  return `Current: ${code}`
+}
+
 /** Every always-visible help line of these groups, measured with `SAMPLES`; the screens
  * render `inviteExpiry` itself. Checked by `copy/copyLimits.test.ts`. */
 const LIMITED_COPY_0: readonly LimitedCopy[] = [
   { kind: 'help', text: inviteExpiry(SAMPLES.date) },
   { kind: 'help', text: CATEGORIES_SAVE_AT_ONCE },
   { kind: 'help', text: currentLanguageLine('xx') },
+  { kind: 'help', text: currentPhoneCountryLine('XX') },
   { kind: 'help', text: CURRENCY_SYMBOL_HINT },
   { kind: 'help', text: PHONE_COUNTRY_HELP },
   { kind: 'notice', text: moneyTooManyDecimals(0) },
@@ -98,6 +105,7 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'SETTINGS_TEXT.deleteReasonConfirm': [['Marketing']],
   languageName: [['en'], ['de'], ['xx']],
   'SETTINGS_TEXT.currentLanguage': [['xx']],
+  'SETTINGS_TEXT.currentPhoneCountry': [['XX']],
   phoneCountryName: [['AR'], ['xx']],
   'SETTINGS_TEXT.phoneCountryOption': [['Uruguay', '598']],
 })
@@ -163,6 +171,7 @@ export const SETTINGS_TEXT = {
   deleteReasonConfirm: (name: string) => `Delete the reason ${name}?`,
   reasonMoveFailed: 'The order wasn\'t saved. Try again.',
   currentLanguage: currentLanguageLine,
+  currentPhoneCountry: currentPhoneCountryLine,
   currencySymbol: 'Symbol',
   currencySymbolHint: CURRENCY_SYMBOL_HINT,
   currencyDecimals: 'Decimals',
@@ -198,6 +207,10 @@ const PHONE_COUNTRY_NAMES: ReadonlyMap<string, string> = new Map([
   ['ES', SETTINGS_TEXT.phoneCountryES],
   ['US', SETTINGS_TEXT.phoneCountryUS],
 ])
+
+/** The ISO codes the front names, in the order Settings lists them (the server's `PhoneCountry`
+ * enum; `tests/test_phone_country_front_names.py` keeps the two equal). */
+export const PHONE_COUNTRY_CODES: readonly string[] = [...PHONE_COUNTRY_NAMES.keys()]
 
 export function phoneCountryName(code: string): string {
   return PHONE_COUNTRY_NAMES.get(code) ?? code
