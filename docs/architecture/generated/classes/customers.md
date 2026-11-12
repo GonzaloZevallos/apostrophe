@@ -101,6 +101,7 @@ classDiagram
     value : str
     of(raw: str, country: PhoneCountry #124; None) PhoneNumber
     optional(raw: str #124; None, country: PhoneCountry #124; None) PhoneNumber #124; None
+    plus_digits(raw: str) str #124; None
   }
   Customer --> CustomerName : name
   CustomerNameTooLong --|> CustomerRuleBroken
@@ -142,9 +143,6 @@ classDiagram
     phone_taken(phone: PhoneNumber) bool
     save(customer: Customer) Customer
   }
-  class PhoneCountryReader {
-    current() PhoneCountry #124; None
-  }
   class PhoneTaken {
     code : ClassVar~str~
   }
@@ -167,6 +165,7 @@ classDiagram
     customer_type_id : int #124; None
     name : str
     phone : str #124; None
+    phone_country : str #124; None
   }
   class CustomerOut {
     balance
@@ -184,6 +183,7 @@ classDiagram
     customer_type_id : int #124; None
     name : str #124; None
     phone : str #124; None
+    phone_country : str #124; None
     to_changes() CustomerChanges
   }
   class CustomerRow {
