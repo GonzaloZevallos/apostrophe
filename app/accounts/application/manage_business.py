@@ -9,7 +9,6 @@ from dataclasses import dataclass
 from app.accounts.application.ports import Accounts
 from app.accounts.domain.account import BusinessName
 from app.shared.language import BusinessLanguage, Language
-from app.shared.phone_country import PhoneCountry
 from app.shared.transaction import Transaction
 
 
@@ -19,8 +18,6 @@ class BusinessProfile:
     user_emails: list[str]
     # The stored tag, never the shown one (docs/adr/0050).
     language: str
-    # The stored ISO code, or None while the business has none (docs/adr/0082).
-    phone_country: str | None
 
 
 def business_profile(accounts: Accounts, business_id: int) -> BusinessProfile:
@@ -31,7 +28,6 @@ def business_profile(accounts: Accounts, business_id: int) -> BusinessProfile:
         business.name.value,
         [user.email.value for user in users],
         business.language.language.tag,
-        None if business.phone_country is None else business.phone_country.value,
     )
 
 
@@ -67,17 +63,3 @@ def change_business_language(
     accounts.save_business(dataclasses.replace(business, language=language))
     transaction.commit()
     return True
-
-
-def change_phone_country(
-    accounts: Accounts, transaction: Transaction, business_id: int, code: str | None
-) -> BusinessProfile:
-    """Sets the business's Phone country, or clears it with None. A code that is not a
-    listed country is refused (`UnknownPhoneCountry`, 422) before anything is read or
-    written. Stored phone numbers are never touched (docs/adr/0082)."""
-    country = None if code is None else PhoneCountry.parse(code)
-    business = accounts.business(business_id)
-    assert business is not None, "a signed-in user's business always exists"
-    accounts.save_business(dataclasses.replace(business, phone_country=country))
-    transaction.commit()
-    return business_profile(accounts, business_id)

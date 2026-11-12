@@ -1,6 +1,6 @@
 /**
  * The "Negocio" group of Configuración (`ConfiguracionNegocio.dc.html`; `accounts.md`):
- * renaming the business and choosing its Phone country, both under the form's one Save.
+ * renaming the business, language and the links to currency and withdrawal reasons.
  *
  * The business comes only from the session: `GET`/`PATCH /business` never take an id
  * (CODING_STANDARDS §9). Saving shows the fixed toast "Saved" (a constant,
@@ -8,24 +8,21 @@
  * inline and keeps what was typed, dispatched through `refusals.ts`. A dropped network shows
  * "Sin conexión", never the generic retry, which would wrongly blame the server.
  *
- * `dirty` is the typed name against `accepted`, or the chosen Phone country against the one the
- * server last accepted: both taken once from the first answer and reset from the save's answer.
- * They are never compared with the query cache, which the save refetches and a partner's change
- * can move under the form. The Phone country saves through `PUT /business/phone-country` and
- * shows what the API answered; its options are the API's, after "No country".
+ * `dirty` is the typed name against `accepted`, taken once from the first answer and reset from
+ * the save's answer. It is never compared with the query cache, which the save refetches and a
+ * partner's change can move under the form. The Phone country is chosen per number in the
+ * customer form (docs/adr/20261111-phone-country-per-number), so there is no setting for it here.
  */
 
 import { type FormEvent, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE, get, patch, put } from '../../api/client'
-import { type PhoneCountryOption, savePhoneCountry } from '../../api/phoneCountry'
 import { invalidateResource, keys } from '../../api/keys'
 import { type LanguageTag, type StoredLanguage, sameLanguage } from '../../api/language'
 import { LANGUAGE_NOT_SELECTABLE_MESSAGE, kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
 import AvisoExito from '../../components/AvisoExito'
 import Boton from '../../components/Boton'
 import Icono from '../../components/Icono'
-import PhoneCountryControl from './PhoneCountryControl'
 import InAppLink from '../../components/InAppLink'
 import { SETTINGS_CURRENCY, SETTINGS_WITHDRAWAL_REASONS } from '../../routes'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
@@ -48,9 +45,6 @@ interface Business {
   /** The stored language (never the shown one): what this control marks as current. */
   language: StoredLanguage
   selectable_languages: readonly LanguageTag[]
-  /** The stored Phone country (an ISO code) or null, and the countries it may take, in order. */
-  phone_country: string | null
-  phone_countries: readonly PhoneCountryOption[]
 }
 
 /** What `PUT /business/language` answers. */
@@ -91,8 +85,6 @@ export default function BusinessGroup() {
   return (
     <BusinessForm
       initialName={data.name}
-      initialPhoneCountry={data.phone_country}
-      phoneCountries={data.phone_countries}
       language={data.language}
       selectable={data.selectable_languages}
     />
@@ -101,8 +93,6 @@ export default function BusinessGroup() {
 
 interface BusinessFormProps {
   initialName: string
-  initialPhoneCountry: string | null
-  phoneCountries: readonly PhoneCountryOption[]
   language: StoredLanguage
   selectable: readonly LanguageTag[]
 }
@@ -118,20 +108,11 @@ function failureMessage(caught: ApiError, overrides: Partial<Record<RefusalCode,
     : ERROR_GENERICO_MENSAJE
 }
 
-function BusinessForm({
-  initialName,
-  initialPhoneCountry,
-  phoneCountries,
-  language,
-  selectable,
-}: BusinessFormProps) {
+function BusinessForm({ initialName, language, selectable }: BusinessFormProps) {
   const queryClient = useQueryClient()
   const [accepted, setAccepted] = useState(initialName)
   const [name, setName] = useState(initialName)
-  const [acceptedCountry, setAcceptedCountry] = useState(initialPhoneCountry)
-  const [country, setCountry] = useState(initialPhoneCountry)
   const [nameError, setNameError] = useState<string | null>(null)
-  const [countryError, setCountryError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -143,55 +124,24 @@ function BusinessForm({
     setSaved(false)
   }
 
-  function onCountryChange(value: string | null): void {
-    setCountry(value)
-    setCountryError(null)
-    setOffline(false)
-    setSaved(false)
-  }
-
   async function onSave(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
     setNameError(null)
-    setCountryError(null)
     setOffline(false)
     setSaved(false)
     setSaving(true)
-    const countryChanged = country !== acceptedCountry
     try {
-      // The name saves when it changed or when it is all that is saved (a blank one is refused).
-      if (name !== accepted || !countryChanged) {
-        try {
-          const updated = await patch<Business>('/business', { name })
-          setAccepted(updated.name)
-          setName(updated.name)
-          invalidateResource(queryClient, 'business')
-        } catch (caught) {
-          if (caught instanceof ApiError) {
-            setNameError(failureMessage(caught, RENAME_OVERRIDES))
-            return
-          }
-          throw caught
+      try {
+        const updated = await patch<Business>('/business', { name })
+        setAccepted(updated.name)
+        setName(updated.name)
+        invalidateResource(queryClient, 'business')
+      } catch (caught) {
+        if (caught instanceof ApiError) {
+          setNameError(failureMessage(caught, RENAME_OVERRIDES))
+          return
         }
-      }
-      if (countryChanged) {
-        try {
-          const answered = await savePhoneCountry(country)
-          queryClient.setQueryData<Business>(keys.business(), (old) =>
-            old === undefined
-              ? old
-              : { ...old, phone_country: answered.phone_country, phone_countries: answered.phone_countries },
-          )
-          setAcceptedCountry(answered.phone_country)
-          setCountry(answered.phone_country)
-          invalidateResource(queryClient, 'business')
-        } catch (caught) {
-          if (caught instanceof ApiError) {
-            setCountryError(failureMessage(caught, {}))
-            return
-          }
-          throw caught
-        }
+        throw caught
       }
       setSaved(true)
     } catch (caught) {
@@ -208,7 +158,7 @@ function BusinessForm({
   return (
     <SettingsGroup
       title={COMMON_TEXT.business}
-      dirty={name !== accepted || country !== acceptedCountry}
+      dirty={name !== accepted}
       leave={LEAVE}
     >
       {saved && (
@@ -233,13 +183,6 @@ function BusinessForm({
             </span>
           )}
         </label>
-        <PhoneCountryControl
-          options={phoneCountries}
-          value={country}
-          onChange={onCountryChange}
-          error={countryError}
-          disabled={saving}
-        />
         <Boton textOnly="submit" type="submit" disabled={saving}>
           {COMMON_TEXT.save}
         </Boton>
@@ -353,4 +296,3 @@ function LanguageControl({ language, selectable }: { language: StoredLanguage; s
     </div>
   )
 }
-

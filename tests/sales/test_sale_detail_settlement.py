@@ -63,7 +63,7 @@ def _variety(client: TestClient) -> int:
 def _customer(client: TestClient, name: str = "Juana") -> int:
     # The phone is unique per customer: a repeated one is refused.
     phone = f"11 {sum(map(ord, name)):04d}-{len(name):04d}"
-    response = client.post("/customers", json={"name": name, "phone": phone})
+    response = client.post("/customers", json={"name": name, "phone": phone, "phone_country": "AR"})
     assert response.status_code == 201, response.text
     return int(response.json()["id"])
 

@@ -77,7 +77,9 @@ def test_assigning_a_customer_later_does_not_change_the_number(client: TestClien
     variety_id = _variety(client)
     _sell(client, variety_id)
     sale = _sell(client, variety_id)
-    customer = client.post("/customers", json={"name": "Juana", "phone": "11 2345-6789"}).json()
+    customer = client.post(
+        "/customers", json={"name": "Juana", "phone": "11 2345-6789", "phone_country": "AR"}
+    ).json()
 
     assigned = client.put(f"/sales/{sale['id']}/customer", json={"customer_id": customer["id"]})
 

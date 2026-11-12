@@ -7,13 +7,13 @@ from dataclasses import dataclass
 from enum import Enum, auto
 
 from app.customers.application.errors import CustomerNotFound, CustomerTypeNotFound, PhoneTaken
-from app.customers.application.ports import (
-    Customers,
-    CustomerTypes,
-    PhoneCountryReader,
-    PricingSettingsReader,
+from app.customers.application.ports import Customers, CustomerTypes, PricingSettingsReader
+from app.customers.domain.customer import (
+    Customer,
+    CustomerName,
+    PhoneNeedsCountryCode,
+    PhoneNumber,
 )
-from app.customers.domain.customer import Customer, CustomerName, PhoneNumber
 from app.shared.phone_country import PhoneCountry
 from app.shared.transaction import Transaction
 
@@ -35,18 +35,19 @@ class CustomerChanges:
 def register_customer(
     customers: Customers,
     settings: PricingSettingsReader,
-    phone_country: PhoneCountryReader,
     types: CustomerTypes,
     transaction: Transaction,
     *,
     name: str,
     phone: str | None,
+    phone_country: str | None,
     customer_type_id: int | None,
 ) -> Customer:
     _require_existing(types, customer_type_id)
     # While the customer types are off a customer is created with none (docs/adr/0059).
     stored_type = customer_type_id if settings.current().is_vip_customers else None
-    return _register(customers, transaction, name, phone, phone_country.current(), stored_type)
+    customer_phone = _phone_for(phone, phone_country)
+    return _register(customers, transaction, name, customer_phone, stored_type)
 
 
 def register_imported_customer(
@@ -60,19 +61,18 @@ def register_imported_customer(
     """The spreadsheet import's own write. The import hands in the VIP type id of a VIP
     of the sheet, and the frozen `vip` mark is never written (docs/adr/0070). Its numbers
     are Argentine whatever the business's Phone country (docs/adr/0082)."""
-    return _register(customers, transaction, name, phone, PhoneCountry.AR, customer_type_id)
+    customer_phone = PhoneNumber.optional(phone, PhoneCountry.AR)
+    return _register(customers, transaction, name, customer_phone, customer_type_id)
 
 
 def _register(
     customers: Customers,
     transaction: Transaction,
     name: str,
-    phone: str | None,
-    country: PhoneCountry | None,
+    customer_phone: PhoneNumber | None,
     customer_type_id: int | None,
 ) -> Customer:
     customer_name = CustomerName.of(name)
-    customer_phone = PhoneNumber.optional(phone, country)
     if customer_phone is not None and customers.phone_taken(customer_phone):
         raise PhoneTaken()
     customer = customers.add(
@@ -86,6 +86,24 @@ def _register(
     return customer
 
 
+def _phone_for(raw: str | None, requested_code: str | None) -> PhoneNumber | None:
+    """The one place a typed phone and the country sent with it become a number
+    (docs/adr/20261111-phone-country-per-number).
+    In order: a blank phone is none and the country is ignored; a "+"
+    form follows its own calling code and the country is ignored, even a bogus one;
+    otherwise the requested country reads it, and none asks for the country."""
+    if raw is None or not raw.strip():
+        return None
+    try:
+        return PhoneNumber.of(raw, None)
+    except PhoneNeedsCountryCode:
+        # `of` reads a "+" form without a country; only a local number gets here.
+        pass
+    if requested_code is None:
+        raise PhoneNeedsCountryCode()
+    return PhoneNumber.of(raw, PhoneCountry.parse(requested_code))
+
+
 def get_customer(customers: Customers, customer_id: int) -> Customer:
     customer = customers.get(customer_id)
     if customer is None:
@@ -96,11 +114,11 @@ def get_customer(customers: Customers, customer_id: int) -> Customer:
 def edit_customer(
     customers: Customers,
     settings: PricingSettingsReader,
-    phone_country: PhoneCountryReader,
     types: CustomerTypes,
     transaction: Transaction,
     customer_id: int,
     changes: CustomerChanges,
+    phone_country: str | None = None,
 ) -> Customer:
     customer = get_customer(customers, customer_id)
 
@@ -109,11 +127,12 @@ def edit_customer(
     if isinstance(changes.phone, Unchanged):
         phone = customer.phone
     elif customer.phone is not None and changes.phone == customer.phone.value:
-        # The stored value sent back as it is stays as it is, whatever the Phone country
-        # is now: it is neither normalised again nor looked up (docs/adr/0082).
+        # The stored value sent back as it is stays as it is, whatever country is sent
+        # with it: it is neither normalised again nor is the country read
+        # (docs/adr/20261111-phone-country-per-number).
         phone = customer.phone
     else:
-        phone = PhoneNumber.optional(changes.phone, phone_country.current())
+        phone = _phone_for(changes.phone, phone_country)
         if phone is not None and customers.phone_taken(phone, other_than=customer_id):
             raise PhoneTaken()
 

@@ -73,7 +73,6 @@
   {"file":"src/screens/settings/IntegrationsGroup.tsx","imports":["settings.ts"],"issue":353},
   {"file":"src/screens/settings/InvitePartner.tsx","imports":["inicio.ts"],"issue":350},
   {"file":"src/screens/settings/InvitePartner.tsx","imports":["settings.ts"],"issue":353},
-  {"file":"src/screens/settings/PhoneCountryControl.tsx","imports":["settings.ts"],"issue":353},
   {"file":"src/screens/settings/PricingGroup.tsx","imports":["settings.ts"],"issue":353},
   {"file":"src/screens/settings/Settings.tsx","imports":["pinnedCatalog.ts"],"issue":352},
   {"file":"src/screens/settings/UsersGroup.tsx","imports":["settings.ts"],"issue":353},

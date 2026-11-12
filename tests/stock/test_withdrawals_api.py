@@ -395,7 +395,9 @@ def test_a_sale_line_cost_moves_with_an_earlier_withdrawal_and_every_reader_agre
 
 def test_a_withdrawal_is_never_a_sale_a_debt_or_money(client: TestClient) -> None:
     variety_id = _priced_variety(client, "Flor")
-    customer = client.post("/customers", json={"name": "Ana", "phone": "11 2222-3333"}).json()
+    customer = client.post(
+        "/customers", json={"name": "Ana", "phone": "11 2222-3333", "phone_country": "AR"}
+    ).json()
     _stock_in(client, variety_id, "50", origin="purchase", total_cost=5_000)
     client.post(
         "/sales",

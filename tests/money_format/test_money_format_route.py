@@ -204,7 +204,9 @@ def _bodies(client: TestClient) -> list[tuple[str, str, str, dict[str, Any]]]:
         "/stock/entries", json={"product_id": product, "origin": "adjustment", "quantity": 20}
     ).json()
     category = client.post("/expense-categories", json={"name": "Taxes"}).json()["id"]
-    customer = client.post("/customers", json={"name": "Ana", "phone": "11 5555-5555"}).json()["id"]
+    customer = client.post(
+        "/customers", json={"name": "Ana", "phone": "11 5555-5555", "phone_country": "AR"}
+    ).json()["id"]
     expense = client.post(
         "/expenses",
         json={"spent_on": "2026-10-01", "category_id": category, "amount": 100, "detail": "a"},

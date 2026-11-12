@@ -123,7 +123,7 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
   await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Phone').fill('+5491155550077')
+  await page.getByLabel('Phone', { exact: true }).fill('+5491155550077')
   await page.getByLabel('Name').fill('Lucía Borde')
   await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)

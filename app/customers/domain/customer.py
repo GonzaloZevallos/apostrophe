@@ -109,6 +109,21 @@ class PhoneNumber:
             return None
         return cls.of(raw, country)
 
+    @staticmethod
+    def _without_separators(raw: str) -> str:
+        cleaned = raw
+        for separator in _SEPARATORS:
+            cleaned = cleaned.replace(separator, "")
+        return cleaned
+
+    @classmethod
+    def plus_digits(cls, raw: str) -> str | None:
+        """What follows a leading "+" once the separators are removed, or `None` when the
+        text has no "+" form. A "+" anywhere else is not one. The front's `shownCountry`
+        reads "+" by the same rule (`web/src/phone/plusCases.json`)."""
+        cleaned = cls._without_separators(raw)
+        return cleaned[1:] if cleaned.startswith("+") else None
+
     @classmethod
     def of(cls, raw: str, country: PhoneCountry | None) -> PhoneNumber:
         """The canonical number of one typed by the business's Phone country (docs/adr/0082).
@@ -119,12 +134,9 @@ class PhoneNumber:
         international lengths, and otherwise a local number of that country. There is
         no default for `country`: every caller says which one it means.
         """
-        cleaned = raw
-        for separator in _SEPARATORS:
-            cleaned = cleaned.replace(separator, "")
-
-        has_plus = cleaned.startswith("+")
-        rest = cleaned[1:] if has_plus else cleaned
+        plus_digits = cls.plus_digits(raw)
+        has_plus = plus_digits is not None
+        rest = plus_digits if plus_digits is not None else cls._without_separators(raw)
         if "+" in rest or not rest or not rest.isdigit():
             raise InvalidPhoneNumber()
 

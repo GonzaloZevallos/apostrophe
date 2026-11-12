@@ -31,6 +31,7 @@ import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
 import { SheetLevel, useSheet } from '../../components/useSheetStack'
 import CustomerFields, { type CustomerFieldsValue } from '../clientes/CustomerFields'
+import { usePhoneCountryField } from '../clientes/usePhoneCountryField'
 import {
   GENERIC_REFUSAL,
   NAME_REQUIRED,
@@ -68,10 +69,16 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
   const vipCustomers = useIsVipCustomers()
   const chooser = useSheet(1)
   const creator = useSheet(2)
+  // The Phone country list is a third sheet: it is drawn in `listHost`, outside the content, and the
+  // content beneath is `inert`, so what it covers is reported as covered and unreachable.
+  const countryList = useSheet(3)
+  const [listHost, setListHost] = useState<HTMLElement | null>(null)
   const [query, setQuery] = useState('')
   const [newCustomer, setNewCustomer] = useState<CustomerFieldsValue>(EMPTY_NEW_CUSTOMER)
+  const country = usePhoneCountryField(null)
   const [nameError, setNameError] = useState<string | null>(null)
   const [phoneError, setPhoneError] = useState<string | null>(null)
+  const [phoneInvalid, setPhoneInvalid] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
 
@@ -92,10 +99,11 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
     event.preventDefault()
     setNameError(null)
     setPhoneError(null)
+    setPhoneInvalid(false)
     setFormError(null)
     setOffline(false)
     try {
-      const customer = await create.mutateAsync(newCustomer)
+      const customer = await create.mutateAsync({ ...newCustomer, phone_country: country.requestCountry })
       onChosen(customer)
       // Read at call time from the router: a save that resolves after the user already
       // closed the sheets closes nothing more.
@@ -110,8 +118,10 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
         const override = resolveOverride(FIELD_OVERRIDES, caught.code)
         if (override !== undefined) {
           if (override.field === 'name') setNameError(override.message)
-          else if (override.field === 'phone') setPhoneError(override.message)
-          else setFormError(override.message)
+          else if (override.field === 'phone') {
+            if (caught.code === 'customer.phone_invalid') setPhoneInvalid(true)
+            else setPhoneError(override.message)
+          } else setFormError(override.message)
         } else {
           setFormError(GENERIC_REFUSAL)
         }
@@ -126,7 +136,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
   return (
     <SheetLevel.Provider value={1}>
     <div className="cliente-sheet" role="presentation">
-      <div className="cliente-sheet__contenido">
+      <div className="cliente-sheet__contenido" inert={countryList.isOpen}>
         <span className="cliente-sheet__manija" aria-hidden="true" />
         <div className="cliente-sheet__encabezado">
           <span className="panel__titulo">{SALES_TEXT.pickCustomer}</span>
@@ -192,6 +202,9 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
                 onChange={setNewCustomer}
                 nameError={nameError}
                 phoneError={phoneError}
+          phoneInvalid={phoneInvalid}
+                country={country}
+                listHost={listHost}
               />
               {formError !== null && (
                 <span className="campo__error" role="alert">
@@ -199,13 +212,14 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
                 </span>
               )}
               {offline && <SinConexion />}
-              <Boton textOnly="submit" type="submit" disabled={create.isPending}>
+              <Boton textOnly="submit" type="submit" disabled={create.isPending || !country.ready}>
                 {SALES_TEXT.createCustomer}
               </Boton>
             </form>
           </SheetLevel.Provider>
         )}
       </div>
+      <div className="nueva-venta__lista" ref={setListHost} />
     </div>
     </SheetLevel.Provider>
   )

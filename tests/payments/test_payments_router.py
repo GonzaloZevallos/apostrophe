@@ -26,7 +26,9 @@ def _priced_variety(client: TestClient, *, price: int = 1_000, name: str = "Vari
 
 
 def _customer(client: TestClient, name: str = "Customer", phone: str = "11 2000-0000") -> int:
-    body: dict[str, int] = client.post("/customers", json={"name": name, "phone": phone}).json()
+    body: dict[str, int] = client.post(
+        "/customers", json={"name": name, "phone": phone, "phone_country": "AR"}
+    ).json()
     return body["id"]
 
 

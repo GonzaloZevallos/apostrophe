@@ -1,7 +1,13 @@
 import { useEffect, useId, useRef } from 'react'
-import { usePhoneCountries, usePhoneCountry } from '../../api/phoneCountry'
-import { CUSTOMERS_TEXT } from '../../copy/customers'
+import { NetworkError } from '../../api/client'
+import ErrorGenerico from '../../components/ErrorGenerico'
+import Selector from '../../components/Selector'
+import SinConexion from '../../components/SinConexion'
+import { CUSTOMERS_TEXT, phoneAdjective, phoneCountryName, phoneLengthsText } from '../../copy/customers'
 import { COMMON_TEXT } from '../../copy/common'
+import { choiceId, choiceOfId, OTHER_ID } from '../../phone/countryState'
+import type { PhoneCountryField } from './usePhoneCountryField'
+
 /**
  * The shared "Nombre / Teléfono" fields (`NuevaVentaCliente.dc.html`,
  * `ClienteForm.tsx`): split out of `ClienteForm` (plan, "Shape") so the "Nuevo
@@ -26,6 +32,12 @@ export interface CustomerFieldsProps {
   onChange: (value: CustomerFieldsValue) => void
   nameError: string | null
   phoneError: string | null
+  /** The server refused the number as not fitting (`customer.phone_invalid`): the field then names the shown country and its lengths. */
+  phoneInvalid: boolean
+  /** The Phone country of this form (`usePhoneCountryField`): the caller sends its `requestCountry`. */
+  country: PhoneCountryField
+  /** Where the phone's Phone country list is drawn when the sheet around the form must be covered (`inert`) beneath it. */
+  listHost?: HTMLElement | null
 }
 
 export default function CustomerFields({
@@ -33,19 +45,39 @@ export default function CustomerFields({
   onChange,
   nameError,
   phoneError,
+  phoneInvalid,
+  country,
+  listHost,
 }: CustomerFieldsProps) {
   const nameRef = useRef<HTMLInputElement>(null)
   const phoneId = useId()
   const phoneHintId = useId()
-  const phoneCountry = usePhoneCountry()
-  const phoneCountries = usePhoneCountries()
-  // Only once both answers are in; a country the list does not carry has no example to show.
+  const countryFailureId = useId()
+  const { countries, choice } = country
+  const shownPhoneError = phoneInvalid ? phoneInvalidText(country) : phoneError
+  // Kept true until the list loaded: a failed load never looks like a country.
+  const loading = !country.ready
+  // The example of the shown country; Other has none and says how to type the number.
   const phonePlaceholder =
-    !phoneCountry.loaded || phoneCountries === undefined
+    countries === undefined
       ? undefined
-      : phoneCountry.country === null
-        ? CUSTOMERS_TEXT.phoneHintNone
-        : phoneCountries.find((option) => option.code === phoneCountry.country)?.example
+      : choice.kind === 'country'
+        ? countries.find((option) => option.code === choice.code)?.example
+        : choice.kind === 'other'
+          ? CUSTOMERS_TEXT.phoneHintNone
+          : undefined
+  const countryOptions = [
+    ...(countries ?? []).map((option) => {
+      const name = phoneCountryName(option.code)
+      return {
+        value: option.code,
+        label: CUSTOMERS_TEXT.phoneCountryOption(name, option.calling_code),
+        // The "(+code)" part of the label, from the same Copy function, kept in one run.
+        figure: CUSTOMERS_TEXT.phoneCountryOption('', option.calling_code).trim(),
+      }
+    }),
+    { value: OTHER_ID, label: CUSTOMERS_TEXT.phoneCountryOther },
+  ]
 
   // The drawing opens with Name focused (`NuevaVentaCliente.dc.html`): once, on mount.
   useEffect(() => {
@@ -73,7 +105,30 @@ export default function CustomerFields({
           </span>
         )}
       </div>
-      <div className="cliente-fila">
+      <div className="cliente-fila cliente-fila--telefono">
+        <div className="campo cliente-fila__pais">
+          {(() => {
+            const shared = {
+              label: CUSTOMERS_TEXT.phoneCountryLabel,
+              required: true as const,
+              options: countryOptions,
+              // Never shown: Other is always an option.
+              emptySetMessage: CUSTOMERS_TEXT.phoneCountryOther,
+              value: choiceId(choice),
+              onChange: (next: string | null) => {
+                if (next !== null) country.pick(choiceOfId(next))
+              },
+              loading,
+              listHost,
+              describedBy: country.failure === null ? undefined : countryFailureId,
+            }
+            return country.locked ? (
+              <Selector {...shared} locked lockedReason={CUSTOMERS_TEXT.phoneCountryLockedReason} />
+            ) : (
+              <Selector {...shared} />
+            )
+          })()}
+        </div>
         <div className="campo cliente-fila__telefono">
           <span className="campo__rotulo">
             <label htmlFor={phoneId}>{CUSTOMERS_TEXT.phone}</label>{' '}
@@ -87,15 +142,30 @@ export default function CustomerFields({
             value={value.phone}
             aria-describedby={phoneHintId}
             placeholder={phonePlaceholder}
-            onChange={(event) => onChange({ ...value, phone: event.target.value })}
+            onChange={(event) => {
+              country.type(event.target.value)
+              onChange({ ...value, phone: event.target.value })
+            }}
           />
-          {phoneError !== null && (
+          {shownPhoneError !== null && (
             <span className="campo__error" role="alert">
-              {phoneError}
+              {shownPhoneError}
             </span>
           )}
         </div>
       </div>
+      {country.failure !== null && (
+        <div id={countryFailureId}>{country.failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}</div>
+      )}
     </>
   )
+}
+
+/** The text of a `customer.phone_invalid` rejection: it names the shown country and the lengths
+ * the API serves for it; with Other shown there is no country to name, so the generic text. */
+function phoneInvalidText(field: PhoneCountryField): string {
+  const { choice, countries } = field
+  const listing = choice.kind === 'country' ? countries?.find((option) => option.code === choice.code) : undefined
+  if (listing === undefined) return CUSTOMERS_TEXT.notAPhone
+  return CUSTOMERS_TEXT.phoneInvalidFor(phoneAdjective(listing.code), phoneLengthsText(listing.national_lengths))
 }

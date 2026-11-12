@@ -79,6 +79,7 @@ export function shotStepReason(kind: string, side: Side): string;
 export type Capture = 'captured' | 'not-captured';
 export type SideRecord = { path: string | null; reason?: string | null };
 export type RowCapture = { capture: Capture; reasons?: { design?: string; built?: string } };
+export const BUILT_DEVICE_PINS: Readonly<{ locale: 'es-AR'; timezoneId: 'America/Argentina/Buenos_Aires' }>;
 export const CALM_CONTEXT: Readonly<{ reducedMotion: 'reduce' }>;
 export const CAPTURE_SCALE: 2;
 export const CALM_CSS: string;

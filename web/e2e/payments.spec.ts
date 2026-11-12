@@ -69,7 +69,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
 
   // A customer, left owing on its first sale.
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Phone').fill('+5491155550099')
+  await page.getByLabel('Phone', { exact: true }).fill('+5491155550099')
   await page.getByLabel('Name').fill('Carla Pérez')
   await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expectPath(page, CUSTOMER)

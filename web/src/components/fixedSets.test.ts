@@ -105,8 +105,6 @@ test('FIXED_SETS gives every exported set a non-empty reason, and names nothing 
   expect(FIXED_SETS).toEqual({
     HOME_PERIODS: 'fixed view: periods',
     HOME_VIEWS: 'fixed set: the two views of Home, Today and Analysis',
-    PHONE_COUNTRIES:
-      'fixed set: the Phone countries the shared rules table holds and the Copy module names; adding one is a code change',
     SALES_PERIODS: 'fixed view: periods',
     THEME_CHOICES: 'fixed set: theme choice',
     CUSTOMER_TYPE_ICON_SET: 'fixed set: the neutral icon set ships with the app',
@@ -122,7 +120,6 @@ test('every raw chip site names a registered set, a real file and a reason', () 
   const sources = new Set(Object.keys(import.meta.glob('/src/**/*.tsx')))
   const declared = Object.keys(FIXED_SETS)
   expect(RAW_CHIP_SITES.map((site) => [site.file, site.set])).toEqual([
-    ['src/screens/settings/PhoneCountryControl.tsx', 'PHONE_COUNTRIES'],
     ['src/components/HomeViewSwitch.tsx', 'HOME_VIEWS'],
     ['src/screens/settings/AppearanceGroup.tsx', 'THEME_CHOICES'],
     ['src/screens/settings/BusinessGroup.tsx', 'LANGUAGES'],

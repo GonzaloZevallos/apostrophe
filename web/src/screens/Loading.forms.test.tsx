@@ -13,6 +13,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { router as appRouter } from '../router'
 import { CUSTOMER_NEW, EXPENSE_NEW } from '../routes'
 import { renderWithViewport, stubViewport } from '../test-viewport'
+import { PHONE_COUNTRIES } from './stubFetchWithSettings'
 import { type FetchImpl, jsonResponse, renderExpenses } from './expenses/renderExpenses'
 
 const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: 'en', money: { symbol: '$', decimals: 0 } }
@@ -55,6 +56,7 @@ describe('the new customer', () => {
       'GET /auth/me': () => jsonResponse(200, ME),
       'GET /pricing-settings': () => (pricingHeld ? gate : Promise.resolve()).then(() => jsonResponse(200, pricing)),
       'GET /api/customer-types': () => gate.then(() => jsonResponse(200, [])),
+      'GET /phone-countries': () => jsonResponse(200, PHONE_COUNTRIES),
     }
     vi.stubGlobal(
       'fetch',

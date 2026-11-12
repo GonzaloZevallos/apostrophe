@@ -1,9 +1,9 @@
-"""The countries a business can set as its Phone country (CONTEXT.md: Phone country,
-docs/adr/0082). The one place a calling code, a national length or a trunk prefix is
-written: the customers domain reads its rules from here, accounts validates against the
-enum, and the front holds only the names and what the API sends it. Each rule also holds
-the templates that group a number for display and the example a seller types. Standard
-library only."""
+"""The countries a number can be read with (CONTEXT.md: Phone country,
+docs/adr/20261111-phone-country-per-number). The
+one place a calling code, a national length or a trunk prefix is written: the customers domain
+reads its rules from here, `GET /phone-countries` serves them, and the front holds only the
+names and what the API sends it. Each rule also holds the templates that group a number for
+display and the example a seller types. Standard library only."""
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
@@ -15,7 +15,7 @@ from typing import ClassVar
 class UnknownPhoneCountry(Exception):
     """A code that is not one of the listed countries."""
 
-    code: ClassVar[str] = "business.phone_country_unknown"
+    code: ClassVar[str] = "customer.phone_country_unknown"
 
     def __init__(self) -> None:
         super().__init__("The phone country is not one a business can choose")

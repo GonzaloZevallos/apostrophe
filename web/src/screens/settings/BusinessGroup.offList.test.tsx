@@ -43,8 +43,6 @@ function Provide() {
 }
 
 const BUSINESS = {
-  phone_country: 'AR',
-  phone_countries: [{ code: 'AR', calling_code: '54' }],
   name: 'La Huerta',
   language: 'en',
   selectable_languages: ['en'],
