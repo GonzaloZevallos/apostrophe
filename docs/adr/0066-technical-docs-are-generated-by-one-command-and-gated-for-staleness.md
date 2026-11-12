@@ -99,3 +99,5 @@ de 16 a 35): mediana 202 s, peor 246 s. Es más que `tests-fast` (94.8 s), así 
 más lento de una entrega; es el costo conocido de esta parte.
 
 2026-11-11, GH-692 part 2: `api_breaks` generates the base spec from base code in a worktree and reads the head spec from the workspace.
+
+2026-11-12, GH-697 part 3: master's owned paths are committed by `github-actions[bot]` after each merge and the stale check is skipped only on a master push; see [ADR-20261112-regen-commits-master-s-owned-docs-as-the-actions-bot-outside-ci-ok](../adr/20261112-regen-commits-master-s-owned-docs-as-the-actions-bot-outside-ci-ok.md).
