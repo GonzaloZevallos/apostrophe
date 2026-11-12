@@ -8,8 +8,6 @@ the exit status is always 0. What is owned is decided only by `writer.is_owned`.
 from `app` or `tests`.
 """
 
-from __future__ import annotations
-
 import subprocess
 import sys
 from collections.abc import Iterable

@@ -1,7 +1,5 @@
 """The owned-path guard warns about generated output in a pull request and never fails (GH-708)."""
 
-from __future__ import annotations
-
 import subprocess
 from pathlib import Path
 
