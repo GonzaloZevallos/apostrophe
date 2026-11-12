@@ -206,7 +206,7 @@ def test_the_whole_vocabulary_dry_runs_clean_and_real_runs_as_import_md_says(
     assert sales["2026-02-01"]["lines"][0]["pricing_rule"] == "list"
     assert sales["2026-02-02"]["lines"][0]["pricing_rule"] == "list"
     assert sales["2026-02-03"]["payment"] == "owing"
-    assert sales["2026-02-03"]["lines"][0]["pricing_rule"] == "vip"
+    assert sales["2026-02-03"]["lines"][0]["pricing_rule"] == "type"
     assert sales["2026-02-04"]["payment"] == "none"
     paid_methods = {sales["2026-02-01"]["payment"], sales["2026-02-02"]["payment"]}
     assert paid_methods == {"cash", "transfer"}

@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-02
+summary: "usuarios con correo y contraseña, solo se entra por invitación, sesión firmada"
 ---
 
 # Users with email and password, invitations as the only way in, a signed session

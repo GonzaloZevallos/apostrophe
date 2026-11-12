@@ -21,10 +21,13 @@ from app.shared.quantity import Quantity
 class PriceBook(Protocol):
     """A business's varieties, read for pricing. Built for one business."""
 
-    def for_variety(self, variety_id: int, day: date) -> VarietyPricing | None:
+    def for_variety(
+        self, variety_id: int, day: date, customer_type_id: int | None = None
+    ) -> VarietyPricing | None:
         """`None` when the variety does not exist in this business. A variety that
         exists but has no current price on `day` is a `VarietyPricing` whose
-        `current` is `None`."""
+        `current` is `None`. With a customer type, the quote carries that type's price
+        in force on `day` (the row tied to the Current price entry), or none."""
         ...
 
 

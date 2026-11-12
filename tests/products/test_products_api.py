@@ -1,14 +1,18 @@
 """Varieties and their prices through the HTTP API, over a real database."""
 
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Any
 
 from fastapi.testclient import TestClient
+from sqlalchemy import select, text
 from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
 
+from app.customer_types.adapters.tables import CustomerTypePriceRow
 from tests.conftest import MovableClock
 from tests.fakes.archive import archive_by_hand
 from tests.pricing_switches import set_switches
+from tests.vip_type import make_type
 
 GOLD_JANUARY = {
     "effective_from": "2026-01-01",
@@ -95,7 +99,7 @@ def test_a_price_entry_is_recorded_and_becomes_the_current_price(
 
     assert entry == {"id": entry["id"], **GOLD_JANUARY, "vip_price": None}
     listed = client.get(f"/api/products/{variety['id']}").json()
-    assert listed["current_price"] == entry
+    assert listed["current_price"] == {**entry, "type_prices": []}
 
 
 def test_grams_with_two_decimals_go_in_and_out_as_numbers(
@@ -238,6 +242,7 @@ def test_a_vip_price_is_stored_and_answered_on_the_entry_the_current_price_and_t
     client: TestClient, engine: Engine
 ) -> None:
     set_switches(engine, bulk=True, vip=True)
+    make_type(engine, is_vip=True)
     variety_id = _register(client)["id"]
 
     entry = _price(client, variety_id, **GOLD_WITH_VIP)
@@ -251,6 +256,7 @@ def test_a_vip_price_is_stored_and_answered_on_the_entry_the_current_price_and_t
 
 def test_an_entry_without_a_vip_price_answers_null(client: TestClient, engine: Engine) -> None:
     set_switches(engine, bulk=True, vip=True)
+    make_type(engine, is_vip=True)
     variety_id = _register(client)["id"]
 
     assert _price(client, variety_id, **GOLD_JANUARY)["vip_price"] is None
@@ -260,6 +266,7 @@ def test_a_vip_price_alone_and_a_bulk_price_alone_are_both_accepted(
     client: TestClient, engine: Engine
 ) -> None:
     set_switches(engine, bulk=True, vip=True)
+    make_type(engine, is_vip=True)
     variety_id = _register(client)["id"]
 
     only_vip = _price(
@@ -273,6 +280,7 @@ def test_a_vip_price_alone_and_a_bulk_price_alone_are_both_accepted(
 
 def test_a_vip_price_above_the_bulk_price_is_accepted(client: TestClient, engine: Engine) -> None:
     set_switches(engine, bulk=True, vip=True)
+    make_type(engine, is_vip=True)
     variety_id = _register(client)["id"]
 
     entry = _price(client, variety_id, **{**GOLD_JANUARY, "vip_price": 10_500})
@@ -284,6 +292,7 @@ def test_a_vip_price_at_or_above_list_is_refused_with_its_code_and_without_the_a
     client: TestClient, engine: Engine
 ) -> None:
     set_switches(engine, bulk=True, vip=True)
+    make_type(engine, is_vip=True)
     variety_id = _register(client)["id"]
 
     for vip_price in (11_000, 12_345):
@@ -301,6 +310,7 @@ def test_with_bulk_off_the_bulk_values_posted_are_not_stored(
     client: TestClient, engine: Engine
 ) -> None:
     set_switches(engine, bulk=False, vip=True)
+    make_type(engine, is_vip=True)
     variety_id = _register(client)["id"]
 
     entry = _price(client, variety_id, **GOLD_WITH_VIP)
@@ -339,6 +349,7 @@ def test_an_earlier_entry_keeps_its_stored_rules_when_a_later_one_is_recorded_wi
     client: TestClient, engine: Engine
 ) -> None:
     set_switches(engine, bulk=True, vip=True)
+    make_type(engine, is_vip=True)
     variety_id = _register(client)["id"]
     _price(client, variety_id, **GOLD_WITH_VIP)
 
@@ -364,6 +375,7 @@ def test_one_business_s_switches_never_gate_another_business_s_entries(
 ) -> None:
     set_switches(engine, bulk=False, vip=False, business_name="Primer Negocio")
     set_switches(engine, bulk=True, vip=True, business_name="Otro Negocio")
+    make_type(engine, is_vip=True, business_name="Otro Negocio")
     mine = _price(client, _register(client)["id"], **GOLD_WITH_VIP)
     theirs = _price(other_client, _register(other_client)["id"], **GOLD_WITH_VIP)
 
@@ -389,3 +401,140 @@ def test_an_archived_variety_still_holds_its_name(client: TestClient, engine: En
     assert client.post("/api/products", json={"name": " GONE "}).status_code == 409
     other = _register(client, "Other")
     assert client.patch(f"/api/products/{other['id']}", json={"name": "gone"}).status_code == 409
+
+
+def _vip_rows(engine: Engine) -> list[tuple[Any, ...]]:
+    with Session(engine) as session:
+        return [
+            tuple(r)
+            for r in session.execute(
+                select(
+                    CustomerTypePriceRow.price_entry_id,
+                    CustomerTypePriceRow.effective_on,
+                    CustomerTypePriceRow.price,
+                )
+            ).all()
+        ]
+
+
+def test_the_vip_field_writes_one_vip_type_row_and_never_the_frozen_column(
+    client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=True, vip=True)
+    vip_type = make_type(engine, is_vip=True)
+    variety_id = _register(client)["id"]
+
+    entry = _price(client, variety_id, **GOLD_WITH_VIP)
+
+    assert [(r[0], r[1]) for r in _vip_rows(engine)] == [(entry["id"], date(2026, 1, 1))]
+    with Session(engine) as session:
+        assert session.scalars(text("select vip_price from price_entry")).all() == [None]
+    current = client.get(f"/api/products/{variety_id}").json()["current_price"]
+    assert current["type_prices"] == [{"customer_type_id": vip_type, "price": 9_000}]
+
+
+def test_with_the_switch_off_or_no_vip_type_no_row_is_stored_and_the_entry_saves(
+    client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=True, vip=True)
+    variety_id = _register(client)["id"]
+
+    no_type = _price(client, variety_id, **GOLD_WITH_VIP)
+
+    assert no_type["vip_price"] is None
+    assert _vip_rows(engine) == []
+    make_type(engine, is_vip=True)
+    set_switches(engine, bulk=True, vip=False)
+    off = _price(client, variety_id, **{**GOLD_WITH_VIP, "effective_from": "2026-02-01"})
+    assert off["vip_price"] is None
+    assert _vip_rows(engine) == []
+
+
+def test_deleting_an_entry_deletes_its_rows_and_the_previous_vip_price_shows_again(
+    client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=True, vip=True)
+    make_type(engine, is_vip=True)
+    variety_id = _register(client)["id"]
+    _price(client, variety_id, **GOLD_WITH_VIP)
+    later = _price(
+        client, variety_id, **{**GOLD_WITH_VIP, "effective_from": "2026-02-01", "vip_price": 8_000}
+    )
+
+    assert client.delete(f"/api/products/{variety_id}/prices/{later['id']}").status_code == 204
+
+    assert len(_vip_rows(engine)) == 1
+    assert client.get(f"/api/products/{variety_id}").json()["current_price"]["vip_price"] == 9_000
+
+
+def test_removing_a_product_leaves_no_row(client: TestClient, engine: Engine) -> None:
+    set_switches(engine, bulk=True, vip=True)
+    make_type(engine, is_vip=True)
+    variety_id = _register(client)["id"]
+    _price(client, variety_id, **GOLD_WITH_VIP)
+
+    assert client.delete(f"/api/products/{variety_id}").status_code == 204
+
+    assert _vip_rows(engine) == []
+
+
+def test_a_migrated_business_with_no_vip_type_shows_no_vip_price(
+    client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=True, vip=True)
+    variety_id = _register(client)["id"]
+    _price(client, variety_id, **GOLD_WITH_VIP)
+    with Session(engine) as session:
+        session.execute(text("update price_entry set vip_price = 9000"))
+        session.commit()
+
+    shown = client.get(f"/api/products/{variety_id}/prices").json()
+
+    assert shown[0]["vip_price"] is None
+
+
+def test_an_entry_of_another_business_answers_404_and_keeps_its_rows(
+    client: TestClient, other_client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=True, vip=True, business_name="Otro Negocio")
+    make_type(engine, is_vip=True, business_name="Otro Negocio")
+    theirs = _register(other_client)["id"]
+    entry = _price(other_client, theirs, **GOLD_WITH_VIP)
+
+    assert client.delete(f"/api/products/{theirs}/prices/{entry['id']}").status_code == 404
+    assert len(_vip_rows(engine)) == 1
+
+
+def test_a_vip_price_with_cents_is_stored_in_hundredths_and_answered_in_currency_units(
+    client: TestClient, engine: Engine
+) -> None:
+    # A business at 2 decimals holds its amounts in the unit of a cent (docs/adr/0058): the
+    # type-price row goes through the same helpers as the list and bulk prices, so the VIP
+    # price compares with them and comes back as typed.
+    assert client.put("/api/money-format", json={"symbol": "$", "decimals": 2}).status_code == 200
+    set_switches(engine, bulk=True, vip=True)
+    vip_type = make_type(engine, is_vip=True)
+    variety_id = _register(client)["id"]
+
+    entry = _price(
+        client,
+        variety_id,
+        effective_from="2026-01-01",
+        list_price=12.5,
+        bulk_price=11.25,
+        bulk_minimum=10,
+        vip_price=10.5,
+    )
+
+    assert entry["vip_price"] == 10.5
+    assert [row[2] for row in _vip_rows(engine)] == [1_050]
+    current = client.get(f"/api/products/{variety_id}").json()["current_price"]
+    assert current["vip_price"] == 10.5
+    assert current["type_prices"] == [{"customer_type_id": vip_type, "price": 10.5}]
+    assert client.get(f"/api/products/{variety_id}/prices").json()[0]["vip_price"] == 10.5
+    refused = client.post(
+        f"/api/products/{variety_id}/prices",
+        json={"effective_from": "2026-02-01", "list_price": 12.5, "vip_price": 12.5},
+    )
+    assert refused.status_code == 422
+    assert refused.json()["code"] == "variety.vip_price_not_below_list"

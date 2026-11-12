@@ -10,7 +10,8 @@ and prints. Lines carry job names and results, nothing else.
   is "false". A "true" or missing flag, `failure` and `cancelled` fail.
 - `ALWAYS_JOBS` (checks, web, docs) must be `success`.
 - pytest, vitest, e2e-shard and e2e are treated alike: none is parked or warning-only.
-  `e2e-shard` is the matrix; `e2e` is the aggregator over it (the job `ci_covers` names).
+  `e2e-shard` is the matrix; `e2e` is the aggregator over it (the check-run `ci-ok` gates
+  the merge on).
 - `WARN_JOBS` (coverage) pass on `success`; any other result is a warning, except `cancelled`,
   which fails.
 - A job in no map fails by name.

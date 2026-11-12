@@ -66,6 +66,7 @@ class SaleLineOut(BaseModel):
     product_name: str
     quantity: QuantityOut
     pricing_rule: PricingRule
+    customer_type_name: str | None
     price_per_gram: MoneyOut
     line_total: MoneyOut
 
@@ -77,6 +78,7 @@ class SaleLineOut(BaseModel):
             product_name=view_line.variety_name,
             quantity=line.quantity.as_decimal(),
             pricing_rule=line.pricing_rule,
+            customer_type_name=line.customer_type_name,
             price_per_gram=Decimal(line.price_per_gram),
             line_total=Decimal(line.line_total),
         )
@@ -144,6 +146,7 @@ class SaleLineDetailOut(BaseModel):
     product_name: str
     quantity: QuantityOut
     pricing_rule: PricingRule
+    customer_type_name: str | None
     price_per_gram: MoneyOut
     line_total: MoneyOut
     cost: LineCostOut
@@ -156,6 +159,7 @@ class SaleLineDetailOut(BaseModel):
             product_name=view_line.variety_name,
             quantity=line.quantity.as_decimal(),
             pricing_rule=line.pricing_rule,
+            customer_type_name=line.customer_type_name,
             price_per_gram=Decimal(line.price_per_gram),
             line_total=Decimal(line.line_total),
             cost=LineCostOut.of(cost),

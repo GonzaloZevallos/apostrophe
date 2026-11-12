@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-11-10
+summary: "Home no muestra avisos de primer uso y abrir `/onboarding` en `finish` termina el Onboarding"
 ---
 
 # Home no muestra avisos de primer uso y `/onboarding` en `finish` termina el Onboarding

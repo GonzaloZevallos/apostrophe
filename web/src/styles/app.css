@@ -1826,6 +1826,14 @@ body {
   color: var(--acento);
 }
 
+.insignia--truncable {
+  display: inline-block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .insignia--deuda {
   background: var(--deuda-fondo);
   color: var(--deuda);
@@ -2160,13 +2168,18 @@ body {
   letter-spacing: -0.035em;
 }
 
+/* The row wraps when its figures and the badge do not fit side by side, so a narrow screen
+ * never scrolls sideways; each figure stays whole on its own line. */
 .venta-detalle__linea-inferior {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--espacio-xs);
 }
 
 .venta-detalle__precio {
+  flex-shrink: 0;
+  white-space: nowrap;
   font-size: 14px;
   color: var(--tinta2);
 }

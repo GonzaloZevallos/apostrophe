@@ -3,13 +3,15 @@ type is made by the upgrade or the import (docs/adr/0070), never by a route, and
 customer's type is written by the Customer API, which these tests of readers do not
 depend on."""
 
-from sqlalchemy import select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import BusinessRow
-from app.customer_types.adapters.tables import CustomerTypeRow
+from app.customer_types.adapters.sql_customer_type_prices import SqlCustomerTypePrices
+from app.customer_types.adapters.tables import CustomerTypePriceRow, CustomerTypeRow
 from app.customers.adapters.tables import CustomerRow
+from app.products.adapters.tables import PriceEntryRow
 
 
 def make_type(
@@ -42,5 +44,29 @@ def put_in_type(engine: Engine, customer_id: int, type_id: int | None) -> None:
             update(CustomerRow)
             .where(CustomerRow.id == customer_id)
             .values(customer_type_id=type_id)
+        )
+        session.commit()
+
+
+def price_type(engine: Engine, product_id: int, type_id: int, price: int) -> None:
+    """The type's price for the product, set straight on a `customer_type_price` row tied to
+    the product's latest Price entry (docs/adr/0059): what the VIP price field of a Price
+    entry saves. A row already tied to that entry for the type is replaced."""
+    with Session(engine) as session:
+        entry = session.execute(
+            select(PriceEntryRow.id, PriceEntryRow.business_id, PriceEntryRow.effective_on)
+            .where(PriceEntryRow.variety_id == product_id)
+            .order_by(PriceEntryRow.effective_on.desc())
+        ).first()
+        assert entry is not None, "the product needs a Price entry first"
+        entry_id, business_id, effective_on = entry
+        session.execute(
+            delete(CustomerTypePriceRow).where(
+                CustomerTypePriceRow.price_entry_id == entry_id,
+                CustomerTypePriceRow.customer_type_id == type_id,
+            )
+        )
+        SqlCustomerTypePrices(session, business_id).add(
+            type_id, product_id, effective_on, price, entry_id
         )
         session.commit()

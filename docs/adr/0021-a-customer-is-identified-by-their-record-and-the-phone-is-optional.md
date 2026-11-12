@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-04
+summary: "un cliente se identifica por su registro; el teléfono es opcional"
 ---
 
 # A customer is identified by their record; the phone number is optional, unique only among customers who have one

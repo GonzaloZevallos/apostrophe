@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-11-11
+summary: "un número de teléfono lleva su propio país, elegido por número y detectado en el dispositivo; el país ya no es una configuración del Business"
 ---
 
 # Un número de teléfono lleva su propio país, elegido por número y detectado en el dispositivo

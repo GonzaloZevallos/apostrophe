@@ -74,6 +74,13 @@ interface PriceEntry {
   bulk_price: number | null
   bulk_minimum: number | null
   vip_price: number | null
+  /** The price each customer type has in this entry; only on the product's current price. */
+  type_prices?: TypePrice[]
+}
+
+export interface TypePrice {
+  customer_type_id: number
+  price: number
 }
 
 export interface Variety {

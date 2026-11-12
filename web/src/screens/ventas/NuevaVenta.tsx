@@ -35,6 +35,7 @@ import { useLocation, useNavigate, useOutletContext } from 'react-router'
 import { tooManyDecimalsMessage } from '../../api/amountRefusal'
 import { ApiError, NetworkError, UNKNOWN_CODE, get, post } from '../../api/client'
 import type { Customer } from '../../api/customers'
+import { customerTypesQueryOptions } from '../../api/customerTypes'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import type { PricingSettings as ApiPricingSettings } from '../../api/pricingSettings'
@@ -102,14 +103,22 @@ function isBlank(line: LineState): boolean {
   return line.varietyId === '' && line.grams.trim() === '' && !line.gift && line.specialPrice.trim() === ''
 }
 
-function quoteOf(variety: Variety): PriceQuote | null {
+/** The price the Customer's type has in the entry, from the current price's `type_prices`; `null`
+ * for a Customer with no type or a type with no price in it. */
+function typePriceOf(variety: Variety, typeId: number | null): number | null {
+  if (typeId === null) return null
+  const found = variety.current_price?.type_prices?.find((price) => price.customer_type_id === typeId)
+  return found === undefined ? null : found.price
+}
+
+function quoteOf(variety: Variety, typeId: number | null): PriceQuote | null {
   const price = variety.current_price
   if (price === null) return null
   const bulk =
     price.bulk_price !== null && price.bulk_minimum !== null
       ? { price: price.bulk_price, minimumHundredths: hundredthsOfApiGrams(price.bulk_minimum) }
       : null
-  return { listPrice: price.list_price, bulk, vipPrice: price.vip_price }
+  return { listPrice: price.list_price, bulk, vipPrice: typePriceOf(variety, typeId) }
 }
 
 /** Both rules off: what prices a line while the switches have not come, or could not be read.
@@ -288,6 +297,14 @@ function NuevaVentaForm() {
       ? NO_RULES
       : { bulk: settingsQuery.data.is_bulk_pricing, vip: settingsQuery.data.is_vip_customers }
 
+  const customerTypeId = customer?.customer_type_id ?? null
+  // The name for the badge: the list of types is asked only while it can matter.
+  const customerTypesQuery = useQuery({
+    ...customerTypesQueryOptions(),
+    enabled: settings.vip && customerTypeId !== null,
+  })
+  const customerTypeName = customerTypesQuery.data?.find((type) => type.id === customerTypeId)?.name ?? null
+
   function chooseCustomer(chosen: Customer | null): void {
     setCustomerOverride(chosen)
     if (chosen === null && payState === 'owing') setPayState(null)
@@ -378,7 +395,7 @@ function NuevaVentaForm() {
         varietyName: variety?.name ?? line.varietyName,
         gift: line.gift,
         specialPrice: specialPriceOf(line),
-        quote: variety !== undefined ? quoteOf(variety) : null,
+        quote: variety !== undefined ? quoteOf(variety, null) : null,
       }
     })
 
@@ -413,19 +430,23 @@ function NuevaVentaForm() {
     if (specialPriceErrorFor(line) !== null) return null
     const grams = parseGrams(line.grams)
     if (!grams.ok) return null
-    const quote = quoteOf(variety)
+    const quote = quoteOf(variety, customerTypeId)
     const specialPrice = specialPriceOf(line)
     if (!line.gift && specialPrice === null && quote === null) return null
     try {
       const priced = priceLine({
         gift: line.gift,
         specialPrice,
-        customerIsVip: customer?.vip ?? false,
+        customerIsVip: customerTypeId !== null,
         settings,
         quote,
         gramsHundredths: toHundredths(grams.value),
       })
-      return { ...priced, gramsHundredths: toHundredths(grams.value) }
+      return {
+        ...priced,
+        gramsHundredths: toHundredths(grams.value),
+        typeName: priced.rule === 'type' ? customerTypeName : null,
+      }
     } catch {
       return null
     }
@@ -588,7 +609,7 @@ function NuevaVentaForm() {
         const flagged = lines.find((line) => {
           if (line.varietyId === '' || line.gift || specialPriceOf(line) !== null) return false
           const variety = freshVarieties.find((item) => String(item.id) === line.varietyId)
-          return variety === undefined || quoteOf(variety) === null
+          return variety === undefined || quoteOf(variety, null) === null
         })
         if (flagged !== undefined) {
           openLine(flagged.key)

@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-25
+summary: "una cantidad guardada es un entero de centésimas, sea cual sea la unidad"
 ---
 
 # A stored quantity is a whole number of hundredths whatever the unit, and decimals only validate and display

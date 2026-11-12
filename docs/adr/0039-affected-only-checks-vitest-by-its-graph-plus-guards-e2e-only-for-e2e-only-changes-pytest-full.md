@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-08
+summary: "los chequeos afectados: vitest por su grafo, e2e solo para cambios de e2e, pytest completo"
 ---
 
 # Affected-only checks: vitest by its graph plus the guards, e2e only for e2e-only changes, pytest full

@@ -14,6 +14,7 @@ from app.db import (
     scaled,
 )
 from app.products.adapters.tables import PriceEntryRow, ProductRow
+from app.products.adapters.vip_type_prices import SqlVipTypePrices
 from app.products.domain.product import NameHolder, PriceEntry, Product, ProductName
 from app.sales.adapters.tables import SaleLineRow
 from app.shared.money import Money
@@ -42,6 +43,7 @@ class SqlProducts:
     def __init__(self, session: Session, business_id: int) -> None:
         self._session = session
         self._business_id = business_id
+        self._vip_prices = SqlVipTypePrices(session, business_id)
 
     def add(self, product: Product) -> Product:
         row = ProductRow(
@@ -214,7 +216,6 @@ class SqlProducts:
             list_price=self._stored(entry.list_price),
             bulk_price=self._stored_or_none(entry.bulk.price if entry.bulk else None),
             bulk_minimum_hundredths=entry.bulk.minimum.hundredths if entry.bulk else None,
-            vip_price=self._stored_or_none(entry.vip_price),
         )
 
     def _product(self, row: ProductRow) -> Product:
@@ -222,7 +223,8 @@ class SqlProducts:
 
     def _entries_of(self, product_ids: Sequence[int]) -> dict[int, tuple[PriceEntry, ...]]:
         """The price entries of the listed products, their amounts read in hundredths inside
-        the statement that loads them: one statement whatever the number of products."""
+        the statement that loads them: one statement whatever the number of products, and
+        one more for the VIP prices, which are rows of the VIP type (docs/adr/0059)."""
         if not product_ids:
             return {}
         factor = money_scale_factor(self._session, self._business_id)
@@ -231,7 +233,6 @@ class SqlProducts:
                 PriceEntryRow,
                 scaled(PriceEntryRow.list_price, factor),
                 scaled(PriceEntryRow.bulk_price, factor),
-                scaled(PriceEntryRow.vip_price, factor),
             )
             .where(
                 PriceEntryRow.business_id == self._business_id,
@@ -239,11 +240,16 @@ class SqlProducts:
             )
             .order_by(PriceEntryRow.effective_on)
         )
+        found = self._session.execute(statement).all()
+        vip_prices = self._vip_prices.prices_of([row.id for row, _, _ in found])
         grouped: dict[int, list[PriceEntry]] = {}
-        for row, list_price, bulk_price, vip_price in self._session.execute(statement).all():
+        for row, list_price, bulk_price in found:
             grouped.setdefault(row.variety_id, []).append(
                 _entry(
-                    row, self._units(list_price), self._units(bulk_price), self._units(vip_price)
+                    row,
+                    self._units(list_price),
+                    self._units(bulk_price),
+                    vip_prices.get(row.id),
                 )
             )
         return {product_id: tuple(entries) for product_id, entries in grouped.items()}

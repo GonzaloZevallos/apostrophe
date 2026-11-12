@@ -53,6 +53,7 @@ def test_a_fully_costed_line_answers_its_cost_and_no_pending_grams(
             "product_name": "Lavanda",
             "quantity": 10.0,
             "pricing_rule": "list",
+            "customer_type_name": None,
             "price_per_gram": 10_000,
             "line_total": 100_000,
             "cost": {"costed": 5_000, "pending_quantity": 0.0},

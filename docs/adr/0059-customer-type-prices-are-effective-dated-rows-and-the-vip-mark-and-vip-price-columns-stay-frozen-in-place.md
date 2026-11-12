@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-28
+summary: "los precios por tipo de cliente son filas con vigencia"
 ---
 
 # Customer-type prices are effective-dated rows, and the VIP mark and VIP price columns stay frozen in place

@@ -1,6 +1,7 @@
 ---
 status: superseded by 0085
 date: 2026-11-10
+summary: "un teléfono con el código de un país de la lista sigue la regla de ese país, y las reglas viven en una sola tabla compartida"
 ---
 
 # A phone number with a listed country code follows that country's rule, and the rules live in one shared table

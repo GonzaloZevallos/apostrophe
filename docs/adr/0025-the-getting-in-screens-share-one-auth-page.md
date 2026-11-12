@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-05
+summary: "las pantallas de entrada comparten una sola página de autenticación"
 ---
 
 # The getting-in screens share one `AuthPage`

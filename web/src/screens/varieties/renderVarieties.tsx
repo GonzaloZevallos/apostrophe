@@ -59,6 +59,9 @@ export function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
+/** The Business's VIP type: the "VIP price" field shows only while it exists. */
+export const VIP_TYPE = { id: 2, name: 'Mayoristas', icon: 'star', is_vip: true }
+
 export type FetchImpl = (url: string, init?: RequestInit) => Promise<Response>
 
 /** The faked API for variety 1: `overrides` replaces any one of its answers. */
@@ -67,6 +70,7 @@ export function api(overrides: Record<string, () => Response> = {}): FetchImpl {
     const key = `${init?.method ?? 'GET'} ${url}`
     const override = overrides[key]
     if (override !== undefined) return Promise.resolve(override())
+    if (key === 'GET /api/customer-types') return Promise.resolve(jsonResponse(200, [VIP_TYPE]))
     if (key === 'GET /pricing-settings') return Promise.resolve(jsonResponse(200, SETTINGS_ON))
     if (key === 'GET /api/products/1') return Promise.resolve(jsonResponse(200, VARIETY_ROW))
     if (key === 'GET /api/products/1/prices') return Promise.resolve(jsonResponse(200, HISTORY))

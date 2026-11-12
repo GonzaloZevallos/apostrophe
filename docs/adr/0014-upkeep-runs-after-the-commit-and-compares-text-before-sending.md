@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-03
+summary: "el mantenimiento corre después del commit y solo envía si el texto cambió"
 ---
 
 # Upkeep runs after the triggering commit, under one per-business lock, and only sends when the text changed

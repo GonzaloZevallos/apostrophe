@@ -44,22 +44,44 @@ class PriceEntryOut(BaseModel):
         )
 
 
+class TypePriceOut(BaseModel):
+    customer_type_id: int
+    price: MoneyOut
+
+
+class CurrentPriceOut(PriceEntryOut):
+    """The entry in force, with the price each customer type has in it (docs/adr/0059):
+    in this part, only the VIP type's."""
+
+    type_prices: list[TypePriceOut]
+
+    @classmethod
+    def with_types(cls, entry: PriceEntry, vip_type_id: int | None) -> "CurrentPriceOut":
+        base = PriceEntryOut.of(entry)
+        type_prices = (
+            []
+            if vip_type_id is None or entry.vip_price is None
+            else [TypePriceOut(customer_type_id=vip_type_id, price=Decimal(entry.vip_price))]
+        )
+        return cls(**base.model_dump(), type_prices=type_prices)
+
+
 class ProductOut(BaseModel):
     id: int
     name: str
     # The price in force on the day asked for (today, unless the caller asked for
     # another day, docs/adr/0011); `null` when the product has none that day.
-    current_price: PriceEntryOut | None
+    current_price: CurrentPriceOut | None
     archived: bool
 
     @classmethod
-    def of(cls, product: Product, day: date) -> "ProductOut":
+    def of(cls, product: Product, day: date, vip_type_id: int | None) -> "ProductOut":
         assert product.id is not None, "only stored products go out"
         price = product.current_price(day)
         return cls(
             id=product.id,
             name=product.name.value,
-            current_price=None if price is None else PriceEntryOut.of(price),
+            current_price=None if price is None else CurrentPriceOut.with_types(price, vip_type_id),
             archived=product.is_archived,
         )
 

@@ -68,6 +68,15 @@ def test_a_list_priced_sale_line_is_sold_and_a_gift_is_gifted() -> None:
     assert gift_row.line_total == 0
 
 
+def test_a_line_priced_by_a_customer_type_is_sold_like_a_list_line() -> None:
+    priced_by_type = _sale_line(PricingRule.CUSTOMER_TYPE, 3_000)
+
+    [row] = build_draw_rows({VARIETY: ([_lot("10", 10_000)], [priced_by_type])})
+
+    assert row.kind == "sold"
+    assert row.line_total == 3_000
+
+
 def test_a_negative_adjustment_is_a_shortfall_with_no_variety_sale_or_total() -> None:
     adjustment = Draw(
         LotOrder(DAY, NOW, STOCK_ENTRY_RANK, 2, 0), VARIETY, Quantity.of("2"), DrawSource.ADJUSTMENT

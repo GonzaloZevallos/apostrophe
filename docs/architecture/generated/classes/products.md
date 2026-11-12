@@ -36,6 +36,8 @@ classDiagram
   }
   class tables {
   }
+  class vip_type_prices {
+  }
   errors --> product
   import_port --> manage_prices
   import_port --> manage_products
@@ -43,6 +45,7 @@ classDiagram
   import_port --> product
   import_port --> sql_products
   import_port --> tables
+  import_port --> vip_type_prices
   manage_prices --> errors
   manage_prices --> manage_products
   manage_prices --> ports
@@ -58,9 +61,11 @@ classDiagram
   router --> product
   router --> schemas
   router --> sql_products
+  router --> vip_type_prices
   schemas --> product
   sql_products --> product
   sql_products --> tables
+  sql_products --> vip_type_prices
   tables --> product
 ```
 
@@ -71,6 +76,9 @@ classDiagram
   class BulkTerms {
     minimum : Quantity
     price : int
+  }
+  class CustomerTypePriceNotBelowList {
+    code : ClassVar~str~
   }
   class DuplicateEffectiveDate {
     code : ClassVar~str~
@@ -121,15 +129,12 @@ classDiagram
   class UnknownPriceEntry {
     code : ClassVar~str~
   }
-  class VipPriceNotBelowList {
-    code : ClassVar~str~
-  }
+  CustomerTypePriceNotBelowList --|> ProductRuleBroken
   DuplicateEffectiveDate --|> ProductRuleBroken
   InvalidName --|> ProductRuleBroken
   InvalidPriceEntry --|> ProductRuleBroken
   Product --> ProductName : name
   UnknownPriceEntry --|> ProductRuleBroken
-  VipPriceNotBelowList --|> ProductRuleBroken
 ```
 
 ## application
@@ -168,12 +173,23 @@ classDiagram
     remove_unused(product_id: int) bool
     save(product: Product) Product
   }
+  class VipTypePrices {
+    prices_of(entry_ids: Sequence~int~) Mapping~int, int~
+    record(product_id: int, entry_id: int, effective_on: date, price: int) None
+    remove_for_entry(entry_id: int) None
+    remove_for_product(product_id: int) None
+    vip_type_id() int #124; None
+  }
 ```
 
 ## adapters
 
 ```mermaid
 classDiagram
+  class CurrentPriceOut {
+    type_prices : list~TypePriceOut~
+    with_types(entry: PriceEntry, vip_type_id: int #124; None) 'CurrentPriceOut'
+  }
   class ListedCurrentPrice {
     bulk_minimum : Quantity #124; None
     bulk_price : Money #124; None
@@ -216,10 +232,10 @@ classDiagram
   }
   class ProductOut {
     archived : bool
-    current_price : PriceEntryOut #124; None
+    current_price : CurrentPriceOut #124; None
     id : int
     name : str
-    of(product: Product, day: date) 'ProductOut'
+    of(product: Product, day: date, vip_type_id: int #124; None) 'ProductOut'
   }
   class ProductRow {
     archived_at : Mapped~datetime #124; None~
@@ -251,5 +267,17 @@ classDiagram
     remove_unused(product_id: int) bool
     save(product: Product) Product
   }
+  class SqlVipTypePrices {
+    prices_of(entry_ids: Sequence~int~) Mapping~int, int~
+    record(product_id: int, entry_id: int, effective_on: date, price: int) None
+    remove_for_entry(entry_id: int) None
+    remove_for_product(product_id: int) None
+    vip_type_id() int #124; None
+  }
+  class TypePriceOut {
+    customer_type_id : int
+    price
+  }
+  CurrentPriceOut --|> PriceEntryOut
   ProductDetailOut --|> ProductOut
 ```

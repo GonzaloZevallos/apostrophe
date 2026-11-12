@@ -14,6 +14,9 @@ export type InsigniaTono = 'neutro' | 'acento' | 'deuda' | 'critico'
 export interface InsigniaProps {
   children: ReactNode
   tono?: InsigniaTono
+  /** For a word the seller wrote: it shrinks with its row and ends in an ellipsis, while the
+   * full word stays the element's text. */
+  truncable?: boolean
 }
 
 const CLASS: Record<InsigniaTono, string> = {
@@ -23,6 +26,6 @@ const CLASS: Record<InsigniaTono, string> = {
   critico: 'insignia insignia--critico',
 }
 
-export default function Insignia({ children, tono = 'neutro' }: InsigniaProps) {
-  return <span className={CLASS[tono]}>{children}</span>
+export default function Insignia({ children, tono = 'neutro', truncable = false }: InsigniaProps) {
+  return <span className={truncable ? `${CLASS[tono]} insignia--truncable` : CLASS[tono]}>{children}</span>
 }

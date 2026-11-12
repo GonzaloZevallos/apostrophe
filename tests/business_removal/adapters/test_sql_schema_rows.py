@@ -208,6 +208,17 @@ def seeded(
                 text("INSERT INTO first_run (business_id, imported_at) VALUES (:b, :at)"),
                 {"b": _business_id(file_engine, email), "at": "2026-10-01 12:00:00"},
             )
+        # One type price each, tied to the business's Price entry (no route writes one yet).
+        connection.execute(
+            text(
+                "INSERT INTO customer_type_price (business_id, variety_id, customer_type_id, "
+                "price, effective_on, price_entry_id) "
+                "SELECT price_entry.business_id, price_entry.variety_id, customer_type.id, "
+                "price_entry.list_price / 2, price_entry.effective_on, price_entry.id "
+                "FROM price_entry JOIN customer_type "
+                "ON customer_type.business_id = price_entry.business_id"
+            )
+        )
     return {"leaving": leaving_records, "staying": staying_records}
 
 
