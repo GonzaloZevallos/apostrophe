@@ -12,6 +12,7 @@ subgraph src["src"]
       src_screens_analisis_AmountRow_tsx["AmountRow.tsx"]
       src_screens_analisis_Bar_tsx["Bar.tsx"]
       src_screens_analisis_CostLines_tsx["CostLines.tsx"]
+      src_screens_analisis_ExpensesCard_tsx["ExpensesCard.tsx"]
       src_screens_analisis_NoBestWeekLine_tsx["NoBestWeekLine.tsx"]
       src_screens_analisis_marks_ts["marks.ts"]
       src_screens_analisis_pendingSuffix_ts["pendingSuffix.ts"]
@@ -156,7 +157,6 @@ subgraph src["src"]
     src_screens_Gastos_tsx["Gastos.tsx"]
     src_screens_Inicio_tsx["Inicio.tsx"]
     src_screens_Invitacion_tsx["Invitacion.tsx"]
-    src_screens_Mas_tsx["Mas.tsx"]
     src_screens_PinPublish_tsx["PinPublish.tsx"]
     src_screens_Reset_tsx["Reset.tsx"]
     src_screens_StockEntryForm_tsx["StockEntryForm.tsx"]
@@ -185,6 +185,7 @@ src_screens_Analisis_tsx-->src_screens_analisisCost_ts
 src_screens_Analisis_tsx-->src_screens_analisis_AmountRow_tsx
 src_screens_Analisis_tsx-->src_screens_analisis_Bar_tsx
 src_screens_Analisis_tsx-->src_screens_analisis_CostLines_tsx
+src_screens_Analisis_tsx-->src_screens_analisis_ExpensesCard_tsx
 src_screens_Analisis_tsx-->src_screens_analisis_NoBestWeekLine_tsx
 src_screens_Analisis_tsx-->src_screens_analisis_marks_ts
 src_screens_Analisis_tsx-->src_screens_analisis_pendingSuffix_ts

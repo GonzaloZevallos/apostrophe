@@ -16,7 +16,7 @@ import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
-import { openGastos } from './helpers/openMas.js'
+import { openGastos } from './helpers/openScreens.js'
 import { uniqueTag } from './helpers/unique.js'
 
 const PASSWORD = 'correcthorsebattery'
@@ -55,7 +55,7 @@ test('a seller goes through every Configuración group from the phone, with no c
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
   }
   await page.goto(HOME)
-  await page.getByRole('link', { name: /^Settings for / }).click()
+  await page.getByRole('link', { name: /^Settings for / }).or(page.getByRole('link', { name: 'Settings', exact: true })).click()
   await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
 
   // Negocio.

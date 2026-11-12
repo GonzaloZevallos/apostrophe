@@ -514,7 +514,7 @@ body {
 
 .bar-inferior__item {
   /* Sized by the label, then the spare room shared out: the longest word ("Variedades")
-   * never has to give up a letter to the shortest ("Más"). */
+   * never has to give up a letter to the shortest ("Ventas"). */
   flex: 1 1 auto;
   min-width: min-content;
   min-height: var(--alto-tocable);
@@ -685,6 +685,54 @@ body {
   height: min(var(--marca-tamano), 1lh);
   width: auto;
   aspect-ratio: 1;
+}
+
+/* The trailing slot of a phone header: the title takes the room the avatar leaves and is cut
+ * with an ellipsis, so a long title never widens the page. Phone only: the computer draws no
+ * avatar and none of these rules apply there. `--envoltura` is a row added only to hold the
+ * title and the avatar; on the computer it dissolves, so the title is the flex or grid item
+ * of its header that it always was. */
+@media (max-width: 899.98px) {
+  .cabecera-fila {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-md);
+  }
+
+  .cabecera-fila--envoltura {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .cabecera-fila > .encabezado__titulo {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 900px) {
+  .cabecera-fila--envoltura {
+    display: contents;
+  }
+}
+
+/* The Expenses card on the phone's Analysis: a title and its two actions, stacked, each at the
+ * phone's tap height through `Boton`. */
+.tarjeta-gastos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+/* "See the expenses" is a text link: it keeps the phone's tap height like the other link-shaped
+ * buttons, shrinks to its words and leaves the underline to the text, not to the 44 px box. */
+.tarjeta-gastos .boton--enlace {
+  align-self: flex-start;
+  min-height: var(--alto-tocable);
+  box-shadow: none;
 }
 
 .inicio__avatar {
@@ -933,6 +981,11 @@ body {
   color: var(--tinta2);
   font-size: 15px;
   cursor: pointer;
+}
+
+/* The Today | Analysis segment draws these options as links. */
+a.ajustes-tema__opcion {
+  text-decoration: none;
 }
 
 .ajustes-tema__opcion--activa {
@@ -5191,6 +5244,8 @@ body {
     .ajustes-tema__opcion,
     .ajustes-tema__opcion--activa,
     .inicio__avatar,
+    /* Expenses' month arrows rest on the --superficie pill, so the --superficie fill shows nothing. */
+    .gastos__mes-boton,
     .selector__campo
   ):active:not(:disabled):not([aria-disabled='true']) {
   transform: scale(0.98);

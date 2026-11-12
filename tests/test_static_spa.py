@@ -109,8 +109,8 @@ def test_the_normaliser_reads_every_placeholder_name_as_an_id() -> None:
 
 def test_every_legacy_row_is_pinned_old_and_target() -> None:
     # The raw templates, `{id}` still literal, before any id is substituted.
-    assert len(PINNED_LEGACY_ROWS) == 20
-    assert len(LEGACY_FRONT_PATHS) == 20
+    assert len(PINNED_LEGACY_ROWS) == 19
+    assert len(LEGACY_FRONT_PATHS) == 19
     assert {old for old, _ in LEGACY_FRONT_PATHS} == {old for old, _ in PINNED_LEGACY_ROWS}
     assert dict(LEGACY_FRONT_PATHS) == dict(PINNED_LEGACY_ROWS)
 

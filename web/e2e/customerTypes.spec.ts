@@ -32,7 +32,7 @@ test('a seller creates a customer type in Settings and assigns it from the Custo
   await signUpNewBusiness(page)
   const counter: Counter = { taps: 0 }
 
-  await tap(counter, page.getByRole('link', { name: /^Settings for / }))
+  await tap(counter, page.getByRole('link', { name: /^Settings for / }).or(page.getByRole('link', { name: 'Settings', exact: true })))
   await tap(counter, page.getByRole('link', { name: /^Prices/ }))
   await expectPath(page, SETTINGS_PRICES)
   expect(counter.taps).toBeLessThanOrEqual(TAP_BUDGET_TO_PRICES)

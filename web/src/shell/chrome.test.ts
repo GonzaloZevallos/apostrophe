@@ -5,18 +5,23 @@
  */
 
 import { expect, test } from 'vitest'
-import { SCREENS, screen as declare, screenOf, type ScreenId } from '../routes'
+import { kindOf, SCREENS, screen as declare, screenOf, type ScreenId } from '../routes'
 import { chromeOf, type Chrome } from './chrome'
 
 const ROOT: Chrome = { rail: true, railNuevaVenta: true, barNuevaVenta: true, bar: true, backArrow: false }
 const CARD: Chrome = { rail: true, railNuevaVenta: false, barNuevaVenta: false, bar: true, backArrow: true }
 const FORM: Chrome = { rail: true, railNuevaVenta: false, barNuevaVenta: false, bar: false, backArrow: false }
 const MODAL_FORM: Chrome = { ...FORM, rail: false }
+/** Gastos: a card under Análisis on the phone, a root of the side rail on a computer. The rail
+ * and the bar are both in the markup, so each keeps the flags of its own viewport's kind. */
+const CARD_ON_PHONE: readonly [Chrome, Chrome] = [
+  { rail: true, railNuevaVenta: true, barNuevaVenta: false, bar: true, backArrow: true },
+  { rail: true, railNuevaVenta: true, barNuevaVenta: false, bar: true, backArrow: false },
+]
 
 /** Phone, then computer; the same on both unless a row says otherwise. */
 const EXPECTED: Record<ScreenId, readonly [Chrome, Chrome]> = {
   home: [ROOT, ROOT],
-  more: [ROOT, ROOT],
   sales: [ROOT, ROOT],
   'sale-new': [FORM, FORM],
   sale: [CARD, CARD],
@@ -39,7 +44,7 @@ const EXPECTED: Record<ScreenId, readonly [Chrome, Chrome]> = {
   'withdrawal-new': [FORM, FORM],
   withdrawal: [CARD, CARD],
   'withdrawal-edit': [FORM, FORM],
-  expenses: [ROOT, ROOT],
+  expenses: CARD_ON_PHONE,
   'expense-new': [FORM, FORM],
   analysis: [ROOT, ROOT],
   settings: [CARD, CARD],
@@ -79,7 +84,7 @@ test('a two-pane detail is a card: no "+ Nueva venta" in the rail and its rail s
   const detail = declare({
     id: 'customer',
     path: '/x',
-    kind: 'card',
+    declaredKind: 'card',
     titleKey: 'common:home',
     pane: 'detail',
     parent: 'customers',
@@ -92,12 +97,12 @@ test('only the explicit modalOnComputer hides the rail, and only on a computer',
   const modal = declare({
     id: 'sale-new',
     path: '/x',
-    kind: 'form',
+    declaredKind: 'form',
     titleKey: 'common:home',
     parent: 'sales',
     modalOnComputer: true,
   })
-  const plainForm = declare({ id: 'sale-new', path: '/x', kind: 'form', titleKey: 'common:home', parent: 'sales' })
+  const plainForm = declare({ id: 'sale-new', path: '/x', declaredKind: 'form', titleKey: 'common:home', parent: 'sales' })
 
   expect(chromeOf(modal, 'computer').rail).toBe(false)
   expect(chromeOf(modal, 'phone').rail).toBe(true)
@@ -105,7 +110,7 @@ test('only the explicit modalOnComputer hides the rail, and only on a computer',
 })
 
 test('no form, on either viewport, shows "+ Nueva venta" in the rail or on the bar', () => {
-  const forms = SCREENS.filter((entry) => entry.kind === 'form')
+  const forms = SCREENS.filter((entry) => kindOf(entry, 'phone') === 'form' && kindOf(entry, 'computer') === 'form')
   expect(forms.length).toBeGreaterThan(0)
   for (const form of forms) {
     for (const viewport of ['phone', 'computer'] as const) {

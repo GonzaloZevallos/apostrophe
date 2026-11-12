@@ -120,7 +120,7 @@ const CARDS: [string, string, string][] = [
   ["a variety's entries", pathTo(VARIETY_ENTRIES, { id: 1 }), '‹ 24K Gold'],
   ["a withdrawal's detail", pathTo(WITHDRAWAL, { id: 1 }), '‹ Products'],
   ['a sale', pathTo(SALE, { id: 1 }), '‹ Sales'],
-  ['Settings', SETTINGS, '‹ More'],
+  ['Settings', SETTINGS, '‹ Home'],
 ]
 
 describe.each(['phone', 'computer'] as const)('on a %s', (size) => {
@@ -133,8 +133,7 @@ describe.each(['phone', 'computer'] as const)('on a %s', (size) => {
     await settled()
 
     // The label settles with the record (an archived variety first reads "‹ Products").
-    if (size === 'computer' && label === '‹ More') expect(arrows()).toHaveLength(1)
-    else await waitFor(() => expect(arrows()).toEqual([label]))
+    await waitFor(() => expect(arrows()).toEqual([label]))
     expect(document.querySelectorAll('.flecha-atras')).toHaveLength(1)
     expect(backControls()).toHaveLength(1)
   })

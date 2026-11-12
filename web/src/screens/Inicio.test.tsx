@@ -119,7 +119,7 @@ test('the business avatar at the top opens Configuración in one tap, carrying i
   stubFetch(PANEL)
   renderInicio()
 
-  const avatar = await screen.findByRole('link', { name: 'Settings for La Huerta' })
+  const avatar = await screen.findByRole('link', { name: 'Settings' })
   expect(avatar).toHaveAttribute('href', SETTINGS)
   expect(avatar).toHaveTextContent('LH')
   // The name stays above the title, as the design draws it.

@@ -25,6 +25,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useLocation, useOutletContext } from 'react-router'
 import InAppLink from '../../components/InAppLink'
+import SettingsAvatar from '../../components/SettingsAvatar'
 import { NetworkError } from '../../api/client'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
@@ -109,7 +110,10 @@ export default function Ventas() {
     <ContentArea as="main" className="pantalla">
       <div className="cuerpo">
         <div className="ventas__cabecera">
-          <span className="encabezado__titulo">{COMMON_TEXT.sales}</span>
+          <div className="cabecera-fila cabecera-fila--envoltura">
+            <span className="encabezado__titulo">{COMMON_TEXT.sales}</span>
+            <SettingsAvatar />
+          </div>
 
           <Pestanas
             items={SALES_PERIODS}

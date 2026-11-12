@@ -87,5 +87,6 @@ test('before its first answer the list is only the loading state: no figure, no 
   expect(screen.getAllByRole('progressbar')).toHaveLength(1)
   expect(screen.queryByText(EMPTY_LIST)).not.toBeInTheDocument()
   expect(screen.queryByText(/\$/)).not.toBeInTheDocument()
-  expect(screen.queryByRole('link')).not.toBeInTheDocument()
+  // The header's Settings avatar is always there; no sale row is.
+  expect(screen.queryByRole('link', { name: /^(?!Settings$)/ })).not.toBeInTheDocument()
 })

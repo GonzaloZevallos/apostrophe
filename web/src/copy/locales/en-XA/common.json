@@ -8,7 +8,6 @@
   "done": "⟦Ðöňè·~⟧",
   "noKeepTyping": "⟦Ňö, ķèèṗ ťýṗìňĝ·~·~·~⟧",
   "yesDiscard": "⟦Ýèš, đìšçåřđ ìť·~·~·~⟧",
-  "more": "⟦Ṁöřè·~⟧",
   "discardTheChange": "⟦Ðìšçåřđ ťĥè çĥåňĝè?·~·~·~·⟧",
   "newVariety": "⟦Ňèŵ ṗřöđûçť·~·~⟧",
   "newPrice": "⟦Ňèŵ ṗřìçè·~·~⟧",
@@ -117,5 +116,9 @@
   "paid": "⟦Ṗåìđ·~⟧",
   "paymentMethod": "⟦Ṗåýṁèňť ṁèťĥöđ·~·~·⟧",
   "chooseHowTheyPaid": "⟦Çĥööšè ĥöŵ ťĥèý ṗåìđ.·~·~·~·~⟧",
-  "noType": "⟦Ňö ťýṗè·~·⟧"
+  "noType": "⟦Ňö ťýṗè·~·⟧",
+  "homeViewSwitchLabel": "⟦Ĥöṁè ṽìèŵ·~·~⟧",
+  "homeSegmentToday": "⟦Ťöđåý·~⟧",
+  "homeSegmentAnalysis": "⟦Åňåłýšìš·~·⟧",
+  "seeExpenses": "⟦Šèè ťĥè èẋṗèňšèš·~·~·~⟧"
 }
