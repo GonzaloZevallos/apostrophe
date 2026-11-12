@@ -3,7 +3,8 @@
 How code is written in this product. They apply to the code a task adds or touches. They
 replace the agentic system's default standards whole (agentic-system, ADR-0012): sections
 1 to 8 are those practices said for this stack; section 9 is this product's own and
-outranks every other; section 10 says the frontend's; section 11 names the database.
+outranks every other; section 10 says the frontend's; section 11 names the database;
+section 12 says who writes the generated documentation.
 
 ## 1. Hexagonal architecture
 
@@ -290,3 +291,13 @@ schema, never listed, and no allowlist exists to put it on.
   with a migration, never listed.
 - Existing hand-written names (`uq_customer_business_phone`, the `spent_on` index of
   `expense`) keep the names they reflect today; they pass the checked rules as they are.
+
+## 12. Generated documentation
+
+- The files under `docs/architecture/generated/**` and `docs/api/**`, and
+  `docs/architecture/decisiones.md`, are written only by `scripts.docs.generate`.
+- They are never edited by hand and never committed in a feature pull request.
+- Master regenerates them after each merge (docs/adr/0066).
+- A branch that changed one of them restores it from its merge-base with master.
+- The CI `docs` job runs `generate`, which fails only when generation fails, and warns
+  on a pull request that touches one of these paths (`scripts.docs.owned_guard`).

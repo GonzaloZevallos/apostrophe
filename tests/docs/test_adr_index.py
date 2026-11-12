@@ -1,7 +1,6 @@
 """The ADR index is generated from the front matter of `docs/adr/*.md` (GH-692).
 
-The reader, the generator over throwaway directories, the committed page against the
-generator, and the key set of every real ADR. Reads of the repo's docs are literal
+The reader, the generator over throwaway directories, and the key set of every real ADR. Reads of the repo's docs are literal
 `REPO_ROOT / "docs" / ...` chains.
 """
 
@@ -19,10 +18,6 @@ from scripts.docs.adr_index import INTRO, AdrIndexError, index_text, read_front_
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-REGENERATE = (
-    "the page is generated from docs/adr/; regenerate, do not edit: "
-    "uv run --no-project python -m scripts.docs.generate"
-)
 # The keys every ADR has, and the keys one ADR carries on top of them, by file name.
 BASE_KEYS = {"status", "date", "summary"}
 EXTRA_KEYS = {"0017-deploying-render-turso-backups-and-the-restore-drill.md": {"amended"}}
@@ -175,12 +170,6 @@ def test_the_same_directory_gives_the_same_page_twice(tmp_path: Path) -> None:
 
 
 # --- the real ADRs ----------------------------------------------------------------------
-
-
-def test_the_committed_page_is_what_the_generator_writes() -> None:
-    page = (REPO_ROOT / "docs" / "architecture" / "decisiones.md").read_bytes()
-
-    assert page == index_text(REPO_ROOT / "docs" / "adr").encode("utf-8"), REGENERATE
 
 
 def test_every_adr_parses_to_the_agreed_keys() -> None:
