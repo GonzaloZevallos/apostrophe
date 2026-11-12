@@ -231,7 +231,7 @@
   {"source":"customers.ts:CUSTOMERS_TEXT.phoneAdjectiveES","args":null,"text":"a Spanish"},
   {"source":"customers.ts:CUSTOMERS_TEXT.phoneAdjectiveMX","args":null,"text":"a Mexican"},
   {"source":"customers.ts:CUSTOMERS_TEXT.phoneAdjectivePY","args":null,"text":"a Paraguayan"},
-  {"source":"customers.ts:CUSTOMERS_TEXT.phoneAdjectiveUS","args":null,"text":"an American"},
+  {"source":"customers.ts:CUSTOMERS_TEXT.phoneAdjectiveUS","args":null,"text":"a US"},
   {"source":"customers.ts:CUSTOMERS_TEXT.phoneAdjectiveUY","args":null,"text":"a Uruguayan"},
   {"source":"customers.ts:CUSTOMERS_TEXT.phoneCountryAR","args":null,"text":"Argentina"},
   {"source":"customers.ts:CUSTOMERS_TEXT.phoneCountryBR","args":null,"text":"Brazil"},

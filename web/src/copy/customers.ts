@@ -68,7 +68,7 @@ export const CUSTOMERS_TEXT = {
   phoneAdjectiveBR: 'a Brazilian',
   phoneAdjectiveMX: 'a Mexican',
   phoneAdjectiveES: 'a Spanish',
-  phoneAdjectiveUS: 'an American',
+  phoneAdjectiveUS: 'a US',
   phoneLengthsOr: 'or',
   phoneInvalidFor: (adjective: string | number, lengths: string | number) => `That doesn't look like ${adjective} number. It needs ${lengths} digits after the country code.`,
   needsCountryCode: 'Start the number with + and the country code.',
