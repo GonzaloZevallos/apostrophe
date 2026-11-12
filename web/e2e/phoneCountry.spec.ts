@@ -1,5 +1,5 @@
 /**
- * The Phone country per number, from a phone viewport on a Uruguayan device (customers.md; ADR-0085):
+ * The Phone country per number, from a phone viewport on a Uruguayan device (customers.md; ADR-20261111-phone-country-per-number):
  * the country of a number is chosen in the customer form and its default is detected from where the
  * app is used, against the real backend and the real built front.
  *

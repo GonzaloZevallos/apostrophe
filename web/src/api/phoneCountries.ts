@@ -1,7 +1,7 @@
 /**
  * The listed Phone countries as `GET /phone-countries` answers them: the same list for every
  * business, in the order the Selector shows. The front holds no calling code, length or example
- * of its own (docs/adr/0085): it shows what the API sends.
+ * of its own (docs/adr/20261111-phone-country-per-number): it shows what the API sends.
  */
 
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'

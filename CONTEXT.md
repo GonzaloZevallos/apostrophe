@@ -588,7 +588,7 @@ El Customer type "VIP" que la actualización creó en cada Business existente, c
 _Avoid_: VIP mark, VIP flag, default type
 
 **Phone country**:
-El país con el que se lee un Phone number tipeado sin + ni código de país, elegido por número en el formulario del Customer entre una lista fija (Argentina, Uruguay, Chile, Paraguay, Brazil, Mexico, Spain, United States) o Other. No se guarda, porque la forma internacional del número lo lleva; cuando el número empieza con +, lo decide su código y el campo queda bloqueado. Ya no es una configuración del Business ni está en Settings (ADR-0085, que reemplaza a ADR-0082). En la app: Phone country.
+El país con el que se lee un Phone number tipeado sin + ni código de país, elegido por número en el formulario del Customer entre una lista fija (Argentina, Uruguay, Chile, Paraguay, Brazil, Mexico, Spain, United States) o Other. No se guarda, porque la forma internacional del número lo lleva; cuando el número empieza con +, lo decide su código y el campo queda bloqueado. Ya no es una configuración del Business ni está en Settings (ADR-20261111-phone-country-per-number, que reemplaza a ADR-0082). En la app: Phone country.
 _Avoid_: default country, business country, locale, region, country setting
 
 **Sale number**:

@@ -1,5 +1,6 @@
 """`GET /phone-countries`: the listed Phone countries with the example a seller types
-(docs/adr/0085). The same constant for every business, read from the shared table; the
+(docs/adr/20261111-phone-country-per-number).
+The same constant for every business, read from the shared table; the
 route asks for a session and reads nothing with it."""
 
 from fastapi import APIRouter

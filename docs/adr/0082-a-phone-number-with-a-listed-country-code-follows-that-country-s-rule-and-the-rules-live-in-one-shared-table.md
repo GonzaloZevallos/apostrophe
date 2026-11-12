@@ -1,5 +1,5 @@
 ---
-status: superseded by 0085
+status: superseded by 20261111-phone-country-per-number
 date: 2026-11-10
 summary: "un teléfono con el código de un país de la lista sigue la regla de ese país, y las reglas viven en una sola tabla compartida"
 ---

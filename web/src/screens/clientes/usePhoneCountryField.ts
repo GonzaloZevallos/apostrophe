@@ -1,5 +1,5 @@
 /**
- * The Phone country of a customer form (docs/adr/0085): the list the API serves, the
+ * The Phone country of a customer form (docs/adr/20261111-phone-country-per-number): the list the API serves, the
  * `countryState` reducer that holds the choice, and the one-time detection from the device.
  * The form owns the phone text; this hook sees it through `type` and decides what the Selector
  * shows, whether it is locked and which code the request sends. Nothing here is stored or

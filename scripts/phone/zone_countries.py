@@ -1,5 +1,6 @@
 """Generates the two files the phone country detection reads on the device
-(docs/adr/0085): `web/src/phone/zoneCountries.json`, the listed country of every IANA time
+(docs/adr/20261111-phone-country-per-number):
+`web/src/phone/zoneCountries.json`, the listed country of every IANA time
 zone of the eight, and `web/src/phone/listedCodes.json`, the listed codes in their order, and
 `web/src/phone/servedCountries.json`, the code and calling code of each listed country as
 `GET /phone-countries` serves them (the answer vitest stubs; the front writes no code by hand).

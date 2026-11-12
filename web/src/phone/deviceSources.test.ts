@@ -1,5 +1,5 @@
 /**
- * Only `web/src/phone/device.ts` asks the browser where the app is used (docs/adr/0085):
+ * Only `web/src/phone/device.ts` asks the browser where the app is used (docs/adr/20261111-phone-country-per-number):
  * no other file of `web/src` reads `navigator.languages`, `navigator.language` or the time
  * zone. Tests and `test-setup.ts` are out; comments are not code.
  */

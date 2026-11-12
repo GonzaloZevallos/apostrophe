@@ -1,4 +1,5 @@
-"""The countries a number can be read with (CONTEXT.md: Phone country, docs/adr/0085). The
+"""The countries a number can be read with (CONTEXT.md: Phone country,
+docs/adr/20261111-phone-country-per-number). The
 one place a calling code, a national length or a trunk prefix is written: the customers domain
 reads its rules from here, `GET /phone-countries` serves them, and the front holds only the
 names and what the API sends it. Each rule also holds the templates that group a number for

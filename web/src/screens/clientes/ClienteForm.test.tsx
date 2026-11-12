@@ -815,7 +815,7 @@ test('a type deleted meanwhile (404 customer_type.not_found) clears the choice, 
   expect(screen.queryByText('la ficha')).not.toBeInTheDocument()
 })
 
-// The Phone country Selector (docs/adr/0085): one country per number, detected on the device.
+// The Phone country Selector (docs/adr/20261111-phone-country-per-number): one country per number, detected on the device.
 
 function countryField() {
   return screen.findByRole('button', { name: /^Phone country/ })

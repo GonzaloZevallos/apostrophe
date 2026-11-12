@@ -1,5 +1,5 @@
 /**
- * The Phone country of the customer form as a reducer (docs/adr/0085). The choice is what the
+ * The Phone country of the customer form as a reducer (docs/adr/20261111-phone-country-per-number). The choice is what the
  * Selector shows; it follows the "+" while the text has one, so deleting the "+" keeps the last
  * shown country; detection fills it once, only when nothing was picked and there is no "+".
  */

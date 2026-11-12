@@ -11,7 +11,7 @@
  * `dirty` is the typed name against `accepted`, taken once from the first answer and reset from
  * the save's answer. It is never compared with the query cache, which the save refetches and a
  * partner's change can move under the form. The Phone country is chosen per number in the
- * customer form (docs/adr/0085), so there is no setting for it here.
+ * customer form (docs/adr/20261111-phone-country-per-number), so there is no setting for it here.
  */
 
 import { type FormEvent, useState } from 'react'

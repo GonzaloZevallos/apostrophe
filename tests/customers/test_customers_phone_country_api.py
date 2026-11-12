@@ -1,4 +1,5 @@
-"""A customer's phone read by the country sent with it, over `TestClient` (docs/adr/0085):
+"""A customer's phone read by the country sent with it, over `TestClient`
+(docs/adr/20261111-phone-country-per-number):
 a number typed without "+" is read by `phone_country`, a "+" number follows its own code
 and ignores the country, a blank phone ignores it, no country asks for "+", a country
 outside the list is refused, an untouched stored number never reads the country, a local

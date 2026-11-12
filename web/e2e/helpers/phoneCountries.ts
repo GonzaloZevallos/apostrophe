@@ -1,6 +1,6 @@
 /**
  * The listed Phone countries as the real backend serves them (`GET /phone-countries`), so an
- * e2e spec never states a calling code or an example itself (docs/adr/0085): it reads them
+ * e2e spec never states a calling code or an example itself (docs/adr/20261111-phone-country-per-number): it reads them
  * from the same answer the Selector shows. Only the country's name is the spec's own text.
  */
 

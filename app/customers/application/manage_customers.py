@@ -88,7 +88,8 @@ def _register(
 
 def _phone_for(raw: str | None, requested_code: str | None) -> PhoneNumber | None:
     """The one place a typed phone and the country sent with it become a number
-    (docs/adr/0085). In order: a blank phone is none and the country is ignored; a "+"
+    (docs/adr/20261111-phone-country-per-number).
+    In order: a blank phone is none and the country is ignored; a "+"
     form follows its own calling code and the country is ignored, even a bogus one;
     otherwise the requested country reads it, and none asks for the country."""
     if raw is None or not raw.strip():
@@ -127,7 +128,8 @@ def edit_customer(
         phone = customer.phone
     elif customer.phone is not None and changes.phone == customer.phone.value:
         # The stored value sent back as it is stays as it is, whatever country is sent
-        # with it: it is neither normalised again nor is the country read (docs/adr/0085).
+        # with it: it is neither normalised again nor is the country read
+        # (docs/adr/20261111-phone-country-per-number).
         phone = customer.phone
     else:
         phone = _phone_for(changes.phone, phone_country)
