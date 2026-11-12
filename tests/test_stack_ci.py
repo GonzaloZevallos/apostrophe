@@ -78,7 +78,7 @@ STALE_RUN = (
     'git diff --exit-code -- docs/architecture/generated docs/api && test -z "$(git status '
     '--porcelain --untracked-files=all -- docs/architecture/generated docs/api)"'
 )
-PACK_RUN = "uv run --no-project python -m scripts.docs.regen_pack --out \"$RUNNER_TEMP/regen\""
+PACK_RUN = 'uv run --no-project python -m scripts.docs.regen_pack --out "$RUNNER_TEMP/regen"'
 FAILED_DOCS_RUN = (
     """echo "master's owned docs are not regenerated: this run's docs job failed" """
     """>> "$GITHUB_STEP_SUMMARY\""""
@@ -1857,3 +1857,439 @@ def test_parse_mode_resolves_names_to_empty_and_calls_to_false() -> None:
 def test_parse_mode_refuses_what_github_would_reject(text: str) -> None:
     with pytest.raises(ValueError):
         _Expression(text, None).evaluate()
+
+
+# --- the ungated jobs: the registry's rules, one mutation each (GH-697) --------------------------
+
+UNGATED_ID = next(iter(UNGATED_JOBS))
+UNGATED_RUN = next(iter(UNGATED_RUNS))
+
+
+def _ungated_problems_of(
+    workflow: Data,
+    ungated_jobs: dict[str, str] | None = None,
+    ungated_runs: dict[str, str] | None = None,
+) -> list[str]:
+    return stack_ci_problems(
+        STACK,
+        workflow,
+        CI_ONLY,
+        CI_FORMS,
+        UNGATED_JOBS if ungated_jobs is None else ungated_jobs,
+        UNGATED_RUNS if ungated_runs is None else ungated_runs,
+    )
+
+
+def test_the_registries_hold_the_ungated_job_and_the_one_command_it_runs() -> None:
+    assert UNGATED_RUNS.keys() <= set(_runs(WORKFLOW)[UNGATED_ID])
+    assert all(reason.strip() for reason in UNGATED_JOBS.values())
+    assert UNGATED_RUNS.keys().isdisjoint(CI_ONLY)
+    assert UNGATED_ID not in _closure(WORKFLOW, STACK["ci"])
+
+
+def test_an_ungated_id_that_is_not_a_job_is_refused() -> None:
+    problems = _ungated_problems_of(WORKFLOW, {**UNGATED_JOBS, "ghost": "no such job"})
+    assert problems == ["UNGATED_JOBS names 'ghost', which is not a job of ci.yml"]
+
+
+def test_an_ungated_job_without_a_reason_is_refused() -> None:
+    problems = _ungated_problems_of(WORKFLOW, {UNGATED_ID: "  "})
+    assert problems == [f"UNGATED_JOBS gives {UNGATED_ID!r} an empty reason"]
+
+
+def test_an_ungated_job_inside_the_closure_of_ci_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["ci-ok"]["needs"].append(UNGATED_ID)
+    problems = _ungated_problems_of(workflow)
+    assert f"ungated job {UNGATED_ID!r} is in the needs closure of ci:" in problems
+
+
+def test_a_job_that_needs_an_ungated_job_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["ci-ok"]["needs"].append(UNGATED_ID)
+    assert f"job 'ci-ok' needs the ungated job {UNGATED_ID!r}" in _ungated_problems_of(workflow)
+
+
+def test_a_command_in_an_ungated_job_outside_the_registry_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"][UNGATED_ID]["steps"].append({"run": "make everything-green"})
+    assert _ungated_problems_of(workflow) == [
+        f"ungated job {UNGATED_ID!r} runs a command outside UNGATED_RUNS and setup: "
+        "make everything-green"
+    ]
+
+
+def test_a_setup_command_in_an_ungated_job_is_accepted() -> None:
+    workflow = _mutated()
+    workflow["jobs"][UNGATED_ID]["steps"].append({"run": next(iter(STACK["setup"].values()))})
+    assert _ungated_problems_of(workflow) == []
+
+
+def test_an_ungated_run_that_no_ungated_job_runs_is_refused() -> None:
+    problems = _ungated_problems_of(WORKFLOW, ungated_runs={**UNGATED_RUNS, "bash nobody.sh": "x"})
+    assert problems == ["UNGATED_RUNS command (bash nobody.sh) is run by no ungated job"]
+
+
+def test_an_ungated_run_never_joins_the_commands_a_gated_job_may_run() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["checks"]["steps"].append({"run": UNGATED_RUN})
+    assert _ungated_problems_of(workflow) == [f"job 'checks' runs an unknown step: {UNGATED_RUN}"]
+
+
+def test_a_job_with_contents_write_outside_the_registry_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["docs"]["permissions"] = {"contents": "write"}
+    assert _ungated_problems_of(workflow) == [
+        "job 'docs' holds contents: write and is not in UNGATED_JOBS"
+    ]
+
+
+def test_an_ungated_job_dropped_from_the_registry_is_refused() -> None:
+    problems = _ungated_problems_of(WORKFLOW, {}, {})
+    assert f"job {UNGATED_ID!r} is not in the needs closure of ci:" in problems
+    assert f"job {UNGATED_ID!r} holds contents: write and is not in UNGATED_JOBS" in problems
+
+
+# --- what a master push, an agentic-ci push, a pull request and a dispatch each run -----------
+
+MASTER_CASE = "a master push"
+CASES = {
+    MASTER_CASE: ("push", "refs/heads/master", ""),
+    "an agentic-ci push": ("push", "refs/heads/agentic-ci/x", ""),
+    "a pull request": ("pull_request", "refs/pull/1/merge", ""),
+    "a dispatch on master": ("workflow_dispatch", "refs/heads/master", DISPATCH_SHA),
+}
+
+
+def _holds(condition: object, case: str, status: str = "success") -> bool:
+    """Whether a step or job with this `if:` (none means always) runs in `case`."""
+    event, ref, sha = CASES[case]
+    if condition is None:
+        return True
+    return _Expression(str(condition), _context(event, ref, sha, status)).evaluate() is True
+
+
+def _docs_steps(workflow: Data, run: str) -> list[Data]:
+    return [
+        step for step in _steps(workflow["jobs"]["docs"]) if str(step.get("run", "")).strip() == run
+    ]
+
+
+def _upload_steps(workflow: Data) -> list[Data]:
+    return [
+        step
+        for step in _steps(workflow["jobs"]["docs"])
+        if str(step.get("uses", "")).startswith("actions/upload-artifact@")
+        and cast("Data", step.get("with", {})).get("name") == OWNED_DOCS_ARTIFACT
+    ]
+
+
+def _verb(runs: bool) -> str:
+    return "must run" if runs else "must be skipped"
+
+
+def _master_push_problems(workflow: Data, ungated_jobs: dict[str, str] = UNGATED_JOBS) -> list[str]:
+    """Which events run the docs steps that pack, upload and skip, and the ungated jobs."""
+    problems: list[str] = []
+    jobs: Data = workflow["jobs"]
+    docs = _steps(jobs["docs"])
+    found = {
+        "stale-check": _docs_steps(workflow, STALE_RUN),
+        "pack": _docs_steps(workflow, PACK_RUN),
+        "upload": _upload_steps(workflow),
+        "failure": _docs_steps(workflow, FAILED_DOCS_RUN),
+        "generate": _docs_steps(workflow, GENERATE),
+    }
+    problems.extend(
+        f"docs has {len(steps)} {label} steps, not 1"
+        for label, steps in found.items()
+        if len(steps) != 1
+    )
+    if problems:
+        return problems
+    stale, pack, upload, failed, generate = (steps[0] for steps in found.values())
+
+    for label, step, only_master in (
+        ("stale-check", stale, False),
+        ("pack", pack, True),
+        ("upload", upload, True),
+    ):
+        for case in CASES:
+            runs = (case == MASTER_CASE) is only_master
+            if _holds(step.get("if"), case) is not runs:
+                problems.append(f"the docs {label} step {_verb(runs)} for {case}")
+    for case in CASES:
+        for status in ("success", "failure"):
+            runs = case == MASTER_CASE and status == "failure"
+            if _holds(failed.get("if"), case, status) is not runs:
+                problems.append(
+                    f"the docs failure step {_verb(runs)} for {case} when the job is {status}"
+                )
+    if not docs.index(generate) < docs.index(pack) < docs.index(upload):
+        problems.append("the docs steps are not generate, then pack, then upload")
+    options = cast("Data", upload.get("with", {}))
+    if options.get("if-no-files-found") != "error":
+        problems.append("the upload does not set if-no-files-found: error")
+    if options.get("retention-days") != 1:
+        problems.append("the upload does not set retention-days: 1")
+
+    for job_id in ungated_jobs:
+        job = cast("Data | None", jobs.get(job_id))
+        if job is None:
+            continue
+        problems.extend(
+            f"the ungated job {job_id!r} {_verb(case == MASTER_CASE)} for {case}"
+            for case in CASES
+            if _holds(job.get("if"), case) is not (case == MASTER_CASE)
+        )
+        if _needs(job) != ["docs"]:
+            problems.append(f"the ungated job {job_id!r} needs {_needs(job)}, not ['docs']")
+        if job_id in _needs(jobs["ci-ok"]):
+            problems.append(f"ci-ok needs the ungated job {job_id!r}")
+        problems.extend(
+            f"a checkout of the ungated job {job_id!r} does not set fetch-depth: 0"
+            for checkout in _checkouts(job)
+            if cast("Data", checkout.get("with", {})).get("fetch-depth") != 0
+        )
+    return problems
+
+
+def test_the_real_workflow_runs_the_docs_steps_and_the_ungated_job_as_the_task_wrote() -> None:
+    assert _master_push_problems(WORKFLOW) == []
+    assert _docs_steps(WORKFLOW, PACK_RUN)[0]["if"] == MASTER_PUSH
+    assert _upload_steps(WORKFLOW)[0]["if"] == MASTER_PUSH
+    assert _docs_steps(WORKFLOW, STALE_RUN)[0]["if"] == STALE_IF
+    assert _docs_steps(WORKFLOW, FAILED_DOCS_RUN)[0]["if"] == f"failure() && {MASTER_PUSH}"
+    assert WORKFLOW["jobs"][UNGATED_ID]["if"] == MASTER_PUSH
+
+
+def test_the_stale_step_is_skipped_only_for_a_master_push() -> None:
+    step = _docs_steps(WORKFLOW, STALE_RUN)[0]
+    assert {case: _holds(step["if"], case) for case in CASES} == {
+        MASTER_CASE: False,
+        "an agentic-ci push": True,
+        "a pull request": True,
+        "a dispatch on master": True,
+    }
+
+
+def test_the_pack_and_upload_steps_and_the_ungated_job_run_only_for_a_master_push() -> None:
+    conditions = [
+        _docs_steps(WORKFLOW, PACK_RUN)[0]["if"],
+        _upload_steps(WORKFLOW)[0]["if"],
+        WORKFLOW["jobs"][UNGATED_ID]["if"],
+    ]
+    for condition in conditions:
+        assert [case for case in CASES if _holds(condition, case)] == [MASTER_CASE]
+
+
+def test_the_failure_step_runs_only_when_a_master_push_failed() -> None:
+    condition = _docs_steps(WORKFLOW, FAILED_DOCS_RUN)[0]["if"]
+    assert [
+        (case, status)
+        for case in CASES
+        for status in ("success", "failure")
+        if _holds(condition, case, status)
+    ] == [(MASTER_CASE, "failure")]
+
+
+def test_a_failure_step_that_does_not_read_failure_is_refused() -> None:
+    workflow = _mutated()
+    _docs_steps(workflow, FAILED_DOCS_RUN)[0]["if"] = MASTER_PUSH
+    assert _master_push_problems(workflow) == [
+        f"the docs failure step must be skipped for {MASTER_CASE} when the job is success"
+    ]
+
+
+def test_a_failure_step_without_the_master_conjunct_is_refused() -> None:
+    workflow = _mutated()
+    _docs_steps(workflow, FAILED_DOCS_RUN)[0]["if"] = "failure()"
+    assert _master_push_problems(workflow) == [
+        f"the docs failure step must be skipped for {case} when the job is failure"
+        for case in CASES
+        if case != MASTER_CASE
+    ]
+
+
+def test_a_stale_step_without_its_if_is_refused() -> None:
+    workflow = _mutated()
+    del _docs_steps(workflow, STALE_RUN)[0]["if"]
+    assert _master_push_problems(workflow) == [
+        f"the docs stale-check step must be skipped for {MASTER_CASE}"
+    ]
+
+
+def test_a_pack_or_upload_step_that_runs_on_every_event_is_refused() -> None:
+    workflow = _mutated()
+    del _docs_steps(workflow, PACK_RUN)[0]["if"]
+    del _upload_steps(workflow)[0]["if"]
+    problems = _master_push_problems(workflow)
+    assert [p for p in problems if "pack" in p] == [
+        f"the docs pack step must be skipped for {case}" for case in CASES if case != MASTER_CASE
+    ]
+    assert [p for p in problems if "upload" in p] == [
+        f"the docs upload step must be skipped for {case}" for case in CASES if case != MASTER_CASE
+    ]
+
+
+def test_an_upload_that_only_warns_when_files_are_missing_is_refused() -> None:
+    workflow = _mutated()
+    _upload_steps(workflow)[0]["with"]["if-no-files-found"] = "warn"
+    assert _master_push_problems(workflow) == ["the upload does not set if-no-files-found: error"]
+
+
+def test_an_upload_that_keeps_the_artifact_longer_is_refused() -> None:
+    workflow = _mutated()
+    _upload_steps(workflow)[0]["with"]["retention-days"] = 14
+    assert _master_push_problems(workflow) == ["the upload does not set retention-days: 1"]
+
+
+def test_a_pack_before_generate_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["docs"]["steps"]
+    pack = _docs_steps(workflow, PACK_RUN)[0]
+    steps.remove(pack)
+    steps.insert(0, pack)
+    assert _master_push_problems(workflow) == [
+        "the docs steps are not generate, then pack, then upload"
+    ]
+
+
+def test_a_missing_docs_step_is_reported_by_name() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["docs"]["steps"].remove(_upload_steps(workflow)[0])
+    assert _master_push_problems(workflow) == ["docs has 0 upload steps, not 1"]
+
+
+def test_an_ungated_job_that_runs_on_another_event_is_refused() -> None:
+    workflow = _mutated()
+    del workflow["jobs"][UNGATED_ID]["if"]
+    assert _master_push_problems(workflow) == [
+        f"the ungated job {UNGATED_ID!r} must be skipped for {case}"
+        for case in CASES
+        if case != MASTER_CASE
+    ]
+
+
+def test_an_ungated_job_that_needs_more_than_docs_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"][UNGATED_ID]["needs"] = ["docs", "changes"]
+    assert _master_push_problems(workflow) == [
+        f"the ungated job {UNGATED_ID!r} needs ['docs', 'changes'], not ['docs']"
+    ]
+
+
+def test_an_ungated_job_ci_ok_needs_is_refused_by_the_master_push_pins() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["ci-ok"]["needs"].append(UNGATED_ID)
+    assert f"ci-ok needs the ungated job {UNGATED_ID!r}" in _master_push_problems(workflow)
+
+
+def test_an_ungated_checkout_without_full_depth_is_refused() -> None:
+    workflow = _mutated()
+    del _checkouts(workflow["jobs"][UNGATED_ID])[0]["with"]["fetch-depth"]
+    assert _master_push_problems(workflow) == [
+        f"a checkout of the ungated job {UNGATED_ID!r} does not set fetch-depth: 0"
+    ]
+
+
+def test_an_ungated_checkout_with_a_ref_is_refused() -> None:
+    workflow = _mutated()
+    _checkouts(workflow["jobs"][UNGATED_ID])[0]["with"]["ref"] = SHA_REF
+    assert f"the master checkout of {UNGATED_ID!r} carries a ref ({SHA_REF})" in _problems(workflow)
+
+
+# --- the `if:` rules and the well-formedness of the whole file --------------------------------
+
+
+def _conditions(workflow: Data) -> list[tuple[str, str]]:
+    """Every job-level and step-level `if:`, with where it is."""
+    found: list[tuple[str, str]] = []
+    for job_id, job in cast("Data", workflow["jobs"]).items():
+        if "if" in job:
+            found.append((f"job {job_id!r}", str(job["if"])))
+        found.extend(
+            (f"step {index} of {job_id!r}", str(step["if"]))
+            for index, step in enumerate(_steps(job))
+            if "if" in step
+        )
+    return found
+
+
+def _if_prefix_problems(workflow: Data) -> list[str]:
+    return [
+        f"{where} `if:` starts with {prefix!r}: {text}"
+        for where, text in _conditions(workflow)
+        for prefix in ("!", "${{")
+        if text.strip().startswith(prefix)
+    ]
+
+
+USES = re.compile(r"\w[\w.-]*/\w[\w.-]*@[\w./-]+")
+
+
+def _wellformed_problems(workflow: Data) -> list[str]:
+    """What GitHub would reject, or never run, in a file the Dispatch cannot run before merge."""
+    problems: list[str] = []
+    jobs: Data = workflow["jobs"]
+    for job_id, job in jobs.items():
+        problems.extend(
+            f"job {job_id!r} needs {need!r}, which is not a job"
+            for need in _needs(job)
+            if need not in jobs
+        )
+        problems.extend(
+            f"job {job_id!r} uses {step['uses']!r}, which is not owner/name@ref"
+            for step in _steps(job)
+            if "uses" in step and not USES.fullmatch(str(step["uses"]))
+        )
+    for where, text in _conditions(workflow):
+        try:
+            _Expression(text, None).evaluate()
+        except ValueError as error:
+            problems.append(f"{where} `if:` does not parse: {error}")
+    return problems
+
+
+def test_no_if_starts_with_a_negation_or_an_expression_wrapper() -> None:
+    assert _conditions(WORKFLOW)
+    assert _if_prefix_problems(WORKFLOW) == []
+
+
+@pytest.mark.parametrize("prefix", ["!", "${{ "])
+def test_an_if_starting_with_a_negation_or_an_expression_wrapper_is_refused(prefix: str) -> None:
+    workflow = _mutated()
+    workflow["jobs"]["docs"]["steps"][-1]["if"] = f"{prefix}failure()"
+    assert _if_prefix_problems(workflow) == [
+        f"step {len(workflow['jobs']['docs']['steps']) - 1} of 'docs' `if:` starts with "
+        f"{prefix.strip()!r}: {prefix}failure()"
+    ]
+
+
+def test_the_workflow_is_well_formed() -> None:
+    assert _wellformed_problems(WORKFLOW) == []
+
+
+def test_a_need_that_is_not_a_job_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["ci-ok"]["needs"].append("ghost")
+    assert _wellformed_problems(workflow) == ["job 'ci-ok' needs 'ghost', which is not a job"]
+
+
+def test_an_if_the_evaluator_cannot_parse_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["docs"]["steps"][-1]["if"] = "length(github.ref) > 1"
+    problems = _wellformed_problems(workflow)
+    assert len(problems) == 1
+    assert problems[0].startswith(
+        f"step {len(workflow['jobs']['docs']['steps']) - 1} of 'docs' `if:` does not parse"
+    )
+
+
+@pytest.mark.parametrize("uses", ["actions/checkout", "checkout@v7", "./local@v1", "a/b@"])
+def test_a_uses_that_is_not_owner_name_at_ref_is_refused(uses: str) -> None:
+    workflow = _mutated()
+    workflow["jobs"]["ci-ok"]["steps"][0]["uses"] = uses
+    assert _wellformed_problems(workflow) == [
+        f"job 'ci-ok' uses {uses!r}, which is not owner/name@ref"
+    ]
