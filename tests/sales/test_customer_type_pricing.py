@@ -29,7 +29,7 @@ def _entry(client: TestClient, product_id: int, day: str, *, bulk: bool) -> None
 
 
 def _customer(client: TestClient, name: str = "Juana") -> int:
-    body = {"name": name, "phone": f"11 {next(_phones)}-0000"}
+    body = {"name": name, "phone": f"11 {next(_phones)}-0000", "phone_country": "AR"}
     return int(client.post("/customers", json=body).json()["id"])
 
 
