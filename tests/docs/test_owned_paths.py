@@ -72,3 +72,21 @@ def test_a_docs_paths_that_is_not_a_list_of_strings_is_rejected(tmp_path: Path) 
 
     with pytest.raises(ValueError, match="docs.paths is not a list of strings"):
         owned_paths(tmp_path)
+
+
+def _bot_owned_literal(script: str) -> list[str]:
+    """The entries of the `BOT_OWNED=( ... )` literal of `bot-push.sh`, one quoted entry a line."""
+    body = script.split("BOT_OWNED=(\n", 1)[1].split("\n)", 1)[0]
+    return [line.strip().strip("'") for line in body.splitlines()]
+
+
+def test_bot_push_owns_the_docs_paths_and_the_screens() -> None:
+    script = (REPO_ROOT / "scripts" / "ci" / "bot-push.sh").read_text(encoding="utf-8")
+
+    assert _bot_owned_literal(script) == [*owned_paths(REPO_ROOT), "docs/assets/screens/**"]
+
+
+def test_a_bot_owned_literal_missing_a_path_is_seen_as_a_difference() -> None:
+    script = "BOT_OWNED=(\n  'docs/api/**'\n  'docs/assets/screens/**'\n)\n"
+
+    assert _bot_owned_literal(script) != [*owned_paths(REPO_ROOT), "docs/assets/screens/**"]
