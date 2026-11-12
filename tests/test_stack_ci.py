@@ -33,6 +33,7 @@ from scripts.ci_changes import render, select
 from scripts.ci_coverage import MARKER
 from scripts.ci_verdict import ALWAYS_JOBS, CHANGES, SUITES, WARN_JOBS
 from scripts.docs.owned_paths import owned_paths
+from scripts.docs.regen_pack import PATHS_FILE, TAR_FILE
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -68,8 +69,26 @@ GROUP = (
 SHA_REF = "${{ inputs.sha }}"
 HEAD_ROOT_EXPRESSION = "${{ github.workspace }}/head"
 DISPATCH_ONLY = "github.event_name == 'workflow_dispatch'"
-# The two checkouts of master's own code: no `ref`, so they run master's scripts over the head.
-MASTER_CHECKOUTS = (("changes", 0), ("ci-ok", 0))
+# The checkouts of master's own code: no `ref`, so they run master's scripts over the head. The last
+# one is the ungated job that commits master's docs after a merge.
+MASTER_CHECKOUTS = (("changes", 0), ("ci-ok", 0), ("regen", 0))
+MASTER_PUSH = "github.event_name == 'push' && github.ref == 'refs/heads/master'"
+STALE_IF = "github.event_name != 'push' || github.ref != 'refs/heads/master'"
+STALE_RUN = (
+    'git diff --exit-code -- docs/architecture/generated docs/api && test -z "$(git status '
+    '--porcelain --untracked-files=all -- docs/architecture/generated docs/api)"'
+)
+PACK_RUN = "uv run --no-project python -m scripts.docs.regen_pack --out \"$RUNNER_TEMP/regen\""
+FAILED_DOCS_RUN = (
+    """echo "master's owned docs are not regenerated: this run's docs job failed" """
+    """>> "$GITHUB_STEP_SUMMARY\""""
+)
+PUBLISH_RUN = (
+    'bash scripts/docs/regen-publish.sh --sha "$SHA" '
+    f'--tar "$RUNNER_TEMP/regen/{TAR_FILE}" --owned "$RUNNER_TEMP/regen/{PATHS_FILE}" '
+    '--summary "$GITHUB_STEP_SUMMARY"'
+)
+OWNED_DOCS_ARTIFACT = "owned-docs"
 VITEST_LIST_RUN = (
     'if [ -n "$BASE_REF" ]; then npx --prefix web vitest list --root web --changed="$BASE_REF" '
     '--filesOnly > "$RUNNER_TEMP/vitest-listed.txt"; '
@@ -132,16 +151,29 @@ CI_ONLY: dict[str, str] = {
     VERDICT_RUN: "the merge condition: one verdict over every job's result and the `changes` flags",
     E2E_GATE_RUN: "the `e2e` aggregator: green only when every `e2e-shard` is",
     E2E_RUN: "end-to-end is judged by GitHub CI only (owner's rule, GH-699)",
-    (
-        'git diff --exit-code -- docs/architecture/generated docs/api && test -z "$(git status '
-        '--porcelain --untracked-files=all -- docs/architecture/generated docs/api)"'
-    ): "the CI form of the reserved `docs` check",
+    STALE_RUN: "the CI form of the reserved `docs` check; skipped on a master push (ADR-0066)",
+    PACK_RUN: "packs master's regenerated owned docs for the `regen` job; only a master push does",
+    FAILED_DOCS_RUN: "the summary line that says a red `docs` job left master's docs unregenerated",
     "bash scripts/docs/install-ci-tools.sh": "binaries on no package manager the repo uses",
     "bash scripts/docs/ci-mermaid-render.sh": "needs Chromium",
     "lychee --offline --no-progress docs/architecture docs/api/README.md": (
         "binary installed only in CI"
     ),
     "uv run --no-project python -m scripts.docs.api_breaks": "needs the base ref and the PR body",
+}
+
+# Jobs outside `ci-ok`'s needs closure, each with the reason it gates nothing (ADR-0066, amended).
+UNGATED_JOBS: dict[str, str] = {
+    "regen": (
+        "commits master's owned docs as the Actions bot after a merge; it gates no merge, so "
+        "`ci-ok` must not need it, and it holds the only `contents: write` of the workflow"
+    ),
+}
+
+# The commands the ungated jobs run, each with its reason. They never join the commands a gated
+# job may run.
+UNGATED_RUNS: dict[str, str] = {
+    PUBLISH_RUN: "commits the packed docs and hands the push to scripts/ci/bot-push.sh",
 }
 
 # Checks CI runs in another form (shards, coverage, selected specs): check -> the exact `run:`
@@ -249,7 +281,10 @@ def _output_references(workflow: Data) -> set[str]:
 
 
 def _structure_problems(
-    workflow: Data, ci_names: list[str], workflow_checks: dict[str, str]
+    workflow: Data,
+    ci_names: list[str],
+    workflow_checks: dict[str, str],
+    ungated_jobs: dict[str, str],
 ) -> list[str]:
     """Permissions, concurrency, `if:` rules, fetch depth, the fork guard and the uploads."""
     problems: list[str] = []
@@ -268,7 +303,7 @@ def _structure_problems(
 
     for name in ci_names:
         if name in jobs:
-            others = sorted(job for job in jobs if job != name)
+            others = sorted(job for job in jobs if job != name and job not in ungated_jobs)
             if sorted(_needs(jobs[name])) != others:
                 problems.append(f"{name!r} needs {sorted(_needs(jobs[name]))}, not every other job")
             if jobs[name].get("if") != "always()":
@@ -592,8 +627,57 @@ def _generate_problems(
     return problems
 
 
+def _ungated_problems(
+    workflow: Data,
+    gated: set[str],
+    setup: dict[str, str],
+    ungated_jobs: dict[str, str],
+    ungated_runs: dict[str, str],
+) -> list[str]:
+    """The jobs outside `ci-ok`'s closure: declared with a reason, needed by nobody, running only
+    declared commands, and the only holders of `contents: write`."""
+    problems: list[str] = []
+    jobs: Data = workflow["jobs"]
+    runs = _runs(workflow)
+    for job_id, reason in ungated_jobs.items():
+        if job_id not in jobs:
+            problems.append(f"UNGATED_JOBS names {job_id!r}, which is not a job of ci.yml")
+            continue
+        if not reason.strip():
+            problems.append(f"UNGATED_JOBS gives {job_id!r} an empty reason")
+        if job_id in gated:
+            problems.append(f"ungated job {job_id!r} is in the needs closure of ci:")
+        problems.extend(
+            f"job {other!r} needs the ungated job {job_id!r}"
+            for other, job in jobs.items()
+            if job_id in _needs(job)
+        )
+        problems.extend(
+            f"ungated job {job_id!r} runs a command outside UNGATED_RUNS and setup: {command}"
+            for command in runs[job_id]
+            if command not in ungated_runs and command not in setup.values()
+        )
+    problems.extend(
+        f"UNGATED_RUNS command ({command}) is run by no ungated job"
+        for command in ungated_runs
+        if not any(command in runs.get(job_id, []) for job_id in ungated_jobs)
+    )
+    problems.extend(
+        f"job {job_id!r} holds contents: write and is not in UNGATED_JOBS"
+        for job_id, job in jobs.items()
+        if cast("Data", job.get("permissions", {})).get("contents") == "write"
+        and job_id not in ungated_jobs
+    )
+    return problems
+
+
 def stack_ci_problems(
-    stack: Data, workflow: Data, ci_only: dict[str, str], ci_forms: dict[str, str]
+    stack: Data,
+    workflow: Data,
+    ci_only: dict[str, str],
+    ci_forms: dict[str, str],
+    ungated_jobs: dict[str, str],
+    ungated_runs: dict[str, str],
 ) -> list[str]:
     """What keeps `stack` and `workflow` from being one list of checks."""
     problems: list[str] = []
@@ -639,16 +723,19 @@ def stack_ci_problems(
         known.add(generate)
         problems.extend(_generate_problems(generate, runs, gated, checks, ci_only, ci_forms))
     for job, commands in runs.items():
+        if job in ungated_jobs:
+            continue
         problems.extend(
             f"job {job!r} runs an unknown step: {command}"
             for command in commands
             if command not in known
         )
     for job_id in workflow["jobs"]:
-        if job_id not in gated:
+        if job_id not in gated and job_id not in ungated_jobs:
             problems.append(f"job {job_id!r} is not in the needs closure of ci:")
+    problems.extend(_ungated_problems(workflow, gated, setup, ungated_jobs, ungated_runs))
 
-    problems.extend(_structure_problems(workflow, ci_names, checks))
+    problems.extend(_structure_problems(workflow, ci_names, checks, ungated_jobs))
     problems.extend(
         f"output {name!r} is read but no producer emits it"
         for name in sorted(_output_references(workflow) - OUTPUT_NAMES)
@@ -669,7 +756,14 @@ def _forms_for(stack: Data) -> dict[str, str]:
 def _problems(
     workflow: Data, stack: Data = STACK, forms: dict[str, str] | None = None
 ) -> list[str]:
-    return stack_ci_problems(stack, workflow, CI_ONLY, CI_FORMS if forms is None else forms)
+    return stack_ci_problems(
+        stack,
+        workflow,
+        CI_ONLY,
+        CI_FORMS if forms is None else forms,
+        UNGATED_JOBS,
+        UNGATED_RUNS,
+    )
 
 
 def _mutated() -> Data:
@@ -683,12 +777,13 @@ def test_ci_yml_and_stack_yaml_are_one_list() -> None:
 
 def test_the_gated_jobs_are_the_needs_closure_of_ci_ok() -> None:
     assert STACK["ci"] == ["ci-ok"]
-    assert _closure(WORKFLOW, STACK["ci"]) == set(WORKFLOW["jobs"])
+    assert _closure(WORKFLOW, STACK["ci"]) == set(WORKFLOW["jobs"]) - set(UNGATED_JOBS)
 
 
 def test_ci_ok_needs_every_other_job_and_runs_always() -> None:
     ci_ok = WORKFLOW["jobs"]["ci-ok"]
-    assert sorted(_needs(ci_ok)) == sorted(job for job in WORKFLOW["jobs"] if job != "ci-ok")
+    expected = sorted(job for job in WORKFLOW["jobs"] if job != "ci-ok" and job not in UNGATED_JOBS)
+    assert sorted(_needs(ci_ok)) == expected
     assert ci_ok["if"] == "always()"
 
 
@@ -1158,7 +1253,7 @@ def test_a_check_in_a_job_outside_the_closure_is_refused() -> None:
 
 def test_a_ci_only_entry_no_job_runs_is_refused() -> None:
     ci_only = {**CI_ONLY, "npm --prefix web run storybook": "a step nobody runs"}
-    problems = stack_ci_problems(STACK, WORKFLOW, ci_only, CI_FORMS)
+    problems = stack_ci_problems(STACK, WORKFLOW, ci_only, CI_FORMS, UNGATED_JOBS, UNGATED_RUNS)
     assert problems == [
         "CI_ONLY command (npm --prefix web run storybook) is run by no job of ci.yml"
     ]
@@ -1277,7 +1372,7 @@ def test_a_docs_generate_in_a_job_outside_the_closure_is_refused() -> None:
 
 def test_a_docs_generate_still_listed_in_ci_only_is_refused() -> None:
     ci_only = {**CI_ONLY, GENERATE: "the docs generator"}
-    assert stack_ci_problems(STACK, WORKFLOW, ci_only, CI_FORMS) == [
+    assert stack_ci_problems(STACK, WORKFLOW, ci_only, CI_FORMS, UNGATED_JOBS, UNGATED_RUNS) == [
         f"docs.generate ({GENERATE}) is also in CI_ONLY"
     ]
 
