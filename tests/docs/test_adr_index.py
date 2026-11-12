@@ -1,7 +1,7 @@
 """The ADR index is generated from the front matter of `docs/adr/*.md` (GH-692).
 
-The reader, the generator over throwaway directories, and the key set of every real ADR. Reads of the repo's docs are literal
-`REPO_ROOT / "docs" / ...` chains.
+The reader, the generator over throwaway directories, and the key set of every real ADR.
+Reads of the repo's docs are literal `REPO_ROOT / "docs" / ...` chains.
 """
 
 from __future__ import annotations

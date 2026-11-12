@@ -25,7 +25,9 @@ _MESSAGE = (
 
 def annotations(changed: Iterable[str]) -> list[str]:
     """One `::warning file=<path>::` line for each changed path the generator owns."""
-    return [f"::warning file={path}::{_MESSAGE}" for path in changed if is_owned(PurePosixPath(path))]
+    return [
+        f"::warning file={path}::{_MESSAGE}" for path in changed if is_owned(PurePosixPath(path))
+    ]
 
 
 def _git(*args: str) -> str | None:
