@@ -88,3 +88,23 @@ test('with the Phone country list open, system back closes only the list', async
   expect(screen.getByLabelText('Phone')).toHaveValue('099 123 456')
   expect(screen.getByRole('button', { name: 'Create customer' })).toBeInTheDocument()
 })
+
+test('with the Phone country list open, the customer sheet and the sale beneath are inert, and they are live again once it closes', async () => {
+  const user = await refusePhoneWith('customer.phone_invalid')
+  await screen.findByRole('alert')
+  const covered = () => [
+    screen.getByLabelText('Name', { selector: 'input' }).closest('[inert]'),
+    document.querySelector('form.nueva-venta')?.closest('[inert]') ?? null,
+  ]
+  expect(covered()).toEqual([null, null])
+
+  await user.click(screen.getByRole('button', { name: /^Phone country/ }))
+  const list = await screen.findByRole('dialog', { name: 'Phone country options' })
+
+  expect(covered().every((layer) => layer !== null)).toBe(true)
+  expect(list.closest('[inert]')).toBeNull()
+
+  await act(() => router.navigate(-1))
+  await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Phone country options' })).not.toBeInTheDocument())
+  expect(covered()).toEqual([null, null])
+})

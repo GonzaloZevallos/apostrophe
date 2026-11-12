@@ -69,6 +69,10 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
   const vipCustomers = useIsVipCustomers()
   const chooser = useSheet(1)
   const creator = useSheet(2)
+  // The Phone country list is a third sheet: it is drawn in `listHost`, outside the content, and the
+  // content beneath is `inert`, so what it covers is reported as covered and unreachable.
+  const countryList = useSheet(3)
+  const [listHost, setListHost] = useState<HTMLElement | null>(null)
   const [query, setQuery] = useState('')
   const [newCustomer, setNewCustomer] = useState<CustomerFieldsValue>(EMPTY_NEW_CUSTOMER)
   const country = usePhoneCountryField(null)
@@ -132,7 +136,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
   return (
     <SheetLevel.Provider value={1}>
     <div className="cliente-sheet" role="presentation">
-      <div className="cliente-sheet__contenido">
+      <div className="cliente-sheet__contenido" inert={countryList.isOpen}>
         <span className="cliente-sheet__manija" aria-hidden="true" />
         <div className="cliente-sheet__encabezado">
           <span className="panel__titulo">{SALES_TEXT.pickCustomer}</span>
@@ -200,6 +204,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
                 phoneError={phoneError}
           phoneInvalid={phoneInvalid}
                 country={country}
+                listHost={listHost}
               />
               {formError !== null && (
                 <span className="campo__error" role="alert">
@@ -214,6 +219,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
           </SheetLevel.Provider>
         )}
       </div>
+      <div className="nueva-venta__lista" ref={setListHost} />
     </div>
     </SheetLevel.Provider>
   )

@@ -36,6 +36,8 @@ export interface CustomerFieldsProps {
   phoneInvalid: boolean
   /** The Phone country of this form (`usePhoneCountryField`): the caller sends its `requestCountry`. */
   country: PhoneCountryField
+  /** Where the phone's Phone country list is drawn when the sheet around the form must be covered (`inert`) beneath it. */
+  listHost?: HTMLElement | null
 }
 
 export default function CustomerFields({
@@ -45,6 +47,7 @@ export default function CustomerFields({
   phoneError,
   phoneInvalid,
   country,
+  listHost,
 }: CustomerFieldsProps) {
   const nameRef = useRef<HTMLInputElement>(null)
   const phoneId = useId()
@@ -116,6 +119,7 @@ export default function CustomerFields({
                 if (next !== null) country.pick(choiceOfId(next))
               },
               loading,
+              listHost,
               describedBy: country.failure === null ? undefined : countryFailureId,
             }
             return country.locked ? (
