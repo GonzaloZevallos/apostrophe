@@ -3,6 +3,7 @@
 - Cuando leo cómo funciona una capacidad en la documentación funcional, quiero ver la pantalla del teléfono que describe, la misma imagen cada vez, para entender lo que el dueño tiene en el teléfono sin correr la app ni abrir un archivo de diseño. Lo lee sobre todo el dueño o quien mantiene el producto; quienes revisan y el sistema agéntico que escribe y controla la documentación se benefician en segundo lugar.
 - Cuando leo la definición escrita de una pantalla del teléfono en `docs/product/` (como dueño, como PM o como agente del sistema), quiero la imagen de la pantalla construida al lado, para entender la definición más rápido sin levantar la app. Cuando actualizo las imágenes, quiero que cambien solo las pantallas que de verdad cambiaron, para que una actualización nunca me haga revisar ruido.
 - Cuando un cambio llega a master, yo, el dueño que mantiene el producto mediante el sistema agéntico, quiero que el workflow de Screen images corra solo y refresque las imágenes que están junto a las definiciones escritas en `docs/product/`, para que una corrida en rojo me diga algo sobre las pantallas o la captura, nunca que al runner le faltaba una herramienta.
+- Cuando un workflow del bot ya hizo su commit y master se movió mientras corría, quiero (como quien integra a master y lee la página de la corrida) que publique igual si el movimiento fue solo de archivos del bot o de archivos que ese workflow ignora, para que master lleve la última salida generada sin que nadie vuelva a correrlo ni persiga al bot.
 
 ## Qué es una Screen image
 
@@ -62,6 +63,30 @@ Lo decide `docs/adr/0079-screen-images-are-built-only-lossless-webp-at-dpr-1-on-
 - **Control.** Un test de pytest del Gate recorre cada archivo de `.github/workflows/` y falla cuando un workflow usa Python antes de instalar la versión fijada, así que la falla aparece en el pull request que la introduce. El test solo lee los archivos de los workflows. El Gate nunca corre la captura.
 - **Una falla de la captura es un hallazgo, no un arreglo de herramientas.** Una corrida que pasa el control de herramientas y después falla por la app de muestra, Playwright, Docker o el control de dos capturas está en rojo con sentido: se informa como hallazgo con un issue propio que cita la corrida, y no se arregla cambiando qué se captura, cuándo ni qué se publica dentro de la tarea que arregla las herramientas. Una falla causada por cómo se instala Python (versión, dependencias o el entorno que usa la captura) sí es de las herramientas y se arregla ahí.
 
+## Publicar en master: `bot-push.sh`
+
+El job `push` de `screen-images.yml` publica las imágenes en master como `github-actions[bot]` mediante `scripts/design/screen-images-publish.sh`, que después de hacer su commit llama al ayudante compartido `scripts/ci/bot-push.sh` (GH-697 parte 1). El ayudante es genérico, para cualquier workflow que haga commits en master como el bot; en esta parte solo lo usa Screen images.
+
+- **`screen-images-publish.sh` no cambia para quien lo llama.** Conserva su interfaz, su control de archivos sueltos en el árbol de trabajo (con su stderr) y su línea `no image changed`. Llama al ayudante con `--label 'Screen images' --skip-note 'the next master run updates the images.' --ignore 'docs/assets/screens/**'`.
+- **Interfaz.** `bot-push.sh --sha SHA --commit REV --summary FILE --label TEXT --skip-note TEXT [--ignore PATH]... [--remote origin] [--branch master]`. Un uso incorrecto (una marca obligatoria faltante incluida) termina con 2, imprime solo una línea de uso en stderr y no escribe ninguna línea de resumen.
+- **Checkout completo.** Todo checkout que corre `bot-push.sh` usa `fetch-depth: 0`; hoy es solo el del job `push` de `screen-images.yml`.
+- **Rutas del bot.** La lista es un arreglo literal en el script: `docs/architecture/generated/**`, `docs/api/**`, `docs/architecture/decisiones.md` y `docs/assets/screens/**`. Su parte de docs es igual a `docs.paths` de `.agentic/stack.yaml` (un test de `tests/docs/test_owned_paths.py` lo compara con `owned_paths(REPO_ROOT)` más la entrada de las imágenes); la entrada de las imágenes nunca se agrega a `stack.yaml`.
+- **Un solo comparador.** Sirve para la lista del bot y para `--ignore`: una entrada que termina en `/**` coincide solo con rutas estrictamente debajo de esa carpeta, y cualquier otra coincide solo con esa ruta exacta. Así, `docs/assets/screens-old/x` o un archivo llamado exactamente `docs/assets/screens` nunca son imágenes.
+- **Qué tocó un commit.** Se decide por su diff contra su primer padre, así que un merge cuenta como que toca todo lo que trae. Un commit es del bot solo cuando su email de autor y su email de committer son ambos `41898283+github-actions[bot]@users.noreply.github.com`.
+- **En orden.**
+  1. Un clon superficial termina con 1.
+  2. El commit entregado debe tocar solo rutas del bot; si toca otra, o no tiene primer padre, termina con 1.
+  3. Trae la rama; si master no se movió, empuja el commit.
+  4. Si se movió, revisa cada commit de `SHA..punta`: uno del bot debe tocar solo rutas del bot y cualquier otro solo rutas de `--ignore`. Si alguno no cumple, escribe `<label>: not pushed, <branch> moved from <sha> to <tip> during the run; <skip-note>` y termina con 0. Un commit del rango sin primer padre termina con 1: nunca se adivina un diff contra un árbol vacío.
+  5. Si todos cumplen, se pone sobre la punta nueva, aplica el commit con cherry-pick y empuja.
+  6. Un push rechazado (también en el paso 3) vuelve a traer la rama, se pone sobre la punta nueva, revisa todo el rango otra vez y vuelve a aplicar el commit, como máximo 3 veces, escribiendo solo en stderr; si sigue rechazado, termina con 1.
+  7. Un conflicto de cherry-pick lo aborta y termina con 1.
+  8. Al empujar escribe `<label>: pushed <head> to <branch>.`
+- **Saltear o fallar.** Termina con 0 sin empujar solo cuando un commit que no es del bot toca una ruta fuera de `--ignore`, o cuando un commit del bot trae una ruta ajena: la próxima corrida de master se pone al día, así que fallar sería ruido. Termina con 1 cuando no puede juzgar o no puede terminar: clon superficial, ruta ajena en el commit entregado, conflicto de cherry-pick, commit sin primer padre o push rechazado después de 3 reintentos. Nunca une cambios ajenos por su cuenta.
+- **Una línea por resultado.** Cada resultado (empujado, salteado, fallido) escribe exactamente una línea de resumen que empieza con la etiqueta, agregada al archivo de `--summary` (el workflow pasa `$GITHUB_STEP_SUMMARY`); si ese archivo viene vacío, la línea va a stdout. Los reintentos escriben solo en stderr.
+- **Nunca encima de un humano.** El bot nunca empuja sobre un cambio de código de una persona, un merge de una persona ni una ruta parecida, y nunca empuja un commit que toca una ruta fuera de su lista.
+- **Cómo se prueba.** `tests/ci/test_bot_push.py` cubre cada caso contra un remoto desnudo de prueba y verifica el código de salida, la cabeza del remoto y la única línea de resumen: master sin moverse; movida por un commit del bot en una ruta propia; por una persona en código; por una persona solo en rutas ignoradas; por un commit del bot con una ruta ajena; un merge de una persona con código; una persona en `docs/assets/screens-old/x`; una persona en un archivo llamado exactamente `docs/assets/screens`; un conflicto entre dos commits del bot; un clon `--depth 1`; un hook que siempre rechaza; un hook que rechaza una vez mientras entra un commit del bot (se recupera, encima de ese commit); y un hook que rechaza una vez mientras entra código de una persona (saltea). El cambio toca `.github/`, así que lo juzga un Dispatch (ADR-0072).
+
 ## La misma imagen en cada corrida
 
 - Una fila que difiere entre dos corridas se arregla primero en la semilla fijada o en el camino fijado de la app.
@@ -73,7 +98,7 @@ Lo decide `docs/adr/0079-screen-images-are-built-only-lossless-webp-at-dpr-1-on-
 
 - Una Screen image nunca es un paso del Gate, nunca se controla píxel a píxel y queda afuera de todo control de documentación desactualizada. `screen-images.sh` es una herramienta de mantenimiento, nunca un job requerido del CI; en el Gate corren solo los tests unitarios del plan y del resumen, y el test que controla que los workflows instalen el Python fijado.
 - Una fila fallida o una app que no arrancó nunca borran ni reemplazan una imagen guardada.
-- Las imágenes de master pueden ir una corrida de master detrás del código de master.
+- Las imágenes de master pueden ir una corrida de master detrás del código de master: pasa cuando master se movió durante la corrida por un cambio de una persona fuera de las imágenes. Cuando se movió solo por commits del bot en sus rutas o solo por cambios de imágenes, la corrida publica igual.
 - Los artefactos de un PR se conservan 7 días.
 - La documentación solo advierte sobre la antigüedad: ninguna imagen ni ningún doc lleva sello de fecha o de commit, porque un sello rompería "la misma imagen en cada corrida".
 
@@ -90,3 +115,8 @@ Lo decide `docs/adr/0079-screen-images-are-built-only-lossless-webp-at-dpr-1-on-
 - Rojo con sentido: cero corridas de los workflows de Screen images en rojo porque al runner le faltaba la versión de Python fijada.
 - Sin brecha nueva: el test de workflows cubre el 100 % de los archivos de `.github/workflows/`. Falla ante cualquier workflow que use Python antes de instalar la versión fijada, `backup.yml` lo pasa tal como está, y dos jobs de `ci.yml` (`changes` y `ci-ok`, que corren `uv run --no-project python` sin instalar) pasan solo por la lista declarada de brechas conocidas del test, que solo puede achicarse.
 - Un solo pin: la versión sale de un único lugar, `[tool.mypy] python_version`; subir ese pin hace fallar al test en cada literal de workflow que quedó atrás, así que ninguno se desactualiza sin que se vea.
+- Publica en vez de saltear (`bot-push.sh`): los casos "commit del bot en ruta propia", "persona solo en rutas ignoradas" y "hook que rechaza una vez mientras entra un commit del bot" terminan con la cabeza del remoto en el commit aplicado sobre la punta nueva; en las primeras corridas de master posteriores al merge en que master se movió solo por commits del bot o de imágenes, cero líneas `not pushed`.
+- Una línea por resultado: en el 100 % de los tests con uso válido, el resumen tiene exactamente una línea que empieza con la etiqueta; los reintentos aparecen solo en stderr.
+- Nada empujado encima de otros: en todo caso de salteo o de falla, la cabeza del remoto queda igual que antes de la corrida; las rutas parecidas, el merge de una persona y el commit del bot con ruta ajena saltean.
+- Sin cambio para quien llama: `tests/design/test_screen_images_publish.py` pasa sin ningún diff en el archivo.
+- Casos cubiertos: los 13 casos de `tests/ci/test_bot_push.py` tienen su propio test, y el test de rutas propias compara el arreglo con `owned_paths(REPO_ROOT)` más `docs/assets/screens/**`.
