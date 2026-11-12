@@ -822,7 +822,7 @@ def test_the_real_workflow_triggers_on_master_agentic_ci_and_pull_requests() -> 
 
 # --- the cancellation rule, evaluated from the workflow's own expression --------------------------
 
-_TOKENS = re.compile(r"\s*(?:(\|\||&&|==|\(|\)|,)|'([^']*)'|([A-Za-z_][\w.]*))")
+_TOKENS = re.compile(r"\s*(?:(\|\||&&|==|!=|\(|\)|,)|'([^']*)'|([A-Za-z_][\w.]*))")
 
 
 def _tokenize(text: str) -> list[tuple[str, str]]:
@@ -845,10 +845,12 @@ def _tokenize(text: str) -> list[tuple[str, str]]:
 
 
 class _Expression:
-    """`||`, `&&`, `==`, parentheses, `startsWith(a, b)`, `format('{0}…', …)`, single-quoted strings
-    and the contexts given; the grammar is one level per operator, loosest first."""
+    """`||`, `&&`, `==`, `!=`, parentheses, `startsWith(a, b)`, `format('{0}…', …)`, `always()`,
+    `success()`, `failure()`, single-quoted strings and the contexts given; the grammar is one level
+    per operator, loosest first. A `None` context is parse mode: the same grammar, where a dotted
+    name is `""`, a call to a documented function is `False` and anything else raises."""
 
-    def __init__(self, text: str, context: dict[str, str]) -> None:
+    def __init__(self, text: str, context: dict[str, str] | None) -> None:
         self.tokens = _tokenize(text)
         self.context = context
         self.position = 0
@@ -888,9 +890,13 @@ class _Expression:
 
     def _equal(self) -> bool | str:
         value = self._primary()
-        while self._take("=="):
-            value = value == self._primary()
-        return value
+        while True:
+            if self._take("=="):
+                value = value == self._primary()
+            elif self._take("!="):
+                value = value != self._primary()
+            else:
+                return value
 
     def _primary(self) -> bool | str:
         token = self._peek()
@@ -904,36 +910,57 @@ class _Expression:
             return value
         if kind == "str":
             return text
-        if kind == "name" and text == "startsWith":
-            self._expect("(")
-            subject = self._or()
-            self._expect(",")
-            prefix = self._or()
-            self._expect(")")
-            return (
-                isinstance(subject, str) and isinstance(prefix, str) and subject.startswith(prefix)
-            )
-        if kind == "name" and text == "format":
-            self._expect("(")
-            template = self._or()
-            values: list[bool | str] = []
-            while self._take(","):
-                values.append(self._or())
-            self._expect(")")
-            if not isinstance(template, str):
-                raise ValueError("format() takes a string template")
-            return template.format(*values)
-        if kind == "name" and text in self.context:
+        if kind == "name" and self._peek() == ("op", "("):
+            return self._call(text)
+        if kind == "name" and self.context is None:
+            return ""
+        if kind == "name" and self.context is not None and text in self.context:
             return self.context[text]
         raise ValueError(f"unsupported token {token}")
 
+    def _arguments(self) -> list[bool | str]:
+        self._expect("(")
+        values: list[bool | str] = []
+        if not self._take(")"):
+            values.append(self._or())
+            while self._take(","):
+                values.append(self._or())
+            self._expect(")")
+        return values
 
-def _context(event: str, ref: str, sha: str = "") -> dict[str, str]:
+    def _call(self, name: str) -> bool | str:
+        values = self._arguments()
+        context = self.context
+        if context is None:
+            if name not in EXPRESSION_FUNCTIONS:
+                raise ValueError(f"unsupported function {name}()")
+            return False
+        if name == "startsWith" and len(values) == 2:
+            subject, prefix = values
+            return (
+                isinstance(subject, str) and isinstance(prefix, str) and subject.startswith(prefix)
+            )
+        if name == "format" and values:
+            template, *rest = values
+            if not isinstance(template, str):
+                raise ValueError("format() takes a string template")
+            return template.format(*rest)
+        if name == "always" and not values:
+            return True
+        if name == "success" and not values:
+            return context["job.status"] == "success"
+        if name == "failure" and not values:
+            return context["job.status"] == "failure"
+        raise ValueError(f"unsupported call {name}() with {len(values)} arguments")
+
+
+def _context(event: str, ref: str, sha: str = "", status: str = "success") -> dict[str, str]:
     return {
         "github.event_name": event,
         "github.ref": ref,
         "github.workflow": "CI",
         "inputs.sha": sha,
+        "job.status": status,
     }
 
 
@@ -971,7 +998,7 @@ def test_a_newer_run_cancels_only_for_a_pull_request_or_an_agentic_ci_push(
 
 
 def test_the_evaluator_refuses_an_expression_outside_its_subset() -> None:
-    for text in ("github.actor == 'x'", "contains(github.ref, 'x')", "github.ref != 'x'", "1 == 1"):
+    for text in ("github.actor == 'x'", "contains(github.ref, 'x')", "!github.ref", "1 == 1"):
         with pytest.raises(ValueError):
             _Expression(text, {"github.event_name": "push", "github.ref": "r"}).evaluate()
 
@@ -1662,3 +1689,76 @@ def test_a_docs_job_running_api_breaks_before_generate_is_refused() -> None:
     assert _generate_before_api_breaks_problems(workflow) == [
         "the docs job runs api_breaks before generate"
     ]
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("'a' == 'a'", True),
+        ("'a' == 'b'", False),
+        ("'a' != 'b'", True),
+        ("'a' != 'a'", False),
+        ("github.ref != 'r' || github.ref == 'r'", True),
+        ("github.event_name != 'push' && github.ref == 'r'", False),
+    ],
+)
+def test_the_evaluator_compares_with_equal_and_not_equal(text: str, expected: bool) -> None:
+    assert _Expression(text, _context("push", "r")).evaluate() is expected
+
+
+@pytest.mark.parametrize(
+    ("status", "always", "success", "failure"),
+    [("success", True, True, False), ("failure", True, False, True)],
+)
+def test_the_evaluator_reads_the_job_status_for_always_success_and_failure(
+    status: str, always: bool, success: bool, failure: bool
+) -> None:
+    context = _context("push", "r", status=status)
+    assert _Expression("always()", context).evaluate() is always
+    assert _Expression("success()", context).evaluate() is success
+    assert _Expression("failure()", context).evaluate() is failure
+
+
+@pytest.mark.parametrize("status", ["success", "failure"])
+@pytest.mark.parametrize("event", ["push", "pull_request"])
+def test_a_call_may_lead_or_trail_a_conjunction(status: str, event: str) -> None:
+    context = _context(event, "r", status=status)
+    expected = status == "failure" and event == "push"
+    leading = "failure() && github.event_name == 'push'"
+    trailing = "github.event_name == 'push' && failure()"
+    assert _Expression(leading, context).evaluate() is expected
+    assert _Expression(trailing, context).evaluate() is expected
+
+
+def test_the_evaluator_refuses_a_call_with_the_wrong_arguments() -> None:
+    context = _context("push", "r")
+    for text in ("always(github.ref)", "startsWith(github.ref)", "format()", "length(github.ref)"):
+        with pytest.raises(ValueError):
+            _Expression(text, context).evaluate()
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "needs.changes.outputs.pytest == 'true'",
+        "steps.combine.outcome != 'success'",
+        "always()",
+        "github.event.pull_request.head.repo.full_name == github.repository",
+        "startsWith(github.ref, 'refs/heads/')",
+        "failure() && github.event_name == 'push'",
+    ],
+)
+def test_parse_mode_accepts_what_the_workflow_may_say(text: str) -> None:
+    _Expression(text, None).evaluate()
+
+
+def test_parse_mode_resolves_names_to_empty_and_calls_to_false() -> None:
+    assert _Expression("github.ref", None).evaluate() == ""
+    assert _Expression("always()", None).evaluate() is False
+    assert _Expression("contains(github.ref, 'x')", None).evaluate() is False
+
+
+@pytest.mark.parametrize("text", ["length(x)", "!x", "a == 'b'!", "(a == 'b'", "a == 'b')", "a b"])
+def test_parse_mode_refuses_what_github_would_reject(text: str) -> None:
+    with pytest.raises(ValueError):
+        _Expression(text, None).evaluate()
