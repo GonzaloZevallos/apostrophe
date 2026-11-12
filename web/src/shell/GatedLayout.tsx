@@ -11,7 +11,8 @@
  * the screen history returns to. Nothing under it renders in a language other than the
  * business's: while a chunk for `shown_language` loads it renders nothing, and a load that
  * fails or times out ends in English (`i18n/language.ts`); an English business mounts in the
- * same commit its `me` arrives in.
+ * same commit its `me` arrives in. It also provides the business's money writers (`useMoney()`),
+ * so nothing under it ever writes an amount before the Money format is known.
  */
 
 import { useQuery } from '@tanstack/react-query'
@@ -24,6 +25,7 @@ import ErrorGenerico from '../components/ErrorGenerico'
 import FlashProvider from '../flash/FlashProvider'
 import { useShownLanguage } from '../i18n/language'
 import ContentArea from '../components/ContentArea'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
 export default function GatedLayout() {
   const { data, isPending, isError, error } = useQuery({ queryKey: keys.me(), queryFn: getMe })
@@ -51,8 +53,10 @@ export default function GatedLayout() {
   }
   if (data === undefined || !languageReady) return null
   return (
-    <FlashProvider>
-      <Outlet context={data} />
-    </FlashProvider>
+    <MoneyFormatProvider format={data.money}>
+      <FlashProvider>
+        <Outlet context={data} />
+      </FlashProvider>
+    </MoneyFormatProvider>
   )
 }

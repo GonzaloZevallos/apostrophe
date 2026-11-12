@@ -9,11 +9,13 @@
 
 import type { FocusEvent, KeyboardEvent, RefObject } from 'react'
 import Boton from '../../components/Boton'
+import MoneyInput from '../../components/MoneyInput'
 import Loading from '../../components/Loading'
 import OpcionInterruptor from '../../components/OpcionInterruptor'
 import ReglaInsignia from '../../components/ReglaInsignia'
 import Selector from '../../components/Selector'
-import { formatGrams, formatMoney } from '../../format/money'
+import { formatGrams } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { type priceLine, fromHundredths } from '../../sales/pricing'
 import { GRAMS_HELP, SALES_TEXT } from '../../copy/sales'
 import { useViewport } from '../../shell/useViewport'
@@ -36,6 +38,8 @@ export interface LinePreview {
   pricePerGram: number
   lineTotal: number
   gramsHundredths: number
+  /** The Customer's type name, when the rule is `'type'`: the badge's word. */
+  typeName: string | null
 }
 
 /** `scrollIntoView` doesn't exist in the jsdom the component's own tests render
@@ -102,6 +106,7 @@ export default function NuevaVentaLinea({
   onChange,
   onRemove,
 }: NuevaVentaLineaProps) {
+  const money = useMoney()
   // A browser without `matchMedia` (jsdom) is the phone, the layout this component's own
   // changes are for.
   const isComputer = useViewport() === 'computer'
@@ -137,10 +142,10 @@ export default function NuevaVentaLinea({
           preview !== null && (
             <div className="nueva-venta__linea-detalle">
               {preview.rule !== 'gift' && (
-                <span className="nueva-venta__linea-preciogramo cifra-n">{formatMoney(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
+                <span className="nueva-venta__linea-preciogramo cifra-n">{money.money(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
               )}
-              <ReglaInsignia rule={preview.rule} />
-              <span className="nueva-venta__linea-total cifra-s">{formatMoney(preview.lineTotal)}</span>
+              <ReglaInsignia rule={preview.rule} typeName={preview.typeName} />
+              <span className="nueva-venta__linea-total cifra-s">{money.money(preview.lineTotal)}</span>
             </div>
           )
         )}
@@ -218,11 +223,10 @@ export default function NuevaVentaLinea({
             onChange={(gift) => onChange({ gift })}
           />
         )}
-        <input
+        <MoneyInput
           className="campo__input"
           aria-label={SALES_TEXT.lineSpecialPrice(n)}
           type="text"
-          inputMode="numeric"
           enterKeyHint="done"
           placeholder={SALES_TEXT.specialPrice}
           value={line.specialPrice}
@@ -230,7 +234,7 @@ export default function NuevaVentaLinea({
           ref={specialPriceRef}
           onKeyDown={(event) => onEnter(event, () => specialPriceRef.current?.blur())}
           onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
-          onChange={(event) => onChange({ specialPrice: event.target.value })}
+          onChange={(specialPrice) => onChange({ specialPrice })}
         />
       </div>
       {error !== null && (
@@ -246,10 +250,10 @@ export default function NuevaVentaLinea({
       {error === null && !figuresLoading && preview !== null && (
         <div className="nueva-venta__linea-detalle">
           {preview.rule !== 'gift' && (
-            <span className="nueva-venta__linea-preciogramo cifra-n">{formatMoney(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
+            <span className="nueva-venta__linea-preciogramo cifra-n">{money.money(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
           )}
-          <ReglaInsignia rule={preview.rule} />
-          <span className="nueva-venta__linea-total cifra-s">{formatMoney(preview.lineTotal)}</span>
+          <ReglaInsignia rule={preview.rule} typeName={preview.typeName} />
+          <span className="nueva-venta__linea-total cifra-s">{money.money(preview.lineTotal)}</span>
         </div>
       )}
       {canRemove && (

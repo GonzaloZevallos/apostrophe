@@ -30,7 +30,7 @@ import { EMPTY_DETAIL, EMPTY_TITLE } from '../copy/varieties'
 import { LIMITS, SAMPLES } from '../copy/limits'
 import { chooseTheme } from '../theme'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
 
 function price(list: number) {
   return { id: 1, effective_from: '2026-09-25', list_price: list, bulk_price: null, bulk_minimum: null, vip_price: null }
@@ -237,7 +237,7 @@ describe('the list', () => {
     expect(link).toHaveClass('boton--suave')
   })
 
-  test('the bar has no Stock tab: Inicio, Ventas, Clientes, Variedades and Más', async () => {
+  test('the bar has no Stock tab: Inicio, Ventas, Clientes and Variedades', async () => {
     renderApp(VARIETIES_PATH)
 
     await screen.findByText('24K Gold')
@@ -247,7 +247,6 @@ describe('the list', () => {
       'Sales',
       'Customers',
       'Products',
-      'More',
     ])
   })
 
@@ -459,7 +458,7 @@ describe('the icon and text rule', () => {
     renderApp(VARIETIES_PATH)
     await screen.findByText('24K Gold')
 
-    expectIconAndTextRule(screen.getByRole('main'), { optionClasses: ['variedad-fila', 'variedades__todas'] })
+    expectIconAndTextRule(screen.getByRole('main'), { optionClasses: ['variedad-fila', 'variedades__todas', 'inicio__avatar'] })
     for (const name of ['Send catalog', '+ Stock entry', 'Take from stock']) {
       const link = screen.getByRole('link', { name })
       expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
@@ -471,7 +470,7 @@ describe('the icon and text rule', () => {
     await screen.findByText('24K Gold')
     screen.getByRole('link', { name: 'Take from stock' }).querySelector('svg')?.remove()
 
-    const problems = iconAndTextProblems(screen.getByRole('main'), { optionClasses: ['variedad-fila', 'variedades__todas'] })
+    const problems = iconAndTextProblems(screen.getByRole('main'), { optionClasses: ['variedad-fila', 'variedades__todas', 'inicio__avatar'] })
     expect(problems).toHaveLength(1)
     expect(problems[0]).toContain('Take from stock')
   })
@@ -486,7 +485,7 @@ describe('the icon and text rule', () => {
     await screen.findByText('No products yet')
 
     expectIconAndTextRule(screen.getByRole('main'), {
-      optionClasses: ['variedades__todas'],
+      optionClasses: ['variedades__todas', 'inicio__avatar'],
       limits: LIMITS,
       samples: SAMPLES,
     })
@@ -504,7 +503,7 @@ describe('the icon and text rule', () => {
     const title = await screen.findByText(EMPTY_TITLE)
     title.textContent = 'x'.repeat(LIMITS.emptyTitle + 1)
 
-    const problems = iconAndTextProblems(screen.getByRole('main'), { limits: LIMITS, samples: SAMPLES })
+    const problems = iconAndTextProblems(screen.getByRole('main'), { limits: LIMITS, samples: SAMPLES, optionClasses: ['inicio__avatar'] })
     expect(problems.filter((problem) => problem.includes('emptyTitle'))).toHaveLength(1)
   })
 })
@@ -579,7 +578,7 @@ describe('Nueva variety and the icon and text rule', () => {
 
     await screen.findByRole('button', { name: 'Add the product' })
     expect(document.querySelectorAll('[data-copy="help"]')).toHaveLength(1)
-    expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
+    expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS, optionClasses: ['inicio__avatar'] })
   })
 })
 

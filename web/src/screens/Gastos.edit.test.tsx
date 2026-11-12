@@ -8,7 +8,7 @@ import { act, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { sheetDepth } from '../components/useSheetStack'
-import { EXPENSES, MORE } from '../routes'
+import { ANALYSIS, EXPENSES } from '../routes'
 import { flipViewport, stubViewport } from '../test-viewport'
 import { type FetchImpl, jsonResponse, renderExpenses } from './expenses/renderExpenses'
 
@@ -96,7 +96,7 @@ test('phone: back from a dirty edit asks once; keeping stays, discarding returns
   await act(() => router.navigate(-1))
   await userEvent.click(await screen.findByRole('button', { name: 'Yes, discard them' }))
 
-  await vi.waitFor(() => expect(screen.queryByLabelText('Details')).not.toBeInTheDocument())
+  await waitFor(() => expect(screen.queryByLabelText('Details')).not.toBeInTheDocument())
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   expect(router.state.location.search).toBe('?month=2026-09')
   expect(sheetDepth(router.state.location.state)).toBe(0)
@@ -146,7 +146,7 @@ test('phone: a save returns to Expenses with the toast and leaves no entry behin
   expect(await screen.findAllByText('Expense saved')).toHaveLength(1)
   expect(screen.queryByLabelText('Details')).not.toBeInTheDocument()
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
-  await vi.waitFor(() => expect(sheetDepth(router.state.location.state)).toBe(0))
+  await waitFor(() => expect(sheetDepth(router.state.location.state)).toBe(0))
   expect(router.state.location.search).toBe('?month=2026-09')
   expect(router.state.historyAction).toBe('POP')
 })
@@ -161,7 +161,7 @@ test('phone: deleting from a dirty edit opens the delete confirmation on the mon
 
   expect(await screen.findByText('Delete the expense?')).toBeInTheDocument()
   expect(screen.queryByText(DISCARD)).not.toBeInTheDocument()
-  await vi.waitFor(() => expect(sheetDepth(router.state.location.state)).toBe(0))
+  await waitFor(() => expect(sheetDepth(router.state.location.state)).toBe(0))
   expect(router.state.location.search).toBe('?month=2026-09')
   expect(screen.queryByLabelText('Details')).not.toBeInTheDocument()
 })
@@ -174,7 +174,7 @@ test('resize: phone to computer with a dirty edit keeps what was typed and drops
 
   flipViewport('computer')
 
-  await vi.waitFor(() => expect(sheetDepth(router.state.location.state)).toBe(0))
+  await waitFor(() => expect(sheetDepth(router.state.location.state)).toBe(0))
   expect(screen.getByLabelText('Details')).toHaveValue('Bolsas x')
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
 })
@@ -189,21 +189,21 @@ test('resize: phone to computer with the leave dialog up resets it and keeps the
 
   flipViewport('computer')
 
-  await vi.waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument())
+  await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument())
   expect(screen.getByLabelText('Details')).toHaveValue('Bolsas x')
 })
 
 test('resize: after turning computer, a tab-bar navigation with a dirty edit asks nothing', async () => {
   stubViewport('phone')
-  const router = renderExpenses([MORE, SEPTEMBER], fetchFake())
+  const router = renderExpenses([ANALYSIS, SEPTEMBER], fetchFake())
   await openEdit()
   await makeDirty()
   flipViewport('computer')
-  await vi.waitFor(() => expect(sheetDepth(router.state.location.state)).toBe(0))
+  await waitFor(() => expect(sheetDepth(router.state.location.state)).toBe(0))
 
-  await act(() => router.navigate(MORE))
+  await act(() => router.navigate(ANALYSIS))
 
-  expect(router.state.location.pathname).toBe(MORE)
+  expect(router.state.location.pathname).toBe(ANALYSIS)
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
 })
 
@@ -214,7 +214,7 @@ test('resize: computer to phone, then back closes a clean edit', async () => {
   expect(sheetDepth(router.state.location.state)).toBe(0)
 
   flipViewport('phone')
-  await vi.waitFor(() => expect(sheetDepth(router.state.location.state)).toBe(1))
+  await waitFor(() => expect(sheetDepth(router.state.location.state)).toBe(1))
   await act(() => router.navigate(-1))
 
   expect(screen.queryByLabelText('Details')).not.toBeInTheDocument()
@@ -228,7 +228,7 @@ test('resize: computer to phone, then back from a dirty edit asks', async () => 
   await makeDirty()
 
   flipViewport('phone')
-  await vi.waitFor(() => expect(sheetDepth(router.state.location.state)).toBe(1))
+  await waitFor(() => expect(sheetDepth(router.state.location.state)).toBe(1))
   await act(() => router.navigate(-1))
 
   expect(await screen.findByText(DISCARD)).toBeInTheDocument()

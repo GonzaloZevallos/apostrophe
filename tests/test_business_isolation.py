@@ -21,6 +21,7 @@ would.
 
 from collections.abc import Callable, Iterator
 from dataclasses import replace
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -28,13 +29,15 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import delete as sa_delete
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import BusinessRow
 from app.accounts.application import manage_business
 from app.accounts.application.ports import Accounts
+from app.customer_types.adapters.sql_customer_type_prices import SqlCustomerTypePrices
+from app.customer_types.adapters.tables import CustomerTypePriceRow, CustomerTypeRow
 from app.expenses.adapters.sql_expense_categories import SqlExpenseCategories
 from app.expenses.adapters.tables import ExpenseCategoryRow
 from app.expenses.application import manage_categories
@@ -245,6 +248,12 @@ def seed_pricing_settings(client: TestClient) -> dict[str, int]:
     return {}
 
 
+def seed_money_format(client: TestClient) -> dict[str, int]:
+    saved = client.put("/api/money-format", json={"symbol": "US$", "decimals": 0})
+    assert saved.status_code == 200, saved.text
+    return {}
+
+
 def seed_first_run(client: TestClient) -> dict[str, int]:
     # `/first-run` has no record to name and nothing a client can write but the dismissal,
     # which stamps only an imported business. Its rows are stamped by the import, so the
@@ -266,6 +275,7 @@ SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_pinned_catalog,
     seed_payments,
     seed_pricing_settings,
+    seed_money_format,
     seed_first_run,
 ]
 
@@ -304,6 +314,7 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
     # `de` is selectable in this module (the `settings` fixture below), so the body really
     # changes the stored language of whichever business calls it.
     ("PUT", "/business/language"): {"language": "de"},
+    ("PUT", "/business/phone-country"): {"phone_country": "UY"},
     ("POST", "/sales"): {
         "payment": "owing",
         "customer_id": 1,
@@ -356,6 +367,7 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
     },
     ("POST", "/onboarding-progress/passes"): {"step": "header_footer", "as": "done"},
     ("PUT", "/pricing-settings"): {"is_bulk_pricing": False, "is_vip_customers": False},
+    ("PUT", "/api/money-format"): {"symbol": "ZZ", "decimals": 0},
     ("POST", "/auth/password"): {
         "current_password": "the wrong current password",
         "new_password": "a new password of some length",
@@ -414,18 +426,58 @@ def business_a(app: FastAPI, engine: Engine, clock: MovableClock) -> Iterator[Te
 
 @pytest.fixture
 def business_b(
-    app: FastAPI, engine: Engine, clock: MovableClock, business_a: TestClient
+    app: FastAPI,
+    engine: Engine,
+    clock: MovableClock,
+    money_scale: int,
+    business_a: TestClient,
 ) -> Iterator[TestClient]:
+    """B is opened at the other scale, so one installation holds a scale-0 and a scale-2
+    business whichever A is. The opening wiring is one per app, so B's empty `money_format`
+    row (no amount exists in it yet) is set to the other scale right after it is opened."""
+    other_scale = 2 - money_scale
     with TestClient(app) as client:
-        yield signed_in(client, open_business(client, engine, clock, "B", "b@b.com"))
+        token = open_business(client, engine, clock, "B", "b@b.com")
+        with engine.begin() as connection:
+            connection.execute(
+                text("UPDATE money_format SET scale = :scale WHERE business_id = 2"),
+                {"scale": other_scale},
+            )
+        assert _scales(engine) == [money_scale, other_scale]
+        yield signed_in(client, token)
+
+
+def _scales(engine: Engine) -> list[int]:
+    """The `money_format.scale` of each business, in the order they were opened."""
+    with engine.connect() as connection:
+        rows = connection.execute(text("SELECT scale FROM money_format ORDER BY business_id"))
+        return [int(row[0]) for row in rows]
 
 
 @pytest.fixture
-def seeded(business_a: TestClient) -> dict[str, int]:
+def seeded(business_a: TestClient, engine: Engine) -> dict[str, int]:
     names: dict[str, int] = {}
     for seed in SEEDERS:
         names |= seed(business_a)
+    seed_customer_type_price(engine, names)
     return names
+
+
+def seed_customer_type_price(engine: Engine, names: dict[str, int]) -> None:
+    """A's type price for A's seeded type and variety, tied to A's seeded Price entry. No
+    route writes one yet, so it goes through the repository; every route of the sweep then
+    runs with a `customer_type_price` row of A in the database."""
+    with Session(engine) as session:
+        owner = session.get(CustomerTypeRow, names["type_id"])
+        assert owner is not None
+        SqlCustomerTypePrices(session, owner.business_id).add(
+            names["type_id"],
+            names["variety_id"],
+            date(2026, 1, 1),
+            9_000,
+            names["entry_id"],
+        )
+        session.commit()
 
 
 def _concrete(path: str, names: dict[str, int]) -> str:
@@ -1259,3 +1311,71 @@ def test_two_businesses_both_start_at_sale_number_1_and_neither_learns_the_other
     assert "number" not in refused.text
     assert business_b.delete(f"/sales/{sales_a[-1]['id']}").status_code == 404
     assert business_a.get(f"/sales/{sales_a[-1]['id']}").json()["number"] == 3
+
+
+def test_a_scale_0_and_a_scale_2_business_hold_their_own_money_and_neither_shows_a_scale(
+    business_a: TestClient, business_b: TestClient, engine: Engine
+) -> None:
+    """One installation, one business at each scale: the same sale reads back as 11000 in
+    both, each stored at its own scale, and no response of either names a scale."""
+    for client, amount in ((business_a, 11_000), (business_b, 22_000)):
+        variety = client.post("/api/products", json={"name": "Plant"}).json()
+        client.post(
+            f"/api/products/{variety['id']}/prices",
+            json={"effective_from": "2026-01-01", "list_price": amount},
+        )
+        customer = client.post("/customers", json={"name": "Fran", "phone": "11 2345-6789"}).json()
+        sold = client.post(
+            "/sales",
+            json={
+                "payment": "owing",
+                "customer_id": customer["id"],
+                "lines": [{"product_id": variety["id"], "quantity": "1"}],
+            },
+        )
+        assert sold.status_code == 201, sold.text
+
+    with engine.connect() as connection:
+        stored = {
+            int(row[0]): int(row[1])
+            for row in connection.execute(
+                text("SELECT business_id, line_total FROM sale_line ORDER BY business_id")
+            )
+        }
+    scales = _scales(engine)
+    assert stored == {1: 11_000 * 10 ** scales[0], 2: 22_000 * 10 ** scales[1]}
+
+    assert business_a.get("/payments/debtors").json()["total_owed"] == 11_000
+    assert business_b.get("/payments/debtors").json()["total_owed"] == 22_000
+    for client in (business_a, business_b):
+        for path in ("/panel", "/analysis", "/payments/debtors", "/sales", "/business"):
+            assert "scale" not in client.get(path).text, path
+
+
+def test_another_business_cannot_see_or_remove_a_type_price_of_this_one(
+    business_a: TestClient, business_b: TestClient, seeded: dict[str, int], engine: Engine
+) -> None:
+    """B's repository finds none of A's rows and removes none; B's delete of A's type
+    answers 404 and A's row is still there."""
+    with Session(engine) as session:
+        business_of_b = session.scalars(
+            select(BusinessRow.id).where(BusinessRow.id != _owner(session, seeded["type_id"]))
+        ).one()
+    with Session(engine) as session:
+        theirs = SqlCustomerTypePrices(session, business_of_b)
+        assert theirs.tied_price(seeded["entry_id"], seeded["type_id"]) is None
+        assert theirs.prices_of_type(seeded["type_id"], [seeded["entry_id"]]) == {}
+        theirs.remove_for_entry(seeded["entry_id"])
+        theirs.remove_for_product(seeded["variety_id"])
+        theirs.remove_for_type(seeded["type_id"])
+        session.commit()
+
+    assert business_b.delete(f"/api/customer-types/{seeded['type_id']}").status_code == 404
+    with Session(engine) as session:
+        assert len(session.scalars(select(CustomerTypePriceRow)).all()) == 1
+
+
+def _owner(session: Session, type_id: int) -> int:
+    row = session.get(CustomerTypeRow, type_id)
+    assert row is not None
+    return row.business_id

@@ -5,6 +5,14 @@ from app.expenses.domain.expense import Expense
 from app.expenses.domain.month import Month
 from app.expenses.domain.monthly_view import CategorizedExpense
 from app.shared.language import Language
+from app.shared.money import MoneyFormat
+
+
+class MoneyFormatReader(Protocol):
+    """How the business shows money: its symbol and decimals, never the scale it stores
+    amounts at (docs/adr/0055, docs/adr/0058). Built for one business."""
+
+    def current(self) -> MoneyFormat: ...
 
 
 class ExpenseCategories(Protocol):

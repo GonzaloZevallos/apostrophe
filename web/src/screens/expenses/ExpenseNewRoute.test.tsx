@@ -9,9 +9,10 @@ import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { sheetDepth } from "../../components/useSheetStack";
-import { EXPENSES, EXPENSE_NEW, MORE } from "../../routes";
+import { ANALYSIS, EXPENSES, EXPENSE_NEW } from "../../routes";
 import { stubViewport } from "../../test-viewport";
 import {
+  ANALYSIS_SCREEN,
   type FetchImpl,
   ME,
   categoryField,
@@ -81,45 +82,45 @@ async function expectGastosLoaded(
   );
 }
 
-test('a save opened from Más goes back to Más and toasts "Expense saved" there, once', async () => {
-  const router = renderExpenses([MORE], api());
+test('a save opened from the Analysis card goes back to Analysis and toasts "Expense saved" there, once', async () => {
+  const router = renderExpenses([ANALYSIS], api());
 
   await userEvent.click(
-    await screen.findByRole("link", { name: "Add expense from More" }),
+    await screen.findByRole("link", { name: "Add expense" }),
   );
   await fillForm();
   await userEvent.click(
     screen.getByRole("button", { name: "Save the expense" }),
   );
 
-  expect(await screen.findByText("More screen")).toBeInTheDocument();
-  expect(router.state.location.pathname).toBe(MORE);
+  expect(await screen.findByText(ANALYSIS_SCREEN)).toBeInTheDocument();
+  expect(router.state.location.pathname).toBe(ANALYSIS);
   expect(await screen.findAllByText("Expense saved")).toHaveLength(1);
 });
 
-async function openFromMore(
+async function openFromAnalysis(
   router: ReturnType<typeof renderExpenses>,
 ): Promise<void> {
   await userEvent.click(
-    await screen.findByRole("link", { name: "Add expense from More" }),
+    await screen.findByRole("link", { name: "Add expense" }),
   );
   expect(router.state.location.pathname).toBe(EXPENSE_NEW);
 }
 
 test("the date is today", async () => {
-  renderExpenses([MORE, EXPENSE_NEW], api());
+  renderExpenses([ANALYSIS, EXPENSE_NEW], api());
 
   expect(await screen.findByLabelText("Date")).toHaveValue(ME.today);
 });
 
 test("an untouched form closes at once, back to the screen that opened it", async () => {
-  const router = renderExpenses([MORE], api());
-  await openFromMore(router);
+  const router = renderExpenses([ANALYSIS], api());
+  await openFromAnalysis(router);
 
   await userEvent.click(await screen.findByRole("button", { name: "Close" }));
 
-  expect(await screen.findByText("More screen")).toBeInTheDocument();
-  expect(router.state.location.pathname).toBe(MORE);
+  expect(await screen.findByText(ANALYSIS_SCREEN)).toBeInTheDocument();
+  expect(router.state.location.pathname).toBe(ANALYSIS);
   expect(screen.queryByText("Expense saved")).not.toBeInTheDocument();
 });
 
@@ -133,18 +134,18 @@ test('"Close" is there and works while the categories are still loading', async 
     }
     return api()(url, init);
   };
-  const router = renderExpenses([MORE], pending);
-  await openFromMore(router);
+  const router = renderExpenses([ANALYSIS], pending);
+  await openFromAnalysis(router);
 
   await userEvent.click(await screen.findByRole("button", { name: "Close" }));
 
-  expect(await screen.findByText("More screen")).toBeInTheDocument();
-  expect(router.state.location.pathname).toBe(MORE);
+  expect(await screen.findByText(ANALYSIS_SCREEN)).toBeInTheDocument();
+  expect(router.state.location.pathname).toBe(ANALYSIS);
 });
 
 test("closing with something typed asks before discarding; staying keeps the form", async () => {
-  const router = renderExpenses([MORE], api());
-  await openFromMore(router);
+  const router = renderExpenses([ANALYSIS], api());
+  await openFromAnalysis(router);
 
   await userEvent.type(await screen.findByLabelText("Details"), "Cinta");
   await userEvent.click(screen.getByRole("button", { name: "Close" }));
@@ -160,8 +161,8 @@ test("closing with something typed asks before discarding; staying keeps the for
 });
 
 test("confirming the discard leaves the form and saves nothing", async () => {
-  const router = renderExpenses([MORE], api());
-  await openFromMore(router);
+  const router = renderExpenses([ANALYSIS], api());
+  await openFromAnalysis(router);
 
   await userEvent.type(await screen.findByLabelText("Details"), "Cinta");
   await userEvent.click(screen.getByRole("button", { name: "Close" }));
@@ -169,8 +170,8 @@ test("confirming the discard leaves the form and saves nothing", async () => {
     await screen.findByRole("button", { name: "Yes, discard it" }),
   );
 
-  expect(await screen.findByText("More screen")).toBeInTheDocument();
-  expect(router.state.location.pathname).toBe(MORE);
+  expect(await screen.findByText(ANALYSIS_SCREEN)).toBeInTheDocument();
+  expect(router.state.location.pathname).toBe(ANALYSIS);
   expect(fetch).not.toHaveBeenCalledWith(
     EXPENSES,
     expect.objectContaining({ method: "POST" }),
@@ -235,8 +236,8 @@ test('the form route has no bar and no "New sale"; Gastos has both', async () =>
 });
 
 test("closing, or going back by history, with something typed asks the same question", async () => {
-  const router = renderExpenses([MORE], api());
-  await openFromMore(router);
+  const router = renderExpenses([ANALYSIS], api());
+  await openFromAnalysis(router);
   await userEvent.type(await screen.findByLabelText("Details"), "Cinta");
 
   await userEvent.click(screen.getByRole("button", { name: "Close" }));
@@ -254,11 +255,11 @@ test("closing, or going back by history, with something typed asks the same ques
   expect(screen.getByLabelText("Details")).toHaveValue("Cinta");
 
   await userEvent.click(screen.getByRole("button", { name: "Yes, discard it" }));
-  expect(await screen.findByText("More screen")).toBeInTheDocument();
+  expect(await screen.findByText(ANALYSIS_SCREEN)).toBeInTheDocument();
 });
 
 test("with no in-app history, closing replaces the form with Gastos", async () => {
-  const router = renderExpenses([MORE, EXPENSE_NEW], api());
+  const router = renderExpenses([ANALYSIS, EXPENSE_NEW], api());
 
   await userEvent.click(await screen.findByRole("button", { name: "Close" }));
 
@@ -266,16 +267,16 @@ test("with no in-app history, closing replaces the form with Gastos", async () =
   expect(router.state.historyAction).toBe("REPLACE");
 });
 
-test("after a save the form is no longer in history: leaving by history is a pop to Más", async () => {
-  const router = renderExpenses([MORE], api());
-  await openFromMore(router);
+test("after a save the form is no longer in history: leaving by history is a pop to Analysis", async () => {
+  const router = renderExpenses([ANALYSIS], api());
+  await openFromAnalysis(router);
 
   await fillForm();
   await userEvent.click(
     screen.getByRole("button", { name: "Save the expense" }),
   );
 
-  expect(await screen.findByText("More screen")).toBeInTheDocument();
+  expect(await screen.findByText(ANALYSIS_SCREEN)).toBeInTheDocument();
   expect(router.state.historyAction).toBe("POP");
   expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
 });
@@ -286,7 +287,7 @@ const MANY_CATEGORIES = Array.from({ length: 12 }, (_unused, index) => ({
 }));
 
 test("with 12 categories the field is a Selector found by typing, with no select, pressed button or radio group", async () => {
-  renderExpenses([MORE, EXPENSE_NEW], api({ categories: MANY_CATEGORIES }));
+  renderExpenses([ANALYSIS, EXPENSE_NEW], api({ categories: MANY_CATEGORIES }));
   const field = await categoryField();
 
   expect(document.querySelector("select")).toBeNull();
@@ -308,7 +309,7 @@ test("with 12 categories the field is a Selector found by typing, with no select
 });
 
 test("an empty set shows its message in the open list and the inline creation stays", async () => {
-  renderExpenses([MORE, EXPENSE_NEW], api({ categories: [] }));
+  renderExpenses([ANALYSIS, EXPENSE_NEW], api({ categories: [] }));
 
   await userEvent.click(await categoryField());
 
@@ -334,7 +335,7 @@ test("while the categories load the form shows no empty wording and no field", a
       return new Promise(() => undefined);
     return api()(url, init);
   };
-  renderExpenses([MORE, EXPENSE_NEW], pending);
+  renderExpenses([ANALYSIS, EXPENSE_NEW], pending);
 
   await screen.findByRole("button", { name: "Close" });
 
@@ -345,7 +346,7 @@ test("while the categories load the form shows no empty wording and no field", a
 });
 
 test("nothing chosen: the field reads its placeholder and the form cannot be saved", async () => {
-  renderExpenses([MORE, EXPENSE_NEW], api());
+  renderExpenses([ANALYSIS, EXPENSE_NEW], api());
   await userEvent.type(await screen.findByLabelText("Amount"), "1000");
   await userEvent.type(screen.getByLabelText("Details"), "Cinta");
 
@@ -357,7 +358,7 @@ test("nothing chosen: the field reads its placeholder and the form cannot be sav
 
 describe.each([
   ["Expenses", [EXPENSES], EXPENSES, "Add expense"],
-  ["More", [MORE], MORE, "Add expense from More"],
+  ["Analysis", [ANALYSIS], ANALYSIS, "Add expense"],
 ] as const)("the new expense opened from %s", (_origin, entries, parent, link) => {
   async function open(): Promise<ReturnType<typeof renderExpenses>> {
     stubViewport("phone");
@@ -411,8 +412,12 @@ describe.each([
 
   test("on the computer Escape with the dropdown open closes only the dropdown", async () => {
     stubViewport("computer");
-    const router = renderExpenses([...entries], api());
-    await userEvent.click(await screen.findByRole("link", { name: link }));
+    // The Expenses card on Analysis is phone-only: on a computer that origin reaches the form by its address.
+    const router = renderExpenses(
+      parent === ANALYSIS ? [...entries, EXPENSE_NEW] : [...entries],
+      api(),
+    );
+    if (parent !== ANALYSIS) await userEvent.click(await screen.findByRole("link", { name: link }));
     await userEvent.click(await categoryField());
     expect(
       await screen.findByRole("listbox", { name: "Category options" }),

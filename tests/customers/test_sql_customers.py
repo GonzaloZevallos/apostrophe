@@ -17,10 +17,11 @@ from app.customers.adapters.tables import CustomerRow
 from app.customers.application.errors import PhoneTaken
 from app.customers.domain.customer import Customer, CustomerName, PhoneNumber
 from app.migrations.runner import upgrade_to_head
+from app.shared.phone_country import PhoneCountry
 
 
 def _customer(name: str, phone: str) -> Customer:
-    return Customer(name=CustomerName.of(name), phone=PhoneNumber.of(phone))
+    return Customer(name=CustomerName.of(name), phone=PhoneNumber.of(phone, PhoneCountry.AR))
 
 
 def _business_id_of(engine: Engine, customer_id: int) -> int:

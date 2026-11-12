@@ -8,7 +8,6 @@
   "done": "Done",
   "noKeepTyping": "No, keep typing",
   "yesDiscard": "Yes, discard it",
-  "more": "More",
   "discardTheChange": "Discard the change?",
   "newVariety": "New product",
   "newPrice": "New price",
@@ -88,6 +87,7 @@
   "catalogMessage": "Catalog message",
   "expenseCategories": "Expense categories",
   "withdrawalReasons": "Withdrawal reasons",
+  "currencyAndDecimals": "Currency and decimals",
   "appearance": "Appearance",
   "yourAccount": "Your account",
   "varietyWithPrice": "Product with price",
@@ -116,5 +116,9 @@
   "paid": "Paid",
   "paymentMethod": "Payment method",
   "chooseHowTheyPaid": "Choose how they paid.",
-  "noType": "No type"
+  "noType": "No type",
+  "homeViewSwitchLabel": "Home view",
+  "homeSegmentToday": "Today",
+  "homeSegmentAnalysis": "Analysis",
+  "seeExpenses": "See the expenses"
 }

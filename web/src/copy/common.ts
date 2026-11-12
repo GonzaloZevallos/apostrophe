@@ -68,8 +68,6 @@ export const COMMON_TEXT = {
   noKeepTyping: 'No, keep typing',
   /** @deprecated read `common:yesDiscard` */
   yesDiscard: 'Yes, discard it',
-  /** @deprecated read `common:more` */
-  more: 'More',
   /** @deprecated read `common:discardTheChange` */
   discardTheChange: 'Discard the change?',
   /** @deprecated read `common:newVariety` */
@@ -228,6 +226,8 @@ export const COMMON_TEXT = {
   catalogMessage: 'Catalog message',
   /** @deprecated read `common:expenseCategories` */
   expenseCategories: 'Expense categories',
+  /** @deprecated read `common:currencyAndDecimals` */
+  currencyAndDecimals: 'Currency and decimals',
   /** @deprecated read `common:withdrawalReasons` */
   withdrawalReasons: 'Withdrawal reasons',
   /** @deprecated read `common:appearance` */

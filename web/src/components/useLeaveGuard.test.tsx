@@ -1,13 +1,23 @@
 import { HOME } from '../routes'
-import { render, screen } from '@testing-library/react'
+import { render as renderBare, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { useState } from 'react'
+import { type ReactElement, type ReactNode, useState } from 'react'
 import { createMemoryRouter, RouterProvider, useNavigate } from 'react-router'
 import { expect, test } from 'vitest'
 import LeaveConfirm from './LeaveConfirm'
 import { useLeaveGuard } from './useLeaveGuard'
 import ContentArea from './ContentArea'
 import { SheetRouterProvider, SheetStackProvider, sheetDepth, useSheet } from './useSheetStack'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
+
+function Business({ children }: { children: ReactNode }) {
+  return <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>{children}</MoneyFormatProvider>
+}
+
+/** Rendered for a "$"/0-decimals business, the one the strings below were written for. */
+function render(ui: ReactElement) {
+  return renderBare(ui, { wrapper: Business })
+}
 
 function Form({ startDirty }: { startDirty: boolean }) {
   const [dirty, setDirty] = useState(startDirty)

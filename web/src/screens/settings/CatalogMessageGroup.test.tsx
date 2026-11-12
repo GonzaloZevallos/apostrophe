@@ -18,6 +18,7 @@ import { SHOWN_EN } from '../../test/shownLanguage'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import CatalogMessageGroup from './CatalogMessageGroup'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -26,10 +27,10 @@ function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
-const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN }
+const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 function Provide() {
-  return <Outlet context={ME} />
+  return <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
 }
 
 const CATALOG = {

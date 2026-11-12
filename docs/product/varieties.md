@@ -23,7 +23,9 @@ Este afina el job de arriba para el celular y la computadora (en la computadora,
 
 Su protagonista es quien mantiene la app, o quien revisa en su nombre, al estilo del job del mantenedor de accounts.md; quien vende se ve afectado solo de forma indirecta. Lo sirven acá la única fuente de "Check the grams entered" y "Price saved", y el test del marco que pide la métrica del marco de navigation.md. No cambia ningún comportamiento de la app.
 
-**Cuando** configuro cómo pone precios mi negocio, registro el precio de un producto o entrego un pedido, **quiero** que la app use solo las **Pricing rule**s que tiene mi negocio (un **Bulk price** si vendo por cantidad, y un **VIP price** que fijo por producto si tengo **VIP customers**), **para** cobrarle a cada cliente exactamente lo que quiero sin tipear un **Special price** a mano, sin ver campos que no me corresponden y sin que el precio de nadie cambie por sorpresa. (Lo sirven acá el VIP price de la Price entry y los campos de precio que siguen los interruptores; se define en pricing-settings.md.)
+**Cuando** configuro cómo pone precios mi negocio, registro el precio de un producto o entrego un pedido, **quiero** que la app use solo las **Pricing rule**s que tiene mi negocio (un **Bulk price** si vendo por cantidad, y un **VIP price** que fijo por producto si tengo **VIP customer**s), **para** cobrarle a cada cliente exactamente lo que quiero sin tipear un **Special price** a mano, sin ver campos que no me corresponden y sin que el precio de nadie cambie por sorpresa. (Lo sirven acá el VIP price de la Price entry y los campos de precio que siguen los interruptores; se define en pricing-settings.md.)
+
+**Cuando** registro una venta para un cliente que pertenece a uno de mis grupos de clientes, **quiero** que cada línea se cotice al precio que fijé para ese grupo y ese producto, **para** cobrarle a cada grupo su propio precio sin tipearlo ni sacarlo de memoria. (Parte customer-type prices de GH-318: lo sirve acá el campo "VIP price" de la Price entry, que guarda el **Customer-type price** del **VIP type**; los Customer-type prices se definen en pricing-settings.md y la cotización de la línea en sales.md.)
 
 **Cuando** manejo mi negocio desde el celular, **quiero** mantener mis precios al día desde el celular, **para** dejar de llevarlos en la planilla y tener datos reales cuando lleguen las ventas.
 
@@ -114,7 +116,7 @@ Criterios de éxito:
     no llevan datos.
 15. **Solo se ven mis reglas, y cambiar de interruptor no pierde nada** (pricing-settings.md):
     - Con Bulk price desactivado, no se muestra ningún Bulk price ni **Bulk minimum** en el formulario de precio ni en la página del Product.
-    - Con VIP customers desactivado, no se muestra ningún VIP price.
+    - Con Customer types desactivado, o en un Business sin su VIP type, no se muestra ningún VIP price.
     - Al volver a activarlos, se muestra otra vez cada Bulk price y VIP price guardado.
 16. **El formulario de precio se ve como se diseñó**: coincide con `docs/product/design-system/pantallas/` en el celular y la computadora, en los dos temas:
     - en la computadora, un modal sobre la página del Product, nunca una página propia;
@@ -138,6 +140,7 @@ Criterios de éxito:
 23. **Ninguna palabra que elegir**: Settings y el Onboarding no muestran "What you sell". Ninguna ruta, campo de esquema ni columna guarda ni sirve una palabra elegida por el Business.
 24. **Los Businesses existentes cambian sin hacer nada**: el del dueño incluido, ven "Product" / "Products" sin ninguna acción de su parte, y ninguno de sus datos cambia (nombres de los Products, Notes, Catalog header and footer guardados, **Expense category**s).
 25. **El flujo del celular no paga nada**: registrar una venta sigue llevando menos de un minuto y cada pantalla conserva su lugar en la **Navigation**. Solo cambia la palabra.
+26. **El VIP price no cambia para quien vende** (parte customer-type prices): en un Business con su VIP type, el campo "VIP price", su rechazo, la sección Prices y el historial de precios se leen igual que antes, aunque el VIP price ahora se guarda como el Customer-type price del VIP type; y a cada VIP customer se le cobra lo mismo que antes (pricing-settings.md, criterio 3).
 
 ## Comportamiento
 
@@ -147,17 +150,19 @@ Criterios de éxito:
   - Lo que no cambia: los datos de quien vende (nombres, Notes, Catalog header and footer guardados, Expense categories), las rutas del front `/varieties/*`, las redirecciones heredadas, los ids del registro de diseño y los identificadores del código (ADR-0061). Las demás palabras de flor (gramos, "g", **Indica share**, **Aroma**, 🌿) quedan para #420 y #390, así que una pantalla puede leer "Product" junto a "g" o "% indica" por ahora; ningún texto nuevo de esta capacidad agrega una.
 - **Price entry**: una fecha de vigencia y un List price por gramo en pesos enteros. Opcionalmente, también tiene:
   - un Bulk price por gramo con su Bulk minimum en gramos (hasta dos decimales). Los dos van juntos o ninguno, y el Bulk price es menor que el List price;
-  - un VIP price por gramo, en pesos enteros, menor que el List price. Es independiente del Bulk price y del Bulk minimum (una Price entry puede tener cualquiera de los dos solo) y nunca se compara con el Bulk price.
+  - un VIP price por gramo, mayor que cero, con hasta los decimales del **Money format** del Business, y menor que el List price de esa Price entry. Es independiente del Bulk price y del Bulk minimum (una Price entry puede tener cualquiera de los dos solo) y nunca se compara con el Bulk price.
 
   Todo monto es mayor que cero.
-- **Un VIP price igual o mayor que el List price** se rechaza con su propio mensaje fijo y su propio código de rechazo (ADR-0008), que nunca repite el monto (ADR-0005).
+- **Dónde se guarda el VIP price** (ADR-0059, pricing-settings.md): lo tipeado en "VIP price" se guarda como una fila de **Customer-type price** del **VIP type**, con la fecha de la Price entry y atada a ella. La columna `price_entry.vip_price` queda congelada y no se vuelve a escribir ni a leer. La sección Prices y el historial de precios leen el VIP price de esa fila, y la API lo sigue respondiendo en el mismo campo `vip_price`, con la misma forma. La Price entry de hoy de un Product también responde `type_prices` (cada Customer type con su precio vigente), que New sale usa para cotizar por tipo (sales.md); en esta parte solo existe el del VIP type.
+- **Un VIP price igual o mayor que el List price** se rechaza con el rechazo `CustomerTypePriceNotBelowList`, que conserva su mensaje fijo y su código de rechazo de siempre (`variety.vip_price_not_below_list`, ADR-0008) y nunca repite el monto (ADR-0005).
 - **Reglas desactivadas** (pricing-settings.md):
-  - Una Price entry registrada mientras Bulk price está desactivado no guarda ningún Bulk price ni Bulk minimum, y una registrada mientras VIP customers está desactivado no guarda ningún VIP price, mande lo que mande el pedido. No se copia nada de una Price entry anterior.
+  - Una Price entry registrada mientras Bulk price está desactivado no guarda ningún Bulk price ni Bulk minimum, y una registrada mientras Customer types está desactivado, o en un Business sin su VIP type, no guarda ningún VIP price, mande lo que mande el pedido (se descarta sin rechazo y la Price entry se guarda). No se copia nada de una Price entry anterior.
   - Las Price entries anteriores conservan lo que guardaron.
   - Cuando se vuelve a activar una regla, el Current price no muestra línea de Bulk ni de VIP si su Price entry no la tiene; quien vende registra una Price entry nueva si quiere una.
+  - **Un Business sin VIP type** (abierto después de los Customer types, o que eliminó el suyo) no muestra ningún VIP price, ni en el formulario ni en Prices ni en el historial: los VIP prices congelados que tuviera en `price_entry.vip_price` no se migraron a ninguna fila porque ningún Customer pudo ni puede pagarlos; siguen guardados tal cual y salen en el **Business export**. No hay aviso.
 - Una Price entry por Product por fecha de vigencia; una segunda en la misma fecha se rechaza.
-- **Sin ediciones**: una Price entry nunca se edita, su VIP price incluido. Una Price entry nueva la reemplaza desde su propia fecha (ADR-0003).
-- **Eliminar una Price entry** (`DELETE /api/products/{id}/prices/{entry_id}`, ADR-0003): cualquier Price entry se puede eliminar, incluida la que rige hoy. Vuelve a regir la anterior.
+- **Sin ediciones**: una Price entry nunca se edita, su VIP price incluido. Una Price entry nueva la reemplaza desde su propia fecha (ADR-0003). Un VIP price rige solo mientras su Price entry es el Current price: una Price entry posterior sin VIP price lo termina desde su propia fecha.
+- **Eliminar una Price entry** (`DELETE /api/products/{id}/prices/{entry_id}`, ADR-0003): cualquier Price entry se puede eliminar, incluida la que rige hoy. En la misma escritura se eliminan las filas de Customer-type price atadas a ella. Vuelve a regir la anterior, con su propio VIP price.
 - La representación propia de un Product lleva su Current price de **hoy**, `null` cuando no tiene. Hoy es el día del negocio en hora de Argentina. Las respuestas llevan lo guardado, junto con los interruptores del Business; las pantallas ocultan lo desactivado.
 - El historial de precios lista primero la Price entry más nueva.
 - **Low-stock threshold**: gramos opcionales, mayores que cero, de hasta dos decimales, que se fijan o se desactivan por Product. Desactivado significa que el Product no tiene ninguno; no se conserva ningún monto anterior. Sus reglas y el **Stock status** están en `stock.md`.
@@ -168,8 +173,8 @@ Criterios de éxito:
   incluidos) o cualquier Stock entry de él (de cualquier origen: **Purchase**, **Harvest**, **Opening stock** o un Adjustment de
   cualquiera de los dos signos), o cualquier línea de Stock withdrawal de él (**Promotion** u **Own use**). Se calcula
   en el momento y nunca se guarda.
-- **Qué no es historial**: las Price entries, el Low-stock threshold y los Catalog attributes. Un
-  Product eliminado se los lleva con él.
+- **Qué no es historial**: las Price entries (con sus Customer-type prices), el Low-stock threshold y los Catalog attributes. Un
+  Product eliminado se los lleva con él: primero las filas de Customer-type price, después las Price entries.
 - **El historial decide qué acción se ofrece**, calculado cuando se lee la página: Delete
   sin historial, Archive con historial. Solo Delete está protegido por el dominio.
 - **Delete**: solo para un Product sin historial. El Product desaparece para siempre.
@@ -197,7 +202,7 @@ Criterios de éxito:
     (pinned-catalog.md).
 - **Un Archived product queda afuera de**:
   - la lista de Products y su línea de resumen;
-  - What you have left de Home, y la regla "Start with your products" (results.md);
+  - What you have left de Home (results.md);
   - el selector de Product de New sale (`sales.md`);
   - el selector de Product del formulario de Stock entry (`stock.md`);
   - el formulario de Price entry;
@@ -273,8 +278,8 @@ Criterios de éxito:
   - si no: cada estado que no es ok, contado por palabra, en el orden de Stock status (p. ej. "1 no entries · 1 sold out · 1 low"). Nunca queda en blanco.
   - La redacción exacta es de diseño, siempre que cada estado se diga con palabra.
 - **"Send catalog"** arriba, que abre la pantalla del Catalog (`catalog.md`). Está
-  deshabilitado, con su motivo en palabras, solo mientras se muestra la **First-run checklist** y nada
-  califica (navigation.md).
+  deshabilitado, con su motivo en palabras, solo para un Business anterior al Onboarding que no cumplió los dos pasos
+  obligatorios, mientras nada califica (navigation.md).
 - **"+ Stock entry"**, un botón secundario arriba de la lista (no un botón flotante),
   que abre el formulario de Stock entry con el Product por elegir (`stock.md`).
 - **"Take from stock"**, un botón secundario junto a "+ Stock entry", en celular y
@@ -319,7 +324,7 @@ Criterios de éxito:
   - **Prices**: las últimas 3 Price entries con "Effective from", primero la más nueva, cada fila con
     su acción de eliminar, y "See all" (`/varieties/{low}/prices`) para el historial completo.
     - Cada fila muestra el List price.
-    - Muestra el Bulk price y el Bulk minimum solo mientras Bulk price está activado, y el VIP price ("VIP price") solo mientras VIP customers está activado, cada uno solo cuando la Price entry lo tiene;
+    - Muestra el Bulk price y el Bulk minimum solo mientras Bulk price está activado, y el VIP price ("VIP price", leído de la fila del VIP type) solo mientras Customer types está activado y el Business tiene su VIP type, cada uno solo cuando la Price entry lo tiene;
   - **Low stock warning**: el aviso actual, de solo lectura, con un interruptor de encendido y apagado y un
     link "Edit", y nada más (sin "See all"):
     - dice "Warn me below 15 g", "Warning: 18,5 g left" o "Warning off";
@@ -365,7 +370,7 @@ Criterios de éxito:
   - **Sus secciones, todas de solo lectura**:
     - **Stock and entries**: los últimos 3 movimientos, con "See all";
     - **Prices**: las últimas 3 Price entries, con "See all", siguiendo la misma regla de
-      interruptores que la sección Prices activa (sin VIP price mientras VIP customers está desactivado);
+      interruptores que la sección Prices activa (sin VIP price mientras Customer types está desactivado o sin VIP type);
     - **Low stock warning**: solo la configuración guardada, "Warn me below N g" o "Warning
       off"; nunca el "Warning: N g left" en vivo; sin interruptor y sin "Edit";
     - **In the catalog**: los cuatro atributos guardados (mostrado u oculto en palabras, emoji,
@@ -406,8 +411,7 @@ Criterios de éxito:
   - para la única Price entry, que el Product queda "No price: cannot be sold".
 
   El texto nunca menciona las Sales.
-- **Después de eliminar**, los precios de hoy se actualizan de inmediato en la página y en la lista. Home puede
-  volver a mostrar "Start with your products".
+- **Después de eliminar**, los precios de hoy se actualizan de inmediato en la página y en la lista.
 - **Toasts**: "Product saved", "Price saved", "Price deleted", "Product deleted", "Product archived" y "Product restored", sin nombres ni montos
   (más "Warning saved", "Catalog saved" y el "Entry saved" del formulario de Stock entry).
 - **Rechazos**, como un nombre duplicado, un nombre que tiene un Archived product, una
@@ -424,8 +428,8 @@ Criterios de éxito:
 - **Tipo**: un formulario (navigation.md) en los dos dispositivos: sin barra y sin "+ New sale"; "Close"; salir con algo tipeado pregunta antes de descartar, y un formulario sin tocar se cierra de inmediato. Volver sin historial de navegación lleva a la página del Product. Solo difiere cómo se dibuja en la computadora.
 - **Campos**:
   - la fecha de vigencia y el List price;
-  - el Bulk price y el Bulk minimum solo mientras Bulk price está activado, y "VIP price" solo mientras VIP customers está activado, cada uno opcional;
-  - no dice nada sobre una regla desactivada.
+  - el Bulk price y el Bulk minimum solo mientras Bulk price está activado, y "VIP price" solo mientras Customer types está activado y el Business tiene su VIP type (`GET /api/customer-types` lista un tipo con `is_vip`), cada uno opcional. Sin VIP type el campo no está, sin ningún lugar vacío; su etiqueta, su lugar, su línea de ayuda y su rechazo son los de siempre;
+  - no dice nada sobre una regla desactivada ni sobre la falta de VIP type.
 - **Montos en pesos**: el List price, el Bulk price y el VIP price muestran cada uno "$" antes del monto. El Bulk minimum, en gramos, nunca. El "$" es texto bajo la regla de contraste del README de diseño (ADR-0029), dibujado solo con tokens existentes. Estos campos son los campos de precio compartidos, así que el "$" también se muestra en el paso 1 del Onboarding (onboarding.md).
 - **"Effective from", un chip de fecha**:
   - por defecto dice "Today dd/mm", como la fecha de New sale (sales.md);
@@ -463,15 +467,16 @@ Criterios de éxito:
   gana solo las filas propias de ese Product, recapturadas por el script (ADR-0035).
 - **Guard de muestra**: controla los gramos propios del Archived product, "Archived" y "Hidden"
   en sus pantallas, no solo literales de una lista de prohibidos.
-- **Dibujos que todavía dicen "Variety"**: bajo el **Drawing as guide**, la definición escrita gana; cada dibujo de `pantallas/` que todavía muestra "Variety" o "Varieties" se lista en el PR como un defecto conocido del dibujo, que diseño corrige en su propio trabajo.
+- **Dibujos que todavía dicen "Variety"**: bajo el **Drawing as guide**, la definición escrita gana; cada dibujo de `pantallas/` que todavía muestra "Variety" o "Varieties" se lista en el PR como un defecto conocido del dibujo, que diseño corrige en su propio trabajo. El dibujo del formulario de precio no tiene el campo "VIP price": se juzga contra este texto.
 
 ### Restricciones
 
 - Cada ruta, incluidas las de eliminar, archivar y restaurar, entra en el barrido de aislamiento
-  y en el test de rutas protegidas (ADR-0004).
+  y en el test de rutas protegidas (ADR-0004). Toda lectura y escritura de Customer-type prices filtra por el Business de la sesión, y el barrido de aislamiento siembra filas de otro Business.
 - Códigos de rechazo en `contract.json` (ADR-0008): una eliminación con historial; un nombre que tiene un
-  Archived product; un Archived product referenciado para un registro nuevo (inexistente). Archive no tiene
+  Archived product; un Archived product referenciado para un registro nuevo (inexistente); un VIP price no menor que el List price (`variety.vip_price_not_below_list`, el código de `CustomerTypePriceNotBelowList`). Archive no tiene
   rechazo propio. Ninguno repite un nombre ni un monto (ADR-0005).
+- **Columnas congeladas** (ADR-0059): ningún módulo fuera de las migraciones, sus tests y las definiciones de tabla lee ni escribe `price_entry.vip_price` ni `customer.is_vip`; un test de arquitectura lo controla.
 - **Una fuente por mensaje compartido**: en el front, "Check the grams entered" (que muestran los formularios de precio, de Stock entry y de Stock withdrawal) y el toast "Price saved" se definen cada uno una sola vez y se leen de ahí; ninguna pantalla repite ninguno de los dos como literal propio.
 - **Diseño en el celular (GH-319)**: la rama de celular del formulario de precio, New product y las tres ediciones en línea los dibuja el único `Sheet` compartido; la rama de diálogo `PriceFrame` de ADR-0044 no se edita, y se conservan las claves del registro `VariedadRenombrar`, `VariedadUmbral` y `CatalogoAtributos`.
 - **Sin palabra configurable**: ninguna ruta, campo de esquema ni columna guarda ni sirve una palabra elegida por el Business para lo que vende. La palabra de pantalla vive solo en el Copy module (docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md).
@@ -488,10 +493,11 @@ Criterios de éxito:
   - Igual o mayor que el List price se rechaza con su propio código, que está en `contract.json` y lo controla `tests/test_refusal_codes.py`.
   - Se aceptan un VIP price sin Bulk price y un Bulk price sin VIP price.
   - Ningún rechazo contiene el monto.
+- **El VIP price en su fila (criterio 26)**: tests con TestClient muestran que un VIP price tipeado en un Business con VIP type se guarda como una fila del VIP type atada a su Price entry, con `price_entry.vip_price` vacío, y se responde igual en la Price entry y en el historial; con cents en un Business de dos decimales, se responde como se tipeó. Sin VIP type, o con Customer types desactivado, no se guarda ninguna fila ni hay rechazo. Eliminar la Price entry o el Product deja 0 filas suyas, y vuelve a regir el VIP price de la anterior.
 - **Las reglas desactivadas no guardan nada (criterio 15)**: una Price entry enviada con valores de Bulk o de VIP mientras esa regla está desactivada no guarda ninguno; los valores de las Price entries anteriores no cambian.
-- **Interruptores en pantalla (criterio 15)**: tests del front muestran el formulario de precio, la sección Prices y el historial completo sin campos de Bulk mientras Bulk price está desactivado y sin VIP price mientras VIP customers está desactivado, y cada valor guardado de vuelta una vez activados.
+- **Interruptores en pantalla (criterio 15)**: tests del front muestran el formulario de precio, la sección Prices y el historial completo sin campos de Bulk mientras Bulk price está desactivado y sin VIP price mientras Customer types está desactivado o el Business no tiene su VIP type, y cada valor guardado de vuelta una vez activados.
 - **Sin curl (criterio 4)**: la corrida de punta a punta del front agrega un Product, agrega un precio desde su
-  página (con un VIP price cuando VIP customers está activado), renombra el Product, elimina una Price
+  página (con un VIP price cuando Customer types está activado y hay VIP type), renombra el Product, elimina una Price
   entry, fija un Low-stock threshold con "Edit", lo desactiva y lo vuelve a activar con el
   interruptor, y edita los Catalog attributes del Product con "Edit" y "Save the
   catalog", todo desde su página, y registra un Stock withdrawal desde su página. También elimina un
@@ -637,7 +643,10 @@ Criterios de éxito:
 - Editar los Catalog attributes o el umbral en el lugar, sin un formulario y un guardado.
 - Editar una Price entry, su VIP price incluido (ADR-0003).
 - Copiar los precios de una regla oculta a una Price entry nueva.
-- Otras reglas VIP (un porcentaje sobre el List price); precios promocionales por fecha.
+- Un campo de precio en la Price entry para los Customer types que no son el VIP type, o una pantalla para fijar precios por tipo fuera de una Price entry: los entrega la parte de la pantalla de precios por tipo (pricing-settings.md).
+- Un aviso cuando un List price posterior queda igual o por debajo de un VIP price.
+- Otras reglas de precio por tipo (un porcentaje sobre el List price).
+- Precios promocionales por fecha: los va a revertir la parte promotions (docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; ver `sales.md`).
 - Documentar la diferencia del formulario de precio con el diseño en lugar de alinearlo.
 - Una elección de fecha en el paso 1 del Onboarding; cualquier cambio en las reglas de fecha de una Price entry.
 - Un token nuevo o un cambio en el valor de cualquier token para el formulario de precio.
@@ -682,14 +691,6 @@ Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-an
 
 - Los precios van a viajar en unidades de moneda, interpretados como Decimal, y se van a guardar en la escala propia del Business, 0 o 2. El Business va a tener su propio símbolo de moneda y sus decimales de dinero (de 0 a 2).
 - Va a reemplazar "pesos enteros" en todos los lugares donde este archivo lo dice, y "Todo monto es mayor que cero." sigue rigiendo.
-
-### Los Customer types
-
-Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; lo entrega la parte customer-type prices.
-
-- Los **Customer type**s van a reemplazar la marca VIP única: cada tipo va a tener su propio precio por Product, guardado como filas con fecha de vigencia. Las columnas de la marca `vip` y de `vip_price` van a quedar congeladas en su lugar.
-- Va a reemplazar: "un VIP price por gramo, en pesos enteros, menor que el List price. Es independiente del Bulk price y del Bulk minimum (una Price entry puede tener cualquiera de los dos solo) y nunca se compara con el Bulk price." y el rechazo "**Un VIP price igual o mayor que el List price**".
-- Fuera de alcance: la línea "Otras reglas VIP (un porcentaje sobre el List price); precios promocionales por fecha." se va a dividir. "precios promocionales por fecha" lo va a revertir la parte promotions (docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; ver `sales.md`); "Otras reglas VIP (un porcentaje sobre el List price)" va a quedar afuera.
 
 ### El día del negocio
 

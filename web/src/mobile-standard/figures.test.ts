@@ -1,15 +1,17 @@
 import { describe, expect, test } from 'vitest'
 import { STOCK_TEXT } from '../copy/stock'
-import { formatGrams, formatMoney, formatSignedMoney } from '../format/money'
+import { formatGrams, moneyFormatter } from '../format/money'
 import { FIGURE_SOURCES, isFigure } from './figures.ts'
+
+const money = moneyFormatter({ symbol: '$', decimals: 0 })
 
 describe('isFigure', () => {
   test('money as the format module prints it, with or without a minus sign', () => {
     for (const text of [
-      formatMoney(11000),
-      formatMoney(0),
-      formatMoney(1234567),
-      formatSignedMoney(-4500),
+      money.money(11000),
+      money.money(0),
+      money.money(1234567),
+      money.signed(-4500),
       '− $ 4.500',
       '-$ 4.500',
       '$ 11.000',

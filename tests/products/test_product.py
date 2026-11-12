@@ -5,6 +5,7 @@ from datetime import UTC, date, datetime
 import pytest
 
 from app.products.domain.product import (
+    CustomerTypePriceNotBelowList,
     DuplicateEffectiveDate,
     InvalidName,
     InvalidPriceEntry,
@@ -13,7 +14,6 @@ from app.products.domain.product import (
     ProductArchived,
     ProductName,
     UnknownPriceEntry,
-    VipPriceNotBelowList,
 )
 from app.shared.quantity import Quantity
 
@@ -163,7 +163,7 @@ def test_a_vip_price_is_never_compared_with_the_bulk_price() -> None:
 def test_a_vip_price_at_or_above_the_list_price_is_refused_with_its_own_code(
     vip_price: int,
 ) -> None:
-    with pytest.raises(VipPriceNotBelowList) as refused:
+    with pytest.raises(CustomerTypePriceNotBelowList) as refused:
         PriceEntry.of(date(2026, 1, 1), 11_000, vip_price=vip_price)
 
     assert refused.value.code == "variety.vip_price_not_below_list"

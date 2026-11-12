@@ -22,7 +22,7 @@ import { router } from '../../router'
 import type { SaleLine } from '../../api/sales'
 import type { Variety } from '../Variedades'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
 
 const ROSA = {
   id: 1,
@@ -116,7 +116,7 @@ test('a variety with no price that day shows its message and blocks saving', asy
 
 test('Debiendo is disabled with no customer, enables once one is chosen, and resets on "No customer"', async () => {
   const user = userEvent.setup()
-  const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', vip: false }
+  const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', phone_display: '+54 9 11 0000-0000', vip: false }
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
     'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
@@ -146,7 +146,7 @@ test('Debiendo is disabled with no customer, enables once one is chosen, and res
 
 test('a customer with no phone shows no phone element in Pick a customer nor the chosen chip', async () => {
   const user = userEvent.setup()
-  const SOL = { id: 6, name: 'Sol', phone: null, vip: false }
+  const SOL = { id: 6, name: 'Sol', phone: null, phone_display: null, vip: false }
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
     'GET /api/products?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
@@ -227,6 +227,7 @@ test('the posted line\'s product_id is the id of the product picked from the pro
     product_name: salvia.name,
     quantity: 1,
     pricing_rule: 'list',
+    customer_type_name: null,
     price_per_gram: 1000,
     line_total: 1000,
   } satisfies SaleLine
@@ -566,18 +567,19 @@ test('a $0 special price is refused rather than silently priced at list, and Reg
   expect(screen.getByLabelText('Line 1 gift')).toBeDisabled()
 })
 
-test('"Nueva venta a <name>" prices a VIP customer at the VIP price below the bulk minimum', async () => {
+test('"Nueva venta a <name>" prices a customer of a type at its price below the bulk minimum', async () => {
   const user = userEvent.setup()
-  const VIP_ANA = { id: 7, name: 'Ana VIP', phone: '+5491100000001', vip: true }
+  const VIP_ANA = { id: 7, name: 'Ana VIP', phone: '+5491100000001', phone_display: '+54 9 11 0000-0001', vip: true, customer_type_id: 5 }
   const WITH_BULK = {
     id: 3,
     name: 'Jazmín',
-    current_price: { id: 11, effective_from: '2026-09-01', list_price: 1000, bulk_price: 800, bulk_minimum: 10, vip_price: 700 },
+    current_price: { id: 11, effective_from: '2026-09-01', list_price: 1000, bulk_price: 800, bulk_minimum: 10, vip_price: 700, type_prices: [{ customer_type_id: 5, price: 700 }] },
   }
   setupFetch({
     'GET /auth/me': () => jsonResponse(200, ME),
     'GET /api/products?on=2026-10-02': () => jsonResponse(200, [WITH_BULK]),
     'GET /customers/7': () => jsonResponse(200, VIP_ANA),
+    'GET /api/customer-types': () => jsonResponse(200, [{ id: 5, name: 'Mayoristas', icon: 'star', is_vip: true }]),
     'GET /pricing-settings': () => jsonResponse(200, { is_bulk_pricing: true, is_vip_customers: true }),
   })
   await act(() => router.navigate(SALE_NEW, { state: { customerId: '7' } }))
@@ -591,8 +593,8 @@ test('"Nueva venta a <name>" prices a VIP customer at the VIP price below the bu
   await user.type(screen.getByLabelText('Line 1 grams'), '1')
 
   // Below the bulk minimum (10 g), the VIP price is still the lowest rule that applies (sales.md).
-  // Two "VIP"s now: the customer's own badge, and the line's rule badge.
-  await waitFor(() => expect(screen.getAllByText('VIP').length).toBeGreaterThanOrEqual(2))
+  // The customer keeps its own "VIP" mark; the line's badge reads the type's name.
+  expect(await screen.findByText('Mayoristas')).toBeInTheDocument()
   expect(screen.getByText('$ 700 x g')).toBeInTheDocument()
 })
 

@@ -15,17 +15,23 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import UserRow
+from app.customer_types.adapters.sql_customer_type_prices import SqlCustomerTypePrices
+from app.customer_types.adapters.tables import CustomerTypeRow
+from app.money_format.adapters.reader import SqlMoneyFormat
 from app.products.adapters.import_port import ProductsImport
+from app.products.adapters.tables import PriceEntryRow
 from app.sales.adapters.import_port import SalesImport
 from app.sales.adapters.price_book import PlannedPriceBook
 from app.sales.adapters.sql_sales import SqlSales
-from app.sales.domain.pricing import price_line
+from app.sales.domain.pricing import CustomerTypeFact, price_line
 from app.shared.pricing_settings import PricingSettings
 from app.shared.quantity import Quantity
 from app.spreadsheet_import.application.no_commit import NoCommit
 from app.spreadsheet_import.application.ports import Refusal, SaleCheck, SaleCheckInput
 from app.spreadsheet_import.domain.plan import OnTheSpotMethod
 from app.spreadsheet_import.domain.rows import PriceHistoryRow, SheetRef
+from tests.pricing_switches import set_switches
+from tests.vip_type import put_in_type
 
 BOTH_ON = PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
 TODAY = date(2026, 6, 15)
@@ -100,7 +106,9 @@ def test_has_records_is_false_for_a_fresh_business_true_after_write(
         sales_import = SalesImport(session, business_id)
         assert sales_import.has_records() is False
 
-        varieties_import = ProductsImport(session, business_id)
+        varieties_import = ProductsImport(
+            session, business_id, SqlMoneyFormat(session, business_id)
+        )
         variety_id = varieties_import.write_variety("Blue Dream", NoCommit())
         varieties_import.write_price_entry(
             variety_id,
@@ -228,7 +236,9 @@ def test_planned_price_book_agrees_with_the_sql_book_once_written(
         assert planned[0].refusal is None
         planned_total = planned[0].total
 
-        varieties_import = ProductsImport(session, business_id)
+        varieties_import = ProductsImport(
+            session, business_id, SqlMoneyFormat(session, business_id)
+        )
         variety_id = varieties_import.write_variety("Blue Dream", NoCommit())
         varieties_import.write_price_entry(variety_id, history[0], NoCommit())
         written_total = sales_import.write_sale(
@@ -245,6 +255,32 @@ def test_planned_price_book_agrees_with_the_sql_book_once_written(
     assert planned_total == written_total == 12_000  # 20g at the bulk price of 600
 
 
+def _vip_type_priced_like_bulk(session: Session, business_id: int, variety_id: int) -> None:
+    """The VIP type and its price row on every entry with a bulk price, which the import's
+    price-entry write saves (docs/adr/0034, docs/adr/0059)."""
+    type_row = session.scalars(
+        select(CustomerTypeRow).where(
+            CustomerTypeRow.business_id == business_id, CustomerTypeRow.is_vip.is_(True)
+        )
+    ).first()
+    if type_row is None:
+        type_row = CustomerTypeRow(
+            business_id=business_id, name="VIP", name_key="vip", icon="star", is_vip=True
+        )
+        session.add(type_row)
+        session.flush()
+    prices = SqlCustomerTypePrices(session, business_id)
+    entries = session.execute(
+        select(PriceEntryRow.id, PriceEntryRow.effective_on, PriceEntryRow.bulk_price).where(
+            PriceEntryRow.variety_id == variety_id, PriceEntryRow.bulk_price.is_not(None)
+        )
+    ).all()
+    for entry_id, effective_on, _ in entries:
+        if prices.tied_price(entry_id, type_row.id) is None:
+            prices.add(type_row.id, variety_id, effective_on, 800, entry_id)
+    session.commit()
+
+
 def test_write_sale_stores_the_pricing_rule_from_the_row_s_own_vip_fact(
     client: TestClient, engine: Engine
 ) -> None:
@@ -257,7 +293,9 @@ def test_write_sale_stores_the_pricing_rule_from_the_row_s_own_vip_fact(
     customer_id = _customer_id(client)
     run_today = date(2026, 8, 1)
     with Session(engine) as session:
-        varieties_import = ProductsImport(session, business_id)
+        varieties_import = ProductsImport(
+            session, business_id, SqlMoneyFormat(session, business_id)
+        )
         variety_id = varieties_import.write_variety("Blue Dream", NoCommit())
         varieties_import.write_price_entry(
             variety_id,
@@ -275,6 +313,7 @@ def test_write_sale_stores_the_pricing_rule_from_the_row_s_own_vip_fact(
             NoCommit(),
         )
         session.commit()
+        _vip_type_priced_like_bulk(session, business_id, variety_id)
 
         sales_import = SalesImport(session, business_id)
         bulk_date = date(2026, 6, 1)
@@ -335,7 +374,7 @@ def test_write_sale_stores_the_pricing_rule_from_the_row_s_own_vip_fact(
     assert amigo_fallback_line.price_per_gram == 1_000
 
     vip_line = by_date[date(2026, 6, 3)].lines[0]
-    assert vip_line.pricing_rule.value == "vip"
+    assert vip_line.pricing_rule.value == "type"
     assert vip_line.price_per_gram == 800
 
 
@@ -373,13 +412,13 @@ def test_planned_price_book_matches_what_write_sale_stores_for_bulk_list_vip_and
     book = PlannedPriceBook(history, keys, ordinals)
     expected = []
     for sale in cases:
-        pricing = book.for_variety(1, sale.sale_date)
+        pricing = book.for_variety(1, sale.sale_date, 1 if sale.vip else None)
         quote = pricing.current if pricing is not None else None
         expected.append(
             price_line(
                 gift=sale.gift,
                 special_price=sale.special_total,
-                customer_is_vip=sale.vip,
+                customer_type=CustomerTypeFact(id=1, name="VIP") if sale.vip else None,
                 settings=BOTH_ON,
                 quote=quote,
                 quantity=sale.quantity,
@@ -387,10 +426,13 @@ def test_planned_price_book_matches_what_write_sale_stores_for_bulk_list_vip_and
         )
 
     with Session(engine) as session:
-        varieties_import = ProductsImport(session, business_id)
+        varieties_import = ProductsImport(
+            session, business_id, SqlMoneyFormat(session, business_id)
+        )
         variety_id = varieties_import.write_variety("Blue Dream", NoCommit())
         varieties_import.write_price_entry(variety_id, history[0], NoCommit())
         session.commit()
+        _vip_type_priced_like_bulk(session, business_id, variety_id)
 
         sales_import = SalesImport(session, business_id)
         for sale in cases:
@@ -418,3 +460,77 @@ def test_planned_price_book_matches_what_write_sale_stores_for_bulk_list_vip_and
         assert line.price_per_gram == exp.price_per_gram
         assert line.line_total == exp.line_total
         assert stored.total == exp.line_total + sale.shipping
+
+
+def test_an_imported_vip_sale_equals_a_hand_entered_one_with_the_type_name_copied(
+    client: TestClient, engine: Engine
+) -> None:
+    """The import's Amigo row and a `POST /sales` for a customer in the VIP type, same
+    product, day and grams, store the same price per gram, total, rule `type` and copy of the
+    type's name (docs/adr/0059): the import is not a second way to price."""
+    business_id = _business_id(engine, "uno@example.com")
+    imported_customer = _customer_id(client)
+    hand_customer = _customer_id(client, "11 5555-0000")
+    sale_day = date(2026, 6, 3)
+    set_switches(engine, bulk=True, vip=True)
+    with Session(engine) as session:
+        varieties_import = ProductsImport(
+            session, business_id, SqlMoneyFormat(session, business_id)
+        )
+        variety_id = varieties_import.write_variety("Blue Dream", NoCommit())
+        varieties_import.write_price_entry(
+            variety_id,
+            _price_row(
+                effective=date(2026, 1, 1),
+                list_price=1_000,
+                bulk_price=900,
+                bulk_minimum=Quantity.of(10),
+            ),
+            NoCommit(),
+        )
+        session.commit()
+        _vip_type_priced_like_bulk(session, business_id, variety_id)
+        vip_type = session.scalars(
+            select(CustomerTypeRow).where(
+                CustomerTypeRow.business_id == business_id, CustomerTypeRow.is_vip.is_(True)
+            )
+        ).one()
+        vip_type_id, vip_type_name = vip_type.id, vip_type.name
+
+        SalesImport(session, business_id).write_sale(
+            variety_id,
+            imported_customer,
+            _sale_input(has_customer=True, vip=True, quantity=Quantity.of(20), sale_date=sale_day),
+            datetime(2026, 6, 3, 12, tzinfo=UTC),
+            date(2026, 8, 1),
+            NoCommit(),
+            BOTH_ON,
+        )
+        session.commit()
+    put_in_type(engine, hand_customer, vip_type_id)
+
+    created = client.post(
+        "/sales",
+        json={
+            "date": sale_day.isoformat(),
+            "payment": "cash",
+            "customer_id": hand_customer,
+            "lines": [{"product_id": variety_id, "quantity": "20"}],
+        },
+    )
+    assert created.status_code == 201, created.text
+    hand_line = created.json()["lines"][0]
+
+    with Session(engine) as session:
+        imported = [
+            sale
+            for sale in SqlSales(session, business_id).list(date_from=None, date_to=None)
+            if sale.customer_id == imported_customer
+        ]
+    [imported_sale] = imported
+    imported_line = imported_sale.lines[0]
+    assert imported_line.pricing_rule.value == hand_line["pricing_rule"] == "type"
+    assert imported_line.price_per_gram == hand_line["price_per_gram"] == 800
+    assert imported_line.line_total == hand_line["line_total"] == 16_000
+    assert imported_line.customer_type_name == hand_line["customer_type_name"] == vip_type_name
+    assert imported_line.customer_type_id == vip_type_id

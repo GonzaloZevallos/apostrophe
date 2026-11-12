@@ -16,8 +16,9 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { CUSTOMERS, pathTo, SALE_NEW } from '../../routes'
 import NuevaVenta from './NuevaVenta'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
 const price = (list: number) => ({
   id: 9,
   effective_from: '2026-09-01',
@@ -27,7 +28,7 @@ const price = (list: number) => ({
 })
 const ROSA_TODAY = { id: 1, name: 'Rosa', current_price: price(1000) }
 const ROSA_YESTERDAY = { id: 1, name: 'Rosa', current_price: price(1500) }
-const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', vip: false }
+const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', phone_display: '+54 9 11 0000-0000', vip: false }
 
 function jsonResponse(body: unknown): Response {
   return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })
@@ -65,7 +66,7 @@ afterEach(() => {
 function renderForm() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const router = createMemoryRouter(
-    [{ element: <Outlet context={ME} />, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] }],
+    [{ element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] }],
     { initialEntries: [SALE_NEW] },
   )
   render(

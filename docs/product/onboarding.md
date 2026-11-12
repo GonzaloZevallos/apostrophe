@@ -4,19 +4,21 @@
 
 Antes, quien vendía caía en un Home vacío y abría Products, la pantalla del Catalog y Settings una por una. Antes de la app, hacía todo eso en la pestaña Ajustes de la planilla.
 
-**Cuando** manejo mi negocio desde el celular entre pedidos o en medio de un chat con un cliente, varias veces al día, **quiero** la app organizada según lo que de verdad hago y cada cuánto, **para** volver con el cliente en vez de buscar entre menús. (El job de navegación, navigation.md: lo sirve acá el Onboarding como el único elemento de primer uso de un Business nuevo.)
+**Cuando** manejo mi negocio desde el celular entre pedidos o en medio de un chat con un cliente, varias veces al día, **quiero** la app organizada según lo que de verdad hago y cada cuánto, **para** volver con el cliente en vez de buscar entre menús. (El job de navegación, navigation.md: lo sirve acá el Onboarding como el único camino guiado de un Business nuevo, abierto al aceptar su Invitation; Home no muestra ningún aviso de primer uso.)
+
+**Cuando** abro Home en el celular para ver cómo viene el día, **quiero** ver solo lo que vendí, lo que me deben y mi Stock por Product, **para** llevar el negocio de un vistazo sin avisos de configuración en el medio. (Se define en results.md; lo sirve acá que el Onboarding no ponga ningún aviso en Home: se entra solo al aceptar la Invitation o abriendo `/onboarding`.)
 
 **Cuando** un precio cambia en mitad del día y estoy con el celular entre pedidos o en medio de un chat con un cliente, **quiero** registrar el precio nuevo y el día desde el que rige en un formulario corto que se lea en pesos y arranque en hoy, sin salir del producto que estaba mirando, **para** volver con el cliente seguro de que rige el precio correcto, sin dudar del monto ni de la fecha. (Se define en varieties.md; lo sirve acá su situación secundaria: el paso 1 comparte los campos de precio, así que sus montos se leen en pesos con "$". El paso 1 siempre guarda un precio que rige desde hoy y no muestra fecha.)
 
 **Cuando** reviso un cambio del Onboarding contra su diseño antes de aprobarlo, **quiero** que cada diferencia entre los pasos construidos (incluido el chip "Initial stock" del Opening stock) y el dibujo esté o bien corregida o bien registrada como decisión en este doc, y que las capturas de antes y después cubran cada pantalla que el cambio toca, **para** aprobar solo a partir de la evidencia del PR, sin revisar pantallas a mano ni arrastrar un hallazgo abierto a la próxima tarea.
 
-Este afina el criterio 5 y su métrica de diseño; no es un job de producto nuevo. Su protagonista es quien revisa en nombre del mantenedor y, al final, Zeta, como en design-capture.md y en el criterio 11 de pinned-catalog.md. Quien vende se ve afectado solo de forma indirecta. Salió del seguimiento de GH-144, donde la etiqueta "Origin" sobre el chip del paso 2 estaba sin decidir y la evidencia de comparación no tenía corrida de antes, ni pasos oscuros, ni el aviso de Home.
+Este afina el criterio 5 y su métrica de diseño; no es un job de producto nuevo. Su protagonista es quien revisa en nombre del mantenedor y, al final, Zeta, como en design-capture.md y en el criterio 11 de pinned-catalog.md. Quien vende se ve afectado solo de forma indirecta. Salió del seguimiento de GH-144, donde la etiqueta "Origin" sobre el chip del paso 2 estaba sin decidir y la evidencia de comparación no tenía corrida de antes, ni pasos oscuros, ni el aviso de Home de entonces.
 
 **Cuando** trabajo en la app desde el celular, venda lo que venda, **quiero** que llame "products" a lo que vendo, **para** que la app se ajuste a mi negocio sin que yo traduzca sus palabras ni le elija una. (Se define en varieties.md; lo sirve acá su segunda situación, el primer uso: el Onboarding dice "Product" en sus pasos y nunca pregunta "What you sell".)
 
 # Onboarding
 
-La configuración paso a paso por la que se guía a un **Business** recién creado una vez que se acepta su **Invitation** de Business nuevo. Para ese Business ocupa el lugar de la **First-run checklist**. Pide lo que necesita una primera **Sale** (un **Product** con precio para hoy y su **Opening stock**) y ofrece las configuraciones de todo el Business que quien vende recién empieza tendría que salir a buscar (**Catalog header and footer**, el bot de Telegram, un socio, **Expense category**s). Cada paso guarda exactamente lo que guarda su dueño: varieties.md, stock.md, catalog.md, pinned-catalog.md, accounts.md y expenses.md. El Onboarding no tiene ninguna configuración propia; solo recuerda qué pasos opcionales se pasaron. Lo ve solo su Business (ADR-0004). Dónde se ubica está en navigation.md; su aviso de Home sigue el orden de results.md.
+La configuración paso a paso por la que se guía a un **Business** recién creado una vez que se acepta su **Invitation** de Business nuevo. Pide lo que necesita una primera **Sale** (un **Product** con precio para hoy y su **Opening stock**) y ofrece las configuraciones de todo el Business que quien vende recién empieza tendría que salir a buscar (**Catalog header and footer**, el bot de Telegram, un socio, **Expense category**s). Cada paso guarda exactamente lo que guarda su dueño: varieties.md, stock.md, catalog.md, pinned-catalog.md, accounts.md y expenses.md. El Onboarding no tiene ninguna configuración propia; solo recuerda qué pasos opcionales se pasaron. Lo ve solo su Business (ADR-0004). Dónde se ubica está en navigation.md. No pone ningún aviso en Home (results.md): el dueño sacó los avisos de primer uso (`docs/design/redesign/registro-unificado.md`).
 
 El Onboarding nunca pregunta cómo se llama lo que vende el Business: en pantalla es siempre "Product" / "Products" para todo Business (varieties.md, docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md), y no existe ningún paso "What you sell".
 
@@ -24,7 +26,7 @@ Criterios de éxito:
 
 1. **Rápido, desde el celular**: desde aceptar la Invitation hasta un Business listo para su primera Sale (un Product con precio para hoy, con Opening stock) en menos de 5 minutos, solo desde el celular.
 2. **Solo la venta es obligatoria**: nada es obligatorio más allá de un Product con precio y su Opening stock. Cualquier otro paso se puede saltear con un toque y dice dónde se puede hacer más adelante.
-3. **Nada perdido**: salir a mitad de camino no pierde nada de lo ya guardado. Retomar arranca en el primer paso que no está ni hecho ni pasado.
+3. **Nada perdido**: salir a mitad de camino no pierde nada de lo ya guardado. Retomar (al volver por su propia entrada) arranca en el primer paso que no está ni hecho ni pasado. Quien no vuelve termina la configuración desde Settings y la página del Product, que guardan lo mismo.
 4. **Un dato, un lugar**: cada paso guarda la misma configuración, bajo las mismas reglas y rechazos, que guardan Settings o la página del Product. Un valor fijado en un paso es el valor que se ve después en su lugar de siempre, y al revés.
 5. **Simple y atractivo, sin inventar nada**: armado con elementos del design system y juzgado a ojo en celular y computadora. Sin datos de relleno, sin cifras falsas y sin ningún paso para una configuración que todavía no existe.
 6. **Un cambio se aprueba solo con su evidencia**:
@@ -33,6 +35,7 @@ Criterios de éxito:
    - cada diferencia que muestran las capturas se lista en el PR;
    - la comparación nunca es un paso del **Gate** (ADR-0042, gate.md).
 7. **Ninguna palabra que elegir**: el Onboarding nunca muestra "What you sell" ni pide una Unit, y cada texto suyo dice "Product" / "Products", nunca "variety".
+8. **Home queda limpio**: ningún estado del Onboarding (sin empezar, a mitad de camino, con todo hecho o pasado sin "Done", terminado) pone un aviso, insignia ni recordatorio en Home ni en ningún otro lado.
 
 ## Comportamiento
 
@@ -40,30 +43,24 @@ Criterios de éxito:
 
 - Solo a un Business recién abierto con una Invitation de Business nuevo, desde el momento en que se acepta la Invitation.
 - **Nunca se ofrece a**:
-  - un Business importado. Una vez que la **Spreadsheet import** carga un Business, el Onboarding terminó para él: su aviso nunca se muestra y "Done" nunca se muestra. Sus pasos recordados como pasados no son registros para el control de elegibilidad de la Spreadsheet import (import.md);
+  - un Business importado. Una vez que la **Spreadsheet import** carga un Business, el Onboarding terminó para él: `/onboarding` lleva a Home y "Done" nunca se muestra. Sus pasos recordados como pasados no son registros para el control de elegibilidad de la Spreadsheet import (import.md);
   - un Business al que un **User** se sumó con una Invitation para sumarse;
   - un Business que existía antes de que saliera el Onboarding.
 - **Sin "hacerlo de nuevo"**: una vez que terminó, nada en la app vuelve a apuntar a él.
-- **Un estado por Business**: un socio que se suma a mitad de camino ve el mismo aviso y puede seguir. Sin roles.
+- **Un estado por Business**: un socio que se suma a mitad de camino comparte el mismo estado y puede seguir abriendo `/onboarding`. Sin roles.
 
-### Relación con la First-run checklist y el aviso posterior a la Spreadsheet import
+### Home y las demás pantallas mientras no terminó
 
-- Para un Business recién creado el Onboarding reemplaza por completo a la checklist; las dos nunca rigen a la vez.
-- Mientras no terminó, no se muestran ni la checklist ni "Start with your products". "Start with your products" toma el lugar una vez que terminó.
-- **Sin reglas laterales propias**: "+ New sale" y "Send catalog" se comportan mientras corre el Onboarding como para cualquier Business. Lo que falta lo dice el aviso de Home ("Missing: …"), el propio "<product> has no price for that date" de New sale antes de guardar y el estado vacío propio de la pantalla del Catalog. Las reglas laterales de la checklist (navigation.md) son de la checklist.
-- **El Onboarding no arma ni la checklist ni el aviso posterior a la Spreadsheet import**: la checklist "To get started" de Home y el aviso "Connect the bot…" los arma la capacidad de primer uso (navigation.md, results.md), que lee `/first-run`. Un Business que existía antes del Onboarding y un Business importado ven el elemento que decide esa capacidad, no un aviso del Onboarding.
+- **Home no muestra nada del Onboarding**: ni avance, ni paso que falta, ni "Start with your products". Un Business a mitad de camino ve el Panel normal con sus estados vacíos de siempre, sin texto de configuración (results.md).
+- **Sin reglas laterales propias**: "+ New sale" y "Send catalog" se comportan mientras corre el Onboarding como para cualquier Business. Lo que falta lo dicen el propio "<product> has no price for that date" de New sale antes de guardar y el estado vacío propio de la pantalla del Catalog. Las reglas laterales de "+ New sale" y "Send catalog" para un Business que existía antes del Onboarding (navigation.md) no son del Onboarding.
+- **El Onboarding no arma nada en Home** y no lee ni escribe el estado de primer uso de `/first-run` más allá de su propio fin.
 
-### Entrada y el aviso de Home
+### Entrada y cómo se vuelve
 
 - **Entrada**: aceptar una Invitation de Business nuevo lleva al Onboarding, no a un Home vacío. Una Invitation para sumarse sigue llevando a Home. Es la única vez que el Onboarding se abre solo.
-- **El aviso**: mientras el Onboarding no terminó, Home muestra "Go on to the setup" arriba de todo, en la posición 1 del orden de results.md, en el celular y en `InicioCompu`.
-  - Muestra el avance en palabras ("2 of 6 steps"), contando los pasos hechos o pasados, y el paso donde se retoma por su nombre corto (p. ej. "Missing: initial stock").
-  - Cuando cada paso está hecho o pasado pero todavía no se llegó a "Done" (por ejemplo, se eliminó el único precio mientras los pasos opcionales estaban pasados, y después se volvió a agregar desde la página del Product), dice "6 of 6 steps" sin línea "Missing", y abre "Done".
-  - Agregar más Products nunca lleva el conteo más allá de los pasos 1–2.
-  - Si no, abre el Onboarding en el paso donde se retoma.
-  - No se puede descartar. Se va para siempre cuando el Onboarding termina.
-  - Los socios también lo ven.
-- Quien vende que lo quiera fuera antes termina los dos pasos obligatorios y toca "Skip the rest".
+- **Volver**: mientras no terminó, abrir la dirección `/onboarding` lleva al paso donde se retoma, o a "Done" cuando cada paso está hecho o pasado. Ninguna pantalla enlaza a él: ni Home, ni Settings, ni More. Su propia entrada es eso: el aterrizaje tras la Invitation y su dirección.
+- **Quien sale antes de "Done"** y no vuelve termina la configuración desde Settings (Integrations, Users, Catalog message, Expense categories) y la página del Product, que guardan exactamente lo mismo que cada paso.
+- Quien vende que lo quiera terminado antes termina los dos pasos obligatorios y toca "Skip the rest".
 
 ### Las pantallas
 
@@ -122,7 +119,7 @@ Criterios de éxito:
 ### Hecho y pasado
 
 - **Los pasos obligatorios se calculan a partir de los datos**: el paso 1 está hecho cuando un Product tiene precio para hoy, y el paso 2 cuando existe una Stock entry.
-- **Los pasos opcionales se pasan con un toque explícito**, y el paso pasado se recuerda para el Business. Este estado guardado es solo del Onboarding; la regla de la checklist de solo calcular no cambia.
+- **Los pasos opcionales se pasan con un toque explícito**, y el paso pasado se recuerda para el Business. Este estado guardado es solo del Onboarding.
 
 | Paso | Se pasa con |
 |---|---|
@@ -139,8 +136,10 @@ Criterios de éxito:
 
 ### "Done"
 
-- Una vez que los dos pasos obligatorios están hechos y cada paso opcional está pasado, la siguiente pantalla que muestra el Onboarding es "Done", y **llegar a "Done" termina el Onboarding**. Por lo general eso pasa con el toque que pasa el último paso opcional (su propia acción, o "Skip the rest"); cuando cada paso quedó hecho o pasado fuera de él, pasa al tocar el aviso de Home.
-- Desde ahí terminó para siempre: salir de "Done" por cualquier medio, o cerrar la app en esa pantalla, nunca trae de vuelta el Onboarding, y el aviso de Home se va. No hace falta tocar nada en "Done".
+!["Done" del Onboarding en el teléfono](../assets/screens/OnboardingListo.webp)
+
+- Una vez que los dos pasos obligatorios están hechos y cada paso opcional está pasado, la siguiente pantalla que muestra el Onboarding es "Done", y **llegar a "Done" termina el Onboarding**. Por lo general eso pasa con el toque que pasa el último paso opcional (su propia acción, o "Skip the rest"); cuando cada paso quedó hecho o pasado fuera de él, pasa al abrir `/onboarding`. Si nunca se vuelve a abrir, el Onboarding queda sin terminar sin que nada lo muestre.
+- Desde ahí terminó para siempre: salir de "Done" por cualquier medio, o cerrar la app en esa pantalla, nunca trae de vuelta el Onboarding. No hace falta tocar nada en "Done".
 - **Una línea por paso**:
   - "Done" para un paso cuyos datos existen o que se guardó;
   - "For later — in Settings → <group>" o "in Products" para un paso salteado;
@@ -160,13 +159,12 @@ Criterios de éxito:
 - Solo elementos del design system: tokens, componentes y los dos temas. Sin ilustraciones, animación, textos de marketing, colores nuevos ni componentes nuevos.
 - Si nada existente sirve para el indicador de avance o la disposición del paso, diseño lo dibuja solo a partir de tokens, dentro del design system, antes de construirlo; nunca se inventa en el código.
 - El texto del producto sigue el **Product language** (product-language.md). Nada recortado entre 320 y 430 px ni con el texto al 130 %; controles de al menos 44 px de alto y campos de al menos 16 px.
-- Cada paso y "Done" entran en `scripts/design/screens.json`; `scripts/design/compare.sh` corre antes y después, en celular y computadora, juzgado a ojo.
+- Cada paso y "Done" entran en `scripts/design/screens.json`; `scripts/design/compare.sh` corre antes y después, en celular y computadora, juzgado a ojo. Home ya no tiene filas del Onboarding: las filas `InicioOnboardingEnCurso*` e `InicioOnboardingCompleto*` se retiraron.
 
 ### Revisar un cambio contra el diseño (criterio 6)
 
 - **La matriz de evidencia**: cada celda se captura en la base de la tarea (antes) y en el head (después) con `scripts/design/comparisons.mjs --strict`. Un solo script desde una sola instalación toma los dos lados, en el mismo día de Argentina, con las fuentes fijadas (ADR-0042). El PR registra la versión instalada de `@fontsource/plus-jakarta-sans`. Las celdas son:
   - cada paso del Onboarding y "Done", claro y oscuro, celular y computadora;
-  - el aviso "Go on to the setup" en Home, `InicioOscuro` (tema oscuro) e `InicioCompu` (disposición de computadora);
   - cuando el cambio toca el chip del paso 2, el formulario de Stock entry abierto desde un Product sin Stock entries ("Initial stock" preseleccionado), claro y oscuro, celular y computadora.
 
   Las pantallas que el cambio no toca quedan afuera.
@@ -185,6 +183,8 @@ Criterios de éxito:
 ### Restricciones
 
 - El estado del Onboarding lleva `business_id`, tomado de la sesión. Sus rutas entran en el barrido de aislamiento y en el test de rutas protegidas; el estado de otro Business no existe (404 o ausente).
+- `/onboarding-progress` sigue existiendo y lo lee solo `OnboardingLayout`; Home no lo lee.
+- Abrir `/onboarding` con cada paso hecho o pasado manda `advance` una sola vez por montaje y puede terminar solo el Onboarding del Business de la Session; el pedido no nombra ningún Business, y en cualquier otro estado no escribe nada (ADR-0081).
 - La **Business removal** lo exporta y lo borra mediante la reflexión de esquema de ADR-0015, y la corrida de prueba lo cuenta.
 - Cada paso llama a los casos de uso y códigos de rechazo propios de su dueño (`contract.json`, ADR-0008); no hay copia de ninguna regla.
 - Nada sobre él va a los logs, la consola ni el almacenamiento del navegador (ADR-0005, ADR-0026). No se guarda ni se registra nada sobre el tiempo que llevó ni sobre dónde se fue quien vende.
@@ -196,13 +196,13 @@ No hay telemetría.
 
 - **Menos de 5 minutos (criterio 1)**: una corrida de punta a punta del front desde un viewport de celular acepta una Invitation de Business nuevo, le pone precio a un Product, carga su Opening stock, pasa los pasos opcionales y abre New sale desde "Done" (`web/e2e/onboarding.spec.ts`); ningún test mide su duración.
 - **Nada perdido (criterio 3)**:
-  - una segunda corrida de punta a punta sale a mitad de camino, retoma desde el aviso de Home y cae en el primer paso ni hecho ni pasado;
+  - una segunda corrida de punta a punta sale a mitad de camino con "Close", cae en Home sin ningún aviso, retoma abriendo `/onboarding` y cae en el primer paso ni hecho ni pasado;
   - una matriz de retomar, 100 % en verde, cubre:
     - los pasos obligatorios calculados a partir de los datos;
     - los pasos opcionales pasados recordados;
     - "Done" para datos que ya existen;
     - ningún final antes de que se cumplan los dos pasos obligatorios, y ninguno por un cambio hecho fuera del Onboarding;
-    - cada paso hecho o pasado fuera de él: el aviso dice "6 of 6 steps" sin línea "Missing", abre "Done", y llegar a "Done" lo termina;
+    - cada paso hecho o pasado fuera de él: abrir `/onboarding` abre "Done" con un solo `advance` (también en StrictMode), y llegar a "Done" lo termina; una segunda apertura lleva a Home;
     - el final al llegar a "Done".
 - **Un dato, un lugar (criterio 4)**: un valor guardado en cada paso se lee igual en Settings o en la página del Product, y al revés.
 - **Solo la venta es obligatoria (criterio 2)**: tests del front muestran:
@@ -224,15 +224,11 @@ No hay telemetría.
   0 hallazgos abiertos sobre la etiqueta.
 - **A quién le toca**:
   - a un Business recién creado le toca;
-  - un Business importado (incluido uno que cayó en el Onboarding antes de la Spreadsheet import) nunca lo vuelve a ver;
+  - un Business importado (incluido uno que cayó en el Onboarding antes de la Spreadsheet import) nunca lo vuelve a ver: `/onboarding` lleva a Home;
   - el Business de un User que se sumó y un Business preexistente nunca lo ven;
   - los pasos pasados recordados nunca hacen que la Spreadsheet import rechace.
-- **Home y marco**, tests del front en celular y computadora:
-  - el aviso va arriba de todo con sus palabras, no se puede descartar y conserva su conteo en los pasos 1–2 mientras se agregan Products;
-  - "Start with your products" nunca se muestra junto a él;
-  - "+ New sale" y "Send catalog" se comportan como para cualquier Business mientras corre;
-  - el Onboarding no tiene barra ni "+ New sale";
-  - New sale abierta desde "Done" vuelve a Home.
+- **Home limpio (criterio 8)**, tests del front en celular y computadora: Home no muestra ningún aviso del Onboarding ni "Start with your products" para un Business sin empezar, a mitad de camino, con todo hecho o pasado sin "Done", ni terminado; ninguna pantalla fuera del Onboarding enlaza a `/onboarding`; nada bajo `web/src`, `web/e2e` ni `tests` nombra `OnboardingNotice`.
+- **Marco**: "+ New sale" y "Send catalog" se comportan como para cualquier Business mientras corre; el Onboarding no tiene barra ni "+ New sale"; New sale abierta desde "Done" vuelve a Home.
 - **Ninguna palabra que elegir (criterio 7)**: tests del front muestran que ningún paso ni "Done" muestra "What you sell", ningún campo de Unit ni la palabra "variety"; el barrido de palabras de varieties.md cubre los textos del Onboarding.
 - **Aislamiento**: las rutas están en el barrido de aislamiento y en el test de rutas protegidas; la Business removal deja 0 filas del estado y conteo exportado = conteo borrado.
 - **Diseño (criterio 5)**: cada pantalla en `screens.json`, `compare.sh` antes y después, y una pasada a ojo en celular y computadora en los dos temas; el marco del paso y el paso 1 coinciden con `OnboardingVariedad` (el paso del Product) y `OnboardingCategorias` (el paso de las Expense categories). El paso de precio del paso 1 está registrado en `screens.json` y capturado antes y después de que le llegue el "$" (varieties.md).
@@ -255,9 +251,11 @@ No hay telemetría.
 - Un paso "What you sell" o cualquier pregunta por la palabra de lo que vende el Business: no existe ninguna palabra configurable.
 - Preguntar la Unit en el Onboarding: se elige por Product al crearlo (#390).
 - Hacerlo de nuevo, o cualquier entrada que vuelva a apuntar a él una vez que terminó.
+- Cualquier aviso, insignia, recordatorio o link hacia el Onboarding en Home, Settings, More o cualquier otra pantalla; un mensaje a los Users existentes de que el aviso de Home se fue.
 - "Finish for now" como segunda salida.
 - Ofrecerlo a Businesses importados, de un User que se sumó o preexistentes.
-- Armar la First-run checklist, sus reglas laterales ("+ New sale" diciendo qué falta, "Send catalog" deshabilitado) o el aviso posterior a la Spreadsheet import: su propia tarea (navigation.md).
+- Las reglas laterales de "+ New sale" y "Send catalog" para Businesses preexistentes (navigation.md).
+- Quitar `/onboarding-progress` o `/first-run` del backend: decisión aparte.
 - Terminar el Onboarding desde afuera, sin llegar a "Done".
 - Publicar el Catalog desde el Onboarding.
 - Esperar a que se sume un socio.
@@ -283,6 +281,6 @@ Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split
 
 - La configuración inicial va a ser el Onboarding, extendido. Los pasos obligatorios van a seguir siendo un Product con precio para hoy y su Opening stock. Confirmar la zona horaria va a ser un toque dentro del flujo, con la zona horaria del teléfono que acepta como sugerencia.
 - La moneda, las categorías, los atributos y la plantilla del Catalog van a ser pasos opcionales con sus valores por defecto completos ("$" con 0 decimales, "Products" y "General"). El flujo va a seguir siendo para el celular primero, con íconos y botones grandes. No va a haber paso de palabra para lo que vende el Business (no existe ninguna) ni paso de Units: la Unit se elige por Product al crearlo (#390).
-- La First-run checklist de los Businesses que existían antes del Onboarding no va a cambiar.
+- Los Businesses que existían antes del Onboarding no lo van a recibir.
 - Va a reemplazar: "### Los seis pasos, en orden" (la tabla de seis pasos), "A product with today's price" (la redacción del paso 1) y "Los **Catalog attributes** por Product y el **Low-stock threshold** en el Onboarding." en Fuera de alcance.
 - También va a reemplazar, en el paso 2, "Its opening stock": el Opening stock se va a ingresar en la Unit del Product (docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md).

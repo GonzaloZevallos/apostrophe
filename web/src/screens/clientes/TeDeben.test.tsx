@@ -14,6 +14,7 @@ import debtorsFixture from '../../api/fixtures/debtors.json'
 import TeDeben from './TeDeben'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { baselineText } from '../../i18n/testing'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 const NOBODY_OWES = baselineText('customers.ts:NOBODY_OWES')
 
@@ -28,13 +29,15 @@ function renderTeDeben() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
+<MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
       <MemoryRouter initialEntries={[CUSTOMERS]}>
         <Routes>
           <Route path={CUSTOMERS} element={<TeDeben />} />
           <Route path={CUSTOMER} element={<span>ficha</span>} />
         </Routes>
       </MemoryRouter>
-    </QueryClientProvider>,
+    </MoneyFormatProvider>
+</QueryClientProvider>,
   )
 }
 

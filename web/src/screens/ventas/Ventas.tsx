@@ -25,6 +25,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useLocation, useOutletContext } from 'react-router'
 import InAppLink from '../../components/InAppLink'
+import SettingsAvatar from '../../components/SettingsAvatar'
 import { NetworkError } from '../../api/client'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
@@ -41,7 +42,8 @@ import Pestanas from '../../components/Pestanas'
 import SinConexion from '../../components/SinConexion'
 import { salesCount } from '../../format/counts'
 import { type DateRange, formatDate, monthRange, todayRange, weekRange } from '../../format/dates'
-import { formatGrams, formatMoney } from '../../format/money'
+import { formatGrams } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { saleGrams } from '../../sales/grams'
 import { SALES_TEXT } from '../../copy/sales'
 import { useTranslation } from 'react-i18next'
@@ -83,6 +85,7 @@ function varietyNames(lines: Sale['lines']): string {
 }
 
 export default function Ventas() {
+  const money = useMoney()
   const { t } = useTranslation()
   const me = useOutletContext<Me>()
   const location = useLocation()
@@ -107,7 +110,10 @@ export default function Ventas() {
     <ContentArea as="main" className="pantalla">
       <div className="cuerpo">
         <div className="ventas__cabecera">
-          <span className="encabezado__titulo">{COMMON_TEXT.sales}</span>
+          <div className="cabecera-fila cabecera-fila--envoltura">
+            <span className="encabezado__titulo">{COMMON_TEXT.sales}</span>
+            <SettingsAvatar />
+          </div>
 
           <Pestanas
             items={SALES_PERIODS}
@@ -120,7 +126,7 @@ export default function Ventas() {
           {!isError && !isPending && (
             <div className="ventas__resumen">
               <span className="ventas__rango">{`${rangeLabel(range, me.today)} · ${salesCount(sales.length)}`}</span>
-              <span className="ventas__total cifra-s">{formatMoney(total)}</span>
+              <span className="ventas__total cifra-s">{money.money(total)}</span>
             </div>
           )}
         </div>
@@ -198,7 +204,7 @@ export default function Ventas() {
                     <span className="fila-venta__gramos cifra-n">{gramos}</span>
                     <span className="fila-venta__monto">
                       <span className={sale.still_owing ? 'fila-venta__cifra monto-deuda cifra-s' : 'fila-venta__cifra cifra-s'}>
-                        {formatMoney(sale.total)}
+                        {money.money(sale.total)}
                       </span>
                       {sale.still_owing && <span className="fila-venta__te-debe monto-deuda">{SALES_TEXT.owesYou}</span>}
                     </span>

@@ -46,4 +46,31 @@ describe('findShortAsyncTimeouts', () => {
     expect(scan('setTimeout(fn, 10)')).toEqual([])
     expect(scan('window.clearTimeout(id)')).toEqual([])
   })
+
+  it('rejects a Vitest wait, which ignores the ceiling, on the line of its token', () => {
+    expect(scan('await vi.waitFor(() => x)')).toHaveLength(1)
+    expect(scan('await vi.waitUntil(() => x)')).toHaveLength(1)
+    expect(scan('await vi.waitFor(fn, { timeout: 20_000 })')).toHaveLength(1)
+    expect(scan('await expect.poll(() => x).toBe(1)')).toHaveLength(1)
+    expect(scan('const a = 1\nawait vi\n  .waitFor(() => x)')).toEqual([
+      { path: '/src/x.test.tsx', line: 3 },
+    ])
+  })
+
+  it('rejects a Vitest wait written as a bracket access or a destructure', () => {
+    expect(scan("await vi['waitFor'](fn)")).toHaveLength(1)
+    expect(scan('await vi["waitUntil"](fn)')).toHaveLength(1)
+    expect(scan("await expect['poll'](fn)")).toHaveLength(1)
+    expect(scan('const { waitFor } = vi')).toHaveLength(1)
+    expect(scan('const { fn, waitUntil: until } = vi')).toHaveLength(1)
+    expect(scan('const { poll } = expect')).toHaveLength(1)
+  })
+
+  it('accepts Testing Library waits and names that only look alike', () => {
+    expect(scan('await waitFor(() => x)')).toEqual([])
+    expect(scan("await screen.findByText('a')")).toEqual([])
+    expect(scan('const polled = 1')).toEqual([])
+    expect(scan('const f = vi.fn()')).toEqual([])
+    expect(scan("import { waitFor } from '@testing-library/react'")).toEqual([])
+  })
 })

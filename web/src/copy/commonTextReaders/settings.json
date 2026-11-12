@@ -1,6 +1,5 @@
 [
   "web/src/copy/settings.ts",
-  "web/src/screens/Mas.tsx",
   "web/src/screens/settings/AccountGroup.test.tsx",
   "web/src/screens/settings/AccountGroup.tsx",
   "web/src/screens/settings/AppearanceGroup.tsx",
@@ -9,6 +8,8 @@
   "web/src/screens/settings/CatalogMessageForm.tsx",
   "web/src/screens/settings/CatalogMessageGroup.test.tsx",
   "web/src/screens/settings/CatalogMessageGroup.tsx",
+  "web/src/screens/settings/CurrencyAndDecimals.test.tsx",
+  "web/src/screens/settings/CurrencyAndDecimals.tsx",
   "web/src/screens/settings/ExpenseCategoriesEditor.tsx",
   "web/src/screens/settings/ExpenseCategoriesGroup.test.tsx",
   "web/src/screens/settings/ExpenseCategoriesGroup.tsx",

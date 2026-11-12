@@ -19,20 +19,23 @@ import { type FormEvent, Fragment, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { tooManyDecimalsMessage } from '../api/amountRefusal'
 import { ApiError, NetworkError, UNKNOWN_CODE, get } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import { isGone, resolveOverride, type RefusalCode } from '../api/refusals'
 import { type Origin, type StockEntry, deleteEntry, editEntry, readStock, recordEntry } from '../api/stock'
 import { costPerGram, gramsToHundredths } from '../domain/costPerGram'
 import ConfirmDialog from '../components/ConfirmDialog'
+import MoneyInput from '../components/MoneyInput'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { SheetActions } from '../components/Sheet'
 import Selector from '../components/Selector'
 import SinConexion from '../components/SinConexion'
 import { useViewport } from '../shell/useViewport'
 import { formatDate } from '../format/dates'
-import { formatGrams, formatMoney } from '../format/money'
-import { parseMoney, parseSignedGrams } from '../format/parse'
+import { formatGrams, type MoneyFormat } from '../format/money'
+import { useMoney } from '../format/moneyContext'
+import { formatMoneyInput, parseMoneyInput, parseSignedGrams } from '../format/parse'
 import type { Variety } from './Variedades'
 import { entryVarietyChoice } from './stockEntryChoice'
 import Boton from '../components/Boton'
@@ -40,7 +43,7 @@ import { STOCK_ENTRY_ORIGINS } from '../components/fixedSets'
 import {
   COST_REQUIRED_HELP,
   GRAMS_INVALID,
-  OPENING_COST_HINT,
+  openingCostHint,
   onHandHelp,
   perGramPreview,
   STOCK_TEXT,
@@ -53,13 +56,16 @@ export const COST_REQUIRED = STOCK_TEXT.unaCompraNecesitaUn
 export const COST_ON_NEGATIVE = STOCK_TEXT.unAjusteNegativoNo
 export const DATE_IN_FUTURE = COMMON_TEXT.dateCannotBeFuture
 
-const FIELD_OVERRIDES: Partial<Record<RefusalCode, string>> = {
-  'stock.cost_required': COST_REQUIRED,
-  'stock.cost_on_negative_adjustment': COST_ON_NEGATIVE,
-  'stock.date_in_future': DATE_IN_FUTURE,
-  'stock.grams_invalid': GRAMS_INVALID,
-  'stock.cost_invalid': GENERIC_REFUSAL,
-  'stock.note_too_long': GENERIC_REFUSAL,
+function fieldOverrides(format: MoneyFormat): Partial<Record<RefusalCode, string>> {
+  return {
+    'stock.cost_required': COST_REQUIRED,
+    'stock.cost_on_negative_adjustment': COST_ON_NEGATIVE,
+    'stock.date_in_future': DATE_IN_FUTURE,
+    'stock.grams_invalid': GRAMS_INVALID,
+    'stock.cost_invalid': GENERIC_REFUSAL,
+    'money.too_many_decimals': tooManyDecimalsMessage(format),
+    'stock.note_too_long': GENERIC_REFUSAL,
+  }
 }
 
 interface CommonProps {
@@ -120,6 +126,7 @@ export default function StockEntryForm({
   pinned = false,
 }: StockEntryFormProps) {
   const phone = useViewport() === 'phone'
+  const money = useMoney()
   const Actions = pinned ? SheetActions : Fragment
   const queryClient = useQueryClient()
   const varietiesQuery = useQuery({
@@ -152,9 +159,9 @@ export default function StockEntryForm({
           : '',
   )
   const [origin, setOrigin] = useState<Origin>(initial?.origin ?? fixedOrigin ?? preselectedOrigin ?? 'purchase')
-  const [totalCost, setTotalCost] = useState(
-    initial?.total_cost !== null && initial?.total_cost !== undefined ? String(initial.total_cost) : '',
-  )
+  const initialCost =
+    initial?.total_cost !== null && initial?.total_cost !== undefined ? formatMoneyInput(initial.total_cost, money.format) : ''
+  const [totalCost, setTotalCost] = useState(initialCost)
   const [note, setNote] = useState(initial?.note ?? '')
   const [formError, setFormError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
@@ -166,7 +173,7 @@ export default function StockEntryForm({
   // Something typed (or changed, on an edit) is what the host asks about before discarding.
   const dirty =
     grams !== (initial !== undefined ? String(initial.quantity) : '') ||
-    totalCost !== (initial?.total_cost != null ? String(initial.total_cost) : '') ||
+    totalCost !== initialCost ||
     note !== (initial?.note ?? '')
   useEffect(() => {
     onDirtyChange?.(dirty)
@@ -179,7 +186,7 @@ export default function StockEntryForm({
   }
 
   const previewGrams = parseSignedGrams(grams)
-  const previewCost = parseMoney(totalCost)
+  const previewCost = parseMoneyInput(totalCost, money.format)
   // A negative adjustment carries no cost (stock.md): the preview only ever shows for
   // positive grams, the only case `cost_per_gram` (and its front mirror) accepts.
   const preview =
@@ -214,7 +221,7 @@ export default function StockEntryForm({
     if (!previewGrams.ok) return null
     const variety = Number(chosenId)
     if (!Number.isInteger(variety) || chosenId === '') return null
-    const parsedCost = totalCost.trim() === '' ? undefined : parseMoney(totalCost)
+    const parsedCost = totalCost.trim() === '' ? undefined : parseMoneyInput(totalCost, money.format)
     if (parsedCost !== undefined && !parsedCost.ok) return null
     return {
       date,
@@ -229,7 +236,8 @@ export default function StockEntryForm({
   async function save(): Promise<void> {
     const body = buildBody()
     if (body === null) {
-      setFormError(GENERIC_REFUSAL)
+      const cost = totalCost.trim() === '' ? undefined : parseMoneyInput(totalCost, money.format)
+      setFormError(cost?.ok === false && cost.tooManyDecimals ? tooManyDecimalsMessage(money.format) : GENERIC_REFUSAL)
       return
     }
     setFormError(null)
@@ -251,7 +259,7 @@ export default function StockEntryForm({
         return
       }
       if (caught instanceof ApiError) {
-        const message = resolveOverride(FIELD_OVERRIDES, caught.code)
+        const message = resolveOverride(fieldOverrides(money.format), caught.code)
         setFormError(message ?? (caught.code !== UNKNOWN_CODE ? GENERIC_REFUSAL : ERROR_GENERICO_MENSAJE))
       } else if (caught instanceof NetworkError) {
         setOffline(true)
@@ -385,15 +393,14 @@ export default function StockEntryForm({
             </div>
             <label className="campo">
               <span className="campo__rotulo">{STOCK_TEXT.costoTotal}</span>
-              <input
+              <MoneyInput
                 className="campo__input"
                 autoComplete="off"
-                inputMode="numeric"
                 value={totalCost}
-                onChange={(event) => setTotalCost(event.target.value)}
+                onChange={setTotalCost}
               />
               <span className="campo__ayuda" data-copy="help">
-                {OPENING_COST_HINT}
+                {openingCostHint(money.money(0))}
               </span>
             </label>
           </>
@@ -464,12 +471,11 @@ export default function StockEntryForm({
             )}
             <label className="campo">
               <span className="campo__rotulo">{STOCK_TEXT.costoTotal}</span>
-              <input
+              <MoneyInput
                 className="campo__input"
                 autoComplete="off"
-                inputMode="numeric"
                 value={totalCost}
-                onChange={(event) => setTotalCost(event.target.value)}
+                onChange={setTotalCost}
               />
               <span className="campo__ayuda" data-copy="help">
                 {COST_REQUIRED_HELP}
@@ -496,7 +502,7 @@ export default function StockEntryForm({
           {offline && <SinConexion />}
           {preview !== null && (
             <span className="pie" data-copy="help">
-              {perGramPreview(formatMoney(preview))}
+              {perGramPreview(money.money(preview))}
             </span>
           )}
           {pinned && phone && deleteButton}

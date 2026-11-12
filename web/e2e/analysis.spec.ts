@@ -1,28 +1,27 @@
 /**
  * Análisis's own end-to-end run (plan, "Order": "The integration step runs the
  * end-to-end flow on the merged branch"; PRD metric "No curl": "the end-to-end
- * front run opens Más → Análisis, moves back a month and reads each section").
+ * front run opens Análisis from Home's segment, moves back a month and reads each section").
  *
  * A seller prices a variety, buys stock, sells some of it and records an expense —
- * then opens Análisis from Más, reads the month's variety row, the week-by-week,
+ * then opens Análisis from Home's segment, reads the month's variety row, the week-by-week,
  * day-by-week and expense sections, moves back a month (where there is nothing to
  * show, since everything above happened today) and reads every section again,
  * through the built front alone, against the real backend.
  */
 
 import { ANALYSIS, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, WITHDRAWAL_NEW } from '../src/routes.js'
-import { expectPath } from './helpers/url.js'
 import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import type { Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
-import { openGastos, openMas } from './helpers/openMas.js'
+import { openAnalysis, openGastos } from './helpers/openScreens.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { setPriceDate } from './helpers/priceDate.js'
 import { uniqueTag } from './helpers/unique.js'
 
-test('a seller opens Análisis from Más, moves back a month and reads each section', async ({
+test('a seller opens Análisis from the Home segment, moves back a month and reads each section', async ({
   page,
 }) => {
   const consoleMessages: string[] = []
@@ -71,10 +70,8 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await page.getByLabel('Details').fill('Flete al mercado')
   await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: 'Save the expense' }).click())
 
-  // Más → Análisis.
-  await openMas(page)
-  await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Analysis/ }).click()
-  await expectPath(page, ANALYSIS)
+  // Home's Today | Analysis segment → Análisis.
+  await openAnalysis(page)
 
   // The current month: the variety row, week by week, by weekday and both expense
   // breakdowns all carry this month's activity. At this (desktop-sized) viewport,

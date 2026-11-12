@@ -10,11 +10,12 @@ test('getMe carries the shown language the API answered', async () => {
     'fetch',
     vi.fn().mockResolvedValue(
       new Response(
-        JSON.stringify({ email: 'a@b.co', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'de' }),
+        JSON.stringify({ email: 'a@b.co', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'de', money: { symbol: 'US$', decimals: 2 } }),
         { status: 200, headers: { 'Content-Type': 'application/json' } },
       ),
     ),
   )
   const me = await getMe()
   expect(me.shown_language).toBe('de')
+  expect(me.money).toEqual({ symbol: 'US$', decimals: 2 })
 })

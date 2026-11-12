@@ -18,6 +18,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useOutletContext, useSearchParams } from 'react-router'
 import InAppLink from '../components/InAppLink'
+import SettingsAvatar from '../components/SettingsAvatar'
 import AnswerButton from '../components/AnswerButton'
 import BotonLink from '../components/BotonLink'
 import { ApiError, NetworkError } from '../api/client'
@@ -25,7 +26,8 @@ import { type Expense, deleteExpense, monthlyView } from '../api/expenses'
 import { invalidateResource, keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { formatDate, formatMonthLong, parseMonth, shiftMonth } from '../format/dates'
-import { formatMoney } from '../format/money'
+import type { MoneyFormatter } from '../format/money'
+import { useMoney } from '../format/moneyContext'
 import { isGone } from '../api/refusals'
 import { SheetStackProvider } from '../components/useSheetStack'
 import GoneNotice from '../components/GoneNotice'
@@ -45,8 +47,8 @@ export { FLOWER_NOTICE }
 export const NO_DISCARD_TITLE = COMMON_TEXT.noKeep
 export const YES_DELETE_TITLE = COMMON_TEXT.yesDelete
 
-function deleteQuestion(expense: Expense, categoryName: string, today: string): string {
-  return EXPENSES_TEXT.deleteTheExpenseOf(formatMoney(expense.amount), categoryName, formatDate(expense.spent_on, today))
+function deleteQuestion(expense: Expense, categoryName: string, today: string, money: MoneyFormatter): string {
+  return EXPENSES_TEXT.deleteTheExpenseOf(money.money(expense.amount), categoryName, formatDate(expense.spent_on, today))
 }
 
 function DeleteConfirm({
@@ -64,6 +66,7 @@ function DeleteConfirm({
   onDone: () => void
   onGone: () => void
 }) {
+  const money = useMoney()
   const queryClient = useQueryClient()
   const [sending, setSending] = useState(false)
   const [offline, setOffline] = useState(false)
@@ -95,7 +98,7 @@ function DeleteConfirm({
     <div className="capa" role="presentation">
       <div className="capa__contenido panel">
         <span className="panel__titulo">{EXPENSES_TEXT.deleteTheExpense}</span>
-        <span className="panel__detalle">{deleteQuestion(expense, categoryName, today)}{EXPENSES_TEXT.thisCannotBeUndone}</span>
+        <span className="panel__detalle">{deleteQuestion(expense, categoryName, today, money)}{EXPENSES_TEXT.thisCannotBeUndone}</span>
         {offline && <SinConexion />}
         {error !== null && (
           <span className="campo__error" role="alert">
@@ -159,7 +162,10 @@ function GastosScreen() {
     <ContentArea as="main" className="pantalla">
       <div className="cuerpo gastos">
         <div className="gastos__cabecera">
-          <span className="encabezado__titulo gastos__titulo">{COMMON_TEXT.expenses}</span>
+          <div className="cabecera-fila cabecera-fila--envoltura">
+            <span className="encabezado__titulo gastos__titulo">{COMMON_TEXT.expenses}</span>
+            <SettingsAvatar />
+          </div>
           <InAppLink to={EXPENSE_NEW} className="gastos__cargar" aria-label={COMMON_TEXT.addExpense}>
             <Icono nombre="agregar" />
             <span className="gastos__cargar-texto">{COMMON_TEXT.addExpense}</span>

@@ -6,13 +6,14 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import { inAppState } from '../../components/inAppState'
 import { LOGIN, SETTINGS, SETTINGS_BUSINESS } from '../../routes'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 import { SHOWN_EN } from '../../test/shownLanguage'
 import BusinessGroup from './BusinessGroup'
 
@@ -30,13 +31,20 @@ const ME: Me = {
   business_name: 'La Huerta',
   today: '2026-10-02',
   shown_language: SHOWN_EN,
+  money: { symbol: '$', decimals: 0 },
 }
 
 function Provide() {
-  return <Outlet context={ME} />
+  return (
+    <MoneyFormatProvider format={ME.money}>
+      <Outlet context={ME} />
+    </MoneyFormatProvider>
+  )
 }
 
 const BUSINESS = {
+  phone_country: 'AR',
+  phone_countries: [{ code: 'AR', calling_code: '54' }],
   name: 'La Huerta',
   language: 'en',
   selectable_languages: ['en'],
@@ -168,7 +176,8 @@ test('a refusal shows the copy-module sentence, never the detail, and reloads th
 test('a stored language off the Selectable list is shown checked, cannot be tapped, and keeps its place in the list', async () => {
   renderBusiness(vi.fn().mockResolvedValue(jsonResponse(200, { ...BUSINESS, language: 'de', selectable_languages: ['en', 'fr'] })))
 
-  const radios = await screen.findAllByRole('radio')
+  const group = await screen.findByRole('radiogroup', { name: 'Language' })
+  const radios = within(group).getAllByRole('radio')
   expect(radios.map((radio) => radio.textContent)).toEqual(['English', 'Deutsch'])
   const stored = screen.getByRole('radio', { name: 'Deutsch' })
   expect(stored).toHaveAttribute('aria-checked', 'true')

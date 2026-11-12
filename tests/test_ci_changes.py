@@ -987,6 +987,15 @@ def test_the_real_tree_selects_only_the_always_shard_for_a_screen_or_the_app_she
         assert result.vitest and result.e2e
 
 
+def test_the_real_tree_runs_pytest_in_the_always_shard_for_a_new_adr() -> None:
+    # The staleness test reads docs/adr through REPO_ROOT / "docs" / "adr", so a new ADR file
+    # (not yet in the tree at this base) still selects the reader.
+    result = select(["docs/adr/20261112-x.md"], REPO_ROOT)
+
+    assert result.pytest
+    assert "always" in shards(result)
+
+
 def test_the_screen_map_guard_is_a_reader_of_the_screens_and_the_specs() -> None:
     readers = pytest_readers(REPO_ROOT)
 

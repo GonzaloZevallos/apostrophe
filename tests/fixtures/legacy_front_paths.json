@@ -17,7 +17,6 @@
     {"old": "/ventas/{id}", "now": "/sales/{id}"},
     {"old": "/catalogo", "now": "/varieties/catalog"},
     {"old": "/analisis", "now": "/analysis"},
-    {"old": "/mas", "now": "/more"},
     {"old": "/gastos", "now": "/expenses"},
     {"old": "/gastos/categorias", "now": "/settings/expense-categories"},
     {"old": "/negocio", "now": "/settings"}

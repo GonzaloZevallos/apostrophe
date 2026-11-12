@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from app.catalog.domain.attributes import CatalogAttributes
+from app.shared.money import Money
 from app.shared.quantity import Quantity
 
 StockStatus = Literal["no_entries", "sold_out", "low", "ok"]
@@ -23,8 +24,8 @@ class CatalogPrice:
     """A variety's current price entry, as the catalog needs it: a bulk price and a
     bulk minimum go together, or neither is given."""
 
-    list_price: int
-    bulk_price: int | None
+    list_price: Money
+    bulk_price: Money | None
     bulk_minimum: Quantity | None
 
     def __post_init__(self) -> None:

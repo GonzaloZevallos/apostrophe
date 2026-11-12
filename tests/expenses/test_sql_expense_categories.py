@@ -12,6 +12,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from app.db import money_stored_value
 from app.expenses.adapters.sql_expense_categories import SqlExpenseCategories
 from app.expenses.adapters.tables import ExpenseRow
 from app.expenses.domain.category import (
@@ -20,6 +21,7 @@ from app.expenses.domain.category import (
     CategoryNameTaken,
     ExpenseCategory,
 )
+from app.shared.money import Money
 
 # `client` opens the first (and, in these tests, only) business on a fresh engine.
 BUSINESS_ID = 1
@@ -38,7 +40,7 @@ def test_remove_raises_category_in_use_when_an_expense_is_filed_under_it(
                 business_id=BUSINESS_ID,
                 expense_category_id=category.id,
                 spent_on=date(2026, 10, 1),
-                amount=100,
+                amount=money_stored_value(session, BUSINESS_ID, Money.of_units(100)),
                 detail="una compra",
                 recorded_at=datetime(2026, 10, 1, tzinfo=UTC),
             )

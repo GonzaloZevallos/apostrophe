@@ -37,7 +37,7 @@ const viewport = vi.hoisted(() => ({ current: 'phone' as 'phone' | 'computer' })
 
 vi.mock('./useViewport', () => ({ useViewport: () => viewport.current }))
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
 const LIVE = { id: 1, name: '24K Gold', archived: false, removal: null, current_price: null }
 const ARCHIVED = { id: 2, name: 'Vieja', archived: true, removal: null, current_price: null }
 const FIRST_RUN_NONE = { kind: 'none', checklist: [], import_notice: false, nothing_qualifies: false }
@@ -120,7 +120,7 @@ const CARDS: [string, string, string][] = [
   ["a variety's entries", pathTo(VARIETY_ENTRIES, { id: 1 }), '‹ 24K Gold'],
   ["a withdrawal's detail", pathTo(WITHDRAWAL, { id: 1 }), '‹ Products'],
   ['a sale', pathTo(SALE, { id: 1 }), '‹ Sales'],
-  ['Settings', SETTINGS, '‹ More'],
+  ['Settings', SETTINGS, '‹ Home'],
 ]
 
 describe.each(['phone', 'computer'] as const)('on a %s', (size) => {
@@ -133,8 +133,7 @@ describe.each(['phone', 'computer'] as const)('on a %s', (size) => {
     await settled()
 
     // The label settles with the record (an archived variety first reads "‹ Products").
-    if (size === 'computer' && label === '‹ More') expect(arrows()).toHaveLength(1)
-    else await waitFor(() => expect(arrows()).toEqual([label]))
+    await waitFor(() => expect(arrows()).toEqual([label]))
     expect(document.querySelectorAll('.flecha-atras')).toHaveLength(1)
     expect(backControls()).toHaveLength(1)
   })

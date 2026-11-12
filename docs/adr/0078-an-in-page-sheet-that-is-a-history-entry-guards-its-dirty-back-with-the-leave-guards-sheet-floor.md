@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-11-09
+summary: "una hoja en la página que es una entrada del historial protege su atrás sucio con el piso de hoja del guardia de salida"
 ---
 
 # ADR-0078: Una hoja en la página que es una entrada del historial protege su atrás sucio con el piso de hoja del guardia de salida

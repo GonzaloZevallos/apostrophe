@@ -35,6 +35,7 @@ import {
   GENERIC_REFUSAL,
   NAME_REQUIRED,
   PHONE_INVALID,
+  PHONE_NEEDS_COUNTRY_CODE,
   PHONE_TAKEN,
 } from '../clientes/ClienteForm'
 import { SALES_TEXT } from '../../copy/sales'
@@ -56,6 +57,7 @@ const FIELD_OVERRIDES: Partial<Record<RefusalCode, { field: Field; message: stri
   'customer.name_missing': { field: 'name', message: NAME_REQUIRED },
   'customer.name_too_long': { field: 'name', message: COMMON_TEXT.nameTooLong },
   'customer.phone_invalid': { field: 'phone', message: PHONE_INVALID },
+  'customer.phone_needs_country_code': { field: 'phone', message: PHONE_NEEDS_COUNTRY_CODE },
   'customer.phone_taken': { field: 'phone', message: PHONE_TAKEN },
 }
 
@@ -159,8 +161,8 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
                   <span className="lista-clientes__nombre-texto">{customer.name}</span>
                   {vipCustomers && customer.vip && <span className="vip-insignia">{COMMON_TEXT.vip}</span>}
                 </span>
-                {customer.phone !== null && (
-                  <span className="lista-clientes__telefono">{customer.phone}</span>
+                {customer.phone_display !== null && (
+                  <span className="lista-clientes__telefono">{customer.phone_display}</span>
                 )}
               </span>
             </Boton>

@@ -8,7 +8,7 @@ import type { CopyKey } from './i18n/resources.generated.ts'
  * they type-check under the node project, which has no JSX. `router.tsx` binds each declared
  * screen to its element (`bind`) and each public page through `outside`.
  *
- * Every screen under `Shell` is declared once with `screen()` and is exactly one `kind` (the
+ * Every screen under `Shell` is declared once with `screen()` and is exactly one `kind` per viewport (the
  * Onboarding's forms too, though `OnboardingLayout` draws them instead of `Shell`):
  *   - `root`: a place of its own (the bar or the rail marks it); shows the bar and "+ Nueva venta".
  *   - `card`: a detail; shows the bar and a "‹ parent" arrow, no "+ Nueva venta".
@@ -16,10 +16,10 @@ import type { CopyKey } from './i18n/resources.generated.ts'
  * Every route outside `Shell` (the public pages and the catch-all) is declared with
  * `outside()`; a route is one or the other, never both, never neither.
  *
- * `parentOf` and `placeOf` take the viewport because Configuración's list has a different
- * parent on the phone (Más) than on a computer (Inicio). A card or form has no place of its
- * own: `placeOf` walks its parent chain until a screen that declares one, so the mark never
- * depends on history, a reload or how the screen was opened.
+ * `kindOf`, `parentOf` and `placeOf` take the viewport because Gastos is a card under Análisis
+ * on the phone and a root on a computer (`card-on-phone`, which has no computer parent). A card
+ * or form has no place of its own: `placeOf` walks its parent chain until a screen that
+ * declares one, so the mark never depends on history, a reload or how the screen was opened.
  */
 
 export type Viewport = 'phone' | 'computer'
@@ -28,19 +28,19 @@ export type Viewport = 'phone' | 'computer'
 export type Kind = 'root' | 'card' | 'form'
 
 /** What the bottom bar can mark. */
-export type BarPlace = 'home' | 'sales' | 'customers' | 'varieties' | 'more'
+export type BarPlace = 'home' | 'sales' | 'customers' | 'varieties'
 
 /** What the side rail can mark: the bar's places, Gastos, Análisis and the business row. */
 export type RailPlace = BarPlace | 'expenses' | 'analysis' | 'business'
 
 export interface Place {
-  bar: BarPlace
+  /** The bar's mark; `null` marks no tab (Configuración is reached from a header, not a tab). */
+  bar: BarPlace | null
   rail: RailPlace
 }
 
 export type ScreenId =
   | 'home'
-  | 'more'
   | 'sales'
   | 'sale-new'
   | 'sale'
@@ -75,6 +75,7 @@ export type ScreenId =
   | 'settings-catalog-message'
   | 'settings-expense-categories'
   | 'settings-withdrawal-reasons'
+  | 'settings-currency'
   | 'settings-appearance'
   | 'settings-account'
   | 'onboarding'
@@ -132,7 +133,6 @@ export function withdrawalNewFor(varietyId: number | string): string {
   return `${WITHDRAWAL_NEW}?variety=${encodeURIComponent(String(varietyId))}`
 }
 
-export const MORE = '/more'
 export const EXPENSES = '/expenses'
 export const EXPENSE_NEW = '/expenses/new'
 export const ANALYSIS = '/analysis'
@@ -145,6 +145,7 @@ export const SETTINGS_CUSTOMER_TYPES = '/settings/prices/customer-types'
 export const SETTINGS_INTEGRATIONS = '/settings/integrations'
 export const SETTINGS_CATALOG_MESSAGE = '/settings/catalog-message'
 export const EXPENSE_CATEGORIES = '/settings/expense-categories'
+export const SETTINGS_CURRENCY = '/settings/currency'
 export const SETTINGS_WITHDRAWAL_REASONS = '/settings/withdrawal-reasons'
 export const SETTINGS_APPEARANCE = '/settings/appearance'
 export const SETTINGS_ACCOUNT = '/settings/account'
@@ -208,7 +209,7 @@ export function paymentLink(
   return { to: pathTo(CUSTOMER_PAYMENT, { id: customerId }), state: { underneath } }
 }
 
-/** The path as a route-table segment (`'/more'` → `'more'`). */
+/** The path as a route-table segment (`'/sales'` → `'sales'`). */
 export function relative(path: string): string {
   return path.replace(/^\//, '')
 }
@@ -234,10 +235,21 @@ interface ScreenBase {
   sheetOnPhone?: true
 }
 
+/**
+ * The declared kind is read only through `kindOf`: Gastos is a card on the phone (its parent is
+ * Análisis) and a root on a computer (the rail opens it), which one `kind` cannot say.
+ */
 export type Screen =
-  | (ScreenBase & { kind: 'root'; place: Place; parent?: undefined })
-  | (ScreenBase & { kind: 'card'; parent: Parent; place?: Place })
-  | (ScreenBase & { kind: 'form'; parent: Parent; place?: undefined })
+  | (ScreenBase & { declaredKind: 'root'; place: Place; parent?: undefined })
+  | (ScreenBase & { declaredKind: 'card'; parent: Parent; place?: Place })
+  | (ScreenBase & { declaredKind: 'form'; parent: Parent; place?: undefined })
+  | (ScreenBase & { declaredKind: 'card-on-phone'; place: Place; parent: { phone: ScreenId } })
+
+/** The kind of a screen on a viewport: the only reader of `declaredKind`. */
+export function kindOf(entry: Screen, viewport: Viewport): Kind {
+  if (entry.declaredKind === 'card-on-phone') return viewport === 'phone' ? 'card' : 'root'
+  return entry.declaredKind
+}
 
 /** Declares a screen under `Shell`. Returns it as given: the type is the check. */
 export function screen<S extends Screen>(declaration: S): S {
@@ -254,28 +266,27 @@ export function outside<O extends Outside>(declaration: O): O {
 }
 
 export const SCREENS = [
-  screen({ id: 'home', path: HOME, kind: 'root', titleKey: 'common:home', place: { bar: 'home', rail: 'home' } }),
-  screen({ id: 'more', path: MORE, kind: 'root', titleKey: 'common:more', place: { bar: 'more', rail: 'more' } }),
+  screen({ id: 'home', path: HOME, declaredKind: 'root', titleKey: 'common:home', place: { bar: 'home', rail: 'home' } }),
 
-  screen({ id: 'sales', path: SALES, kind: 'root', titleKey: 'common:sales', place: { bar: 'sales', rail: 'sales' } }),
-  screen({ id: 'sale-new', path: SALE_NEW, kind: 'form', titleKey: 'common:newSale', parent: 'sales' }),
-  screen({ id: 'sale', path: SALE, kind: 'card', titleKey: 'shell:sale', parent: 'sales' }),
+  screen({ id: 'sales', path: SALES, declaredKind: 'root', titleKey: 'common:sales', place: { bar: 'sales', rail: 'sales' } }),
+  screen({ id: 'sale-new', path: SALE_NEW, declaredKind: 'form', titleKey: 'common:newSale', parent: 'sales' }),
+  screen({ id: 'sale', path: SALE, declaredKind: 'card', titleKey: 'shell:sale', parent: 'sales' }),
 
   screen({
     id: 'customers',
     path: CUSTOMERS,
-    kind: 'root',
+    declaredKind: 'root',
     titleKey: 'common:customers',
     pane: 'list',
     place: { bar: 'customers', rail: 'customers' },
   }),
-  screen({ id: 'customer-new', path: CUSTOMER_NEW, kind: 'form', titleKey: 'common:newCustomer', parent: 'customers', sheetOnPhone: true }),
-  screen({ id: 'customer', path: CUSTOMER, kind: 'card', titleKey: 'shell:customer', pane: 'detail', parent: 'customers' }),
-  screen({ id: 'customer-edit', path: CUSTOMER_EDIT, kind: 'form', titleKey: 'common:editCustomer', parent: 'customer', sheetOnPhone: true }),
+  screen({ id: 'customer-new', path: CUSTOMER_NEW, declaredKind: 'form', titleKey: 'common:newCustomer', parent: 'customers', sheetOnPhone: true }),
+  screen({ id: 'customer', path: CUSTOMER, declaredKind: 'card', titleKey: 'shell:customer', pane: 'detail', parent: 'customers' }),
+  screen({ id: 'customer-edit', path: CUSTOMER_EDIT, declaredKind: 'form', titleKey: 'common:editCustomer', parent: 'customer', sheetOnPhone: true }),
   screen({
     id: 'customer-payment',
     path: CUSTOMER_PAYMENT,
-    kind: 'form',
+    declaredKind: 'form',
     titleKey: 'common:recordPayment',
     parent: 'customers',
     modalOnComputer: true,
@@ -284,126 +295,134 @@ export const SCREENS = [
   screen({
     id: 'varieties',
     path: VARIETIES,
-    kind: 'root',
+    declaredKind: 'root',
     titleKey: 'common:varieties',
     pane: 'list',
     place: { bar: 'varieties', rail: 'varieties' },
   }),
-  screen({ id: 'variety', path: VARIETY, kind: 'card', titleKey: 'common:variety', pane: 'detail', parent: 'varieties', backLabel: 'record' }),
-  screen({ id: 'variety-new', path: VARIETY_NEW, kind: 'form', titleKey: 'common:newVariety', parent: 'varieties', sheetOnPhone: true }),
-  screen({ id: 'variety-prices', path: VARIETY_PRICES, kind: 'card', titleKey: 'common:prices', parent: 'variety', backLabel: 'record' }),
-  screen({ id: 'variety-price-new', path: VARIETY_PRICE_NEW, kind: 'form', titleKey: 'common:newPrice', parent: 'variety', modalOnComputer: true, sheetOnPhone: true }),
-  screen({ id: 'variety-entries', path: VARIETY_ENTRIES, kind: 'card', titleKey: 'common:entries', parent: 'variety', backLabel: 'record' }),
-  screen({ id: 'catalog', path: CATALOG, kind: 'card', titleKey: 'common:catalog', parent: 'varieties' }),
-  screen({ id: 'stock', path: STOCK, kind: 'card', titleKey: 'common:allEntries', parent: 'varieties' }),
-  screen({ id: 'stock-entry-new', path: STOCK_ENTRY_NEW, kind: 'form', titleKey: 'common:stockEntry', parent: 'varieties', sheetOnPhone: true }),
-  screen({ id: 'stock-entry', path: STOCK_ENTRY, kind: 'form', titleKey: 'common:stockEntry', parent: 'stock', sheetOnPhone: true }),
+  screen({ id: 'variety', path: VARIETY, declaredKind: 'card', titleKey: 'common:variety', pane: 'detail', parent: 'varieties', backLabel: 'record' }),
+  screen({ id: 'variety-new', path: VARIETY_NEW, declaredKind: 'form', titleKey: 'common:newVariety', parent: 'varieties', sheetOnPhone: true }),
+  screen({ id: 'variety-prices', path: VARIETY_PRICES, declaredKind: 'card', titleKey: 'common:prices', parent: 'variety', backLabel: 'record' }),
+  screen({ id: 'variety-price-new', path: VARIETY_PRICE_NEW, declaredKind: 'form', titleKey: 'common:newPrice', parent: 'variety', modalOnComputer: true, sheetOnPhone: true }),
+  screen({ id: 'variety-entries', path: VARIETY_ENTRIES, declaredKind: 'card', titleKey: 'common:entries', parent: 'variety', backLabel: 'record' }),
+  screen({ id: 'catalog', path: CATALOG, declaredKind: 'card', titleKey: 'common:catalog', parent: 'varieties' }),
+  screen({ id: 'stock', path: STOCK, declaredKind: 'card', titleKey: 'common:allEntries', parent: 'varieties' }),
+  screen({ id: 'stock-entry-new', path: STOCK_ENTRY_NEW, declaredKind: 'form', titleKey: 'common:stockEntry', parent: 'varieties', sheetOnPhone: true }),
+  screen({ id: 'stock-entry', path: STOCK_ENTRY, declaredKind: 'form', titleKey: 'common:stockEntry', parent: 'stock', sheetOnPhone: true }),
   screen({
     id: 'varieties-archived',
     path: ARCHIVED_VARIETIES,
-    kind: 'card',
+    declaredKind: 'card',
     titleKey: 'common:archived',
     pane: 'list',
     parent: 'varieties',
   }),
-  screen({ id: 'withdrawal-new', path: WITHDRAWAL_NEW, kind: 'form', titleKey: 'common:takeFromStock', parent: 'varieties', sheetOnPhone: true }),
-  screen({ id: 'withdrawal', path: WITHDRAWAL, kind: 'card', titleKey: 'common:withdrawal', parent: 'varieties' }),
-  screen({ id: 'withdrawal-edit', path: WITHDRAWAL_EDIT, kind: 'form', titleKey: 'common:takeFromStock', parent: 'withdrawal', sheetOnPhone: true }),
+  screen({ id: 'withdrawal-new', path: WITHDRAWAL_NEW, declaredKind: 'form', titleKey: 'common:takeFromStock', parent: 'varieties', sheetOnPhone: true }),
+  screen({ id: 'withdrawal', path: WITHDRAWAL, declaredKind: 'card', titleKey: 'common:withdrawal', parent: 'varieties' }),
+  screen({ id: 'withdrawal-edit', path: WITHDRAWAL_EDIT, declaredKind: 'form', titleKey: 'common:takeFromStock', parent: 'withdrawal', sheetOnPhone: true }),
 
   screen({
     id: 'expenses',
     path: EXPENSES,
-    kind: 'root',
+    declaredKind: 'card-on-phone',
     titleKey: 'common:expenses',
-    place: { bar: 'more', rail: 'expenses' },
+    parent: { phone: 'analysis' },
+    place: { bar: 'home', rail: 'expenses' },
   }),
-  screen({ id: 'expense-new', path: EXPENSE_NEW, kind: 'form', titleKey: 'shell:newExpense', parent: 'expenses', sheetOnPhone: true }),
+  screen({ id: 'expense-new', path: EXPENSE_NEW, declaredKind: 'form', titleKey: 'shell:newExpense', parent: 'expenses', sheetOnPhone: true }),
   screen({
     id: 'analysis',
     path: ANALYSIS,
-    kind: 'root',
+    declaredKind: 'root',
     titleKey: 'common:analysis',
-    place: { bar: 'more', rail: 'analysis' },
+    place: { bar: 'home', rail: 'analysis' },
   }),
 
   screen({
     id: 'settings',
     path: SETTINGS,
-    kind: 'card',
+    declaredKind: 'card',
     titleKey: 'common:settings',
-    parent: { phone: 'more', computer: 'home' },
-    place: { bar: 'more', rail: 'business' },
+    parent: 'home',
+    place: { bar: null, rail: 'business' },
   }),
-  screen({ id: 'settings-business', path: SETTINGS_BUSINESS, kind: 'form', titleKey: 'common:business', parent: 'settings' }),
-  screen({ id: 'settings-users', path: SETTINGS_USERS, kind: 'form', titleKey: 'common:users', parent: 'settings' }),
-  screen({ id: 'settings-prices', path: SETTINGS_PRICES, kind: 'form', titleKey: 'common:prices', parent: 'settings' }),
+  screen({ id: 'settings-business', path: SETTINGS_BUSINESS, declaredKind: 'form', titleKey: 'common:business', parent: 'settings' }),
+  screen({ id: 'settings-users', path: SETTINGS_USERS, declaredKind: 'form', titleKey: 'common:users', parent: 'settings' }),
+  screen({ id: 'settings-prices', path: SETTINGS_PRICES, declaredKind: 'form', titleKey: 'common:prices', parent: 'settings' }),
   screen({
     id: 'settings-customer-types',
     path: SETTINGS_CUSTOMER_TYPES,
-    kind: 'form',
+    declaredKind: 'form',
     titleKey: 'customerTypes:title',
     parent: 'settings-prices',
   }),
   screen({
     id: 'settings-integrations',
     path: SETTINGS_INTEGRATIONS,
-    kind: 'form',
+    declaredKind: 'form',
     titleKey: 'shell:integrations',
     parent: 'settings',
   }),
   screen({
     id: 'settings-catalog-message',
     path: SETTINGS_CATALOG_MESSAGE,
-    kind: 'form',
+    declaredKind: 'form',
     titleKey: 'common:catalogMessage',
     parent: 'settings',
   }),
   screen({
     id: 'settings-expense-categories',
     path: EXPENSE_CATEGORIES,
-    kind: 'form',
+    declaredKind: 'form',
     titleKey: 'common:expenseCategories',
+    parent: 'settings',
+  }),
+  screen({
+    id: 'settings-currency',
+    path: SETTINGS_CURRENCY,
+    declaredKind: 'form',
+    titleKey: 'common:currencyAndDecimals',
     parent: 'settings',
   }),
   screen({
     id: 'settings-withdrawal-reasons',
     path: SETTINGS_WITHDRAWAL_REASONS,
-    kind: 'form',
+    declaredKind: 'form',
     titleKey: 'common:withdrawalReasons',
     parent: 'settings',
   }),
   screen({
     id: 'settings-appearance',
     path: SETTINGS_APPEARANCE,
-    kind: 'form',
+    declaredKind: 'form',
     titleKey: 'common:appearance',
     parent: 'settings',
   }),
-  screen({ id: 'settings-account', path: SETTINGS_ACCOUNT, kind: 'form', titleKey: 'common:yourAccount', parent: 'settings' }),
+  screen({ id: 'settings-account', path: SETTINGS_ACCOUNT, declaredKind: 'form', titleKey: 'common:yourAccount', parent: 'settings' }),
 
   // The Onboarding's steps and "Listo" are forms whose parent is Inicio: "Cerrar" and back
   // with no history land there. `router.tsx` draws them in `OnboardingLayout`, the
   // Onboarding's own frame (one centred column, no bar, no rail), not in `Shell`.
-  screen({ id: 'onboarding', path: ONBOARDING, kind: 'form', titleKey: 'shell:gettingStarted', parent: 'home' }),
-  screen({ id: 'onboarding-variety', path: ONBOARDING_VARIETY, kind: 'form', titleKey: 'common:varietyWithPrice', parent: 'home' }),
-  screen({ id: 'onboarding-stock', path: ONBOARDING_STOCK, kind: 'form', titleKey: 'common:initialStock', parent: 'home' }),
+  screen({ id: 'onboarding', path: ONBOARDING, declaredKind: 'form', titleKey: 'shell:gettingStarted', parent: 'home' }),
+  screen({ id: 'onboarding-variety', path: ONBOARDING_VARIETY, declaredKind: 'form', titleKey: 'common:varietyWithPrice', parent: 'home' }),
+  screen({ id: 'onboarding-stock', path: ONBOARDING_STOCK, declaredKind: 'form', titleKey: 'common:initialStock', parent: 'home' }),
   screen({
     id: 'onboarding-catalog-message',
     path: ONBOARDING_CATALOG_MESSAGE,
-    kind: 'form',
+    declaredKind: 'form',
     titleKey: 'common:catalogMessage',
     parent: 'home',
   }),
-  screen({ id: 'onboarding-bot', path: ONBOARDING_BOT, kind: 'form', titleKey: 'common:telegramBot', parent: 'home' }),
-  screen({ id: 'onboarding-partner', path: ONBOARDING_PARTNER, kind: 'form', titleKey: 'common:partner', parent: 'home' }),
+  screen({ id: 'onboarding-bot', path: ONBOARDING_BOT, declaredKind: 'form', titleKey: 'common:telegramBot', parent: 'home' }),
+  screen({ id: 'onboarding-partner', path: ONBOARDING_PARTNER, declaredKind: 'form', titleKey: 'common:partner', parent: 'home' }),
   screen({
     id: 'onboarding-categories',
     path: ONBOARDING_CATEGORIES,
-    kind: 'form',
+    declaredKind: 'form',
     titleKey: 'common:expenseCategories',
     parent: 'home',
   }),
-  screen({ id: 'onboarding-done', path: ONBOARDING_DONE, kind: 'form', titleKey: 'common:done', parent: 'home' }),
+  screen({ id: 'onboarding-done', path: ONBOARDING_DONE, declaredKind: 'form', titleKey: 'common:done', parent: 'home' }),
 ] as const satisfies readonly Screen[]
 
 /** The ids marked `backLabel: 'record'`: the only screens `useBackParent` accepts, by type. */
@@ -438,8 +457,11 @@ export function screenOf(id: ScreenId): Screen {
 }
 
 function parentIdOf(entry: Screen, viewport: Viewport): ScreenId | undefined {
-  if (entry.parent === undefined) return undefined
-  return typeof entry.parent === 'string' ? entry.parent : entry.parent[viewport]
+  const { parent } = entry
+  if (parent === undefined) return undefined
+  if (typeof parent === 'string') return parent
+  if ('computer' in parent) return parent[viewport]
+  return viewport === 'phone' ? parent.phone : undefined
 }
 
 export interface ParentRef {

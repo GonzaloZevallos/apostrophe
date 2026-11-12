@@ -23,8 +23,9 @@ import { DISCARD_QUESTION } from './OnboardingStep'
 import { HOME, ONBOARDING_BOT, ONBOARDING_CATALOG_MESSAGE, ONBOARDING_CATEGORIES, ONBOARDING_PARTNER, ONBOARDING_STOCK, ONBOARDING_VARIETY } from '../../routes'
 import { CHECKLIST_DONE } from '../../copy/inicio'
 import { SheetRouterProvider } from '../../components/useSheetStack'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 const ORDER: StepSlug[] = ['variety', 'stock', 'header_footer', 'bot', 'partner', 'categories']
 const PATHS: Record<StepSlug, string> = {
   variety: 'variety',
@@ -92,7 +93,7 @@ function stubFetch(read: OnboardingProgress, extra: Record<string, Handler>): vo
 function renderAt(path: string | string[]) {
   const routes: RouteObject[] = [
     {
-      element: <Outlet context={ME} />,
+      element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>,
       children: [
         { index: true, element: <span>pantalla inicio</span> },
         {

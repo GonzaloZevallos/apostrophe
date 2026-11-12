@@ -104,10 +104,12 @@ test('FIXED_SETS gives every exported set a non-empty reason, and names nothing 
   }
   expect(FIXED_SETS).toEqual({
     HOME_PERIODS: 'fixed view: periods',
+    HOME_VIEWS: 'fixed set: the two views of Home, Today and Analysis',
     SALES_PERIODS: 'fixed view: periods',
     THEME_CHOICES: 'fixed set: theme choice',
     CUSTOMER_TYPE_ICON_SET: 'fixed set: the neutral icon set ships with the app',
     STOCK_ENTRY_ORIGINS: 'fixed set: Stock entry origins',
+    MONEY_DECIMALS: 'fixed set: the decimals a Business may write money with, 0 to 2',
     PAYMENT_STATES: 'fixed set: payment state, which is not a method',
     LANGUAGES:
       'fixed set: the languages the Copy module has texts for; adding one is a code change in the Copy module',
@@ -118,6 +120,7 @@ test('every raw chip site names a registered set, a real file and a reason', () 
   const sources = new Set(Object.keys(import.meta.glob('/src/**/*.tsx')))
   const declared = Object.keys(FIXED_SETS)
   expect(RAW_CHIP_SITES.map((site) => [site.file, site.set])).toEqual([
+    ['src/components/HomeViewSwitch.tsx', 'HOME_VIEWS'],
     ['src/screens/settings/AppearanceGroup.tsx', 'THEME_CHOICES'],
     ['src/screens/settings/BusinessGroup.tsx', 'LANGUAGES'],
     ['src/screens/settings/CustomerTypeForm.tsx', 'CUSTOMER_TYPE_ICON_SET'],

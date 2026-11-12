@@ -23,6 +23,7 @@ import Notice from '../../components/Notice'
 import { readFeedback, saleJustSaved } from '../../components/feedback'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import VentaDetalle from './VentaDetalle'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 /** Stands in for the real `Ventas` screen, just enough to show what `VentaDetalle`
  * navigated back with (plan, invariants: history state is only ever read through
@@ -61,10 +62,12 @@ function renderDetalle(initialState?: unknown) {
   )
   render(
     <QueryClientProvider client={queryClient}>
+<MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
       <SheetRouterProvider router={router}>
         <RouterProvider router={router} />
       </SheetRouterProvider>
-    </QueryClientProvider>,
+    </MoneyFormatProvider>
+</QueryClientProvider>,
   )
 }
 
@@ -256,7 +259,7 @@ test('a sale with a customer already never shows Assign customer', async () => {
   expect(screen.queryByRole('button', { name: 'Assign customer' })).not.toBeInTheDocument()
 })
 
-const NICO_SEARCH_RESULT = { id: 5, name: 'Nico', phone: '1111', vip: true }
+const NICO_SEARCH_RESULT = { id: 5, name: 'Nico', phone: '1111', phone_display: '1111', vip: true }
 const NICO = { id: 5, name: 'Nico', vip: true }
 
 /** Dispatches on method and path instead of call order: the sheet's own search
@@ -438,4 +441,18 @@ test('a sale keeps its recorded "VIP" and "bulk" badges while both pricing switc
   expect(await screen.findByText('Sale #2')).toBeInTheDocument()
   expect(screen.getByText('VIP')).toBeInTheDocument()
   expect(screen.getByText('bulk')).toBeInTheDocument()
+})
+
+test('a recorded type line shows the type name copied when it was saved', async () => {
+  const line = SALE.lines[0]
+  const recorded = {
+    ...SALE,
+    customer: { id: 5, name: 'Ana Pérez', vip: false },
+    lines: [{ ...line, pricing_rule: 'type', customer_type_name: 'Mayoristas' }],
+  }
+  vi.mocked(fetch).mockImplementation(() => Promise.resolve(jsonResponse(200, recorded)))
+  renderDetalle()
+
+  expect(await screen.findByText('Sale #2')).toBeInTheDocument()
+  expect(screen.getByText('Mayoristas')).toBeInTheDocument()
 })

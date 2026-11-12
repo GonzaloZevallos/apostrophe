@@ -9,8 +9,7 @@ from datetime import date
 from sqlalchemy.orm import Session
 
 from app.catalog.domain.product import ArchivedCatalogProduct, CatalogPrice, CatalogProduct
-from app.products.adapters.sql_products import SqlProducts
-from app.products.domain.product import PriceEntry
+from app.products.adapters.sql_products import ListedCurrentPrice, SqlProducts
 
 
 class SqlCatalogVarieties:
@@ -18,17 +17,10 @@ class SqlCatalogVarieties:
         self._varieties = SqlProducts(session, business_id)
 
     def on(self, day: date) -> list[CatalogProduct]:
-        views = []
-        for variety in self._varieties.listed():
-            assert variety.id is not None, "only stored varieties are read here"
-            views.append(
-                CatalogProduct(
-                    id=variety.id,
-                    name=variety.name.value,
-                    price=_catalog_price(variety.current_price(day)),
-                )
-            )
-        return views
+        return [
+            CatalogProduct(id=listed.product_id, name=listed.name, price=_catalog_price(listed))
+            for listed in self._varieties.listed_current_prices(day)
+        ]
 
     def archived(self) -> list[ArchivedCatalogProduct]:
         views = []
@@ -45,11 +37,12 @@ class SqlCatalogVarieties:
         return variety is not None and not variety.is_archived
 
 
-def _catalog_price(entry: PriceEntry | None) -> CatalogPrice | None:
-    if entry is None:
+def _catalog_price(listed: ListedCurrentPrice) -> CatalogPrice | None:
+    """The price in force with its cents kept: it is never turned into whole units here."""
+    if listed.list_price is None:
         return None
     return CatalogPrice(
-        list_price=entry.list_price,
-        bulk_price=entry.bulk.price if entry.bulk else None,
-        bulk_minimum=entry.bulk.minimum if entry.bulk else None,
+        list_price=listed.list_price,
+        bulk_price=listed.bulk_price,
+        bulk_minimum=listed.bulk_minimum,
     )

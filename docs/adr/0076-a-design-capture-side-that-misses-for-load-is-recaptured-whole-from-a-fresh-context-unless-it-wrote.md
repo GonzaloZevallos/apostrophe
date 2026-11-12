@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-11-07
+summary: "un lado de la captura de diseño que falla por carga se vuelve a capturar entero desde un contexto nuevo, salvo que haya escrito"
 ---
 
 # A design-capture side that misses for load is recaptured whole from a fresh context, unless it wrote

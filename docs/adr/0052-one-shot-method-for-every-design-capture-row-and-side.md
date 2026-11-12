@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-25
+summary: "un solo método para cada fila y lado de las capturas de diseño"
 ---
 
 # One shot method for every design-capture row and both sides

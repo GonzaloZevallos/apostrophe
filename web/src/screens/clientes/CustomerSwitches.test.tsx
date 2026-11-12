@@ -18,8 +18,9 @@ import ClienteFicha from './ClienteFicha'
 import Clientes from './Clientes'
 import ClientesLayout from './ClientesLayout'
 import ClienteForm from './ClienteForm'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
-const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN }
+const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 function json(body: unknown): Response {
   return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })
@@ -47,7 +48,7 @@ function renderAt(path: string): void {
       {
         element: (
           <FlashProvider>
-            <Outlet context={ME} />
+            <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
           </FlashProvider>
         ),
         children: [
@@ -73,6 +74,7 @@ const FER = {
   id: 3,
   name: 'Fer',
   phone: '+5491158423310',
+  phone_display: '+54 9 11 5842-3310',
   vip: true,
   customer_type_id: 2,
   balance: 0,

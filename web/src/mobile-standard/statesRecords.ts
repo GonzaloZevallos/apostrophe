@@ -13,9 +13,9 @@ import {
   EXPENSE_CATEGORIES,
   EXPENSE_NEW,
   EXPENSES,
-  MORE,
   pathTo,
   SETTINGS_ACCOUNT,
+  SETTINGS_CURRENCY,
   SETTINGS_WITHDRAWAL_REASONS,
   SETTINGS_CUSTOMER_TYPES,
   STOCK,
@@ -27,7 +27,8 @@ import {
   WITHDRAWAL_NEW,
 } from '../routes.ts'
 import { AUTH_TEXT } from '../copy/auth.ts'
-import { common, emptyState } from './copy.ts'
+import { REFUSAL_KEY } from '../i18n/refusalTable.ts'
+import { common, emptyState, refusal } from './copy.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { EXPENSES_TEXT } from '../copy/expenses.ts'
 import { SETTINGS_TEXT } from '../copy/settings.ts'
@@ -62,6 +63,7 @@ const SAMPLE_TYPED_CUSTOMER = {
   id: 1,
   name: 'Ana Pérez',
   phone: null,
+  phone_display: null,
   vip: true,
   customer_type_id: 2,
   balance: 0,
@@ -271,12 +273,6 @@ export const RECORDS_STATES: readonly WalkState[] = [
   },
 
   {
-    screen: 'GastoDesdeMas',
-    route: MORE,
-    steps: [{ click: common('common:addExpense') }],
-    visible: 'Save the expense',
-  },
-  {
     screen: 'GastoDesdeGastos',
     route: EXPENSES,
     steps: [{ activate: common('common:addExpense') }],
@@ -306,6 +302,20 @@ export const RECORDS_STATES: readonly WalkState[] = [
     route: EXPENSE_CATEGORIES,
     steps: [{ click: 'Delete' }],
     visible: 'Delete the category?',
+  },
+  {
+    screen: 'ConfiguracionMonedaSimboloInvalido',
+    route: SETTINGS_CURRENCY,
+    steps: [{ click: common('common:save') }],
+    visible: refusal({ key: REFUSAL_KEY['money_format.symbol_invalid'] }),
+    writes: [{ method: 'PUT', path: /^\/api\/money-format$/, status: 422, body: { code: 'money_format.symbol_invalid', field: 'symbol' } }],
+  },
+  {
+    screen: 'ConfiguracionMonedaNoBajar',
+    route: SETTINGS_CURRENCY,
+    steps: [{ click: common('common:save') }],
+    visible: refusal({ key: REFUSAL_KEY['money_format.decimals_below_recorded'] }),
+    writes: [{ method: 'PUT', path: /^\/api\/money-format$/, status: 409, body: { code: 'money_format.decimals_below_recorded' } }],
   },
   {
     screen: 'ConfiguracionMotivos',

@@ -1,13 +1,30 @@
 /**
- * The tap budget (PRD criterion 1; metric "Taps"): the expense form opens in at most
- * two taps from every tab root, one from Gastos, and a computer never takes more taps
- * than the phone. A tap is a click this spec makes through `tap()`, so the count is of
- * what a seller does, not of what the code calls. One expense is also recorded from
- * Más, and the form's exit goes back by history to the screen that opened it.
+ * The tap budget (PRD criterion 1; metric "Taps"), measured from each phone tab root: the
+ * expense form opens in two taps from Home (the Analysis segment, then "Add expense") and three
+ * from Sales, Customers and Products, one from Gastos; Settings in one (the avatar); a stock
+ * withdrawal in two (Products, then "Take from stock"). A computer never takes more taps than
+ * the phone. A tap is a click this spec makes through `tap()`, so the count is of what a seller
+ * does, not of what the code calls. One expense is also recorded from the Expenses card on
+ * Analysis, and the form's exit goes back by history to the screen that opened it.
  */
 
 import { expectPath } from './helpers/url.js'
-import { CATALOG, CUSTOMERS, CUSTOMER_PAYMENT, EXPENSES, EXPENSE_NEW, HOME, MORE, SALES, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, VARIETY } from '../src/routes.js'
+import {
+  ANALYSIS,
+  CATALOG,
+  CUSTOMERS,
+  CUSTOMER_PAYMENT,
+  EXPENSES,
+  EXPENSE_NEW,
+  HOME,
+  SALES,
+  SALE_NEW,
+  SETTINGS,
+  STOCK_ENTRY_NEW,
+  VARIETIES,
+  VARIETY,
+  WITHDRAWAL_NEW,
+} from '../src/routes.js'
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import type { Locator, Page } from '@playwright/test'
@@ -21,7 +38,7 @@ const PHONE = { width: 390, height: 844 }
 const COMPUTER = { width: 1280, height: 920 }
 
 /** Tab roots: where a seller can be standing when the need to record an expense comes. */
-const ROOTS = [HOME, SALES, CUSTOMERS, VARIETIES, MORE, EXPENSES] as const
+const ROOTS = [HOME, SALES, CUSTOMERS, VARIETIES, EXPENSES] as const
 
 interface Counter {
   taps: number
@@ -32,6 +49,11 @@ async function tap(counter: Counter, target: Locator): Promise<void> {
   await target.click()
 }
 
+/** The Today | Analysis segment's "Analysis" option. */
+function analysisOption(page: Page): Locator {
+  return page.getByRole('group', { name: 'Home view' }).getByRole('link', { name: 'Analysis' })
+}
+
 /** Opens the expense form from wherever the seller is, the way the viewport allows;
  * returns the taps it took. */
 async function openExpenseForm(page: Page, computer: boolean): Promise<number> {
@@ -39,14 +61,14 @@ async function openExpenseForm(page: Page, computer: boolean): Promise<number> {
   const here = new URL(page.url()).pathname
   if (here === EXPENSES) {
     await tap(counter, page.getByRole('link', { name: 'Add expense' }))
-  } else if (here === MORE) {
-    await tap(counter, page.getByRole('link', { name: /^\+ Add expense/ }))
   } else if (computer) {
     await tap(counter, page.locator('.riel-lateral').getByRole('link', { name: 'Expenses' }))
     await tap(counter, page.getByRole('link', { name: 'Add expense' }))
   } else {
-    await tap(counter, page.locator('.bar-inferior').getByRole('link', { name: 'More' }))
-    await tap(counter, page.getByRole('link', { name: /^\+ Add expense/ }))
+    // The phone: Home's segment leads to Analysis, whose Expenses card holds "Add expense".
+    if (here !== HOME) await viaTab(page, counter, false, 'Home')
+    await tap(counter, analysisOption(page))
+    await tap(counter, page.getByRole('link', { name: 'Add expense' }))
   }
   await expectPath(page, EXPENSE_NEW)
   await expect(page.getByRole('button', { name: 'Close' })).toBeVisible()
@@ -76,39 +98,42 @@ test('the expense form opens within the tap budget from every tab root, phone an
   for (const root of ROOTS) {
     const phone = taps.phone[root]
     const computer = taps.computer[root]
-    expect(phone, `phone, from ${root}`).toBeLessThanOrEqual(root === EXPENSES ? 1 : 2)
     expect(computer, `computer, from ${root}`).toBeLessThanOrEqual(phone ?? 0)
   }
-  expect(taps.phone[MORE]).toBe(1)
+  expect(taps.phone[HOME]).toBe(2)
+  expect(taps.phone[SALES]).toBe(3)
+  expect(taps.phone[CUSTOMERS]).toBe(3)
+  expect(taps.phone[VARIETIES]).toBe(3)
   expect(taps.phone[EXPENSES]).toBe(1)
   expect(consoleMessages).toEqual([])
 })
 
-test('a seller records an expense from Más and Cerrar goes back to where the form was opened', async ({
+test('a seller records an expense from the Expenses card and Close goes back to where the form was opened', async ({
   page,
 }) => {
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
   await page.setViewportSize(PHONE)
 
-  await signUpNewBusiness(page, { businessName: `Flores de Más ${uniqueTag()}`, email: `duena-mas-${uniqueTag()}@example.com` })
+  await signUpNewBusiness(page, { businessName: `Flores de la Tarjeta ${uniqueTag()}`, email: `duena-tarjeta-${uniqueTag()}@example.com` })
 
-  await page.goto(MORE)
-  await page.getByRole('link', { name: /^\+ Add expense/ }).click()
+  await analysisOption(page).click()
+  await page.getByRole('link', { name: 'Add expense' }).click()
   await page.getByRole('button', { name: 'Close' }).click()
-  await expectPath(page, MORE)
+  await expectPath(page, ANALYSIS)
 
-  await page.getByRole('link', { name: /^\+ Add expense/ }).click()
+  await page.getByRole('link', { name: 'Add expense' }).click()
   await page.getByRole('button', { name: /^Category/ }).click()
   await page.getByRole('button', { name: 'Packaging', exact: true }).click()
   await page.getByLabel('Amount').fill('3200')
   await page.getByLabel('Details').fill('Cajas de cartón')
   await expectToast(page, 'Expense saved', async () => {
     await page.getByRole('button', { name: 'Save the expense' }).click()
-    await expectPath(page, MORE)
+    await expectPath(page, ANALYSIS)
   })
 
-  await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Expenses/ }).click()
+  await page.getByRole('link', { name: 'See the expenses' }).click()
+  await expectPath(page, EXPENSES)
   await expect(page.getByText('Cajas de cartón')).toBeVisible()
   expect(consoleMessages).toEqual([])
 })
@@ -126,7 +151,7 @@ async function settled(page: Page, computer: boolean): Promise<void> {
 }
 
 test('the sale form, Registrar cobro, the catalog and a stock entry open within the tap budget', async ({ page }) => {
-  test.setTimeout(120_000)
+  test.setTimeout(180_000)
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
   await signUp(page, 'Toques')
@@ -155,6 +180,10 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
           page.locator('.riel-lateral').getByRole('link', { name: /New sale$/ }),
           label,
         ).toHaveCount(0)
+      } else if (!computer && root === EXPENSES) {
+        // On the phone Gastos is a card under Analysis: a card never shows "+ New sale", so
+        // the sale is not one tap from here; the computer, where it stays a root, measures it.
+        await expect(page.getByRole('link', { name: /New sale$/ }), label).toHaveCount(0)
       } else {
         await tap(counter, page.getByRole('link', { name: /New sale$/ }).filter({ visible: true }).first())
         await expectPath(page, SALE_NEW)
@@ -197,13 +226,44 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
       await tap(counter, page.getByRole('link', { name: '+ Stock entry' }))
       await expectPath(page, STOCK_ENTRY_NEW)
       measure(`stock entry ${root}`, device, counter.taps)
+
+      // Settings: the avatar on the phone, the rail's business row on a computer. One tap.
+      await page.goto(root)
+      counter = { taps: 0 }
+      await settled(page, computer && root === VARIETIES)
+      await tap(
+        counter,
+        computer
+          ? page.locator('.riel-lateral').getByRole('link', { name: /^Settings for / })
+          : page.getByRole('link', { name: 'Settings', exact: true }),
+      )
+      await expectPath(page, SETTINGS)
+      measure(`settings ${root}`, device, counter.taps)
+
+      // Stock withdrawal: Products, then "Take from stock" next to "+ Stock entry". The list's
+      // is the first in the page (a computer's selected variety carries its own beside it).
+      await page.goto(root)
+      counter = { taps: 0 }
+      if (root !== VARIETIES) await viaTab(page, counter, computer, 'Products')
+      await settled(page, computer)
+      await tap(counter, page.getByRole('link', { name: 'Take from stock' }).first())
+      await expectPath(page, WITHDRAWAL_NEW)
+      measure(`withdrawal ${root}`, device, counter.taps)
     }
   }
 
   expect(Object.keys(taps).length).toBeGreaterThan(10)
   for (const [key, { phone, computer }] of Object.entries(taps)) {
+    if (key === `sale ${EXPENSES}`) {
+      // Phone-less on purpose (a card shows no "+ New sale"): the computer's one tap stands alone.
+      expect(phone, `phone: ${key}`).toBe(0)
+      expect(computer, `computer: ${key}`).toBe(1)
+      continue
+    }
     expect(phone, `phone: ${key}`).toBeGreaterThan(0)
-    expect(phone, `phone: ${key}`).toBeLessThanOrEqual(key.startsWith('sale') || key.startsWith('payment') ? 1 : 2)
+    expect(phone, `phone: ${key}`).toBeLessThanOrEqual(
+      key.startsWith('sale') || key.startsWith('payment') || key.startsWith('settings') ? 1 : 2,
+    )
     expect(computer, `computer: ${key}`).toBeLessThanOrEqual(phone)
   }
   expect(consoleMessages).toEqual([])

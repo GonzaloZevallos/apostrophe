@@ -15,7 +15,7 @@ import { CUSTOMER_NEW, EXPENSE_NEW } from '../routes'
 import { renderWithViewport, stubViewport } from '../test-viewport'
 import { type FetchImpl, jsonResponse, renderExpenses } from './expenses/renderExpenses'
 
-const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: 'en' }
+const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: 'en', money: { symbol: '$', decimals: 0 } }
 
 let release: () => void
 let gate: Promise<void>

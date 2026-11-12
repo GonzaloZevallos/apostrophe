@@ -14,6 +14,7 @@ import beyond what this module returns; the `category_id` `check_expense` hands
 from __future__ import annotations
 
 from datetime import UTC, date, datetime, time
+from decimal import Decimal
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -23,8 +24,10 @@ from app.expenses.adapters.sql_expenses import SqlExpenses
 from app.expenses.adapters.tables import ExpenseRow
 from app.expenses.application.manage_categories import add_category
 from app.expenses.application.manage_expenses import record_expense
+from app.expenses.application.ports import MoneyFormatReader
 from app.expenses.domain.category import CategoryName, ExpenseRuleBroken, InvalidCategoryName
 from app.expenses.domain.expense import Expense, InvalidAmount, InvalidDetail, InvalidExpenseDate
+from app.shared.money import MoneyFormat
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.application.ports import Refusal
 from app.spreadsheet_import.domain.rows import GastoRow
@@ -35,9 +38,14 @@ _LOCAL_CATEGORY_ID = 1
 
 
 class ExpensesImport:
-    def __init__(self, session: Session, business_id: int) -> None:
+    def __init__(
+        self, session: Session, business_id: int, money_format: MoneyFormatReader | None = None
+    ) -> None:
         self._session = session
         self._business_id = business_id
+        # The command line hangs the business's own format here; a caller that has none
+        # gets the whole-amount one, which accepts a sheet's whole amounts all the same.
+        self._money_format: MoneyFormatReader = money_format or _SheetAmounts()
         self._categories = SqlExpenseCategories(session, business_id)
         self._expenses = SqlExpenses(session, business_id)
 
@@ -97,14 +105,24 @@ class ExpensesImport:
         record_expense(
             self._expenses,
             self._categories,
+            self._money_format,
             transaction,
             spent_on=row.spent_on,
             category_id=category_id,
-            amount=row.amount,
+            amount=Decimal(row.amount),
             detail=row.detail,
             today=today,
             recorded_at=recorded_at,
         )
+
+
+class _SheetAmounts:
+    """A sheet's amounts are whole currency units already, so any format accepts them: the
+    use case's check passes by value, and this hexagon never reads the money format table
+    it does not own (docs/adr/0055)."""
+
+    def current(self) -> MoneyFormat:
+        return MoneyFormat(symbol="#", decimals=0)
 
 
 def _as_datetime(today: date) -> datetime:

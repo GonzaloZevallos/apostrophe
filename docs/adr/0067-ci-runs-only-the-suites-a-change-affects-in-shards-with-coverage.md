@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-30
+summary: "la integración continua corre solo las suites que un cambio afecta"
 ---
 
 # CI corre solo las suites que un cambio afecta, en shards y con cobertura
@@ -93,7 +94,7 @@ libre al rebasar.
   están. No hace checkout, no usa `uv` y no corre ningún check. `ci-ok` depende de ambos y
   `scripts/ci_verdict.py` juzga ambos con la bandera `e2e`, de modo que una matriz cancelada con un
   agregador en rojo se nombra en las dos líneas.
-- **`ci_covers`.** `.agentic/stack.yaml` declara, como última clave,
+- **`ci_covers`** (`ci_covers` was removed by GH-699; see ADR-0054.) `.agentic/stack.yaml` declara, como última clave,
   `ci_covers: {web-e2e: {job: e2e, failed: '✘|^\s*\d+ failed\b'}}`. Si `web-e2e` agota el tiempo en
   local, el sistema difiere a CI cuando el check-run `e2e` está en verde, salvo que la salida local ya
   contenga una línea que cumpla `failed`. Con `retries: 0`, el reporter de lista imprime cada falla final

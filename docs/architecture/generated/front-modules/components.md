@@ -24,6 +24,7 @@ subgraph src["src"]
     src_components_FieldRefusal_tsx["FieldRefusal.tsx"]
     src_components_GoneNotice_tsx["GoneNotice.tsx"]
     src_components_GoneScreen_tsx["GoneScreen.tsx"]
+    src_components_HomeViewSwitch_tsx["HomeViewSwitch.tsx"]
     src_components_Icono_tsx["Icono.tsx"]
     src_components_InAppLink_tsx["InAppLink.tsx"]
     src_components_Insignia_tsx["Insignia.tsx"]
@@ -31,6 +32,7 @@ subgraph src["src"]
     src_components_Loading_tsx["Loading.tsx"]
     src_components_MarcaEstado_tsx["MarcaEstado.tsx"]
     src_components_MasInfo_tsx["MasInfo.tsx"]
+    src_components_MoneyInput_tsx["MoneyInput.tsx"]
     src_components_Notice_tsx["Notice.tsx"]
     src_components_OpcionInterruptor_tsx["OpcionInterruptor.tsx"]
     src_components_PaneRowLink_tsx["PaneRowLink.tsx"]
@@ -39,6 +41,7 @@ subgraph src["src"]
     src_components_ReglaInsignia_tsx["ReglaInsignia.tsx"]
     src_components_SegmentedChoice_tsx["SegmentedChoice.tsx"]
     src_components_SelectorPago_tsx["SelectorPago.tsx"]
+    src_components_SettingsAvatar_tsx["SettingsAvatar.tsx"]
     src_components_Sheet_tsx["Sheet.tsx"]
     src_components_SinConexion_tsx["SinConexion.tsx"]
     src_components_botonVisual_tsx["botonVisual.tsx"]
@@ -86,6 +89,7 @@ src_components_SegmentedChoice_tsx-->src_components_fixedSets_ts
 src_components_SelectorPago_tsx-->src_components_FieldRefusal_tsx
 src_components_SelectorPago_tsx-->src_components_SegmentedChoice_tsx
 src_components_SelectorPago_tsx-->src_components_fixedSets_ts
+src_components_SettingsAvatar_tsx-->src_components_InAppLink_tsx
 src_components_Sheet_tsx-->src_components_ContentArea_tsx
 src_components_Sheet_tsx-->src_components_useVisualViewport_ts
 src_components_SinConexion_tsx-->src_components_AvisoAmbar_tsx

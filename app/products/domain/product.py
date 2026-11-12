@@ -31,7 +31,7 @@ class InvalidPriceEntry(ProductRuleBroken):
     code: ClassVar[str] = "variety.price_entry_invalid"
 
 
-class VipPriceNotBelowList(ProductRuleBroken):
+class CustomerTypePriceNotBelowList(ProductRuleBroken):
     code: ClassVar[str] = "variety.vip_price_not_below_list"
 
 
@@ -105,7 +105,9 @@ class PriceEntry:
             if self.vip_price <= 0:
                 raise InvalidPriceEntry("the VIP price must be positive")
             if self.vip_price >= self.list_price:
-                raise VipPriceNotBelowList("the VIP price must be lower than the list price")
+                raise CustomerTypePriceNotBelowList(
+                    "the VIP price must be lower than the list price"
+                )
 
     def _check_bulk(self, bulk: BulkTerms) -> None:
         if bulk.price <= 0:

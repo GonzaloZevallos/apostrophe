@@ -15,6 +15,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useMatch } from 'react-router'
 import BotonLink from '../../components/BotonLink'
+import SettingsAvatar from '../../components/SettingsAvatar'
 import { NetworkError } from '../../api/client'
 import { listCustomers } from '../../api/customers'
 import { debtorsQuery } from '../../api/payments'
@@ -88,11 +89,12 @@ export default function Clientes() {
       {/* The first answer only: a new search over the list already shown is not the area loading. */}
       <LoadingWhile active={isPending} />
       <div className="cuerpo">
-        <div className="clientes__encabezado">
+        <div className="clientes__encabezado cabecera-fila">
           <span className="encabezado__titulo">{COMMON_TEXT.customers}</span>
           <BotonLink to={CUSTOMER_NEW} variant="secondary" icon="agregar">
             {COMMON_TEXT.newCustomer}
           </BotonLink>
+          <SettingsAvatar />
         </div>
         {feedback !== null && <Notice {...feedback} />}
         <label className="campo">
@@ -129,7 +131,7 @@ export default function Clientes() {
                   key={customer.id}
                   id={customer.id}
                   name={customer.name}
-                  phone={customer.phone}
+                  phoneDisplay={customer.phone_display}
                   vip={vipCustomers && customer.vip}
                   balance={customer.balance}
                   owingSince={customer.owing_since}

@@ -16,6 +16,7 @@ subgraph src["src"]
   src_customerTypes["customerTypes"]
   src_domain["domain"]
   src_flash["flash"]
+  src_fontsReady_ts["fontsReady.ts"]
   src_format["format"]
   src_i18n["i18n"]
   src_main_tsx["main.tsx"]
@@ -41,6 +42,8 @@ src_Root_tsx-->src_components
 src_Root_tsx-->src_queryClient_ts
 src_Root_tsx-->src_shell
 src_Root_tsx-->src_useOnline_ts
+src_api-->src_copy
+src_api-->src_format
 src_api-->src_i18n
 src_api-->src_sales
 src_components-->src_api
@@ -60,6 +63,7 @@ src_format-->src_copy
 src_i18n-->src_api
 src_i18n-->src_copy
 src_main_tsx-->src_App_tsx
+src_main_tsx-->src_fontsReady_ts
 src_main_tsx-->src_i18n
 src_main_tsx-->src_shell
 src_main_tsx-->src_styles

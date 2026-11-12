@@ -65,6 +65,7 @@ from tests.business_removal.adapters.seed import (
     seed,
     set_env,
 )
+from tests.business_removal.money_fakes import FakeMoneyFormat
 from tests.conftest import NOW, MovableClock
 from tests.spreadsheet_import.test_cli import _save_mapping, _save_workbook, _workbook
 
@@ -262,7 +263,7 @@ class _Rows:
     def business_of(self, email: str) -> BusinessRef | None:
         if email != OWNER_EMAIL:
             return None
-        return BusinessRef(id=1, name=LEAVING_BUSINESS, language="en")
+        return BusinessRef(id=1, name=LEAVING_BUSINESS, language="en", default_phone_country=None)
 
     def rows(self, table: str, business_id: int) -> list[dict[str, Any]]:
         if table == "business":
@@ -339,6 +340,7 @@ def _removal_use_cases(capture: Capture, text: OperatorText) -> None:
                     words,
                     CLOCK,
                     OWNER_EMAIL,
+                    money_format=FakeMoneyFormat(),
                 )
             for line in output.lines:
                 capture.lines.append(Line("removal", f"use-case-{name}-{mode}", "out", line))
@@ -353,6 +355,7 @@ def _removal_use_cases(capture: Capture, text: OperatorText) -> None:
         words,
         CLOCK,
         OWNER_EMAIL,
+        money_format=FakeMoneyFormat(),
     )
     for line in unknown.lines:
         capture.lines.append(Line("removal", "use-case-unknown-outcome", "out", line))

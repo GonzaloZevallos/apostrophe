@@ -2,7 +2,7 @@
  * The panel's body (`docs/product/results.md`, "Qué muestra cada pestaña"): the Hoy · Semana ·
  * Mes switch and what each tab draws, each figure straight from `GET /panel`
  * (`PanelAnswer`). Nothing here computes, sorts or sign-tests an amount: ranges go through
- * `formatDateShort` only, Ganancia and Caja through `formatSignedMoney`.
+ * `formatDateShort` only, Ganancia and Caja through `money.signed`.
  *
  * Hoy is only what can be acted on, top to bottom: sold today, the Te deben block, Lo que
  * te queda. The result figures (Ganancia, Caja, Costo de lo vendido, Faltante de stock,
@@ -32,7 +32,8 @@ import type {
 } from '../../api/panel'
 import { salesOwingCount } from '../../format/counts'
 import { formatDateShort } from '../../format/dates'
-import { formatGrams, formatMoney } from '../../format/money'
+import { formatGrams } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { detailFor, sideNoteFor } from '../../stock/detail'
 import { INICIO_TEXT } from '../../copy/inicio'
 import { useTranslation } from 'react-i18next'
@@ -118,6 +119,7 @@ function StockRow({ variety, today }: { variety: PanelVarietyOut; today: string 
 }
 
 function TeDebenBlock({ debts }: { debts: PanelDebts }) {
+  const money = useMoney()
   const { t } = useTranslation()
   // `oldest` is a date-or-null, never an amount (review finding: deciding this from
   // `total_owed === 0` compared an API amount inside a screen, which the plan
@@ -136,7 +138,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
       <InAppLink to={CUSTOMERS} className="bloque-deben__titulo" data-place={OWED_PLACE}>
         {COMMON_TEXT.owedToYou}
       </InAppLink>
-      <span className="cifra-xl">{formatMoney(debts.total_owed)}</span>
+      <span className="cifra-xl">{money.money(debts.total_owed)}</span>
       <span className="pie bloque-deben__cuenta">{salesOwingCount(debts.sales_owing_count)}</span>
       <span className="pie bloque-deben__desde">{INICIO_TEXT.desde0(formatDateShort(debts.oldest))}</span>
       {debts.teaser.map((row) => (
@@ -144,7 +146,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
           <InAppLink to={pathTo(CUSTOMER, { id: row.customer_id })} className="bloque-deben__datos">
             <span className="bloque-deben__nombre">{row.name}</span>
             <span className="pie">
-              <span className="monto-deuda cifra-n">{formatMoney(row.balance)}</span>
+              <span className="monto-deuda cifra-n">{money.money(row.balance)}</span>
               {INICIO_TEXT.sinceDate(formatDateShort(row.owing_since))}
             </span>
           </InAppLink>

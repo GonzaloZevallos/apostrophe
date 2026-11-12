@@ -22,8 +22,8 @@ import { peekPaymentReturn } from '../../paymentReturn'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { choosePaymentMethod } from '../../components/selectorTestKit'
 
-const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
-const OWING = { id: 1, name: 'Ana Pérez', phone: '+5491122334455', vip: false, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }
+const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', money: { symbol: '$', decimals: 0 } }
+const OWING = { id: 1, name: 'Ana Pérez', phone: '+5491122334455', phone_display: '+54 9 11 2233-4455', vip: false, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }
 const SETTLED = { ...OWING, balance: 0, owing_since: null, standing: 'settled' }
 const ACCOUNT = {
   balance: 11000,
@@ -94,7 +94,7 @@ describe('on a computer', () => {
 
     const dialog = await screen.findByRole('dialog', { name: 'Record payment' })
     expect(dialog).toHaveAttribute('aria-modal', 'true')
-    expect(dialog).toHaveTextContent('Ana Pérez · owes you $ 11.000 since 14/09')
+    await waitFor(() => expect(dialog).toHaveTextContent('Ana Pérez · owes you $ 11.000 since 14/09'))
     for (const selector of ['.cobro-paneles__lista', '.cobro-paneles__detalle']) {
       const pane = document.querySelector(selector)
       expect(pane).not.toBeNull()
@@ -145,7 +145,7 @@ describe('on a phone', () => {
 
     const dialog = await screen.findByRole('dialog', { name: 'Record payment' })
     expect(dialog).toHaveAttribute('aria-modal', 'true')
-    expect(within(dialog).getByRole('button', { name: 'Close' })).toBeInTheDocument()
+    await waitFor(() => expect(within(dialog).getByRole('button', { name: 'Close' })).toBeInTheDocument())
     expect(screen.queryByRole('link', { name: 'New sale' })).toBeNull()
   })
 
@@ -194,7 +194,7 @@ describe('on a phone', () => {
     renderApp([{ pathname: PAYMENT }], 'phone')
     const dialog = await screen.findByRole('dialog', { name: 'Record payment' })
 
-    expect(within(dialog).getAllByRole('button', { name: 'Close' })).toHaveLength(1)
+    await waitFor(() => expect(within(dialog).getAllByRole('button', { name: 'Close' })).toHaveLength(1))
     const save = within(dialog).getByRole('button', { name: 'Save' })
     expect(save.parentElement).toHaveClass('sheet__actions')
     expect(save.closest('form')?.lastElementChild).toBe(save.parentElement)
@@ -297,7 +297,7 @@ describe.each<Viewport>(['phone', 'computer'])('what sits behind Record payment,
     expect(router.state.location.pathname).toBe(PAYMENT)
     const card = behindLink('Record payment')?.closest('[inert]')
     expect(card).toBeTruthy()
-    expect(card).toHaveTextContent('Left owing')
+    await waitFor(() => expect(card).toHaveTextContent('Left owing'))
     expect(card).not.toHaveTextContent('Customer saved')
   })
 

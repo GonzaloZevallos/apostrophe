@@ -33,6 +33,7 @@ def test_a_new_business_invitation_opens_a_business_and_signs_its_user_in(
         "business_name": "La Huerta",
         "today": "2026-10-02",
         "shown_language": "en",
+        "money": {"symbol": "$", "decimals": 0},
     }
 
 
@@ -271,6 +272,7 @@ def test_get_business_shows_its_name_and_its_users_sorted_by_email(
     client: TestClient, other_client: TestClient
 ) -> None:
     client.post("/invitations")
+    client.put("/business/phone-country", json={"phone_country": None})
 
     business = client.get("/business")
 
@@ -280,6 +282,20 @@ def test_get_business_shows_its_name_and_its_users_sorted_by_email(
         "users": [{"email": "uno@example.com"}],
         "language": "en",
         "selectable_languages": ["en"],
+        "phone_country": None,
+        "phone_countries": [
+            {"code": code, "calling_code": calling}
+            for code, calling in (
+                ("AR", "54"),
+                ("UY", "598"),
+                ("CL", "56"),
+                ("PY", "595"),
+                ("BR", "55"),
+                ("MX", "52"),
+                ("ES", "34"),
+                ("US", "1"),
+            )
+        ],
     }
     # The business comes only from the session: another business's own call answers
     # its own business, never business `client`'s (CODING_STANDARDS §9).

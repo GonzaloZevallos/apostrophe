@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-06
+summary: "un retiro es una tercera fuente de salida de stock con una fuente explícita"
 ---
 
 # A withdrawal is a third draw source in `app/stock/`, told apart by an explicit `DrawSource`, ordered after a sale line on an exact tie

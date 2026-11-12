@@ -35,9 +35,11 @@ import Loading from '../components/Loading'
 import MarcaEstado from '../components/MarcaEstado'
 import Notice from '../components/Notice'
 import PaneRowLink from '../components/PaneRowLink'
+import SettingsAvatar from '../components/SettingsAvatar'
 import SinConexion from '../components/SinConexion'
 import { readFeedback } from '../components/feedback'
-import { formatGrams, formatMoney } from '../format/money'
+import { formatGrams } from '../format/money'
+import { useMoney } from '../format/moneyContext'
 import {
   ARCHIVED_VARIETIES,
   CATALOG,
@@ -73,6 +75,13 @@ interface PriceEntry {
   bulk_price: number | null
   bulk_minimum: number | null
   vip_price: number | null
+  /** The price each customer type has in this entry; only on the product's current price. */
+  type_prices?: TypePrice[]
+}
+
+export interface TypePrice {
+  customer_type_id: number
+  price: number
 }
 
 export interface Variety {
@@ -119,7 +128,10 @@ export default function Variedades() {
   return (
     <ContentArea as="main" className="pantalla variedades">
       <div className="cuerpo">
-        <h1 className="encabezado__titulo">{COMMON_TEXT.varieties}</h1>
+        <div className="cabecera-fila cabecera-fila--envoltura">
+          <h1 className="encabezado__titulo">{COMMON_TEXT.varieties}</h1>
+          <SettingsAvatar />
+        </div>
         {summary !== null && <p className="pie variedades__resumen">{summary}</p>}
         <div className="variedades__acciones">
           {catalogDisabled ? (
@@ -192,6 +204,7 @@ export function VarietyRows({
   today: string
   computer: boolean
 }) {
+  const money = useMoney()
   return (
     <div className="lista-variedades">
       {rows.map(({ variety, row }) => (
@@ -212,7 +225,7 @@ export function VarietyRows({
             <span className={variety.current_price === null ? 'variedad-fila__precio' : 'variedad-fila__precio cifra-s'}>
               {variety.current_price === null
                 ? NO_PRICE_TODAY
-                : COMMON_TEXT.pricePerGram(formatMoney(variety.current_price.list_price))}
+                : COMMON_TEXT.pricePerGram(money.money(variety.current_price.list_price))}
             </span>
           </span>
         </PaneRowLink>

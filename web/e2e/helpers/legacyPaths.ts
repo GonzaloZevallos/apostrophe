@@ -39,7 +39,7 @@ function read(): (readonly [old: string, now: string])[] {
 /** Every old path and the route it moved to, as templates `pathTo` fills (`/…/:id`). */
 export const LEGACY_REDIRECTS: readonly (readonly [old: string, now: string])[] = read()
 
-/** The old path that redirects to `now` (a registry template such as `/more`, or `/sales/:id`). */
+/** The old path that redirects to `now` (a registry template such as `/analysis`, or `/sales/:id`). */
 export function legacyFor(now: string): string {
   const row = LEGACY_REDIRECTS.find(([, target]) => target === now)
   if (row === undefined) throw new Error(`no legacy row redirects to ${now}`)

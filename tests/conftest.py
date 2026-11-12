@@ -26,6 +26,9 @@ PASSWORD = "correct horse battery staple"
 SETTINGS = Settings(secret_key="test-secret-key", database_url="sqlite://")
 # Cheap enough for a suite that opens two businesses per test; never used outside tests.
 TEST_HASHER = PasswordHasher(ScryptParams(n=16, r=1, p=1))
+# The money scales the suite runs at: a business opened before the flip stores whole units
+# (0), a business opened now stores hundredths (2) (docs/adr/0058).
+SCALES: tuple[int, ...] = (0, 2)
 
 
 class MovableClock:
@@ -61,6 +64,11 @@ def open_business(
 def signed_in(client: TestClient, token: str) -> TestClient:
     client.cookies.clear()
     client.headers["Authorization"] = f"Bearer {token}"
+    # A new business starts with no Phone country (docs/adr/0082); the suite's customers
+    # are typed the Argentine way, so the businesses it opens are set to Argentina, as
+    # every business that existed before the setting is. A test of "no country" clears it.
+    set_argentina = client.put("/business/phone-country", json={"phone_country": "AR"})
+    assert set_argentina.status_code == 200, set_argentina.text
     return client
 
 
@@ -97,8 +105,24 @@ def settings() -> Settings:
     return SETTINGS
 
 
+@pytest.fixture(params=SCALES)
+def money_scale(request: pytest.FixtureRequest) -> int:
+    """The scale the businesses a test opens store their amounts at. A test that asks for
+    it runs once per entry of `SCALES`; the `app` fixture hands it to the opening adapter
+    through the app's own wiring, never through hand-built rows."""
+    scale: int = request.param
+    return scale
+
+
 @pytest.fixture
-def app(engine: Engine, clock: MovableClock, telegram: FakeTelegram, settings: Settings) -> FastAPI:
+def app(
+    money_scale: int,
+    engine: Engine,
+    clock: MovableClock,
+    telegram: FakeTelegram,
+    settings: Settings,
+) -> FastAPI:
+    # Every test that builds the app runs once per scale, the whole suite at both.
     return create_app(
         settings,
         engine=engine,
@@ -106,6 +130,7 @@ def app(engine: Engine, clock: MovableClock, telegram: FakeTelegram, settings: S
         hasher=TEST_HASHER,
         telegram=telegram,
         upkeep_ticker=False,
+        opening_money_scale=money_scale,
     )
 
 

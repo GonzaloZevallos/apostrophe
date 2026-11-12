@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-28
+summary: "la configuración se guarda por Business en hexágonos separados por motivo de cambio"
 ---
 
 # Configuration is stored per business in hexagons split by reason to change, with frozen shared values read through each reader's own Protocol

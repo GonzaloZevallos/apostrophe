@@ -10,9 +10,9 @@
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { pickStockVariety, pickWithdrawalReason, pickWithdrawalVariety } from './helpers/stockVariety.js'
-import { HOME, VARIETIES, WITHDRAWAL_NEW } from '../src/routes.js'
+import { HOME, VARIETIES } from '../src/routes.js'
 import { watchConsole } from './console.js'
-import { openMas } from './helpers/openMas.js'
+import { openTakeFromStock } from './helpers/openScreens.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { uniqueTag } from './helpers/unique.js'
 
@@ -42,7 +42,7 @@ test('a seller adds a withdrawal reason, records a withdrawal with it and reads 
 
   // Settings → Business → Withdrawal reasons: add "Gifts".
   await page.goto(HOME)
-  await page.getByRole('link', { name: /^Settings for / }).click()
+  await page.getByRole('link', { name: /^Settings for / }).or(page.getByRole('link', { name: 'Settings', exact: true })).click()
   await page.getByRole('link', { name: 'Business', exact: true }).click()
   await page.getByRole('link', { name: 'Withdrawal reasons', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Add reason' })).toBeVisible()
@@ -55,9 +55,7 @@ test('a seller adds a withdrawal reason, records a withdrawal with it and reads 
   await expect(page.getByRole('button', { name: 'Move Gifts down' })).toHaveCount(0)
 
   // "Take from stock" offers it last, and no reason is preselected.
-  await openMas(page)
-  await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Take from stock/ }).click()
-  await expect(page).toHaveURL((url) => url.pathname === WITHDRAWAL_NEW)
+  await openTakeFromStock(page)
   const reasonField = page.getByRole('group', { name: 'Reason', exact: true }).getByRole('button')
   await expect(reasonField).not.toContainText('Gifts')
   await reasonField.click()

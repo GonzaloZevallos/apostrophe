@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-16
+summary: "el shell dibuja el marco y un padre varía solo por su registro"
 ---
 
 # The shell draws the chrome, and a parent varies only by its record

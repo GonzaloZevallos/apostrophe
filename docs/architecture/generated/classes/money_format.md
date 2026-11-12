@@ -10,29 +10,85 @@ classDiagram
   }
   class application {
   }
+  class apply_money_format {
+  }
+  class change {
+  }
   class domain {
+  }
+  class export_reader {
   }
   class money_format {
   }
   class opening {
   }
+  class reader {
+  }
+  class rescale {
+  }
+  class router {
+  }
+  class sql_money_format_writer {
+  }
   class tables {
   }
+  apply_money_format --> change
+  export_reader --> tables
   opening --> tables
+  reader --> tables
+  router --> apply_money_format
+  router --> reader
+  router --> rescale
+  router --> sql_money_format_writer
+  sql_money_format_writer --> change
+  sql_money_format_writer --> rescale
+  sql_money_format_writer --> tables
 ```
 
 ## domain
 
-No classes in this layer.
+```mermaid
+classDiagram
+  class AmountTooLargeToRescale {
+    code : ClassVar~str~
+  }
+  class DecimalsBelowRecordedAmounts {
+    code : ClassVar~str~
+  }
+  class MoneyFormatChange {
+    any : bool
+    decimals_changed : bool
+    symbol_changed : bool
+  }
+  class RescaleBusy {
+    code : ClassVar~str~
+  }
+  class RescaleCheckFailed {
+    code : ClassVar~str~
+  }
+```
 
 ## application
 
-No classes in this layer.
+```mermaid
+classDiagram
+  class ApplyMoneyFormat {
+    execute(business_id: int, symbol: str, decimals: int) MoneyFormatChange
+  }
+  class MoneyFormatWriter {
+    apply(business_id: int, money_format: MoneyFormat) MoneyFormatChange
+  }
+```
 
 ## adapters
 
 ```mermaid
 classDiagram
+  class MoneyFormatBody {
+    decimals : int
+    symbol : str
+    of(money_format: MoneyFormat) MoneyFormatBody
+  }
   class MoneyFormatOpening {
     opened(business_id: int, language: BusinessLanguage) None
   }
@@ -42,5 +98,14 @@ classDiagram
     id : Mapped~int~
     scale : Mapped~int~
     symbol : Mapped~str~
+  }
+  class SqlMoneyFormat {
+    current() MoneyFormat
+  }
+  class SqlMoneyFormatRead {
+    of(business_id: int) ExportedMoney
+  }
+  class SqlMoneyFormatWriter {
+    apply(business_id: int, money_format: MoneyFormat) MoneyFormatChange
   }
 ```

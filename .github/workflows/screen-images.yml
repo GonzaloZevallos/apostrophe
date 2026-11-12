@@ -1,0 +1,106 @@
+name: Screen images
+
+# Master's images, kept up to date (docs/product/screen-images.md, ADR-0079). `capture` reads the
+# repository and writes nothing to it; only `push` may write, and only through `screenImagesRun.mjs apply`
+# and `screen-images-publish.sh`. There is no `container:`: the script runs the pinned Playwright image
+# through the host's Docker.
+on:
+  push:
+    branches: [master]
+    paths-ignore:
+      - 'docs/assets/screens/**'
+
+concurrency:
+  group: screen-images
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.13"
+      - name: Tools the capture needs
+        run: |-
+          set -e
+          node --version
+          git --version
+          uv --version
+          docker version
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - run: uv venv --python 3.13
+      - run: uv sync --locked --extra dev
+      - run: npm --prefix web ci --no-fund --no-audit
+      - name: Capture the screen images
+        run: scripts/design/screen-images.sh --out "$RUNNER_TEMP/screen-images" --twice --mode master
+      - name: Summary
+        if: always()
+        run: |-
+          out="$RUNNER_TEMP/screen-images"
+          if [ -f "$out/summary.md" ]; then cat "$out/summary.md" >> "$GITHUB_STEP_SUMMARY"; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screen-images
+          retention-days: 7
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/screen-images/plan.json
+            ${{ runner.temp }}/screen-images/summary.md
+            ${{ runner.temp }}/screen-images/*.webp
+  push:
+    needs: capture
+    if: always() && needs.capture.result != 'cancelled'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - run: npm --prefix web ci --no-fund --no-audit
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: screen-images
+          path: ${{ runner.temp }}/screen-images
+      # Apply only a plan that started: a plan that never did has empty lists and nothing to apply.
+      - id: gate
+        run: |-
+          plan="$RUNNER_TEMP/screen-images/plan.json"
+          if [ ! -f "$plan" ]; then
+            echo "Screen images: no plan artifact, nothing applied." >> "$GITHUB_STEP_SUMMARY"
+          elif ! jq -e '.appStarted == true' "$plan" >/dev/null; then
+            echo "Screen images: the sample app did not start, nothing applied." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "apply=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.gate.outputs.apply == 'true'
+        run: node scripts/design/screenImagesRun.mjs apply --out "$RUNNER_TEMP/screen-images" --target docs/assets/screens
+      - if: steps.gate.outputs.apply == 'true'
+        run: scripts/design/screen-images-publish.sh --sha "${{ github.sha }}" --summary "$GITHUB_STEP_SUMMARY"
+      - name: Summary
+        run: |-
+          out="$RUNNER_TEMP/screen-images"
+          if [ -f "$out/summary.md" ]; then cat "$out/summary.md" >> "$GITHUB_STEP_SUMMARY"; fi
+      - name: Fail when the plan had failures
+        if: always()
+        run: |-
+          plan="$RUNNER_TEMP/screen-images/plan.json"
+          if [ -f "$plan" ] && jq -e '.failures | length > 0' "$plan" >/dev/null; then
+            echo "Screen images: the plan has failures." >&2
+            exit 1
+          fi

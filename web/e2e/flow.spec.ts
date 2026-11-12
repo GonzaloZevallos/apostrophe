@@ -13,14 +13,14 @@
  * browser console (CODING_STANDARDS.md section 9, in the browser too).
  */
 
-import { CUSTOMER, CUSTOMER_NEW, EXPENSES, EXPENSE_CATEGORIES, MORE, SETTINGS_BUSINESS, SETTINGS_USERS, STOCK, STOCK_ENTRY, STOCK_ENTRY_NEW, VARIETIES, VARIETY } from '../src/routes.js'
+import { ANALYSIS, CUSTOMER, CUSTOMER_NEW, EXPENSES, EXPENSE_CATEGORIES, SETTINGS_BUSINESS, SETTINGS_USERS, STOCK, STOCK_ENTRY, STOCK_ENTRY_NEW, VARIETIES, VARIETY } from '../src/routes.js'
 import { legacyFor } from './helpers/legacyPaths.js'
 import { expectAnyPath, expectPath } from './helpers/url.js'
 import { expectToast } from './helpers/toast.js'
 import { expect, test, withToastRecorder } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
-import { openGastos } from './helpers/openMas.js'
+import { openGastos } from './helpers/openScreens.js'
 import { uniqueTag } from './helpers/unique.js'
 
 const PASSWORD = 'correcthorsebattery'
@@ -147,7 +147,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText(/Flower purchases don't go here/)).toBeVisible()
 
   // The Spanish paths stay on purpose here: the server answers them with a 308 and the
-  // app shows the English screen (the one old Gastos path and one old Más path of
+  // app shows the English screen (the one old Gastos path and one old Análisis path of
   // the run; every other step reaches a screen through the nav or its real path).
   await page.goto(`${legacyFor(EXPENSES)}?month=2026-01`)
   await expectPath(page, EXPENSES, '?month=2026-01')
@@ -155,15 +155,15 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.reload()
   await expectPath(page, EXPENSES, '?month=2026-01')
   await expect(page.getByText(/Flower purchases don't go here/)).toBeVisible()
-  await page.goto(legacyFor(MORE))
-  await expectPath(page, MORE)
+  await page.goto(legacyFor(ANALYSIS))
+  await expectPath(page, ANALYSIS)
   await expect(
-    page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Expenses/ }),
+    page.getByText('There is nothing to analyze yet.'),
   ).toBeVisible()
   await page.reload()
-  await expectPath(page, MORE)
+  await expectPath(page, ANALYSIS)
   await expect(
-    page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Expenses/ }),
+    page.getByText('There is nothing to analyze yet.'),
   ).toBeVisible()
 
   // Add and remove an expense category. "Growing supplies", "Packaging",
@@ -184,8 +184,8 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.goto(SETTINGS_BUSINESS)
   const renamedTo = `${businessName} Renombrado`
   await page.getByLabel('Business name').fill(renamedTo)
-  await expectToast(page, 'Business renamed', () => page.getByRole('button', { name: 'Save the name' }).click())
-  await expect(page.getByText('Business renamed')).toBeVisible()
+  await expectToast(page, 'Saved', () => page.getByRole('button', { name: 'Save' }).click())
+  await expect(page.getByText('Saved', { exact: true })).toBeVisible()
 
   // Create a join link and accept it as a second user, from a separate browser
   // context (its own cookie jar — a second device).

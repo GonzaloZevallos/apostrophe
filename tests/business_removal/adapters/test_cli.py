@@ -829,6 +829,29 @@ def test_the_export_carries_the_stored_language_of_the_removed_business(
     assert remaining == [("Otro Negocio",)]
 
 
+def test_the_export_carries_the_phone_country_of_the_removed_business(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    db_path = tmp_path / "apostrophe.db"
+    export_dir = tmp_path / "exports"
+    clock = MovableClock(PINNED)
+    seed(db_path, clock)
+    set_env(monkeypatch, db_path, export_dir)
+    with sqlite3.connect(db_path) as connection:
+        connection.execute(
+            "UPDATE business SET default_phone_country = 'UY' WHERE name = 'La Huerta'"
+        )
+
+    result = main(
+        [EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO(), clock=clock
+    )
+
+    assert result == 0
+    (written,) = export_dir.glob("*.json")
+    document = json.loads(written.read_text())
+    assert document["business"]["default_phone_country"] == "UY"
+
+
 def test_an_invalid_forced_language_prints_one_refused_line_before_any_handler_is_installed(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -874,3 +897,45 @@ def test_a_line_that_cannot_be_rendered_ends_in_one_refused_line_through_main(
 
     assert result == 1
     assert stdout.getvalue() == "refused: RuntimeError\n"
+
+
+def test_a_customer_type_price_is_exported_with_its_references_and_emptied(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    db_path = tmp_path / "apostrophe.db"
+    clock = MovableClock(PINNED)
+    export_dir = tmp_path / "exports"
+    seed(db_path, clock)
+    with sqlite3.connect(db_path) as connection:
+        business_id, variety_id, entry_id = connection.execute(
+            "SELECT business.id, variety.id, price_entry.id FROM business "
+            "JOIN variety ON variety.business_id = business.id "
+            "JOIN price_entry ON price_entry.variety_id = variety.id "
+            "WHERE business.name = 'La Huerta'"
+        ).fetchone()
+        connection.execute(
+            "INSERT INTO customer_type (business_id, name, name_key, icon, is_vip) "
+            "VALUES (?, 'Mayorista', 'mayorista', 'star', 0)",
+            (business_id,),
+        )
+        type_id = connection.execute("SELECT id FROM customer_type").fetchone()[0]
+        connection.execute(
+            "INSERT INTO customer_type_price (business_id, variety_id, customer_type_id, "
+            "price, effective_on, price_entry_id) VALUES (?, ?, ?, 4000, '2026-10-01', ?)",
+            (business_id, variety_id, type_id, entry_id),
+        )
+        connection.commit()
+    set_env(monkeypatch, db_path, export_dir)
+
+    result = main(
+        [EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO(), clock=clock
+    )
+
+    assert result == 0
+    document = json.loads(next(export_dir.glob("*.json")).read_text())
+    [record] = document["kinds"]["customer_type_price"]
+    assert record["variety_id"] == {"id": variety_id, "name": "Lavanda"}
+    assert record["customer_type_id"] == {"id": type_id, "name": "Mayorista"}
+    assert record["price"] == 4000
+    assert record["effective_on"] == "2026-10-01"
+    assert row_counts(db_path, "customer_type_price", business_id) == 0

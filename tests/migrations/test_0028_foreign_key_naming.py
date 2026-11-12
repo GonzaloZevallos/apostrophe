@@ -77,6 +77,14 @@ def _seed(engine: Engine) -> None:
                 text("INSERT INTO business (id, name, language) VALUES (:b, :name, 'en')"),
                 {"b": business, "name": f"Negocio {business}"},
             )
+            # The repositories read amounts through the business's money format.
+            connection.execute(
+                text(
+                    "INSERT INTO money_format (business_id, symbol, decimals, scale) "
+                    "VALUES (:b, '$', 0, 0)"
+                ),
+                {"b": business},
+            )
             connection.execute(
                 text(
                     "INSERT INTO app_user (id, business_id, email, password_hash) "
