@@ -23,3 +23,4 @@ Parte 2 de GH-682. Decidido por el Tech Lead, con la regla del dueño del 2026-1
 - Un vendedor argentino con el teléfono en `en-US` ve Estados Unidos por defecto y lo cambia con un toque.
 - Agregar un país sigue siendo una fila de la tabla compartida y un alias de zona; no hay migración.
 - Los clientes de la API que mandaban un número local ahora mandan también `phone_country`: es un cambio incompatible, declarado en el cuerpo del PR.
+- La línea que lleva el cuerpo del PR para el chequeo de cambios incompatibles de la API (ADR-0066), tal cual: `Breaking-API: customer write takes phone_country; GET /business drops phone_country and phone_countries; PUT /business/phone-country removed`.
