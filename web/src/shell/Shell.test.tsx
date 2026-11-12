@@ -3,8 +3,8 @@
  * mounted as a stub that only says its title, so what the shell draws is the registry's answer
  * for that screen's kind and place, and nothing else (no pathname, no history decides it).
  *
- * The bar is Inicio, Ventas, Clientes, Variedades and Más; the rail is the first four, a
- * divider, Gastos and Análisis, and the business row, with no Más. "+ Nueva venta" is fixed,
+ * The bar is Inicio, Ventas, Clientes and Variedades; the rail is the first four, a
+ * divider, Gastos and Análisis, and the business row. "+ Nueva venta" is fixed,
  * apart from the tabs, and only a root shows it. A card shows the bar and a "‹ parent" arrow,
  * a form neither. jsdom lays nothing out, so each surface is checked through its markup and
  * `useViewport` is mocked per case for the viewport (its own test owns `matchMedia`).
@@ -21,6 +21,7 @@ import { SHOWN_EN } from '../test/shownLanguage'
 import { expectIconAndTextRule, iconAndTextProblems } from '../test/iconAndTextRule'
 import { inAppState } from '../components/inAppState'
 import InAppLink from '../components/InAppLink'
+import SettingsAvatar from '../components/SettingsAvatar'
 import {
   ANALYSIS,
   CATALOG,
@@ -29,7 +30,6 @@ import {
   EXPENSES,
   EXPENSE_NEW,
   HOME,
-  MORE,
   SALE,
   SALE_NEW,
   SALES,
@@ -42,14 +42,13 @@ import {
   pathTo,
   type Screen,
 } from '../routes'
-import Mas from '../screens/Mas'
 import { chooseTheme } from '../theme'
 import Shell from './Shell'
 import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
-const BAR = ['Home', 'Sales', 'Customers', 'Products', 'More']
+const BAR = ['Home', 'Sales', 'Customers', 'Products']
 const RAIL = ['Home', 'Sales', 'Customers', 'Products', 'Expenses', 'Analysis']
 
 const viewport = vi.hoisted(() => ({ current: 'phone' as 'phone' | 'computer' }))
@@ -73,23 +72,27 @@ function Landed() {
   return <div>{`en ${location.pathname} inApp=${String(inApp)}`}</div>
 }
 
-/** A stand-in for Inicio's teaser: an in-app link into a customer's card. */
+/** A stand-in for Inicio: the real Settings avatar of its header and a teaser, an in-app link into a customer's card. */
 function Teaser() {
-  return <InAppLink to={pathTo(CUSTOMER, { id: 3 })}>Collect from Ana</InAppLink>
+  return (
+    <>
+      <SettingsAvatar />
+      <InAppLink to={pathTo(CUSTOMER, { id: 3 })}>Collect from Ana</InAppLink>
+    </>
+  )
 }
 
-/** Every registered screen as a leaf; Inicio holds the teaser, Más its real list. */
+/** Every registered screen as a leaf; Inicio holds the teaser. */
 function leaf(entry: Screen): RouteObject {
   const element =
     entry.id === 'home' ? (
       <Teaser />
-    ) : entry.id === 'more' ? (
-      <Mas />
     ) : (
       <Landed />
     )
   return { path: entry.path, element, handle: { screen: entry.id } }
 }
+
 
 /** What the stubbed `GET /first-run` answers; a failed read when it is `undefined`. */
 function stubFirstRun(answer: FirstRunAnswer | 'pending' | undefined): void {
@@ -143,7 +146,7 @@ function current(nav: HTMLElement): string[] {
   return [...nav.querySelectorAll('[aria-current="page"]')].map((link) => link.textContent ?? '')
 }
 
-test('the bar is Inicio, Ventas, Clientes, Variedades and Más, with no Stock', () => {
+test('the bar is Inicio, Ventas, Clientes and Variedades, with no Stock', () => {
   const { container } = renderShell([HOME])
 
   expect(container.querySelectorAll('nav')).toHaveLength(2)
@@ -179,7 +182,6 @@ test('the rail is "New sale", four tabs, a divider, Gastos and Análisis, then t
     'LHLa Huerta',
   ])
   expect(tabNames(rail(container))).toEqual(RAIL)
-  expect(within(rail(container)).queryByRole('link', { name: 'More' })).not.toBeInTheDocument()
 })
 
 test('"New sale" is fixed, apart from the tabs, and goes straight to the sale form', () => {
@@ -205,7 +207,8 @@ test.each([
 
 test.each([
   ['a root', HOME, true, true, false],
-  ['a root that is Gastos', EXPENSES, true, true, false],
+  ['a root: Análisis', ANALYSIS, true, true, false],
+  ['a card on the phone: Gastos', EXPENSES, true, false, true],
   ['a card: a sale', pathTo(SALE, { id: 7 }), true, false, true],
   ['a card: a customer', pathTo(CUSTOMER, { id: 3 }), true, false, true],
   // A variety's back names the loaded record, so it shows no arrow until its screen declares one.
@@ -233,6 +236,7 @@ test.each([
   ['a card: a variety, the detail pane of Variedades', pathTo(VARIETY, { id: 2 }), false],
   ['a root: Clientes', CUSTOMERS, true],
   ['a root: Variedades', VARIETIES, true],
+  ['a root on a computer: Gastos', EXPENSES, true],
   ['a card: Configuración', SETTINGS, false],
   ['a form: the sale', SALE_NEW, false],
 ])('%s: the rail shows "New sale" %s, by the screen\'s kind alone', (_kind, path, inRail) => {
@@ -318,26 +322,17 @@ test.each([
 test.each([
   [EXPENSES, 'Expenses'],
   [ANALYSIS, 'Analysis'],
-])('on %s the phone marks Más and a computer marks its own entry, %s', (path, railEntry) => {
+])('on %s the phone marks Home and a computer marks its own entry, %s', (path, railEntry) => {
   const { container } = renderShell([path])
 
-  expect(current(bar(container))).toEqual(['More'])
+  expect(current(bar(container))).toEqual(['Home'])
   expect(current(rail(container))).toEqual([railEntry])
 })
 
-test('Más marks Más on the bar and nothing on the rail, which has no Más', () => {
-  const { container } = renderShell([MORE])
-
-  expect(current(bar(container))).toEqual(['More'])
-  expect(current(rail(container))).toEqual([])
-})
-
-test('Configuración marks Más on the phone and the business row on a computer', () => {
+test('Configuración marks no tab on the bar and the business row on a computer', () => {
   const { container } = renderShell([SETTINGS])
 
-  const more = within(bar(container)).getByRole('link', { name: 'More' })
-  expect(more).toHaveAttribute('aria-current', 'page')
-  expect(current(bar(container))).toEqual(['More'])
+  expect(current(bar(container))).toEqual([])
   const row = within(rail(container)).getByRole('link', { name: 'Settings for La Huerta' })
   expect(row).toHaveAttribute('aria-current', 'page')
   expect(row.className).toMatch(/--activo/)
@@ -390,15 +385,19 @@ test('the business row leads to Configuración, carrying inApp, one tap from Ini
   expect(screen.getByText(`en ${SETTINGS} inApp=true`)).toBeInTheDocument()
 })
 
-test('the phone reaches Configuración in two taps: the Más tab, then its Configuración entry', async () => {
-  const { container } = renderShell([HOME])
+test('the phone reaches Configuración in one tap: the Settings avatar in the header', async () => {
+  renderShell([HOME])
 
-  await userEvent.click(within(bar(container)).getByRole('link', { name: 'More' }))
-  await userEvent.click(
-    within(screen.getByRole('navigation', { name: 'More' })).getByRole('link', { name: /^Settings/ }),
-  )
+  await userEvent.click(screen.getByRole('link', { name: 'Settings' }))
 
   expect(screen.getByText(`en ${SETTINGS} inApp=true`)).toBeInTheDocument()
+})
+
+test('a computer draws no Settings avatar: its way to Configuración is the business row', () => {
+  const { container } = renderShell([HOME], { computer: true })
+
+  expect(screen.queryByRole('link', { name: 'Settings' })).not.toBeInTheDocument()
+  expect(within(rail(container)).getByRole('link', { name: 'Settings for La Huerta' })).toBeInTheDocument()
 })
 
 test('Inicio\'s teaser opens the card with inApp state; the card reads "‹ Customers" and Back lands on Inicio', async () => {
@@ -441,15 +440,22 @@ test('a sale reads "‹ Sales"; a variety, whose word is the record\'s, shows no
   expect(screen.queryByRole('button', { name: /^‹ / })).not.toBeInTheDocument()
 })
 
-test('Configuración\'s list opened directly reads "‹ More" on the phone and "‹ Home" on a computer', async () => {
+test('Configuración\'s list opened directly reads "‹ Home" on the phone and on a computer', () => {
   const phone = renderShell([SETTINGS])
-  expect(screen.getByRole('button', { name: '‹ More' })).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: '‹ Home' })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '‹ Home' })).toBeInTheDocument()
   phone.unmount()
 
   renderShell([SETTINGS], { computer: true })
   expect(screen.getByRole('button', { name: '‹ Home' })).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: '‹ More' })).not.toBeInTheDocument()
+})
+
+test('Gastos reads "‹ Analysis" on the phone and draws no back arrow on a computer', () => {
+  const phone = renderShell([EXPENSES])
+  expect(screen.getByRole('button', { name: '‹ Analysis' })).toBeInTheDocument()
+  phone.unmount()
+
+  renderShell([EXPENSES], { computer: true })
+  expect(screen.queryByRole('button', { name: /^‹ / })).not.toBeInTheDocument()
 })
 
 test('a root has no arrow', () => {
@@ -570,7 +576,8 @@ test('a form shows no "New sale", so it asks nothing of /first-run', async () =>
 // The fixed bar and the floating "+ New sale" (GH-319): the markup the phone CSS pins.
 test.each([
   ['a root', HOME, true],
-  ['a root that is Gastos', EXPENSES, true],
+  ['a root: Análisis', ANALYSIS, true],
+  ['a card on the phone: Gastos', EXPENSES, false],
   ['a card: a sale', pathTo(SALE, { id: 7 }), false],
   ['a form: the sale', SALE_NEW, false],
 ])('%s: "New sale" and its missing line float as one group only on a root (%s)', async (_kind, path, grouped) => {

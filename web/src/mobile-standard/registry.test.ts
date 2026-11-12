@@ -177,12 +177,14 @@ describe('parseRouteRegistry', () => {
           { path: HOME, kind: 'root' },
           { path: '/shop/{id}', kind: 'card', parent: '/shop', computer_parent: HOME, archived_parent: '/shop/old' },
           { path: '/shop/new', kind: 'form', parent: '/shop' },
+          { path: '/shop/all', kind: 'card', parent: '/shop', computer_kind: 'root' },
         ],
       }),
     ).toEqual([
-      { path: HOME, kind: 'root', parent: null, computerParent: null, archivedParent: null },
-      { path: '/shop/{id}', kind: 'card', parent: '/shop', computerParent: HOME, archivedParent: '/shop/old' },
-      { path: '/shop/new', kind: 'form', parent: '/shop', computerParent: null, archivedParent: null },
+      { path: HOME, kind: 'root', computerKind: null, parent: null, computerParent: null, archivedParent: null },
+      { path: '/shop/{id}', kind: 'card', computerKind: null, parent: '/shop', computerParent: HOME, archivedParent: '/shop/old' },
+      { path: '/shop/new', kind: 'form', computerKind: null, parent: '/shop', computerParent: null, archivedParent: null },
+      { path: '/shop/all', kind: 'card', computerKind: 'root', parent: '/shop', computerParent: null, archivedParent: null },
     ])
   })
 
@@ -191,6 +193,7 @@ describe('parseRouteRegistry', () => {
     ['a missing path', { registry: [{ kind: 'root' }] }, /path/],
     ['an empty path', { registry: [{ path: '', kind: 'root' }] }, /path/],
     ['an invalid kind', { registry: [{ path: '/x', kind: 'sheet' }] }, /kind/],
+    ['a computer kind that is not a kind', { registry: [{ path: '/x', kind: 'card', parent: '/y', computer_kind: 'sheet' }] }, /computer_kind is not root, card or form/],
     ['a parent that is not text', { registry: [{ path: '/x', kind: 'form', parent: 3 }] }, /parent/],
     ['a form without a parent', { registry: [{ path: '/x', kind: 'form' }] }, /parent/],
     ['a computer parent that is not text', { registry: [{ path: '/x', kind: 'root', computer_parent: 1 }] }, /computer_parent is not text/],

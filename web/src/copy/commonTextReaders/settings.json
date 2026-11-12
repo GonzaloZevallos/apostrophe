@@ -1,6 +1,5 @@
 [
   "web/src/copy/settings.ts",
-  "web/src/screens/Mas.tsx",
   "web/src/screens/settings/AccountGroup.test.tsx",
   "web/src/screens/settings/AccountGroup.tsx",
   "web/src/screens/settings/AppearanceGroup.tsx",

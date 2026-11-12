@@ -7,7 +7,7 @@ import {
   type ChromeExpectation,
   type ChromeFacts,
 } from './chrome.ts'
-import { HOME, MORE, pathTo, SALE, SALE_NEW, STOCK, VARIETY_ENTRIES } from '../routes.ts'
+import { ANALYSIS, HOME, pathTo, SALE, SALE_NEW, STOCK, VARIETY_ENTRIES } from '../routes.ts'
 import { ROUTE_REGISTRY, type RouteRegistryEntry } from './registry.ts'
 import type { CellId } from './targets.ts'
 
@@ -131,7 +131,7 @@ describe('judgeChrome: covered chrome', () => {
 })
 
 const rows = (...paths: [string, RouteRegistryEntry['kind']][]): RouteRegistryEntry[] =>
-  paths.map(([path, kind]) => ({ path, kind, parent: null, computerParent: null, archivedParent: null }))
+  paths.map(([path, kind]) => ({ path, kind, computerKind: null, parent: null, computerParent: null, archivedParent: null }))
 
 describe('kindAt', () => {
   test('resolves /sales/new to the form, not the /sales/{id} card, in either row order', () => {
@@ -163,7 +163,7 @@ describe('kindAt', () => {
   })
 
   test('the root path matches only the root row', () => {
-    expect(kindAt(HOME, rows([HOME, 'root'], [MORE, 'root']))).toBe('root')
+    expect(kindAt(HOME, rows([HOME, 'root'], [ANALYSIS, 'root']))).toBe('root')
   })
 
   test('over the real registry every row, parameters filled, gives its own kind and never throws', () => {

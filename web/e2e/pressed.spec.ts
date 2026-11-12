@@ -7,16 +7,17 @@
  * It is the backstop of `src/architecture/touch.test.ts`, which finds every tappable control
  * in the markup and reads the stylesheet. This one is the authority on what a person sees,
  * but it runs on an empty business, so it covers chrome and settings only: the bar, the
- * tabs, Más, Configuración's list, Tu cuenta, Apariencia, Inicio's first-run controls, the
+ * tabs, Análisis, Gastos, Configuración's list, Tu cuenta, Apariencia, Inicio's first-run controls, the
  * computer sidebar with its business row, and Entrar signed out. List rows (sales, expenses,
  * customers, varieties) are covered by the static scan and by eye.
  */
 
 import {
+  ANALYSIS,
   CUSTOMERS,
+  EXPENSES,
   HOME,
   LOGIN,
-  MORE,
   SALE_NEW,
   SALES,
   SETTINGS,
@@ -123,7 +124,7 @@ async function switchStates(page: Page): Promise<boolean[]> {
   )
 }
 
-const PHONE_ROUTES = [HOME, SALES, CUSTOMERS, VARIETIES, MORE, SETTINGS, SETTINGS_ACCOUNT, SETTINGS_APPEARANCE]
+const PHONE_ROUTES = [HOME, SALES, CUSTOMERS, VARIETIES, ANALYSIS, EXPENSES, SETTINGS, SETTINGS_ACCOUNT, SETTINGS_APPEARANCE]
 
 test.describe('on a phone', () => {
   test.use({ viewport: PHONE })

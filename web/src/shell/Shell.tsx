@@ -1,9 +1,9 @@
 /**
  * The bottom bar on the phone, the side rail on a computer (`componentes.ts`'s `Destino`);
  * CSS alone switches between them (`styles/app.css`). Only destinations that exist show.
- * The bar is Inicio, Ventas, Clientes, Variedades and Más; the rail is "+ Nueva venta", the
+ * The bar is Inicio, Ventas, Clientes and Variedades; the rail is "+ Nueva venta", the
  * same first four, a divider, Gastos and Análisis, and the business row (avatar and name) at
- * the bottom, which opens Configuración. There is no Más on a computer.
+ * the bottom, which opens Configuración (on the phone a header avatar opens it).
  *
  * Everything the shell decides comes from the leaf route's registry entry (`routes.ts`),
  * found through the route's `handle.screen`: `chromeOf` (`chrome.ts`) turns it into the
@@ -33,7 +33,6 @@ import {
   EXPENSES,
   HOME,
   isScreenId,
-  MORE,
   placeOf,
   SALE_NEW,
   SALES,
@@ -61,8 +60,8 @@ type CommonKey = Extract<CopyKey, `common:${string}`>
 
 type Placement = 'bar' | 'rail' | 'both'
 
-/** `main` entries sit above the rail's divider with their icon, `more` ones below it. */
-type Group = 'main' | 'more'
+/** `main` entries sit above the rail's divider with their icon, `secondary` ones below it. */
+type Group = 'main' | 'secondary'
 
 interface Item {
   to: string
@@ -94,9 +93,8 @@ const NAV_ITEMS: Item[] = [
     group: 'main',
     place: 'varieties',
   },
-  { to: EXPENSES, labelKey: 'common:expenses', icono: 'gastos', placement: 'rail', group: 'more', place: 'expenses' },
-  { to: ANALYSIS, labelKey: 'common:analysis', icono: 'analisis', placement: 'rail', group: 'more', place: 'analysis' },
-  { to: MORE, labelKey: 'common:more', icono: 'mas', placement: 'bar', group: 'more', place: 'more' },
+  { to: EXPENSES, labelKey: 'common:expenses', icono: 'gastos', placement: 'rail', group: 'secondary', place: 'expenses' },
+  { to: ANALYSIS, labelKey: 'common:analysis', icono: 'analisis', placement: 'rail', group: 'secondary', place: 'analysis' },
 ]
 
 const BAR_ITEMS = NAV_ITEMS.filter((item) => item.placement !== 'rail')
@@ -115,7 +113,7 @@ function leafScreen(matches: readonly { handle: unknown }[]): Screen {
 
 function railClassName(item: Item, active: boolean): string {
   const base =
-    item.group === 'more'
+    item.group === 'secondary'
       ? 'riel-lateral__item riel-lateral__item--secundario'
       : 'riel-lateral__item'
   return active ? `${base} riel-lateral__item--activo` : base

@@ -8,7 +8,7 @@ import { act, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { sheetDepth } from '../components/useSheetStack'
-import { EXPENSES, MORE } from '../routes'
+import { ANALYSIS, EXPENSES } from '../routes'
 import { flipViewport, stubViewport } from '../test-viewport'
 import { type FetchImpl, jsonResponse, renderExpenses } from './expenses/renderExpenses'
 
@@ -195,15 +195,15 @@ test('resize: phone to computer with the leave dialog up resets it and keeps the
 
 test('resize: after turning computer, a tab-bar navigation with a dirty edit asks nothing', async () => {
   stubViewport('phone')
-  const router = renderExpenses([MORE, SEPTEMBER], fetchFake())
+  const router = renderExpenses([ANALYSIS, SEPTEMBER], fetchFake())
   await openEdit()
   await makeDirty()
   flipViewport('computer')
   await waitFor(() => expect(sheetDepth(router.state.location.state)).toBe(0))
 
-  await act(() => router.navigate(MORE))
+  await act(() => router.navigate(ANALYSIS))
 
-  expect(router.state.location.pathname).toBe(MORE)
+  expect(router.state.location.pathname).toBe(ANALYSIS)
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
 })
 

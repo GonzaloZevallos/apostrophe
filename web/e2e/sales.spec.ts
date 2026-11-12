@@ -11,7 +11,7 @@
  * the design's own 900px breakpoint.
  *
  * One business proves the PRD's own metrics in sequence:
- * - The shell: the bar shows exactly Inicio, Ventas, Clientes, Variedades and Más.
+ * - The shell: the bar shows exactly Inicio, Ventas, Clientes and Variedades.
  * - "Caught before save" (3): Debiendo disabled with no customer, and a line whose
  *   variety has no price that day, both shown before any save is attempted.
  * - "Under a minute" (1): each of the three sales below — a new customer, an
@@ -149,7 +149,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   await page.goto(SALES)
 
-  // Shell metric: the bar shows exactly Inicio, Ventas, Clientes, Variedades and Más, in that
+  // Shell metric: the bar shows exactly Inicio, Ventas, Clientes and Variedades, in that
   // order — the mobile bottom bar at this viewport (`Shell.tsx`'s `.bar-inferior`;
   // the side rail, `.riel-lateral`, shares the same `aria-label` but is hidden here).
   const tabBar = page.getByRole('navigation', { name: 'Navigation' }).last()
@@ -158,7 +158,6 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
     'Sales',
     'Customers',
     'Products',
-    'More',
   ])
 
   // --- Sale A: caught-before-save, a new customer, two varieties, one shipping. ---
