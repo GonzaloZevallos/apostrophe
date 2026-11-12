@@ -43,8 +43,8 @@ export function usePaymentMethodOptions(): PaymentMethodOptions {
   // the failure is kept until the list arrives or fails again, so the open field never flips to
   // `loading` (which closes it) and the person keeps reading why it is empty.
   const [lastFailure, setLastFailure] = useState<'offline' | 'server' | null>(null)
-  const observed =
-    query.data !== undefined ? null : query.isError ? (query.error instanceof NetworkError ? 'offline' : 'server') : undefined
+  const errorKind = query.error instanceof NetworkError ? 'offline' : 'server'
+  const observed = query.data !== undefined ? null : query.isError ? errorKind : undefined
   if (observed !== undefined && observed !== lastFailure) setLastFailure(observed)
   const failure = observed === undefined ? lastFailure : observed
   const failed = failure !== null
