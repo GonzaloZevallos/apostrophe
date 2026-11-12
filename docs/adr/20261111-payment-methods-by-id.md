@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-11-10
+summary: "los medios de pago se identifican por id y la columna `payment.method` queda congelada"
 ---
 
 # Los medios de pago se identifican por id y la columna `payment.method` queda congelada
