@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-11-02
+summary: "el tipo VIP es la única fila is_vip de un Business y nunca se identifica por nombre"
 ---
 
 # The VIP type is the single is_vip row of a business, set only by the migration and the import, and never identified by name

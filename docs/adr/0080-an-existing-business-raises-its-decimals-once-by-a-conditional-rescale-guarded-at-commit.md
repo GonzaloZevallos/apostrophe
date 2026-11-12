@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-11-10
+summary: "un Business existente sube sus decimales una sola vez: la escala pasa de 0 a 2 por un UPDATE condicional y el commit rechaza la escritura que leyó la escala vieja"
 ---
 
 # An existing business raises its decimals once, by a conditional rescale guarded at commit

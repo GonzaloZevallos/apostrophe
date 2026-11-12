@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-11-01
+summary: "la palabra en pantalla es siempre Product y no existe ningún ajuste de palabra"
 ---
 
 # The screen word is always Product, and no product-word setting exists

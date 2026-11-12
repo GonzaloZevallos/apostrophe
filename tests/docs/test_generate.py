@@ -48,7 +48,7 @@ from scripts.docs.validate import (
     node_validator,
     parse_node_output,
 )
-from scripts.docs.writer import write_tree
+from scripts.docs.writer import is_owned, write_tree
 
 
 def _fenced(*lines: str) -> str:
@@ -322,6 +322,7 @@ def test_export_openapi_is_stable_and_equals_the_app_document() -> None:
 
 GEN = PurePosixPath("docs/architecture/generated")
 API = PurePosixPath("docs/api")
+PAGE = PurePosixPath("docs/architecture/decisiones.md")
 
 
 def test_write_tree_refuses_a_key_outside_the_roots_and_writes_nothing(tmp_path: Path) -> None:
@@ -375,6 +376,49 @@ def test_write_tree_replaces_a_changed_file_byte_for_byte(tmp_path: Path) -> Non
     write_tree(tmp_path, {GEN / "a.md": "one\n"})
     write_tree(tmp_path, {GEN / "a.md": "two\n"})
     assert (tmp_path / GEN / "a.md").read_bytes() == b"two\n"
+
+
+def test_write_tree_writes_the_page_and_refuses_its_neighbours(tmp_path: Path) -> None:
+    write_tree(tmp_path, {PAGE: "# Decisiones\n"})
+    assert (tmp_path / PAGE).read_bytes() == b"# Decisiones\n"
+    with pytest.raises(ValueError, match=r"decisiones\.md\.bak"):
+        write_tree(tmp_path, {PAGE.with_name("decisiones.md.bak"): "x"})
+    assert not (tmp_path / "docs" / "architecture" / "decisiones.md.bak").exists()
+
+
+def test_the_page_survives_a_run_that_does_not_produce_it(tmp_path: Path) -> None:
+    (tmp_path / PAGE).parent.mkdir(parents=True)
+    (tmp_path / PAGE).write_text("# Decisiones\n\nmine\n")
+    write_tree(tmp_path, {API / "openapi.json": "{}\n"})
+    assert (tmp_path / PAGE).read_text() == "# Decisiones\n\nmine\n"
+
+
+def test_a_headered_file_at_the_page_path_is_removed_when_not_produced(tmp_path: Path) -> None:
+    (tmp_path / PAGE).parent.mkdir(parents=True)
+    (tmp_path / PAGE).write_text(f"{HEADER}\n")
+    write_tree(tmp_path, {API / "openapi.json": "{}\n"})
+    assert not (tmp_path / PAGE).exists()
+
+
+@pytest.mark.parametrize(
+    ("path", "owned"),
+    [
+        ("docs/api/index.html", True),
+        ("docs/architecture/generated/classes/a.md", True),
+        ("docs/architecture/decisiones.md", True),
+        ("docs/api", False),
+        ("docs/architecture/generated", False),
+        ("docs/architecture/decisiones.md.bak", False),
+        ("docs/architecture/decisiones.md/x.md", False),
+        ("docs/architecture/other.md", False),
+        ("docs/api/../x.md", False),
+        ("/docs/api/a.md", False),
+    ],
+)
+def test_is_owned_reads_a_glob_as_strictly_under_and_a_bare_entry_as_that_file(
+    path: str, owned: bool
+) -> None:
+    assert is_owned(PurePosixPath(path)) is owned
 
 
 # --- the pipeline: produce, validate on a staged copy, write ---------------------------
@@ -456,6 +500,7 @@ def test_produce_lays_out_hexagons_packages_and_layers(tmp_path: Path) -> None:
         "docs/api/README.md",
         "docs/api/index.html",
         "docs/api/openapi.json",
+        "docs/architecture/decisiones.md",
         "docs/architecture/generated/README.md",
         "docs/architecture/generated/app-root.md",
         "docs/architecture/generated/classes/alpha.md",
@@ -534,6 +579,40 @@ def test_run_writes_the_tree_when_everything_passes(tmp_path: Path) -> None:
     assert lines == []
     assert (repo / GEN / "classes" / "alpha.md").is_file()
     assert (repo / API / "openapi.json").read_text() == "{}\n"
+
+
+def test_run_writes_the_page_from_the_adrs_of_the_repo(tmp_path: Path) -> None:
+    repo = _fake_repo(tmp_path)
+    (repo / "docs" / "adr").mkdir(parents=True)
+    (repo / "docs" / "adr" / "0001-a.md").write_text(
+        '---\nstatus: accepted\ndate: 2026-10-02\nsummary: "uno"\n---\n', encoding="utf-8"
+    )
+    code = run(repo, run_tool=FakeTools(), validate=_accepting, openapi=_openapi)
+    assert code == 0
+    page = (repo / PAGE).read_text(encoding="utf-8")
+    assert page.endswith("| [0001](../adr/0001-a.md) | uno |  |\n")
+    assert HEADER not in page
+
+
+def test_an_adr_without_a_summary_makes_run_exit_1_naming_the_file_and_write_nothing(
+    tmp_path: Path,
+) -> None:
+    repo = _fake_repo(tmp_path)
+    (repo / "docs" / "adr").mkdir(parents=True)
+    (repo / "docs" / "adr" / "0001-a.md").write_text(
+        "---\nstatus: accepted\ndate: 2026-10-02\n---\n", encoding="utf-8"
+    )
+    (repo / PAGE).parent.mkdir(parents=True)
+    (repo / PAGE).write_text("# Decisiones\n\nold\n")
+    before = _snapshot(repo / "docs")
+    lines: list[str] = []
+    code = run(
+        repo, run_tool=FakeTools(), validate=_accepting, openapi=_openapi, report=lines.append
+    )
+    assert code == 1
+    assert lines == ["docs/adr/0001-a.md: summary is missing or empty"]
+    assert _snapshot(repo / "docs") == before
+    assert not (repo / GEN).exists()
 
 
 def test_run_twice_gives_the_same_bytes(tmp_path: Path) -> None:

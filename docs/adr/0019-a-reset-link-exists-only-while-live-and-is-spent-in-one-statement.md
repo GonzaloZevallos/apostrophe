@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-04
+summary: "un enlace de restablecimiento existe solo mientras puede servir y se gasta en una sentencia"
 ---
 
 # A reset link is a row only while it could still work, spent in one guarded statement; the brake has one sequence; removal withholds owned tables

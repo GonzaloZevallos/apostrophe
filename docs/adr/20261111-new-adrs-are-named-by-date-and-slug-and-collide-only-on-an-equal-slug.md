@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-11-11
+summary: "los ADR nuevos se nombran por fecha y slug, y solo chocan si el slug que sigue a la fecha es igual"
 ---
 
 # Los ADR nuevos se nombran por fecha y slug, y solo chocan si el slug es igual

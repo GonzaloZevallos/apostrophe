@@ -152,7 +152,7 @@ forbidden:
 # one writer; this extends the shared-state inventory above.
 docs:
   generate: uv run --no-project python -m scripts.docs.generate
-  paths: ["docs/architecture/generated/**", "docs/api/**"]
+  paths: ["docs/architecture/generated/**", "docs/api/**", "docs/architecture/decisiones.md"]
 # `ci`: the check-run name of ci.yml that gates a merge (agentic-system ADR-0045, GH-216
 # amendment): with it, `agentic merge` decides from GitHub's CI on the reviewed head instead of
 # rerunning every check locally. Only `ci-ok` is named: it `needs` every other job (changes,

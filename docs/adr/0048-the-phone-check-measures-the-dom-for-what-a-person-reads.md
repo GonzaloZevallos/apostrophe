@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-17
+summary: "la prueba de teléfono mide el DOM por lo que una persona lee"
 ---
 
 # The phone check measures the DOM for what a person reads; the README table stays the token guard

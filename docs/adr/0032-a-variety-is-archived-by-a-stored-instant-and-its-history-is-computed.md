@@ -1,3 +1,9 @@
+---
+status: accepted
+date: 2026-10-06
+summary: "una variedad se archiva con un instante guardado y su historia se calcula"
+---
+
 # 0032. A variety is archived by a stored instant, and its history is computed
 
 Status: accepted (GH-117)

@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-17
+summary: "el canal del cliente se elimina para siempre"
 ---
 
 # The customer's channel is dropped for good

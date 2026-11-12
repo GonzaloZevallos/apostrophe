@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-02
+summary: "cada línea de venta guarda el precio al que se vendió"
 ---
 
 # A sale line records the price it was sold at; a mistaken price entry is deleted

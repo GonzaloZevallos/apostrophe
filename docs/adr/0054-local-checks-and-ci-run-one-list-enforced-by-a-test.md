@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-26
+summary: "los chequeos locales y la integración continua corren una sola lista verificada por una prueba"
 ---
 
 # Local checks and CI run one list, enforced by a test

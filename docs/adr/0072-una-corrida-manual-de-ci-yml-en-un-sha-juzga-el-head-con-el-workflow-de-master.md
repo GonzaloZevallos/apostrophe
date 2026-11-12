@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-11-04
+summary: "una corrida manual de `ci.yml` en un sha juzga el head con el workflow de master"
 ---
 
 # Una corrida manual de `ci.yml` en un sha juzga el head con el workflow de master

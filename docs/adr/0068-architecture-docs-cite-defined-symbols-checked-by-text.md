@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-28
+summary: "las páginas de arquitectura citan símbolos definidos y una prueba de texto lo comprueba"
 ---
 
 # Architecture docs cite defined symbols, and a text test checks them
