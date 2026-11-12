@@ -82,4 +82,4 @@ Un ADR da el motivo de una decisión; lo que el sistema hace hoy se afirma en la
 | [0075](../adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md) | la palabra en pantalla es siempre Product y no existe ningún ajuste de palabra |  |
 | [0076](../adr/0076-a-design-capture-side-that-misses-for-load-is-recaptured-whole-from-a-fresh-context-unless-it-wrote.md) | un lado de la captura de diseño que falla por carga se vuelve a capturar entero desde un contexto nuevo, salvo que haya escrito |  |
 | [0077](../adr/0077-the-login-guard-tables-have-a-surrogate-id-and-stay-keyed-by-a-unique-column.md) | las tablas del freno de ingreso tienen un id sustituto y siguen claveadas por una columna única |  |
-| [0078](../adr/0078-more-is-retired-and-expenses-is-a-card-on-the-phone-and-a-root-on-the-computer.md) | More se retira, y Expenses es una tarjeta en el celular y un Tab root en la computadora |  |
+| [0085](../adr/0085-more-is-retired-and-expenses-is-a-card-on-the-phone-and-a-root-on-the-computer.md) | More se retira, y Expenses es una tarjeta en el celular y un Tab root en la computadora |  |
