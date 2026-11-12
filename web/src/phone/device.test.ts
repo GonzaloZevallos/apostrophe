@@ -1,3 +1,10 @@
+/**
+ * The device readers are the one place the browser is asked where the app is used
+ * (invariant 4), and they reach `navigator` and `Temporal`, which `detectCountry` never sees:
+ * its seam takes the languages and the zone as arguments. A test of `detectCountry`,
+ * `shownCountry`, the reducer or `toRequestCountry` cannot show that these two reads answer
+ * the empty value when the browser has nothing, so they are tested here, beside the file.
+ */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 type Device = typeof import('./device.ts')
