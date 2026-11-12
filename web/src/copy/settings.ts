@@ -208,10 +208,6 @@ const PHONE_COUNTRY_NAMES: ReadonlyMap<string, string> = new Map([
   ['US', SETTINGS_TEXT.phoneCountryUS],
 ])
 
-/** The ISO codes the front names, in the order Settings lists them (the server's `PhoneCountry`
- * enum; `tests/test_phone_country_front_names.py` keeps the two equal). */
-export const PHONE_COUNTRY_CODES: readonly string[] = [...PHONE_COUNTRY_NAMES.keys()]
-
 export function phoneCountryName(code: string): string {
   return PHONE_COUNTRY_NAMES.get(code) ?? code
 }

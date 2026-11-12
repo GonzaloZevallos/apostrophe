@@ -22,9 +22,10 @@ import { COMMON_TEXT } from '../copy/common'
 import { CUSTOMER_TYPE_ICON_NAME } from '../copy/readers/customerTypeIcons'
 import { HOME_VIEW_NAME } from '../copy/readers/homeViews'
 import { PAYMENT_STATE_NAME } from '../copy/readers/paymentStates'
+import { PHONE_COUNTRY_CODES } from '../copy/readers/phoneCountryCodes'
 import { SHIPPED_LANGUAGE_TAGS } from '../copy/readers/shippedLanguages'
 import { SALES_TEXT } from '../copy/sales'
-import { languageName, PHONE_COUNTRY_CODES, phoneCountryName, SETTINGS_TEXT } from '../copy/settings'
+import { languageName, phoneCountryName, SETTINGS_TEXT } from '../copy/settings'
 import type { NombreIcono } from './Icono'
 
 export interface FixedOption<T extends string> {
