@@ -39,7 +39,7 @@ test('a seller adds, edits, deletes, archives and restores payment methods in Se
   await page.getByLabel(/^List price/).fill('1000')
   await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Phone').fill('+5491155550077')
+  await page.getByLabel('Phone', { exact: true }).fill('+5491155550077')
   await page.getByLabel('Name').fill('Carla Métodos')
   await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expectPath(page, CUSTOMER)
