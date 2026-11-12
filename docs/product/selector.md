@@ -155,6 +155,10 @@ Cada pantalla pasada al Selector lo muestra cerrado en su propio dibujo de `pant
 
 Las listas abiertas las juzga el chequeo `mobile`. El dibujo del paso de cobro del teléfono (`NuevaVentaCobrar`, `NuevaVentaCobrarOscuro`) no se actualizó y todavía muestra el viejo select "Cómo paga". Ante esa diferencia ganan esta definición y sales.md (Drawing as guide).
 
+![Alta de un Customer en el teléfono, con el Selector "Phone country"](../assets/screens/ClienteNuevo.webp)
+
+![Edición de un Customer en el teléfono, con el Selector "Phone country" bloqueado](../assets/screens/ClienteEditar.webp)
+
 ## Métricas
 
 Cada criterio de éxito se mide con una prueba de vitest y Testing Library, a través de lo que ve el usuario; están todos en verde en el Gate:
