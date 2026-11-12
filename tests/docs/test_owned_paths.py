@@ -30,6 +30,19 @@ def _linguist_generated(attributes: str) -> list[str]:
     return found
 
 
+def _merge_values(attributes: str) -> dict[str, list[str]]:
+    """Each path of `.gitattributes` mapped to every `merge=` value on its line."""
+    found: dict[str, list[str]] = {}
+    for line in attributes.splitlines():
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        path, *tokens = line.split()
+        values = [token.removeprefix("merge=") for token in tokens if token.startswith("merge=")]
+        if values:
+            found.setdefault(path, []).extend(values)
+    return found
+
+
 def test_docs_paths_lists_the_page_next_to_the_two_directories() -> None:
     assert owned_paths(REPO_ROOT) == [
         "docs/architecture/generated/**",
@@ -52,6 +65,42 @@ def test_a_gitattributes_line_missing_a_path_is_seen_as_a_difference() -> None:
     attributes = "*.mo binary\ndocs/api/** linguist-generated=true\n"
 
     assert sorted(_linguist_generated(attributes)) != sorted(owned_paths(REPO_ROOT))
+
+
+def test_gitattributes_gives_every_docs_path_exactly_the_regen_driver() -> None:
+    attributes = (REPO_ROOT / ".gitattributes").read_text(encoding="utf-8")
+    merges = _merge_values(attributes)
+
+    assert {path: merges.get(path) for path in owned_paths(REPO_ROOT)} == {
+        path: ["regen"] for path in owned_paths(REPO_ROOT)
+    }
+    assert sorted(path for path, values in merges.items() if "regen" in values) == sorted(
+        owned_paths(REPO_ROOT)
+    )
+
+
+def test_a_gitattributes_line_without_the_regen_driver_is_seen_as_a_difference() -> None:
+    attributes = "docs/api/** linguist-generated=true merge=regen\n"
+
+    merges = _merge_values(attributes)
+
+    assert sorted(path for path, values in merges.items() if "regen" in values) != sorted(
+        owned_paths(REPO_ROOT)
+    )
+
+
+def test_a_line_with_two_merge_tokens_is_not_exactly_regen() -> None:
+    merges = _merge_values("docs/api/** merge=union merge=regen\n")
+
+    assert merges == {"docs/api/**": ["union", "regen"]}
+    assert merges["docs/api/**"] != ["regen"]
+
+
+def test_a_line_with_only_the_union_driver_is_not_regen() -> None:
+    merges = _merge_values("docs/architecture/decisiones.md linguist-generated=true merge=union\n")
+
+    assert merges["docs/architecture/decisiones.md"] != ["regen"]
+    assert "regen" not in merges["docs/architecture/decisiones.md"]
 
 
 def test_the_command_prints_one_path_per_line() -> None:
