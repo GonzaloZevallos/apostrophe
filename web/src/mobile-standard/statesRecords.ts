@@ -13,7 +13,6 @@ import {
   EXPENSE_CATEGORIES,
   EXPENSE_NEW,
   EXPENSES,
-  MORE,
   pathTo,
   SETTINGS_ACCOUNT,
   SETTINGS_PAYMENT_METHODS,
@@ -31,6 +30,7 @@ import {
   WITHDRAWAL_NEW,
 } from '../routes.ts'
 import { AUTH_TEXT } from '../copy/auth.ts'
+import { DETECTED_COUNTRY_BUTTON } from './countryField.ts'
 import { REFUSAL_KEY } from '../i18n/refusalTable.ts'
 import { common, emptyState, refusal } from './copy.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
@@ -218,6 +218,28 @@ export const RECORDS_STATES: readonly WalkState[] = [
     reads: [{ path: /^\/api\/customer-types$/, status: 200, body: TWELVE_TYPES }],
   },
   {
+    // The Phone country list open in New customer: the eight served countries and Other, with search.
+    screen: 'customer/country-selector-open',
+    route: CUSTOMER_NEW,
+    steps: [{ press: DETECTED_COUNTRY_BUTTON }],
+    visible: CUSTOMERS_TEXT.phoneCountryOther,
+  },
+  {
+    // The Phone country Selector while GET /phone-countries is held: busy, with Save off (the walk's held pass).
+    screen: 'customer/country-selector-loading',
+    route: CUSTOMER_NEW,
+    steps: [],
+    visible: CUSTOMERS_TEXT.phoneCountryLabel,
+    holds: /\/phone-countries$/,
+  },
+  {
+    // A typed "+" locks the Selector on its country and shows the reason in words.
+    screen: 'customer/country-selector-locked',
+    route: CUSTOMER_NEW,
+    steps: [{ fill: { label: CUSTOMERS_TEXT.phone, value: '+598 99 123 456' } }],
+    visible: CUSTOMERS_TEXT.phoneCountryLockedReason,
+  },
+  {
     // A customer in a type, answered by a stub, so the detail page's type line is walked.
     screen: 'ClienteFichaConTipo',
     route: CUSTOMER.replace(':id', '{debtor}'),
@@ -283,12 +305,6 @@ export const RECORDS_STATES: readonly WalkState[] = [
     visible: VARIETIES_TEXT.guardaElCatalogo,
   },
 
-  {
-    screen: 'GastoDesdeMas',
-    route: MORE,
-    steps: [{ click: common('common:addExpense') }],
-    visible: 'Save the expense',
-  },
   {
     screen: 'GastoDesdeGastos',
     route: EXPENSES,

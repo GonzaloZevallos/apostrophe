@@ -16,10 +16,12 @@ subgraph src["src"]
   src_customerTypes["customerTypes"]
   src_domain["domain"]
   src_flash["flash"]
+  src_fontsReady_ts["fontsReady.ts"]
   src_format["format"]
   src_i18n["i18n"]
   src_main_tsx["main.tsx"]
   src_paymentReturn_ts["paymentReturn.ts"]
+  src_phone["phone"]
   src_queryClient_ts["queryClient.ts"]
   src_router_tsx["router.tsx"]
   src_routes_ts["routes.ts"]
@@ -63,6 +65,7 @@ src_format-->src_copy
 src_i18n-->src_api
 src_i18n-->src_copy
 src_main_tsx-->src_App_tsx
+src_main_tsx-->src_fontsReady_ts
 src_main_tsx-->src_i18n
 src_main_tsx-->src_shell
 src_main_tsx-->src_styles
@@ -88,6 +91,7 @@ src_screens-->src_flash
 src_screens-->src_format
 src_screens-->src_i18n
 src_screens-->src_paymentReturn_ts
+src_screens-->src_phone
 src_screens-->src_routes_ts
 src_screens-->src_sales
 src_screens-->src_session_ts

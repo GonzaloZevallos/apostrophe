@@ -2,6 +2,7 @@
 
 import { CUSTOMER, CUSTOMERS, HOME, SALE, SALE_NEW, SALES } from '../routes.ts'
 import { common, emptyState } from './copy.ts'
+import { DETECTED_COUNTRY_BUTTON } from './countryField.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { SALES_TEXT } from '../copy/sales.ts'
 import type { WalkState } from './states.ts'
@@ -99,6 +100,17 @@ export const SALES_STATES: readonly WalkState[] = [
     route: SALE_NEW,
     steps: [{ click: SALES_TEXT.pickCustomer }, { click: common('common:newCustomer') }],
     visible: SALES_TEXT.createCustomer,
+  },
+  {
+    // The Phone country list open inside Pick a customer's new-customer sheet.
+    screen: 'sale/customer-country-selector-open',
+    route: SALE_NEW,
+    steps: [
+      { click: SALES_TEXT.pickCustomer },
+      { click: common('common:newCustomer') },
+      { press: DETECTED_COUNTRY_BUTTON },
+    ],
+    visible: CUSTOMERS_TEXT.phoneCountryOther,
   },
   {
     screen: 'DescartarVenta',

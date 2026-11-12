@@ -19,10 +19,8 @@ from sqlalchemy.orm import Session
 from app.accounts.adapters.deps import require_session
 from app.accounts.adapters.language_router import router as language_router
 from app.accounts.adapters.onboarding_facts import SqlUserFacts
-from app.accounts.adapters.phone_country_router import router as phone_country_router
 from app.accounts.adapters.router import public_router as accounts_public_router
 from app.accounts.adapters.router import router as accounts_router
-from app.accounts.adapters.sql_phone_country import SqlPhoneCountry
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.session_token import SessionSigner
 from app.catalog.adapters.babel_defaults import BabelHeaderFooterDefaults
@@ -308,7 +306,6 @@ def create_app(
     # (docs/adr/0006, docs/adr/0034).
     app.state.varieties_pricing_settings = SqlPricingSettings
     app.state.customers_pricing_settings = SqlPricingSettings
-    app.state.customers_phone_country = SqlPhoneCountry
     app.state.owing_sales = SqlOwingSales
     # How money is shown, read through each hexagon's own `MoneyFormatReader` port (docs/adr/0055).
     app.state.accounts_money_format = SqlMoneyFormat
@@ -372,7 +369,6 @@ def create_app(
     # then `en -> en` would still sync. Only a changed language can owe the pin an edit, so
     # the router schedules upkeep itself when it did (ADR-0014, as pricing settings does).
     app.include_router(language_router, dependencies=gated)
-    app.include_router(phone_country_router, dependencies=gated)
     app.include_router(products_router, dependencies=money_upkeep_gated)
     app.include_router(customers_router, dependencies=money_gated)
     app.include_router(phone_countries_router, dependencies=gated)

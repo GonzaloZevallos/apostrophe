@@ -229,6 +229,9 @@ function NuevaVentaForm() {
   // reported as covered (mobile check) and unreachable. Every Selector in the form shares `listHost`.
   const [listHost, setListHost] = useState<HTMLElement | null>(null)
   const pickerListOpen = useViewport() !== 'computer' && customerSheet.isOpen && !customerAsked
+  // The Phone country list of "Pick a customer"'s new customer is a third sheet, over the sale.
+  const countryListSheet = useSheet(3)
+  const countryListOpen = useViewport() !== 'computer' && countryListSheet.isOpen
   function askCustomer(): void {
     setCustomerAsked(true)
     customerSheet.open()
@@ -649,7 +652,7 @@ function NuevaVentaForm() {
 
   return (
     <ContentArea as="main" className="pantalla">
-      <form ref={formRef} className="nueva-venta" inert={pickerListOpen} onSubmit={onSubmit}>
+      <form ref={formRef} className="nueva-venta" inert={pickerListOpen || countryListOpen} onSubmit={onSubmit}>
         <div className="nueva-venta__disposicion">
         <div className="nueva-venta__cuerpo" aria-busy={repricing || opening || undefined}>
           <div className="encabezado-fila nueva-venta__cabecera">

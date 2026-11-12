@@ -128,7 +128,8 @@ def _seed_customer_owing(client: TestClient) -> int:
         json={"effective_from": "2026-01-01", "list_price": 1_000},
     )
     customer = client.post(
-        "/customers", json={"name": "Guard customer", "phone": "11 2222-3333"}
+        "/customers",
+        json={"name": "Guard customer", "phone": "11 2222-3333", "phone_country": "AR"},
     ).json()
     customer_id: int = customer["id"]
     sale = client.post(

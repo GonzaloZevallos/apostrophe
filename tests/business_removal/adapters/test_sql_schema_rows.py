@@ -50,6 +50,7 @@ def _seed_everything(client: TestClient, owner_email: str) -> dict[str, int]:
         json={
             "name": "Removal customer",
             "phone": "11 2345-6789",
+            "phone_country": "AR",
             "customer_type_id": customer_type["id"],
         },
     ).json()
@@ -454,7 +455,8 @@ def test_rows_parses_bool_date_and_naive_datetime_columns(tmp_path: Path) -> Non
         signed = signed_in(client, token)
         set_switches(engine, bulk=False, vip=True, business_name="Types Business")
         customer = signed.post(
-            "/customers", json={"name": "Vip customer", "phone": "11 2345-6789"}
+            "/customers",
+            json={"name": "Vip customer", "phone": "11 2345-6789", "phone_country": "AR"},
         ).json()
         variety = signed.post("/api/products", json={"name": "Types variety"}).json()
         entry = signed.post(

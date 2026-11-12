@@ -6,7 +6,7 @@
  *
  * Every link goes through `InAppLink`, which is what lets a group's "Cerrar" and
  * this list's back go through history (`useBackOr`). The "‹ parent" arrow is the shell's
- * (`shell/BackArrow.tsx`): Más on the phone, Inicio on a computer.
+ * (`shell/BackArrow.tsx`): Inicio on both widths.
  */
 
 import { useTranslation } from 'react-i18next'

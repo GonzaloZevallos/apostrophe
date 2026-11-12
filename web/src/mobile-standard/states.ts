@@ -53,6 +53,8 @@ export interface WalkState {
   writes?: readonly WriteStub[]
   /** The GETs the state answers with a fixed status. */
   reads?: readonly ReadStub[]
+  /** A GET path held while the state first draws (its loading is read), then let through before the steps run. */
+  holds?: RegExp
 }
 
 /** What is wrong between the walked states and the names `Violation.screen` may carry. */

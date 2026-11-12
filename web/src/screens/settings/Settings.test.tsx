@@ -5,7 +5,7 @@
  * jsdom lays nothing out: the list's back arrow reads the viewport.
  */
 
-import { EXPENSE_CATEGORIES, HOME, MORE, SALES, SETTINGS, SETTINGS_ACCOUNT, SETTINGS_APPEARANCE, SETTINGS_BUSINESS, SETTINGS_CATALOG_MESSAGE, SETTINGS_INTEGRATIONS, SETTINGS_PAYMENTS, SETTINGS_PRICES, SETTINGS_USERS } from '../../routes'
+import { EXPENSE_CATEGORIES, HOME, SALES, SETTINGS, SETTINGS_ACCOUNT, SETTINGS_APPEARANCE, SETTINGS_BUSINESS, SETTINGS_CATALOG_MESSAGE, SETTINGS_INTEGRATIONS, SETTINGS_PAYMENTS, SETTINGS_PRICES, SETTINGS_USERS } from '../../routes'
 import { inAppState } from '../../components/inAppState'
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -112,15 +112,16 @@ test('every group route exists and closes with "Close"', async () => {
   }
 })
 
-test('reached directly on the phone, back says "‹ More" and goes to Más', async () => {
+test('opened from Home (the avatar), back returns to Home', async () => {
   stubComputer(false)
   const user = userEvent.setup()
-  const { router } = renderApp(['/otro', SETTINGS], 1)
+  const { router } = renderApp([HOME])
+  await act(() => router.navigate(SETTINGS, { state: inAppState({ pathname: HOME }) }))
 
-  await user.click(await screen.findByRole('button', { name: '‹ More' }))
+  await user.click(await screen.findByRole('button', { name: /^‹ / }))
 
-  expect(router.state.location.pathname).toBe(MORE)
-  expect(screen.queryByRole('button', { name: '‹ Home' })).not.toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(HOME)
+  expect(router.state.historyAction).toBe('POP')
 })
 
 test('reached directly on a computer, back says "‹ Home" and goes to Inicio', async () => {
@@ -139,7 +140,7 @@ test('reached by an in-app link, back goes back in history', async () => {
   const { router } = renderApp([SALES])
   await act(() => router.navigate(SETTINGS, { state: inAppState({ pathname: SALES }) }))
 
-  await user.click(await screen.findByRole('button', { name: '‹ More' }))
+  await user.click(await screen.findByRole('button', { name: '‹ Home' }))
 
   expect(router.state.location.pathname).toBe(SALES)
 })

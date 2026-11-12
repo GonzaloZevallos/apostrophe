@@ -210,7 +210,7 @@ export interface FilaStockProps {
 /* Chrome                                                              */
 /* ------------------------------------------------------------------ */
 
-export type Destino = 'inicio' | 'ventas' | 'clientes' | 'variedades' | 'mas';
+export type Destino = 'inicio' | 'ventas' | 'clientes' | 'variedades';
 
 export interface BarraInferiorProps {
   activo: Destino;
@@ -266,7 +266,6 @@ export type NombreIcono =
   | 'ventas'
   | 'clientes'
   | 'variedades'
-  | 'mas'
   | 'atras'
   | 'chevron'
   | 'abajo'
@@ -292,7 +291,6 @@ export type NombreIcono =
   | 'precio'
   | 'gastos'
   | 'analisis'
-  | 'configuracion'
   | 'negocio'
   | 'usuarios'
   | 'integraciones'

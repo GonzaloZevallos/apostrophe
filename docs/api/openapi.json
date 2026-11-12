@@ -540,24 +540,6 @@
             "title": "Name",
             "type": "string"
           },
-          "phone_countries": {
-            "items": {
-              "$ref": "#/components/schemas/PhoneCountryOption"
-            },
-            "title": "Phone Countries",
-            "type": "array"
-          },
-          "phone_country": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Phone Country"
-          },
           "selectable_languages": {
             "items": {
               "type": "string"
@@ -577,9 +559,7 @@
           "name",
           "users",
           "language",
-          "selectable_languages",
-          "phone_country",
-          "phone_countries"
+          "selectable_languages"
         ],
         "title": "BusinessOut",
         "type": "object"
@@ -595,35 +575,6 @@
           "name"
         ],
         "title": "BusinessPatchIn",
-        "type": "object"
-      },
-      "BusinessPhoneCountryOut": {
-        "description": "The `GET /business` Phone country fields: the stored code or null, and the options.",
-        "properties": {
-          "phone_countries": {
-            "items": {
-              "$ref": "#/components/schemas/PhoneCountryOption"
-            },
-            "title": "Phone Countries",
-            "type": "array"
-          },
-          "phone_country": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Phone Country"
-          }
-        },
-        "required": [
-          "phone_country",
-          "phone_countries"
-        ],
-        "title": "BusinessPhoneCountryOut",
         "type": "object"
       },
       "CatalogAttributesIn": {
@@ -1111,6 +1062,17 @@
               }
             ],
             "title": "Phone"
+          },
+          "phone_country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone Country"
           }
         },
         "required": [
@@ -1247,6 +1209,17 @@
               }
             ],
             "title": "Phone"
+          },
+          "phone_country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone Country"
           }
         },
         "title": "CustomerPatchIn",
@@ -2984,44 +2957,6 @@
           "month"
         ],
         "title": "PeriodsOut",
-        "type": "object"
-      },
-      "PhoneCountryIn": {
-        "properties": {
-          "phone_country": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Phone Country"
-          }
-        },
-        "required": [
-          "phone_country"
-        ],
-        "title": "PhoneCountryIn",
-        "type": "object"
-      },
-      "PhoneCountryOption": {
-        "properties": {
-          "calling_code": {
-            "title": "Calling Code",
-            "type": "string"
-          },
-          "code": {
-            "title": "Code",
-            "type": "string"
-          }
-        },
-        "required": [
-          "code",
-          "calling_code"
-        ],
-        "title": "PhoneCountryOption",
         "type": "object"
       },
       "PhoneCountryOut": {
@@ -7065,52 +7000,6 @@
           }
         ],
         "summary": "Change Language",
-        "tags": [
-          "accounts"
-        ]
-      }
-    },
-    "/business/phone-country": {
-      "put": {
-        "operationId": "change_phone_country_business_phone_country_put",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PhoneCountryIn"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BusinessPhoneCountryOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Change Phone Country",
         "tags": [
           "accounts"
         ]

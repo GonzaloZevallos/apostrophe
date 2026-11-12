@@ -31,6 +31,9 @@ import { formatMonthLong } from '../format/dates'
 import { formatGrams } from '../format/money'
 import { useMoney } from '../format/moneyContext'
 import Loading from '../components/Loading'
+import HomeViewSwitch from '../components/HomeViewSwitch'
+import SettingsAvatar from '../components/SettingsAvatar'
+import ExpensesCard from './analisis/ExpensesCard'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import { amountParts } from './analisisCost'
@@ -308,9 +311,12 @@ export default function Analisis() {
   return (
     <ContentArea as="main" className="pantalla analisis">
       <div className="cuerpo">
-        <div className="encabezado__fila">
+        <div className="encabezado__fila cabecera-fila">
           <span className="encabezado__titulo">{COMMON_TEXT.analysis}</span>
+          <SettingsAvatar />
         </div>
+        <HomeViewSwitch selected="analysis" />
+        <ExpensesCard />
 
         {query.isPending && <Loading />}
 

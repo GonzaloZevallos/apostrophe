@@ -15,7 +15,6 @@ from pathlib import Path
 import pytest
 
 from app.accounts.adapters.language_router import as_http as language_as_http
-from app.accounts.adapters.phone_country_router import as_http as phone_country_as_http
 from app.accounts.adapters.router import as_http as accounts_as_http
 from app.catalog.adapters.router import as_http as catalog_as_http
 from app.customer_types.adapters.router import as_http as customer_types_as_http
@@ -41,7 +40,6 @@ CONTRACT_PATH = Path(__file__).resolve().parent.parent / "web" / "src" / "api" /
 TRANSLATORS: list[TranslateErrors] = [
     accounts_as_http,
     language_as_http,
-    phone_country_as_http,
     customers_as_http,
     customer_types_as_http,
     products_as_http,

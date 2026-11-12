@@ -20,10 +20,10 @@ import {
 } from '../../api/paymentMethods'
 import { isGone, kindOf } from '../../api/refusals'
 import Boton from '../../components/Boton'
+import { PAYMENT_METHOD_ICON_SET } from '../../components/fixedSets'
 import PaymentMethodGlyph from '../../components/PaymentMethodGlyph'
 import {
   DEFAULT_PAYMENT_METHOD_ICON,
-  PAYMENT_METHOD_ICON_ORDER,
   type PaymentMethodIcon,
   paymentMethodIconName,
   paymentMethodIconKey,
@@ -147,7 +147,7 @@ export default function PaymentMethodForm({
           role="radiogroup"
           aria-label={t('paymentMethods:form.iconLabel')}
         >
-          {PAYMENT_METHOD_ICON_ORDER.map((key) => (
+          {PAYMENT_METHOD_ICON_SET.map(({ value: key }) => (
             <button
               key={key}
               type="button"

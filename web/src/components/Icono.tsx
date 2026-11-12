@@ -21,7 +21,6 @@ export const ICON_NAMES = [
   'ventas',
   'clientes',
   'variedades',
-  'mas',
   'atras',
   'chevron',
   'abajo',
@@ -47,7 +46,6 @@ export const ICON_NAMES = [
   'precio',
   'gastos',
   'analisis',
-  'configuracion',
   'negocio',
   'usuarios',
   'integraciones',
@@ -84,14 +82,6 @@ export interface IconoProps {
   label?: string
 }
 
-const DOTS: ReactNode = (
-  <>
-    <circle cx="5" cy="12" r="0.75" />
-    <circle cx="12" cy="12" r="0.75" />
-    <circle cx="19" cy="12" r="0.75" />
-  </>
-)
-
 const TRAZOS: Record<NombreIcono, ReactNode> = {
   inicio: (
     <>
@@ -114,7 +104,6 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
     </>
   ),
   variedades: <path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5z" />,
-  mas: DOTS,
   atras: <path d="m15 5-7 7 7 7" />,
   chevron: <path d="m9 5 7 7-7 7" />,
   abajo: <path d="m5 9 7 7 7-7" />,
@@ -199,9 +188,6 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
   ),
   analisis: (
     <><path d="M5 20v-8" /><path d="M12 20V5" /><path d="M19 20v-9" /></>
-  ),
-  configuracion: (
-    <><path d="M4 7h9" /><path d="M17 7h3" /><circle cx="15" cy="7" r="2" /><path d="M4 17h3" /><path d="M11 17h9" /><circle cx="9" cy="17" r="2" /></>
   ),
   negocio: (
     <><path d="M4 9.5 5.5 4h13L20 9.5" /><path d="M4 9.5a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0 2.7 2.7 0 0 0 5.3 0" /><path d="M5.5 12.5V20h13v-7.5" /><path d="M10 20v-4.5h4V20" /></>

@@ -27,6 +27,8 @@ const ROSA = {
 const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', phone_display: '+54 9 11 0000-0000', vip: false }
 const NUEVA = { id: 8, name: 'Luz', phone: null, phone_display: null, vip: false }
 
+import { PHONE_COUNTRIES } from '../stubFetchWithSettings'
+
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 }
@@ -45,6 +47,9 @@ beforeEach(() => {
       }
       if (method === 'GET' && path.startsWith(pathTo(CUSTOMERS))) {
         return Promise.resolve(jsonResponse(200, [ANA]))
+      }
+      if (method === 'GET' && path === '/phone-countries') {
+        return Promise.resolve(jsonResponse(200, PHONE_COUNTRIES))
       }
       if (method === 'POST' && path === '/customers') {
         return new Promise<Response>((resolve) => {
@@ -171,7 +176,9 @@ test.each([
   await user.click(screen.getByRole('button', { name: 'Pick a customer' }))
   await user.click(await screen.findByRole('button', { name: 'New customer' }))
   await user.type(screen.getByLabelText('Name'), 'Luz')
-  await user.click(screen.getByRole('button', { name: 'Create customer' }))
+  const create = screen.getByRole('button', { name: 'Create customer' })
+  await waitFor(() => expect(create).toBeEnabled())
+  await user.click(create)
   await waitFor(() => expect(releaseCreate).not.toBeNull())
 
   await leave(router)

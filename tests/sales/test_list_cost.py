@@ -217,7 +217,12 @@ def _seed(client: TestClient, sales: int) -> None:
     customers: list[int] = []
     for number in range(max(sales // 3, 1)):
         created = client.post(
-            "/customers", json={"name": f"Cliente {number}", "phone": f"11 {2000 + number}-6789"}
+            "/customers",
+            json={
+                "name": f"Cliente {number}",
+                "phone": f"11 {2000 + number}-6789",
+                "phone_country": "AR",
+            },
         )
         assert created.status_code == 201, created.text
         customers.append(int(created.json()["id"]))

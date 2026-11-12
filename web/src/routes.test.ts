@@ -24,6 +24,7 @@ import {
   readPaymentUnderneath,
   SCREENS,
   screenOf,
+  kindOf,
   type Kind,
   type ParentRef,
   type Place,
@@ -36,9 +37,12 @@ import Shell from "./shell/Shell";
 const VIEWPORTS: Viewport[] = ["phone", "computer"];
 
 interface Expected {
-  kind: Kind;
+  /** The kind on each viewport. */
+  kind: { phone: Kind; computer: Kind };
   /** The parent's id on each viewport, `undefined` for a root. */
   parent: { phone: ScreenId; computer: ScreenId } | undefined;
+  /** For a screen that has a parent on the phone only. */
+  phoneParent?: ScreenId;
   place: Place;
 }
 
@@ -51,20 +55,21 @@ function expectation(
   parent: ScreenId | undefined,
   place: Place,
 ): Expected {
-  return { kind, parent: same(parent), place };
+  return { kind: { phone: kind, computer: kind }, parent: same(parent), place };
 }
 
 const HOME_PLACE: Place = { bar: "home", rail: "home" };
 const SALES_PLACE: Place = { bar: "sales", rail: "sales" };
 const CUSTOMERS_PLACE: Place = { bar: "customers", rail: "customers" };
 const VARIETIES_PLACE: Place = { bar: "varieties", rail: "varieties" };
-const EXPENSES_PLACE: Place = { bar: "more", rail: "expenses" };
-const SETTINGS_PLACE: Place = { bar: "more", rail: "business" };
+const EXPENSES_PLACE: Place = { bar: "home", rail: "expenses" };
+const ANALYSIS_PLACE: Place = { bar: "home", rail: "analysis" };
+/** Configuración marks no tab on the bar: a header avatar opens it, not a tab. */
+const SETTINGS_PLACE: Place = { bar: null, rail: "business" };
 
 /** navigation.md's structure, said once more here and independently of `routes.ts`. */
 const EXPECTED: Record<ScreenId, Expected> = {
   home: expectation("root", undefined, HOME_PLACE),
-  more: expectation("root", undefined, { bar: "more", rail: "more" }),
   sales: expectation("root", undefined, SALES_PLACE),
   "sale-new": expectation("form", "sales", SALES_PLACE),
   sale: expectation("card", "sales", SALES_PLACE),
@@ -87,15 +92,17 @@ const EXPECTED: Record<ScreenId, Expected> = {
   "withdrawal-new": expectation("form", "varieties", VARIETIES_PLACE),
   withdrawal: expectation("card", "varieties", VARIETIES_PLACE),
   "withdrawal-edit": expectation("form", "withdrawal", VARIETIES_PLACE),
-  expenses: expectation("root", undefined, EXPENSES_PLACE),
-  "expense-new": expectation("form", "expenses", EXPENSES_PLACE),
-  analysis: expectation("root", undefined, { bar: "more", rail: "analysis" }),
-  // Configuración's list is the one screen whose parent differs by viewport.
-  settings: {
-    kind: "card",
-    parent: { phone: "more", computer: "home" },
-    place: SETTINGS_PLACE,
+  // Gastos is the one screen whose kind differs by viewport: a card under Análisis on the
+  // phone, a root of the side rail on a computer.
+  expenses: {
+    kind: { phone: "card", computer: "root" },
+    parent: undefined,
+    phoneParent: "analysis",
+    place: EXPENSES_PLACE,
   },
+  "expense-new": expectation("form", "expenses", EXPENSES_PLACE),
+  analysis: expectation("root", undefined, ANALYSIS_PLACE),
+  settings: expectation("card", "home", SETTINGS_PLACE),
   "settings-business": expectation("form", "settings", SETTINGS_PLACE),
   "settings-users": expectation("form", "settings", SETTINGS_PLACE),
   "settings-prices": expectation("form", "settings", SETTINGS_PLACE),
@@ -136,7 +143,10 @@ describe("parentOf and placeOf, every screen on both viewports", () => {
     ids.flatMap((id) => VIEWPORTS.map((viewport) => [id, viewport] as const)),
   )("%s on the %s", (id, viewport) => {
     const expected = EXPECTED[id];
-    const parentId = expected.parent?.[viewport];
+    const parentId =
+      viewport === "phone" && expected.phoneParent !== undefined
+        ? expected.phoneParent
+        : expected.parent?.[viewport];
     const parent = parentOf(id, viewport);
 
     expect(parent?.id).toBe(parentId);
@@ -149,14 +159,14 @@ describe("parentOf and placeOf, every screen on both viewports", () => {
       });
     }
     expect(placeOf(id, viewport)).toEqual(expected.place);
-    expect(SCREENS.find((entry) => entry.id === id)?.kind).toBe(expected.kind);
+    expect(kindOf(screenOf(id), viewport)).toBe(expected.kind[viewport]);
   });
 
   test("a card and a form have a parent, a root none; every chain ends at a root", () => {
     for (const entry of SCREENS) {
       for (const viewport of VIEWPORTS) {
         expect(parentOf(entry.id, viewport) === undefined).toBe(
-          entry.kind === "root",
+          kindOf(entry, viewport) === "root",
         );
         let hops = 0;
         let current: ScreenId | undefined = entry.id;
@@ -171,15 +181,27 @@ describe("parentOf and placeOf, every screen on both viewports", () => {
     }
   });
 
-  test("the label and the back fallback are one result: Configuración says Más on the phone, Inicio on a computer", () => {
-    expect(parentOf("settings", "phone")).toMatchObject({
-      titleKey: "common:more",
-      path: routes.MORE,
+  test("the label and the back fallback are one result: Gastos says Análisis on the phone and has none on a computer", () => {
+    expect(parentOf("expenses", "phone")).toMatchObject({
+      titleKey: "common:analysis",
+      path: routes.ANALYSIS,
     });
-    expect(parentOf("settings", "computer")).toMatchObject({
-      titleKey: "common:home",
-      path: routes.HOME,
-    });
+    expect(parentOf("expenses", "computer")).toBeUndefined();
+  });
+
+  test("Configuración says Inicio on both viewports and marks no tab on the bar", () => {
+    for (const viewport of VIEWPORTS) {
+      expect(parentOf("settings", viewport)).toMatchObject({
+        titleKey: "common:home",
+        path: routes.HOME,
+      });
+      expect(placeOf("settings-account", viewport).bar).toBeNull();
+    }
+  });
+
+  test("Análisis and Gastos mark Inicio on the bar and their own entry on the rail", () => {
+    expect(placeOf("analysis", "phone")).toEqual({ bar: "home", rail: "analysis" });
+    expect(placeOf("expenses", "phone")).toEqual({ bar: "home", rail: "expenses" });
   });
 });
 
@@ -328,6 +350,8 @@ describe("the router against the registry", () => {
 interface RegistryRow {
   path: string;
   kind: string;
+  /** The kind on a computer, when it is not the phone's. */
+  computerKind: string | null;
   parent: string | null;
   /** The parent on a computer, when it is not the phone's. */
   computerParent: string | null;
@@ -370,14 +394,23 @@ function registryDisagreements(
     const entry = screens.find((s) => patternsMatch(row.path, s.path));
     if (entry === undefined) return [`${row.path}: no screen declares it`];
     const found: string[] = [];
-    if (entry.kind !== row.kind)
-      found.push(`${row.path}: kind ${entry.kind} is not ${row.kind}`);
+    for (const viewport of VIEWPORTS) {
+      const have = kindOf(entry, viewport);
+      const want =
+        viewport === "computer" && row.computerKind !== null
+          ? row.computerKind
+          : row.kind;
+      if (have !== want)
+        found.push(`${row.path}: kind ${have} on ${viewport} is not ${want}`);
+    }
     for (const viewport of VIEWPORTS) {
       const have = parentOf(entry.id, viewport)?.path ?? null;
       const want =
-        viewport === "computer" && row.computerParent !== null
-          ? row.computerParent
-          : row.parent;
+        viewport === "computer" && row.computerKind === "root"
+          ? null
+          : viewport === "computer" && row.computerParent !== null
+            ? row.computerParent
+            : row.parent;
       const agree =
         have === null || want === null ? have === want : patternsMatch(have, want);
       if (!agree)
@@ -404,7 +437,7 @@ function settingsGroupsNotForms(
     .flatMap((s) => {
       const row = rows.find((r) => patternsMatch(r.path, s.path));
       return [
-        ...(s.kind === "form" ? [] : [`${s.path}: screen kind ${s.kind}`]),
+        ...(kindOf(s, "phone") === "form" ? [] : [`${s.path}: screen kind ${kindOf(s, "phone")}`]),
         ...(row?.kind === "form" ? [] : [`${s.path}: registry kind ${row?.kind}`]),
       ];
     });
@@ -430,8 +463,8 @@ describe("the registry against screens.json", () => {
       { path: routes.CATCH_ALL },
     ];
     const rows: RegistryRow[] = [
-      { path: routes.LOGIN, kind: "form", parent: null, computerParent: null },
-      { path: routes.INVITATION, kind: "root", parent: routes.HOME, computerParent: null },
+      { path: routes.LOGIN, kind: "form", parent: null, computerKind: null, computerParent: null },
+      { path: routes.INVITATION, kind: "root", parent: routes.HOME, computerKind: null, computerParent: null },
     ];
     expect(outsideDisagreements(rows, pages)).toEqual([
       `${routes.LOGIN}: kind root is not form`,
@@ -442,21 +475,48 @@ describe("the registry against screens.json", () => {
 
   test("a row that disagrees on kind or parent, names no screen, or is missing, is refused", () => {
     const rows: RegistryRow[] = [
-      { path: routes.CUSTOMER_NEW, kind: "card", parent: routes.CUSTOMERS, computerParent: null },
-      { path: routes.CUSTOMER_EDIT, kind: "form", parent: routes.CUSTOMERS, computerParent: null },
-      { path: routes.SETTINGS, kind: "card", parent: routes.MORE, computerParent: null },
-      { path: "nowhere", kind: "form", parent: routes.CUSTOMERS, computerParent: null },
+      { path: routes.CUSTOMER_NEW, kind: "card", parent: routes.CUSTOMERS, computerKind: null, computerParent: null },
+      { path: routes.CUSTOMER_EDIT, kind: "form", parent: routes.CUSTOMERS, computerKind: null, computerParent: null },
+      { path: routes.EXPENSES, kind: "root", computerKind: null, parent: null, computerParent: null },
+      { path: "nowhere", kind: "form", parent: routes.CUSTOMERS, computerKind: null, computerParent: null },
     ];
     const refused = registryDisagreements(rows, SCREENS);
-    expect(refused).toContain(`${routes.CUSTOMER_NEW}: kind form is not card`);
+    expect(refused).toContain(`${routes.CUSTOMER_NEW}: kind form on phone is not card`);
+    expect(refused).toContain(`${routes.EXPENSES}: kind card on phone is not root`);
     expect(refused).toContain(
       `${routes.CUSTOMER_EDIT}: parent ${routes.CUSTOMER} on phone is not ${routes.CUSTOMERS}`,
     );
-    expect(refused).toContain(
-      `${routes.SETTINGS}: parent ${routes.HOME} on computer is not ${routes.MORE}`,
-    );
     expect(refused).toContain("nowhere: no screen declares it");
     expect(refused).toContain(`${routes.SALES}: no registry row`);
+  });
+
+  test("a row that leaves out or misstates computer_kind is refused on the computer side", () => {
+    const row = {
+      path: routes.EXPENSES,
+      kind: "card",
+      parent: routes.ANALYSIS,
+      computerParent: null,
+    };
+    const leftOut = registryDisagreements(
+      [{ ...row, computerKind: null }],
+      SCREENS,
+    );
+    expect(leftOut).toContain(`${routes.EXPENSES}: kind root on computer is not card`);
+    expect(leftOut).toContain(
+      `${routes.EXPENSES}: parent none on computer is not ${routes.ANALYSIS}`,
+    );
+
+    const misstated = registryDisagreements(
+      [{ ...row, computerKind: "card" }],
+      SCREENS,
+    );
+    expect(misstated).toContain(`${routes.EXPENSES}: kind root on computer is not card`);
+
+    expect(
+      registryDisagreements([{ ...row, computerKind: "root" }], SCREENS).filter((line) =>
+        line.startsWith(`${routes.EXPENSES}:`),
+      ),
+    ).toEqual([]);
   });
 
   test("every Configuración group is a form, in the front and in the design registry", () => {
@@ -469,7 +529,7 @@ describe("the registry against screens.json", () => {
 
   test("a Configuración group registered as a card, or with a card row, is refused", () => {
     const asCard = SCREENS.map((s) =>
-      s.id === "settings-integrations" ? { ...s, kind: "card" as const } : s,
+      s.id === "settings-integrations" ? { ...s, declaredKind: "card" as const } : s,
     );
     expect(settingsGroupsNotForms(ROUTE_REGISTRY, asCard)).toEqual([
       `${routes.SETTINGS_INTEGRATIONS}: screen kind card`,
@@ -926,7 +986,7 @@ describe("the screens whose back names the record", () => {
       (entry) => entry.id,
     );
     expect(marked.sort()).toEqual(["variety", "variety-entries", "variety-prices"]);
-    for (const id of marked) expect(screenOf(id).kind).toBe("card");
+    for (const id of marked) expect(kindOf(screenOf(id), "phone")).toBe("card");
   });
 });
 
@@ -1027,7 +1087,6 @@ const FIRST_SEGMENTS = new Set([
     "catalogo",
     "analisis",
     "entrar",
-    "mas",
     "gastos",
     "negocio",
   ],
@@ -1159,7 +1218,7 @@ describe("source scan for path literals", () => {
           content: "await fetch(x)\nnavigate('/sales')",
         },
         { path: "src/screens/V.tsx", content: "navigate('/')" },
-        { path: "e2e/a.spec.ts", content: "await page.goto('/more')" },
+        { path: "e2e/a.spec.ts", content: "await page.goto('/gastos')" },
         {
           path: "src/screens/U.test.tsx",
           content: "initialEntries={['/expenses/new']}",
@@ -1181,14 +1240,14 @@ describe("source scan for path literals", () => {
   test("lets through constants, other paths, API calls, comments, api/ and routes.ts itself", () => {
     expect(
       findPathLiterals([
-        { path: "src/screens/X.tsx", content: "<Link to={MORE}>" },
+        { path: "src/screens/X.tsx", content: "<Link to={EXPENSES}>" },
         {
           path: "src/screens/Y.tsx",
           content: "const to = '/algo-que-no-es-una-ruta'",
         },
         {
           path: "src/screens/Z.tsx",
-          content: "// goes to '/mas'\n/* '/gastos' */",
+          content: "// goes to '/gastos'\n/* '/gastos' */",
         },
         {
           path: "src/screens/A.tsx",
@@ -1204,7 +1263,7 @@ describe("source scan for path literals", () => {
             "expect(fetch).toHaveBeenCalledWith(\n  '/customers',\n  init)",
         },
         { path: "src/api/me.ts", content: "get('/customers')" },
-        { path: "src/routes.ts", content: "export const MORE = '/more'" },
+        { path: "src/routes.ts", content: "export const EXPENSES = '/gastos'" },
       ]),
     ).toEqual([]);
   });
@@ -1271,7 +1330,6 @@ describe("source scan for path literals", () => {
 describe("the registry holds keys, and English resolves each to today's title", () => {
   const TITLES: Record<ScreenId, string> = {
     home: "Home",
-    more: "More",
     sales: "Sales",
     "sale-new": "New sale",
     sale: "Sale",

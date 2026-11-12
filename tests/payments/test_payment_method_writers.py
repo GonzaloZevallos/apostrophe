@@ -32,7 +32,9 @@ def _variety(client: TestClient) -> int:
 
 def _customer(client: TestClient) -> int:
     return int(
-        client.post("/customers", json={"name": "Ana", "phone": "11 2000-0000"}).json()["id"]
+        client.post(
+            "/customers", json={"name": "Ana", "phone": "11 2000-0000", "phone_country": "AR"}
+        ).json()["id"]
     )
 
 

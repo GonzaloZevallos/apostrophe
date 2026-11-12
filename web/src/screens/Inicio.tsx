@@ -22,12 +22,14 @@
  * first Publicar").
  */
 
-import { CATALOG, SETTINGS } from '../routes'
+import { CATALOG } from '../routes'
 import { useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useOutletContext } from 'react-router'
 import BrandMark from '../components/BrandMark'
 import InAppLink from '../components/InAppLink'
+import HomeViewSwitch from '../components/HomeViewSwitch'
+import SettingsAvatar from '../components/SettingsAvatar'
 import { owedPlace, useReturnToPlace } from '../components/useReturnToPlace'
 import { peekPaymentReturn } from '../paymentReturn'
 import { get, NetworkError } from '../api/client'
@@ -38,7 +40,6 @@ import ErrorGenerico from '../components/ErrorGenerico'
 import Loading, { LoadingWhile } from '../components/Loading'
 import { AvisoCuerpo } from '../components/AvisoAmbar'
 import SinConexion from '../components/SinConexion'
-import { initialsOf } from '../format/initials'
 import { PINNED_CATALOG_OUT_OF_DATE } from '../copy/inicio'
 import InicioPanel from './inicio/InicioPanel'
 import { COMMON_TEXT } from '../copy/common'
@@ -85,14 +86,9 @@ export default function Inicio() {
             </div>
             <span className="encabezado__titulo">{COMMON_TEXT.home}</span>
           </div>
-          <InAppLink
-            to={SETTINGS}
-            aria-label={COMMON_TEXT.settingsFor(me.business_name)}
-            className="inicio__avatar"
-          >
-            {initialsOf(me.business_name)}
-          </InAppLink>
+          <SettingsAvatar />
         </div>
+        <HomeViewSwitch selected="today" />
 
         {pinOutOfDate && (
           <InAppLink to={CATALOG} className="aviso-ambar aviso-ambar--atencion" role="status">

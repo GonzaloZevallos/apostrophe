@@ -14,6 +14,8 @@ export type InstanceTextKey =
   | Extract<CopyKey, `paymentMethods:icon.${string}`>
   | 'common:paid'
   | 'common:owing'
+  | 'common:homeSegmentToday'
+  | 'common:homeSegmentAnalysis'
 
 export function instanceText(key: InstanceTextKey): string {
   return i18n.t(key)

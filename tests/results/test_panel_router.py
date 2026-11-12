@@ -79,7 +79,9 @@ def _sale(
 
 
 def _customer(client: TestClient, name: str) -> int:
-    response = client.post("/customers", json={"name": name, "phone": "11 5555-5555"})
+    response = client.post(
+        "/customers", json={"name": name, "phone": "11 5555-5555", "phone_country": "AR"}
+    )
     assert response.status_code == 201, response.text
     return int(response.json()["id"])
 
@@ -827,7 +829,8 @@ def _seed_bigger_panel_history(client: TestClient) -> None:
     customer_ids = []
     for i in range(5):
         customer = client.post(
-            "/customers", json={"name": f"Deudora {i}", "phone": f"11 5000-{i:04d}"}
+            "/customers",
+            json={"name": f"Deudora {i}", "phone": f"11 5000-{i:04d}", "phone_country": "AR"},
         ).json()
         customer_ids.append(customer["id"])
     for i in range(60):

@@ -17,6 +17,6 @@ test('no screen or component draws a literal "+" beside the agregar icon', () =>
   const files = Object.entries(modules)
     .filter(([path]) => !isTestFile(path))
     .map(([path, content]) => ({ path: path.replace(/^\//, ''), content }))
-  expect(files.some(({ path }) => path === 'src/screens/Mas.tsx')).toBe(true)
+  expect(files.some(({ path }) => path === 'src/screens/Analisis.tsx')).toBe(true)
   expect(findPlusBesideAgregar(files)).toEqual([])
 })

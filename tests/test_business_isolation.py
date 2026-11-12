@@ -85,7 +85,8 @@ def seed_varieties(client: TestClient) -> dict[str, int]:
 
 def seed_customers(client: TestClient) -> dict[str, int]:
     customer = client.post(
-        "/customers", json={"name": f"{MARKER} customer", "phone": "11 2345-6789"}
+        "/customers",
+        json={"name": f"{MARKER} customer", "phone": "11 2345-6789", "phone_country": "AR"},
     ).json()
     # A customer with no phone (ADR-0021) is isolated the same way; it carries no id
     # a gated route needs, so it is checked only through the list comparison.
@@ -123,7 +124,8 @@ def seed_sales(client: TestClient) -> dict[str, int]:
         json={"effective_from": "2026-01-01", "list_price": 11_000},
     )
     customer = client.post(
-        "/customers", json={"name": f"{MARKER} sales customer", "phone": "11 5555-5555"}
+        "/customers",
+        json={"name": f"{MARKER} sales customer", "phone": "11 5555-5555", "phone_country": "AR"},
     ).json()
     without_customer = client.post(
         "/sales",
@@ -233,7 +235,12 @@ def seed_payments(client: TestClient) -> dict[str, int]:
         json={"effective_from": "2026-01-01", "list_price": 11_000},
     )
     customer = client.post(
-        "/customers", json={"name": f"{MARKER} payments customer", "phone": "11 4444-3333"}
+        "/customers",
+        json={
+            "name": f"{MARKER} payments customer",
+            "phone": "11 4444-3333",
+            "phone_country": "AR",
+        },
     ).json()
     customer_id = customer["id"]
     client.post(
@@ -304,6 +311,7 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
     ("POST", "/customers"): {
         "name": "Another customer",
         "phone": "11 9876-5432",
+        "phone_country": "AR",
         "customer_type_id": 1,
     },
     ("PATCH", "/customers/{customer_id}"): {"name": "Renamed", "customer_type_id": 1},
@@ -327,7 +335,6 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
     # `de` is selectable in this module (the `settings` fixture below), so the body really
     # changes the stored language of whichever business calls it.
     ("PUT", "/business/language"): {"language": "de"},
-    ("PUT", "/business/phone-country"): {"phone_country": "UY"},
     ("POST", "/sales"): {
         "payment": {"kind": "owing"},
         "customer_id": 1,
@@ -578,7 +585,8 @@ def seeded_b(business_a: TestClient) -> dict[str, int]:
         json={"effective_from": "2026-01-01", "list_price": 11_000},
     )
     customer = business_a.post(
-        "/customers", json={"name": "Referenced customer", "phone": "11 1111-2222"}
+        "/customers",
+        json={"name": "Referenced customer", "phone": "11 1111-2222", "phone_country": "AR"},
     ).json()
     return {"variety_id": variety["id"], "customer_id": customer["id"]}
 
@@ -596,7 +604,7 @@ def test_a_body_reference_to_a_missing_or_foreign_variety_is_refused_the_same_wa
 ) -> None:
     foreign_variety = seeded_b["variety_id"]
     customer_id = business_b.post(
-        "/customers", json={"name": "B customer", "phone": "11 3333-4444"}
+        "/customers", json={"name": "B customer", "phone": "11 3333-4444", "phone_country": "AR"}
     ).json()["id"]
 
     missing = business_b.post(
@@ -703,7 +711,7 @@ def test_a_body_reference_to_a_missing_or_foreign_customer_is_refused_the_same_w
     assert missing.json() == other_business.json()
 
     own_customer = business_b.post(
-        "/customers", json={"name": "B customer 2", "phone": "11 7777-8888"}
+        "/customers", json={"name": "B customer 2", "phone": "11 7777-8888", "phone_country": "AR"}
     ).json()
     valid = business_b.post(
         "/sales", json=_sale_body(variety_id=variety["id"], customer_id=own_customer["id"])
@@ -738,7 +746,7 @@ def test_assigning_a_customer_from_another_business_is_refused_the_same_way_as_m
     assert missing.json() == other_business.json()
 
     own_customer = business_b.post(
-        "/customers", json={"name": "B customer 3", "phone": "11 6666-5555"}
+        "/customers", json={"name": "B customer 3", "phone": "11 6666-5555", "phone_country": "AR"}
     ).json()
     valid = business_b.put(f"/sales/{sale_id}/customer", json={"customer_id": own_customer["id"]})
     assert valid.status_code == 200, valid.text
@@ -749,7 +757,7 @@ def test_assigning_a_customer_type_from_another_business_is_refused_the_same_way
 ) -> None:
     foreign_type = seeded["type_id"]
     own_customer = business_b.post(
-        "/customers", json={"name": "B customer 4", "phone": "11 5555-4444"}
+        "/customers", json={"name": "B customer 4", "phone": "11 5555-4444", "phone_country": "AR"}
     ).json()
     url = f"/customers/{own_customer['id']}"
 
@@ -1004,7 +1012,8 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
         json={"effective_from": "2026-01-01", "list_price": 10_000},
     )
     customer = business_a.post(
-        "/customers", json={"name": f"{MARKER} panel customer", "phone": "11 7777-8888"}
+        "/customers",
+        json={"name": f"{MARKER} panel customer", "phone": "11 7777-8888", "phone_country": "AR"},
     ).json()
     gifted = business_a.post(
         "/sales",
@@ -1384,7 +1393,9 @@ def test_a_scale_0_and_a_scale_2_business_hold_their_own_money_and_neither_shows
             f"/api/products/{variety['id']}/prices",
             json={"effective_from": "2026-01-01", "list_price": amount},
         )
-        customer = client.post("/customers", json={"name": "Fran", "phone": "11 2345-6789"}).json()
+        customer = client.post(
+            "/customers", json={"name": "Fran", "phone": "11 2345-6789", "phone_country": "AR"}
+        ).json()
         sold = client.post(
             "/sales",
             json={

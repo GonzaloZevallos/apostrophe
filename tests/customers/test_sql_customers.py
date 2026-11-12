@@ -53,7 +53,7 @@ def test_a_second_customer_with_the_same_phone_is_refused_as_phone_taken(
     client: TestClient, engine: Engine
 ) -> None:
     registered = client.post(
-        "/customers", json={"name": "Fran Araujo", "phone": "11 2345-6789"}
+        "/customers", json={"name": "Fran Araujo", "phone": "11 2345-6789", "phone_country": "AR"}
     ).json()
     business_id = _business_id_of(engine, registered["id"])
     customers = SqlCustomers(Session(engine), business_id)
@@ -72,9 +72,11 @@ def test_a_second_customer_with_the_same_phone_is_refused_as_phone_taken(
 def test_the_same_phone_in_two_businesses_is_not_taken(
     client: TestClient, other_client: TestClient, engine: Engine
 ) -> None:
-    client.post("/customers", json={"name": "Fran Araujo", "phone": "11 2345-6789"})
+    client.post(
+        "/customers", json={"name": "Fran Araujo", "phone": "11 2345-6789", "phone_country": "AR"}
+    )
     other = other_client.post(
-        "/customers", json={"name": "Otro Fran", "phone": "11 1111-1111"}
+        "/customers", json={"name": "Otro Fran", "phone": "11 1111-1111", "phone_country": "AR"}
     ).json()
     other_business_id = _business_id_of(engine, other["id"])
 

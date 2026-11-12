@@ -11,7 +11,8 @@
 
 import { pickProduct } from './lineProduct'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import { PHONE_COUNTRIES } from '../stubFetchWithSettings'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, MemoryRouter, Outlet, Route, RouterProvider, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
@@ -39,7 +40,8 @@ const ROSA = {
   current_price: { id: 9, effective_from: '2026-09-01', list_price: 1000, bulk_price: null, bulk_minimum: null },
 }
 const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', phone_display: '+54 9 11 0000-0000', vip: false }
-const OPTIONS = { limits: LIMITS, samples: SAMPLES }
+// The Settings avatar is a text-only link by design: its initials are its glyph.
+const OPTIONS = { limits: LIMITS, samples: SAMPLES, optionClasses: ['inicio__avatar'] }
 
 function json(body: unknown): Response {
   return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })
@@ -114,7 +116,13 @@ function renderDetalle(state?: unknown) {
 test.each(VIEWPORTS)("VentaDetalle: Deshacer is an undo, the actions carry an icon and the Assign customer sheet passes (%s)", async (viewport) => {
   stubViewport(viewport)
   vi.mocked(fetch).mockImplementation((path) =>
-    Promise.resolve(String(path).startsWith(pathTo(CUSTOMERS)) ? json([ANA]) : json({ ...SALE_DETAIL, customer: null })),
+    Promise.resolve(
+      String(path).startsWith(pathTo(CUSTOMERS))
+        ? json([ANA])
+        : path === '/phone-countries'
+          ? json(PHONE_COUNTRIES)
+          : json({ ...SALE_DETAIL, customer: null }),
+    ),
   )
   const user = userEvent.setup()
   const { container } = renderDetalle(saleJustSaved())
@@ -127,13 +135,21 @@ test.each(VIEWPORTS)("VentaDetalle: Deshacer is an undo, the actions carry an ic
   expectIconAndTextRule(container, OPTIONS)
 
   await user.click(screen.getByRole('button', { name: 'New customer' }))
+  // Once the Phone country list is in: the rule reads a control's text, which a busy Selector has none of.
+  await waitFor(() => expect(screen.getByRole('button', { name: /^Phone country/ })).toHaveTextContent('Argentina'))
   expectIconAndTextRule(container, OPTIONS)
 })
 
 test.each(VIEWPORTS)("NuevaVenta: with two lines, Pick a customer and Nuevo cliente open, every control follows the rule (%s)", async (viewport) => {
   stubViewport(viewport)
   vi.mocked(fetch).mockImplementation((path) =>
-    Promise.resolve(String(path).startsWith(pathTo(CUSTOMERS)) ? json([ANA]) : json([ROSA])),
+    Promise.resolve(
+      String(path).startsWith(pathTo(CUSTOMERS))
+        ? json([ANA])
+        : path === '/phone-countries'
+          ? json(PHONE_COUNTRIES)
+          : json([ROSA]),
+    ),
   )
   const router = createMemoryRouter(
     [{ element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] }],

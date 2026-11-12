@@ -47,7 +47,7 @@ def _business_id(engine: Engine, email: str) -> int:
 
 def _customer_id(client: TestClient, phone: str = "11 2345-6789") -> int:
     body: dict[str, int] = client.post(
-        "/customers", json={"name": "Fran Araujo", "phone": phone}
+        "/customers", json={"name": "Fran Araujo", "phone": phone, "phone_country": "AR"}
     ).json()
     return body["id"]
 

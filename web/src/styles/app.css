@@ -251,6 +251,37 @@ body {
   gap: 10px;
 }
 
+/* Phone country above the Phone field at full width; beside it at a fixed width from 900px. */
+.cliente-fila--telefono {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--espacio-md);
+}
+
+.cliente-fila__pais {
+  min-width: 0;
+}
+
+.cliente-fila--telefono .cliente-fila__telefono {
+  flex: none;
+}
+
+@media (min-width: 900px) {
+  .cliente-fila--telefono {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .cliente-fila__pais {
+    flex: none;
+    width: 240px;
+  }
+
+  .cliente-fila--telefono .cliente-fila__telefono {
+    flex: 1;
+  }
+}
+
 .cliente-fila__telefono {
   flex: 1;
   min-width: 0;
@@ -514,7 +545,7 @@ body {
 
 .bar-inferior__item {
   /* Sized by the label, then the spare room shared out: the longest word ("Variedades")
-   * never has to give up a letter to the shortest ("Más"). */
+   * never has to give up a letter to the shortest ("Ventas"). */
   flex: 1 1 auto;
   min-width: min-content;
   min-height: var(--alto-tocable);
@@ -685,6 +716,54 @@ body {
   height: min(var(--marca-tamano), 1lh);
   width: auto;
   aspect-ratio: 1;
+}
+
+/* The trailing slot of a phone header: the title takes the room the avatar leaves and is cut
+ * with an ellipsis, so a long title never widens the page. Phone only: the computer draws no
+ * avatar and none of these rules apply there. `--envoltura` is a row added only to hold the
+ * title and the avatar; on the computer it dissolves, so the title is the flex or grid item
+ * of its header that it always was. */
+@media (max-width: 899.98px) {
+  .cabecera-fila {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-md);
+  }
+
+  .cabecera-fila--envoltura {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .cabecera-fila > .encabezado__titulo {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 900px) {
+  .cabecera-fila--envoltura {
+    display: contents;
+  }
+}
+
+/* The Expenses card on the phone's Analysis: a title and its two actions, stacked, each at the
+ * phone's tap height through `Boton`. */
+.tarjeta-gastos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+/* "See the expenses" is a text link: it keeps the phone's tap height like the other link-shaped
+ * buttons, shrinks to its words and leaves the underline to the text, not to the 44 px box. */
+.tarjeta-gastos .boton--enlace {
+  align-self: flex-start;
+  min-height: var(--alto-tocable);
+  box-shadow: none;
 }
 
 .inicio__avatar {
@@ -933,6 +1012,11 @@ body {
   color: var(--tinta2);
   font-size: 15px;
   cursor: pointer;
+}
+
+/* The Today | Analysis segment draws these options as links. */
+a.ajustes-tema__opcion {
+  text-decoration: none;
 }
 
 .ajustes-tema__opcion--activa {
@@ -5191,6 +5275,8 @@ body {
     .ajustes-tema__opcion,
     .ajustes-tema__opcion--activa,
     .inicio__avatar,
+    /* Expenses' month arrows rest on the --superficie pill, so the --superficie fill shows nothing. */
+    .gastos__mes-boton,
     .selector__campo
   ):active:not(:disabled):not([aria-disabled='true']) {
   transform: scale(0.98);
@@ -6581,8 +6667,22 @@ body {
   touch-action: manipulation;
 }
 
-.selector__campo:disabled {
+.selector__campo:disabled,
+.selector__campo[aria-disabled='true'] {
   cursor: default;
+}
+
+/* The reason a locked field cannot be changed: a visible sentence in the secondary ink (4.5:1 in
+ * both themes), never styled as a disabled label. */
+.selector__razon {
+  margin: 0;
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+/* A locked field has no chevron to invite a tap: the list never opens. */
+.selector__campo[aria-disabled='true'] .selector__chevron {
+  display: none;
 }
 
 .selector__valor {
@@ -6604,6 +6704,11 @@ body {
 
 .selector__glifo {
   flex: none;
+}
+
+/* A calling code inside an option's name never breaks across lines. */
+.selector__cifra {
+  white-space: nowrap;
 }
 
 .selector__marca {

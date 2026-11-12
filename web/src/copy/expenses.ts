@@ -47,8 +47,6 @@ export const EXPENSES_TEXT = {
   saveTheExpense: 'Save the expense',
   deleteExpense: 'Delete expense',
   discardTheExpense: 'Discard the expense?',
-  moreScreen: 'More screen',
-  addExpenseFromMore: 'Add expense from More',
   deleteTheExpenseOf: (amount: string | number, categoryName: string | number, date: string | number) => `Delete the expense of ${amount} in ${categoryName} on ${date}?`,
   oneCategory: '1 category',
   categoriesCount: (categories: string | number) => `${categories} categories`,

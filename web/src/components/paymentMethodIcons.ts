@@ -2,8 +2,8 @@
  * The payment-method icons: the closed set of keys (the backend's `PaymentMethodIcon`) mapped
  * to the `Icono` glyph that draws each and its accessible name. A key the API sends that is
  * not in the set falls back to `other`, so a newer server never breaks an older screen. The
- * set is not a chip set (ADR-0074): the settings picker lists it as a closed list in its Sheet,
- * so these keys are not declared in `components/fixedSets.ts`.
+ * add/edit Sheet's icon grid draws the keys as chips, so they are also declared as the fixed set
+ * `PAYMENT_METHOD_ICON_SET` in `components/fixedSets.ts` (ADR-0074).
  */
 
 import type { NombreIcono } from './Icono'

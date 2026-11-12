@@ -5,6 +5,7 @@
  * (plan, "Gone records").
  */
 
+import { DETECTED_COUNTRY_BUTTON } from '../../mobile-standard/countryField.ts'
 import { CUSTOMER, CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_NEW, LOGIN, pathTo, SETTINGS_CUSTOMER_TYPES } from '../../routes'
 import { useGoneNotice } from '../../components/goneExit'
 import { readFeedback } from '../../components/feedback'
@@ -23,6 +24,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { queryClient, setCurrentPath, setNavigate } from '../../queryClient'
 import ClienteForm from './ClienteForm'
 import { PHONE_COUNTRIES, stubFetchWithSettings } from '../stubFetchWithSettings'
+import { deviceLanguages, deviceTimeZone } from '../../phone/device'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
@@ -124,6 +126,13 @@ function renderForm(initialPath: string, previous?: string) {
 
 let api: ReturnType<typeof stubFetchWithSettings>
 
+/** Save waits for the Phone country list (the Selector is loading and Save off until it is in). */
+async function clickSave(): Promise<void> {
+  const button = screen.getByRole('button', { name: 'Save and use' })
+  await waitFor(() => expect(button).toBeEnabled())
+  await userEvent.click(button)
+}
+
 beforeEach(() => {
   api = stubFetchWithSettings()
 })
@@ -140,7 +149,7 @@ test('registers a customer and lands on its card', async () => {
 
   await userEvent.type(screen.getByLabelText('Phone'), '+5491131785094')
   await userEvent.type(screen.getByLabelText('Name'), 'Nico')
-  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+  await clickSave()
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(api).toHaveBeenCalledWith(
@@ -194,12 +203,12 @@ test('registering with no phone sends the request and shows the saved toast', as
   renderForm(CUSTOMER_NEW)
 
   await userEvent.type(screen.getByLabelText('Name'), 'Sol')
-  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+  await clickSave()
 
   expect(await screen.findByText('Customer saved')).toBeInTheDocument()
   expect(api).toHaveBeenCalledWith(
     '/customers',
-    expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Sol', phone: '', customer_type_id: null }) }),
+    expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Sol', phone: '', phone_country: 'AR', customer_type_id: null }) }),
   )
 })
 
@@ -214,13 +223,13 @@ test('clearing a phone when editing sends it and shows the saved toast', async (
 
   expect(await screen.findByLabelText('Phone')).toHaveValue('+5491144861258')
   await userEvent.clear(screen.getByLabelText('Phone'))
-  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+  await clickSave()
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(await screen.findByText('Customer saved')).toBeInTheDocument()
   expect(api).toHaveBeenCalledWith(
     '/customers/7',
-    expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', phone: '', customer_type_id: null }) }),
+    expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', phone: '', phone_country: 'AR', customer_type_id: null }) }),
   )
 })
 
@@ -232,7 +241,7 @@ test('a duplicate phone is refused on the phone field, keeping what was typed', 
 
   await userEvent.type(screen.getByLabelText('Phone'), '+5491131785094')
   await userEvent.type(screen.getByLabelText('Name'), 'Nico')
-  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+  await clickSave()
 
   expect(await screen.findByRole('alert')).toHaveTextContent('That phone number already belongs to another customer')
   expect(screen.getByLabelText('Phone')).toHaveValue('+5491131785094')
@@ -247,13 +256,13 @@ test('a number without + in a business with no Phone country asks for + and the 
 
   await userEvent.type(screen.getByLabelText('Phone'), '099 123 456')
   await userEvent.type(screen.getByLabelText('Name'), 'Nico')
-  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+  await clickSave()
 
   expect(await screen.findByRole('alert')).toHaveTextContent('Start the number with + and the country code.')
   expect(screen.getByLabelText('Phone')).toHaveValue('099 123 456')
 })
 
-test('a number that does not fit asks for its area code, or + and the country code', async () => {
+test('a number that does not fit names the country and the lengths it needs, not the number', async () => {
   api.mockResolvedValue(
     jsonResponse(422, { detail: 'refused', code: 'customer.phone_invalid' }),
   )
@@ -261,11 +270,26 @@ test('a number that does not fit asks for its area code, or + and the country co
 
   await userEvent.type(screen.getByLabelText('Phone'), '2345')
   await userEvent.type(screen.getByLabelText('Name'), 'Nico')
-  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+  await clickSave()
 
-  expect(await screen.findByRole('alert')).toHaveTextContent(
-    'Enter the number with its area code, or start with + and the country code.',
+  const alert = await screen.findByRole('alert')
+  expect(alert).toHaveTextContent(
+    "That doesn't look like an Argentine number. It needs 7 digits after the country code.",
   )
+  expect(alert).not.toHaveTextContent('2345')
+})
+
+test('a number refused with Other shown gets the generic phone text', async () => {
+  api.mockResolvedValue(
+    jsonResponse(422, { detail: 'refused', code: 'customer.phone_invalid' }),
+  )
+  renderForm(CUSTOMER_NEW)
+
+  await userEvent.type(screen.getByLabelText('Phone'), '+99912')
+  await userEvent.type(screen.getByLabelText('Name'), 'Nico')
+  await clickSave()
+
+  expect(await screen.findByRole('alert')).toHaveTextContent(CUSTOMERS_TEXT.notAPhone)
 })
 
 test('edit loads the existing customer and saves the change', async () => {
@@ -293,7 +317,7 @@ test('edit loads the existing customer and saves the change', async () => {
 
   await userEvent.clear(screen.getByLabelText('Name'))
   await userEvent.type(screen.getByLabelText('Name'), 'Tincho Aguirre')
-  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+  await clickSave()
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(api).toHaveBeenCalledWith('/customers/7', expect.objectContaining({ method: 'PATCH' }))
@@ -309,7 +333,7 @@ test('saving an edit on a customer that is gone shows the gone notice, not the t
   renderForm(pathTo(CUSTOMER_EDIT, { id: 7 }))
 
   expect(await screen.findByLabelText('Name')).toHaveValue('Tincho')
-  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+  await clickSave()
 
   await waitFor(() => expect(screen.getByText('la ficha')).toBeInTheDocument())
   expect(screen.getByText('That is gone. The list is up to date.')).toBeInTheDocument()
@@ -346,7 +370,7 @@ test('a 401 on save clears the cache and goes to Entrar, through the session bou
 
   await userEvent.type(screen.getByLabelText('Phone'), '+5491131785094')
   await userEvent.type(screen.getByLabelText('Name'), 'Nico')
-  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+  await clickSave()
 
   await waitFor(() => expect(navigate).toHaveBeenCalledWith(LOGIN))
   expect(queryClient.getQueryData(['me'])).toBeUndefined()
@@ -418,7 +442,7 @@ test('after registering, the form is replaced by the new customer card and Back 
   const router = await openFromList()
   await userEvent.type(screen.getByLabelText('Name'), 'Sol')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+  await clickSave()
 
   expect(await screen.findByText('Customer saved')).toBeInTheDocument()
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
@@ -439,7 +463,7 @@ test('after editing from the card, the save goes back by history: no second card
   await userEvent.click(screen.getByRole('link', { name: 'Editar' }))
   await userEvent.type(await screen.findByLabelText('Name'), ' Aguirre')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+  await clickSave()
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(await screen.findByText('Customer saved')).toBeInTheDocument()
@@ -481,7 +505,7 @@ function renderGone(entries: HistoryEntry[]) {
 
 async function saveTheGoneEdit() {
   await userEvent.type(await screen.findByLabelText('Name'), ' R')
-  await userEvent.click(screen.getByRole('button', { name: 'Save and use' }))
+  await clickSave()
 }
 
 const CARD = pathTo(CUSTOMER, { id: 7 })
@@ -568,8 +592,10 @@ test.each([
   expect(screen.getAllByText('That is gone. The list is up to date.')).toHaveLength(1)
 })
 
-test('the form follows the icon and text rule: its submit and its Cerrar are text controls of the closed kinds', () => {
+test('the form follows the icon and text rule: its submit and its Cerrar are text controls of the closed kinds', async () => {
   renderForm(CUSTOMER_NEW)
+  // Once the Phone country list is in: the rule reads a control's text, which a busy Selector has none of.
+  await waitFor(async () => expect(await countryField()).toHaveTextContent('Argentina'))
 
   expect(screen.getByRole('button', { name: 'Save and use' })).toHaveAttribute('type', 'submit')
   expectIconAndTextRule(document.body)
@@ -596,6 +622,7 @@ function stubTypesAnswer(answer: () => Promise<Response>) {
       return Promise.resolve(jsonResponse(200, { is_bulk_pricing: true, is_vip_customers: true }))
     }
     if (input === '/api/customer-types') return answer()
+    if (input === '/phone-countries') return Promise.resolve(jsonResponse(200, PHONE_COUNTRIES))
     return other(input, init)
   })
   return other
@@ -632,12 +659,12 @@ test('13 types: the field is a Selector, no select, radio group or pressed butto
   await user.click(screen.getByRole('button', { name: 'Kind 09' }))
   await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Customer type options' })).not.toBeInTheDocument())
   expect(await typeField()).toHaveTextContent('Kind 09')
-  await user.click(screen.getByRole('button', { name: 'Save and use' }))
+  await clickSave()
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(api).toHaveBeenCalledWith(
     '/customers',
-    expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Ana', phone: '', customer_type_id: 9 }) }),
+    expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Ana', phone: '', phone_country: 'AR', customer_type_id: 9 }) }),
   )
 })
 
@@ -649,12 +676,12 @@ test('a type is set on a new customer and sent as customer_type_id', async () =>
 
   await user.type(await screen.findByLabelText('Name'), 'Ana')
   await chooseType(user, 'Friends')
-  await user.click(screen.getByRole('button', { name: 'Save and use' }))
+  await clickSave()
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(api).toHaveBeenCalledWith(
     '/customers',
-    expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Ana', phone: '', customer_type_id: 1 }) }),
+    expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Ana', phone: '', phone_country: 'AR', customer_type_id: 1 }) }),
   )
 })
 
@@ -683,11 +710,11 @@ test('the list has no clearing row with no type chosen, and the clearing row set
   await user.click(within(screen.getByRole('dialog', { name: 'Customer type options' })).getByRole('button', { name: 'Close' }))
   await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Customer type options' })).not.toBeInTheDocument())
 
-  await user.click(screen.getByRole('button', { name: 'Save and use' }))
+  await clickSave()
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(api).toHaveBeenCalledWith(
     '/customers/7',
-    expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', phone: '', customer_type_id: null }) }),
+    expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', customer_type_id: null }) }),
   )
 })
 
@@ -701,12 +728,12 @@ test("editing changes a customer's type from one type to another", async () => {
   await waitFor(async () => expect(await typeField()).toHaveTextContent('Friends'))
   await chooseType(user, 'Wholesale')
   expect(await typeField()).toHaveTextContent('Wholesale')
-  await user.click(screen.getByRole('button', { name: 'Save and use' }))
+  await clickSave()
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(api).toHaveBeenCalledWith(
     '/customers/7',
-    expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', phone: '', customer_type_id: 2 }) }),
+    expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', customer_type_id: 2 }) }),
   )
 })
 
@@ -746,11 +773,11 @@ test('after a failed load the field stays busy with the failure line, described 
   expect(document.getElementById(describedBy ?? '')).toContainElement(line)
 
   await user.type(await screen.findByLabelText('Name'), ' R')
-  await user.click(screen.getByRole('button', { name: 'Save and use' }))
+  await clickSave()
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(other).toHaveBeenCalledWith(
     '/customers/7',
-    expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho R', phone: '', customer_type_id: 2 }) }),
+    expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho R', customer_type_id: 2 }) }),
   )
 })
 
@@ -778,7 +805,7 @@ test('a type deleted meanwhile (404 customer_type.not_found) clears the choice, 
 
   await user.type(await screen.findByLabelText('Name'), 'Ana')
   await chooseType(user, 'Wholesale')
-  await user.click(screen.getByRole('button', { name: 'Save and use' }))
+  await clickSave()
 
   const refusal = await screen.findByText('That type no longer exists. Pick another one.')
   expect(screen.getByLabelText('Name')).toHaveValue('Ana')
@@ -788,48 +815,257 @@ test('a type deleted meanwhile (404 customer_type.not_found) clears the choice, 
   expect(screen.queryByText('la ficha')).not.toBeInTheDocument()
 })
 
-const PLACEHOLDERS: readonly (readonly [string | null, string])[] = [
-  ...PHONE_COUNTRIES.map((option): readonly [string | null, string] => [option.code, option.example]),
-  [null, CUSTOMERS_TEXT.phoneHintNone],
-]
+// The Phone country Selector (docs/adr/20261111-phone-country-per-number): one country per number, detected on the device.
 
-test.each(PLACEHOLDERS)('the phone field shows the example of the business Phone country %s', async (country, hint) => {
-  stubFetchWithSettings(true, true, [], country)
-  renderForm(CUSTOMER_NEW)
+function countryField() {
+  return screen.findByRole('button', { name: /^Phone country/ })
+}
 
-  await waitFor(() => {
-    expect(screen.getByLabelText('Phone')).toHaveAttribute('placeholder', hint)
+async function pickCountry(user: ReturnType<typeof userEvent.setup>, name: string) {
+  await user.click(await countryField())
+  await user.click(await screen.findByRole('button', { name: new RegExp(`^${name}`) }))
+}
+
+/** The JSON body the last request with this method sent. */
+function sentBody(method: string): Record<string, unknown> {
+  const call = api.mock.calls.findLast(([, init]) => init?.method === method)
+  return JSON.parse(String(call?.[1]?.body)) as Record<string, unknown>
+}
+
+const SAVED = { id: 9, name: 'Nico', phone: null, phone_display: null, vip: false }
+
+function storedCustomer(phone: string | null) {
+  return { id: 7, name: 'Tincho', phone, phone_display: phone, vip: false, customer_type_id: null }
+}
+
+async function openEdit7(phone: string | null) {
+  api.mockResolvedValueOnce(jsonResponse(200, storedCustomer(phone)))
+  api.mockResolvedValue(jsonResponse(200, storedCustomer(phone)))
+  renderForm(pathTo(CUSTOMER_EDIT, { id: 7 }))
+  await screen.findByDisplayValue('Tincho')
+}
+
+describe('the Phone country', () => {
+  afterEach(() => {
+    vi.mocked(deviceLanguages).mockReturnValue(['es-AR'])
+    vi.mocked(deviceTimeZone).mockReturnValue('America/Argentina/Buenos_Aires')
+  })
+
+  test('a new form shows the detected country with its example, and sends it', async () => {
+    api.mockResolvedValue(jsonResponse(201, SAVED))
+    renderForm(CUSTOMER_NEW)
+
+    await waitFor(async () => expect(await countryField()).toHaveTextContent('Argentina (+54)'))
+    expect(await countryField()).not.toHaveAttribute('aria-disabled')
+    expect(screen.getByLabelText('Phone')).toHaveAttribute('placeholder', 'example AR')
+    await userEvent.type(screen.getByLabelText('Name'), 'Nico')
+    await userEvent.type(screen.getByLabelText('Phone'), '11 3178 5094')
+    await clickSave()
+
+    await screen.findByText('la ficha')
+    expect(sentBody('POST')).toMatchObject({ phone: '11 3178 5094', phone_country: 'AR' })
+  })
+
+  test('the phone walk names the field by its label and the detected value, and the bare label is not its name', async () => {
+    renderForm(CUSTOMER_NEW)
+
+    expect(await screen.findByRole('button', { name: DETECTED_COUNTRY_BUTTON })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Phone country$/ })).not.toBeInTheDocument()
+  })
+
+  test('the detection follows the phone language, then the zone', async () => {
+    vi.mocked(deviceLanguages).mockReturnValue(['es-UY'])
+    renderForm(CUSTOMER_NEW)
+    await waitFor(async () => expect(await countryField()).toHaveTextContent('Uruguay (+598)'))
+  })
+
+  test('a place with no listed country shows Other and its placeholder, and sends null', async () => {
+    vi.mocked(deviceLanguages).mockReturnValue(['fr-FR'])
+    vi.mocked(deviceTimeZone).mockReturnValue('Europe/Paris')
+    api.mockResolvedValue(jsonResponse(201, SAVED))
+    renderForm(CUSTOMER_NEW)
+
+    await waitFor(async () => expect(await countryField()).toHaveTextContent('Other (type + and the code)'))
+    expect(screen.getByLabelText('Phone')).toHaveAttribute('placeholder', CUSTOMERS_TEXT.phoneHintNone)
+    await userEvent.type(screen.getByLabelText('Name'), 'Nico')
+    await clickSave()
+    await screen.findByText('la ficha')
+    expect(sentBody('POST')).toMatchObject({ phone: '', phone_country: null })
+  })
+
+  test('a typed + and code lock the Selector on that country, and the request sends it', async () => {
+    api.mockResolvedValue(jsonResponse(201, SAVED))
+    renderForm(CUSTOMER_NEW)
+    await waitFor(async () => expect(await countryField()).toHaveTextContent('Argentina'))
+
+    await userEvent.type(screen.getByLabelText('Phone'), '+598 99 123 456')
+
+    const field = await countryField()
+    expect(field).toHaveTextContent('Uruguay (+598)')
+    expect(field).toHaveAttribute('aria-disabled', 'true')
+    const reason = screen.getByText('The + and the code set the country')
+    expect(field.getAttribute('aria-describedby')).toContain(reason.id)
+    expect(screen.getByLabelText('Phone')).toHaveValue('+598 99 123 456')
+    await userEvent.click(field)
+    expect(screen.queryByRole('button', { name: /^Chile/ })).not.toBeInTheDocument()
+    await userEvent.type(screen.getByLabelText('Name'), 'Nico')
+    await clickSave()
+    await screen.findByText('la ficha')
+    expect(sentBody('POST')).toMatchObject({ phone: '+598 99 123 456', phone_country: 'UY' })
+  })
+
+  test('an unlisted code locks on Other', async () => {
+    renderForm(CUSTOMER_NEW)
+    await waitFor(async () => expect(await countryField()).toHaveTextContent('Argentina'))
+
+    await userEvent.type(screen.getByLabelText('Phone'), '+491511234')
+
+    expect(await countryField()).toHaveTextContent('Other (type + and the code)')
+    expect(await countryField()).toHaveAttribute('aria-disabled', 'true')
+    expect(screen.getByLabelText('Phone')).toHaveAttribute('placeholder', CUSTOMERS_TEXT.phoneHintNone)
+  })
+
+  test('deleting the + unlocks and keeps the last country; picking another sends it', async () => {
+    api.mockResolvedValue(jsonResponse(201, SAVED))
+    renderForm(CUSTOMER_NEW)
+    const user = userEvent.setup()
+    await waitFor(async () => expect(await countryField()).toHaveTextContent('Argentina'))
+    await user.type(screen.getByLabelText('Phone'), '+598 99 123 456')
+    expect(await countryField()).toHaveAttribute('aria-disabled', 'true')
+
+    await user.clear(screen.getByLabelText('Phone'))
+    await user.type(screen.getByLabelText('Phone'), '99 123 456')
+
+    expect(await countryField()).toHaveTextContent('Uruguay (+598)')
+    expect(await countryField()).not.toHaveAttribute('aria-disabled')
+    await pickCountry(user, 'Argentina')
+    expect(await countryField()).toHaveTextContent('Argentina (+54)')
+    expect(screen.getByLabelText('Phone')).toHaveAttribute('placeholder', 'example AR')
+    await user.type(screen.getByLabelText('Name'), 'Nico')
+    await clickSave()
+    await screen.findByText('la ficha')
+    expect(sentBody('POST')).toMatchObject({ phone: '99 123 456', phone_country: 'AR' })
+  })
+
+  test('the placeholder follows the Selector, and Other has its own', async () => {
+    renderForm(CUSTOMER_NEW)
+    const user = userEvent.setup()
+    await waitFor(async () => expect(await countryField()).toHaveTextContent('Argentina'))
+
+    await pickCountry(user, 'Chile')
+    expect(screen.getByLabelText('Phone')).toHaveAttribute('placeholder', 'example CL')
+    await pickCountry(user, 'Other')
+    expect(screen.getByLabelText('Phone')).toHaveAttribute('placeholder', CUSTOMERS_TEXT.phoneHintNone)
+  })
+
+  test('the list holds the eight served countries then Other, each code in a nowrap run', async () => {
+    renderForm(CUSTOMER_NEW)
+    await waitFor(async () => expect(await countryField()).toHaveTextContent('Argentina'))
+    await userEvent.click(await countryField())
+
+    const names = ['Argentina', 'Uruguay', 'Chile', 'Paraguay', 'Brazil', 'Mexico', 'Spain', 'United States', 'Other']
+    for (const name of names) {
+      expect(await screen.findByRole('button', { name: new RegExp(`^${name}`) })).toBeInTheDocument()
+    }
+    expect(screen.getByText('(+598)')).toHaveClass('selector__cifra')
+  })
+
+  test('Save is off and the Selector is busy while the list is on its way', async () => {
+    let release: (response: Response) => void = () => undefined
+    const held = new Promise<Response>((resolve) => {
+      release = resolve
+    })
+    const base = globalThis.fetch
+    vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) =>
+      input === '/phone-countries' ? held : base(input, init),
+    )
+    renderForm(CUSTOMER_NEW)
+
+    expect(await countryField()).toHaveAttribute('aria-busy', 'true')
+    expect(screen.getByRole('button', { name: 'Save and use' })).toBeDisabled()
+    release(jsonResponse(200, PHONE_COUNTRIES))
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Save and use' })).toBeEnabled())
+    expect(await countryField()).not.toHaveAttribute('aria-busy')
+  })
+
+  test('a failed list keeps Save off and shows the form load error', async () => {
+    stubFetchWithSettings(true, true, [], 'fail')
+    renderForm(CUSTOMER_NEW)
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
+    expect(await countryField()).toHaveAttribute('aria-busy', 'true')
+    expect(screen.getByRole('button', { name: 'Save and use' })).toBeDisabled()
+  })
+
+  test('Edit on a +598 number opens locked on Uruguay and an untouched Save sends neither phone nor country', async () => {
+    await openEdit7('+59899123456')
+
+    expect(await countryField()).toHaveTextContent('Uruguay (+598)')
+    expect(await countryField()).toHaveAttribute('aria-disabled', 'true')
+    await clickSave()
+    await screen.findByText('la ficha')
+    expect(sentBody('PATCH')).not.toHaveProperty('phone')
+    expect(sentBody('PATCH')).not.toHaveProperty('phone_country')
+  })
+
+  test('Edit of a number from an unlisted country opens locked on Other and saves untouched', async () => {
+    await openEdit7('+4915112345678')
+
+    expect(await countryField()).toHaveTextContent('Other (type + and the code)')
+    expect(await countryField()).toHaveAttribute('aria-disabled', 'true')
+    await clickSave()
+    await screen.findByText('la ficha')
+    expect(sentBody('PATCH')).toEqual({ name: 'Tincho', customer_type_id: null })
+  })
+
+  test.each(PHONE_COUNTRIES)('Edit of a $code number shows $code locked', async ({ code, calling_code }) => {
+    await openEdit7(`+${calling_code}12345678`)
+
+    const field = await countryField()
+    expect(field).toHaveTextContent(`(+${calling_code})`)
+    expect(field).toHaveAttribute('aria-disabled', 'true')
+    expect(screen.getByLabelText('Phone')).toHaveValue(`+${calling_code}12345678`)
+    expect(code).toHaveLength(2)
+  })
+
+  test('Edit of a customer without a number runs the detection', async () => {
+    vi.mocked(deviceLanguages).mockReturnValue(['es-UY'])
+    await openEdit7(null)
+
+    await waitFor(async () => expect(await countryField()).toHaveTextContent('Uruguay (+598)'))
+    expect(await countryField()).not.toHaveAttribute('aria-disabled')
+  })
+
+  test('Edit with a changed number sends the phone and the shown country', async () => {
+    await openEdit7('+59899123456')
+    const user = userEvent.setup()
+
+    await user.clear(screen.getByLabelText('Phone'))
+    await user.type(screen.getByLabelText('Phone'), '11 3178 5094')
+    expect(await countryField()).toHaveTextContent('Uruguay (+598)')
+    await pickCountry(user, 'Argentina')
+    await clickSave()
+    await screen.findByText('la ficha')
+    expect(sentBody('PATCH')).toMatchObject({ phone: '11 3178 5094', phone_country: 'AR' })
+  })
+
+  test('a rejection names the country and joins several lengths with or', async () => {
+    api.mockResolvedValue(jsonResponse(422, { detail: 'refused', code: 'customer.phone_invalid' }))
+    renderForm(CUSTOMER_NEW)
+    const user = userEvent.setup()
+    await waitFor(async () => expect(await countryField()).toHaveTextContent('Argentina'))
+    await pickCountry(user, 'Spain')
+    await user.type(screen.getByLabelText('Phone'), '12')
+    await user.type(screen.getByLabelText('Name'), 'Nico')
+    await clickSave()
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(
+      "That doesn't look like a Spanish number. It needs 4, 5 or 6 digits after the country code.",
+    )
+    expect(alert).not.toHaveTextContent('12')
   })
 })
-
-test('the phone field takes its example from what GET /phone-countries answers', async () => {
-  const listing = [{ code: 'UY', calling_code: '598', national_lengths: [8], example: 'whatever the API says' }]
-  stubFetchWithSettings(true, true, [], 'UY', listing)
-  renderForm(CUSTOMER_NEW)
-
-  await waitFor(() => {
-    expect(screen.getByLabelText('Phone')).toHaveAttribute('placeholder', 'whatever the API says')
-  })
-})
-
-test('when GET /phone-countries fails the phone field has no placeholder', async () => {
-  stubFetchWithSettings(true, true, [], 'UY', 'fail')
-  // Watch the real call: the failure only counts once the request was made and answered.
-  const answered: Promise<Response>[] = []
-  const stubbed = globalThis.fetch
-  vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => {
-    const response = stubbed(input, init)
-    if (input === '/phone-countries') answered.push(response)
-    return response
-  })
-  renderForm(CUSTOMER_NEW)
-  const field = await screen.findByLabelText('Phone')
-  await waitFor(() => expect(answered).toHaveLength(1))
-  expect((await answered[0]!).status).toBe(500)
-  await new Promise((resolve) => setTimeout(resolve, 0))
-  expect(field).not.toHaveAttribute('placeholder')
-})
-
 describe('history', () => {
   const CARD7 = pathTo(CUSTOMER, { id: 7 })
   const EDIT7 = pathTo(CUSTOMER_EDIT, { id: 7 })

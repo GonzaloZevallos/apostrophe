@@ -35,7 +35,6 @@ import ExpenseNewRoute from './screens/expenses/ExpenseNewRoute'
 import Gastos from './screens/Gastos'
 import Inicio from './screens/Inicio'
 import Invitacion from './screens/Invitacion'
-import Mas from './screens/Mas'
 import Listo from './screens/onboarding/Listo'
 import OnboardingLayout from './screens/onboarding/OnboardingLayout'
 import { OnboardingEntry, OnboardingStepRoute } from './screens/onboarding/OnboardingRoutes'
@@ -93,7 +92,6 @@ import {
  * screen, does not type-check. */
 const ELEMENTS: Record<ScreenId, ReactElement> = {
   home: <Inicio />,
-  more: <Mas />,
   sales: <Ventas />,
   'sale-new': <NuevaVenta />,
   sale: <VentaDetalle />,

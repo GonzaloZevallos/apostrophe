@@ -38,8 +38,6 @@ classDiagram
   }
   class password {
   }
-  class phone_country_router {
-  }
   class ports {
   }
   class reset_link {
@@ -53,8 +51,6 @@ classDiagram
   class sign_in {
   }
   class sql_accounts {
-  }
-  class sql_phone_country {
   }
   class tables {
   }
@@ -80,9 +76,6 @@ classDiagram
   manage_business --> account
   manage_business --> ports
   onboarding_facts --> tables
-  phone_country_router --> application
-  phone_country_router --> deps
-  phone_country_router --> sql_accounts
   ports --> account
   ports --> invitation
   reset_password --> account
@@ -97,7 +90,6 @@ classDiagram
   router --> invitation
   router --> invitations
   router --> password
-  router --> phone_country_router
   router --> ports
   router --> reset_link
   router --> session_token
@@ -113,8 +105,6 @@ classDiagram
   sql_accounts --> invitation
   sql_accounts --> ports
   sql_accounts --> tables
-  sql_phone_country --> account
-  sql_phone_country --> tables
   tables --> account
 ```
 
@@ -264,7 +254,6 @@ classDiagram
   class BusinessProfile {
     language : str
     name : str
-    phone_country : str #124; None
     user_emails : list~str~
   }
   class EmailTaken {
@@ -316,17 +305,11 @@ classDiagram
   class BusinessOut {
     language : str
     name : str
-    phone_countries : list~PhoneCountryOption~
-    phone_country : str #124; None
     selectable_languages : list~str~
     users : list~UserOut~
   }
   class BusinessPatchIn {
     name : str
-  }
-  class BusinessPhoneCountryOut {
-    phone_countries : list~PhoneCountryOption~
-    phone_country : str #124; None
   }
   class BusinessRow {
     default_phone_country : Mapped~str #124; None~
@@ -387,13 +370,6 @@ classDiagram
     decimals : int
     symbol : str
   }
-  class PhoneCountryIn {
-    phone_country : str #124; None
-  }
-  class PhoneCountryOption {
-    calling_code : str
-    code : str
-  }
   class ResetLinkRow {
     app_user_id : Mapped~int~
     business_id : Mapped~int~
@@ -430,9 +406,6 @@ classDiagram
     user(user_id: int) User #124; None
     user_by_email(email: Email) User #124; None
     users_of_business(business_id: int) list~User~
-  }
-  class SqlPhoneCountry {
-    current() PhoneCountry #124; None
   }
   class SqlUserFacts {
     user_count() int
