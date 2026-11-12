@@ -132,10 +132,7 @@ CI_ONLY: dict[str, str] = {
     VERDICT_RUN: "the merge condition: one verdict over every job's result and the `changes` flags",
     E2E_GATE_RUN: "the `e2e` aggregator: green only when every `e2e-shard` is",
     E2E_RUN: "end-to-end is judged by GitHub CI only (owner's rule, GH-699)",
-    (
-        'git diff --exit-code -- docs/architecture/generated docs/api && test -z "$(git status '
-        '--porcelain --untracked-files=all -- docs/architecture/generated docs/api)"'
-    ): "the CI form of the reserved `docs` check",
+    "uv run --no-project python -m scripts.docs.owned_guard": "needs the merge-base with master",
     "bash scripts/docs/install-ci-tools.sh": "binaries on no package manager the repo uses",
     "bash scripts/docs/ci-mermaid-render.sh": "needs Chromium",
     "lychee --offline --no-progress docs/architecture docs/api/README.md": (
@@ -1662,3 +1659,74 @@ def test_a_docs_job_running_api_breaks_before_generate_is_refused() -> None:
     assert _generate_before_api_breaks_problems(workflow) == [
         "the docs job runs api_breaks before generate"
     ]
+
+
+OWNED_GUARD = "uv run --no-project python -m scripts.docs.owned_guard"
+
+
+def _docs_guard_problems(workflow: Data) -> list[str]:
+    """What keeps the `docs` job from warning about generated output a branch committed (GH-708)."""
+    job = cast("Data", workflow["jobs"]["docs"])
+    steps = _steps(job)
+    guard = [i for i, step in enumerate(steps) if str(step.get("run", "")).strip() == OWNED_GUARD]
+    generate = [i for i, step in enumerate(steps) if str(step.get("run", "")).strip() == GENERATE]
+    if len(guard) != 1:
+        return [f"the docs job has {len(guard)} owned-path guard steps, not 1"]
+    problems: list[str] = []
+    if len(generate) != 1 or guard[0] < generate[0]:
+        problems.append("the docs job does not run the owned-path guard after generate")
+    if "continue-on-error" in steps[guard[0]] or "continue-on-error" in job:
+        problems.append("the owned-path guard or the docs job has continue-on-error")
+    if "if" in steps[guard[0]]:
+        problems.append("the owned-path guard step has an if:")
+    checkout = [step for step in steps if str(step.get("uses", "")).startswith("actions/checkout@")]
+    depth = cast("Data", checkout[0].get("with", {})).get("fetch-depth") if checkout else None
+    if depth != 0:
+        problems.append(f"the docs checkout has fetch-depth {depth!r}, not 0")
+    return problems
+
+
+def test_the_docs_job_runs_the_owned_path_guard_after_generate() -> None:
+    assert _docs_guard_problems(WORKFLOW) == []
+
+
+def test_a_docs_job_without_the_owned_path_guard_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["docs"]["steps"]
+    steps[:] = [step for step in steps if step.get("run") != OWNED_GUARD]
+    assert _docs_guard_problems(workflow) == ["the docs job has 0 owned-path guard steps, not 1"]
+
+
+def test_an_owned_path_guard_before_generate_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["docs"]["steps"]
+    guard = next(step for step in steps if step.get("run") == OWNED_GUARD)
+    steps.remove(guard)
+    steps.insert(next(i for i, step in enumerate(steps) if step.get("run") == GENERATE), guard)
+    assert _docs_guard_problems(workflow) == [
+        "the docs job does not run the owned-path guard after generate"
+    ]
+
+
+def test_an_owned_path_guard_that_may_fail_or_skip_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["docs"]["steps"]
+    guard = next(step for step in steps if step.get("run") == OWNED_GUARD)
+    guard["continue-on-error"] = True
+    guard["if"] = "github.event_name == 'pull_request'"
+    workflow["jobs"]["docs"]["continue-on-error"] = True
+    assert _docs_guard_problems(workflow) == [
+        "the owned-path guard or the docs job has continue-on-error",
+        "the owned-path guard step has an if:",
+    ]
+
+
+def test_a_shallow_docs_checkout_is_refused() -> None:
+    workflow = _mutated()
+    checkout = workflow["jobs"]["docs"]["steps"][0]
+    del checkout["with"]["fetch-depth"]
+    assert _docs_guard_problems(workflow) == ["the docs checkout has fetch-depth None, not 0"]
+
+
+def test_the_docs_check_runs_in_validate_mode() -> None:
+    assert STACK["docs"]["mode"] == "validate"
