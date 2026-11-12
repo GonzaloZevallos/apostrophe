@@ -135,6 +135,11 @@ body {
   color: var(--tinta2);
 }
 
+/* The Customer's number on the card and the card behind: whole, on one line, never cut. */
+.campo__valor-telefono {
+  white-space: nowrap;
+}
+
 /* The price form's "Rige desde" chip (`PrecioNuevoCompu.dc.html`): a 52 px rounded surface
  * with a calendar and the date, left-aligned, over `Boton`'s secondary look. */
 .precio-chip .boton {
@@ -995,6 +1000,27 @@ a.ajustes-tema__opcion {
   color: var(--tinta2);
 }
 
+/* The phone field's example: the secondary ink, fully opaque, so it reads at 4.5:1 in both themes
+   (the browser's own placeholder grey does not in the dark one). */
+.campo__input[type='tel']::placeholder {
+  color: var(--tinta2);
+  opacity: 1;
+}
+
+/* The Phone country control: the same options, stacked, one per row (nine do not fit across). */
+.ajustes-tema--columna {
+  flex-direction: column;
+  border-radius: var(--radio-campo);
+}
+
+.ajustes-tema--columna .ajustes-tema__opcion {
+  flex: none;
+  justify-content: flex-start;
+  padding-inline: var(--espacio-md);
+  border-radius: var(--radio-campo);
+  text-align: start;
+}
+
 /* The language control under the name form: the same segments, at least 44px tall. */
 .ajustes-idioma {
   margin-top: var(--espacio-xxl);
@@ -1383,6 +1409,7 @@ a.ajustes-tema__opcion {
 .lista-clientes__telefono {
   font-size: 13px;
   color: var(--tinta2);
+  white-space: nowrap;
 }
 
 .vip-insignia {
@@ -1821,6 +1848,14 @@ a.ajustes-tema__opcion {
   color: var(--acento);
 }
 
+.insignia--truncable {
+  display: inline-block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .insignia--deuda {
   background: var(--deuda-fondo);
   color: var(--deuda);
@@ -2155,13 +2190,18 @@ a.ajustes-tema__opcion {
   letter-spacing: -0.035em;
 }
 
+/* The row wraps when its figures and the badge do not fit side by side, so a narrow screen
+ * never scrolls sideways; each figure stays whole on its own line. */
 .venta-detalle__linea-inferior {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--espacio-xs);
 }
 
 .venta-detalle__precio {
+  flex-shrink: 0;
+  white-space: nowrap;
   font-size: 14px;
   color: var(--tinta2);
 }
@@ -2559,6 +2599,7 @@ a.ajustes-tema__opcion {
 .nueva-venta__cliente-telefono {
   font-size: 14px;
   color: var(--tinta2);
+  white-space: nowrap;
 }
 
 .nueva-venta__cliente-cambiar {
@@ -5123,8 +5164,7 @@ a.ajustes-tema__opcion {
  *   the --superficie group): .inicio__avatar and .ajustes-tema__opcion, plain and --activa (the track is
  *   --superficie, the selected option --papel), and the selected variants
  *   .riel-lateral__item--activo, .riel-lateral__negocio--activo, .bar-inferior__item--activo,
- *   .pestanas__opcion--activa, .variedad-fila--activa and .selector-pago__opcion--activa;
- *   with the --linea cue and the scale as well, .aviso-onboarding (rests on --superficie).
+ *   .pestanas__opcion--activa, .variedad-fila--activa and .selector-pago__opcion--activa.
  * .opcion-interruptor is label-wrapped (its checkbox is stretched over it and must keep the
  * tap), so its cue is the fill only: its own rule below, with no `transform`.
  * A .boton--enlace inside .venta-guardada sits on the bar's own --boton fill, so it takes
@@ -5206,9 +5246,7 @@ a.ajustes-tema__opcion {
     .inicio__avatar,
     /* Expenses' month arrows rest on the --superficie pill, so the --superficie fill shows nothing. */
     .gastos__mes-boton,
-    .selector__campo,
-    /* a whole-block control; nothing tappable may be nested in it (it would scale with it). */
-    .aviso-onboarding
+    .selector__campo
   ):active:not(:disabled):not([aria-disabled='true']) {
   transform: scale(0.98);
   background-color: var(--linea);
@@ -5251,7 +5289,6 @@ a.ajustes-tema__opcion {
     .ajustes-tema__opcion,
     .opcion-interruptor,
     .mas-info__boton,
-    .aviso-onboarding,
     .inicio__avatar,
     .variedades__todas,
     .pestanas,
@@ -5504,22 +5541,6 @@ a.ajustes-tema__opcion {
   text-decoration: none;
 }
 
-/* "Arrancá por las variedades": the attention icon beside its title and line. */
-.estado-vacio--atencion {
-  flex-direction: row;
-  align-items: flex-start;
-  text-align: left;
-  gap: 12px;
-}
-
-.estado-vacio--atencion .aviso-ambar__cuerpo {
-  gap: 10px;
-}
-
-.estado-vacio--atencion .estado-vacio__detalle {
-  max-width: none;
-}
-
 /* ===== end gh97-sales-home ===== */
 /* A host element that adds no box of its own: its children lay out as the parent's. */
 .sin-caja {
@@ -5716,8 +5737,9 @@ a.ajustes-tema__opcion {
   cursor: pointer;
 }
 
-/* On a computer the card stops at 560px, as `InicioPrimeraVezCompu.dc.html` draws it
- * (GH-188); it applies to every tappable notice. The same literal is `NOTICE_CAP` in
+/* On a computer the card stops at 560px (GH-188; the drawing that showed it left with the
+ * first-use notices); it applies to every tappable notice, today Inicio's "Your Telegram
+ * catalog is out of date". The same literal is `NOTICE_CAP` in
  * `web/src/architecture/noticeCap.ts`, which guards this block: change both together. */
 @media (min-width: 900px) {
   .boton-aviso {
@@ -5736,17 +5758,6 @@ a.ajustes-tema__opcion {
   flex: 1;
   font-size: 16px;
   font-weight: 600;
-}
-
-.aviso-onboarding__conteo {
-  font-size: 14px;
-  color: var(--tinta2);
-  margin: 3px 0 var(--espacio-md);
-}
-
-.aviso-onboarding__falta {
-  font-size: 13px;
-  margin-top: 10px;
 }
 
 .listo__lista {
@@ -6089,103 +6100,7 @@ a.ajustes-tema__opcion {
   outline: none;
 }
 
-/* The first-run checklist, the after-import notice and the missing line under "+ Nueva venta"
- * (`InicioPrimeraVez.dc.html`, `InicioPrimeraVezCompu.dc.html`), tokens only. */
-.checklist {
-  background: var(--superficie);
-  border-radius: var(--radio-panel-grande);
-  padding: var(--espacio-lg) var(--espacio-lg) var(--espacio-sm);
-  display: flex;
-  flex-direction: column;
-  gap: var(--espacio-sm);
-}
-
-.checklist__titulo {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--tinta);
-}
-
-.checklist__lista {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.checklist__paso {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--espacio-md);
-  padding: 10px 0;
-  border-bottom: 1px solid var(--linea);
-}
-
-.checklist__paso:last-child {
-  border-bottom: none;
-}
-
-.checklist__caja {
-  width: 22px;
-  height: 22px;
-  box-sizing: border-box;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  border: 2px solid var(--tinta2);
-}
-
-.checklist__caja--hecha {
-  background: var(--boton);
-  border-color: var(--boton);
-  color: var(--boton-texto);
-}
-
-.checklist__caja svg {
-  width: 16px;
-  height: 16px;
-}
-
-.checklist__texto {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.checklist__nombre {
-  font-size: 15px;
-  color: var(--tinta);
-}
-
-.checklist__requisito {
-  font-size: 13px;
-  color: var(--tinta2);
-}
-
-.checklist__hecho {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--tinta);
-}
-
-.aviso-importado {
-  flex-direction: row;
-  align-items: center;
-  gap: var(--espacio-md);
-  padding: 14px 16px;
-}
-
-.aviso-importado .aviso-ambar__cuerpo {
-  flex: 1;
-}
-
-.aviso-importado .aviso-ambar__titulo {
-  font-size: 14px;
-}
-
+/* The missing line under "+ Nueva venta", tokens only. */
 .nueva-venta__falta {
   display: block;
   margin: calc(-1 * var(--espacio-sm) + var(--espacio-xs)) var(--margen-pantalla) var(--espacio-md);
@@ -6377,9 +6292,8 @@ a.ajustes-tema__opcion {
     flex-shrink: 0;
   }
 
+  /* A number is never cut: it stays on one line whole (the names above keep their ellipsis). */
   .lista-clientes__telefono {
-    overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
   }
 
@@ -6659,6 +6573,24 @@ a.ajustes-tema__opcion {
   min-width: 44px;
   min-height: 44px;
   padding: 0;
+}
+
+/* Currency and decimals: every button on the form (its header Close, Save) takes no tap delay,
+ * and the Example's digits are tabular. Scoped to the screen, so no other screen's listed
+ * offender changes. */
+.moneda-pantalla button,
+.ajustes-grupo:has(.moneda-pantalla) .ajustes-grupo__encabezado button {
+  touch-action: manipulation;
+}
+
+.moneda-pantalla output {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Currency and decimals: the decimals radios (0 · 1 · 2) are at least as tall as a touch target. */
+.moneda-decimales .selector-pago__opcion {
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-md);
 }
 
 /* The group's own Close sits in the header above the wrapper; only this group's is scoped. */

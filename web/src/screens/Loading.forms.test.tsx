@@ -8,13 +8,14 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import { RouterProvider, createMemoryRouter } from 'react-router'
+import { SheetRouterProvider } from '../components/useSheetStack'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { router as appRouter } from '../router'
 import { CUSTOMER_NEW, EXPENSE_NEW } from '../routes'
 import { renderWithViewport, stubViewport } from '../test-viewport'
 import { type FetchImpl, jsonResponse, renderExpenses } from './expenses/renderExpenses'
 
-const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: 'en' }
+const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: 'en', money: { symbol: '$', decimals: 0 } }
 
 let release: () => void
 let gate: Promise<void>
@@ -67,7 +68,9 @@ describe('the new customer', () => {
     renderWithViewport('phone', () =>
       render(
         <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
+          <SheetRouterProvider router={router}>
+            <RouterProvider router={router} />
+          </SheetRouterProvider>
         </QueryClientProvider>,
       ),
     )

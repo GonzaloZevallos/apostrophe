@@ -2,7 +2,7 @@
 /**
  * The Onboarding's own end-to-end runs (GH-86, "Metrics"), from a phone viewport, through the
  * built front and the real backend: a full run from accepting a new-business invitation to
- * Nueva venta opened from "Done" (its duration is not measured, docs/adr/0038); a resume from Inicio's notice; a
+ * Nueva venta opened from "Done" (its duration is not measured, docs/adr/0038); a resume by opening /onboarding; a
  * value saved in step 3 reading the same in Configuración; and, at the end of each, the
  * browser holding only the theme.
  */
@@ -12,11 +12,9 @@ import { watchConsole } from './console.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { expectPath } from './helpers/url.js'
-import { SALE_NEW, SETTINGS_CATALOG_MESSAGE } from '../src/routes.js'
+import { HOME, ONBOARDING, ONBOARDING_STOCK, SALE_NEW, SETTINGS_CATALOG_MESSAGE } from '../src/routes.js'
 
 test.use({ isMobile: true, hasTouch: true, viewport: { width: 375, height: 812 } })
-
-const NOTICE = 'Go on to the setup'
 
 async function priceAVariety(page: import('@playwright/test').Page, name: string): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Add your first product' })).toBeVisible()
@@ -25,7 +23,7 @@ async function priceAVariety(page: import('@playwright/test').Page, name: string
   await page.getByRole('button', { name: 'Save the product' }).click()
 }
 
-test('a new business goes from the invitation to Nueva venta from "Done", with no notice left', async ({
+test('a new business goes from the invitation to Nueva venta from "Done"', async ({
   page,
 }) => {
   const consoleMessages: string[] = []
@@ -58,19 +56,19 @@ test('a new business goes from the invitation to Nueva venta from "Done", with n
 
   await page.getByRole('button', { name: 'Close' }).click()
   await expect(page.locator('.encabezado__negocio')).toBeVisible()
-  await expect(page.getByText(NOTICE)).toHaveCount(0)
   await expectOnlyTheThemeStored(page)
   expect(consoleMessages).toEqual([])
 })
 
-test('leaving after step 1 keeps it, and Inicio\'s notice resumes at step 2', async ({ page }) => {
+test('leaving after step 1 keeps it, and opening /onboarding resumes at step 2', async ({ page }) => {
   await signUpNewBusiness(page, { stayInOnboarding: true })
   await priceAVariety(page, 'Lirio')
   await expect(page.getByRole('heading', { name: 'Add what you have today' })).toBeVisible()
 
   await page.getByRole('button', { name: 'Close' }).click()
-  await expect(page.getByText(NOTICE)).toBeVisible()
-  await page.getByText(NOTICE).click()
+  await expectPath(page, HOME)
+  await page.goto(ONBOARDING)
+  await expectPath(page, ONBOARDING_STOCK)
   await expect(page.getByRole('heading', { name: 'Add what you have today' })).toBeVisible()
   await expect(page.getByText('Step 2 of 6')).toBeVisible()
   await expectOnlyTheThemeStored(page)

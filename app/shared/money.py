@@ -11,10 +11,11 @@ whose remainder must be 0, and a rounding goes through `round_half_up`.
 
 from __future__ import annotations
 
+import unicodedata
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from fractions import Fraction
-from typing import ClassVar
+from typing import ClassVar, Literal
 
 HUNDREDTHS_PER_UNIT = 100
 MAX_DECIMALS = 2
@@ -38,6 +39,16 @@ class MoneyNotRepresentable(ValueError):
     code: ClassVar[str] = "money.not_representable"
 
 
+class TooManyDecimals(ValueError):
+    """An amount has more decimals than the business shows. The message is a fixed
+    literal and never carries the amount (CODING_STANDARDS.md section 9)."""
+
+    code: ClassVar[str] = "money.too_many_decimals"
+
+    def __init__(self) -> None:
+        super().__init__("the amount has more decimals than the business allows")
+
+
 def _exact_hundredths(amount: Decimal) -> int | None:
     """The amount's whole hundredths, or None when it has more than two decimals.
 
@@ -54,6 +65,9 @@ def _exact_hundredths(amount: Decimal) -> int | None:
     if shift >= 0:
         hundredths = magnitude * 10**shift
     else:
+        if -shift > len(digits):
+            # Smaller than a hundredth whatever its digits: nothing to divide by 10**huge.
+            return None if magnitude else 0
         hundredths, remainder = divmod(magnitude, 10**-shift)
         if remainder != 0:
             return None
@@ -79,6 +93,38 @@ class Money:
             raise InvalidMoney("an amount allows at most two decimals")
         return cls(hundredths)
 
+    @classmethod
+    def of_units(cls, units: int) -> Money:
+        """A whole number of currency units as money."""
+        return cls(units * HUNDREDTHS_PER_UNIT)
+
+    def whole_units(self) -> int:
+        """The amount as a whole number of currency units. Exact or it raises
+        `MoneyNotRepresentable`: cents are never truncated and never rounded. No write
+        or read path uses it now (they use `in_decimals`); it stays for whole-unit callers."""
+        units, remainder = divmod(self.hundredths, HUNDREDTHS_PER_UNIT)
+        if remainder != 0:
+            raise MoneyNotRepresentable("the amount is not a whole number of units")
+        return units
+
+    @classmethod
+    def of_decimals(cls, units: int, decimals: int) -> Money:
+        """An amount held in the domain's unit for a business of `decimals` decimals (a
+        tenth of a unit at 1, a hundredth at 2, a whole unit at 0), as money."""
+        return cls(units * 10 ** (MAX_DECIMALS - checked_decimals(decimals)))
+
+    def in_decimals(self, decimals: int) -> int:
+        """The amount in the domain's unit for a business of `decimals` decimals: a whole
+        currency unit at 0, a tenth at 1, a hundredth at 2. Exact or it raises
+        `MoneyNotRepresentable`: an amount finer than the decimals is never truncated and
+        never rounded. This is how a use case and an adapter hand the domain an amount,
+        and the domain arithmetic stays in that one unit throughout."""
+        step: int = 10 ** (MAX_DECIMALS - checked_decimals(decimals))
+        units, remainder = divmod(self.hundredths, step)
+        if remainder != 0:
+            raise MoneyNotRepresentable("the amount has more decimals than the business shows")
+        return units
+
     def as_decimal(self) -> Decimal:
         return Decimal(self.hundredths) / HUNDREDTHS_PER_UNIT
 
@@ -99,19 +145,86 @@ class Money:
         return Money(self.hundredths - other.hundredths)
 
 
+def checked_decimals(decimals: int) -> int:
+    """The decimals a business may show: a whole number from 0 to 2 (a bool is not one).
+    The one place the rule lives; `MoneyFormat` and the rescale use case both call it."""
+    if type(decimals) is not int or not 0 <= decimals <= MAX_DECIMALS:
+        raise ValueError("the money decimals must be a whole number from 0 to 2")
+    return decimals
+
+
+SYMBOL_MAX_CODE_POINTS = 4
+# Categories that move or hide text without showing anything: control, format (zero-width
+# and direction marks), line and paragraph separators. A price line must read as written.
+_INVISIBLE_CATEGORIES = frozenset({"Cc", "Cf", "Zl", "Zp"})
+_BOLD_MARK = "**"
+
+
+class InvalidMoneyFormat(ValueError):
+    """A money format was invalid. `field` names the part, `symbol` or `decimals`, in the
+    subclass that carries its own `code`. The message is a fixed literal and never repeats
+    what was submitted (CODING_STANDARDS.md section 9)."""
+
+    field: ClassVar[Literal["symbol", "decimals"]]
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.refusal_fields = {"field": self.field}
+
+
+class InvalidMoneySymbol(InvalidMoneyFormat):
+    field: ClassVar[Literal["symbol", "decimals"]] = "symbol"
+    code: ClassVar[str] = "money_format.symbol_invalid"
+
+
+class InvalidMoneyDecimals(InvalidMoneyFormat):
+    field: ClassVar[Literal["symbol", "decimals"]] = "decimals"
+    code: ClassVar[str] = "money_format.decimals_invalid"
+
+
 @dataclass(frozen=True)
 class MoneyFormat:
     """How a business shows money: its symbol and how many decimals. The scale it stores
-    amounts at is a storage fact and is not here (docs/adr/0058)."""
+    amounts at is a storage fact and is not here (docs/adr/0058).
+
+    The symbol rules live only here (docs/adr/0080): 1 to 4 code points, none of them
+    control, format or line/paragraph separator characters, and never two asterisks in a
+    row (they would pair across the catalog's price lines as bold). `of` trims a raw
+    symbol first; the constructor checks the symbol as it is given."""
 
     symbol: str
     decimals: int
 
     def __post_init__(self) -> None:
         if not self.symbol.strip():
-            raise ValueError("the money symbol must not be blank")
-        if type(self.decimals) is not int or not 0 <= self.decimals <= MAX_DECIMALS:
-            raise ValueError("the money decimals must be a whole number from 0 to 2")
+            raise InvalidMoneySymbol("the money symbol must not be blank")
+        if len(self.symbol) > SYMBOL_MAX_CODE_POINTS:
+            raise InvalidMoneySymbol("the money symbol must be 1 to 4 characters")
+        if any(unicodedata.category(char) in _INVISIBLE_CATEGORIES for char in self.symbol):
+            raise InvalidMoneySymbol(
+                "the money symbol must not hold a control or invisible character"
+            )
+        if _BOLD_MARK in self.symbol:
+            raise InvalidMoneySymbol("the money symbol must not hold two asterisks in a row")
+        try:
+            checked_decimals(self.decimals)
+        except ValueError as exc:
+            raise InvalidMoneyDecimals(str(exc)) from exc
+
+    @classmethod
+    def of(cls, raw_symbol: str, decimals: int) -> MoneyFormat:
+        """A format from a symbol as typed: trimmed at both ends, then checked."""
+        return cls(raw_symbol.strip(), decimals)
+
+
+def money_within(amount: Decimal, money_format: MoneyFormat) -> Money:
+    """A request's amount as `Money`, checked by value against the business's decimals:
+    `10.00` passes at 0 decimals, `10.5` does not. The one place the rule lives; raises
+    `TooManyDecimals`, never rounding what it refuses."""
+    hundredths = _exact_hundredths(amount)
+    if hundredths is None or hundredths % 10 ** (MAX_DECIMALS - money_format.decimals) != 0:
+        raise TooManyDecimals
+    return Money(hundredths)
 
 
 def _round_half_up(value: Fraction, decimals: int) -> int:
@@ -133,11 +246,18 @@ def round_half_up(value: Fraction, money_format: MoneyFormat) -> Money:
 
 
 def round_half_up_to_units(value: Fraction) -> int:
-    """An exact amount in currency units, rounded half up (away from zero on a tie) to the
-    whole unit, as a whole-unit int.
+    """An exact amount, rounded half up (away from zero on a tie) to the domain's own unit.
 
-    It exists because today's domain amounts are whole-unit ints and carry no
-    `MoneyFormat`; the part that turns those amounts into `Money` replaces its callers.
-    Until then the two shapes coexist and no use case reads the money scale."""
+    A domain amount is an int in one unit for the whole request: a currency unit for a
+    business of 0 decimals, a tenth for 1, a hundredth for 2 (`Money.in_decimals`). The
+    caller passes the exact value in that unit, so this rounds to the business's decimals
+    without knowing them."""
     units, _ = divmod(_round_half_up(value, 0), HUNDREDTHS_PER_UNIT)
     return units
+
+
+def domain_amount_within(amount: Decimal, money_format: MoneyFormat) -> int:
+    """A request's amount as the domain's int, in the unit of the format's decimals
+    (`Money.in_decimals`): `1234.50` is 123450 at 2 decimals and `1234.5` is refused by
+    `money_within` at 0. The one conversion every write use case makes; it never rounds."""
+    return money_within(amount, money_format).in_decimals(money_format.decimals)

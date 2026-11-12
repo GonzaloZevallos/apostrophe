@@ -1,6 +1,7 @@
 ---
 status: superseded by 0033
 date: 2026-10-06
+summary: "las rutas del front de variedades se sirven por patrones de id"
 ---
 
 # Varieties front paths are served by exact paths and id patterns, and legacy ids are carried across server side

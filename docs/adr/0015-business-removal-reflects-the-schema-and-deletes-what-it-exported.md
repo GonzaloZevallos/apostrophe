@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-03
+summary: "la baja de un Business sigue el esquema y borra exactamente lo que exportó"
 ---
 
 # Business removal reflects the schema, classifies columns by convention, and deletes exactly the ids it exported

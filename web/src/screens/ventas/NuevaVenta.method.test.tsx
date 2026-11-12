@@ -16,8 +16,8 @@ import { HOME, SALES, SALE_NEW } from '../../routes'
 import { router } from '../../router'
 import { pickProduct } from './lineProduct'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
-const ANA = { id: 7, name: 'Ana', phone: '+5491100000001', vip: false }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
+const ANA = { id: 7, name: 'Ana', phone: '+5491100000001', phone_display: '+54 9 11 0000-0001', vip: false }
 
 function price(list: number) {
   return { id: 9, effective_from: '2026-09-01', list_price: list, bulk_price: null, bulk_minimum: null, vip_price: null }

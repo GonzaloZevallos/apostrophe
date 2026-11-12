@@ -342,7 +342,8 @@ Criterios de éxito, el test de seguridad de la cookie (seguimiento de GH-130):
 - **El archivo del export**:
   - un archivo JSON por corrida real, con permisos solo para el dueño, escrito en el sistema de archivos del servidor y nunca en un lugar que sirva la app;
   - su nombre lleva el nombre del Business (en forma de slug) y la fecha y hora de la corrida; un archivo existente nunca se sobrescribe;
-  - valores simples: fechas ISO 8601, pesos enteros, gramos como decimales de hasta dos posiciones;
+  - valores simples: fechas ISO 8601, montos como el entero guardado a la **Money scale** del Business (unidades enteras de moneda en escala 0, centésimos en escala 2), gramos como decimales de hasta dos posiciones;
+  - un bloque `money {scale, decimals}` con la Money scale y los decimales del **Money format** del Business, para leer sus montos (ADR-0058). Se lee en la misma transacción y en el mismo paso que las filas del export, antes del borrado, y la fila de `money_format` se cuenta entre las exportadas y las borradas. Un export de escala 0 conserva sus enteros exactamente como antes, salvo este bloque (money.md);
   - cada registro nombra aquello a lo que se refiere (Customer, Product, categoría) además de su id;
   - guarda cada hecho registrado tal como está guardado:
     - el nombre del Business y sus Pricing settings (Bulk price y VIP customers);
@@ -515,7 +516,7 @@ Este archivo solo dice dónde se aplica y cómo se mantiene. No repite los requi
 
 Estos grupos de Settings (navigation.md) reemplazan a la antigua pantalla Business, que ya no existe; `/negocio` redirige a Settings. Cada uno es su propia subpantalla, un formulario: "Close", y una confirmación al salir con cambios sin guardar; uno sin tocar se cierra al instante. (Prices, entre Users e Integrations, es pricing-settings.md.)
 
-- **Business**: renombrar el Business. Toast "Business renamed"; rechazos en línea, conservando lo tipeado.
+- **Business**: renombrar el Business y elegir su Phone country, con un solo Save. Toast "Saved"; rechazos en línea, conservando lo tipeado.
 - **Users**:
   - los Users por email, ordenados por email, con el que tiene la sesión iniciada marcado "you"; siempre lista al menos al User con la sesión iniciada;
   - "Invite a partner": cada toque crea un link nuevo para sumarse, para copiar o compartir con el menú de compartir del teléfono.
@@ -578,7 +579,7 @@ Estos estados los dibuja `Estados` (GH-49), con el estilo renovado a partir del 
 
 - **Los toasts de éxito** son cortos, fijos y no llevan datos, con una excepción deliberada.
   - Los toasts de esta capacidad:
-    - "Business renamed";
+    - "Saved";
     - "Invitation ready", salvo que el link se muestre en la pantalla;
     - "Password changed · we signed out your other sessions".
   - Elegir un tema no muestra ningún toast.
@@ -659,7 +660,7 @@ Estos estados los dibuja `Estados` (GH-49), con el estilo renovado a partir del 
 - **Nada inventado (criterio 7)**:
   - la barra, la barra lateral, More y Settings muestran exactamente los accesos que lista navigation.md;
   - cada cifra de Home es igual a la respuesta de la API, con ceros reales para un período sin actividad (results.md);
-  - Home no muestra otros avisos que la **First-run checklist**, "Start with your products", el del **Pinned catalog** y el aviso posterior al **Spreadsheet import**.
+  - Home no muestra otro aviso que el del **Pinned catalog** ("Your Telegram catalog is out of date"); ningún elemento de primer uso (navigation.md).
 - **Password change (criterio 18)**:
   - después de un Change, cada token anterior del User responde 401;
   - el token nuevo del dispositivo que actuó funciona, y el token de un socio en el mismo Business sigue funcionando;
@@ -710,8 +711,8 @@ Estos estados los dibuja `Estados` (GH-49), con el estilo renovado a partir del 
   - `login_guard` no guarda nada para los emails eliminados;
   - una tabla agregada al esquema más adelante queda cubierta sin cambiar el comando, comprobado por un test.
 - **Export = borrado (criterios 8, 11)**:
-  - para cada tipo exportado, el conteo en el archivo es igual al conteo borrado;
-  - cada campo guardado listado arriba está presente, las Pricing settings y los VIP prices incluidos, y cada referencia lleva un nombre y un id;
+  - para cada tipo exportado, el conteo en el archivo es igual al conteo borrado, la fila de `money_format` incluida;
+  - cada campo guardado listado arriba está presente, las Pricing settings, los VIP prices y el bloque `money {scale, decimals}` incluidos, y cada referencia lleva un nombre y un id;
   - en el archivo no hay ningún hash de contraseña, digest de Invitation, digest de Reset link ni secreto;
   - la corrida de prueba cuenta los Reset links solo entre lo que se borra.
 - **Los demás intactos (criterio 12)**: el conteo de filas de cada tabla del otro Business es idéntico antes y después, y lee todos sus datos después.

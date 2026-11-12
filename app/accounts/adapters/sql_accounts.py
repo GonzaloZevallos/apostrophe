@@ -18,10 +18,12 @@ from app.accounts.domain.account import (
     BusinessName,
     Email,
     StoredLanguageCorrupt,
+    StoredPhoneCountryCorrupt,
     User,
 )
 from app.accounts.domain.invitation import Invitation, InvitationKind
 from app.shared.language import BusinessLanguage, InvalidLanguageTag, Language
+from app.shared.phone_country import PhoneCountry, UnknownPhoneCountry
 
 
 class SqlAccounts:
@@ -31,10 +33,14 @@ class SqlAccounts:
         self._session = session
 
     def add_business(self, business: Business) -> Business:
-        row = BusinessRow(name=business.name.value, language=business.language.language.tag)
+        row = BusinessRow(
+            name=business.name.value,
+            language=business.language.language.tag,
+            default_phone_country=_country_code(business.phone_country),
+        )
         self._session.add(row)
         self._session.flush()
-        return Business(business.name, business.language, row.id)
+        return Business(business.name, business.language, business.phone_country, row.id)
 
     def business(self, business_id: int) -> Business | None:
         row = self._session.get(BusinessRow, business_id)
@@ -46,13 +52,14 @@ class SqlAccounts:
             language = BusinessLanguage(Language(row.language))
         except InvalidLanguageTag:
             raise StoredLanguageCorrupt from None
-        return Business(BusinessName(row.name), language, row.id)
+        return Business(BusinessName(row.name), language, _phone_country(row), row.id)
 
     def save_business(self, business: Business) -> None:
         assert business.id is not None
         row = self._session.get_one(BusinessRow, business.id)
         row.name = business.name.value
         row.language = business.language.language.tag
+        row.default_phone_country = _country_code(business.phone_country)
         self._session.flush()
 
     def add_user(self, user: User) -> User:
@@ -219,10 +226,10 @@ class SqlAccounts:
             UserRow.business_id, UserRow.id, literal(token_digest), literal(created_at)
         ).where(UserRow.id == user_id)
         insert_statement = sqlite_insert(ResetLinkRow).from_select(
-            ["business_id", "user_id", "token_digest", "created_at"], select_statement
+            ["business_id", "app_user_id", "token_digest", "created_at"], select_statement
         )
         statement = insert_statement.on_conflict_do_update(
-            index_elements=["user_id"],
+            index_elements=["app_user_id"],
             set_={
                 "token_digest": insert_statement.excluded.token_digest,
                 "created_at": insert_statement.excluded.created_at,
@@ -243,14 +250,14 @@ class SqlAccounts:
         statement = (
             delete(ResetLinkRow)
             .where(ResetLinkRow.token_digest == token_digest, ResetLinkRow.created_at > cutoff)
-            .returning(ResetLinkRow.user_id)
+            .returning(ResetLinkRow.app_user_id)
         )
         row = self._session.execute(statement).first()
         self._session.flush()
         return None if row is None else int(row[0])
 
     def delete_reset_links_of(self, user_id: int) -> None:
-        statement = delete(ResetLinkRow).where(ResetLinkRow.user_id == user_id)
+        statement = delete(ResetLinkRow).where(ResetLinkRow.app_user_id == user_id)
         self._session.execute(statement)
         self._session.flush()
 
@@ -262,6 +269,19 @@ class UnknownUser(Exception):
 
     def __init__(self, user_id: int) -> None:
         super().__init__(f"no user with id {user_id}")
+
+
+def _country_code(country: PhoneCountry | None) -> str | None:
+    return None if country is None else country.value
+
+
+def _phone_country(row: BusinessRow) -> PhoneCountry | None:
+    if row.default_phone_country is None:
+        return None
+    try:
+        return PhoneCountry.parse(row.default_phone_country)
+    except UnknownPhoneCountry:
+        raise StoredPhoneCountryCorrupt from None
 
 
 def _user(row: UserRow) -> User:

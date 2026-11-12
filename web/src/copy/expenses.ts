@@ -5,7 +5,7 @@
 
 import { baselineArgs, FIXTURE } from './baselineArgs.ts'
 import type * as Self from './expenses.ts'
-import type { LimitedCopy } from './limits'
+import type { LimitedCopy } from './limits.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 

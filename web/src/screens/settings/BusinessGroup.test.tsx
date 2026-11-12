@@ -7,7 +7,7 @@
 import { LOGIN, SETTINGS, SETTINGS_BUSINESS } from '../../routes'
 import { inAppState } from '../../components/inAppState'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -18,7 +18,8 @@ import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import BusinessGroup from './BusinessGroup'
-import { BUSINESS_NAME_INVALID_MESSAGE, RENAME_SUCCESS } from '../../copy/settings'
+import { BUSINESS_NAME_INVALID_MESSAGE, GENERIC_REFUSAL_MESSAGE, RENAME_SUCCESS } from '../../copy/settings'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -32,13 +33,28 @@ const ME: Me = {
   business_name: 'La Huerta',
   today: '2026-10-02',
   shown_language: SHOWN_EN,
+  money: { symbol: '$', decimals: 0 },
 }
 
 function Provide() {
-  return <Outlet context={ME} />
+  return <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
 }
 
+// What `GET /business` lists (the API's order and calling codes, faked at fetch).
+const PHONE_COUNTRIES = [
+  { code: 'AR', calling_code: '54' },
+  { code: 'UY', calling_code: '598' },
+  { code: 'CL', calling_code: '56' },
+  { code: 'PY', calling_code: '595' },
+  { code: 'BR', calling_code: '55' },
+  { code: 'MX', calling_code: '52' },
+  { code: 'ES', calling_code: '34' },
+  { code: 'US', calling_code: '1' },
+]
+
 const BUSINESS = {
+  phone_country: 'AR',
+  phone_countries: PHONE_COUNTRIES,
   name: 'La Huerta',
   language: 'en',
   selectable_languages: ['en'],
@@ -94,7 +110,7 @@ test('renaming the business shows the fixed success toast, never the name or an 
   const input = await screen.findByLabelText('Business name')
   await userEvent.clear(input)
   await userEvent.type(input, 'La Huerta Nueva')
-  await userEvent.click(screen.getByRole('button', { name: 'Save the name' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText(RENAME_SUCCESS)).toBeInTheDocument()
   expect(screen.getByDisplayValue('La Huerta Nueva')).toBeInTheDocument()
@@ -114,7 +130,7 @@ test('a rejected name keeps what was typed and shows the inline refusal, not a t
   const input = await screen.findByLabelText('Business name')
   await userEvent.clear(input)
   await userEvent.type(input, '   ')
-  await userEvent.click(screen.getByRole('button', { name: 'Save the name' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByRole('alert')).toHaveTextContent(BUSINESS_NAME_INVALID_MESSAGE)
   expect(screen.queryByText(RENAME_SUCCESS)).not.toBeInTheDocument()
@@ -131,7 +147,7 @@ test('a dropped network while renaming shows "Sin conexión", never the generic 
   const input = await screen.findByLabelText('Business name')
   await userEvent.clear(input)
   await userEvent.type(input, 'La Huerta Nueva')
-  await userEvent.click(screen.getByRole('button', { name: 'Save the name' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.queryByText(ERROR_GENERICO_MENSAJE)).not.toBeInTheDocument()
@@ -152,12 +168,12 @@ test('"Close" right after a save closes at once, with the refetch still pending:
   const input = await screen.findByLabelText('Business name')
   await userEvent.clear(input)
   await userEvent.type(input, 'La Huerta Nueva')
-  await userEvent.click(screen.getByRole('button', { name: 'Save the name' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
   await screen.findByText(RENAME_SUCCESS)
   await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
-  expect(screen.queryByText('Discard the name?')).not.toBeInTheDocument()
+  expect(screen.queryByText('Discard changes?')).not.toBeInTheDocument()
 })
 
 test('a real change after a save asks before closing, and keeping it leaves what was typed', async () => {
@@ -172,12 +188,12 @@ test('a real change after a save asks before closing, and keeping it leaves what
   const input = await screen.findByLabelText('Business name')
   await userEvent.clear(input)
   await userEvent.type(input, 'La Huerta Nueva')
-  await userEvent.click(screen.getByRole('button', { name: 'Save the name' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
   await screen.findByText(RENAME_SUCCESS)
   await userEvent.type(input, ' 2')
   await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
-  expect(await screen.findByText('Discard the name?')).toBeInTheDocument()
+  expect(await screen.findByText('Discard changes?')).toBeInTheDocument()
   await userEvent.click(screen.getByRole('button', { name: 'No, keep editing' }))
   expect(screen.getByLabelText('Business name')).toHaveValue('La Huerta Nueva 2')
   expect(screen.queryByText('Lista de grupos')).not.toBeInTheDocument()
@@ -236,7 +252,7 @@ test('tapping Deutsch saves at once with PUT {language: de} and shows what the A
     expect(screen.getByRole('radio', { name: 'Deutsch' })).toHaveAttribute('aria-checked', 'true')
   })
   expect(screen.getByRole('radio', { name: 'English' })).toHaveAttribute('aria-checked', 'false')
-  expect(screen.queryByText('Discard the name?')).not.toBeInTheDocument()
+  expect(screen.queryByText('Discard changes?')).not.toBeInTheDocument()
 })
 
 test('segments are disabled while the choice is saving', async () => {
@@ -299,9 +315,124 @@ test('a stored language off the list is one extra selected segment, first, that 
   const stored = 'fr' as StoredLanguage
   renderBusiness(vi.fn().mockResolvedValue(jsonResponse(200, { ...TWO_LANGUAGES, language: stored })))
 
-  const radios = await screen.findAllByRole('radio')
+  const radios = within(await screen.findByRole('radiogroup', { name: 'Language' })).getAllByRole('radio')
   expect(radios.map((radio) => radio.textContent)).toEqual(['fr', 'English', 'Deutsch'])
   expect(radios[0]).toHaveAttribute('aria-checked', 'true')
   expect(radios[0]).toBeDisabled()
   expect(radios[1]).toBeEnabled()
+})
+
+const OPTION_NAMES = [
+  'No country',
+  'Argentina (+54)',
+  'Uruguay (+598)',
+  'Chile (+56)',
+  'Paraguay (+595)',
+  'Brazil (+55)',
+  'Mexico (+52)',
+  'Spain (+34)',
+  'United States (+1)',
+]
+
+function phoneCountryFetch(answer: () => Response | Promise<Response>) {
+  return vi.fn((url: string, init?: RequestInit) => {
+    if (url === '/business/phone-country' && init?.method === 'PUT') return Promise.resolve(answer())
+    return Promise.resolve(jsonResponse(200, BUSINESS))
+  })
+}
+
+test('the Phone country control lists "No country" first, then the API countries with their codes, and marks the stored one with a check', async () => {
+  renderBusiness(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
+
+  const group = await screen.findByRole('radiogroup', { name: 'Phone country' })
+  const options = within(group).getAllByRole('radio')
+  expect(options.map((option) => option.textContent)).toEqual(OPTION_NAMES)
+  const argentina = screen.getByRole('radio', { name: 'Argentina (+54)' })
+  expect(argentina).toHaveAttribute('aria-checked', 'true')
+  expect(argentina.querySelector('svg')).not.toBeNull()
+  expect(screen.getByRole('radio', { name: 'No country' })).toHaveAttribute('aria-checked', 'false')
+})
+
+test('the help line is always visible and is the control\'s accessible description', async () => {
+  renderBusiness(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
+
+  const group = await screen.findByRole('radiogroup', { name: 'Phone country' })
+  expect(group).toHaveAccessibleDescription("Applies to numbers you type from now on. Saved numbers don't change.")
+})
+
+test('choosing a country and saving sends only PUT {phone_country}, with no confirmation, and shows what the API answered', async () => {
+  const user = userEvent.setup()
+  const fetchMock = phoneCountryFetch(() => jsonResponse(200, { phone_country: 'UY', phone_countries: PHONE_COUNTRIES }))
+  renderBusiness(fetchMock)
+
+  await user.click(await screen.findByRole('radio', { name: 'Uruguay (+598)' }))
+  expect(screen.getByRole('radio', { name: 'Uruguay (+598)' })).toHaveAttribute('aria-checked', 'true')
+  await user.click(screen.getByRole('button', { name: 'Save' }))
+
+  expect(await screen.findByText(RENAME_SUCCESS)).toBeInTheDocument()
+  const writes = fetchMock.mock.calls.filter(([, init]) => init?.method !== undefined && init.method !== 'GET')
+  expect(writes.map(([url, init]) => [url, init?.method, init?.body])).toEqual([
+    ['/business/phone-country', 'PUT', JSON.stringify({ phone_country: 'UY' })],
+  ])
+  expect(screen.getByRole('radio', { name: 'Uruguay (+598)' })).toHaveAttribute('aria-checked', 'true')
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+})
+
+test('choosing "No country" saves a null Phone country', async () => {
+  const user = userEvent.setup()
+  const fetchMock = phoneCountryFetch(() => jsonResponse(200, { phone_country: null, phone_countries: PHONE_COUNTRIES }))
+  renderBusiness(fetchMock)
+
+  await user.click(await screen.findByRole('radio', { name: 'No country' }))
+  await user.click(screen.getByRole('button', { name: 'Save' }))
+
+  expect(await screen.findByText(RENAME_SUCCESS)).toBeInTheDocument()
+  expect(fetchMock).toHaveBeenCalledWith(
+    '/business/phone-country',
+    expect.objectContaining({ method: 'PUT', body: JSON.stringify({ phone_country: null }) }),
+  )
+  expect(screen.getByRole('radio', { name: 'No country' })).toHaveAttribute('aria-checked', 'true')
+})
+
+test('a refused Phone country shows the fixed generic sentence under the control, never the detail, and keeps the choice', async () => {
+  const user = userEvent.setup()
+  renderBusiness(
+    phoneCountryFetch(() =>
+      jsonResponse(422, { code: 'business.phone_country_unknown', detail: 'DETAIL-MUST-NOT-SHOW' }),
+    ),
+  )
+
+  await user.click(await screen.findByRole('radio', { name: 'Chile (+56)' }))
+  await user.click(screen.getByRole('button', { name: 'Save' }))
+
+  expect(await screen.findByRole('alert')).toHaveTextContent(GENERIC_REFUSAL_MESSAGE)
+  expect(screen.queryByText(/DETAIL-MUST-NOT-SHOW/)).not.toBeInTheDocument()
+  expect(screen.queryByText(RENAME_SUCCESS)).not.toBeInTheDocument()
+  expect(screen.getByRole('radio', { name: 'Chile (+56)' })).toHaveAttribute('aria-checked', 'true')
+})
+
+test('a dropped network while saving the Phone country shows "Sin conexión"', async () => {
+  const user = userEvent.setup()
+  const fetchMock = vi.fn((url: string, init?: RequestInit) =>
+    url === '/business/phone-country' && init?.method === 'PUT'
+      ? Promise.reject(new TypeError('network error'))
+      : Promise.resolve(jsonResponse(200, BUSINESS)),
+  )
+  renderBusiness(fetchMock)
+
+  await user.click(await screen.findByRole('radio', { name: 'Spain (+34)' }))
+  await user.click(screen.getByRole('button', { name: 'Save' }))
+
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
+  expect(screen.queryByText(RENAME_SUCCESS)).not.toBeInTheDocument()
+})
+
+test('an unsaved Phone country choice asks before closing', async () => {
+  const user = userEvent.setup()
+  renderBusiness(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
+
+  await user.click(await screen.findByRole('radio', { name: 'Brazil (+55)' }))
+  await user.click(screen.getByRole('button', { name: 'Close' }))
+
+  expect(await screen.findByText('Discard changes?')).toBeInTheDocument()
 })

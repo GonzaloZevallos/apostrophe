@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Protocol
 
 from app.business_removal.application.export_file import ExportFile
+from app.business_removal.application.money_format_read import MoneyFormatRead
 from app.business_removal.application.operator_words import OperatorWords
 from app.business_removal.application.schema_rows import SchemaRows
 from app.business_removal.application.signals import blocked_signals
@@ -36,7 +37,11 @@ from app.business_removal.domain.exclusions import (
     LOGIN_GUARD_TABLE,
     WITHHELD_TABLES,
 )
-from app.business_removal.domain.export_document import Business, build_document, id_sets
+from app.business_removal.domain.export_document import (
+    Business,
+    build_document,
+    id_sets,
+)
 from app.business_removal.domain.labels import exported_tables, unlabelled_tables
 from app.business_removal.domain.naming import file_name, terminal_name
 from app.business_removal.domain.reconciliation import reconcile
@@ -130,6 +135,8 @@ def remove_business(
     words: OperatorWords,
     clock: Clock,
     email: str,
+    *,
+    money_format: MoneyFormatRead,
 ) -> int:
     """Exports the business found from `email`, asks the operator to type its name
     back, then deletes every row in one transaction -- only once the file has been
@@ -166,12 +173,22 @@ def remove_business(
             return 1
 
         rows = {name: schema_rows.rows(name, business.id) for name in owned}
+        # Read at the same step as the rows, in the same transaction and before the
+        # delete: the export states the scale its stored amounts are held at.
+        money = money_format.of(business.id)
         now = _naive_utc(clock())
         document = build_document(
-            Business(business.id, business.name, business.language, business.last_sale_number),
+            Business(
+                business.id,
+                business.name,
+                business.language,
+                business.default_phone_country,
+                business.last_sale_number,
+            ),
             schema,
             rows,
             now,
+            money,
         )
         name = file_name(business.name, now)
         path = export_file.write_durably(name, document)

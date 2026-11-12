@@ -99,9 +99,14 @@ def _seed(engine: Engine) -> None:
 
 
 def _counts(engine: Engine) -> dict[str, int]:
+    """Keyed by the 0012 name; read under whichever name the table has now (0027 renamed
+    `catalog_attributes` to `catalog_attribute`)."""
+    present = set(inspect(engine).get_table_names())
     with engine.connect() as connection:
         return {
-            table: connection.execute(text(f"SELECT COUNT(*) FROM {table}")).scalar_one()
+            table: connection.execute(
+                text(f"SELECT COUNT(*) FROM {table if table in present else table[:-1]}")
+            ).scalar_one()
             for table in ("variety", *REFERENCING)
         }
 

@@ -207,6 +207,17 @@ def seeded(
                 text("INSERT INTO first_run (business_id, imported_at) VALUES (:b, :at)"),
                 {"b": _business_id(file_engine, email), "at": "2026-10-01 12:00:00"},
             )
+        # One type price each, tied to the business's Price entry (no route writes one yet).
+        connection.execute(
+            text(
+                "INSERT INTO customer_type_price (business_id, variety_id, customer_type_id, "
+                "price, effective_on, price_entry_id) "
+                "SELECT price_entry.business_id, price_entry.variety_id, customer_type.id, "
+                "price_entry.list_price / 2, price_entry.effective_on, price_entry.id "
+                "FROM price_entry JOIN customer_type "
+                "ON customer_type.business_id = price_entry.business_id"
+            )
+        )
     return {"leaving": leaving_records, "staying": staying_records}
 
 
@@ -456,8 +467,8 @@ def test_rows_parses_bool_date_and_naive_datetime_columns(tmp_path: Path) -> Non
         [customer_row] = rows.rows("customer", business.id)
         assert customer_row["id"] == customer["id"]
         # The frozen mark is read back as a bool and never written: it stays False.
-        assert type(customer_row["vip"]) is bool
-        assert customer_row["vip"] is False
+        assert type(customer_row["is_vip"]) is bool
+        assert customer_row["is_vip"] is False
         [settings_row] = rows.rows("pricing_settings", business.id)
         assert settings_row["is_vip_customers"] is True
 

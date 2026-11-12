@@ -16,7 +16,7 @@ import { ANALYSIS, CUSTOMERS, EXPENSES, HOME, SALES, SETTINGS, VARIETIES, type V
 import { SHOWN_EN } from '../test/shownLanguage'
 import { stubViewport } from '../test-viewport'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 const PATHS = [
   ['Home', HOME],

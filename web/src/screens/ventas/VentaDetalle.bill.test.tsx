@@ -15,6 +15,7 @@ import { saleJustSaved } from '../../components/feedback'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { pathTo, SALE as SALE_ROUTE } from '../../routes'
 import VentaDetalle from './VentaDetalle'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -27,10 +28,12 @@ function renderDetalle(state?: unknown) {
   })
   render(
     <QueryClientProvider client={queryClient}>
+<MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
       <SheetRouterProvider router={router}>
         <RouterProvider router={router} />
       </SheetRouterProvider>
-    </QueryClientProvider>,
+    </MoneyFormatProvider>
+</QueryClientProvider>,
   )
   return queryClient
 }
@@ -142,7 +145,7 @@ test('a 404 still takes the not-found path, with no button', async () => {
   expect(screen.queryByText('Sale #2')).not.toBeInTheDocument()
 })
 
-const NICO_SEARCH_RESULT = { id: 5, name: 'Nico', phone: '1111', vip: true }
+const NICO_SEARCH_RESULT = { id: 5, name: 'Nico', phone: '1111', phone_display: '1111', vip: true }
 const NICO = { id: 5, name: 'Nico', vip: true }
 
 /** Serves the sale's reads from a queue the test controls, so a read can be held. */

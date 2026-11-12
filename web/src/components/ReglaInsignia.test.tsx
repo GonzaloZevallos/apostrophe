@@ -41,3 +41,15 @@ test('special reads "special", accented', () => {
   render(<ReglaInsignia rule="special" />)
   expect(screen.getByText('special').className).toBe('insignia insignia--acento')
 })
+
+test('a type line reads the type name it was priced with, in full, whatever its length', () => {
+  const name = 'Mayoristas de la feria del domingo por la mañana'
+  render(<ReglaInsignia rule="type" typeName={name} />)
+  expect(screen.getByText(name)).toBeInTheDocument()
+  expect(screen.queryByLabelText(name)).not.toBeInTheDocument()
+})
+
+test('a type line without a name shows no badge rather than a wrong word', () => {
+  const { container } = render(<ReglaInsignia rule="type" typeName={null} />)
+  expect(container).toBeEmptyDOMElement()
+})

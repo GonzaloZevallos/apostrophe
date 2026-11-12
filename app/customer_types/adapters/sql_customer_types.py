@@ -4,7 +4,7 @@ from sqlalchemy import CursorResult, column, delete, exists, select, table
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.customer_types.adapters.tables import CustomerTypeRow
+from app.customer_types.adapters.tables import CustomerTypePriceRow, CustomerTypeRow
 from app.customer_types.domain.customer_type import (
     CustomerType,
     CustomerTypeIcon,
@@ -73,8 +73,17 @@ class SqlCustomerTypes:
         return _customer_type(row)
 
     def delete_unused(self, type_id: int) -> bool:
-        """One `DELETE ... WHERE NOT EXISTS (customer in the type)`: a customer that
-        joins between the count and this statement leaves the row where it is."""
+        """The type's price rows go first, then the type, each by one `DELETE ... WHERE NOT
+        EXISTS (customer in the type)`: a customer that joins between the count and these
+        statements leaves both where they are."""
+        in_use = exists().where(_CUSTOMER.c.customer_type_id == type_id)
+        self._session.execute(
+            delete(CustomerTypePriceRow).where(
+                CustomerTypePriceRow.customer_type_id == type_id,
+                CustomerTypePriceRow.business_id == self._business_id,
+                ~in_use,
+            )
+        )
         in_use = exists().where(_CUSTOMER.c.customer_type_id == CustomerTypeRow.id)
         statement = delete(CustomerTypeRow).where(
             CustomerTypeRow.id == type_id,

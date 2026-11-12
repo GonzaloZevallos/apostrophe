@@ -257,8 +257,6 @@ for (const viewport of VIEWPORTS) {
           if (origin === 'customers') {
             await opener.scrollIntoViewIfNeeded()
           } else {
-            // Home draws its setup notice above the figures once /first-run answers; the seller scrolls a drawn page.
-            if (origin === 'home') await expect(page.getByText('Go on to the setup')).toBeVisible()
             // Home and the card keep the control near the top; scroll so it sits 100 px below it, or as far as the page goes.
             await opener.evaluate((element) => window.scrollTo(0, element.getBoundingClientRect().top + window.scrollY - 100))
             await expect(opener).toBeInViewport()

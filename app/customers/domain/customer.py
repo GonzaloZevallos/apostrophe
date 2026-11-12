@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from app.shared.names import fold
+from app.shared.phone_country import PhoneCountry, PhoneCountryRule, grouped, listed_country_of
 
 NAME_MAX_LENGTH = 60
 
@@ -35,6 +36,17 @@ class InvalidPhoneNumber(CustomerRuleBroken):
         super().__init__("that doesn't look like a phone number with its area code")
 
 
+class PhoneNeedsCountryCode(CustomerRuleBroken):
+    """A number typed without "+" in a business that has no Phone country."""
+
+    code: ClassVar[str] = "customer.phone_needs_country_code"
+
+    def __init__(self) -> None:
+        super().__init__(
+            "a phone number without a Phone country starts with + and its country code"
+        )
+
+
 class MissingCustomerName(CustomerRuleBroken):
     code: ClassVar[str] = "customer.name_missing"
 
@@ -47,6 +59,13 @@ class CustomerNameTooLong(CustomerRuleBroken):
 
     def __init__(self) -> None:
         super().__init__(f"a customer name has at most {NAME_MAX_LENGTH} characters")
+
+
+def _argentine_marks(rule: PhoneCountryRule) -> tuple[str, str]:
+    """Argentina's mobile nine and local fifteen, which only its rule in the shared table has."""
+    if rule.mobile_nine is None or rule.local_mobile_fifteen is None:
+        raise ValueError("Argentina's rule carries the mobile nine and the local fifteen")
+    return rule.mobile_nine, rule.local_mobile_fifteen
 
 
 @dataclass(frozen=True)
@@ -82,16 +101,24 @@ class PhoneNumber:
         return True
 
     @classmethod
-    def optional(cls, raw: str | None) -> PhoneNumber | None:
+    def optional(cls, raw: str | None, country: PhoneCountry | None) -> PhoneNumber | None:
         """`None` for a missing phone, or one blank after trimming; otherwise `of`.
         The only place in the product a phone is tested for emptiness (the plan's
         invariant)."""
         if raw is None or not raw.strip():
             return None
-        return cls.of(raw)
+        return cls.of(raw, country)
 
     @classmethod
-    def of(cls, raw: str) -> PhoneNumber:
+    def of(cls, raw: str, country: PhoneCountry | None) -> PhoneNumber:
+        """The canonical number of one typed by the business's Phone country (docs/adr/0082).
+
+        With "+", a listed calling code is read by that country's rule whatever
+        `country` is, and any other code is accepted as written. Without "+" the digits
+        are international when they start with the country's code and fit one of its
+        international lengths, and otherwise a local number of that country. There is
+        no default for `country`: every caller says which one it means.
+        """
         cleaned = raw
         for separator in _SEPARATORS:
             cleaned = cleaned.replace(separator, "")
@@ -101,18 +128,82 @@ class PhoneNumber:
         if "+" in rest or not rest or not rest.isdigit():
             raise InvalidPhoneNumber()
 
-        if rest.startswith("54"):
-            return cls(cls._from_54(rest[2:]))
         if has_plus:
-            return cls(cls._from_foreign(rest))
-        return cls(cls._from_local(rest))
+            listed = listed_country_of(rest)
+            if listed is None:
+                return cls(cls._from_foreign(rest))
+            return cls(cls._international(listed, rest))
+        if country is None:
+            raise PhoneNeedsCountryCode()
+        if country is PhoneCountry.AR:
+            return cls(cls._argentine(rest))
+        if rest.startswith(country.rule.calling_code):
+            national = cls._national_after_code(country.rule, rest)
+            if national is not None:
+                return cls(f"+{country.rule.calling_code}{national}")
+        return cls(f"+{country.rule.calling_code}{cls._local(country.rule, rest)}")
+
+    @classmethod
+    def _international(cls, country: PhoneCountry, digits: str) -> str:
+        """The number typed with "+" and the calling code of a listed country."""
+        if country is PhoneCountry.AR:
+            return cls._argentine(digits)
+        national = cls._national_after_code(country.rule, digits)
+        if national is None:
+            raise InvalidPhoneNumber()
+        return f"+{country.rule.calling_code}{national}"
+
+    @staticmethod
+    def _national_after_code(rule: PhoneCountryRule, digits: str) -> str | None:
+        """The national number of digits that start with the calling code, or `None`
+        when they do not fit one of the country's lengths. Mexico drops the old
+        mobile "1" after 52."""
+        national = digits[len(rule.calling_code) :]
+        one = rule.legacy_mobile_one
+        if (
+            one is not None
+            and national.startswith(one)
+            and len(national) - 1 in rule.national_lengths
+        ):
+            national = national[len(one) :]
+        return national if len(national) in rule.national_lengths else None
+
+    @staticmethod
+    def _local(rule: PhoneCountryRule, digits: str) -> str:
+        """A number typed the way it is said in the country: the trunk prefix is
+        dropped (Brazil: and a two-digit carrier code), what is left must be a national
+        length."""
+        local = digits
+        if rule.trunk_prefix is not None and local.startswith(rule.trunk_prefix):
+            local = local[len(rule.trunk_prefix) :]
+        if (
+            rule.carrier_code_length
+            and len(local) - rule.carrier_code_length in rule.national_lengths
+        ):
+            local = local[rule.carrier_code_length :]
+        if len(local) not in rule.national_lengths:
+            raise InvalidPhoneNumber()
+        return local
+
+    @classmethod
+    def _argentine(cls, rest: str) -> str:
+        """Argentina's rule, as it has always been: every number is a mobile. Its code,
+        its mobile nine, its local fifteen, its trunk prefix and its length are read
+        from the shared table."""
+        code = PhoneCountry.AR.rule.calling_code
+        if rest.startswith(code):
+            return cls._from_54(rest[len(code) :])
+        return cls._from_local(rest)
 
     @staticmethod
     def _from_54(remainder: str) -> str:
-        if len(remainder) == 10:
-            return "+549" + remainder
-        if len(remainder) == 11 and remainder[0] == "9":
-            return "+549" + remainder[1:]
+        rule = PhoneCountry.AR.rule
+        nine, _ = _argentine_marks(rule)
+        (length,) = rule.national_lengths
+        if len(remainder) == length:
+            return f"+{rule.calling_code}{nine}{remainder}"
+        if len(remainder) == length + len(nine) and remainder.startswith(nine):
+            return f"+{rule.calling_code}{nine}{remainder[len(nine) :]}"
         raise InvalidPhoneNumber()
 
     @staticmethod
@@ -123,23 +214,33 @@ class PhoneNumber:
 
     @staticmethod
     def _from_local(digits: str) -> str:
-        local = digits[1:] if digits.startswith("0") else digits
-        if len(local) == 12:
-            local = PhoneNumber._without_15(local)
-        if len(local) != 10:
+        rule = PhoneCountry.AR.rule
+        nine, fifteen = _argentine_marks(rule)
+        (length,) = rule.national_lengths
+        trunk = rule.trunk_prefix or ""
+        local = digits[len(trunk) :] if trunk and digits.startswith(trunk) else digits
+        if len(local) == length + len(fifteen):
+            local = PhoneNumber._without_15(local, fifteen)
+        if len(local) != length:
             raise InvalidPhoneNumber()
-        return "+549" + local
+        return f"+{rule.calling_code}{nine}{local}"
 
     @staticmethod
-    def _without_15(local: str) -> str:
+    def _without_15(local: str, fifteen: str) -> str:
         for index in (2, 3, 4):
-            if local[index : index + 2] == "15":
-                return local[:index] + local[index + 2 :]
+            if local[index : index + len(fifteen)] == fifteen:
+                return local[:index] + local[index + len(fifteen) :]
         raise InvalidPhoneNumber()
 
     @property
     def digits(self) -> str:
         return self.value[1:]
+
+    @property
+    def display(self) -> str:
+        """The number grouped by its own country's rule, for a read response only; a
+        number that fits no template is the stored value."""
+        return grouped(self.digits) or self.value
 
 
 @dataclass(frozen=True)

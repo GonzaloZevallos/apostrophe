@@ -18,8 +18,9 @@ import { addFixtureNamespace, removeFixtureNamespace } from '../i18n/testing'
 import { CATALOG, HOME, SCREENS, type Screen } from '../routes'
 import { SHOWN_EN } from '../test/shownLanguage'
 import Shell from './Shell'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 const viewport = vi.hoisted(() => ({ current: 'phone' as 'phone' | 'computer' }))
 
@@ -72,7 +73,7 @@ function leaf(entry: Screen): RouteObject {
 function renderShell(path: string, computer: boolean) {
   viewport.current = computer ? 'computer' : 'phone'
   const router = createMemoryRouter(
-    [{ element: <Outlet context={ME} />, children: [{ element: <Shell />, children: SCREENS.map(leaf) }] }],
+    [{ element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>, children: [{ element: <Shell />, children: SCREENS.map(leaf) }] }],
     { initialEntries: [path] },
   )
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })

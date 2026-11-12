@@ -9,6 +9,7 @@ from app.accounts.adapters.deps import CurrentBusinessId
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
+from app.money_route import MoneyJsonRoute
 from app.products.adapters.schemas import (
     PriceEntryIn,
     PriceEntryOut,
@@ -17,6 +18,7 @@ from app.products.adapters.schemas import (
     ProductOut,
 )
 from app.products.adapters.sql_products import SqlProducts
+from app.products.adapters.vip_type_prices import SqlVipTypePrices
 from app.products.application import manage_prices, manage_products
 from app.products.application.errors import (
     NameHeldByArchived,
@@ -24,17 +26,23 @@ from app.products.application.errors import (
     ProductHasHistory,
     ProductNotFound,
 )
-from app.products.application.ports import PricingSettingsReader, ProductLeaving
+from app.products.application.ports import (
+    MoneyFormatReader,
+    PricingSettingsReader,
+    ProductLeaving,
+    VipTypePrices,
+)
 from app.products.domain.product import (
+    CustomerTypePriceNotBelowList,
     DuplicateEffectiveDate,
     ProductArchived,
     ProductRuleBroken,
     UnknownPriceEntry,
-    VipPriceNotBelowList,
 )
+from app.shared.money import TooManyDecimals
 from app.shared.quantity import InvalidQuantity, Quantity
 
-router = APIRouter(prefix="/api/products", tags=["products"])
+router = APIRouter(prefix="/api/products", tags=["products"], route_class=MoneyJsonRoute)
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
@@ -56,6 +64,17 @@ def get_pricing_settings(
     return factory(session, business_id)
 
 
+def get_money_format(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> MoneyFormatReader:
+    # Products never imports `app.money_format` (docs/adr/0055): `app/main.py` hangs
+    # `SqlMoneyFormat` on `app.state.products_money_format` as a factory.
+    factory = cast(
+        Callable[[Session, int], MoneyFormatReader], request.app.state.products_money_format
+    )
+    return factory(session, business_id)
+
+
 def get_leaving(
     request: Request, session: SessionDep, business_id: CurrentBusinessId
 ) -> ProductLeaving:
@@ -66,8 +85,21 @@ def get_leaving(
     return factory(session, business_id)
 
 
+def get_vip_type_prices(session: SessionDep, business_id: CurrentBusinessId) -> VipTypePrices:
+    return SqlVipTypePrices(session, business_id)
+
+
+def get_vip_type_id(
+    vip_prices: Annotated[VipTypePrices, Depends(get_vip_type_prices)],
+) -> int | None:
+    return vip_prices.vip_type_id()
+
+
 ProductsDep = Annotated[SqlProducts, Depends(get_products)]
+VipPricesDep = Annotated[VipTypePrices, Depends(get_vip_type_prices)]
+VipTypeIdDep = Annotated[int | None, Depends(get_vip_type_id)]
 SettingsDep = Annotated[PricingSettingsReader, Depends(get_pricing_settings)]
+MoneyFormatDep = Annotated[MoneyFormatReader, Depends(get_money_format)]
 LeavingDep = Annotated[ProductLeaving, Depends(get_leaving)]
 TodayDep = Annotated[date, Depends(get_today)]
 ClockDep = Annotated[Clock, Depends(get_clock)]
@@ -77,45 +109,63 @@ as_http = TranslateErrors(
     [
         (404, (ProductNotFound, ProductArchived, UnknownPriceEntry)),
         (409, (NameTaken, NameHeldByArchived, ProductHasHistory, DuplicateEffectiveDate)),
-        (422, (ProductRuleBroken, VipPriceNotBelowList, InvalidQuantity)),
+        (422, (ProductRuleBroken, CustomerTypePriceNotBelowList, InvalidQuantity, TooManyDecimals)),
     ]
 )
 
 
 @router.get("")
 def list_all_products(
-    products: ProductsDep, today: TodayDep, on: date | None = None, archived: bool = False
+    products: ProductsDep,
+    today: TodayDep,
+    vip_type_id: VipTypeIdDep,
+    on: date | None = None,
+    archived: bool = False,
 ) -> list[ProductOut]:
     """Each product's current price as of `on` (today when omitted, docs/adr/0011),
     inside the session's own business. Archived products only with `archived=true`."""
     day = on or today
     listed = manage_products.list_products(products, archived=archived)
-    return [ProductOut.of(v, day) for v in listed]
+    return [ProductOut.of(v, day, vip_type_id) for v in listed]
 
 
 @router.post("", status_code=201)
 def register_product(
-    body: ProductIn, products: ProductsDep, session: SessionDep, today: TodayDep
+    body: ProductIn,
+    products: ProductsDep,
+    session: SessionDep,
+    today: TodayDep,
+    vip_type_id: VipTypeIdDep,
 ) -> ProductOut:
     with as_http:
         product = manage_products.register_product(products, session, body.name)
-        return ProductOut.of(product, today)
+        return ProductOut.of(product, today, vip_type_id)
 
 
 @router.get("/{product_id}")
-def get_product(product_id: int, products: ProductsDep, today: TodayDep) -> ProductDetailOut:
+def get_product(
+    product_id: int, products: ProductsDep, today: TodayDep, vip_type_id: VipTypeIdDep
+) -> ProductDetailOut:
     with as_http:
         product = manage_products.get_product(products, product_id=product_id)
         removal = manage_products.removal_offered(products, product)
-        return ProductDetailOut(**ProductOut.of(product, today).model_dump(), removal=removal)
+        return ProductDetailOut(
+            **ProductOut.of(product, today, vip_type_id).model_dump(), removal=removal
+        )
 
 
 @router.delete("/{product_id}", status_code=204)
 def delete_product(
-    product_id: int, products: ProductsDep, leaving: LeavingDep, session: SessionDep
+    product_id: int,
+    products: ProductsDep,
+    leaving: LeavingDep,
+    vip_prices: VipPricesDep,
+    session: SessionDep,
 ) -> None:
     with as_http:
-        manage_products.delete_product(products, leaving, session, product_id=product_id)
+        manage_products.delete_product(
+            products, leaving, vip_prices, session, product_id=product_id
+        )
 
 
 @router.patch("/{product_id}")
@@ -125,12 +175,13 @@ def rename_product(
     products: ProductsDep,
     session: SessionDep,
     today: TodayDep,
+    vip_type_id: VipTypeIdDep,
 ) -> ProductOut:
     with as_http:
         product = manage_products.rename_product(
             products, session, product_id=product_id, raw_name=body.name
         )
-        return ProductOut.of(product, today)
+        return ProductOut.of(product, today, vip_type_id)
 
 
 @router.post("/{product_id}/archive")
@@ -140,21 +191,26 @@ def archive_product(
     session: SessionDep,
     today: TodayDep,
     clock: ClockDep,
+    vip_type_id: VipTypeIdDep,
 ) -> ProductOut:
     with as_http:
         product = manage_products.archive_product(
             products, session, product_id=product_id, at=clock()
         )
-        return ProductOut.of(product, today)
+        return ProductOut.of(product, today, vip_type_id)
 
 
 @router.post("/{product_id}/restore")
 def restore_product(
-    product_id: int, products: ProductsDep, session: SessionDep, today: TodayDep
+    product_id: int,
+    products: ProductsDep,
+    session: SessionDep,
+    today: TodayDep,
+    vip_type_id: VipTypeIdDep,
 ) -> ProductOut:
     with as_http:
         product = manage_products.restore_product(products, session, product_id=product_id)
-        return ProductOut.of(product, today)
+        return ProductOut.of(product, today, vip_type_id)
 
 
 @router.get("/{product_id}/prices")
@@ -170,6 +226,8 @@ def record_price_entry(
     body: PriceEntryIn,
     products: ProductsDep,
     settings: SettingsDep,
+    money_format: MoneyFormatDep,
+    vip_prices: VipPricesDep,
     session: SessionDep,
 ) -> PriceEntryOut:
     with as_http:
@@ -177,6 +235,7 @@ def record_price_entry(
         entry = manage_prices.record_price_entry(
             products,
             settings,
+            money_format,
             session,
             product_id=product_id,
             effective_from=body.effective_from,
@@ -184,17 +243,22 @@ def record_price_entry(
             bulk_price=body.bulk_price,
             bulk_minimum=bulk_minimum,
             vip_price=body.vip_price,
+            vip_prices=vip_prices,
         )
         return PriceEntryOut.of(entry)
 
 
 @router.delete("/{product_id}/prices/{entry_id}", status_code=204)
 def delete_price_entry(
-    product_id: int, entry_id: int, products: ProductsDep, session: SessionDep
+    product_id: int,
+    entry_id: int,
+    products: ProductsDep,
+    vip_prices: VipPricesDep,
+    session: SessionDep,
 ) -> None:
     with as_http:
         manage_prices.delete_price_entry(
-            products, session, product_id=product_id, entry_id=entry_id
+            products, vip_prices, session, product_id=product_id, entry_id=entry_id
         )
 
 

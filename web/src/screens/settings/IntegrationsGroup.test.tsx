@@ -7,7 +7,7 @@
 import { CATALOG, SETTINGS, SETTINGS_INTEGRATIONS } from '../../routes'
 import { inAppState } from '../../components/inAppState'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render as renderBare, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -15,6 +15,17 @@ import IntegrationsGroup from './IntegrationsGroup'
 import { iconAndTextProblems } from '../../test/iconAndTextRule'
 import { LIMITED_COPY, OWN_CHAT_HELP, OWN_CHAT_INFO, PREVIOUS_PIN_NOTICE } from '../../copy/settings'
 import { LIMITS } from '../../copy/limits'
+import type { ReactElement, ReactNode } from 'react'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
+
+function Business({ children }: { children: ReactNode }) {
+  return <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>{children}</MoneyFormatProvider>
+}
+
+/** Rendered for a "$"/0-decimals business, the one the strings below were written for. */
+function render(ui: ReactElement) {
+  return renderBare(ui, { wrapper: Business })
+}
 
 vi.mock('../../shell/useViewport', () => ({ useViewport: () => 'phone' }))
 

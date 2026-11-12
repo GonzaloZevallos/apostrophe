@@ -16,8 +16,9 @@ import { SheetRouterProvider } from '../../components/useSheetStack'
 import { SALE_NEW } from '../../routes'
 import { stubViewport } from '../../test-viewport'
 import NuevaVenta from './NuevaVenta'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
 
 beforeEach(() => {
   vi.stubGlobal(
@@ -39,7 +40,7 @@ function renderForm(viewport: 'phone' | 'computer' = 'phone') {
   stubViewport(viewport)
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const router = createMemoryRouter(
-    [{ element: <Outlet context={ME} />, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] }],
+    [{ element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] }],
     { initialEntries: [SALE_NEW] },
   )
   render(

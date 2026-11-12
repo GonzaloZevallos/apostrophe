@@ -9,6 +9,7 @@ from datetime import date
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.db import domain_amount, money_scale_factor, scaled
 from app.results.application.ports import PurchaseRecord
 from app.stock.adapters.tables import StockEntryRow
 from app.stock.domain.entry import Origin
@@ -20,13 +21,18 @@ class SqlPurchases:
         self._business_id = business_id
 
     def purchases(self) -> list[PurchaseRecord]:
-        statement = select(StockEntryRow.entered_on, StockEntryRow.total_cost).where(
+        factor = money_scale_factor(self._session, self._business_id)
+        statement = select(
+            StockEntryRow.entered_on, scaled(StockEntryRow.total_cost, factor)
+        ).where(
             StockEntryRow.business_id == self._business_id,
             StockEntryRow.origin == Origin.PURCHASE.value,
         )
         return [
-            PurchaseRecord(day=day, total_cost=total_cost or 0)
-            for day, total_cost in self._session.execute(statement).all()
+            PurchaseRecord(
+                day=day, total_cost=domain_amount(self._session, self._business_id, hundredths or 0)
+            )
+            for day, hundredths in self._session.execute(statement).all()
         ]
 
     def earliest_entry_day(self) -> date | None:

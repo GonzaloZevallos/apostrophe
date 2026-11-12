@@ -31,7 +31,10 @@ OTHER_TABLES = ("sale", "sale_line", "payment")
 # `number`), and a `SELECT *` would fail on each.
 SELECTED = {
     "sale": "id, business_id, {sale_date}, customer_id, shipping_charged, note, recorded_at",
-    "sale_line": "*",
+    "sale_line": (
+        "id, business_id, sale_id, variety_id, grams_hundredths, pricing_rule, "
+        "price_per_gram, line_total, position"
+    ),
     "payment": "*",
 }
 
@@ -149,15 +152,21 @@ def _seed(engine: Engine) -> None:
             )
 
 
+def _customer_columns(engine: Engine) -> list[str]:
+    return [column["name"] for column in inspect(engine).get_columns("customer")]
+
+
 def _snapshot(engine: Engine) -> dict[str, list[tuple[Any, ...]]]:
     """Everything that must survive: the customer's columns but the channel, the rows of
     the other tables, and each customer's balance (sold with shipping minus paid)."""
+    # 0027 renamed `vip` to `is_vip`: read whichever the database has.
+    vip = "is_vip" if "is_vip" in _customer_columns(engine) else "vip"
     with engine.connect() as connection:
         snapshot: dict[str, list[tuple[Any, ...]]] = {
             "customer": [
                 tuple(row)
                 for row in connection.execute(
-                    text("SELECT id, business_id, name, phone, vip FROM customer ORDER BY id")
+                    text(f"SELECT id, business_id, name, phone, {vip} FROM customer ORDER BY id")
                 )
             ]
         }
@@ -191,8 +200,8 @@ def _snapshot(engine: Engine) -> dict[str, list[tuple[Any, ...]]]:
 
 
 def _assert_dropped_and_whole(engine: Engine) -> None:
-    columns = [column["name"] for column in inspect(engine).get_columns("customer")]
-    assert columns == ["id", "business_id", "name", "phone", "vip", "customer_type_id"]
+    columns = _customer_columns(engine)
+    assert columns == ["id", "business_id", "name", "phone", "is_vip", "customer_type_id"]
     assert [name for name in inspect(engine).get_unique_constraints("customer")] == [
         {"name": "uq_customer_business_id_phone", "column_names": ["business_id", "phone"]}
     ]

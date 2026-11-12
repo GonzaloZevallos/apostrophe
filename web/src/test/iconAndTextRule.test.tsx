@@ -10,6 +10,7 @@ import Boton from '../components/Boton'
 import BotonLink from '../components/BotonLink'
 import ConfirmDialog from '../components/ConfirmDialog'
 import Icono from '../components/Icono'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 import { expectIconAndTextRule, iconAndTextProblems } from './iconAndTextRule'
 
 function problemsOf(node: React.ReactElement, options = {}) {
@@ -19,6 +20,7 @@ function problemsOf(node: React.ReactElement, options = {}) {
 
 test('what the rule allows passes: every kind, the answers, an icon-only control', () => {
   const { container } = render(
+    <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
     <MemoryRouter>
       <Boton variant="secondary" icon="agregar">
         Nueva entrada
@@ -46,7 +48,8 @@ test('what the rule allows passes: every kind, the answers, an icon-only control
         onConfirm={() => {}}
         onCancel={() => {}}
       />
-    </MemoryRouter>,
+    </MemoryRouter>
+    </MoneyFormatProvider>,
   )
   expectIconAndTextRule(container)
 })

@@ -1,13 +1,38 @@
-from sqlalchemy import ColumnElement, delete, exists, select
-from sqlalchemy.orm import Session, selectinload
+from collections.abc import Sequence
+from dataclasses import dataclass
+from datetime import date
 
-from app.db import flush_or_refuse
+from sqlalchemy import ColumnElement, delete, exists, select
+from sqlalchemy.orm import Session
+
+from app.db import (
+    domain_amount,
+    flush_or_refuse,
+    money_of_domain,
+    money_scale_factor,
+    money_stored_value,
+    scaled,
+)
 from app.products.adapters.tables import PriceEntryRow, ProductRow
+from app.products.adapters.vip_type_prices import SqlVipTypePrices
 from app.products.domain.product import NameHolder, PriceEntry, Product, ProductName
 from app.sales.adapters.tables import SaleLineRow
+from app.shared.money import Money
 from app.shared.quantity import Quantity
 from app.shared.reference import ReferenceRefused
 from app.stock.adapters.tables import StockEntryRow, StockWithdrawalLineRow
+
+
+@dataclass(frozen=True)
+class ListedCurrentPrice:
+    """A listed product with the price entry in force on a day, read in hundredths so cents
+    are kept: the catalog's view, which never turns a price into whole units."""
+
+    product_id: int
+    name: str
+    list_price: Money | None
+    bulk_price: Money | None
+    bulk_minimum: Quantity | None
 
 
 class SqlProducts:
@@ -18,6 +43,7 @@ class SqlProducts:
     def __init__(self, session: Session, business_id: int) -> None:
         self._session = session
         self._business_id = business_id
+        self._vip_prices = SqlVipTypePrices(session, business_id)
 
     def add(self, product: Product) -> Product:
         row = ProductRow(
@@ -26,14 +52,55 @@ class SqlProducts:
         row.price_entries = [self._entry_row(e) for e in product.price_entries]
         self._session.add(row)
         self._session.flush()
-        return _product(row)
+        return self._product(row)
 
     def get(self, product_id: int) -> Product | None:
         row = self._row(product_id)
-        return None if row is None else _product(row)
+        return None if row is None else self._product(row)
 
     def listed(self) -> list[Product]:
         return self._by_name(ProductRow.archived_at.is_(None))
+
+    def listed_current_prices(self, day: date) -> list[ListedCurrentPrice]:
+        """Every listed product by name key, with the entry in force on `day` (the latest
+        effective on or before it), amounts in hundredths through `scaled`."""
+        factor = money_scale_factor(self._session, self._business_id)
+        products = self._session.execute(
+            select(ProductRow.id, ProductRow.name)
+            .where(ProductRow.business_id == self._business_id, ProductRow.archived_at.is_(None))
+            .order_by(ProductRow.name_key)
+        ).all()
+        entries = self._session.execute(
+            select(
+                PriceEntryRow.variety_id,
+                scaled(PriceEntryRow.list_price, factor),
+                scaled(PriceEntryRow.bulk_price, factor),
+                PriceEntryRow.bulk_minimum_hundredths,
+            )
+            .where(
+                PriceEntryRow.business_id == self._business_id,
+                PriceEntryRow.variety_id.in_([p.id for p in products]),
+                PriceEntryRow.effective_on <= day,
+            )
+            .order_by(PriceEntryRow.effective_on)
+        ).all()
+        in_force = {entry.variety_id: entry for entry in entries}
+        found: list[ListedCurrentPrice] = []
+        for product in products:
+            entry = in_force.get(product.id)
+            if entry is None:
+                found.append(ListedCurrentPrice(product.id, product.name, None, None, None))
+                continue
+            found.append(
+                ListedCurrentPrice(
+                    product_id=product.id,
+                    name=product.name,
+                    list_price=Money(entry[1]),
+                    bulk_price=None if entry[2] is None else Money(entry[2]),
+                    bulk_minimum=None if entry[3] is None else Quantity(entry[3]),
+                )
+            )
+        return found
 
     def archived(self) -> list[Product]:
         return self._by_name(ProductRow.archived_at.is_not(None))
@@ -42,10 +109,11 @@ class SqlProducts:
         statement = (
             select(ProductRow)
             .where(ProductRow.business_id == self._business_id, archival)
-            .options(selectinload(ProductRow.price_entries))
             .order_by(ProductRow.name_key)
         )
-        return [_product(row) for row in self._session.scalars(statement)]
+        rows = self._session.scalars(statement).all()
+        entries = self._entries_of([row.id for row in rows])
+        return [_product(row, entries.get(row.id, ())) for row in rows]
 
     def save(self, product: Product) -> Product:
         assert product.id is not None, "save takes a variety that was added"
@@ -62,7 +130,7 @@ class SqlProducts:
             *(self._entry_row(e) for e in product.price_entries if e.id is None),
         ]
         flush_or_refuse(self._session)
-        return _product(row)
+        return self._product(row)
 
     def name_holder(self, name: ProductName, *, other_than: int | None = None) -> NameHolder | None:
         statement = select(ProductRow.archived_at).where(
@@ -122,33 +190,90 @@ class SqlProducts:
         )
         return self._session.scalar(statement)
 
+    def _units(self, hundredths: int | None) -> int | None:
+        """A read amount as the domain's int, in the unit of the business's decimals."""
+        return (
+            None
+            if hundredths is None
+            else domain_amount(self._session, self._business_id, hundredths)
+        )
+
+    def _stored(self, units: int) -> int:
+        """A domain amount as the integer this business's column holds."""
+        return money_stored_value(
+            self._session,
+            self._business_id,
+            money_of_domain(self._session, self._business_id, units),
+        )
+
+    def _stored_or_none(self, units: int | None) -> int | None:
+        return None if units is None else self._stored(units)
+
     def _entry_row(self, entry: PriceEntry) -> PriceEntryRow:
         return PriceEntryRow(
             business_id=self._business_id,
             effective_on=entry.effective_from,
-            list_price=entry.list_price,
-            bulk_price=entry.bulk.price if entry.bulk else None,
+            list_price=self._stored(entry.list_price),
+            bulk_price=self._stored_or_none(entry.bulk.price if entry.bulk else None),
             bulk_minimum_hundredths=entry.bulk.minimum.hundredths if entry.bulk else None,
-            vip_price=entry.vip_price,
         )
 
+    def _product(self, row: ProductRow) -> Product:
+        return _product(row, self._entries_of([row.id]).get(row.id, ()))
 
-def _product(row: ProductRow) -> Product:
+    def _entries_of(self, product_ids: Sequence[int]) -> dict[int, tuple[PriceEntry, ...]]:
+        """The price entries of the listed products, their amounts read in hundredths inside
+        the statement that loads them: one statement whatever the number of products, and
+        one more for the VIP prices, which are rows of the VIP type (docs/adr/0059)."""
+        if not product_ids:
+            return {}
+        factor = money_scale_factor(self._session, self._business_id)
+        statement = (
+            select(
+                PriceEntryRow,
+                scaled(PriceEntryRow.list_price, factor),
+                scaled(PriceEntryRow.bulk_price, factor),
+            )
+            .where(
+                PriceEntryRow.business_id == self._business_id,
+                PriceEntryRow.variety_id.in_(product_ids),
+            )
+            .order_by(PriceEntryRow.effective_on)
+        )
+        found = self._session.execute(statement).all()
+        vip_prices = self._vip_prices.prices_of([row.id for row, _, _ in found])
+        grouped: dict[int, list[PriceEntry]] = {}
+        for row, list_price, bulk_price in found:
+            grouped.setdefault(row.variety_id, []).append(
+                _entry(
+                    row,
+                    self._units(list_price),
+                    self._units(bulk_price),
+                    vip_prices.get(row.id),
+                )
+            )
+        return {product_id: tuple(entries) for product_id, entries in grouped.items()}
+
+
+def _product(row: ProductRow, entries: tuple[PriceEntry, ...]) -> Product:
     return Product(
         name=ProductName(row.name),
-        price_entries=tuple(_entry(r) for r in row.price_entries),
+        price_entries=entries,
         id=row.id,
         archived_at=row.archived_at,
     )
 
 
-def _entry(row: PriceEntryRow) -> PriceEntry:
+def _entry(
+    row: PriceEntryRow, list_price: int | None, bulk_price: int | None, vip_price: int | None
+) -> PriceEntry:
+    assert list_price is not None, "a price entry always has a list price"
     minimum = row.bulk_minimum_hundredths
     return PriceEntry.of(
         effective_from=row.effective_on,
-        list_price=row.list_price,
-        bulk_price=row.bulk_price,
+        list_price=list_price,
+        bulk_price=bulk_price,
         bulk_minimum=None if minimum is None else Quantity(minimum),
-        vip_price=row.vip_price,
+        vip_price=vip_price,
         id=row.id,
     )

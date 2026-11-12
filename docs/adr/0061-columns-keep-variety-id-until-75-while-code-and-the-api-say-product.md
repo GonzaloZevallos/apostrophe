@@ -1,9 +1,10 @@
 ---
 status: accepted
 date: 2026-10-25
+summary: "las columnas conservan variety_id mientras el código y la API dicen Product"
 ---
 
-# Columns keep variety_id until #75 while code and the API say Product
+# Columns keep variety_id until the variety table is renamed while code and the API say Product
 
 Epic GH-318 lets a business call what it sells anything it likes (the "Product word" section of the
 PRD, `docs/product/business-configuration.md` on the epic's branch; it is not in `docs/product/` at
@@ -27,11 +28,10 @@ business's screen word; Product is the name of the thing.
 ## Decision
 
 - **A column that references `variety.id` stays `variety_id`** (or ends in `_variety_id` when it
-  needs a role prefix) until #75, the rename of the database's names. The table class's attribute
+  needs a role prefix) until the `variety` table is renamed. The table class's attribute
   has the column's own name (CODING_STANDARDS §11, "A new column's mapped attribute has the
-  column's own name"; its Scope section says "Old and new names coexist until #75", which this
-  agrees with and neither amends nor adds an allowlist entry to). A new table added by the epic that references `variety.id` is named the same
-  way, so `test_naming.py`'s rule on foreign keys holds without a new allowlist entry. The `variety`
+  column's own name"), and the naming allowlist is empty, so this decision adds no entry to it. A new table added by the epic that references `variety.id` is named the same
+  way, so `test_naming.py`'s rule on foreign keys holds. The `variety`
   table itself is not renamed here.
 - **Domain, ports and API say Product.** A domain attribute, a port parameter and an API field are
   `product_id` / `product`, never `variety_id`. The only place the two names meet is the repository
@@ -58,15 +58,14 @@ business's screen word; Product is the name of the thing.
 ## Why
 
 - Renaming a column is a migration that rewrites a table in SQLite, and a name change is the work
-  #75 already owns. Doing it here would break the rule that no task other than #75 touches the
-  naming allowlist's names, and would put a data risk inside an epic about configuration.
+  of renaming the `variety` table. Doing it here would put a data risk inside an epic about configuration.
 - Keeping the mapping in the adapter is the hexagon's own rule (CODING_STANDARDS §1): the domain
   speaks the product's language and the adapter speaks the database's.
 - Leaving the front paths alone keeps every bookmark and the design-capture list working.
 
 ## Rejected
 
-- **Rename `variety_id` to `product_id` in the database inside GH-318.** It is #75's work, and it
+- **Rename `variety_id` to `product_id` in the database inside GH-318.** It is the `variety` table rename's work, and it
   would touch every table that references a variety.
 - **Keep `variety` in domain and API too.** The epic's whole point is that Variety is one business's
   word; a code base that says Variety everywhere would teach the next reader the wrong thing.

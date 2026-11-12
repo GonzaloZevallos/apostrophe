@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from 'react'
+import { usePhoneCountries, usePhoneCountry } from '../../api/phoneCountry'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { COMMON_TEXT } from '../../copy/common'
 /**
@@ -36,6 +37,15 @@ export default function CustomerFields({
   const nameRef = useRef<HTMLInputElement>(null)
   const phoneId = useId()
   const phoneHintId = useId()
+  const phoneCountry = usePhoneCountry()
+  const phoneCountries = usePhoneCountries()
+  // Only once both answers are in; a country the list does not carry has no example to show.
+  const phonePlaceholder =
+    !phoneCountry.loaded || phoneCountries === undefined
+      ? undefined
+      : phoneCountry.country === null
+        ? CUSTOMERS_TEXT.phoneHintNone
+        : phoneCountries.find((option) => option.code === phoneCountry.country)?.example
 
   // The drawing opens with Name focused (`NuevaVentaCliente.dc.html`): once, on mount.
   useEffect(() => {
@@ -76,6 +86,7 @@ export default function CustomerFields({
             autoComplete="off"
             value={value.phone}
             aria-describedby={phoneHintId}
+            placeholder={phonePlaceholder}
             onChange={(event) => onChange({ ...value, phone: event.target.value })}
           />
           {phoneError !== null && (

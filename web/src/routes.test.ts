@@ -114,6 +114,7 @@ const EXPECTED: Record<ScreenId, Expected> = {
     "settings",
     SETTINGS_PLACE,
   ),
+  "settings-currency": expectation("form", "settings", SETTINGS_PLACE),
   "settings-withdrawal-reasons": expectation("form", "settings", SETTINGS_PLACE),
   "settings-appearance": expectation("form", "settings", SETTINGS_PLACE),
   "settings-account": expectation("form", "settings", SETTINGS_PLACE),
@@ -887,7 +888,7 @@ describe("screens.json against the English routes", () => {
     expect(
       routeProblems([
         { screen: "Inicio", route: "/", path: "/" },
-        { screen: "InicioPrimeraVez", route: null, path: "/" },
+        { screen: "PantallaSinConstruir", route: null, path: "/" },
         { screen: "Ventas", route: "/sales", path: "/sales/new" },
         { screen: "OnboardingListo", route: "/onboarding/categories", path: "/onboarding/done" },
         {
@@ -898,7 +899,7 @@ describe("screens.json against the English routes", () => {
         },
       ]),
     ).toEqual([
-      "InicioPrimeraVez: route is null, so it is not built",
+      "PantallaSinConstruir: route is null, so it is not built",
       "Ventas: route /sales is not path /sales/new",
       "OnboardingListo: reached by steps, so it needs steps",
     ]);
@@ -1361,6 +1362,7 @@ describe("the registry holds keys, and English resolves each to today's title", 
     "settings-integrations": "Integrations",
     "settings-catalog-message": "Catalog message",
     "settings-expense-categories": "Expense categories",
+    "settings-currency": "Currency and decimals",
     "settings-withdrawal-reasons": "Withdrawal reasons",
     "settings-appearance": "Appearance",
     "settings-account": "Your account",

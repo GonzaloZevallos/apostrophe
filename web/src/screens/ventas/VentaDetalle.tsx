@@ -52,7 +52,8 @@ import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
 import { SheetStackProvider, useSheet } from '../../components/useSheetStack'
 import { formatDateShort } from '../../format/dates'
-import { formatGrams, formatMoney } from '../../format/money'
+import { formatGrams, type MoneyFormatter } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { GENERIC_REFUSAL } from './NuevaVenta'
 import NuevaVentaCliente from './NuevaVentaCliente'
 import SaleBillButton from './SaleBillButton'
@@ -103,11 +104,11 @@ function summaryLine(sale: SaleDetail): string {
   return parts.filter((part) => part !== '').join(' · ')
 }
 
-function deleteTitle(sale: SaleDetail): string {
-  const money = formatMoney(sale.total)
+function deleteTitle(sale: SaleDetail, money: MoneyFormatter): string {
+  const total = money.money(sale.total)
   const day = formatDateShort(sale.date)
   const grams = formatGrams(sale.total_quantity)
-  return SALES_TEXT.deleteSaleConfirm(money, day, grams)
+  return SALES_TEXT.deleteSaleConfirm(total, day, grams)
 }
 
 const DELETE_TOAST = 'common:saleDeleted'
@@ -123,6 +124,7 @@ export default function VentaDetalle() {
 }
 
 function VentaDetalleScreen() {
+  const money = useMoney()
   const { id } = useParams<{ id: string }>()
   const saleId = id ?? ''
   const location = useLocation()
@@ -312,7 +314,7 @@ function VentaDetalleScreen() {
 
         <div className="venta-detalle__resumen">
           <span className="campo__rotulo">{SALES_TEXT.total}</span>
-          <span className="cifra-xl">{formatMoney(sale.total)}</span>
+          <span className="cifra-xl">{money.money(sale.total)}</span>
           <span className="venta-detalle__subtitulo">{summaryLine(sale)}</span>
         </div>
 
@@ -331,22 +333,22 @@ function VentaDetalleScreen() {
                 </div>
                 <div className="venta-detalle__linea-inferior">
                   <span className="venta-detalle__precio cifra-n">
-                    {formatMoney(line.price_per_gram)}{SALES_TEXT.perGram}
+                    {money.money(line.price_per_gram)}{SALES_TEXT.perGram}
                   </span>
-                  <ReglaInsignia rule={line.pricing_rule} />
-                  <span className="venta-detalle__total cifra-s">{formatMoney(line.line_total)}</span>
+                  <ReglaInsignia rule={line.pricing_rule} typeName={line.customer_type_name} />
+                  <span className="venta-detalle__total cifra-s">{money.money(line.line_total)}</span>
                 </div>
               </div>
             ))}
             <div className="venta-detalle__renglon">
               <span>{SALES_TEXT.shippingCharged}</span>
               <span className="venta-detalle__renglon-monto cifra-s">
-                {formatMoney(sale.shipping_charged)}
+                {money.money(sale.shipping_charged)}
               </span>
             </div>
             <div className="venta-detalle__renglon venta-detalle__renglon--total">
               <span>{SALES_TEXT.total}</span>
-              <span className="venta-detalle__renglon-monto cifra-s">{formatMoney(sale.total)}</span>
+              <span className="venta-detalle__renglon-monto cifra-s">{money.money(sale.total)}</span>
             </div>
           </div>
         </div>
@@ -389,7 +391,7 @@ function VentaDetalleScreen() {
 
       {confirmingDelete && (
         <ConfirmDialog
-          title={deleteTitle(sale)}
+          title={deleteTitle(sale, money)}
           detail={COMMON_TEXT.cannotUndo}
           confirmText={COMMON_TEXT.yesDelete}
           cancelText={COMMON_TEXT.noKeep}

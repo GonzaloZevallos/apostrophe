@@ -20,8 +20,9 @@ import { SALE as SALE_PATH, SCREENS, kindOf, pathTo, type ScreenId } from '../ro
 import { HISTORY, SETTINGS_ON, VARIETY_ROW, jsonResponse } from '../screens/varieties/renderVarieties'
 import Shell from '../shell/Shell'
 import { CARDS_EXEMPT } from './backExempt'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -55,6 +56,7 @@ const CUSTOMER = {
   id: 1,
   name: 'Ana Pérez',
   phone: null,
+  phone_display: null,
   vip: false,
   balance: 0,
   owing_since: null,
@@ -168,7 +170,7 @@ test('the count catches a card that draws its own back next to the shell\'s', as
   const memory = createMemoryRouter(
     [
       {
-        element: <Outlet context={ME} />,
+        element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>,
         children: [
           {
             element: <Shell />,

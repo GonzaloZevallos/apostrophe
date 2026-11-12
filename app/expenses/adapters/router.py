@@ -1,7 +1,8 @@
+from collections.abc import Callable
 from datetime import date
-from typing import Annotated
+from typing import Annotated, cast
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import CurrentBusinessId
@@ -17,6 +18,7 @@ from app.expenses.adapters.schemas import (
 from app.expenses.adapters.sql_expense_categories import SqlExpenseCategories
 from app.expenses.adapters.sql_expenses import SqlExpenses
 from app.expenses.application import manage_categories, manage_expenses
+from app.expenses.application.ports import MoneyFormatReader
 from app.expenses.domain.category import (
     CategoryInUse,
     CategoryNameTaken,
@@ -26,10 +28,12 @@ from app.expenses.domain.category import (
 from app.expenses.domain.expense import ExpenseNotFound
 from app.expenses.domain.month import Month
 from app.http_errors import TranslateErrors
+from app.money_route import MoneyJsonRoute
+from app.shared.money import TooManyDecimals
 
 router = APIRouter(tags=["expenses"])
 categories_router = APIRouter(prefix="/expense-categories")
-expenses_router = APIRouter(prefix="/expenses")
+expenses_router = APIRouter(prefix="/expenses", route_class=MoneyJsonRoute)
 
 SessionDep = Annotated[Session, Depends(get_session)]
 TodayDep = Annotated[date, Depends(get_today)]
@@ -44,6 +48,18 @@ def get_expenses(session: SessionDep, business_id: CurrentBusinessId) -> SqlExpe
     return SqlExpenses(session, business_id)
 
 
+def get_money_format(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> MoneyFormatReader:
+    # Expenses never imports `app.money_format` (docs/adr/0055): `app/main.py` hangs
+    # `SqlMoneyFormat` on `app.state.expenses_money_format` as a factory.
+    factory = cast(
+        Callable[[Session, int], MoneyFormatReader], request.app.state.expenses_money_format
+    )
+    return factory(session, business_id)
+
+
+MoneyFormatDep = Annotated[MoneyFormatReader, Depends(get_money_format)]
 CategoriesDep = Annotated[SqlExpenseCategories, Depends(get_categories)]
 ExpensesDep = Annotated[SqlExpenses, Depends(get_expenses)]
 
@@ -53,7 +69,7 @@ as_http = TranslateErrors(
     [
         (404, (CategoryNotFound, ExpenseNotFound)),
         (409, (CategoryNameTaken, CategoryInUse)),
-        (422, (ExpenseRuleBroken,)),
+        (422, (ExpenseRuleBroken, TooManyDecimals)),
     ]
 )
 
@@ -99,6 +115,7 @@ def record_expense(
     body: ExpenseIn,
     expenses: ExpensesDep,
     categories: CategoriesDep,
+    money_format: MoneyFormatDep,
     session: SessionDep,
     today: TodayDep,
     clock: ClockDep,
@@ -107,6 +124,7 @@ def record_expense(
         expense = manage_expenses.record_expense(
             expenses,
             categories,
+            money_format,
             session,
             spent_on=body.spent_on,
             category_id=body.category_id,
@@ -124,6 +142,7 @@ def edit_expense(
     body: ExpenseIn,
     expenses: ExpensesDep,
     categories: CategoriesDep,
+    money_format: MoneyFormatDep,
     session: SessionDep,
     today: TodayDep,
 ) -> ExpenseOut:
@@ -131,6 +150,7 @@ def edit_expense(
         expense = manage_expenses.edit_expense(
             expenses,
             categories,
+            money_format,
             session,
             expense_id,
             spent_on=body.spent_on,

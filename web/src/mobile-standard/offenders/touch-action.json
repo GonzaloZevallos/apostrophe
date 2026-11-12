@@ -458,7 +458,7 @@
   {
     "screen": "ConfiguracionNegocio",
     "rule": "touch-action",
-    "target": "button:Save the name",
+    "target": "button:Save",
     "issue": 60
   },
   {
@@ -560,7 +560,7 @@
   {
     "screen": "ElegirCliente",
     "rule": "touch-action",
-    "target": "button:Nico Parra+#",
+    "target": "button:Nico Parra+# # # #-#",
     "issue": 78
   },
   {
@@ -828,60 +828,6 @@
     "issue": 45
   },
   {
-    "screen": "InicioOnboardingCompleto",
-    "rule": "touch-action",
-    "target": "button:Month",
-    "issue": 45
-  },
-  {
-    "screen": "InicioOnboardingCompleto",
-    "rule": "touch-action",
-    "target": "button:Today",
-    "issue": 45
-  },
-  {
-    "screen": "InicioOnboardingCompleto",
-    "rule": "touch-action",
-    "target": "button:Week",
-    "issue": 45
-  },
-  {
-    "screen": "InicioOnboardingEnCurso",
-    "rule": "touch-action",
-    "target": "button:Month",
-    "issue": 45
-  },
-  {
-    "screen": "InicioOnboardingEnCurso",
-    "rule": "touch-action",
-    "target": "button:Today",
-    "issue": 45
-  },
-  {
-    "screen": "InicioOnboardingEnCurso",
-    "rule": "touch-action",
-    "target": "button:Week",
-    "issue": 45
-  },
-  {
-    "screen": "InicioPrimeraVez",
-    "rule": "touch-action",
-    "target": "button:Month",
-    "issue": 45
-  },
-  {
-    "screen": "InicioPrimeraVez",
-    "rule": "touch-action",
-    "target": "button:Today",
-    "issue": 45
-  },
-  {
-    "screen": "InicioPrimeraVez",
-    "rule": "touch-action",
-    "target": "button:Week",
-    "issue": 45
-  },
-  {
     "screen": "Invitacion",
     "rule": "touch-action",
     "target": "button:Show",
@@ -968,13 +914,13 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "touch-action",
-    "target": "button:Lu Fernández+#",
+    "target": "button:Lu Fernández+# # # #-#",
     "issue": 78
   },
   {
     "screen": "NuevaVentaCliente",
     "rule": "touch-action",
-    "target": "button:Mica SolanoVIP+#",
+    "target": "button:Mica SolanoVIP+# # # #-#",
     "issue": 78
   },
   {
@@ -986,7 +932,7 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "touch-action",
-    "target": "button:Nico Parra+#",
+    "target": "button:Nico Parra+# # # #-#",
     "issue": 78
   },
   {
@@ -998,7 +944,7 @@
   {
     "screen": "NuevaVentaCliente",
     "rule": "touch-action",
-    "target": "button:Tincho Aguirre+#",
+    "target": "button:Tincho Aguirre+# # # #-#",
     "issue": 78
   },
   {
@@ -1118,19 +1064,19 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-action",
-    "target": "button:Lu Fernández+#",
+    "target": "button:Lu Fernández+# # # #-#",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-action",
-    "target": "button:Mica SolanoVIP+#",
+    "target": "button:Mica SolanoVIP+# # # #-#",
     "issue": 78
   },
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-action",
-    "target": "button:Nico Parra+#",
+    "target": "button:Nico Parra+# # # #-#",
     "issue": 78
   },
   {
@@ -1142,7 +1088,7 @@
   {
     "screen": "NuevoClienteEnVenta",
     "rule": "touch-action",
-    "target": "button:Tincho Aguirre+#",
+    "target": "button:Tincho Aguirre+# # # #-#",
     "issue": 78
   },
   {
@@ -1918,7 +1864,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "button:Lu Fernández+#",
+    "target": "button:Lu Fernández+# # # #-#",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -1929,7 +1875,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "button:Lu Fernández+#",
+    "target": "button:Lu Fernández+# # # #-#",
     "issue": 78,
     "sizes": [
       "246x437"
@@ -1938,7 +1884,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "button:Mica SolanoVIP+#",
+    "target": "button:Mica SolanoVIP+# # # #-#",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -1949,7 +1895,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "button:Mica SolanoVIP+#",
+    "target": "button:Mica SolanoVIP+# # # #-#",
     "issue": 78,
     "sizes": [
       "246x437"
@@ -1978,7 +1924,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "button:Nico Parra+#",
+    "target": "button:Nico Parra+# # # #-#",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -1989,7 +1935,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "button:Nico Parra+#",
+    "target": "button:Nico Parra+# # # #-#",
     "issue": 78,
     "sizes": [
       "246x437"
@@ -1998,7 +1944,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "button:Tincho Aguirre+#",
+    "target": "button:Tincho Aguirre+# # # #-#",
     "issue": 78,
     "sizes": [
       "320x568",
@@ -2009,7 +1955,7 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "button:Tincho Aguirre+#",
+    "target": "button:Tincho Aguirre+# # # #-#",
     "issue": 78,
     "sizes": [
       "246x437"

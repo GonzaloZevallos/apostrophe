@@ -6,7 +6,7 @@ Este es el job de navegación que está debajo del job propio "desde mi celular"
 
 **Cuando** abro la app entre pedidos o al final del día, **quiero** ver qué vendí hoy, quién me debe y qué se está terminando, y actuar en el acto (cobrarle a un deudor, abrir un producto que está bajo, arreglar lo que me dice un aviso), **para poder** volver con el cliente sin recorrer Customers y Products uno por uno ni hacer cuentas.
 
-Esto afina el job de navegación y el job del **Panel** de results.md para Home (GH-45); no es un job nuevo. Lo sirven acá "Collect" en las filas de deudores de Home, la **First-run checklist** y el aviso posterior a la **Spreadsheet import**, cada uno llevando a su arreglo.
+Esto afina el job de navegación y el job del **Panel** de results.md para Home (GH-45); no es un job nuevo. Lo sirven acá "Collect" en las filas de deudores de Home y el aviso de **Out of date** del Pinned catalog, cada uno llevando a su arreglo. Home no muestra ningún elemento de primer uso (results.md).
 
 **Cuando** un cliente me pregunta qué tengo o cuánto sale algo, o entra flor, se termina o cambia de precio, **quiero** abrir un producto y encontrar todo lo suyo en su propia página, que la lista me diga de un vistazo qué tengo, qué se está terminando y qué no puedo vender, y el Catalog de hoy a un toque de esa lista, listo para compartir desde el celular, **para poder** contestarle al cliente, registrar lo que entró y mandar un Catalog al día sin moverme entre pantallas, y que mis clientes nunca reciban un precio viejo ni un producto que no puedo vender.
 
@@ -35,12 +35,12 @@ GH-480 afina el mismo job para la página en sí: una pantalla a la que llego em
 - Antes: More era el único camino del celular a Settings, Analysis, Expenses, Add expense y Take from stock; quien vendía abría More, recorría una lista y tocaba.
 - Lo sirven "Los destinos que estaban en More (GH-651)" y los criterios 24–26.
 
-**Cuando** acabo de abrir mi negocio y todavía está vacío, **quiero** que me guíen por lo que necesita, un paso corto por vez, con los valores por defecto ya completos, **para** registrar mi primera venta el mismo día sin buscar entre Settings, Products y la pantalla del Catalog. (Lo sirve acá el **Onboarding** como el único elemento de primer uso de un **Business** recién creado, abierto al aceptar la **Invitation** y desde el aviso de Home; definido en onboarding.md.)
+**Cuando** acabo de abrir mi negocio y todavía está vacío, **quiero** que me guíen por lo que necesita, un paso corto por vez, con los valores por defecto ya completos, **para** registrar mi primera venta el mismo día sin buscar entre Settings, Products y la pantalla del Catalog. (Lo sirve acá el **Onboarding** como el único elemento de primer uso de un **Business** recién creado, abierto al aceptar la **Invitation** y en su propia dirección, `/onboarding`; definido en onboarding.md.)
 
-**Cuando** reviso un cambio en los elementos de primer uso de Home antes de aprobarlo, **quiero** que los tests, el contrato `/first-run` y la **Design capture** prueben lo que dicen navigation.md, results.md y ADR-0046 en cada estado en que pueden estar y en los dos temas, **para poder** aprobar solo con la evidencia, sin confiar en controles parciales ni arrastrar hallazgos abiertos a la próxima tarea.
+**Cuando** reviso un cambio en las reglas de primer uso que quedan (la línea de precio faltante de "+ New sale" y el "Send catalog" deshabilitado) antes de aprobarlo, **quiero** que los tests y el contrato `/first-run` prueben lo que dicen navigation.md y ADR-0046 en cada estado en que pueden estar y en los dos temas, **para poder** aprobar solo con la evidencia, sin confiar en controles parciales ni arrastrar hallazgos abiertos a la próxima tarea.
 
 - Su protagonista es el mantenedor, o quien revisa en su nombre, como en gate.md, design-capture.md y el criterio 6 de onboarding.md. Quien vende se ve afectado solo de forma indirecta: un head que nadie puede aprobar frena el trabajo que espera.
-- Afina el criterio 12, los criterios 10–12 de results.md y ADR-0046; no es un job de producto nuevo y no agrega comportamiento de producto.
+- Afina el criterio 12 y ADR-0046 (su lugar en Home ya no existe: ADR-0081); no es un job de producto nuevo y no agrega comportamiento de producto.
 - Su lado de captura (la fila `InicioHoyCompu`) es de design-capture.md.
 - Antes (el seguimiento de GH-45): el test de concordancia llegaba a `/first-run` solo donde se muestra la checklist, la forma de `checklist` fuera del tipo checklist estaba sin decidir, solo el test de la checklist corría en los dos temas, y la captura de Today mostraba una diferencia por construcción.
 
@@ -56,7 +56,7 @@ Antes de esta estructura: la barra era Home · Sales · Customers · Stock · Mo
 
 # Navigation
 
-La **Navigation** es la única estructura de la app para un Business: las pestañas en el celular, la barra lateral en una computadora, el avatar "Settings" del encabezado del celular, el segmento Today | Analysis, Settings, la única regla que le da a cada pantalla su marco y su camino de vuelta, qué lugar queda marcado, las rutas y sus redirecciones, la disposición en el celular (barra fija, "+ New sale" flotante, formularios como **Sheet**s), dónde empieza una pantalla y adónde vuelve atrás en la página, y el primer uso (el Onboarding para un Business recién creado, la First-run checklist para un Business que existía antes de él, el aviso posterior a la Spreadsheet import para uno importado). Dice desde dónde se llega a cada capacidad. Lo que hace cada capacidad queda en su propio archivo; nada de acá cambia una regla de precios, **Settlement**, **Stock**, el **Catalog**, el aislamiento o los mensajes de respuesta. Lo ve solo el Business de la **Session** (ADR-0004). No hay pantalla More (GH-651).
+La **Navigation** es la única estructura de la app para un Business: las pestañas en el celular, la barra lateral en una computadora, el avatar "Settings" del encabezado del celular, el segmento Today | Analysis, Settings, la única regla que le da a cada pantalla su marco y su camino de vuelta, qué lugar queda marcado, las rutas y sus redirecciones, la disposición en el celular (barra fija, "+ New sale" flotante, formularios como **Sheet**s), dónde empieza una pantalla y adónde vuelve atrás en la página, y el primer uso (el Onboarding para un Business recién creado; Home no muestra ningún elemento de primer uso). Dice desde dónde se llega a cada capacidad. Lo que hace cada capacidad queda en su propio archivo; nada de acá cambia una regla de precios, **Settlement**, **Stock**, el **Catalog**, el aislamiento o los mensajes de respuesta. Lo ve solo el Business de la **Session** (ADR-0004). No hay pantalla More (GH-651).
 
 Criterios de éxito:
 
@@ -79,14 +79,14 @@ Criterios de éxito:
 9. **Marco por tipo, en todas partes.** Cada pantalla, incluidas las de Products (la lista de dos paneles, la página de un Product, sus listas "See all" de precios y de Stock entries, New price, New product, "All entries" y el formulario de Stock entry), es exactamente de un tipo y tiene una pantalla madre. La única excepción con nombre es Expenses, que es un detalle en el celular y un Tab root en una computadora (Marco y camino de vuelta). El formulario de Stock entry dice "Close", nunca "Back".
 10. **Un solo movimiento atrás.** Atrás o "Close" deja una pantalla en un toque y nunca cae dos veces en la misma pantalla del historial, incluidas las salidas de "That is gone." y Record payment. Sin historial, atrás va a la pantalla a la que pertenece el formulario, la Sheet o la tarjeta.
 11. **Cada dirección abre su pantalla.** Recargar cualquier ruta de Products, incluidas las que llevan parámetros, abre la pantalla y nunca la respuesta de la API. Cada path viejo en español, incluidos `/variedades/{id}` y `/mi-stock/entradas/{id}`, responde una redirección permanente a su ruta nueva con el id pasado. La única excepción es `/mas`, el path viejo de More, que ya no tiene destino y va a Home como cualquier dirección desconocida.
-12. **Primer uso, un elemento por vez.** Un Business recién creado recibe el aviso del Onboarding; solo un Business que existía antes de que saliera el Onboarding ve la First-run checklist; un Business importado ve el aviso descartable posterior a la Spreadsheet import; nunca dos elementos de primer uso a la vez, y cada uno lleva a su arreglo.
+12. **Primer uso, fuera de Home.** Home no muestra ningún elemento de primer uso. El Onboarding se abre solo al aceptar la Invitation de un Business nuevo o en la dirección `/onboarding`.
 
 Criterios de éxito, revisión del primer uso (seguimiento de GH-45):
 
 13. **Aprobado solo con la evidencia.** Una revisión del head que se integra no levanta ningún hallazgo importante sobre el test de concordancia del primer uso, la forma de `checklist`, su cobertura de temas o la captura de Today, y ninguno se arrastra a otra tarea.
 14. **Una respuesta rota hace fallar un test.** En cualquier estado alcanzable (sin Product; con precio sin Stock; con Stock sin precio; agotado; que califica; checklist ida), un test falla si el `nothing_qualifies` de `/first-run` no es exactamente "el tipo es la checklist y `GET /catalog` no tiene texto", o si sus pasos de checklist no concuerdan con los datos.
 15. **Una sola forma para `checklist`.** Su forma fuera del tipo checklist se escribe una vez, acá. La API, `contract.json` y el front concuerdan en ella, y un test la fija.
-16. **Los dos temas.** Cada test de primer uso en Home corre en claro y en oscuro.
+16. **Los dos temas.** Cada test de las reglas laterales de primer uso (el Shell y Products) corre en claro y en oscuro.
 17. **La captura dice la verdad.** `InicioHoyCompu` se compara contra su propia sección nombrada (design-capture.md).
 18. **Nada de lo que ve quien vende cambia, y ningún test se afloja.** Este archivo, results.md y cada pantalla se leen y se comportan como antes; cada suite pasa; los tests editados conservan cada aserción que tenían; los cambios del registro quedan dentro de sus costuras declaradas.
 
@@ -150,7 +150,7 @@ El dueño retiró la pantalla More el 2026-11-02 (`docs/design/redesign/registro
 ### Settings
 
 - **Una pantalla que reúne cada configuración de todo el Business, en grupos, y nada más.** Los grupos, en este orden (el comportamiento de cada grupo es de su dueño):
-  - **Business**: el nombre del Business (accounts.md). Toast "Business renamed".
+  - **Business**: el nombre del Business y su Phone country (accounts.md). Toast "Saved".
   - **Users**: los socios por email, ordenados por email, el que inició sesión marcado "you", e "Invite a partner", que crea un link nuevo para sumarse por toque, para copiar o compartir (accounts.md). Sin lista de Invitations, sin revocar, sin roles.
   - **Prices** (pricing-settings.md), en `/settings/prices`:
     - los dos interruptores, Bulk price y VIP customers;
@@ -333,69 +333,53 @@ Esto cubre Settings y sus grupos, la pantalla del Catalog y la página de un Pro
 
 ### Primer uso
 
-- **Tres elementos de primer uso, cada uno para su propio Business, nunca dos a la vez**:
-  - **el Onboarding**, para un Business abierto con una Invitation de Business nuevo después de que salió (onboarding.md);
-  - **la First-run checklist**, para un Business que existía antes de que saliera el Onboarding;
-  - **el aviso posterior a la Spreadsheet import**, para un Business cargado por la Spreadsheet import. Una vez que la Spreadsheet import carga un Business, su Onboarding terminó.
-- No hay tour ni pantalla de bienvenida más allá de estos.
-- **El estado de primer uso es del Business.** Cada User de él ve el mismo elemento: un User que se sumó con una Invitation para sumarse ve el que tenga el Business al que se sumó, o ninguno. Una Invitation para sumarse nunca abre un Business, así que nunca arranca un primer uso propio.
+- **Home no muestra ningún elemento de primer uso**: ni el aviso del Onboarding, ni una checklist, ni "Start with your products", ni un aviso posterior a la **Spreadsheet import**. Home no lee `/first-run` ni `/onboarding-progress`, y es el Panel de results.md para un Business en cualquier estado de su configuración (ADR-0081).
+- **El Onboarding** es el único elemento de primer uso, para un Business abierto con una Invitation de Business nuevo después de que salió (onboarding.md). Una vez que la Spreadsheet import carga un Business, su Onboarding terminó.
+- No hay tour ni pantalla de bienvenida más allá de él.
+- **El estado de primer uso es del Business.** Cada User de él comparte el mismo estado: un User que se sumó con una Invitation para sumarse comparte el del Business al que se sumó, o ninguno. Una Invitation para sumarse nunca abre un Business, así que nunca arranca un primer uso propio.
 - **Qué se guarda**: el estado propio del Onboarding (ADR-0036) nunca se copia. Además de él, se guardan solo tres hechos del Business:
-  1. que el Business lo cargó la Spreadsheet import, y cuándo. Solo la Spreadsheet import lo escribe, dentro de su único commit, y nunca se borra ni se mueve (import.md). Un Business importado antes de que existiera este hecho no tiene ninguno, y no se completa hacia atrás;
+  1. que el Business lo cargó la Spreadsheet import, y cuándo. Solo la Spreadsheet import lo escribe, dentro de su único commit, y nunca se borra ni se mueve (import.md). Termina el Onboarding del Business. Un Business importado antes de que existiera este hecho no tiene ninguno, y no se completa hacia atrás;
   2. que la checklist se fue para siempre;
-  3. que se descartó el aviso posterior a la Spreadsheet import.
+  3. que se descartó el aviso posterior a la Spreadsheet import. Ya no lo lee ninguna pantalla; quitarlo es una decisión aparte (ADR-0081).
 
   Ninguno guarda datos personales. Ningún paso de la checklist se guarda nunca como tildado.
-- Qué elemento se muestra, y cada paso de la checklist, lo responde el servidor para el Business de la Session.
+- **Las reglas laterales** siguen, sin ninguna pantalla que las anuncie. Rigen para un Business que existía antes de que saliera el Onboarding y que todavía no cumplió los dos pasos obligatorios, y valen para cada User de él:
+  - los pasos, calculados a partir de los datos del Business en el momento, nunca de una marca guardada: (1) un Product con **Current price** hoy (obligatorio); (2) cualquier Stock entry (obligatorio); (3) el **Pinned catalog** publicado al menos una vez y (4) un segundo User en el Business, ambos opcionales y que nunca las retienen;
+  - se van para siempre la primera vez que los pasos 1 y 2 están cumplidos los dos, y nunca vuelven, aunque la condición de un paso obligatorio después vuelva a ser falsa (por ejemplo, se elimina la única Price entry);
+  - mientras rigen, "+ New sale" sigue visible y, sin ningún Product con precio hoy, dice en palabras qué falta;
+  - mientras rigen y nada califica para el Catalog, "Send catalog" está deshabilitado con su motivo en palabras (p. ej. "Add a product with a price and its stock"). Es la única vez que se deshabilita (catalog.md). El link de Integrations a la pantalla del Catalog nunca se deshabilita;
+  - un Business recién creado y un Business importado no las tienen: el primero tiene el Onboarding, el segundo llega con precios y Stock.
+- Qué regla rige, y cada paso, lo responde el servidor para el Business de la Session.
 
 ### Qué responde `/first-run`, y cómo se prueba (seguimiento de GH-45)
 
-- **La forma de `checklist`**: fuera del tipo checklist (el aviso del Onboarding, "Start with your products", ninguno), `checklist` es una lista vacía `[]`, nunca `null`. El aviso posterior a la Spreadsheet import es su propio indicador y nunca la cambia. Esta es la única declaración de la forma: el plan, el esquema de la API y el front la leen, y el verificador del contrato no cambia. Home muestra la checklist solo cuando el tipo lo dice, nunca porque la lista tenga elementos.
-- **`nothing_qualifies`** es verdadero exactamente cuando el tipo es la checklist y el Catalog no tiene texto para enviar; en cualquier otro tipo es falso, tenga lo que tenga el Catalog. Lo lee solo la regla de la checklist que deshabilita "Send catalog", y fuera de la checklist no significa nada. Nunca se amplía para responder por cada tipo.
-- **El test de concordancia** compara `/first-run` con sus fuentes en ocho estados: sin Product; con precio sin Stock; con Stock sin precio; agotado; que califica; checklist ida; un Onboarding abierto; y un Business importado, mientras se muestra su aviso y una vez que terminó. En cada estado:
-  - el tipo y el indicador del aviso son iguales a lo que dicen sus fuentes: `/onboarding-progress`, el hecho de la Spreadsheet import y el hecho de la publicación;
+- **Quién lo lee**: solo el Shell ("+ New sale", la línea de precio faltante) y Products ("Send catalog" deshabilitado). Home no lo lee. El endpoint conserva su respuesta tal como está (ADR-0046); `POST /first-run/import-notice/dismissal` y el indicador `import_notice` no tienen lector, y quitarlos es una decisión aparte (ADR-0081).
+- **La forma de `checklist`**: fuera del tipo checklist (el aviso del Onboarding, "Start with your products", ninguno), `checklist` es una lista vacía `[]`, nunca `null`. El indicador `import_notice` es independiente y nunca la cambia. Esta es la única declaración de la forma: el plan, el esquema de la API y el front la leen, y el verificador del contrato no cambia. El front lee la regla lateral solo cuando el tipo dice checklist, nunca porque la lista tenga elementos.
+- **`nothing_qualifies`** es verdadero exactamente cuando el tipo es la checklist y el Catalog no tiene texto para enviar; en cualquier otro tipo es falso, tenga lo que tenga el Catalog. Lo lee solo la regla que deshabilita "Send catalog", y fuera de la checklist no significa nada. Nunca se amplía para responder por cada tipo.
+- **El test de concordancia** compara `/first-run` con sus fuentes en ocho estados: sin Product; con precio sin Stock; con Stock sin precio; agotado; que califica; checklist ida; un Onboarding abierto; y un Business importado, mientras tiene el indicador `import_notice` y una vez que terminó. En cada estado:
+  - el tipo y el indicador son iguales a lo que dicen sus fuentes: `/onboarding-progress`, el hecho de la Spreadsheet import y el hecho de la publicación;
   - se lee el propio `GET /catalog` (no solo el puerto por el que lo lee el servidor), y `nothing_qualifies` es igual a "el tipo es la checklist y `GET /catalog` no tiene texto".
 
-  Cada elemento de primer uso (el aviso del Onboarding, la checklist, "Start with your products", el aviso posterior a la Spreadsheet import, ninguno) aparece en al menos un estado. Solo agrega controles; no cambia ninguna regla ni matriz de acá.
-- **Los dos temas**: los tests del front del aviso del Onboarding, la checklist, "Start with your products", el aviso posterior a la Spreadsheet import, la línea de precio faltante de "+ New sale" y el "Send catalog" deshabilitado corren cada uno en claro y en oscuro, conservando cada aserción que tenían. Las cifras de Home quedan fuera de este alcance.
+  Cada tipo que el endpoint responde aparece en al menos un estado. Solo agrega controles; no cambia ninguna regla ni matriz de acá.
+- **Los dos temas**: los tests del front de la línea de precio faltante de "+ New sale" y del "Send catalog" deshabilitado corren cada uno en claro y en oscuro, conservando cada aserción que tenían. Las cifras de Home quedan fuera de este alcance.
 
 ### El Onboarding (primer uso de un Business recién creado)
 
-- **Entrada**: aceptar una Invitation de Business nuevo cae en el Onboarding en lugar de Home. Es la única vez que se abre solo.
-- **El aviso de Home**: mientras no terminó, "Go on to the setup" está arriba de todo en Home, en el celular y en `InicioCompu`, en el lugar de la checklist (results.md da el orden de Home). Muestra "N of 6 steps" y qué sigue, abre el Onboarding en su paso de retomar, y no se puede descartar.
-- **Mientras no terminó**, no se muestran ni la checklist ni "Start with your products".
-- **No agrega ninguna regla lateral**: "+ New sale" y "Send catalog" se comportan como para cualquier Business. Lo que falta lo dicen el aviso, la propia línea de falta de precio de New sale antes de guardar y el estado vacío de la pantalla del Catalog.
-- **Una vez que terminó** ("Done" alcanzado, o la Spreadsheet import cargó el Business), nunca vuelve a mostrarse; los faltantes que siguen los dicen los avisos permanentes.
+- **Entrada**: aceptar una Invitation de Business nuevo cae en el Onboarding en lugar de Home. Es la única vez que se abre solo. Después, se vuelve a él solo abriendo la dirección `/onboarding`: ninguna pantalla enlaza a él, ni Home, ni Settings, ni More.
+- **Home no lo anuncia**: ni un aviso, ni una marca, ni un recordatorio. Home es el Panel, sea cual sea el estado de la configuración.
+- **Abrir `/onboarding`**:
+  - mientras no terminó, lleva al paso donde se retoma;
+  - con cada paso hecho o pasado y sin "Done" alcanzado, manda `advance` una sola vez por montaje, muestra "Done" (reemplazando su entrada del historial) y con eso termina el Onboarding (ADR-0081). Una segunda apertura lleva a Home;
+  - para un Business cuyo Onboarding terminó (por "Done" o por la Spreadsheet import) y para uno que nunca tuvo uno, lleva a Home.
+- **No agrega ninguna regla lateral**: "+ New sale" y "Send catalog" se comportan como para cualquier Business. Lo que falta lo dicen la propia línea de falta de precio de New sale antes de guardar y el estado vacío de la pantalla del Catalog.
+- **Una vez que terminó** ("Done" alcanzado, o la Spreadsheet import cargó el Business), no vuelve; los faltantes que siguen los dicen los avisos permanentes.
 - Sus pasos, pases, retomar y pantalla de cierre están en onboarding.md.
-
-### First-run checklist (Businesses que existían antes del Onboarding)
-
-- **Los pasos**, cada uno calculado a partir de los datos del Business en el momento, nunca de una marca guardada:
-  1. un Product con **Current price** hoy (obligatorio);
-  2. cualquier Stock entry (obligatorio);
-  3. el **Pinned catalog** publicado al menos una vez (opcional);
-  4. un segundo User en el Business (opcional).
-- Un paso cumplido muestra su casilla tildada y la palabra "Done", nunca solo color. Las etiquetas de los pasos son la redacción de diseño, dentro de los límites de largo de la **Icon and text rule**; la checklist no lleva **Attention icon**.
-- **Quién la ve**: un Business que existía antes de que saliera el Onboarding y que todavía no cumplió los dos pasos obligatorios, y cada User de él. Un Business recién creado recibe el Onboarding en su lugar y nunca ve la checklist. Los pasos opcionales nunca la retienen en pantalla; siguen alcanzables en Settings (Integrations, Users).
-- **Cuándo se va**: para siempre, la primera vez que los pasos 1 y 2 están cumplidos los dos.
-  - Nunca vuelve, aunque la condición de un paso obligatorio después vuelva a ser falsa (por ejemplo, se elimina la única Price entry).
-  - Los faltantes que siguen los dicen los avisos permanentes: "Start with your products" y el aviso de **Out of date** del Pinned catalog.
-- **Dónde**: arriba de todo en Home, en el celular y en `InicioCompu` por igual (results.md da el orden de Home). Mientras rige, ocupa el lugar de primer uso, y "Start with your products" no se muestra.
-- **Mientras se muestra**:
-  - "+ New sale" sigue visible y, sin ningún Product con precio hoy, dice en palabras qué falta;
-  - mientras nada califica para el Catalog, "Send catalog" está deshabilitado con su motivo en palabras (p. ej. "Add a product with a price and its stock"). Es la única vez que se deshabilita (catalog.md). El link de Integrations a la pantalla del Catalog nunca se deshabilita.
-- **Un Business importado** llega con precios y Stock, así que nunca ve la checklist.
-
-### Aviso posterior a la Spreadsheet import
-
-- Un Business que cargó la Spreadsheet import (import.md), según lo registró la propia Spreadsheet import, muestra en Home "Connect the bot so the pinned catalog updates by itself", con el Attention icon (icon-and-text-rule.md).
-- Se puede descartar. Se muestra hasta que se descarta o hasta que el Pinned catalog se publica por primera vez, lo que pase primero, y después nunca más. Un descarte es para el Business: ningún socio lo ve después.
-- Un Business importado antes de que la Spreadsheet import lo registrara nunca ve el aviso.
 
 ### Restricciones
 
-- Nada de acá agrega una ruta que responda datos del Business más allá de lo que necesitan el Panel de Home y el estado de primer uso; cada pantalla lee las rutas de su dueño, que ya están en el barrido de aislamiento y en el test de rutas protegidas. Las rutas propias del Onboarding, y cualquier ruta del estado de primer uso (el hecho de la Spreadsheet import, el fin de la checklist, el descarte del aviso posterior a la Spreadsheet import), se suman a los dos, y ese estado lleva `business_id` y lo exporta y lo borra la **Business removal** (ADR-0015).
+- Nada de acá agrega una ruta que responda datos del Business más allá de lo que necesitan el Panel de Home y el estado de primer uso; cada pantalla lee las rutas de su dueño, que ya están en el barrido de aislamiento y en el test de rutas protegidas. Las rutas propias del Onboarding, y cualquier ruta del estado de primer uso (el hecho de la Spreadsheet import, el fin de la checklist), se suman a los dos, y ese estado lleva `business_id` y lo exporta y lo borra la **Business removal** (ADR-0015).
 - Servir un path del front a una navegación del navegador nunca amplía lo que la API responde a un pedido JSON, y no agrega ninguna ruta de la API (ADR-0024).
-- Lo que decide el aviso del Onboarding, la checklist y el aviso posterior a la Spreadsheet import lo responde el servidor solo para el Business de la Session.
+- Lo que deciden el Onboarding y las reglas laterales lo responde el servidor solo para el Business de la Session. Abrir `/onboarding` puede terminar solo el Onboarding del Business de la Session, y solo en `finish`; el pedido no nombra ningún Business (ADR-0081).
 - Ningún id de Business en una URL; ningún dato personal ni dinero en la consola o el almacenamiento del navegador (accounts.md). La **Theme choice** es lo único que se guarda en el dispositivo (ADR-0026); los hechos de primer uso se guardan en el servidor, nunca en el navegador. Los offsets de scroll (GH-480) viven solo en la memoria de la app en marcha, nunca en `sessionStorage`, `localStorage` ni ningún otro almacenamiento del navegador. El segmento Today | Analysis no recuerda nada: Home siempre abre en Today.
 - Los mensajes de respuesta siguen accounts.md, en Settings, el Onboarding y Home como en todas partes:
   - sin red se muestra "No connection";
@@ -438,26 +422,24 @@ Esto cubre Settings y sus grupos, la pantalla del Catalog y la página de un Pro
     - agrega, renombra y quita una categoría, incluido un rechazo al quitar;
     - cambia Appearance, cambia la contraseña y cierra sesión.
 - **Matriz de primer uso, el Onboarding**: 100% en verde, celular y computadora:
-  - un Business recién creado cae en el Onboarding al aceptar su Invitation y ve "Go on to the setup" mientras no terminó, nunca con "Start with your products";
+  - un Business recién creado cae en el Onboarding al aceptar su Invitation; Home, abierto después, no muestra ningún aviso del Onboarding;
   - mientras corre, "+ New sale" y "Send catalog" se comportan como para cualquier Business;
-  - un Business preexistente y un Business importado (incluido uno que cayó en el Onboarding antes de la Spreadsheet import) nunca lo ven; un User que se suma a un Business a mitad del Onboarding ve el mismo aviso.
-- **Matriz de primer uso, la checklist y el aviso posterior a la Spreadsheet import (criterio 12)**: 100% en verde, celular y computadora:
-  - un Business que existía antes del Onboarding ve la checklist, y cada paso cumplido muestra "Done";
-  - se va la primera vez que los pasos 1 y 2 están cumplidos los dos, sean como sean el 3 y el 4;
-  - eliminar después la única Price entry nunca la trae de vuelta;
-  - un Business importado nunca la ve, y ve el aviso posterior a la Spreadsheet import hasta que se descarta o se publica; una vez descartado, ningún socio lo ve;
-  - un Business que terminó el Onboarding por "Done" nunca ve el aviso posterior a la Spreadsheet import, y tampoco un Business importado antes de que existiera el hecho de la Spreadsheet import;
-  - un User que se sumó ve el elemento de su Business, o ninguno;
-  - nunca se muestran dos elementos de primer uso a la vez;
-  - "Send catalog" está deshabilitado solo mientras se muestra la checklist y nada califica.
+  - `/onboarding` retoma en el primer paso ni hecho ni pasado; con cada paso hecho o pasado y sin "Done", muestra "Done" y lo termina, y una segunda apertura lleva a Home;
+  - un Business preexistente y un Business importado (incluido uno que cayó en el Onboarding antes de la Spreadsheet import) caen en Home al abrir `/onboarding`; un User que se suma a un Business a mitad del Onboarding comparte su estado.
+- **Matriz de primer uso, Home y las reglas laterales (criterio 12)**: 100% en verde, celular y computadora:
+  - Home no muestra ningún aviso de primer uso ni "Start with your products", para un Business en Onboarding, uno preexistente, uno importado y uno sin precio hoy, y sigue mostrando "Your Telegram catalog is out of date" mientras aplica; Home no pide `/first-run` ni `/onboarding-progress`;
+  - un Business que existía antes del Onboarding y no cumplió los pasos 1 y 2 tiene la línea de precio faltante de "+ New sale" y el "Send catalog" deshabilitado cuando nada califica;
+  - se van la primera vez que los pasos 1 y 2 están cumplidos los dos, sean como sean el 3 y el 4, y eliminar después la única Price entry nunca las trae de vuelta;
+  - un Business importado y uno recién creado nunca las tienen;
+  - un User que se sumó ve las reglas de su Business, o ninguna.
 - **Estado de primer uso aislado**: sus rutas están en el barrido y en el test de rutas protegidas; la Business removal deja 0 filas de él y conteo exportado = conteo borrado.
-- **Concordancia de primer uso (criterios 13, 14)**: en los ocho estados, el tipo y el indicador del aviso de `/first-run` son iguales a sus fuentes, y `nothing_qualifies` es igual a "el tipo es la checklist y `GET /catalog` no tiene texto": 0 diferencias; cada uno de los cinco elementos aparece en al menos un estado; un `nothing_qualifies` roto a propósito hace fallar el test, mostrado una vez en el PR y sin commitear. 0 hallazgos de estos tipos en el head que se integra, y 0 arrastrados a otra tarea.
+- **Concordancia de primer uso (criterios 13, 14)**: en los ocho estados, el tipo y el indicador `import_notice` de `/first-run` son iguales a sus fuentes, y `nothing_qualifies` es igual a "el tipo es la checklist y `GET /catalog` no tiene texto": 0 diferencias; cada tipo que el endpoint responde aparece en al menos un estado; un `nothing_qualifies` roto a propósito hace fallar el test, mostrado una vez en el PR y sin commitear. 0 hallazgos de estos tipos en el head que se integra, y 0 arrastrados a otra tarea.
 - **Una sola forma (criterio 15)**: un test del backend muestra `checklist == []` para cada tipo que no es la checklist; un test del front muestra que `[]` se lee como sin checklist; el plan, el esquema y el front concuerdan, y el código del verificador del contrato no cambia.
-- **Los dos temas (criterio 16)**: cada uno de los seis tests del front de primer uso corre en claro y en oscuro, y ningún test tiene menos aserciones que antes.
-- **Nada aflojado (criterio 18)**: cada suite pasa; los únicos tests editados son el test de concordancia, los tests de primer uso de Home y los dos tests del registro, cada uno conservando sus aserciones; bajo `web/src/` no cambia nada salvo tests, aparte del tipo `/first-run` del front si declaraba `checklist` como anulable.
+- **Los dos temas (criterio 16)**: cada uno de los tests del front de las reglas laterales (la línea de precio faltante de "+ New sale" y el "Send catalog" deshabilitado) corre en claro y en oscuro, y ningún test tiene menos aserciones que antes.
+- **Nada aflojado (criterio 18)**: cada suite pasa; los únicos tests editados son el test de concordancia, los tests de primer uso que quedan y los dos tests del registro, cada uno conservando sus aserciones; bajo `web/src/` no cambia nada salvo tests, aparte del tipo `/first-run` del front si declaraba `checklist` como anulable.
 - **Redirecciones (criterio 11)**: cada path viejo en español que se movió responde una redirección permanente a su ruta en inglés, probado uno por uno, incluidos `/negocio`, `/gastos/categorias`, `/catalogo`, `/mi-stock/nueva-entrada`, y `/variedades/{id}` y `/mi-stock/entradas/{id}` con el id pasado. `/mas` ya no tiene redirección y cae en Home como cualquier dirección desconocida. Un test muestra que cada destino de redirección es un path de `screens.json`, sin excepción. Hay un solo mecanismo de redirección, en el servidor, y ninguno en el front.
 - **Recargas bajo `/varieties` (criterio 11)**: una navegación del navegador a cada ruta de Products, incluidas las que llevan parámetros (`/varieties/{id}`, `/varieties/{id}/entries`, `/varieties/{id}/prices`, `/varieties/{id}/prices/new`, `/varieties/entries/{id}`) y `/varieties/archived`, abre la pantalla, nunca la respuesta de la API; las llamadas propias del front a la API siguen llegando a la API.
-- **Una estructura (criterio 7)**: los docs, CONTEXT.md, `pantallas/` y `screens.json` nombran las mismas pantallas y rutas, incluidos el formulario y el detalle de Stock withdrawal, la tarjeta Archived, la página del Archived product, Prices, las pantallas del Onboarding y los estados de primer uso de Home; Zeta aprueba el pull request que las enuncia.
+- **Una estructura (criterio 7)**: los docs, CONTEXT.md, `pantallas/` y `screens.json` nombran las mismas pantallas y rutas, incluidos el formulario y el detalle de Stock withdrawal, la tarjeta Archived, la página del Archived product, Prices, las pantallas del Onboarding y Home sin ningún estado de primer uso; Zeta aprueba el pull request que las enuncia.
 - **Diseño**: `scripts/design/compare.sh` corre antes y después para el formulario de Stock entry, el formulario de Customer, New sale y Home (celular y computadora, los dos temas), adjuntado al PR y juzgado a ojo; `NuevaVentaCompu` sale sin cambios; cualquier diferencia con el diseño se lista en el PR.
 - **Velocidad en el celular (GH-319, con el criterio 1)**: el e2e de New sale pasa sin editarse, con la misma cantidad de toques hasta una Sale guardada. Una Sale se registra desde un viewport de celular en menos de 60 s.
 - **Marco a mano (criterio 19)**:
@@ -510,6 +492,7 @@ Esto cubre Settings y sus grupos, la pantalla del Catalog y la página de un Pro
 - Un tour o pantalla de bienvenida más allá del Onboarding.
 - Una opción para volver a correr el Onboarding.
 - Reglas laterales sobre "+ New sale" o "Send catalog" atadas al Onboarding.
+- Un aviso, una marca o un link a `/onboarding` en Home, Settings o More; quitar o adelgazar `/first-run` (decisión aparte, ADR-0081).
 - Una checklist para un Business recién creado; guardar un paso de la checklist como tildado.
 - Completar hacia atrás el hecho de la Spreadsheet import para un Business importado antes de que existiera.
 - Promociones (como campañas u ofertas), automatizaciones, idiomas, y cualquier opción para ellas antes de que existan. Un Stock withdrawal para promoción es un registro de Stock, no esto.

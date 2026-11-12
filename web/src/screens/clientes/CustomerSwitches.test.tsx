@@ -7,6 +7,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
+import { SheetRouterProvider } from '../../components/useSheetStack'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import { SHOWN_EN } from '../../test/shownLanguage'
@@ -17,8 +18,9 @@ import ClienteFicha from './ClienteFicha'
 import Clientes from './Clientes'
 import ClientesLayout from './ClientesLayout'
 import ClienteForm from './ClienteForm'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
-const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN }
+const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 function json(body: unknown): Response {
   return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })
@@ -46,7 +48,7 @@ function renderAt(path: string): void {
       {
         element: (
           <FlashProvider>
-            <Outlet context={ME} />
+            <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
           </FlashProvider>
         ),
         children: [
@@ -61,7 +63,9 @@ function renderAt(path: string): void {
   )
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-      <RouterProvider router={router} />
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
 }
@@ -70,6 +74,7 @@ const FER = {
   id: 3,
   name: 'Fer',
   phone: '+5491158423310',
+  phone_display: '+54 9 11 5842-3310',
   vip: true,
   customer_type_id: 2,
   balance: 0,
@@ -130,7 +135,7 @@ test('the customer card hides the type while Customer types is off', async () =>
 test('the customer form shows the Customer type field only while Customer types is on', async () => {
   stub(true, {})
   renderAt(CUSTOMER_NEW)
-  expect(await screen.findByLabelText('Customer type')).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: /^Customer type/ })).toBeInTheDocument()
   expect(screen.queryByRole('switch', { name: 'VIP' })).not.toBeInTheDocument()
 })
 

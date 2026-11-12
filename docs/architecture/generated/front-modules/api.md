@@ -8,6 +8,7 @@ Only edges between files inside `api/` are drawn; edges between folders are in [
 flowchart LR
 subgraph src["src"]
   subgraph src_api["api"]
+    src_api_amountRefusal_ts["amountRefusal.ts"]
     src_api_analysis_ts["analysis.ts"]
     src_api_catalog_ts["catalog.ts"]
     src_api_client_ts["client.ts"]
@@ -19,9 +20,11 @@ subgraph src["src"]
     src_api_keys_ts["keys.ts"]
     src_api_language_ts["language.ts"]
     src_api_me_ts["me.ts"]
+    src_api_moneyFormat_ts["moneyFormat.ts"]
     src_api_onboarding_ts["onboarding.ts"]
     src_api_panel_ts["panel.ts"]
     src_api_payments_ts["payments.ts"]
+    src_api_phoneCountry_ts["phoneCountry.ts"]
     src_api_pricingSettings_ts["pricingSettings.ts"]
     src_api_refusals_ts["refusals.ts"]
     src_api_sales_ts["sales.ts"]
@@ -30,6 +33,7 @@ subgraph src["src"]
     src_api_withdrawalReasons_ts["withdrawalReasons.ts"]
   end
 end
+src_api_amountRefusal_ts-->src_api_refusals_ts
 src_api_analysis_ts-->src_api_client_ts
 src_api_catalog_ts-->src_api_client_ts
 src_api_catalog_ts-->src_api_keys_ts
@@ -42,6 +46,7 @@ src_api_firstRun_ts-->src_api_client_ts
 src_api_firstRun_ts-->src_api_keys_ts
 src_api_me_ts-->src_api_client_ts
 src_api_me_ts-->src_api_language_ts
+src_api_moneyFormat_ts-->src_api_client_ts
 src_api_onboarding_ts-->src_api_client_ts
 src_api_onboarding_ts-->src_api_keys_ts
 src_api_panel_ts-->src_api_analysis_ts
@@ -50,6 +55,8 @@ src_api_panel_ts-->src_api_keys_ts
 src_api_panel_ts-->src_api_stock_ts
 src_api_payments_ts-->src_api_client_ts
 src_api_payments_ts-->src_api_keys_ts
+src_api_phoneCountry_ts-->src_api_client_ts
+src_api_phoneCountry_ts-->src_api_keys_ts
 src_api_pricingSettings_ts-->src_api_client_ts
 src_api_pricingSettings_ts-->src_api_keys_ts
 src_api_refusals_ts-->src_api_contract_json

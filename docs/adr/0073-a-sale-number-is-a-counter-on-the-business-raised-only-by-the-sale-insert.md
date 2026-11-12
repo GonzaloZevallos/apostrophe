@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-11-07
+summary: "el número de una venta es un contador del Business que solo sube el alta de la venta"
 ---
 
 # A Sale number is a counter on the business, raised only by the sale insert

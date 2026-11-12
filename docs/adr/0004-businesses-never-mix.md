@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-02
+summary: "los Businesses nunca se mezclan: el Business sale de la sesión y cada fila lo lleva"
 ---
 
 # Businesses never mix: the business comes from the session and every row carries it

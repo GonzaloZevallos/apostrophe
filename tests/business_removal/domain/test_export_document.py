@@ -64,13 +64,15 @@ SCHEMA = Schema(
             (
                 _col("id", primary_key=True),
                 _col("business_id"),
-                _col("category_id"),
+                _col("expense_category_id"),
                 _col("spent_on"),
                 _col("amount"),
             ),
             (
                 ForeignKey(
-                    ("business_id", "category_id"), "expense_category", ("business_id", "id")
+                    ("business_id", "expense_category_id"),
+                    "expense_category",
+                    ("business_id", "id"),
                 ),
             ),
         ),
@@ -87,7 +89,7 @@ SCHEMA = Schema(
     )
 )
 
-BUSINESS = Business(1, "La Flor", "es")
+BUSINESS = Business(1, "La Flor", "es", "AR")
 EXPORTED_AT = datetime(2026, 10, 3, 12, 0, 0)
 
 
@@ -186,7 +188,7 @@ def test_the_composite_expense_foreign_key_references_the_category_by_id_alone()
             {
                 "id": 1,
                 "business_id": 1,
-                "category_id": 1,
+                "expense_category_id": 1,
                 "spent_on": date(2026, 1, 1),
                 "amount": 500,
             },
@@ -196,7 +198,7 @@ def test_the_composite_expense_foreign_key_references_the_category_by_id_alone()
     document = build_document(BUSINESS, SCHEMA, rows, EXPORTED_AT)
 
     expense = document["kinds"]["expense"][0]
-    assert expense["category_id"] == {"id": 1, "name": "Insumos de cultivo"}
+    assert expense["expense_category_id"] == {"id": 1, "name": "Insumos de cultivo"}
     assert "business_id" not in expense
     category = document["kinds"]["expense_category"][0]
     assert "business_id" not in category
@@ -289,9 +291,22 @@ def test_no_password_hash_or_withheld_table_ever_reaches_the_document() -> None:
     assert "business_id" not in user
 
 
-def test_the_header_carries_the_business_s_id_name_and_language() -> None:
+def test_the_header_carries_the_business_s_id_name_language_and_phone_country() -> None:
     document = build_document(
-        Business(1, "La Flor", "de"), SCHEMA, {"app_user": [], "customer": []}, EXPORTED_AT
+        Business(1, "La Flor", "de", "UY"), SCHEMA, {"app_user": [], "customer": []}, EXPORTED_AT
     )
 
-    assert document["business"] == {"id": 1, "name": "La Flor", "language": "de"}
+    assert document["business"] == {
+        "id": 1,
+        "name": "La Flor",
+        "language": "de",
+        "default_phone_country": "UY",
+    }
+
+
+def test_a_business_with_no_phone_country_exports_a_null() -> None:
+    document = build_document(
+        Business(1, "La Flor", "de", None), SCHEMA, {"app_user": [], "customer": []}, EXPORTED_AT
+    )
+
+    assert document["business"]["default_phone_country"] is None

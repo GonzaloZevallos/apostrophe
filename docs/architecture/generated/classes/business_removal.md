@@ -48,6 +48,8 @@ classDiagram
   }
   class export_file {
   }
+  class money_format_read {
+  }
   class operator_words {
   }
   class remove_business {
@@ -57,6 +59,7 @@ classDiagram
   class signals {
   }
   remove_business --> export_file
+  remove_business --> money_format_read
   remove_business --> operator_words
   remove_business --> schema_rows
   remove_business --> signals
@@ -86,12 +89,14 @@ classDiagram
 ```mermaid
 classDiagram
   class Business {
+    default_phone_country : str #124; None
     id : int
     language : str
     last_sale_number : int #124; None
     name : str
   }
   class BusinessRef {
+    default_phone_country : str #124; None
     id : int
     language : str
     last_sale_number : int #124; None
@@ -108,6 +113,10 @@ classDiagram
   }
   class DeleteOrderCycle {
     tables : tuple~str, ...~
+  }
+  class ExportedMoney {
+    decimals : int
+    scale : int
   }
   class ForeignKey {
     columns : tuple~str, ...~
@@ -149,6 +158,9 @@ classDiagram
     write_durably(name: str, document: dict~str, Any~) Path
   }
   class Interrupted {
+  }
+  class MoneyFormatRead {
+    of(business_id: int) ExportedMoney
   }
   class OperatorWords {
     busy() str
@@ -231,6 +243,9 @@ classDiagram
     unknown_outcome(path: str) str
     unlabelled_tables(tables: str) str
     unowned_tables(tables: str) str
+  }
+  class _BusyTranslatingMoneyFormat {
+    of(business_id: int) ExportedMoney
   }
   class _BusyTranslatingSchemaRows {
     business_of(email: str) BusinessRef #124; None

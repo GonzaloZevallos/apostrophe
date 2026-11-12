@@ -239,7 +239,7 @@ test.describe.serial('navigation', () => {
       await expectAction(page.getByRole('link', { name: `New sale to ${records.customerName}` }))
     }
 
-    // InicioPrimeraVez: Inicio of a business with nothing in it yet.
+    // Inicio of a business with nothing in it yet.
     const context = await withToastRecorder(browser.newContext({ baseURL: workerServer.url, viewport: { width: 390, height: 844 } }))
     const fresh = await context.newPage()
     await signUp(fresh, 'PrimeraVez')

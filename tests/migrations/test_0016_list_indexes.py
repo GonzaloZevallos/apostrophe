@@ -25,7 +25,10 @@ TABLES = ("sale", "sale_line", "payment")
 # `number`), and a `SELECT *` would fail on every one.
 SELECTED = {
     "sale": "id, business_id, {sale_date}, customer_id, shipping_charged, note, recorded_at",
-    "sale_line": "*",
+    "sale_line": (
+        "id, business_id, sale_id, variety_id, grams_hundredths, pricing_rule, "
+        "price_per_gram, line_total, position"
+    ),
     "payment": "*",
 }
 

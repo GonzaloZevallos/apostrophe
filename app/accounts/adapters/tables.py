@@ -18,6 +18,8 @@ class BusinessRow(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(BUSINESS_NAME_MAX_LENGTH))
     language: Mapped[str] = mapped_column(String(35))
+    # An ISO 3166-1 alpha-2 code from app.shared.phone_country, or null (docs/adr/0082).
+    default_phone_country: Mapped[str | None] = mapped_column(String(2))
     # The highest Sale number this business ever gave (docs/adr/0073); only
     # `SqlSales.add` raises it, so deleting a sale never frees a number.
     last_sale_number: Mapped[int] = mapped_column(server_default="0")
@@ -53,7 +55,7 @@ class ResetLinkRow(Base):
     # UNIQUE, not a rule in code.
     id: Mapped[int] = mapped_column(primary_key=True)
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
-    user_id: Mapped[int] = mapped_column(ForeignKey("app_user.id"), unique=True)
+    app_user_id: Mapped[int] = mapped_column(ForeignKey("app_user.id"), unique=True)
     token_digest: Mapped[str] = mapped_column(String(64), unique=True)
     created_at: Mapped[datetime] = mapped_column(UtcDateTime)
 

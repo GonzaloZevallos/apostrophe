@@ -41,7 +41,8 @@ import SinConexion from '../../components/SinConexion'
 import Sheet from '../../components/Sheet'
 import { type LeaveGuard, useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
-import { formatGrams, formatMoney, keepMoneyTogether } from '../../format/money'
+import { formatGrams } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import {
   CATALOG_SECTION_ID,
   STOCK_ENTRY_NEW,
@@ -107,6 +108,7 @@ function VarietyPageView({
   /** The routed page tells the shell's arrow about its variety; the copy behind the modal has no arrow. */
   publishRecord: boolean
 }) {
+  const money = useMoney()
   const id = String(varietyId)
   const me = useOutletContext<Me>()
   const location = useLocation()
@@ -273,7 +275,7 @@ function VarietyPageView({
             <p className="variedad-resumen variedad-resumen--archivada">
               <span className="cifra-n">{formatGrams(row.quantity)}</span>
               {' · '}
-              {variety.current_price === null ? NO_PRICE_TODAY : keepMoneyTogether(COMMON_TEXT.pricePerGram(formatMoney(variety.current_price.list_price)))}
+              {variety.current_price === null ? NO_PRICE_TODAY : money.keepTogether(COMMON_TEXT.pricePerGram(money.money(variety.current_price.list_price)))}
             </p>
             <div className="variedad-marcas">
               <Insignia>{VARIETIES_TEXT.archivada}</Insignia>
@@ -287,7 +289,7 @@ function VarietyPageView({
             {catalogRow !== null && !catalogRow.shown && <>{OUT_OF_DATE_JOINER}<span className="variedad-resumen__oculta">{VARIETIES_TEXT.oculta}</span></>}
             {row.days_left !== null && <>{OUT_OF_DATE_JOINER}<span className="cifra-n">{row.days_left}{VARIETIES_TEXT.dias}</span></>}
             {' · '}
-            {variety.current_price === null ? NO_PRICE_TODAY : keepMoneyTogether(COMMON_TEXT.pricePerGram(formatMoney(variety.current_price.list_price)))}
+            {variety.current_price === null ? NO_PRICE_TODAY : money.keepTogether(COMMON_TEXT.pricePerGram(money.money(variety.current_price.list_price)))}
           </p>
         )}
 

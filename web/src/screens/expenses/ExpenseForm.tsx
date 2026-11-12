@@ -12,7 +12,8 @@
  * expense (Gastos): a new expense can neither be deleted nor be already gone.
  */
 
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, useEffect, useId, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useLoading } from '../../components/useLoading'
 import { useOutletContext } from 'react-router'
@@ -32,13 +33,18 @@ import { isGone, kindOf, resolveOverride, type RefusalCode } from '../../api/ref
 import type { SuccessToast } from '../../components/AvisoExito'
 import Boton from '../../components/Boton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
+import MoneyInput from '../../components/MoneyInput'
 import { SheetActions } from '../../components/Sheet'
+import Selector from '../../components/Selector'
 import SinConexion from '../../components/SinConexion'
 import { useViewport } from '../../shell/useViewport'
-import { parseMoney } from '../../format/parse'
+import { formatMoneyInput, parseMoneyInput } from '../../format/parse'
+import type { MoneyFormat } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { EXPENSES_TEXT } from '../../copy/expenses'
 import { COMMON_TEXT } from '../../copy/common'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
+import { AMOUNT_REFUSAL_CODE, tooManyDecimalsMessage } from '../../api/amountRefusal'
 
 export const CATEGORY_GONE = EXPENSES_TEXT.categoryGone
 export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
@@ -63,14 +69,14 @@ interface FormState {
   detail: string
 }
 
-function initialForm(target: FormTarget, today: string): FormState {
+function initialForm(target: FormTarget, today: string, format: MoneyFormat): FormState {
   if (target === 'nuevo') {
     return { spent_on: today, category_id: '', amount: '', detail: '' }
   }
   return {
     spent_on: target.spent_on,
     category_id: String(target.category_id),
-    amount: String(target.amount),
+    amount: formatMoneyInput(target.amount, format),
     detail: target.detail,
   }
 }
@@ -102,13 +108,17 @@ export default function ExpenseForm({
   onGone,
 }: ExpenseFormProps) {
   const me = useOutletContext<Me>()
+  const money = useMoney()
   const phone = useViewport() === 'phone'
   const queryClient = useQueryClient()
+  const { t } = useTranslation()
+  const categoryErrorId = useId()
   const categoriesQuery = useQuery({ queryKey: keys.expenseCategories(), queryFn: listCategories })
-  const [initial] = useState<FormState>(() => initialForm(target, me.today))
+  const [initial] = useState<FormState>(() => initialForm(target, me.today, money.format))
   const [form, setForm] = useState<FormState>(initial)
   const [categoryError, setCategoryError] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
+  const [amountError, setAmountError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
   const [sending, setSending] = useState(false)
   const [extraCategories, setExtraCategories] = useState<ExpenseCategory[]>([])
@@ -125,6 +135,8 @@ export default function ExpenseForm({
   // The form draws only its header until the categories answer.
   useLoading(categoriesQuery.isPending)
   const categories = categoriesQuery.data ?? []
+  // The query is the single source: an inline-created category stops being offered as an extra
+  // the moment the query holds it.
   const allCategories = [
     ...categories,
     ...extraCategories.filter((extra) => !categories.some((category) => category.id === extra.id)),
@@ -157,11 +169,13 @@ export default function ExpenseForm({
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
     setFormError(null)
+    setAmountError(null)
     setCategoryError(null)
     setOffline(false)
-    const parsedAmount = parseMoney(form.amount)
+    const parsedAmount = parseMoneyInput(form.amount, money.format)
     if (!parsedAmount.ok) {
-      setFormError(GENERIC_REFUSAL)
+      if (parsedAmount.tooManyDecimals) setAmountError(tooManyDecimalsMessage(money.format))
+      else setFormError(GENERIC_REFUSAL)
       return
     }
     const body: ExpenseInput = {
@@ -183,11 +197,14 @@ export default function ExpenseForm({
         setOffline(true)
       } else if (caught instanceof ApiError && resolveOverride(EXPENSE_FORM_OVERRIDES, caught.code) === 'category-gone') {
         invalidateResource(queryClient, 'expenseCategories')
+        setExtraCategories((previous) => previous.filter((extra) => extra.id !== body.category_id))
         setForm((previous) => ({ ...previous, category_id: '' }))
         setCategoryError(CATEGORY_GONE)
       } else if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateResource(queryClient, 'expenses')
         onGone?.()
+      } else if (caught instanceof ApiError && caught.code === AMOUNT_REFUSAL_CODE) {
+        setAmountError(tooManyDecimalsMessage(money.format))
       } else if (isRefusal(caught)) {
         setFormError(GENERIC_REFUSAL)
       } else {
@@ -234,42 +251,41 @@ export default function ExpenseForm({
           <input
             className="campo__input"
             type="date"
+            autoComplete="off"
             value={form.spent_on}
             max={me.today}
             onChange={(event) => setForm((previous) => ({ ...previous, spent_on: event.target.value }))}
             required
           />
         </label>
-        <label className="campo">
-          <span className="campo__rotulo">{COMMON_TEXT.category}</span>
-          <select
-            className="campo__input"
-            value={form.category_id}
-            onChange={(event) => {
-              setCategoryError(null)
-              setForm((previous) => ({ ...previous, category_id: event.target.value }))
-            }}
+        <div className="campo">
+          <Selector
             required
-          >
-            <option value="">{EXPENSES_TEXT.pickACategory}</option>
-            {allCategories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        {categoryError !== null && (
-          <span className="campo__error" role="alert">
-            {categoryError}
-          </span>
-        )}
+            label={COMMON_TEXT.category}
+            placeholder={EXPENSES_TEXT.pickACategory}
+            options={allCategories.map((category) => ({ value: String(category.id), label: category.name }))}
+            value={form.category_id === '' ? null : form.category_id}
+            onChange={(next) => {
+              setCategoryError(null)
+              setForm((previous) => ({ ...previous, category_id: next ?? '' }))
+            }}
+            loading={categoriesQuery.isPending || categoriesQuery.isError}
+            emptySetMessage={t('emptyStates:selectorNoCategories')}
+            describedBy={categoryError === null ? undefined : categoryErrorId}
+          />
+          {categoryError !== null && (
+            <span className="campo__error" role="alert" id={categoryErrorId}>
+              {categoryError}
+            </span>
+          )}
+        </div>
         {creatingCategory ? (
           <div className="campo">
             <label className="campo">
               <span className="campo__rotulo">{EXPENSES_TEXT.newCategoryName}</span>
               <input
                 className="campo__input"
+                autoComplete="off"
                 value={newCategoryName}
                 onChange={(event) => setNewCategoryName(event.target.value)}
               />
@@ -294,19 +310,25 @@ export default function ExpenseForm({
         )}
         <label className="campo">
           <span className="campo__rotulo">{COMMON_TEXT.amount}</span>
-          <input
+          <MoneyInput
             className="campo__input campo__input--monto"
-            inputMode="numeric"
+            autoComplete="off"
             value={form.amount}
-            onChange={(event) => setForm((previous) => ({ ...previous, amount: event.target.value }))}
+            onChange={(amount) => setForm((previous) => ({ ...previous, amount }))}
             required
           />
+          {amountError !== null && (
+            <span className="campo__error" role="alert">
+              {amountError}
+            </span>
+          )}
         </label>
         <label className="campo">
           <span className="campo__rotulo">{EXPENSES_TEXT.details}</span>
           <input
             className="campo__input"
             value={form.detail}
+            autoComplete="off"
             maxLength={200}
             onChange={(event) => setForm((previous) => ({ ...previous, detail: event.target.value }))}
             required

@@ -21,7 +21,7 @@ import { STOCK_TEXT } from '../copy/stock'
 import { behindPane, expectBehindPane, expectBehindPaneEmpty } from '../test/behindPane'
 import { flipViewport, renderWithViewport } from '../test-viewport'
 
-const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03' }
+const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', money: { symbol: '$', decimals: 0 } }
 const VARIETIES = [
   { id: 3, name: '24K Gold', archived: false, current_price: null },
   { id: 4, name: 'Sir Jack', archived: false, current_price: null },

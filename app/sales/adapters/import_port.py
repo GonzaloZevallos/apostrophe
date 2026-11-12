@@ -6,25 +6,31 @@ import adapter writes only its own hexagon's tables).
 maps each distinct variety key to a local ordinal that never leaves this call, and
 replays `Sale.record` — the same aggregate constructor `write_sale` uses through
 `record_sale` — so a row's refusal, when there is one, is always the rule `Sale.record`
-itself would raise. `write_sale` is always given a vip fact built from the row's own
-`vip` (the plan's invariant: never from the customer's stored VIP flag).
+itself would raise. `write_sale` is always given a type fact built from the row's own
+`vip` and the business's VIP type (the plan's invariant: never from the customer's stored
+VIP flag).
 """
 
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from datetime import date, datetime
+from decimal import Decimal
 from typing import assert_never
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.customer_types.adapters.import_port import VIP_TYPE_NAME
+from app.customer_types.adapters.tables import CustomerTypeRow
 from app.sales.adapters.price_book import PlannedPriceBook, SqlPriceBook
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.adapters.tables import SaleRow
+from app.sales.application.ports import MoneyFormatReader
 from app.sales.application.record_sale import LineInput, record_sale
-from app.sales.domain.pricing import SaleRuleBroken
+from app.sales.domain.pricing import CustomerTypeFact, SaleRuleBroken
 from app.sales.domain.sale import CustomerFact, LineRequest, PaymentMethod, Sale
+from app.shared.money import MoneyFormat
 from app.shared.pricing_settings import PricingSettings
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.application.ports import Refusal, SaleCheck, SaleCheckInput
@@ -39,6 +45,8 @@ _UNUSED_RECORDED_AT = datetime(1970, 1, 1)
 # resolves a real customer, so any id that is not `None` tells `Sale.record` a customer
 # is present, and never leaves this module (the plan's invariant).
 _CHECK_CUSTOMER_ID = 1
+# The VIP type's id for the duration of one check only: no type exists yet in the plan phase.
+_CHECK_VIP_TYPE = CustomerTypeFact(id=1, name=VIP_TYPE_NAME.value)
 
 
 def _payment_method(method: OnTheSpotMethod | None) -> PaymentMethod | None:
@@ -60,9 +68,14 @@ def _payment_method(method: OnTheSpotMethod | None) -> PaymentMethod | None:
 class SalesImport:
     """`SalesImport` for one business."""
 
-    def __init__(self, session: Session, business_id: int) -> None:
+    def __init__(
+        self, session: Session, business_id: int, money_format: MoneyFormatReader | None = None
+    ) -> None:
         self._session = session
         self._business_id = business_id
+        # The command line hangs the business's own format here; a caller that has none
+        # gets the whole-amount one, which accepts a sheet's whole amounts all the same.
+        self._money_format: MoneyFormatReader = money_format or _SheetAmounts()
 
     def has_records(self) -> bool:
         statement = (
@@ -94,7 +107,10 @@ class SalesImport:
                     customer_id=_CHECK_CUSTOMER_ID if sale.has_customer else None,
                     settings=settings,
                     customer=(
-                        CustomerFact(id=_CHECK_CUSTOMER_ID, vip=sale.vip)
+                        CustomerFact(
+                            id=_CHECK_CUSTOMER_ID,
+                            customer_type=_CHECK_VIP_TYPE if sale.vip else None,
+                        )
                         if sale.has_customer
                         else None
                     ),
@@ -132,20 +148,23 @@ class SalesImport:
         stored = record_sale(
             SqlSales(self._session, self._business_id),
             SqlPriceBook(self._session, self._business_id),
-            _FixedVip(sale.vip),
+            _FixedType(self._vip_type_fact() if sale.vip else None),
             _FixedSettings(settings),
+            self._money_format,
             transaction,
             sale_date=sale.sale_date,
             today=today,
             customer_id=customer_id,
-            shipping_charged=sale.shipping,
+            shipping_charged=Decimal(sale.shipping),
             note=sale.note,
             lines=[
                 LineInput(
                     variety_id=variety_id,
                     quantity=sale.quantity,
                     gift=sale.gift,
-                    special_price=sale.special_total,
+                    special_price=(
+                        None if sale.special_total is None else Decimal(sale.special_total)
+                    ),
                 )
             ],
             method=_payment_method(sale.method),
@@ -153,6 +172,17 @@ class SalesImport:
             recorded_at=recorded_at,
         )
         return stored.total
+
+    def _vip_type_fact(self) -> CustomerTypeFact | None:
+        """The business's VIP type with its current name, as a hand-entered sale to a VIP
+        customer would read it."""
+        found = self._session.execute(
+            select(CustomerTypeRow.id, CustomerTypeRow.name).where(
+                CustomerTypeRow.business_id == self._business_id,
+                CustomerTypeRow.is_vip.is_(True),
+            )
+        ).first()
+        return None if found is None else CustomerTypeFact(id=found[0], name=found[1])
 
 
 class _FixedSettings:
@@ -166,16 +196,16 @@ class _FixedSettings:
         return self._settings
 
 
-class _FixedVip:
-    """A `CustomerFacts` of one fixed answer: `sale.vip`, decided by the sheet's row
-    type ("Amigo") rather than any customer's stored flag (the plan's invariant: a
-    sale is priced with vip = (row type is "Amigo"), never from the stored flag)."""
+class _FixedType:
+    """A `CustomerFacts` of one fixed answer: the customer type decided by the sheet's row
+    type ("Amigo" is the VIP type) rather than any customer's stored flag (the plan's
+    invariant: a sale is priced from the row's own type, never from the stored flag)."""
 
-    def __init__(self, vip: bool) -> None:
-        self._vip = vip
+    def __init__(self, customer_type: CustomerTypeFact | None) -> None:
+        self._customer_type = customer_type
 
     def get(self, customer_id: int) -> CustomerFact | None:
-        return CustomerFact(id=customer_id, vip=self._vip)
+        return CustomerFact(id=customer_id, customer_type=self._customer_type)
 
 
 def _assign_ordinals(
@@ -194,3 +224,12 @@ def _assign_ordinals(
         if sale.variety_key not in ordinals:
             ordinals[sale.variety_key] = len(ordinals) + 1
     return ordinals
+
+
+class _SheetAmounts:
+    """A sheet's amounts are whole currency units already, so any format accepts them: the
+    use case's check passes by value, and this hexagon never reads the money format table
+    it does not own (docs/adr/0055)."""
+
+    def current(self) -> MoneyFormat:
+        return MoneyFormat(symbol="#", decimals=0)

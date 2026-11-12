@@ -131,7 +131,7 @@ export default function Clientes() {
                   key={customer.id}
                   id={customer.id}
                   name={customer.name}
-                  phone={customer.phone}
+                  phoneDisplay={customer.phone_display}
                   vip={vipCustomers && customer.vip}
                   balance={customer.balance}
                   owingSince={customer.owing_since}

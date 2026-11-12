@@ -20,6 +20,7 @@ import { LIMITS, SAMPLES } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { stubViewport } from '../../test-viewport'
 import { Outlet, createMemoryRouter, RouterProvider } from 'react-router'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 import type { InitialEntry } from 'react-router'
 import FlashProvider from '../../flash/FlashProvider'
 import ClienteFicha from './ClienteFicha'
@@ -51,7 +52,7 @@ function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
-const LU_SETTLED = { id: 2, name: 'Lu', phone: '+5491100000002', vip: false, balance: 0, owing_since: null, standing: 'settled' }
+const LU_SETTLED = { id: 2, name: 'Lu', phone: '+5491100000002', phone_display: '+54 9 11 0000-0002', vip: false, balance: 0, owing_since: null, standing: 'settled' }
 const EMPTY_DEBTORS = { total_owed: 0, sales_owing_count: 0, debtors: [] }
 
 /** Dispatches on the request's own path, not on call order (plan, invariants):
@@ -74,6 +75,7 @@ function renderClientes() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
+<MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
       <MemoryRouter initialEntries={[CUSTOMERS]}>
         <Routes>
           <Route element={<Outlet context={{ email: 'a@b.com', business_name: 'N', today: '2026-10-03' }} />}>
@@ -83,7 +85,8 @@ function renderClientes() {
           </Route>
         </Routes>
       </MemoryRouter>
-    </QueryClientProvider>,
+    </MoneyFormatProvider>
+</QueryClientProvider>,
   )
 }
 
@@ -145,7 +148,7 @@ test('a stale answer still in flight shows marked pending, never as the current 
       }
       if (query === 'ni') {
         return jsonResponse(200, [
-          { id: 2, name: 'Nico Parra', phone: '+5491131785094', vip: false },
+          { id: 2, name: 'Nico Parra', phone: '+5491131785094', phone_display: '+54 9 11 3178-5094', vip: false },
         ])
       }
       return jsonResponse(200, [])
@@ -189,7 +192,7 @@ test('a result still catching up to a newer keystroke is marked pending, not cur
     fetchStub((query) => {
       if (query === '') {
         return jsonResponse(200, [
-          { id: 1, name: 'Mica Solano', phone: '+5491160337725', vip: false },
+          { id: 1, name: 'Mica Solano', phone: '+5491160337725', phone_display: '+54 9 11 6033-7725', vip: false },
         ])
       }
       if (query === 'x') {
@@ -236,7 +239,7 @@ test('Te deben sits above everyone A–Z, and the header carries no debt figure'
       () =>
         jsonResponse(200, [
           customerFixture,
-          { id: 2, name: 'Lu', phone: '+5491100000002', vip: false, balance: 0, owing_since: null, standing: 'settled' },
+          { id: 2, name: 'Lu', phone: '+5491100000002', phone_display: '+54 9 11 0000-0002', vip: false, balance: 0, owing_since: null, standing: 'settled' },
         ]),
       () => jsonResponse(200, debtorsFixture),
     ),
@@ -292,7 +295,7 @@ test('a customer in credit is only in A–Z, never in Te deben', async () => {
     fetchStub(
       () =>
         jsonResponse(200, [
-          { id: 2, name: 'Lu', phone: '+5491100000002', vip: false, balance: -2000, owing_since: null, standing: 'credit' },
+          { id: 2, name: 'Lu', phone: '+5491100000002', phone_display: '+54 9 11 0000-0002', vip: false, balance: -2000, owing_since: null, standing: 'credit' },
         ]),
       () => jsonResponse(200, debtorsFixture),
     ),
@@ -338,7 +341,7 @@ test('"Collect from X" is on every row that owes, in the section and in the list
       () =>
         jsonResponse(200, [
           customerFixture,
-          { id: 2, name: 'Lu', phone: '+5491100000002', vip: false, balance: 0, owing_since: null, standing: 'settled' },
+          { id: 2, name: 'Lu', phone: '+5491100000002', phone_display: '+54 9 11 0000-0002', vip: false, balance: 0, owing_since: null, standing: 'settled' },
         ]),
       () => jsonResponse(200, debtorsFixture),
     ),
@@ -368,6 +371,16 @@ test('with nobody owing, a fixed "Nobody owes you" with nothing to tap sits abov
   expect(within(everyone).getByText('Lu')).toBeInTheDocument()
 })
 
+test('a row shows phone_display, never the stored phone, whatever country the number is from', async () => {
+  const uy = { ...customerFixture, id: 9, name: 'Uri', balance: 0, owing_since: null, standing: 'settled', phone: '+59899123456', phone_display: '+598 99 123 456' }
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [uy])))
+  renderClientes()
+
+  const row = await screen.findByRole('link', { name: /Uri/ })
+  expect(within(row).getByText('+598 99 123 456')).toBeInTheDocument()
+  expect(screen.queryByText('+59899123456')).not.toBeInTheDocument()
+})
+
 test('a customer with no phone shows no phone element, no dash, no empty label', async () => {
   vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerNoPhoneFixture])))
   renderClientes()
@@ -382,8 +395,8 @@ test('a customer who owes shows the amber mark; one in credit shows the blue "Cr
   vi.mocked(fetch).mockImplementation(
     fetchStub(() =>
       jsonResponse(200, [
-        { id: 1, name: 'Ana', phone: '+5491100000001', vip: false, balance: 15000, owing_since: '2026-09-14', standing: 'owes' },
-        { id: 2, name: 'Lu', phone: '+5491100000002', vip: false, balance: -2000, owing_since: null, standing: 'credit' },
+        { id: 1, name: 'Ana', phone: '+5491100000001', phone_display: '+54 9 11 0000-0001', vip: false, balance: 15000, owing_since: '2026-09-14', standing: 'owes' },
+        { id: 2, name: 'Lu', phone: '+5491100000002', phone_display: '+54 9 11 0000-0002', vip: false, balance: -2000, owing_since: null, standing: 'credit' },
       ]),
     ),
   )
@@ -397,9 +410,9 @@ test('every row has a decorative initials avatar; only the rows that owe nothing
   vi.mocked(fetch).mockImplementation(
     fetchStub(() =>
       jsonResponse(200, [
-        { id: 1, name: 'Ana Pérez', phone: '+5491100000001', vip: false, balance: 15000, owing_since: '2026-09-14', standing: 'owes' },
-        { id: 2, name: 'Lu Fernández', phone: '+5491100000002', vip: false, balance: -2000, owing_since: null, standing: 'credit' },
-        { id: 3, name: 'Mica Solano', phone: '+5491100000003', vip: false, balance: 0, owing_since: null, standing: 'settled' },
+        { id: 1, name: 'Ana Pérez', phone: '+5491100000001', phone_display: '+54 9 11 0000-0001', vip: false, balance: 15000, owing_since: '2026-09-14', standing: 'owes' },
+        { id: 2, name: 'Lu Fernández', phone: '+5491100000002', phone_display: '+54 9 11 0000-0002', vip: false, balance: -2000, owing_since: null, standing: 'credit' },
+        { id: 3, name: 'Mica Solano', phone: '+5491100000003', phone_display: '+54 9 11 0000-0003', vip: false, balance: 0, owing_since: null, standing: 'settled' },
       ]),
     ),
   )
@@ -452,7 +465,9 @@ function renderApp(entries: string[] = [CUSTOMERS]) {
       {
         element: (
           <FlashProvider>
-            <Outlet context={{ email: 'a@b.com', business_name: 'N', today: '2026-10-03' }} />
+            <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
+              <Outlet context={{ email: 'a@b.com', business_name: 'N', today: '2026-10-03', money: { symbol: '$', decimals: 0 } }} />
+            </MoneyFormatProvider>
           </FlashProvider>
         ),
         children: [
@@ -581,7 +596,9 @@ function renderTwoPanes(entries: InitialEntry[]) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
+        <RouterProvider router={router} />
+      </MoneyFormatProvider>
     </QueryClientProvider>,
   )
   return router
@@ -657,14 +674,16 @@ test('tapping "New customer" opens the customer form', async () => {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[CUSTOMERS]}>
-        <Routes>
-          <Route element={<ClientesLayout />}>
-            <Route path={CUSTOMERS} element={<Clientes />} />
-          </Route>
-          <Route path={CUSTOMER_NEW} element={<span>customer form</span>} />
-        </Routes>
-      </MemoryRouter>
+      <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
+        <MemoryRouter initialEntries={[CUSTOMERS]}>
+          <Routes>
+            <Route element={<ClientesLayout />}>
+              <Route path={CUSTOMERS} element={<Clientes />} />
+            </Route>
+            <Route path={CUSTOMER_NEW} element={<span>customer form</span>} />
+          </Routes>
+        </MemoryRouter>
+      </MoneyFormatProvider>
     </QueryClientProvider>,
   )
 
