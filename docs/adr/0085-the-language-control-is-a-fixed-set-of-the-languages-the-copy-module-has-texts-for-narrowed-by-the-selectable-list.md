@@ -3,7 +3,7 @@ status: accepted
 date: 2026-11-10
 ---
 
-# ADR-0079: El control de idioma es un Fixed set de los idiomas que el Copy module tiene, acotado por la lista de Selectable languages
+# ADR-0085: El control de idioma es un Fixed set de los idiomas que el Copy module tiene, acotado por la lista de Selectable languages
 
 Extiende ADR-0074 (no la enmienda).
 
