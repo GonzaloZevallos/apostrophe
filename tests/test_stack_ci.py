@@ -73,11 +73,6 @@ DISPATCH_ONLY = "github.event_name == 'workflow_dispatch'"
 # one is the ungated job that commits master's docs after a merge.
 MASTER_CHECKOUTS = (("changes", 0), ("ci-ok", 0), ("regen", 0))
 MASTER_PUSH = "github.event_name == 'push' && github.ref == 'refs/heads/master'"
-STALE_IF = "github.event_name != 'push' || github.ref != 'refs/heads/master'"
-STALE_RUN = (
-    'git diff --exit-code -- docs/architecture/generated docs/api && test -z "$(git status '
-    '--porcelain --untracked-files=all -- docs/architecture/generated docs/api)"'
-)
 PACK_RUN = 'uv run --no-project python -m scripts.docs.regen_pack --out "$RUNNER_TEMP/regen"'
 FAILED_DOCS_RUN = (
     """echo "master's owned docs are not regenerated: this run's docs job failed" """
@@ -151,7 +146,7 @@ CI_ONLY: dict[str, str] = {
     VERDICT_RUN: "the merge condition: one verdict over every job's result and the `changes` flags",
     E2E_GATE_RUN: "the `e2e` aggregator: green only when every `e2e-shard` is",
     E2E_RUN: "end-to-end is judged by GitHub CI only (owner's rule, GH-699)",
-    STALE_RUN: "the CI form of the reserved `docs` check; skipped on a master push (ADR-0066)",
+    "uv run --no-project python -m scripts.docs.owned_guard": "needs the merge-base with master",
     PACK_RUN: "packs master's regenerated owned docs for the `regen` job; only a master push does",
     FAILED_DOCS_RUN: "the summary line that says a red `docs` job left master's docs unregenerated",
     "bash scripts/docs/install-ci-tools.sh": "binaries on no package manager the repo uses",
@@ -1994,7 +1989,6 @@ def _master_push_problems(workflow: Data, ungated_jobs: dict[str, str] = UNGATED
     jobs: Data = workflow["jobs"]
     docs = _steps(jobs["docs"])
     found = {
-        "stale-check": _docs_steps(workflow, STALE_RUN),
         "pack": _docs_steps(workflow, PACK_RUN),
         "upload": _upload_steps(workflow),
         "failure": _docs_steps(workflow, FAILED_DOCS_RUN),
@@ -2007,10 +2001,9 @@ def _master_push_problems(workflow: Data, ungated_jobs: dict[str, str] = UNGATED
     )
     if problems:
         return problems
-    stale, pack, upload, failed, generate = (steps[0] for steps in found.values())
+    pack, upload, failed, generate = (steps[0] for steps in found.values())
 
     for label, step, only_master in (
-        ("stale-check", stale, False),
         ("pack", pack, True),
         ("upload", upload, True),
     ):
@@ -2058,19 +2051,8 @@ def test_the_real_workflow_runs_the_docs_steps_and_the_ungated_job_as_the_task_w
     assert _master_push_problems(WORKFLOW) == []
     assert _docs_steps(WORKFLOW, PACK_RUN)[0]["if"] == MASTER_PUSH
     assert _upload_steps(WORKFLOW)[0]["if"] == MASTER_PUSH
-    assert _docs_steps(WORKFLOW, STALE_RUN)[0]["if"] == STALE_IF
     assert _docs_steps(WORKFLOW, FAILED_DOCS_RUN)[0]["if"] == f"failure() && {MASTER_PUSH}"
     assert WORKFLOW["jobs"][UNGATED_ID]["if"] == MASTER_PUSH
-
-
-def test_the_stale_step_is_skipped_only_for_a_master_push() -> None:
-    step = _docs_steps(WORKFLOW, STALE_RUN)[0]
-    assert {case: _holds(step["if"], case) for case in CASES} == {
-        MASTER_CASE: False,
-        "an agentic-ci push": True,
-        "a pull request": True,
-        "a dispatch on master": True,
-    }
 
 
 def test_the_pack_and_upload_steps_and_the_ungated_job_run_only_for_a_master_push() -> None:
@@ -2108,14 +2090,6 @@ def test_a_failure_step_without_the_master_conjunct_is_refused() -> None:
         f"the docs failure step must be skipped for {case} when the job is failure"
         for case in CASES
         if case != MASTER_CASE
-    ]
-
-
-def test_a_stale_step_without_its_if_is_refused() -> None:
-    workflow = _mutated()
-    del _docs_steps(workflow, STALE_RUN)[0]["if"]
-    assert _master_push_problems(workflow) == [
-        f"the docs stale-check step must be skipped for {MASTER_CASE}"
     ]
 
 
@@ -2293,3 +2267,74 @@ def test_a_uses_that_is_not_owner_name_at_ref_is_refused(uses: str) -> None:
     assert _wellformed_problems(workflow) == [
         f"job 'ci-ok' uses {uses!r}, which is not owner/name@ref"
     ]
+
+
+OWNED_GUARD = "uv run --no-project python -m scripts.docs.owned_guard"
+
+
+def _docs_guard_problems(workflow: Data) -> list[str]:
+    """What keeps the `docs` job from warning about generated output a branch committed (GH-708)."""
+    job = cast("Data", workflow["jobs"]["docs"])
+    steps = _steps(job)
+    guard = [i for i, step in enumerate(steps) if str(step.get("run", "")).strip() == OWNED_GUARD]
+    generate = [i for i, step in enumerate(steps) if str(step.get("run", "")).strip() == GENERATE]
+    if len(guard) != 1:
+        return [f"the docs job has {len(guard)} owned-path guard steps, not 1"]
+    problems: list[str] = []
+    if len(generate) != 1 or guard[0] < generate[0]:
+        problems.append("the docs job does not run the owned-path guard after generate")
+    if "continue-on-error" in steps[guard[0]] or "continue-on-error" in job:
+        problems.append("the owned-path guard or the docs job has continue-on-error")
+    if "if" in steps[guard[0]]:
+        problems.append("the owned-path guard step has an if:")
+    checkout = [step for step in steps if str(step.get("uses", "")).startswith("actions/checkout@")]
+    depth = cast("Data", checkout[0].get("with", {})).get("fetch-depth") if checkout else None
+    if depth != 0:
+        problems.append(f"the docs checkout has fetch-depth {depth!r}, not 0")
+    return problems
+
+
+def test_the_docs_job_runs_the_owned_path_guard_after_generate() -> None:
+    assert _docs_guard_problems(WORKFLOW) == []
+
+
+def test_a_docs_job_without_the_owned_path_guard_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["docs"]["steps"]
+    steps[:] = [step for step in steps if step.get("run") != OWNED_GUARD]
+    assert _docs_guard_problems(workflow) == ["the docs job has 0 owned-path guard steps, not 1"]
+
+
+def test_an_owned_path_guard_before_generate_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["docs"]["steps"]
+    guard = next(step for step in steps if step.get("run") == OWNED_GUARD)
+    steps.remove(guard)
+    steps.insert(next(i for i, step in enumerate(steps) if step.get("run") == GENERATE), guard)
+    assert _docs_guard_problems(workflow) == [
+        "the docs job does not run the owned-path guard after generate"
+    ]
+
+
+def test_an_owned_path_guard_that_may_fail_or_skip_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["docs"]["steps"]
+    guard = next(step for step in steps if step.get("run") == OWNED_GUARD)
+    guard["continue-on-error"] = True
+    guard["if"] = "github.event_name == 'pull_request'"
+    workflow["jobs"]["docs"]["continue-on-error"] = True
+    assert _docs_guard_problems(workflow) == [
+        "the owned-path guard or the docs job has continue-on-error",
+        "the owned-path guard step has an if:",
+    ]
+
+
+def test_a_shallow_docs_checkout_is_refused() -> None:
+    workflow = _mutated()
+    checkout = workflow["jobs"]["docs"]["steps"][0]
+    del checkout["with"]["fetch-depth"]
+    assert _docs_guard_problems(workflow) == ["the docs checkout has fetch-depth None, not 0"]
+
+
+def test_the_docs_check_runs_in_validate_mode() -> None:
+    assert STACK["docs"]["mode"] == "validate"
