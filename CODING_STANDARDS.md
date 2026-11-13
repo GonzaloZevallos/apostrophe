@@ -44,10 +44,11 @@ outranks every other; section 10 says the frontend's; section 11 names the datab
 
 ### Generated docs
 
-- The `docs.paths` of `.agentic/stack.yaml` are generated and never edited by hand; the staleness
-  check enforces it. `decisiones.md` comes from each ADR's `summary:`. The `regen` merge driver
-  (`cp %B %A`) takes the side merged in: master's copy when master is merged into a branch, the
-  branch's copy when a branch is merged into master locally. Then run `generate` and commit
+- The `docs.paths` of `.agentic/stack.yaml` are generated, never edited by hand (the staleness
+  check enforces it); `decisiones.md` comes from each ADR's `summary:`. The `regen` merge driver
+  takes the side merged in: master's copy when master is merged into a branch, the branch's copy
+  when a branch is merged into master locally. A file deleted on one side and edited on the other
+  still conflicts: regenerate it, then `generate` and commit
   (ADR-20261112-generated-docs-and-the-adr-index-are-built-on-master).
 
 ## 6. Strict typing, without silencing

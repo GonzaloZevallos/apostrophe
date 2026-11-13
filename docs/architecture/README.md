@@ -9,6 +9,6 @@ Las páginas que explican cómo está armado apostrophe, escritas a mano y en es
 - [Flujos clave](flujos-clave.md): iniciar sesión, una venta con pago en el acto, un movimiento de stock y abrir un Business nuevo.
 - [Decisiones](decisiones.md): el índice de los ADR de [docs/adr/](../adr/).
 
-Los caminos generados (`generated/`, `../api/` y `decisiones.md`, que sale del `summary:` de cada ADR) no se editan a mano. El driver `merge=regen` evita los conflictos entre ramas: al fusionar master en una rama gana la copia de master, y al fusionar una rama en master, en local, gana la de la rama y `regen` escribe encima en master. Después de una fusión se corre `generate` y se confirma. Ver la [ADR](../adr/20261112-generated-docs-and-the-adr-index-are-built-on-master.md).
+Los caminos generados (`generated/`, `../api/` y `decisiones.md`, que sale del `summary:` de cada ADR) no se editan a mano. El driver `merge=regen` evita la mayoría de los conflictos entre ramas: al fusionar master en una rama gana la copia de master, y al fusionar una rama en master, en local, gana la de la rama y `regen` escribe encima en master. Un archivo generado borrado en un lado y editado en el otro sigue en conflicto y se resuelve regenerándolo. Después de una fusión se corre `generate` y se confirma. Ver la [ADR](../adr/20261112-generated-docs-and-the-adr-index-are-built-on-master.md).
 
 Volver a [Cómo funciona](../README.md).
