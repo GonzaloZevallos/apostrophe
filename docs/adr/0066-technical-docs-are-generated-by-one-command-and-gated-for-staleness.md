@@ -103,7 +103,7 @@ más lento de una entrega; es el costo conocido de esta parte.
 Desde 2026-11-12 (GH-708) el check reservado `docs` corre con `mode: validate` (agentic-system commit
 b273ac6e, PR #609, GH-603): ejecuta `generate`, falla solo si generar falla y deja `paths` como los tiene HEAD.
 La línea `summary:` de este ADR sigue con su texto de 2026-10-29: cambiarla reescribe la fila 0066 de
-`decisiones.md`, y el gate de GH-708 aún corría `docs` en modo commit; se actualiza en un cambio posterior.
+`decisiones.md`, y el gate de GH-708 aún corría `docs` en modo commit; se actualiza en el cambio posterior de la incidencia 720, que aterriza cuando el nuevo modo ya está en master.
 
 2026-11-11, GH-692 part 2: `api_breaks` generates the base spec from base code in a worktree and reads the head spec from the workspace.
 
