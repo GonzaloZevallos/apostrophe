@@ -9,6 +9,8 @@ summary: "los documentos técnicos se generan con un solo comando y se vigila qu
 GH-460 (part 3). It replaces decision 3 of ADR-0063 ("Staleness is not detected"). Decisions 1, 2 and 4
 to 6 of ADR-0063 still hold. `.agentic/stack.yaml` declares `docs:` since part 4 (GH-468, 2026-10-31; see Pending).
 
+Enmendada por la [ADR 20261112](20261112-generated-docs-and-the-adr-index-are-built-on-master.md): un driver de fusión `merge=regen` resuelve los caminos poseídos (decisión 3).
+
 ## Decision
 
 1. **A `docs` job gates the merge.** `.github/workflows/ci.yml` has a job `docs` (ubuntu-24.04), and

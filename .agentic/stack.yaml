@@ -11,9 +11,10 @@ setup:
   deps: uv sync --locked --extra dev
   web: npm --prefix web ci --no-fund --no-audit
   web-browsers: npx --prefix web playwright install chromium
+  merge-driver: git config merge.regen.driver "cp %B %A"
 checks:
   tests: uv run --no-project pytest -n 8
-  tests-fast: uv run --no-project pytest -n 4 -p no:cacheprovider tests/architecture tests/migrations tests/test_business_isolation.py tests/test_gated_routes.py tests/test_stack_affected.py tests/test_stack_ci.py tests/test_stack_parallel_writers.py
+  tests-fast: uv run --no-project pytest -n 4 -p no:cacheprovider tests/architecture tests/docs/test_parallel_branches.py tests/migrations tests/test_business_isolation.py tests/test_gated_routes.py tests/test_stack_affected.py tests/test_stack_ci.py tests/test_stack_parallel_writers.py
   lint: uv run --no-project ruff check .
   types: uv run --no-project mypy app tests scripts
   web-types: npm --prefix web run typecheck

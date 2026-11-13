@@ -42,6 +42,14 @@ outranks every other; section 10 says the frontend's; section 11 names the datab
 - Test-first at seams agreed in the plan. A test that breaks on a refactor without a
   change of behaviour is wrong.
 
+### Generated docs
+
+- The `docs.paths` of `.agentic/stack.yaml` are generated, never edited by hand (the staleness
+  check enforces it); `decisiones.md` comes from each ADR's `summary:`. The `regen` merge driver
+  takes the side merged in: master's copy in master-into-branch, the branch's copy in
+  branch-into-master (locally). Modify/delete still conflicts: regenerate, then commit
+  (ADR-20261112-generated-docs-and-the-adr-index-are-built-on-master).
+
 ## 6. Strict typing, without silencing
 
 - `mypy --strict` over `app`, `tests` and `scripts`, and `ruff`, pass with nothing silenced: no
