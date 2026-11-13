@@ -42,6 +42,18 @@ outranks every other; section 10 says the frontend's; section 11 names the datab
 - Test-first at seams agreed in the plan. A test that breaks on a refactor without a
   change of behaviour is wrong.
 
+### Generated docs
+
+- The paths in `docs.paths` of `.agentic/stack.yaml` (`docs/api/**`, `docs/architecture/generated/**`,
+  `docs/architecture/decisiones.md`) are generated and never edited by hand; the staleness check
+  (the reserved `docs` check and the CI staleness step) enforces it. `decisiones.md` comes from
+  each ADR's `summary:` (ADR-20261112-generated-docs-and-the-adr-index-are-built-on-master).
+- `.gitattributes` gives those paths the `regen` merge driver (`cp %B %A`, set by the
+  `merge-driver` step of `setup:`), so a merge takes the side being merged in: master's copy when
+  master is merged into a branch, the branch's copy when a branch is merged into master locally,
+  where `regen` writes over it. A file deleted on one side and edited on the other still
+  conflicts. After a merge, run `generate` and commit; a DOCS_STALE then means "regenerate".
+
 ## 6. Strict typing, without silencing
 
 - `mypy --strict` over `app`, `tests` and `scripts`, and `ruff`, pass with nothing silenced: no
