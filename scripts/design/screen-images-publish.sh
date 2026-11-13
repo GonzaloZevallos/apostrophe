@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # Publishes the images the master workflow just applied (docs/product/screen-images.md): commits only
-# `docs/assets/screens`, as the Actions bot, and pushes only when master is still at the commit that
-# was captured. It makes the three decisions the workflow must not leave in untested `run:` blocks:
-# refuse a stray path, commit only when something is staged, push only without a race.
+# `docs/assets/screens`, as the Actions bot, and hands the push to scripts/ci/bot-push.sh, which pushes
+# on top of master when it moved only by bot commits or image changes. It makes the decisions the
+# workflow must not leave in untested `run:` blocks: refuse a stray path, commit only when something
+# is staged.
 #
 #   scripts/design/screen-images-publish.sh --sha SHA --summary FILE [--remote origin] [--branch master]
 #
 # Runs in the current directory, which must be the repository root, after `screenImagesRun.mjs apply`. Exit 2 on bad usage, 1 on a path
-# outside the images, 0 otherwise (also when master moved and nothing was pushed).
+# outside the images, 0 otherwise (also when master moved and nothing was pushed). The helper's exit codes pass through.
 set -euo pipefail
 target=docs/assets/screens
 usage="usage: screen-images-publish.sh --sha SHA --summary FILE [--remote origin] [--branch master]"
@@ -51,12 +52,8 @@ GIT_COMMITTER_NAME='github-actions[bot]' GIT_COMMITTER_EMAIL="$bot_email" \
   git -c user.name='github-actions[bot]' -c user.email="$bot_email" \
   commit -q -m 'chore(screens): update images [skip ci]'
 
-git fetch -q "$remote" "$branch"
-current="$(git rev-parse FETCH_HEAD)"
-if [ "$current" != "$sha" ]; then
-  note "Screen images: not pushed, $branch moved from $sha to $current during the run; the next master run updates the images."
-  exit 0
-fi
-
-git push -q "$remote" "HEAD:$branch"
-note "Screen images: pushed $(git rev-parse HEAD) to $branch."
+# The race rules (fetch, classify what moved, rebase, push, retry) are shared with the other bot workflows.
+exec "$(dirname "${BASH_SOURCE[0]}")/../ci/bot-push.sh" \
+  --sha "$sha" --commit HEAD --summary "$summary" \
+  --label 'Screen images' --skip-note 'the next master run updates the images.' \
+  --ignore 'docs/assets/screens/**' --remote "$remote" --branch "$branch"

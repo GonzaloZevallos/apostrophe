@@ -163,7 +163,8 @@ docs:
 # generator's stale check, the Mermaid render, the offline link check and the OpenAPI
 # breaking-change check (ADR-0066). e2e runs only in CI, as CI_ONLY (tests/test_stack_ci.py): the
 # owner's rule is that GitHub CI judges end-to-end tests (GH-699), and it gates the merge through
-# `ci-ok`, which needs `e2e`.
+# `ci-ok`, which needs `e2e`. `ci-ok` needs every job except those `UNGATED_JOBS` declares
+# (tests/test_stack_ci.py): `regen` commits master's owned docs after a merge and gates nothing.
 ci: [ci-ok]
 # `ci_dispatch` (agentic-system commit 0ca8e14c, PR #476, GH-462): how the system judges a head that
 # touches `.github/` without trusting that head's own workflow. It dispatches the base's
