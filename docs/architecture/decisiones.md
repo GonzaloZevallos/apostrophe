@@ -70,7 +70,7 @@ Un ADR da el motivo de una decisión; lo que el sistema hace hoy se afirma en la
 | [0062](../adr/0062-on-the-phone-a-form-is-drawn-by-one-sheet.md) | en el teléfono un formulario lo dibuja una sola hoja |  |
 | [0063](../adr/0063-the-technical-docs-come-only-from-the-generator-and-are-built-by-pinned-offline-tools.md) | los documentos técnicos salen solo del generador y se construyen con herramientas fijas sin red |  |
 | [0064](../adr/0064-ci-selection-is-a-union-of-path-rules-that-fails-closed.md) | la selección de CI es una unión de reglas por ruta que falla cerrada |  |
-| [0066](../adr/0066-technical-docs-are-generated-by-one-command-and-gated-for-staleness.md) | los documentos técnicos se generan con un solo comando y se vigila que no queden viejos |  |
+| [0066](../adr/0066-technical-docs-are-generated-by-one-command-and-gated-for-staleness.md) | los documentos generados nunca se commitean en un PR de feature: master los regenera tras cada merge |  |
 | [0067](../adr/0067-ci-runs-only-the-suites-a-change-affects-in-shards-with-coverage.md) | la integración continua corre solo las suites que un cambio afecta |  |
 | [0068](../adr/0068-architecture-docs-cite-defined-symbols-checked-by-text.md) | las páginas de arquitectura citan símbolos definidos y una prueba de texto lo comprueba |  |
 | [0069](../adr/0069-un-solo-dueno-del-scroll-al-cambiar-de-pantalla-con-offsets-en-memoria.md) | un solo dueño del scroll al cambiar de pantalla, con los offsets solo en memoria |  |
