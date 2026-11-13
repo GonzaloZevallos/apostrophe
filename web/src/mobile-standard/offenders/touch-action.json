@@ -2038,5 +2038,461 @@
     "rule": "touch-action",
     "target": "button:Delete this price",
     "issue": 47
+  },
+  {
+    "screen": "ConfiguracionCobros",
+    "rule": "touch-action",
+    "target": "button:Close",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoArchivadosVacio",
+    "rule": "touch-action",
+    "target": "button:Close",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
+    "rule": "touch-action",
+    "target": "button:Add method",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
+    "rule": "touch-action",
+    "target": "button:Archive",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
+    "rule": "touch-action",
+    "target": "button:Archive Cash",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
+    "rule": "touch-action",
+    "target": "button:Delete Transfer",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
+    "rule": "touch-action",
+    "target": "button:Edit Cash",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
+    "rule": "touch-action",
+    "target": "button:Edit Transfer",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
+    "rule": "touch-action",
+    "target": "button:Keep it",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
+    "rule": "touch-action",
+    "target": "button:Move Cash down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
+    "rule": "touch-action",
+    "target": "button:Move Cash up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
+    "rule": "touch-action",
+    "target": "button:Move Transfer down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
+    "rule": "touch-action",
+    "target": "button:Move Transfer up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Add method",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Archive Cash",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Delete",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Delete Transfer",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Edit Cash",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Edit Transfer",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Keep it",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Move Cash down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Move Cash up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Move Transfer down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Move Transfer up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-action",
+    "target": "button:Add method",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-action",
+    "target": "button:Archive Cash",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-action",
+    "target": "button:Delete Transfer",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-action",
+    "target": "button:Edit Cash",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-action",
+    "target": "button:Edit Transfer",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-action",
+    "target": "button:Move Cash down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-action",
+    "target": "button:Move Cash up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-action",
+    "target": "button:Move Transfer down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-action",
+    "target": "button:Move Transfer up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoLista",
+    "rule": "touch-action",
+    "target": "button:Add method",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoLista",
+    "rule": "touch-action",
+    "target": "button:Archive Cash",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoLista",
+    "rule": "touch-action",
+    "target": "button:Delete Transfer",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoLista",
+    "rule": "touch-action",
+    "target": "button:Edit Cash",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoLista",
+    "rule": "touch-action",
+    "target": "button:Edit Transfer",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoLista",
+    "rule": "touch-action",
+    "target": "button:Move Cash down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoLista",
+    "rule": "touch-action",
+    "target": "button:Move Cash up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoLista",
+    "rule": "touch-action",
+    "target": "button:Move Transfer down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoLista",
+    "rule": "touch-action",
+    "target": "button:Move Transfer up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-action",
+    "target": "button:Add method",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-action",
+    "target": "button:Archive Cash",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-action",
+    "target": "button:Delete Transfer",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-action",
+    "target": "button:Edit Cash",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-action",
+    "target": "button:Edit Transfer",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-action",
+    "target": "button:Move Cash down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-action",
+    "target": "button:Move Cash up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-action",
+    "target": "button:Move Transfer down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-action",
+    "target": "button:Move Transfer up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-action",
+    "target": "button:Add method",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-action",
+    "target": "button:Archive Cash",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-action",
+    "target": "button:Delete Transfer",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-action",
+    "target": "button:Edit Cash",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-action",
+    "target": "button:Edit Transfer",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-action",
+    "target": "button:Move Cash down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-action",
+    "target": "button:Move Cash up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-action",
+    "target": "button:Move Transfer down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-action",
+    "target": "button:Move Transfer up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoUltimo",
+    "rule": "touch-action",
+    "target": "button:Add method",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoUltimo",
+    "rule": "touch-action",
+    "target": "button:Archive Cash",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoUltimo",
+    "rule": "touch-action",
+    "target": "button:Edit Cash",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoUltimo",
+    "rule": "touch-action",
+    "target": "button:Move Cash down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoUltimo",
+    "rule": "touch-action",
+    "target": "button:Move Cash up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionPagosGrupo",
+    "rule": "touch-action",
+    "target": "button:Close",
+    "issue": 60
+  },
+  {
+    "screen": "new-sale/method-no-longer-available",
+    "rule": "touch-action",
+    "target": "button:Add another product",
+    "issue": 78
+  },
+  {
+    "screen": "new-sale/method-no-longer-available",
+    "rule": "touch-action",
+    "target": "button:Close",
+    "issue": 78
+  },
+  {
+    "screen": "new-sale/method-no-longer-available",
+    "rule": "touch-action",
+    "target": "button:Line #: Golden Cookies",
+    "issue": 78
+  },
+  {
+    "screen": "new-sale/method-no-longer-available",
+    "rule": "touch-action",
+    "target": "button:Pick a customer",
+    "issue": 78
+  },
+  {
+    "screen": "new-sale/method-no-longer-available",
+    "rule": "touch-action",
+    "target": "button:Remove line #",
+    "issue": 78
+  },
+  {
+    "screen": "new-sale/method-no-longer-available",
+    "rule": "touch-action",
+    "target": "button:Save sale",
+    "issue": 78
+  },
+  {
+    "screen": "new-sale/method-selector-offline",
+    "rule": "touch-action",
+    "target": "button:Add another product",
+    "issue": 78
+  },
+  {
+    "screen": "new-sale/method-selector-offline",
+    "rule": "touch-action",
+    "target": "button:Close",
+    "issue": 78
+  },
+  {
+    "screen": "new-sale/method-selector-offline",
+    "rule": "touch-action",
+    "target": "button:Pick a customer",
+    "issue": 78
+  },
+  {
+    "screen": "new-sale/method-selector-offline",
+    "rule": "touch-action",
+    "target": "button:Save sale",
+    "issue": 78
   }
 ]

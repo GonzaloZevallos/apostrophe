@@ -21,6 +21,7 @@ import { inAppState } from '../../components/inAppState'
 import { peekPaymentReturn } from '../../paymentReturn'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { choosePaymentMethod } from '../../components/selectorTestKit'
+import { withPaymentMethods } from '../../test-payment-methods'
 
 const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', money: { symbol: '$', decimals: 0 } }
 const OWING = { id: 1, name: 'Ana Pérez', phone: '+5491122334455', phone_display: '+54 9 11 2233-4455', vip: false, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }
@@ -29,11 +30,11 @@ const ACCOUNT = {
   balance: 11000,
   owing_since: '2026-09-14',
   standing: 'owes',
-  rows: [{ kind: 'sale', date: '2026-09-14', running_balance: 11000, standing: 'owes', sale: { id: 10, total: 11000, how_paid: 'owing' } }],
+  rows: [{ kind: 'sale', date: '2026-09-14', running_balance: 11000, standing: 'owes', sale: { id: 10, total: 11000, how_paid: 'owing', payment_method: null } }],
 }
 const DEBTORS = { total_owed: 11000, sales_owing_count: 1, debtors: [{ customer: { id: 1, name: 'Ana Pérez' }, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }] }
 const RECORDED = {
-  payment: { id: 5, paid_on: '2026-10-03', amount: 5000, method: 'cash' },
+  payment: { id: 5, paid_on: '2026-10-03', amount: 5000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
   applied_to: [{ sale_id: 10, sale_date: '2026-09-14', amount: 5000 }],
   after: { balance: 6000, owing_since: '2026-09-14', standing: 'owes' },
 }
@@ -65,10 +66,10 @@ function renderApp(entries: { pathname: string; state?: unknown }[], viewport: V
   }
   vi.stubGlobal(
     'fetch',
-    vi.fn((url: string, init?: RequestInit) => {
+    vi.fn(withPaymentMethods((url: string, init?: RequestInit) => {
       const answer = table[`${init?.method ?? 'GET'} ${url}`]
       return answer === undefined ? Promise.resolve(jsonResponse(404, {})) : Promise.resolve(answer())
-    }),
+    })),
   )
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const router = createMemoryRouter(appRouter.routes, { initialEntries: entries, initialIndex: entries.length - 1 })
@@ -416,6 +417,24 @@ describe('the form as drawn', () => {
     expect(screen.getByLabelText('Amount')).toHaveValue('$ 11.000')
   })
 
+  test('a 404 payment_method.unavailable keeps the form and the chosen method, marked as no longer available', async () => {
+    await openForm({
+      'POST /customers/1/payments': () => jsonResponse(404, { detail: 'gone', code: 'payment_method.unavailable' }),
+    })
+    const amount = screen.getByLabelText('Amount')
+    await userEvent.clear(amount)
+    await userEvent.type(amount, '5000')
+    await choosePaymentMethod(userEvent, 'Cash')
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    expect(
+      await screen.findByText('That payment method is no longer available. Choose another one.'),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^Payment method/ })).toHaveTextContent('Cash')
+    expect(screen.queryByText('Choose how they paid.')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Amount')).toHaveValue('$ 5.000')
+  })
+
   test('a typed amount shows with dot thousands and the POST carries the number', async () => {
     await openForm()
     const amount = screen.getByLabelText('Amount')
@@ -426,7 +445,7 @@ describe('the form as drawn', () => {
     await choosePaymentMethod(userEvent, 'Cash')
     await userEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => expect(postedBody('POST /customers/1/payments')).toBeDefined())
-    expect(postedBody('POST /customers/1/payments')).toEqual({ paid_on: '2026-10-03', amount: 5000, method: 'cash' })
+    expect(postedBody('POST /customers/1/payments')).toEqual({ paid_on: '2026-10-03', amount: 5000, payment_method_id: 1 })
   })
 
   test('a zero amount is refused on save, an emptied one shows empty, and "All" brings the balance back', async () => {

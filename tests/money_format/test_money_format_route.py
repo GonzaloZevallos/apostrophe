@@ -212,9 +212,12 @@ def _bodies(client: TestClient) -> list[tuple[str, str, str, dict[str, Any]]]:
         json={"spent_on": "2026-10-01", "category_id": category, "amount": 100, "detail": "a"},
     ).json()["id"]
     sale_line = {"product_id": product, "quantity": "1"}
+    methods = client.get("/api/payment-methods").json()
+    cash = next(m["id"] for m in methods if m["name"] == "Cash")
+    paid_in_cash = {"kind": "paid", "payment_method_id": cash}
     owing = client.post(
         "/sales",
-        json={"customer_id": customer, "payment": "owing", "lines": [sale_line]},
+        json={"customer_id": customer, "payment": {"kind": "owing"}, "lines": [sale_line]},
     )
     assert owing.status_code == 201, owing.text
     return [
@@ -240,13 +243,13 @@ def _bodies(client: TestClient) -> list[tuple[str, str, str, dict[str, Any]]]:
             "sale shipping",
             "POST",
             "/sales",
-            {"payment": "cash", "shipping_charged": "10.50", "lines": [sale_line]},
+            {"payment": paid_in_cash, "shipping_charged": "10.50", "lines": [sale_line]},
         ),
         (
             "sale special price",
             "POST",
             "/sales",
-            {"payment": "cash", "lines": [{**sale_line, "special_price": "10.50"}]},
+            {"payment": paid_in_cash, "lines": [{**sale_line, "special_price": "10.50"}]},
         ),
         (
             "stock entry",
@@ -264,7 +267,7 @@ def _bodies(client: TestClient) -> list[tuple[str, str, str, dict[str, Any]]]:
             "customer payment",
             "POST",
             f"/customers/{customer}/payments",
-            {"paid_on": "2026-10-02", "amount": "10.50", "method": "cash"},
+            {"paid_on": "2026-10-02", "amount": "10.50", "payment_method_id": cash},
         ),
         (
             "customer payment preview",

@@ -15,6 +15,7 @@ from app.accounts.adapters.tables import BusinessRow
 from app.db import make_engine
 from app.expenses.adapters.tables import ExpenseCategoryRow, ExpenseRow
 from app.migrations.runner import upgrade_to_head
+from app.payment_methods.adapters.tables import PaymentMethodRow
 from app.payments.adapters.tables import PaymentRow
 from app.settings import DEFAULT_DATABASE_URL as APP_DEFAULT_DATABASE_URL
 from scripts.drill import (
@@ -47,12 +48,17 @@ def _seed(path: Path, *, payment_at: datetime, expense_at: datetime) -> None:
         category = ExpenseCategoryRow(business_id=business.id, name="Flete", name_key="flete")
         session.add(category)
         session.flush()
+        cash = PaymentMethodRow(
+            business_id=business.id, name="Cash", name_key="cash", icon="banknote", position=1
+        )
+        session.add(cash)
+        session.flush()
         session.add(
             PaymentRow(
                 business_id=business.id,
                 paid_on=payment_at.date(),
                 amount=1000,
-                method="cash",
+                payment_method_id=cash.id,
                 recorded_at=payment_at,
             )
         )

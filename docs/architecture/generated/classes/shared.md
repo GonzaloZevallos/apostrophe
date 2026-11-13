@@ -80,6 +80,17 @@ classDiagram
   class OperatorText {
     rendered : set~str~
   }
+  class PaymentMethodId {
+    value : int
+  }
+  class PaymentMethodLabel {
+    icon : str
+    id : int
+    name : str
+  }
+  class PaymentMethodUnavailable {
+    code : ClassVar~str~
+  }
   class PhoneCountry {
     name
     rule : 'PhoneCountryRule'

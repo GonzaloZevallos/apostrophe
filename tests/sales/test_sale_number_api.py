@@ -21,7 +21,7 @@ def _variety(client: TestClient) -> int:
 
 def _sell(client: TestClient, variety_id: int, **extra: Any) -> dict[str, Any]:
     body: dict[str, Any] = {
-        "payment": "cash",
+        "payment": {"kind": "paid", "payment_method_id": 1},
         "lines": [{"product_id": variety_id, "quantity": "1"}],
         **extra,
     }

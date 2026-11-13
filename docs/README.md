@@ -23,6 +23,7 @@ Cada capacidad tiene su página en [docs/product/](product/):
 - [Navigation](product/navigation.md)
 - [Onboarding](product/onboarding.md)
 - [Pagos](product/payments.md)
+- [Payment methods](product/payment-methods.md)
 - [Phone first](product/phone-first.md)
 - [Pinned catalog](product/pinned-catalog.md)
 - [Pricing settings](product/pricing-settings.md)
@@ -44,4 +45,5 @@ El contrato de diseño del front está en [el sistema de diseño](product/design
 
 - [Arquitectura](architecture/README.md): contexto, contenedores, componentes, modelo de datos y flujos clave.
 - [Decisiones](architecture/decisiones.md): el índice de los ADR de [docs/adr/](adr/).
+- Los documentos generados (`docs/api/`, `docs/architecture/generated/` y `decisiones.md`, que sale del `summary:` de cada ADR) no se editan a mano. Git los fusiona con el driver `merge=regen`: al fusionar master en una rama gana la copia de master, y al fusionar una rama en master, en local, gana la de la rama y `regen` escribe encima en master. Un archivo generado borrado en un lado y editado en el otro sigue en conflicto y se resuelve regenerándolo. Después de una fusión se corre `generate` y se confirma. Ver la [ADR](adr/20261112-generated-docs-and-the-adr-index-are-built-on-master.md).
 - [Referencia de la API](api/index.html): el documento OpenAPI exportado de la app, como página estática.

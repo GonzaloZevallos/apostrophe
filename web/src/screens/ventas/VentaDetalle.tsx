@@ -81,10 +81,8 @@ export const UNDO_WINDOW_MS = 5000
  * line entirely, replacing `PAYMENT_LABEL` and its own row (plan, "sale-detail"). */
 function paymentSummary(payment: Sale['payment']): string {
   switch (payment) {
-    case 'cash':
-      return SALES_TEXT.paidInCash
-    case 'transfer':
-      return SALES_TEXT.paidByTransfer
+    case 'paid':
+      return SALES_TEXT.paid
     case 'owing':
       return SALES_TEXT.leftOwing
     case 'none':

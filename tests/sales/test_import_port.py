@@ -462,6 +462,72 @@ def test_planned_price_book_matches_what_write_sale_stores_for_bulk_list_vip_and
         assert stored.total == exp.line_total + sale.shipping
 
 
+# -- the sheet's payment words and the business's methods (ADR-20261111-payment-methods-by-id)
+
+
+def _write_paid(session: Session, business_id: int, method: OnTheSpotMethod) -> None:
+    varieties_import = ProductsImport(session, business_id, SqlMoneyFormat(session, business_id))
+    variety_id = varieties_import.write_variety("Blue Dream", NoCommit())
+    varieties_import.write_price_entry(
+        variety_id, _price_row(effective=date(2026, 1, 1), list_price=1_000), NoCommit()
+    )
+    SalesImport(session, business_id).write_sale(
+        variety_id,
+        None,
+        _sale_input(method=method),
+        datetime(2026, 6, 15, 12, tzinfo=UTC),
+        TODAY,
+        NoCommit(),
+        BOTH_ON,
+    )
+    session.commit()
+
+
+def _method_ids(client: TestClient) -> dict[str, int]:
+    return {m["name"]: m["id"] for m in client.get("/api/payment-methods").json()}
+
+
+def test_a_word_whose_default_method_is_offered_is_paid_with_it(
+    client: TestClient, engine: Engine
+) -> None:
+    business_id = _business_id(engine, "uno@example.com")
+    cash = _method_ids(client)["Cash"]
+    with Session(engine) as session:
+        _write_paid(session, business_id, "cash")
+
+    sales = client.get("/sales").json()
+    assert [sale["payment"] for sale in sales] == ["paid"]
+    assert len(client.get("/api/payment-methods").json()) == 2
+    assert cash == _method_ids(client)["Cash"]
+
+
+def test_a_word_nobody_holds_adds_the_method_last(client: TestClient, engine: Engine) -> None:
+    business_id = _business_id(engine, "uno@example.com")
+    transfer = _method_ids(client)["Transfer"]
+    assert client.delete(f"/api/payment-methods/{transfer}").status_code == 204
+    with Session(engine) as session:
+        _write_paid(session, business_id, "transfer")
+
+    listed = [m["name"] for m in client.get("/api/payment-methods").json()]
+
+    assert listed == ["Cash", "Transfer"]
+
+
+def test_a_word_whose_default_method_is_archived_is_reported_before_any_write(
+    client: TestClient, engine: Engine
+) -> None:
+    business_id = _business_id(engine, "uno@example.com")
+    cash = _method_ids(client)["Cash"]
+    assert client.post(f"/api/payment-methods/{cash}/archive").status_code == 204
+
+    with Session(engine) as session:
+        archived = SalesImport(session, business_id).archived_method_words(
+            ["cash", "transfer", "cash"]
+        )
+
+    assert list(archived) == ["cash"]
+
+
 def test_an_imported_vip_sale_equals_a_hand_entered_one_with_the_type_name_copied(
     client: TestClient, engine: Engine
 ) -> None:
@@ -513,7 +579,7 @@ def test_an_imported_vip_sale_equals_a_hand_entered_one_with_the_type_name_copie
         "/sales",
         json={
             "date": sale_day.isoformat(),
-            "payment": "cash",
+            "payment": {"kind": "paid", "payment_method_id": _method_ids(client)["Cash"]},
             "customer_id": hand_customer,
             "lines": [{"product_id": variety_id, "quantity": "20"}],
         },

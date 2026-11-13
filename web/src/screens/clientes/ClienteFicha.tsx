@@ -22,7 +22,6 @@ import { getCustomer } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
 import CustomerTypeLine from './CustomerTypeLine'
 import {
-  type PaymentMethod,
   deletePayment,
   getAccount,
 } from '../../api/payments'
@@ -47,13 +46,13 @@ import { formatDateShort } from '../../format/dates'
 import type { MoneyFormatter } from '../../format/money'
 import { useMoney } from '../../format/moneyContext'
 import AccountRowLine from './AccountRowLine'
-import { METHOD_LABEL, deleteRowIndices, rowKey } from './accountRows'
+import { deleteRowIndices, rowKey } from './accountRows'
 import { COMMON_TEXT } from '../../copy/common'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import ContentArea from '../../components/ContentArea'
 
-function deletePaymentTitle(payment: { amount: number; method: PaymentMethod; paid_on: string }, money: MoneyFormatter): string {
-  return CUSTOMERS_TEXT.deletePaymentOf(money.money(payment.amount), METHOD_LABEL[payment.method], formatDateShort(payment.paid_on))
+function deletePaymentTitle(payment: { amount: number; method: string; paid_on: string }, money: MoneyFormatter): string {
+  return CUSTOMERS_TEXT.deletePaymentOf(money.money(payment.amount), payment.method, formatDateShort(payment.paid_on))
 }
 
 function cardHeading(root: HTMLElement): HTMLElement | null {
@@ -71,7 +70,7 @@ export default function ClienteFicha() {
 
   const [deletedToast, setDeletedToast] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState<
-    { id: number; amount: number; method: PaymentMethod; paid_on: string } | null
+    { id: number; amount: number; method: string; paid_on: string } | null
   >(null)
   const [accountGone, setAccountGone] = useState(false)
   const [deletePaymentOffline, setDeletePaymentOffline] = useState(false)
@@ -229,7 +228,7 @@ export default function ClienteFicha() {
                     setConfirmingDelete({
                       id: row.payment.id,
                       amount: row.payment.amount,
-                      method: row.payment.method,
+                      method: row.payment.payment_method.name,
                       paid_on: row.payment.paid_on,
                     })
                   }

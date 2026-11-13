@@ -144,7 +144,7 @@ describe('validateSale', () => {
   })
 
   test('does not flag a Paid sale with a method, or a sale with no state chosen', () => {
-    expect(validateSale({ payState: 'paid', method: 'cash', total: 500, hasCustomer: false, lines: [] })).toEqual([])
+    expect(validateSale({ payState: 'paid', method: 1, total: 500, hasCustomer: false, lines: [] })).toEqual([])
     expect(validateSale({ ...NO_PAYMENT, hasCustomer: false, lines: [] })).toEqual([])
   })
 
@@ -164,13 +164,13 @@ describe('validateSale', () => {
 
 describe('paymentChoiceOf', () => {
   test('Owing is owing, whatever method is still held', () => {
-    expect(paymentChoiceOf('owing', null, 500)).toBe('owing')
-    expect(paymentChoiceOf('owing', 'cash', 500)).toBe('owing')
+    expect(paymentChoiceOf('owing', null, 500)).toEqual({ kind: 'owing' })
+    expect(paymentChoiceOf('owing', 1, 500)).toEqual({ kind: 'owing' })
   })
 
   test('Paid sends the chosen method', () => {
-    expect(paymentChoiceOf('paid', 'cash', 500)).toBe('cash')
-    expect(paymentChoiceOf('paid', 'transfer', 500)).toBe('transfer')
+    expect(paymentChoiceOf('paid', 1, 500)).toEqual({ kind: 'paid', payment_method_id: 1 })
+    expect(paymentChoiceOf('paid', 2, 500)).toEqual({ kind: 'paid', payment_method_id: 2 })
   })
 
   test('Paid with no method sends nothing (allowed only at $0)', () => {
@@ -180,7 +180,7 @@ describe('paymentChoiceOf', () => {
 
   test('no state chosen sends nothing, even with a method held', () => {
     expect(paymentChoiceOf(null, null, 500)).toBeNull()
-    expect(paymentChoiceOf(null, 'transfer', 500)).toBeNull()
+    expect(paymentChoiceOf(null, 2, 500)).toBeNull()
   })
 })
 

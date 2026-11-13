@@ -17,6 +17,7 @@ import { queryClient } from '../../queryClient'
 import { HOME, SALES, SALE_NEW } from '../../routes'
 import { router } from '../../router'
 import { pickProduct, productField } from './lineProduct'
+import { withPaymentMethods } from '../../test-payment-methods'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
 const ANA = { id: 7, name: 'Ana', phone: '+5491100000001', phone_display: '+54 9 11 0000-0001', vip: false }
@@ -59,7 +60,7 @@ function stubFetch({ products }: Stubs): ReturnType<typeof vi.fn> {
     if (method === 'GET' && url === '/sales') return Promise.resolve(jsonResponse(200, []))
     return Promise.reject(new Error(`unexpected request: ${method} ${path}`))
   })
-  vi.stubGlobal('fetch', fetchMock)
+  vi.stubGlobal('fetch', withPaymentMethods(fetchMock))
   return fetchMock
 }
 

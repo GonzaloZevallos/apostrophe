@@ -28,8 +28,8 @@ from app.main import create_app
 from app.migrations.runner import upgrade_to_head
 from app.payments.adapters.sql_payments import SqlPayments
 from app.payments.domain.payment import PaymentAboveBalance
-from app.payments.domain.settlement import PaymentMethod
 from app.settings import Settings
+from app.shared.payment_method import PaymentMethodId
 from app.tables import metadata
 from tests.conftest import NOW, TEST_HASHER, MovableClock, open_business, signed_in
 from tests.fakes.telegram import FakeTelegram
@@ -136,7 +136,7 @@ def _seed_customer_owing(client: TestClient) -> int:
         "/sales",
         json={
             "customer_id": customer_id,
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "lines": [{"product_id": variety["id"], "quantity": "10"}],
         },
     )
@@ -155,7 +155,7 @@ def test_the_guarded_payment_insert_accepts_exactly_the_balance_on_libsql(
         row = session.get(CustomerRow, customer_id)
         assert row is not None
         payments = SqlPayments(session, row.business_id)
-        payments.insert_later(customer_id, NOW.date(), balance, PaymentMethod.CASH, NOW)
+        payments.insert_later(customer_id, NOW.date(), balance, PaymentMethodId(1), NOW)
         session.commit()
 
     assert client.get(f"/customers/{customer_id}/account").json()["balance"] == 0
@@ -173,7 +173,7 @@ def test_the_guarded_payment_insert_refuses_one_above_the_balance_on_libsql(
         assert row is not None
         payments = SqlPayments(session, row.business_id)
         with pytest.raises(PaymentAboveBalance):
-            payments.insert_later(customer_id, NOW.date(), balance + 1, PaymentMethod.CASH, NOW)
+            payments.insert_later(customer_id, NOW.date(), balance + 1, PaymentMethodId(1), NOW)
         session.rollback()
 
     assert client.get(f"/customers/{customer_id}/account").json()["balance"] == balance

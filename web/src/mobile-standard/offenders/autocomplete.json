@@ -378,5 +378,65 @@
     "rule": "autocomplete",
     "target": "textbox:To",
     "issue": 78
+  },
+  {
+    "screen": "new-sale/method-selector-offline",
+    "rule": "autocomplete",
+    "target": "textbox:Shipping",
+    "issue": 78
+  },
+  {
+    "screen": "new-sale/method-selector-offline",
+    "rule": "autocomplete",
+    "target": "textbox:Line # special price",
+    "issue": 78
+  },
+  {
+    "screen": "new-sale/method-selector-offline",
+    "rule": "autocomplete",
+    "target": "textbox:Date",
+    "issue": 78
+  },
+  {
+    "screen": "new-sale/method-no-longer-available",
+    "rule": "autocomplete",
+    "target": "textbox:Line # special price",
+    "issue": 78
+  },
+  {
+    "screen": "new-sale/method-no-longer-available",
+    "rule": "autocomplete",
+    "target": "textbox:Shipping",
+    "issue": 78
+  },
+  {
+    "screen": "new-sale/method-no-longer-available",
+    "rule": "autocomplete",
+    "target": "textbox:Note",
+    "issue": 78
+  },
+  {
+    "screen": "new-sale/method-no-longer-available",
+    "rule": "autocomplete",
+    "target": "textbox:Date",
+    "issue": 78
+  },
+  {
+    "screen": "new-sale/method-no-longer-available",
+    "rule": "autocomplete",
+    "target": "textbox:Line # grams",
+    "issue": 78
+  },
+  {
+    "screen": "new-sale/method-selector-offline",
+    "rule": "autocomplete",
+    "target": "textbox:Line # grams",
+    "issue": 78
+  },
+  {
+    "screen": "new-sale/method-selector-offline",
+    "rule": "autocomplete",
+    "target": "textbox:Note",
+    "issue": 78
   }
 ]

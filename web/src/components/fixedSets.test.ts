@@ -108,6 +108,8 @@ test('FIXED_SETS gives every exported set a non-empty reason, and names nothing 
     SALES_PERIODS: 'fixed view: periods',
     THEME_CHOICES: 'fixed set: theme choice',
     CUSTOMER_TYPE_ICON_SET: 'fixed set: the neutral icon set ships with the app',
+    PAYMENT_METHOD_ICON_SET:
+      'fixed set: the payment-method icons ship with the app, the same closed set as the backend PaymentMethodIcon',
     STOCK_ENTRY_ORIGINS: 'fixed set: Stock entry origins',
     MONEY_DECIMALS: 'fixed set: the decimals a Business may write money with, 0 to 2',
     PAYMENT_STATES: 'fixed set: payment state, which is not a method',
@@ -124,6 +126,7 @@ test('every raw chip site names a registered set, a real file and a reason', () 
     ['src/screens/settings/AppearanceGroup.tsx', 'THEME_CHOICES'],
     ['src/screens/settings/BusinessGroup.tsx', 'LANGUAGES'],
     ['src/screens/settings/CustomerTypeForm.tsx', 'CUSTOMER_TYPE_ICON_SET'],
+    ['src/screens/settings/PaymentMethodForm.tsx', 'PAYMENT_METHOD_ICON_SET'],
     ['src/screens/StockEntryForm.tsx', 'STOCK_ENTRY_ORIGINS'],
   ])
   for (const site of RAW_CHIP_SITES) {

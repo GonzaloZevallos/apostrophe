@@ -9,6 +9,8 @@ summary: "los documentos técnicos se generan con un solo comando y se vigila qu
 The file name is historical: the ADR keeps its id and its first title. GH-460 (part 3). It replaces decision 3 of ADR-0063 ("Staleness is not detected"). Decisions 1, 2 and 4
 to 6 of ADR-0063 still hold. `.agentic/stack.yaml` declares `docs:` since part 4 (GH-468, 2026-10-31; see Pending).
 
+Enmendada por la [ADR 20261112](20261112-generated-docs-and-the-adr-index-are-built-on-master.md): un driver de fusión `merge=regen` resuelve los caminos poseídos (decisión 3).
+
 ## Decision
 
 1. **A `docs` job gates the merge.** `.github/workflows/ci.yml` has a job `docs` (ubuntu-24.04), and
@@ -106,5 +108,7 @@ La línea `summary:` de este ADR sigue con su texto de 2026-10-29: cambiarla ree
 `decisiones.md`, y el gate de GH-708 aún corría `docs` en modo commit; se actualiza en el cambio posterior de la incidencia 720, que aterriza cuando el nuevo modo ya está en master.
 
 2026-11-11, GH-692 part 2: `api_breaks` generates the base spec from base code in a worktree and reads the head spec from the workspace.
+
+2026-11-12, GH-697 part 3: master's owned paths are committed by `github-actions[bot]` after each merge and the stale check is skipped only on a master push; see [ADR-20261112-regen-commits-master-s-owned-docs-as-the-actions-bot-outside-ci-ok](../adr/20261112-regen-commits-master-s-owned-docs-as-the-actions-bot-outside-ci-ok.md).
 
 2026-11-12, GH-708 (GH-692 phase B): the stale check of step 5 is replaced by the owned-path guard (warnings only), `decisiones.md` joins the owned paths, and generated output is never committed in a feature pull request: master regenerates it after each merge.

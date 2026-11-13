@@ -4,7 +4,7 @@
  * there is no Customer (PM, adjustment 2 of the original swap), so `toBeDisabled()` still reads it.
  */
 
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { beforeEach, expect, test, vi } from 'vitest'
@@ -12,9 +12,12 @@ import type { PayState } from '../sales/pricing'
 import type { PaymentMethod } from '../api/payments'
 import { stubViewport } from '../test-viewport'
 import SelectorPago, { type SelectorPagoProps } from './SelectorPago'
-import { renderForm } from './selectorTestKit'
+import { renderForm, stubPaymentMethodsFetch } from './selectorTestKit'
 
-beforeEach(() => stubViewport('computer'))
+beforeEach(() => {
+  stubViewport('computer')
+  stubPaymentMethodsFetch()
+})
 
 function Harness(props: Partial<SelectorPagoProps> & { initial?: PayState | null }) {
   const [payState, setPayState] = useState<PayState | null>(props.initial ?? null)
@@ -44,7 +47,7 @@ test('no Payment method field shows until Paid is chosen, and none shows under O
   await user.click(screen.getByRole('radio', { name: 'Owing' }))
   expect(screen.queryByRole('button', { name: /^Payment method/ })).toBeNull()
   await user.click(screen.getByRole('radio', { name: 'Paid' }))
-  expect(screen.getByRole('button', { name: /^Payment method/ })).toBeInTheDocument()
+  expect(await screen.findByRole("button", { name: /^Payment method/ })).toBeInTheDocument()
 })
 
 test('the method is a Selector with Cash and Transfer, no clearing row, and no radio or pressed button holds them', async () => {
@@ -53,17 +56,17 @@ test('the method is a Selector with Cash and Transfer, no clearing row, and no r
   expect(screen.queryByRole('radio', { name: 'Cash' })).toBeNull()
   expect(screen.queryByRole('radio', { name: 'Transfer' })).toBeNull()
   expect(document.querySelector('[aria-pressed]')).toBeNull()
-  await user.click(screen.getByRole('button', { name: /^Payment method/ }))
-  expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual(['Cash', 'Transfer'])
+  await user.click(await screen.findByRole('button', { name: /^Payment method/ }))
+  expect((await screen.findAllByRole('option')).map((option) => option.textContent)).toEqual(['Cash', 'Transfer'])
 })
 
 test('choosing a method in the list reports it', async () => {
   const user = userEvent.setup()
   const onMethod = vi.fn()
   renderForm(<Harness initial="paid" onMethod={onMethod} />)
-  await user.click(screen.getByRole('button', { name: /^Payment method/ }))
-  await user.click(screen.getByRole('option', { name: 'Cash' }))
-  expect(onMethod).toHaveBeenCalledWith('cash')
+  await user.click(await screen.findByRole('button', { name: /^Payment method/ }))
+  await user.click(await screen.findByRole('option', { name: 'Cash' }))
+  expect(onMethod).toHaveBeenCalledWith(1)
 })
 
 test('a disabled Owing carries the caller\'s description as its accessible description', () => {
@@ -103,4 +106,25 @@ test('the refusal shows at the method field with the sentence, linked to the fie
 test('no refusal shows when the method is not refused', () => {
   renderForm(<Harness initial="paid" />)
   expect(screen.queryByRole('alert')).toBeNull()
+})
+
+test('a methods list that failed says so on the field and a tap on it reads the list again', async () => {
+  const user = userEvent.setup()
+  vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(new Response('{}', { status: 500 }))))
+  renderForm(<Harness initial="paid" />)
+  const field = await screen.findByRole('button', { name: /^Payment method/ })
+  await waitFor(() => expect(field).toBeEnabled())
+
+  stubPaymentMethodsFetch()
+  await user.click(field)
+
+  expect((await screen.findAllByRole('option')).map((option) => option.textContent)).toEqual(['Cash', 'Transfer'])
+})
+
+test('with no connection the sin conexión notice shows and the form keeps its state', async () => {
+  vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new TypeError('Failed to fetch'))))
+  renderForm(<Harness initial="paid" />)
+
+  expect(await screen.findByText(/^Offline/)).toBeInTheDocument()
+  expect(screen.getByRole('radio', { name: 'Paid' })).toHaveAttribute('aria-checked', 'true')
 })

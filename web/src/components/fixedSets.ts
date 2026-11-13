@@ -21,6 +21,7 @@
 import { COMMON_TEXT } from '../copy/common'
 import { CUSTOMER_TYPE_ICON_NAME } from '../copy/readers/customerTypeIcons'
 import { HOME_VIEW_NAME } from '../copy/readers/homeViews'
+import { PAYMENT_METHOD_ICON_KEYS, PAYMENT_METHOD_ICON_NAME } from '../copy/readers/paymentMethodIcons'
 import { PAYMENT_STATE_NAME } from '../copy/readers/paymentStates'
 import { SHIPPED_LANGUAGE_TAGS } from '../copy/readers/shippedLanguages'
 import { SALES_TEXT } from '../copy/sales'
@@ -52,6 +53,8 @@ const HOME_VIEWS_REASON = 'fixed set: the two views of Home, Today and Analysis'
 const PERIODS_REASON = 'fixed view: periods'
 const THEME_REASON = 'fixed set: theme choice'
 const ICONS_REASON = 'fixed set: the neutral icon set ships with the app'
+const PAYMENT_METHOD_ICONS_REASON =
+  'fixed set: the payment-method icons ship with the app, the same closed set as the backend PaymentMethodIcon'
 const ORIGINS_REASON = 'fixed set: Stock entry origins'
 const MONEY_DECIMALS_REASON = 'fixed set: the decimals a Business may write money with, 0 to 2'
 const PAYMENT_STATE_REASON = 'fixed set: payment state, which is not a method'
@@ -97,6 +100,14 @@ export const CUSTOMER_TYPE_ICON_SET = fixedSet(ICONS_REASON, [
   { value: 'crown', icon: 'corona', label: CUSTOMER_TYPE_ICON_NAME.crown },
   { value: 'bell', icon: 'campana', label: CUSTOMER_TYPE_ICON_NAME.bell },
 ])
+
+/** The payment-method icon grid of the add/edit Sheet, in the order the picker shows it. The
+ * names a person sees on the methods are the Business's own data and go through the Selector;
+ * only the drawings are fixed. */
+export const PAYMENT_METHOD_ICON_SET = fixedSet(
+  PAYMENT_METHOD_ICONS_REASON,
+  PAYMENT_METHOD_ICON_KEYS.map((key) => ({ value: key, label: PAYMENT_METHOD_ICON_NAME[key] })),
+)
 
 /** The origin pills of a Stock entry. */
 export const STOCK_ENTRY_ORIGINS = fixedSet(ORIGINS_REASON, [
@@ -162,6 +173,11 @@ export const RAW_CHIP_SITES = rawSites([
     reason: 'the icon grid draws each option as an icon button with its own accessible name',
   },
   {
+    file: 'src/screens/settings/PaymentMethodForm.tsx',
+    set: 'PAYMENT_METHOD_ICON_SET',
+    reason: 'the icon grid draws each option as its payment-method glyph with its own accessible name',
+  },
+  {
     file: 'src/screens/StockEntryForm.tsx',
     set: 'STOCK_ENTRY_ORIGINS',
     reason: 'the origin pills and the fixed Initial stock pill share the form origin layout',
@@ -182,6 +198,7 @@ export const FIXED_SETS = {
   SALES_PERIODS: PERIODS_REASON,
   THEME_CHOICES: THEME_REASON,
   CUSTOMER_TYPE_ICON_SET: ICONS_REASON,
+  PAYMENT_METHOD_ICON_SET: PAYMENT_METHOD_ICONS_REASON,
   STOCK_ENTRY_ORIGINS: ORIGINS_REASON,
   PAYMENT_STATES: PAYMENT_STATE_REASON,
   LANGUAGES: LANGUAGES_REASON,

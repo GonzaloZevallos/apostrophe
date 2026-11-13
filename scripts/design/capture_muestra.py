@@ -45,7 +45,16 @@ _MONTHS = (
 _WEEKDAYS = {1: "Lun", 2: "Mar", 3: "Mié", 4: "Jue", 5: "Vie", 6: "Sáb", 7: "Dom"}
 _STATUS = {"ok": "ok", "low": "baja", "sold_out": "agotada", "no_entries": "sin entradas"}
 _STANDING = {"owes": "debe", "settled": "al día"}
-_HOW_PAID = {"cash": "Efectivo", "transfer": "Transferencia", "owing": "Debiendo"}
+_METHOD = {"Cash": "Efectivo", "Transfer": "Transferencia"}
+
+
+def how_paid(word: str, method: dict[str, Any] | None) -> str:
+    """The sheet's words for a sale's payment: `Debiendo`, or the method's name in Spanish."""
+    if word == "owing" or method is None:
+        return "Debiendo"
+    return _METHOD[method["name"]]
+
+
 _RULE = {
     "list": "Lista",
     "bulk": "Por mayor",
@@ -355,7 +364,7 @@ def _sales(api: _ClientApi) -> list[str]:
                 money(sale["total"]),
                 money(sale["shipping_charged"]),
                 yes_no(sale["still_owing"]),
-                _HOW_PAID[sale["payment"]],
+                how_paid(sale["payment"], sale["payment_method"]),
             ]
         )
         lines.extend(
@@ -388,12 +397,12 @@ def _accounts(api: _ClientApi) -> list[str]:
             if row["kind"] == "sale":
                 sale = row["sale"]
                 concept, amount = "Venta", money(sale["total"])
-                detail = _HOW_PAID[sale["how_paid"]]
+                detail = how_paid(sale["how_paid"], sale["payment_method"])
             else:
                 payment = row["payment"]
                 concept, amount = "Pago", money(payment["amount"])
                 applied = row["applied_to"]
-                method = _HOW_PAID[payment["method"]]
+                method = how_paid("paid", payment["payment_method"])
                 detail = f"{method}, a la venta del {day_month(applied['sale_date'])}"
             rows.append(
                 [

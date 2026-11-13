@@ -34,7 +34,7 @@ const SALE = {
   customer: null,
   shipping_charged: 0,
   note: null,
-  payment: 'cash',
+  payment: 'paid',
   total: 11000,
   still_owing: false,
   total_quantity: 1,
@@ -79,6 +79,7 @@ const LOADED: Partial<Record<ScreenId, string>> = {
   catalog: 'Sir Jack',
   'varieties-archived': 'Archived',
   withdrawal: 'Zkittlez',
+  'settings-payment-methods': 'Add method',
 }
 
 const CATALOG = {
@@ -119,6 +120,7 @@ function fakeApi(): void {
         'GET /api/products?archived=true': [ARCHIVED],
         'GET /catalog': CATALOG,
         'GET /catalog/archived': [],
+        'GET /api/payment-methods': [{ id: 1, name: 'Cash', icon: 'banknote', position: 1, in_use: false }],
       }
       return Promise.resolve(key in answers ? jsonResponse(200, answers[key]) : jsonResponse(404, { detail: 'No existe' }))
     }),

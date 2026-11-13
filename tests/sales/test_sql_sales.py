@@ -18,7 +18,8 @@ from app.customers.adapters.tables import CustomerRow
 from app.products.adapters.tables import ProductRow
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.domain.pricing import PriceQuote, PricingRule
-from app.sales.domain.sale import CustomerAlreadyAssigned, LineRequest, PaymentMethod, Sale
+from app.sales.domain.sale import CustomerAlreadyAssigned, LineRequest, Sale
+from app.shared.payment_method import PaymentMethodId
 from app.shared.pricing_settings import PricingSettings
 from app.shared.quantity import Quantity
 
@@ -27,6 +28,9 @@ TODAY = date(2026, 6, 15)
 RECORDED_AT = datetime(2026, 6, 15, 12, 0, tzinfo=UTC)
 QUOTE = PriceQuote(list_price=1_000)
 ONE_GRAM = Quantity.of(1)
+
+
+DEFAULT_METHOD = PaymentMethodId(1)
 
 
 def _variety_id(client: TestClient) -> int:
@@ -60,7 +64,7 @@ def _sale(
     variety_id: int,
     customer_id: int | None = None,
     sale_date: date = TODAY,
-    method: PaymentMethod | None = PaymentMethod.CASH,
+    method: PaymentMethodId | None = DEFAULT_METHOD,
     left_owing: bool = False,
     quantity: Quantity = ONE_GRAM,
 ) -> Sale:
@@ -106,7 +110,7 @@ def test_add_then_get_round_trips_a_sale_with_its_lines_and_payment(
     assert line.line_total == 1_000
     assert fetched.payment is not None
     assert fetched.payment.amount == fetched.total
-    assert fetched.payment.method == PaymentMethod.CASH
+    assert fetched.payment.method == PaymentMethodId(1)
     assert fetched.payment.customer_id == customer_id
 
 
@@ -385,7 +389,7 @@ def test_list_views_reads_exactly_three_statements_whatever_the_number_of_sales(
                 shipping_charged=0,
                 note=None,
                 lines=two_lines,
-                method=PaymentMethod.CASH,
+                method=PaymentMethodId(1),
                 left_owing=False,
                 recorded_at=RECORDED_AT,
             )

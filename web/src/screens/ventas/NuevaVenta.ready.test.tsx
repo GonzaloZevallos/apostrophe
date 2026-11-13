@@ -16,6 +16,7 @@ import { SheetRouterProvider } from '../../components/useSheetStack'
 import { SALE_NEW } from '../../routes'
 import { stubViewport } from '../../test-viewport'
 import NuevaVenta from './NuevaVenta'
+import { withPaymentMethods } from '../../test-payment-methods'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
@@ -23,11 +24,11 @@ const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02'
 beforeEach(() => {
   vi.stubGlobal(
     'fetch',
-    vi.fn(() =>
+    vi.fn(withPaymentMethods(() =>
       Promise.resolve(
         new Response('[]', { status: 200, headers: { 'Content-Type': 'application/json' } }),
       ),
-    ),
+    )),
   )
 })
 

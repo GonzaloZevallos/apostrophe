@@ -42,6 +42,7 @@ from app.payments.domain.payment import (
     PaymentMethodRequired,
 )
 from app.shared.money import TooManyDecimals
+from app.shared.payment_method import PaymentMethodId, PaymentMethodUnavailable
 
 # Two routers, like `app.sales.adapters.router` and `app.customers.adapters.router`
 # have their own prefixes: payments' own routes under `/payments`, and the two that
@@ -80,7 +81,7 @@ PaymentsDep = Annotated[SqlPayments, Depends(get_payments)]
 
 as_http = TranslateErrors(
     [
-        (404, (CustomerNotFound, PaymentNotFound)),
+        (404, (CustomerNotFound, PaymentNotFound, PaymentMethodUnavailable)),
         (409, (OnTheSpot,)),
         (
             422,
@@ -131,7 +132,7 @@ def record_payment(
             customer_id,
             body.paid_on,
             body.amount,
-            body.method,
+            None if body.payment_method_id is None else PaymentMethodId(body.payment_method_id),
             today,
             clock(),
         )

@@ -11,9 +11,10 @@ setup:
   deps: uv sync --locked --extra dev
   web: npm --prefix web ci --no-fund --no-audit
   web-browsers: npx --prefix web playwright install chromium
+  merge-driver: git config merge.regen.driver "cp %B %A"
 checks:
   tests: uv run --no-project pytest -n 8
-  tests-fast: uv run --no-project pytest -n 4 -p no:cacheprovider tests/architecture tests/migrations tests/test_business_isolation.py tests/test_gated_routes.py tests/test_stack_affected.py tests/test_stack_ci.py tests/test_stack_parallel_writers.py
+  tests-fast: uv run --no-project pytest -n 4 -p no:cacheprovider tests/architecture tests/docs/test_parallel_branches.py tests/migrations tests/test_business_isolation.py tests/test_gated_routes.py tests/test_stack_affected.py tests/test_stack_ci.py tests/test_stack_parallel_writers.py
   lint: uv run --no-project ruff check .
   types: uv run --no-project mypy app tests scripts
   web-types: npm --prefix web run typecheck
@@ -169,7 +170,8 @@ docs:
 # `generate`, which fails only when generation fails, the owned-path guard (warnings only), the
 # Mermaid render, the offline link check and the OpenAPI breaking-change check (ADR-0066). e2e runs only in CI, as CI_ONLY (tests/test_stack_ci.py): the
 # owner's rule is that GitHub CI judges end-to-end tests (GH-699), and it gates the merge through
-# `ci-ok`, which needs `e2e`.
+# `ci-ok`, which needs `e2e`. `ci-ok` needs every job except those `UNGATED_JOBS` declares
+# (tests/test_stack_ci.py): `regen` commits master's owned docs after a merge and gates nothing.
 ci: [ci-ok]
 # `ci_dispatch` (agentic-system commit 0ca8e14c, PR #476, GH-462): how the system judges a head that
 # touches `.github/` without trusting that head's own workflow. It dispatches the base's

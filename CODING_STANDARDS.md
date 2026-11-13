@@ -42,6 +42,14 @@ outranks every other; 10 says the frontend's; 11 names the database; 12 the gene
 - Test-first at seams agreed in the plan. A test that breaks on a refactor without a
   change of behaviour is wrong.
 
+### Generated docs
+
+- The `docs.paths` of `.agentic/stack.yaml` are generated, never edited by hand (the staleness
+  check enforces it); `decisiones.md` comes from each ADR's `summary:`. The `regen` merge driver
+  takes the side merged in: master's copy in master-into-branch, the branch's copy in
+  branch-into-master (locally). Modify/delete still conflicts: regenerate, then commit
+  (ADR-20261112-generated-docs-and-the-adr-index-are-built-on-master).
+
 ## 6. Strict typing, without silencing
 
 - `mypy --strict` over `app`, `tests` and `scripts`, and `ruff`, pass with nothing silenced: no
@@ -96,10 +104,9 @@ React, Vite and TypeScript in `web/`, built from the design in `docs/product/des
 - **Names in code are English**, the `CONTEXT.md` terms, as in the backend. **Every word
   on screen is English**, plain second person ("Save", "Owes you"), using the glossary's
   `_In the app_` word. Every text lives in `web/src/copy/`, keyed, never in a screen.
-- **The backend decides; the front shows.** A line's price, a sale's total, a balance and
-  where a payment goes come from the API. The front may preview a computation before
-  saving (the design's `precios.ts`), but what it shows after saving is what the API
-  answered.
+- **The backend decides; the front shows.** A line's price, a sale's total, a balance and where a
+  payment goes come from the API. The front may preview a computation before saving (the design's
+  `precios.ts`), but what it shows after saving is what the API answered.
 - **Color, type and spacing only from the design tokens.** No loose hex values in a
   component. The design README's accessibility rules are requirements: no state told by color alone: a sign, arrow or word on every gain, loss, debt or state; chart series labelled directly; text at
   4.5:1 at least.
@@ -108,9 +115,8 @@ React, Vite and TypeScript in `web/`, built from the design in `docs/product/des
 - **Section 9 holds in the browser too.** The business is never in a URL. No phone
   numbers, names, amounts or tokens in `console`, in `localStorage` or in error reports;
   the session lives in the backend's cookie, never in browser storage.
-- **Tests at the seams**: screens and components with Testing Library, through what the
-  user sees and does, with the API faked at `fetch`. Formats and previews with plain
-  unit tests.
+- **Tests at the seams**: screens and components with Testing Library, through what the user sees
+  and does, with the API faked at `fetch`. Formats and previews with plain unit tests.
 - **A screen looks like its design**, by eye: the same structure, hierarchy, type, colors,
   spacing and components as its file in `pantallas/`. Look at its comparison
   (`scripts/design/comparisons.mjs`, design README) before delivering, and keep its entry
@@ -244,21 +250,18 @@ schema, never listed, and no allowlist exists to put it on.
 
 - Lowercase `snake_case` for every table, column, index and constraint name
   (`^[a-z][a-z0-9]*(_[a-z0-9]+)*$`).
-- A boolean column starts with `is_` (`is_vip`, `is_shown`), and only a boolean column
-  does.
+- A boolean column starts with `is_` (`is_vip`, `is_shown`), and only a boolean column does.
 - `_on` names a calendar date (`spent_on`), and only a date column ends in `_on`.
 - `_at` names a moment in time (`created_at`), and only a datetime column ends in `_at`.
-- A foreign key to `<t>.id` is `<t>_id`, or ends in `_<t>_id` when it needs a role
-  prefix (`assigned_app_user_id` referencing `app_user`), matched on whole
-  `_`-separated segments, so `wholesale_id` against `sale` fails. A foreign key to a
-  column other than `id` (only possible inside a composite key) carries that column's
-  own name instead. `_id` alone does not imply a foreign key (`pinned_catalog.message_id`
-  is not one, and passes).
+- A foreign key to `<t>.id` is `<t>_id`, or ends in `_<t>_id` when it needs a role prefix
+  (`assigned_app_user_id` referencing `app_user`), matched on whole `_`-separated segments, so
+  `wholesale_id` against `sale` fails. A foreign key to a column other than `id` (only possible
+  inside a composite key) carries that column's own name instead. `_id` alone does not imply a
+  foreign key (`pinned_catalog.message_id` is not one, and passes).
 - Every table's primary key is the single column `id`.
-- Names follow their pattern exactly: `ix_<table>_<columns>` for an index,
-  `uq_<table>_<columns>` for a unique constraint, `pk_<table>` for a primary key, and
-  `fk_<table>_<first column>_<referenced table>` for a foreign key (columns joined by
-  `_`, in their declared order).
+- Names follow their pattern exactly: `ix_<table>_<columns>` for an index, `uq_<table>_<columns>`
+  for a unique constraint, `pk_<table>` for a primary key, and `fk_<table>_<first
+  column>_<referenced table>` for a foreign key (columns joined by `_`, in their declared order).
 - A check constraint's name starts with `ck_<table>_` and is itself `snake_case`.
 - A unique, primary-key, foreign-key or check constraint always reflects with a name;
   one that does not is a break on its own.
@@ -267,20 +270,18 @@ schema, never listed, and no allowlist exists to put it on.
 
 - Singular table names (`customer`, not `customers`); a junction table is `<a>_<b>`,
   with its own surrogate `id` and a `uq_<a>_<b>_<a>_id_<b>_id` on the pair.
-- No `_until`, `_from` or `_start` for a moment in time or a calendar date (`_at` and
-  `_on` say both, with no third option): a reviewer reads it, since a column bearing one
-  of these and no date or datetime type (where the `_on`/`_at` rules would already catch
-  it) is not something the reflected schema alone can tell apart from an ordinary
-  integer or string column of the same name.
+- No `_until`, `_from` or `_start` for a moment in time or a calendar date (`_at` and `_on` say
+  both, with no third option): a reviewer reads it, since a column bearing one of these and no date
+  or datetime type (where the `_on`/`_at` rules would already catch it) is not something the
+  reflected schema alone can tell apart from an ordinary integer or string column of the same name.
 
 ### How a table class states a name
 
-- A table class never passes `name=` to a constraint or an index: `NAMING_CONVENTION`
-  (`app/db.py`) fills it in from the convention above. A check constraint passes only
-  its short rule name (the convention adds the `ck_<table>_` prefix). A composite index
-  is declared `Index(None, "a", "b")`, never with a literal name. Its migration spells
-  the convention's name out with `op.f(...)`, since Alembic cannot recompute a
-  naming-convention name from a bare string.
+- A table class never passes `name=` to a constraint or an index: `NAMING_CONVENTION` (`app/db.py`)
+  fills it in from the convention above. A check constraint passes only its short rule name (the
+  convention adds the `ck_<table>_` prefix). A composite index is declared `Index(None, "a", "b")`,
+  never with a literal name. Its migration spells the convention's name out with `op.f(...)`, since
+  Alembic cannot recompute a naming-convention name from a bare string.
 - A new column's mapped attribute has the column's own name.
 
 ### Scope
@@ -294,7 +295,6 @@ schema, never listed, and no allowlist exists to put it on.
 ## 12. Generated documentation
 
 - `docs/architecture/generated/**`, `docs/api/**` and `docs/architecture/decisiones.md` are
-  written only by `scripts.docs.generate`: never edited by hand, never committed in a feature
-  pull request. Master regenerates them after each merge (docs/adr/0066).
-- A branch that changed one restores it from its merge-base; CI warns on a pull request that
-  touches them (`scripts.docs.owned_guard`).
+  written only by `scripts.docs.generate`, never edited by hand and never committed in a feature
+  pull request: master regenerates them after each merge (docs/adr/0066). A branch that changed
+  one restores it from its merge-base; CI warns on a pull request that touches one.

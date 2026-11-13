@@ -30,7 +30,10 @@ def _entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
 def _sale(client: TestClient, variety_id: int, quantity: str = "10") -> int:
     response = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": quantity}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": quantity}],
+        },
     )
     assert response.status_code == 201, response.text
     return int(response.json()["id"])
@@ -104,7 +107,10 @@ def test_list_sales_never_carries_a_cost_field(client: TestClient) -> None:
     _entry(client, variety_id, quantity="10", total_cost=5_000)
     client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "10"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "10"}],
+        },
     )
 
     listed = client.get("/sales")
@@ -124,7 +130,7 @@ def test_sale_detail_answers_total_grams_summed_over_every_line_gifts_included(
     response = client.post(
         "/sales",
         json={
-            "payment": "cash",
+            "payment": {"kind": "paid", "payment_method_id": 1},
             "lines": [
                 {"product_id": variety_id, "quantity": "10"},
                 {"product_id": variety_id, "quantity": "4", "gift": True},
@@ -176,13 +182,16 @@ def test_a_sale_detail_carries_still_owing_from_settlement(client: TestClient) -
         "/sales",
         json={
             "customer_id": customer["id"],
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "lines": [{"product_id": variety_id, "quantity": "1"}],
         },
     ).json()
     paid = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "1"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "1"}],
+        },
     ).json()
 
     owing_detail = client.get(f"/sales/{owing['id']}").json()
