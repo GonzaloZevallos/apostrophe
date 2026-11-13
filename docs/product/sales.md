@@ -10,6 +10,8 @@
 
 **Cuando** un cliente me paga, con una venta o a cuenta de una deuda, **quiero** decir cómo me pagó con el mismo control que uso para cualquier elección que puede crecer, **para** registrar el medio a propósito y nunca por un valor que quedó de antes; y cuando los Payment methods pasen a ser mi propia lista, registrar un pago se tiene que sentir igual. (Parte 5 de GH-581: acá lo sirve el campo "Payment method" bajo Paid en New sale; en Record payment, payments.md).
 
+**Cuando** un cliente me paga, en la venta o más tarde, **quiero** registrar cómo me pagó con los medios que mi negocio de verdad acepta, nombrados a mi manera, **para** que cada pago me diga después cómo me llegó la plata, sin que la app decida por mí que la plata es efectivo o transferencia. (Parte 24 de GH-318: la lista vive en payment-methods.md; acá la sirve el campo "Payment method" bajo Paid en New sale).
+
 **Cuando** configuro cómo cotiza mi negocio, registro el precio de un producto o entrego un pedido, **quiero** que la app use solo las **Pricing rule**s que tiene mi negocio (un **Bulk price** si vendo por volumen, y un **VIP price** que fijo por producto si tengo clientes VIP), **para** cobrarle a cada cliente exactamente lo que quiero cobrarle sin tipear un **Special price** a mano, sin ver campos que no me aplican y sin que a nadie le cambie el precio por sorpresa. (Afina la primera historia; no es un trabajo nuevo. Definido en pricing-settings.md).
 
 **Cuando** registro una venta para un cliente que pertenece a uno de mis grupos de clientes, **quiero** que cada línea se cotice al precio que fijé para ese grupo y ese producto, **para** cobrarle a cada grupo su propio precio sin tipearlo ni sacarlo de memoria. (Parte customer-type prices de GH-318: lo sirve acá la cotización por **Customer-type price**; los precios se guardan en pricing-settings.md).
@@ -22,7 +24,7 @@
 
 **Cuando** le comparto un Sale bill a un cliente, o más tarde necesito señalar esa venta exacta en nuestro chat, **quiero** que la venta lleve un número corto propio de mi negocio, **para** que los dos nombremos la misma venta sin confusión, y que el número nunca revele cuántas ventas tiene ningún otro negocio. (El **Sale number**; mostrarlo, no buscar por él).
 
-**Cuando** un cliente me paga parte o todo lo que me debe, en efectivo o por transferencia, el mismo día o semanas después, **quiero** registrarlo desde el teléfono en pocos toques y ver que su Balance y su "owing since" bajan en el acto, **para** saber siempre quién me debe qué y desde cuándo, y que nada de lo que pagó o todavía debe se pierda ni caiga en la persona equivocada. (Acá lo sirve la marca "owes you" en Sales; definido en `payments.md`).
+**Cuando** un cliente me paga parte o todo lo que me debe, con cualquiera de los medios que acepta mi negocio, el mismo día o semanas después, **quiero** registrarlo desde el teléfono en pocos toques y ver que su Balance y su "owing since" bajan en el acto, **para** saber siempre quién me debe qué y desde cuándo, y que nada de lo que pagó o todavía debe se pierda ni caiga en la persona equivocada. (Acá lo sirve la marca "owes you" en Sales; definido en `payments.md`).
 
 **Cuando** doy de alta un cliente (desde Customers, en medio de una venta o con la **Spreadsheet import** única) y no tengo su **Phone number**, **quiero** guardarlo igual con su nombre y agregar el número más adelante si algún día lo consigo, **para** registrar cada venta y cada deuda a nombre de la persona que de verdad debe, sin inventar un número ni dejar a esa persona fuera de la app. (Acá lo sirve "New customer" de Pick a customer; definido en `customers.md`).
 
@@ -34,7 +36,8 @@ Lo que un cliente se lleva de una vez, con cada línea cotizada con los precios 
 - los Current prices, de los productos;
 - los clientes, con su **Customer type**, de clientes;
 - los Customer-type prices vigentes, de las Pricing settings (pricing-settings.md);
-- qué Pricing rules usa el negocio, de las Pricing settings (pricing-settings.md).
+- qué Pricing rules usa el negocio, de las Pricing settings (pricing-settings.md);
+- los Payment methods ofrecidos del negocio, de payment-methods.md (ADR-20261111-payment-methods-by-id).
 
 Los pagos (`payments.md`) saldan lo que una venta deja debiendo y dicen si cada venta sigue debiendo. El stock (`stock.md`) saca los gramos de cada línea de los **Lot**s de su producto y le da a la línea su **Cost of goods sold**, que sigue a los Lots y nunca queda congelado (ADR-0009). Esta capacidad cubre también las pantallas de ventas: New sale, Sales y el detalle de una venta, en el teléfono y en la computadora, y el Sale bill que se comparte desde el detalle de una venta. Dónde se ubican es navigation.md.
 
@@ -42,7 +45,7 @@ La protagonista de las historias del teléfono es la vendedora. Los diseños de 
 
 Antes de la parte 4 de GH-581, cada línea de New sale elegía su producto con un `<select>` nativo, que en el teléfono abre el selector del sistema, sin búsqueda y distinto del resto de las elecciones de la app. Los productos son un **Growable set**, así que se eligen solo con el **Selector** (ADR-0074). No hay registro de errores de producto ni de líneas abandonadas, y esta definición no afirma ninguno.
 
-Antes de la parte 5 de GH-581, cómo se pagó era una fila de tres botones (Cash · Transfer · Owing) que mezclaba el estado (pagada o debiendo) con el medio. Los Payment methods son un Growable set que pasa a ser la lista propia del negocio con GH-318, así que el medio se elige con el Selector; el estado Paid · Owing no es un medio y sigue siendo una elección fija. Los botones viejos además figuraban como infractores de `touch-action` en el **Mobile check** (zoom por doble toque y selección de texto al tocar). No hay registro de medios mal elegidos, y esta definición no afirma ninguno.
+Antes de la parte 5 de GH-581, cómo se pagó era una fila de tres botones (Cash · Transfer · Owing) que mezclaba el estado (pagada o debiendo) con el medio. Los Payment methods son un Growable set, así que el medio se elige con el Selector; desde la parte 24 de GH-318 son la lista propia de cada negocio (payment-methods.md, ADR-20261111-payment-methods-by-id), y el estado Paid · Owing no es un medio y sigue siendo una elección fija. Los botones viejos además figuraban como infractores de `touch-action` en el **Mobile check** (zoom por doble toque y selección de texto al tocar). No hay registro de medios mal elegidos, y esta definición no afirma ninguno.
 
 Antes de la parte customer-type prices de GH-318, un precio propio por grupo existía solo para un grupo, el VIP. Para cualquier otro grupo, la vendedora tipeaba un Special price en cada línea, lo que pierde el vínculo entre la venta y el grupo que recibió el precio, o cotizaba de memoria.
 
@@ -64,7 +67,7 @@ Criterios de éxito, registro (API):
    - Una venta con datos faltantes o inválidos se rechaza entera.
    - Una venta que queda debiendo siempre tiene cliente. Solo puede no tenerlo una venta en la que no queda nada debiendo.
    - Se le puede agregar un cliente después, una sola vez, y nunca cambiarlo por otro.
-5. **Los negocios nunca se mezclan** (ADR-0004): una venta referencia solo clientes y productos de su propio negocio. La venta de otro negocio responde 404 y las listas no muestran nada de ella. La nota nunca aparece en respuestas de error ni en logs (ADR-0005).
+5. **Los negocios nunca se mezclan** (ADR-0004): una venta referencia solo clientes, productos y Payment methods de su propio negocio. La venta de otro negocio responde 404 y las listas no muestran nada de ella. La nota nunca aparece en respuestas de error ni en logs (ADR-0005).
 
 Criterios de éxito, Pricing rules (pricing-settings.md):
 
@@ -108,10 +111,10 @@ Criterios de éxito, producto de una línea (Selector, parte 4 de GH-581):
 
 Sin objetivo de tiempo nuevo: la venta en menos de un minuto del criterio 1 sigue siendo la vara.
 
-Criterios de éxito, cómo se pagó (Selector, parte 5 de GH-581):
+Criterios de éxito, cómo se pagó (Selector, parte 5 de GH-581; la lista propia del negocio desde la parte 24 de GH-318):
 
-33. **Un paso más como máximo.** La venta se sigue registrando desde el teléfono en menos de un minuto (criterio 1); el medio suma como máximo un paso: abrir el campo y tocar la opción. Con dos opciones la lista no tiene búsqueda.
-34. **Nunca sin medio, nunca por defecto.** Una venta pagada con total por encima de $0 no se guarda sin medio; Owing nunca muestra ni pide uno. El medio nunca viene puesto: arranca vacío al abrir y cada vez que se vuelve a Paid. Lo que se guarda y lo que se manda a la API no cambian: cash, transfer u owing.
+33. **Un paso más como máximo.** La venta se sigue registrando desde el teléfono en menos de un minuto (criterio 1); el medio suma como máximo un paso: abrir el campo y tocar la opción. Con más de 8 medios ofrecidos, la lista tiene búsqueda.
+34. **Nunca sin medio, nunca por defecto.** Una venta pagada con total por encima de $0 no se guarda sin medio; Owing nunca muestra ni pide uno. El medio nunca viene puesto: arranca vacío al abrir y cada vez que se vuelve a Paid. Lo que se manda a la API es la unión por `kind`: `{kind: 'paid', payment_method_id}` (el id del medio del negocio) u `{kind: 'owing'}`; nunca un nombre de medio.
 35. **Volver y Escape predecibles.** Con la lista de medios abierta, volver o "Close" cierran solo la lista y la venta queda intacta; en la computadora, Escape cierra solo el desplegable.
 36. **Nada se pierde.** Owing sigue deshabilitado con "To leave it owing, pick a customer" sin cliente; Paid · Owing conservan su aspecto y su comportamiento; una venta de $0 sigue sin necesitar medio; el Mobile check no gana ningún infractor.
 
@@ -183,12 +186,13 @@ Criterios de éxito, Sale number:
 - **Total**: la suma de los totales redondeados de las líneas más el Shipping charged. Las líneas se redondean de a una, nunca como suma.
 - **Shipping charged**: con hasta los decimales del Money format del Business, cero o más, $0 por defecto. Un valor negativo se rechaza.
 - **Cómo se pagó**:
-  - **Pagada entera en el momento, en efectivo o por transferencia.** Registra un On-the-spot payment por el total, en la fecha de la venta, con su medio (ADR-0007). Salda solo esta venta (`payments.md`).
+  - **Pagada entera en el momento.** Registra un On-the-spot payment por el total, en la fecha de la venta, con el medio del negocio elegido (ADR-0007). Salda solo esta venta (`payments.md`).
   - **Queda debiendo**: sin medio, y la venta necesita cliente. Los pagos posteriores la saldan empezando por la deuda más vieja (`payments.md`).
   - **Total de $0**: queda saldada sin medio y sin nada debido. Un medio enviado con ella se ignora y no se guarda.
   - Un total por encima de $0 necesita un medio o "queda debiendo".
   - No existe el pago parcial en el momento.
-  - Lo que viaja a la API es uno de cash, transfer u owing, igual que antes de la parte 5 de GH-581. En New sale lo deriva una función pura, `paymentChoiceOf` (`web/src/sales/pricing.ts`), a partir del estado Paid · Owing, el medio y el total. Owing da `owing`, Paid con medio da ese medio, y Paid sin medio o sin estado elegido no da nada. Un medio que haya quedado guardado con Owing elegido nunca se manda.
+  - Lo que viaja a la API es `{kind: "owing"}` o `{kind: "paid", payment_method_id}`, con el id de un Payment method que el negocio ofrece (docs/adr/20261111-payment-methods-by-id). En New sale lo deriva una función pura, `paymentChoiceOf` (`web/src/sales/pricing.ts`), a partir del estado Paid · Owing, el medio y el total. Owing da `{kind: "owing"}`, Paid con medio da `{kind: "paid", payment_method_id}`, y Paid sin medio o sin estado elegido no da nada. Un medio que haya quedado guardado con Owing elegido nunca se manda.
+  - Un medio archivado, eliminado, inexistente o de otro negocio responde 404 `payment_method.unavailable`, controlado dentro del mismo `INSERT … SELECT` que escribe el On-the-spot payment; la venta entera no se escribe (payment-methods.md).
 - **Cliente**:
   - Opcional solo cuando no queda nada debiendo.
   - Tiene que ser del mismo negocio; el cliente de otro negocio no se encuentra.
@@ -209,11 +213,11 @@ Criterios de éxito, Sale number:
   - No muestra el Sale number.
 - **Ver una**: el Sale number, fecha, cliente o ninguno, envío, nota, cómo se pagó, total, y de cada línea el producto, los gramos, el precio por gramo guardado, la Pricing rule (con la copia del nombre del tipo cuando la regla es la de un Customer type), el total de la línea y el Cost of goods sold (monto costeado y gramos pendientes). Trae también el Sale bill (abajo), o ninguno.
 - **Sale bill** (los hechos detrás del texto compartido):
-  - El nombre del negocio, el Sale number, la fecha, de cada línea el producto, la cantidad, el monto y la regla (bulk, gift o ninguna: lista, VIP, Customer type y Special price se leen todas como ninguna), con el precio unitario en las líneas con Bulk price; el Shipping charged; el total; el estado de pago (cash, transfer, paid, owed, none) con lo que todavía se debe de esta venta; y el Balance del cliente, o ninguno cuando la venta no tiene cliente.
+  - El nombre del negocio, el Sale number, la fecha, de cada línea el producto, la cantidad, el monto y la regla (bulk, gift o ninguna: lista, VIP, Customer type y Special price se leen todas como ninguna), con el precio unitario en las líneas con Bulk price; el Shipping charged; el total; el estado de pago (paid, owed, none) con lo que todavía se debe de esta venta; y el Balance del cliente, o ninguno cuando la venta no tiene cliente.
   - El nombre del negocio y los nombres de los productos son datos de la vendedora, y viajan exactamente como están guardados: nunca se escapan, se recortan ni se reescriben.
   - El estado de pago, lo que todavía se debe y el Balance salen de la única pasada de Settlement detrás del "still owing" del detalle, en la misma respuesta; nada vuelve a calcular el Settlement en otro lado.
   - El Balance es la cuenta entera del cliente al momento de leer el detalle, no en la fecha de la venta.
-  - Es cerrado: no tiene campo para la nota, el nombre o el id del cliente, ningún id de venta o de línea, la marca VIP, el Customer type ni su nombre, una Pricing rule que no sea bulk o gift, costo, margen ni link. El Sale number no es un id: es el número propio del negocio. El negocio sale solo de la sesión.
+  - Es cerrado: no tiene campo para la nota, el nombre o el id del cliente, ningún id de venta o de línea, la marca VIP, el Customer type ni su nombre, una Pricing rule que no sea bulk o gift, costo, margen, medio de pago ni link. El Sale number no es un id: es el número propio del negocio. El negocio sale solo de la sesión.
   - Cuando no se puede calcular, el detalle responde sin Sale bill y el resto del detalle no se ve afectado; el error nombra la regla incumplida y ninguna venta, cliente ni monto.
   - No se guarda ni se loguea nada de él.
 - **Borrar**:
@@ -234,6 +238,7 @@ Criterios de éxito, Sale number:
     - queda debiendo sin cliente;
     - nota demasiado larga;
     - asignar a una venta que ya tiene cliente;
+    - un medio que ya no se ofrece o de otro negocio (`payment_method.unavailable`, 404);
     - venta, cliente o producto de otro negocio (no existe).
 - **Aislamiento (ADR-0004)**:
   - El negocio sale de la sesión.
@@ -257,7 +262,7 @@ Criterios de éxito, Sale number:
   - una o más líneas. Cada línea tiene producto (elegido con el Selector, abajo), gramos, "Gift" y "Special price" (el total de la línea);
   - el Shipping charged;
   - la nota;
-  - cómo se pagó: Paid · Owing y, bajo Paid, el medio en el campo "Payment method" (Cash, Transfer).
+  - cómo se pagó: Paid · Owing y, bajo Paid, el medio en el campo "Payment method" (los medios del negocio).
 - **No hay campo de Sale number**: el número lo asigna la app al guardar, nunca lo tipea la vendedora.
 - **El total de la venta** se muestra con los gramos vendidos y los gramos regalados.
 - **Vista previa en vivo**:
@@ -281,17 +286,19 @@ Criterios de éxito, Sale number:
   - **Sin productos**: cuando el negocio no tiene productos para ofrecer, la lista abierta muestra el mensaje de `emptyStates.selectorNoVarieties` ("No products yet. Add them in the Products tab."). La línea no tiene botón para crear: un producto se crea en la pestaña Products. Cerrar la lista conserva la venta.
   - **Un producto que ya no se ofrece**: en una línea existente cuyo producto ya no se ofrece (archivado), el campo recibe `selected` con el nombre que trae la línea y lo muestra con la marca "no longer available"; la fila cerrada de la línea también muestra ese nombre. La lista nunca lo ofrece como elección nueva. El rechazo de esa línea conserva su texto y sigue impidiendo guardar. Elegir un producto ofrecido saca la marca.
   - **Nada se pierde**: la línea conserva el nombre accesible por línea, el traer a la vista al enfocar, el foco al agregar una línea y el rechazo ante un producto que ya no está.
-- **Cómo se pagó** (`SelectorPago`, desde la parte 5 de GH-581; el control del medio está en selector.md):
+- **Cómo se pagó** (`SelectorPago`, desde la parte 5 de GH-581; el control del medio está en selector.md y la lista en payment-methods.md):
   - **El estado**: "Paid · Owing" es un `SegmentedChoice` cuyas opciones salen de un Fixed set declarado en `fixedSets.ts` con el motivo "fixed set: payment state, which is not a method". Conserva el aspecto y el comportamiento de los botones de pago de antes; su único agregado es `touch-action: manipulation` y `user-select: none`, que no cambia cómo se ve. El estado deshabilitado y la descripción de cada opción viven en una capa aparte por valor (`optionState`), nunca en el Fixed set.
   - **Al abrir**: lo que la pantalla elegía al abrir para la opción vieja Cash lo elige ahora para Paid; el medio arranca siempre vacío.
-  - **El medio**: bajo Paid aparece un Selector obligatorio con la etiqueta "Payment method", la misma entrada del Copy module que usa Record payment (payments.md). Sus opciones son "Cash" y "Transfer", en ese orden. Salen de la única lista de opciones de medio, armada a partir del Copy module por `usePaymentMethodOptions()` (`web/src/sales/paymentMethods.ts`), que comparten New sale y Record payment. Esa lista nunca se declara en `fixedSets.ts`. El campo no tiene valor por defecto, ni opción "Select…", ni `placeholder`, ni fila para borrar: vacío, muestra solo su etiqueta. Con dos opciones la lista no tiene búsqueda.
+  - **El medio**: bajo Paid aparece un Selector obligatorio con la etiqueta "Payment method", la misma entrada del Copy module que usa Record payment (payments.md). Sus opciones son los medios ofrecidos del negocio (`GET /api/payment-methods`, sin caché vieja), en el orden que guarda el servidor; los valores son los ids y cada medio se muestra por su nombre, sin ícono. Salen de la única lista de opciones de medio, armada por `usePaymentMethodOptions()` (`web/src/sales/paymentMethods.ts`), que comparten New sale y Record payment. Esa lista nunca se declara en `fixedSets.ts`. El campo no tiene valor por defecto, ni opción "Select…", ni `placeholder`, ni fila para borrar: vacío, muestra solo su etiqueta. Con más de 8 medios ofrecidos, la lista tiene búsqueda.
+  - **Carga**: mientras la lista de medios no se cargó con éxito, el campo queda en `loading`: deshabilitado, con su esqueleto, nunca vacío ni con el texto de conjunto vacío.
+  - **La lista no carga** (decisión 21 del humano): sin conexión se muestra el aviso "Sin conexión" de Estados; con un error del servidor la lista dice "Could not load the payment methods. Tap to try again." y tocar el campo de nuevo vuelve a leerla. En los dos casos se conserva todo lo tipeado; si sigue fallando, la vendedora puede dejarla en Owing y registrar el pago después, o cerrar.
   - **Bajo Owing** el medio no se muestra ni se pide.
   - **Sin restos**: pasar de Paid a Owing y volver a Paid deja el medio vacío otra vez.
   - **En el teléfono**: la lista de medios es su propia entrada del historial, en el nivel 1 sobre el formulario, dentro del `SheetStackProvider` de `NuevaVenta`. Se dibuja en el mismo `listHost` que las listas de las líneas, fuera del formulario, que mientras tanto queda `inert`. Volver o "Close" con la lista abierta cierran solo la lista; nunca preguntan "Discard the sale?". Elegir un medio no cambia la condición de "Discard the sale?".
   - **En la computadora**: el desplegable del Selector con teclado; Escape cierra solo el desplegable.
   - **Sin medio al guardar**: con Paid y un total por encima de $0, "Save sale" sigue habilitado. Este control corre después de los rechazos de las líneas, del de "sin líneas" y del de envío. Tocar "Save sale" sin medio no guarda nada y no entra en el estado de guardado en curso. Muestra "Choose how they paid." junto al campo, con el **Attention icon** al lado (`FieldRefusal`), y lleva el foco de la vendedora al campo. La frase sale del Copy module y desaparece apenas se elige un medio. Una venta de $0 se guarda sin medio, como antes.
   - **Sin estado elegido**: si no está elegido ni Paid ni Owing, el guardado se rechaza como antes.
-  - Lo que se manda a la API no cambia: cash, transfer u owing.
+  - **Un medio que dejó de ofrecerse con el formulario abierto** (una socia lo archivó o lo eliminó): lo que se manda a la API es `{kind: "owing"}` o `{kind: "paid", payment_method_id}`, y un medio archivado, eliminado o de otro negocio responde 404 `payment_method.unavailable`. El formulario conserva todo lo tipeado, el campo muestra el medio elegido con la marca "no longer available" (en New sale solo la marca, sin frase propia) y la lista se vuelve a leer. Elegir un medio ofrecido saca la marca.
 - **Gift y Special price se excluyen**:
   - Elegir uno limpia y deshabilita el otro, y apagarlo libera el otro.
   - Special price no acepta $0.
@@ -343,7 +350,7 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
   - El campo de producto de la línea aparece en `NuevaVenta.dc.html` y `NuevaVentaOscuro.dc.html`.
   - Paid · Owing y, bajo Paid, el campo "Payment method" aparecen en los dibujos de computadora `NuevaVentaCompu`, `NuevaVentaClienteCompu` y sus versiones oscuras. Es el único cambio de esos dibujos.
   - Las listas abiertas no se dibujan: las juzga el chequeo `mobile`.
-  - El dibujo del paso de cobro del teléfono (`NuevaVentaCobrar`, `NuevaVentaCobrarOscuro`) no se actualizó. Todavía muestra un select "Cómo paga" con Efectivo por defecto, medios que la app no tiene, "Queda debiendo" como medio y una línea "10 % pagando en efectivo" sin regla escrita.
+  - El dibujo del paso de cobro del teléfono (`NuevaVentaCobrar`, `NuevaVentaCobrarOscuro`) no se actualizó. Todavía muestra chips "Cómo paga" con Efectivo por defecto, "Queda debiendo" como medio y una línea "10 % pagando en efectivo" sin regla escrita. Rige el campo Selector obligatorio de arriba (decisión 21 del humano).
   - El encabezado "Prices of <type>" del dibujo sugiere un solo juego de precios para toda la venta; la cotización es por línea, y gana esta definición.
   - Ante una diferencia, ganan esta definición y los ADRs (Drawing as guide).
 
@@ -419,7 +426,7 @@ Un Sale bill corto en texto plano de una venta, que la vendedora le manda al cli
    - regalo: `{product} {quantity} {unit} · Gift · $ 0`.
 3. `Shipping · {amount}`, solo cuando el Shipping charged está por encima de $0.
 4. Una línea en blanco, después `Total · {amount}`.
-5. La línea de pago: "Paid in cash" o "Paid by transfer" para un On-the-spot payment; "Paid" cuando se pagó entera después; `Still owed on this sale: {amount}` cuando todavía se debe algo de ella, en parte o entera; ninguna cuando el estado de pago es none.
+5. La línea de pago: "Paid" cuando la venta se pagó entera, en el momento o después, sin nombrar el medio; `Still owed on this sale: {amount}` cuando todavía se debe algo de ella, en parte o entera; ninguna cuando el estado de pago es none.
 6. La línea de Balance: `Your balance: {amount}` cuando el Balance está por encima de $0; `In your favor: {amount}` para un Credit, como su valor absoluto.
 
 **Líneas que pueden faltar**: el envío cuando es $0; la línea de pago cuando el estado es none; la línea de Balance cuando la venta no tiene cliente o el Balance es exactamente $0.
@@ -456,14 +463,14 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 ### Estado de carga compartido
 
 - En estas pantallas aplica al detalle de la venta, a la lista de Sales antes de su primera respuesta, a New sale mientras espera precios (al abrirse y al cambiar la fecha), a los resultados de Pick a customer antes de su primera respuesta, y al botón del Sale bill mientras carga el detalle.
-- El campo de producto de cada línea muestra mientras cargan los productos el estado de carga propio del Selector (selector.md), nunca el texto de conjunto vacío. El campo del medio nunca carga: su lista viene con la app.
+- El campo de producto de cada línea y el campo del medio muestran mientras cargan sus listas el estado de carga propio del Selector (selector.md), nunca el texto de conjunto vacío. La lista de medios viene del servidor desde la parte 24 de GH-318 (payment-methods.md).
 - No lleva ningún dígito, símbolo de moneda ni cifra de relleno (accounts.md, criterio 7).
 
 ### Chequeo en el teléfono
 
 - El chequeo `mobile` recorre la lista de productos de una línea de New sale abierta en el teléfono en el estado `new-sale/line-variety-selector-open` (`web/src/mobile-standard/statesSales.ts`), con 12 productos o más, así que la búsqueda se muestra. Los demás estados `new-sale/*` eligen el producto de la línea tocando el campo y después la opción.
 - El cambio al Selector borró de `autocomplete.json` las siete entradas `combobox:Line # product` que quedaron obsoletas (DescartarVenta, ElegirCliente, NuevaVenta, NuevaVentaCliente, NuevaVentaConLinea, NuevaVentaConLineaYPago y NuevoClienteEnVenta), y no agregó ningún infractor.
-- Desde la parte 5 de GH-581 recorre también la lista de medios abierta en el estado `new-sale/method-selector-open` (`statesSales.ts`). Los estados `new-sale/*` que eligen un medio, como `NuevaVentaConLineaYPago`, lo hacen con Paid, después el campo y después la opción.
+- Desde la parte 5 de GH-581 recorre también la lista de medios abierta en el estado `new-sale/method-selector-open` (`statesSales.ts`). Los estados `new-sale/*` que eligen un medio, como `NuevaVentaConLineaYPago`, lo hacen con Paid, después el campo y después la opción. Desde la parte 24 de GH-318 recorre además los estados del campo del medio cargando, con error del servidor, sin conexión y con un medio "no longer available".
 - El cambio del medio al Selector borró de `touch-action.json` las 21 entradas `radio:Cash`, `radio:Transfer` y `radio:Owing`: tres por cada estado DescartarVenta, ElegirCliente, NuevaVenta, NuevaVentaCliente, NuevaVentaConLinea, NuevaVentaConLineaYPago y NuevoClienteEnVenta. También borró cualquier otra entrada que dejó obsoleta y no agregó ningún infractor. Las celdas nuevas `radio:Paid` y `radio:Owing` pasan gracias al agregado de CSS de `SegmentedChoice`.
 - La insignia con el nombre de un Customer type se comprueba en un navegador con su propia corrida (`web/e2e/typeBadge.spec.ts`): un cliente en un tipo de nombre de 40 caracteres y una venta cotizada por él, en la vista previa de New sale y en el detalle, a 320 y a 246 px, sin desplazamiento horizontal, sin nombre que desborde y sin cifra partida. El fixture de muestra fijado no cambia, y el chequeo `mobile` del detalle a 246x437 no gana ningún infractor.
 
@@ -498,10 +505,10 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
   - registrar o borrar un pago.
 - **Sin sorpresa para los VIP existentes (criterio 19)**: después de la migración, para cada cliente del VIP type, el precio por gramo, el total y la insignia mostrada de una venta son iguales a los de antes, para el mismo producto, día y gramos: 0 diferencias. Un test cubre también una Price entry con VIP price seguida de otra sin VIP price: desde la segunda, el cliente paga lista o bulk, como antes. Las líneas viejas con la regla `vip` siguen diciendo "VIP".
 - **Una venta por pedido**: una venta de varios productos es una venta, con total = líneas redondeadas + envío una vez, por la API y por el formulario. (Criterios 2, 8)
-- **Todo o nada**: una venta rechazada deja 0 filas nuevas en ventas, líneas y pagos, y no consume Sale number. (Criterio 4)
+- **Todo o nada**: una venta rechazada deja 0 filas nuevas en ventas, líneas y pagos, y no consume Sale number; también cuando el rechazo es un medio que ya no se ofrece. (Criterio 4)
 - **Debiendo sin cliente**: 0 guardadas; el dominio lo rechaza y un test lo cubre. (Criterio 4)
 - **Borrar devuelve gramos**: después de borrar una venta, el stock de sus productos sube exactamente los gramos de sus líneas, y la respuesta los nombra. La confirmación de Delete sale nombra los gramos, y el aviso de Undo dice que vuelven.
-- **Cobertura de aislamiento**: cada ruta de ventas está en el barrido y responde 404 o vacío desde otro negocio, incluidas referencias a un cliente o un producto de otro negocio; un Customer-type price de otro negocio nunca cotiza una línea. En pantalla, la venta de otro negocio abierta por id muestra "That is gone." (Criterio 5)
+- **Cobertura de aislamiento**: cada ruta de ventas está en el barrido y responde 404 o vacío desde otro negocio, incluidas referencias a un cliente, un producto o un Payment method de otro negocio; un Customer-type price de otro negocio nunca cotiza una línea. En pantalla, la venta de otro negocio abierta por id muestra "That is gone." (Criterio 5)
 - **Sin eco**: (Criterio 5)
   - ningún cuerpo de rechazo ni línea de log contiene la nota, el nombre de un cliente ni un monto enviado;
   - después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen ninguno.
@@ -538,14 +545,15 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - **Producto de una línea, carga y conjunto vacío (criterio 32)**: mientras cargan los productos, y con la consulta fallida, el campo tiene `aria-busy`, sin texto, y la lista no se abre; sin productos, la lista abierta muestra "No products yet. Add them in the Products tab." y cerrarla conserva la venta.
 - **Producto de una línea, agregar una línea**: agregar una línea le da el foco a su campo de producto sin abrir la lista.
 - **Chequeo en el teléfono, producto de una línea**: `new-sale/line-variety-selector-open` pasa el chequeo `mobile` sin ningún infractor nuevo, y no queda ninguna entrada `combobox:Line # product` obsoleta.
-- **Medio, es un Selector (criterio 34)**: un test del front (`SelectorPago.test.tsx`, `NuevaVenta.method.test.tsx`) muestra bajo Paid el campo "Payment method" con exactamente Cash y Transfer, ningún grupo de radio ni botón `aria-pressed` con los medios y ninguna fila para borrar; bajo Owing el campo no está.
+- **Medio, es un Selector (criterio 34)**: un test del front (`SelectorPago.test.tsx`, `NuevaVenta.method.test.tsx`) muestra bajo Paid el campo "Payment method" con exactamente los medios ofrecidos del negocio (en el test, Cash y Transfer), ningún grupo de radio ni botón `aria-pressed` con los medios y ninguna fila para borrar; bajo Owing el campo no está.
 - **Medio, sin medio no se guarda (criterio 34)**: con Paid, total por encima de $0 y sin medio, tocar "Save sale" no hace ningún pedido a la API, no entra en el estado de guardado en curso y muestra "Choose how they paid." con el Attention icon junto al campo, que recibe el foco; elegir un medio saca la frase. Una venta de $0 con Paid se guarda sin medio.
-- **Medio, valor enviado (criterio 34)**: tests unitarios de `paymentChoiceOf` y `validateSale` (`pricing.test.ts`) cubren cada valor que viaja (cash, transfer, owing), el caso de $0, un medio que quedó guardado con Owing elegido (nunca se manda) y Owing sin cliente.
+- **Medio, valor enviado (criterio 34)**: tests unitarios de `paymentChoiceOf` y `validateSale` (`pricing.test.ts`) cubren cada valor que viaja (paid con `payment_method_id`, owing), el caso de $0, un medio que quedó guardado con Owing elegido (nunca se manda) y Owing sin cliente.
 - **Medio, sin restos (criterio 34)**: elegir Transfer, pasar a Owing y volver a Paid deja el campo vacío.
+- **Medio, ya no se ofrece**: un test del front con un guardado respondido 404 `payment_method.unavailable` conserva lo tipeado y marca el campo "no longer available"; un test de API manda un medio archivado, eliminado, inexistente y de otro negocio y no escribe ninguna fila.
 - **Medio, volver y Escape (criterio 35)**: con la lista de medios abierta, volver o "Close" cierran solo la lista y "Discard the sale?" no aparece; en la computadora, Escape cierra solo el desplegable.
 - **Medio, nada se pierde (criterio 36)**: sin cliente, Owing está deshabilitado con "To leave it owing, pick a customer"; los tests existentes de Owing pasan con sus aserciones sin cambios; el `FixedSet` de Paid · Owing declara su motivo y ningún medio está en `fixedSets.ts`.
 - **Chequeo en el teléfono, medio (criterio 36)**: `new-sale/method-selector-open` pasa el chequeo `mobile` sin ningún infractor nuevo, y no queda ninguna entrada `radio:Cash`, `radio:Transfer` ni `radio:Owing` en `touch-action.json`.
-- **Juego de referencia del Sale bill (criterio 21)**: `saleBill.cases.json`, con los textos esperados escritos a mano contra esta definición, nunca generados; 0 diferencias. Casos: con y sin línea con Bulk price; una línea VIP, una cotizada por un Customer type y una con Special price que se leen como líneas de lista; un regalo; una venta de $0 solo de regalos con Balance distinto de cero; efectivo, transferencia, pagada después, debiendo en parte, debiendo entera; un Balance, un Credit y un Balance de exactamente $0; sin cliente; con y sin envío; una línea y varias líneas; cantidades 0,01, 0,1, 1,05 y 1000; un producto cuyo nombre tiene `*`, `_` y una comilla invertida, mostrado sin cambios; Sale #1 y un Sale number de cuatro cifras sin separador de miles, en la línea `Sale #N · dd/mm`.
+- **Juego de referencia del Sale bill (criterio 21)**: `saleBill.cases.json`, con los textos esperados escritos a mano contra esta definición, nunca generados; 0 diferencias. Casos: con y sin línea con Bulk price; una línea VIP, una cotizada por un Customer type y una con Special price que se leen como líneas de lista; un regalo; una venta de $0 solo de regalos con Balance distinto de cero; pagada en el momento con cualquier medio (siempre `paid`, sin nombrar el medio), pagada después, debiendo en parte, debiendo entera; un Balance, un Credit y un Balance de exactamente $0; sin cliente; con y sin envío; una línea y varias líneas; cantidades 0,01, 0,1, 1,05 y 1000; un producto cuyo nombre tiene `*`, `_` y una comilla invertida, mostrado sin cambios; Sale #1 y un Sale number de cuatro cifras sin separador de miles, en la línea `Sale #N · dd/mm`.
 - **Formato de cantidades (criterio 21)**: `formatQuantity` da 1 → "0,01", 10 → "0,1", 105 → "1,05", 350 → "3,5", 100000 → "1.000" a partir de centésimos enteros; los tests existentes de `formatGrams` pasan sin editarlos.
 - **Test de filtraciones del Sale bill (criterio 22)**: con nombres de negocio y de productos sin `*`, `_` ni comillas invertidas, ningún texto de los casos contiene la nota, el nombre del cliente, el nombre de su Customer type, "VIP", "special", "list", un id (el `sale.id` incluido), "http", `*`, `_` ni una comilla invertida; el esquema del Sale bill en la API es cerrado y no tiene ningún campo así.
 - **Contrato cumplido**: un vitest lee los esquemas `SaleBillOut` de `tests/fixtures/openapi_snapshot.json` y verifica que sus nombres de propiedad y sus enums son iguales a las listas de claves del front, el Sale number incluido; el front y la API nunca se separan.
@@ -562,7 +570,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 
 - Pagos posteriores y parciales, Balances, **Owing since** y Credit: `payments.md`.
 - Rechazar una venta por falta de stock: nunca (ADR-0009).
-- Editar una venta: se borra y se registra de nuevo.
+- Editar una venta: se borra y se registra de nuevo. Eso incluye cambiar el medio de un On-the-spot payment.
 - Pasar una venta de un cliente a otro o sacarle el cliente.
 - Borradores o guardado automático de una venta.
 - Profit y Cash en Sales: la capacidad de resultados.
@@ -574,10 +582,10 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - Otras reglas VIP (un porcentaje sobre lista); promociones de precio por fecha.
 - Rechazar o avisar en una venta porque las Pricing settings cambiaron en medio de la venta.
 - Para los precios por Customer type: una pantalla para fijarlos o gestionarlos fuera del campo "VIP price" de una Price entry (la parte de la pantalla de precios por tipo); un aviso cuando un List price baja hasta un Customer-type price; volver a cotizar líneas registradas.
-- Para el Sale bill: un año en la fecha; un paso de vista previa; un estado de "ya compartido"; un recibo de pago; elegir un canal o enviar desde la app; una factura; escapar o reescribir los nombres que tipeó la vendedora para el formato de alguna app de chat; hacer configurable la unidad (#318); cualquier otro idioma (#317).
+- Para el Sale bill: un año en la fecha; un paso de vista previa; un estado de "ya compartido"; un recibo de pago; el nombre del medio de pago; elegir un canal o enviar desde la app; una factura; escapar o reescribir los nombres que tipeó la vendedora para el formato de alguna app de chat; hacer configurable la unidad (#318); cualquier otro idioma (#317).
 - Para el Sale number: buscar o filtrar ventas por número; mostrarlo en Sales, en la historia del cliente, en Home o en Analysis; el resto del rediseño del detalle de la venta (#530) y la línea "por Telegram" del dibujo (un hallazgo aparte, y un canal choca con Assume nothing); el `sale.id` global que ya lleva el camino del detalle (`/sales/{sale_id}`), un hallazgo aparte con su propio issue.
 - Para el producto de una línea: crear un producto desde la línea (se crea en la pestaña Products); cambiar el texto de "elegir un producto", el nombre accesible, el mensaje de conjunto vacío o el rechazo; abrir la lista sola al agregar una línea; saltar solo a los gramos después de elegir; dibujar la lista abierta en `pantallas/`.
-- Para el medio de pago: hacer configurables los Payment methods (GH-318); recordar el último medio o proponer uno por defecto; cambiar lo que se guarda o lo que viaja a la API; cambiar el estado Paid · Owing más allá de cómo está construido; dibujar la lista abierta en `pantallas/`; un descuento por medio de pago como el "10 % pagando en efectivo" del dibujo del paso de cobro, que no tiene regla escrita.
+- Para el medio de pago: gestionar la lista (vive en payment-methods.md); informes por medio (Cash separado por medio, totales por medio); recordar el último medio o proponer uno por defecto; el ícono del medio dentro del Selector; cambiar el estado Paid · Owing más allá de cómo está construido; dibujar la lista abierta en `pantallas/`; un descuento por medio de pago como el "10 % pagando en efectivo" del dibujo del paso de cobro, que no tiene regla escrita.
 
 ## Planeado en GH-318
 
@@ -590,7 +598,7 @@ Cada pasaje nombra el ADR que lo decide, la parte que lo va a entregar y la fras
 Decidido en docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; lo entrega la parte units.
 
 - La cantidad de una línea va a estar en la unidad de su producto, guardada como un número entero de centésimos sea cual sea la unidad; los 0 a 2 decimales de la unidad solo van a validar lo tipeado y decidir cómo se muestra. El pie y el total de la venta van a mostrar la cantidad vendida y la cantidad regalada como un monto por unidad, cada uno con su etiqueta, nunca sumados entre unidades.
-- Va a reemplazar: "Tiene un producto del mismo negocio y gramos por encima de cero, con a lo sumo dos decimales, sea cual sea su regla." y "**El total de la venta** se muestra con los gramos vendidos y los gramos regalados."
+- Reemplazó: "Tiene un producto del mismo negocio y gramos por encima de cero, con a lo sumo dos decimales, sea cual sea su regla." y "**El total de la venta** se muestra con los gramos vendidos y los gramos regalados."
 
 ### Money scale
 
@@ -598,13 +606,6 @@ Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-an
 
 - Los montos van a viajar en unidades de moneda como Decimal y se van a guardar en la escala del negocio (0 o 2). El redondeo con la mitad hacia arriba de una línea va a pasar por un único helper, `round_half_up`, que la parte money crea en `app/shared/money.py`; subir los decimales de un negocio no va a cambiar el valor de ningún monto registrado.
 - Va a reemplazar: "**Special price**: el total tipeado para la línea, en pesos enteros y por encima de $0.", "gramos × el precio por gramo guardado, redondeado al peso entero más cercano, con la mitad exacta hacia arriba" y "**Shipping charged**: pesos enteros, cero o más, $0 por defecto."
-
-### Payment method
-
-Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; lo entrega la parte payment methods.
-
-- Los Payment methods van a ser la lista propia del negocio; un negocio nuevo va a empezar con "Cash" y "Transfer", y uno existente va a conservar los dos. El campo "Payment method" ya es un Selector (parte 5 de GH-581): la parte payment methods reemplaza solo la fuente de sus opciones (`usePaymentMethodOptions()`), y agrega el mensaje de conjunto vacío que nombra el lugar donde se crean los medios.
-- Va a reemplazar: "cómo se pagó: Paid · Owing y, bajo Paid, el medio en el campo \"Payment method\" (Cash, Transfer).", "Sus opciones son \"Cash\" y \"Transfer\", en ese orden" y "**Pagada entera en el momento, en efectivo o por transferencia.**" ("Owing" sigue siendo un estado, no un medio).
 
 ### Business time zone
 

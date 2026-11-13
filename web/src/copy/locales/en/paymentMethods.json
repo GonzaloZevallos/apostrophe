@@ -1,0 +1,58 @@
+{
+  "title": "Payment methods",
+  "group": {
+    "title": "Payments and expenses",
+    "row": "Payment methods"
+  },
+  "list": {
+    "add": "Add method",
+    "archivedEntry": "Archived",
+    "moveUp": "Move {{name}} up",
+    "moveDown": "Move {{name}} down",
+    "moveUpShort": "Up",
+    "moveDownShort": "Down",
+    "delete": "Delete",
+    "archive": "Archive",
+    "deleteConfirm": "Delete {{name}} for good?",
+    "archiveConfirm": "Archive {{name}}? It stops being offered for new payments. Past payments keep showing it.",
+    "keepIt": "Keep it",
+    "lastOffered": "You need at least one payment method. Add another one first.",
+    "retry": "Try again",
+    "moveFailed": "Couldn't move it. Try again.",
+    "loadError": "Couldn't load your payment methods.",
+    "editNamed": "Edit {{name}}",
+    "archiveNamed": "Archive {{name}}",
+    "deleteNamed": "Delete {{name}}"
+  },
+  "form": {
+    "titleNew": "New payment method",
+    "titleEdit": "Edit payment method",
+    "nameLabel": "Name",
+    "iconLabel": "Icon",
+    "renameNotice": "Past payments will show the new name.",
+    "save": "Save",
+    "errorRequired": "Give the method a name.",
+    "errorTooLong": "Use 60 characters or fewer.",
+    "errorTaken": "You already have a method with that name.",
+    "errorTakenArchived": "An archived method already has that name. Restore it from Archived.",
+    "discardTitle": "Discard the changes?",
+    "discardConfirm": "Discard",
+    "discardKeep": "Keep editing",
+    "errorRefused": "Check the details and try again."
+  },
+  "archived": {
+    "title": "Archived payment methods",
+    "restore": "Restore",
+    "restoreNamed": "Restore {{name}}"
+  },
+  "icon": {
+    "banknote": "Cash",
+    "coins": "Coins",
+    "card": "Card",
+    "bank": "Bank",
+    "phone": "Phone",
+    "wallet": "Wallet",
+    "qr": "QR code",
+    "other": "Other"
+  }
+}

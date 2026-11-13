@@ -12,8 +12,9 @@ from app.payments.application.errors import CustomerNotFound
 from app.payments.application.ports import Ledgers, MoneyFormatReader, Payments
 from app.payments.domain.payment import PaymentCandidate, PaymentMethodRequired
 from app.payments.domain.payment import settle_candidate as domain_settle_candidate
-from app.payments.domain.settlement import PaymentMethod, Split, Standing
+from app.payments.domain.settlement import Split, Standing
 from app.shared.money import domain_amount_within
+from app.shared.payment_method import PaymentMethodId
 from app.shared.transaction import Transaction
 
 
@@ -70,7 +71,7 @@ class RecordedPayment:
     id: int
     paid_on: date
     amount: int
-    method: PaymentMethod
+    method: PaymentMethodId
     outcome: CandidateOutcome
 
 
@@ -82,7 +83,7 @@ def record_payment(
     customer_id: int,
     paid_on: date,
     amount: Decimal,
-    method: PaymentMethod | None,
+    method: PaymentMethodId | None,
     today: date,
     recorded_at: datetime,
 ) -> RecordedPayment:

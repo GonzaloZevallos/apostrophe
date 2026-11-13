@@ -9,6 +9,7 @@
  * (`shell/BackArrow.tsx`): Inicio on both widths.
  */
 
+import { useTranslation } from 'react-i18next'
 import { useOutletContext } from 'react-router'
 import type { Me } from '../../api/me'
 import Icono, { type NombreIcono } from '../../components/Icono'
@@ -20,6 +21,7 @@ import {
   SETTINGS_BUSINESS,
   SETTINGS_CATALOG_MESSAGE,
   SETTINGS_INTEGRATIONS,
+  SETTINGS_PAYMENTS,
   SETTINGS_PRICES,
   SETTINGS_USERS,
 } from '../../routes'
@@ -27,10 +29,13 @@ import { COMMON_TEXT } from '../../copy/common'
 import { INTEGRATIONS_LINK_WORD } from '../../copy/pinnedCatalog'
 import ContentArea from '../../components/ContentArea'
 
-const GROUPS: readonly { to: string; label: string; icon: NombreIcono }[] = [
+const PAYMENTS_GROUP_KEY = 'paymentMethods:group.title'
+
+const GROUPS: readonly { to: string; label: string | typeof PAYMENTS_GROUP_KEY; icon: NombreIcono }[] = [
   { to: SETTINGS_BUSINESS, label: COMMON_TEXT.business, icon: 'negocio' },
   { to: SETTINGS_USERS, label: COMMON_TEXT.users, icon: 'usuarios' },
   { to: SETTINGS_PRICES, label: COMMON_TEXT.prices, icon: 'precio' },
+  { to: SETTINGS_PAYMENTS, label: PAYMENTS_GROUP_KEY, icon: 'tarjeta' },
   { to: SETTINGS_INTEGRATIONS, label: INTEGRATIONS_LINK_WORD, icon: 'integraciones' },
   { to: SETTINGS_CATALOG_MESSAGE, label: COMMON_TEXT.catalogMessage, icon: 'mensaje' },
   { to: EXPENSE_CATEGORIES, label: COMMON_TEXT.expenseCategories, icon: 'categorias' },
@@ -39,6 +44,7 @@ const GROUPS: readonly { to: string; label: string; icon: NombreIcono }[] = [
 ]
 
 export default function Settings() {
+  const { t } = useTranslation()
   const me = useOutletContext<Me>()
 
   return (
@@ -54,7 +60,9 @@ export default function Settings() {
               <span className="ajustes__item-icono">
                 <Icono nombre={group.icon} />
               </span>
-              <span className="ajustes__item-rotulo">{group.label}</span>
+              <span className="ajustes__item-rotulo">
+                {group.label === PAYMENTS_GROUP_KEY ? t(PAYMENTS_GROUP_KEY) : group.label}
+              </span>
               <span className="ajustes__item-flecha">
                 <Icono nombre="chevron" />
               </span>

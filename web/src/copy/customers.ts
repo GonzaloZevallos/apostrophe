@@ -33,8 +33,8 @@ export const CUSTOMERS_TEXT = {
   owesYouSince: 'owes you since ',
   saveAndUse: 'Save and use',
   discardTheCustomer: 'Discard the customer?',
-  paidInCash: 'Paid in cash',
-  paidByTransfer: 'Paid by transfer',
+  paid: 'Paid',
+  paidWith: (method: string | number) => `Paid · ${method}`,
   leftOwing: 'Left owing',
   deletePaymentOf: (amount: string | number, method: string | number, paid_on: string | number) => `Delete the payment of ${amount} (${method}) from ${paid_on}?`,
   saleTitle: SHELL_TEXT.sale,
@@ -75,8 +75,6 @@ export const CUSTOMERS_TEXT = {
   phoneTaken: 'That phone number already belongs to another customer',
   searchCustomer: 'Search customer',
   searching: 'Searching…',
-  methodCash: 'cash',
-  methodTransfer: 'transfer',
   typeLabel: 'Customer type',
   typeNone: 'No type',
   typeNotice: 'Add a customer type',
@@ -140,7 +138,8 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: CUSTOMERS_TEXT.saleTitle },
   { kind: 'help', text: CUSTOMERS_TEXT.nothingToPay },
   { kind: 'help', text: CUSTOMERS_TEXT.accountHeading },
-  { kind: 'help', text: CUSTOMERS_TEXT.paymentTitle(CUSTOMERS_TEXT.methodTransfer) },
+  { kind: 'help', text: CUSTOMERS_TEXT.paymentTitle(SAMPLES.name) },
+  { kind: 'help', text: CUSTOMERS_TEXT.paidWith(SAMPLES.name) },
   { kind: 'help', text: CUSTOMERS_TEXT.onAccountOf(SAMPLES.date) },
 ]
 
@@ -151,6 +150,7 @@ const { money: M, date: D } = FIXTURE
 export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'CUSTOMERS_TEXT.deletePaymentOf': [[M, 'cash', D]],
   'CUSTOMERS_TEXT.paymentTitle': [['cash']],
+  'CUSTOMERS_TEXT.paidWith': [['cash']],
   'CUSTOMERS_TEXT.onAccountOf': [[D]],
   'CUSTOMERS_TEXT.creditAmount': [[M]],
   'CUSTOMERS_TEXT.balanceAmount': [[M]],

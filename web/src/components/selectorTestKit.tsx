@@ -5,6 +5,7 @@
  * note in `docs/product/selector.md`).
  */
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import type { UserEvent } from '@testing-library/user-event'
 import type { ReactNode } from 'react'
@@ -20,6 +21,24 @@ const FORM_TITLE = 'The form'
 const EARLIER_TITLE = 'Before the form'
 
 export const submitSpy = vi.fn()
+
+/** The business's offered methods as `GET /api/payment-methods` answers them. */
+export const PAYMENT_METHODS_LIST = [
+  { id: 1, name: 'Cash', icon: 'banknote', position: 1, in_use: false },
+  { id: 2, name: 'Transfer', icon: 'bank', position: 2, in_use: false },
+]
+
+/** A `fetch` answering the methods list with `PAYMENT_METHODS_LIST` and nothing else. */
+export function stubPaymentMethodsFetch(): void {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(() =>
+      Promise.resolve(
+        new Response(JSON.stringify(PAYMENT_METHODS_LIST), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+      ),
+    ),
+  )
+}
 
 export function numbered(count: number): SelectorOption[] {
   return Array.from({ length: count }, (_unused, index) => ({
@@ -56,9 +75,11 @@ export function renderForm(ui: ReactNode, { level = 0 }: { level?: number } = {}
     { initialEntries: ['/afuera', '/'], initialIndex: 1 },
   )
   const view = render(
-    <SheetRouterProvider router={router}>
-      <RouterProvider router={router} />
-    </SheetRouterProvider>,
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
+    </QueryClientProvider>,
   )
   return { router, depth: () => sheetDepth(router.state.location.state), ...view }
 }

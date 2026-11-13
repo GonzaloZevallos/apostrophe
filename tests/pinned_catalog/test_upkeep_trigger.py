@@ -189,7 +189,10 @@ def test_a_variety_selling_out_and_coming_back_triggers_edits(
 
     sale = client.post(
         "/sales",
-        json={"lines": [{"product_id": sellable["id"], "quantity": "10"}], "payment": "cash"},
+        json={
+            "lines": [{"product_id": sellable["id"], "quantity": "10"}],
+            "payment": {"kind": "paid", "payment_method_id": 1},
+        },
     )
     assert sale.status_code == 201, sale.text  # sells all the stock: now sold out
 

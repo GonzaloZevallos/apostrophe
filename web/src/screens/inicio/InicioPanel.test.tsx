@@ -24,6 +24,7 @@ import CobroRoute from '../clientes/CobroRoute'
 import Inicio from '../Inicio'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
 import { baselineText } from '../../i18n/testing'
+import { METHODS_ANSWER } from '../../test-payment-methods'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
@@ -93,7 +94,7 @@ const OWING_ACCOUNT = {
       date: '2026-09-14',
       running_balance: 11000,
       standing: 'owes',
-      sale: { id: 10, total: 11000, how_paid: 'owing' },
+      sale: { id: 10, total: 11000, how_paid: 'owing', payment_method: null },
     },
   ],
 }
@@ -157,6 +158,7 @@ beforeEach(() => {
   api.mockImplementation((input, init) => {
     const url = String(input)
     const method = init?.method ?? 'GET'
+    if (url === '/api/payment-methods') return Promise.resolve(jsonResponse(200, METHODS_ANSWER))
     if (url === '/panel') return Promise.resolve(jsonResponse(200, panelNow))
     if (url === '/api/products') return Promise.resolve(jsonResponse(200, [{ current_price: { id: 1 } }]))
     if (url === '/pinned-catalog/status') return Promise.resolve(jsonResponse(200, { status: null }))

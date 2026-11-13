@@ -16,6 +16,7 @@ import { router as appRouter } from '../../router'
 import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, pathTo } from '../../routes'
 import type { Viewport } from '../../routes'
 import { renderWithViewport } from '../../test-viewport'
+import { withPaymentMethods } from '../../test-payment-methods'
 
 const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', money: { symbol: '$', decimals: 0 } }
 const OWING = { id: 1, name: 'Ana Pérez', phone: '+5491122334455', phone_display: '+54 9 11 2233-4455', vip: false, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }
@@ -23,11 +24,11 @@ const ACCOUNT = {
   balance: 11000,
   owing_since: '2026-09-14',
   standing: 'owes',
-  rows: [{ kind: 'sale', date: '2026-09-14', running_balance: 11000, standing: 'owes', sale: { id: 10, total: 11000, how_paid: 'owing' } }],
+  rows: [{ kind: 'sale', date: '2026-09-14', running_balance: 11000, standing: 'owes', sale: { id: 10, total: 11000, how_paid: 'owing', payment_method: null } }],
 }
 const DEBTORS = { total_owed: 11000, sales_owing_count: 1, debtors: [{ customer: { id: 1, name: 'Ana Pérez' }, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }] }
 const PREVIEW = {
-  payment: { id: 5, paid_on: '2026-10-03', amount: 5000, method: 'cash' },
+  payment: { id: 5, paid_on: '2026-10-03', amount: 5000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
   applied_to: [{ sale_id: 10, sale_date: '2026-09-14', amount: 5000 }],
   after: { balance: 6000, owing_since: '2026-09-14', standing: 'owes' },
 }
@@ -56,10 +57,10 @@ function renderApp(pathname: string, viewport: Viewport) {
   }
   vi.stubGlobal(
     'fetch',
-    vi.fn((url: string, init?: RequestInit) => {
+    vi.fn(withPaymentMethods((url: string, init?: RequestInit) => {
       const answer = table[`${init?.method ?? 'GET'} ${url}`]
       return Promise.resolve(answer === undefined ? json(404, {}) : answer())
-    }),
+    })),
   )
   const router = createMemoryRouter(appRouter.routes, { initialEntries: [{ pathname: HOME }, { pathname }], initialIndex: 1 })
   renderWithViewport(viewport, () =>

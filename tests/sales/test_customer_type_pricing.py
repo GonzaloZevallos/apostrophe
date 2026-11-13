@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.customer_types.adapters.tables import CustomerTypePriceRow, CustomerTypeRow
 from app.customers.adapters.tables import CustomerRow
+from tests.payment_body import payment_body
 from tests.pricing_switches import set_switches
 from tests.vip_type import make_type, price_type, put_in_type
 
@@ -38,7 +39,7 @@ def _sell(
 ) -> dict[str, Any]:
     body: dict[str, Any] = {
         "date": day,
-        "payment": "cash",
+        "payment": payment_body("cash", client),
         "lines": [{"product_id": product_id, "quantity": quantity}],
     }
     if customer_id is not None:

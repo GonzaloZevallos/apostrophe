@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "screen": "ConfiguracionCobros",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 60
+  }
+]

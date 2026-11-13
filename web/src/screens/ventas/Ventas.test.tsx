@@ -130,7 +130,7 @@ test("the period's total and count are the sum and the number of sales shown", a
         customer: { id: 5, name: 'Nico', vip: true },
         shipping_charged: 0,
         note: null,
-        payment: 'cash',
+        payment: 'paid',
         total: 6000,
         lines: [
           { product_id: 1, product_name: 'Blue Dream', quantity: 5, pricing_rule: 'list', price_per_gram: 1200, line_total: 6000 },
@@ -222,7 +222,7 @@ test('a sale still owing shows its total in amber with "owes you" under it, from
 
 test('a sale paid in full shows no "owes you" mark', async () => {
   api.mockResolvedValue(
-    jsonResponse(200, [{ ...saleFixture, payment: 'cash', still_owing: false }]),
+    jsonResponse(200, [{ ...saleFixture, payment: 'paid', still_owing: false }]),
   )
   renderVentas()
 

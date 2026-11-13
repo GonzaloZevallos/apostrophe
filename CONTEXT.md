@@ -116,9 +116,13 @@ _In the app_: Note
 _Avoid_: comment, description, memo
 
 **Payment**:
-El dinero que un Customer entrega en una fecha, en efectivo o por transferencia, sin Note. Puede ser un On-the-spot payment registrado con su Sale, o un Payment posterior registrado mediante Record payment, que se abre con "Collect" en una fila de deudor de Customers o Home o desde la ficha del Customer. Su fecha, monto y método nunca cambian; se elimina y se vuelve a registrar, nunca se edita. _In the app_: Payment.
+El dinero que un Customer entrega en una fecha, con uno de los Payment methods de su Business, sin Note. Puede ser un On-the-spot payment registrado con su Sale, o un Payment posterior registrado mediante Record payment, que se abre con "Collect" en una fila de deudor de Customers o Home o desde la ficha del Customer. Su fecha, monto y medio nunca cambian; se elimina y se vuelve a registrar, nunca se edita. _In the app_: Payment.
 _Avoid_: collection, settlement, receipt, abono
 _In the app_: Payment
+
+**Payment method**:
+Una forma en que le pagan a un Business, de su lista propia: un nombre único en el Business (sin importar mayúsculas ni espacios, archivados incluidos, hasta 60 caracteres), un ícono de un conjunto fijo y neutro y una posición. Todo Business arranca con "Cash" y "Transfer", medios comunes que se renombran, reordenan, archivan o eliminan como cualquiera; uno con Payments solo se archiva, y el último ofrecido no se puede sacar. Un Payment apunta a su medio por id, así que muestra su nombre actual (ADR-20261111-payment-methods-by-id). _In the app_: Payment method.
+_Avoid_: payment type, channel, Owing, paid later
 
 **Balance**:
 Lo que debe un Customer: lo que compró y no pagó, menos sus Payments; se calcula en el momento. Un Payment posterior siempre salda primero la deuda más antigua. Menor que cero es un Credit. _In the app_: Owes you.
@@ -265,7 +269,7 @@ El texto propio de un Business que abre y cierra el Catalog, de varias líneas y
 _Avoid_: title, signature, intro, outro
 
 **On-the-spot payment**:
-El Payment registrado junto con una Sale pagada por completo en efectivo o por transferencia. Salda solo esa Sale, nunca una deuda más antigua, y se elimina solo junto con su Sale. _In the app_: Paid in cash / Paid by transfer.
+El Payment registrado junto con una Sale pagada por completo con uno de los Payment methods del Business. Salda solo esa Sale, nunca una deuda más antigua, y se elimina solo junto con su Sale. _In the app_: Paid · <método>.
 _Avoid_: cash sale, immediate payment
 
 **Settlement**:
@@ -387,7 +391,7 @@ Una pantalla que muestra la barra (o la barra lateral) y "+ New sale": Home, Sal
 _Avoid_: home, main screen, section, More
 
 **Settings**:
-El único lugar que reúne cada configuración de todo el Business, en grupos: Business (con sus Withdrawal reasons y su Currency and decimals), Users, Prices, Integrations, Catalog message, Expense categories, Appearance y Your account. La configuración de un solo Product vive en el Product, nunca acá, y nada del Operator está acá. _In the app_: Settings.
+El único lugar que reúne cada configuración de todo el Business, en grupos: Business (con sus Withdrawal reasons y su Currency and decimals), Users, Prices, Payments and expenses (con sus Payment methods), Integrations, Catalog message, Expense categories, Appearance y Your account. La configuración de un solo Product vive en el Product, nunca acá, y nada del Operator está acá. _In the app_: Settings.
 _Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group)
 
 **First-run checklist**:
@@ -545,10 +549,6 @@ _Avoid_: locale, region
 El precio por gramo que paga un Customer type por un Product, guardado como una fila con fecha de vigencia que nunca se edita, opcionalmente atada a la Price entry con la que se guardó. Rige la fila más reciente en esa fecha o antes, y una atada a una Price entry rige solo mientras esa Price entry es el Current price. Es un entero mayor que $0 y menor que el List price de su fecha; en esta parte solo se fija el del VIP type, con el campo "VIP price" de una Price entry. _In the app_: VIP price (para el VIP type); en una línea, el nombre del tipo.
 _Avoid_: tier price, group price, discount, VIP price column
 
-**Payment method**:
-Una forma de pagar de un Customer, definida por el vendedor. Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; a cargo de la parte payment methods.
-_Avoid_: payment type, channel
-
 **Applied promotion**:
 Una Promotion tal como estaba una Sale cuando se guardó, registrada como filas tipadas que nunca se vuelven a calcular. Decidido en docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; a cargo de la parte promotions-at-sale-time, que también define en qué se diferencia de una Promotion.
 _Avoid_: discount line, coupon
@@ -600,7 +600,7 @@ El único control para elegir una opción de un Growable set: un campo con etiqu
 _Avoid_: dropdown, picker, select, chooser, combobox, chips
 
 **Growable set**:
-Un conjunto que puede tener una opción con la que la app no vino, hoy o por una decisión ya tomada, como los Products, las Expense categories, los Withdrawal reasons, los Customer types y, con GH-318, los Payment methods. Siempre se elige con el Selector, nunca con chips. En la app: no tiene palabra propia.
+Un conjunto que puede tener una opción con la que la app no vino, hoy o por una decisión ya tomada, como los Products, las Expense categories, los Withdrawal reasons, los Customer types y los Payment methods. Siempre se elige con el Selector, nunca con chips. En la app: no tiene palabra propia.
 _Avoid_: dynamic list, open set, custom list, user list
 
 **Fixed set**:

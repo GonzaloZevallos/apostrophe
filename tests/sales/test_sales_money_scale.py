@@ -33,6 +33,7 @@ from app.shared.quantity import Quantity
 from tests.conftest import NOW
 from tests.fakes.money_format import WholeAmounts
 from tests.money_wire import assert_money_is_int
+from tests.payment_body import payment_body
 from tests.vip_type import make_type
 
 DAY = "2026-10-02"
@@ -75,9 +76,9 @@ def _sell(client: TestClient, product_id: int, **body: Any) -> dict[str, Any]:
         "/sales",
         json={
             "lines": [{"product_id": product_id, "quantity": "2"}],
-            "payment": "cash",
+            "payment": {"kind": "paid", "payment_method_id": 1},
             "date": DAY,
-            **body,
+            **{**body, **({"payment": payment_body(body["payment"])} if "payment" in body else {})},
         },
     )
     assert response.status_code == 201, response.text
@@ -171,7 +172,7 @@ BILL = {
             "unit_price": 9_000,
         }
     ],
-    "payment": {"state": "cash", "still_owed": None},
+    "payment": {"state": "paid", "still_owed": None},
     "balance": None,
 }
 
@@ -389,7 +390,7 @@ def test_a_money_field_with_a_decimal_is_refused_over_http_and_nothing_is_saved(
             "/sales",
             json={
                 "lines": [line],
-                "payment": "cash",
+                "payment": {"kind": "paid", "payment_method_id": 1},
                 "date": DAY,
                 **({"shipping_charged": 10.5} if where == "shipping_charged" else {}),
             },

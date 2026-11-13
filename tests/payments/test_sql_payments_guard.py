@@ -23,7 +23,7 @@ from app.customers.adapters.tables import CustomerRow
 from app.payments.adapters.sql_payments import SqlPayments
 from app.payments.adapters.tables import PaymentRow
 from app.payments.domain.payment import PaymentAboveBalance
-from app.payments.domain.settlement import PaymentMethod
+from app.shared.payment_method import PaymentMethodId
 
 RECORDED_AT = datetime(2026, 9, 28, 12, 0, tzinfo=UTC)
 
@@ -54,7 +54,7 @@ def _seed(client: TestClient) -> int:
         "/sales",
         json={
             "customer_id": customer_id,
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "shipping_charged": 500,
             "lines": [
                 {"product_id": variety["id"], "quantity": "10"},
@@ -66,13 +66,16 @@ def _seed(client: TestClient) -> int:
         "/sales",
         json={
             "customer_id": customer_id,
-            "payment": "cash",
+            "payment": {"kind": "paid", "payment_method_id": 1},
             "lines": [{"product_id": variety["id"], "quantity": "2"}],
         },
     )
     unassigned = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety["id"], "quantity": "1"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety["id"], "quantity": "1"}],
+        },
     ).json()
     assigned = client.put(f"/sales/{unassigned['id']}/customer", json={"customer_id": customer_id})
     assert assigned.status_code == 200, assigned.text
@@ -88,7 +91,7 @@ def _seed(client: TestClient) -> int:
     balance = account["balance"]
     partial = client.post(
         f"/customers/{customer_id}/payments",
-        json={"paid_on": "2026-09-20", "amount": min(1_000, balance), "method": "cash"},
+        json={"paid_on": "2026-09-20", "amount": min(1_000, balance), "payment_method_id": 1},
     )
     assert partial.status_code == 201, partial.text
 
@@ -125,7 +128,7 @@ def test_insert_later_refuses_one_above_the_balance_and_adds_no_row(
         payments = SqlPayments(session, business_id)
         try:
             payments.insert_later(
-                customer_id, RECORDED_AT.date(), balance + 1, PaymentMethod.CASH, RECORDED_AT
+                customer_id, RECORDED_AT.date(), balance + 1, PaymentMethodId(1), RECORDED_AT
             )
             raised = False
         except PaymentAboveBalance:
@@ -147,7 +150,7 @@ def test_insert_later_accepts_exactly_the_balance(client: TestClient, engine: En
     with Session(engine) as session:
         payments = SqlPayments(session, business_id)
         payments.insert_later(
-            customer_id, RECORDED_AT.date(), balance, PaymentMethod.CASH, RECORDED_AT
+            customer_id, RECORDED_AT.date(), balance, PaymentMethodId(1), RECORDED_AT
         )
         session.commit()
 
@@ -168,7 +171,7 @@ def test_a_stale_read_is_refused_by_the_second_insert(client: TestClient, engine
     with Session(engine) as session:
         payments = SqlPayments(session, business_id)
         payments.insert_later(
-            customer_id, RECORDED_AT.date(), stale_balance, PaymentMethod.CASH, RECORDED_AT
+            customer_id, RECORDED_AT.date(), stale_balance, PaymentMethodId(1), RECORDED_AT
         )
         session.commit()
 
@@ -179,7 +182,7 @@ def test_a_stale_read_is_refused_by_the_second_insert(client: TestClient, engine
                 customer_id,
                 RECORDED_AT.date(),
                 stale_balance,
-                PaymentMethod.CASH,
+                PaymentMethodId(1),
                 RECORDED_AT,
             )
             refused = False

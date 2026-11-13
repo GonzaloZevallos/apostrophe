@@ -22,6 +22,7 @@ export type Resource =
   | 'payments'
   | 'pinnedCatalog'
   | 'pricingSettings'
+  | 'paymentMethods'
 
 const PREFIX: Record<Resource, string> = {
   me: 'me',
@@ -39,6 +40,7 @@ const PREFIX: Record<Resource, string> = {
   payments: 'payments',
   pinnedCatalog: 'pinned-catalog',
   pricingSettings: 'pricing-settings',
+  paymentMethods: 'payment-methods',
 }
 
 export const keys = {
@@ -53,6 +55,11 @@ export const keys = {
   customers: (q: string) => [PREFIX.customers, { q }] as const,
   customer: (id: string) => [PREFIX.customers, id] as const,
   customerTypes: () => [PREFIX.customerTypes] as const,
+  // The business's offered payment methods and its archived ones (Settings → Payments and
+  // expenses → Payment methods; the Selectors of New sale and Record payment read the first).
+  // One prefix, so `invalidateResource(queryClient, 'paymentMethods')` refreshes both.
+  paymentMethods: () => [PREFIX.paymentMethods] as const,
+  archivedPaymentMethods: () => [PREFIX.paymentMethods, 'archived'] as const,
   expenses: (month: string) => [PREFIX.expenses, month] as const,
   expenseCategories: () => [PREFIX.expenseCategories] as const,
   // `Nueva venta`'s own prices and customer-by-id fetches (plan, invariants:

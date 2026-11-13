@@ -91,6 +91,41 @@
         "title": "AccountOut",
         "type": "object"
       },
+      "AccountPaymentRefOut": {
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Amount"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "paid_on": {
+            "format": "date",
+            "title": "Paid On",
+            "type": "string"
+          },
+          "payment_method": {
+            "$ref": "#/components/schemas/PaymentMethodLabelOut"
+          }
+        },
+        "required": [
+          "id",
+          "paid_on",
+          "amount",
+          "payment_method"
+        ],
+        "title": "AccountPaymentRefOut",
+        "type": "object"
+      },
       "AfterOut": {
         "properties": {
           "balance": {
@@ -444,8 +479,6 @@
         "properties": {
           "state": {
             "enum": [
-              "cash",
-              "transfer",
               "paid",
               "owed",
               "none"
@@ -887,7 +920,7 @@
             "type": "string"
           },
           "payment": {
-            "$ref": "#/components/schemas/PaymentRefOut"
+            "$ref": "#/components/schemas/AccountPaymentRefOut"
           },
           "running_balance": {
             "anyOf": [
@@ -2098,6 +2131,82 @@
         "title": "MeOut",
         "type": "object"
       },
+      "MethodIn": {
+        "properties": {
+          "icon": {
+            "$ref": "#/components/schemas/PaymentMethodIcon",
+            "default": "other"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "MethodIn",
+        "type": "object"
+      },
+      "MethodOut": {
+        "properties": {
+          "icon": {
+            "$ref": "#/components/schemas/PaymentMethodIcon"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "in_use": {
+            "title": "In Use",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "icon",
+          "position",
+          "in_use"
+        ],
+        "title": "MethodOut",
+        "type": "object"
+      },
+      "MethodPatch": {
+        "properties": {
+          "icon": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethodIcon"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "MethodPatch",
+        "type": "object"
+      },
       "MoneyFormatBody": {
         "properties": {
           "decimals": {
@@ -2260,6 +2369,23 @@
         "title": "MonthlyViewOut",
         "type": "object"
       },
+      "MoveIn": {
+        "properties": {
+          "direction": {
+            "enum": [
+              "up",
+              "down"
+            ],
+            "title": "Direction",
+            "type": "string"
+          }
+        },
+        "required": [
+          "direction"
+        ],
+        "title": "MoveIn",
+        "type": "object"
+      },
       "Origin": {
         "enum": [
           "purchase",
@@ -2269,6 +2395,20 @@
         ],
         "title": "Origin",
         "type": "string"
+      },
+      "OwingIn": {
+        "properties": {
+          "kind": {
+            "const": "owing",
+            "title": "Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "OwingIn",
+        "type": "object"
       },
       "OwnChatLookupIn": {
         "properties": {
@@ -2301,6 +2441,26 @@
           "own_chat"
         ],
         "title": "OwnChatLookupOut",
+        "type": "object"
+      },
+      "PaidIn": {
+        "description": "Money received on the spot, with the method the business chose\n(docs/adr/20261111-payment-methods-by-id).",
+        "properties": {
+          "kind": {
+            "const": "paid",
+            "title": "Kind",
+            "type": "string"
+          },
+          "payment_method_id": {
+            "title": "Payment Method Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "payment_method_id"
+        ],
+        "title": "PaidIn",
         "type": "object"
       },
       "PanelOut": {
@@ -2435,7 +2595,7 @@
             "type": "string"
           },
           "payment": {
-            "$ref": "#/components/schemas/PaymentRefOut"
+            "$ref": "#/components/schemas/AccountPaymentRefOut"
           },
           "running_balance": {
             "anyOf": [
@@ -2482,20 +2642,21 @@
             ],
             "title": "Amount"
           },
-          "method": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PaymentMethod"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "paid_on": {
             "format": "date",
             "title": "Paid On",
             "type": "string"
+          },
+          "payment_method_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Method Id"
           }
         },
         "required": [
@@ -2505,13 +2666,44 @@
         "title": "PaymentIn",
         "type": "object"
       },
-      "PaymentMethod": {
+      "PaymentMethodIcon": {
+        "description": "The closed, neutral set a method's icon is chosen from: nothing here is a\ncountry, a bank or a brand.",
         "enum": [
-          "cash",
-          "transfer"
+          "banknote",
+          "coins",
+          "card",
+          "bank",
+          "phone",
+          "wallet",
+          "qr",
+          "other"
         ],
-        "title": "PaymentMethod",
+        "title": "PaymentMethodIcon",
         "type": "string"
+      },
+      "PaymentMethodLabelOut": {
+        "description": "A method as a read shows it: its current name and icon, archived or not.",
+        "properties": {
+          "icon": {
+            "title": "Icon",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "icon"
+        ],
+        "title": "PaymentMethodLabelOut",
+        "type": "object"
       },
       "PaymentPreviewIn": {
         "properties": {
@@ -2577,20 +2769,21 @@
             "title": "Id",
             "type": "integer"
           },
-          "method": {
-            "$ref": "#/components/schemas/PaymentMethod"
-          },
           "paid_on": {
             "format": "date",
             "title": "Paid On",
             "type": "string"
+          },
+          "payment_method_id": {
+            "title": "Payment Method Id",
+            "type": "integer"
           }
         },
         "required": [
           "id",
           "paid_on",
           "amount",
-          "method"
+          "payment_method_id"
         ],
         "title": "PaymentRefOut",
         "type": "object"
@@ -4006,19 +4199,23 @@
             "type": "integer"
           },
           "payment": {
+            "enum": [
+              "paid",
+              "owing",
+              "none"
+            ],
+            "title": "Payment",
+            "type": "string"
+          },
+          "payment_method": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/PaymentMethod"
+                "$ref": "#/components/schemas/PaymentMethodLabelOut"
               },
               {
-                "enum": [
-                  "owing",
-                  "none"
-                ],
-                "type": "string"
+                "type": "null"
               }
-            ],
-            "title": "Payment"
+            ]
           },
           "shipping_charged": {
             "anyOf": [
@@ -4059,6 +4256,7 @@
           "shipping_charged",
           "note",
           "payment",
+          "payment_method",
           "total",
           "lines",
           "total_quantity",
@@ -4114,11 +4312,21 @@
           "payment": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/PaymentMethod"
-              },
-              {
-                "const": "owing",
-                "type": "string"
+                "discriminator": {
+                  "mapping": {
+                    "owing": "#/components/schemas/OwingIn",
+                    "paid": "#/components/schemas/PaidIn"
+                  },
+                  "propertyName": "kind"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/PaidIn"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OwingIn"
+                  }
+                ]
               },
               {
                 "type": "null"
@@ -4321,19 +4529,23 @@
             "type": "integer"
           },
           "payment": {
+            "enum": [
+              "paid",
+              "owing",
+              "none"
+            ],
+            "title": "Payment",
+            "type": "string"
+          },
+          "payment_method": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/PaymentMethod"
+                "$ref": "#/components/schemas/PaymentMethodLabelOut"
               },
               {
-                "enum": [
-                  "owing",
-                  "none"
-                ],
-                "type": "string"
+                "type": "null"
               }
-            ],
-            "title": "Payment"
+            ]
           },
           "shipping_charged": {
             "anyOf": [
@@ -4370,6 +4582,7 @@
           "shipping_charged",
           "note",
           "payment",
+          "payment_method",
           "total",
           "lines",
           "still_owing"
@@ -4381,8 +4594,7 @@
         "properties": {
           "how_paid": {
             "enum": [
-              "cash",
-              "transfer",
+              "paid",
               "owing",
               "none"
             ],
@@ -4392,6 +4604,16 @@
           "id": {
             "title": "Id",
             "type": "integer"
+          },
+          "payment_method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethodLabelOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "total": {
             "anyOf": [
@@ -4408,7 +4630,8 @@
         "required": [
           "id",
           "total",
-          "how_paid"
+          "how_paid",
+          "payment_method"
         ],
         "title": "SaleRefOut",
         "type": "object"
@@ -5397,6 +5620,346 @@
         "summary": "Put Money Format",
         "tags": [
           "money-format"
+        ]
+      }
+    },
+    "/api/payment-methods": {
+      "get": {
+        "operationId": "list_offered_api_payment_methods_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MethodOut"
+                  },
+                  "title": "Response List Offered Api Payment Methods Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Offered",
+        "tags": [
+          "payment-methods"
+        ]
+      },
+      "post": {
+        "operationId": "add_method_api_payment_methods_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MethodIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MethodOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Method",
+        "tags": [
+          "payment-methods"
+        ]
+      }
+    },
+    "/api/payment-methods/archived": {
+      "get": {
+        "operationId": "list_archived_api_payment_methods_archived_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MethodOut"
+                  },
+                  "title": "Response List Archived Api Payment Methods Archived Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Archived",
+        "tags": [
+          "payment-methods"
+        ]
+      }
+    },
+    "/api/payment-methods/{method_id}": {
+      "delete": {
+        "operationId": "delete_method_api_payment_methods__method_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "method_id",
+            "required": true,
+            "schema": {
+              "title": "Method Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Method",
+        "tags": [
+          "payment-methods"
+        ]
+      },
+      "patch": {
+        "operationId": "update_method_api_payment_methods__method_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "method_id",
+            "required": true,
+            "schema": {
+              "title": "Method Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MethodPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MethodOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Method",
+        "tags": [
+          "payment-methods"
+        ]
+      }
+    },
+    "/api/payment-methods/{method_id}/archive": {
+      "post": {
+        "operationId": "archive_method_api_payment_methods__method_id__archive_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "method_id",
+            "required": true,
+            "schema": {
+              "title": "Method Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Archive Method",
+        "tags": [
+          "payment-methods"
+        ]
+      }
+    },
+    "/api/payment-methods/{method_id}/move": {
+      "post": {
+        "operationId": "move_method_api_payment_methods__method_id__move_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "method_id",
+            "required": true,
+            "schema": {
+              "title": "Method Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MethodOut"
+                  },
+                  "title": "Response Move Method Api Payment Methods  Method Id  Move Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Move Method",
+        "tags": [
+          "payment-methods"
+        ]
+      }
+    },
+    "/api/payment-methods/{method_id}/restore": {
+      "post": {
+        "operationId": "restore_method_api_payment_methods__method_id__restore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "method_id",
+            "required": true,
+            "schema": {
+              "title": "Method Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Restore Method",
+        "tags": [
+          "payment-methods"
         ]
       }
     },

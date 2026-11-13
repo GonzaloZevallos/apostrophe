@@ -35,7 +35,7 @@ SELECTED = {
         "id, business_id, sale_id, variety_id, grams_hundredths, pricing_rule, "
         "price_per_gram, line_total, position"
     ),
-    "payment": "*",
+    "payment": "id, business_id, paid_on, amount, method, customer_id, sale_id, recorded_at",
 }
 
 

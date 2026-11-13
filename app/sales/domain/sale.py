@@ -11,7 +11,6 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from datetime import date, datetime
-from enum import StrEnum
 from typing import ClassVar
 
 from app.sales.domain.pricing import (
@@ -21,6 +20,7 @@ from app.sales.domain.pricing import (
     SaleRuleBroken,
     price_line,
 )
+from app.shared.payment_method import PaymentMethodId, PaymentMethodLabel
 from app.shared.pricing_settings import PricingSettings
 from app.shared.quantity import Quantity
 
@@ -101,11 +101,6 @@ class CustomerAlreadyAssigned(SaleRuleBroken):
         super().__init__("the sale already has a customer")
 
 
-class PaymentMethod(StrEnum):
-    CASH = "cash"
-    TRANSFER = "transfer"
-
-
 @dataclass(frozen=True)
 class CustomerFact:
     """What `CustomerFacts.get` answers for a customer who exists in the business."""
@@ -149,9 +144,11 @@ class OnTheSpotPayment:
 
     paid_on: date
     amount: int
-    method: PaymentMethod
+    method: PaymentMethodId
     customer_id: int | None
     id: int | None = None
+    # Set only by the views (the method's current name and icon); a write never carries it.
+    label: PaymentMethodLabel | None = None
 
     def __post_init__(self) -> None:
         assert self.amount > 0, "an on-the-spot payment is always for a positive amount"
@@ -226,7 +223,7 @@ class Sale:
         shipping_charged: int,
         note: str | None,
         lines: Sequence[LineRequest],
-        method: PaymentMethod | None,
+        method: PaymentMethodId | None,
         left_owing: bool,
         recorded_at: datetime,
     ) -> Sale:
@@ -301,7 +298,7 @@ class Sale:
         total: int,
         sale_date: SaleDate,
         customer_id: int | None,
-        method: PaymentMethod | None,
+        method: PaymentMethodId | None,
         left_owing: bool,
     ) -> OnTheSpotPayment | None:
         if total <= 0:

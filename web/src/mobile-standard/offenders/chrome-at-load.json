@@ -1,1 +1,20 @@
-[]
+[
+  {
+    "screen": "ConfiguracionMediosPagoUltimo",
+    "rule": "chrome-at-load",
+    "target": "chrome:bar",
+    "issue": 60,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "ConfiguracionMediosPagoLista",
+    "rule": "chrome-at-load",
+    "target": "chrome:bar",
+    "issue": 60,
+    "sizes": [
+      "246x437"
+    ]
+  }
+]

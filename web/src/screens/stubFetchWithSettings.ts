@@ -1,7 +1,7 @@
 /**
  * Test helper: stands `fetch` in with a mock for every request but `GET /pricing-settings`,
  * which it answers with the switches given (both on by default), `GET /api/customer-types`, which
- * it answers with the list given (none by default), and `GET /phone-countries`, which it answers with the
+ * it answers with the list given (none by default), `GET /api/payment-methods`, which it answers with the test's opening methods, and `GET /phone-countries`, which it answers with the
  * listing given (`PHONE_COUNTRIES`, eight made-up examples, by default) or, with `'fail'`, with a
  * server error. For the screens that read the
  * switches beside their own data and whose tests fake only their own requests: the test keeps
@@ -9,6 +9,7 @@
  */
 
 import { vi, type Mock } from 'vitest'
+import { METHODS_ANSWER } from '../test-payment-methods'
 import { SERVED } from '../phone/served.fixture'
 
 /** What the faked `GET /phone-countries` answers by default: the codes in the API's order, the
@@ -53,6 +54,13 @@ export function stubFetchWithSettings(
         ? Promise.resolve(
             new Response(JSON.stringify(phoneCountries === 'fail' ? { detail: 'boom' } : phoneCountries), {
               status: phoneCountries === 'fail' ? 500 : 200,
+              headers: { 'Content-Type': 'application/json' },
+            }),
+          )
+      : input === '/api/payment-methods'
+        ? Promise.resolve(
+            new Response(JSON.stringify(METHODS_ANSWER), {
+              status: 200,
               headers: { 'Content-Type': 'application/json' },
             }),
           )

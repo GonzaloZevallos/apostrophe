@@ -9,7 +9,10 @@
   "analysisNoHistory": "There is nothing to analyze yet.",
   "analysisEmptyMonth": "You did not sell or give away anything this month.",
   "customerTypesList": "No customer types yet",
+  "paymentMethodsArchived": "No archived payment methods.",
   "selectorNoVarieties": "No products yet. Add them in the Products tab.",
   "selectorNoCategories": "No categories yet. Add them in Settings → Expense categories.",
-  "selectorNoReasons": "No reasons yet. Add them in Settings → Business → Withdrawal reasons."
+  "selectorNoReasons": "No reasons yet. Add them in Settings → Business → Withdrawal reasons.",
+  "selectorNoPaymentMethods": "No payment methods yet. Add one in Settings → Payment methods.",
+  "selectorPaymentMethodsFailed": "Could not load the payment methods. Tap to try again."
 }

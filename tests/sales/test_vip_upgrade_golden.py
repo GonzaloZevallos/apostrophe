@@ -93,7 +93,7 @@ def _priced(client: TestClient, customer_id: int, quantity: str) -> tuple[str, i
     created = client.post(
         "/sales",
         json={
-            "payment": "cash",
+            "payment": {"kind": "paid", "payment_method_id": 1},
             "customer_id": customer_id,
             "lines": [{"product_id": 1, "quantity": quantity}],
         },

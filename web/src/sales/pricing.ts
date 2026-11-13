@@ -225,7 +225,8 @@ export interface LineValidation {
   quote: PriceQuote | null
 }
 
-export type PaymentChoice = 'cash' | 'transfer' | 'owing'
+/** The wire payment of a sale (`PaidIn | OwingIn`, discriminated on `kind`). */
+export type PaymentChoice = { kind: 'paid'; payment_method_id: PaymentMethod } | { kind: 'owing' }
 
 /** The state of "how paid": Paid or Owing, or nothing chosen yet. */
 export type PayState = 'paid' | 'owing'
@@ -240,8 +241,8 @@ export function paymentChoiceOf(
   // method whatever the total, and a $0 sale with no method sends none.
   _total: number,
 ): PaymentChoice | null {
-  if (payState === 'owing') return 'owing'
-  if (payState === 'paid') return method
+  if (payState === 'owing') return { kind: 'owing' }
+  if (payState === 'paid') return method === null ? null : { kind: 'paid', payment_method_id: method }
   return null
 }
 

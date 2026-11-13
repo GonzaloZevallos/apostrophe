@@ -13,6 +13,7 @@ import App from '../../App'
 import { queryClient } from '../../queryClient'
 import { router } from '../../router'
 import { HOME, pathTo, SALES, SALE_NEW } from '../../routes'
+import { withPaymentMethods } from '../../test-payment-methods'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
 const ROSA = {
@@ -31,7 +32,7 @@ async function openForm(): Promise<ReturnType<typeof vi.fn>> {
     if (path === '/api/products?on=2026-10-02') return Promise.resolve(jsonResponse(200, [ROSA]))
     return Promise.reject(new Error(`unexpected request: ${path}`))
   })
-  vi.stubGlobal('fetch', fetchMock)
+  vi.stubGlobal('fetch', withPaymentMethods(fetchMock))
   await act(() => router.navigate(SALES))
   await act(() => router.navigate(SALE_NEW))
   render(<App />)

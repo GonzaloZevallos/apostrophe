@@ -118,7 +118,10 @@ def test_a_purchase_whose_cost_divides_unevenly_costs_the_same_at_both_scales(
     assert created.status_code == 201, created.text
     sale = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": product_id, "quantity": "2"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": product_id, "quantity": "2"}],
+        },
     )
     assert sale.status_code == 201, sale.text
 
@@ -139,7 +142,10 @@ def test_the_purchases_and_the_draws_a_scale_two_session_reads_are_whole_units(
     _purchase(client, product_id, "5", 7_500)
     client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": product_id, "quantity": "2"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": product_id, "quantity": "2"}],
+        },
     )
     business_id = _business_id(engine)
 
