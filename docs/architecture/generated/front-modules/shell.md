@@ -17,6 +17,7 @@ subgraph src["src"]
     src_shell_scrollPlan_ts["scrollPlan.ts"]
     src_shell_scroller_ts["scroller.ts"]
     src_shell_useBackParent_ts["useBackParent.ts"]
+    src_shell_useLeafScreen_ts["useLeafScreen.ts"]
     src_shell_useViewport_ts["useViewport.ts"]
   end
 end
@@ -28,5 +29,6 @@ src_shell_ScrollSync_tsx-->src_shell_useViewport_ts
 src_shell_Shell_tsx-->src_shell_BackArrow_tsx
 src_shell_Shell_tsx-->src_shell_chrome_ts
 src_shell_Shell_tsx-->src_shell_useBackParent_ts
+src_shell_Shell_tsx-->src_shell_useLeafScreen_ts
 src_shell_Shell_tsx-->src_shell_useViewport_ts
 ```
