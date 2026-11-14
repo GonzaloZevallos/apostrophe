@@ -24,7 +24,7 @@ La identidad del producto Apostrophe: la Yerba mark, el Wordmark, la tipografía
 
 - "apostrophe" en minúscula, Geist 600, con el ’ (U+2019) en `--acento` (#1E6B47 en claro, #5CC594 en oscuro).
 - La Yerba mark junto al Wordmark (el lockup) es una sola imagen con el nombre accesible "apostrophe": la Yerba mark adentro es decorativa y el ’ es `aria-hidden`.
-- Sus textos viven en el Copy module (`brand.wordmark`, `brand.mark.label`), los dos con el valor "apostrophe". El ’ no es copy: lo dibuja `BrandMark` como un carácter fijo.
+- Sus textos viven en el Copy module (`brand.wordmark`), con el valor "apostrophe". El ’ no es copy: lo dibuja `BrandMark` como un carácter fijo.
 - Los tamaños salen de los tokens `--marca-*` de `web/src/styles/tokens.css`. Con 300 px de ancho o menos, el lockup pasa a sus tamaños angostos para que la acción principal no quede fuera de la pantalla. En la barra lateral de la computadora el lockup usa siempre los tamaños angostos.
 
 ## Dónde aparece
@@ -39,7 +39,7 @@ La marca aparece en esos lugares y en ningún otro: ni en los Tab roots (Home, A
 **El encabezado de Home y Analysis en el teléfono no la muestra** (parte 2 de GH-723, decisión del dueño)
 
 - Desde GH-723, el encabezado compartido de Home y Analysis en el teléfono muestra la línea de fecha, el segmento Home | Analysis y el avatar "Settings" (navigation.md), sin la Yerba mark, sin el nombre del Business y sin título visible. Antes, la Yerba mark iba en línea al comienzo de la fila del nombre del Business en Home, solo cuando el nombre entraba entero a su lado.
-- Con eso, la forma de la Yerba mark sola (sin Wordmark) se quedó sin ninguna pantalla que la use. La variante `'mark'` de `BrandMark`, su CSS (`.brand-mark--mark`, `.inicio__cabecera-marca`), su token de tamaño y sus casos de test siguen en el código, sin llamador, hasta que #736 los borre. Ninguna pantalla nueva los vuelve a usar mientras tanto. Lo que quede del lockup (sus tamaños, su recorte) sigue solo mientras lo use algún lugar de la tabla de arriba.
+- Con eso, la forma de la Yerba mark sola (sin Wordmark) se quedó sin ninguna pantalla que la use. #736 borró la variante `'mark'` de `BrandMark`, `clipRoot`, `.brand-mark--mark`, `.inicio__cabecera-marca` y las reglas muertas de `.inicio__cabecera`, el token `--marca-tamano`, sus casos de test y la clave `brand.mark.label`. Lo que quede del lockup (sus tamaños, su recorte) sigue solo mientras lo use algún lugar de la tabla de arriba.
 - La identidad en el teléfono la sigue dando el ícono de la app en la pantalla de inicio y el lockup de Sign in, de la aceptación de Invitation y del primer paso del Onboarding.
 
 **Sign in, aceptación de Invitation y primer paso del Onboarding**
@@ -54,7 +54,7 @@ La marca aparece en esos lugares y en ningún otro: ni en los Tab roots (Home, A
 
 **Marca fija**
 
-- La marca es fija para toda la instalación: la misma en cada Business, cada tema y cada idioma. Ninguna configuración la renombra ni la oculta, tampoco los Selectable languages (#317). El nombre accesible es "apostrophe" en todo idioma: el Test locale copia `brand.wordmark` y `brand.mark.label` tal cual, sin pseudolocalizarlos.
+- La marca es fija para toda la instalación: la misma en cada Business, cada tema y cada idioma. Ninguna configuración la renombra ni la oculta, tampoco los Selectable languages (#317). El nombre accesible es "apostrophe" en todo idioma: el Test locale copia `brand.wordmark` tal cual, sin pseudolocalizarlo.
 - La marca aparece solo dentro de la app, ante el vendedor y sus Users. Nunca en el Catalog, el Pinned catalog, los valores por defecto del Catalog header and footer, el Sale bill ni ningún texto de Telegram; esos valores por defecto quedan como están.
 
 ## Tipografía
