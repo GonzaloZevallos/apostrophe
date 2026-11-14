@@ -17,7 +17,7 @@ import { createMemoryRouter, Outlet, RouterProvider, type RouteObject } from 're
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { loadBundle } from '../../scripts/i18n/loadBundle.ts'
 import type { Me } from '../api/me'
-import type { OnboardingProgress, StepSlug } from '../api/onboarding'
+import type { OnboardingProgress, StepSlug, StepState } from '../api/onboarding'
 import App from '../App'
 import { SheetRouterProvider } from '../components/useSheetStack'
 import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
@@ -83,7 +83,7 @@ const MANGO = { id: 7, name: 'Mango Bomb' }
 
 /** A Business with one Product and no price yet; `stock_target` aims step 2 at it. */
 function progress(stockTarget: boolean): OnboardingProgress {
-  const states = stockTarget ? ['done'] : []
+  const states: StepState[] = stockTarget ? ['done'] : []
   return {
     offered: true,
     over: false,

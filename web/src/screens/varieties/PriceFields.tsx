@@ -10,6 +10,7 @@ import { useId } from 'react'
 import MoneyInput from '../../components/MoneyInput'
 import { useMoney } from '../../format/moneyContext'
 import type { PricingSettings } from '../../api/pricingSettings'
+import { describedBy, fieldIds, type FieldIds } from './fieldIds'
 import type { PriceErrors, PriceValues } from './priceFieldRules'
 import { PRICE_DISCOUNT_HELP, PRICE_FROM_GRAMS_HELP, PRICE_PER_GRAM_HELP, VARIETIES_TEXT } from '../../copy/varieties'
 import { COMMON_TEXT } from '../../copy/common'
@@ -21,25 +22,6 @@ export function FieldError({ message, id }: { message: string | undefined; id?: 
       {message}
     </span>
   )
-}
-
-/**
- * What a typed control points at: its own label span (its name is that word alone, never the help
- * or the error the wrapping `<label>` also holds) and its help and error (its description).
- */
-export interface FieldIds {
-  labelledBy: string
-  describedBy: string
-}
-
-/** The ids of one field's label, help and error spans, from one `useId`. */
-export function fieldIds(base: string): { label: string; help: string; error: string } {
-  return { label: `${base}-rotulo`, help: `${base}-ayuda`, error: `${base}-error` }
-}
-
-/** The description of a field: its help, and its error while one is shown. */
-export function describedBy(ids: { help: string; error: string }, error: string | undefined): string {
-  return error === undefined ? ids.help : `${ids.help} ${ids.error}`
 }
 
 interface AmountInputProps {
