@@ -34,7 +34,7 @@ import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { panelQuery, type PanelTab } from '../api/panel'
 import ErrorGenerico from '../components/ErrorGenerico'
-import Loading, { LoadingWhile } from '../components/Loading'
+import Loading from '../components/Loading'
 import { AvisoCuerpo } from '../components/AvisoAmbar'
 import SinConexion from '../components/SinConexion'
 import { PINNED_CATALOG_OUT_OF_DATE } from '../copy/inicio'
@@ -71,7 +71,6 @@ export default function Inicio() {
 
   return (
     <ContentArea as="main" className="pantalla" ref={root}>
-      <LoadingWhile active={waiting} />
       <div className="cuerpo cuerpo--bajo-cabecera">
         {pinOutOfDate && (
           <InAppLink to={CATALOG} className="aviso-ambar aviso-ambar--atencion" role="status">
@@ -87,8 +86,9 @@ export default function Inicio() {
         {/* A saved payment drops the cached panel and leaves the hand-off: Home reads again and the
             catalog notice above it makes the page taller once it answers. While that hand-off waits for
             its place, the marker tells the scroll owner (`ScrollSync`) the page is not at its final
-            height yet. A first visit shows none: it has no place to return to. */}
-        {!ready && failed === undefined && peekPaymentReturn() !== null && <Loading />}
+            height yet. While the first answers are on their way the area draws the loading shape itself:
+            the header is outside it, so without the shape the area would be blank (GH-723). */}
+        {waiting || (!ready && failed === undefined && peekPaymentReturn() !== null) ? <Loading /> : null}
         {panelRead.data !== undefined && (
           <InicioPanel panel={panelRead.data} tab={tab} onTab={setTab} today={me.today} />
         )}

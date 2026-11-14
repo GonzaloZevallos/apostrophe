@@ -121,6 +121,8 @@ describe.each([
     await waitFor(() => expect(main).toHaveAttribute('aria-busy', 'true'))
     expect(main).not.toContainElement(header)
     expect(main.textContent).not.toMatch(/[0-9]/)
+    // The header is outside the area, so the area draws its own loading shape: never blank.
+    expect(within(main).getByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
     expect(within(header).getByText('03/10')).toBeInTheDocument()
     expect(within(header).getByRole('link', { name: 'Settings' })).toBeEnabled()
     const other = path === HOME ? 'Analysis' : 'Today'
