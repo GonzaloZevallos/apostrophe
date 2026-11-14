@@ -154,7 +154,7 @@ El **Business export** (accounts.md) guarda los dos interruptores tal como está
 - **Upkeep**: un guardado que cambia cualquiera de los dos interruptores dispara el Upkeep; un guardado que no cambia ninguno no envía nada.
 - **Aislamiento (criterio 7)**: las rutas de los interruptores, de los Customer types y de las Price entries que escriben Customer-type prices están en el barrido y en el test de rutas protegidas. Los interruptores, los tipos y sus precios de un Business nunca cambian los precios, las pantallas ni el Catalog de otro.
 - **Sin eco**: ningún rechazo ni línea de log contiene un precio.
-- **Textos**: todo texto nuevo está en el Copy module y ningún valor por defecto nuevo lleva una palabra de flor.
+- **Textos**: todo texto nuevo está en el Copy module y ningún valor por defecto nuevo lleva una palabra propia de un solo tipo de negocio.
 - **Diseño**: `scripts/design/compare.sh` corre antes y después para Prices (`ConfiguracionPrecios`), en celular y computadora, adjunto al PR; la lista de Customer types no tiene dibujo y se juzga contra el diseño escrito.
 
 ## Fuera de alcance

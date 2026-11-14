@@ -25,7 +25,7 @@ Criterios de éxito:
 - **Campos**: `business_id`, nombre, ícono y posición, más si está archivado.
 - **Nombre**: único en el Business sin importar mayúsculas, minúsculas ni espacios, los archivados incluidos. No puede quedar en blanco después de recortar y tiene hasta 60 caracteres.
 - **Renombrar**: se permite en cualquier momento. Los Payments pasados muestran el nombre nuevo, porque un Payment apunta al medio y no a su texto. Es a propósito, a diferencia de una **Price entry**. Quien quiera conservar el nombre viejo como historia agrega un medio nuevo y archiva el viejo.
-- **Ícono**: se elige de un conjunto fijo y neutro, nunca texto libre: `banknote`, `coins`, `card`, `bank`, `phone`, `wallet`, `qr`, `other`. Nada en él es propio de la flor, de un país, de un banco ni de una marca. Un medio nuevo recibe `other` por defecto, así que nunca hay que elegir uno. En Settings el ícono va al lado del nombre y nunca lo reemplaza (**Icon and text rule**); en el Selector de New sale y Record payment cada medio se muestra solo por su nombre, sin ícono.
+- **Ícono**: se elige de un conjunto fijo y neutro, nunca texto libre: `banknote`, `coins`, `card`, `bank`, `phone`, `wallet`, `qr`, `other`. Nada en él es propio de un solo tipo de negocio, de un país, de un banco ni de una marca. Un medio nuevo recibe `other` por defecto, así que nunca hay que elegir uno. En Settings el ícono va al lado del nombre y nunca lo reemplaza (**Icon and text rule**); en el Selector de New sale y Record payment cada medio se muestra solo por su nombre, sin ícono.
 - **Orden**: la posición la fija la vendedora; New sale y Record payment muestran los medios ofrecidos en ese orden, y el Selector nunca los reordena.
 
 ### Los valores por defecto
@@ -77,7 +77,7 @@ Criterios de éxito:
 - **La lista** muestra los medios ofrecidos en su orden, cada uno con su ícono y su nombre. Cada fila tiene "Move up" y "Move down" (en el teléfono, sin arrastrar; el "Move up" del primero y el "Move down" del último quedan deshabilitados) y, según el medio, "Delete" cuando no tiene Payments o "Archive" cuando los tiene, cada una con su confirmación. Tocar la fila abre su edición. Tiene "Add method" y la entrada "Archived". Mientras carga muestra la forma de la lista; si falla, "Try again"; sin conexión, el aviso de Estados.
 - **Agregar** y **editar** se hacen en un formulario (una **Sheet** en el teléfono, con "Close" arriba y Save fijo abajo) con nombre e ícono, el ícono por defecto ya elegido. Los rechazos del nombre (en blanco, más de 60 caracteres, repetido, reservado por un archivado con "Restore it from Archived.") se muestran junto al campo y conservan lo escrito. La edición avisa "Past payments will show the new name." y, al volver a abrirla después de guardar, muestra lo guardado (decisión 1 del humano). Salir con cambios sin guardar pide confirmación.
 - **Archived**: muestra los medios archivados, cada uno con "Restore"; vacío dice "No archived payment methods."
-- Todo texto sale del **Copy module**; ningún valor por defecto nuevo lleva una palabra de la flor.
+- Todo texto sale del **Copy module**; ningún valor por defecto nuevo lleva una palabra propia de un solo tipo de negocio.
 
 ### API y restricciones
 
