@@ -6,6 +6,7 @@
  * No console message at any point.
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { expectPath } from './helpers/url.js'
@@ -40,7 +41,7 @@ for (const viewport of VIEWPORTS) {
         await page.getByRole('link', { name: 'New product' }).click()
         await expectPath(page, VARIETY_NEW)
         // The exact fill below is what waits for the form: an earlier screen's "Edit name" button is not a "Name" field.
-        await page.getByLabel('Name', { exact: true }).fill(name)
+        await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill(name)
         await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
       }
 

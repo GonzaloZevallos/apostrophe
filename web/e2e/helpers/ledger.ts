@@ -7,6 +7,7 @@
  * signs a business up first and picks the customer's name with `uniqueTag`.
  */
 
+import { VARIETY_NAME_LABEL } from './labels.js'
 import { CUSTOMER, CUSTOMER_NEW, VARIETIES, VARIETY_NEW, pathTo } from '../../src/routes.js'
 import { expect } from '../fixtures.js'
 import type { Page } from '@playwright/test'
@@ -21,7 +22,7 @@ export async function seedLedger(page: Page, customerName: string, sales: number
   await page.getByRole('link', { name: 'New product' }).click()
   await expectPath(page, VARIETY_NEW)
   // The exact fill below is what waits for the form: an earlier screen's "Edit name" button is not a "Name" field.
-  await page.getByLabel('Name', { exact: true }).fill(variety)
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill(variety)
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: new RegExp(variety) }).click()
   await page.getByRole('link', { name: 'New price' }).click()

@@ -9,6 +9,7 @@
  * of the customer card.
  */
 
+import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './helpers/labels.js'
 import type { Page } from '@playwright/test'
 import { CUSTOMER, CUSTOMER_NEW, HOME, VARIETIES } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
@@ -136,13 +137,13 @@ test('real screens: a flash toast, a toast on its own timer and the card\'s hist
 
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name', { exact: true }).fill('Rosa')
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: '+ Stock entry' }).click()
   await page.getByLabel('Grams', { exact: true }).fill('50')
   await pickStockVariety(page, 'Rosa')
-  await page.getByLabel('Total cost', { exact: true }).fill('20000')
+  await page.getByLabel(STOCK_COST_LABEL, { exact: true }).fill('20000')
   // FlashProvider: 2.5 s on the flash toast.
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 

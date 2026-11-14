@@ -10,6 +10,7 @@
  * through the built front alone, against the real backend.
  */
 
+import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { ANALYSIS, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, VARIETY_NEW, WITHDRAWAL_NEW } from '../src/routes.js'
 import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
@@ -37,7 +38,7 @@ test('a seller opens Análisis from the Home segment, moves back a month and rea
   // A priced variety.
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name', { exact: true }).fill('Rosa')
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
@@ -51,7 +52,7 @@ test('a seller opens Análisis from the Home segment, moves back a month and rea
   await page.getByLabel('Date', { exact: true }).fill(firstOfMonth(todayIso, 1))
   await page.getByLabel('Grams', { exact: true }).fill('50')
   await pickStockVariety(page, 'Rosa')
-  await page.getByLabel('Total cost', { exact: true }).fill('20000')
+  await page.getByLabel(STOCK_COST_LABEL, { exact: true }).fill('20000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 
   // A cash sale, today.
@@ -157,7 +158,7 @@ async function recordEntry(
   await page.getByLabel('Grams', { exact: true }).fill(entry.grams)
   await pickStockVariety(page, entry.variety)
   await page.getByRole('button', { name: entry.origin, exact: true }).click()
-  if (entry.cost !== undefined) await page.getByLabel('Total cost', { exact: true }).fill(entry.cost)
+  if (entry.cost !== undefined) await page.getByLabel(STOCK_COST_LABEL, { exact: true }).fill(entry.cost)
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 }
 
@@ -188,7 +189,7 @@ test('Análisis reads Cost of goods sold, Stock shortfall, Marketing and Own use
     await page.getByRole('link', { name: 'New product' }).click()
     await expectPath(page, VARIETY_NEW)
     // The exact fill below is what waits for the form: an earlier screen's "Edit name" button is not a "Name" field.
-    await page.getByLabel('Name', { exact: true }).fill(name)
+    await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill(name)
     await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   }
   await page.goto(STOCK_ENTRY_NEW)
@@ -316,7 +317,7 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
   expect(longName).toHaveLength(60)
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name', { exact: true }).fill(longName)
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill(longName)
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Variedad Larguísimo/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()

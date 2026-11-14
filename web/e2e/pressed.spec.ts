@@ -12,6 +12,7 @@
  * customers, varieties) are covered by the static scan and by eye.
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import {
   ANALYSIS,
   CUSTOMERS,
@@ -283,7 +284,7 @@ test.describe('Undo', () => {
       })
       await page.goto(VARIETIES)
       await page.getByRole('link', { name: 'New product' }).click()
-      await page.getByLabel('Name', { exact: true }).fill('Rosa')
+      await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
       await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
       await page.getByRole('link', { name: /Rosa/ }).click()
       await page.getByRole('link', { name: 'New price' }).click()

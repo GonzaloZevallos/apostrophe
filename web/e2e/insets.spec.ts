@@ -7,6 +7,7 @@
  * element that each check can add and remove.
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import type { Page } from '@playwright/test'
@@ -115,7 +116,7 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
 
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name', { exact: true }).fill('Rosa')
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()

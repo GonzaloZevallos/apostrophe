@@ -5,6 +5,7 @@
  * address bar after each save.
  */
 
+import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './labels.js'
 import {
   CUSTOMER,
   CUSTOMER_NEW,
@@ -62,7 +63,7 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
   await page.getByRole('link', { name: 'New product' }).click()
   await expectPath(page, VARIETY_NEW)
   // The exact fill below is what waits for the form: an earlier screen's "Edit name" button is not a "Name" field.
-  await page.getByLabel('Name', { exact: true }).fill('Rosa')
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   const variety = await idAt(page, VARIETY)
@@ -83,7 +84,7 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
   await page.goto(STOCK_ENTRY_NEW)
   await page.getByLabel('Grams', { exact: true }).fill('50')
   await pickStockVariety(page, 'Rosa')
-  await page.getByLabel('Total cost', { exact: true }).fill('45000')
+  await page.getByLabel(STOCK_COST_LABEL, { exact: true }).fill('45000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
   await page.goto(STOCK)
   await page.getByRole('link', { name: 'Edit' }).click()

@@ -22,6 +22,7 @@
  * forbids there.
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
 import type { Page } from '@playwright/test'
 import { expectPath } from './helpers/url.js'
@@ -60,7 +61,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // One priced variety, $1.000/g — round figures for every assertion below.
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name', { exact: true }).fill('Rosa')
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()

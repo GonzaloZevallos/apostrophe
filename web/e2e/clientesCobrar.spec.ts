@@ -10,6 +10,7 @@
  * round trip never lands on Registrar cobro again. No test measures elapsed time (ADR-0038).
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import type { Page } from '@playwright/test'
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMER_PAYMENT, CUSTOMERS, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { watchConsole } from './console.js'
@@ -79,7 +80,7 @@ for (const viewport of VIEWPORTS) {
 
     await page.goto(VARIETIES)
     await page.getByRole('link', { name: 'New product' }).click()
-    await page.getByLabel('Name', { exact: true }).fill('Rosa')
+    await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
     await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
     await page.getByRole('link', { name: /Rosa/ }).click()
     await page.getByRole('link', { name: 'New price' }).click()

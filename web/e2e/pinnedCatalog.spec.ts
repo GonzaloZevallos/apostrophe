@@ -9,6 +9,7 @@
  * Telegram token or the network.
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { CATALOG, HOME, SETTINGS_INTEGRATIONS, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
@@ -39,7 +40,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   // A variety with a price, so the catalog has something to publish.
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name', { exact: true }).fill('Rosa')
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()

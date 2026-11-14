@@ -7,6 +7,7 @@
  * already lower; with something typed, Close asks first. Roles, names, text and URLs only.
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import type { Page } from '@playwright/test'
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMERS, HOME, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { choosePaymentMethod, expect, test } from './fixtures.js'
@@ -37,7 +38,7 @@ async function makeDebtor(page: Page): Promise<void> {
   await signUpNewBusiness(page)
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name', { exact: true }).fill('Rosa')
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
   await page.getByRole('button', { name: 'Add the product' }).click()
   await expect(page.getByText('Product saved')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()

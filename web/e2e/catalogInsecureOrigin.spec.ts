@@ -31,6 +31,7 @@
  * `**` removed" asks for here just as directly as reading the clipboard back would.
  */
 
+import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { e2eBaseUrl } from './env.js'
@@ -100,7 +101,7 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
   // A variety with a price and stock, so the catalog has something to copy.
   await page.goto(`${INSECURE_ORIGIN}${VARIETIES}`)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name', { exact: true }).fill('Rosa')
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
   await page.getByRole('button', { name: 'Add the product' }).click()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
@@ -110,7 +111,7 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
   await page.goto(`${INSECURE_ORIGIN}${STOCK_ENTRY_NEW}`)
   await page.getByLabel('Grams', { exact: true }).fill('50')
   await pickStockVariety(page, 'Rosa')
-  await page.getByLabel('Total cost', { exact: true }).fill('45000')
+  await page.getByLabel(STOCK_COST_LABEL, { exact: true }).fill('45000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 
   await page.goto(`${INSECURE_ORIGIN}${CATALOG}`)

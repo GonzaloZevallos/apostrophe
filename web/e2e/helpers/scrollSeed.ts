@@ -6,6 +6,7 @@
  * `customerSheet.spec.ts` and `cobroHoja.spec.ts` do.
  */
 
+import { VARIETY_NAME_LABEL } from './labels.js'
 import { OWING } from './paymentMethod.js'
 import type { Page } from '@playwright/test'
 import { VARIETIES, VARIETY_NEW } from '../../src/routes.js'
@@ -37,7 +38,7 @@ async function businessWithRosa(page: Page): Promise<void> {
   await page.getByRole('link', { name: 'New product' }).click()
   await expectPath(page, VARIETY_NEW)
   // The exact fill below is what waits for the form: an earlier screen's "Edit name" button is not a "Name" field.
-  await page.getByLabel('Name', { exact: true }).fill('Rosa')
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()

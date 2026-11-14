@@ -8,6 +8,7 @@
  * nothing overflows the page sideways. On a computer the tabs keep the plain list.
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { paidInCash } from './helpers/paymentMethod.js'
 import { SALES, VARIETIES } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
@@ -54,7 +55,7 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
 
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name', { exact: true }).fill('Jazmín')
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Jazmín')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()

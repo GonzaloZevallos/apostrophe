@@ -8,6 +8,7 @@
  * after the round trip leaves the app's own history, not Registrar cobro again.
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { CUSTOMER, CUSTOMER_NEW, HOME, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { choosePaymentMethod, expect, test } from './fixtures.js'
@@ -38,7 +39,7 @@ for (const viewport of VIEWPORTS) {
 
     await page.goto(VARIETIES)
     await page.getByRole('link', { name: 'New product' }).click()
-    await page.getByLabel('Name', { exact: true }).fill('Rosa')
+    await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
     await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
     await page.getByRole('link', { name: /Rosa/ }).click()
     await page.getByRole('link', { name: 'New price' }).click()

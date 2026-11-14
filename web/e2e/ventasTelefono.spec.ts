@@ -13,6 +13,7 @@
  * model page zoom, not text size.
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { SALE_NEW, SALES, VARIETIES } from '../src/routes.js'
 import { choosePaymentMethod, expect, test, withToastRecorder, type WorkerServer } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
@@ -63,7 +64,7 @@ async function signUpWithAVariety(page: Page): Promise<void> {
   await signUpNewBusiness(page, { businessName: `Vivero Telefono ${uniqueTag()}`, email: `telefono-venta-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name', { exact: true }).fill('Jazmín')
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Jazmín')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()

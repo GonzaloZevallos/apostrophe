@@ -47,6 +47,7 @@
  * there.
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { paidInCash } from './helpers/paymentMethod.js'
 import { CUSTOMERS, SALE, SALES, SALE_NEW, VARIETIES, VARIETY_NEW } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
@@ -137,7 +138,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
     await page.getByRole('link', { name: 'New product' }).click()
     await expectPath(page, VARIETY_NEW)
     // The exact fill below is what waits for the form: an earlier screen's "Edit name" button is not a "Name" field.
-    await page.getByLabel('Name', { exact: true }).fill(name)
+    await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill(name)
     await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
     if (listPrice === undefined) return
     await page.getByRole('link', { name: new RegExp(name) }).click()
@@ -408,7 +409,7 @@ test('the Regalo switch is checked by a real tap, shows a press without flipping
   })
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name', { exact: true }).fill('Rosa')
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()

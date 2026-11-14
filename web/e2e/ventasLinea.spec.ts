@@ -6,6 +6,7 @@
  * shell's own spec, not to this one.
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
@@ -22,7 +23,7 @@ async function signUpWithAVariety(page: Page): Promise<void> {
   await signUpNewBusiness(page, { businessName: `Vivero Line ${uniqueTag()}`, email: `duena-linea-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name', { exact: true }).fill('Jazmín con un nombre bastante largo')
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Jazmín con un nombre bastante largo')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
