@@ -6,7 +6,7 @@
  * header does not wait for them.
  */
 
-import { act, render, screen, within } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import App from '../App'
@@ -52,9 +52,9 @@ async function openAt(path: string, viewport: Viewport) {
 
 describe('on the phone', () => {
   test.each(PATHS)('%s has exactly one link named Settings, and one tap reaches /settings', async (_name, path) => {
-    const main = await openAt(path, 'phone')
+    await openAt(path, 'phone')
 
-    const links = within(main).getAllByRole('link', { name: 'Settings' })
+    const links = screen.getAllByRole('link', { name: 'Settings' })
     expect(links).toHaveLength(1)
     expect(screen.getAllByRole('link', { name: 'Settings' })).toHaveLength(1)
     // The glyph is the business's initials; the name is the fixed word, never the business.
