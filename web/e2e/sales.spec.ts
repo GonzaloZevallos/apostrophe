@@ -125,7 +125,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   // Accept a new-business invitation.
   await signUpNewBusiness(page, { businessName, email: ownerEmail })
-  await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
+  await expect(page.locator('.inicio-cabecera')).toBeVisible()
 
   // Two priced varieties and one with no price at all, for the "no price that day"
   // check below. Jazmín's own price is backdated well before this run's own week

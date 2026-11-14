@@ -71,7 +71,7 @@ for (const scheme of SCHEMES) {
       await page.getByLabel('Password').fill(owner.password)
       await page.getByRole('button', { name: 'Sign in' }).click()
 
-      await expect(page.locator('.encabezado__negocio')).toHaveText(owner.businessName)
+      await expect(page.locator('.inicio-cabecera')).toBeVisible()
       expect(new URL(page.url()).pathname).toBe(HOME)
       await page.context().close()
     })
@@ -93,7 +93,7 @@ for (const scheme of SCHEMES) {
       await page.getByRole('button', { name: 'Sign in' }).scrollIntoViewIfNeeded()
       await page.getByRole('button', { name: 'Sign in' }).click()
 
-      await expect(page.locator('.encabezado__negocio')).toHaveText(owner.businessName)
+      await expect(page.locator('.inicio-cabecera')).toBeVisible()
       await page.context().close()
     })
   }

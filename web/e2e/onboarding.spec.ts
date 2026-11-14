@@ -55,7 +55,7 @@ test('a new business goes from the invitation to Nueva venta from "Done"', async
   await expectPath(page, SALE_NEW)
 
   await page.getByRole('button', { name: 'Close' }).click()
-  await expect(page.locator('.encabezado__negocio')).toBeVisible()
+  await expect(page.locator('.inicio-cabecera')).toBeVisible()
   await expectOnlyTheThemeStored(page)
   expect(consoleMessages).toEqual([])
 })

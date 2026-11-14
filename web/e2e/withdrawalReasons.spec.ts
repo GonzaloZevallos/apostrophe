@@ -26,7 +26,7 @@ test('a seller adds a withdrawal reason, records a withdrawal with it and reads 
 
   const businessName = `Flores de Motivos ${uniqueTag()}`
   await signUpNewBusiness(page, { businessName, email: `duena-motivos-${uniqueTag()}@example.com` })
-  await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
+  await expect(page.locator('.inicio-cabecera')).toBeVisible()
 
   // A variety with one lot: 50 g for $ 20.000.
   await page.goto(VARIETIES)

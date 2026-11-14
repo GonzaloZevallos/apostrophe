@@ -41,7 +41,7 @@ export interface SignedUpBusiness {
  */
 export async function leaveOnboarding(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Close' }).click()
-  await expect(page.locator('.encabezado__negocio')).toBeVisible()
+  await expect(page.locator('.inicio-cabecera')).toBeVisible()
 }
 
 export async function signUpNewBusiness(

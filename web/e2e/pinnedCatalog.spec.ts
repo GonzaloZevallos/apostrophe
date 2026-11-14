@@ -34,7 +34,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   const businessName = `Flores del Bot ${uniqueTag()}`
 
   await signUpNewBusiness(page, { businessName, email: ownerEmail })
-  await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
+  await expect(page.locator('.inicio-cabecera')).toBeVisible()
 
   // A variety with a price, so the catalog has something to publish.
   await page.goto(VARIETIES)

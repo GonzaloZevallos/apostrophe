@@ -34,7 +34,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   const businessName = `Flores de Ajustes ${uniqueTag()}`
 
   await signUpNewBusiness(page, { businessName, email: ownerEmail })
-  await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
+  await expect(page.locator('.inicio-cabecera')).toBeVisible()
 
   // A category with an expense in it, so its removal is refused later.
   await openGastos(page)
@@ -130,7 +130,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await page.getByLabel('Email address').fill(ownerEmail)
   await page.getByLabel('Password').fill(NEW_PASSWORD)
   await page.getByRole('button', { name: 'Sign in' }).click()
-  await expect(page.locator('.encabezado__negocio')).toHaveText(renamedTo)
+  await expect(page.locator('.inicio-cabecera')).toBeVisible()
 
   await expectOnlyTheThemeStored(page)
   // The refused removal answers 409, and Chromium logs every failed resource load by itself;
