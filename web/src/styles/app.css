@@ -781,8 +781,9 @@ body {
 }
 
 /* The Home | Analysis segment (phone only: `HomeViewSwitch` draws nothing on a computer). Two
- * links on a --linea track, the palette's nearest step to the drawing's (a mixed colour would be
- * read back by the mobile contrast check as `color(srgb …)`, which it cannot prove). Each link is a 44 px box that paints the 36 px pill: its
+ * links on an --acento-suave track, the palette's nearest step to the drawing's: a mixed colour
+ * would be read back by the mobile contrast check as `color(srgb …)`, which it cannot prove, and
+ * --linea would be the same fill as the --linea pressed cue, which would then show nothing. Each link is a 44 px box that paints the 36 px pill: its
  * transparent block border keeps the fill off the extra 4 px, and its negative block margin
  * gives that 4 px back, so the track stays as tall as the drawing (36 px pill + 3 px padding).
  * The pill child holds the word. The marked option is the --superficie pill with the drawing's
@@ -790,7 +791,7 @@ body {
 .inicio-segmentos {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  background: var(--linea);
+  background: var(--acento-suave);
   border-radius: 12px;
   padding: 3px;
 }
