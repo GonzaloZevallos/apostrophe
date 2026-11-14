@@ -10,7 +10,7 @@ import type { Browser, Page } from '@playwright/test'
 import { HOME, LOGIN } from '../src/routes.js'
 import { BRAKE_MESSAGE, FORGOT_SHEET_TEXT } from '../src/copy/auth.js'
 import { expect, test, withToastRecorder } from './fixtures.js'
-import { signUpNewBusiness } from './helpers/signup.js'
+import { expectBusinessNameOnPhone, signUpNewBusiness } from './helpers/signup.js'
 import { uniqueTag } from './helpers/unique.js'
 
 const FORGOT = 'Forgot your password?'
@@ -71,8 +71,9 @@ for (const scheme of SCHEMES) {
       await page.getByLabel('Password', { exact: true }).fill(owner.password)
       await page.getByRole('button', { name: 'Sign in' }).click()
 
-      await expect(page.locator('.encabezado__negocio')).toHaveText(owner.businessName)
+      await expect(page.locator('.inicio-cabecera')).toBeVisible()
       expect(new URL(page.url()).pathname).toBe(HOME)
+      await expectBusinessNameOnPhone(page, owner.businessName)
       await page.context().close()
     })
   }
@@ -93,7 +94,7 @@ for (const scheme of SCHEMES) {
       await page.getByRole('button', { name: 'Sign in' }).scrollIntoViewIfNeeded()
       await page.getByRole('button', { name: 'Sign in' }).click()
 
-      await expect(page.locator('.encabezado__negocio')).toHaveText(owner.businessName)
+      await expectBusinessNameOnPhone(page, owner.businessName)
       await page.context().close()
     })
   }

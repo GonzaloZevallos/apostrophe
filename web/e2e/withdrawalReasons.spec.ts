@@ -14,7 +14,7 @@ import { pickStockVariety, pickWithdrawalReason, pickWithdrawalVariety } from '.
 import { HOME, VARIETIES } from '../src/routes.js'
 import { watchConsole } from './console.js'
 import { openTakeFromStock } from './helpers/openScreens.js'
-import { signUpNewBusiness } from './helpers/signup.js'
+import { expectBusinessNameOnPhone, signUpNewBusiness } from './helpers/signup.js'
 import { uniqueTag } from './helpers/unique.js'
 
 test.use({ viewport: { width: 390, height: 844 } })
@@ -27,7 +27,7 @@ test('a seller adds a withdrawal reason, records a withdrawal with it and reads 
 
   const businessName = `Flores de Motivos ${uniqueTag()}`
   await signUpNewBusiness(page, { businessName, email: `duena-motivos-${uniqueTag()}@example.com` })
-  await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
+  await expectBusinessNameOnPhone(page, businessName)
 
   // A variety with one lot: 50 g for $ 20.000.
   await page.goto(VARIETIES)

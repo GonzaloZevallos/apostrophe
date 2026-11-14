@@ -556,7 +556,7 @@ _Avoid_: discount line, coupon
 ## Language
 
 **Yerba mark**:
-La marca del producto Apostrophe: un cuadrado redondeado #1E6B47 con el apóstrofo en blanco, igual en claro y oscuro, cuya única fuente es `web/public/icons/mark.svg`. De ella derivan el ícono de la app, el favicon y la marca del encabezado del teléfono. Es del producto, nunca de un Business, y nunca aparece en el Catalog, el Sale bill ni en Telegram. En la app: no tiene palabra propia; su nombre accesible es "apostrophe".
+La marca del producto Apostrophe: un cuadrado redondeado #1E6B47 con el apóstrofo en blanco, igual en claro y oscuro, cuya única fuente es `web/public/icons/mark.svg`; de ella derivan el ícono de la app, el favicon y el lockup con el Wordmark, y desde GH-723 ningún encabezado del teléfono la muestra. Es del producto, nunca de un Business, y nunca aparece en el Catalog, el Sale bill ni en Telegram. En la app: no tiene palabra propia; su nombre accesible es "apostrophe".
 _Avoid_: logo, icon, badge, Business logo
 
 **Wordmark**:

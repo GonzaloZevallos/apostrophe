@@ -127,11 +127,11 @@ test('the Analysis segment on Home reaches Analysis under the gated shell', asyn
 
   render(<App />)
 
-  const main = await screen.findByRole('main')
-  await userEvent.click(within(main).getByRole('link', { name: 'Analysis' }))
+  await screen.findByRole('main')
+  await userEvent.click(within(await screen.findByRole('group', { name: 'Home view' })).getByRole('link', { name: 'Analysis' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(ANALYSIS))
-  const group = await within(await screen.findByRole('main')).findByRole('group', { name: 'Home view' })
+  const group = await screen.findByRole('group', { name: 'Home view' })
   expect(within(group).getByRole('link', { name: 'Analysis' })).toHaveAttribute('aria-current', 'page')
 })
 

@@ -13,7 +13,7 @@ import { CATALOG, HOME, LOGIN } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
-import { signUpNewBusiness } from './helpers/signup.js'
+import { expectBusinessNameOnPhone, signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { openGastos } from './helpers/openScreens.js'
@@ -34,7 +34,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   const businessName = `Flores de Ajustes ${uniqueTag()}`
 
   await signUpNewBusiness(page, { businessName, email: ownerEmail })
-  await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
+  await expectBusinessNameOnPhone(page, businessName)
 
   // A category with an expense in it, so its removal is refused later.
   await openGastos(page)
@@ -130,7 +130,8 @@ test('a seller goes through every Configuración group from the phone, with no c
   await page.getByLabel('Email address', { exact: true }).fill(ownerEmail)
   await page.getByLabel('Password', { exact: true }).fill(NEW_PASSWORD)
   await page.getByRole('button', { name: 'Sign in' }).click()
-  await expect(page.locator('.encabezado__negocio')).toHaveText(renamedTo)
+  // Signed back in with the new password: the business is the renamed one, read where the phone shows it.
+  await expectBusinessNameOnPhone(page, renamedTo)
 
   await expectOnlyTheThemeStored(page)
   // The refused removal answers 409, and Chromium logs every failed resource load by itself;

@@ -53,7 +53,7 @@ import { CUSTOMERS, SALE, SALES, SALE_NEW, VARIETIES, VARIETY_NEW } from '../src
 import { expectPath } from './helpers/url.js'
 import { expectToast } from './helpers/toast.js'
 import { choosePaymentMethod, expect, test, withToastRecorder } from './fixtures.js'
-import { signUpNewBusiness } from './helpers/signup.js'
+import { expectBusinessNameOnPhone, signUpNewBusiness } from './helpers/signup.js'
 import { setPriceDate } from './helpers/priceDate.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -126,7 +126,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   // Accept a new-business invitation.
   await signUpNewBusiness(page, { businessName, email: ownerEmail })
-  await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
+  await expectBusinessNameOnPhone(page, businessName)
 
   // Two priced varieties and one with no price at all, for the "no price that day"
   // check below. Jazmín's own price is backdated well before this run's own week

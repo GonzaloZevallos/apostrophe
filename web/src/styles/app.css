@@ -504,6 +504,48 @@ body {
   gap: var(--espacio-xl);
 }
 
+/* Home and Analysis put their header in `HomeLayout`, above the body, so the body's own top
+ * padding is the gap that header used to leave under it (the same `--espacio-xl`). */
+.cuerpo--bajo-cabecera {
+  padding-top: var(--espacio-xl);
+}
+
+/* The header of Home and Analysis (`HomeLayout`): a plain div above the body's `main`, scrolling
+ * with the page. It owns its own side and top spacing from tokens only; the safe-area insets
+ * come from `.disposicion`. On the computer it holds the business name and the title, stacked
+ * with no gap; on the phone a date row, the segment and the hidden title, a screen apart. */
+.inicio-cabecera {
+  display: flex;
+  flex-direction: column;
+  padding: var(--espacio-lg) var(--margen-pantalla) 0;
+}
+
+@media (max-width: 899.98px) {
+  .inicio-cabecera {
+    gap: var(--espacio-xl);
+  }
+}
+
+/* The date row: the date takes the free width and never wraps, the "Editar" slot is a
+ * zero-width inert box, and the avatar closes the row. */
+.inicio-cabecera__fila {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+}
+
+.inicio-cabecera__fecha {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inicio-cabecera__editar {
+  flex: 0 0 0;
+}
+
 .encabezado__negocio {
   display: block;
   font-size: 14px;
@@ -512,6 +554,8 @@ body {
 
 .encabezado__titulo {
   display: block;
+  margin: 0;
+  font: inherit;
   font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.02em;

@@ -14,7 +14,7 @@ import { CATALOG, HOME, SETTINGS_INTEGRATIONS, VARIETIES } from '../src/routes.j
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
-import { signUpNewBusiness } from './helpers/signup.js'
+import { expectBusinessNameOnPhone, signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openCatalog } from './helpers/openScreens.js'
 import { uniqueTag } from './helpers/unique.js'
@@ -35,7 +35,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   const businessName = `Flores del Bot ${uniqueTag()}`
 
   await signUpNewBusiness(page, { businessName, email: ownerEmail })
-  await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
+  await expectBusinessNameOnPhone(page, businessName)
 
   // A variety with a price, so the catalog has something to publish.
   await page.goto(VARIETIES)

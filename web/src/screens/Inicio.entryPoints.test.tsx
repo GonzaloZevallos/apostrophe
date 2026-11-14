@@ -41,9 +41,9 @@ async function openHome(viewport: Viewport) {
 
 describe('Home', () => {
   test('on the phone Home is selected and Analysis opens /analysis', async () => {
-    const main = await openHome('phone')
+    await openHome('phone')
 
-    const group = within(main).getByRole('group', { name: 'Home view' })
+    const group = screen.getByRole('group', { name: 'Home view' })
     expect(within(group).getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page')
 
     await userEvent.click(within(group).getByRole('link', { name: 'Analysis' }))
@@ -52,8 +52,8 @@ describe('Home', () => {
   })
 
   test('on the computer there is no segment', async () => {
-    const main = await openHome('computer')
+    await openHome('computer')
 
-    expect(within(main).queryByRole('group', { name: 'Home view' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Home view' })).not.toBeInTheDocument()
   })
 })

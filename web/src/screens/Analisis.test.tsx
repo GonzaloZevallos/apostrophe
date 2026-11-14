@@ -13,6 +13,7 @@ import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import { SHOWN_EN } from '../test/shownLanguage'
+import { homeLayoutRoute } from '../test/homeLayoutRoute'
 import { screenRoute } from '../test/screenRoute'
 import analysisEmptyFixture from '../api/fixtures/analysis-empty.json'
 import analysisFixture from '../api/fixtures/analysis.json'
@@ -93,7 +94,7 @@ function renderAnalisis(
   render(
     <QueryClientProvider client={new QueryClient()}>
       <RouterProvider
-        router={createMemoryRouter([{ element: <Provide />, children: [screenRoute('analysis', <Analisis />)] }], {
+        router={createMemoryRouter([{ element: <Provide />, children: [homeLayoutRoute([screenRoute('analysis', <Analisis />)])] }], {
           initialEntries: [ANALYSIS],
         })}
       />
