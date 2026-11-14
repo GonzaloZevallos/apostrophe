@@ -86,7 +86,10 @@ test('a save opened from the Analysis card goes back to Analysis and toasts "Exp
   const router = renderExpenses([ANALYSIS], api());
 
   await userEvent.click(
-    await screen.findByRole("link", { name: "Add expense" }),
+    within(await screen.findByRole("group", { name: "Expenses" })).getByRole(
+      "link",
+      { name: "Record expense" },
+    ),
   );
   await fillForm();
   await userEvent.click(
@@ -102,7 +105,10 @@ async function openFromAnalysis(
   router: ReturnType<typeof renderExpenses>,
 ): Promise<void> {
   await userEvent.click(
-    await screen.findByRole("link", { name: "Add expense" }),
+    within(await screen.findByRole("group", { name: "Expenses" })).getByRole(
+      "link",
+      { name: "Record expense" },
+    ),
   );
   expect(router.state.location.pathname).toBe(EXPENSE_NEW);
 }
@@ -358,7 +364,7 @@ test("nothing chosen: the field reads its placeholder and the form cannot be sav
 
 describe.each([
   ["Expenses", [EXPENSES], EXPENSES, "Add expense"],
-  ["Analysis", [ANALYSIS], ANALYSIS, "Add expense"],
+  ["Analysis", [ANALYSIS], ANALYSIS, "Record expense"],
 ] as const)("the new expense opened from %s", (_origin, entries, parent, link) => {
   async function open(): Promise<ReturnType<typeof renderExpenses>> {
     stubViewport("phone");

@@ -1,7 +1,7 @@
 /**
  * Analysis' entry points, through the real router (CODING_STANDARDS §10): the Home | Analysis
- * segment with Analysis selected ("Home" leads to Home), and the Expenses card with "Add
- * expense" (the Expense form, whose "Close" goes back to where it was opened) and "See the
+ * segment with Analysis selected ("Home" leads to Home), and the Expenses card with "Record
+ * expense" (the Expense form, whose "Close" goes back to where it was opened) and "See
  * expenses". The computer reaches Expenses from the side rail, so there the card and the
  * segment are absent.
  */
@@ -59,24 +59,36 @@ describe('Analysis on the phone', () => {
     expect(router.state.location.pathname).toBe(HOME)
   })
 
-  test('the Expenses card: "See the expenses" opens Expenses', async () => {
+  test('the Expenses card: "See expenses" opens Expenses', async () => {
     const main = await openAt(ANALYSIS, 'phone')
 
     const card = within(main).getByRole('group', { name: 'Expenses' })
-    await userEvent.click(within(card).getByRole('link', { name: 'See the expenses' }))
+    await userEvent.click(within(card).getByRole('link', { name: 'See expenses' }))
 
     expect(router.state.location.pathname).toBe(EXPENSES)
   })
 
-  test('the Expenses card: "Add expense" opens the form, and Close goes back to Analysis', async () => {
+  test('the Expenses card: "Record expense" opens the form, and Close goes back to Analysis', async () => {
     const main = await openAt(ANALYSIS, 'phone')
 
     const card = within(main).getByRole('group', { name: 'Expenses' })
-    await userEvent.click(within(card).getByRole('link', { name: 'Add expense' }))
+    await userEvent.click(within(card).getByRole('link', { name: 'Record expense' }))
 
     expect(router.state.location.pathname).toBe(EXPENSE_NEW)
     await userEvent.click(await screen.findByRole('button', { name: 'Close' }))
     await waitFor(() => expect(router.state.location.pathname).toBe(ANALYSIS))
+  })
+
+  test('the Expenses card has exactly the links "Record expense" and "See expenses", and none of the old labels', async () => {
+    const main = await openAt(ANALYSIS, 'phone')
+
+    const card = within(main).getByRole('group', { name: 'Expenses' })
+    const names = within(card)
+      .getAllByRole('link')
+      .map((link) => link.textContent)
+    expect(names).toEqual(['Record expense', 'See expenses'])
+    expect(within(card).queryByRole('link', { name: 'Add expense' })).not.toBeInTheDocument()
+    expect(within(card).queryByRole('link', { name: 'See the expenses' })).not.toBeInTheDocument()
   })
 
   test('the Expense form opened with no history closes to Expenses', async () => {
