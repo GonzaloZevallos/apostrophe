@@ -7,7 +7,7 @@
  * It is the backstop of `src/architecture/touch.test.ts`, which finds every tappable control
  * in the markup and reads the stylesheet. This one is the authority on what a person sees,
  * but it runs on an empty business, so it covers chrome and settings only: the bar, the
- * tabs, Análisis, Gastos, Configuración's list, Tu cuenta, Apariencia, Inicio's first-run controls, the
+ * tabs, Análisis, Gastos, Configuración's list, Tu cuenta, Apariencia, the
  * computer sidebar with its business row, and Entrar signed out. List rows (sales, expenses,
  * customers, varieties) are covered by the static scan and by eye.
  */
@@ -95,6 +95,8 @@ async function tagControls(page: Page): Promise<{ probe: string; name: string }[
         const classes = [...element.classList]
         if (box.width === 0 || box.height === 0 || unavailable) continue
         if (element.tagName === 'INPUT' || classes.some((cls) => exempt.includes(cls))) continue
+        // The Settings avatar is a box only: its cue is on its disc, measured in its own test below.
+        if (classes.includes('inicio__avatar')) continue
         const key = `${element.tagName} ${classes.join(' ')}`
         const count = taken.get(key) ?? 0
         if (count >= perSet) continue
@@ -160,6 +162,104 @@ test.describe('on a phone', () => {
 
       expect(messages).toEqual([])
     })
+  }
+})
+
+test.describe('the Settings avatar on a phone', () => {
+  for (const theme of THEMES) {
+    for (const route of [HOME, ANALYSIS]) {
+      test(`${route}: a 44 px link holding the drawn disc, clear of the segment, with a ring and a press cue (${theme})`, async ({ page }) => {
+        const messages: string[] = []
+        watchConsole(page, messages)
+        await page.setViewportSize(PHONE)
+        await signUpNewBusiness(page, {
+          businessName: `Flores del Avatar ${theme} ${uniqueTag()}`,
+          email: `duena-avatar-${theme}-${uniqueTag()}@example.com`,
+        })
+        for (const width of [320, 360, 390]) {
+          await page.setViewportSize({ width, height: PHONE.height })
+          await openIn(page, route, theme)
+          const avatar = page.getByRole('link', { name: 'Settings', exact: true })
+          await expect(avatar).toHaveCount(1)
+
+          const m = await avatar.evaluate((link) => {
+            const disc = link.firstElementChild as HTMLElement
+            const own = link.getBoundingClientRect()
+            const drawn = disc.getBoundingClientRect()
+            const style = getComputedStyle(link)
+            const at = (x: number, y: number) => {
+              const hit = document.elementFromPoint(x, y)
+              return hit === link || hit === disc
+            }
+            return {
+              own: { x: own.x, y: own.y, width: own.width, height: own.height },
+              drawn: { x: drawn.x, y: drawn.y, width: drawn.width, height: drawn.height },
+              fill: style.backgroundColor,
+              border: style.borderTopWidth,
+              hits: [
+                at(own.x + own.width / 2, own.y + own.height / 2),
+                at(own.x + 2, own.y + 2),
+                at(own.x + own.width - 2, own.y + 2),
+                at(own.x + 2, own.y + own.height - 2),
+                at(own.x + own.width - 2, own.y + own.height - 2),
+              ],
+            }
+          })
+          expect(m.own.width, `${route} at ${width}: the box is at least 44 wide`).toBeGreaterThanOrEqual(44)
+          expect(m.own.height, `${route} at ${width}: the box is at least 44 tall`).toBeGreaterThanOrEqual(44)
+          expect(m.drawn.width, 'the drawn disc is 36 wide').toBe(36)
+          expect(m.drawn.x - 4).toBeGreaterThanOrEqual(m.own.x - 0.01)
+          expect(m.drawn.y - 4).toBeGreaterThanOrEqual(m.own.y - 0.01)
+          expect(m.drawn.x + m.drawn.width + 4).toBeLessThanOrEqual(m.own.x + m.own.width + 0.01)
+          expect(m.drawn.y + m.drawn.height + 4).toBeLessThanOrEqual(m.own.y + m.own.height + 0.01)
+          expect(m.fill, 'the link draws no fill').toBe('rgba(0, 0, 0, 0)')
+          expect(m.border, 'the link draws no border').toBe('0px')
+          expect(m.hits, 'the link or its disc is hit at the centre and the four inset corners').toEqual([true, true, true, true, true])
+
+          const segment = page.getByRole('group', { name: 'Home view' }).getByRole('link')
+          for (const link of await segment.all()) {
+            const apart = await link.evaluate((other, mine) => {
+              const a = other.getBoundingClientRect()
+              return a.right <= mine.x || a.left >= mine.x + mine.width || a.bottom <= mine.y || a.top >= mine.y + mine.height
+            }, m.own)
+            expect(apart, `${route} at ${width}: the avatar's box and a segment link do not overlap`).toBe(true)
+          }
+        }
+
+        // Keyboard: Tab reaches the link; the ring is the disc's, never the link's.
+        await openIn(page, route, theme)
+        const avatar = page.getByRole('link', { name: 'Settings', exact: true })
+        for (let step = 0; step < 12; step += 1) {
+          await page.keyboard.press('Tab')
+          if (await avatar.evaluate((link) => link === document.activeElement)) break
+        }
+        await expect(avatar).toBeFocused()
+        const ring = await avatar.evaluate((link) => ({
+          link: getComputedStyle(link).outlineStyle,
+          disc: getComputedStyle(link.firstElementChild as Element).outlineStyle,
+        }))
+        expect(ring).toEqual({ link: 'none', disc: 'solid' })
+
+        // Pressed: the link scales and the ring shows over the disc; the link paints no fill.
+        const box = await avatar.boundingBox()
+        if (box === null) throw new Error('the avatar has no box')
+        const cue = async () =>
+          avatar.evaluate((link) => ({
+            transform: getComputedStyle(link).transform,
+            ring: getComputedStyle(link, '::after').boxShadow,
+          }))
+        const resting = await cue()
+        await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+        await page.mouse.down()
+        const pressed = await cue()
+        await page.mouse.move(0, 0)
+        await page.mouse.up()
+        expect(resting.transform).toBe('none')
+        expect(pressed.transform).toBe('matrix(0.98, 0, 0, 0.98, 0, 0)')
+        expect(pressed.ring).not.toBe(resting.ring)
+        expect(messages).toEqual([])
+      })
+    }
   }
 })
 

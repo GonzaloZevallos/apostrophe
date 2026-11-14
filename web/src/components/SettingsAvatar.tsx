@@ -1,7 +1,9 @@
 /**
  * The phone's one entry to Settings: the business's initials in a disc at the end of the
  * header row of Home, Sales, Customers, Products, Analysis and Expenses. Its name is the fixed
- * word "Settings", not the business (the initials are the glyph, not the name). The computer
+ * word "Settings", not the business (the initials are the glyph, not the name). The link is a
+ * 44 px touch box with negative margins that draws nothing; the drawn 36 px disc is its child.
+ * While the business is not known the disc is empty, the link stays. The computer
  * has the side rail's Business row instead, so there it draws nothing (a viewport decision,
  * `useViewport`, not CSS: no hidden twin is left in the page for a screen reader).
  */
@@ -21,7 +23,7 @@ export default function SettingsAvatar() {
   if (useViewport() === 'computer') return null
   return (
     <InAppLink to={SETTINGS} aria-label={t('common:settings')} className="inicio__avatar">
-      {me == null ? '' : initialsOf(me.business_name)}
+      <span className="inicio__avatar-disc">{me == null ? '' : initialsOf(me.business_name)}</span>
     </InAppLink>
   )
 }
