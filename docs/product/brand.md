@@ -39,7 +39,7 @@ La marca aparece en esos lugares y en ningún otro: ni en los Tab roots (Home, A
 **El encabezado de Home y Analysis en el teléfono no la muestra** (parte 2 de GH-723, decisión del dueño)
 
 - Desde GH-723, el encabezado compartido de Home y Analysis en el teléfono muestra la línea de fecha, el segmento Home | Analysis y el avatar "Settings" (navigation.md), sin la Yerba mark, sin el nombre del Business y sin título visible. Antes, la Yerba mark iba en línea al comienzo de la fila del nombre del Business en Home, solo cuando el nombre entraba entero a su lado.
-- Con eso se fue la forma de la Yerba mark sola (sin Wordmark): la variante de `BrandMark` que la dibujaba y su CSS se borran. Lo que quede del lockup (sus tamaños, su recorte) sigue solo mientras lo use algún lugar de la tabla de arriba.
+- Con eso, la forma de la Yerba mark sola (sin Wordmark) se quedó sin ninguna pantalla que la use. La variante `'mark'` de `BrandMark`, su CSS (`.brand-mark--mark`, `.inicio__cabecera-marca`), su token de tamaño y sus casos de test siguen en el código, sin llamador, hasta que #736 los borre. Ninguna pantalla nueva los vuelve a usar mientras tanto. Lo que quede del lockup (sus tamaños, su recorte) sigue solo mientras lo use algún lugar de la tabla de arriba.
 - La identidad en el teléfono la sigue dando el ícono de la app en la pantalla de inicio y el lockup de Sign in, de la aceptación de Invitation y del primer paso del Onboarding.
 
 **Sign in, aceptación de Invitation y primer paso del Onboarding**
@@ -98,7 +98,7 @@ La marca aparece en esos lugares y en ningún otro: ni en los Tab roots (Home, A
 - **Geist sin red.** El e2e no hace ningún pedido de tipografía fuera de la instalación.
 - **Cifras alineadas.** La regla `tabular-figures` del Mobile check informa cero infracciones.
 - **Teléfono sin problemas nuevos.** El Mobile check imprime cero infractores nuevos, las listas de infractores solo se achican, la barra lateral muestra como mucho un elemento de marca visible, y registrar una Sale desde el teléfono sigue tomando menos de un minuto.
-- **Sin marca en el encabezado de Home y Analysis.** En el teléfono, en `/` y en `/analysis`, no hay ninguna imagen "apostrophe" ni nombre del Business en el encabezado (parte 2 de GH-723); los tests de `BrandMark` ya no tienen casos de la marca sola ni del recorte, y el lockup de Sign in, de la aceptación de Invitation, del primer paso del Onboarding y de la barra lateral sigue igual.
+- **Sin marca en el encabezado de Home y Analysis.** En el teléfono, en `/` y en `/analysis`, no hay ninguna imagen "apostrophe" ni nombre del Business en el encabezado (parte 2 de GH-723), y el lockup de Sign in, de la aceptación de Invitation, del primer paso del Onboarding y de la barra lateral sigue igual. Cuando #736 borre la variante de la marca sola, los tests de `BrandMark` dejan de tener sus casos de la marca sola y del recorte.
 - **Misma app instalada.** El `id`, el `name` y el `short_name` del manifest no cambian.
 
 ## Reglas fijas

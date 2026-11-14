@@ -20,6 +20,8 @@ Este job afina el primero para cada fila de semana y de mes; no es un job nuevo.
 
 **Cuando** estoy en la pestaña Home del celular y quiero pasar entre la vista en vivo y la vista de historia de mi negocio, **quiero** que las dos opciones se llamen como las vistas que abren, Home y Analysis, **para** saber dónde estoy y adónde me lleva la otra opción sin un "Today" encima de otro. (#733, navigation.md: afina el job de navegación para el celular. Acá lo sirve el segmento de Analysis, con "Analysis" elegido y "Home" para volver.)
 
+**Cuando** abro Home en el celular entre pedidos, **quiero** que arriba de la pantalla se vea qué día estoy mirando y poder pasar entre Home y Analysis con un toque, **para poder** ver cómo va el día o el mes. No necesito que la app me diga en qué Business estoy, porque ya lo sé. (Parte 2 de GH-723, navigation.md: afina el job de navegación para el celular. Acá lo sirve el mismo encabezado de Home, en el mismo lugar, con "Analysis" elegido; el mes que se lee lo sigue nombrando el selector de mes.)
+
 Criterios de éxito:
 
 1. **Respuestas sin cuentas**: desde una sola pantalla en el teléfono, un vendedor puede nombrar el producto de mayor Margin del mes elegido y el de menor Margin, la Best week de las últimas 8 semanas, el Best weekday y la Expense category que más se llevó ese mes.
@@ -40,6 +42,7 @@ Criterios de éxito:
 11. **Nada cambia para un negocio existente** (GH-318, parte de Withdrawal reasons): ve las mismas cifras en cada fila, cabecera y línea desde el First record; la única diferencia visible es que "Promotion" ahora dice "Marketing".
 12. **Se llega sin More** (GH-651): en el teléfono, Analysis se abre en 1 toque desde Home con el segmento Home | Analysis, y Expenses y su formulario se abren desde la tarjeta Expenses de Analysis.
 13. **El segmento nombra sus vistas** (#733): en el teléfono, las opciones del segmento de Analysis dicen "Home" y "Analysis", en pantalla y en su nombre accesible; ninguna dice "Today", y "Home" vuelve a Home en 1 toque.
+14. **El mismo encabezado que Home** (parte 2 de GH-723): en el teléfono, Analysis muestra la misma línea de fecha (el hoy del Business, nunca el mes que se lee), el mismo avatar y el mismo segmento, en el mismo lugar que Home, sin título visible y con un solo h1, oculto a la vista. Están en todos los estados de Analysis. En la computadora solo se ve el h1 "Analysis", como antes.
 
 # Análisis
 
@@ -156,10 +159,15 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 ![Analysis en el teléfono](../assets/screens/Analisis.webp)
 
 - **Dónde**: en el teléfono, una Tab root a la que se llega con el segmento Home | Analysis de Home: muestra la barra con Home marcada como activa y "+ New sale". En la computadora, "Analysis" en la barra lateral, debajo del separador (navigation.md). More ya no existe (GH-651).
-- **Encabezado del teléfono**: el título "Analysis" con el avatar "Settings" al final de la fila (navigation.md); el título se corta con puntos suspensivos antes de que el avatar se achique.
-- **El segmento Home | Analysis** (solo en el teléfono): debajo del encabezado, el mismo control de navegación de Home, un grupo con nombre accesible "Home view" de dos links de al menos 44 px, "Home" y "Analysis", con "Analysis" elegido (`aria-current="page"` y peso, nunca solo color). "Home" vuelve a Home. Ninguna opción dice "Today" (#733).
+- **Encabezado del teléfono** (compartido con Home desde la parte 2 de GH-723, navigation.md): el mismo encabezado de Home, en el mismo lugar, dibujado por el layout de ruta `HomeLayout` arriba del contenido y fuera de su área de contenido. Es un `div`, no es fijo y se va con el scroll. En este orden:
+  1. Una fila con la línea de fecha, un lugar vacío y el avatar "Settings" al final. La línea de fecha es el hoy del Business como dd/mm, tomado del `me.today` de la Session, nunca el mes que se lee: ese lo nombra el selector de mes. Nunca se parte en dos líneas y se corta con puntos suspensivos antes de que el avatar se achique. El lugar vacío ocupa el lugar que el dibujo le da a "Sumar gráfico" y no tiene link, botón, rol, texto ni elemento enfocable.
+  2. El segmento Home | Analysis.
+  3. El único h1 de la pantalla, "Analysis", oculto a la vista: solo lo leen los lectores de pantalla. No hay título visible.
+
+  No espera las cifras: está en los estados cargando, error, vacío y con datos, así que siempre se puede volver a Home o abrir Settings, y el `aria-busy` sigue en el área de contenido.
+- **El segmento Home | Analysis** (solo en el teléfono): dentro del encabezado, debajo de la fila de la fecha, el mismo control de navegación de Home, un grupo con nombre accesible "Home view" de dos links de al menos 44 px, "Home" y "Analysis", con "Analysis" elegido (`aria-current="page"` y peso, nunca solo color). "Home" vuelve a Home. Ninguna opción dice "Today" (#733).
 - **La tarjeta Expenses** (solo en el teléfono): debajo del segmento y antes de las cifras, con el título "Expenses", "Add expense" (abre el formulario de la Expense con la fecha de hoy) y "See the expenses" (abre Expenses), cada una de al menos 44 px (expenses.md). No espera las cifras: está en los estados cargando, error, vacío y con datos. Es solo una entrada; no muestra ninguna cifra.
-- **Computadora**: la disposición de `AnalisisCompu`, con las tres secciones como tablas. La disposición del teléfono nunca la cambia: su captura sigue igual, y el segmento, el avatar y la tarjeta Expenses no se dibujan.
+- **Computadora**: la disposición de `AnalisisCompu`, con las tres secciones como tablas, y arriba solo el h1 visible "Analysis", sin nombre del Business. La disposición del teléfono nunca la cambia: su captura sigue igual, y la línea de fecha, el segmento, el avatar y la tarjeta Expenses no se dibujan.
 - **Filas de semana y de mes**: en el teléfono son tarjetas (ver En el teléfono); en la computadora, cómo se ubican en una fila el Cost of goods sold, el Stock shortfall y las líneas de los Withdrawal reasons (líneas o subfilas) lo decide diseño. Cada cifra va en palabras, y lo pendiente y lo negativo se dicen con una palabra o un signo, nunca solo con el color, en los dos temas.
 - **Gráficos**: solo el acento y los tokens; cada barra lleva su cifra. Las marcas de mejor, las marcas de pendiente y los negativos se dicen con una palabra o una forma, nunca solo con el color.
 - **Idioma y formatos**: los textos están en el Product language (product-language.md), y cada uno sale del Copy module. El nombre de un Withdrawal reason es un dato del negocio y se muestra tal como está guardado. Los formatos siguen siendo argentinos: plata `$ 11.000`, gramos `3,5 g`, fechas `dd/mm`.
@@ -275,6 +283,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
   - No se agrega ninguna fuera de las reglas de gate.md.
 - **Se llega sin More (criterio 12)**: pruebas de Testing Library a través del router real, en ancho de teléfono: tocar "Analysis" en el segmento de Home lleva a `/analysis`; tocar "Home" en el de Analysis lleva a `/`; "Add expense" de la tarjeta abre el formulario de la Expense y "See the expenses" abre Expenses; Analysis tiene la barra, "+ New sale" y Home marcada como activa. 100% de aprobación.
 - **El segmento nombra sus vistas (criterio 13, #733)**: en ancho de teléfono, el grupo "Home view" de Analysis tiene exactamente dos links, de nombre accesible "Home" y "Analysis", y ninguno "Today"; el proyecto e2e `mobile` pasa en `Analisis` y `AnalisisOscuro` sin ningún infractor agregado. 100% de aprobación.
+- **El mismo encabezado que Home (criterio 14, parte 2 de GH-723)**: pruebas de Testing Library a través del router real (`HomeLayout.test.tsx`): en `/analysis` hay exactamente un h1, con `visualmente-oculto` en el teléfono y visible en la computadora, también cargando y con error; la línea de fecha muestra el hoy de la Session (`03/10` para 2026-10-03); la fila del encabezado no tiene otro elemento interactivo que las dos opciones del segmento y el avatar; cambiar de opción deja `router.state.historyAction === 'REPLACE'` con el índice del historial sin cambios, y la vista elegida abre arriba. El proyecto e2e `mobile` pasa en `Analisis` y `AnalisisOscuro` a 320, 360 y 390 px y al 130 %, con la línea de fecha en una sola línea y sin ningún infractor agregado, y la captura de `AnalisisCompu` no cambia. 100% de aprobación.
 - **Aislamiento (criterio 5)**: cada ruta de Analysis está en el barrido y responde solo las cifras y los nombres de Withdrawal reason de su propio negocio, nunca los datos del otro negocio sembrado.
 - **Sin eco**: después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen montos ni nombres.
 - **Velocidad**: la pantalla responde en menos de 300 ms con un año de unos cientos de ventas y unas decenas de productos (el disparador de revisión de ADR-0010).
@@ -302,6 +311,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 - En el teléfono: secciones plegables, saltos entre secciones, o textos nuevos para las tarjetas o la semana actual.
 - La barra inferior, el "+ New sale" flotante y las etiquetas de la barra en Analysis (son de Navigation, parte 1 de GH-319).
 - La pantalla Analysis rediseñada completa (sus pestañas Day/Week/Month/Year, la tarjeta Expenses con superficie propia y ubicada después de los resúmenes) y un conteo de Expenses en la tarjeta: los construye su propio issue de rediseño.
+- Mostrar en el encabezado el período que se lee ("Octubre de 2026" en el dibujo) y una función detrás del lugar vacío ("Sumar gráfico" en el dibujo) (parte 2 de GH-723).
 
 ## Planificado en GH-318
 
