@@ -17,6 +17,9 @@ test('Home importing api/firstRun is found, whatever the import form', () => {
   ])
   expect(find('src/screens/Inicio.tsx', "import type { FirstRun } from '../api/firstRun'")).toHaveLength(1)
   expect(find('src/screens/Inicio.tsx', "const m = await import('../api/firstRun')")).toHaveLength(1)
+  expect(find('src/screens/Inicio.tsx', "import '../api/firstRun'")).toEqual([
+    'src/screens/Inicio.tsx:1: Home imports api/firstRun, but shows no first-use notice',
+  ])
 })
 
 test('Home importing api/onboarding is found, in Inicio.tsx and in the files under screens/inicio/', () => {

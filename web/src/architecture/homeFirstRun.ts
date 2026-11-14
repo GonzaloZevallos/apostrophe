@@ -18,7 +18,7 @@ export interface Source {
 /** The only product files that may import `api/firstRun`. */
 export const FIRST_RUN_READERS = ['src/shell/Shell.tsx', 'src/screens/Variedades.tsx']
 
-const SETUP_MODULE = /(?:from\s+|import\s*\(\s*)['"][^'"]*\/api\/(firstRun|onboarding)['"]/g
+const SETUP_MODULE = /(?:from\s+|import\s*\(\s*|import\s+)['"][^'"]*\/api\/(firstRun|onboarding)['"]/g
 
 function isHome(path: string): boolean {
   return path === 'src/screens/Inicio.tsx' || path.startsWith('src/screens/inicio/')
