@@ -35,7 +35,7 @@ export default function HomeLayout() {
         {phone && (
           <>
             <div className="inicio-cabecera__fila">
-              <span className="inicio-cabecera__fecha">{formatDate(me.today, me.today)}</span>
+              <span className="inicio-cabecera__fecha titulo">{formatDate(me.today, me.today)}</span>
               <span className="inicio-cabecera__editar" aria-hidden="true" />
               <SettingsAvatar />
             </div>

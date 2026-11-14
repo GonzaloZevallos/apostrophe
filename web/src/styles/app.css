@@ -540,9 +540,6 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
 }
 
 .inicio-cabecera__editar {

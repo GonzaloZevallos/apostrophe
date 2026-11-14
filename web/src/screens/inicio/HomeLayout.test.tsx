@@ -124,8 +124,19 @@ describe.each([
     expect(within(header).getByText('03/10')).toBeInTheDocument()
     expect(within(header).getByRole('link', { name: 'Settings' })).toBeEnabled()
     const other = path === HOME ? 'Analysis' : 'Today'
+    // react-router's data router does not expose the history position, so follow it: a PUSH moves
+    // one entry on, a REPLACE stays where it is.
+    const position = { index: 0, actions: [] as string[] }
+    const stop = router.subscribe((state) => {
+      position.actions.push(state.historyAction)
+      if (state.historyAction === 'PUSH') position.index += 1
+    })
     await userEvent.click(within(header).getByRole('link', { name: other }))
+    stop()
     expect(router.state.historyAction).toBe('REPLACE')
+    expect(position.index).toBe(0)
+    expect(position.actions.length).toBeGreaterThan(0)
+    expect(position.actions.every((action) => action === 'REPLACE')).toBe(true)
     expect(router.state.location.pathname).toBe(path === HOME ? ANALYSIS : HOME)
   })
 
