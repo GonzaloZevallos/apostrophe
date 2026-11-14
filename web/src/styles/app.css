@@ -5247,7 +5247,7 @@ a.ajustes-tema__opcion {
  *   .selector-pago__opcion, .gastos__mes-boton, .encabezado__volver, .historial-fila__borrar;
  *   resting on --superficie or --papel itself, so --linea is the fill cue (these come after
  *   the --superficie group): .inicio__avatar, .ajustes-tema__opcion and .inicio-segmento, plain and
- *   --activa (the Settings track is --superficie, its selected option --papel; the segment track mixes --linea into --superficie, its marked option is --superficie), and the selected variants
+ *   --activa (the Settings track is --superficie, its selected option --papel; the segment track is --acento-suave, its marked option is --superficie), and the selected variants
  *   .riel-lateral__item--activo, .riel-lateral__negocio--activo, .bar-inferior__item--activo,
  *   .pestanas__opcion--activa, .variedad-fila--activa and .selector-pago__opcion--activa.
  * .opcion-interruptor is label-wrapped (its checkbox is stretched over it and must keep the
