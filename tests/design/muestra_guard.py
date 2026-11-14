@@ -24,7 +24,7 @@ LINES = (
     "Promoción",
     "Consumo propio",
     "Gastos",
-    "Compras de flores",
+    "Compras",
     "Ganancia",
     "Caja",
 )
@@ -677,7 +677,7 @@ _ANALYSIS_WORDS = {
     "Expenses of the month": "Gastos del mes",
     "Expenses since the first record": "Gastos desde el primer registro",
     "Moved since your first record, not the money you have in cash": GROUPED_SECTION,
-    "Flower purchases": "Compras de flores",
+    "Flower purchases": "Compras",
     "Sales": "Ventas",
     "Expenses": "Gastos",
     "Profit": "Ganancia",

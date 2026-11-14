@@ -180,7 +180,7 @@ export interface CategoriaGasto extends DelNegocio {
   nombre: string;
 }
 
-/** Ojo: las compras de flores NO son gastos, son entradas de stock. */
+/** Ojo: las compras de Stock no son gastos, son entradas de stock. */
 export interface Gasto extends DelNegocio {
   id: Id;
   fecha: Date;
