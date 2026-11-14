@@ -77,8 +77,8 @@ _In the app_: Customer type
 
 **Sale**:
 Todo lo que un Customer se lleva de una vez: una fecha, como máximo un Customer, el Shipping charged, una Note opcional y una o más Sale lines. Una Sale cuenta en su propia fecha, esté paga o no. Su Customer puede omitirse solo cuando no queda nada adeudado.
+_Avoid_: order, transaction, purchase (that is stock coming in)
 _In the app_: Sale
-_Avoid_: order, transaction, purchase (that is flower coming in)
 
 **Sale without a customer**:
 Una Sale pagada por completo en el acto a alguien que no está registrado como Customer, muchas veces una persona que quizá nunca vuelva a comprar. Cuenta en todos los totales y en el historial de ningún Customer. Se le puede asignar un Customer más adelante, una sola vez; nunca pasa de un Customer a otro.
@@ -184,9 +184,9 @@ _In the app_: Cost of goods sold
 _Avoid_: COGS, average cost, cost per gram
 
 **Expense**:
-Dinero que sale por algo que no es flor, archivado bajo una Expense category. La flor que se compra es una Purchase, nunca una Expense.
-_In the app_: Expense
+Dinero que sale por algo que no es una Purchase, archivado bajo una Expense category. Lo que se compra para el Stock es una Purchase, nunca una Expense.
 _Avoid_: cost, outflow, bill
+_In the app_: Expense
 
 **Expense category**:
 El rubro propio de un Business para sus Expenses, con un nombre único dentro de ese Business sin importar mayúsculas, minúsculas ni espacios. Un Business nuevo arranca con cuatro valores por defecto en su Stored language al abrirse (en inglés "Growing supplies", "Packaging", "Shipping and transport" y "Other"), que un cambio de idioma nunca renombra; los Businesses anteriores conservan los valores que recibieron, los de español incluidos. Una Expense category no se puede eliminar mientras tenga Expenses.
@@ -580,7 +580,7 @@ Un Product que quien vende eligió dejar fuera del Catalog, sin importar su prec
 _Avoid_: hidden variety, inactive, disabled, archived
 
 **Withdrawal reason**:
-Uno de los motivos de la lista propia de un Business bajo el que se registra cada Stock withdrawal, con un nombre único en el Business (sin importar mayúsculas, minúsculas ni espacios, de hasta 60 caracteres) y una posición. Un Business nuevo arranca con "Marketing" y "Own use" en su Stored language, que un cambio de idioma nunca renombra. La lista se edita solo en Settings → Business → Withdrawal reasons, nunca queda vacía, y un motivo con retiros no se puede eliminar; nunca registra flor perdida, que es un Adjustment negativo. _In the app_: Withdrawal reasons (la lista), Reason (en el formulario), y cada motivo por su nombre.
+Uno de los motivos de la lista propia de un Business bajo el que se registra cada Stock withdrawal, con un nombre único en el Business (sin importar mayúsculas, minúsculas ni espacios, de hasta 60 caracteres) y una posición. Un Business nuevo arranca con "Marketing" y "Own use" en su Stored language, que un cambio de idioma nunca renombra. La lista se edita solo en Settings → Business → Withdrawal reasons, nunca queda vacía, y un motivo con retiros no se puede eliminar; nunca registra Stock perdido, que es un Adjustment negativo. _In the app_: Withdrawal reasons (la lista), Reason (en el formulario), y cada motivo por su nombre.
 _Avoid_: category, type, tag, cause, Promotion (old name of one default reason)
 
 **VIP type**:
