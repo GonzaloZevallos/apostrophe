@@ -8,13 +8,13 @@ Sirve al job de resultados del brief ("When I look at a day, a week or a month, 
 
 Este job afina el primero para cada fila de semana y de mes; no es un job nuevo. Antes, el Cost of goods sold y el Stock shortfall de un período pasado no se veían en ningún lado: el Stock shortfall estaba solo dentro del Profit, sin poder separarlo, y Home muestra solo la semana y el mes en curso.
 
-**Cuando** saco gramos de mi propio stock sin venderlos (para convidar en una fiesta y que la gente conozca el negocio, o para consumo propio), **quiero** registrarlo desde el teléfono en pocos toques (fecha, productos y gramos, Withdrawal reason), **para** mantener el stock bien y ver en el Profit lo que me costó promocionar el negocio y lo que consumí, sin registrar una venta que nadie hizo ni un Adjustment que se lee como flor perdida. (Acá lo sirven las líneas de costo por Withdrawal reason; el Stock withdrawal se define en stock.md.)
+**Cuando** saco gramos de mi propio stock sin venderlos (para convidar en una fiesta y que la gente conozca el negocio, o para consumo propio), **quiero** registrarlo desde el teléfono en pocos toques (fecha, productos y gramos, Withdrawal reason), **para** mantener el stock bien y ver en el Profit lo que me costó promocionar el negocio y lo que consumí, sin registrar una venta que nadie hizo ni un Adjustment que se lee como Stock perdido. (Acá lo sirven las líneas de costo por Withdrawal reason; el Stock withdrawal se define en stock.md.)
 
 **Cuando** saco stock sin venderlo, **quiero** registrarlo bajo un Withdrawal reason con mis propias palabras, **para que** Home y Analysis muestren cuánto me cuesta cada tipo de Stock withdrawal y cuánto baja mi Profit. (GH-318, parte de Withdrawal reasons: acá lo sirve una línea de costo por Withdrawal reason en la cabecera del mes, en cada fila de semana y de mes y desde el First record, en el orden de la lista del negocio; la lista se define en stock.md.)
 
 **Cuando** llevo el negocio desde el teléfono entre pedidos o en medio de un chat con un cliente, varias veces por día, **quiero** que la app esté ordenada según lo que hago de verdad y con qué frecuencia, con Analysis a mano para la mirada semanal o mensual, **para** volver al cliente en vez de buscar entre menús. (El job de navegación, navigation.md.)
 
-**Cuando** necesito registrar una Expense, sacar flor del stock, ver cómo va el negocio o cambiar una configuración desde el celular, **quiero** encontrarlo donde ya vive ese contexto (Analysis en Home, "Take from stock" en la vista de stock de Products, Settings en el encabezado), **para** terminar en pocos toques sin pasar por un menú que lo junta todo. (GH-651, el retiro de More, navigation.md: acá lo sirven el segmento Home | Analysis de Home y la tarjeta Expenses de Analysis.)
+**Cuando** necesito registrar una Expense, sacar Stock, ver cómo va el negocio o cambiar una configuración desde el celular, **quiero** encontrarlo donde ya vive ese contexto (Analysis en Home, "Take from stock" en la vista de stock de Products, Settings en el encabezado), **para** terminar en pocos toques sin pasar por un menú que lo junta todo. (GH-651, el retiro de More, navigation.md: acá lo sirven el segmento Home | Analysis de Home y la tarjeta Expenses de Analysis.)
 
 **Cuando** quiero saber cómo me fue en un mes, desde el teléfono y entre otras cosas, **quiero** elegir primero el mes y leer cada cifra de Analysis de arriba abajo, sin desplazarme de costado ni hacer zoom, **para** saber si gané plata ese mes y qué productos la dejaron. (GH-319, Analysis en el teléfono. Afina el primer job para el teléfono y cambia solo la disposición, nunca lo que muestra una sección. Antes, el dueño se desplazaba de costado y perdía a qué producto o período pertenecía una cifra, o esperaba a estar en la computadora.)
 
@@ -29,7 +29,7 @@ Criterios de éxito:
 3. **Costo honesto** (ADR-0009, ADR-0010):
    - Los Margins salen del costo real de cada Lot, como están hoy los Lots.
    - Cuando el costo de una cifra incluye gramos pendientes, la cifra lo dice con sus propios gramos y nunca los toma como si costaran $0. Una cifra de costo que está toda pendiente nunca muestra "$ 0", aparezca donde aparezca.
-   - La flor perdida por un Adjustment negativo baja el Profit.
+   - El Stock perdido por un Adjustment negativo baja el Profit.
    - Los gramos retirados bajan el Profit en la línea de su Withdrawal reason, nunca dentro del Cost of goods sold, del Stock shortfall ni de un Margin.
    - Una Stock entry o un Stock withdrawal corregidos más tarde se ven en cada semana y mes pasados afectados la próxima vez que se abre la pantalla. Ningún período se cierra nunca.
 4. **Nada leído solo por el color, nada inventado**: cada barra y cada fila llevan su propia cifra. Un período sin actividad muestra $0 o queda afuera por una regla explícita, nunca con una cifra de relleno.
