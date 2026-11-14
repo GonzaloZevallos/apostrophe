@@ -3,7 +3,7 @@ import { expectPath } from './url.js'
 import { expect } from '../fixtures.js'
 import type { Page } from '@playwright/test'
 
-/** A phone: the entry points below (the Today | Analysis segment, the Expenses card) only exist
+/** A phone: the entry points below (the Home | Analysis segment, the Expenses card) only exist
  * there; a computer reaches the same screens from the side rail. */
 const PHONE = { width: 390, height: 844 }
 
@@ -19,7 +19,7 @@ async function onPhone(page: Page, walk: () => Promise<void>): Promise<void> {
   if (before !== null) await page.setViewportSize(before)
 }
 
-/** The Today | Analysis segment's "Analysis" option, on Home or on Analysis. */
+/** The Home | Analysis segment's "Analysis" option, on Home or on Analysis. */
 function analysisOption(page: Page) {
   return page.getByRole('group', { name: 'Home view' }).getByRole('link', { name: 'Analysis' })
 }

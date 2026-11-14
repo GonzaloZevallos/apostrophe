@@ -1,6 +1,6 @@
 /**
- * Analysis' entry points, through the real router (CODING_STANDARDS §10): the Today | Analysis
- * segment with Analysis selected ("Today" leads to Home), and the Expenses card with "Add
+ * Analysis' entry points, through the real router (CODING_STANDARDS §10): the Home | Analysis
+ * segment with Analysis selected ("Home" leads to Home), and the Expenses card with "Add
  * expense" (the Expense form, whose "Close" goes back to where it was opened) and "See the
  * expenses". The computer reaches Expenses from the side rail, so there the card and the
  * segment are absent.
@@ -48,13 +48,13 @@ async function openAt(path: string, viewport: Viewport) {
 }
 
 describe('Analysis on the phone', () => {
-  test('the segment has Analysis selected and Today leads back to Home', async () => {
+  test('the segment has Analysis selected and Home leads back to Home', async () => {
     const main = await openAt(ANALYSIS, 'phone')
 
     const group = within(main).getByRole('group', { name: 'Home view' })
     expect(within(group).getByRole('link', { name: 'Analysis' })).toHaveAttribute('aria-current', 'page')
 
-    await userEvent.click(within(group).getByRole('link', { name: 'Today' }))
+    await userEvent.click(within(group).getByRole('link', { name: 'Home' }))
 
     expect(router.state.location.pathname).toBe(HOME)
   })

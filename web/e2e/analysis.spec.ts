@@ -70,7 +70,7 @@ test('a seller opens Análisis from the Home segment, moves back a month and rea
   await page.getByLabel('Details').fill('Flete al mercado')
   await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: 'Save the expense' }).click())
 
-  // Home's Today | Analysis segment → Análisis.
+  // Home's Home | Analysis segment → Análisis.
   await openAnalysis(page)
 
   // The current month: the variety row, week by week, by weekday and both expense

@@ -104,7 +104,7 @@ test('FIXED_SETS gives every exported set a non-empty reason, and names nothing 
   }
   expect(FIXED_SETS).toEqual({
     HOME_PERIODS: 'fixed view: periods',
-    HOME_VIEWS: 'fixed set: the two views of Home, Today and Analysis',
+    HOME_VIEWS: "Home and Analysis are the two views of the phone's Home tab; the app ships both and no setting adds another.",
     SALES_PERIODS: 'fixed view: periods',
     THEME_CHOICES: 'fixed set: theme choice',
     CUSTOMER_TYPE_ICON_SET: 'fixed set: the neutral icon set ships with the app',
