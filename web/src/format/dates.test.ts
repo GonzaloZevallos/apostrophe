@@ -1,11 +1,12 @@
 import type { TFunction } from 'i18next'
-import { describe, expect, test } from 'vitest'
+import { afterEach, describe, expect, test, vi } from 'vitest'
 import {
   chipDate,
   formatDate,
   formatDateLong,
   formatDateShort,
   formatMonthLong,
+  formatTodayLong,
   maxSaleDate,
   monthRange,
   parseMonth,
@@ -170,5 +171,43 @@ describe('parseMonth', () => {
     ['other parameters are ignored', 'q=1&month=2025-12', '2025-12'],
   ])('%s', (_name, search, expected) => {
     expect(parseMonth(new URLSearchParams(search), TODAY)).toBe(expected)
+  })
+})
+
+describe('formatTodayLong', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  test.each([
+    ['es', '2026-10-29', 'Jueves 29 de octubre'],
+    ['es', '2026-09-30', 'Miércoles 30 de septiembre'],
+    ['es-AR', '2026-10-03', 'Sábado 3 de octubre'],
+    ['en', '2026-10-29', 'Thursday, October 29'],
+    ['en', '2026-09-30', 'Wednesday, September 30'],
+  ])('%s reads %s as "%s"', (language, iso, expected) => {
+    expect(formatTodayLong(iso, language)).toBe(expected)
+  })
+
+  test.each([
+    ['2028-02-29', 'Tuesday, February 29'],
+    ['2026-12-31', 'Thursday, December 31'],
+    ['2026-01-01', 'Thursday, January 1'],
+  ])('%s reads %s, with no year', (iso, expected) => {
+    expect(formatTodayLong(iso, 'en')).toBe(expected)
+  })
+
+  test.each(['Pacific/Kiritimati', 'Pacific/Pago_Pago'])('reads the same under the process time zone %s', (zone) => {
+    vi.stubEnv('TZ', zone)
+    expect(formatTodayLong('2026-10-29', 'en')).toBe('Thursday, October 29')
+    expect(formatTodayLong('2026-10-29', 'es')).toBe('Jueves 29 de octubre')
+  })
+
+  test.each(['en-xa', 'en-XA', 'en_US', ''])('the unusable tag "%s" gives the English form', (tag) => {
+    expect(formatTodayLong('2026-10-29', tag)).toBe('Thursday, October 29')
+  })
+
+  test('rejects a string that is not an API date', () => {
+    expect(() => formatTodayLong('29/10/2026', 'en')).toThrow('not an API date: 29/10/2026')
   })
 })
