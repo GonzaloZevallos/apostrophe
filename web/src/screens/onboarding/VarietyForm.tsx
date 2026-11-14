@@ -8,12 +8,12 @@
  * start the next variety fresh.
  */
 
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, useEffect, useId, useState } from 'react'
 import type { OnboardingTarget } from '../../api/onboarding'
 import type { PricingSettings } from '../../api/pricingSettings'
 import Boton from '../../components/Boton'
 import SinConexion from '../../components/SinConexion'
-import PriceFields, { FieldError } from '../varieties/PriceFields'
+import PriceFields, { describedBy, FieldError, fieldIds } from '../varieties/PriceFields'
 import type { PriceValues } from '../varieties/priceFieldRules'
 import { VARIETY_NAME_HELP } from '../../copy/varieties'
 import { useVarietyWithPrice } from './useVarietyWithPrice'
@@ -33,6 +33,7 @@ const EMPTY: PriceValues = { listPrice: '', bulkPrice: '', bulkMinimum: '', vipP
 
 export default function VarietyForm({ seed, today, settings, onDirtyChange, onPriced }: VarietyFormProps) {
   const [name, setName] = useState('')
+  const nameIds = fieldIds(useId())
   const [values, setValues] = useState<PriceValues>(EMPTY)
   const { saved, sending, nameError, priceErrors, offline, submit } = useVarietyWithPrice({
     seed,
@@ -58,16 +59,18 @@ export default function VarietyForm({ seed, today, settings, onDirtyChange, onPr
     <form className="formulario" onSubmit={onSubmit}>
       {saved === null ? (
         <label className="campo">
-          <span className="campo__rotulo">{COMMON_TEXT.name}</span>
+          <span id={nameIds.label} className="campo__rotulo">{COMMON_TEXT.name}</span>
           <input
             className="campo__input"
             type="text"
             value={name}
             onChange={(event) => setName(event.target.value)}
             required
+            aria-labelledby={nameIds.label}
+            aria-describedby={describedBy(nameIds, nameError ?? undefined)}
           />
-          <span className="campo__ayuda" data-copy="help">{VARIETY_NAME_HELP}</span>
-          <FieldError message={nameError ?? undefined} />
+          <span id={nameIds.help} className="campo__ayuda" data-copy="help">{VARIETY_NAME_HELP}</span>
+          <FieldError id={nameIds.error} message={nameError ?? undefined} />
         </label>
       ) : (
         <p className="pie">{ONBOARDING_TEXT.varietyNamed(saved.name)}</p>
