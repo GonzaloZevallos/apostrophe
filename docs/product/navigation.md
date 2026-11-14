@@ -485,7 +485,7 @@ Esto cubre Settings y sus grupos, la pantalla del Catalog y la página de un Pro
 - **El encabezado de Home y Analysis (parte 2 de GH-723)**:
   - Cada cuerpo (Home y Analysis) conserva su propia área de contenido como `main`, su estado de carga y su `ref`, así que `aria-busy`, `useReturnToPlace` y ScrollSync no cambian.
   - Ninguna palabra ni nombre accesible nuevo en el Copy module y ningún formateador de fecha nuevo: la línea de fecha es una cifra.
-  - Se borra el código que pierde su último uso: la variante de la Yerba mark sola de `BrandMark`, `clipRoot` si ningún lockup lo usa, `brandBox`, el CSS `.inicio__cabecera-marca` y `.brand-mark--mark`, y el token de tamaño de la marca si nada más lo lee.
+  - Se borró el código que perdió su último uso: #736 sacó la variante de la Yerba mark sola de `BrandMark`, `clipRoot`, el CSS `.inicio__cabecera-marca`, `.brand-mark--mark` y las reglas muertas de `.inicio__cabecera`, y el token `--marca-tamano`. `brandBox` se fue antes, con #732.
   - Ninguna lista de infractores crece y ninguna tolerancia se agranda; una falla se arregla en el código, nunca en una lista.
 - **El nombre de la opción Home (#733)**: el valor del segmento en `HOME_VIEWS`, `copy/readers/homeViews.ts` y el tipo `Segment` del registro es `home`, nunca `today`; la palabra sale de `common:homeSegmentHome`, y en-XA se regenera con `web/scripts/i18n/pseudo.ts`. El ADR `20261109-more-is-retired-…` y los docs generados no se editan por la etiqueta vieja.
 

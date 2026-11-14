@@ -714,19 +714,6 @@ body {
   font-weight: 600;
 }
 
-/* Inicio's header on the phone (`Inicio.dc.html`): the name and title, and the business
- * avatar as a 44px touch target drawn at 38px (a transparent border the fill does not paint
- * under, in the phone block at the end of this file). The computer has the rail's row instead. */
-.inicio__cabecera {
-  display: flex;
-  align-items: center;
-  gap: var(--espacio-md);
-}
-
-.inicio__cabecera-titulos {
-  flex: 1;
-}
-
 /* The trailing slot of a phone header: the title takes the room the avatar leaves and is cut
  * with an ellipsis, so a long title never widens the page. Phone only: the computer draws no
  * avatar and none of these rules apply there. `--envoltura` is a row added only to hold the
@@ -6223,16 +6210,6 @@ a.ajustes-tema__opcion {
  * long name cut with an ellipsis, a figure kept on one line at a size that follows the width it
  * has (a container query, so it also follows a larger text size), and "$" never alone. */
 @media (max-width: 899.98px) {
-  .inicio__cabecera-titulos {
-    min-width: 0;
-  }
-
-  .inicio__cabecera .encabezado__negocio {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
   .panel-ventas,
   .bloque-deben,
   .ventas__cabecera .ventas__resumen {
