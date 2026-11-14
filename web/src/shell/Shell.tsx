@@ -167,7 +167,7 @@ export default function Shell() {
     <div className="disposicion" ref={layoutRef}>
       {chrome.rail && (
         <nav className="riel-lateral" aria-label={t('shell:navigation')} data-menu>
-          <BrandMark variant="lockup" />
+          <BrandMark />
           {chrome.railNuevaVenta && (
             <>
               <BotonLink

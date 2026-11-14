@@ -104,13 +104,6 @@ body {
   color: var(--acento);
 }
 
-.brand-mark--mark {
-  display: block;
-  flex: none;
-  width: var(--marca-tamano);
-  height: var(--marca-tamano);
-}
-
 .subtitulo {
   font-size: 16px;
   color: var(--tinta2);
@@ -732,34 +725,6 @@ body {
 
 .inicio__cabecera-titulos {
   flex: 1;
-}
-
-/* The business name and the mark share one box a single name line tall. When both do not fit
- * the mark wraps onto the clipped second line, so the name and the title stay where they are
- * with no mark at all; CSS decides, nothing is measured. `row-reverse` with `flex-end` draws
- * the mark before the name, the DOM keeps the name first so it takes the first line. */
-.inicio__cabecera-marca {
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: row-reverse;
-  justify-content: flex-end;
-  align-items: center;
-  align-content: flex-start;
-  gap: var(--espacio-sm);
-  font-size: 14px;
-  height: 1lh;
-  overflow: hidden;
-}
-
-.inicio__cabecera-marca .encabezado__negocio {
-  flex: 0 0 auto;
-  max-width: 100%;
-}
-
-.inicio__cabecera-marca .brand-mark--mark {
-  height: min(var(--marca-tamano), 1lh);
-  width: auto;
-  aspect-ratio: 1;
 }
 
 /* The trailing slot of a phone header: the title takes the room the avatar leaves and is cut
@@ -3833,10 +3798,6 @@ a.ajustes-tema__opcion {
 
   .riel-lateral {
     display: flex;
-  }
-
-  .inicio__cabecera-marca .brand-mark--mark {
-    display: none;
   }
 
   .inicio__avatar {

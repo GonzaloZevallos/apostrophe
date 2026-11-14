@@ -51,7 +51,7 @@ type Tree = { readonly [key: string]: string | Tree }
  * The brand's own texts, as `namespace:path`. They are never translated nor pseudo-
  * localised: the name is the same in every language, the Test locale included (`BrandMark`).
  */
-export const VERBATIM_KEYS: readonly string[] = ['brand:wordmark', 'brand:mark.label']
+export const VERBATIM_KEYS: readonly string[] = ['brand:wordmark']
 
 /** The same tree with every string value pseudo-localised: keys, suffixes and nesting stay. */
 export function generatePseudo(english: Tree, ns = '', path = ''): Tree {
