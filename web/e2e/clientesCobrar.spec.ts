@@ -10,7 +10,6 @@
  * round trip never lands on Registrar cobro again. No test measures elapsed time (ADR-0038).
  */
 
-import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import type { Page } from '@playwright/test'
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMER_PAYMENT, CUSTOMERS, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { watchConsole } from './console.js'
@@ -164,3 +163,4 @@ for (const viewport of VIEWPORTS) {
     expect(consoleMessages).toEqual([])
   })
 }
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'

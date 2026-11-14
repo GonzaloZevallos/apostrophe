@@ -13,7 +13,6 @@
  * browser console (CODING_STANDARDS.md section 9, in the browser too).
  */
 
-import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { ANALYSIS, CUSTOMER, CUSTOMER_NEW, EXPENSES, EXPENSE_CATEGORIES, SETTINGS_BUSINESS, SETTINGS_USERS, STOCK, STOCK_ENTRY, STOCK_ENTRY_NEW, VARIETIES, VARIETY } from '../src/routes.js'
 import { legacyFor } from './helpers/legacyPaths.js'
 import { expectAnyPath, expectPath } from './helpers/url.js'
@@ -211,3 +210,4 @@ test('a seller does everything the backend offers today, from the front alone', 
 })
 
 import { pickStockVariety } from './helpers/stockVariety.js'
+import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './helpers/labels.js'

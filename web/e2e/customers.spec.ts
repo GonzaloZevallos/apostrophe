@@ -16,7 +16,6 @@
  * browser's own storage.
  */
 
-import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import type { Locator, Page } from '@playwright/test'
 import { expectPath } from './helpers/url.js'
@@ -276,3 +275,4 @@ test.describe('the card\'s pinned "New sale to <name>" on a computer', () => {
     expect(end.x + end.width).toBeLessThanOrEqual(pane.x + pane.width + SUBPIXEL)
   })
 })
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'

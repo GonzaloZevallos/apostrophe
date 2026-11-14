@@ -9,7 +9,6 @@
  * of the customer card.
  */
 
-import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './helpers/labels.js'
 import type { Page } from '@playwright/test'
 import { CUSTOMER, CUSTOMER_NEW, HOME, VARIETIES } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
@@ -165,3 +164,4 @@ test('real screens: a flash toast, a toast on its own timer and the card\'s hist
 })
 
 import { pickStockVariety } from './helpers/stockVariety.js'
+import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './helpers/labels.js'

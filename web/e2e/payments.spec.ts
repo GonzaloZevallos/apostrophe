@@ -22,7 +22,6 @@
  * forbids there.
  */
 
-import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
 import type { Page } from '@playwright/test'
 import { expectPath } from './helpers/url.js'
@@ -254,3 +253,4 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page.getByRole('region', { name: 'Owed to you' }).locator('.cifra-xl')).toHaveText('$ 5.000')
   await expect(page.getByText('2 sales owing')).toBeVisible()
 })
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'

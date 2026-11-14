@@ -24,7 +24,6 @@
  * several amounts through the panel alone.
  */
 
-import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, HOME, SALES, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, pathTo } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expectToast } from './helpers/toast.js'
@@ -403,3 +402,4 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
 })
 
 import { pickStockVariety } from './helpers/stockVariety.js'
+import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './helpers/labels.js'

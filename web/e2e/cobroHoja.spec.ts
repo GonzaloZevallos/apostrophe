@@ -7,7 +7,6 @@
  * already lower; with something typed, Close asks first. Roles, names, text and URLs only.
  */
 
-import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import type { Page } from '@playwright/test'
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMERS, HOME, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { choosePaymentMethod, expect, test } from './fixtures.js'
@@ -325,3 +324,4 @@ test.describe('Record payment on a phone over a long breakdown', () => {
     await expect(page.getByText(/Payment saved/)).toBeVisible()
   })
 })
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
