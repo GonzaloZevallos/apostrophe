@@ -9,7 +9,7 @@ La identidad del producto Apostrophe: la Yerba mark, el Wordmark, la tipografía
 ## Yerba mark
 
 - Su única fuente es `web/public/icons/mark.svg`, un SVG versionado: un cuadrado redondeado #1E6B47 con el apóstrofo en blanco. Es igual en tema claro y oscuro.
-- De ese archivo derivan la marca del encabezado, el favicon y cada ícono PNG. `BrandMark` lo carga como imagen (`<img src="/icons/mark.svg">`) y nunca copia su markup dentro de `web/src`.
+- De ese archivo derivan el lockup con el Wordmark, el favicon y cada ícono PNG. `BrandMark` lo carga como imagen (`<img src="/icons/mark.svg">`) y nunca copia su markup dentro de `web/src`.
 - `scripts/design/icons.mjs` renderiza con Playwright, sin red, cargando `mark.svg` como imagen sin editar su markup:
   - `icon-192.png` e `icon-512.png`: el cuadrado redondeado sobre transparencia;
   - `icon-maskable-512.png`: #1E6B47 a sangre, con el apóstrofo dentro de la zona segura del 80 %;
@@ -31,20 +31,16 @@ La identidad del producto Apostrophe: la Yerba mark, el Wordmark, la tipografía
 
 | Lugar | Muestra |
 |---|---|
-| Teléfono: encabezado de Home, en línea al comienzo de su fila actual | Solo la Yerba mark, y solo cuando el nombre del Business entra entero a su lado |
 | Sign in, las dos pantallas de aceptación de Invitation (Business nuevo y sumarse a un Business), primer paso del Onboarding | Yerba mark con Wordmark, arriba |
 | Barra lateral de la computadora (`InicioCompu`) | Yerba mark y Wordmark arriba, sobre "+ New sale", sin rediseño |
 
-La marca aparece en esos lugares y en ningún otro: ni en los demás Tab roots (Sales, Customers, Products, More), ni en tarjetas, detalles, Sheets, los pasos del Onboarding después del primero o Reset.
+La marca aparece en esos lugares y en ningún otro: ni en los Tab roots (Home, Analysis, Sales, Customers, Products), ni en tarjetas, detalles, Sheets, los pasos del Onboarding después del primero o Reset.
 
-**Encabezado de Home en el teléfono**
+**El encabezado de Home y Analysis en el teléfono no la muestra** (parte 2 de GH-723, decisión del dueño)
 
-- La Yerba mark va en línea, al comienzo de la fila del nombre del Business, antes del nombre. El título y el avatar que lleva a Settings quedan donde estaban. No es más alta que esa línea, y el encabezado nunca gana altura por ella.
-- Lo decide el CSS, sin medir nada: el nombre y la marca comparten una caja de una sola línea. Cuando el nombre y la marca no entran juntos, la marca pasa a la línea recortada y no se ve, así que el nombre del Business nunca pierde un carácter por la marca. Phone first gana sobre mostrar la marca.
-- Mientras se ve, es `role=img` con el nombre "apostrophe". Mientras está recortada, o si el navegador no puede saber si se ve, es `aria-hidden`.
-- En la computadora la marca del encabezado de Home no se muestra; ahí la marca está en la barra lateral.
-- Nunca mueve ni oculta una flecha de regreso ni "Close", y las Sheets nunca la muestran.
-- Tocarla no hace nada. Nombra la app y no es un control.
+- Desde GH-723, el encabezado compartido de Home y Analysis en el teléfono muestra la línea de fecha, el segmento Today | Analysis y el avatar "Settings" (navigation.md), sin la Yerba mark, sin el nombre del Business y sin título visible. Antes, la Yerba mark iba en línea al comienzo de la fila del nombre del Business en Home, solo cuando el nombre entraba entero a su lado.
+- Con eso se fue la forma de la Yerba mark sola (sin Wordmark): la variante de `BrandMark` que la dibujaba y su CSS se borran. Lo que quede del lockup (sus tamaños, su recorte) sigue solo mientras lo use algún lugar de la tabla de arriba.
+- La identidad en el teléfono la sigue dando el ícono de la app en la pantalla de inicio y el lockup de Sign in, de la aceptación de Invitation y del primer paso del Onboarding.
 
 **Sign in, aceptación de Invitation y primer paso del Onboarding**
 
@@ -69,7 +65,7 @@ La marca aparece en esos lugares y en ningún otro: ni en los demás Tab roots (
 - La copia de docs conserva su `@import` de Google para Geist. Es documentación, y la app nunca la carga.
 - En las Design captures, `scripts/design/fonts.mjs` responde el pedido de Plus Jakarta Sans de los dibujos con los archivos de Geist alojados en la instalación (ADR-0042). Por eso el lado del dibujo ya sale en Geist.
 - Los dibujos de `pantallas/` no se editan. La Yerba mark y el Wordmark son las diferencias esperadas contra ellos, y no son hallazgos.
-- Las Design captures cubren Sign in, las dos pantallas de aceptación de Invitation, el primer paso del Onboarding, Home en el teléfono e `InicioCompu`.
+- Las Design captures cubren Sign in, las dos pantallas de aceptación de Invitation, el primer paso del Onboarding e `InicioCompu`.
 
 ## Tabular figures
 
@@ -80,7 +76,7 @@ La marca aparece en esos lugares y en ningún otro: ni en los demás Tab roots (
   - cantidades (gramos hoy, cualquier Unit más adelante);
   - porcentajes mostrados como cifra (Margin percentage, Average margin, Indica share);
   - Days left.
-- No cubren fechas, horas, Phone numbers, conteos dentro de una oración ("3 customers", "and N g without cost") ni texto libre.
+- No cubren fechas, horas, Phone numbers, conteos dentro de una oración ("3 customers", "and N g without cost") ni texto libre. La línea de fecha del encabezado de Home y Analysis es una fecha y no lleva Tabular figures.
 - La prueba: un número que está en una columna, en una fila de cifras o en un total que el ojo recorre hacia abajo o de costado es tabular.
 - El Mobile check tiene la regla `tabular-figures`: marca todo texto visible cuyo contenido entero es una cifra (dinero, gramos, un porcentaje o Days left) y que no lleva `tabular-nums`. Los patrones viven en `web/src/mobile-standard/figures.ts`. Esa regla no tiene archivo de infractores y el cargador rechaza uno: una cifra que falla se corrige, nunca se lista.
 
@@ -101,13 +97,13 @@ La marca aparece en esos lugares y en ningún otro: ni en los demás Tab roots (
 - **Sin azul anterior.** El azul anterior no aparece en ningún token ni en ningún ícono que la app entrega.
 - **Geist sin red.** El e2e no hace ningún pedido de tipografía fuera de la instalación.
 - **Cifras alineadas.** La regla `tabular-figures` del Mobile check informa cero infracciones.
-- **Teléfono sin problemas nuevos.** El Mobile check imprime cero infractores nuevos, las listas de infractores solo se achican, cada estado de Home o de la barra lateral muestra como mucho un elemento de marca visible, y registrar una Sale desde el teléfono sigue tomando menos de un minuto.
-- **Encabezado de Home intacto.** Con un nombre de Business corto, la Yerba mark se ve con el nombre "apostrophe". Con uno que necesita todo el ancho, no se ve y es `aria-hidden`. En los dos casos el encabezado, la caja del nombre y la posición del título quedan iguales que sin la marca, sin scroll horizontal, a 320 px y a 246 px.
+- **Teléfono sin problemas nuevos.** El Mobile check imprime cero infractores nuevos, las listas de infractores solo se achican, la barra lateral muestra como mucho un elemento de marca visible, y registrar una Sale desde el teléfono sigue tomando menos de un minuto.
+- **Sin marca en el encabezado de Home y Analysis.** En el teléfono, en `/` y en `/analysis`, no hay ninguna imagen "apostrophe" ni nombre del Business en el encabezado (parte 2 de GH-723); los tests de `BrandMark` ya no tienen casos de la marca sola ni del recorte, y el lockup de Sign in, de la aceptación de Invitation, del primer paso del Onboarding y de la barra lateral sigue igual.
 - **Misma app instalada.** El `id`, el `name` y el `short_name` del manifest no cambian.
 
 ## Reglas fijas
 
-1. La Yerba mark existe como un solo SVG versionado (`web/public/icons/mark.svg`). La marca del encabezado, el favicon y cada ícono PNG derivan de él, y el `id` del manifest nunca cambia.
+1. La Yerba mark existe como un solo SVG versionado (`web/public/icons/mark.svg`). El lockup, el favicon y cada ícono PNG derivan de él, y el `id` del manifest nunca cambia.
 2. No hay colores hex literales en `web/src` fuera de los dos archivos de tokens.
 3. `DESIGN_STANDARDS.md` y el README de `docs/product/design-system/` describen:
    - el logo y su única fuente SVG;
