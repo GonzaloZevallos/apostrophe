@@ -15,6 +15,7 @@
 
 import { expect } from '../fixtures.js'
 import type { Page } from '@playwright/test'
+import { HOME, SETTINGS_BUSINESS } from '../../src/routes.js'
 import { newBusinessInvitationUrl } from '../backend.js'
 import { uniqueTag } from './unique.js'
 
@@ -41,6 +42,21 @@ export interface SignedUpBusiness {
  */
 export async function leaveOnboarding(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Close' }).click()
+  await expect(page.locator('.inicio-cabecera')).toBeVisible()
+}
+
+/**
+ * The business a phone session landed in. The phone's Home header shows no business name, so the
+ * name is read where the phone still shows it, the Business group of Configuración, and the
+ * page goes back to Home (`.inicio-cabecera`, drawn on both viewports) for the spec to go on. It
+ * starts from a page that has landed on Home.
+ */
+export async function expectBusinessNameOnPhone(page: Page, businessName: string): Promise<void> {
+  // Landed first: a navigation now would cut a sign-in or a sign-up still on its way.
+  await expect(page.locator('.inicio-cabecera')).toBeVisible()
+  await page.goto(SETTINGS_BUSINESS)
+  await expect(page.getByLabel('Business name')).toHaveValue(businessName)
+  await page.goto(HOME)
   await expect(page.locator('.inicio-cabecera')).toBeVisible()
 }
 

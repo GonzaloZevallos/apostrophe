@@ -23,7 +23,7 @@ import { expectPath } from './helpers/url.js'
 import { expect, test, withToastRecorder } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { resetLink, supportsPasswordReset } from './backend.js'
-import { signUpNewBusiness } from './helpers/signup.js'
+import { expectBusinessNameOnPhone, signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { uniqueTag } from './helpers/unique.js'
@@ -50,7 +50,7 @@ test('changes a password from Configuración → Tu cuenta, signing an older dev
   const businessName = `Flores del Cambio ${uniqueTag()}`
 
   await signUpNewBusiness(page, { businessName, email: ownerEmail })
-  await expect(page.locator('.inicio-cabecera')).toBeVisible()
+  await expectBusinessNameOnPhone(page, businessName)
 
   // A second device, signed in as the same user.
   const otherContext = await withToastRecorder(browser.newContext({ baseURL: workerServer.url }))
@@ -60,7 +60,7 @@ test('changes a password from Configuración → Tu cuenta, signing an older dev
   await otherPage.getByLabel('Email address').fill(ownerEmail)
   await otherPage.getByLabel('Password').fill(PASSWORD)
   await otherPage.getByRole('button', { name: 'Sign in' }).click()
-  await expect(otherPage.locator('.inicio-cabecera')).toBeVisible()
+  await expectBusinessNameOnPhone(otherPage, businessName)
 
   await page.goto(SETTINGS_ACCOUNT)
   await page.getByRole('button', { name: 'Change password' }).click()
@@ -70,10 +70,10 @@ test('changes a password from Configuración → Tu cuenta, signing an older dev
   await expectToast(page, 'Password changed · we signed out your other sessions', () => sheet.getByRole('button', { name: 'Save' }).click())
 
   // This device stays signed in: `.inicio-cabecera` only renders on Home and Analysis
-  // (`Inicio.tsx`), never on a Configuración group itself, so the check navigates home rather
+  // (`HomeLayout.tsx`), never on a Configuración group itself, so the check navigates home rather
   // than reloading the settings screen it was already on.
   await page.goto(HOME)
-  await expect(page.locator('.inicio-cabecera')).toBeVisible()
+  await expectBusinessNameOnPhone(page, businessName)
 
   // The older device is signed out: its gated calls now answer 401, which is
   // exactly the point of this check, and Chromium logs every failed resource
@@ -105,7 +105,7 @@ test('resets a forgotten password from a printed link through to Inicio, then sh
   const businessName = `Flores del Reinicio ${uniqueTag()}`
 
   await signUpNewBusiness(page, { businessName, email: ownerEmail })
-  await expect(page.locator('.inicio-cabecera')).toBeVisible()
+  await expectBusinessNameOnPhone(page, businessName)
 
   const link = resetLink(ownerEmail)
 
@@ -113,7 +113,7 @@ test('resets a forgotten password from a printed link through to Inicio, then sh
   await expect(page.getByText('Choose your new password')).toBeVisible()
   await page.getByLabel('New password').fill(NEW_PASSWORD)
   await page.getByRole('button', { name: 'Save and sign in' }).click()
-  await expect(page.locator('.inicio-cabecera')).toBeVisible()
+  await expectBusinessNameOnPhone(page, businessName)
 
   // The same link, spent, now shows the dead-link state. The lookup itself
   // answers 404 account.reset_link_gone — expected, not a leak — and Chromium
