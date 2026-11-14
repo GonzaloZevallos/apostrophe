@@ -26,10 +26,7 @@ import { CATALOG } from '../routes'
 import { useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useOutletContext } from 'react-router'
-import BrandMark from '../components/BrandMark'
 import InAppLink from '../components/InAppLink'
-import HomeViewSwitch from '../components/HomeViewSwitch'
-import SettingsAvatar from '../components/SettingsAvatar'
 import { owedPlace, useReturnToPlace } from '../components/useReturnToPlace'
 import { peekPaymentReturn } from '../paymentReturn'
 import { get, NetworkError } from '../api/client'
@@ -42,7 +39,6 @@ import { AvisoCuerpo } from '../components/AvisoAmbar'
 import SinConexion from '../components/SinConexion'
 import { PINNED_CATALOG_OUT_OF_DATE } from '../copy/inicio'
 import InicioPanel from './inicio/InicioPanel'
-import { COMMON_TEXT } from '../copy/common'
 import ContentArea from '../components/ContentArea'
 
 export { PINNED_CATALOG_OUT_OF_DATE }
@@ -64,7 +60,6 @@ export default function Inicio() {
   const pinOutOfDate = pinnedCatalog.data?.status?.state === 'out_of_date'
 
   const root = useRef<HTMLElement>(null)
-  const brandBox = useRef<HTMLDivElement>(null)
   // The catalog notice above the panel makes the page taller once it answers (pending, not failed: a
   // failure draws none), so the place is applied after it, never against a shorter page.
   const settled = !pinnedCatalog.isPending
@@ -77,19 +72,7 @@ export default function Inicio() {
   return (
     <ContentArea as="main" className="pantalla" ref={root}>
       <LoadingWhile active={waiting} />
-      <div className="cuerpo">
-        <div className="inicio__cabecera">
-          <div className="inicio__cabecera-titulos">
-            <div className="inicio__cabecera-marca" ref={brandBox}>
-              <span className="encabezado__negocio">{me.business_name}</span>
-              <BrandMark variant="mark" clipRoot={brandBox} />
-            </div>
-            <span className="encabezado__titulo">{COMMON_TEXT.home}</span>
-          </div>
-          <SettingsAvatar />
-        </div>
-        <HomeViewSwitch />
-
+      <div className="cuerpo cuerpo--bajo-cabecera">
         {pinOutOfDate && (
           <InAppLink to={CATALOG} className="aviso-ambar aviso-ambar--atencion" role="status">
             <AvisoCuerpo attention>

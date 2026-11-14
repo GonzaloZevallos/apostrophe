@@ -32,6 +32,7 @@ import Analisis from './screens/Analisis'
 import Entrar from './screens/Entrar'
 import EntradaStock from './screens/EntradaStock'
 import ExpenseNewRoute from './screens/expenses/ExpenseNewRoute'
+import HomeLayout from './screens/inicio/HomeLayout'
 import Gastos from './screens/Gastos'
 import Inicio from './screens/Inicio'
 import Invitacion from './screens/Invitacion'
@@ -153,6 +154,9 @@ const WITH_VARIETIES_PANES: ReadonlySet<ScreenId> = new Set([
   'stock-entry',
 ])
 
+/** Home and Analysis share `HomeLayout`, which draws their one header. Expenses is never wrapped. */
+const WITH_HOME_SEGMENTS: ReadonlySet<ScreenId> = new Set(['home', 'analysis'])
+
 const WITH_CUSTOMER_SEARCH: ReadonlySet<ScreenId> = new Set([
   'customers',
   'customer-new',
@@ -170,8 +174,15 @@ function bind(entry: Screen): RouteObject {
 const shellChildren: RouteObject[] = [
   ...SCREENS.filter(
     (entry) =>
-      !WITH_CUSTOMER_SEARCH.has(entry.id) && !WITH_VARIETIES_PANES.has(entry.id) && !ONBOARDING_SCREENS.has(entry.id),
+      !WITH_CUSTOMER_SEARCH.has(entry.id) &&
+      !WITH_VARIETIES_PANES.has(entry.id) &&
+      !WITH_HOME_SEGMENTS.has(entry.id) &&
+      !ONBOARDING_SCREENS.has(entry.id),
   ).map(bind),
+  {
+    element: <HomeLayout />,
+    children: SCREENS.filter((entry) => WITH_HOME_SEGMENTS.has(entry.id)).map(bind),
+  },
   {
     element: <VarietiesLayout />,
     children: SCREENS.filter((entry) => WITH_VARIETIES_PANES.has(entry.id)).map(bind),

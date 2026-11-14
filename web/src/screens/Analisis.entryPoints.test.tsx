@@ -49,9 +49,9 @@ async function openAt(path: string, viewport: Viewport) {
 
 describe('Analysis on the phone', () => {
   test('the segment has Analysis selected and Today leads back to Home', async () => {
-    const main = await openAt(ANALYSIS, 'phone')
+    await openAt(ANALYSIS, 'phone')
 
-    const group = within(main).getByRole('group', { name: 'Home view' })
+    const group = screen.getByRole('group', { name: 'Home view' })
     expect(within(group).getByRole('link', { name: 'Analysis' })).toHaveAttribute('aria-current', 'page')
 
     await userEvent.click(within(group).getByRole('link', { name: 'Today' }))
@@ -92,7 +92,7 @@ describe('Analysis on the computer', () => {
   test('the segment and the Expenses card are absent', async () => {
     const main = await openAt(ANALYSIS, 'computer')
 
-    expect(within(main).queryByRole('group', { name: 'Home view' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Home view' })).not.toBeInTheDocument()
     expect(within(main).queryByRole('group', { name: 'Expenses' })).not.toBeInTheDocument()
   })
 })

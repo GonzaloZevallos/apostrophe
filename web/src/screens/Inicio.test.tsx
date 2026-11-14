@@ -25,8 +25,10 @@ import panelFixture from '../api/fixtures/panel.json'
 import type { PanelAnswer } from '../api/panel'
 import type { Me } from '../api/me'
 import { SHOWN_EN } from '../test/shownLanguage'
+import { homeLayoutRoute } from '../test/homeLayoutRoute'
 import { screenRoute } from '../test/screenRoute'
 import { chooseTheme } from '../theme'
+import { stubViewport } from '../test-viewport'
 import { consumePaymentReturn, setPaymentReturn } from '../paymentReturn'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import Inicio, { PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
@@ -100,7 +102,7 @@ function renderInicio(
             {
               element: <Provide />,
               children: [
-                screenRoute('home', <Inicio />),
+                homeLayoutRoute([screenRoute('home', <Inicio />)]),
                 { path: CUSTOMERS, element: <span>pantalla clientes</span> },
                 { path: CUSTOMER, element: <span>ficha de cliente</span> },
                 { path: CUSTOMER_PAYMENT, element: <PaymentStub /> },
@@ -129,8 +131,8 @@ test('the business avatar at the top opens Configuración in one tap, carrying i
   const avatar = await screen.findByRole('link', { name: 'Settings' })
   expect(avatar).toHaveAttribute('href', SETTINGS)
   expect(avatar).toHaveTextContent('LH')
-  // The name stays above the title, as the design draws it.
-  expect(screen.getByText('La Huerta')).toBeInTheDocument()
+  // The phone shows no business name: the avatar's initials are its only trace.
+  expect(screen.queryByText('La Huerta')).not.toBeInTheDocument()
   await userEvent.click(avatar)
 
   expect(screen.getByText('Configuración inApp=true')).toBeInTheDocument()
@@ -602,66 +604,27 @@ test('a failed panel read hides the Loading marker even with a hand-off waiting'
   expect(screen.queryByRole('link', { name: 'Collect from Ana Pérez' })).not.toBeInTheDocument()
 })
 
-/** The header's mark with the clipping box as the observer's root, and what that observer is told. */
-class VisibleObserver implements IntersectionObserver {
-  static roots: (Element | Document | null)[] = []
-  readonly root: Element | Document | null
-  readonly rootMargin = '0px'
-  readonly scrollMargin = '0px'
-  readonly thresholds: readonly number[] = [0]
-  private readonly callback: IntersectionObserverCallback
-  constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
-    this.callback = callback
-    this.root = options?.root ?? null
-    VisibleObserver.roots.push(this.root)
-  }
-  observe(target: Element): void {
-    const box = target.getBoundingClientRect()
-    const seen: IntersectionObserverEntry = {
-      boundingClientRect: box,
-      intersectionRatio: 1,
-      intersectionRect: box,
-      isIntersecting: true,
-      rootBounds: null,
-      target,
-      time: 0,
-    }
-    this.callback([seen], this)
-  }
-  unobserve(): void {}
-  disconnect(): void {}
-  takeRecords(): IntersectionObserverEntry[] {
-    return []
-  }
-}
-
-test('the phone header draws the mark before the business name, hidden from assistive technology when nothing says it is visible', async () => {
+test('the phone header shows no business name, no apostrophe image and a hidden title', async () => {
+  stubViewport('phone')
   stubFetch(PANEL)
   renderInicio()
   await screen.findByText('You sold today')
 
-  const main = within(screen.getByRole('main'))
-  expect(main.queryByRole('img', { name: 'apostrophe' })).not.toBeInTheDocument()
-  const mark = main.getByAltText('apostrophe')
-  expect(mark).toHaveAttribute('src', '/icons/mark.svg')
-  expect(mark).toHaveAttribute('aria-hidden', 'true')
-  const name = main.getByText('La Huerta')
-  expect(name.compareDocumentPosition(mark) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-  // The title stays outside the box that holds the name and the mark.
-  const title = main.getByText('Home', { selector: 'span' })
-  expect(name.parentElement).toBe(mark.parentElement)
-  expect(name.parentElement).not.toContainElement(title)
+  expect(screen.queryByText('La Huerta')).not.toBeInTheDocument()
+  expect(screen.queryByRole('img', { name: 'apostrophe' })).not.toBeInTheDocument()
+  expect(screen.queryByAltText('apostrophe')).not.toBeInTheDocument()
+  expect(screen.getByRole('heading', { level: 1, name: 'Home' })).toHaveClass('visualmente-oculto')
 })
 
-test('the header mark is an image named "apostrophe" once the observer sees it inside the clipping box', async () => {
-  VisibleObserver.roots = []
-  vi.stubGlobal('IntersectionObserver', VisibleObserver)
+test('the computer header keeps the business name above the visible title', async () => {
+  stubViewport('computer')
   stubFetch(PANEL)
   renderInicio()
   await screen.findByText('You sold today')
 
-  const main = within(screen.getByRole('main'))
-  const mark = main.getByRole('img', { name: 'apostrophe' })
-  expect(mark).not.toHaveAttribute('aria-hidden')
-  expect(VisibleObserver.roots).toContain(main.getByText('La Huerta').parentElement)
+  const title = screen.getByRole('heading', { level: 1, name: 'Home' })
+  expect(title).not.toHaveClass('visualmente-oculto')
+  const name = screen.getByText('La Huerta')
+  expect(name.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(screen.queryByRole('img', { name: 'apostrophe' })).not.toBeInTheDocument()
 })
