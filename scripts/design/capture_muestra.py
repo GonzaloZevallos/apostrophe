@@ -343,7 +343,7 @@ def _panel(api: _ClientApi) -> list[str]:
             amount = reason["amount"]
             add(reason["name"], "—" if amount is None else money(amount), reason["pending"])
         add("Gastos", money(p["expenses"]))
-        add("Compras de flores", money(p["purchases"]))
+        add("Compras", money(p["purchases"]))
         add("Ganancia", money(p["profit"]), p["profit_pending"])
         add("Caja", money(p["cash"]))
     header = ["Período", "Rango", "Etiqueta", "Valor", "Pendiente"]
@@ -486,7 +486,7 @@ def _analysis(api: _ClientApi) -> list[str]:
     def expenses(title: str, breakdown: Json) -> list[str]:
         rows = [[c["name"], money(c["total"])] for c in breakdown["categories"]]
         rows.append(["Total gastos", money(breakdown["total"])])
-        rows.append(["Compras de flores", money(breakdown["purchases"])])
+        rows.append(["Compras", money(breakdown["purchases"])])
         return [f"### {title}", "", *table(["Categoría", "Total"], rows)]
 
     out += expenses("Análisis · gastos del mes", answer["month_expenses"])

@@ -1,6 +1,6 @@
 # Apostrophe
 
-El back office de los negocios chicos que venden flor por gramo: qué vende cada uno y a qué precio, qué entra y qué sale del Stock, quién debe qué, en qué gasta y si gana plata. Una instalación guarda varios Businesses, y nunca se mezclan. Reemplaza la planilla `Control_de_ventas_y_gastos`.
+El back office de los negocios chicos que venden productos, por unidad, por peso, por volumen o de otras formas: qué vende cada uno y a qué precio, qué entra y qué sale del Stock, quién debe qué, en qué gasta y si gana plata. Una instalación guarda varios Businesses, y nunca se mezclan. Reemplaza la planilla `Control_de_ventas_y_gastos`.
 
 Cada término lleva `_In the app_`: la palabra en inglés que una persona ve en pantalla (la app está en inglés, `docs/product/product-language.md`); donde el término del glosario se leería como código, la palabra de pantalla es una más simple en inglés. El código, los tests y los docs usan el término del glosario. Las definiciones están escritas en español; los términos, `_In the app_` y `_Avoid_` siguen en inglés.
 

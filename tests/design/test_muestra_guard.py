@@ -83,10 +83,10 @@ def muestra_text(*, drop: str = "") -> str:
             "| 24K Gold | $ 136.000 | 13 g | $ 65.000 | 38% | 52% |",
         ),
         "Análisis · gastos del mes": table(
-            "| Categoría | Total |", "| Envíos | $ 4.500 |", "| Compras de flores | $ 150.000 |"
+            "| Categoría | Total |", "| Envíos | $ 4.500 |", "| Compras | $ 150.000 |"
         ),
         "Análisis · gastos desde el primer registro": table(
-            "| Categoría | Total |", "| Envíos | $ 4.500 |", "| Compras de flores | $ 1.030.000 |"
+            "| Categoría | Total |", "| Envíos | $ 4.500 |", "| Compras | $ 1.030.000 |"
         ),
         "Análisis · semanas": table(
             "| Período | Rango | Etiqueta | Valor | Pendiente |",
@@ -451,13 +451,13 @@ ANALISIS = [
     "Gastos del mes",
     "Envíos",
     "$ 4.500",
-    "Compras de flores",
+    "Compras",
     "Van aparte",
     "$ 150.000",
     "Desde el primer registro",
     "Ventas",
     "$ 537.000",
-    "Compras de flores",
+    "Compras",
     "$ 1.030.000",
 ]
 
@@ -542,7 +542,7 @@ def test_the_variety_rows_the_weekdays_and_the_expenses_are_checked() -> None:
         for p in analisis_problems(replaced(ANALISIS, "$ 4.500", "$ 41.800"))
     )
     assert any(
-        "'Compras de flores' reads $ 537.500 under 'Desde el primer registro'" in p
+        "'Compras' reads $ 537.500 under 'Desde el primer registro'" in p
         for p in analisis_problems(replaced(ANALISIS, "$ 1.030.000", "$ 537.500"))
     )
 

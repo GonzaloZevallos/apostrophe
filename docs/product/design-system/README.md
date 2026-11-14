@@ -426,7 +426,7 @@ Un ejemplo de cada clase: Expense categories → Selector (el negocio agrega las
 - **Precio especial**: se carga el total de la línea y se deduce el precio por
   gramo, no al revés.
 - **Cobros**: se imputan a la venta impaga más vieja (`imputarCobro`).
-- **Las compras de flores no son gastos**: son entradas de stock. Los gastos son
+- **Las compras de Stock no son gastos**: son entradas de stock. Los gastos son
   insumos, packaging, envíos y otros.
 - **La caja puede dar negativa** en un período con una compra grande. Se muestra,
   no se tapa.
