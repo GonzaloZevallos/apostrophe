@@ -1,131 +1,91 @@
 /**
- * The Home | Analysis segment through a real router on the phone (navigation.md, GH-480): the
- * real `Shell` (bar and rail), the real `ScrollSync` with a scroller the test holds, and the
- * registry-bound routes of Home and Analysis (`screenRoute`). Every switch is a REPLACE: the
- * history position does not move, the page opens at the top, the tapped option is marked and the
- * bar keeps Home marked. The bar's Home tab, a deliberate move, is a PUSH. Tapping the option
- * already marked changes nothing: no entry, no scroll, the Panel tab and the month stay.
- *
- * The routes are `screenRoute(id, element)`, which has the shape of `router.tsx`'s `bind`, and not
- * the table of `router.tsx` itself: that one is a browser router built once at import, under
- * `Root` and `GatedLayout` (sign-in, first-run and onboarding gates), and it is not exported.
+ * The Home | Analysis segment through the real route table on the phone (navigation.md, GH-480):
+ * `router.tsx`'s own router, `<App />`, the real `Root` with its `ScrollSync` on the window, the
+ * real `Shell` (bar and rail) and the real Home and Analysis screens, with the API faked at
+ * `fetch`. Every switch is a REPLACE: the history position does not move, the page opens at the
+ * top, the tapped option is marked and the bar keeps Home marked. The bar's Home tab, a
+ * deliberate move, is a PUSH. Tapping the option already marked changes nothing: no entry, no
+ * scroll, the Panel tab and the month stay.
  */
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
-import { afterEach, describe, expect, test, vi } from 'vitest'
-import type { Me } from '../api/me'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import analysisFixture from '../api/fixtures/analysis.json'
 import panelFixture from '../api/fixtures/panel.json'
-import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
+import App from '../App'
+import { queryClient } from '../queryClient'
+import { router } from '../router'
 import { ANALYSIS, HOME, SALES, type Viewport } from '../routes'
-import Analisis from '../screens/Analisis'
-import Inicio from '../screens/Inicio'
-import ScrollSync from '../shell/ScrollSync'
-import Shell from '../shell/Shell'
-import type { Scroller } from '../shell/scroller'
-import { screenRoute } from '../test/screenRoute'
 import { SHOWN_EN } from '../test/shownLanguage'
 import { stubViewport } from '../test-viewport'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-04', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-04', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 const fetched: string[] = []
 
-function json(body: unknown): Response {
-  return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })
+function json(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 }
 
-/** A page whose scroll offset the test sets and reads; `setY` is what `ScrollSync` calls. */
-function heldScroller() {
-  const state = { y: 0 }
-  const listeners = new Set<() => void>()
-  const scroller: Scroller = {
-    y: () => state.y,
-    maxY: () => 2000,
-    height: () => 2800,
-    setY: (top) => {
-      state.y = top
-      listeners.forEach((listener) => listener())
-    },
-    onScroll: (listener) => {
-      listeners.add(listener)
-      return () => listeners.delete(listener)
-    },
-    onInput: () => () => undefined,
-    frame: (callback) => {
-      const id = window.setTimeout(callback, 0)
-      return () => window.clearTimeout(id)
-    },
-    after: (ms, callback) => {
-      const id = window.setTimeout(callback, ms)
-      return () => window.clearTimeout(id)
-    },
-  }
-  return {
-    scroller,
-    get y() {
-      return state.y
-    },
-    scrollTo(y: number) {
-      state.y = y
-      listeners.forEach((listener) => listener())
-    },
-  }
+/** The window's scroll offset, held by the test: `ScrollSync` writes it through `window.scrollTo`. */
+const page = {
+  y: 0,
+  scrollTo(y: number) {
+    page.y = y
+    window.dispatchEvent(new Event('scroll'))
+  },
 }
 
-function mount(viewport: Viewport = 'phone') {
-  stubViewport(viewport)
+let stopCounting: () => void = () => undefined
+/** react-router's data router does not expose the history position, so the test follows it: a
+ * PUSH moves one entry on, a REPLACE stays where it is. */
+const position = { index: 0, actions: [] as string[] }
+
+beforeEach(async () => {
+  page.y = 0
+  Object.defineProperty(window, 'scrollY', { configurable: true, get: () => page.y })
+  vi.spyOn(window, 'scrollTo').mockImplementation((options?: ScrollToOptions | number) => {
+    page.scrollTo(typeof options === 'object' ? (options.top ?? 0) : 0)
+  })
   fetched.length = 0
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL) => {
       const url = String(input)
       fetched.push(url)
+      if (url.includes('/auth/me')) return Promise.resolve(json(ME))
       if (url.includes('/first-run')) return Promise.resolve(json({ kind: 'none' }))
       if (url.includes('/pinned-catalog/status')) return Promise.resolve(json({ status: null }))
       if (url.includes('/panel')) return Promise.resolve(json(panelFixture))
       if (url.includes('/analysis')) return Promise.resolve(json(analysisFixture))
-      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+      return Promise.resolve(json({ code: 'not_found' }, 404))
     }),
   )
-  const page = heldScroller()
-  const router = createMemoryRouter(
-    [
-      {
-        element: (
-          <>
-            <ScrollSync scroller={page.scroller} />
-            <MoneyFormatProvider format={ME.money}>
-              <Outlet context={ME} />
-            </MoneyFormatProvider>
-          </>
-        ),
-        children: [
-          { path: SALES, element: <span>previous screen</span> },
-          {
-            element: <Shell />,
-            children: [screenRoute('home', <Inicio />), screenRoute('analysis', <Analisis />)],
-          },
-        ],
-      },
-    ],
-    { initialEntries: [SALES, HOME], initialIndex: 1 },
-  )
-  // react-router's data router does not expose the history position, so the test follows it:
-  // a PUSH moves one entry on, a REPLACE stays where it is.
-  const position = { index: 1, actions: [] as string[] }
-  router.subscribe((state) => {
+})
+
+afterEach(async () => {
+  stopCounting()
+  cleanup()
+  await waitFor(() => expect(queryClient.isFetching()).toBe(0))
+  await act(() => router.navigate(HOME))
+  queryClient.clear()
+  vi.restoreAllMocks()
+  vi.unstubAllGlobals()
+})
+
+/** Opens Home with the Sales page behind it, so Back has somewhere to go. */
+async function mount(viewport: Viewport = 'phone') {
+  stubViewport(viewport)
+  await act(() => router.navigate(SALES))
+  await act(() => router.navigate(HOME))
+  position.index = 0
+  position.actions = []
+  stopCounting = router.subscribe((state) => {
     position.actions.push(state.historyAction)
     if (state.historyAction === 'PUSH') position.index += 1
   })
-  render(
-    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>,
-  )
+  render(<App />)
   return { router, page, position }
 }
 
@@ -146,8 +106,10 @@ afterEach(() => {
 
 describe('switching on the phone', () => {
   test('three round trips are all REPLACE at one history position, at the top, with the bar on Home', async () => {
-    const { router, page, position } = mount()
+    const { router, page, position } = await mount()
     await screen.findByRole('group', { name: 'Home view' })
+    // What Home's own first render announced (its arrival, a PUSH) is not a switch.
+    position.actions.length = 0
     const index = position.index
 
     for (let round = 0; round < 3; round += 1) {
@@ -180,7 +142,7 @@ describe('switching on the phone', () => {
   })
 
   test("the bar's Home tab is a PUSH", async () => {
-    const { router, position } = mount()
+    const { router, position } = await mount()
     await screen.findByRole('group', { name: 'Home view' })
     await userEvent.click(segment('Analysis'))
     await waitFor(() => expect(segment('Analysis')).toHaveAttribute('aria-current', 'page'))
@@ -196,7 +158,7 @@ describe('switching on the phone', () => {
 
 describe('tapping the option already marked', () => {
   test('on Home it changes no entry, no scroll and not the Panel tab', async () => {
-    const { router, page, position } = mount()
+    const { router, page, position } = await mount()
     await userEvent.click(await screen.findByRole('button', { name: 'Week' }))
     expect(screen.getByRole('button', { name: 'Week' })).toHaveAttribute('aria-pressed', 'true')
     act(() => page.scrollTo(420))
@@ -212,7 +174,7 @@ describe('tapping the option already marked', () => {
   })
 
   test('on Analysis it changes no entry, no scroll and not the month', async () => {
-    const { router, page, position } = mount()
+    const { router, page, position } = await mount()
     await screen.findByRole('group', { name: 'Home view' })
     await userEvent.click(segment('Analysis'))
     await userEvent.click(await screen.findByRole('button', { name: 'Previous month' }))
@@ -235,7 +197,7 @@ describe('tapping the option already marked', () => {
 })
 
 test('on the computer the control renders nothing', async () => {
-  mount('computer')
+  await mount('computer')
 
   await screen.findByRole('main')
   expect(screen.queryByRole('group', { name: 'Home view' })).not.toBeInTheDocument()
