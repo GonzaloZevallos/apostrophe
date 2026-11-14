@@ -134,6 +134,13 @@ El `issue` sale de `COPY_OWNER` (`owners.ts`), la única tabla que escribe un n�
 
 Las listas solo se achican: cada parte de área (#350 a #353) borra únicamente sus propias entradas cuando mueve sus palabras a keys. Nunca se agrega una entrada para tapar un infractor nuevo: se lo mueve a una key.
 
+### Restos conocidos de un solo tipo de negocio
+
+Textos que la app todavía muestra con una palabra propia de un solo tipo de negocio, que la definición escrita (expenses.md, results.md) ya no usa. La app no cambia por esta lista; la redacción de cada texto queda pendiente bajo #330.
+
+- `web/src/copy/common.ts`: la etiqueta de la cifra de Purchases del período (Week y Month de Home y Analysis). #330.
+- `web/src/copy/expenses.ts`: la línea fija de Expenses que recuerda que una Purchase se registra en Stock, nunca como Expense. #330.
+
 ### Listas de infractores del estándar móvil
 
 El estándar móvil guarda listas de infractores en `web/src/mobile-standard/offenders/`:
