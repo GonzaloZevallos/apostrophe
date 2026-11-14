@@ -15,7 +15,7 @@ export const EMPTY_TITLE = 'No products yet'
 export const EMPTY_DETAIL = 'Add the first one with its price so you can sell and send your catalog.'
 export const NO_ARCHIVED_MESSAGE = 'You have no archived products'
 export const PRICE_HISTORY_HELP = 'Each sale uses the price in force that day, even if you change it later.'
-/** Why "Mandar catálogo" is disabled, only while the first-run checklist shows and nothing qualifies. */
+/** Why "Mandar catálogo" is disabled, only while /first-run answers checklist and nothing qualifies. */
 export const CATALOG_DISABLED_REASON = 'Add a product with a price and its stock'
 
 const LIMITED_COPY_0: readonly LimitedCopy[] = [

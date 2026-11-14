@@ -12,7 +12,7 @@
  * only by `summaryLine`. A row links to a variety's page by its id alone, never a business id.
  *
  * "Mandar catálogo" is disabled, with its reason in words, only while `GET /first-run` says the
- * checklist shows and nothing qualifies (`navigation.md`, "First-run checklist"); the server
+ * checklist shows and nothing qualifies (`navigation.md`); the server
  * decides, the front never counts what the catalog could send. While that read is pending or
  * has failed it is enabled, like in every other state.
  */
