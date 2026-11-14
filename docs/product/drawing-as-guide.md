@@ -24,6 +24,6 @@ La regla vive en [DESIGN_STANDARDS.md](../../DESIGN_STANDARDS.md), sección "Dra
 
 ## Métricas
 
-- `git grep -n -i -E "\bflowers?\b|\bflor(es)?\b" -- README.md CONTEXT.md docs/product/design-system` devuelve 0 líneas.
+- `tests/docs/word_check.py` no encuentra la palabra del tipo de producto en `README.md`, `CONTEXT.md` ni `docs/product`: devuelve 0 coincidencias.
 - Al regenerar `muestra.md`, 0 cifras se mueven: en `git diff --word-diff` cambian solo celdas de rótulo.
 - `tests/design/test_muestra_guard.py` da el mismo resultado antes y después de un cambio de redacción, salvo el rótulo.
