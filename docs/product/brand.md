@@ -38,7 +38,7 @@ La marca aparece en esos lugares y en ningún otro: ni en los Tab roots (Home, A
 
 **El encabezado de Home y Analysis en el teléfono no la muestra** (parte 2 de GH-723, decisión del dueño)
 
-- Desde GH-723, el encabezado compartido de Home y Analysis en el teléfono muestra la línea de fecha, el segmento Today | Analysis y el avatar "Settings" (navigation.md), sin la Yerba mark, sin el nombre del Business y sin título visible. Antes, la Yerba mark iba en línea al comienzo de la fila del nombre del Business en Home, solo cuando el nombre entraba entero a su lado.
+- Desde GH-723, el encabezado compartido de Home y Analysis en el teléfono muestra la línea de fecha, el segmento Home | Analysis y el avatar "Settings" (navigation.md), sin la Yerba mark, sin el nombre del Business y sin título visible. Antes, la Yerba mark iba en línea al comienzo de la fila del nombre del Business en Home, solo cuando el nombre entraba entero a su lado.
 - Con eso se fue la forma de la Yerba mark sola (sin Wordmark): la variante de `BrandMark` que la dibujaba y su CSS se borran. Lo que quede del lockup (sus tamaños, su recorte) sigue solo mientras lo use algún lugar de la tabla de arriba.
 - La identidad en el teléfono la sigue dando el ícono de la app en la pantalla de inicio y el lockup de Sign in, de la aceptación de Invitation y del primer paso del Onboarding.
 
