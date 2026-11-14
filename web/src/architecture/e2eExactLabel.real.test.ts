@@ -9,9 +9,13 @@ import { findInexactLabels } from './e2eExactLabel'
 // Vitest runs with `web/` as its root (`npm --prefix web test`).
 const E2E_DIR = path.join(process.cwd(), 'e2e')
 
+// `e2e/.tmp` is the running suite's own git-ignored scratch (throwaway databases), not source.
+const SCRATCH = '.tmp'
+
 function filesUnder(directory: string): string[] {
   const found: string[] = []
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    if (entry.isDirectory() && entry.name === SCRATCH) continue
     const full = path.join(directory, entry.name)
     if (entry.isDirectory()) found.push(...filesUnder(full))
     else found.push(full)
