@@ -4,7 +4,7 @@
  * it is there whatever state the view under it is in. It holds no state and reads nothing the
  * session did not load before any screen, so it never waits for the Panel or Analysis data.
  *
- * On the phone the header is a date line (today's date, a figure), an empty inert slot where
+ * On the phone the header is the long date line (today's weekday, day and month, in the screen's language), an empty inert slot where
  * the drawing keeps "Editar", the avatar, then the Home | Analysis segment and the screen's
  * one h1, visually hidden: the phone shows no business name, no mark and no visible title. On
  * the computer it is what each screen always drew: on Home the business name above the visible
@@ -19,12 +19,12 @@ import { useTranslation } from 'react-i18next'
 import type { Me } from '../../api/me'
 import HomeViewSwitch from '../../components/HomeViewSwitch'
 import SettingsAvatar from '../../components/SettingsAvatar'
-import { formatDate } from '../../format/dates'
+import { formatTodayLong } from '../../format/dates'
 import { useLeafScreen } from '../../shell/useLeafScreen'
 import { useViewport } from '../../shell/useViewport'
 
 export default function HomeLayout() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const me = useOutletContext<Me>()
   const screen = useLeafScreen()
   const phone = useViewport() === 'phone'
@@ -35,7 +35,7 @@ export default function HomeLayout() {
         {phone && (
           <>
             <div className="inicio-cabecera__fila">
-              <span className="inicio-cabecera__fecha titulo">{formatDate(me.today, me.today)}</span>
+              <span className="inicio-cabecera__fecha titulo">{formatTodayLong(me.today, i18n.language)}</span>
               <span className="inicio-cabecera__editar" aria-hidden="true" />
               <SettingsAvatar />
             </div>
