@@ -12,7 +12,9 @@
 
 **Cuando** registro una Expense o guardo un Customer desde el teléfono, **quiero** elegir su Expense category o su Customer type igual que elijo un Product o un Withdrawal reason (un campo con etiqueta que abre su propia lista, con búsqueda cuando la lista es larga), **para** terminar el formulario en pocos toques y que volver nunca tire lo que ya tipeé. (Parte 6 de GH-581, compartido con customers.md y selector.md: acá lo sirven el campo "Category" del formulario de la Expense y la edición en el lugar como su propia entrada del historial.)
 
-En la práctica, estos jobs se juntan así. El vendedor paga algo que no es una Purchase de Stock entre pedidos, o se sienta a mirar en qué se fue la plata de la semana o del mes. Carga la Expense desde Analysis, a 2 toques desde Home y a 3 desde los demás Tab roots del teléfono. Encuentra las Expenses de cualquier mes, con el total y lo que se llevó cada Expense category, en un solo lugar evidente. La computadora es el mismo job en una pantalla más grande.
+**Cuando** entro a Expenses desde Analysis o desde una venta en el teléfono, **quiero** que su encabezado me ofrezca solo el camino de vuelta y la acción de registrar una Expense, **para** registrar o revisar una Expense y volver adonde estaba sin una entrada a Settings que no vine a buscar. (Decisión del dueño en #724, 2026-11-14: acá lo sirve el encabezado de Expenses en el teléfono, sin el avatar "Settings", como los dibujos `Gastos` y `GastosOscuro`.)
+
+En la práctica, estos jobs se juntan así. El vendedor paga algo que no es una Purchase de Stock entre pedidos, o se sienta a mirar en qué se fue la plata de la semana o del mes. Carga la Expense desde Analysis, a 2 toques desde Home y a 3 desde los demás Tab roots del teléfono. Encuentra las Expenses de cualquier mes, con el total y lo que se llevó cada Expense category, en un solo lugar evidente, y vuelve adonde estaba sin distracciones en el encabezado. La computadora es el mismo job en una pantalla más grande.
 
 Criterios de éxito:
 
@@ -26,6 +28,7 @@ Criterios de éxito:
 8. **La Expense category se elige con el Selector** (parte 6 de GH-581). Con 12 o más Expense categories, el vendedor encuentra una buscando y la elige; el formulario no tiene ningún otro tipo de selector para ese campo (ni select nativo, ni chips, ni radios, ni botones presionados).
 9. **Volver nunca tira el formulario.** En el teléfono, volver con la lista abierta cierra solo la lista; volver con el formulario sin tocar vuelve a la pantalla madre; volver con algo tipeado pregunta antes de descartar. Vale para la Expense nueva desde Expenses, la Expense nueva desde la tarjeta Expenses de Analysis y la edición en el lugar dentro de Expenses. En la computadora, Escape cierra solo el desplegable.
 10. **Sin categorías, el vendedor sabe dónde crearlas**: la lista muestra "No categories yet. Add them in Settings → Expense categories.", y nunca mientras las Expense categories se están cargando o después de una carga fallida. Nada de lo que el formulario hacía antes se pierde.
+11. **Un encabezado sin Settings en el teléfono** (decisión del dueño en #724). En el teléfono, Expenses no muestra ningún elemento llamado "Settings" o "Ajustes y cuenta", en ningún estado de la pantalla, y se entra y se sale por "‹ Analysis" y el gesto de volver del teléfono. Home, Sales, Customers, Products y Analysis conservan el avatar, así que Settings sigue a 1 toque de cada Tab root. Las filas de teléfono de Expenses del Mobile check pasan a 320, 360 y 390 px y con el texto al 130 %, en claro y en oscuro, sin que crezca ninguna lista de infractores.
 
 # Expenses
 
@@ -86,8 +89,8 @@ La plata que un negocio paga por cualquier cosa que no sea una Purchase de Stock
 
   No espera a que respondan las cifras de Analysis: las dos acciones están en los estados cargando, error, vacío y con datos. En una computadora la tarjeta no se dibuja, porque a Expenses se llega desde la barra lateral. Reemplaza al "+ Add expense" que estaba en More, que ya no existe.
 - **Expenses** (`Expenses`, ruta `/expenses`; la vieja `/gastos` redirige ahí de forma permanente) es la única pantalla cuyo tipo depende del ancho (navigation.md, el ADR de GH-651):
-  - en el teléfono, un detalle con "‹ Analysis" (su pantalla madre), la barra con Home marcada como activa, sin "+ New sale", y el avatar "Settings" al final de la fila del título;
-  - en una computadora, una Tab root con la barra lateral, Expenses activa y "+ New sale", a la que se llega desde la barra lateral, debajo del separador.
+  - en el teléfono, un detalle con "‹ Analysis" (su pantalla madre), la barra con Home marcada como activa y sin "+ New sale". Su encabezado no lleva el avatar "Settings" ni ningún elemento llamado "Settings" o "Ajustes y cuenta", en ningún estado de la pantalla (cargando, vacía, con error o con datos), como los dibujos `Gastos` y `GastosOscuro` (decisión del dueño en #724, 2026-11-14). Se sale por "‹ Analysis" o el gesto de volver del teléfono. A Settings se llega desde el avatar de Home, Sales, Customers, Products y Analysis, a 1 toque de cada Tab root (navigation.md); Expenses en el teléfono es un detalle, no un Tab root. El texto del encabezado no cambia: "Gastos" y "+ Anotar gasto" son las etiquetas del dibujo, no las palabras de la app (Product language);
+  - en una computadora, una Tab root con la barra lateral, Expenses activa y "+ New sale", a la que se llega desde la barra lateral, debajo del separador. No tiene avatar en el encabezado: Settings se abre desde la fila del Business de la barra lateral.
 
   Tiene:
   - la navegación por mes;
@@ -134,7 +137,7 @@ La plata que un negocio paga por cualquier cosa que no sea una Purchase de Stock
 - **Toasts**: "Expense saved", "Expense deleted", "Category saved" y "Category deleted", sin montos.
 - **Los rechazos** se muestran en línea y conservan lo tipeado.
 - **Respuesta ante fallas**: la pérdida de red muestra "No connection", y un error del servidor muestra un reintento genérico (accounts.md).
-- **Diseño**: el formulario de la Expense muestra el campo "Category" cerrado como Selector, con "Create a new category" debajo, en `GastoNuevo`, `GastoNuevoOscuro` y `GastoNuevoCompu` de `docs/product/design-system/pantallas/`.
+- **Diseño**: el formulario de la Expense muestra el campo "Category" cerrado como Selector, con "Create a new category" debajo, en `GastoNuevo`, `GastoNuevoOscuro` y `GastoNuevoCompu` de `docs/product/design-system/pantallas/`. El encabezado de Expenses en el teléfono sigue a `Gastos` y `GastosOscuro`: "‹ Analysis" y la acción de registrar, sin avatar.
 
 ### Restricciones
 
@@ -146,6 +149,7 @@ La plata que un negocio paga por cualquier cosa que no sea una Purchase de Stock
 - Las Expense categories son un Growable set: nunca se declaran en `fixedSets.ts` ni se eligen con chips (selector.md).
 - El formulario monta un `SheetStackProvider` en `ExpenseNewRoute` y en la edición en el lugar de `Gastos`, para que la lista del Selector sea su propia entrada del historial, en el nivel de arriba del formulario.
 - La edición en el lugar del teléfono protege su volver con cambios sin guardar mediante el piso de Sheet de la guarda de salida (ADR-0078).
+- El encabezado de Expenses en el teléfono no monta `SettingsAvatar`; el componente y su montaje en Home, Sales, Customers, Products y Analysis no cambian. Si un helper o una spec del e2e usaba el avatar en Expenses como referencia, se migra a otro elemento de la pantalla ("‹ Analysis" o la acción de registrar); el avatar nunca se vuelve a poner en Expenses, visible ni oculto, para satisfacer un localizador (D-69509906).
 
 ## Métricas
 
@@ -167,8 +171,8 @@ Se leen de los datos y de las pruebas; no hay telemetría.
   - en una computadora, nunca más que en el teléfono.
 
   Meta: 100% dentro del límite.
-- **M8, el marco de Expenses (criterios 1, 5)**: las pruebas del front muestran:
-  - en el teléfono, "‹ Analysis", la barra y ningún "+ New sale"; en una computadora, la barra lateral con "+ New sale" y sin flecha de regreso;
+- **M8, el marco de Expenses (criterios 1, 5, 11)**: las pruebas del front muestran:
+  - en el teléfono, "‹ Analysis", la barra, ningún "+ New sale" y ningún avatar "Settings"; en una computadora, la barra lateral con "+ New sale" y sin flecha de regreso;
   - la navegación por mes y la línea fija que recuerda que una Purchase se registra en Stock, nunca como Expense (`web/src/copy/expenses.ts`);
   - la acción de registrar: secundaria en el teléfono (sin un segundo "+" flotante), el botón de la cabecera en una computadora.
 - **M9, las Expense categories salieron de Expenses (criterio 5)**: las pruebas del front muestran:
@@ -188,6 +192,7 @@ Se leen de los datos y de las pruebas; no hay telemetría.
 - **M16, conjunto vacío y carga (criterio 10)**: las pruebas del front muestran "No categories yet. Add them in Settings → Expense categories." con el conjunto vacío, y ningún texto de conjunto vacío mientras la consulta está pendiente o falló; con la carga fallida, la línea de falla existente en el formulario. El chequeo `mobile` recorre el estado `expense/category-selector-empty` y las entradas `combobox:Category` obsoletas de `autocomplete.json` ya no están, sin ningún infractor nuevo.
 - **M17, nada se pierde (criterio 10)**: las pruebas del front muestran que la Expense category creada dentro del formulario queda elegida y el error se borra, también con el conjunto vacío; que el rechazo por una Expense category que desapareció deja el campo vacío con "That category is gone. Pick another." y conserva lo tipeado; y que el error de campo obligatorio sigue apareciendo.
 - **M18, la tarjeta Expenses (GH-651)**: pruebas de Testing Library a través del router real, en ancho de teléfono: "Add expense" de la tarjeta abre el formulario de la Expense y "See the expenses" abre Expenses; en ancho de computadora la tarjeta no está. 100% de aprobación.
+- **M19, Expenses sin Settings en el teléfono (criterio 11, #724)**: pruebas de Testing Library a través del router real, en ancho de teléfono, encuentran 0 elementos llamados "Settings" o "Ajustes y cuenta" en Expenses en cada uno de sus estados (cargando, vacía, con error y con datos), y siguen encontrando "‹ Analysis" y la acción de registrar; en Home, Sales, Customers, Products y Analysis encuentran exactamente un link "Settings" que lleva a `/settings`; en ancho de computadora no hay avatar en el encabezado de Home, Analysis ni Expenses. El proyecto e2e `mobile` pasa en las filas de Expenses a 320, 360 y 390 px y con el texto al 130 %, en claro y en oscuro, con 0 infractores agregados, sin ninguna entrada obsoleta que quede en las listas, y ningún helper ni spec del e2e usa el avatar en Expenses. 100% de aprobación.
 
 ## Fuera de alcance
 
@@ -205,3 +210,4 @@ Se leen de los datos y de las pruebas; no hay telemetría.
 - Cambiar el texto del conjunto vacío para que mencione la creación dentro del formulario.
 - Cambiar las rutas de Expenses, su navegación por mes o cómo se abre y se ve la edición en el lugar.
 - Un reintento con un toque para la carga fallida de las Expense categories dentro del formulario.
+- Cualquier otro cambio en el encabezado de Expenses (su texto incluido), en el componente `SettingsAvatar` o en los encabezados de Home, Sales, Customers, Products y Analysis; cualquier cambio en la disposición de computadora de Expenses; un aviso o nota de versión por el retiro del avatar.
