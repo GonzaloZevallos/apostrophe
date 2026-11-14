@@ -648,9 +648,12 @@ test('the phone header draws the mark before the business name, hidden from assi
   const name = main.getByText('La Huerta')
   expect(name.compareDocumentPosition(mark) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   // The title stays outside the box that holds the name and the mark.
-  const title = main.getByText('Home', { selector: 'span' })
+  // The segment's "Home" option is a span too: the title is the one outside its group.
+  const segmentGroup = screen.getByRole('group', { name: 'Home view' })
+  const [title] = main.getAllByText('Home', { selector: 'span' }).filter((span) => !segmentGroup.contains(span))
+  expect(title).toBeDefined()
   expect(name.parentElement).toBe(mark.parentElement)
-  expect(name.parentElement).not.toContainElement(title)
+  expect(name.parentElement).not.toContainElement(title ?? null)
 })
 
 test('the header mark is an image named "apostrophe" once the observer sees it inside the clipping box', async () => {
