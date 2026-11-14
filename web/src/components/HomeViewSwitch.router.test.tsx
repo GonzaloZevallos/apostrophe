@@ -5,6 +5,10 @@
  * history position does not move, the page opens at the top, the tapped option is marked and the
  * bar keeps Home marked. The bar's Home tab, a deliberate move, is a PUSH. Tapping the option
  * already marked changes nothing: no entry, no scroll, the Panel tab and the month stay.
+ *
+ * The routes are `screenRoute(id, element)`, which has the shape of `router.tsx`'s `bind`, and not
+ * the table of `router.tsx` itself: that one is a browser router built once at import, under
+ * `Root` and `GatedLayout` (sign-in, first-run and onboarding gates), and it is not exported.
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
