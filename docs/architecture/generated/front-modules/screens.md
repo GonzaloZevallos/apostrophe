@@ -46,6 +46,7 @@ subgraph src["src"]
       src_screens_expenses_MonthBody_tsx["MonthBody.tsx"]
     end
     subgraph src_screens_inicio["inicio"]
+      src_screens_inicio_HomeLayout_tsx["HomeLayout.tsx"]
       src_screens_inicio_InicioFondo_tsx["InicioFondo.tsx"]
       src_screens_inicio_InicioPanel_tsx["InicioPanel.tsx"]
       src_screens_inicio_PeriodFigures_tsx["PeriodFigures.tsx"]
