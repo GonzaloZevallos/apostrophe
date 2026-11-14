@@ -131,7 +131,7 @@ function OnboardingStepFrame({
   return (
     <ContentArea as="main" className="pantalla onboarding">
       <div className="onboarding__columna">
-        {isFirst(slug) && <BrandMark variant="lockup" />}
+        {isFirst(slug) && <BrandMark />}
         <div className={`onboarding__cabecera${previous === undefined ? ' onboarding__cabecera--derecha' : ''}`}>
           {previous !== undefined && (
             <Boton variant="secondary" icon="atras" onClick={() => void navigate(previous)}>

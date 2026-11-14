@@ -34,7 +34,7 @@ export default function AuthPage({
   return (
     <ContentArea as="main" className="pantalla auth-page" inert={inert}>
       <div className="auth-page__columna">
-        {brand && <BrandMark variant="lockup" />}
+        {brand && <BrandMark />}
         {title !== undefined && (
           <div>
             {eyebrow !== undefined && <span className="auth-page__pastilla">{eyebrow}</span>}

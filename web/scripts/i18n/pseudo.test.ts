@@ -83,10 +83,10 @@ describe('the en-XA generator', () => {
   it('copies the brand keys verbatim and still pseudo-localises every other key', () => {
     const english = { wordmark: 'apostrophe', mark: { label: 'apostrophe' }, tagline: 'Sell better' }
 
-    expect(VERBATIM_KEYS).toEqual(['brand:wordmark', 'brand:mark.label'])
+    expect(VERBATIM_KEYS).toEqual(['brand:wordmark'])
     expect(generatePseudo(english, 'brand')).toEqual({
       wordmark: 'apostrophe',
-      mark: { label: 'apostrophe' },
+      mark: { label: pseudoText('apostrophe') },
       tagline: pseudoText('Sell better'),
     })
     // The same keys in another namespace are ordinary text.
@@ -97,7 +97,7 @@ describe('the en-XA generator', () => {
   it('has the committed en-XA brand texts equal to the English ones', () => {
     const read = (dir: string): unknown => JSON.parse(readFileSync(join(dir, 'brand.json'), 'utf8'))
 
-    expect(read(PSEUDO_DIR)).toEqual({ wordmark: 'apostrophe', mark: { label: 'apostrophe' } })
+    expect(read(PSEUDO_DIR)).toEqual({ wordmark: 'apostrophe' })
     expect(read(ENGLISH_DIR)).toEqual(read(PSEUDO_DIR))
   })
 
