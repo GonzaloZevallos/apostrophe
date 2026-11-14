@@ -35,7 +35,7 @@ test('a new business goes from the invitation to Nueva venta from "Done"', async
 
   await expect(page.getByRole('heading', { name: 'Add what you have today' })).toBeVisible()
   await expect(page.getByText('Rosa', { exact: true })).toBeVisible()
-  await page.getByLabel('Grams').fill('500')
+  await page.getByLabel('Grams', { exact: true }).fill('500')
   await page.getByRole('button', { name: 'Save the entry' }).click()
   await page.getByRole('button', { name: 'Continue' }).click()
 
@@ -79,15 +79,15 @@ test('the catalog message saved in step 3 reads the same in Configuración', asy
   await priceAVariety(page, 'Jazmín')
   await expect(page.getByRole('heading', { name: 'Add what you have today' })).toBeVisible()
   await expect(page.getByText('Jazmín', { exact: true })).toBeVisible()
-  await page.getByLabel('Grams').fill('300')
+  await page.getByLabel('Grams', { exact: true }).fill('300')
   await page.getByRole('button', { name: 'Save the entry' }).click()
   await page.getByRole('button', { name: 'Continue' }).click()
 
   await expect(page.getByRole('heading', { name: 'How your catalog looks' })).toBeVisible()
-  await page.getByLabel('Header').fill('🌸 Catálogo de Jazmín 🌸')
+  await page.getByLabel('Header', { exact: true }).fill('🌸 Catálogo de Jazmín 🌸')
   await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByRole('heading', { name: 'Connect your Telegram bot' })).toBeVisible()
 
   await page.goto(SETTINGS_CATALOG_MESSAGE)
-  await expect(page.getByLabel('Header')).toHaveValue('🌸 Catálogo de Jazmín 🌸')
+  await expect(page.getByLabel('Header', { exact: true })).toHaveValue('🌸 Catálogo de Jazmín 🌸')
 })

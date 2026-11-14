@@ -6,9 +6,11 @@
  * No console message at any point.
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
-import { SALE_NEW, VARIETIES } from '../src/routes.js'
+import { expectPath } from './helpers/url.js'
+import { SALE_NEW, VARIETIES, VARIETY_NEW } from '../src/routes.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -37,7 +39,9 @@ for (const viewport of VIEWPORTS) {
       async function addVariety(name: string): Promise<void> {
         await page.goto(VARIETIES)
         await page.getByRole('link', { name: 'New product' }).click()
-        await page.getByLabel('Name').fill(name)
+        await expectPath(page, VARIETY_NEW)
+        // The exact fill below is what waits for the form: an earlier screen's "Edit name" button is not a "Name" field.
+        await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill(name)
         await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
       }
 

@@ -119,7 +119,7 @@
   "paymentMethodUnavailable": "That payment method is no longer available. Choose another one.",
   "noType": "No type",
   "homeViewSwitchLabel": "Home view",
-  "homeSegmentToday": "Today",
+  "homeSegmentHome": "Home",
   "homeSegmentAnalysis": "Analysis",
   "seeExpenses": "See the expenses"
 }

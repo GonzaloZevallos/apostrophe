@@ -387,7 +387,7 @@ La estructura fija de la app para un Business: las pestañas del celular, la bar
 _Avoid_: menu, sitemap, routing, shell, More
 
 **Tab root**:
-Una pantalla que muestra la barra (o la barra lateral) y "+ New sale": Home, Sales, Customers, Products y Analysis, y en una computadora también Expenses, que se abre desde la barra lateral. En el celular, a Analysis se llega con el segmento Today | Analysis de Home, cuyas opciones reemplazan la entrada del historial, y Analysis marca Home como activa; Expenses es un detalle con "‹ Analysis". Cualquier otra pantalla es una tarjeta o un detalle (con una flecha de regreso a su pantalla madre) o un formulario o una Sheet (con "Close").
+Una pantalla que muestra la barra (o la barra lateral) y "+ New sale": Home, Sales, Customers, Products y Analysis, y en una computadora también Expenses, que se abre desde la barra lateral. En el celular, a Analysis se llega con el segmento Home | Analysis de Home, cuyas opciones reemplazan la entrada del historial, y Analysis marca Home como activa; Expenses es un detalle con "‹ Analysis". Cualquier otra pantalla es una tarjeta o un detalle (con una flecha de regreso a su pantalla madre) o un formulario o una Sheet (con "Close").
 _Avoid_: home, main screen, section, More
 
 **Settings**:

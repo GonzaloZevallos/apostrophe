@@ -49,7 +49,7 @@ async function freshPhone(
 async function expectInsideTheScreen(page: Page, names: string[]): Promise<void> {
   const height = page.viewportSize()?.height ?? 0
   for (const name of names) {
-    const box = await page.getByRole('button', { name }).or(page.getByLabel(name)).first().boundingBox()
+    const box = await page.getByRole('button', { name }).or(page.getByLabel(name, { exact: true })).first().boundingBox()
     expect(box).not.toBeNull()
     expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(height)
   }
@@ -65,10 +65,10 @@ for (const scheme of SCHEMES) {
       const page = await freshPhone(browser, workerServer.url, viewport, scheme)
       await page.goto(LOGIN)
 
-      await expect(page.getByLabel('Email address')).toBeFocused()
+      await expect(page.getByLabel('Email address', { exact: true })).toBeFocused()
       await expectInsideTheScreen(page, ['Email address', 'Password', 'Sign in'])
-      await page.getByLabel('Email address').fill(owner.email)
-      await page.getByLabel('Password').fill(owner.password)
+      await page.getByLabel('Email address', { exact: true }).fill(owner.email)
+      await page.getByLabel('Password', { exact: true }).fill(owner.password)
       await page.getByRole('button', { name: 'Sign in' }).click()
 
       await expect(page.locator('.inicio-cabecera')).toBeVisible()
@@ -87,10 +87,10 @@ for (const scheme of SCHEMES) {
       const page = await freshPhone(browser, workerServer.url, viewport, scheme)
       await page.goto(LOGIN)
 
-      await expect(page.getByLabel('Email address')).toBeFocused()
-      await expect(page.getByLabel('Email address')).toBeInViewport()
-      await page.getByLabel('Email address').fill(owner.email)
-      await page.getByLabel('Password').fill(owner.password)
+      await expect(page.getByLabel('Email address', { exact: true })).toBeFocused()
+      await expect(page.getByLabel('Email address', { exact: true })).toBeInViewport()
+      await page.getByLabel('Email address', { exact: true }).fill(owner.email)
+      await page.getByLabel('Password', { exact: true }).fill(owner.password)
       await page.getByRole('button', { name: 'Sign in' }).scrollIntoViewIfNeeded()
       await page.getByRole('button', { name: 'Sign in' }).click()
 
@@ -112,15 +112,15 @@ for (const scheme of SCHEMES) {
       route.fulfill({ status: 429, json: { detail: 'too many failed attempts', code: 'account.login_locked' } }),
     )
     await page.goto(LOGIN)
-    await page.getByLabel('Email address').fill('ana@example.com')
-    await page.getByLabel('Password').fill('equivocada123')
+    await page.getByLabel('Email address', { exact: true }).fill('ana@example.com')
+    await page.getByLabel('Password', { exact: true }).fill('equivocada123')
 
     await page.getByRole('button', { name: FORGOT }).click()
     await expect(page.getByRole('dialog', { name: FORGOT })).toContainText(FORGOT_SHEET_TEXT.whatToAsk)
     await page.goBack()
     await expect(page.getByRole('dialog')).toHaveCount(0)
-    await expect(page.getByLabel('Email address')).toHaveValue('ana@example.com')
-    await expect(page.getByLabel('Password')).toHaveValue('equivocada123')
+    await expect(page.getByLabel('Email address', { exact: true })).toHaveValue('ana@example.com')
+    await expect(page.getByLabel('Password', { exact: true })).toHaveValue('equivocada123')
     expect(authRequests).toEqual([])
 
     await page.getByRole('button', { name: 'Sign in' }).click()

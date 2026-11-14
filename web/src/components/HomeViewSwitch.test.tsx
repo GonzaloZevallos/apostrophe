@@ -1,5 +1,5 @@
 /**
- * `HomeViewSwitch` at the component seam: the Today | Analysis segment is navigation (two
+ * `HomeViewSwitch` at the component seam: the Home | Analysis segment is navigation (two
  * links in a named group), the marked one told by `aria-current` and not by colour alone, taken
  * from the registry through the leaf route, and it exists only on the phone.
  */
@@ -29,11 +29,11 @@ function renderSwitch(on: ScreenId, viewport: Viewport = 'phone') {
 }
 
 describe('on the phone', () => {
-  test('Home marks Today, Analysis one tap away', async () => {
+  test('Home marks Home, Analysis one tap away', async () => {
     renderSwitch('home')
 
     const group = screen.getByRole('group', { name: 'Home view' })
-    expect(within(group).getByRole('link', { name: 'Today' })).toHaveAttribute('aria-current', 'page')
+    expect(within(group).getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page')
     const analysis = within(group).getByRole('link', { name: 'Analysis' })
     expect(analysis).not.toHaveAttribute('aria-current')
 
@@ -41,16 +41,16 @@ describe('on the phone', () => {
 
     const next = screen.getByRole('group', { name: 'Home view' })
     expect(within(next).getByRole('link', { name: 'Analysis' })).toHaveAttribute('aria-current', 'page')
-    expect(within(next).getByRole('link', { name: 'Today' })).not.toHaveAttribute('aria-current')
+    expect(within(next).getByRole('link', { name: 'Home' })).not.toHaveAttribute('aria-current')
   })
 
-  test('Analysis marks Analysis, and Today leads back to Home', async () => {
+  test('Analysis marks Analysis, and Home leads back to Home', async () => {
     const router = renderSwitch('analysis')
 
-    await userEvent.click(screen.getByRole('link', { name: 'Today' }))
+    await userEvent.click(within(screen.getByRole('group', { name: 'Home view' })).getByRole('link', { name: 'Home' }))
 
     expect(router.state.location.pathname).toBe(HOME)
-    expect(within(screen.getByRole('group', { name: 'Home view' })).getByRole('link', { name: 'Today' })).toHaveAttribute(
+    expect(within(screen.getByRole('group', { name: 'Home view' })).getByRole('link', { name: 'Home' })).toHaveAttribute(
       'aria-current',
       'page',
     )
@@ -60,8 +60,9 @@ describe('on the phone', () => {
     renderSwitch('home')
 
     expect(screen.queryByRole('tab')).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Today' })).toHaveAttribute('href', HOME)
-    expect(screen.getByRole('link', { name: 'Analysis' })).toHaveAttribute('href', ANALYSIS)
+    const group = within(screen.getByRole('group', { name: 'Home view' }))
+    expect(group.getByRole('link', { name: 'Home' })).toHaveAttribute('href', HOME)
+    expect(group.getByRole('link', { name: 'Analysis' })).toHaveAttribute('href', ANALYSIS)
   })
 
   test('a leaf route that declares no screen is a bug in the table: it throws, with no fallback', () => {

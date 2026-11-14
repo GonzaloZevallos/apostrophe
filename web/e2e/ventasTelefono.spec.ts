@@ -13,6 +13,7 @@
  * model page zoom, not text size.
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { SALE_NEW, SALES, VARIETIES } from '../src/routes.js'
 import { choosePaymentMethod, expect, test, withToastRecorder, type WorkerServer } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
@@ -63,7 +64,7 @@ async function signUpWithAVariety(page: Page): Promise<void> {
   await signUpNewBusiness(page, { businessName: `Vivero Telefono ${uniqueTag()}`, email: `telefono-venta-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name').fill('Jazmín')
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Jazmín')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
@@ -90,7 +91,7 @@ test('a sale is recorded from a phone: existing customer, new customer, none', a
       await page.getByRole('button', { name: 'Pick a customer' }).click()
       await page.getByRole('button', { name: 'New customer' }).click()
       await page.getByLabel('Phone', { exact: true }).fill('+5491155550012')
-      await page.getByLabel('Name').fill('Luz Díaz')
+      await page.getByLabel('Name', { exact: true }).fill('Luz Díaz')
       await page.getByRole('button', { name: 'Create customer' }).click()
       // The sheets close by history, a moment after the customer is saved; until then the
       // picker's own list also names customers, so the chosen one is read once it is gone.

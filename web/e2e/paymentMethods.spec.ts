@@ -5,6 +5,7 @@
  * no payment uses, and archives and restores one that a payment uses. Roles, names and text only.
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import type { Locator } from '@playwright/test'
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, HOME, SALE_NEW, SETTINGS_PAYMENT_METHODS, VARIETIES } from '../src/routes.js'
 import { choosePaymentMethod, expect, test } from './fixtures.js'
@@ -32,7 +33,7 @@ test('a seller adds, edits, deletes, archives and restores payment methods in Se
   // A priced product, a customer and a sale left owing, so that Cash gets a payment below.
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name').fill('Rosa')
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
@@ -40,7 +41,7 @@ test('a seller adds, edits, deletes, archives and restores payment methods in Se
   await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Phone', { exact: true }).fill('+5491155550077')
-  await page.getByLabel('Name').fill('Carla Métodos')
+  await page.getByLabel('Name', { exact: true }).fill('Carla Métodos')
   await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expectPath(page, CUSTOMER)
   await page.getByRole('link', { name: 'New sale to Carla Métodos' }).click()

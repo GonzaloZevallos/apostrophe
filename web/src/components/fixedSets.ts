@@ -49,7 +49,8 @@ function fixedSet<const T extends string>(
   return Object.assign([...options], { [brand]: true as const })
 }
 
-const HOME_VIEWS_REASON = 'fixed set: the two views of Home, Today and Analysis'
+const HOME_VIEWS_REASON =
+  "Home and Analysis are the two views of the phone's Home tab; the app ships both and no setting adds another."
 const PERIODS_REASON = 'fixed view: periods'
 const THEME_REASON = 'fixed set: theme choice'
 const ICONS_REASON = 'fixed set: the neutral icon set ships with the app'
@@ -68,9 +69,9 @@ export const HOME_PERIODS = fixedSet(PERIODS_REASON, [
   { value: 'month', label: () => COMMON_TEXT.month },
 ])
 
-/** Home's Today | Analysis switch on the phone. */
+/** Home's Home | Analysis switch on the phone. */
 export const HOME_VIEWS = fixedSet(HOME_VIEWS_REASON, [
-  { value: 'today', label: HOME_VIEW_NAME.today },
+  { value: 'home', label: HOME_VIEW_NAME.home },
   { value: 'analysis', label: HOME_VIEW_NAME.analysis },
 ])
 

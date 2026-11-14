@@ -60,7 +60,7 @@ function expectation(
   return { kind: { phone: kind, computer: kind }, parent: same(parent), place };
 }
 
-const HOME_PLACE: Place = { bar: "home", rail: "home", segment: "today" };
+const HOME_PLACE: Place = { bar: "home", rail: "home", segment: "home" };
 const SALES_PLACE: Place = { bar: "sales", rail: "sales" };
 const CUSTOMERS_PLACE: Place = { bar: "customers", rail: "customers" };
 const VARIETIES_PLACE: Place = { bar: "varieties", rail: "varieties" };
@@ -214,7 +214,7 @@ describe("the Home | Analysis segment in the registry", () => {
     for (const viewport of VIEWPORTS) {
       expect(kindOf(screenOf("home"), viewport)).toBe("root");
       expect(kindOf(screenOf("analysis"), viewport)).toBe("root");
-      expect(placeOf("home", viewport)).toEqual({ bar: "home", rail: "home", segment: "today" });
+      expect(placeOf("home", viewport)).toEqual({ bar: "home", rail: "home", segment: "home" });
       expect(placeOf("analysis", viewport)).toEqual({ bar: "home", rail: "analysis", segment: "analysis" });
     }
   });
@@ -227,12 +227,12 @@ describe("the Home | Analysis segment in the registry", () => {
   });
 
   test("each segment value is held by exactly one screen, and screenOfSegment finds it", () => {
-    for (const segment of ["today", "analysis"] as const) {
+    for (const segment of ["home", "analysis"] as const) {
       const holders = DECLARED.filter((entry) => entry.place?.segment === segment);
       expect(holders).toHaveLength(1);
       expect(screenOfSegment(segment)).toBe(holders[0]);
     }
-    expect(screenOfSegment("today").path).toBe(routes.HOME);
+    expect(screenOfSegment("home").path).toBe(routes.HOME);
     expect(screenOfSegment("analysis").path).toBe(routes.ANALYSIS);
   });
 

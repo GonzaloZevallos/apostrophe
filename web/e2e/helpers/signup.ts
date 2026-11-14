@@ -74,9 +74,9 @@ export async function signUpNewBusiness(
 
   await page.goto(newBusinessInvitationUrl())
 
-  const nameField = page.getByLabel('Business name')
-  const emailField = page.getByLabel('Email address')
-  const passwordField = page.getByLabel('Password')
+  const nameField = page.getByLabel('Business name', { exact: true })
+  const emailField = page.getByLabel('Email address', { exact: true })
+  const passwordField = page.getByLabel('Password', { exact: true })
   await nameField.fill(businessName)
   await emailField.fill(email)
   await passwordField.fill(password)

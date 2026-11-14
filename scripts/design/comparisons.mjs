@@ -182,8 +182,8 @@ async function run(page, rawStep, placeholders) {
   // An icon-only control has an accessible name and no text: found by role and exact name,
   // and strict, so zero matches or two fail the row instead of picking one.
   else if (step.press) await page.getByRole('button', { name: step.press, exact: true }).click()
-  else if (step.fill) await page.getByLabel(step.fill.label).first().fill(resolveFacts(step.fill.value, placeholders))
-  else if (step.select) await page.getByLabel(step.select.label).first().selectOption({ index: step.select.index })
+  else if (step.fill) await page.getByLabel(step.fill.label, { exact: true }).fill(resolveFacts(step.fill.value, placeholders))
+  else if (step.select) await page.getByLabel(step.select.label, { exact: true }).selectOption({ index: step.select.index })
   else if (step.wait) await page.getByText(step.wait, { exact: true }).first().waitFor()
   // The page has settled by now: only the network goes, the page is never reloaded. Every
   // font face it has not loaded yet is loaded first, since offline it could never be. The

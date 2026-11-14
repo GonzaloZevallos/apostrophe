@@ -8,6 +8,7 @@
  * after the round trip leaves the app's own history, not Registrar cobro again.
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { CUSTOMER, CUSTOMER_NEW, HOME, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { choosePaymentMethod, expect, test } from './fixtures.js'
@@ -38,7 +39,7 @@ for (const viewport of VIEWPORTS) {
 
     await page.goto(VARIETIES)
     await page.getByRole('link', { name: 'New product' }).click()
-    await page.getByLabel('Name').fill('Rosa')
+    await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
     await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
     await page.getByRole('link', { name: /Rosa/ }).click()
     await page.getByRole('link', { name: 'New price' }).click()
@@ -46,7 +47,7 @@ for (const viewport of VIEWPORTS) {
     await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 
     await page.goto(CUSTOMER_NEW)
-    await page.getByLabel('Name').fill('Carla Cobrar')
+    await page.getByLabel('Name', { exact: true }).fill('Carla Cobrar')
     await page.getByRole('button', { name: 'Save and use' }).click()
     await expectPath(page, CUSTOMER)
     await page.getByRole('link', { name: 'New sale to Carla Cobrar' }).click()
@@ -70,7 +71,7 @@ for (const viewport of VIEWPORTS) {
 
     // A partial payment: back on Inicio, the row keeps its new balance.
     await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).click()
-    await page.getByLabel('Amount').fill('2000')
+    await page.getByLabel('Amount', { exact: true }).fill('2000')
     await choosePaymentMethod(page, 'Cash')
     // The exact text is the privacy check: an exact match cannot contain the customer's name.
     await expectToast(page, 'Payment saved · still owing $ 3.000', () =>

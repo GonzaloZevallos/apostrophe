@@ -107,7 +107,7 @@ describe.each([
     const interactive = headerOf(h1).querySelectorAll('a, button, input, select, textarea, summary, [tabindex], [role="button"]')
     expect([...interactive].map((element) => element.getAttribute('aria-label') ?? element.textContent)).toEqual([
       'Settings',
-      'Today',
+      'Home',
       'Analysis',
     ])
   })
@@ -125,7 +125,7 @@ describe.each([
     expect(within(main).getByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
     expect(within(header).getByText('03/10')).toBeInTheDocument()
     expect(within(header).getByRole('link', { name: 'Settings' })).toBeEnabled()
-    const other = path === HOME ? 'Analysis' : 'Today'
+    const other = path === HOME ? 'Analysis' : 'Home'
     // react-router's data router does not expose the history position, so follow it: a PUSH moves
     // one entry on, a REPLACE stays where it is.
     const position = { index: 0, actions: [] as string[] }
