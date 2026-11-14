@@ -663,12 +663,13 @@ describe('the Inicio rows of the real screens.json', () => {
   }
   const clicks = (r: Row): unknown[] => (r.steps ?? []).flatMap((step) => ('click' in step ? [step.click] : []))
   // GH-526: the 2026-10-29 drawings of Inicio and InicioCompu draw one frame, Hoy, so no Inicio row crops to
-  // a section any more: `section` is absent on every row of both drawings.
+  // a section any more: `section` is absent on every row of both drawings. GH-731 adds the one exception: the phone
+  // rows InicioHoy and InicioOscuro crop to the segment's own tablist, found by its label 'Análisis' (once each).
 
   it('captures Hoy, the tab Inicio opens on, with no step, on phone and computer', () => {
     expect(clicks(row('InicioHoy'))).toEqual([])
     expect(row('InicioHoy')).toMatchObject({ design: 'Inicio' })
-    expect(row('InicioHoy').section).toBeUndefined()
+    expect(row('InicioHoy').section).toBe('Análisis')
     expect(clicks(row('InicioHoyCompu'))).toEqual([])
     expect(row('InicioHoyCompu')).toMatchObject({
       design: 'InicioCompu',
@@ -700,6 +701,7 @@ describe('the Inicio rows of the real screens.json', () => {
   it('captures the dark Hoy against the dark drawing, which draws Hoy alone', () => {
     expect(clicks(row('InicioOscuro'))).toEqual([])
     expect(row('InicioOscuro').tema).toBe('oscuro')
+    expect(row('InicioOscuro').section).toBe('Análisis')
   })
 
   // GH-526: the 2026-10-29 Inicio and InicioCompu draw one frame, Hoy: there is no Semana or Mes block, so the

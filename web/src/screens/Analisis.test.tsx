@@ -9,10 +9,11 @@ import { ANALYSIS } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
+import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import { SHOWN_EN } from '../test/shownLanguage'
+import { screenRoute } from '../test/screenRoute'
 import analysisEmptyFixture from '../api/fixtures/analysis-empty.json'
 import analysisFixture from '../api/fixtures/analysis.json'
 import { ANALYSIS_TEXT } from '../copy/analysis'
@@ -91,13 +92,11 @@ function renderAnalisis(
   vi.stubGlobal('fetch', vi.fn(fetchImpl))
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={[ANALYSIS]}>
-        <Routes>
-          <Route element={<Provide />}>
-            <Route path={ANALYSIS} element={<Analisis />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider
+        router={createMemoryRouter([{ element: <Provide />, children: [screenRoute('analysis', <Analisis />)] }], {
+          initialEntries: [ANALYSIS],
+        })}
+      />
     </QueryClientProvider>,
   )
 }

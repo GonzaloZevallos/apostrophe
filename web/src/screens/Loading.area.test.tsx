@@ -8,11 +8,12 @@ import { CATALOG, CUSTOMERS, HOME, WITHDRAWAL_NEW } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import type { ReactElement } from 'react'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
+import { createMemoryRouter, Outlet, RouterProvider, type RouteObject } from 'react-router'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import FlashProvider from '../flash/FlashProvider'
 import { SHOWN_EN } from '../test/shownLanguage'
+import { screenRoute } from '../test/screenRoute'
 import { stubViewport } from '../test-viewport'
 import Catalogo from './Catalogo'
 import ClientesLayout from './clientes/ClientesLayout'
@@ -50,26 +51,26 @@ function holdFetch(): void {
   )
 }
 
-function renderScreen(path: string, element: ReactElement, layout?: ReactElement): void {
+function renderScreen(route: RouteObject, layout?: ReactElement): void {
   holdFetch()
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[path]}>
-        <Routes>
-          <Route
-            element={
-              <FlashProvider>
-                <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
-              </FlashProvider>
-            }
-          >
-            <Route element={layout}>
-              <Route path={path} element={element} />
-            </Route>
-          </Route>
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider
+        router={createMemoryRouter(
+          [
+            {
+              element: (
+                <FlashProvider>
+                  <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
+                </FlashProvider>
+              ),
+              children: [{ element: layout, children: [route] }],
+            },
+          ],
+          { initialEntries: [route.path ?? HOME] },
+        )}
+      />
     </QueryClientProvider>,
   )
 }
@@ -81,20 +82,20 @@ async function releaseAnswers(): Promise<void> {
 
 describe('a screen waiting on its first answer', () => {
   test('Inicio marks its own area busy from the first render, and clears it once answered', async () => {
-    renderScreen(HOME, <Inicio />)
+    renderScreen(screenRoute('home', <Inicio />))
     expect(screen.getByRole('main')).toHaveAttribute('aria-busy', 'true')
     await releaseAnswers()
   })
 
   test('Catalogo marks its own area busy from the first render, and clears it once answered', async () => {
-    renderScreen(CATALOG, <Catalogo />)
+    renderScreen({ path: CATALOG, element: <Catalogo /> })
     expect(screen.getByRole('main')).toHaveAttribute('aria-busy', 'true')
     release()
     await waitFor(() => expect(screen.getByRole('main')).not.toHaveAttribute('aria-busy'))
   })
 
   test('Clientes marks its own area busy from the first render, and clears it once answered', async () => {
-    renderScreen(CUSTOMERS, <Clientes />, <ClientesLayout />)
+    renderScreen({ path: CUSTOMERS, element: <Clientes /> }, <ClientesLayout />)
     expect(screen.getByRole('main')).toHaveAttribute('aria-busy', 'true')
     await releaseAnswers()
   })

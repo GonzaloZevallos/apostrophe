@@ -23,7 +23,7 @@
 import { Fragment, useCallback, useMemo, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Link, Outlet, useMatches, useOutletContext } from 'react-router'
+import { Link, Outlet, useOutletContext } from 'react-router'
 import { actionableFirstRun, firstRunQuery } from '../api/firstRun'
 import type { Me } from '../api/me'
 import Icono, { type NombreIcono } from '../components/Icono'
@@ -32,16 +32,13 @@ import {
   ANALYSIS,
   EXPENSES,
   HOME,
-  isScreenId,
   placeOf,
   SALE_NEW,
   SALES,
-  screenOf,
   CUSTOMERS,
   SETTINGS,
   VARIETIES,
   type RailPlace,
-  type Screen,
 } from '../routes'
 import BrandMark from '../components/BrandMark'
 import BotonLink from '../components/BotonLink'
@@ -51,6 +48,7 @@ import { NUEVA_VENTA_MISSING } from '../copy/inicio'
 import { chromeOf } from './chrome'
 import { initialsOf } from '../format/initials'
 import { BackParentContext, type BackParentSlot, type BackParentStore } from './useBackParent'
+import { useLeafScreen } from './useLeafScreen'
 import { useViewport } from './useViewport'
 import { useVisualViewport } from '../components/useVisualViewport'
 import type { CopyKey } from '../i18n/resources.generated'
@@ -99,17 +97,6 @@ const NAV_ITEMS: Item[] = [
 
 const BAR_ITEMS = NAV_ITEMS.filter((item) => item.placement !== 'rail')
 const RAIL_ITEMS = NAV_ITEMS.filter((item) => item.placement !== 'bar')
-
-/** The registry entry of the leaf route: the deepest match that names a screen. */
-function leafScreen(matches: readonly { handle: unknown }[]): Screen {
-  for (const match of [...matches].reverse()) {
-    const { handle } = match
-    if (typeof handle === 'object' && handle !== null && 'screen' in handle && isScreenId(handle.screen)) {
-      return screenOf(handle.screen)
-    }
-  }
-  throw new Error('Shell: the leaf route does not declare a screen (routes.ts)')
-}
 
 function railClassName(item: Item, active: boolean): string {
   const base =
@@ -163,7 +150,7 @@ function useNuevaVentaMissing(enabled: boolean): boolean {
 export default function Shell() {
   const { t } = useTranslation()
   const me = useOutletContext<Me>()
-  const leaf = leafScreen(useMatches())
+  const leaf = useLeafScreen()
   const barPlace = placeOf(leaf.id, 'phone').bar
   const railPlace = placeOf(leaf.id, 'computer').rail
   const chrome = chromeOf(leaf, useViewport())

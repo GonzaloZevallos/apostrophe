@@ -24,10 +24,12 @@ import {
   readPaymentUnderneath,
   SCREENS,
   screenOf,
+  screenOfSegment,
   kindOf,
   type Kind,
   type ParentRef,
   type Place,
+  type Screen,
   type ScreenId,
   type Viewport,
 } from "./routes";
@@ -58,12 +60,12 @@ function expectation(
   return { kind: { phone: kind, computer: kind }, parent: same(parent), place };
 }
 
-const HOME_PLACE: Place = { bar: "home", rail: "home" };
+const HOME_PLACE: Place = { bar: "home", rail: "home", segment: "today" };
 const SALES_PLACE: Place = { bar: "sales", rail: "sales" };
 const CUSTOMERS_PLACE: Place = { bar: "customers", rail: "customers" };
 const VARIETIES_PLACE: Place = { bar: "varieties", rail: "varieties" };
 const EXPENSES_PLACE: Place = { bar: "home", rail: "expenses" };
-const ANALYSIS_PLACE: Place = { bar: "home", rail: "analysis" };
+const ANALYSIS_PLACE: Place = { bar: "home", rail: "analysis", segment: "analysis" };
 /** Configuración marks no tab on the bar: a header avatar opens it, not a tab. */
 const SETTINGS_PLACE: Place = { bar: null, rail: "business" };
 
@@ -200,8 +202,45 @@ describe("parentOf and placeOf, every screen on both viewports", () => {
   });
 
   test("Análisis and Gastos mark Inicio on the bar and their own entry on the rail", () => {
-    expect(placeOf("analysis", "phone")).toEqual({ bar: "home", rail: "analysis" });
+    expect(placeOf("analysis", "phone")).toEqual({ bar: "home", rail: "analysis", segment: "analysis" });
     expect(placeOf("expenses", "phone")).toEqual({ bar: "home", rail: "expenses" });
+  });
+});
+
+const DECLARED: readonly Screen[] = SCREENS;
+
+describe("the Home | Analysis segment in the registry", () => {
+  test("Inicio and Análisis are roots on the bar's Inicio, each with its own segment value", () => {
+    for (const viewport of VIEWPORTS) {
+      expect(kindOf(screenOf("home"), viewport)).toBe("root");
+      expect(kindOf(screenOf("analysis"), viewport)).toBe("root");
+      expect(placeOf("home", viewport)).toEqual({ bar: "home", rail: "home", segment: "today" });
+      expect(placeOf("analysis", viewport)).toEqual({ bar: "home", rail: "analysis", segment: "analysis" });
+    }
+  });
+
+  test("Análisis has no back arrow and Gastos has no segment", () => {
+    for (const viewport of VIEWPORTS) {
+      expect(parentOf("analysis", viewport)).toBeUndefined();
+      expect(placeOf("expenses", viewport).segment).toBeUndefined();
+    }
+  });
+
+  test("each segment value is held by exactly one screen, and screenOfSegment finds it", () => {
+    for (const segment of ["today", "analysis"] as const) {
+      const holders = DECLARED.filter((entry) => entry.place?.segment === segment);
+      expect(holders).toHaveLength(1);
+      expect(screenOfSegment(segment)).toBe(holders[0]);
+    }
+    expect(screenOfSegment("today").path).toBe(routes.HOME);
+    expect(screenOfSegment("analysis").path).toBe(routes.ANALYSIS);
+  });
+
+  test("only Inicio and Análisis carry a segment", () => {
+    expect(DECLARED.filter((entry) => entry.place?.segment !== undefined).map((entry) => entry.id)).toEqual([
+      "home",
+      "analysis",
+    ]);
   });
 });
 

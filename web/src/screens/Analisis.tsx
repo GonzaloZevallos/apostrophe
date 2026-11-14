@@ -315,7 +315,7 @@ export default function Analisis() {
           <span className="encabezado__titulo">{COMMON_TEXT.analysis}</span>
           <SettingsAvatar />
         </div>
-        <HomeViewSwitch selected="analysis" />
+        <HomeViewSwitch />
         <ExpensesCard />
 
         {query.isPending && <Loading />}
