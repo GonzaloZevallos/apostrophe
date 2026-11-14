@@ -14,9 +14,11 @@ Este job afina el primero para cada fila de semana y de mes; no es un job nuevo.
 
 **Cuando** llevo el negocio desde el teléfono entre pedidos o en medio de un chat con un cliente, varias veces por día, **quiero** que la app esté ordenada según lo que hago de verdad y con qué frecuencia, con Analysis a mano para la mirada semanal o mensual, **para** volver al cliente en vez de buscar entre menús. (El job de navegación, navigation.md.)
 
-**Cuando** necesito registrar una Expense, sacar flor del stock, ver cómo va el negocio o cambiar una configuración desde el celular, **quiero** encontrarlo donde ya vive ese contexto (Analysis en Home, "Take from stock" en la vista de stock de Products, Settings en el encabezado), **para** terminar en pocos toques sin pasar por un menú que lo junta todo. (GH-651, el retiro de More, navigation.md: acá lo sirven el segmento Today | Analysis de Home y la tarjeta Expenses de Analysis.)
+**Cuando** necesito registrar una Expense, sacar flor del stock, ver cómo va el negocio o cambiar una configuración desde el celular, **quiero** encontrarlo donde ya vive ese contexto (Analysis en Home, "Take from stock" en la vista de stock de Products, Settings en el encabezado), **para** terminar en pocos toques sin pasar por un menú que lo junta todo. (GH-651, el retiro de More, navigation.md: acá lo sirven el segmento Home | Analysis de Home y la tarjeta Expenses de Analysis.)
 
 **Cuando** quiero saber cómo me fue en un mes, desde el teléfono y entre otras cosas, **quiero** elegir primero el mes y leer cada cifra de Analysis de arriba abajo, sin desplazarme de costado ni hacer zoom, **para** saber si gané plata ese mes y qué productos la dejaron. (GH-319, Analysis en el teléfono. Afina el primer job para el teléfono y cambia solo la disposición, nunca lo que muestra una sección. Antes, el dueño se desplazaba de costado y perdía a qué producto o período pertenecía una cifra, o esperaba a estar en la computadora.)
+
+**Cuando** estoy en la pestaña Home del celular y quiero pasar entre la vista en vivo y la vista de historia de mi negocio, **quiero** que las dos opciones se llamen como las vistas que abren, Home y Analysis, **para** saber dónde estoy y adónde me lleva la otra opción sin un "Today" encima de otro. (#733, navigation.md: afina el job de navegación para el celular. Acá lo sirve el segmento de Analysis, con "Analysis" elegido y "Home" para volver.)
 
 Criterios de éxito:
 
@@ -32,15 +34,16 @@ Criterios de éxito:
 5. **Los negocios nunca se mezclan** (ADR-0004): cada cifra cubre solo el negocio de la Session, y los nombres de los Withdrawal reasons también.
 6. **Cada fila explica su Profit**: las 8 filas de semana y las 12 filas de mes muestran el Cost of goods sold, y el Stock shortfall cuando el período lo tiene, al lado de la línea de cada Withdrawal reason con Stock withdrawals en el período, las Expenses, el Profit y el Cash.
 7. **Se lee de arriba abajo en el teléfono**: a 320 px y a 246 px (texto al 130 %), con un nombre de producto de 60 caracteres y cifras de nueve dígitos, el dueño puede cambiar de mes y leer cada sección sin desplazarse de costado.
-8. **Nada se pierde en el teléfono**: cada cifra de cada fila de tabla aparece en su tarjeta con la misma etiqueta existente y en el mismo orden, y el selector de mes es el primer control del contenido, después del encabezado con el avatar "Settings", el segmento Today | Analysis y la tarjeta Expenses.
+8. **Nada se pierde en el teléfono**: cada cifra de cada fila de tabla aparece en su tarjeta con la misma etiqueta existente y en el mismo orden, y el selector de mes es el primer control del contenido, después del encabezado con el avatar "Settings", el segmento Home | Analysis y la tarjeta Expenses.
 9. **La computadora no cambia**: la captura de `AnalisisCompu` sale igual que antes de las tarjetas del teléfono, y el segmento, el avatar y la tarjeta Expenses no se dibujan en una computadora.
 10. **Se lee de un vistazo**: en el teléfono cada cifra principal entra en una línea, ningún texto mide menos de 12 px y cada zona de toque, las flechas del mes, el segmento y las acciones de la tarjeta Expenses incluidas, mide al menos 44×44.
 11. **Nada cambia para un negocio existente** (GH-318, parte de Withdrawal reasons): ve las mismas cifras en cada fila, cabecera y línea desde el First record; la única diferencia visible es que "Promotion" ahora dice "Marketing".
-12. **Se llega sin More** (GH-651): en el teléfono, Analysis se abre en 1 toque desde Home con el segmento Today | Analysis, y Expenses y su formulario se abren desde la tarjeta Expenses de Analysis.
+12. **Se llega sin More** (GH-651): en el teléfono, Analysis se abre en 1 toque desde Home con el segmento Home | Analysis, y Expenses y su formulario se abren desde la tarjeta Expenses de Analysis.
+13. **El segmento nombra sus vistas** (#733): en el teléfono, las opciones del segmento de Analysis dicen "Home" y "Analysis", en pantalla y en su nombre accesible; ninguna dice "Today", y "Home" vuelve a Home en 1 toque.
 
 # Análisis
 
-Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada producto: Margin por producto de un mes elegido; ventas, Cost of goods sold, Stock shortfall, Profit y Cash de las últimas 8 semanas y los últimos 12 meses; el patrón por día de la semana; los totales desde el First record, y las Expenses por Expense category. Es de solo lectura y lo ve solo su negocio (ADR-0004). Cada cifra que comparte con Resultados (#7) sale del cálculo de #7. El Cost of goods sold, el Stock shortfall y el costo de los Stock withdrawals por Withdrawal reason siguen a los Lots como están hoy (ADR-0009, ADR-0010). Lee ventas, stock (Stock entries, Stock withdrawals y la lista de Withdrawal reasons), Payments y Expenses. Se llega con el segmento Today | Analysis de Home en el teléfono y desde la barra lateral en la computadora (navigation.md). En el teléfono, además, es el lugar desde donde se llega a Expenses y al formulario de la Expense, por su tarjeta Expenses.
+Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada producto: Margin por producto de un mes elegido; ventas, Cost of goods sold, Stock shortfall, Profit y Cash de las últimas 8 semanas y los últimos 12 meses; el patrón por día de la semana; los totales desde el First record, y las Expenses por Expense category. Es de solo lectura y lo ve solo su negocio (ADR-0004). Cada cifra que comparte con Resultados (#7) sale del cálculo de #7. El Cost of goods sold, el Stock shortfall y el costo de los Stock withdrawals por Withdrawal reason siguen a los Lots como están hoy (ADR-0009, ADR-0010). Lee ventas, stock (Stock entries, Stock withdrawals y la lista de Withdrawal reasons), Payments y Expenses. Se llega con el segmento Home | Analysis de Home en el teléfono y desde la barra lateral en la computadora (navigation.md). En el teléfono, además, es el lugar desde donde se llega a Expenses y al formulario de la Expense, por su tarjeta Expenses.
 
 ## Comportamiento
 
@@ -152,9 +155,9 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 
 ![Analysis en el teléfono](../assets/screens/Analisis.webp)
 
-- **Dónde**: en el teléfono, una Tab root a la que se llega con el segmento Today | Analysis de Home: muestra la barra con Home marcada como activa y "+ New sale". En la computadora, "Analysis" en la barra lateral, debajo del separador (navigation.md). More ya no existe (GH-651).
+- **Dónde**: en el teléfono, una Tab root a la que se llega con el segmento Home | Analysis de Home: muestra la barra con Home marcada como activa y "+ New sale". En la computadora, "Analysis" en la barra lateral, debajo del separador (navigation.md). More ya no existe (GH-651).
 - **Encabezado del teléfono**: el título "Analysis" con el avatar "Settings" al final de la fila (navigation.md); el título se corta con puntos suspensivos antes de que el avatar se achique.
-- **El segmento Today | Analysis** (solo en el teléfono): debajo del encabezado, el mismo control de navegación de Home, un grupo con nombre accesible "Home view" de dos links de al menos 44 px, con "Analysis" elegido (`aria-current="page"` y peso, nunca solo color). "Today" vuelve a Home.
+- **El segmento Home | Analysis** (solo en el teléfono): debajo del encabezado, el mismo control de navegación de Home, un grupo con nombre accesible "Home view" de dos links de al menos 44 px, "Home" y "Analysis", con "Analysis" elegido (`aria-current="page"` y peso, nunca solo color). "Home" vuelve a Home. Ninguna opción dice "Today" (#733).
 - **La tarjeta Expenses** (solo en el teléfono): debajo del segmento y antes de las cifras, con el título "Expenses", "Add expense" (abre el formulario de la Expense con la fecha de hoy) y "See the expenses" (abre Expenses), cada una de al menos 44 px (expenses.md). No espera las cifras: está en los estados cargando, error, vacío y con datos. Es solo una entrada; no muestra ninguna cifra.
 - **Computadora**: la disposición de `AnalisisCompu`, con las tres secciones como tablas. La disposición del teléfono nunca la cambia: su captura sigue igual, y el segmento, el avatar y la tarjeta Expenses no se dibujan.
 - **Filas de semana y de mes**: en el teléfono son tarjetas (ver En el teléfono); en la computadora, cómo se ubican en una fila el Cost of goods sold, el Stock shortfall y las líneas de los Withdrawal reasons (líneas o subfilas) lo decide diseño. Cada cifra va en palabras, y lo pendiente y lo negativo se dicen con una palabra o un signo, nunca solo con el color, en los dos temas.
@@ -165,7 +168,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 
 ### En el teléfono (debajo del corte de 900 px)
 
-- **El selector de mes primero**: es el primer control del contenido de Analysis, después del encabezado, el segmento Today | Analysis y la tarjeta Expenses. La regla de orden que Expenses aplica a su propio selector de mes está acotada a Expenses y nunca llega a Analysis.
+- **El selector de mes primero**: es el primer control del contenido de Analysis, después del encabezado, el segmento Home | Analysis y la tarjeta Expenses. La regla de orden que Expenses aplica a su propio selector de mes está acotada a Expenses y nunca llega a Analysis.
 - **Una sola disposición a la vez**:
   - En ancho de teléfono, las tres secciones (por producto, últimas 8 semanas, últimos 12 meses) se muestran como listas de tarjetas, y no hay ninguna tabla en la página.
   - En ancho de computadora se muestran como tablas, y no hay ninguna tarjeta en la página.
@@ -270,12 +273,13 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
   - No queda ninguna entrada `touch-target`, `text-size`, `h-scroll`, `name-overflow` ni `figure-split` para una celda de contenido de Analysis que este trabajo arregló.
   - Cada entrada que pasó a verde se borra.
   - No se agrega ninguna fuera de las reglas de gate.md.
-- **Se llega sin More (criterio 12)**: pruebas de Testing Library a través del router real, en ancho de teléfono: tocar "Analysis" en el segmento de Home lleva a `/analysis`; tocar "Today" en el de Analysis lleva a `/`; "Add expense" de la tarjeta abre el formulario de la Expense y "See the expenses" abre Expenses; Analysis tiene la barra, "+ New sale" y Home marcada como activa. 100% de aprobación.
+- **Se llega sin More (criterio 12)**: pruebas de Testing Library a través del router real, en ancho de teléfono: tocar "Analysis" en el segmento de Home lleva a `/analysis`; tocar "Home" en el de Analysis lleva a `/`; "Add expense" de la tarjeta abre el formulario de la Expense y "See the expenses" abre Expenses; Analysis tiene la barra, "+ New sale" y Home marcada como activa. 100% de aprobación.
+- **El segmento nombra sus vistas (criterio 13, #733)**: en ancho de teléfono, el grupo "Home view" de Analysis tiene exactamente dos links, de nombre accesible "Home" y "Analysis", y ninguno "Today"; el proyecto e2e `mobile` pasa en `Analisis` y `AnalisisOscuro` sin ningún infractor agregado. 100% de aprobación.
 - **Aislamiento (criterio 5)**: cada ruta de Analysis está en el barrido y responde solo las cifras y los nombres de Withdrawal reason de su propio negocio, nunca los datos del otro negocio sembrado.
 - **Sin eco**: después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen montos ni nombres.
 - **Velocidad**: la pantalla responde en menos de 300 ms con un año de unos cientos de ventas y unas decenas de productos (el disparador de revisión de ADR-0010).
 - **Sin curl**: la corrida de punta a punta del front:
-  - abre Analysis con el segmento Today | Analysis de Home en el teléfono, y con la opción de la barra lateral en la computadora;
+  - abre Analysis con el segmento Home | Analysis de Home en el teléfono, y con la opción de la barra lateral en la computadora;
   - retrocede un mes;
   - lee cada sección, incluidos el Cost of goods sold, el Stock shortfall y la línea de cada Withdrawal reason en las filas (tarjetas en el teléfono), un Withdrawal reason agregado por el dueño incluido.
 - **Diseño**: `scripts/design/compare.sh` corre antes y después para Analysis, en teléfono y computadora y en los dos temas. Al PR se adjuntan las capturas, el resultado del e2e `mobile` y la cantidad de entradas en las listas de excepciones. Una pantalla que la herramienta no puede capturar se informa como "not compared".
