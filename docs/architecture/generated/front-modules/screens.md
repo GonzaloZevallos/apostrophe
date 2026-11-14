@@ -124,6 +124,7 @@ subgraph src["src"]
       src_screens_varieties_VarietyThresholdSection_tsx["VarietyThresholdSection.tsx"]
       src_screens_varieties_archivedVarieties_ts["archivedVarieties.ts"]
       src_screens_varieties_catalogFormErrors_ts["catalogFormErrors.ts"]
+      src_screens_varieties_fieldIds_ts["fieldIds.ts"]
       src_screens_varieties_isStillCurrent_ts["isStillCurrent.ts"]
       src_screens_varieties_priceFieldRules_ts["priceFieldRules.ts"]
       src_screens_varieties_restoreLanding_ts["restoreLanding.ts"]
@@ -288,6 +289,7 @@ src_screens_onboarding_StockStep_tsx-->src_screens_onboarding_useOnboardingWrite
 src_screens_onboarding_VarietyDone_tsx-->src_screens_Variedades_tsx
 src_screens_onboarding_VarietyForm_tsx-->src_screens_onboarding_useVarietyWithPrice_ts
 src_screens_onboarding_VarietyForm_tsx-->src_screens_varieties_PriceFields_tsx
+src_screens_onboarding_VarietyForm_tsx-->src_screens_varieties_fieldIds_ts
 src_screens_onboarding_VarietyForm_tsx-->src_screens_varieties_priceFieldRules_ts
 src_screens_onboarding_VarietyStep_tsx-->src_screens_onboarding_VarietyDone_tsx
 src_screens_onboarding_VarietyStep_tsx-->src_screens_onboarding_VarietyForm_tsx
@@ -340,6 +342,7 @@ src_screens_varieties_CatalogAttributesForm_tsx-->src_screens_Variedades_tsx
 src_screens_varieties_CatalogAttributesForm_tsx-->src_screens_varieties_catalogFormErrors_ts
 src_screens_varieties_EntriesBehind_tsx-->src_screens_EntriesList_tsx
 src_screens_varieties_EntriesBehind_tsx-->src_screens_Variedades_tsx
+src_screens_varieties_PriceFields_tsx-->src_screens_varieties_fieldIds_ts
 src_screens_varieties_PriceFields_tsx-->src_screens_varieties_priceFieldRules_ts
 src_screens_varieties_PriceForm_tsx-->src_screens_Variedades_tsx
 src_screens_varieties_PriceForm_tsx-->src_screens_varieties_PriceFields_tsx
