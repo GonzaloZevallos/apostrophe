@@ -22,7 +22,7 @@ async function signUpWithAVariety(page: Page): Promise<void> {
   await signUpNewBusiness(page, { businessName: `Vivero Line ${uniqueTag()}`, email: `duena-linea-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name').fill('Jazmín con un nombre bastante largo')
+  await page.getByLabel('Name', { exact: true }).fill('Jazmín con un nombre bastante largo')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
@@ -52,11 +52,11 @@ test('the open line fits and is thumb-sized at 320, 375, 430 and at 130 % text',
     const line = page.locator('.nueva-venta__linea--abierta')
     const controls = [
       page.getByRole('button', { name: /^Line 1 product/ }),
-      page.getByLabel('Line 1 grams'),
-      page.getByLabel('Line 1 special price'),
+      page.getByLabel('Line 1 grams', { exact: true }),
+      page.getByLabel('Line 1 special price', { exact: true }),
       line.locator('.opcion-interruptor'),
       page.getByRole('button', { name: 'Add another product' }),
-      page.getByLabel('Shipping'),
+      page.getByLabel('Shipping', { exact: true }),
     ]
     for (const control of controls) {
       const rect = await box(control)
@@ -66,9 +66,9 @@ test('the open line fits and is thumb-sized at 320, 375, 430 and at 130 % text',
     }
     for (const input of [
       page.getByRole('button', { name: /^Line 1 product/ }),
-      page.getByLabel('Line 1 grams'),
-      page.getByLabel('Line 1 special price'),
-      page.getByLabel('Shipping'),
+      page.getByLabel('Line 1 grams', { exact: true }),
+      page.getByLabel('Line 1 special price', { exact: true }),
+      page.getByLabel('Shipping', { exact: true }),
     ]) {
       const size = await input.evaluate((element) => parseFloat(getComputedStyle(element).fontSize))
       expect(size, `font size at ${width}`).toBeGreaterThanOrEqual(MIN_INPUT_FONT)

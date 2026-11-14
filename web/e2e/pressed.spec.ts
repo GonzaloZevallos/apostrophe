@@ -283,7 +283,7 @@ test.describe('Undo', () => {
       })
       await page.goto(VARIETIES)
       await page.getByRole('link', { name: 'New product' }).click()
-      await page.getByLabel('Name').fill('Rosa')
+      await page.getByLabel('Name', { exact: true }).fill('Rosa')
       await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
       await page.getByRole('link', { name: /Rosa/ }).click()
       await page.getByRole('link', { name: 'New price' }).click()

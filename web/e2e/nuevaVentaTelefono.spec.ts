@@ -40,7 +40,7 @@ async function signInWithAPricedVariety(page: Page): Promise<void> {
   await signUpNewBusiness(page, { businessName: `Vivero Telefono ${uniqueTag()}`, email: `telefono-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name').fill('Jazmín')
+  await page.getByLabel('Name', { exact: true }).fill('Jazmín')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
@@ -82,7 +82,7 @@ test('the form is three zones at every phone width: footer in view, header fixed
     await expect(save).toBeInViewport()
 
     // Header: the date input is 16 px or more and 44 px or more tall.
-    const date = page.getByLabel('Date')
+    const date = page.getByLabel('Date', { exact: true })
     expect(await date.evaluate((node) => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(16)
     expect((await box(date)).height).toBeGreaterThanOrEqual(44)
 
@@ -129,7 +129,7 @@ test('with the viewport shortened the footer stays in view, and the keyboard fla
 
   await page.setViewportSize({ width: 375, height: 380 })
   await expect(save).toBeInViewport()
-  await expect(page.getByLabel('Date')).toBeInViewport()
+  await expect(page.getByLabel('Date', { exact: true })).toBeInViewport()
 
   // Headless Chromium has no on-screen keyboard: the flag the visual-viewport hook sets is
   // set by hand, to see what the stylesheet does under it.

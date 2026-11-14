@@ -115,7 +115,7 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
 
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name').fill('Rosa')
+  await page.getByLabel('Name', { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
@@ -124,7 +124,7 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
 
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Phone', { exact: true }).fill('+5491155550077')
-  await page.getByLabel('Name').fill('Lucía Borde')
+  await page.getByLabel('Name', { exact: true }).fill('Lucía Borde')
   await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)
   await page.getByRole('link', { name: 'New sale to Lucía Borde' }).click()

@@ -22,16 +22,16 @@ test('Back on a dirty Record payment and on a dirty New sale asks, and "No" keep
   page,
 }) => {
   await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Business name').fill(`Flores del Norte ${uniqueTag()}`)
-  await page.getByLabel('Email address').fill(`duena-volver-${uniqueTag()}@example.com`)
-  await page.getByLabel('Password').fill(PASSWORD)
+  await page.getByLabel('Business name', { exact: true }).fill(`Flores del Norte ${uniqueTag()}`)
+  await page.getByLabel('Email address', { exact: true }).fill(`duena-volver-${uniqueTag()}@example.com`)
+  await page.getByLabel('Password', { exact: true }).fill(PASSWORD)
   await page.getByRole('button', { name: 'Create the business' }).click()
   // A new business lands in the Onboarding; this spec is about something else.
   await leaveOnboarding(page)
 
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name').fill('Rosa')
+  await page.getByLabel('Name', { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
@@ -39,7 +39,7 @@ test('Back on a dirty Record payment and on a dirty New sale asks, and "No" keep
   await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Name').fill('Carla Volver')
+  await page.getByLabel('Name', { exact: true }).fill('Carla Volver')
   await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)
   await page.getByRole('link', { name: 'New sale to Carla Volver' }).click()
@@ -72,5 +72,5 @@ test('Back on a dirty Record payment and on a dirty New sale asks, and "No" keep
   await expect(page.getByText('Discard the sale?')).toBeVisible()
   await page.getByRole('button', { name: 'No, keep entering' }).click()
   await expectPath(page, SALE_NEW)
-  await expect(page.getByLabel('Line 1 grams')).toHaveValue('3')
+  await expect(page.getByLabel('Line 1 grams', { exact: true })).toHaveValue('3')
 })

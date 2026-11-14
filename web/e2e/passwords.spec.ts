@@ -57,16 +57,16 @@ test('changes a password from Configuración → Tu cuenta, signing an older dev
   const otherPage = await otherContext.newPage()
   watchConsole(otherPage, consoleMessages)
   await otherPage.goto(LOGIN)
-  await otherPage.getByLabel('Email address').fill(ownerEmail)
-  await otherPage.getByLabel('Password').fill(PASSWORD)
+  await otherPage.getByLabel('Email address', { exact: true }).fill(ownerEmail)
+  await otherPage.getByLabel('Password', { exact: true }).fill(PASSWORD)
   await otherPage.getByRole('button', { name: 'Sign in' }).click()
   await expect(otherPage.locator('.encabezado__negocio')).toHaveText(businessName)
 
   await page.goto(SETTINGS_ACCOUNT)
   await page.getByRole('button', { name: 'Change password' }).click()
   const sheet = page.locator('.capa')
-  await sheet.getByLabel('Current password').fill(PASSWORD)
-  await sheet.getByLabel('New password').fill(NEW_PASSWORD)
+  await sheet.getByLabel('Current password', { exact: true }).fill(PASSWORD)
+  await sheet.getByLabel('New password', { exact: true }).fill(NEW_PASSWORD)
   await expectToast(page, 'Password changed · we signed out your other sessions', () => sheet.getByRole('button', { name: 'Save' }).click())
 
   // This device stays signed in: `.encabezado__negocio` only renders on Inicio
@@ -111,7 +111,7 @@ test('resets a forgotten password from a printed link through to Inicio, then sh
 
   await page.goto(link)
   await expect(page.getByText('Choose your new password')).toBeVisible()
-  await page.getByLabel('New password').fill(NEW_PASSWORD)
+  await page.getByLabel('New password', { exact: true }).fill(NEW_PASSWORD)
   await page.getByRole('button', { name: 'Save and sign in' }).click()
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 

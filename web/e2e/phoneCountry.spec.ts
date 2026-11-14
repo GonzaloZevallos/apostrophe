@@ -35,7 +35,7 @@ async function pickCountry(page: Page, option: string): Promise<void> {
 
 async function newCustomerForm(page: Page, name: string): Promise<void> {
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Name').fill(name)
+  await page.getByLabel('Name', { exact: true }).fill(name)
   // The list resolved and detection ran: the Selector no longer loads.
   await expect(countryField(page)).not.toHaveAttribute('aria-busy', 'true')
 }
@@ -116,7 +116,7 @@ test('a Uruguayan device saves a local Uruguayan number, an Argentine one by pic
 
   // The Business group of Settings no longer holds a Phone country.
   await page.goto(SETTINGS_BUSINESS)
-  await expect(page.getByLabel('Business name')).toBeVisible()
+  await expect(page.getByLabel('Business name', { exact: true })).toBeVisible()
   await expect(page.getByText('Phone country')).toHaveCount(0)
   await expect(page.getByRole('radio', { name: 'No country' })).toHaveCount(0)
 

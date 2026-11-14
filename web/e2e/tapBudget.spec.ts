@@ -127,8 +127,8 @@ test('a seller records an expense from the Expenses card and Close goes back to 
   await page.getByRole('link', { name: 'Add expense' }).click()
   await page.getByRole('button', { name: /^Category/ }).click()
   await page.getByRole('button', { name: 'Packaging', exact: true }).click()
-  await page.getByLabel('Amount').fill('3200')
-  await page.getByLabel('Details').fill('Cajas de cartón')
+  await page.getByLabel('Amount', { exact: true }).fill('3200')
+  await page.getByLabel('Details', { exact: true }).fill('Cajas de cartón')
   await expectToast(page, 'Expense saved', async () => {
     await page.getByRole('button', { name: 'Save the expense' }).click()
     await expectPath(page, ANALYSIS)
@@ -309,7 +309,7 @@ test('a new customer, alone or from Pick a customer, with a local number in the 
     await page.goto(CUSTOMERS)
     const counter: Counter = { taps: 0 }
     await tap(counter, page.getByRole('link', { name: 'New customer' }))
-    await page.getByLabel('Name').fill(`Cliente ${key} ${uniqueTag()}`)
+    await page.getByLabel('Name', { exact: true }).fill(`Cliente ${key} ${uniqueTag()}`)
     await awaitDetected()
     if (other) await pickUruguay(counter)
     await phone.fill(distinct(other ? uruguay.example : argentina.example, other ? 2 : 1))
@@ -324,7 +324,7 @@ test('a new customer, alone or from Pick a customer, with a local number in the 
     const counter: Counter = { taps: 0 }
     await tap(counter, page.getByRole('button', { name: 'Pick a customer' }))
     await tap(counter, page.getByRole('button', { name: 'New customer' }))
-    await page.getByLabel('Name').fill(`Cliente venta ${key} ${uniqueTag()}`)
+    await page.getByLabel('Name', { exact: true }).fill(`Cliente venta ${key} ${uniqueTag()}`)
     await awaitDetected()
     if (other) await pickUruguay(counter)
     await phone.fill(distinct(other ? uruguay.example : argentina.example, other ? 4 : 3))

@@ -61,7 +61,7 @@ test('a seller edits a variety, the header and footer, then copies and shares to
   // A variety with a price and stock, so the catalog has something to show.
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name').fill('Rosa')
+  await page.getByLabel('Name', { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
@@ -69,9 +69,9 @@ test('a seller edits a variety, the header and footer, then copies and shares to
   await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 
   await page.goto(STOCK_ENTRY_NEW)
-  await page.getByLabel('Grams').fill('50')
+  await page.getByLabel('Grams', { exact: true }).fill('50')
   await pickStockVariety(page, 'Rosa')
-  await page.getByLabel('Total cost').fill('45000')
+  await page.getByLabel('Total cost', { exact: true }).fill('45000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 
   // Variedades → Mandar catálogo.
@@ -82,9 +82,9 @@ test('a seller edits a variety, the header and footer, then copies and shares to
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('button', { name: 'Edit catalog' }).click()
-  await page.getByLabel('Emoji').fill('🌹')
-  await page.getByLabel('% indica').fill('30')
-  await page.getByLabel('Aroma/flavor').fill('floral, dulce')
+  await page.getByLabel('Emoji', { exact: true }).fill('🌹')
+  await page.getByLabel('% indica', { exact: true }).fill('30')
+  await page.getByLabel('Aroma/flavor', { exact: true }).fill('floral, dulce')
   await expectToast(page, 'Catalog saved', () => page.getByRole('button', { name: 'Save the catalog' }).click())
   await expect(page.getByText('floral, dulce')).toBeVisible()
   await page.goto(CATALOG)
@@ -93,12 +93,12 @@ test('a seller edits a variety, the header and footer, then copies and shares to
   // to the catalog screen, which only links out to it and shows neither value.
   await page.getByRole('link', { name: 'Edit header and footer' }).click()
   await expectPath(page, SETTINGS_CATALOG_MESSAGE)
-  await page.getByLabel('Header').fill('🌸 Catálogo de **Flores** 🌸')
-  await page.getByLabel('Footer').fill('Pedidos por privado.')
+  await page.getByLabel('Header', { exact: true }).fill('🌸 Catálogo de **Flores** 🌸')
+  await page.getByLabel('Footer', { exact: true }).fill('Pedidos por privado.')
   await expectToast(page, 'Catalog saved', () => page.getByRole('button', { name: 'Save the message' }).click())
   await page.getByRole('button', { name: 'Close' }).click()
   await expectPath(page, CATALOG)
-  await expect(page.getByLabel('Footer')).toHaveCount(0)
+  await expect(page.getByLabel('Footer', { exact: true })).toHaveCount(0)
 
   // The API's own text keeps its markers; the preview, the clipboard and the share sheet
   // show it without them.

@@ -8,10 +8,11 @@
 
 import { OWING } from './paymentMethod.js'
 import type { Page } from '@playwright/test'
-import { VARIETIES } from '../../src/routes.js'
+import { VARIETIES, VARIETY_NEW } from '../../src/routes.js'
 import { expect } from '../fixtures.js'
 import { signUpNewBusiness } from './signup.js'
 import { expectToast } from './toast.js'
+import { expectPath } from './url.js'
 
 /** How many customers, sales or varieties a long list has. */
 export const LONG = 40
@@ -34,7 +35,9 @@ async function businessWithRosa(page: Page): Promise<void> {
   await signUpNewBusiness(page)
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name').fill('Rosa')
+  await expectPath(page, VARIETY_NEW)
+  // The exact fill below is what waits for the form: an earlier screen's "Edit name" button is not a "Name" field.
+  await page.getByLabel('Name', { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()

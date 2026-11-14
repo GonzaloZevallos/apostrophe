@@ -44,7 +44,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   // Add a customer.
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Phone', { exact: true }).fill(PHONE)
-  await page.getByLabel('Name').fill('Marisa Gómez')
+  await page.getByLabel('Name', { exact: true }).fill('Marisa Gómez')
   await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
@@ -52,7 +52,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   // Add a product.
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name').fill('Rosa')
+  await page.getByLabel('Name', { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await expectPath(page, VARIETY)
@@ -77,9 +77,9 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: '+ Stock entry' }).click()
   await expectPath(page, STOCK_ENTRY_NEW)
-  await page.getByLabel('Grams').fill('50')
+  await page.getByLabel('Grams', { exact: true }).fill('50')
   await pickStockVariety(page, 'Rosa')
-  await page.getByLabel('Total cost').fill('45000')
+  await page.getByLabel('Total cost', { exact: true }).fill('45000')
   await expect(page.getByText('It comes to $ 900 per gram')).toBeVisible()
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
   await expectAnyPath(page, [VARIETIES, VARIETY])
@@ -89,8 +89,8 @@ test('a seller does everything the backend offers today, from the front alone', 
   // Edit it: editing confirms before saving (stock.md).
   await page.getByRole('link', { name: 'Edit' }).click()
   await expectPath(page, STOCK_ENTRY)
-  await expect(page.getByLabel('Grams')).toHaveValue('50')
-  await page.getByLabel('Grams').fill('60')
+  await expect(page.getByLabel('Grams', { exact: true })).toHaveValue('50')
+  await page.getByLabel('Grams', { exact: true }).fill('60')
   await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByText('Save the changes?')).toBeVisible()
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Yes, save' }).click())
@@ -110,7 +110,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByRole('link', { name: /Rosa/ }).click()
   await expect(page.getByText('Warning off')).toBeVisible()
   await page.getByRole('switch', { name: 'Warn when running low' }).click()
-  await page.getByLabel('Warn when below').fill('15')
+  await page.getByLabel('Warn when below', { exact: true }).fill('15')
   await expectToast(page, 'Warning saved', () => page.getByRole('button', { name: 'Save the warning' }).click())
   await expect(page.getByText('Warn me below 15 g')).toBeVisible()
   await page.getByRole('switch', { name: 'Warn when running low' }).click()
@@ -120,16 +120,16 @@ test('a seller does everything the backend offers today, from the front alone', 
   await openGastos(page)
   await page.getByRole('link', { name: 'Add expense' }).click()
   await page.getByRole('button', { name: 'Create a new category' }).click()
-  await page.getByLabel('New category name').fill('Flete')
+  await page.getByLabel('New category name', { exact: true }).fill('Flete')
   await page.getByRole('button', { name: 'Create category' }).click()
-  await page.getByLabel('Amount').fill('4500')
-  await page.getByLabel('Details').fill('Flete al mercado')
+  await page.getByLabel('Amount', { exact: true }).fill('4500')
+  await page.getByLabel('Details', { exact: true }).fill('Flete al mercado')
   await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: 'Save the expense' }).click())
   await expect(page.getByText('Flete al mercado')).toBeVisible()
 
   // Edit it.
   await page.getByText('Flete al mercado').click()
-  await page.getByLabel('Details').fill('Flete al mercado central')
+  await page.getByLabel('Details', { exact: true }).fill('Flete al mercado central')
   await page.getByRole('button', { name: 'Save the expense' }).click()
   // A second "Expense saved" on the same list, the first maybe still showing: not detectable, so the row is asserted.
   await expect(page.getByText('Flete al mercado central')).toBeVisible()
@@ -171,7 +171,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   // (`app/expenses/domain/category.py`'s `DEFAULT_CATEGORY_NAMES`), so this one
   // uses a name of its own.
   await page.goto(EXPENSE_CATEGORIES)
-  await page.getByLabel('New category').fill('Delivery en bici')
+  await page.getByLabel('New category', { exact: true }).fill('Delivery en bici')
   await page.getByRole('button', { name: '+ Category' }).click()
   await expect(page.getByText('Category saved')).toBeVisible()
   const newRow = page.locator('.fila', { hasText: 'Delivery en bici' })
@@ -183,7 +183,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   // Rename the business.
   await page.goto(SETTINGS_BUSINESS)
   const renamedTo = `${businessName} Renombrado`
-  await page.getByLabel('Business name').fill(renamedTo)
+  await page.getByLabel('Business name', { exact: true }).fill(renamedTo)
   await expectToast(page, 'Saved', () => page.getByRole('button', { name: 'Save' }).click())
   await expect(page.getByText('Saved', { exact: true })).toBeVisible()
 
@@ -200,8 +200,8 @@ test('a seller does everything the backend offers today, from the front alone', 
   watchConsole(partnerPage, consoleMessages)
   await partnerPage.goto(inviteUrl)
   await expect(partnerPage.locator('.invitacion__titulo')).toHaveText(renamedTo)
-  await partnerPage.getByLabel('Email address').fill(`socio-${uniqueTag()}@example.com`)
-  await partnerPage.getByLabel('Password').fill(PASSWORD)
+  await partnerPage.getByLabel('Email address', { exact: true }).fill(`socio-${uniqueTag()}@example.com`)
+  await partnerPage.getByLabel('Password', { exact: true }).fill(PASSWORD)
   await partnerPage.getByRole('button', { name: `Join ${renamedTo}` }).click()
   await expect(partnerPage.locator('.encabezado__negocio')).toHaveText(renamedTo)
   await partnerContext.close()

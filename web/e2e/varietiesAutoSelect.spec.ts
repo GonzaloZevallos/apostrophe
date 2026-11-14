@@ -27,7 +27,7 @@ test('a tap that leaves Variedades on the phone is not replaced when the viewpor
   })
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name').fill('Rosa')
+  await page.getByLabel('Name', { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
 
   const cdp = await context.newCDPSession(page)

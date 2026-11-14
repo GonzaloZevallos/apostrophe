@@ -31,7 +31,7 @@ import { seedLedger } from './helpers/ledger.js'
 /** The customer's card, never the list beside it on a computer (the list holds the search box):
  * its "Te debe" and "Credit" are what these specs read. */
 function cardOf(page: Page) {
-  return page.locator('main').filter({ hasNot: page.getByLabel('Search customer') })
+  return page.locator('main').filter({ hasNot: page.getByLabel('Search customer', { exact: true }) })
 }
 
 test('a customer with no phone number is registered, edited, sold to, paid and shown in Te deben', async ({
@@ -49,7 +49,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // One priced variety, $1.000/g — round figures for every assertion below.
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name').fill('Jazmín')
+  await page.getByLabel('Name', { exact: true }).fill('Jazmín')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
@@ -58,7 +58,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
 
   // Registered with no phone number at all.
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Name').fill('Noe Sinnumero')
+  await page.getByLabel('Name', { exact: true }).fill('Noe Sinnumero')
   await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
@@ -130,7 +130,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await page.goto(SALE_NEW)
   await page.getByRole('button', { name: 'Pick a customer' }).click()
   await page.getByRole('button', { name: 'New customer' }).click()
-  await page.getByLabel('Name').fill('Sol Sinnumero')
+  await page.getByLabel('Name', { exact: true }).fill('Sol Sinnumero')
   await page.getByRole('button', { name: 'Create customer' }).click()
   await expect(page.getByRole('button', { name: /Sol Sinnumero/ })).toBeVisible()
   // The chosen chip carries no phone element either.

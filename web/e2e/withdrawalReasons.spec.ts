@@ -31,13 +31,13 @@ test('a seller adds a withdrawal reason, records a withdrawal with it and reads 
   // A variety with one lot: 50 g for $ 20.000.
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name').fill('Rosa')
+  await page.getByLabel('Name', { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: '+ Stock entry' }).click()
-  await page.getByLabel('Grams').fill('50')
+  await page.getByLabel('Grams', { exact: true }).fill('50')
   await pickStockVariety(page, 'Rosa')
-  await page.getByLabel('Total cost').fill('20000')
+  await page.getByLabel('Total cost', { exact: true }).fill('20000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 
   // Settings → Business → Withdrawal reasons: add "Gifts".
