@@ -7,12 +7,14 @@
  */
 
 import { act, render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import App from '../App'
 import { queryClient } from '../queryClient'
 import { router } from '../router'
 import { ANALYSIS, CUSTOMERS, EXPENSES, HOME, SALES, SETTINGS, VARIETIES, type Viewport } from '../routes'
+import SettingsAvatar from './SettingsAvatar'
 import { SHOWN_EN } from '../test/shownLanguage'
 import { stubViewport } from '../test-viewport'
 
@@ -60,10 +62,31 @@ describe('on the phone', () => {
     // The glyph is the business's initials; the name is the fixed word, never the business.
     expect(links[0]).toHaveTextContent('LH')
     expect(links[0]).toHaveAttribute('href', SETTINGS)
+    // The drawn disc is a child of the link's 44 px box and holds the initials.
+    const disc = links[0]?.firstElementChild
+    expect(disc).toHaveClass('inicio__avatar-disc')
+    expect(disc).toHaveTextContent('LH')
 
     await userEvent.click(links[0] as HTMLElement)
 
     expect(router.state.location.pathname).toBe(SETTINGS)
+  })
+})
+
+describe('while the business name is not known', () => {
+  test('the link is still there, named Settings, with an empty disc: no letters, no placeholder', () => {
+    stubViewport('phone')
+    render(
+      <MemoryRouter>
+        <SettingsAvatar />
+      </MemoryRouter>,
+    )
+
+    const links = screen.getAllByRole('link', { name: 'Settings' })
+    expect(links).toHaveLength(1)
+    expect(links[0]).toHaveAttribute('href', SETTINGS)
+    expect(links[0]?.firstElementChild).toHaveClass('inicio__avatar-disc')
+    expect(links[0]).toHaveTextContent(/^$/)
   })
 })
 

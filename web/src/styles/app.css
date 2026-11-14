@@ -811,17 +811,44 @@ body {
 }
 
 .inicio__avatar {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radio-pildora);
-  background: var(--superficie);
-  color: var(--tinta);
+  flex: none;
+  width: var(--alto-tocable);
+  height: var(--alto-tocable);
+  position: relative;
+  margin: -4px;
+  background: transparent;
+  border: 0;
   text-decoration: none;
-  font-size: 14px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The drawn disc: 36 px of --boton with the initials, the child of the 44 px touch box above. */
+.inicio__avatar-disc {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background: var(--boton);
+  color: var(--boton-texto);
+  font-size: 13px;
   font-weight: 600;
+}
+
+/* The link draws no ring of its own; the focus ring is the disc's. */
+.inicio__avatar:focus-visible {
+  outline: none;
+}
+
+.inicio__avatar:focus-visible > .inicio__avatar-disc {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
 }
 
 /* The Home | Analysis segment (phone only: `HomeViewSwitch` draws nothing on a computer). Two
@@ -5290,7 +5317,7 @@ a.ajustes-tema__opcion {
  *   .variedad-fila, .variedades__todas, .catalogo__fila-nombre, .pestanas__opcion,
  *   .selector-pago__opcion, .gastos__mes-boton, .encabezado__volver, .historial-fila__borrar;
  *   resting on --superficie or --papel itself, so --linea is the fill cue (these come after
- *   the --superficie group): .inicio__avatar, .ajustes-tema__opcion and .inicio-segmento, plain and
+ *   the --superficie group): .ajustes-tema__opcion and .inicio-segmento, plain and
  *   --activa (the Settings track is --superficie, its selected option --papel; the segment track is --acento-suave, its marked option is --superficie), and the selected variants
  *   .riel-lateral__item--activo, .riel-lateral__negocio--activo, .bar-inferior__item--activo,
  *   .pestanas__opcion--activa, .variedad-fila--activa and .selector-pago__opcion--activa.
@@ -5313,6 +5340,24 @@ a.ajustes-tema__opcion {
   transform: scale(0.98);
   box-shadow: inset 0 0 0 3px var(--papel);
   transition: none;
+}
+
+/* The avatar rests on a filled --boton disc, so its cue is the --papel ring, drawn over the disc by
+ * the link's own ::after (4 px in, 36 px round: exactly the disc) with the link scaled; the link
+ * itself paints no fill, border or outline. The pressed-state scan reads the last compound of a
+ * selector, so the cue is named on `.inicio__avatar`, not on the child. */
+.inicio__avatar:active:not([aria-disabled='true']) {
+  transform: scale(0.98);
+  transition: none;
+}
+
+.inicio__avatar:active:not([aria-disabled='true'])::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 18px;
+  box-shadow: inset 0 0 0 3px var(--papel);
+  pointer-events: none;
 }
 
 :is(
@@ -5374,7 +5419,6 @@ a.ajustes-tema__opcion {
     .ajustes-tema__opcion--activa,
     .inicio-segmento,
     .inicio-segmento--activa,
-    .inicio__avatar,
     /* Expenses' month arrows rest on the --superficie pill, so the --superficie fill shows nothing. */
     .gastos__mes-boton,
     .selector__campo
@@ -6533,20 +6577,9 @@ a.ajustes-tema__opcion {
   }
 }
 
-/* Tap targets on Home (GH-319): the business avatar is a 44 px box that still draws the
- * 38 px disc (a transparent border the background does not paint under), and the
- * "Owed to you" title is a full-width, 44 px tall link. Phone only: the computer hides the
- * avatar and keeps the title as it is. */
+/* Tap targets on Home (GH-319): the "Owed to you" title is a full-width, 44 px tall link. Phone
+ * only: the computer keeps the title as it is. (The avatar's 44 px box is its own rule above.) */
 @media (max-width: 899.98px) {
-  .inicio__avatar {
-    box-sizing: border-box;
-    flex: none;
-    width: var(--alto-tocable);
-    height: var(--alto-tocable);
-    border: 3px solid transparent;
-    background-clip: padding-box;
-  }
-
   .bloque-deben__titulo {
     display: flex;
     align-items: center;
