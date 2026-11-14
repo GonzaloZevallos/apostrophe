@@ -55,7 +55,7 @@ export async function expectBusinessNameOnPhone(page: Page, businessName: string
   // Landed first: a navigation now would cut a sign-in or a sign-up still on its way.
   await expect(page.locator('.inicio-cabecera')).toBeVisible()
   await page.goto(SETTINGS_BUSINESS)
-  await expect(page.getByLabel('Business name')).toHaveValue(businessName)
+  await expect(page.getByLabel('Business name', { exact: true })).toHaveValue(businessName)
   await page.goto(HOME)
   await expect(page.locator('.inicio-cabecera')).toBeVisible()
 }
