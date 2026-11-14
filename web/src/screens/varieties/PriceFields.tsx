@@ -10,7 +10,7 @@ import { useId } from 'react'
 import MoneyInput from '../../components/MoneyInput'
 import { useMoney } from '../../format/moneyContext'
 import type { PricingSettings } from '../../api/pricingSettings'
-import { describedBy, fieldIds, type FieldIds } from './fieldIds'
+import { ariaOf, fieldIds, type FieldAria } from './fieldIds'
 import type { PriceErrors, PriceValues } from './priceFieldRules'
 import { PRICE_DISCOUNT_HELP, PRICE_FROM_GRAMS_HELP, PRICE_PER_GRAM_HELP, VARIETIES_TEXT } from '../../copy/varieties'
 import { COMMON_TEXT } from '../../copy/common'
@@ -29,14 +29,14 @@ interface AmountInputProps {
   value: string
   onChange: (value: string) => void
   required?: boolean
-  ids: FieldIds
+  aria: FieldAria
 }
 
 /**
  * An amount input with the business's symbol before it. The sign is drawn, not typed: it is hidden from the
  * accessible name and never part of the value, so a fill and a payload see digits only.
  */
-function AmountInput({ className, value, onChange, required, ids }: AmountInputProps) {
+function AmountInput({ className, value, onChange, required, aria }: AmountInputProps) {
   const { symbol } = useMoney().format
   return (
     <span className="campo__monto">
@@ -46,8 +46,7 @@ function AmountInput({ className, value, onChange, required, ids }: AmountInputP
         value={value}
         onChange={onChange}
         required={required}
-        aria-labelledby={ids.labelledBy}
-        aria-describedby={ids.describedBy}
+        {...aria}
       />
     </span>
   )
@@ -59,9 +58,15 @@ export interface PriceFieldsProps {
   values: PriceValues
   errors: PriceErrors
   onChange: (field: keyof PriceValues, value: string) => void
+  /**
+   * Each control is named by its own label span and described by its help and error, so a typed
+   * `fill` by that word alone finds it (the screen-images rows). Off, the wrapping `<label>`
+   * names the control with its help text, as the price form's phone-check findings are listed.
+   */
+  ownLabels?: boolean
 }
 
-export default function PriceFields({ settings, values, errors, onChange }: PriceFieldsProps) {
+export default function PriceFields({ settings, values, errors, onChange, ownLabels = false }: PriceFieldsProps) {
   const base = useId()
   const list = fieldIds(`${base}-lista`)
   const bulk = fieldIds(`${base}-mayor`)
@@ -76,7 +81,7 @@ export default function PriceFields({ settings, values, errors, onChange }: Pric
           value={values.listPrice}
           onChange={(value) => onChange('listPrice', value)}
           required
-          ids={{ labelledBy: list.label, describedBy: describedBy(list, errors.listPrice) }}
+          aria={ariaOf(ownLabels, list, errors.listPrice)}
         />
         <span id={list.help} className="campo__ayuda" data-copy="help">{PRICE_PER_GRAM_HELP}</span>
         <FieldError id={list.error} message={errors.listPrice} />
@@ -89,7 +94,7 @@ export default function PriceFields({ settings, values, errors, onChange }: Pric
               className="campo__input"
               value={values.bulkPrice}
               onChange={(value) => onChange('bulkPrice', value)}
-              ids={{ labelledBy: bulk.label, describedBy: describedBy(bulk, errors.bulkPrice) }}
+              aria={ariaOf(ownLabels, bulk, errors.bulkPrice)}
             />
             <span id={bulk.help} className="campo__ayuda" data-copy="help">{PRICE_DISCOUNT_HELP}</span>
             <FieldError id={bulk.error} message={errors.bulkPrice} />
@@ -101,8 +106,7 @@ export default function PriceFields({ settings, values, errors, onChange }: Pric
               inputMode="decimal"
               value={values.bulkMinimum}
               onChange={(event) => onChange('bulkMinimum', event.target.value)}
-              aria-labelledby={minimum.label}
-              aria-describedby={describedBy(minimum, errors.bulkMinimum)}
+              {...ariaOf(ownLabels, minimum, errors.bulkMinimum)}
             />
             <span id={minimum.help} className="campo__ayuda" data-copy="help">{PRICE_FROM_GRAMS_HELP}</span>
             <FieldError id={minimum.error} message={errors.bulkMinimum} />
@@ -116,7 +120,7 @@ export default function PriceFields({ settings, values, errors, onChange }: Pric
             className="campo__input"
             value={values.vipPrice}
             onChange={(value) => onChange('vipPrice', value)}
-            ids={{ labelledBy: vip.label, describedBy: describedBy(vip, errors.vipPrice) }}
+            aria={ariaOf(ownLabels, vip, errors.vipPrice)}
           />
           <span id={vip.help} className="campo__ayuda" data-copy="help">{PRICE_DISCOUNT_HELP}</span>
           <FieldError id={vip.error} message={errors.vipPrice} />

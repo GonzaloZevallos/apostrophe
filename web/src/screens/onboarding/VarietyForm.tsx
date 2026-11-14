@@ -14,7 +14,7 @@ import type { PricingSettings } from '../../api/pricingSettings'
 import Boton from '../../components/Boton'
 import SinConexion from '../../components/SinConexion'
 import PriceFields, { FieldError } from '../varieties/PriceFields'
-import { describedBy, fieldIds } from '../varieties/fieldIds'
+import { ariaOf, fieldIds } from '../varieties/fieldIds'
 import type { PriceValues } from '../varieties/priceFieldRules'
 import { VARIETY_NAME_HELP } from '../../copy/varieties'
 import { useVarietyWithPrice } from './useVarietyWithPrice'
@@ -67,8 +67,7 @@ export default function VarietyForm({ seed, today, settings, onDirtyChange, onPr
             value={name}
             onChange={(event) => setName(event.target.value)}
             required
-            aria-labelledby={nameIds.label}
-            aria-describedby={describedBy(nameIds, nameError ?? undefined)}
+            {...ariaOf(true, nameIds, nameError ?? undefined)}
           />
           <span id={nameIds.help} className="campo__ayuda" data-copy="help">{VARIETY_NAME_HELP}</span>
           <FieldError id={nameIds.error} message={nameError ?? undefined} />
@@ -77,6 +76,7 @@ export default function VarietyForm({ seed, today, settings, onDirtyChange, onPr
         <p className="pie">{ONBOARDING_TEXT.varietyNamed(saved.name)}</p>
       )}
       <PriceFields
+        ownLabels
         settings={settings}
         values={values}
         errors={priceErrors}
