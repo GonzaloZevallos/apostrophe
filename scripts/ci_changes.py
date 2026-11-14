@@ -57,6 +57,10 @@ SCREEN_MAP_PATH: Final = "scripts/e2e_screen_specs.json"
 ALWAYS_SHARD: Final = "always"
 MAX_E2E_SHARDS: Final = 4
 MOBILE_PAIR: Final = ("web/e2e/mobile.spec.ts", "web/e2e/mobile.setup.ts")
+DESIGN_LABEL_CHECK: Final = (
+    "src/architecture/screenImagesLabels.real.test.tsx",
+    "src/design/screens.test.ts",
+)
 _WATCHED: Final = frozenset({"web", "docs"})
 _TEST_SUFFIXES: Final = (".test.ts", ".test.tsx")
 _SAFE_PATH: Final = re.compile(r"[A-Za-z0-9._/][A-Za-z0-9._/-]*")
@@ -654,6 +658,7 @@ def _rule_scripts(path: str, parts: tuple[str, ...], plan: _Plan, ctx: _Context)
     plan.pytest = True
     if path.startswith("scripts/design/"):
         plan.mobile_pair = True
+        plan.vitest_tests.update(DESIGN_LABEL_CHECK)
     return True
 
 

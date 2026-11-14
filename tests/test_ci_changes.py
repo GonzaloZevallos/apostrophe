@@ -15,6 +15,7 @@ import pytest
 from scripts.affected import REPO_ROOT, CommandResult, Runner, run_command
 from scripts.ci_areas import ALWAYS_DIRS, areas
 from scripts.ci_changes import (
+    DESIGN_LABEL_CHECK,
     MOBILE_PAIR,
     SELECTOR_INPUTS,
     Selection,
@@ -205,6 +206,37 @@ def test_a_design_path_gives_the_always_shard_and_the_mobile_pair(
     assert shards(result) == ["always"]
     assert result.e2e_specs == MOBILE
     assert result.e2e_shards == 1
+
+
+@pytest.mark.parametrize("path", ["scripts/design/screens.json", "scripts/design/comparisons.mjs"])
+def test_a_design_script_path_selects_the_screen_images_label_check_in_vitest(
+    tmp_path: Path, path: str
+) -> None:
+    root = make_tree(tmp_path)
+    for name in DESIGN_LABEL_CHECK:
+        write(root, f"web/{name}")
+
+    result = selected([path], root)
+
+    assert result.vitest
+    assert not result.vitest_changed
+    assert set(DESIGN_LABEL_CHECK) <= set(result.vitest_files)
+
+
+def test_a_design_script_path_drops_a_label_check_file_that_does_not_exist(
+    tmp_path: Path,
+) -> None:
+    root = make_tree(tmp_path)
+
+    result = selected(["scripts/design/screens.json"], root)
+
+    assert not set(DESIGN_LABEL_CHECK) & set(result.vitest_files)
+
+
+def test_every_file_the_design_label_check_names_exists_under_web() -> None:
+    missing = [name for name in DESIGN_LABEL_CHECK if not (REPO_ROOT / "web" / name).is_file()]
+
+    assert missing == [], f"the design label check names files that do not exist: {missing}"
 
 
 @pytest.mark.parametrize(
