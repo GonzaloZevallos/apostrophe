@@ -1,7 +1,8 @@
 /**
  * The tap budget (PRD criterion 1; metric "Taps"), measured from each phone tab root: the
  * expense form opens in two taps from Home (the Analysis segment, then "Add expense") and three
- * from Sales, Customers and Products, one from Gastos; Settings in one (the avatar); a stock
+ * from Sales, Customers and Products, one from Gastos; Settings in one from each phone Tab root (the avatar; phone Gastos is a
+ * detail screen with no avatar and no figure, owner's decision on #724); a stock
  * withdrawal in two (Products, then "Take from stock"). A computer never takes more taps than
  * the phone. A tap is a click this spec makes through `tap()`, so the count is of what a seller
  * does, not of what the code calls. One expense is also recorded from the Expenses card on
@@ -233,14 +234,19 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
       await page.goto(root)
       counter = { taps: 0 }
       await settled(page, computer && root === VARIETIES)
-      await tap(
-        counter,
-        computer
-          ? page.locator('.riel-lateral').getByRole('link', { name: /^Settings for / })
-          : page.getByRole('link', { name: 'Settings', exact: true }),
-      )
-      await expectPath(page, SETTINGS)
-      measure(`settings ${root}`, device, counter.taps)
+      if (!computer && root === EXPENSES) {
+        // On the phone Gastos is a detail screen and carries no avatar: nothing to measure.
+        await expect(page.getByRole('link', { name: 'Settings', exact: true }), label).toHaveCount(0)
+      } else {
+        await tap(
+          counter,
+          computer
+            ? page.locator('.riel-lateral').getByRole('link', { name: /^Settings for / })
+            : page.getByRole('link', { name: 'Settings', exact: true }),
+        )
+        await expectPath(page, SETTINGS)
+        measure(`settings ${root}`, device, counter.taps)
+      }
 
       // Stock withdrawal: Products, then "Take from stock" next to "+ Stock entry". The list's
       // is the first in the page (a computer's selected variety carries its own beside it).
@@ -256,8 +262,8 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
 
   expect(Object.keys(taps).length).toBeGreaterThan(10)
   for (const [key, { phone, computer }] of Object.entries(taps)) {
-    if (key === `sale ${EXPENSES}`) {
-      // Phone-less on purpose (a card shows no "+ New sale"): the computer's one tap stands alone.
+    if (key === `sale ${EXPENSES}` || key === `settings ${EXPENSES}`) {
+      // Phone-less on purpose (a card shows no "+ New sale" and no Settings avatar): the computer's one tap stands alone.
       expect(phone, `phone: ${key}`).toBe(0)
       expect(computer, `computer: ${key}`).toBe(1)
       continue
