@@ -5,7 +5,7 @@
  * session did not load before any screen, so it never waits for the Panel or Analysis data.
  *
  * On the phone the header is a date line (today's date, a figure), an empty inert slot where
- * the drawing keeps "Editar", the avatar, then the Today | Analysis segment and the screen's
+ * the drawing keeps "Editar", the avatar, then the Home | Analysis segment and the screen's
  * one h1, visually hidden: the phone shows no business name, no mark and no visible title. On
  * the computer it is what each screen always drew: on Home the business name above the visible
  * title, on Analysis the title alone. It is a plain div, not a `<header>` (the chrome's own is

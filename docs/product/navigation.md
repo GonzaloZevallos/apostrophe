@@ -53,9 +53,9 @@ GH-480 afina el mismo job para la página en sí: una pantalla a la que llego em
 **Cuando** abro Home en el celular entre pedidos, **quiero** que arriba de la pantalla se vea qué día estoy mirando y poder pasar entre Home y Analysis con un toque, **para poder** ver cómo va el día o el mes. No necesito que la app me diga en qué Business estoy, porque ya lo sé.
 
 - Afina el job de navegación para el celular y el job del Panel de results.md (parte 2 de GH-723); no es un job nuevo de producto. Rige solo en el celular: la computadora no cambia.
-- Antes: Home y Analysis armaban cada una su propio encabezado. En el celular, el nombre del Business y la Yerba mark ocupaban arriba de la pantalla para repetir algo que quien vende ya sabe, la fecha a la que pertenecen las cifras no se mostraba, y el segmento Today | Analysis estaba dentro del contenido de cada pantalla, en un lugar distinto en cada una.
+- Antes: Home y Analysis armaban cada una su propio encabezado. En el celular, el nombre del Business y la Yerba mark ocupaban arriba de la pantalla para repetir algo que quien vende ya sabe, la fecha a la que pertenecen las cifras no se mostraba, y el segmento Home | Analysis estaba dentro del contenido de cada pantalla, en un lugar distinto en cada una.
 - El lugar "Editar" del dibujo queda vacío e inerte: no sirve a ningún job todavía y no promete ninguna función de edición.
-- Lo sirven "El encabezado de Home y Analysis (celular, GH-723)" y los criterios 30–33.
+- Lo sirven "El encabezado de Home y Analysis (celular, GH-723)" y los criterios 34–37.
 
 **Cuando** acabo de abrir mi negocio y todavía está vacío, **quiero** que me guíen por lo que necesita, un paso corto por vez, con los valores por defecto ya completos, **para** registrar mi primera venta el mismo día sin buscar entre Settings, Products y la pantalla del Catalog. (Lo sirve acá el **Onboarding** como el único elemento de primer uso de un **Business** recién creado, abierto al aceptar la **Invitation** y en su propia dirección, `/onboarding`; definido en onboarding.md.)
 
@@ -151,12 +151,12 @@ Criterios de éxito, el nombre de la opción Home (#733). Se verifican en el cel
 31. **Las opciones son "Home" y "Analysis".** Un toque lleva de cualquiera de las dos vistas a la otra; el gesto de atrás se comporta como ahora (las opciones reemplazan la entrada del historial y no agregan una); Analysis sigue marcando Home como activa.
 32. **Nada más cambia para quien vende.** Las mismas pantallas, en los mismos lugares, con el mismo comportamiento.
 
-Criterios de éxito, el encabezado de Home y Analysis (parte 2 de GH-723). Se verifican en el celular salvo el 33.
+Criterios de éxito, el encabezado de Home y Analysis (parte 2 de GH-723). Se verifican en el celular salvo el 37.
 
-30. **Un toque para cambiar, sin rebote.** Un toque cambia entre Home y Analysis, sin agregar una entrada al historial, así que atrás sale de Home en vez de rebotar entre las dos vistas (criterio 28, que esta parte conserva).
-31. **El mismo encabezado en las dos pantallas.** Home y Analysis muestran el mismo encabezado en el mismo lugar: la línea de fecha con el dd/mm de hoy, el segmento y el avatar. Nada más de esa fila se puede tocar. El encabezado se va con el scroll (no es fijo). Cada pantalla tiene exactamente un h1, y nada visible lo repite.
-32. **Entra en celulares chicos y con zoom.** A 320, 360 y 390 px y con el texto al 130 %, en claro y en oscuro: la línea de fecha nunca se parte, la página nunca se desplaza de costado, cada objetivo táctil mide al menos 44×44 y el Mobile check pasa sin que crezca ninguna lista de infractores.
-33. **La computadora se ve igual.** En Home el nombre del Business está arriba del título visible; en Analysis solo se ve el título. Expenses no se toca.
+34. **Un toque para cambiar, sin rebote.** Un toque cambia entre Home y Analysis, sin agregar una entrada al historial, así que atrás sale de Home en vez de rebotar entre las dos vistas (criterio 28, que esta parte conserva).
+35. **El mismo encabezado en las dos pantallas.** Home y Analysis muestran el mismo encabezado en el mismo lugar: la línea de fecha con el dd/mm de hoy, el segmento y el avatar. Nada más de esa fila se puede tocar. El encabezado se va con el scroll (no es fijo). Cada pantalla tiene exactamente un h1, y nada visible lo repite.
+36. **Entra en celulares chicos y con zoom.** A 320, 360 y 390 px y con el texto al 130 %, en claro y en oscuro: la línea de fecha nunca se parte, la página nunca se desplaza de costado, cada objetivo táctil mide al menos 44×44 y el Mobile check pasa sin que crezca ninguna lista de infractores.
+37. **La computadora se ve igual.** En Home el nombre del Business está arriba del título visible; en Analysis solo se ve el título. Expenses no se toca.
 
 ## Comportamiento
 
@@ -584,15 +584,15 @@ Esto cubre Settings y sus grupos, la pantalla del Catalog y la página de un Pro
   - Fácil de tocar (27): 0 infractores `touch-target`, `touch-action` y `user-select` del segmento en `InicioHoy`, `InicioOscuro`, `Analisis` y `AnalisisOscuro`, a 320, 360 y 390 px y con el texto al 130 %; ningún infractor agregado y ninguno dejado obsoleto.
   - El historial (28): a través del router real en el celular, tocando Analysis y Home tres veces o más, el 100% de los cambios dan `historyAction` REPLACE, un `historyIndex` sin cambios, scroll en 0, `aria-current` en la opción tocada y la barra marcando Home; la pestaña Home de la barra sigue siendo un PUSH, y atrás después de los cambios sale a la pantalla anterior al par. Tocar la opción ya marcada, después de desplazarse y elegir una pestaña del Panel distinta de Today (Home) o retroceder un mes (Analysis), no cambia el `historyIndex`, el offset, la pestaña del Panel ni el mes.
   - La marca y el dibujo (29): datos del registro para Home y Analysis (root, barra en Home, su valor de `segment`; Analysis con su entrada en la barra lateral y sin flecha de regreso) y para Expenses sin `segment`; las dos filas `section` (`InicioHoy` e `InicioOscuro`) capturadas lado a lado con su dibujo y adjuntas al PR, juzgadas a ojo, cada etiqueta encontrada exactamente una vez, sin ninguna tolerancia agrandada; `Analisis` y `AnalisisOscuro` informadas como "not compared". En una computadora el segmento no muestra nada.
-- **El encabezado de Home y Analysis (criterios 30–33, parte 2 de GH-723)**:
-  - Sin rebote (30): los controles de historial del criterio 28 siguen pasando sin editarse con el segmento dentro del encabezado compartido.
-  - Un h1 (31): a través del router real, en `/` y en `/analysis`, exactamente un h1; en el celular con `visualmente-oculto`, en la computadora sin él. Expenses no muestra el grupo "Home view".
-  - La fecha (31): con hoy 2026-10-03, la línea de fecha dice `03/10` en Home y en Analysis.
-  - Nada más se toca (31): la fila del encabezado no tiene ningún elemento interactivo salvo las dos opciones del segmento y el avatar; el lugar "Editar" no tiene rol, texto ni foco.
-  - Nada del Business en el celular (31): en Home y Analysis no hay nombre del Business ni imagen "apostrophe", y el h1 está oculto a la vista.
-  - Siempre a mano (31): con la vista cargando y con un error, el encabezado, el segmento y el avatar están presentes y funcionan, y `aria-busy` queda en el área de contenido.
-  - Entra (32): el proyecto e2e `mobile` en las cuatro filas de celular (`InicioHoy`, `InicioOscuro`, `Analisis`, `AnalisisOscuro`), a 320, 360 y 390 px y con el texto al 130 %, da 0 infractores `chrome-at-load`, `chrome-mid-scroll`, `h-scroll`, de carga, de contraste, `text-size` y `touch-target`; la línea de fecha ocupa una sola línea; el h1 oculto no se informa; ninguna lista de infractores crece ni se agranda ninguna tolerancia.
-  - Computadora (33): las capturas `InicioHoyCompu*` y `AnalisisCompu*` no cambian; en Home el nombre del Business está arriba del h1 visible y en Analysis solo está el h1.
+- **El encabezado de Home y Analysis (criterios 34–37, parte 2 de GH-723)**:
+  - Sin rebote (34): los controles de historial del criterio 28 siguen pasando sin editarse con el segmento dentro del encabezado compartido.
+  - Un h1 (35): a través del router real, en `/` y en `/analysis`, exactamente un h1; en el celular con `visualmente-oculto`, en la computadora sin él. Expenses no muestra el grupo "Home view".
+  - La fecha (35): con hoy 2026-10-03, la línea de fecha dice `03/10` en Home y en Analysis.
+  - Nada más se toca (35): la fila del encabezado no tiene ningún elemento interactivo salvo las dos opciones del segmento y el avatar; el lugar "Editar" no tiene rol, texto ni foco.
+  - Nada del Business en el celular (35): en Home y Analysis no hay nombre del Business ni imagen "apostrophe", y el h1 está oculto a la vista.
+  - Siempre a mano (35): con la vista cargando y con un error, el encabezado, el segmento y el avatar están presentes y funcionan, y `aria-busy` queda en el área de contenido.
+  - Entra (36): el proyecto e2e `mobile` en las cuatro filas de celular (`InicioHoy`, `InicioOscuro`, `Analisis`, `AnalisisOscuro`), a 320, 360 y 390 px y con el texto al 130 %, da 0 infractores `chrome-at-load`, `chrome-mid-scroll`, `h-scroll`, de carga, de contraste, `text-size` y `touch-target`; la línea de fecha ocupa una sola línea; el h1 oculto no se informa; ninguna lista de infractores crece ni se agranda ninguna tolerancia.
+  - Computadora (37): las capturas `InicioHoyCompu*` y `AnalisisCompu*` no cambian; en Home el nombre del Business está arriba del h1 visible y en Analysis solo está el h1.
 - **El nombre de la opción Home (criterios 30–32, #733)**:
   - Ninguna opción dice "Today" (30): un test de Testing Library a través del router real, en ancho de celular, encuentra en Home y en Analysis el grupo "Home view" con exactamente dos links de nombre accesible "Home" y "Analysis", y las pestañas del Panel siguen siendo exactamente Today · Week · Month. Una búsqueda no encuentra la clave `homeSegmentToday`, ningún valor `'today'` en `HOME_VIEWS` ni en `Segment`, y ningún "Today | Analysis" bajo `web/src`, `web/e2e` ni en los docs del producto. 0 restos.
   - Las mismas opciones, el mismo cambio (31): los tests del historial de GH-723 pasan con "Home" en lugar de "Today", sin ninguna aserción aflojada. 100% de aprobación.
