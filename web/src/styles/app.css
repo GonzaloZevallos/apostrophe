@@ -780,6 +780,60 @@ body {
   font-weight: 600;
 }
 
+/* The Home | Analysis segment (phone only: `HomeViewSwitch` draws nothing on a computer). Two
+ * links on an --acento-suave track, the palette's nearest step to the drawing's: a mixed colour
+ * would be read back by the mobile contrast check as `color(srgb …)`, which it cannot prove, and
+ * --linea would be the same fill as the --linea pressed cue, which would then show nothing. Each link is a 44 px box that paints the 36 px pill: its
+ * transparent block border keeps the fill off the extra 4 px, and its negative block margin
+ * gives that 4 px back, so the track stays as tall as the drawing (36 px pill + 3 px padding).
+ * The pill child holds the word. The marked option is the --superficie pill with the drawing's
+ * soft shadow, and bold, not color alone. */
+.inicio-segmentos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  background: var(--acento-suave);
+  border-radius: 12px;
+  padding: 3px;
+}
+
+.inicio-segmento {
+  box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
+  min-width: var(--alto-tocable);
+  min-height: var(--alto-tocable);
+  margin-block: -4px;
+  border-block: 4px solid transparent;
+  border-radius: 10px;
+  background-clip: padding-box;
+  color: var(--tinta2);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.inicio-segmento--activa {
+  background-color: var(--superficie);
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+.inicio-segmento--activa .inicio-segmento__pill {
+  border-radius: 10px;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--tinta) 12%, transparent);
+}
+
+.inicio-segmento__pill {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  text-align: center;
+}
+
 /* Below the rail's divider (`GastosCompu.dc.html`): smaller, no icon, the active one
  * filled with the accent's bar on its left edge besides (never color alone). */
 .riel-lateral__divisor {
@@ -5192,8 +5246,8 @@ a.ajustes-tema__opcion {
  *   .variedad-fila, .variedades__todas, .catalogo__fila-nombre, .pestanas__opcion,
  *   .selector-pago__opcion, .gastos__mes-boton, .encabezado__volver, .historial-fila__borrar;
  *   resting on --superficie or --papel itself, so --linea is the fill cue (these come after
- *   the --superficie group): .inicio__avatar and .ajustes-tema__opcion, plain and --activa (the track is
- *   --superficie, the selected option --papel), and the selected variants
+ *   the --superficie group): .inicio__avatar, .ajustes-tema__opcion and .inicio-segmento, plain and
+ *   --activa (the Settings track is --superficie, its selected option --papel; the segment track is --acento-suave, its marked option is --superficie), and the selected variants
  *   .riel-lateral__item--activo, .riel-lateral__negocio--activo, .bar-inferior__item--activo,
  *   .pestanas__opcion--activa, .variedad-fila--activa and .selector-pago__opcion--activa.
  * .opcion-interruptor is label-wrapped (its checkbox is stretched over it and must keep the
@@ -5274,6 +5328,8 @@ a.ajustes-tema__opcion {
 :is(
     .ajustes-tema__opcion,
     .ajustes-tema__opcion--activa,
+    .inicio-segmento,
+    .inicio-segmento--activa,
     .inicio__avatar,
     /* Expenses' month arrows rest on the --superficie pill, so the --superficie fill shows nothing. */
     .gastos__mes-boton,
@@ -5318,6 +5374,7 @@ a.ajustes-tema__opcion {
     .mas__item,
     .ajustes__item,
     .ajustes-tema__opcion,
+    .inicio-segmento,
     .opcion-interruptor,
     .mas-info__boton,
     .inicio__avatar,

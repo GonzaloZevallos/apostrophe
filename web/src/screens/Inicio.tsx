@@ -88,7 +88,7 @@ export default function Inicio() {
           </div>
           <SettingsAvatar />
         </div>
-        <HomeViewSwitch selected="today" />
+        <HomeViewSwitch />
 
         {pinOutOfDate && (
           <InAppLink to={CATALOG} className="aviso-ambar aviso-ambar--atencion" role="status">

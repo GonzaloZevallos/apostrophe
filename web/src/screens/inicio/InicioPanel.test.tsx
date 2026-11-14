@@ -16,6 +16,7 @@ import panelFixture from '../../api/fixtures/panel.json'
 import paymentFixture from '../../api/fixtures/payment.json'
 import type { Me } from '../../api/me'
 import { SHOWN_EN } from '../../test/shownLanguage'
+import { screenRoute } from '../../test/screenRoute'
 import type { PanelAnswer, PanelDebts } from '../../api/panel'
 import FlashProvider from '../../flash/FlashProvider'
 import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, VARIETY, pathTo } from '../../routes'
@@ -130,7 +131,7 @@ function renderInicio() {
       {
         element: <Provide />,
         children: [
-          { path: HOME, element: <Inicio /> },
+          screenRoute('home', <Inicio />),
           { path: CUSTOMERS, element: <span>pantalla clientes</span> },
           { path: CUSTOMER, element: <CustomerStub /> },
           { path: CUSTOMER_PAYMENT, element: <CobroRoute /> },

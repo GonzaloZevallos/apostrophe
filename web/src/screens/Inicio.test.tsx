@@ -19,12 +19,13 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Outlet, Route, Routes, useLocation, useParams } from 'react-router'
+import { createMemoryRouter, Outlet, RouterProvider, useLocation, useParams } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import panelFixture from '../api/fixtures/panel.json'
 import type { PanelAnswer } from '../api/panel'
 import type { Me } from '../api/me'
 import { SHOWN_EN } from '../test/shownLanguage'
+import { screenRoute } from '../test/screenRoute'
 import { chooseTheme } from '../theme'
 import { consumePaymentReturn, setPaymentReturn } from '../paymentReturn'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
@@ -93,17 +94,23 @@ function renderInicio(
 ) {
   return render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={[HOME]}>
-        <Routes>
-          <Route element={<Provide />}>
-            <Route index element={<Inicio />} />
-            <Route path={CUSTOMERS} element={<span>pantalla clientes</span>} />
-            <Route path={CUSTOMER} element={<span>ficha de cliente</span>} />
-            <Route path={CUSTOMER_PAYMENT} element={<PaymentStub />} />
-            <Route path={SETTINGS} element={<SettingsLanding />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider
+        router={createMemoryRouter(
+          [
+            {
+              element: <Provide />,
+              children: [
+                screenRoute('home', <Inicio />),
+                { path: CUSTOMERS, element: <span>pantalla clientes</span> },
+                { path: CUSTOMER, element: <span>ficha de cliente</span> },
+                { path: CUSTOMER_PAYMENT, element: <PaymentStub /> },
+                { path: SETTINGS, element: <SettingsLanding /> },
+              ],
+            },
+          ],
+          { initialEntries: [HOME] },
+        )}
+      />
     </QueryClientProvider>,
   )
 }

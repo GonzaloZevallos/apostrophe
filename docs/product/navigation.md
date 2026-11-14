@@ -37,6 +37,12 @@ GH-480 afina el mismo job para la página en sí: una pantalla a la que llego em
 - Antes: More era el único camino del celular a Settings, Analysis, Expenses, Add expense y Take from stock; quien vendía abría More, recorría una lista y tocaba.
 - Lo sirven "Los destinos que estaban en More (GH-651)" y los criterios 24–26.
 
+**Cuando** reviso mi negocio en el celular y quiero pasar del Home de hoy al Analysis de mis días, semanas y meses, o volver, **quiero** cambiar con un solo toque del pulgar, **para poder** leer la vista que necesito y que atrás me siga llevando a donde venía, en vez de pasar por cada cambio que hice.
+
+- Afina el job de navegación para el celular (parte 1 de GH-723); no es un job nuevo de producto. Rige solo en el celular: en una computadora Analysis tiene su entrada en la barra lateral y el segmento no muestra nada.
+- Antes: cada cambio entre Home y Analysis agregaba una entrada al historial, así que atrás recorría los cambios anteriores en vez de salir del par; el objetivo táctil del segmento no tenía garantizados 44 px; y la opción marcada salía de comparar la dirección, no del registro de pantallas.
+- Lo sirven "El segmento Today | Analysis (GH-723)" y los criterios 27–29.
+
 **Cuando** acabo de abrir mi negocio y todavía está vacío, **quiero** que me guíen por lo que necesita, un paso corto por vez, con los valores por defecto ya completos, **para** registrar mi primera venta el mismo día sin buscar entre Settings, Products y la pantalla del Catalog. (Lo sirve acá el **Onboarding** como el único elemento de primer uso de un **Business** recién creado, abierto al aceptar la **Invitation** y en su propia dirección, `/onboarding`; definido en onboarding.md.)
 
 **Cuando** reviso un cambio en las reglas de primer uso que quedan (la línea de precio faltante de "+ New sale" y el "Send catalog" deshabilitado) antes de aprobarlo, **quiero** que los tests y el contrato `/first-run` prueben lo que dicen navigation.md y ADR-0046 en cada estado en que pueden estar y en los dos temas, **para poder** aprobar solo con la evidencia, sin confiar en controles parciales ni arrastrar hallazgos abiertos a la próxima tarea.
@@ -119,6 +125,12 @@ Criterios de éxito, el retiro de More (GH-651). Se verifican en el celular; la 
 25. **Cada entrada donde la ponen los dibujos aprobados.** Settings es el botón de avatar del encabezado del celular, con nombre accesible "Settings"; Analysis es el segmento Today | Analysis de Home; Expenses y Add expense son la tarjeta Expenses de Analysis, con "Add expense" y "See the expenses"; Take from stock está junto a la acción de entrada en la vista de stock de Products. Cada botón o link nuevo cumple el estándar del celular (44 px y las demás reglas) y sus palabras salen de las palabras In-the-app del glosario, en inglés, en el **Copy module**.
 26. **Nada alcanzable se pierde.** Un destino sin lugar en los dibujos aprobados se lista en el PR, nunca se pierde en silencio. La barra lateral de la computadora no cambia (Phone first).
 
+Criterios de éxito, el segmento Today | Analysis (parte 1 de GH-723). Se verifican en el celular; la computadora no cambia.
+
+27. **Fácil de tocar.** Cada opción del segmento tiene una caja de al menos 44×44 px a 320, 360 y 390 px de ancho y con el texto al 130 %. Ninguna lista de infractores crece.
+28. **Cambiar no toca el historial.** Cualquier cantidad de cambios entre Home y Analysis deja el historial como estaba, y el próximo gesto de atrás va a la pantalla desde la que vino quien vende. Cada cambio a la otra vista la abre arriba. La pestaña Home de la barra sigue agregando una entrada al historial, porque es un movimiento deliberado.
+29. **La marca siempre es la correcta, y el control es el del dibujo.** La opción marcada siempre corresponde a la pantalla que se ve, y la barra mantiene Home marcada en las dos pantallas. El control coincide con los dibujos Inicio e InicioOscuro, en claro y en oscuro (Analisis y AnalisisOscuro no se comparan, por decisión del dueño); la diferencia de etiquetas ("Hoy"/"Análisis" en los dibujos, "Today"/"Analysis" en la app) no cuenta, por **Drawing as guide**. La comparación es la **Design capture**: el dibujo y la app lado a lado, adjuntos al PR y juzgados a ojo, sin ningún número de AE, porque `scripts/design/ae.mjs` solo compara dos corridas de captura y nunca una construcción con un dibujo. Si una etiqueta de `section` no es única en su dibujo, el trabajo se frena y va al dueño con los números; nunca se agranda una tolerancia ni se lista un infractor.
+
 ## Comportamiento
 
 ### Pestañas (celular)
@@ -129,13 +141,26 @@ Criterios de éxito, el retiro de More (GH-651). Se verifican en el celular; la 
 - **La pestaña activa** se marca con algo más que color: un ícono relleno o un subrayado, y `aria-current` en el elemento. Analysis marca Home como activa; Settings no marca ninguna.
 - **Entra**: la barra, "Products" incluida, entra a 320 px de ancho de viewport con el texto al 130 %, medido en un navegador real.
 - **El avatar "Settings"**: un botón de avatar en el encabezado del celular de Home, Sales, Customers, Products y Analysis, y de Expenses, con nombre accesible "Settings", que abre Settings en 1 toque. Reemplaza al avatar del Business que tenía Home, así que cada pantalla tiene una sola entrada a Settings. Mide al menos 44×44 y no hace que ningún encabezado se desborde a 320 px.
-- **El segmento Today | Analysis**: un control de navegación en Home y en Analysis, con la opción actual marcada por forma o palabra y no solo por color. "Analysis" abre `/analysis`; "Today" vuelve a Home. Home siempre abre en Today y no recuerda nada. Las pestañas Today · Week · Month del **Panel** no cambian.
+- **El segmento Today | Analysis**: un control de navegación en Home y en Analysis, con la opción actual marcada por forma o palabra y no solo por color. "Analysis" abre `/analysis`; "Today" vuelve a Home. Home siempre abre en Today y no recuerda nada. Las pestañas Today · Week · Month del **Panel** no cambian. Cómo se comporta está en "El segmento Today | Analysis (GH-723)".
+
+### El segmento Today | Analysis (celular, GH-723)
+
+- **Dónde**: en el lugar donde ya se dibuja, dentro del cuerpo de Home y de Analysis; esta parte no lo mueve ni cambia la fila del encabezado (eso es la parte 2 de GH-723). El lugar "Editar" a su lado queda vacío e inerte: ningún link, botón, rol, texto ni elemento enfocable. En una computadora no muestra nada.
+- **Dos opciones, Today y Analysis.** La opción que vuelve a Home se sigue llamando "Today"; el cambio de nombre a "Home" lo lleva #733. El nombre accesible del grupo sigue siendo "Home view". Cada palabra y nombre accesible sale del Copy module, en inglés.
+- **Cada opción es un link que reemplaza la entrada actual del historial**, nunca una pestaña (`role="tab"`). La opción actual se marca como la página actual (`aria-current="page"`), por forma o peso, nunca solo por color.
+- **Qué opción se marca** sale solo del registro de pantallas: el valor `segment` del lugar de la pantalla actual en `routes.ts` (`today` en Home, `analysis` en Analysis), con la pantalla actual obtenida igual que la usa la barra. Ningún componente compara una dirección, un estado ni el historial. Expenses no tiene `segment`.
+- **Tocar la otra opción** abre esa vista arriba, como una pantalla nueva. No pasa nada de una a otra: Home abre en Today y Analysis en su mes por defecto.
+- **Tocar la opción ya marcada no cambia nada**: no salta arriba, no agrega una entrada al historial y no reinicia la pestaña del Panel ni el mes elegido. No es un cambio de pantalla, porque el path no cambia (Scroll al cambiar de pantalla). Sigue siendo un link con su caja de 44 px y su marca.
+- **Atrás** sale del par Home/Analysis hacia la pantalla desde la que vino quien vende, sin importar cuántas veces cambió. Nunca pasa a la otra vista.
+- **Marco**: Analysis sigue siendo un Tab root con la barra marcando Home, conserva su entrada en la barra lateral y no tiene flecha de regreso propia. Expenses, abierta desde Analysis en el celular, conserva su "‹ Analysis" y no tiene segmento.
+- **Objetivo táctil**: cada opción es una caja de link de al menos 44×44, con `touch-action: manipulation`, sin selección de texto, sin resaltado de toque y con un estado `:active`; la píldora dibujada de 36 px es un hijo ubicado con márgenes negativos.
+- **Las rutas no cambian**; `/more` y `/mas` siguen como están.
 
 ### Barra lateral (computadora)
 
 - Desde arriba: "+ New sale"; Home, Sales, Customers, Products; un divisor; Expenses, Analysis.
 - Abajo: el nombre del Business con su avatar, que abre Settings (como lo dibuja `InicioCompu`).
-- Sin cambios por GH-651: no hay avatar en el encabezado ni segmento Today | Analysis en una computadora, y Settings, Expenses y Analysis se abren desde la barra lateral como antes. Al formulario de Stock withdrawal se llega desde el "Take from stock" secundario de Products y desde la página de un Product.
+- Sin cambios por GH-651 ni por GH-723: no hay avatar en el encabezado ni segmento Today | Analysis en una computadora, y Settings, Expenses y Analysis se abren desde la barra lateral como antes. Al formulario de Stock withdrawal se llega desde el "Take from stock" secundario de Products y desde la página de un Product.
 - **Dos paneles**: Customers y Products muestran la lista a la izquierda y la ficha del Customer o la página del Product elegidos a la derecha. Products abierto sin nada elegido elige el primer Product sin archivar por nombre (varieties.md); eso cuenta como ningún toque. Archived usa los mismos dos paneles y elige el primer Archived product por nombre. Customers no elige nada por su cuenta.
 - **Dos paneles e historial**: en una computadora, elegir una fila del panel izquierdo reemplaza la entrada actual del historial, y lo mismo hace la selección automática del primer Product de Products. Atrás desde cualquiera de las dos pantallas la deja en un paso, nunca uno por fila mirada. En el celular, abrir un Product o un Customer agrega una entrada al historial, y atrás vuelve a la lista.
 
@@ -225,6 +250,7 @@ Cada pantalla es exactamente de uno de tres tipos, tiene una sola pantalla madre
 
 - **Salir porque el registro ya no existe es el mismo movimiento que "Close".** Cuando guardar, eliminar o deshacer en el formulario de Stock entry, el formulario de Customer o Record payment da con un registro que ya no existe, la pantalla vuelve un paso en el historial cuando se abrió desde dentro de la app, o a su pantalla madre cuando se abrió con un link directo. La lista se actualiza y se muestra "That is gone. The list is up to date.", como lo define accounts.md. Nunca se duplica una entrada del historial.
 - **"Collect from <name>"** en una fila de deudor (Customers o Home) abre Record payment con ese Customer elegido, como una entrada en el historial de la app; atrás o "Close" lo cierra en un movimiento, de vuelta a la pantalla de la que vino.
+- **El segmento Today | Analysis reemplaza, nunca agrega.** Pasar de Home a Analysis o de Analysis a Home con el segmento reemplaza la entrada actual del historial, así que el par ocupa una sola entrada y atrás sale de él en un movimiento (El segmento Today | Analysis). La pestaña Home de la barra sigue agregando una entrada.
 
 ### Disposición en el celular (GH-319)
 
@@ -284,7 +310,7 @@ Solo por debajo de 900 px. Cada regla de acá rige bajo ese corte. Las disposici
   - las flechas de mes;
   - el interruptor de Stock bajo;
   - el Move up y el Move down de cada Payment method;
-  - el avatar "Settings", el segmento Today | Analysis y las dos acciones de la tarjeta Expenses (GH-651).
+  - el avatar "Settings", el segmento Today | Analysis (cada opción, como caja de link, GH-723) y las dos acciones de la tarjeta Expenses (GH-651).
 - **Ayuda del teclado**:
   - El login sugiere el usuario y la contraseña actual.
   - Change password y la página de reseteo sugieren la contraseña nueva y la actual.
@@ -292,9 +318,9 @@ Solo por debajo de 900 px. Cada regla de acá rige bajo ese corte. Las disposici
 
 ### Scroll al cambiar de pantalla (GH-480)
 
-En el celular y en una computadora por igual. Una pantalla es el path de su ruta. Un cambio de profundidad de una Sheet (ADR-0027), o una Sheet con ruta que se abre sobre la pantalla desde la que se abrió, no es un cambio de pantalla. Tampoco lo es elegir una fila en los dos paneles de una computadora.
+En el celular y en una computadora por igual. Una pantalla es el path de su ruta. Un cambio de profundidad de una Sheet (ADR-0027), o una Sheet con ruta que se abre sobre la pantalla desde la que se abrió, no es un cambio de pantalla. Tampoco lo es elegir una fila en los dos paneles de una computadora, ni tocar en el segmento Today | Analysis la opción ya marcada.
 
-- **Llegar empieza arriba.** Cada movimiento hacia adelante a otra pantalla la muestra desde arriba, sea cual sea el offset de la pantalla que quedó atrás. Un movimiento hacia adelante es una pestaña de la barra o de la barra lateral, el segmento Today | Analysis, una acción de la tarjeta Expenses, "+ New sale", un link, una fila de lista hacia su tarjeta o detalle, una redirección, o el avatar "Settings" (o la fila del Business de la barra lateral) hacia Settings.
+- **Llegar empieza arriba.** Cada movimiento hacia adelante a otra pantalla la muestra desde arriba, sea cual sea el offset de la pantalla que quedó atrás. Un movimiento hacia adelante es una pestaña de la barra o de la barra lateral, el segmento Today | Analysis (que reemplaza la entrada del historial en vez de agregar una), una acción de la tarjeta Expenses, "+ New sale", un link, una fila de lista hacia su tarjeta o detalle, una redirección, o el avatar "Settings" (o la fila del Business de la barra lateral) hacia Settings.
 - **Volver devuelve al lugar.** Todos estos son un movimiento atrás, y cada uno vuelve a la pantalla anterior en el offset que tenía cuando se la dejó:
   - el gesto de atrás del celular o el atrás del navegador;
   - "‹ <parent>" cuando pasa por el historial;
@@ -319,7 +345,8 @@ En el celular y en una computadora por igual. Una pantalla es el path de su ruta
 
 ### Rutas
 
-- La ruta de cada pantalla está en inglés: `/sales`, `/customers`, `/varieties`, `/expenses`, `/analysis`, `/settings`, `/settings/prices`, `/settings/payments`, y lo mismo para cada otra pantalla. El formulario de Stock withdrawal es `/withdrawals/new` (y `/withdrawals/{id}/edit`), el detalle de un Stock withdrawal `/withdrawals/{id}`. La lista de Payment methods es `/settings/payments/methods` y sus archivados `/settings/payments/methods/archived`. Cada pantalla se registra una vez, con su tipo y su pantalla madre, en `scripts/design/screens.json`, que fija su path exacto; se incluyen cada grupo de Settings, cada paso del Onboarding y "Done", y también `/customers/new`, `/customers/{id}/edit` y `/varieties/entries/{id}`. Las filas `Mas` y `MasOscuro` salen del registro junto con la pantalla More (GH-651).
+- La ruta de cada pantalla está en inglés: `/sales`, `/customers`, `/varieties`, `/expenses`, `/analysis`, `/settings`, `/settings/prices`, `/settings/payments`, y lo mismo para cada otra pantalla. El formulario de Stock withdrawal es `/withdrawals/new` (y `/withdrawals/{id}/edit`), el detalle de un Stock withdrawal `/withdrawals/{id}`. La lista de Payment methods es `/settings/payments/methods` y sus archivados `/settings/payments/methods/archived`. Cada pantalla se registra una vez, con su tipo y su pantalla madre, en `scripts/design/screens.json`, que fija su path exacto; se incluyen cada grupo de Settings, cada paso del Onboarding y "Done", y también `/customers/new`, `/customers/{id}/edit` y `/varieties/entries/{id}`. Las filas `Mas` y `MasOscuro` salen del registro junto con la pantalla More (GH-651). Solo las filas `InicioHoy` e `InicioOscuro` llevan una sección `section` exacta para el segmento Today | Analysis (GH-723); `Analisis` y `AnalisisOscuro` no se comparan.
+- En `routes.ts`, el lugar de Home y el de Analysis llevan un `segment` (`today`, `analysis`); los dos son Tab roots con la barra en Home, Analysis conserva su entrada en la barra lateral y ninguna flecha de regreso, y ningún otro lugar, Expenses incluido, lleva `segment`.
 - **Products** y sus pantallas: `/varieties`, `/varieties/{id}`, `/varieties/catalog` (la pantalla del Catalog), `/varieties/entries` ("All entries"), `/varieties/entries/new`, `/varieties/entries/{id}` (editar una Stock entry), `/varieties/{id}/entries` (las Stock entries de un Product, la misma lista filtrada a él, con los Stock withdrawals que lo tocan, "‹ <product>"), `/varieties/{id}/prices`, `/varieties/{id}/prices/new`, `/varieties/new` y `/varieties/archived` (la tarjeta Archived). La página de un Product es de solo lectura cuando el Product está archivado. `{id}` es el id propio del Product o de la Stock entry. Recargar cualquiera de ellas abre la pantalla, nunca la respuesta de la API, y las llamadas propias del front a la API siguen llegando a la API.
 - **Campos personalizados** (dibujados en `docs/design/campos-personalizados/`, construidos por #394 y #395; todavía no construidos, así que sus filas en `scripts/design/screens.json` tienen `route: null`): los campos personalizados de una categoría viven bajo esa categoría, junto a Categories en `/settings/products/categories`. En `screens.json` los ids son números concretos de ejemplo (`1` para la categoría y para el campo); acá `:category` es un id de categoría y `:field` un id de campo. La lista es `/settings/products/categories/:category/fields`; su Sheet de campo nuevo es `.../fields/new`; la Sheet de un campo numérico es `.../fields/:field`; sus valores de lista son `.../fields/:field/values` y archivar un valor es `.../fields/:field/values/archive`; copiar un campo a las hojas hermanas es `.../fields/apply-to-siblings`; copiar los campos de otra categoría es `.../fields/copy`. Cada gemelo oscuro tiene el path de su pantalla clara, y las dos pantallas de computadora tienen el path de su pantalla de celular.
 - Cada path viejo en español redirige de forma permanente a su ruta nueva, cada uno probado uno por uno, con el id del registro pasado:
@@ -403,6 +430,11 @@ Esto cubre Settings y sus grupos, la pantalla del Catalog y la página de un Pro
   - Las reglas del celular nunca editan la rama de diálogo `PriceFrame` de ADR-0044 ni la rama de computadora de `CobroFrame`.
   - Cada paso deja el **Mobile check** en verde, borra de las listas cada infractor que pone en verde, conserva las claves del registro y no agrega ningún infractor fuera de las reglas de canje o de fila nueva de gate.md.
 - **El retiro de More (GH-651)**: ningún dibujo de `docs/product/design-system/pantallas/` se edita; las filas `Mas` y `MasOscuro` de `screens.json` y sus infractores salen en el mismo diff que quita la pantalla, y `PAUSED_CEILING` y `PAUSED` no crecen.
+- **El segmento Today | Analysis (GH-723)**:
+  - La opción marcada sale solo de `placeOf(...).segment` en `routes.ts`; ningún componente compara un path, un estado o el historial.
+  - Cada opción es un link de react-router con `replace` y `aria-current="page"`, nunca `role="tab"`. Un test que afirma que no se agregó una entrada al historial mira `router.state.historyAction === 'REPLACE'` y un `historyIndex` sin cambios, nunca `window.history.length`.
+  - Las clases `ajustes-tema*` de Settings no se tocan; el segmento tiene su propio CSS.
+  - Antes de construir, la sección del segmento en `InicioHoy` e `InicioOscuro` se ancla con una etiqueta `section` que aparece exactamente una vez en su dibujo (`Analisis` y `AnalisisOscuro` no se comparan); una etiqueta que no es única frena el trabajo y va al dueño con los números. Las dos filas se capturan lado a lado con `scripts/design/comparisons.mjs --only` y se juzgan a ojo; no se pide ningún número de AE contra el dibujo. Ninguna tolerancia se agranda y ningún infractor se lista.
 
 ## Métricas
 
@@ -495,6 +527,10 @@ Esto cubre Settings y sus grupos, la pantalla del Catalog y la página de un Pro
   - 0 infractores `touch-target`, `text-size` o `h-scroll` para los controles nuevos a 320 px; cada palabra nueva está en `web/src/copy/`.
   - La barra lateral de la computadora y sus marcos tienen 0 cambios, y sus capturas no cambian.
   - vitest, e2e (incluido el proyecto `mobile`) y pytest en verde; ningún dibujo de `pantallas/` editado; `PAUSED_CEILING` y `PAUSED` sin crecer.
+- **El segmento Today | Analysis (criterios 27–29, GH-723)**:
+  - Fácil de tocar (27): 0 infractores `touch-target`, `touch-action` y `user-select` del segmento en `InicioHoy`, `InicioOscuro`, `Analisis` y `AnalisisOscuro`, a 320, 360 y 390 px y con el texto al 130 %; ningún infractor agregado y ninguno dejado obsoleto.
+  - El historial (28): a través del router real en el celular, tocando Analysis y Today tres veces o más, el 100% de los cambios dan `historyAction` REPLACE, un `historyIndex` sin cambios, scroll en 0, `aria-current` en la opción tocada y la barra marcando Home; la pestaña Home de la barra sigue siendo un PUSH, y atrás después de los cambios sale a la pantalla anterior al par. Tocar la opción ya marcada, después de desplazarse y elegir una pestaña del Panel distinta de Today (Home) o retroceder un mes (Analysis), no cambia el `historyIndex`, el offset, la pestaña del Panel ni el mes.
+  - La marca y el dibujo (29): datos del registro para Home y Analysis (root, barra en Home, su valor de `segment`; Analysis con su entrada en la barra lateral y sin flecha de regreso) y para Expenses sin `segment`; las dos filas `section` (`InicioHoy` e `InicioOscuro`) capturadas lado a lado con su dibujo y adjuntas al PR, juzgadas a ojo, cada etiqueta encontrada exactamente una vez, sin ninguna tolerancia agrandada; `Analisis` y `AnalisisOscuro` informadas como "not compared". En una computadora el segmento no muestra nada.
 
 ## Fuera de alcance
 
@@ -534,6 +570,7 @@ Esto cubre Settings y sus grupos, la pantalla del Catalog y la página de un Pro
 - Recordar offsets de scroll después de una recarga o en el almacenamiento del navegador; restaurar el scroll dentro de una lista anidada en una pantalla (un panel, un selector) más allá de la regla de los dos paneles; ir arriba cuando quien vende toca la pestaña en la que ya está.
 - Hacer coincidir el offset de una imagen de fondo inerte dibujada detrás de un diálogo de computadora (`InicioFondo` de Home detrás de Record payment) mientras el diálogo está abierto, o volver a dibujar ese fondo para lograrlo.
 - Del retiro de More (GH-651): las pantallas rediseñadas completas, que construyen sus propios issues; cualquier cambio en la barra lateral de la computadora o en sus marcos; un avatar en el encabezado de la computadora; recordar la última vista de Home; cambiar las pestañas Today · Week · Month del Panel; un destino más específico que Home para `/mas` o `/more`; un menú o pantalla que vuelva a reunir los destinos de More.
+- Del segmento Today | Analysis (parte 1 de GH-723): moverlo a un layout compartido o cambiar la fila del encabezado; reestructurar el cuerpo de Home o de Analysis (la parte 2 de GH-723); vistas o entradas nuevas; recordar la pestaña del Panel o el mes de Analysis entre un cambio y otro; cualquier cambio de rutas o de ScrollSync; editar el ADR `20261109-more-is-retired-…` por su etiqueta vieja; el cambio de nombre de la opción "Today" a "Home" (#733).
 
 ## Planned in GH-318
 

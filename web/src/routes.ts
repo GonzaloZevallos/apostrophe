@@ -33,10 +33,15 @@ export type BarPlace = 'home' | 'sales' | 'customers' | 'varieties'
 /** What the side rail can mark: the bar's places, Gastos, Análisis and the business row. */
 export type RailPlace = BarPlace | 'expenses' | 'analysis' | 'business'
 
+/** The two options of the phone's Home | Analysis segment (`HomeViewSwitch`). */
+export type Segment = 'today' | 'analysis'
+
 export interface Place {
   /** The bar's mark; `null` marks no tab (Configuración is reached from a header, not a tab). */
   bar: BarPlace | null
   rail: RailPlace
+  /** The option of the Home | Analysis segment this screen is; set only on `home` and `analysis`. */
+  segment?: Segment
 }
 
 export type ScreenId =
@@ -273,7 +278,7 @@ export function outside<O extends Outside>(declaration: O): O {
 }
 
 export const SCREENS = [
-  screen({ id: 'home', path: HOME, declaredKind: 'root', titleKey: 'common:home', place: { bar: 'home', rail: 'home' } }),
+  screen({ id: 'home', path: HOME, declaredKind: 'root', titleKey: 'common:home', place: { bar: 'home', rail: 'home', segment: 'today' } }),
 
   screen({ id: 'sales', path: SALES, declaredKind: 'root', titleKey: 'common:sales', place: { bar: 'sales', rail: 'sales' } }),
   screen({ id: 'sale-new', path: SALE_NEW, declaredKind: 'form', titleKey: 'common:newSale', parent: 'sales' }),
@@ -342,7 +347,7 @@ export const SCREENS = [
     path: ANALYSIS,
     declaredKind: 'root',
     titleKey: 'common:analysis',
-    place: { bar: 'home', rail: 'analysis' },
+    place: { bar: 'home', rail: 'analysis', segment: 'analysis' },
   }),
 
   screen({
@@ -481,6 +486,14 @@ export const OUTSIDE: readonly Outside[] = [
 export function screenOf(id: ScreenId): Screen {
   const found = SCREENS.find((candidate) => candidate.id === id)
   if (found === undefined) throw new Error(`routes: no screen declared as ${id}`)
+  return found
+}
+
+/** The screen that is one option of the Home | Analysis segment: the link's target comes from here. */
+export function screenOfSegment(segment: Segment): Screen {
+  const declared: readonly Screen[] = SCREENS
+  const found = declared.find((candidate) => candidate.place?.segment === segment)
+  if (found === undefined) throw new Error(`routes: no screen declared as the ${segment} segment`)
   return found
 }
 
