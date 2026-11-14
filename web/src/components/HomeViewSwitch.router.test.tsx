@@ -95,7 +95,7 @@ function barHome(): HTMLElement {
   return within(bar).getByRole('link', { name: 'Home' })
 }
 
-function segment(name: 'Today' | 'Analysis'): HTMLElement {
+function segment(name: 'Home' | 'Analysis'): HTMLElement {
   return within(screen.getByRole('group', { name: 'Home view' })).getByRole('link', { name })
 }
 
@@ -121,13 +121,13 @@ describe('switching on the phone', () => {
       expect(router.state.historyAction).toBe('REPLACE')
       expect(position.index).toBe(index)
       expect(page.y).toBe(0)
-      expect(segment('Today')).not.toHaveAttribute('aria-current')
+      expect(segment('Home')).not.toHaveAttribute('aria-current')
       expect(barHome()).toHaveAttribute('aria-current', 'page')
 
       act(() => page.scrollTo(300))
 
-      await userEvent.click(segment('Today'))
-      await waitFor(() => expect(segment('Today')).toHaveAttribute('aria-current', 'page'))
+      await userEvent.click(segment('Home'))
+      await waitFor(() => expect(segment('Home')).toHaveAttribute('aria-current', 'page'))
       expect(router.state.location.pathname).toBe(HOME)
       expect(router.state.historyAction).toBe('REPLACE')
       expect(position.index).toBe(index)
@@ -156,6 +156,39 @@ describe('switching on the phone', () => {
   })
 })
 
+describe('the segment names', () => {
+  /** The links of the "Home view" group, by accessible name, in order. */
+  function segmentNames(): string[] {
+    return within(screen.getByRole('group', { name: 'Home view' }))
+      .getAllByRole('link')
+      .map((link) => link.textContent ?? '')
+  }
+
+  test('on Home the group offers exactly Home and Analysis, never Today, and the Panel tabs stay Today, Week, Month', async () => {
+    await mount()
+    await screen.findByRole('group', { name: 'Home view' })
+
+    expect(segmentNames()).toEqual(['Home', 'Analysis'])
+    expect(
+      within(screen.getByRole('group', { name: 'Home view' })).queryByRole('link', { name: 'Today' }),
+    ).not.toBeInTheDocument()
+    const periods = await screen.findByRole('group', { name: 'Period' })
+    expect(within(periods).getAllByRole('button').map((tab) => tab.textContent)).toEqual(['Today', 'Week', 'Month'])
+  })
+
+  test('on Analysis the group offers exactly Home and Analysis, never Today', async () => {
+    await mount()
+    await screen.findByRole('group', { name: 'Home view' })
+    await userEvent.click(segment('Analysis'))
+    await waitFor(() => expect(segment('Analysis')).toHaveAttribute('aria-current', 'page'))
+
+    expect(segmentNames()).toEqual(['Home', 'Analysis'])
+    expect(
+      within(screen.getByRole('group', { name: 'Home view' })).queryByRole('link', { name: 'Today' }),
+    ).not.toBeInTheDocument()
+  })
+})
+
 describe('tapping the option already marked', () => {
   test('on Home it changes no entry, no scroll and not the Panel tab', async () => {
     const { router, page, position } = await mount()
@@ -164,13 +197,13 @@ describe('tapping the option already marked', () => {
     act(() => page.scrollTo(420))
     const index = position.index
 
-    await userEvent.click(segment('Today'))
+    await userEvent.click(segment('Home'))
 
     expect(router.state.location.pathname).toBe(HOME)
     expect(position.index).toBe(index)
     expect(page.y).toBe(420)
     expect(screen.getByRole('button', { name: 'Week' })).toHaveAttribute('aria-pressed', 'true')
-    expect(segment('Today')).toHaveAttribute('aria-current', 'page')
+    expect(segment('Home')).toHaveAttribute('aria-current', 'page')
   })
 
   test('on Analysis it changes no entry, no scroll and not the month', async () => {

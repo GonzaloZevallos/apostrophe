@@ -1,6 +1,6 @@
 /**
- * The Today | Analysis segment on the phone's Home and Analysis: navigation between the two
- * views of the business, not a choice kept anywhere (Home always opens on Today). Two links
+ * The Home | Analysis segment on the phone's Home and Analysis: navigation between the two
+ * views of the business, not a choice kept anywhere (Home always opens on its Home view). Two links
  * in a named group, each one a `Link` that replaces the history entry, so any number of
  * switches leaves Back where it was. The marked option is the screen's own `segment` in the
  * registry (`placeOf(...).segment`), read through the same leaf screen the shell reads for the

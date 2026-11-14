@@ -51,7 +51,7 @@ async function tap(counter: Counter, target: Locator): Promise<void> {
   await target.click()
 }
 
-/** The Today | Analysis segment's "Analysis" option. */
+/** The Home | Analysis segment's "Analysis" option. */
 function analysisOption(page: Page): Locator {
   return page.getByRole('group', { name: 'Home view' }).getByRole('link', { name: 'Analysis' })
 }

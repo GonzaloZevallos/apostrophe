@@ -1,6 +1,6 @@
 /**
  * Home's entry point to Analysis, through the real router (CODING_STANDARDS §10): on the phone
- * the Today | Analysis segment sits under the header with Today selected and "Analysis" opens
+ * the Home | Analysis segment sits under the header with Home selected and "Analysis" opens
  * `/analysis`; on the computer, which reaches Analysis from the side rail, the segment is absent.
  */
 
@@ -40,11 +40,11 @@ async function openHome(viewport: Viewport) {
 }
 
 describe('Home', () => {
-  test('on the phone Today is selected and Analysis opens /analysis', async () => {
+  test('on the phone Home is selected and Analysis opens /analysis', async () => {
     const main = await openHome('phone')
 
     const group = within(main).getByRole('group', { name: 'Home view' })
-    expect(within(group).getByRole('link', { name: 'Today' })).toHaveAttribute('aria-current', 'page')
+    expect(within(group).getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page')
 
     await userEvent.click(within(group).getByRole('link', { name: 'Analysis' }))
 

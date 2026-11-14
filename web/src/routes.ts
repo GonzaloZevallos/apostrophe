@@ -34,7 +34,7 @@ export type BarPlace = 'home' | 'sales' | 'customers' | 'varieties'
 export type RailPlace = BarPlace | 'expenses' | 'analysis' | 'business'
 
 /** The two options of the phone's Home | Analysis segment (`HomeViewSwitch`). */
-export type Segment = 'today' | 'analysis'
+export type Segment = 'home' | 'analysis'
 
 export interface Place {
   /** The bar's mark; `null` marks no tab (Configuración is reached from a header, not a tab). */
@@ -278,7 +278,7 @@ export function outside<O extends Outside>(declaration: O): O {
 }
 
 export const SCREENS = [
-  screen({ id: 'home', path: HOME, declaredKind: 'root', titleKey: 'common:home', place: { bar: 'home', rail: 'home', segment: 'today' } }),
+  screen({ id: 'home', path: HOME, declaredKind: 'root', titleKey: 'common:home', place: { bar: 'home', rail: 'home', segment: 'home' } }),
 
   screen({ id: 'sales', path: SALES, declaredKind: 'root', titleKey: 'common:sales', place: { bar: 'sales', rail: 'sales' } }),
   screen({ id: 'sale-new', path: SALE_NEW, declaredKind: 'form', titleKey: 'common:newSale', parent: 'sales' }),

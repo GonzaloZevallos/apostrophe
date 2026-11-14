@@ -176,7 +176,7 @@ test.describe.serial('navigation', () => {
     await page.getByRole('link', { name: 'Settings', exact: true }).click()
     await expectPath(page, SETTINGS)
 
-    // Analysis: Home's Today | Analysis segment.
+    // Analysis: Home's Home | Analysis segment.
     await page.goto(HOME)
     await page.getByRole('group', { name: 'Home view' }).getByRole('link', { name: 'Analysis' }).click()
     await expectPath(page, ANALYSIS)
