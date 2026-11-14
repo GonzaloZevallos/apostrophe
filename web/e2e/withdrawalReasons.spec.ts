@@ -7,6 +7,7 @@
  * Rosa's only lot is 50 g for $ 20.000 ($ 400 the gram), so a 3 g withdrawal costs $ 1.200.
  */
 
+import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { pickStockVariety, pickWithdrawalReason, pickWithdrawalVariety } from './helpers/stockVariety.js'
@@ -31,13 +32,13 @@ test('a seller adds a withdrawal reason, records a withdrawal with it and reads 
   // A variety with one lot: 50 g for $ 20.000.
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name').fill('Rosa')
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: '+ Stock entry' }).click()
-  await page.getByLabel('Grams').fill('50')
+  await page.getByLabel('Grams', { exact: true }).fill('50')
   await pickStockVariety(page, 'Rosa')
-  await page.getByLabel('Total cost').fill('20000')
+  await page.getByLabel(STOCK_COST_LABEL, { exact: true }).fill('20000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 
   // Settings → Business → Withdrawal reasons: add "Gifts".

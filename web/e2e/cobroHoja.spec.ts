@@ -37,7 +37,7 @@ async function makeDebtor(page: Page): Promise<void> {
   await signUpNewBusiness(page)
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name').fill('Rosa')
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
   await page.getByRole('button', { name: 'Add the product' }).click()
   await expect(page.getByText('Product saved')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
@@ -47,7 +47,7 @@ async function makeDebtor(page: Page): Promise<void> {
   await expect(page.getByText('Price saved')).toBeVisible()
 
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Name').fill('Carla Cobrar')
+  await page.getByLabel('Name', { exact: true }).fill('Carla Cobrar')
   await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)
   await page.getByRole('link', { name: 'New sale to Carla Cobrar' }).click()
@@ -117,7 +117,7 @@ for (const viewport of VIEWPORTS) {
         await makeDebtor(page)
         await openFrom(page, origin)
 
-        await page.getByLabel('Amount').fill('2000')
+        await page.getByLabel('Amount', { exact: true }).fill('2000')
         await choosePaymentMethod(page, 'Cash')
         await page.getByRole('button', { name: 'Save' }).click()
 
@@ -270,7 +270,7 @@ for (const viewport of VIEWPORTS) {
             await page.getByRole('button', { name: 'Close' }).click()
           } else {
             const pays = how === 'partial' ? 2000 : owed
-            await page.getByLabel('Amount').fill(String(pays))
+            await page.getByLabel('Amount', { exact: true }).fill(String(pays))
             await choosePaymentMethod(page, 'Cash')
             await page.getByRole('button', { name: 'Save' }).click()
             owed -= pays
@@ -312,7 +312,7 @@ test.describe('Record payment on a phone over a long breakdown', () => {
     await moreSalesFor(page, 'Carla Cobrar', 8)
     await openFrom(page, 'card')
 
-    await page.getByLabel('Amount').fill('13000')
+    await page.getByLabel('Amount', { exact: true }).fill('13000')
     await choosePaymentMethod(page, 'Cash')
     const save = page.getByRole('button', { name: 'Save' })
     await save.scrollIntoViewIfNeeded()
@@ -324,3 +324,4 @@ test.describe('Record payment on a phone over a long breakdown', () => {
     await expect(page.getByText(/Payment saved/)).toBeVisible()
   })
 })
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'

@@ -429,7 +429,7 @@ test('opening a live invitation under the write guard shows its form, not "Sin c
   await page.goto(INVITATION.replace(':token', String(readFacts()['join_token'])))
   await settle(page)
   await expect(page.getByText('Te quedaste sin internet')).toHaveCount(0)
-  await expect(page.getByLabel('Email address')).toBeVisible()
+  await expect(page.getByLabel('Email address', { exact: true })).toBeVisible()
   await context.close()
 })
 

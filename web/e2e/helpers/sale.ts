@@ -44,9 +44,9 @@ export async function fillSaleLine(
   const listName = `Line ${n} product options`
   const list = page.getByRole('dialog', { name: listName }).or(page.getByRole('listbox', { name: listName }))
   await list.getByRole('button', { name: variety }).or(list.getByRole('option', { name: variety })).click()
-  await page.getByLabel(`Line ${n} grams`).fill(grams)
-  if (gift === true) await page.getByLabel(`Line ${n} gift`).check()
+  await page.getByLabel(`Line ${n} grams`, { exact: true }).fill(grams)
+  if (gift === true) await page.getByLabel(`Line ${n} gift`, { exact: true }).check()
   if (specialPrice !== undefined) {
-    await page.getByLabel(`Line ${n} special price`).fill(specialPrice)
+    await page.getByLabel(`Line ${n} special price`, { exact: true }).fill(specialPrice)
   }
 }

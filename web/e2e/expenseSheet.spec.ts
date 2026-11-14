@@ -48,7 +48,7 @@ test('a direct address to Add expense opens the sheet over Expenses, focus in Da
 
   const dialog = page.getByRole('dialog', { name: 'Add expense' })
   await expect(dialog).toBeVisible()
-  await expect(page.getByLabel('Date')).toBeFocused()
+  await expect(page.getByLabel('Date', { exact: true })).toBeFocused()
   await expect(dialog.getByRole('button', { name: 'Close' })).toBeVisible()
   await expect(page.locator('.behind-pane')).toHaveAttribute('inert', '')
   await expect(page.locator('.behind-pane')).toContainText('Bolsas')
@@ -64,7 +64,7 @@ test('editing an expense opens an in-page sheet, focus in Date, Delete above Sav
 
   const dialog = page.getByRole('dialog', { name: 'Edit expense' })
   await expect(dialog).toBeVisible()
-  await expect(page.getByLabel('Date')).toBeFocused()
+  await expect(page.getByLabel('Date', { exact: true })).toBeFocused()
   await expect(page.locator('.behind-pane')).toHaveCount(0)
   const del = dialog.getByRole('button', { name: 'Delete expense' })
   const save = dialog.getByRole('button', { name: 'Save the expense' })

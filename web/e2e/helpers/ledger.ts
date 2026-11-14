@@ -7,7 +7,8 @@
  * signs a business up first and picks the customer's name with `uniqueTag`.
  */
 
-import { CUSTOMER, CUSTOMER_NEW, VARIETIES, pathTo } from '../../src/routes.js'
+import { VARIETY_NAME_LABEL } from './labels.js'
+import { CUSTOMER, CUSTOMER_NEW, VARIETIES, VARIETY_NEW, pathTo } from '../../src/routes.js'
 import { expect } from '../fixtures.js'
 import type { Page } from '@playwright/test'
 import { expectPath } from './url.js'
@@ -19,7 +20,9 @@ export async function seedLedger(page: Page, customerName: string, sales: number
   const variety = `Rosa ${uniqueTag()}`
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name').fill(variety)
+  await expectPath(page, VARIETY_NEW)
+  // The exact fill below is what waits for the form: an earlier screen's "Edit name" button is not a "Name" field.
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill(variety)
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: new RegExp(variety) }).click()
   await page.getByRole('link', { name: 'New price' }).click()
@@ -27,7 +30,7 @@ export async function seedLedger(page: Page, customerName: string, sales: number
   await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Name').fill(customerName)
+  await page.getByLabel('Name', { exact: true }).fill(customerName)
   await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)
   const card = new URL(page.url()).pathname

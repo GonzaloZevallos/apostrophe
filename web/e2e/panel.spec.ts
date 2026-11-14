@@ -182,7 +182,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // A priced variety.
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name').fill('Rosa')
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
@@ -195,16 +195,16 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
 
   // A purchase: the "Origen" pill defaults to "Purchase" (`EntradaStock.tsx`).
   await page.goto(STOCK_ENTRY_NEW)
-  await page.getByLabel('Grams').fill('50')
+  await page.getByLabel('Grams', { exact: true }).fill('50')
   await pickStockVariety(page, 'Rosa')
   await expect(page.getByRole('button', { name: 'Purchase' })).toHaveAttribute('aria-pressed', 'true')
-  await page.getByLabel('Total cost').fill('45000')
+  await page.getByLabel(STOCK_COST_LABEL, { exact: true }).fill('45000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 
   // A customer, for the sale left owing.
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Phone', { exact: true }).fill('+5491155550077')
-  await page.getByLabel('Name').fill('Carla Pérez')
+  await page.getByLabel('Name', { exact: true }).fill('Carla Pérez')
   await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
@@ -212,7 +212,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // A sale left owing, to Carla.
   await page.getByRole('link', { name: 'New sale to Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)
-  const todayIso = await page.getByLabel('Date').inputValue()
+  const todayIso = await page.getByLabel('Date', { exact: true }).inputValue()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Owing' }).check()
   await page.getByRole('button', { name: 'Save sale' }).click()
@@ -271,8 +271,8 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.getByRole('link', { name: 'Add expense' }).click()
   await page.getByRole('button', { name: /^Category/ }).click()
   await page.getByRole('option', { name: 'Other' }).or(page.getByRole('button', { name: 'Other', exact: true })).click()
-  await page.getByLabel('Amount').fill('1500')
-  await page.getByLabel('Details').fill('Bolsas de regalo')
+  await page.getByLabel('Amount', { exact: true }).fill('1500')
+  await page.getByLabel('Details', { exact: true }).fill('Bolsas de regalo')
   await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: 'Save the expense' }).click())
 
   // `GET /panel`, read in this same run: the one answer Inicio must agree with,
@@ -390,7 +390,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // On a computer the list sits beside the card and has its own title: read the card's (the pane
   // without the search box).
   await expect(
-    page.locator('main').filter({ hasNot: page.getByLabel('Search customer') }).locator('.encabezado__titulo'),
+    page.locator('main').filter({ hasNot: page.getByLabel('Search customer', { exact: true }) }).locator('.encabezado__titulo'),
   ).toHaveText(teaserRow.name)
   await expect(page.locator('.ficha-deuda', { hasText: new RegExp(`Owes you\\s*${pesos(teaserRow.balance).replace(/[$.]/g, '\\$&')}`) })).toBeVisible()
 
@@ -402,3 +402,4 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
 })
 
 import { pickStockVariety } from './helpers/stockVariety.js'
+import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './helpers/labels.js'

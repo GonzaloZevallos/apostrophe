@@ -34,7 +34,7 @@ test('a direct address to the new entry opens the sheet over Products, focus in 
 
   const dialog = page.getByRole('dialog', { name: 'New entry' })
   await expect(dialog).toBeVisible()
-  await expect(page.getByLabel('Date')).toBeFocused()
+  await expect(page.getByLabel('Date', { exact: true })).toBeFocused()
   await expect(dialog.getByRole('button', { name: 'Close' })).toBeVisible()
   await expect(page.locator('.behind-pane')).toHaveAttribute('inert', '')
   await expectActionAtTheBottom(page, 'New entry', 'Save the entry')
@@ -47,7 +47,7 @@ test('a direct address to Edit entry opens the sheet over All entries, Delete ab
 
   const dialog = page.getByRole('dialog', { name: 'Edit entry' })
   await expect(dialog).toBeVisible()
-  await expect(page.getByLabel('Date')).toBeFocused()
+  await expect(page.getByLabel('Date', { exact: true })).toBeFocused()
   await expect(page.locator('.behind-pane')).toHaveAttribute('inert', '')
   const del = await dialog.getByRole('button', { name: 'Delete entry' }).boundingBox()
   const save = await dialog.getByRole('button', { name: 'Save' }).boundingBox()

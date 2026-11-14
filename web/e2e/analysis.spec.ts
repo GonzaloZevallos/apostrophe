@@ -10,9 +10,11 @@
  * through the built front alone, against the real backend.
  */
 
-import { ANALYSIS, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, WITHDRAWAL_NEW } from '../src/routes.js'
+import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './helpers/labels.js'
+import { ANALYSIS, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, VARIETY_NEW, WITHDRAWAL_NEW } from '../src/routes.js'
 import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
+import { expectPath } from './helpers/url.js'
 import type { Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
@@ -36,7 +38,7 @@ test('a seller opens Análisis from the Home segment, moves back a month and rea
   // A priced variety.
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name').fill('Rosa')
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
@@ -46,11 +48,11 @@ test('a seller opens Análisis from the Home segment, moves back a month and rea
   // A stock entry (origin defaults to "Purchase"), backdated into last month so the
   // business's first record — and so "Previous month" — is not this same month.
   await page.goto(STOCK_ENTRY_NEW)
-  const todayIso = await page.getByLabel('Date').inputValue()
-  await page.getByLabel('Date').fill(firstOfMonth(todayIso, 1))
-  await page.getByLabel('Grams').fill('50')
+  const todayIso = await page.getByLabel('Date', { exact: true }).inputValue()
+  await page.getByLabel('Date', { exact: true }).fill(firstOfMonth(todayIso, 1))
+  await page.getByLabel('Grams', { exact: true }).fill('50')
   await pickStockVariety(page, 'Rosa')
-  await page.getByLabel('Total cost').fill('20000')
+  await page.getByLabel(STOCK_COST_LABEL, { exact: true }).fill('20000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 
   // A cash sale, today.
@@ -64,10 +66,10 @@ test('a seller opens Análisis from the Home segment, moves back a month and rea
   await openGastos(page)
   await page.getByRole('link', { name: 'Add expense' }).click()
   await page.getByRole('button', { name: 'Create a new category' }).click()
-  await page.getByLabel('New category name').fill('Flete')
+  await page.getByLabel('New category name', { exact: true }).fill('Flete')
   await page.getByRole('button', { name: 'Create category' }).click()
-  await page.getByLabel('Amount').fill('1500')
-  await page.getByLabel('Details').fill('Flete al mercado')
+  await page.getByLabel('Amount', { exact: true }).fill('1500')
+  await page.getByLabel('Details', { exact: true }).fill('Flete al mercado')
   await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: 'Save the expense' }).click())
 
   // Home's Today | Analysis segment → Análisis.
@@ -152,11 +154,11 @@ async function recordEntry(
   entry: { date: string; grams: string; variety: string; origin: string; cost?: string },
 ): Promise<void> {
   await page.goto(STOCK_ENTRY_NEW)
-  await page.getByLabel('Date').fill(entry.date)
-  await page.getByLabel('Grams').fill(entry.grams)
+  await page.getByLabel('Date', { exact: true }).fill(entry.date)
+  await page.getByLabel('Grams', { exact: true }).fill(entry.grams)
   await pickStockVariety(page, entry.variety)
   await page.getByRole('button', { name: entry.origin, exact: true }).click()
-  if (entry.cost !== undefined) await page.getByLabel('Total cost').fill(entry.cost)
+  if (entry.cost !== undefined) await page.getByLabel(STOCK_COST_LABEL, { exact: true }).fill(entry.cost)
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 }
 
@@ -165,7 +167,7 @@ async function recordWithdrawal(
   withdrawal: { date: string; grams: string; variety: string; reason: string },
 ): Promise<void> {
   await page.goto(WITHDRAWAL_NEW)
-  await page.getByLabel('Date').fill(withdrawal.date)
+  await page.getByLabel('Date', { exact: true }).fill(withdrawal.date)
   await pickWithdrawalVariety(page, withdrawal.variety)
   await page.getByLabel('Grams 1', { exact: true }).fill(withdrawal.grams)
   await pickWithdrawalReason(page, withdrawal.reason)
@@ -185,11 +187,13 @@ test('Análisis reads Cost of goods sold, Stock shortfall, Marketing and Own use
   for (const name of ['Rosa', 'Lirio']) {
     await page.goto(VARIETIES)
     await page.getByRole('link', { name: 'New product' }).click()
-    await page.getByLabel('Name').fill(name)
+    await expectPath(page, VARIETY_NEW)
+    // The exact fill below is what waits for the form: an earlier screen's "Edit name" button is not a "Name" field.
+    await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill(name)
     await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   }
   await page.goto(STOCK_ENTRY_NEW)
-  const today = await page.getByLabel('Date').inputValue()
+  const today = await page.getByLabel('Date', { exact: true }).inputValue()
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: /Lirio/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
@@ -213,7 +217,7 @@ test('Análisis reads Cost of goods sold, Stock shortfall, Marketing and Own use
   await recordWithdrawal(page, { date: today, grams: '1', variety: 'Rosa', reason: 'Own use' })
 
   await page.goto(SALE_NEW)
-  await page.getByLabel('Date').fill(twoWeeksAgo)
+  await page.getByLabel('Date', { exact: true }).fill(twoWeeksAgo)
   await fillSaleLine(page, 1, { variety: 'Lirio', grams: '15' })
   await page.getByRole('radio', { name: 'Paid' }).check(); await choosePaymentMethod(page, 'Cash')
   await page.getByRole('button', { name: 'Save sale' }).click()
@@ -313,7 +317,7 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
   expect(longName).toHaveLength(60)
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New product' }).click()
-  await page.getByLabel('Name').fill(longName)
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill(longName)
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Variedad Larguísimo/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
@@ -322,7 +326,7 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
 
   // The first record is two weeks old, so there is more than the current week. 10 g are costed; the 500 g sold leave 490 g without a cost: a partly pending figure.
   await page.goto(STOCK_ENTRY_NEW)
-  const today = await page.getByLabel('Date').inputValue()
+  const today = await page.getByLabel('Date', { exact: true }).inputValue()
   await recordEntry(page, { date: daysFrom(today, -14), grams: '10', variety: longName, origin: 'Purchase', cost: '10000' })
   await page.goto(SALE_NEW)
   await fillSaleLine(page, 1, { variety: longName, grams: '500' })
@@ -336,10 +340,10 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
   await openGastos(page)
   await page.getByRole('link', { name: 'Add expense' }).click()
   await page.getByRole('button', { name: 'Create a new category' }).click()
-  await page.getByLabel('New category name').fill(longCategory)
+  await page.getByLabel('New category name', { exact: true }).fill(longCategory)
   await page.getByRole('button', { name: 'Create category' }).click()
-  await page.getByLabel('Amount').fill('123456789')
-  await page.getByLabel('Details').fill('Gasto grande')
+  await page.getByLabel('Amount', { exact: true }).fill('123456789')
+  await page.getByLabel('Details', { exact: true }).fill('Gasto grande')
   await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: 'Save the expense' }).click())
 
   for (const width of [320, 246]) {

@@ -27,9 +27,8 @@ function clickTarget(page: Page, name: string): Locator {
 
 /** A fill types into an input or textarea, and picks the option with that label in a select. */
 async function fill(page: Page, label: string, value: string, timeout: number): Promise<void> {
-  // The exact label wins: "Phone" is also a part of the "Phone country" field's name, which comes first on a phone.
-  const exact = page.getByLabel(label, { exact: true })
-  const field = (await exact.count()) > 0 ? exact.first() : page.getByLabel(label).first()
+  // Exact, so "Phone" is not also the "Phone country" field, which comes first on a phone. The evaluate below waits for it.
+  const field = page.getByLabel(label, { exact: true })
   const isSelect = await field.evaluate((element) => element.tagName === 'SELECT', undefined, { timeout })
   if (isSelect) await field.selectOption({ label: value }, { timeout })
   else await field.fill(value, { timeout })
@@ -46,7 +45,7 @@ async function run(page: Page, step: WalkStep, facts: Facts): Promise<void> {
   } else if ('click' in step) await clickTarget(page, step.click).click(options)
   else if ('press' in step) await page.getByRole('button', { name: step.press, exact: true }).click(options)
   else if ('select' in step) {
-    await page.getByLabel(step.select.label).first().selectOption({ index: step.select.index }, options)
+    await page.getByLabel(step.select.label, { exact: true }).selectOption({ index: step.select.index }, options)
   } else if ('fill' in step) {
     await fill(page, step.fill.label, resolvePlaceholders(step.fill.value, facts), STEP_TIMEOUT_MS)
   } else if ('wait' in step) await page.getByText(step.wait, { exact: true }).first().waitFor(options)

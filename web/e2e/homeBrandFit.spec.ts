@@ -49,9 +49,9 @@ async function geometry(page: Page): Promise<Geometry> {
 
 async function signUp(page: Page, businessName: string): Promise<void> {
   await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Business name').fill(businessName)
-  await page.getByLabel('Email address').fill(`marca-${uniqueTag()}@example.com`)
-  await page.getByLabel('Password').fill(DEFAULT_PASSWORD)
+  await page.getByLabel('Business name', { exact: true }).fill(businessName)
+  await page.getByLabel('Email address', { exact: true }).fill(`marca-${uniqueTag()}@example.com`)
+  await page.getByLabel('Password', { exact: true }).fill(DEFAULT_PASSWORD)
   await page.getByRole('button', { name: 'Create the business' }).click()
   await leaveOnboarding(page)
 }
