@@ -58,7 +58,7 @@ Cómo elige el producto en qué idioma se muestran sus textos, y qué mantiene l
 
 ## Sin cambios
 
-Los formatos (`$ 11.000`, `$11.000`, dd/mm, `3,5 g`), las rutas, los nombres de campos de la API, los códigos de error y los nombres de la base de datos. Los datos propios de quien vende nunca se traducen.
+Los formatos (`$ 11.000`, `$11.000`, dd/mm, `3,5 g`; la única excepción es la línea de fecha larga de Home y Analysis, que sigue el idioma de la pantalla, ADR-0049 GH-748), las rutas, los nombres de campos de la API, los códigos de error y los nombres de la base de datos. Los datos propios de quien vende nunca se traducen.
 
 ## Métricas
 

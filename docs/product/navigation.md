@@ -160,8 +160,8 @@ Criterios de éxito, el nombre de la opción Home (#733). Se verifican en el cel
 Criterios de éxito, el encabezado de Home y Analysis (parte 2 de GH-723). Se verifican en el celular salvo el 37.
 
 34. **Un toque para cambiar, sin rebote.** Un toque cambia entre Home y Analysis, sin agregar una entrada al historial, así que atrás sale de Home en vez de rebotar entre las dos vistas (criterio 28, que esta parte conserva).
-35. **El mismo encabezado en las dos pantallas.** Home y Analysis muestran el mismo encabezado en el mismo lugar: la línea de fecha con el dd/mm de hoy, el segmento y el avatar. Nada más de esa fila se puede tocar. El encabezado se va con el scroll (no es fijo). Cada pantalla tiene exactamente un h1, y nada visible lo repite.
-36. **Entra en celulares chicos y con zoom.** A 320, 360 y 390 px y con el texto al 130 %, en claro y en oscuro: la línea de fecha nunca se parte, la página nunca se desplaza de costado, cada objetivo táctil mide al menos 44×44 y el Mobile check pasa sin que crezca ninguna lista de infractores.
+35. **El mismo encabezado en las dos pantallas.** Home y Analysis muestran el mismo encabezado en el mismo lugar: la línea de fecha larga de hoy (día de la semana, día y mes, sin año, en el idioma de la pantalla), el segmento y el avatar. Nada más de esa fila se puede tocar. El encabezado se va con el scroll (no es fijo). Cada pantalla tiene exactamente un h1, y nada visible lo repite.
+36. **Entra en celulares chicos y con zoom.** A 320, 360 y 390 px y con el texto al 130 %, en claro y en oscuro: la línea de fecha nunca se parte (a 320 px y 100 % se ve entera; al 130 % puede terminar en puntos suspensivos), la página nunca se desplaza de costado, cada objetivo táctil mide al menos 44×44 y el Mobile check pasa sin que crezca ninguna lista de infractores.
 37. **La computadora se ve igual.** En Home el nombre del Business está arriba del título visible; en Analysis solo se ve el título. Expenses no se toca.
 
 Criterios de éxito, el avatar "Settings" de Home y Analysis (parte 3 de GH-495). Se verifican en el celular; la computadora no cambia.
@@ -212,7 +212,7 @@ Criterios de éxito, el avatar "Settings" de Home y Analysis (parte 3 de GH-495)
 - **No es fijo**: es un `div` (`.inicio-cabecera`), no un elemento `<header>`, y no es fijo ni pegajoso, así que se va con el scroll de la página. El encabezado de marco que mira el Mobile check es el `<header>`; sin él, pasa como hoy.
 - **En el celular, en este orden**:
   1. Una fila con la línea de fecha, un lugar vacío y el avatar "Settings".
-     - La línea de fecha es el hoy del Business (hora de Argentina) como dd/mm, tomado del `me.today` de la Session con el formateador de fechas que ya existe. Es una cifra, no palabras, así que no suma nada al Copy module. Nunca se parte en dos líneas y toma el ancho libre de la fila.
+     - La línea de fecha es el hoy del Business (hora de Argentina) en forma larga ("Jueves 29 de octubre", "Thursday, October 29"), tomado del `me.today` de la Session con `formatTodayLong`. Los nombres del día y del mes salen de `Intl` en el idioma de la pantalla, así que no suman nada al Copy module. Es la única fecha que no es dd/mm (ADR-0049, GH-748). Nunca se parte en dos líneas y toma el ancho libre de la fila.
      - El lugar vacío ocupa el lugar que el dibujo le da a "Editar". No tiene link, botón, rol, texto ni elemento enfocable, y no promete ninguna función de edición.
      - El avatar "Settings" es el de Pestañas: un link con las iniciales del Business, su caja de 44×44 y el círculo de 36 px adentro (parte 3 de GH-495).
   2. El segmento Home | Analysis, como lo define su sección.
