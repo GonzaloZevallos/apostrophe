@@ -1,9 +1,9 @@
 /**
  * The tap budget (PRD criterion 1; metric "Taps"), measured from each phone tab root: the
  * expense form opens in two taps from Home (the Analysis segment, then "Add expense") and three
- * from Sales, Customers and Products, one from Gastos; Settings in one from each phone Tab root (the avatar; phone Gastos is a
- * detail screen with no avatar and no figure, owner's decision on #724); a stock
- * withdrawal in two (Products, then "Take from stock"). A computer never takes more taps than
+ * from Sales, Customers and Products, one from Gastos; Settings in one from each phone Tab root
+ * (the avatar; phone Gastos is a detail screen with no avatar and no figure, owner's decision on
+ * #724); a stock withdrawal in two (Products, then "Take from stock"). A computer never takes more taps than
  * the phone. A tap is a click this spec makes through `tap()`, so the count is of what a seller
  * does, not of what the code calls. One expense is also recorded from the Expenses card on
  * Analysis, and the form's exit goes back by history to the screen that opened it.
