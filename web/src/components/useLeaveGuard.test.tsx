@@ -1,7 +1,7 @@
 import { EXPENSES, EXPENSE_NEW, HOME } from '../routes'
-import { render as renderBare, screen } from '@testing-library/react'
+import { cleanup, render as renderBare, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { type ReactElement, type ReactNode, useState } from 'react'
+import { type ReactElement, type ReactNode, useLayoutEffect, useState } from 'react'
 import { createMemoryRouter, RouterProvider, useNavigate } from 'react-router'
 import { describe, expect, test } from 'vitest'
 import LeaveConfirm from './LeaveConfirm'
@@ -106,11 +106,22 @@ test('disarm followed by navigate in the same tick is not blocked while dirty is
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
 })
 
+interface SheetFormProps {
+  floor: number | undefined
+  dirty: boolean
+  sheetDirty?: boolean
+  disarmed?: boolean
+}
+
 /** A form that draws a guard with a sheet floor, and opens and closes sheets over itself. */
-function SheetForm({ floor, dirty, disarmed }: { floor: number | undefined; dirty: boolean; disarmed?: boolean }) {
-  const { blocker, disarm } = useLeaveGuard(dirty, floor === undefined ? undefined : { sheetFloor: floor })
+function SheetForm({ floor, dirty, sheetDirty, disarmed }: SheetFormProps) {
+  const { blocker, disarm } = useLeaveGuard(dirty, {
+    ...(floor === undefined ? {} : { sheetFloor: floor }),
+    ...(sheetDirty === undefined ? {} : { sheetDirty }),
+  })
   const first = useSheet(1)
   const second = useSheet(2)
+  const navigate = useNavigate()
   return (
     <ContentArea as="main">
       <h1>Formulario</h1>
@@ -125,6 +136,9 @@ function SheetForm({ floor, dirty, disarmed }: { floor: number | undefined; dirt
       </button>
       <button type="button" onClick={first.close}>
         Cerrar
+      </button>
+      <button type="button" onClick={() => navigate('/afuera')}>
+        Salir
       </button>
       <button
         type="button"
@@ -148,17 +162,18 @@ function SheetForm({ floor, dirty, disarmed }: { floor: number | undefined; dirt
   )
 }
 
-function renderSheetForm(props: { floor: number | undefined; dirty: boolean; disarmed?: boolean }) {
+function renderSheetForm(props: SheetFormProps, Host: (props: SheetFormProps) => ReactElement = SheetForm) {
   const router = createMemoryRouter(
     [
       {
         path: HOME,
         element: (
           <SheetStackProvider>
-            <SheetForm {...props} />
+            <Host {...props} />
           </SheetStackProvider>
         ),
       },
+      { path: '/afuera', element: <h1>Afuera</h1> },
     ],
     { initialEntries: [HOME] },
   )
@@ -231,6 +246,135 @@ test('a disarmed guard with a sheet floor never blocks', async () => {
 
   expect(depth()).toBe(0)
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+})
+
+test('a sheet-only pop below the floor is not blocked while sheetDirty is false, even if dirty is true', async () => {
+  const user = userEvent.setup()
+  const { depth } = renderSheetForm({ floor: 1, dirty: true, sheetDirty: false })
+  await user.click(screen.getByRole('button', { name: 'Abrir' }))
+
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+  expect(depth()).toBe(0)
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+})
+
+test('a sheet-only pop below the floor is blocked while sheetDirty is true, even if dirty is false', async () => {
+  const user = userEvent.setup()
+  const { depth } = renderSheetForm({ floor: 1, dirty: false, sheetDirty: true })
+  await user.click(screen.getByRole('button', { name: 'Abrir' }))
+
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+  expect(depth()).toBe(1)
+  expect(screen.getByRole('alertdialog', { name: 'Discard the changes?' })).toBeInTheDocument()
+})
+
+test('a navigation to another path blocks on dirty alone, whatever sheetDirty says', async () => {
+  const user = userEvent.setup()
+  const dirtyOnly = renderSheetForm({ floor: 1, dirty: true, sheetDirty: false })
+  await user.click(screen.getByRole('button', { name: 'Salir' }))
+  expect(dirtyOnly.router.state.location.pathname).toBe(HOME)
+  expect(screen.getByRole('alertdialog', { name: 'Discard the changes?' })).toBeInTheDocument()
+  cleanup()
+
+  const sheetOnly = renderSheetForm({ floor: 1, dirty: false, sheetDirty: true })
+  await user.click(screen.getByRole('button', { name: 'Salir' }))
+  expect(sheetOnly.router.state.location.pathname).toBe('/afuera')
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+})
+
+test('a pop that stays at or above the floor is not blocked even with sheetDirty true', async () => {
+  const user = userEvent.setup()
+  const { depth } = renderSheetForm({ floor: 1, dirty: true, sheetDirty: true })
+  await user.click(screen.getByRole('button', { name: 'Abrir' }))
+  await user.click(screen.getByRole('button', { name: 'Abrir otra' }))
+
+  await user.click(screen.getByRole('button', { name: 'Cerrar la otra' }))
+
+  expect(depth()).toBe(1)
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+})
+
+/** Holds the `sheetDirty` it hands the form in state, so a button can drop it after the first render. */
+function ForgetfulHost(props: SheetFormProps) {
+  const [sheetDirty, setSheetDirty] = useState(props.sheetDirty)
+  return (
+    <>
+      <button type="button" onClick={() => setSheetDirty(undefined)}>
+        Olvidar sheetDirty
+      </button>
+      <SheetForm {...props} sheetDirty={sheetDirty} />
+    </>
+  )
+}
+
+test('when sheetDirty is dropped on a later render it falls back to dirty', async () => {
+  const user = userEvent.setup()
+  const { depth } = renderSheetForm({ floor: 1, dirty: true, sheetDirty: false }, ForgetfulHost)
+  await user.click(screen.getByRole('button', { name: 'Abrir' }))
+  await user.click(screen.getByRole('button', { name: 'Olvidar sheetDirty' }))
+
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+  expect(depth()).toBe(1)
+  expect(screen.getByRole('alertdialog', { name: 'Discard the changes?' })).toBeInTheDocument()
+})
+
+/**
+ * Calls the hook first and declares its own layout effect after it, which pops as soon as the
+ * floor is 1: the pop runs in the same commit that gave the guard its floor.
+ */
+function SameCommitHost({ dirty }: SheetFormProps) {
+  const [floor, setFloor] = useState<number | undefined>(undefined)
+  const [popNow, setPopNow] = useState(false)
+  const { blocker } = useLeaveGuard(dirty, floor === undefined ? undefined : { sheetFloor: floor })
+  const first = useSheet(1)
+  const navigate = useNavigate()
+  useLayoutEffect(() => {
+    if (floor === 1 && popNow) void navigate(-1)
+  }, [floor, popNow, navigate])
+  return (
+    <ContentArea as="main">
+      <h1>Formulario</h1>
+      <button type="button" onClick={first.open}>
+        Abrir
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          setFloor(1)
+          setPopNow(true)
+        }}
+      >
+        Fijar el piso y volver
+      </button>
+      {blocker.state === 'blocked' && (
+        <LeaveConfirm
+          blocker={blocker}
+          question="Discard the changes?"
+          detail="No vas a poder recuperarlos."
+          keepLabel="No, keep editing"
+          discardLabel="Sí, descartalos"
+        />
+      )}
+    </ContentArea>
+  )
+}
+
+// Guards the layout effect and the stable callback: the floor and the pop land in one commit, so
+// the pop reaches `shouldBlock` before any passive effect could have written the new floor into
+// its ref. With a passive effect, or a callback rebuilt on `[sheetFloor]`, this pop goes through.
+test('a pop in the same commit that sets the floor is blocked', async () => {
+  const user = userEvent.setup()
+  const { depth } = renderSheetForm({ floor: undefined, dirty: true }, SameCommitHost)
+  await user.click(screen.getByRole('button', { name: 'Abrir' }))
+  expect(depth()).toBe(1)
+
+  await user.click(screen.getByRole('button', { name: 'Fijar el piso y volver' }))
+
+  expect(depth()).toBe(1)
+  expect(screen.getByRole('alertdialog', { name: 'Discard the changes?' })).toBeInTheDocument()
 })
 
 describe('onlySheetChanges', () => {
