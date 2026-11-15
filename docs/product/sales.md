@@ -320,7 +320,7 @@ Criterios de éxito, Sale number:
   - "No, keep entering" deja a la usuaria en el formulario con todo intacto; el siguiente gesto de volver vuelve a preguntar.
   - Un formulario sin tocar se cierra en el acto.
   - Con una hoja abierta sobre el formulario (Pick a customer, o New customer adentro, la lista de productos de una línea o la lista de medios), volver hace exactamente lo que hace el "Close" propio de esa hoja: cierra solo la hoja de arriba y el formulario conserva todo lo tipeado. Nunca pregunta "Discard the sale?".
-  - Con la hoja "Add expense" abierta sobre la venta (solo en el teléfono), volver y "Close" cierran solo esa hoja y la venta conserva todo lo cargado. La referencia es `expenses.md`.
+  - Con la hoja "Add expense" abierta sobre la venta (solo en el teléfono), volver y "Close" cierran solo esa hoja y la venta conserva todo lo cargado. La referencia es `expenses.md`; la regla de la hoja sobre un formulario está en la [ADR 20261114](../adr/20261114-a-form-opened-over-a-form-keeps-the-screens-one-leave-guard-and-points-its-dirty-flag-and-floor-at-the-form-on-top.md).
   - No hay borradores ni guardado automático.
 - **Pick a customer** (`NuevaVentaCliente`):
   - Una hoja sobre la venta, que aparece solo cuando la vendedora la abre.
