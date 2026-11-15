@@ -288,6 +288,23 @@ test('a save while the question shows leaves no question and says Expense record
   await waitFor(() => noQuestion())
 })
 
+test('with no Product chosen, a save while the question shows leaves no question and says Expense saved', async () => {
+  const user = userEvent.setup()
+  const router = renderSale()
+  await user.click(await tile())
+  await pickCategoryAndAmount(user)
+  await user.type(screen.getByLabelText('Details'), 'Cinta')
+  await user.click(close())
+  const question = await asked(EXPENSE_Q)
+  expect(within(question).getByText(LOSES)).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
+
+  expect(await screen.findByText('Expense saved')).toBeInTheDocument()
+  expect(screen.queryByText('Expense recorded')).not.toBeInTheDocument()
+  await waitFor(() => expect(depth(router)).toBe(0))
+  await waitFor(() => noQuestion())
+})
+
 test('navigating to Sales with a touched sale asks about the sale: No keeps both, Yes leaves with no second question', async () => {
   const user = userEvent.setup()
   const router = renderSale()

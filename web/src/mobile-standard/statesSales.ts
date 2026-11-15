@@ -4,6 +4,7 @@ import { CUSTOMER, CUSTOMERS, HOME, SALE, SALE_NEW, SALES } from '../routes.ts'
 import { common, emptyState } from './copy.ts'
 import { DETECTED_COUNTRY_BUTTON } from './countryField.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
+import { EXPENSES_TEXT } from '../copy/expenses.ts'
 import { SALES_TEXT } from '../copy/sales.ts'
 import type { WalkState } from './states.ts'
 
@@ -122,6 +123,19 @@ export const SALES_STATES: readonly WalkState[] = [
       { press: common('common:close') },
     ],
     visible: SALES_TEXT.discardSale,
+  },
+  {
+    // The Expense Sheet over a sale in progress, with a typed Expense: the strip's Back asks first.
+    screen: 'sale/expense-discard',
+    route: SALE_NEW,
+    steps: [
+      { press: `${SALES_TEXT.lineVariety(1)} ${common('common:pickAVariety')}` },
+      { press: 'Sir Jack' },
+      { click: SALES_TEXT.expense },
+      { fill: { label: EXPENSES_TEXT.details, value: 'Cinta' } },
+      { activate: SALES_TEXT.back },
+    ],
+    visible: EXPENSES_TEXT.discardTheExpense,
   },
   {
     screen: 'VentaAsignarCliente',
