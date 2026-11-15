@@ -15,6 +15,12 @@
  * A locale stays only as a literal argument (`'es-AR'`, `'es'`). The other `Intl` members
  * (plural rules and the like) are not banned.
  *
+ * One exception (ADR-0049, amendment GH-748), `DATE_LINE_EXCEPTION`: form 2 in `format/dates.ts`,
+ * for the long date line, when it is the only form-2 hit of that file, its first argument is a
+ * plain identifier (the screen's language, never the device's) and its second is an object
+ * literal holding `timeZone: 'UTC'`. Any other shape, file or count is a hit, and forms 1, 3, 4
+ * and 5 stay on in that file.
+ *
  * `findLocaleCalls(source)` reads the file as text with comments blanked, so a comment that
  * names the ban is not a call; a string that names one is, the rule being about the name.
  * "A string literal" and "the first or second argument" are decided by a scan that tracks
@@ -32,6 +38,14 @@ const NAMES = new RegExp(String.raw`\b(?:${TO_LOCALE}\w*|${LOCALE_COMPARE}|${INT
 
 const ALWAYS_BANNED_MEMBERS: readonly string[] = ['DateTimeFormat', 'RelativeTimeFormat']
 const LITERAL_ARGUMENT_MEMBERS: readonly string[] = ['NumberFormat', 'Collator']
+
+/** The one place the `Intl` date formatter may be built: the long date line (GH-748). It is one
+ * file and one form, never a list. */
+export const DATE_LINE_EXCEPTION = {
+  file: 'src/format/dates.ts',
+  form: 'DateTimeFormat',
+  reason: "the Home and Analysis date line reads long in the screen's language, over a UTC instant built from the API date",
+} as const
 
 /** The slash, spelled by code so the route-literal scan of `routes.test.ts` has nothing to read. */
 const SLASH = '\u002F'
@@ -293,12 +307,57 @@ function isBannedCompare(code: string, end: number): boolean {
   return code.charAt(paren) !== '(' || !isStringLiteral(splitArgs(code, paren)[1])
 }
 
+/** The member after an `Intl` token ending at `end`, read through a plain `.` only. */
+function plainMember(code: string, end: number): { member: string; after: number } | null {
+  const dot = skipSpace(code, end)
+  if (code.charAt(dot) !== '.') return null
+  const at = skipSpace(code, dot + 1)
+  const member = /^[A-Za-z0-9_$]*/.exec(code.slice(at))?.[0] ?? ''
+  return { member, after: at + member.length }
+}
+
+/** Whether the property list of an object literal holds `timeZone: 'UTC'` and no spread. */
+function isUtcOptions(argument: string | undefined): boolean {
+  const text = (argument ?? '').trim()
+  if (!text.startsWith('{') || !text.endsWith('}')) return false
+  const properties = splitArgs(`(${text.slice(1, -1)})`, 0).map((property) => property.trim())
+  return (
+    !properties.some((property) => property.startsWith('...')) &&
+    properties.some((property) => /^timeZone\s*:\s*(['"`])UTC\1$/.test(property))
+  )
+}
+
+/** Whether the form-2 use whose `Intl` token ends at `end` has the shape the exception allows. */
+function isDateLineCall(code: string, start: number, end: number): boolean {
+  if (/\.\s*$/.test(code.slice(0, start))) return false
+  const found = plainMember(code, end)
+  if (found === null) return false
+  const paren = skipSpace(code, found.after)
+  if (code.charAt(paren) !== '(') return false
+  const args = splitArgs(code, paren)
+  const locale = (args[0] ?? '').trim()
+  return args.length === 2 && /^[A-Za-z_$][\w$]*$/.test(locale) && locale !== 'undefined' && isUtcOptions(args[1])
+}
+
+/** The index of the one form-2 use the exception lets pass in `path`, or -1. */
+function exemptDateLine(code: string, path: string): number {
+  if (path.replace(/^\/?(?:web\/)?/, '') !== DATE_LINE_EXCEPTION.file) return -1
+  const uses = [...code.matchAll(NAMES)].filter(
+    (match) => match[0] === INTL && plainMember(code, match.index + INTL.length)?.member === DATE_LINE_EXCEPTION.form,
+  )
+  const only = uses.length === 1 ? uses[0] : undefined
+  return only !== undefined && isDateLineCall(code, only.index, only.index + INTL.length) ? only.index : -1
+}
+
 /** The lines of every banned use in one file: the line where the banned name starts, once,
- * sorted. */
-export function findLocaleCalls(source: string): number[] {
+ * sorted. `path` (the file's path under `web/`, with or without a leading slash) is read only
+ * for `DATE_LINE_EXCEPTION`. */
+export function findLocaleCalls(source: string, path = ''): number[] {
   const { code } = scan(source)
+  const exempt = exemptDateLine(code, path)
   const lines: number[] = []
   for (const match of code.matchAll(NAMES)) {
+    if (match.index === exempt) continue
     const name = match[0]
     const end = match.index + name.length
     const banned = name === INTL ? isBannedIntl(code, end) : name === LOCALE_COMPARE ? isBannedCompare(code, end) : true

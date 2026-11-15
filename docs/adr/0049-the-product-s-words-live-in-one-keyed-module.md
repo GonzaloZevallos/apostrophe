@@ -150,3 +150,14 @@ La guarda de `copyOnly` ya no se limita a los literales de JSX: `findCopyImports
 - `wordsOf` descarta todo valor con forma de key (`isKeyShaped`) y comprueba cada uno contra `en`: `unresolved key`, `unusable key` y `unreadable export` son hallazgos que `lists.test.ts` no tolera.
 - Dos listas derivadas del árbol, `i18nOffenders/copyExportsText.json` y `copyImports.json`, nombran lo que falta mover. `COPY_OWNER` (`owners.ts`) da el issue de cada archivo de copy (#350 a #353). Las listas solo se achican: cada parte de área borra solo sus entradas (`docs/product/gate.md`).
 - Límites, igual que la regla de JSX: un texto armado por un helper fuera de `copy/`, un literal asignado a una variable y renderizado después, y un `import()` cuyo argumento no es un literal no se ven. Un alias de path para `copy/` no existe hoy y no se sigue.
+
+## Amendment (GH-748): la línea de fecha larga
+
+La línea de fecha de Home y Analysis en el celular se lee larga ("Jueves 29 de octubre", "Thursday, October 29"), como la dibuja `01-hoy.png`. Es la única excepción a "formatos y orden se quedan argentinos" y a la regla "fechas `dd/mm`" de CODING_STANDARDS §10, que no se edita: todas las demás fechas siguen en `dd/mm`.
+
+- `formatTodayLong(iso, language)` (`web/src/format/dates.ts`) arma un instante UTC con `Date.UTC` a partir de los dígitos de `me.today` y lo formatea con un `Intl.DateTimeFormat` con `timeZone: 'UTC'`. El idioma es el de la pantalla (`i18n.language`), nunca el del dispositivo; el huso y el reloj del dispositivo no entran. Un tag inusable (`''`, `en_US`, `en-XA`) da inglés.
+- La prohibición de la forma 2 (el formateador de fechas de `Intl`) tiene una excepción con nombre, `DATE_LINE_EXCEPTION` (`web/src/architecture/localeBan.ts`): una constante con su archivo, su forma y su razón, nunca una lista. Vale solo si se cumplen las tres a la vez:
+  1. el archivo es `format/dates.ts`;
+  2. es el único uso de la forma 2 en ese archivo;
+  3. su primer argumento es un identificador simple (no falta, no es `undefined`, ni `[]`, ni un literal) y su segundo es un objeto literal que contiene `timeZone: 'UTC'`, leído con el mismo escáner que sigue strings y profundidad de corchetes.
+- Cualquier otra forma es un hallazgo: opciones en una variable o con spread, un segundo formateador, la misma llamada en otro archivo. Las formas 1, 3, 4 y 5 siguen activas en `dates.ts`.

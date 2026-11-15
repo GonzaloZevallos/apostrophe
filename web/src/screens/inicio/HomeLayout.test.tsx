@@ -13,6 +13,8 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 import analysisFixture from '../../api/fixtures/analysis.json'
 import panelFixture from '../../api/fixtures/panel.json'
 import App from '../../App'
+import { applyShownLanguage, resetToBootLanguage, setLocaleLoader } from '../../i18n/language'
+import { loadLocale } from '../../i18n/resources'
 import { queryClient } from '../../queryClient'
 import { router } from '../../router'
 import { ANALYSIS, EXPENSES, HOME, type Viewport } from '../../routes'
@@ -27,13 +29,13 @@ function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 }
 
-async function open(path: string, viewport: Viewport, answers: Answers = 'answered') {
+async function open(path: string, viewport: Viewport, answers: Answers = 'answered', shown: string = SHOWN_EN) {
   stubViewport(viewport)
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL) => {
       const url = String(input)
-      if (url.includes('/auth/me')) return Promise.resolve(json(ME))
+      if (url.includes('/auth/me')) return Promise.resolve(json({ ...ME, shown_language: shown }))
       if (answers === 'held') return new Promise<Response>(() => undefined)
       if (answers === 'failed') return Promise.resolve(json({ code: 'boom' }, 500))
       if (url.includes('/pinned-catalog/status')) return Promise.resolve(json({ status: null }))
@@ -60,6 +62,11 @@ afterEach(async () => {
   vi.unstubAllGlobals()
   queryClient.clear()
   await act(() => router.navigate(HOME))
+  await act(async () => {
+    await applyShownLanguage('en')
+  })
+  setLocaleLoader(loadLocale)
+  resetToBootLanguage()
 })
 
 describe.each([
@@ -86,7 +93,7 @@ describe.each([
     const h1 = await open(path, 'phone')
     const header = headerOf(h1)
 
-    const date = within(header).getByText('03/10')
+    const date = within(header).getByText('Saturday, October 3')
     const slot = date.nextElementSibling as HTMLElement
     expect(slot).toBeEmptyDOMElement()
     expect(slot).not.toHaveAttribute('role')
@@ -123,7 +130,7 @@ describe.each([
     expect(main.textContent).not.toMatch(/[0-9]/)
     // The header is outside the area, so the area draws its own loading shape: never blank.
     expect(within(main).getByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
-    expect(within(header).getByText('03/10')).toBeInTheDocument()
+    expect(within(header).getByText('Saturday, October 3')).toBeInTheDocument()
     expect(within(header).getByRole('link', { name: 'Settings' })).toBeEnabled()
     const other = path === HOME ? 'Analysis' : 'Home'
     // react-router's data router does not expose the history position, so follow it: a PUSH moves
@@ -148,7 +155,21 @@ describe.each([
     const header = headerOf(h1)
     expect(within(header).getByRole('link', { name: 'Settings' })).toBeInTheDocument()
     expect(within(header).getByRole('group', { name: 'Home view' })).toBeInTheDocument()
-    expect(within(header).getByText('03/10')).toBeInTheDocument()
+    expect(within(header).getByText('Saturday, October 3')).toBeInTheDocument()
+  })
+})
+
+describe('the date line in the screen\'s language', () => {
+  test('reads long in Spanish once the screen speaks it, for the business day', async () => {
+    // The loader has nothing to load: Spanish is an empty bundle, so the line reads from `Intl`.
+    setLocaleLoader(() => Promise.resolve({}))
+    await act(async () => {
+      await applyShownLanguage('es')
+    })
+    const h1 = await open(HOME, 'phone', 'answered', 'es')
+
+    expect(within(headerOf(h1)).getByText('Sábado 3 de octubre')).toBeInTheDocument()
+    expect(within(headerOf(h1)).queryByText('Saturday, October 3')).not.toBeInTheDocument()
   })
 })
 
@@ -177,6 +198,6 @@ describe('Expenses', () => {
 
     expect(h1).toBeNull()
     expect(screen.queryByRole('group', { name: 'Home view' })).not.toBeInTheDocument()
-    expect(screen.queryByText('03/10')).not.toBeInTheDocument()
+    expect(screen.queryByText('Saturday, October 3')).not.toBeInTheDocument()
   })
 })

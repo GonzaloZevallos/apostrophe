@@ -7,7 +7,7 @@
  */
 
 import { describe, expect, test } from 'vitest'
-import { endsInCode, findLocaleCalls } from './localeBan'
+import { DATE_LINE_EXCEPTION, endsInCode, findLocaleCalls } from './localeBan'
 
 const sources = import.meta.glob<string>(['/src/**/*.{ts,tsx}', '!/src/**/*.test.{ts,tsx}'], {
   eager: true,
@@ -183,11 +183,71 @@ describe('what passes, each against a twin one token away that fails', () => {
   })
 })
 
+describe('the date line exception (GH-748)', () => {
+  const DATES = '/src/format/dates.ts'
+  const CALL =
+    "new Intl.DateTimeFormat(tag, { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })"
+  const inFile = (code: string, path = DATES) => findLocaleCalls(onLine2(code), path)
+
+  test('names one file and one form', () => {
+    expect(DATE_LINE_EXCEPTION.file).toBe('src/format/dates.ts')
+    expect(DATE_LINE_EXCEPTION.form).toBe('DateTimeFormat')
+  })
+
+  test('the one correct call in dates.ts passes, whatever the path form', () => {
+    expect(inFile(`const f = ${CALL}`)).toEqual([])
+    expect(inFile(`const f = ${CALL}`, 'src/format/dates.ts')).toEqual([])
+    expect(inFile(`const f = ${CALL}`, 'web/src/format/dates.ts')).toEqual([])
+    expect(endsInCode(onLine2(`const f = ${CALL}`))).toBe(true)
+  })
+
+  test('the same correct call in any other file is caught', () => {
+    expect(inFile(`const f = ${CALL}`, '/src/format/money.ts')).toEqual([2])
+    expect(inFile(`const f = ${CALL}`, '/src/other/dates.ts')).toEqual([2])
+    expect(findLocaleCalls(onLine2(`const f = ${CALL}`))).toEqual([2])
+  })
+
+  test('a second formatter in dates.ts makes both caught', () => {
+    expect(findLocaleCalls(`\n${CALL}\n${CALL}\n`, DATES)).toEqual([2, 3])
+  })
+
+  test.each([
+    ['without timeZone UTC', "new Intl.DateTimeFormat(tag, { weekday: 'long' })"],
+    ['with another zone', "new Intl.DateTimeFormat(tag, { timeZone: 'America/Argentina/Buenos_Aires' })"],
+    ['with no locale argument', "new Intl.DateTimeFormat(undefined, { timeZone: 'UTC' })"],
+    ['with no arguments at all', 'new Intl.DateTimeFormat()'],
+    ['with a literal locale', "new Intl.DateTimeFormat('es', { timeZone: 'UTC' })"],
+    ['with an empty list as locale', "new Intl.DateTimeFormat([], { timeZone: 'UTC' })"],
+    ['with options in a variable', 'new Intl.DateTimeFormat(tag, options)'],
+    ['with a spread in the options', "new Intl.DateTimeFormat(tag, { ...base, timeZone: 'UTC' })"],
+    ['with no options', 'new Intl.DateTimeFormat(tag)'],
+    ['through an optional member', "new Intl?.DateTimeFormat(tag, { timeZone: 'UTC' })"],
+    ['through a global path', "new globalThis.Intl.DateTimeFormat(tag, { timeZone: 'UTC' })"],
+    ['with a UTC that is not the zone', "new Intl.DateTimeFormat(tag, { nested: { timeZone: 'UTC' } })"],
+  ])('the call %s is caught in dates.ts', (_name, code) => {
+    expect(inFile(`const f = ${code}`)).toEqual([2])
+  })
+
+  test('a to-locale call in dates.ts is caught next to the correct call', () => {
+    expect(findLocaleCalls(`\n${CALL}\nx.toLocaleString()\n`, DATES)).toEqual([3])
+  })
+
+  test('a non-literal number formatter in dates.ts is caught next to the correct call', () => {
+    expect(findLocaleCalls(`\n${CALL}\nnew Intl.NumberFormat(tag)\n`, DATES)).toEqual([3])
+  })
+
+  test('a relative-time formatter and a collator in dates.ts stay caught', () => {
+    expect(findLocaleCalls(`\n${CALL}\nnew Intl.RelativeTimeFormat('es')\nnew Intl.Collator(tag)\n`, DATES)).toEqual([
+      3, 4,
+    ])
+  })
+})
+
 describe('every non-test file under web/src', () => {
   test('uses none of the banned forms and ends in code', () => {
     expect(Object.keys(sources).length).toBeGreaterThan(200)
     const hits = Object.entries(sources).flatMap(([path, source]) =>
-      findLocaleCalls(source).map((line) => `${path}:${line}`),
+      findLocaleCalls(source, path).map((line) => `${path}:${line}`),
     )
     expect(hits).toEqual([])
     const open = Object.entries(sources)

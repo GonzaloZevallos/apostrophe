@@ -18,7 +18,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useOutletContext, useSearchParams } from 'react-router'
 import InAppLink from '../components/InAppLink'
-import SettingsAvatar from '../components/SettingsAvatar'
 import AnswerButton from '../components/AnswerButton'
 import BotonLink from '../components/BotonLink'
 import { ApiError, NetworkError } from '../api/client'
@@ -162,10 +161,7 @@ function GastosScreen() {
     <ContentArea as="main" className="pantalla">
       <div className="cuerpo gastos">
         <div className="gastos__cabecera">
-          <div className="cabecera-fila cabecera-fila--envoltura">
-            <span className="encabezado__titulo gastos__titulo">{COMMON_TEXT.expenses}</span>
-            <SettingsAvatar />
-          </div>
+          <span className="encabezado__titulo gastos__titulo">{COMMON_TEXT.expenses}</span>
           <InAppLink to={EXPENSE_NEW} className="gastos__cargar" aria-label={COMMON_TEXT.addExpense}>
             <Icono nombre="agregar" />
             <span className="gastos__cargar-texto">{COMMON_TEXT.addExpense}</span>
