@@ -14,11 +14,15 @@
 
 **Cuando** estoy en el teléfono mirando en Analysis cómo fue el período y me acuerdo de plata que gasté, **quiero** registrar esa Expense o revisar las que ya registré desde ahí mismo, **para** que el Profit y el Cash que estoy leyendo cuenten lo que de verdad gasté. (Parte 1 de GH-725: acá lo sirven las acciones "Record expense" y "See expenses" de la tarjeta Expenses de Analysis, que ya no se leen igual que el "Add expense" propio de Expenses.)
 
-En la práctica, estos jobs se juntan así. El vendedor paga algo que no es una Purchase de Stock entre pedidos, o se sienta a mirar en qué se fue la plata de la semana o del mes. Carga la Expense desde Analysis, a 2 toques desde Home y a 3 desde los demás Tab roots del teléfono. Encuentra las Expenses de cualquier mes, con el total y lo que se llevó cada Expense category, en un solo lugar evidente. La computadora es el mismo job en una pantalla más grande.
+**Cuando** estoy en medio de registrar una venta en el teléfono y tengo que anotar una Expense, **quiero** registrarla ahí mismo y volver a la misma venta intacta, **para** terminar las dos sin volver a tipear nada ni salir del flujo. (Parte 3 de GH-725, compartido con sales.md: acá lo sirven la fila "Other things to record" de New sale con su tile "Expense", el formulario de la Expense abierto como Sheet sobre la venta y la tira "Sale in progress".)
+
+En la práctica, estos jobs se juntan así. El vendedor paga algo que no es una Purchase de Stock entre pedidos, en medio de una venta, o se sienta a mirar en qué se fue la plata de la semana o del mes. Carga la Expense desde Analysis o desde New sale, a 2 toques desde cualquier Tab root del teléfono. Encuentra las Expenses de cualquier mes, con el total y lo que se llevó cada Expense category, en un solo lugar evidente. La computadora es el mismo job en una pantalla más grande.
+
+Línea de base de la parte 3 de GH-725: antes, el vendedor que tenía que anotar una Expense en medio de una venta terminaba o abandonaba la venta y después iba a Expenses por separado (Home → Analysis → Expenses en el teléfono, la barra lateral en la computadora), y a veces se olvidaba de la Expense. Supuesto: el olvido pasa lo bastante seguido como para justificar el atajo.
 
 Criterios de éxito:
 
-1. Una Expense se registra desde el teléfono en menos de un minuto. En el teléfono su formulario abre en 2 toques desde Home (el segmento "Analysis", después "Record expense" en la tarjeta Expenses), en 3 desde Sales, Customers y Products, y en 1 toque desde Expenses ("Add expense"). En una computadora no lleva más toques que en el teléfono. La fecha ya viene en hoy, y la Expense category se elige de la lista del negocio.
+1. Una Expense se registra desde el teléfono en menos de un minuto. En el teléfono su formulario abre en 2 toques desde Home, Sales, Customers, Products y Analysis ("+ New sale", después "Expense"), también en 2 desde Home por la tarjeta (el segmento "Analysis", después "Record expense"), y en 1 toque desde Expenses ("Add expense"). Esto reemplaza los 3 toques de antes desde Sales, Customers y Products. En una computadora no lleva más toques que en el teléfono. La fecha ya viene en hoy, y la Expense category se elige de la lista del negocio.
 2. Para cualquier mes, la vista muestra cada Expense de ese mes y el total del mes. Las desglosa por Expense category, con un subtotal para cada una. Los totales siempre son iguales a la suma de las Expenses que se muestran, también justo después de una edición o una eliminación.
 3. Una Purchase de Stock nunca es una Expense. Nada de acá registra gramos ni un producto, y una Purchase nunca aparece en las listas de Expenses. Así, los resultados pueden contar las Expenses y las Purchases por separado sin contar nada dos veces.
 4. Todo lo de acá se hace desde el teléfono, sin ninguna llamada a la API a mano.
@@ -26,17 +30,21 @@ Criterios de éxito:
 6. **Se ve como en el diseño.** La tarjeta Expenses de Analysis y Expenses, en teléfono y computadora, coinciden con `docs/product/design-system/pantallas/`, juzgados a ojo.
 7. **Valores por defecto en el idioma del negocio.** Un negocio nuevo abierto en un idioma que no es el inglés arranca con sus cuatro Expense categories por defecto en ese idioma. En inglés son idénticas byte a byte a la línea de base, y un cambio de idioma posterior nunca las reescribe.
 8. **La Expense category se elige con el Selector** (parte 6 de GH-581). Con 12 o más Expense categories, el vendedor encuentra una buscando y la elige; el formulario no tiene ningún otro tipo de selector para ese campo (ni select nativo, ni chips, ni radios, ni botones presionados).
-9. **Volver nunca tira el formulario.** En el teléfono, volver con la lista abierta cierra solo la lista; volver con el formulario sin tocar vuelve a la pantalla madre; volver con algo tipeado pregunta antes de descartar. Vale para la Expense nueva desde Expenses, la Expense nueva desde la tarjeta Expenses de Analysis y la edición en el lugar dentro de Expenses. En la computadora, Escape cierra solo el desplegable.
+9. **Volver nunca tira el formulario.** En el teléfono, volver con la lista abierta cierra solo la lista; volver con el formulario sin tocar vuelve a la pantalla madre; volver con algo tipeado pregunta antes de descartar. Vale para la Expense nueva desde Expenses, la Expense nueva desde la tarjeta Expenses de Analysis, la Expense nueva desde New sale y la edición en el lugar dentro de Expenses. En la computadora, Escape cierra solo el desplegable.
 10. **Sin categorías, el vendedor sabe dónde crearlas**: la lista muestra "No categories yet. Add them in Settings → Expense categories.", y nunca mientras las Expense categories se están cargando o después de una carga fallida. Nada de lo que el formulario hacía antes se pierde.
 11. **La tarjeta se distingue de la acción** (parte 1 de GH-725).
     - En Analysis del teléfono, la tarjeta Expenses muestra exactamente "Record expense" y "See expenses". "Add expense" y "See the expenses" no aparecen en ningún lugar de la tarjeta.
     - Cada link abre lo mismo que antes: el formulario de la Expense, y Expenses con "‹ Analysis". Cada uno mide al menos 44×44 CSS px.
     - Nada más cambia para el vendedor: el "Add expense" de Expenses, el título del formulario de la Expense y el nombre del diálogo de la Sheet conservan su texto.
     - Cada uso e2e de las etiquetas viejas de la tarjeta pasa, en la misma tarea, al grupo "Expenses" de la tarjeta, y la etiqueta vieja nunca se vuelve a poner, ni visible ni oculta (D-69509906).
+12. **Una Expense desde New sale, sin perder la venta** (parte 3 de GH-725).
+    - **La venta en curso vuelve exactamente como estaba**: líneas, gramos, Customer, Gifts, Special prices, Shipping charged, Note y totales no cambian después de "Close", el "Back" de la tira, el gesto de volver del teléfono o un guardado. Es el criterio que más importa.
+    - **El vendedor siempre sabe que hay una venta esperando**: mientras al menos una línea tiene un Product elegido, la tira muestra cuántos productos y el mismo total que la fila Total de New sale, y un toque vuelve a la venta.
+    - **Nada tipeado se pierde sin preguntar, y la pregunta nombra lo correcto**: salir de una Expense con algo tipeado pregunta "Discard the expense?" y descartarla conserva la venta; salir de una venta tocada pregunta "Discard the sale?". Después de guardar, el aviso dice "Expense recorded" cuando hay una venta esperando y "Expense saved" si no.
 
 # Expenses
 
-La plata que un negocio paga por cualquier cosa que no sea una Purchase de Stock, archivada bajo sus propias Expense categories y vista solo por ese negocio (ADR-0004). Lo que se compra para el Stock es una Purchase, nunca una Expense. Resultados (#7) lee las Expenses y las Purchases por separado. A Expenses se llega en el teléfono desde la tarjeta Expenses de Analysis ("See expenses") y en una computadora desde la barra lateral; las Expense categories se administran en Settings → Expense categories (navigation.md).
+La plata que un negocio paga por cualquier cosa que no sea una Purchase de Stock, archivada bajo sus propias Expense categories y vista solo por ese negocio (ADR-0004). Lo que se compra para el Stock es una Purchase, nunca una Expense. Resultados (#7) lee las Expenses y las Purchases por separado. A Expenses se llega en el teléfono desde la tarjeta Expenses de Analysis ("See expenses") y en una computadora desde la barra lateral; las Expense categories se administran en Settings → Expense categories (navigation.md). En el teléfono, el formulario de la Expense también se abre desde New sale, con el tile "Expense", sin perder la venta en curso.
 
 ## Comportamiento
 
@@ -70,6 +78,7 @@ La plata que un negocio paga por cualquier cosa que no sea una Purchase de Stock
 - **Monto**: obligatorio, en pesos enteros, mayor que cero.
 - **Detalle**: obligatorio, sin espacios al principio ni al final, no en blanco, hasta 200 caracteres.
 - Una Expense no tiene gramos, ni producto, ni estado pendiente, de borrador o de aprobación.
+- **Una Expense registrada desde New sale es una Expense común**: su propia fecha, su propia Expense category de la lista del negocio, y baja el Profit y el Cash como cualquier otra. No queda atada a la venta y no cambia ninguna de sus cifras. El Shipping charged sigue siendo lo que paga el Customer, mientras que un costo de envío es una Expense; el costo de una venta sale de los Lots como Cost of goods sold, nunca de una Expense; y lo que se compra para el Stock es una Purchase (una Stock entry), que nunca pasa por este formulario.
 - **Editar**: los cuatro campos se pueden editar en el lugar, con la misma validación que al registrar. No se guarda historial de ediciones.
 - **Eliminar**: borra la Expense para siempre.
 - Tanto una edición como una eliminación se ven de inmediato en los totales del mes.
@@ -92,6 +101,18 @@ La plata que un negocio paga por cualquier cosa que no sea una Purchase de Stock
   - "See expenses", un link de texto, sin conteo, que abre Expenses.
 
   Sus palabras son de la tarjeta y nunca repiten la acción propia de Expenses: la tarjeta no muestra "Add expense" ni "See the expenses". "Record …" es el verbo que el producto ya usa para una entrada que abre un formulario (Record payment). La tarjeta no espera a que respondan las cifras de Analysis: las dos acciones están en los estados cargando, error, vacío y con datos. En una computadora la tarjeta no se dibuja, porque a Expenses se llega desde la barra lateral. Reemplaza al "+ Add expense" que estaba en More, que ya no existe.
+- **La fila "Other things to record" de New sale** (solo en el teléfono, debajo del corte de 900 px; parte 3 de GH-725):
+  - New sale tiene una fila titulada "Other things to record", ubicada como la dibuja `NuevaVenta.dc.html`, con un solo tile, "Expense", con el ícono de comprobante. Se ofrece siempre, sea cual sea el estado de la venta. La fila no se compromete con ningún otro tile; cualquier otro registro sería una decisión propia.
+  - Tocar el tile abre el formulario de la Expense existente en el lugar, como una Sheet sobre un New sale que sigue montado (dibujos `VentaEnCurso` y `VentaVuelve`). El formulario usa las Expense categories del negocio y no agrega ningún texto sobre la venta aparte de la tira.
+  - **La tira "Sale in progress"** va arriba del formulario, solo cuando al menos una línea tiene un Product elegido. Es un solo botón de al menos 44 px que dice "Sale in progress · N products · $total · Back":
+    - N cuenta las líneas con un Product elegido, tengan los gramos que tengan: las líneas en blanco quedan afuera, las de Gift y las de Special price cuentan. Con una sola, "1 product".
+    - $total es la misma cifra que la fila Total de New sale, en el Money format del negocio. Un total de $0 se muestra, nunca se oculta.
+    - Mientras los precios se vuelven a calcular, el lugar del monto muestra el indicador de carga de la fila Total, y el nombre accesible deja afuera el monto. Si no, el nombre accesible se lee como "Sale in progress, 2 products, $ 11.000. Back".
+  - Tocar la tira, "Close" y el gesto de volver del teléfono son la misma acción: cierran el formulario y vuelven a la venta.
+  - **Salir**: un formulario sin tocar vuelve a la venta sin preguntar, con la venta intacta. Una Expense con algo tipeado pregunta "Discard the expense?", y descartarla conserva la venta. Al navegar a otro lado, con la venta sin tocar y la Expense tipeada se pregunta por la Expense; con la Expense sin tocar y la venta tocada, "Discard the sale?". La pantalla hace una sola pregunta de salida por vez, y siempre nombra lo que se perdería arriba.
+  - **Guardar**: registra la Expense, actualiza la lista de Expenses y muestra "Expense recorded" cuando al menos una línea tiene un Product elegido, o "Expense saved" si no. El formulario se cierra y el vendedor se queda en New sale, haya o no una venta en curso; a diferencia de Analysis o Expenses, no se vuelve por el historial a otra pantalla. Un "Back" después llega a la pantalla anterior exactamente una vez; si la venta está tocada, salir de New sale sigue preguntando "Discard the sale?", también justo después de guardar.
+  - El foco vuelve al tile "Expense" después de "Close", "Back" o un guardado.
+  - En una computadora la fila no se dibuja: `NuevaVentaCompu`, la barra lateral, More, `/more` y `/mas` no cambian.
 - **Expenses** (`Expenses`, ruta `/expenses`; la vieja `/gastos` redirige ahí de forma permanente) es la única pantalla cuyo tipo depende del ancho (navigation.md, el ADR de GH-651):
   - en el teléfono, un detalle con "‹ Analysis" (su pantalla madre), la barra con Home marcada como activa, sin "+ New sale", y el avatar "Settings" al final de la fila del título;
   - en una computadora, una Tab root con la barra lateral, Expenses activa y "+ New sale", a la que se llega desde la barra lateral, debajo del separador.
@@ -105,13 +126,13 @@ La plata que un negocio paga por cualquier cosa que no sea una Purchase de Stock
     - en una computadora, el botón "Add expense" en la cabecera de la página.
 
     Su aspecto exacto lo decide diseño.
-- **El formulario de la Expense** es un formulario (navigation.md), una Sheet en el teléfono: sin barra y sin "+ New sale", y se cierra con "Close". Su título y el nombre del diálogo de la Sheet son "Add expense", lo abra la tarjeta o Expenses.
+- **El formulario de la Expense** es un formulario (navigation.md), una Sheet en el teléfono: sin barra y sin "+ New sale", y se cierra con "Close". Su título y el nombre del diálogo de la Sheet son "Add expense", lo abra la tarjeta, Expenses o New sale.
   - "Category", "Amount" y "Details" se marcan como obligatorios.
   - El envío se bloquea mientras el detalle está en blanco o no hay Expense category elegida.
   - La fecha viene completada con hoy.
-  - "Close", el gesto de volver y un guardado exitoso vuelven por el historial a la pantalla que lo abrió (Analysis, desde su tarjeta Expenses, o Expenses).
+  - Abierto desde Analysis o Expenses, "Close", el gesto de volver y un guardado exitoso vuelven por el historial a la pantalla que lo abrió (Analysis, desde su tarjeta Expenses, o Expenses). Abierto desde New sale, cierran la Sheet y dejan al vendedor en New sale (arriba).
   - Sin historial (un link directo), vuelve a Expenses en el mes en curso.
-  - Un guardado exitoso muestra "Expense saved" en la pantalla a la que vuelve, sin saltar a otro lado. Después de guardar desde Expenses, Expenses se queda en el mes que mostraba y se actualiza.
+  - Un guardado exitoso muestra "Expense saved" en la pantalla a la que vuelve, sin saltar a otro lado ("Expense recorded" desde New sale con una venta esperando). Después de guardar desde Expenses, Expenses se queda en el mes que mostraba y se actualiza.
   - Salir con algo tipeado pregunta antes de descartar ("Discard the expense?"); un formulario sin tocar se cierra de inmediato.
 - **La edición en el lugar dentro de Expenses** (desde la parte 6 de GH-581) es, en el teléfono, su propia entrada del historial sobre Expenses, como cualquier formulario o Sheet: volver y "Close" son la misma acción.
   - Sin tocar, volver cierra la edición y deja Expenses en el mes que mostraba.
@@ -124,7 +145,7 @@ La plata que un negocio paga por cualquier cosa que no sea una Purchase de Stock
   - mientras las Expense categories se están cargando, el formulario muestra solo su cabecera con "Close", así que el vendedor siempre puede salir; el Selector recibe igual `loading` mientras la carga está pendiente o falló, así que nunca muestra un texto de conjunto vacío antes de una carga exitosa;
   - si la carga falla, el formulario muestra debajo de su cabecera, en lugar de los campos, la línea de falla que ya tiene la app ("No connection" sin red, el reintento genérico ante un error del servidor; accounts.md), sin texto nuevo. Las Expense categories se vuelven a pedir al cerrar el formulario y volver a abrirlo;
   - en el teléfono abre su lista en una Sheet, como su propia entrada del historial sobre el formulario; con más de 8 Expense categories, la lista tiene búsqueda. En la computadora es un desplegable con teclado, y Escape cierra solo el desplegable;
-  - volver o "Close" con la lista abierta cierra solo la lista, nunca el formulario. Esto vale al registrar desde Expenses, al registrar desde la tarjeta Expenses de Analysis y al editar en el lugar dentro de Expenses;
+  - volver o "Close" con la lista abierta cierra solo la lista, nunca el formulario. Esto vale al registrar desde Expenses, al registrar desde la tarjeta Expenses de Analysis, al registrar desde New sale y al editar en el lugar dentro de Expenses;
   - sin ninguna Expense category, la lista muestra "No categories yet. Add them in Settings → Expense categories." (`emptyStates:selectorNoCategories`), y crear una dentro del formulario sigue disponible debajo del campo;
   - elegir una Expense category borra el error del campo;
   - enviar sin Expense category muestra el error de campo obligatorio, como antes, asociado al campo como su descripción.
@@ -138,10 +159,10 @@ La plata que un negocio paga por cualquier cosa que no sea una Purchase de Stock
   - el total y el subtotal se actualizan de inmediato, y una Expense category que queda sin Expenses ese mes desaparece.
 - **Las Expense categories** se administran en Settings → Expense categories, y en ningún otro lado: agregar, renombrar y "Delete". Una eliminación bloqueada muestra el rechazo fijo de arriba. Crear una dentro del formulario de la Expense sigue como se describe.
 - **Una Expense o una Expense category que ya no está** al guardarla, eliminarla o abrirla sigue la regla de la app en `accounts.md`: "That is gone." Abrir una ofrece "Back to Expenses" en el mes en curso.
-- **Toasts**: "Expense saved", "Expense deleted", "Category saved" y "Category deleted", sin montos.
+- **Toasts**: "Expense saved", "Expense recorded" (solo desde New sale con una venta esperando), "Expense deleted", "Category saved" y "Category deleted", sin montos.
 - **Los rechazos** se muestran en línea y conservan lo tipeado.
 - **Respuesta ante fallas**: la pérdida de red muestra "No connection", y un error del servidor muestra un reintento genérico (accounts.md).
-- **Diseño**: el formulario de la Expense muestra el campo "Category" cerrado como Selector, con "Create a new category" debajo, en `GastoNuevo`, `GastoNuevoOscuro` y `GastoNuevoCompu` de `docs/product/design-system/pantallas/`.
+- **Diseño**: el formulario de la Expense muestra el campo "Category" cerrado como Selector, con "Create a new category" debajo, en `GastoNuevo`, `GastoNuevoOscuro` y `GastoNuevoCompu` de `docs/product/design-system/pantallas/`. La fila de New sale y la tira se dibujan en `NuevaVenta`, `VentaEnCurso` y `VentaVuelve`.
 
 ### Restricciones
 
@@ -150,10 +171,12 @@ La plata que un negocio paga por cualquier cosa que no sea una Purchase de Stock
 - Un link de Expenses a Settings → Expense categories aparece solo una vez que ese grupo existe. Ningún link puede apuntar a una pantalla que no existe, y ningún vendedor puede perder la administración de las Expense categories.
 - El dominio de expenses no guarda ningún nombre por defecto ni importa ninguna biblioteca de traducción. La apertura del negocio nuevo toma los valores por defecto a través del puerto `BusinessDefaults` (`for_language(language)`), con el Stored language, nunca con el Shown language.
 - Las palabras de la tarjeta Expenses salen del Copy module: "Expenses", "Record expense" (`common:recordExpense`) y "See expenses" (`common:seeExpenses`). `common:addExpense` ("Add expense") es solo de la acción propia de Expenses, el título del formulario de la Expense y el nombre del diálogo de la Sheet; la tarjeta nunca lo usa.
+- Las palabras de la fila de New sale y de la tira salen del Copy module, en `en` y `en-XA`: "Other things to record", "Expense", "Sale in progress", "1 product" / "{n} products", "Back", "Expense recorded" y la función del nombre accesible de la tira. Sus estilos salen solo de los tokens de diseño.
 - La suite e2e encuentra las acciones de la tarjeta acotadas a su grupo "Expenses" (`getByRole('group', { name: 'Expenses' })`). Ninguna etiqueta vieja se repone, ni visible ni oculta, para satisfacer un localizador (D-69509906).
 - Las Expense categories son un Growable set: nunca se declaran en `fixedSets.ts` ni se eligen con chips (selector.md).
 - El formulario monta un `SheetStackProvider` en `ExpenseNewRoute` y en la edición en el lugar de `Gastos`, para que la lista del Selector sea su propia entrada del historial, en el nivel de arriba del formulario.
 - La edición en el lugar del teléfono protege su volver con cambios sin guardar mediante el piso de Sheet de la guarda de salida (ADR-0078).
+- Desde New sale, el formulario abierto en el lugar sobre otro formulario conserva la única guarda de salida de la pantalla, y apunta su marca de cambios y su piso al formulario de arriba (el ADR que extiende ADR-0078, parte 3 de GH-725). No hay borrador: la venta en curso vive solo mientras New sale está montado.
 
 ## Métricas
 
@@ -169,8 +192,9 @@ Se leen de los datos y de las pruebas; no hay telemetría.
   - edita y elimina una;
   - se mueve entre meses;
   - agrega, renombra y elimina una Expense category en Settings, un rechazo de eliminación incluido.
-- **M7, toques (criterio 1)**: la corrida de punta a punta cuenta los toques para abrir el formulario de la Expense, en ventanas de teléfono y de computadora:
-  - en el teléfono, 2 desde Home y 3 desde Sales, Customers y Products;
+- **M7, toques (criterios 1 y 12)**: la corrida de punta a punta (`tapBudget.spec.ts`) cuenta los toques para abrir el formulario de la Expense, en ventanas de teléfono y de computadora:
+  - en el teléfono, 2 desde Home, Sales, Customers, Products y Analysis ("+ New sale", después "Expense"), terminando en el diálogo "Add expense" sobre New sale;
+  - desde Home por Analysis → "Record expense", también 2;
   - desde Expenses, 1;
   - en una computadora, nunca más que en el teléfono.
 
@@ -204,6 +228,9 @@ Se leen de los datos y de las pruebas; no hay telemetría.
   - localizadores e2e de la tarjeta no acotados a su grupo "Expenses": 0; etiquetas viejas repuestas, visibles u ocultas: 0.
 
   100% de aprobación.
+- **M20, la venta vuelve intacta (criterio 12)**: pruebas de Testing Library a través del router real, con `fetch` simulado y el historial leído de `router.state.location`, en ancho de teléfono: el tile abre el formulario; una Expense sin tocar vuelve sin preguntar con la venta intacta; descartar una Expense tipeada conserva la venta; después de guardar, New sale queda en profundidad 0 y un "Back" llega a la pantalla anterior exactamente una vez; foco en el tile después de "Close", "Back" o un guardado. Ventas cambiadas por abrir, cerrar o guardar una Expense: 0. 100% de aprobación.
+- **M21, la tira dice que hay una venta esperando (criterio 12)**: las pruebas del front muestran la tira con un Product elegido y su ausencia sin ninguno; un caso unitario muestra que un Gift cuenta, que una línea en blanco no y que mientras se vuelve a cotizar no aparece ningún símbolo de moneda; el monto de la tira es igual al de la fila Total, $0 incluido. 100% de aprobación.
+- **M22, la pregunta y el aviso correctos (criterio 12)**: las pruebas del front muestran que una Expense tipeada pregunta "Discard the expense?"; que "Close" en New sale después de guardar sigue preguntando "Discard the sale?" con la venta tocada; que con la venta sin tocar y la Expense tipeada, navegar a `/sales` pregunta por la Expense; que con la Expense sin tocar y la venta tocada pregunta "Discard the sale?"; que el aviso dice "Expense recorded" con una venta esperando y "Expense saved" si no; que en ancho de computadora no hay fila; y que no hay ningún `console.warn`. 100% de aprobación.
 
 ## Fuera de alcance
 
@@ -222,3 +249,8 @@ Se leen de los datos y de las pruebas; no hay telemetría.
 - Cambiar las rutas de Expenses, su navegación por mes o cómo se abre y se ve la edición en el lugar.
 - Un reintento con un toque para la carga fallida de las Expense categories dentro del formulario.
 - Cambiar el "Add expense" de Expenses, el título del formulario de la Expense o el nombre del diálogo de la Sheet, y cualquier nota de versión o aviso en la app sobre el cambio de etiquetas de la tarjeta (parte 1 de GH-725).
+- Atar una Expense a una venta, o usarla como Shipping charged o como costo de la venta (parte 3 de GH-725).
+- Conservar la venta en curso ante una recarga, un navegador cerrado por el teléfono o una pestaña cerrada con el formulario de la Expense abierto: no hay borrador, igual que al salir de New sale.
+- Cualquier tile de "Other things to record" que no sea "Expense", y explicar en el formulario que la Expense no cambia la venta.
+- Registrar una Purchase desde New sale: lo que se compra para el Stock es una Stock entry.
+- Cambiar `NuevaVentaCompu`, la barra lateral, More, `/more` o `/mas`.
