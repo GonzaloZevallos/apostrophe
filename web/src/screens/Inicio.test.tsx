@@ -49,6 +49,8 @@ function jsonResponse(status: number, body: unknown): Response {
 
 /** Every call the stub saw on the two reads Home no longer makes, as "METHOD url". */
 const forbiddenCalls: string[] = []
+/** Every URL the fetch fake received, whatever it answered. */
+const requested: string[] = []
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
@@ -66,6 +68,7 @@ function stubFetch(panel: PanelAnswer, pinnedCatalogStatus: unknown = { status: 
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input)
+      requested.push(url)
       if (url.includes('/first-run') || url.includes('/onboarding-progress')) {
         // What the server would answer for this business: if Home asked, it would show it.
         forbiddenCalls.push(`${init?.method ?? 'GET'} ${url}`)
@@ -121,6 +124,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
   chooseTheme('claro')
   forbiddenCalls.length = 0
+  requested.length = 0
   consumePaymentReturn()
 })
 
@@ -475,14 +479,14 @@ const FIRST_USE_TEXTS = [
 
 const SETUP_STATES: [string, Record<string, unknown>][] = [
   [
-    'a business in Onboarding',
+    'onboarding',
     {
       'first-run': { kind: 'onboarding', checklist: [], import_notice: false, nothing_qualifies: false },
       'onboarding-progress': { offered: true, over: false, count: 1, resume: 'stock', steps: [] },
     },
   ],
   [
-    'a pre-Onboarding business',
+    'pre_onboarding',
     {
       'first-run': {
         kind: 'checklist',
@@ -497,14 +501,14 @@ const SETUP_STATES: [string, Record<string, unknown>][] = [
     },
   ],
   [
-    'an imported business',
+    'imported',
     {
       'first-run': { kind: 'none', checklist: [], import_notice: true, nothing_qualifies: false },
       'onboarding-progress': { offered: true, over: true, count: 6, resume: null, steps: [] },
     },
   ],
   [
-    'a business with no price today',
+    'start_varieties (no price today)',
     {
       'first-run': { kind: 'start_varieties', checklist: [], import_notice: false, nothing_qualifies: true },
       'onboarding-progress': { offered: false, over: false, count: 0, resume: null, steps: [] },
@@ -513,7 +517,7 @@ const SETUP_STATES: [string, Record<string, unknown>][] = [
 ]
 
 for (const theme of ['claro', 'oscuro'] as const) {
-  test.each(SETUP_STATES)(`%s sees the panel and no first-use notice, and Home asks for neither read (${theme})`, async (_state, shown) => {
+  test.each(SETUP_STATES)(`a %s account sees the panel and no first-use notice, and Home asks for neither read (${theme})`, async (_state, shown) => {
     chooseTheme(theme)
     stubFetch(PANEL, { status: null }, shown)
     const { container } = renderInicio()
@@ -525,6 +529,8 @@ for (const theme of ['claro', 'oscuro'] as const) {
     expect(screen.queryByRole('button', { name: 'Dismiss notice' })).not.toBeInTheDocument()
     expect(container.querySelector('.estado-vacio')).toBeNull()
     expect(forbiddenCalls).toEqual([])
+    expect(requested.length).toBeGreaterThan(0)
+    expect(requested.filter((url) => url.includes('/first-run') || url.includes('/onboarding-progress'))).toEqual([])
   })
 }
 

@@ -1,11 +1,11 @@
-import { HOME } from '../routes'
+import { EXPENSES, EXPENSE_NEW, HOME } from '../routes'
 import { render as renderBare, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { type ReactElement, type ReactNode, useState } from 'react'
 import { createMemoryRouter, RouterProvider, useNavigate } from 'react-router'
-import { expect, test } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import LeaveConfirm from './LeaveConfirm'
-import { useLeaveGuard } from './useLeaveGuard'
+import { onlySheetChanges, useLeaveGuard } from './useLeaveGuard'
 import ContentArea from './ContentArea'
 import { SheetRouterProvider, SheetStackProvider, sheetDepth, useSheet } from './useSheetStack'
 import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
@@ -231,4 +231,28 @@ test('a disarmed guard with a sheet floor never blocks', async () => {
 
   expect(depth()).toBe(0)
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+})
+
+describe('onlySheetChanges', () => {
+  const at = (pathname: string, search: string, sheet?: number) => ({
+    pathname,
+    search,
+    state: sheet === undefined ? null : { sheet },
+  })
+
+  test('the same path and search with a different depth is a sheet-only change', () => {
+    expect(onlySheetChanges(at(EXPENSE_NEW, '', 0), at(EXPENSE_NEW, '', 1))).toBe(true)
+  })
+
+  test('a different path is not, even at the same depth', () => {
+    expect(onlySheetChanges(at(EXPENSES, '', 1), at(EXPENSE_NEW, '', 1))).toBe(false)
+  })
+
+  test('a different search is not, even with a different depth', () => {
+    expect(onlySheetChanges(at(EXPENSES, '?mes=2026-10', 0), at(EXPENSES, '?mes=2026-09', 1))).toBe(false)
+  })
+
+  test('the same path and search with no state on either side is not', () => {
+    expect(onlySheetChanges(at(EXPENSES, ''), at(EXPENSES, ''))).toBe(false)
+  })
 })

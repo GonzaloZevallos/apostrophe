@@ -42,6 +42,7 @@ subgraph src["src"]
       src_screens_expenses_ExpenseEditSheet_tsx["ExpenseEditSheet.tsx"]
       src_screens_expenses_ExpenseForm_tsx["ExpenseForm.tsx"]
       src_screens_expenses_ExpenseNewRoute_tsx["ExpenseNewRoute.tsx"]
+      src_screens_expenses_ExpenseNewSheet_tsx["ExpenseNewSheet.tsx"]
       src_screens_expenses_ExpensesBehind_tsx["ExpensesBehind.tsx"]
       src_screens_expenses_MonthBody_tsx["MonthBody.tsx"]
     end
@@ -245,8 +246,9 @@ src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_ClienteFila_tsx
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_CustomerSearch_ts
 src_screens_clientes_TeDeben_tsx-->src_screens_clientes_ClienteFila_tsx
 src_screens_expenses_ExpenseEditSheet_tsx-->src_screens_expenses_ExpenseForm_tsx
-src_screens_expenses_ExpenseNewRoute_tsx-->src_screens_expenses_ExpenseForm_tsx
+src_screens_expenses_ExpenseNewRoute_tsx-->src_screens_expenses_ExpenseNewSheet_tsx
 src_screens_expenses_ExpenseNewRoute_tsx-->src_screens_expenses_ExpensesBehind_tsx
+src_screens_expenses_ExpenseNewSheet_tsx-->src_screens_expenses_ExpenseForm_tsx
 src_screens_expenses_ExpensesBehind_tsx-->src_screens_expenses_MonthBody_tsx
 src_screens_inicio_InicioFondo_tsx-->src_screens_inicio_InicioPanel_tsx
 src_screens_inicio_InicioPanel_tsx-->src_screens_inicio_PeriodFigures_tsx

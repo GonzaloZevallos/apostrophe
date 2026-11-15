@@ -33,14 +33,14 @@ afterEach(async () => {
   await act(() => router.navigate(HOME))
 })
 
-async function openAt(path: string, viewport: Viewport) {
+async function openAt(path: string, viewport: Viewport, me: typeof ME = ME) {
   stubViewport(viewport)
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL) =>
       String(input).includes('/auth/me')
         ? Promise.resolve(
-            new Response(JSON.stringify(ME), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+            new Response(JSON.stringify(me), { status: 200, headers: { 'Content-Type': 'application/json' } }),
           )
         : new Promise<Response>(() => undefined),
     ),
@@ -60,9 +60,30 @@ describe('on the phone', () => {
     // The glyph is the business's initials; the name is the fixed word, never the business.
     expect(links[0]).toHaveTextContent('LH')
     expect(links[0]).toHaveAttribute('href', SETTINGS)
+    // The drawn disc is a child of the link's 44 px box and holds the initials.
+    const disc = links[0]?.firstElementChild
+    expect(disc).toHaveClass('inicio__avatar-disc')
+    expect(disc).toHaveTextContent('LH')
 
     await userEvent.click(links[0] as HTMLElement)
 
+    expect(router.state.location.pathname).toBe(SETTINGS)
+  })
+})
+
+describe('while the Business has no name to take initials from', () => {
+  test.each([
+    ['Home', HOME],
+    ['Analysis', ANALYSIS],
+  ] as const)('%s still has one link named Settings, with an empty disc: no letters, no placeholder', async (_name, path) => {
+    await openAt(path, 'phone', { ...ME, business_name: '' })
+
+    const links = screen.getAllByRole('link', { name: 'Settings' })
+    expect(links).toHaveLength(1)
+    expect(links[0]).toHaveAttribute('href', SETTINGS)
+    expect(links[0]?.firstElementChild).toHaveClass('inicio__avatar-disc')
+    expect(links[0]).toHaveTextContent(/^$/)
+    await userEvent.click(links[0] as HTMLElement)
     expect(router.state.location.pathname).toBe(SETTINGS)
   })
 })

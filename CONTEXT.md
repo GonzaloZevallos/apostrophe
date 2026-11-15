@@ -394,9 +394,6 @@ _Avoid_: home, main screen, section, More
 El único lugar que reúne cada configuración de todo el Business, en grupos: Business (con sus Withdrawal reasons y su Currency and decimals), Users, Prices, Payments and expenses (con sus Payment methods), Integrations, Catalog message, Expense categories, Appearance y Your account. La configuración de un solo Product vive en el Product, nunca acá, y nada del Operator está acá. _In the app_: Settings.
 _Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group)
 
-**First-run checklist**:
-Término retirado del glosario: Home ya no muestra la lista de cuatro pasos, así que la entrada se borra de CONTEXT.md. Las reglas laterales de "+ New sale" y "Send catalog" para un Business anterior al Onboarding siguen en navigation.md sin este nombre.
-
 **Onboarding**:
 La configuración paso a paso por la que se guía a un Business recién creado una vez que se acepta su Invitation de Business nuevo. Tiene dos pasos obligatorios (un Product con precio para hoy, su Opening stock) y otros opcionales (Catalog header and footer, bot de Telegram, un socio, Expense categories); nunca pregunta cómo se llama lo que vende el Business ni pide una Unit, y no pone ningún aviso en Home. Retoma donde quedó solo cuando se vuelve por su propia entrada (el aterrizaje tras la Invitation o la dirección `/onboarding`), termina para siempre al llegar a su pantalla "Done" o cuando un Spreadsheet import carga el Business, y nunca se ofrece en el Business de un User que se sumó ni en uno que existía antes de que saliera.
 _Avoid_: tour, wizard, welcome screen, setup guide, setup notice

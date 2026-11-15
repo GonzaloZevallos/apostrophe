@@ -9,7 +9,8 @@
  * successful save or a logout, never from "Cerrar".
  *
  * A navigation that keeps the pathname and search and changes only the `sheet` depth is
- * never blocked: it opens or closes a sheet, not the form (ADR-0027).
+ * never blocked: it opens or closes a sheet, not the form (ADR-0027). That comparison is the
+ * exported `onlySheetChanges`, the one definition; a host that needs it imports it.
  *
  * The one exception is a form that is itself drawn as a sheet entry (an in-page sheet on the
  * phone, ADR-0078): it passes `{ sheetFloor }`, the depth of its own entry, and then a
@@ -19,7 +20,7 @@
  */
 
 import { useCallback, useLayoutEffect, useRef } from 'react'
-import { type Blocker, type BlockerFunction, useBlocker } from 'react-router'
+import { type Blocker, type BlockerFunction, type Location, useBlocker } from 'react-router'
 import { sheetDepth } from './useSheetStack'
 
 export interface LeaveGuard {
@@ -30,6 +31,18 @@ export interface LeaveGuard {
 export interface LeaveGuardOptions {
   /** The sheet depth of the form's own entry: a sheet-only navigation below it leaves the form. */
   sheetFloor?: number
+}
+
+/** The part of a router `Location` the sheet-only comparison reads. */
+export type SheetLocation = Pick<Location, 'pathname' | 'search' | 'state'>
+
+/** True when the navigation keeps the pathname and search and only changes the sheet depth. */
+export function onlySheetChanges(currentLocation: SheetLocation, nextLocation: SheetLocation): boolean {
+  return (
+    currentLocation.pathname === nextLocation.pathname &&
+    currentLocation.search === nextLocation.search &&
+    sheetDepth(currentLocation.state) !== sheetDepth(nextLocation.state)
+  )
 }
 
 export function useLeaveGuard(dirty: boolean, { sheetFloor }: LeaveGuardOptions = {}): LeaveGuard {
@@ -44,13 +57,10 @@ export function useLeaveGuard(dirty: boolean, { sheetFloor }: LeaveGuardOptions 
     disarmedRef.current = true
   }, [])
   const shouldBlock = useCallback<BlockerFunction>(({ currentLocation, nextLocation }) => {
-    const onlySheetChanges =
-      currentLocation.pathname === nextLocation.pathname &&
-      currentLocation.search === nextLocation.search &&
-      sheetDepth(currentLocation.state) !== sheetDepth(nextLocation.state)
+    const sheetOnly = onlySheetChanges(currentLocation, nextLocation)
     const leavesTheSheet =
-      onlySheetChanges && sheetFloor !== undefined && sheetDepth(nextLocation.state) < sheetFloor
-    return (!onlySheetChanges || leavesTheSheet) && !disarmedRef.current && dirtyRef.current
+      sheetOnly && sheetFloor !== undefined && sheetDepth(nextLocation.state) < sheetFloor
+    return (!sheetOnly || leavesTheSheet) && !disarmedRef.current && dirtyRef.current
   }, [sheetFloor])
   const blocker = useBlocker(shouldBlock)
   return { blocker, disarm }

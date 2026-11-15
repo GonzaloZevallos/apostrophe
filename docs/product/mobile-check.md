@@ -10,7 +10,7 @@ El **Mobile check** es parte del **Gate**. Recorre las filas de teléfono del re
 
 ## Invariantes que se cumplen
 
-1. **Listas de infractores.** Crecen solo como lo permite gate.md. Las entradas `InicioChecklist` (Home con la **First-run checklist**) e `InicioImportado` (Home con el aviso posterior a la **Spreadsheet import**) de `touch-action.json` son un crecimiento por fila nueva del registro de GH-274, y cada una lleva su motivo. GH-305 no agregó ninguna otra entrada y no quitó ninguna. GH-650 (parte 1 de GH-560) retiró esas dos filas del registro junto con sus dibujos, y sus entradas de `touch-action.json` salieron en el mismo cambio.
+1. **Listas de infractores.** Crecen solo como lo permite gate.md. Las entradas `InicioChecklist` (Home con la lista de pasos de primer uso, ya retirada) e `InicioImportado` (Home con el aviso posterior a la **Spreadsheet import**) de `touch-action.json` son un crecimiento por fila nueva del registro de GH-274, y cada una lleva su motivo. GH-305 no agregó ninguna otra entrada y no quitó ninguna. GH-650 (parte 1 de GH-560) retiró esas dos filas del registro junto con sus dibujos, y sus entradas de `touch-action.json` salieron en el mismo cambio.
 2. **Aserciones del registro.** En `web/src/design/screens.test.ts`, toda aserción queda como estaba antes de GH-274 salvo estas dos, cada una marcada como deliberada con su motivo:
    - la sección `InicioHoyCompuOscuro` es `HOY_PHONE`, ya no undefined;
    - la llamada `assertSelectedAccounts` del mapa real corre sobre el mapa completo extendido.

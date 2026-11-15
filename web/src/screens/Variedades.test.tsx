@@ -582,7 +582,7 @@ describe('Nueva variety and the icon and text rule', () => {
   })
 })
 
-describe('"Send catalog" and the first-run checklist', () => {
+describe('"Send catalog" while /first-run answers checklist and nothing qualifies', () => {
   const REASON = 'Add a product with a price and its stock'
   const CHECKLIST_EMPTY: FirstRunAnswer = {
     kind: 'checklist',
