@@ -11,7 +11,7 @@ import userEvent from '@testing-library/user-event'
 import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
-import { EXPENSE_NEW, ANALYSIS } from '../../routes'
+import { EXPENSE_NEW, ANALYSIS, HOME } from '../../routes'
 import { stubViewport } from '../../test-viewport'
 import ExpenseNewSheet from './ExpenseNewSheet'
 import { type FetchImpl, ANALYSIS_SCREEN, ME, categoryField, jsonResponse, renderExpenses } from './renderExpenses'
@@ -64,7 +64,7 @@ test('a leaveConfirm node is drawn in the aside, beside the dialog and not insid
         element: <Outlet context={ME} />,
         children: [
           {
-            path: '/',
+            path: HOME,
             element: (
               <ExpenseNewSheet
                 computer={false}
@@ -78,7 +78,7 @@ test('a leaveConfirm node is drawn in the aside, beside the dialog and not insid
         ],
       },
     ],
-    { initialEntries: ['/'] },
+    { initialEntries: [HOME] },
   )
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
