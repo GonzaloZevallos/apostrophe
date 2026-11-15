@@ -10,7 +10,6 @@ import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import App from '../App'
-import { COMMON_TEXT } from '../copy/common'
 import { EXPENSES_TEXT } from '../copy/expenses'
 import { queryClient } from '../queryClient'
 import { router } from '../router'
@@ -99,8 +98,8 @@ describe('Expenses on the phone', () => {
 
     expect(screen.queryByRole('link', { name: /^(Settings|Ajustes y cuenta)$/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^(Settings|Ajustes y cuenta)$/ })).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: COMMON_TEXT.addExpense })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: COMMON_TEXT.backArrow(COMMON_TEXT.analysis) })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Add expense' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '‹ Analysis' })).toBeInTheDocument()
   })
 })
 
