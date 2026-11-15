@@ -2,10 +2,11 @@ import type { TFunction } from 'i18next'
 import { DATES_TEXT } from '../copy/dates'
 /**
  * Formats API dates (`"YYYY-MM-DD"` strings, the business day, ADR-0001) and API
- * months (`"YYYY-MM"`). The front never turns an API date into `Date` or passes it
- * to `Date.parse` (plan, invariants): every function here works on the string's
- * digits alone, and "today" always comes in as a parameter, read from `GET /auth/me`,
- * never from the device's clock.
+ * months (`"YYYY-MM"`). The front never reads the device's clock, zone or locale here, and
+ * never passes an API date to `Date.parse` (plan, invariants): "today" always comes in as a
+ * parameter, read from `GET /auth/me`. Every function works on the string's digits alone,
+ * except `formatTodayLong`, the one that builds a UTC instant from those digits and formats
+ * it only in UTC, in the language the screen is shown in (ADR-0049, amendment GH-748).
  */
 
 const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/
@@ -33,6 +34,52 @@ export function formatDate(iso: string, todayIso: string): string {
   const { year, month, day } = parseDate(iso)
   const base = `${day}/${month}`
   return year === parseDate(todayIso).year ? base : `${base}/${year}`
+}
+
+const ENGLISH = 'en'
+
+/** The part of a date formatter this file reads: a structural type, so the one `Intl` token
+ * of the file is the construction below (the locale ban admits exactly one). */
+interface LongDateFormatter {
+  formatToParts(date: Date): { type: string; value: string }[]
+  resolvedOptions(): { locale: string }
+}
+
+const formatters = new Map<string, LongDateFormatter>()
+
+/** The long-date formatter of a language tag, cached per tag. An unusable tag (`''`,
+ * `'en_US'`) gets the English one. The only place a formatter is built. */
+function formatterFor(tag: string): LongDateFormatter {
+  const key = tag.toLowerCase() === 'en-xa' ? ENGLISH : tag
+  const cached = formatters.get(key)
+  if (cached !== undefined) return cached
+  let formatter: LongDateFormatter
+  try {
+    formatter = new Intl.DateTimeFormat(key, { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })
+  } catch (error) {
+    if (!(error instanceof RangeError)) throw error
+    formatter = formatterFor(ENGLISH)
+  }
+  formatters.set(key, formatter)
+  return formatter
+}
+
+/** `"2026-10-29"` → `"Jueves 29 de octubre"` in Spanish, `"Thursday, October 29"` in English,
+ * the locale's own long form in any other language: weekday, day and month, no year. The
+ * names come from `Intl` in `language`, over a UTC instant built from the date's digits, so
+ * neither the device's zone nor its locale can move it. */
+export function formatTodayLong(iso: string, language: string): string {
+  const { year, month, day } = parseDate(iso)
+  const formatter = formatterFor(language)
+  const instant = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)))
+  const parts = formatter.formatToParts(instant)
+  if (formatter.resolvedOptions().locale.split('-')[0]?.toLowerCase() !== 'es') {
+    return parts.map((part) => part.value).join('')
+  }
+  const text = parts
+    .map((part, index) => (part.type === 'literal' && parts[index - 1]?.type === 'weekday' ? ' ' : part.value))
+    .join('')
+  return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
 /** `"2026-10-09"` → `"09/10"`, with no "today" to compare against: for a footer
