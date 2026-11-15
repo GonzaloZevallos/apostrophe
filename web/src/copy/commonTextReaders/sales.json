@@ -6,5 +6,7 @@
   "web/src/screens/ventas/NuevaVentaLinea.tsx",
   "web/src/screens/ventas/VentaDetalle.tsx",
   "web/src/screens/ventas/Ventas.test.tsx",
-  "web/src/screens/ventas/Ventas.tsx"
+  "web/src/screens/ventas/Ventas.tsx",
+  "web/src/screens/ventas/leaveQuestion.test.ts",
+  "web/src/screens/ventas/leaveQuestion.ts"
 ]
