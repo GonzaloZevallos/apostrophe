@@ -25,6 +25,7 @@ import {
   pathTo,
 } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
+import { expensesCard } from './helpers/openScreens.js'
 import { expect, test, withToastRecorder } from './fixtures.js'
 import type { Locator, Page } from '@playwright/test'
 import { watchConsole } from './console.js'
@@ -181,12 +182,12 @@ test.describe.serial('navigation', () => {
     await page.getByRole('group', { name: 'Home view' }).getByRole('link', { name: 'Analysis' }).click()
     await expectPath(page, ANALYSIS)
 
-    // Expenses and Add expense: the card on Analysis.
-    await page.getByRole('link', { name: 'See the expenses' }).click()
+    // Expenses and Record expense: the card on Analysis.
+    await expensesCard(page).getByRole('link', { name: 'See expenses' }).click()
     await expectPath(page, EXPENSES)
     await page.goBack()
     await expectPath(page, ANALYSIS)
-    await page.getByRole('link', { name: 'Add expense' }).click()
+    await expensesCard(page).getByRole('link', { name: 'Record expense' }).click()
     await expectPath(page, EXPENSE_NEW)
 
     // Take from stock: Products, next to the entry action.

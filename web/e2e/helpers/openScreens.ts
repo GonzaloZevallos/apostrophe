@@ -24,20 +24,27 @@ function analysisOption(page: Page) {
   return page.getByRole('group', { name: 'Home view' }).getByRole('link', { name: 'Analysis' })
 }
 
+/** The Expenses card on the phone's Analysis. Analysis also renders an amount row in a group
+ * named "Expenses", so the group is the one holding links. */
+export function expensesCard(page: Page) {
+  return page.getByRole('group', { name: 'Expenses', exact: true }).filter({ has: page.getByRole('link') })
+}
+
 /** Analysis, reached the way a seller reaches it from the phone: Home's segment. */
 export async function openAnalysis(page: Page): Promise<void> {
   await onPhone(page, async () => {
     await analysisOption(page).click()
     await expectPath(page, ANALYSIS)
-    await expect(page.getByRole('link', { name: 'See the expenses' })).toBeVisible()
+    await expect(expensesCard(page)).toHaveCount(1)
+    await expect(expensesCard(page).getByRole('link', { name: 'See expenses' })).toBeVisible()
   })
 }
 
-/** Gastos, reached the way a seller reaches it: the segment, then the Expenses card's "See the expenses". */
+/** Gastos, reached the way a seller reaches it: the segment, then the Expenses card's "See expenses". */
 export async function openGastos(page: Page): Promise<void> {
   await onPhone(page, async () => {
     await analysisOption(page).click()
-    await page.getByRole('link', { name: 'See the expenses' }).click()
+    await expensesCard(page).getByRole('link', { name: 'See expenses' }).click()
     await expectPath(page, EXPENSES)
     await expect(page.getByRole('link', { name: 'Add expense' })).toBeVisible()
   })
