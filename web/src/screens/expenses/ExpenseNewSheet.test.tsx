@@ -5,12 +5,16 @@
  * may warn or error. The words are literal English, so this file imports no copy module.
  */
 
-import { act, screen, waitFor } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
-import { EXPENSE_NEW, ANALYSIS } from '../../routes'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
+import { EXPENSE_NEW, ANALYSIS, HOME } from '../../routes'
 import { stubViewport } from '../../test-viewport'
-import { type FetchImpl, ANALYSIS_SCREEN, categoryField, jsonResponse, renderExpenses } from './renderExpenses'
+import ExpenseNewSheet from './ExpenseNewSheet'
+import { type FetchImpl, ANALYSIS_SCREEN, ME, categoryField, jsonResponse, renderExpenses } from './renderExpenses'
 
 const api: FetchImpl = async (url, init) => {
   const method = init?.method ?? 'GET'
@@ -49,4 +53,42 @@ test('typing, opening the list, backing out of it and then out of the form raise
 
   expect(warn).not.toHaveBeenCalled()
   expect(error).not.toHaveBeenCalled()
+})
+
+test('a leaveConfirm node is drawn in the aside, beside the dialog and not inside it', async () => {
+  stubViewport('phone')
+  vi.stubGlobal('fetch', vi.fn(api))
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Outlet context={ME} />,
+        children: [
+          {
+            path: HOME,
+            element: (
+              <ExpenseNewSheet
+                computer={false}
+                leaveConfirm={<div role="alertdialog" aria-label="Probe" />}
+                onClose={() => undefined}
+                onSaved={() => undefined}
+                onDirtyChange={() => undefined}
+              />
+            ),
+          },
+        ],
+      },
+    ],
+    { initialEntries: [HOME] },
+  )
+  render(
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
+        <RouterProvider router={router} />
+      </MoneyFormatProvider>
+    </QueryClientProvider>,
+  )
+
+  const dialog = await screen.findByRole('dialog', { name: 'Add expense' })
+  expect(screen.getByRole('alertdialog', { name: 'Probe' })).toBeInTheDocument()
+  expect(within(dialog).queryByRole('alertdialog', { name: 'Probe' })).not.toBeInTheDocument()
 })
