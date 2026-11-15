@@ -121,5 +121,6 @@
   "homeViewSwitchLabel": "Home view",
   "homeSegmentHome": "Home",
   "homeSegmentAnalysis": "Analysis",
-  "seeExpenses": "See the expenses"
+  "seeExpenses": "See expenses",
+  "recordExpense": "Record expense"
 }

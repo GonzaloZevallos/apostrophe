@@ -1,6 +1,6 @@
 /**
  * The tap budget (PRD criterion 1; metric "Taps"), measured from each phone tab root: the
- * expense form opens in two taps from Home (the Analysis segment, then "Add expense") and three
+ * expense form opens in two taps from Home (the Analysis segment, then "Record expense") and three
  * from Sales, Customers and Products, one from Gastos; Settings in one from each phone Tab root
  * (the avatar; phone Gastos is a detail screen with no avatar and no figure, owner's decision on
  * #724); a stock withdrawal in two (Products, then "Take from stock"). A computer never takes more taps than
@@ -10,6 +10,7 @@
  */
 
 import { expectPath } from './helpers/url.js'
+import { expensesCard } from './helpers/openScreens.js'
 import {
   ANALYSIS,
   CATALOG,
@@ -68,10 +69,10 @@ async function openExpenseForm(page: Page, computer: boolean): Promise<number> {
     await tap(counter, page.locator('.riel-lateral').getByRole('link', { name: 'Expenses' }))
     await tap(counter, page.getByRole('link', { name: 'Add expense' }))
   } else {
-    // The phone: Home's segment leads to Analysis, whose Expenses card holds "Add expense".
+    // The phone: Home's segment leads to Analysis, whose Expenses card holds "Record expense".
     if (here !== HOME) await viaTab(page, counter, false, 'Home')
     await tap(counter, analysisOption(page))
-    await tap(counter, page.getByRole('link', { name: 'Add expense' }))
+    await tap(counter, expensesCard(page).getByRole('link', { name: 'Record expense' }))
   }
   await expectPath(page, EXPENSE_NEW)
   await expect(page.getByRole('button', { name: 'Close' })).toBeVisible()
@@ -121,11 +122,11 @@ test('a seller records an expense from the Expenses card and Close goes back to 
   await signUpNewBusiness(page, { businessName: `Flores de la Tarjeta ${uniqueTag()}`, email: `duena-tarjeta-${uniqueTag()}@example.com` })
 
   await analysisOption(page).click()
-  await page.getByRole('link', { name: 'Add expense' }).click()
+  await expensesCard(page).getByRole('link', { name: 'Record expense' }).click()
   await page.getByRole('button', { name: 'Close' }).click()
   await expectPath(page, ANALYSIS)
 
-  await page.getByRole('link', { name: 'Add expense' }).click()
+  await expensesCard(page).getByRole('link', { name: 'Record expense' }).click()
   await page.getByRole('button', { name: /^Category/ }).click()
   await page.getByRole('button', { name: 'Packaging', exact: true }).click()
   await page.getByLabel('Amount', { exact: true }).fill('3200')
@@ -135,7 +136,7 @@ test('a seller records an expense from the Expenses card and Close goes back to 
     await expectPath(page, ANALYSIS)
   })
 
-  await page.getByRole('link', { name: 'See the expenses' }).click()
+  await expensesCard(page).getByRole('link', { name: 'See expenses' }).click()
   await expectPath(page, EXPENSES)
   await expect(page.getByText('Cajas de cartón')).toBeVisible()
   expect(consoleMessages).toEqual([])
