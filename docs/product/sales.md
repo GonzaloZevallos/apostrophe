@@ -30,6 +30,8 @@
 
 **Cuando** manejo mi negocio desde el teléfono entre pedido y pedido o en medio del chat con un cliente, varias veces por día, **quiero** que la app esté ordenada según lo que hago de verdad y con qué frecuencia, **para** volver con el cliente en lugar de buscar entre menús. (La historia de navegación, navigation.md: acá la sirve "+ New sale", a un toque desde cada **Tab root**).
 
+**Cuando** estoy en medio de registrar una venta en el teléfono y tengo que anotar una Expense, **quiero** registrarla ahí mismo y volver a la misma venta intacta, **para** terminar las dos sin volver a tipear nada ni salir del flujo. (Parte 3 de GH-725, compartido con expenses.md, que es la referencia: acá lo sirven la fila "Other things to record" de New sale en el teléfono con su tile "Expense", y que cerrar la Expense deje la venta como estaba).
+
 # Ventas
 
 Lo que un cliente se lleva de una vez, con cada línea cotizada con los precios del día y las **Pricing settings** del negocio, y ese precio guardado en la línea (ADR-0003). Las ventas las ve solo su negocio (ADR-0004). Esta capacidad lee:
