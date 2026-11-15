@@ -40,7 +40,7 @@ Criterios de éxito:
 12. **Una Expense desde New sale, sin perder la venta** (parte 3 de GH-725).
     - **La venta en curso vuelve exactamente como estaba**: líneas, gramos, Customer, Gifts, Special prices, Shipping charged, Note y totales no cambian después de "Close", el "Back" de la tira, el gesto de volver del teléfono o un guardado. Es el criterio que más importa.
     - **El vendedor siempre sabe que hay una venta esperando**: mientras al menos una línea tiene un Product elegido, la tira muestra cuántos productos y el mismo total que la fila Total de New sale, y un toque vuelve a la venta.
-    - **Nada tipeado se pierde sin preguntar, y la pregunta nombra lo correcto**: salir de una Expense con algo tipeado pregunta "Discard the expense?" y descartarla conserva la venta; salir de una venta tocada pregunta "Discard the sale?". Después de guardar, el aviso dice "Expense recorded" cuando hay una venta esperando y "Expense saved" si no.
+    - **Nada tipeado se pierde sin preguntar, y la pregunta nombra lo correcto**: salir de una Expense con algo tipeado pregunta "Discard the expense?" y descartarla conserva la venta; salir de New sale con la venta tocada pregunta "Discard the sale?", también con la Expense tipeada encima. Después de guardar, el aviso dice "Expense recorded" cuando hay una venta esperando y "Expense saved" si no.
 
 # Expenses
 
@@ -109,8 +109,11 @@ La plata que un negocio paga por cualquier cosa que no sea una Purchase de Stock
     - $total es la misma cifra que la fila Total de New sale, en el Money format del negocio. Un total de $0 se muestra, nunca se oculta.
     - Mientras los precios se vuelven a calcular, el lugar del monto muestra el indicador de carga de la fila Total, y el nombre accesible deja afuera el monto. Si no, el nombre accesible se lee como "Sale in progress, 2 products, $ 11.000. Back".
   - Tocar la tira, "Close" y el gesto de volver del teléfono son la misma acción: cierran el formulario y vuelven a la venta.
-  - **Salir**: un formulario sin tocar vuelve a la venta sin preguntar, con la venta intacta. Una Expense con algo tipeado pregunta "Discard the expense?", y descartarla conserva la venta. Al navegar a otro lado, con la venta sin tocar y la Expense tipeada se pregunta por la Expense; con la Expense sin tocar y la venta tocada, "Discard the sale?". La pantalla hace una sola pregunta de salida por vez, y siempre nombra lo que se perdería arriba.
-  - **Guardar**: registra la Expense, actualiza la lista de Expenses y muestra "Expense recorded" cuando al menos una línea tiene un Product elegido, o "Expense saved" si no. El formulario se cierra y el vendedor se queda en New sale, haya o no una venta en curso; a diferencia de Analysis o Expenses, no se vuelve por el historial a otra pantalla. Un "Back" después llega a la pantalla anterior exactamente una vez; si la venta está tocada, salir de New sale sigue preguntando "Discard the sale?", también justo después de guardar.
+  - **Salir**: la pantalla hace una sola pregunta de salida por vez:
+    - salir del formulario de la Expense quedándose en New sale ("Close", la tira, el gesto de volver): sin nada tipeado vuelve a la venta sin preguntar, con la venta intacta; con algo tipeado pregunta "Discard the expense?", y descartarla conserva la venta;
+    - salir de New sale (navegar a otra pantalla) con la venta tocada pregunta "Discard the sale?", tenga o no algo tipeado la Expense de arriba: es la pérdida mayor y se lleva la Expense con ella. "No, keep entering" conserva las dos tal cual; descartar sale sin una segunda pregunta. No hay una pregunta que nombre a las dos;
+    - salir de New sale con la venta sin tocar y la Expense tipeada pregunta "Discard the expense?".
+  - **Guardar**: registra la Expense, actualiza la lista de Expenses y muestra "Expense recorded" cuando al menos una línea tiene un Product elegido, o "Expense saved" si no. El aviso sigue la regla de toasts de toda la app: si el vendedor abre otra Sheet enseguida, se va antes, sin excepción para New sale. El formulario se cierra y el vendedor se queda en New sale, haya o no una venta en curso; a diferencia de Analysis o Expenses, no se vuelve por el historial a otra pantalla. Un "Back" después llega a la pantalla anterior exactamente una vez; si la venta está tocada, salir de New sale sigue preguntando "Discard the sale?", también justo después de guardar.
   - El foco vuelve al tile "Expense" después de "Close", "Back" o un guardado.
   - En una computadora la fila no se dibuja: `NuevaVentaCompu`, la barra lateral, More, `/more` y `/mas` no cambian.
 - **Expenses** (`Expenses`, ruta `/expenses`; la vieja `/gastos` redirige ahí de forma permanente) es la única pantalla cuyo tipo depende del ancho (navigation.md, el ADR de GH-651):
@@ -133,7 +136,7 @@ La plata que un negocio paga por cualquier cosa que no sea una Purchase de Stock
   - Abierto desde Analysis o Expenses, "Close", el gesto de volver y un guardado exitoso vuelven por el historial a la pantalla que lo abrió (Analysis, desde su tarjeta Expenses, o Expenses). Abierto desde New sale, cierran la Sheet y dejan al vendedor en New sale (arriba).
   - Sin historial (un link directo), vuelve a Expenses en el mes en curso.
   - Un guardado exitoso muestra "Expense saved" en la pantalla a la que vuelve, sin saltar a otro lado ("Expense recorded" desde New sale con una venta esperando). Después de guardar desde Expenses, Expenses se queda en el mes que mostraba y se actualiza.
-  - Salir con algo tipeado pregunta antes de descartar ("Discard the expense?"); un formulario sin tocar se cierra de inmediato.
+  - Salir con algo tipeado pregunta antes de descartar ("Discard the expense?"); un formulario sin tocar se cierra de inmediato. Desde New sale, salir de la pantalla con la venta tocada pregunta en cambio "Discard the sale?" (arriba).
 - **La edición en el lugar dentro de Expenses** (desde la parte 6 de GH-581) es, en el teléfono, su propia entrada del historial sobre Expenses, como cualquier formulario o Sheet: volver y "Close" son la misma acción.
   - Sin tocar, volver cierra la edición y deja Expenses en el mes que mostraba.
   - Con algo tipeado, volver o "Close" preguntan una sola vez antes de descartar: seguir editando se queda en la edición; descartar vuelve a Expenses en ese mes.
@@ -176,7 +179,7 @@ La plata que un negocio paga por cualquier cosa que no sea una Purchase de Stock
 - Las Expense categories son un Growable set: nunca se declaran en `fixedSets.ts` ni se eligen con chips (selector.md).
 - El formulario monta un `SheetStackProvider` en `ExpenseNewRoute` y en la edición en el lugar de `Gastos`, para que la lista del Selector sea su propia entrada del historial, en el nivel de arriba del formulario.
 - La edición en el lugar del teléfono protege su volver con cambios sin guardar mediante el piso de Sheet de la guarda de salida (ADR-0078).
-- Desde New sale, el formulario abierto en el lugar sobre otro formulario conserva la única guarda de salida de la pantalla, y apunta su marca de cambios y su piso al formulario de arriba (el ADR que extiende ADR-0078, parte 3 de GH-725). No hay borrador: la venta en curso vive solo mientras New sale está montado.
+- Desde New sale, el formulario abierto en el lugar sobre otro formulario conserva la única guarda de salida de la pantalla, y apunta su marca de cambios y su piso al formulario de arriba (el ADR que extiende ADR-0078, parte 3 de GH-725). Su única confirmación pregunta "Discard the expense?" cuando el cambio queda dentro de New sale (`onlySheetChanges`); si no, "Discard the sale?" con la venta tocada y "Discard the expense?" sin tocar. No hay borrador: la venta en curso vive solo mientras New sale está montado.
 
 ## Métricas
 
@@ -230,7 +233,7 @@ Se leen de los datos y de las pruebas; no hay telemetría.
   100% de aprobación.
 - **M20, la venta vuelve intacta (criterio 12)**: pruebas de Testing Library a través del router real, con `fetch` simulado y el historial leído de `router.state.location`, en ancho de teléfono: el tile abre el formulario; una Expense sin tocar vuelve sin preguntar con la venta intacta; descartar una Expense tipeada conserva la venta; después de guardar, New sale queda en profundidad 0 y un "Back" llega a la pantalla anterior exactamente una vez; foco en el tile después de "Close", "Back" o un guardado. Ventas cambiadas por abrir, cerrar o guardar una Expense: 0. 100% de aprobación.
 - **M21, la tira dice que hay una venta esperando (criterio 12)**: las pruebas del front muestran la tira con un Product elegido y su ausencia sin ninguno; un caso unitario muestra que un Gift cuenta, que una línea en blanco no y que mientras se vuelve a cotizar no aparece ningún símbolo de moneda; el monto de la tira es igual al de la fila Total, $0 incluido. 100% de aprobación.
-- **M22, la pregunta y el aviso correctos (criterio 12)**: las pruebas del front muestran que una Expense tipeada pregunta "Discard the expense?"; que "Close" en New sale después de guardar sigue preguntando "Discard the sale?" con la venta tocada; que con la venta sin tocar y la Expense tipeada, navegar a `/sales` pregunta por la Expense; que con la Expense sin tocar y la venta tocada pregunta "Discard the sale?"; que el aviso dice "Expense recorded" con una venta esperando y "Expense saved" si no; que en ancho de computadora no hay fila; y que no hay ningún `console.warn`. 100% de aprobación.
+- **M22, la pregunta y el aviso correctos (criterio 12)**: las pruebas del front muestran que una Expense tipeada pregunta "Discard the expense?" al volver a la venta; que "Close" en New sale después de guardar sigue preguntando "Discard the sale?" con la venta tocada; que con la venta sin tocar y la Expense tipeada, navegar a `/sales` pregunta por la Expense; que con la venta tocada navegar a `/sales` pregunta "Discard the sale?", tanto con la Expense sin tocar como con la Expense tipeada; que el aviso dice "Expense recorded" con una venta esperando y "Expense saved" si no (se prueba el texto, no cuánto dura); que en ancho de computadora no hay fila; y que no hay ningún `console.warn`. 100% de aprobación.
 
 ## Fuera de alcance
 
@@ -252,5 +255,6 @@ Se leen de los datos y de las pruebas; no hay telemetría.
 - Atar una Expense a una venta, o usarla como Shipping charged o como costo de la venta (parte 3 de GH-725).
 - Conservar la venta en curso ante una recarga, un navegador cerrado por el teléfono o una pestaña cerrada con el formulario de la Expense abierto: no hay borrador, igual que al salir de New sale.
 - Cualquier tile de "Other things to record" que no sea "Expense", y explicar en el formulario que la Expense no cambia la venta.
+- Una pregunta de salida que nombre a la vez la venta y la Expense, o mantener el aviso "Expense recorded" en pantalla cuando se abre otra Sheet.
 - Registrar una Purchase desde New sale: lo que se compra para el Stock es una Stock entry.
 - Cambiar `NuevaVentaCompu`, la barra lateral, More, `/more` o `/mas`.
