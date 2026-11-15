@@ -1,0 +1,42 @@
+/** `SaleInProgressStrip` rendered with Testing Library: the one button over the sale in progress. */
+
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { expect, test, vi } from 'vitest'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
+import SaleInProgressStrip from './SaleInProgressStrip'
+
+function renderStrip(props: { n: number; total: number; repricing: boolean }, onBack = vi.fn()) {
+  render(
+    <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
+      <SaleInProgressStrip {...props} onBack={onBack} />
+    </MoneyFormatProvider>,
+  )
+  return onBack
+}
+
+test('reads the products, the total and Back, and goes back on a tap', async () => {
+  const onBack = renderStrip({ n: 2, total: 11000, repricing: false })
+  const strip = screen.getByRole('button', { name: 'Sale in progress, 2 products, $ 11.000. Back' })
+  expect(strip).toHaveTextContent('Sale in progress · 2 products · ')
+  expect(strip).toHaveTextContent('· Back')
+  await userEvent.click(strip)
+  expect(onBack).toHaveBeenCalledTimes(1)
+})
+
+test('a total of zero is shown, never hidden', () => {
+  renderStrip({ n: 1, total: 0, repricing: false })
+  expect(screen.getByRole('button', { name: 'Sale in progress, 1 product, $ 0. Back' })).toHaveTextContent('$')
+})
+
+test('while repricing the amount slot is the loading bar: no symbol, no amount, none in the name', () => {
+  renderStrip({ n: 2, total: 11000, repricing: true })
+  const strip = screen.getByRole('button', { name: 'Sale in progress, 2 products. Back' })
+  expect(strip.textContent).not.toContain('$')
+  expect(strip.textContent).not.toContain('11')
+})
+
+test('one product reads in the singular', () => {
+  renderStrip({ n: 1, total: 4500, repricing: false })
+  expect(screen.getByRole('button', { name: /^Sale in progress, 1 product, / })).toHaveTextContent('1 product ·')
+})

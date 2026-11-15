@@ -1,10 +1,10 @@
 /**
  * `ExpenseNewSheet`: the sheet that draws the new-expense form. Presentational only: the host owns
- * the leave guard (it passes the `blocker`), the exit (`onClose`, `onSaved`) and the `SheetLevel`
+ * the leave guard (it passes the `blocker`, or none), the exit (`onClose`, `onSaved`) and the `SheetLevel`
  * of its own history entry. It calls no `useLeaveGuard` and no `useBlocker`.
  */
 
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import type { Blocker } from 'react-router'
 import type { SuccessToast } from '../../components/AvisoExito'
 import LeaveConfirm from '../../components/LeaveConfirm'
@@ -14,7 +14,10 @@ import { EXPENSES_TEXT } from '../../copy/expenses'
 import ExpenseForm from './ExpenseForm'
 
 interface ExpenseNewSheetProps {
-  blocker: Blocker
+  /** The host's leave guard; a host with none (the sheet over New sale) passes nothing. */
+  blocker?: Blocker
+  /** What sits above the form, inside the dialog (the "Sale in progress" strip). */
+  banner?: ReactNode
   onClose: () => void
   onSaved: (saved: SuccessToast) => void
   onDirtyChange: (dirty: boolean) => void
@@ -23,6 +26,7 @@ interface ExpenseNewSheetProps {
 
 export default function ExpenseNewSheet({
   blocker,
+  banner,
   onClose,
   onSaved,
   onDirtyChange,
@@ -44,7 +48,7 @@ export default function ExpenseNewSheet({
       touched={touched}
       onClose={onClose}
       aside={
-        blocker.state === 'blocked' && (
+        blocker !== undefined && blocker.state === 'blocked' && (
           <LeaveConfirm
             blocker={blocker}
             question={EXPENSES_TEXT.discardTheExpense}
@@ -55,6 +59,7 @@ export default function ExpenseNewSheet({
         )
       }
     >
+      {banner}
       <ExpenseForm target="nuevo" onDone={onSaved} onCancel={onClose} onDirtyChange={changeDirty} />
     </Sheet>
   )
