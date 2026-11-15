@@ -50,6 +50,7 @@ export type SuccessToast =
   | typeof PASSWORD_CHANGED_SUCCESS
   | (typeof SETTINGS_TEXT)['invitationReady']
   | (typeof SALES_TEXT)['customerAssigned']
+  | (typeof SALES_TEXT)['expenseRecorded']
   | (typeof SALE_BILL_TEXT)['copied']
   | typeof THRESHOLD_SAVED
   | typeof CATALOG_SAVED

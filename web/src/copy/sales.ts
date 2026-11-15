@@ -4,7 +4,7 @@
  * from `noPriceMessage`), registered here and measured with `SAMPLES` by
  * `copy/copyLimits.test.ts`, never with fixture or API data. */
 
-import { baselineArgs, FIXTURE } from './baselineArgs.ts'
+import { baselineArgs, counted, FIXTURE } from './baselineArgs.ts'
 import type * as Self from './sales.ts'
 import { SAMPLES, type LimitedCopy } from './limits.ts'
 import { COMMON_TEXT } from './common.ts'
@@ -73,6 +73,11 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'SALES_TEXT.lineGift': [['2']],
   'SALES_TEXT.lineSpecialPrice': [['2']],
   'SALES_TEXT.removeLine': [['2']],
+  'SALES_TEXT.products': counted((n) => [n]),
+  'SALES_TEXT.saleInProgressName': [
+    ['2 products', '$ 11.000'],
+    ['1 product', null],
+  ],
   'SALES_TEXT.saleNumber': [[1284]],
   'SALES_TEXT.deleteSaleConfirm': [[M, D, G]],
   'SALE_BILL_TEXT.header': [['Flores Test', 'Sale #1284', D]],
@@ -136,4 +141,14 @@ export const SALES_TEXT = {
   deleteSaleConfirm: (money: string | number, day: string | number, grams: string | number) =>
     `Delete the sale of ${money} from ${day}? ${grams} go back to stock.`,
   dates: 'Dates',
+  otherThingsToRecord: 'Other things to record',
+  expense: 'Expense',
+  saleInProgress: 'Sale in progress',
+  products: (n: number) => (n === 1 ? '1 product' : `${n} products`),
+  back: 'Back',
+  expenseRecorded: 'Expense recorded',
+  /** The strip's accessible name: `products` is `SALES_TEXT.products(n)`; `amount` is the Total row's
+   * figure, or `null` while the prices are being recalculated (the amount clause is dropped). */
+  saleInProgressName: (products: string, amount: string | null) =>
+    amount === null ? `Sale in progress, ${products}. Back` : `Sale in progress, ${products}, ${amount}. Back`,
 } as const
