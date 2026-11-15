@@ -81,6 +81,7 @@ import NuevaVentaCliente from './NuevaVentaCliente'
 import NuevaVentaLinea, { type LinePreview, type LineState } from './NuevaVentaLinea'
 import SaleExpenseSheet, { ExpenseRow } from './SaleExpenseSheet'
 import { productCount } from './saleLineCount'
+import { useLeaveQuestion } from './leaveQuestion'
 import { COMMON_TEXT } from '../../copy/common'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
 import ContentArea from '../../components/ContentArea'
@@ -204,6 +205,11 @@ function NuevaVentaForm() {
   // The expense Sheet over the sale (phone only): what the host mirrors of its own history entry.
   const [expenseOpen, setExpenseOpen] = useState(false)
   const expenseActive = expenseOpen && onPhone
+  // What the Expense reports, and a latch for a save: the form keeps reporting a changed field
+  // after it saved, which must not count as a change that a leave would lose.
+  const [expenseDirty, setExpenseDirty] = useState(false)
+  const [expenseSaved, setExpenseSaved] = useState(false)
+  const expenseLive = expenseActive && expenseDirty && !expenseSaved
   const [closeNonce, setCloseNonce] = useState(0)
   const appliedCloseRef = useRef(0)
   const rowRef = useRef<HTMLElement | null>(null)
@@ -494,9 +500,22 @@ function NuevaVentaForm() {
     note.trim() !== '' ||
     shipping !== '0' ||
     lines.some((line) => !isBlank(line))
-  const { blocker, disarm } = useLeaveGuard(touched)
+  const { blocker, disarm } = useLeaveGuard(touched || expenseLive, {
+    sheetFloor: expenseActive ? 1 : undefined,
+    sheetDirty: expenseLive,
+  })
   // Lines with a Product chosen: the strip's N and the toast wording read this one count.
   const n = productCount(lines)
+  const leaveWords = useLeaveQuestion(blocker, { touched, strip: n > 0 })
+  const leaveConfirm = leaveWords !== null && (
+    <LeaveConfirm
+      blocker={blocker}
+      question={leaveWords.question}
+      detail={leaveWords.detail}
+      keepLabel={COMMON_TEXT.noKeepEntering}
+      discardLabel={COMMON_TEXT.yesDiscard}
+    />
+  )
 
   // A saved expense asks for the Sheet to close: a nonce compared with a ref, never a state
   // cleared by an effect. The close is `sheet.close()`; the host's mirror clears `expenseOpen`.
@@ -853,7 +872,11 @@ function NuevaVentaForm() {
           </div>
         )}
         {onPhone && (
-          <ExpenseRow words={SALES_TEXT} rowRef={rowRef} locked={locked} onOpen={() => setExpenseOpen(true)} />
+          <ExpenseRow words={SALES_TEXT} rowRef={rowRef} locked={locked} onOpen={() => {
+              setExpenseDirty(false)
+              setExpenseSaved(false)
+              setExpenseOpen(true)
+            }} />
         )}
         </div>
       </form>
@@ -873,24 +896,23 @@ function NuevaVentaForm() {
           n={n}
           total={totals.total}
           repricing={repricing}
-          onClosed={() => setExpenseOpen(false)}
-          onSaved={() => setCloseNonce((k) => k + 1)}
+          onClosed={() => {
+            setExpenseOpen(false)
+            setExpenseDirty(false)
+            setExpenseSaved(false)
+          }}
+          onSaved={() => {
+            setExpenseSaved(true)
+            setCloseNonce((k) => k + 1)
+          }}
+          onDirtyChange={setExpenseDirty}
+          leaveConfirm={leaveConfirm}
         />
       )}
 
       {customerShown && <NuevaVentaCliente allowNone onChosen={chooseCustomer} />}
 
-      {blocker.state === 'blocked' && (
-        <div className="nueva-venta__aviso">
-          <LeaveConfirm
-            blocker={blocker}
-            question={SALES_TEXT.discardSale}
-            detail={SALES_TEXT.cannotRecover}
-            keepLabel={COMMON_TEXT.noKeepEntering}
-            discardLabel={COMMON_TEXT.yesDiscard}
-          />
-        </div>
-      )}
+      {!expenseActive && leaveConfirm && <div className="nueva-venta__aviso">{leaveConfirm}</div>}
     </ContentArea>
   )
 }
