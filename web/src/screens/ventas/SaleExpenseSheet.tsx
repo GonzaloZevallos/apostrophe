@@ -16,41 +16,62 @@
 
 import { useQueryClient } from '@tanstack/react-query'
 import { type Ref, useEffect, useLayoutEffect, useRef } from 'react'
+import Boton from '../../components/Boton'
 import { invalidateResource } from '../../api/keys'
 import type { SuccessToast } from '../../components/AvisoExito'
 import Icono from '../../components/Icono'
 import { SheetLevel, useSheet } from '../../components/useSheetStack'
-import { SALES_TEXT } from '../../copy/sales'
 import { useFlash } from '../../flash/useFlash'
 import { useViewport } from '../../shell/useViewport'
 import ExpenseNewSheet from '../expenses/ExpenseNewSheet'
-import SaleInProgressStrip from './SaleInProgressStrip'
+import SaleInProgressStrip, { type SaleInProgressWords } from './SaleInProgressStrip'
+
+/** The row's own words, handed down by New sale, which reads the Copy module. */
+export interface ExpenseRowWords {
+  /** "Other things to record". */
+  otherThingsToRecord: string
+  /** The tile: "Expense". */
+  expense: string
+}
 
 interface ExpenseRowProps {
-  /** New sale's ref to the tile, which takes focus back when the Sheet closes. */
-  tileRef: Ref<HTMLButtonElement>
+  words: ExpenseRowWords
+  /** New sale's ref to the row, whose tile takes focus back when the Sheet closes. */
+  rowRef: Ref<HTMLElement>
   /** A sale save is in flight: the row does nothing. */
   locked: boolean
   onOpen: () => void
 }
 
-export function ExpenseRow({ tileRef, locked, onOpen }: ExpenseRowProps) {
+export function ExpenseRow({ words, rowRef, locked, onOpen }: ExpenseRowProps) {
   return (
-    <nav className="otras-cosas" aria-label={SALES_TEXT.otherThingsToRecord} inert={locked}>
+    <nav ref={rowRef} className="otras-cosas" aria-label={words.otherThingsToRecord} inert={locked}>
       <span className="otras-cosas__titulo" aria-hidden="true">
-        {SALES_TEXT.otherThingsToRecord}
+        {words.otherThingsToRecord}
       </span>
       <div className="otras-cosas__fila">
-        <button ref={tileRef} type="button" className="otras-cosas__tile" onClick={onOpen}>
-          <Icono nombre="gastos" />
-          {SALES_TEXT.expense}
-        </button>
+        <Boton variant="row" onClick={onOpen}>
+          <span className="otras-cosas__tile">
+            <Icono nombre="gastos" />
+            {words.expense}
+          </span>
+        </Boton>
       </div>
     </nav>
   )
 }
 
+/** What the host says, handed down by New sale (the Copy module). */
+export interface SaleExpenseWords {
+  /** The toast armed by a save while a sale is in progress. */
+  expenseRecorded: SuccessToast
+  strip: Omit<SaleInProgressWords, 'products'>
+  /** "N products" for the count of lines with a Product chosen. */
+  products: (n: number) => string
+}
+
 interface SaleExpenseSheetProps {
+  words: SaleExpenseWords
   /** Lines with a Product chosen: the strip shows when it is above 0, and the toast follows it. */
   n: number
   /** New sale's `totals.total` and whether its prices are being recalculated. */
@@ -62,7 +83,7 @@ interface SaleExpenseSheetProps {
   onSaved: () => void
 }
 
-export default function SaleExpenseSheet({ n, total, repricing, onClosed, onSaved }: SaleExpenseSheetProps) {
+export default function SaleExpenseSheet({ words, n, total, repricing, onClosed, onSaved }: SaleExpenseSheetProps) {
   const phone = useViewport() === 'phone'
   const queryClient = useQueryClient()
   const flash = useFlash()
@@ -113,7 +134,7 @@ export default function SaleExpenseSheet({ n, total, repricing, onClosed, onSave
 
   function saved(toast: SuccessToast): void {
     invalidateResource(queryClient, 'expenses')
-    flash.armAfterLeaving(n > 0 ? SALES_TEXT.expenseRecorded : toast)
+    flash.armAfterLeaving(n > 0 ? words.expenseRecorded : toast)
     onSaved()
   }
 
@@ -123,7 +144,12 @@ export default function SaleExpenseSheet({ n, total, repricing, onClosed, onSave
       <ExpenseNewSheet
         computer={false}
         banner={
-          n > 0 && <SaleInProgressStrip n={n} total={total} repricing={repricing} onBack={sheet.close} />
+          n > 0 && <SaleInProgressStrip
+              words={{ ...words.strip, products: words.products(n) }}
+              total={total}
+              repricing={repricing}
+              onBack={sheet.close}
+            />
         }
         onClose={sheet.close}
         onSaved={saved}

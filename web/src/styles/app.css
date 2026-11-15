@@ -7006,12 +7006,11 @@ a.ajustes-tema__opcion {
 
 .otras-cosas__tile {
   min-height: 72px;
+  width: 100%;
   padding: var(--espacio-xs);
-  border: 0;
   border-radius: var(--radio-campo);
   background: var(--papel);
   color: var(--tinta);
-  font: inherit;
   font-size: 13px;
   font-weight: 500;
   display: flex;
@@ -7027,13 +7026,11 @@ a.ajustes-tema__opcion {
 
 .venta-en-curso {
   min-height: var(--alto-tocable);
-  margin: var(--espacio-md) var(--margen-pantalla) 0;
+  width: 100%;
   padding: 0 var(--espacio-md);
-  border: 0;
   border-radius: var(--espacio-md);
   background: var(--acento-suave);
   color: var(--tinta);
-  font: inherit;
   font-size: 14px;
   display: flex;
   align-items: center;

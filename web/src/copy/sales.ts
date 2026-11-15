@@ -9,6 +9,8 @@ import type * as Self from './sales.ts'
 import { SAMPLES, type LimitedCopy } from './limits.ts'
 import { COMMON_TEXT } from './common.ts'
 import { CUSTOMERS_TEXT } from './customers.ts'
+import { ONBOARDING_TEXT } from './onboarding.ts'
+import { STOCK_TEXT } from './stock.ts'
 import { VARIETIES_TEXT } from './varieties.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
@@ -75,7 +77,7 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'SALES_TEXT.removeLine': [['2']],
   'SALES_TEXT.products': counted((n) => [n]),
   'SALES_TEXT.saleInProgressName': [
-    ['2 products', '$ 11.000'],
+    ['2 products', M],
     ['1 product', null],
   ],
   'SALES_TEXT.saleNumber': [[1284]],
@@ -144,10 +146,10 @@ export const SALES_TEXT = {
   otherThingsToRecord: 'Other things to record',
   expense: 'Expense',
   saleInProgress: 'Sale in progress',
-  products: (n: number) => (n === 1 ? '1 product' : `${n} products`),
-  back: 'Back',
+  products: (n: number) => [n, n === 1 ? STOCK_TEXT.varietyOne : STOCK_TEXT.varietyMany].join(' '),
+  back: ONBOARDING_TEXT.back,
   expenseRecorded: 'Expense recorded',
-  /** The strip's accessible name: `products` is `SALES_TEXT.products(n)`; `amount` is the Total row's
+  /** The strip's accessible name; the first argument is the count line from `SALES_TEXT.products(n)`; `amount` is the Total row's
    * figure, or `null` while the prices are being recalculated (the amount clause is dropped). */
   saleInProgressName: (products: string, amount: string | null) =>
     amount === null ? `Sale in progress, ${products}. Back` : `Sale in progress, ${products}, ${amount}. Back`,

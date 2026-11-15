@@ -206,7 +206,7 @@ function NuevaVentaForm() {
   const expenseActive = expenseOpen && onPhone
   const [closeNonce, setCloseNonce] = useState(0)
   const appliedCloseRef = useRef(0)
-  const tileRef = useRef<HTMLButtonElement | null>(null)
+  const rowRef = useRef<HTMLElement | null>(null)
   const wasExpenseActiveRef = useRef(false)
 
   const initialCustomerId = readNewSaleState(location.state)
@@ -506,7 +506,7 @@ function NuevaVentaForm() {
 
   // Focus returns to the Expense tile once the Sheet has closed, however it closed.
   useEffect(() => {
-    if (wasExpenseActiveRef.current && !expenseActive) tileRef.current?.focus()
+    if (wasExpenseActiveRef.current && !expenseActive) rowRef.current?.querySelector('button')?.focus()
     wasExpenseActiveRef.current = expenseActive
   }, [expenseActive])
 
@@ -851,7 +851,7 @@ function NuevaVentaForm() {
           </div>
         )}
         {onPhone && (
-          <ExpenseRow tileRef={tileRef} locked={locked} onOpen={() => setExpenseOpen(true)} />
+          <ExpenseRow words={SALES_TEXT} rowRef={rowRef} locked={locked} onOpen={() => setExpenseOpen(true)} />
         )}
         </div>
       </form>
@@ -859,6 +859,15 @@ function NuevaVentaForm() {
 
       {expenseOpen && (
         <SaleExpenseSheet
+          words={{
+            expenseRecorded: SALES_TEXT.expenseRecorded,
+            strip: {
+              saleInProgress: SALES_TEXT.saleInProgress,
+              back: SALES_TEXT.back,
+              name: (amount) => SALES_TEXT.saleInProgressName(SALES_TEXT.products(n), amount),
+            },
+            products: SALES_TEXT.products,
+          }}
           n={n}
           total={totals.total}
           repricing={repricing}

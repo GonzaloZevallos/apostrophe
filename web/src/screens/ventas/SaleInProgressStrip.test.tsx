@@ -3,13 +3,24 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, test, vi } from 'vitest'
+import { SALES_TEXT } from '../../copy/sales'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 import SaleInProgressStrip from './SaleInProgressStrip'
 
 function renderStrip(props: { n: number; total: number; repricing: boolean }, onBack = vi.fn()) {
   render(
     <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
-      <SaleInProgressStrip {...props} onBack={onBack} />
+      <SaleInProgressStrip
+        words={{
+          saleInProgress: SALES_TEXT.saleInProgress,
+          back: SALES_TEXT.back,
+          products: SALES_TEXT.products(props.n),
+          name: (amount) => SALES_TEXT.saleInProgressName(SALES_TEXT.products(props.n), amount),
+        }}
+        total={props.total}
+        repricing={props.repricing}
+        onBack={onBack}
+      />
     </MoneyFormatProvider>,
   )
   return onBack

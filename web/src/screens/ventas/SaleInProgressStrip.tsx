@@ -7,14 +7,25 @@
  * name leaves the amount out.
  */
 
+import Boton from '../../components/Boton'
 import Icono from '../../components/Icono'
 import Loading from '../../components/Loading'
-import { SALES_TEXT } from '../../copy/sales'
 import { useMoney } from '../../format/moneyContext'
 
+/** The strip's words, handed down by the host that reads the Copy module. */
+export interface SaleInProgressWords {
+  /** "Sale in progress". */
+  saleInProgress: string
+  /** "Back". */
+  back: string
+  /** "N products" for the count of lines with a Product chosen. */
+  products: string
+  /** The accessible name, from the amount in the Money format, or `null` while it is not known. */
+  name: (amount: string | null) => string
+}
+
 interface SaleInProgressStripProps {
-  /** Lines with a Product chosen (`productCount`). */
-  n: number
+  words: SaleInProgressWords
   /** New sale's `totals.total`. */
   total: number
   /** Prices are being recalculated: the amount is not known. */
@@ -22,23 +33,19 @@ interface SaleInProgressStripProps {
   onBack: () => void
 }
 
-export default function SaleInProgressStrip({ n, total, repricing, onBack }: SaleInProgressStripProps) {
+export default function SaleInProgressStrip({ words, total, repricing, onBack }: SaleInProgressStripProps) {
   const money = useMoney()
-  const products = SALES_TEXT.products(n)
   const amount = repricing ? null : money.money(total)
   return (
-    <button
-      type="button"
-      className="venta-en-curso"
-      aria-label={SALES_TEXT.saleInProgressName(products, amount)}
-      onClick={onBack}
-    >
-      <Icono nombre="atras" />
-      <span className="venta-en-curso__texto">
-        {SALES_TEXT.saleInProgress} · <b>{products}</b> · {repricing ? <Loading compacto /> : amount}
-        {' · '}
+    <Boton variant="row" ariaLabel={words.name(amount)} onClick={onBack}>
+      <span className="venta-en-curso">
+        <Icono nombre="atras" />
+        <span className="venta-en-curso__texto">
+          {words.saleInProgress} · <b>{words.products}</b> · {repricing ? <Loading compacto /> : amount}
+          {' · '}
+        </span>
+        <span className="venta-en-curso__volver">{words.back}</span>
       </span>
-      <span className="venta-en-curso__volver">{SALES_TEXT.back}</span>
-    </button>
+    </Boton>
   )
 }
