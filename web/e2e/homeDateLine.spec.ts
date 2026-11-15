@@ -26,6 +26,10 @@ interface Measure {
   text: string
   /** `scrollWidth <= clientWidth`: the text is whole, no ellipsis. */
   whole: boolean
+  scrollWidth: number
+  clientWidth: number
+  fontSize: string
+  fontFamily: string
   dateHeight: number
   dateFontSize: number
   avatarWidth: number
@@ -47,6 +51,10 @@ async function measureRow(page: Page, index: number): Promise<Measure> {
       return {
         text: date.textContent ?? '',
         whole: date.scrollWidth <= date.clientWidth,
+        scrollWidth: date.scrollWidth,
+        clientWidth: date.clientWidth,
+        fontSize: getComputedStyle(date).fontSize,
+        fontFamily: getComputedStyle(date).fontFamily,
         dateHeight: date.getBoundingClientRect().height,
         dateFontSize: parseFloat(getComputedStyle(date).fontSize),
         avatarWidth: avatarBox.width,
@@ -106,7 +114,7 @@ for (const theme of THEMES) {
       ] as const) {
         const at100 = await measureRow(page, index)
         expect(at100.text).toBe(expected)
-        expect(at100.whole, `${expected} at 100 %: shown whole`).toBe(true)
+        expect(at100.whole, `${expected} at 100 %: shown whole (${at100.scrollWidth} of ${at100.clientWidth} px, ${at100.fontSize} ${at100.fontFamily})`).toBe(true)
         expectOneLine(at100, `${expected} at 100 %`)
         expectAvatarSafe(at100, `${expected} at 100 %`)
       }

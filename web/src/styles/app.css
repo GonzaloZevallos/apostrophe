@@ -521,17 +521,22 @@ body {
 
 /* The date row: the date takes the free width and never wraps, the "Editar" slot is a
  * zero-width inert box, and the avatar closes the row. The row has no gap of its own: the date
- * keeps one `--espacio-md` after it, so the long Spanish date ("Miércoles 30 de septiembre",
- * 222 px in Geist 20 px) fits whole at 320 px, where the two gaps around the empty slot left 212. */
+ * keeps one `--espacio-md` after it: the two gaps around the empty slot left 212 px at 320 px. */
 .inicio-cabecera__fila {
   display: flex;
   align-items: center;
   gap: 0;
 }
 
+/* The long date is the `.cuerpo` text token (16 px) at weight 600, not `.titulo`: at 20 px even
+ * "Wednesday, September 30" measured 251 px in the 224 px the row leaves at 320 px. The text
+ * class is not used itself, because `.cuerpo` here is also the body's layout box. */
 .inicio-cabecera__fecha {
   flex: 1;
   margin-inline-end: var(--espacio-md);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
