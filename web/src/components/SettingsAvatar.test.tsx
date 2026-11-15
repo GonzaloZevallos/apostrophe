@@ -10,6 +10,8 @@ import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import App from '../App'
+import { COMMON_TEXT } from '../copy/common'
+import { EXPENSES_TEXT } from '../copy/expenses'
 import { queryClient } from '../queryClient'
 import { router } from '../router'
 import { ANALYSIS, CUSTOMERS, EXPENSES, HOME, SALES, SETTINGS, VARIETIES, type Viewport } from '../routes'
@@ -76,23 +78,29 @@ describe('Expenses on the phone', () => {
     { id: 1, name: 'Rent', subtotal: 500, expenses: [{ id: 7, spent_on: '2026-10-01', category_id: 1, amount: 500, detail: '' }] },
   ])
 
+  // Each state also names what shows the screen got there, so a state never reached fails here.
+  const reached = {
+    loading: () => screen.findByRole('progressbar'),
+    empty: () => screen.findByText(EXPENSES_TEXT.youSpentThisMonth),
+    refused: () => screen.findByRole('alert'),
+    offline: () => screen.findByRole('status'),
+    data: () => screen.findByText(EXPENSES_TEXT.latest),
+  }
+
   test.each([
-    ['loading', undefined],
-    ['an empty month', () => json(MONTH([]))],
-    ['a server error', () => json({ detail: 'boom' }, 500)],
-    ['a connection that fails', () => Promise.reject(new TypeError('Failed to fetch'))],
-    ['one expense', () => json(WITH_ONE)],
-  ] as const)('while %s the header has no Settings avatar, only the way back and the add action', async (_state, other) => {
+    ['loading', undefined, reached.loading],
+    ['an empty month', () => json(MONTH([])), reached.empty],
+    ['a server error', () => json({ detail: 'boom' }, 500), reached.refused],
+    ['a connection that fails', () => Promise.reject(new TypeError('Failed to fetch')), reached.offline],
+    ['one expense', () => json(WITH_ONE), reached.data],
+  ] as const)('while %s the header has no Settings avatar, only the way back and the add action', async (_state, other, arrived) => {
     await openAt(EXPENSES, 'phone', ME, other)
-    // Let the month read settle into its state before looking.
-    await act(async () => {
-      await Promise.resolve()
-    })
+    await arrived()
 
     expect(screen.queryByRole('link', { name: /^(Settings|Ajustes y cuenta)$/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^(Settings|Ajustes y cuenta)$/ })).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Add expense' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '‹ Analysis' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: COMMON_TEXT.addExpense })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: COMMON_TEXT.backArrow(COMMON_TEXT.analysis) })).toBeInTheDocument()
   })
 })
 
