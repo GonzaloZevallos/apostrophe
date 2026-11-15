@@ -320,6 +320,7 @@ Criterios de éxito, Sale number:
   - "No, keep entering" deja a la usuaria en el formulario con todo intacto; el siguiente gesto de volver vuelve a preguntar.
   - Un formulario sin tocar se cierra en el acto.
   - Con una hoja abierta sobre el formulario (Pick a customer, o New customer adentro, la lista de productos de una línea o la lista de medios), volver hace exactamente lo que hace el "Close" propio de esa hoja: cierra solo la hoja de arriba y el formulario conserva todo lo tipeado. Nunca pregunta "Discard the sale?".
+  - Con la hoja "Add expense" abierta sobre la venta (solo en el teléfono), volver y "Close" cierran solo esa hoja y la venta conserva todo lo cargado. La referencia es `expenses.md`.
   - No hay borradores ni guardado automático.
 - **Pick a customer** (`NuevaVentaCliente`):
   - Una hoja sobre la venta, que aparece solo cuando la vendedora la abre.
@@ -346,6 +347,7 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
 - **Ningún campo desborda ni queda recortado** a 320 px ni con el texto al 130 %.
 - **Objetivos táctiles**: las opciones Paid · Owing, "Add another product" y los botones de diálogo miden al menos 44 px de alto; todo campo tiene al menos 16 px. La lista de productos de una línea y la de medios siguen las medidas del Selector (filas y búsqueda de 44 px, texto de 16 px).
 - **Teclados**: gramos `inputmode="decimal"`; pesos (envío, Special price) `inputmode="numeric"`; los campos de una línea llevan `enterkeyhint` para que la tecla de acción del teclado avance entre ellos.
+- **Other things to record**: una fila bajo el pie con un solo botón, "Expense" (ícono de recibo), siempre ofrecida; abre el formulario de gasto en el lugar, como una hoja sobre la venta que sigue montada. Con al menos una línea con producto, la hoja muestra arriba la franja "Sale in progress · N products · total · Back" (`expenses.md`). La computadora no tiene la fila.
 - **Dibujo**: los dibujos de New sale de `docs/product/design-system/pantallas/` muestran los dos campos del Selector cerrados:
   - El campo de producto de la línea aparece en `NuevaVenta.dc.html` y `NuevaVentaOscuro.dc.html`.
   - Paid · Owing y, bajo Paid, el campo "Payment method" aparecen en los dibujos de computadora `NuevaVentaCompu`, `NuevaVentaClienteCompu` y sus versiones oscuras. Es el único cambio de esos dibujos.
