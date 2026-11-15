@@ -125,15 +125,14 @@ export const SALES_STATES: readonly WalkState[] = [
     visible: SALES_TEXT.discardSale,
   },
   {
-    // The Expense Sheet over a sale in progress, with a typed Expense: the strip's Back asks first.
+    // A typed Expense over New sale, with no Product chosen (so no strip: the strip's own layout is
+    // walked where it is drawn). Close asks first; the detail is the common "loses what you entered".
     screen: 'sale/expense-discard',
     route: SALE_NEW,
     steps: [
-      { press: `${SALES_TEXT.lineVariety(1)} ${common('common:pickAVariety')}` },
-      { press: 'Sir Jack' },
       { click: SALES_TEXT.expense },
       { fill: { label: EXPENSES_TEXT.details, value: 'Cinta' } },
-      { activate: SALES_TEXT.back },
+      { activate: common('common:close') },
     ],
     visible: EXPENSES_TEXT.discardTheExpense,
   },
