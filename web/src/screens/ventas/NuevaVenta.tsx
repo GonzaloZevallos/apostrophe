@@ -79,6 +79,8 @@ import { OWING_HINT, SALES_TEXT } from '../../copy/sales'
 import type { Variety } from '../Variedades'
 import NuevaVentaCliente from './NuevaVentaCliente'
 import NuevaVentaLinea, { type LinePreview, type LineState } from './NuevaVentaLinea'
+import SaleExpenseSheet, { ExpenseRow } from './SaleExpenseSheet'
+import { productCount } from './saleLineCount'
 import { COMMON_TEXT } from '../../copy/common'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
 import ContentArea from '../../components/ContentArea'
@@ -199,6 +201,13 @@ function NuevaVentaForm() {
   const queryClient = useQueryClient()
   // Save looks unready before the choice on the phone only; the computer draws it as it always did.
   const onPhone = useViewport() === 'phone'
+  // The expense Sheet over the sale (phone only): what the host mirrors of its own history entry.
+  const [expenseOpen, setExpenseOpen] = useState(false)
+  const expenseActive = expenseOpen && onPhone
+  const [closeNonce, setCloseNonce] = useState(0)
+  const appliedCloseRef = useRef(0)
+  const rowRef = useRef<HTMLElement | null>(null)
+  const wasExpenseActiveRef = useRef(false)
 
   const initialCustomerId = readNewSaleState(location.state)
 
@@ -215,6 +224,8 @@ function NuevaVentaForm() {
   const [methodGone, setMethodGone] = useState<string | null>(null)
   const methodFieldRef = useRef<HTMLButtonElement | null>(null)
   const customerSheet = useSheet(1)
+  // The expense Sheet's own handle: a save closes it through this one, not the customer sheet's.
+  const expenseSheet = useSheet(1)
   // `useSheet(1).isOpen` is true for any sheet at level 1, a line's Product list included:
   // the customer Sheet mounts only when the seller opened it.
   const [customerAsked, setCustomerAsked] = useState(false)
@@ -228,7 +239,7 @@ function NuevaVentaForm() {
   // is drawn in `listHost`, outside the form, and the form beneath is `inert`, so what is covered is
   // reported as covered (mobile check) and unreachable. Every Selector in the form shares `listHost`.
   const [listHost, setListHost] = useState<HTMLElement | null>(null)
-  const pickerListOpen = useViewport() !== 'computer' && customerSheet.isOpen && !customerAsked
+  const pickerListOpen = useViewport() !== 'computer' && customerSheet.isOpen && !customerAsked && !expenseActive
   // The Phone country list of "Pick a customer"'s new customer is a third sheet, over the sale.
   const countryListSheet = useSheet(3)
   const countryListOpen = useViewport() !== 'computer' && countryListSheet.isOpen
@@ -484,6 +495,22 @@ function NuevaVentaForm() {
     shipping !== '0' ||
     lines.some((line) => !isBlank(line))
   const { blocker, disarm } = useLeaveGuard(touched)
+  // Lines with a Product chosen: the strip's N and the toast wording read this one count.
+  const n = productCount(lines)
+
+  // A saved expense asks for the Sheet to close: a nonce compared with a ref, never a state
+  // cleared by an effect. The close is `sheet.close()`; the host's mirror clears `expenseOpen`.
+  useEffect(() => {
+    if (closeNonce === appliedCloseRef.current) return
+    appliedCloseRef.current = closeNonce
+    expenseSheet.close()
+  }, [closeNonce, expenseSheet])
+
+  // Focus returns to the Expense tile once the Sheet has closed, however it closed.
+  useEffect(() => {
+    if (wasExpenseActiveRef.current && !expenseActive) rowRef.current?.querySelector('button')?.focus()
+    wasExpenseActiveRef.current = expenseActive
+  }, [expenseActive])
 
   const save = useMutation({
     mutationFn: (body: SaleBody) => post<SavedSale>('/sales', body),
@@ -652,7 +679,7 @@ function NuevaVentaForm() {
 
   return (
     <ContentArea as="main" className="pantalla">
-      <form ref={formRef} className="nueva-venta" inert={pickerListOpen || countryListOpen} onSubmit={onSubmit}>
+      <form ref={formRef} className="nueva-venta" inert={pickerListOpen || countryListOpen || expenseActive} onSubmit={onSubmit}>
         <div className="nueva-venta__disposicion">
         <div className="nueva-venta__cuerpo" aria-busy={repricing || opening || undefined}>
           <div className="encabezado-fila nueva-venta__cabecera">
@@ -825,9 +852,31 @@ function NuevaVentaForm() {
             </div>
           </div>
         )}
+        {onPhone && (
+          <ExpenseRow words={SALES_TEXT} rowRef={rowRef} locked={locked} onOpen={() => setExpenseOpen(true)} />
+        )}
         </div>
       </form>
       <div className="nueva-venta__lista" ref={setListHost} />
+
+      {expenseOpen && (
+        <SaleExpenseSheet
+          words={{
+            expenseRecorded: SALES_TEXT.expenseRecorded,
+            strip: {
+              saleInProgress: SALES_TEXT.saleInProgress,
+              back: SALES_TEXT.back,
+              name: (amount) => SALES_TEXT.saleInProgressName(SALES_TEXT.products(n), amount),
+            },
+            products: SALES_TEXT.products,
+          }}
+          n={n}
+          total={totals.total}
+          repricing={repricing}
+          onClosed={() => setExpenseOpen(false)}
+          onSaved={() => setCloseNonce((k) => k + 1)}
+        />
+      )}
 
       {customerShown && <NuevaVentaCliente allowNone onChosen={chooseCustomer} />}
 

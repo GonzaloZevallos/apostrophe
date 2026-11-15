@@ -30,6 +30,8 @@
 
 **Cuando** manejo mi negocio desde el teléfono entre pedido y pedido o en medio del chat con un cliente, varias veces por día, **quiero** que la app esté ordenada según lo que hago de verdad y con qué frecuencia, **para** volver con el cliente en lugar de buscar entre menús. (La historia de navegación, navigation.md: acá la sirve "+ New sale", a un toque desde cada **Tab root**).
 
+**Cuando** estoy en medio de registrar una venta en el teléfono y tengo que anotar una Expense, **quiero** registrarla ahí mismo y volver a la misma venta intacta, **para** terminar las dos sin volver a tipear nada ni salir del flujo. (Parte 3 de GH-725, compartido con expenses.md, que es la referencia: acá lo sirven la fila "Other things to record" de New sale en el teléfono con su tile "Expense", y que cerrar la Expense deje la venta como estaba).
+
 # Ventas
 
 Lo que un cliente se lleva de una vez, con cada línea cotizada con los precios del día y las **Pricing settings** del negocio, y ese precio guardado en la línea (ADR-0003). Las ventas las ve solo su negocio (ADR-0004). Esta capacidad lee:
@@ -320,6 +322,7 @@ Criterios de éxito, Sale number:
   - "No, keep entering" deja a la usuaria en el formulario con todo intacto; el siguiente gesto de volver vuelve a preguntar.
   - Un formulario sin tocar se cierra en el acto.
   - Con una hoja abierta sobre el formulario (Pick a customer, o New customer adentro, la lista de productos de una línea o la lista de medios), volver hace exactamente lo que hace el "Close" propio de esa hoja: cierra solo la hoja de arriba y el formulario conserva todo lo tipeado. Nunca pregunta "Discard the sale?".
+  - Con la hoja "Add expense" abierta sobre la venta (solo en el teléfono), volver y "Close" cierran solo esa hoja y la venta conserva todo lo cargado. La referencia es `expenses.md`; la regla de la hoja sobre un formulario está en la [ADR 20261114](../adr/20261114-a-form-opened-over-a-form-keeps-the-screens-one-leave-guard-and-points-its-dirty-flag-and-floor-at-the-form-on-top.md).
   - No hay borradores ni guardado automático.
 - **Pick a customer** (`NuevaVentaCliente`):
   - Una hoja sobre la venta, que aparece solo cuando la vendedora la abre.
@@ -346,6 +349,7 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
 - **Ningún campo desborda ni queda recortado** a 320 px ni con el texto al 130 %.
 - **Objetivos táctiles**: las opciones Paid · Owing, "Add another product" y los botones de diálogo miden al menos 44 px de alto; todo campo tiene al menos 16 px. La lista de productos de una línea y la de medios siguen las medidas del Selector (filas y búsqueda de 44 px, texto de 16 px).
 - **Teclados**: gramos `inputmode="decimal"`; pesos (envío, Special price) `inputmode="numeric"`; los campos de una línea llevan `enterkeyhint` para que la tecla de acción del teclado avance entre ellos.
+- **Other things to record**: una fila bajo el pie con un solo botón, "Expense" (ícono de recibo), siempre ofrecida; abre el formulario de gasto en el lugar, como una hoja sobre la venta que sigue montada. Con al menos una línea con producto, la hoja muestra arriba la franja "Sale in progress · N products · total · Back" (`expenses.md`). La computadora no tiene la fila.
 - **Dibujo**: los dibujos de New sale de `docs/product/design-system/pantallas/` muestran los dos campos del Selector cerrados:
   - El campo de producto de la línea aparece en `NuevaVenta.dc.html` y `NuevaVentaOscuro.dc.html`.
   - Paid · Owing y, bajo Paid, el campo "Payment method" aparecen en los dibujos de computadora `NuevaVentaCompu`, `NuevaVentaClienteCompu` y sus versiones oscuras. Es el único cambio de esos dibujos.

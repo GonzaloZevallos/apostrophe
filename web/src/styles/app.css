@@ -6988,3 +6988,76 @@ a.ajustes-tema__opcion {
   flex-wrap: wrap;
   gap: var(--espacio-sm);
 }
+
+/* ===== venta-gasto-telefono ===== */
+/* The Expense row of phone New sale (`NuevaVenta.dc.html`'s "Otras cosas para anotar") and the
+ * "Sale in progress" strip over the expense Sheet (`VentaEnCurso.dc.html`). Tokens only. */
+.otras-cosas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+  padding: var(--espacio-lg) 0;
+  border-top: 1px solid var(--linea);
+}
+
+.otras-cosas__titulo {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--tinta2);
+}
+
+.otras-cosas__fila {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(var(--alto-tocable), 1fr));
+  gap: var(--espacio-sm);
+}
+
+/* No tap delay or double-tap zoom on the tile, nor on the strip's button. */
+.otras-cosas button,
+button:has(> .venta-en-curso) {
+  touch-action: manipulation;
+}
+
+.otras-cosas__tile {
+  min-height: 72px;
+  width: 100%;
+  padding: var(--espacio-xs);
+  border-radius: var(--radio-campo);
+  background: var(--papel);
+  color: var(--tinta);
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-xs);
+}
+
+.otras-cosas__tile .icono {
+  color: var(--acento);
+}
+
+.venta-en-curso {
+  min-height: var(--alto-tocable);
+  width: 100%;
+  padding: 0 var(--espacio-md);
+  border-radius: var(--espacio-md);
+  background: var(--acento-suave);
+  color: var(--tinta);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+  text-align: left;
+}
+
+.venta-en-curso__texto {
+  flex-grow: 1;
+}
+
+.venta-en-curso__volver {
+  color: var(--acento);
+  font-weight: 600;
+}
+/* ===== end venta-gasto-telefono ===== */

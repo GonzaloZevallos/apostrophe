@@ -5,7 +5,7 @@
 
 import { baselineArgs } from './baselineArgs.ts'
 import type * as Self from './onboarding.ts'
-import type { LimitedCopy } from './limits'
+import type { LimitedCopy } from './limits.ts'
 import { STOCK_TEXT } from './stock.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
