@@ -145,6 +145,7 @@ subgraph src["src"]
       src_screens_ventas_SaleInProgressStrip_tsx["SaleInProgressStrip.tsx"]
       src_screens_ventas_VentaDetalle_tsx["VentaDetalle.tsx"]
       src_screens_ventas_Ventas_tsx["Ventas.tsx"]
+      src_screens_ventas_leaveQuestion_ts["leaveQuestion.ts"]
       src_screens_ventas_saleLineCount_ts["saleLineCount.ts"]
     end
     subgraph src_screens_withdrawals["withdrawals"]
@@ -411,6 +412,7 @@ src_screens_ventas_NuevaVenta_tsx-->src_screens_Variedades_tsx
 src_screens_ventas_NuevaVenta_tsx-->src_screens_ventas_NuevaVentaCliente_tsx
 src_screens_ventas_NuevaVenta_tsx-->src_screens_ventas_NuevaVentaLinea_tsx
 src_screens_ventas_NuevaVenta_tsx-->src_screens_ventas_SaleExpenseSheet_tsx
+src_screens_ventas_NuevaVenta_tsx-->src_screens_ventas_leaveQuestion_ts
 src_screens_ventas_NuevaVenta_tsx-->src_screens_ventas_saleLineCount_ts
 src_screens_ventas_SaleExpenseSheet_tsx-->src_screens_expenses_ExpenseNewSheet_tsx
 src_screens_ventas_SaleExpenseSheet_tsx-->src_screens_ventas_SaleInProgressStrip_tsx
