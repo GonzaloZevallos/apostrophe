@@ -7000,8 +7000,14 @@ a.ajustes-tema__opcion {
 
 .otras-cosas__fila {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(var(--alto-tocable), 1fr));
   gap: var(--espacio-sm);
+}
+
+/* No tap delay or double-tap zoom on the tile, nor on the strip's button. */
+.otras-cosas button,
+button:has(> .venta-en-curso) {
+  touch-action: manipulation;
 }
 
 .otras-cosas__tile {
