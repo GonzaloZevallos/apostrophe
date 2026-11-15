@@ -1,7 +1,9 @@
 /**
  * `ExpenseNewSheet`: the sheet that draws the new-expense form. Presentational only: the host owns
- * the leave guard (it passes the `blocker`, or none), the exit (`onClose`, `onSaved`) and the `SheetLevel`
- * of its own history entry. It calls no `useLeaveGuard` and no `useBlocker`.
+ * the leave guard, the exit (`onClose`, `onSaved`) and the `SheetLevel` of its own history entry.
+ * The host passes a `blocker`, and the sheet draws the standard confirmation for it, or a
+ * `leaveConfirm` node, drawn in the Sheet's aside beside the dialog, or neither. It calls no
+ * `useLeaveGuard` and no `useBlocker`.
  */
 
 import { type ReactNode, useState } from 'react'
@@ -13,9 +15,7 @@ import { COMMON_TEXT } from '../../copy/common'
 import { EXPENSES_TEXT } from '../../copy/expenses'
 import ExpenseForm from './ExpenseForm'
 
-interface ExpenseNewSheetProps {
-  /** The host's leave guard; a host with none (the sheet over New sale) passes nothing. */
-  blocker?: Blocker
+interface Common {
   /** What sits above the form, inside the dialog (the "Sale in progress" strip). */
   banner?: ReactNode
   onClose: () => void
@@ -24,8 +24,19 @@ interface ExpenseNewSheetProps {
   computer: boolean
 }
 
+/**
+ * The host's leave guard, or the confirmation it draws itself; a host with neither (the sheet
+ * over New sale, for now) passes nothing.
+ */
+type ExpenseNewSheetProps = Common &
+  (
+    | { blocker?: Blocker; leaveConfirm?: never }
+    | { leaveConfirm?: ReactNode; blocker?: never }
+  )
+
 export default function ExpenseNewSheet({
   blocker,
+  leaveConfirm,
   banner,
   onClose,
   onSaved,
@@ -48,7 +59,7 @@ export default function ExpenseNewSheet({
       touched={touched}
       onClose={onClose}
       aside={
-        blocker !== undefined && blocker.state === 'blocked' && (
+        blocker?.state === 'blocked' ? (
           <LeaveConfirm
             blocker={blocker}
             question={EXPENSES_TEXT.discardTheExpense}
@@ -56,6 +67,8 @@ export default function ExpenseNewSheet({
             keepLabel={COMMON_TEXT.noKeepEntering}
             discardLabel={COMMON_TEXT.yesDiscard}
           />
+        ) : (
+          leaveConfirm
         )
       }
     >
