@@ -15,7 +15,7 @@
  */
 
 import { useQueryClient } from '@tanstack/react-query'
-import { type Ref, useEffect, useLayoutEffect, useRef } from 'react'
+import { type ReactNode, type Ref, useEffect, useLayoutEffect, useRef } from 'react'
 import Boton from '../../components/Boton'
 import { invalidateResource } from '../../api/keys'
 import type { SuccessToast } from '../../components/AvisoExito'
@@ -81,9 +81,22 @@ interface SaleExpenseSheetProps {
   onClosed: () => void
   /** The expense was saved: New sale closes the Sheet. */
   onSaved: () => void
+  /** The form reports whether a field differs from how the Sheet opened. */
+  onDirtyChange: (dirty: boolean) => void
+  /** New sale's one leave confirmation, drawn in the Sheet's aside. Never a blocker: the host owns no guard. */
+  leaveConfirm?: ReactNode
 }
 
-export default function SaleExpenseSheet({ words, n, total, repricing, onClosed, onSaved }: SaleExpenseSheetProps) {
+export default function SaleExpenseSheet({
+  words,
+  n,
+  total,
+  repricing,
+  onClosed,
+  onSaved,
+  onDirtyChange,
+  leaveConfirm,
+}: SaleExpenseSheetProps) {
   const phone = useViewport() === 'phone'
   const queryClient = useQueryClient()
   const flash = useFlash()
@@ -153,7 +166,8 @@ export default function SaleExpenseSheet({ words, n, total, repricing, onClosed,
         }
         onClose={sheet.close}
         onSaved={saved}
-        onDirtyChange={() => undefined}
+        onDirtyChange={onDirtyChange}
+        leaveConfirm={leaveConfirm}
       />
     </SheetLevel.Provider>
   )

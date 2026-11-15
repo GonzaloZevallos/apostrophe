@@ -4,6 +4,7 @@ import { CUSTOMER, CUSTOMERS, HOME, SALE, SALE_NEW, SALES } from '../routes.ts'
 import { common, emptyState } from './copy.ts'
 import { DETECTED_COUNTRY_BUTTON } from './countryField.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
+import { EXPENSES_TEXT } from '../copy/expenses.ts'
 import { SALES_TEXT } from '../copy/sales.ts'
 import type { WalkState } from './states.ts'
 
@@ -122,6 +123,18 @@ export const SALES_STATES: readonly WalkState[] = [
       { press: common('common:close') },
     ],
     visible: SALES_TEXT.discardSale,
+  },
+  {
+    // A typed Expense over New sale, with no Product chosen (so no strip: the strip's own layout is
+    // walked where it is drawn). Close asks first; the detail is the common "loses what you entered".
+    screen: 'sale/expense-discard',
+    route: SALE_NEW,
+    steps: [
+      { click: SALES_TEXT.expense },
+      { fill: { label: EXPENSES_TEXT.details, value: 'Cinta' } },
+      { activate: common('common:close') },
+    ],
+    visible: EXPENSES_TEXT.discardTheExpense,
   },
   {
     screen: 'VentaAsignarCliente',

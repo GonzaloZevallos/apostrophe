@@ -338,6 +338,7 @@
   {"source":"expenses.ts:EXPENSES_TEXT.newCategoryName","args":null,"text":"New category name"},
   {"source":"expenses.ts:EXPENSES_TEXT.oneCategory","args":null,"text":"1 category"},
   {"source":"expenses.ts:EXPENSES_TEXT.pickACategory","args":null,"text":"Pick a category"},
+  {"source":"expenses.ts:EXPENSES_TEXT.saleStaysAsItIs","args":null,"text":"Your sale in progress stays as it is."},
   {"source":"expenses.ts:EXPENSES_TEXT.saveTheExpense","args":null,"text":"Save the expense"},
   {"source":"expenses.ts:EXPENSES_TEXT.thisCannotBeUndone","args":null,"text":" This can't be undone."},
   {"source":"expenses.ts:EXPENSES_TEXT.whatYouChangedIsLost","args":null,"text":"What you changed is lost: the expense stays as it was."},

@@ -108,6 +108,7 @@
   {"file":"src/screens/ventas/SaleBillButton.tsx","imports":["sales.ts"],"issue":351},
   {"file":"src/screens/ventas/VentaDetalle.tsx","imports":["sales.ts"],"issue":351},
   {"file":"src/screens/ventas/Ventas.tsx","imports":["sales.ts"],"issue":351},
+  {"file":"src/screens/ventas/leaveQuestion.ts","imports":["expenses.ts","sales.ts"],"issue":351},
   {"file":"src/screens/withdrawals/WithdrawalDetail.tsx","imports":["stock.ts"],"issue":352},
   {"file":"src/screens/withdrawals/WithdrawalFacts.tsx","imports":["stock.ts"],"issue":352},
   {"file":"src/screens/withdrawals/WithdrawalForm.tsx","imports":["settings.ts"],"issue":353},
