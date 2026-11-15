@@ -50,7 +50,7 @@ export function ExpenseRow({ words, rowRef, locked, onOpen }: ExpenseRowProps) {
         {words.otherThingsToRecord}
       </span>
       <div className="otras-cosas__fila">
-        <Boton variant="row" onClick={onOpen}>
+        <Boton variant="row" onClick={locked ? undefined : onOpen}>
           <span className="otras-cosas__tile">
             <Icono nombre="gastos" />
             {words.expense}

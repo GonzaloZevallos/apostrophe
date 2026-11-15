@@ -224,6 +224,8 @@ function NuevaVentaForm() {
   const [methodGone, setMethodGone] = useState<string | null>(null)
   const methodFieldRef = useRef<HTMLButtonElement | null>(null)
   const customerSheet = useSheet(1)
+  // The expense Sheet's own handle: a save closes it through this one, not the customer sheet's.
+  const expenseSheet = useSheet(1)
   // `useSheet(1).isOpen` is true for any sheet at level 1, a line's Product list included:
   // the customer Sheet mounts only when the seller opened it.
   const [customerAsked, setCustomerAsked] = useState(false)
@@ -501,8 +503,8 @@ function NuevaVentaForm() {
   useEffect(() => {
     if (closeNonce === appliedCloseRef.current) return
     appliedCloseRef.current = closeNonce
-    customerSheet.close()
-  }, [closeNonce, customerSheet])
+    expenseSheet.close()
+  }, [closeNonce, expenseSheet])
 
   // Focus returns to the Expense tile once the Sheet has closed, however it closed.
   useEffect(() => {
