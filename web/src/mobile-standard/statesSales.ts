@@ -137,6 +137,20 @@ export const SALES_STATES: readonly WalkState[] = [
     visible: EXPENSES_TEXT.discardTheExpense,
   },
   {
+    // The same question over a sale with a line, so the "Sale in progress" strip is on screen: the version with the strip.
+    screen: 'DescartarGastoEnVenta',
+    route: SALE_NEW,
+    steps: [
+      { press: `${SALES_TEXT.lineVariety(1)} ${common('common:pickAVariety')}` },
+      { press: 'Sir Jack' },
+      { fill: { label: SALES_TEXT.lineGrams(1), value: '5' } },
+      { click: SALES_TEXT.expense },
+      { fill: { label: common('common:amount'), value: '1500' } },
+      { activate: common('common:close') },
+    ],
+    visible: EXPENSES_TEXT.discardTheExpense,
+  },
+  {
     screen: 'VentaAsignarCliente',
     route: SALES,
     steps: [{ click: SALES_TEXT.noCustomer }, { click: SALES_TEXT.assignCustomer }],
