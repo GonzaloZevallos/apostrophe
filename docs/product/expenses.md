@@ -28,7 +28,7 @@ Línea de base de la parte 2 de GH-769: antes, en el teléfono, cerrar una Expen
 
 Criterios de éxito:
 
-1. Una Expense se registra desde el teléfono en menos de un minuto. En el teléfono su formulario abre en 2 toques desde Home, Sales, Customers, Products y Analysis ("+ New sale", después "Expense"), también en 2 desde Home por la tarjeta (el segmento "Analysis", después "Record expense"), y en 1 toque desde Expenses ("Add expense"). Esto reemplaza los 3 toques de antes desde Sales, Customers y Products. En una computadora no lleva más toques que en el teléfono. La fecha ya viene en hoy, y la Expense category se elige de la lista del negocio.
+1. Una Expense se registra desde el teléfono en menos de un minuto. En el teléfono su formulario abre en 2 toques desde Home, Sales, Customers, Products y Analysis ("+ New sale", después "Expense"), también en 2 desde Home por la tarjeta (el segmento "Analysis", después "Record expense"), y en 1 toque desde Expenses ("Add expense"). Esto reemplaza los 3 toques de antes desde Sales, Customers y Products. El presupuesto de toques vive en navigation.md, criterio 1. En una computadora no lleva más toques que en el teléfono. La fecha ya viene en hoy, y la Expense category se elige de la lista del negocio.
 2. Para cualquier mes, la vista muestra cada Expense de ese mes y el total del mes. Las desglosa por Expense category, con un subtotal para cada una. Los totales siempre son iguales a la suma de las Expenses que se muestran, también justo después de una edición o una eliminación.
 3. Una Purchase de Stock nunca es una Expense. Nada de acá registra gramos ni un producto, y una Purchase nunca aparece en las listas de Expenses. Así, los resultados pueden contar las Expenses y las Purchases por separado sin contar nada dos veces.
 4. Todo lo de acá se hace desde el teléfono, sin ninguna llamada a la API a mano.
@@ -221,7 +221,7 @@ Se leen de los datos y de las pruebas; no hay telemetría.
   - se mueve entre meses;
   - agrega, renombra y elimina una Expense category en Settings, un rechazo de eliminación incluido.
 - **M7, toques (criterios 1 y 12)**: la corrida de punta a punta (`tapBudget.spec.ts`) cuenta los toques para abrir el formulario de la Expense, en ventanas de teléfono y de computadora:
-  - en el teléfono, 2 desde Home, Sales, Customers, Products y Analysis ("+ New sale", después "Expense"), terminando en el diálogo "Add expense" sobre New sale; la app ya lo cumple, pero la corrida recién lo afirma con #757;
+  - en el teléfono, 2 desde Home, Sales, Customers, Products y Analysis ("+ New sale", después "Expense"), terminando en el diálogo "Add expense" sobre New sale; la app ya lo cumple, y #757 no le agrega un conteo de toques por Tab root: lo muestran "+ New sale" en cada Tab root (`chrome-at-load`) y el tile "Expense", siempre ofrecido, recorrido en el estado `sale/expense-strip` del Mobile check; `tapBudget.spec.ts` sigue contando el camino por Analysis (navigation.md, criterio 1);
   - desde Home por Analysis → "Record expense", también 2;
   - desde Expenses, 1;
   - en una computadora, nunca más que en el teléfono.
@@ -308,4 +308,4 @@ Se leen de los datos y de las pruebas; no hay telemetría.
 - Registrar una Purchase desde New sale: lo que se compra para el Stock es una Stock entry.
 - Cambiar `NuevaVentaCompu`, la barra lateral, More, `/more` o `/mas`.
 - Para la pregunta de salida de la parte 2 de GH-769: cualquier cambio en lo que ve un vendedor cuando se le cierra la sesión (401); cualquier cambio a 900 px o más; cualquier cambio en el texto o las reglas de la guarda "Discard the sale?" de siempre; cambiar `LeaveConfirm` o `ConfirmDialog`; pasar los textos de Expenses de `web/src/copy/expenses.ts` a los JSON de locale (le toca al trabajo del segundo idioma, #317).
-- En esta parte: otros estados recorridos por el Mobile check sobre la Expense desde New sale además de `sale/expense-discard` y `DescartarGastoEnVenta`, las filas del registro de pantallas y la afirmación e2e de los 2 toques desde New sale (#757).
+- En esta parte: otros estados recorridos por el Mobile check sobre la Expense desde New sale además de `sale/expense-discard` y `DescartarGastoEnVenta`, las filas del registro de pantallas y la prueba de los 2 toques desde New sale, que #757 cubre con los estados recorridos del Mobile check y no con un conteo de toques por Tab root (navigation.md, criterio 1).
