@@ -220,7 +220,7 @@ Se leen de los datos y de las pruebas; no hay telemetría.
   - edita y elimina una;
   - se mueve entre meses;
   - agrega, renombra y elimina una Expense category en Settings, un rechazo de eliminación incluido.
-- **M7, toques (criterios 1 y 12)**: la corrida de punta a punta (`tapBudget.spec.ts`) cuenta los toques para abrir el formulario de la Expense, en ventanas de teléfono y de computadora:
+- **M7, toques (criterios 1 y 12)**: la corrida de punta a punta (`tapBudget.spec.ts`) cuenta los toques para abrir el formulario de la Expense, en ventanas de teléfono y de computadora, salvo el camino por "+ New sale" que se explica en el primer punto:
   - en el teléfono, 2 desde Home, Sales, Customers, Products y Analysis ("+ New sale", después "Expense"), terminando en el diálogo "Add expense" sobre New sale; la app ya lo cumple, y #757 no le agrega un conteo de toques por Tab root: lo muestran "+ New sale" en cada Tab root (`chrome-at-load`) y el tile "Expense", siempre ofrecido, recorrido en el estado `sale/expense-strip` del Mobile check; `tapBudget.spec.ts` sigue contando el camino por Analysis (navigation.md, criterio 1);
   - desde Home por Analysis → "Record expense", también 2;
   - desde Expenses, 1;

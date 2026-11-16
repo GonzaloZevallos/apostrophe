@@ -4,10 +4,10 @@ import { MissingKeyError } from '../i18n/resolve.ts'
 import { GONE_NOTICE } from '../api/refusals.ts'
 import { recordExpense } from '../api/expenses.ts'
 import { HOME, SALE_NEW } from '../routes.ts'
-import { STATE_NAMES } from './registry.ts'
+import { STATE_NAMES, WALKABLE } from './registry.ts'
 import { common, refusal } from './copy.ts'
 import { PENDING_TAPS } from './pending.ts'
-import { stateNameProblems, type WalkState } from './states.ts'
+import { offendersAsProblems, stateNameProblems, type WalkState } from './states.ts'
 import { isConvertedRow } from '../i18n/step.ts'
 import { SALES_TEXT } from '../copy/sales.ts'
 import { EXPENSES_TEXT } from '../copy/expenses.ts'
@@ -54,6 +54,37 @@ describe('the walked states and their names', () => {
       expect(state.route.startsWith(HOME), state.screen).toBe(true)
       expect(state.visible, state.screen).not.toBe('')
     }
+  })
+})
+
+describe('a state that lists its offenders as a registry row', () => {
+  const rows = WALKABLE.map((row) => row.screen)
+
+  it('names only walked registry rows', () => {
+    expect(offendersAsProblems(STATES, rows)).toEqual([])
+  })
+
+  it('is only sale/expense-returned, as NuevaVenta, whose page the walk ends on', () => {
+    const borrowing = STATES.filter((state) => state.offendersAs !== undefined)
+    expect(borrowing.map((state) => [state.screen, state.offendersAs])).toEqual([
+      ['sale/expense-returned', 'NuevaVenta'],
+    ])
+  })
+
+  it('refuses a state naming a row that is not walked, a walked state, or a name no one has', () => {
+    const state = (offendersAs: string): WalkState => ({
+      screen: 'Uno',
+      route: HOME,
+      steps: [],
+      visible: 'x',
+      offendersAs,
+    })
+    for (const name of ['sale/expense-strip', 'NoExiste']) {
+      expect(offendersAsProblems([state(name)], rows), name).toEqual([
+        `Uno lists its offenders as ${name}, which is not a walked registry row`,
+      ])
+    }
+    expect(offendersAsProblems([state('NuevaVenta')], rows)).toEqual([])
   })
 })
 

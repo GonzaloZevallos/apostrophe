@@ -201,6 +201,8 @@ export const SALES_STATES: readonly WalkState[] = [
       { wait: SALE_IN_PROGRESS_LINE.total },
     ],
     visible: EXPENSE_RECORDED,
+    // The walk ends on New sale itself, so the page is NuevaVenta's: its listed offenders are that row's.
+    offendersAs: 'NuevaVenta',
     writes: [{ method: 'POST', path: /^\/expenses$/, status: 201, body: RECORDED_EXPENSE_BODY }],
   },
   {
