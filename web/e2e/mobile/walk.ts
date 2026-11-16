@@ -11,7 +11,7 @@ import { mobileLanguage } from '../env.js'
 export const STEP_TIMEOUT_MS = 3_000
 
 /** What the walk visits: a registry screen, or a state with steps of its own. */
-export interface WalkScreen extends Omit<RegistryScreen, 'steps'> {
+export interface WalkScreen extends Omit<RegistryScreen, 'steps' | 'walkedAs'> {
   steps: readonly WalkStep[]
 }
 

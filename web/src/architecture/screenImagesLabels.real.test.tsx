@@ -12,7 +12,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createMemoryRouter, Outlet, RouterProvider, type RouteObject } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { loadBundle } from '../../scripts/i18n/loadBundle.ts'
@@ -32,6 +32,7 @@ import { OnboardingEntry, OnboardingStepRoute } from '../screens/onboarding/Onbo
 import { productField } from '../screens/ventas/lineProduct'
 import { SHOWN_EN } from '../test/shownLanguage'
 import { withPaymentMethods } from '../test-payment-methods'
+import { stubViewport } from '../test-viewport'
 import { judgeLabel, rowLabels, rowsWithoutEntry } from './screenImagesLabels'
 
 const ROWS = parseRegistry(registryJson, STATE_NAMES)
@@ -67,6 +68,7 @@ async function renderNuevaVenta(): Promise<void> {
   const answers = vi.fn((path: string) => {
     if (path === '/auth/me') return Promise.resolve(json(ME))
     if (path === `/api/products?on=${ME.today}`) return Promise.resolve(json([rosa]))
+    if (path.startsWith('/expense-categories')) return Promise.resolve(json([{ id: 1, name: 'Packaging' }]))
     return Promise.reject(new Error(`unexpected request: ${path}`))
   })
   vi.stubGlobal('fetch', withPaymentMethods(answers))
@@ -74,6 +76,14 @@ async function renderNuevaVenta(): Promise<void> {
   render(<App />)
   await screen.findByText('New sale')
   await waitFor(() => expect(productField(1)).toBeEnabled())
+}
+
+/** New sale on the phone with the Expense Sheet open over it: the sale's own labels and the expense form's. */
+async function renderVentaVuelve(): Promise<void> {
+  stubViewport('phone')
+  await renderNuevaVenta()
+  fireEvent.click(screen.getByRole('button', { name: 'Expense' }))
+  await screen.findByLabelText('Amount')
 }
 
 // ---- the onboarding routes: the capture's two onboarding rows ----
@@ -156,6 +166,10 @@ const ENTRIES: Record<string, () => Promise<void>> = {
   EntrarOscuro: renderEntrar,
   VentaGuardada: renderNuevaVenta,
   VentaGuardadaOscuro: renderNuevaVenta,
+  VentaEnCurso: renderNuevaVenta,
+  VentaEnCursoOscuro: renderNuevaVenta,
+  VentaVuelve: renderVentaVuelve,
+  VentaVuelveOscuro: renderVentaVuelve,
   OnboardingVariedad: () => renderOnboarding(ONBOARDING_STOCK, true),
   OnboardingPrecio: () => renderOnboarding(ONBOARDING_VARIETY, false),
 }

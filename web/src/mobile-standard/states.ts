@@ -55,6 +55,22 @@ export interface WalkState {
   reads?: readonly ReadStub[]
   /** A GET path held while the state first draws (its loading is read), then let through before the steps run. */
   holds?: RegExp
+  /**
+   * The registry row whose page this state ends on, when the steps bring the walk back to it: the
+   * state's cells are listed and diffed as that row's, so the row's own offenders are neither
+   * listed a second time under the state's name nor passed over. Anything the state draws that
+   * the row does not is still unlisted, and fails.
+   */
+  offendersAs?: string
+}
+
+/** What is wrong between the states that borrow a row's offenders and the rows they name. */
+export function offendersAsProblems(states: readonly WalkState[], rows: readonly string[]): string[] {
+  return states.flatMap((state) =>
+    state.offendersAs === undefined || rows.includes(state.offendersAs)
+      ? []
+      : [`${state.screen} lists its offenders as ${state.offendersAs}, which is not a walked registry row`],
+  )
 }
 
 /** What is wrong between the walked states and the names `Violation.screen` may carry. */

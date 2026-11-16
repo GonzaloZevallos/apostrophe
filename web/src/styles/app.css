@@ -7052,11 +7052,20 @@ button:has(> .venta-en-curso) {
   text-align: left;
 }
 
+/* The label wraps (two or more lines at 320 and 246 px); the figure never splits. */
 .venta-en-curso__texto {
-  flex-grow: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: normal;
+}
+
+.venta-en-curso__cifra {
+  flex: none;
+  white-space: nowrap;
 }
 
 .venta-en-curso__volver {
+  flex: none;
   color: var(--acento);
   font-weight: 600;
 }

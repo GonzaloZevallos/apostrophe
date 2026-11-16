@@ -64,7 +64,7 @@ for (const size of SIZES) {
       for (const state of STATES) {
         await test.step(state.screen, async () => {
           const page = state.signedOut === true ? outPage : inPage
-          actual.push(...(await walkState(page, state, cellOf(state.screen), facts, bundle)))
+          actual.push(...(await walkState(page, state, cellOf(state.offendersAs ?? state.screen), facts, bundle)))
         })
       }
 

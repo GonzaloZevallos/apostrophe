@@ -30,7 +30,7 @@
 
 **Cuando** manejo mi negocio desde el teléfono entre pedido y pedido o en medio del chat con un cliente, varias veces por día, **quiero** que la app esté ordenada según lo que hago de verdad y con qué frecuencia, **para** volver con el cliente en lugar de buscar entre menús. (La historia de navegación, navigation.md: acá la sirve "+ New sale", a un toque desde cada **Tab root**).
 
-**Cuando** estoy en medio de registrar una venta en el teléfono y tengo que anotar una Expense, **quiero** registrarla ahí mismo y volver a la misma venta intacta, **para** terminar las dos sin volver a tipear nada ni salir del flujo. (Parte 3 de GH-725, compartido con expenses.md, que es la referencia: acá lo sirven la fila "Other things to record" de New sale en el teléfono con su tile "Expense", y que cerrar la Expense deje la venta como estaba).
+**Cuando** estoy en medio de una venta en el teléfono y me acuerdo de una Expense (por ejemplo, packaging o envío y transporte; lo que se compra para el Stock es una **Purchase**, nunca una Expense), **quiero** registrarla desde New sale y volver a mi venta como la dejé, **para** que las cuentas queden bien sin perder el pedido ni hacer esperar al cliente. (Parte 3 de GH-725, compartido con expenses.md, que es la referencia: acá lo sirven la fila "Other things to record" de New sale en el teléfono con su tile "Expense", y que cerrar la Expense deje la venta como estaba. "Como la dejé" vale solo dentro de la misma sesión: la venta en curso vive en memoria, sin borradores, y una recarga la pierde. La parte 4 de GH-725 recorre el flujo en el **Mobile check** y lo escribe acá, para que no se rompa en silencio).
 
 # Ventas
 
@@ -54,6 +54,8 @@ Antes de la parte customer-type prices de GH-318, un precio propio por grupo exi
 El Sale bill sirve en dos momentos: justo después de guardar, con el cliente todavía esperando en el chat (el principal), y más tarde, cuando el cliente pregunta y la vendedora abre el detalle de esa venta. Supuesto sobre hoy: la vendedora vuelve a tipear el pedido y el total, o manda una captura, y saca el Balance a mano.
 
 El Sale number existe porque hoy una venta se señala por su fecha y su cliente ("la venta del 12/10 a Ana"), y eso falla cuando un cliente tiene dos ventas el mismo día o cuando la venta no tiene cliente y solo una nota. El `sale.id` interno es global a toda la instalación, así que mostrarlo revelaría el volumen de otros negocios. Conciliar transferencias con ventas no es el motivo: un pago salda la deuda más vieja (Settlement), nunca una venta puntual.
+
+Antes de la parte 4 de GH-725, lo que la parte 3 entregó (la fila "Other things to record", la franja "Sale in progress" y la vuelta a la venta con "Expense recorded") corría sin ningún control y sin definición escrita: una regresión en la franja o en la vuelta a la venta pasaba sin que nada la notara.
 
 Criterios de éxito, registro (API):
 
@@ -119,6 +121,13 @@ Criterios de éxito, cómo se pagó (Selector, parte 5 de GH-581; la lista propi
 34. **Nunca sin medio, nunca por defecto.** Una venta pagada con total por encima de $0 no se guarda sin medio; Owing nunca muestra ni pide uno. El medio nunca viene puesto: arranca vacío al abrir y cada vez que se vuelve a Paid. Lo que se manda a la API es la unión por `kind`: `{kind: 'paid', payment_method_id}` (el id del medio del negocio) u `{kind: 'owing'}`; nunca un nombre de medio.
 35. **Volver y Escape predecibles.** Con la lista de medios abierta, volver o "Close" cierran solo la lista y la venta queda intacta; en la computadora, Escape cierra solo el desplegable.
 36. **Nada se pierde.** Owing sigue deshabilitado con "To leave it owing, pick a customer" sin cliente; Paid · Owing conservan su aspecto y su comportamiento; una venta de $0 sigue sin necesitar medio; el Mobile check no gana ningún infractor.
+
+Criterios de éxito, una Expense desde New sale (partes 3 y 4 de GH-725; la vara para la vendedora es el presupuesto de 2 toques de navigation.md, criterio 1, más volver a la misma venta):
+
+40. **Los dos estados recorridos pasan.** Sobre el negocio de muestra del recorrido, los dos estados llegan a su pantalla y pasan el Mobile check: la franja (New sale, el primer Product del Selector de la línea 1, "Expense") y la vuelta (los campos obligatorios de la Expense completos y guardados, de vuelta en New sale con "Expense recorded" a la vista y la venta intacta). Un paso que no llega a su pantalla se informa como inalcanzable y hace fallar el recorrido; nunca se saltea, nunca cuenta como pasado y nunca elige otro Product.
+41. **Nada se afloja.** Ninguna lista de infractores crece y ninguna tolerancia se agranda.
+42. **El registro dice la verdad.** `scripts/design/screens.json` tiene las filas de teléfono NuevaVenta (con la fila), VentaEnCurso / VentaEnCursoOscuro y VentaVuelve / VentaVuelveOscuro, a las que llegan los pasos del recorrido; ninguna sugiere una ruta que no existe y no hay ruta nueva.
+43. **Nada promete más que la memoria.** Esta definición y navigation.md dicen el flujo tal como lo entregó la parte 3, y no prometen nada más allá de la sesión: sin borradores, y una recarga pierde la venta en curso.
 
 Criterios de éxito, Sale bill:
 
@@ -322,8 +331,8 @@ Criterios de éxito, Sale number:
   - "No, keep entering" deja a la usuaria en el formulario con todo intacto; el siguiente gesto de volver vuelve a preguntar.
   - Un formulario sin tocar se cierra en el acto.
   - Con una hoja abierta sobre el formulario (Pick a customer, o New customer adentro, la lista de productos de una línea o la lista de medios), volver hace exactamente lo que hace el "Close" propio de esa hoja: cierra solo la hoja de arriba y el formulario conserva todo lo tipeado. Nunca pregunta "Discard the sale?".
-  - Con la hoja "Add expense" abierta sobre la venta (solo en el teléfono), volver y "Close" cierran solo esa hoja y la venta conserva todo lo cargado. La referencia es `expenses.md`; la regla de la hoja sobre un formulario está en la [ADR 20261114](../adr/20261114-a-form-opened-over-a-form-keeps-the-screens-one-leave-guard-and-points-its-dirty-flag-and-floor-at-the-form-on-top.md).
-  - No hay borradores ni guardado automático.
+  - Con la hoja "Add expense" abierta sobre la venta (solo en el teléfono), volver, "Close" y el Back de la franja cierran solo esa hoja y la venta conserva todo lo cargado. La referencia es `expenses.md`; la regla de la hoja sobre un formulario está en la [ADR 20261114](../adr/20261114-a-form-opened-over-a-form-keeps-the-screens-one-leave-guard-and-points-its-dirty-flag-and-floor-at-the-form-on-top.md).
+  - No hay borradores ni guardado automático. La venta en curso vive solo en la memoria de la app abierta: una recarga, o cerrar la pestaña, la pierde.
 - **Pick a customer** (`NuevaVentaCliente`):
   - Una hoja sobre la venta, que aparece solo cuando la vendedora la abre.
   - Ofrece buscar por teléfono o por parte del nombre, "No customer" y "New customer", que crea el cliente y lo usa. "New customer" es el mismo formulario que en Customers: solo el nombre es obligatorio; el teléfono es opcional; VIP solo mientras VIP customers está encendido (customers.md); sin canal.
@@ -339,6 +348,8 @@ Criterios de éxito, Sale number:
 
 #### New sale en el teléfono
 
+![NuevaVenta](../assets/screens/NuevaVenta.webp)
+
 Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desplegable del Selector en el producto de cada línea y en el medio de pago.
 
 - **Pantalla completa, tres zonas**: un encabezado fijo, un cuerpo que se desplaza y un pie fijo.
@@ -349,7 +360,14 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
 - **Ningún campo desborda ni queda recortado** a 320 px ni con el texto al 130 %.
 - **Objetivos táctiles**: las opciones Paid · Owing, "Add another product" y los botones de diálogo miden al menos 44 px de alto; todo campo tiene al menos 16 px. La lista de productos de una línea y la de medios siguen las medidas del Selector (filas y búsqueda de 44 px, texto de 16 px).
 - **Teclados**: gramos `inputmode="decimal"`; pesos (envío, Special price) `inputmode="numeric"`; los campos de una línea llevan `enterkeyhint` para que la tecla de acción del teclado avance entre ellos.
-- **Other things to record**: una fila bajo el pie con un solo botón, "Expense" (ícono de recibo), siempre ofrecida; abre el formulario de gasto en el lugar, como una hoja sobre la venta que sigue montada. Con al menos una línea con producto, la hoja muestra arriba la franja "Sale in progress · N products · total · Back" (`expenses.md`). La computadora no tiene la fila.
+- **Other things to record** (partes 3 y 4 de GH-725; la referencia del formulario de gasto es `expenses.md`):
+  - **La fila y su único tile**: una fila bajo el pie, "Other things to record", con un solo botón, "Expense" (ícono de recibo). Solo en el teléfono. Siempre se ofrece, también en una New sale sin líneas, así que el formulario de gasto queda a 2 toques de cada Tab root ("+ New sale" → "Expense", navigation.md, criterio 1). Mientras el guardado de la venta está en curso, la fila queda `inert` y no hace nada.
+  - **El formulario, sobre la venta**: "Expense" abre el formulario de gasto en el lugar, como una Sheet sobre la venta, que sigue montada debajo con todo lo cargado. La Sheet es una entrada del historial sobre New sale (nivel 1; sus propias listas de Selector se abren en el nivel 2). "Close", el Back de la franja y el gesto de volver del sistema son la misma acción: cierran solo la Sheet y vuelven a New sale en un movimiento, sin preguntar "Discard the sale?" por la venta.
+  - **La venta en curso vive en memoria**: no hay borradores ni guardado automático. "Como la dejé" vale solo dentro de la misma sesión: una recarga pierde la venta y lo tipeado en el gasto.
+  - **La franja "Sale in progress"**: con al menos una línea con producto elegido, la Sheet muestra arriba la franja "Sale in progress · N products · total · Back", donde N cuenta las líneas con producto y el total es el total de la venta tal como lo muestra el pie. Sin ninguna línea con producto, la franja no se muestra. Mientras la venta se vuelve a cotizar (por ejemplo, porque llegan los precios), la franja muestra un estado sin monto en lugar del total, nunca una cifra de relleno, y vuelve a mostrar el total cuando la cotización termina.
+  - **"Expense recorded"**: guardar el gasto cierra la Sheet y vuelve a New sale con la venta intacta. Si la venta tiene al menos una línea con producto, el toast de éxito dice "Expense recorded"; si no, el formulario muestra su propio "Expense saved". El toast se arma para mostrarse después de salir de la Sheet, así que aparece ya de vuelta en New sale, y se va como cualquier otro toast de éxito de la app (su duración y su descarte no cambian, navigation.md). No lleva monto ni nombre.
+  - **Cruzar 900 px con la Sheet abierta**: si el diseño pasa a computadora (girar o agrandar la ventana), la Sheet se cierra; lo tipeado en el gasto se pierde y la venta se conserva.
+  - **La computadora**: no tiene la fila ni la franja, y `NuevaVentaCompu` no cambia.
 - **Dibujo**: los dibujos de New sale de `docs/product/design-system/pantallas/` muestran los dos campos del Selector cerrados:
   - El campo de producto de la línea aparece en `NuevaVenta.dc.html` y `NuevaVentaOscuro.dc.html`.
   - Paid · Owing y, bajo Paid, el campo "Payment method" aparecen en los dibujos de computadora `NuevaVentaCompu`, `NuevaVentaClienteCompu` y sus versiones oscuras. Es el único cambio de esos dibujos.
@@ -477,6 +495,14 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - Desde la parte 5 de GH-581 recorre también la lista de medios abierta en el estado `new-sale/method-selector-open` (`statesSales.ts`). Los estados `new-sale/*` que eligen un medio, como `NuevaVentaConLineaYPago`, lo hacen con Paid, después el campo y después la opción. Desde la parte 24 de GH-318 recorre además los estados del campo del medio cargando, con error del servidor, sin conexión y con un medio "no longer available".
 - El cambio del medio al Selector borró de `touch-action.json` las 21 entradas `radio:Cash`, `radio:Transfer` y `radio:Owing`: tres por cada estado DescartarVenta, ElegirCliente, NuevaVenta, NuevaVentaCliente, NuevaVentaConLinea, NuevaVentaConLineaYPago y NuevoClienteEnVenta. También borró cualquier otra entrada que dejó obsoleta y no agregó ningún infractor. Las celdas nuevas `radio:Paid` y `radio:Owing` pasan gracias al agregado de CSS de `SegmentedChoice`.
 - La insignia con el nombre de un Customer type se comprueba en un navegador con su propia corrida (`web/e2e/typeBadge.spec.ts`): un cliente en un tipo de nombre de 40 caracteres y una venta cotizada por él, en la vista previa de New sale y en el detalle, a 320 y a 246 px, sin desplazamiento horizontal, sin nombre que desborde y sin cifra partida. El fixture de muestra fijado no cambia, y el chequeo `mobile` del detalle a 246x437 no gana ningún infractor.
+- **Una Expense desde New sale** (parte 4 de GH-725): dos estados recorridos (`web/src/mobile-standard/states*.ts`), los dos sobre el negocio de muestra del recorrido:
+  - **La franja**: New sale, el primer Product del Selector de la línea 1 y después "Expense" bajo "Other things to record". Se captura la franja ya asentada, con su total. Filas del registro: VentaEnCurso y VentaEnCursoOscuro.
+  - **La vuelta**: lo mismo, después los campos obligatorios de la Expense completos y guardados, de vuelta en New sale con "Expense recorded" y la venta intacta. Filas del registro: VentaVuelve y VentaVuelveOscuro.
+  - La fila NuevaVenta del registro incluye la fila "Other things to record".
+  - A esas filas se llega por los pasos del recorrido, nunca por una ruta: no existe ruta propia para la venta en curso ni para la vuelta, y ninguna fila de teléfono sugiere una (los paths `/sales/in-progress` y `/sales/resumed` salieron de ellas). Las filas de computadora (`VentaEnCursoCompu`, `VentaEnCursoCompuOscuro`, `VentaVuelveCompu`, `VentaVuelveCompuOscuro`) no se tocaron; ordenarlas es una limpieza posterior.
+  - Un paso que no llega a su pantalla se informa como inalcanzable y hace fallar el recorrido: nunca se saltea, nunca cuenta como pasado y nunca elige otro Product.
+  - El estado sin monto de la franja mientras la venta se vuelve a cotizar no se recorre: es breve, y un control que depende de atraparlo sería inestable (un flake es un defecto del Gate). Lo dice esta definición en palabras.
+  - Ninguna lista de infractores crece y ninguna tolerancia se agranda.
 
 ## Métricas
 
@@ -557,6 +583,10 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - **Medio, volver y Escape (criterio 35)**: con la lista de medios abierta, volver o "Close" cierran solo la lista y "Discard the sale?" no aparece; en la computadora, Escape cierra solo el desplegable.
 - **Medio, nada se pierde (criterio 36)**: sin cliente, Owing está deshabilitado con "To leave it owing, pick a customer"; los tests existentes de Owing pasan con sus aserciones sin cambios; el `FixedSet` de Paid · Owing declara su motivo y ningún medio está en `fixedSets.ts`.
 - **Chequeo en el teléfono, medio (criterio 36)**: `new-sale/method-selector-open` pasa el chequeo `mobile` sin ningún infractor nuevo, y no queda ninguna entrada `radio:Cash`, `radio:Transfer` ni `radio:Owing` en `touch-action.json`.
+- **Una Expense desde New sale, recorrido (criterio 40)**: los dos estados recorridos (la franja y la vuelta) llegan a su pantalla y pasan el chequeo `mobile` en claro y en oscuro: 2 de 2, 0 pasos inalcanzables, 0 pasos salteados. La vuelta muestra "Expense recorded" y la línea 1 con su producto todavía en New sale.
+- **Una Expense desde New sale, nada se afloja (criterio 41)**: 0 entradas agregadas a cualquier lista de infractores y 0 tolerancias agrandadas en el diff.
+- **Una Expense desde New sale, registro (criterio 42)**: las filas de teléfono NuevaVenta, VentaEnCurso, VentaEnCursoOscuro, VentaVuelve y VentaVuelveOscuro están en `scripts/design/screens.json`, alcanzadas por pasos; 0 filas de teléfono con un path que no es una ruta registrada; 0 rutas nuevas; las cuatro filas `*Compu` sin cambios.
+- **Una Expense desde New sale, la definición (criterio 43)**: esta definición y navigation.md dicen la fila y su único tile (solo en el teléfono), la venta en memoria sin borradores y perdida al recargar, la franja con su estado sin monto, "Expense recorded" tal como se comporta, la computadora sin fila ni franja con `NuevaVentaCompu` sin cambios, el presupuesto de 2 toques y la entrada del historial sobre New sale. El diff no toca `docs/architecture/generated`, `docs/api` ni `decisiones.md`.
 - **Juego de referencia del Sale bill (criterio 21)**: `saleBill.cases.json`, con los textos esperados escritos a mano contra esta definición, nunca generados; 0 diferencias. Casos: con y sin línea con Bulk price; una línea VIP, una cotizada por un Customer type y una con Special price que se leen como líneas de lista; un regalo; una venta de $0 solo de regalos con Balance distinto de cero; pagada en el momento con cualquier medio (siempre `paid`, sin nombrar el medio), pagada después, debiendo en parte, debiendo entera; un Balance, un Credit y un Balance de exactamente $0; sin cliente; con y sin envío; una línea y varias líneas; cantidades 0,01, 0,1, 1,05 y 1000; un producto cuyo nombre tiene `*`, `_` y una comilla invertida, mostrado sin cambios; Sale #1 y un Sale number de cuatro cifras sin separador de miles, en la línea `Sale #N · dd/mm`.
 - **Formato de cantidades (criterio 21)**: `formatQuantity` da 1 → "0,01", 10 → "0,1", 105 → "1,05", 350 → "3,5", 100000 → "1.000" a partir de centésimos enteros; los tests existentes de `formatGrams` pasan sin editarlos.
 - **Test de filtraciones del Sale bill (criterio 22)**: con nombres de negocio y de productos sin `*`, `_` ni comillas invertidas, ningún texto de los casos contiene la nota, el nombre del cliente, el nombre de su Customer type, "VIP", "special", "list", un id (el `sale.id` incluido), "http", `*`, `_` ni una comilla invertida; el esquema del Sale bill en la API es cerrado y no tiene ningún campo así.
@@ -576,7 +606,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - Rechazar una venta por falta de stock: nunca (ADR-0009).
 - Editar una venta: se borra y se registra de nuevo. Eso incluye cambiar el medio de un On-the-spot payment.
 - Pasar una venta de un cliente a otro o sacarle el cliente.
-- Borradores o guardado automático de una venta.
+- Borradores o guardado automático de una venta; conservar la venta en curso después de una recarga.
 - Profit y Cash en Sales: la capacidad de resultados.
 - Actualizaciones en vivo entre socias mientras hay un formulario o una lista abiertos.
 - Importar ventas desde la planilla.
@@ -590,6 +620,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - Para el Sale number: buscar o filtrar ventas por número; mostrarlo en Sales, en la historia del cliente, en Home o en Analysis; el resto del rediseño del detalle de la venta (#530) y la línea "por Telegram" del dibujo (un hallazgo aparte, y un canal choca con Assume nothing); el `sale.id` global que ya lleva el camino del detalle (`/sales/{sale_id}`), un hallazgo aparte con su propio issue.
 - Para el producto de una línea: crear un producto desde la línea (se crea en la pestaña Products); cambiar el texto de "elegir un producto", el nombre accesible, el mensaje de conjunto vacío o el rechazo; abrir la lista sola al agregar una línea; saltar solo a los gramos después de elegir; dibujar la lista abierta en `pantallas/`.
 - Para el medio de pago: gestionar la lista (vive en payment-methods.md); informes por medio (Cash separado por medio, totales por medio); recordar el último medio o proponer uno por defecto; el ícono del medio dentro del Selector; cambiar el estado Paid · Owing más allá de cómo está construido; dibujar la lista abierta en `pantallas/`; un descuento por medio de pago como el "10 % pagando en efectivo" del dibujo del paso de cobro, que no tiene regla escrita.
+- Para una Expense desde New sale (parte 4 de GH-725): cambiar las filas `*Compu` del registro, el diseño de computadora o `NuevaVentaCompu`; rediseñar el toast o cualquier comportamiento de la parte 3; recorrer el estado sin monto de la franja; un conteo de toques por cada Tab root dentro del recorrido.
 
 ## Planeado en GH-318
 
