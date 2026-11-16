@@ -66,8 +66,8 @@ const CUSTOMERS_PLACE: Place = { bar: "customers", rail: "customers" };
 const VARIETIES_PLACE: Place = { bar: "varieties", rail: "varieties" };
 const EXPENSES_PLACE: Place = { bar: "home", rail: "expenses" };
 const ANALYSIS_PLACE: Place = { bar: "home", rail: "analysis", segment: "analysis" };
-/** Configuración marks no tab on the bar: a header avatar opens it, not a tab. */
-const SETTINGS_PLACE: Place = { bar: null, rail: "business" };
+/** Configuración marks Inicio on the bar (its phone parent) and the business row on the rail. */
+const SETTINGS_PLACE: Place = { bar: "home", rail: "business" };
 
 /** navigation.md's structure, said once more here and independently of `routes.ts`. */
 const EXPECTED: Record<ScreenId, Expected> = {
@@ -191,13 +191,22 @@ describe("parentOf and placeOf, every screen on both viewports", () => {
     expect(parentOf("expenses", "computer")).toBeUndefined();
   });
 
-  test("Configuración says Inicio on both viewports and marks no tab on the bar", () => {
+  test("Configuración says Inicio on both viewports and marks Inicio on the phone bar", () => {
     for (const viewport of VIEWPORTS) {
       expect(parentOf("settings", viewport)).toMatchObject({
         titleKey: "common:home",
         path: routes.HOME,
       });
-      expect(placeOf("settings-account", viewport).bar).toBeNull();
+    }
+    expect(placeOf("settings-account", "phone").bar).toBe("home");
+  });
+
+  test("every Configuración screen marks Inicio on the phone bar and the business row on the rail", () => {
+    const settingsIds = SCREENS.map((entry) => entry.id).filter((id) => id.startsWith("settings"));
+    expect(settingsIds.length).toBeGreaterThan(1);
+    for (const id of settingsIds) {
+      expect(placeOf(id, "phone").bar, id).toBe("home");
+      expect(placeOf(id, "computer").rail, id).toBe("business");
     }
   });
 
