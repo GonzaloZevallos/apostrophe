@@ -19,6 +19,9 @@ import { useMoney } from '../../format/moneyContext'
 import { type priceLine, fromHundredths } from '../../sales/pricing'
 import { GRAMS_HELP, SALES_TEXT } from '../../copy/sales'
 import { useViewport } from '../../shell/useViewport'
+import { NUEVA_VENTA_MISSING } from '../../copy/inicio'
+import type { NothingSellable } from '../../sales/nothingSellable'
+import Icono from '../../components/Icono'
 import type { Variety } from '../Variedades'
 import { COMMON_TEXT } from '../../copy/common'
 import { useTranslation } from 'react-i18next'
@@ -59,6 +62,9 @@ function onEnter(event: KeyboardEvent<HTMLInputElement>, action: () => void): vo
   action()
 }
 
+/** The open line's hint when nothing is sellable: the Product field's `aria-describedby` names it. */
+const NOTHING_SELLABLE_ID = 'nueva-venta-sin-vendible'
+
 interface NuevaVentaLineaProps {
   /** The line's 1-based position, for its accessible names. */
   n: number
@@ -75,6 +81,9 @@ interface NuevaVentaLineaProps {
   varieties: Variety[]
   /** The Products have not loaded successfully: the Product field waits, never reads as empty. */
   varietiesLoading: boolean
+  /** What is missing for any line to sell on the sale's date, from a successful answer for that
+   * date only (never while loading, refetching or failed); only the open line is given it. */
+  nothingSellable: NothingSellable
   /** "Quitar" is only offered when the sale has more than one line. */
   canRemove: boolean
   varietyRef: RefObject<HTMLButtonElement | null>
@@ -97,6 +106,7 @@ export default function NuevaVentaLinea({
   variety,
   varieties,
   varietiesLoading,
+  nothingSellable,
   canRemove,
   varietyRef,
   listHost,
@@ -160,6 +170,14 @@ export default function NuevaVentaLinea({
 
   return (
     <div className="nueva-venta__linea nueva-venta__linea--abierta">
+      {nothingSellable !== null && (
+        <p id={NOTHING_SELLABLE_ID} className="nueva-venta__sin-vendible">
+          <span className="nueva-venta__sin-vendible-icono">
+            <Icono nombre="atencion" />
+          </span>
+          <span>{nothingSellable === 'noProducts' ? t('emptyStates:selectorNoVarieties') : NUEVA_VENTA_MISSING}</span>
+        </p>
+      )}
       <div className="campo" onFocus={onVarietyFocus}>
         <Selector
           required
@@ -170,6 +188,7 @@ export default function NuevaVentaLinea({
           value={line.varietyId === '' ? null : line.varietyId}
           selected={gone ? { value: line.varietyId, label: line.varietyName } : undefined}
           loading={varietiesLoading}
+          describedBy={nothingSellable !== null ? NOTHING_SELLABLE_ID : undefined}
           emptySetMessage={t('emptyStates:selectorNoVarieties')}
           fieldRef={varietyRef}
           listHost={listHost}

@@ -394,6 +394,23 @@ def test_an_archived_variety_is_absent_from_the_list_but_still_found_by_id(
     assert client.get(f"/api/products/{gone['id']}").status_code == 200
 
 
+def test_an_archived_priced_variety_is_left_out_of_the_list_on_a_day(
+    client: TestClient, engine: Engine
+) -> None:
+    # New sale offers what `GET /api/products?on=` lists: a priced Product that was archived
+    # is not offered on the sale's date, so it cannot count as something sellable.
+    kept = _register(client, "Kept")
+    gone = _register(client, "Gone")
+    _price(client, kept["id"], **GOLD_JANUARY)
+    _price(client, gone["id"], **GOLD_JANUARY)
+    archive_by_hand(engine, gone["id"])
+
+    listed = client.get("/api/products", params={"on": "2026-10-01"}).json()
+
+    assert [v["id"] for v in listed] == [kept["id"]]
+    assert listed[0]["current_price"]["list_price"] == 11_000
+
+
 def test_an_archived_variety_still_holds_its_name(client: TestClient, engine: Engine) -> None:
     gone = _register(client, "Gone")
     archive_by_hand(engine, gone["id"])
