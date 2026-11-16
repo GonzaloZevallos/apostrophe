@@ -105,7 +105,7 @@ describe('the walked states of an expense over a sale in progress', () => {
     return found
   }
   const toStrip = [
-    { press: `${SALES_TEXT.lineVariety(1)} Pick a product` },
+    { click: 'Pick a product' },
     { press: SALE_IN_PROGRESS_LINE.product },
     { fill: { label: SALES_TEXT.lineGrams(1), value: SALE_IN_PROGRESS_LINE.grams } },
     { click: SALES_TEXT.expense },
@@ -115,7 +115,7 @@ describe('the walked states of an expense over a sale in progress', () => {
     const strip = state('sale/expense-strip')
     expect(strip.route).toBe(SALE_NEW)
     expect(strip.steps).toEqual(toStrip)
-    expect(strip.visible).toBe(`${SALES_TEXT.saleInProgress} · ${SALES_TEXT.products(1)} ·`)
+    expect(strip.visible).toBe('Back')
     expect(strip.writes).toBeUndefined()
     expect(strip.reads).toBeUndefined()
   })

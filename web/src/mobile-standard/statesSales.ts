@@ -24,9 +24,9 @@ export const RECORDED_EXPENSE_BODY = {
   detail: 'Cinta',
 } satisfies Expense
 
-/** Line 1 with a Product and its grams, then the Expense tile: the strip is over the form. */
+/** Line 1 with a Product and its grams, then the Expense tile: the strip is over the form. The first tap is a click on the text, as the registry rows say it (a row's step text must be a copy value). */
 const TO_THE_STRIP = [
-  { press: `${SALES_TEXT.lineVariety(1)} ${common('common:pickAVariety')}` },
+  { click: common('common:pickAVariety') },
   { press: SALE_IN_PROGRESS_LINE.product },
   { fill: { label: SALES_TEXT.lineGrams(1), value: SALE_IN_PROGRESS_LINE.grams } },
   { click: SALES_TEXT.expense },
@@ -165,7 +165,10 @@ export const SALES_STATES: readonly WalkState[] = [
     screen: 'DescartarGastoEnVenta',
     route: SALE_NEW,
     steps: [
-      ...TO_THE_STRIP,
+      { press: `${SALES_TEXT.lineVariety(1)} ${common('common:pickAVariety')}` },
+      { press: SALE_IN_PROGRESS_LINE.product },
+      { fill: { label: SALES_TEXT.lineGrams(1), value: SALE_IN_PROGRESS_LINE.grams } },
+      { click: SALES_TEXT.expense },
       { fill: { label: common('common:amount'), value: '1500' } },
       // The strip's Back, not Close: the sale form's own Close is also a button under the Sheet and a step cannot tell the two apart.
       { press: SALES_TEXT.saleInProgressName(SALES_TEXT.products(1), SALE_IN_PROGRESS_LINE.total) },
@@ -174,12 +177,12 @@ export const SALES_STATES: readonly WalkState[] = [
   },
   {
     // The Expense over a sale in progress, settled: the strip reads "Sale in progress · 1 product · total · Back".
-    // The wait reads text, so it waits on the strip's label; the strip draws only once a Product is chosen, and its
-    // total is a figure only after repricing, which the walk settles after every step. Repricing is never walked.
+    // The wait reads text, not an accessible name, so it waits on the strip's "Back", which only the
+    // strip draws; its total is a figure only after repricing, which the walk settles after every step. Repricing is never walked.
     screen: 'sale/expense-strip',
     route: SALE_NEW,
     steps: TO_THE_STRIP,
-    visible: `${SALES_TEXT.saleInProgress} · ${SALES_TEXT.products(1)} ·`,
+    visible: SALES_TEXT.back,
   },
   {
     // The same sale, an Expense saved and the way back: New sale with the toast and line 1 still there.

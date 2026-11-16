@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { HOME } from '../routes.ts'
+import { STATES } from './allStates.ts'
 import {
   parseFacts,
   parseRegistry,
@@ -11,6 +12,7 @@ import {
   SKIP_COMPUTER_VIEWPORT,
   SKIP_NO_ROUTE,
   SKIP_THEME_TWIN,
+  skipWalkedAs,
   skippedScreens,
   STATE_NAMES,
   walkableScreens,
@@ -207,5 +209,45 @@ describe('parseRouteRegistry', () => {
     for (const route of ROUTE_REGISTRY) expect(route.path.startsWith(HOME)).toBe(true)
     expect(ROUTE_REGISTRY.map((route) => route.path)).toContain(`${HOME}withdrawals${HOME}{id}${HOME}edit`)
     expect(ROUTE_REGISTRY.map((route) => route.path)).toContain(`${HOME}login`)
+  })
+})
+
+describe('walked_as: a row whose screen a walked state proves', () => {
+  const row = (extra: Record<string, unknown> = {}) => entry({ screen: 'Proved', walked_as: 'State/one', ...extra })
+
+  test('keeps the row out of the walk and skips it with a reason that names the state', () => {
+    const parsed = parseRegistry({ screens: [entry({ screen: 'Sales' }), row()] }, ['State/one'])
+    expect(walkableScreens(parsed).map((s) => s.screen)).toEqual(['Sales'])
+    expect(skippedScreens(parsed)).toEqual([{ screen: 'Proved', reason: skipWalkedAs('State/one') }])
+    expect(skipWalkedAs('State/one')).toBe('walked as its state State/one')
+  })
+
+  test('refuses a walked_as that is not a walked state, saying which', () => {
+    expect(() => parseRegistry({ screens: [row()] }, ['Other'])).toThrow('Proved: walked_as "State/one" is not a walked state')
+    expect(() => parseRegistry({ screens: [row()] })).toThrow(/not a walked state/)
+  })
+
+  test('refuses a walked_as that is not text', () => {
+    expect(() => parseRegistry({ screens: [row({ walked_as: 3 })] }, ['State/one'])).toThrow(/walked_as is not text/)
+  })
+
+  test('a row without it is walked as before', () => {
+    expect(parseRegistry({ screens: [entry({})] })[0]?.walkedAs).toBeNull()
+  })
+
+  test('every real row that has one is skipped, names a state of STATE_NAMES and has the state steps plus its wait', () => {
+    const proved = REGISTRY.filter((screen) => screen.walkedAs !== null)
+    expect(proved.map((screen) => screen.screen)).toEqual(['VentaEnCurso'])
+    for (const screen of proved) {
+      const state = STATES.find((candidate) => candidate.screen === screen.walkedAs)
+      if (state === undefined) throw new Error(`${screen.screen}: ${String(screen.walkedAs)} is not walked`)
+      expect(walkableScreens(REGISTRY).map((s) => s.screen), screen.screen).not.toContain(screen.screen)
+      expect(skippedScreens(REGISTRY), screen.screen).toContainEqual({
+        screen: screen.screen,
+        reason: skipWalkedAs(state.screen),
+      })
+      expect(screen.steps, screen.screen).toEqual([...state.steps, { wait: state.visible }])
+      expect(screen.route, screen.screen).toBe(state.route)
+    }
   })
 })

@@ -14,6 +14,10 @@ export const SKIP_NO_ROUTE = 'not built yet: route is null'
 export const SKIP_COMPUTER_VIEWPORT = 'computer layout: viewport width of 900 px or more'
 /** Both themes run in every cell, so a dark twin of a registry entry would repeat its walk. */
 export const SKIP_THEME_TWIN = 'dark twin: every cell already runs both themes'
+/** A walked state proves this row's screen, so walking the row too would repeat it. */
+export function skipWalkedAs(state: string): string {
+  return `walked as its state ${state}`
+}
 /** The computer breakpoint, in CSS px (design README, accounts.md). */
 export const COMPUTER_MIN_WIDTH = 900
 
@@ -34,6 +38,8 @@ export interface RegistryScreen {
   signedOut: boolean
   theme: string | null
   steps: readonly RegistryStep[]
+  /** The walked state (`STATE_NAMES`) that proves this row's screen, or `null`. */
+  walkedAs: string | null
 }
 
 /**
@@ -206,6 +212,11 @@ export function parseRegistry(
     const path = row['path']
     if (typeof path !== 'string') throw new Error(`${name}: path is not a string`)
     const theme = row['tema']
+    const walkedAs = row['walked_as']
+    if (walkedAs !== undefined && typeof walkedAs !== 'string') throw new Error(`${name}: walked_as is not text`)
+    if (typeof walkedAs === 'string' && !stateNames.includes(walkedAs)) {
+      throw new Error(`${name}: walked_as "${walkedAs}" is not a walked state`)
+    }
     return {
       screen: name,
       route,
@@ -214,6 +225,7 @@ export function parseRegistry(
       signedOut: row['signed_out'] === true,
       theme: typeof theme === 'string' ? theme : null,
       steps: parseSteps(row['steps'], name),
+      walkedAs: walkedAs ?? null,
     }
   })
 }
@@ -233,6 +245,7 @@ export function resolvePlaceholders(
 /** Why the phone walk leaves a screen out, or `null` when it visits it. The one place that decides. */
 function skipReason(screen: RegistryScreen): string | null {
   if (screen.route === null) return SKIP_NO_ROUTE
+  if (screen.walkedAs !== null) return skipWalkedAs(screen.walkedAs)
   if (screen.theme !== null) return SKIP_THEME_TWIN
   if (screen.viewport !== null && screen.viewport[0] >= COMPUTER_MIN_WIDTH) return SKIP_COMPUTER_VIEWPORT
   return null
