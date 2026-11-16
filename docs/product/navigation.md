@@ -266,6 +266,8 @@ El dueño retiró la pantalla More el 2026-11-02 (`docs/design/redesign/registro
 
 ### Settings
 
+![Configuracion](../assets/screens/Configuracion.webp)
+
 - **Una pantalla que reúne cada configuración de todo el Business, en grupos, y nada más.** Los grupos, en este orden (el comportamiento de cada grupo es de su dueño):
   - **Business**: el nombre del Business. Toast "Saved".
   - **Users**: los socios por email, ordenados por email, el que inició sesión marcado "you", e "Invite a partner", que crea un link nuevo para sumarse por toque, para copiar o compartir (accounts.md). Sin lista de Invitations, sin revocar, sin roles.
@@ -337,7 +339,6 @@ Cada pantalla es exactamente de uno de tres tipos, tiene una sola pantalla madre
 | El detalle de un Stock withdrawal | Products |
 | Archived | Products |
 | La página de un Archived product | Archived |
-| La lista de Payment methods | Payments and expenses |
 | Los Payment methods archivados | la lista de Payment methods |
 | Un paso del Onboarding o "Done" | Home |
 
