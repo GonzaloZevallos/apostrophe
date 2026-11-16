@@ -146,7 +146,8 @@ export const SALES_STATES: readonly WalkState[] = [
       { fill: { label: SALES_TEXT.lineGrams(1), value: '5' } },
       { click: SALES_TEXT.expense },
       { fill: { label: common('common:amount'), value: '1500' } },
-      { activate: common('common:close') },
+      // The strip's Back, not Close: the sale form's own Close is also a button under the Sheet and a step cannot tell the two apart.
+      { press: SALES_TEXT.saleInProgressName(SALES_TEXT.products(1), '$ 55.000') },
     ],
     visible: EXPENSES_TEXT.discardTheExpense,
   },
