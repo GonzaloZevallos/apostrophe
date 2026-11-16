@@ -8,6 +8,8 @@ summary: "More se retira, y Expenses es una tarjeta en el celular y un Tab root 
 
 GH-651, parte 2 de GH-560.
 
+> Enmienda 2026-11-16: la viñeta «`/mas` y `/more` caen en Home a propósito» y la parte de «Una pantalla puede marcar otra pestaña, o ninguna» que dice que Settings no marca ninguna pestaña quedan decididas por `20261116-more-and-mas-redirect-to-home-and-settings-marks-home.md`.
+
 ## Contexto
 
 El 2026-11-02 el dueño retiró la pantalla More (`docs/design/redesign/registro-unificado.md`). En el celular, More era el único camino a cinco lugares: Settings, Analysis, Expenses, Add expense y Take from stock. Los dibujos aprobados ponen cada uno en la pantalla donde ya vive su contexto. La barra lateral de la computadora ya llega directo a Settings, Expenses y Analysis, y no cambia.

@@ -5,7 +5,10 @@
  * What stays on purpose: `MasInfo` and "More info", a settled glossary term, which the patterns let through.
  *
  * The scan reports `file:line`. The matcher is tested on strings it must refuse and look-alikes it must
- * accept, beside the real tree. This file is the scan's only exemption: it has to write the patterns.
+ * accept, beside the real tree. Two things are left out, and only these: this file, which has to write the
+ * patterns, and the one (file, rule) pair in EXEMPTIONS, the redirect case of `tests/test_static_spa.py`
+ * (docs/adr/20261116-more-and-mas-redirect-to-home-and-settings-marks-home). Every other rule still scans
+ * that file.
  */
 
 import { readdirSync, readFileSync } from 'node:fs'
@@ -124,18 +127,30 @@ const RULES: readonly Rule[] = [
   },
 ]
 
+interface Exemption {
+  path: string
+  rule: string
+}
+
+/** The one pair the scan lets through: the server's redirect of `/more` and `/mas` is tested there. */
+const EXEMPTIONS: readonly Exemption[] = [
+  { path: 'tests/test_static_spa.py', rule: 'the /more or /mas path in Python' },
+]
+
 interface Source {
   path: string
   content: string
 }
 
 /** `path:line` for each line of each file that a rule of its file type refuses. */
-function findRetired(files: readonly Source[]): string[] {
+function findRetired(files: readonly Source[], exemptions: readonly Exemption[] = EXEMPTIONS): string[] {
   const found: string[] = []
   for (const { path, content } of files) {
     const type = EXTENSIONS[path.slice(path.lastIndexOf('.'))]
     if (type === undefined) continue
-    const rules = RULES.filter((rule) => rule.types.includes(type))
+    const rules = RULES.filter(
+      (rule) => rule.types.includes(type) && !exemptions.some((e) => e.path === path && e.rule === rule.name),
+    )
     content.split('\n').forEach((line, index) => {
       if (rules.some((rule) => rule.pattern.test(line))) found.push(`${path}:${index + 1}`)
     })
@@ -167,10 +182,25 @@ describe('the retired More scan', () => {
     expect(findRetired(files)).toEqual([])
   })
 
-  test('its own file is the only one the scan leaves out', () => {
+  test('the scan leaves out exactly its own file and one rule of the redirect test', () => {
     const all = ROOTS.flatMap(walk)
     expect(all.filter((file) => file === SELF)).toEqual([SELF])
     expect(all.filter((file) => file !== SELF).length).toBe(all.length - 1)
+    expect(EXEMPTIONS).toEqual([{ path: 'tests/test_static_spa.py', rule: 'the /more or /mas path in Python' }])
+    expect(RULES.filter((rule) => rule.name === EXEMPTIONS[0]?.rule)).toHaveLength(1)
+  })
+
+  test('lets the redirect case through in tests/test_static_spa.py and nowhere else', () => {
+    const line = 'client.get("/more")'
+    expect(findRetired([{ path: 'tests/test_static_spa.py', content: line }])).toEqual([])
+    expect(findRetired([{ path: 'tests/test_other.py', content: line }])).toEqual(['tests/test_other.py:1'])
+  })
+
+  test('exempts one rule of a file, not the file: the other rules still scan it', () => {
+    const only = [{ path: 'x.ts', rule: 'the whole string More or Más' }]
+    const content = "name = 'More'\nconst bar = 'more'"
+    expect(findRetired([{ path: 'x.ts', content }], only)).toEqual(['x.ts:2'])
+    expect(findRetired([{ path: 'x.ts', content }], [])).toEqual(['x.ts:1', 'x.ts:2'])
   })
 
   describe.each(RULES.map((rule) => [rule.name, rule] as const))('%s', (_name, rule) => {

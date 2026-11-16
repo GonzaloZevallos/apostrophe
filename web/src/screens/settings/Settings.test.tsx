@@ -144,3 +144,26 @@ test('reached by an in-app link, back goes back in history', async () => {
 
   expect(router.state.location.pathname).toBe(SALES)
 })
+
+test("opened with no in-app state, back from Settings' list goes to Home", async () => {
+  stubComputer(false)
+  const user = userEvent.setup()
+  const { router } = renderApp([SETTINGS])
+
+  await user.click(await screen.findByRole('button', { name: '‹ Home' }))
+
+  expect(router.state.location.pathname).toBe(HOME)
+  expect(await screen.findByRole('group', { name: 'Home view' })).toBeInTheDocument()
+  expect(screen.queryByRole('navigation', { name: 'Settings' })).not.toBeInTheDocument()
+})
+
+test("opened with no in-app state, Close from a group goes to Settings' list", async () => {
+  stubComputer(false)
+  const user = userEvent.setup()
+  const { router } = renderApp([SETTINGS_ACCOUNT])
+
+  await user.click(await screen.findByRole('button', { name: 'Close' }))
+
+  expect(router.state.location.pathname).toBe(SETTINGS)
+  expect(await screen.findByRole('navigation', { name: 'Settings' })).toBeInTheDocument()
+})

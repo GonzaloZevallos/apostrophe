@@ -329,10 +329,10 @@ test.each([
   expect(current(rail(container))).toEqual([railEntry])
 })
 
-test('Configuración marks no tab on the bar and the business row on a computer', () => {
+test('Configuración marks Home on the phone bar and the business row on a computer', () => {
   const { container } = renderShell([SETTINGS])
 
-  expect(current(bar(container))).toEqual([])
+  expect(current(bar(container))).toEqual(['Home'])
   const row = within(rail(container)).getByRole('link', { name: 'Settings for La Huerta' })
   expect(row).toHaveAttribute('aria-current', 'page')
   expect(row.className).toMatch(/--activo/)
