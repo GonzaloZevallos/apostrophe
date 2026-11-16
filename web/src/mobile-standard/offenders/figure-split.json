@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "screen": "DescartarGastoEnVenta",
+    "rule": "figure-split",
+    "target": "span:Sale in progress · # product · $ #.# ·",
+    "issue": 78,
+    "sizes": ["320x568"]
+  }
+]

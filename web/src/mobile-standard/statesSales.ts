@@ -137,6 +137,21 @@ export const SALES_STATES: readonly WalkState[] = [
     visible: EXPENSES_TEXT.discardTheExpense,
   },
   {
+    // The same question over a sale with a line, so the "Sale in progress" strip is on screen: the version with the strip.
+    screen: 'DescartarGastoEnVenta',
+    route: SALE_NEW,
+    steps: [
+      { press: `${SALES_TEXT.lineVariety(1)} ${common('common:pickAVariety')}` },
+      { press: 'Sir Jack' },
+      { fill: { label: SALES_TEXT.lineGrams(1), value: '5' } },
+      { click: SALES_TEXT.expense },
+      { fill: { label: common('common:amount'), value: '1500' } },
+      // The strip's Back, not Close: the sale form's own Close is also a button under the Sheet and a step cannot tell the two apart.
+      { press: SALES_TEXT.saleInProgressName(SALES_TEXT.products(1), '$ 55.000') },
+    ],
+    visible: EXPENSES_TEXT.discardTheExpense,
+  },
+  {
     screen: 'VentaAsignarCliente',
     route: SALES,
     steps: [{ click: SALES_TEXT.noCustomer }, { click: SALES_TEXT.assignCustomer }],
