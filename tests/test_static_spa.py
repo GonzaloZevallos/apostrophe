@@ -10,11 +10,16 @@ from collections.abc import Iterable
 from pathlib import Path
 
 import pytest
+from fastapi.testclient import TestClient
+from httpx2 import Response
+from sqlalchemy.engine import Engine
 
 from app.main import create_app
+from app.settings import Settings
 from app.shared.language import ENGLISH
 from app.static_spa import (
     LEGACY_FRONT_PATHS,
+    RETIRED_FRONT_PATHS,
     SHARED_FRONT_PATHS,
     MalformedBuiltFront,
     MalformedLegacyFrontPaths,
@@ -309,3 +314,59 @@ def test_boot_accepts_a_page_with_one_html_tag_and_trailing_whitespace(tmp_path:
     index.write_text(SHELL_FIXTURE + "\n\n", encoding="utf-8")
 
     ShellPage(index, None, (ENGLISH,))
+
+
+def _request(client: TestClient, method: str, path: str) -> Response:
+    return client.request(method, path, headers={"Accept": "text/html"}, follow_redirects=False)
+
+
+def test_a_retired_front_path_redirects_permanently_to_home_in_one_hop_without_its_query(
+    tmp_path: Path, engine: Engine, clock: MovableClock
+) -> None:
+    dist = tmp_path / "dist"
+    dist.mkdir()
+    (dist / "index.html").write_text('<html lang="en">the app shell</html>')
+    settings = Settings(
+        secret_key=SETTINGS.secret_key, database_url=SETTINGS.database_url, web_dist=dist
+    )
+    app = create_app(
+        settings,
+        engine=engine,
+        clock=clock,
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
+    )
+
+    with TestClient(app) as client:
+        # One app, every cell: building an app per case made the suite crawl.
+        for path in (
+            "/more",
+            "/mas",
+            "/more/",
+            "/mas/",
+            "/more?x=1",
+            "/mas/?month=2026-01&y=%C3%B1",
+        ):
+            for method in ("GET", "HEAD", "POST"):
+                response = _request(client, method, path)
+                assert response.status_code == 308, (method, path)
+                assert response.headers["location"] == "/", (method, path)
+        # Whatever is under a retired path is the unknown-address rule's, never this redirect.
+        for path in ("/more/x", "/mas/x", "/more/x/y", "/moreover"):
+            response = _request(client, "GET", path)
+            assert response.status_code == 200, path
+            assert "the app shell" in response.text, path
+            assert "location" not in response.headers, path
+        # A legacy row keeps forwarding its query.
+        response = _request(client, "GET", "/gastos?month=2026-01")
+        assert response.status_code == 308
+        assert response.headers["location"] == "/expenses?month=2026-01"
+
+
+def test_the_retired_front_paths_are_exactly_more_and_mas() -> None:
+    assert RETIRED_FRONT_PATHS == frozenset({"/more", "/mas"})
+
+
+def test_the_retired_front_paths_share_nothing_with_the_legacy_old_paths() -> None:
+    assert RETIRED_FRONT_PATHS.isdisjoint({old for old, _ in LEGACY_FRONT_PATHS})
