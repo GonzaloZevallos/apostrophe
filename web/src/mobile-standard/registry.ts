@@ -89,6 +89,8 @@ export const STATE_NAMES: readonly string[] = [
   'sale/customer-country-selector-open',
   'sale/expense-discard',
   'DescartarGastoEnVenta',
+  'sale/expense-strip',
+  'sale/expense-returned',
   'EntradaStockConfirmarCambios',
   'EntradaStockConfirmarBorrado',
   'PrecioNuevoFormulario',

@@ -1,4 +1,4 @@
-/** Sales and collections (`sales.md`, `payments.md`): the forms, sheets and dialogs the walk visits. Nothing here saves. */
+/** Sales and collections (`sales.md`, `payments.md`): the forms, sheets and dialogs the walk visits. Nothing here reaches the backend: a save is answered by its stub. */
 
 import { CUSTOMER, CUSTOMERS, HOME, SALE, SALE_NEW, SALES } from '../routes.ts'
 import { common, emptyState } from './copy.ts'
@@ -6,7 +6,31 @@ import { DETECTED_COUNTRY_BUTTON } from './countryField.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { EXPENSES_TEXT } from '../copy/expenses.ts'
 import { SALES_TEXT } from '../copy/sales.ts'
+import type { Expense } from '../api/expenses.ts'
 import type { WalkState } from './states.ts'
+
+/** The sale in progress the strip states and `DescartarGastoEnVenta` share: line 1's Product, its grams and the Total they make. */
+export const SALE_IN_PROGRESS_LINE = { product: 'Sir Jack', grams: '5', total: '$ 55.000' }
+
+/** The toast `sale/expense-returned` waits for. */
+export const EXPENSE_RECORDED = SALES_TEXT.expenseRecorded
+
+/** The create's answer: the expense the form sends, as the server would store it. */
+export const RECORDED_EXPENSE_BODY = {
+  id: 9001,
+  spent_on: '2026-01-01',
+  category_id: 1,
+  amount: 1500,
+  detail: 'Cinta',
+} satisfies Expense
+
+/** Line 1 with a Product and its grams, then the Expense tile: the strip is over the form. */
+const TO_THE_STRIP = [
+  { press: `${SALES_TEXT.lineVariety(1)} ${common('common:pickAVariety')}` },
+  { press: SALE_IN_PROGRESS_LINE.product },
+  { fill: { label: SALES_TEXT.lineGrams(1), value: SALE_IN_PROGRESS_LINE.grams } },
+  { click: SALES_TEXT.expense },
+] as const
 
 /** Twelve listed Products, so a line's Product list shows its search. Seeded for this state's reads only. */
 const TWELVE_PRODUCTS = Array.from({ length: 12 }, (_unused, index) => ({
@@ -118,8 +142,8 @@ export const SALES_STATES: readonly WalkState[] = [
     route: SALE_NEW,
     steps: [
       { press: `${SALES_TEXT.lineVariety(1)} ${common('common:pickAVariety')}` },
-      { press: 'Sir Jack' },
-      { fill: { label: SALES_TEXT.lineGrams(1), value: '5' } },
+      { press: SALE_IN_PROGRESS_LINE.product },
+      { fill: { label: SALES_TEXT.lineGrams(1), value: SALE_IN_PROGRESS_LINE.grams } },
       { press: common('common:close') },
     ],
     visible: SALES_TEXT.discardSale,
@@ -141,15 +165,40 @@ export const SALES_STATES: readonly WalkState[] = [
     screen: 'DescartarGastoEnVenta',
     route: SALE_NEW,
     steps: [
-      { press: `${SALES_TEXT.lineVariety(1)} ${common('common:pickAVariety')}` },
-      { press: 'Sir Jack' },
-      { fill: { label: SALES_TEXT.lineGrams(1), value: '5' } },
-      { click: SALES_TEXT.expense },
+      ...TO_THE_STRIP,
       { fill: { label: common('common:amount'), value: '1500' } },
       // The strip's Back, not Close: the sale form's own Close is also a button under the Sheet and a step cannot tell the two apart.
-      { press: SALES_TEXT.saleInProgressName(SALES_TEXT.products(1), '$ 55.000') },
+      { press: SALES_TEXT.saleInProgressName(SALES_TEXT.products(1), SALE_IN_PROGRESS_LINE.total) },
     ],
     visible: EXPENSES_TEXT.discardTheExpense,
+  },
+  {
+    // The Expense over a sale in progress, settled: the strip reads "Sale in progress · 1 product · total · Back".
+    // The wait reads text, so it waits on the strip's label; the strip draws only once a Product is chosen, and its
+    // total is a figure only after repricing, which the walk settles after every step. Repricing is never walked.
+    screen: 'sale/expense-strip',
+    route: SALE_NEW,
+    steps: TO_THE_STRIP,
+    visible: `${SALES_TEXT.saleInProgress} · ${SALES_TEXT.products(1)} ·`,
+  },
+  {
+    // The same sale, an Expense saved and the way back: New sale with the toast and line 1 still there.
+    // The required fields of the expense form (`ExpenseForm`): Category (`common:category`, a Selector), Amount
+    // (`common:amount`) and Details (`EXPENSES_TEXT.details`); Date starts at today. Save is `EXPENSES_TEXT.saveTheExpense`.
+    screen: 'sale/expense-returned',
+    route: SALE_NEW,
+    steps: [
+      ...TO_THE_STRIP,
+      { press: `${common('common:category')} ${EXPENSES_TEXT.pickACategory}` },
+      { press: 'Packaging' },
+      { fill: { label: common('common:amount'), value: '1500' } },
+      { fill: { label: EXPENSES_TEXT.details, value: 'Cinta' } },
+      { click: EXPENSES_TEXT.saveTheExpense },
+      // Line 1's total is on New sale again: the sale is intact.
+      { wait: SALE_IN_PROGRESS_LINE.total },
+    ],
+    visible: EXPENSE_RECORDED,
+    writes: [{ method: 'POST', path: /^\/expenses$/, status: 201, body: RECORDED_EXPENSE_BODY }],
   },
   {
     screen: 'VentaAsignarCliente',

@@ -1,13 +1,17 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { STATES } from './allStates.ts'
 import { MissingKeyError } from '../i18n/resolve.ts'
 import { GONE_NOTICE } from '../api/refusals.ts'
-import { HOME } from '../routes.ts'
+import { recordExpense } from '../api/expenses.ts'
+import { HOME, SALE_NEW } from '../routes.ts'
 import { STATE_NAMES } from './registry.ts'
 import { common, refusal } from './copy.ts'
 import { PENDING_TAPS } from './pending.ts'
 import { stateNameProblems, type WalkState } from './states.ts'
 import { isConvertedRow } from '../i18n/step.ts'
+import { SALES_TEXT } from '../copy/sales.ts'
+import { EXPENSES_TEXT } from '../copy/expenses.ts'
+import { EXPENSE_RECORDED, SALE_IN_PROGRESS_LINE } from './statesSales.ts'
 
 describe('the walked states name no key yet', () => {
   it('has no key-shaped click, press, wait or fill.label in any state', () => {
@@ -87,5 +91,76 @@ describe('the walk reads the shared words from the English bundle', () => {
 
   it('refuses a key the English bundle does not have', () => {
     expect(() => common('common:noSuchWord' as Parameters<typeof common>[0])).toThrow(MissingKeyError)
+  })
+})
+
+describe('the walked states of an expense over a sale in progress', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  const state = (screen: string): WalkState => {
+    const found = STATES.find((candidate) => candidate.screen === screen)
+    if (found === undefined) throw new Error(`${screen} is not walked`)
+    return found
+  }
+  const toStrip = [
+    { press: `${SALES_TEXT.lineVariety(1)} Pick a product` },
+    { press: SALE_IN_PROGRESS_LINE.product },
+    { fill: { label: SALES_TEXT.lineGrams(1), value: SALE_IN_PROGRESS_LINE.grams } },
+    { click: SALES_TEXT.expense },
+  ]
+
+  it('opens the Expense over line 1 and waits for the strip, saving nothing and stubbing no read', () => {
+    const strip = state('sale/expense-strip')
+    expect(strip.route).toBe(SALE_NEW)
+    expect(strip.steps).toEqual(toStrip)
+    expect(strip.visible).toBe(`${SALES_TEXT.saleInProgress} · ${SALES_TEXT.products(1)} ·`)
+    expect(strip.writes).toBeUndefined()
+    expect(strip.reads).toBeUndefined()
+  })
+
+  it('fills the required fields, saves, and waits for the sale to be intact under "Expense recorded"', () => {
+    const returned = state('sale/expense-returned')
+    expect(returned.steps.slice(0, toStrip.length)).toEqual(toStrip)
+    expect(returned.steps.slice(toStrip.length)).toEqual([
+      { press: `Category ${EXPENSES_TEXT.pickACategory}` },
+      { press: 'Packaging' },
+      { fill: { label: 'Amount', value: '1500' } },
+      { fill: { label: EXPENSES_TEXT.details, value: 'Cinta' } },
+      { click: EXPENSES_TEXT.saveTheExpense },
+      { wait: SALE_IN_PROGRESS_LINE.total },
+    ])
+    expect(returned.visible).toBe(SALES_TEXT.expenseRecorded)
+    expect(returned.visible).toBe(EXPENSE_RECORDED)
+    expect(returned.reads).toBeUndefined()
+  })
+
+  it('stubs one POST on the path the client really sends to record an expense, and nothing else', async () => {
+    const sent: string[] = []
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((path: string) => {
+        sent.push(path)
+        return Promise.resolve(new Response('{}', { status: 201 }))
+      }),
+    )
+    await recordExpense({ spent_on: '2026-01-01', category_id: 1, amount: 1, detail: 'x' })
+    const sentPath = new URL(sent[0] ?? '', 'http://api.test').pathname
+    const stubs = state('sale/expense-returned').writes ?? []
+    expect(stubs).toHaveLength(1)
+    expect(stubs[0]?.method).toBe('POST')
+    expect(stubs[0]?.status).toBe(201)
+    expect(stubs[0]?.path.test(sentPath)).toBe(true)
+    // It answers that one create and no other call on the same resource.
+    expect(stubs[0]?.path.test('/expenses/3')).toBe(false)
+    expect(stubs[0]?.path.test('/expense-categories')).toBe(false)
+    expect(stubs[0]?.body).toMatchObject({ id: expect.any(Number) as number, detail: 'Cinta' })
+  })
+
+  it('shows a settled figure or toast as its visible text, never a loading label', () => {
+    for (const name of ['sale/expense-strip', 'sale/expense-returned']) {
+      expect(state(name).visible, name).not.toMatch(/loading|saving|…/i)
+    }
   })
 })
