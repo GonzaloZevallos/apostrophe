@@ -329,6 +329,7 @@ Cada pantalla es exactamente de uno de tres tipos, tiene una sola pantalla madre
 | Expenses (celular) | Analysis |
 | La lista de grupos de Settings | Home (`/`) |
 | Un grupo de Settings | la lista de grupos de Settings |
+| La lista de Payment methods (tarjeta "‹ Payments and expenses") | el grupo Payments and expenses |
 | El "See all" de precios o de Stock entries de un Product | la página del Product |
 | "All entries" | Products |
 | Formulario de Stock withdrawal, nuevo | Products |

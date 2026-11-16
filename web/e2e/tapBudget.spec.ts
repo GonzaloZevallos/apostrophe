@@ -26,7 +26,9 @@ import {
   STOCK_ENTRY_NEW,
   VARIETIES,
   VARIETY,
+  SCREENS,
   WITHDRAWAL_NEW,
+  kindOf,
 } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
@@ -41,8 +43,19 @@ import { servedCountry } from './helpers/phoneCountries.js'
 const PHONE = { width: 390, height: 844 }
 const COMPUTER = { width: 1280, height: 920 }
 
-/** Tab roots: where a seller can be standing when the need to record an expense comes. */
-const ROOTS = [HOME, SALES, CUSTOMERS, VARIETIES, EXPENSES] as const
+/** Roots a seller can be standing on: the four tabs, Analysis (a root on both viewports, with its avatar) and
+ * Gastos (a root on a computer only). */
+const ROOTS = [HOME, SALES, CUSTOMERS, VARIETIES, ANALYSIS, EXPENSES] as const
+
+/** Where the expense form's budget is measured: Analysis is left out, its Expenses card is the one-tap entry
+ * the next test records through and a computer reaches it in two. */
+const EXPENSE_ROOTS = ROOTS.filter((root) => root !== ANALYSIS)
+
+test('every root the registry shows on the phone is measured by this spec', () => {
+  const phoneRoots = SCREENS.filter((entry) => kindOf(entry, 'phone') === 'root').map((entry) => entry.path)
+  expect(phoneRoots.length).toBeGreaterThan(1)
+  for (const path of phoneRoots) expect(ROOTS, path).toContain(path)
+})
 
 interface Counter {
   taps: number
@@ -93,13 +106,13 @@ test('the expense form opens within the tap budget from every tab root, phone an
     ['computer', COMPUTER],
   ] as const) {
     await page.setViewportSize(size)
-    for (const root of ROOTS) {
+    for (const root of EXPENSE_ROOTS) {
       await page.goto(root)
       taps[device][root] = await openExpenseForm(page, device === 'computer')
     }
   }
 
-  for (const root of ROOTS) {
+  for (const root of EXPENSE_ROOTS) {
     const phone = taps.phone[root]
     const computer = taps.computer[root]
     expect(computer, `computer, from ${root}`).toBeLessThanOrEqual(phone ?? 0)
@@ -255,7 +268,9 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
       counter = { taps: 0 }
       if (root !== VARIETIES) await viaTab(page, counter, computer, 'Products')
       await settled(page, computer)
-      await tap(counter, page.getByRole('link', { name: 'Take from stock' }).first())
+      const takeFromStock = page.getByRole('link', { name: 'Take from stock' }).first()
+      if (!computer) await expect(takeFromStock, label).toBeInViewport()
+      await tap(counter, takeFromStock)
       await expectPath(page, WITHDRAWAL_NEW)
       measure(`withdrawal ${root}`, device, counter.taps)
     }

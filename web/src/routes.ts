@@ -37,8 +37,8 @@ export type RailPlace = BarPlace | 'expenses' | 'analysis' | 'business'
 export type Segment = 'home' | 'analysis'
 
 export interface Place {
-  /** The bar's mark; `null` marks no tab (Configuración is reached from a header, not a tab). */
-  bar: BarPlace | null
+  /** The bar's mark; every screen marks one tab (Configuración and what is below it mark Inicio, its phone parent). */
+  bar: BarPlace
   rail: RailPlace
   /** The option of the Home | Analysis segment this screen is; set only on `home` and `analysis`. */
   segment?: Segment
@@ -356,7 +356,7 @@ export const SCREENS = [
     declaredKind: 'card',
     titleKey: 'common:settings',
     parent: 'home',
-    place: { bar: null, rail: 'business' },
+    place: { bar: 'home', rail: 'business' },
   }),
   screen({ id: 'settings-business', path: SETTINGS_BUSINESS, declaredKind: 'form', titleKey: 'common:business', parent: 'settings' }),
   screen({ id: 'settings-users', path: SETTINGS_USERS, declaredKind: 'form', titleKey: 'common:users', parent: 'settings' }),
