@@ -24,3 +24,5 @@ Revisado de nuevo el 2026-11-16: la rama `agentic-ci/GH-563-proof` sigue sin exi
 Revisado por tercera vez el 2026-11-16: `git push --dry-run origin HEAD:refs/heads/agentic-ci/GH-563-proof` lo rechaza el hook del sandbox («the system pushes the task branch when it delivers»); `git ls-remote` funciona, pero la rama sigue sin existir. No se inventó ninguna cifra, y la línea `Shard headroom: measured in GH-563 (c).` de ADR-0040 sigue sin llenar por esa razón.
 
 Revisado por cuarta vez el 2026-11-16, tras la devolución de la revisión: `git ls-remote --heads origin 'agentic-ci/GH-563*'` sigue sin devolver nada. Se necesita que una persona empuje `agentic-ci/GH-563-proof` o que la prueba pase a otra tarea.
+
+Revisado por quinta vez el 2026-11-16, en `af90f550`: la rama `agentic-ci/GH-563-proof` sigue ausente del remoto y el push sigue denegado. Sin cambios en las cifras: no existen.
