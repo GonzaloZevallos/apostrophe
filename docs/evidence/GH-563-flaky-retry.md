@@ -22,3 +22,5 @@ La declaración de `rerun_checks` con ids fallidos salió de esta tarea (decisi�
 Revisado de nuevo el 2026-11-16: la rama `agentic-ci/GH-563-proof` sigue sin existir en el remoto y `git push` sigue rechazado en el sandbox, así que nada de lo anterior cambió.
 
 Revisado por tercera vez el 2026-11-16: `git push --dry-run origin HEAD:refs/heads/agentic-ci/GH-563-proof` lo rechaza el hook del sandbox («the system pushes the task branch when it delivers»); `git ls-remote` funciona, pero la rama sigue sin existir. No se inventó ninguna cifra, y la línea `Shard headroom: measured in GH-563 (c).` de ADR-0040 sigue sin llenar por esa razón.
+
+Revisado por cuarta vez el 2026-11-16, tras la devolución de la revisión: `git ls-remote --heads origin 'agentic-ci/GH-563*'` sigue sin devolver nada. Se necesita que una persona empuje `agentic-ci/GH-563-proof` o que la prueba pase a otra tarea.
