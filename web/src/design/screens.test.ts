@@ -29,8 +29,9 @@ const copyFiles = import.meta.glob<CopyFile>(['/src/copy/*.ts', '!/src/copy/limi
   eager: true,
 })
 
-// The sample's own names (scripts/design/sample_app.py), seller data a step may name.
-const SAMPLE_NAMES = ['Blue Dream', 'Gelato', 'Sir Jack']
+// The sample's own names (scripts/design/sample_app.py), seller data a step may name. 'Packaging' is the
+// expense category the sample makes (sample_app.py, `category("Packaging")`), which VentaVuelve picks.
+const SAMPLE_NAMES = ['Blue Dream', 'Gelato', 'Sir Jack', 'Packaging']
 const HOLE = '\u0001'
 /** Stands for the business's currency symbol, so the check names no symbol of its own: a Money format
  * value is built with it and `moneyFormatter` writes the figure around it. */

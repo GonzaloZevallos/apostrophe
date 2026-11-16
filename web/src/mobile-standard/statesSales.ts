@@ -177,12 +177,12 @@ export const SALES_STATES: readonly WalkState[] = [
   },
   {
     // The Expense over a sale in progress, settled: the strip reads "Sale in progress · 1 product · total · Back".
-    // The wait reads text, not an accessible name, so it waits on the strip's "Back", which only the
-    // strip draws; its total is a figure only after repricing, which the walk settles after every step. Repricing is never walked.
+    // The wait reads text, not an accessible name, so it waits on the total figure: a figure, never a loading
+    // label, and the strip's own figure is drawn only once repricing has settled. Repricing is never walked.
     screen: 'sale/expense-strip',
     route: SALE_NEW,
     steps: TO_THE_STRIP,
-    visible: SALES_TEXT.back,
+    visible: SALE_IN_PROGRESS_LINE.total,
   },
   {
     // The same sale, an Expense saved and the way back: New sale with the toast and line 1 still there.
@@ -192,7 +192,7 @@ export const SALES_STATES: readonly WalkState[] = [
     route: SALE_NEW,
     steps: [
       ...TO_THE_STRIP,
-      { press: `${common('common:category')} ${EXPENSES_TEXT.pickACategory}` },
+      { click: EXPENSES_TEXT.pickACategory },
       { press: 'Packaging' },
       { fill: { label: common('common:amount'), value: '1500' } },
       { fill: { label: EXPENSES_TEXT.details, value: 'Cinta' } },

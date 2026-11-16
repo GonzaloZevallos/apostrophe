@@ -115,7 +115,7 @@ describe('the walked states of an expense over a sale in progress', () => {
     const strip = state('sale/expense-strip')
     expect(strip.route).toBe(SALE_NEW)
     expect(strip.steps).toEqual(toStrip)
-    expect(strip.visible).toBe('Back')
+    expect(strip.visible).toBe(SALE_IN_PROGRESS_LINE.total)
     expect(strip.writes).toBeUndefined()
     expect(strip.reads).toBeUndefined()
   })
@@ -124,7 +124,7 @@ describe('the walked states of an expense over a sale in progress', () => {
     const returned = state('sale/expense-returned')
     expect(returned.steps.slice(0, toStrip.length)).toEqual(toStrip)
     expect(returned.steps.slice(toStrip.length)).toEqual([
-      { press: `Category ${EXPENSES_TEXT.pickACategory}` },
+      { click: EXPENSES_TEXT.pickACategory },
       { press: 'Packaging' },
       { fill: { label: 'Amount', value: '1500' } },
       { fill: { label: EXPENSES_TEXT.details, value: 'Cinta' } },

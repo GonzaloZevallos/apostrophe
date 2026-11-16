@@ -707,8 +707,6 @@ const NULL_ROUTE_CEILING: Readonly<Record<string, number>> = Object.freeze({
   Stock: 499,
   VentaEnCursoCompu: 560,
   VentaEnCursoCompuOscuro: 560,
-  VentaVuelve: 560,
-  VentaVuelveOscuro: 560,
   VentaVuelveCompu: 560,
   VentaVuelveCompuOscuro: 560,
   ClienteFichaPago: 560,
