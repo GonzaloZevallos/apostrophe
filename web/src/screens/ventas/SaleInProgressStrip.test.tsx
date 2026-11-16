@@ -29,10 +29,20 @@ function renderStrip(props: { n: number; total: number; repricing: boolean }, on
 test('reads the products, the total and Back, and goes back on a tap', async () => {
   const onBack = renderStrip({ n: 2, total: 11000, repricing: false })
   const strip = screen.getByRole('button', { name: 'Sale in progress, 2 products, $ 11.000. Back' })
-  expect(strip).toHaveTextContent('Sale in progress · 2 products · ')
-  expect(strip).toHaveTextContent('· Back')
+  expect(strip).toHaveTextContent('Sale in progress · 2 products ·')
+  expect(strip).toHaveTextContent('Back')
   await userEvent.click(strip)
   expect(onBack).toHaveBeenCalledTimes(1)
+})
+
+test('the total is its own figure element, outside the label', () => {
+  renderStrip({ n: 2, total: 11000, repricing: false })
+  const figure = screen.getByText('$ 11.000')
+  expect(figure).toHaveClass('cifra-s')
+  const label = screen.getByText(/Sale in progress/)
+  expect(label).not.toContainElement(figure)
+  expect(label).not.toHaveTextContent('$')
+  expect(screen.getByText('Back')).not.toContainElement(figure)
 })
 
 test('a total of zero is shown, never hidden', () => {
@@ -45,9 +55,10 @@ test('while repricing the amount slot is the loading bar: no symbol, no amount, 
   const strip = screen.getByRole('button', { name: 'Sale in progress, 2 products. Back' })
   expect(strip.textContent).not.toContain('$')
   expect(strip.textContent).not.toContain('11')
+  expect(strip.querySelector('[aria-hidden="true"]:not(svg)')).not.toBeNull()
 })
 
 test('one product reads in the singular', () => {
   renderStrip({ n: 1, total: 4500, repricing: false })
-  expect(screen.getByRole('button', { name: /^Sale in progress, 1 product, / })).toHaveTextContent('1 product ·')
+  expect(screen.getByRole('button', { name: /^Sale in progress, 1 product, / })).toHaveTextContent('1 product')
 })

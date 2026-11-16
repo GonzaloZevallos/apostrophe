@@ -4,7 +4,8 @@
  * the same move as Close and the system back: it only calls `onBack` (the host's `sheet.close()`).
  * The total is New sale's `totals.total` in the Money format, the figure of its Total row; while
  * the prices are recalculated the amount slot is that row's compact loading bar and the accessible
- * name leaves the amount out.
+ * name leaves the amount out. The amount sits in its own non-wrapping `cifra-s` element so it never
+ * splits across lines; the label beside it wraps.
  */
 
 import Boton from '../../components/Boton'
@@ -41,9 +42,9 @@ export default function SaleInProgressStrip({ words, total, repricing, onBack }:
       <span className="venta-en-curso">
         <Icono nombre="atras" />
         <span className="venta-en-curso__texto">
-          {words.saleInProgress} · <b>{words.products}</b> · {repricing ? <Loading compacto /> : amount}
-          {' · '}
+          {words.saleInProgress} · <b>{words.products}</b> ·
         </span>
+        <span className="venta-en-curso__cifra cifra-s">{repricing ? <Loading compacto /> : amount}</span>
         <span className="venta-en-curso__volver">{words.back}</span>
       </span>
     </Boton>
