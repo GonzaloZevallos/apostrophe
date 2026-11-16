@@ -153,8 +153,8 @@ describe('the walked states of an expense over a sale in progress', () => {
     expect(stubs[0]?.status).toBe(201)
     expect(stubs[0]?.path.test(sentPath)).toBe(true)
     // It answers that one create and no other call on the same resource.
-    expect(stubs[0]?.path.test('/expenses/3')).toBe(false)
-    expect(stubs[0]?.path.test('/expense-categories')).toBe(false)
+    expect(stubs[0]?.path.test(`${sentPath}/3`)).toBe(false)
+    expect(stubs[0]?.path.test(`${sentPath}-categories`)).toBe(false)
     expect(stubs[0]?.body).toMatchObject({ id: expect.any(Number) as number, detail: 'Cinta' })
   })
 

@@ -156,6 +156,8 @@ const ENTRIES: Record<string, () => Promise<void>> = {
   EntrarOscuro: renderEntrar,
   VentaGuardada: renderNuevaVenta,
   VentaGuardadaOscuro: renderNuevaVenta,
+  VentaEnCurso: renderNuevaVenta,
+  VentaEnCursoOscuro: renderNuevaVenta,
   OnboardingVariedad: () => renderOnboarding(ONBOARDING_STOCK, true),
   OnboardingPrecio: () => renderOnboarding(ONBOARDING_VARIETY, false),
 }
