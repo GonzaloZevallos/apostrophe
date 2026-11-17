@@ -17,6 +17,8 @@ import type { Locator, Page } from '@playwright/test'
 export const BOTTOM_BAR_CLASS = 'bar-inferior'
 export const BOTTOM_BAR = `.${BOTTOM_BAR_CLASS}`
 export const BOTTOM_BAR_ITEM = '.bar-inferior__item'
+/** The bar's + slot, the round box between the second tab and the third; never one of the tabs. */
+export const BOTTOM_BAR_PLUS = '.bar-inferior__mas'
 /** The floating group above the bar: the + New sale button and, when there is one, its missing-price line. */
 export const NEW_SALE_GROUP = '.nueva-venta-flotante'
 export const NEW_SALE_BUTTON_CLASS = 'boton-nueva-venta'

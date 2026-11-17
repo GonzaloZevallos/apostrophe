@@ -27,9 +27,14 @@ import {
 } from './helpers/textScale.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { HOME } from '../src/routes.js'
-import { BOTTOM_BAR, BOTTOM_BAR_ITEM, bottomBar } from './helpers/chrome.js'
+import { BOTTOM_BAR, BOTTOM_BAR_ITEM, BOTTOM_BAR_PLUS, bottomBar } from './helpers/chrome.js'
 
 const PHONE = { width: 320, height: 700 }
+/** The narrowest phone the bar must fit (Step 1 of GH-727: measure before anything is built on it). */
+const NARROW = { width: 246, height: 700 }
+const TAB_BOX = 44
+const PLUS_BOX = 52
+const LABEL_WEIGHT = 600
 const COMPUTER = { width: 1280, height: 920 }
 
 test.use(PHONE_CONTEXT)
@@ -168,6 +173,66 @@ async function bottomBarProblems(page: Page, scale: number): Promise<{ problems:
   return { problems, items }
 }
 
+interface Slot {
+  kind: 'tab' | 'plus'
+  label: string
+  width: number
+  height: number
+  /** The label's drawn width at weight 600 (a Range over its text, with the weight forced); 0 for the +. */
+  labelWidth: number
+}
+
+/** Every slot of the bar in order, as it lays out now: the tabs' and the +'s boxes and each label's width at weight 600. */
+async function measureSlots(page: Page): Promise<Slot[]> {
+  return page.locator(BOTTOM_BAR).evaluate(
+    (bar, args) => {
+      return [...bar.children].map((slot): Slot => {
+        const box = slot.getBoundingClientRect()
+        const label = slot.querySelector('span')
+        if (!slot.matches(args.item) || label === null) {
+          return { kind: 'plus', label: '+', width: box.width, height: box.height, labelWidth: 0 }
+        }
+        const before = label.style.fontWeight
+        label.style.fontWeight = String(args.weight)
+        const range = document.createRange()
+        range.selectNodeContents(label.firstChild ?? label)
+        const labelWidth = range.getBoundingClientRect().width
+        label.style.fontWeight = before
+        return { kind: 'tab', label: label.textContent ?? '', width: box.width, height: box.height, labelWidth }
+      })
+    },
+    { item: BOTTOM_BAR_ITEM, weight: LABEL_WEIGHT },
+  )
+}
+
+/** Why the slots do not fit, one line each; empty when every label is whole in its slot and every box is big enough. */
+function slotProblems(slots: Slot[], viewport: number): string[] {
+  const found: string[] = []
+  if (slots.map((slot) => slot.label).join('|') !== ['Home', 'Sales', '+', 'Customers', 'Products'].join('|')) {
+    found.push('the slots are not Home, Sales, +, Customers, Products')
+  }
+  for (const slot of slots) {
+    const [minWidth, minHeight] = slot.kind === 'plus' ? [PLUS_BOX, PLUS_BOX] : [TAB_BOX, TAB_BOX]
+    if (slot.width < minWidth - TOLERANCE) found.push(`${slot.label} is ${slot.width} px wide, under ${minWidth}`)
+    if (slot.height < minHeight - TOLERANCE) found.push(`${slot.label} is ${slot.height} px tall, under ${minHeight}`)
+    if (slot.kind === 'tab' && slot.labelWidth > slot.width + TOLERANCE) {
+      found.push(`${slot.label} is ${slot.labelWidth} px of text in a ${slot.width} px slot`)
+    }
+  }
+  if (slots.reduce((sum, slot) => sum + slot.width, 0) > viewport + TOLERANCE) found.push('the slots are wider than the viewport')
+  return found
+}
+
+function slotTable(slots: Slot[], viewport: number, theme: string): string {
+  const rows = slots.map(
+    (slot) =>
+      `| ${slot.label} | ${slot.width.toFixed(2)} | ${slot.kind === 'tab' ? slot.labelWidth.toFixed(2) : '-'} | ${
+        slot.kind === 'tab' ? (slot.width - slot.labelWidth).toFixed(2) : '-'
+      } | ${viewport} | ${theme} |`,
+  )
+  return ['| label | slot width | label width at 600 | slack | viewport | theme |', '|---|---|---|---|---|---|', ...rows].join('\n')
+}
+
 // One business for the three tests: signing up is the slow step, and each test only reads layout.
 test.describe.serial('bar and rail fit', () => {
   let page: Page
@@ -188,6 +253,40 @@ test.describe.serial('bar and rail fit', () => {
 
     expect(problems).toEqual([])
     expect(items.filter((item) => item.current === 'page').map((item) => item.text)).toEqual(['Home'])
+  })
+
+  for (const theme of ['light', 'dark'] as const) {
+    test(`at 246 px in ${theme}, every slot fits its label whole at weight 600 and no box is under its minimum`, async () => {
+      await page.emulateMedia({ colorScheme: theme })
+      await page.setViewportSize(NARROW)
+      await page.goto(HOME)
+      await expect(bottomBar(page)).toBeVisible()
+      await expect(page.locator(BOTTOM_BAR_PLUS)).toHaveCount(1)
+      // Automatic follows the emulated scheme: the attribute says `oscuro` in dark and is not that in light.
+      const dark = await page.evaluate(() => document.documentElement.getAttribute('data-tema') === 'oscuro')
+      expect(dark).toBe(theme === 'dark')
+
+      const slots = await measureSlots(page)
+      const table = slotTable(slots, NARROW.width, theme)
+      console.log(table)
+      await test.info().attach(`slots-246-${theme}`, { body: table, contentType: 'text/markdown' })
+
+      const overflows = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)
+      expect([...slotProblems(slots, NARROW.width), ...(overflows ? ['the page scrolls sideways'] : [])]).toEqual([])
+    })
+  }
+
+  test('the slot check rejects a bar whose label is wider than its slot', () => {
+    const slots: Slot[] = [
+      { kind: 'tab', label: 'Home', width: 40, height: 44, labelWidth: 30 },
+      { kind: 'tab', label: 'Customers', width: 46, height: 44, labelWidth: 58 },
+    ]
+
+    expect(slotProblems(slots, 246)).toEqual([
+      'the slots are not Home, Sales, +, Customers, Products',
+      'Home is 40 px wide, under 44',
+      'Customers is 58 px of text in a 46 px slot',
+    ])
   })
 
   test('the measurement rejects a bar that does not fit: at three times the text the labels overflow', async () => {

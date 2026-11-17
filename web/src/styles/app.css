@@ -582,34 +582,55 @@ body {
 
 .bar-inferior {
   display: flex;
+  align-items: center;
   margin-inline: calc(-1 * var(--inset-izquierda)) calc(-1 * var(--inset-derecha));
-  padding: 14px calc(var(--espacio-sm) + var(--inset-derecha)) calc(20px + var(--inset-abajo))
-    calc(var(--espacio-sm) + var(--inset-izquierda));
+  padding: 14px var(--inset-derecha) calc(20px + var(--inset-abajo)) var(--inset-izquierda);
   border-top: 1px solid var(--linea);
 }
 
+/* The four tabs share what the + leaves, in equal parts: no side padding beyond the insets, no
+ * gap between slots, and no tab wider because its word is. Each box is at least 44 px each way
+ * (`--alto-tocable`). */
 .bar-inferior__item {
-  /* Sized by the label, then the spare room shared out: the longest word ("Variedades")
-   * never has to give up a letter to the shortest ("Ventas"). */
-  flex: 1 1 auto;
-  min-width: min-content;
+  flex: 1 1 0;
+  min-width: var(--alto-tocable);
   min-height: var(--alto-tocable);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 2px;
   text-decoration: none;
   color: var(--nav-inactivo);
   font-size: 0.6875rem;
   font-weight: 500;
 }
 
-/* A label is never clipped, cut with an ellipsis or broken mid-word: at 320 px with text at
- * 130 % the five words (the widest, "Variedades") fit side by side in the 304 px. */
+/* The + slot: a 52 px box between the second tab and the third; it never grows or shrinks, so
+ * the tabs never spill over it. */
+.bar-inferior__mas {
+  flex: none;
+  box-sizing: border-box;
+  width: 52px;
+  height: 52px;
+}
+
+/* A label is never clipped, cut with an ellipsis or broken mid-word. */
 .bar-inferior__item > span {
   text-align: center;
   line-height: 1.15;
+}
+
+/* The width sizer: the label drawn again at the active weight, hidden and with no height, so the
+ * tab's box is the same whether or not it is active. It is generated content, not a DOM text
+ * node, and the empty alternative keeps it out of the accessibility tree. */
+.bar-inferior__item > span::after {
+  content: attr(data-label) / '';
+  display: block;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  font-weight: 600;
 }
 
 /* Not color alone (README, accessibility rule 2): the active item is also bold,
@@ -617,7 +638,7 @@ body {
  * active label, the default weight on the rest). */
 .bar-inferior__item--activo {
   color: var(--tinta);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* The mark is more than color: the icon is drawn filled and the label underlined
@@ -5184,8 +5205,7 @@ a.ajustes-tema__opcion {
     box-sizing: border-box;
     height: calc(var(--bar-height) + var(--inset-abajo));
     margin-inline: 0;
-    padding: 8px calc(var(--espacio-sm) + var(--inset-derecha)) calc(12px + var(--inset-abajo))
-      calc(var(--espacio-sm) + var(--inset-izquierda));
+    padding: 8px var(--inset-derecha) calc(12px + var(--inset-abajo)) var(--inset-izquierda);
     background: var(--papel);
   }
 
@@ -6380,25 +6400,6 @@ a.ajustes-tema__opcion {
   .fila-venta__cuerpo {
     order: 3;
     flex: 1 0 100%;
-  }
-}
-
-/* At 246 px the five items need the whole bar: no side padding beyond the insets, and each
- * item at least 44 px wide (its label can still make it wider). */
-@media (max-width: 299.98px) {
-  .bar-inferior {
-    padding-inline: var(--inset-izquierda) var(--inset-derecha);
-  }
-
-  .bar-inferior__item {
-    flex: 1 1 44px;
-    min-width: min-content;
-  }
-
-  /* Geist is wider than the face this bar was sized for: a hair of tightening on the labels
-   * keeps the three short items at 44 px beside "Customers" and "Varieties". */
-  .bar-inferior__item > span {
-    letter-spacing: -0.02em;
   }
 }
 

@@ -38,6 +38,7 @@ import {
   CUSTOMERS,
   SETTINGS,
   VARIETIES,
+  type BarPlace,
   type RailPlace,
 } from '../routes'
 import BrandMark from '../components/BrandMark'
@@ -106,9 +107,24 @@ function railClassName(item: Item, active: boolean): string {
   return active ? `${base} riel-lateral__item--activo` : base
 }
 
-/** One bottom-bar entry; `active` is the registry's mark, not a path comparison. */
+/** The bar's five slots, in order: a tab, or the round + that starts a sale between the second
+ * tab and the third. The + is never a tab, so it is never marked and `BAR_ITEMS` stays four. */
+type BarSlot = { kind: 'tab'; item: Item } | { kind: 'newSale' }
+
+const BAR_TABS_BEFORE_PLUS = 2
+
+const BAR_SLOTS: BarSlot[] = [
+  ...BAR_ITEMS.slice(0, BAR_TABS_BEFORE_PLUS).map((item): BarSlot => ({ kind: 'tab', item })),
+  { kind: 'newSale' },
+  ...BAR_ITEMS.slice(BAR_TABS_BEFORE_PLUS).map((item): BarSlot => ({ kind: 'tab', item })),
+]
+
+/** One bottom-bar entry; `active` is the registry's mark, not a path comparison. The label is
+ * also the `data-label` of its span: CSS draws it again, hidden, at the active weight, so the
+ * tab is as wide inactive as active without a second text node. */
 function BarItem({ item, active }: { item: Item; active: boolean }) {
   const { t } = useTranslation()
+  const label = t(item.labelKey)
   return (
     <Link
       to={item.to}
@@ -116,9 +132,20 @@ function BarItem({ item, active }: { item: Item; active: boolean }) {
       className={active ? 'bar-inferior__item bar-inferior__item--activo' : 'bar-inferior__item'}
     >
       {item.icono !== undefined && <Icono nombre={item.icono} />}
-      <span>{t(item.labelKey)}</span>
+      <span data-label={label}>{label}</span>
     </Link>
   )
+}
+
+/** One slot of the bar. */
+function BarSlotView({ slot, barPlace }: { slot: BarSlot; barPlace: BarPlace }) {
+  switch (slot.kind) {
+    case 'tab':
+      return <BarItem item={slot.item} active={barPlace === slot.item.place} />
+    case 'newSale':
+      // The next subtask turns this box into the + link; here it only holds its 52x52 place.
+      return <span className="bar-inferior__mas" aria-hidden="true" />
+  }
 }
 
 /** The one slot a record-labelled card's `useBackParent` writes and `BackArrow` reads. */
@@ -237,8 +264,8 @@ export default function Shell() {
           )}
           {chrome.bar && (
             <nav className="bar-inferior" aria-label={t('shell:navigation')} data-menu>
-              {BAR_ITEMS.map((item) => (
-                <BarItem key={item.to} item={item} active={barPlace === item.place} />
+              {BAR_SLOTS.map((slot) => (
+                <BarSlotView key={slot.kind === 'tab' ? slot.item.to : slot.kind} slot={slot} barPlace={barPlace} />
               ))}
             </nav>
           )}
