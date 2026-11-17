@@ -9,8 +9,7 @@ const spec = (text: string, path = 'phone.spec.ts') => ({ path, text })
 describe('findChromeLandmarks, on inputs it must reject', () => {
   it.each([
     ["page.locator('.bar-inferior')", 'bar-inferior'],
-    ["page.locator('.nueva-venta-flotante > a')", 'nueva-venta-flotante'],
-    ["page.locator('.nueva-venta__falta')", 'nueva-venta__falta'],
+    ["page.locator('.bar-inferior__mas')", 'bar-inferior__mas'],
     ["page.locator('a.boton-nueva-venta')", 'boton-nueva-venta'],
     ["page.locator('.boton-nueva-venta--escritorio')", 'boton-nueva-venta--escritorio'],
   ])('rejects %s (%s) in a spec', (text) => {

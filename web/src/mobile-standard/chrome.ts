@@ -41,7 +41,7 @@ type Want = 'expected' | 'forbidden' | 'optional'
 
 const TABLE: Record<ChromeExpectation, Record<ChromeElement, Want>> = {
   root: { bar: 'expected', newSale: 'expected', header: 'optional' },
-  card: { bar: 'expected', newSale: 'forbidden', header: 'optional' },
+  card: { bar: 'expected', newSale: 'expected', header: 'optional' },
   form: { bar: 'forbidden', newSale: 'forbidden', header: 'optional' },
   signedOut: { bar: 'forbidden', newSale: 'forbidden', header: 'optional' },
 }

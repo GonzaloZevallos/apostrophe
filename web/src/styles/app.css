@@ -608,13 +608,47 @@ body {
   font-weight: 500;
 }
 
-/* The + slot: a 52 px box between the second tab and the third; it never grows or shrinks, so
- * the tabs never spill over it. */
+/* The + slot: a 52 px round box between the second tab and the third; it never grows or shrinks,
+ * so the tabs never spill over it. Tokens only: the --acento circle, a --papel ring and a soft
+ * shadow (both `box-shadow`, so they take no room), lifted above the bar's top edge by
+ * `--plus-lift` with `translate`, which moves the paint and never the box. The tap highlight is
+ * off and a tap selects nothing (`touch-action` is set on `.bar-inferior a` further down). */
 .bar-inferior__mas {
   flex: none;
   box-sizing: border-box;
-  width: 52px;
-  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--plus-size);
+  height: var(--plus-size);
+  border-radius: var(--radio-pildora);
+  background: var(--acento);
+  color: var(--boton-texto);
+  box-shadow:
+    0 0 0 var(--plus-ring) var(--papel),
+    0 4px 12px color-mix(in srgb, var(--tinta) 22%, transparent);
+  translate: 0 calc(-1 * var(--plus-lift));
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bar-inferior__mas:active {
+  translate: 0 calc(-1 * var(--plus-lift) + 1px);
+  filter: brightness(0.92);
+}
+
+/* The + 's description: read by `aria-describedby`, never drawn. */
+.bar-inferior__mas-descripcion {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* A label is never clipped, cut with an ellipsis or broken mid-word. */
@@ -635,24 +669,16 @@ body {
   font-weight: 600;
 }
 
-/* Not color alone (README, accessibility rule 2): the active item is also bold,
- * same as the design's own bottom bar (`Inicio.dc.html`: `font-weight: 600` on the
- * active label, the default weight on the rest). */
+/* Not color alone (README, accessibility rule 2): the active item is --acento, bold (weight 600,
+ * the width the sizer above already reserves) and drawn filled; no underline. */
 .bar-inferior__item--activo {
-  color: var(--tinta);
+  color: var(--acento);
   font-weight: 600;
 }
 
-/* The mark is more than color: the icon is drawn filled and the label underlined
- * (`Variedades.dc.html`'s active tab). */
 .bar-inferior__item--activo svg {
   fill: currentColor;
-  stroke: none;
-}
-
-.bar-inferior__item--activo > span {
-  box-shadow: 0 2px 0 var(--tinta);
-  padding-bottom: 2px;
+  stroke: currentColor;
 }
 
 /* The "‹ parent" arrow a card shows above its own header (`navigation.md`,
@@ -907,19 +933,12 @@ body {
   box-shadow: inset 2px 0 0 var(--acento);
 }
 
-/* The fixed "Nueva venta" button (accounts.md, "Shell"): a pill above the bottom
- * bar on the phone, matching `.boton`'s own shape (`Inicio.dc.html`). Its
- * `--escritorio` twin sits above the side rail's items instead (`InicioCompu.dc.html`)
- * and is hidden until the `min-width: 900px` query below swaps which one shows,
- * the same switch `.bar-inferior`/`.riel-lateral` already make. */
+/* The computer rail's "Nueva venta" button (accounts.md, "Shell"): the `--escritorio` twin sits
+ * above the side rail's items (`InicioCompu.dc.html`) and is hidden until the `min-width: 900px`
+ * query below swaps which one shows, the same switch `.bar-inferior`/`.riel-lateral` already
+ * make. The phone's entry is the bar's + (`.bar-inferior__mas`). */
 .boton-nueva-venta {
   margin: 0 var(--margen-pantalla) var(--espacio-md);
-}
-
-/* The phone's floating group (`Shell.tsx`) is a box only below 900 px; elsewhere it takes no part
- * in the layout, so the computer keeps the markup's old flow. */
-.nueva-venta-flotante {
-  display: contents;
 }
 
 .boton-nueva-venta--escritorio {
@@ -5158,36 +5177,30 @@ a.ajustes-tema__opcion {
   }
 }
 
-/* The phone's fixed chrome (GH-319): the bar is fixed to the bottom on tab roots and cards, and
- * "+ New sale" with its missing line floats just above it, on tab roots only. One token,
- * `--bottom-chrome-height` (the bar, the button group and the home-bar inset), feeds the content's
- * bottom padding, the group's `bottom` and the toast's `bottom`; no rule below states those heights
- * again. `html:has(...)` switches the parts on, so the toast (drawn outside the column) reads the
- * same token. A form or a sheet has no bar and no group, so its token is the inset alone, plus the
- * sheet's pinned action under a sheet. */
+/* The phone's fixed chrome (GH-319, GH-727): the bar is fixed to the bottom on every screen that is
+ * not a form, and its round + stands above the bar's top edge. One token, `--bottom-chrome-height`
+ * (the bar, the + 's overhang, a sheet's pinned action and the home-bar inset), feeds the content's
+ * bottom padding and the bottom of everything drawn above the bar (the toast, a card's pinned
+ * footer); no rule below states those heights again. `html:has(...)` switches the parts on, so the
+ * toast (drawn outside the column) reads the same token; the overhang is switched on in the very
+ * selector that sets `--bar-height`, so it exists only where the bar does. A form or a sheet has no
+ * bar, so its token is the inset alone, plus the sheet's pinned action under a sheet. */
 @media (max-width: 899.98px) {
   :root {
+    --plus-size: 52px;
+    --plus-ring: 4px;
+    --plus-lift: 10px;
     --bar-height: 0px;
-    --group-height: 0px;
+    --plus-overhang: 0px;
     --sheet-actions-height: 0px;
-    --missing-line-height: 2rem;
     --bottom-chrome-height: calc(
-      var(--bar-height) + var(--group-height) + var(--sheet-actions-height) + var(--inset-abajo)
+      var(--bar-height) + var(--plus-overhang) + var(--sheet-actions-height) + var(--inset-abajo)
     );
   }
 
   html:has(.bar-inferior) {
     --bar-height: calc(var(--alto-tocable) + 28px);
-  }
-
-  html:has(.nueva-venta-flotante) {
-    --group-height: calc(var(--alto-boton) + var(--espacio-md));
-  }
-
-  html:has(.nueva-venta-flotante .nueva-venta__falta) {
-    --group-height: calc(
-      var(--alto-boton) + var(--espacio-md) + var(--espacio-xs) + var(--missing-line-height)
-    );
+    --plus-overhang: calc(var(--plus-lift) + var(--plus-ring));
   }
 
   html:has(.sheet) {
@@ -5215,43 +5228,9 @@ a.ajustes-tema__opcion {
     font-size: 0.75rem;
   }
 
-  .nueva-venta-flotante {
-    position: fixed;
-    left: var(--inset-izquierda);
-    right: var(--inset-derecha);
-    bottom: calc(var(--bottom-chrome-height) - var(--group-height));
-    z-index: 5;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    gap: var(--espacio-xs);
-    padding: 0 var(--margen-pantalla) var(--espacio-md);
-    /* The strip around the button is not a target: only the button and its line are. */
-    pointer-events: none;
-  }
-
-  .nueva-venta-flotante > * {
-    pointer-events: auto;
-  }
-
-  .nueva-venta-flotante .boton-nueva-venta {
-    margin: 0;
-  }
-
-  .nueva-venta-flotante .nueva-venta__falta {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-    height: var(--missing-line-height);
-    margin: 0;
-    line-height: 1.25;
-  }
-
   /* A text keyboard is up: hidden and untappable, never pushed above it. The padding stays, so
    * nothing shifts. */
-  .disposicion[data-teclado='abierto'] .bar-inferior,
-  .disposicion[data-teclado='abierto'] .nueva-venta-flotante {
+  .disposicion[data-teclado='abierto'] .bar-inferior {
     visibility: hidden;
     pointer-events: none;
   }
@@ -5261,8 +5240,8 @@ a.ajustes-tema__opcion {
     bottom: var(--bottom-chrome-height);
   }
 
-  /* Toasts only move: they sit above the bar and the button, above a sheet's pinned action, and
-   * over the sheet itself. */
+  /* Toasts only move: they sit above the bar and the +, above a sheet's pinned action, and over the
+   * sheet itself. */
   .aviso-flotante {
     top: auto;
     bottom: calc(var(--bottom-chrome-height) + var(--espacio-md));
@@ -6254,7 +6233,7 @@ a.ajustes-tema__opcion {
   outline: none;
 }
 
-/* The missing line under "+ Nueva venta", tokens only. */
+/* The missing line under the rail's "+ Nueva venta", tokens only. */
 .nueva-venta__falta {
   display: block;
   margin: calc(-1 * var(--espacio-sm) + var(--espacio-xs)) var(--margen-pantalla) var(--espacio-md);

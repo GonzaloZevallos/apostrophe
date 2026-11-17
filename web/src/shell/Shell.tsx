@@ -43,9 +43,11 @@ import {
 } from '../routes'
 import BrandMark from '../components/BrandMark'
 import BotonLink from '../components/BotonLink'
-import { NUEVA_VENTA_CLASS, NUEVA_VENTA_ESCRITORIO_CLASS } from '../components/botonVisual'
+import { NUEVA_VENTA_ESCRITORIO_CLASS } from '../components/botonVisual'
 import BackArrow from './BackArrow'
 import { NUEVA_VENTA_MISSING } from '../copy/inicio'
+import { describeNewSale } from '../copy/readers/newSaleDescription'
+import { OTHER_RECORDS } from '../sales/otherRecords'
 import { chromeOf } from './chrome'
 import { initialsOf } from '../format/initials'
 import { BackParentContext, type BackParentSlot, type BackParentStore } from './useBackParent'
@@ -137,14 +139,41 @@ function BarItem({ item, active }: { item: Item; active: boolean }) {
   )
 }
 
+const PLUS_DESCRIPTION_ID = 'bar-mas-descripcion'
+
+/** The bar's +: a link to a blank New sale, never a tab, so never marked. It draws an icon and no
+ * text; its name is `common:newSaleFabName` and its description, when there is one, is a hidden
+ * element `aria-describedby` points to (`describeNewSale(OTHER_RECORDS)`). */
+function BarPlus() {
+  const { t } = useTranslation()
+  const description = describeNewSale(OTHER_RECORDS)
+  return (
+    <>
+      <InAppLink
+        to={SALE_NEW}
+        className="bar-inferior__mas"
+        aria-label={t('common:newSaleFabName')}
+        aria-haspopup="dialog"
+        aria-describedby={description === null ? undefined : PLUS_DESCRIPTION_ID}
+      >
+        <Icono nombre="agregar" />
+      </InAppLink>
+      {description !== null && (
+        <span className="bar-inferior__mas-descripcion" id={PLUS_DESCRIPTION_ID}>
+          {description}
+        </span>
+      )}
+    </>
+  )
+}
+
 /** One slot of the bar. */
 function BarSlotView({ slot, barPlace }: { slot: BarSlot; barPlace: BarPlace }) {
   switch (slot.kind) {
     case 'tab':
       return <BarItem item={slot.item} active={barPlace === slot.item.place} />
     case 'newSale':
-      // The next subtask turns this box into the + link; here it only holds its 52x52 place.
-      return <span className="bar-inferior__mas" aria-hidden="true" />
+      return <BarPlus />
   }
 }
 
@@ -160,11 +189,10 @@ function useBackParentStore(): BackParentStore {
   return useMemo(() => ({ slot, write, clearIf }), [slot, write, clearIf])
 }
 
-const NUEVA_VENTA_MISSING_ID = 'nueva-venta-falta'
 const RAIL_MISSING_ID = 'nueva-venta-falta-riel'
 
 /** Whether `GET /first-run` says the checklist shows with its priced-variety step not done.
- * Asked only where "+ Nueva venta" is drawn; while pending or failed it is `false`, so the
+ * Asked only where the rail's "+ Nueva venta" is drawn (the computer); the phone's + reads nothing from it; while pending or failed it is `false`, so the
  * button draws normally. The shell decides nothing: it shows the server's answer. */
 function useNuevaVentaMissing(enabled: boolean): boolean {
   const data = actionableFirstRun(useQuery({ ...firstRunQuery, enabled }))
@@ -185,8 +213,7 @@ export default function Shell() {
   const layoutRef = useRef<HTMLDivElement>(null)
   // The shell hides its bar and button while a text keyboard is up (ADR-0028); it pins nothing.
   useVisualViewport(layoutRef, { fixedForm: false })
-  const missing = useNuevaVentaMissing(chrome.railNuevaVenta || chrome.barNuevaVenta)
-  const barDescribedBy = missing ? NUEVA_VENTA_MISSING_ID : undefined
+  const missing = useNuevaVentaMissing(chrome.railNuevaVenta)
   const railDescribedBy = missing ? RAIL_MISSING_ID : undefined
 
   return (
@@ -250,18 +277,6 @@ export default function Shell() {
       <div className={chrome.bar ? 'columna-principal' : 'columna-principal columna-principal--sin-bar'}>
           {chrome.backArrow && <BackArrow id={leaf.id} />}
           <Outlet context={me} />
-          {chrome.barNuevaVenta && (
-            <div className="nueva-venta-flotante">
-              <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_CLASS} ariaDescribedBy={barDescribedBy}>
-                {t('common:newSale')}
-              </BotonLink>
-              {missing && (
-                <span className="nueva-venta__falta" id={NUEVA_VENTA_MISSING_ID}>
-                  {NUEVA_VENTA_MISSING}
-                </span>
-              )}
-            </div>
-          )}
           {chrome.bar && (
             <nav className="bar-inferior" aria-label={t('shell:navigation')} data-menu>
               {BAR_SLOTS.map((slot) => (

@@ -48,16 +48,18 @@ describe('judgeChrome: each expectation', () => {
     ])
   })
 
-  test('a card wants the bar and no "+ New sale"', () => {
-    expect(judged('card', facts({ newSale: { present: false } }))).toEqual([])
+  test('a card wants the bar and its +', () => {
+    expect(judged('card', facts({ newSale: {} }))).toEqual([])
     expect(judged('card', facts({ bar: { present: false }, newSale: { present: false } }))).toEqual([
       'chrome-at-load chrome:bar',
       'chrome-mid-scroll chrome:bar',
+      'chrome-at-load chrome:new-sale',
+      'chrome-mid-scroll chrome:new-sale',
     ])
   })
 
-  test('a card with "+ New sale" is reported', () => {
-    expect(judged('card', facts({ newSale: {} }))).toEqual([
+  test('a card with no + is reported', () => {
+    expect(judged('card', facts({ newSale: { present: false } }))).toEqual([
       'chrome-at-load chrome:new-sale',
       'chrome-mid-scroll chrome:new-sale',
     ])
@@ -78,13 +80,13 @@ describe('judgeChrome: each expectation', () => {
   })
 
   test('an expected bar out of view and uncovered is reported, with the rule of the phase', () => {
-    const found = facts({ newSale: { present: false } })
+    const found = facts({})
     const only = found.elements.map((e) => (e.element === 'bar' && e.phase === 'mid' ? { ...e, inView: false } : e))
     expect(judged('card', { ...found, elements: only })).toEqual(['chrome-mid-scroll chrome:bar'])
   })
 
   test('the violation carries the cell', () => {
-    const [violation] = judgeChrome('card', facts({ bar: { inView: false }, newSale: { present: false } }), CELL)
+    const [violation] = judgeChrome('card', facts({ bar: { inView: false } }), CELL)
     expect(violation).toEqual({ ...CELL, rule: 'chrome-at-load', target: 'chrome:bar' })
   })
 })
@@ -92,7 +94,7 @@ describe('judgeChrome: each expectation', () => {
 describe('judgeChrome: the header', () => {
   test('an absent header is never reported, on any kind', () => {
     for (const expectation of ['root', 'card', 'form', 'signedOut'] as const) {
-      const ok = facts({ bar: { present: expectation === 'root' || expectation === 'card' }, newSale: { present: expectation === 'root' } })
+      const ok = facts({ bar: { present: expectation === 'root' || expectation === 'card' }, newSale: { present: expectation === 'root' || expectation === 'card' } })
       expect(judged(expectation, ok)).toEqual([])
     }
   })
@@ -110,13 +112,12 @@ describe('judgeChrome: the header', () => {
 
 describe('judgeChrome: covered chrome', () => {
   test('a covered bar passes at load and at mid-scroll, out of view or not, even where it is forbidden', () => {
-    const covered = facts({ bar: { covered: true, inView: false }, newSale: { present: false } })
-    expect(judged('card', covered)).toEqual([])
-    expect(judged('form', covered)).toEqual([])
+    expect(judged('card', facts({ bar: { covered: true, inView: false } }))).toEqual([])
+    expect(judged('form', facts({ bar: { covered: true, inView: false }, newSale: { present: false } }))).toEqual([])
   })
 
   test('an overlay whose chrome is uncovered and out of view is reported', () => {
-    const found = facts({ bar: { inView: false }, newSale: { present: false } }, true)
+    const found = facts({ bar: { inView: false } }, true)
     expect(judged('card', found)).toEqual(['chrome-at-load chrome:bar', 'chrome-mid-scroll chrome:bar'])
   })
 
@@ -125,7 +126,7 @@ describe('judgeChrome: covered chrome', () => {
     expect(judged('root', facts({ bar: { covered: true }, newSale: { covered: true } }, true))).toEqual([])
   })
 
-  test('a covered "+ New sale" on a card passes', () => {
+  test('a covered + on a card passes', () => {
     expect(judged('card', facts({ newSale: { covered: true } }))).toEqual([])
   })
 })

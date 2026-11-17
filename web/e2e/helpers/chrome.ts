@@ -19,10 +19,12 @@ export const BOTTOM_BAR = `.${BOTTOM_BAR_CLASS}`
 export const BOTTOM_BAR_ITEM = '.bar-inferior__item'
 /** The bar's + slot, the round box between the second tab and the third; never one of the tabs. */
 export const BOTTOM_BAR_PLUS = '.bar-inferior__mas'
-/** The floating group above the bar: the + New sale button and, when there is one, its missing-price line. */
-export const NEW_SALE_GROUP = '.nueva-venta-flotante'
-export const NEW_SALE_BUTTON_CLASS = 'boton-nueva-venta'
+/** The phone's New sale entry is the bar's +; its accessible name is the one named Spanish word. */
+export const NEW_SALE_BUTTON_CLASS = 'bar-inferior__mas'
 export const NEW_SALE_BUTTON = `.${NEW_SALE_BUTTON_CLASS}`
+export const NEW_SALE_NAME = 'Vender'
+/** The computer rail's own New sale button, whatever its viewport modifier. */
+export const NEW_SALE_RAIL = '.boton-nueva-venta'
 /** The computer rail's own New sale button. */
 export const NEW_SALE_BUTTON_COMPUTER = '.boton-nueva-venta--escritorio'
 
@@ -35,42 +37,40 @@ export function bottomBarItems(page: Page): Locator {
   return bottomBar(page).locator(BOTTOM_BAR_ITEM)
 }
 
-/** The phone's floating New sale entry only, never the computer rail's button. */
+/** The phone's New sale entry only: the bar's +, found by its role and name, never the rail's button. */
 export function newSaleEntry(page: Page): Locator {
-  return page.locator(`${NEW_SALE_GROUP} > ${NEW_SALE_BUTTON}`)
+  return page.getByRole('link', { name: NEW_SALE_NAME, exact: true })
 }
 
 /**
- * Every New sale button on the page, whichever chrome draws it. An absence or count-zero check
- * uses this and never `newSaleEntry`, so the check cannot pass just because the button moved
- * out of the group.
+ * Every New sale entry on the page, whichever chrome draws it: the bar's + and the rail's button.
+ * An absence or count-zero check uses this and never `newSaleEntry`, so the check cannot pass just
+ * because the entry moved.
  */
 export function anyNewSaleButton(page: Page): Locator {
-  return page.locator(`a${NEW_SALE_BUTTON}`)
+  return page.locator(`a${NEW_SALE_BUTTON}, a${NEW_SALE_RAIL}`)
 }
 
-/** Taps the floating New sale entry. */
+/** Taps the phone's New sale entry, the bar's +. */
 export async function openNewSaleFromChrome(page: Page): Promise<void> {
   await newSaleEntry(page).click()
 }
 
 /**
- * The y of the highest rendered bottom chrome edge: the smallest `top` among the bar and the
- * floating group's children (the missing-price line counts as chrome). It throws when none is
- * rendered, so it never returns 0 or NaN.
- *
- * Kept for GH-727 part 3; its only user today is `chromeHelpers.spec.ts`.
+ * The y of the highest rendered bottom chrome edge: the smallest `top` among the bar and its +
+ * (which stands above the bar's top edge). It throws when none is rendered, so it never returns 0
+ * or NaN.
  */
 export async function bottomChromeTop(page: Page): Promise<number> {
   const top = await page.evaluate(
-    ({ bar, group }) => {
-      const tops = [...document.querySelectorAll(`${bar}, ${group} > *`)]
+    ({ bar, plus }) => {
+      const tops = [...document.querySelectorAll(`${bar}, ${plus}`)]
         .map((element) => element.getBoundingClientRect())
         .filter((rect) => rect.width > 1 && rect.height > 1)
         .map((rect) => rect.top)
       return tops.length === 0 ? null : Math.min(...tops)
     },
-    { bar: BOTTOM_BAR, group: NEW_SALE_GROUP },
+    { bar: BOTTOM_BAR, plus: BOTTOM_BAR_PLUS },
   )
   if (top === null) throw new Error('bottomChromeTop: no bottom chrome is rendered')
   return top
