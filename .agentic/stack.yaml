@@ -199,4 +199,6 @@ ci_dispatch:
 # `test_id`, use no cache selector (`--lf`, `--last-failed`, `--ff`, `--failed-first`, `--sw`,
 # `--stepwise`) nor `--reruns`, and exit 0 on nothing. The human moved the declaration to #602,
 # which waits for agentic-system #530 (a failed-ids token in `rerun_checks`).
+# Since GH-699 `web-e2e` is no longer a check, so no Playwright form can be declared here at all:
+# GitHub CI judges e2e, and its one retry lives in `retries: 1` under `CI`.
 # Read at a task's base, like every key here.
