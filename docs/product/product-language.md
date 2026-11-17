@@ -73,7 +73,7 @@ Criterios de éxito:
 - **Qué es**: el nombre accesible del + de la barra del celular, que abre New sale. No tiene texto visible; solo lo lee un lector de pantalla.
 - **Dónde vive**: en el Copy module, bajo su propia clave `common:newSaleFabName`, como cualquier otro texto; ningún componente lo escribe como literal.
 - **Por qué**: decisión 3 del humano en GH-727. Es una decisión tomada y no se reabre.
-- **Guards**: si un guard de copy o de palabras en español la rechaza, se registra en los datos de excepción tipados de ese guard, citando la decisión 3 del humano, nunca con un comentario de bypass. Ninguna otra palabra en español entra por esa vía.
+- **Guards**: si un guard de copy o de palabras en español la rechaza, se registra en los datos de excepción tipados de ese guard, citando la decisión 3 del humano, nunca con un comentario de bypass. Ninguna otra palabra en español entra por esa vía. Cuando salió (parte 3 de GH-727) ningún guard la rechazó, así que no hay ninguna entrada de excepción para ella.
 - **Solo esa**: ninguna otra palabra en español aparece en la barra ni en ningún otro lugar de la app; la excepción no es un precedente para otra.
 
 ### Qué no cambia nunca
@@ -160,7 +160,7 @@ Criterios de éxito:
 No hay telemetría. Se leen de los tests y de la revisión.
 
 - **Nada de español en la app (criterio 1).**
-  - Un guard falla ante un literal visible para el usuario fuera del Copy module y ante cualquier string en español conocido, salvo "Vender" bajo `common:newSaleFabName`, registrado en los datos de excepción tipados del guard con la cita de la decisión 3 del humano de GH-727.
+  - Un guard falla ante un literal visible para el usuario fuera del Copy module y ante cualquier string en español conocido, salvo "Vender" bajo `common:newSaleFabName`. Hoy ningún guard la rechaza, así que no tiene entrada de excepción; si uno la rechazara, se registra en los datos de excepción tipados de ese guard con la cita de la decisión 3 del humano de GH-727.
   - Un barrido de los rechazos de la API y de la salida de los scripts del Operator no encuentra español.
   - Las líneas fijas del bot se verifican en inglés con el adaptador falso.
   - Un recorrido de cada pantalla del registro, en celular y computadora y en los dos temas, no encuentra español fuera de esa excepción.
