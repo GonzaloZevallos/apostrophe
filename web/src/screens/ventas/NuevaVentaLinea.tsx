@@ -64,6 +64,26 @@ function onEnter(event: KeyboardEvent<HTMLInputElement>, action: () => void): vo
 /** The open line's hint when nothing is sellable: the Product field's `aria-describedby` names it. */
 const NOTHING_SELLABLE_ID = 'nueva-venta-sin-vendible'
 
+/** The hint for "nothing is sellable": the real one (named by the Product field) or, with
+ * `keepsSpace`, its hidden copy: the same box and sentence, so the same height, with no id for a
+ * description to name and out of the accessibility tree. */
+function NothingSellableHint({ kind, keepsSpace }: { kind: 'noProducts' | 'noPrice'; keepsSpace: boolean }) {
+  const { t } = useTranslation()
+  return (
+    <p
+      id={keepsSpace ? undefined : NOTHING_SELLABLE_ID}
+      className="pie nueva-venta__sin-vendible"
+      aria-hidden={keepsSpace ? 'true' : undefined}
+      style={keepsSpace ? { visibility: 'hidden' } : undefined}
+    >
+      <span className="aviso-ambar__icono">
+        <Icono nombre="atencion" />
+      </span>
+      <span>{kind === 'noProducts' ? t('emptyStates:selectorNoVarieties') : NO_PRICE_HINT}</span>
+    </p>
+  )
+}
+
 interface NuevaVentaLineaProps {
   /** The line's 1-based position, for its accessible names. */
   n: number
@@ -83,6 +103,10 @@ interface NuevaVentaLineaProps {
   /** What is missing for any line to sell on the sale's date, from a successful answer for that
    * date only (never while loading, refetching or failed); only the open line is given it. */
   nothingSellable: NothingSellable
+  /** What the previous date's answer said was missing, while the Products of a new date reload
+   * (placeholder data); only the open line is given it. It draws no hint: it keeps the hint's
+   * room, hidden and unread, so the form does not jump. */
+  reservedHint: NothingSellable
   /** "Quitar" is only offered when the sale has more than one line. */
   canRemove: boolean
   varietyRef: RefObject<HTMLButtonElement | null>
@@ -106,6 +130,7 @@ export default function NuevaVentaLinea({
   varieties,
   varietiesLoading,
   nothingSellable,
+  reservedHint,
   canRemove,
   varietyRef,
   listHost,
@@ -122,9 +147,12 @@ export default function NuevaVentaLinea({
   const { t } = useTranslation()
   const gone = line.varietyId !== '' && variety === undefined
   // The Product list is showing: with no Products its own message says the same words as the hint,
-  // so the hint steps aside while it shows and the sentence is never on screen twice.
+  // so the hint steps aside while it shows and the sentence is never on screen twice. The kept
+  // space is a hidden copy that holds the hint's room while the Products reload after a date
+  // change: it steps aside the same way, and it is never on screen.
   const [listShowing, setListShowing] = useState(false)
   const hintShown = nothingSellable !== null && !(nothingSellable === 'noProducts' && listShowing)
+  const keptSpace = !hintShown && reservedHint !== null && !(reservedHint === 'noProducts' && listShowing)
   // Focus bubbles out of the Selector's list (a portal) too: only the field itself scrolls the form.
   function onVarietyFocus(event: FocusEvent<HTMLElement>): void {
     if (event.target === varietyRef.current) scrollFieldIntoView(event.target)
@@ -173,13 +201,10 @@ export default function NuevaVentaLinea({
 
   return (
     <div className="nueva-venta__linea nueva-venta__linea--abierta">
-      {hintShown && (
-        <p id={NOTHING_SELLABLE_ID} className="pie nueva-venta__sin-vendible">
-          <span className="aviso-ambar__icono">
-            <Icono nombre="atencion" />
-          </span>
-          <span>{nothingSellable === 'noProducts' ? t('emptyStates:selectorNoVarieties') : NO_PRICE_HINT}</span>
-        </p>
+      {hintShown ? (
+        <NothingSellableHint kind={nothingSellable} keepsSpace={false} />
+      ) : (
+        keptSpace && <NothingSellableHint kind={reservedHint} keepsSpace />
       )}
       <div className="campo" onFocus={onVarietyFocus}>
         <Selector

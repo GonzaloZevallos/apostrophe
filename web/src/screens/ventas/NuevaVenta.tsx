@@ -317,6 +317,9 @@ function NuevaVentaForm() {
   // true while a date change keeps the previous day's list (`isPlaceholderData`), so both count.
   const sellable =
     varietiesQuery.isSuccess && !varietiesQuery.isPlaceholderData ? nothingSellable(varietiesQuery.data) : null
+  // While the next date's answer is awaited, the previous one decides only how much room the open
+  // line keeps for the hint: it is drawn hidden and never read (a failed answer keeps none).
+  const reservedHint = varietiesQuery.isPlaceholderData ? nothingSellable(varietiesQuery.data) : null
   const repricing = varietiesQuery.isPlaceholderData || settingsQuery.isPlaceholderData
   const settings: PricingSettings =
     settingsQuery.data === undefined
@@ -773,6 +776,7 @@ function NuevaVentaForm() {
                     varieties={varieties}
                     varietiesLoading={!varietiesQuery.isSuccess}
                     nothingSellable={line.key === openKey ? sellable : null}
+                    reservedHint={line.key === openKey ? reservedHint : null}
                     canRemove={lines.length > 1}
                     varietyRef={varietyFieldRef}
                     listHost={listHost}
