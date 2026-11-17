@@ -5,7 +5,6 @@ import { common, emptyState } from './copy.ts'
 import { DETECTED_COUNTRY_BUTTON } from './countryField.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { EXPENSES_TEXT } from '../copy/expenses.ts'
-import { COMMON_TEXT } from '../copy/common.ts'
 import { NO_PRICE_HINT, SALES_TEXT } from '../copy/sales.ts'
 import { DAY_BEFORE_PIN } from './pin.ts'
 import type { Expense } from '../api/expenses.ts'
@@ -134,7 +133,7 @@ export const SALES_STATES: readonly WalkState[] = [
     reads: [{ path: /^\/api\/products$/, status: 200, body: TWELVE_PRODUCTS }],
     refetch: {
       holds: /^\/api\/products$/,
-      steps: [{ fill: { label: COMMON_TEXT.date, value: DAY_BEFORE_PIN } }],
+      steps: [{ fill: { label: common('common:date'), value: DAY_BEFORE_PIN } }],
     },
     offendersAs: 'NuevaVenta',
   },
