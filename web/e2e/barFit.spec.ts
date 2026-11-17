@@ -233,6 +233,19 @@ function slotTable(slots: Slot[], viewport: number, theme: string): string {
   return ['| label | slot width | label width at 600 | slack | viewport | theme |', '|---|---|---|---|---|---|', ...rows].join('\n')
 }
 
+test('the slot check rejects a bar whose label is wider than its slot', () => {
+  const slots: Slot[] = [
+    { kind: 'tab', label: 'Home', width: 40, height: 44, labelWidth: 30 },
+    { kind: 'tab', label: 'Customers', width: 46, height: 44, labelWidth: 58 },
+  ]
+
+  expect(slotProblems(slots, 246)).toEqual([
+    'the slots are not Home, Sales, +, Customers, Products',
+    'Home is 40 px wide, under 44',
+    'Customers is 58 px of text in a 46 px slot',
+  ])
+})
+
 // One business for the three tests: signing up is the slow step, and each test only reads layout.
 test.describe.serial('bar and rail fit', () => {
   let page: Page
@@ -275,19 +288,6 @@ test.describe.serial('bar and rail fit', () => {
       expect([...slotProblems(slots, NARROW.width), ...(overflows ? ['the page scrolls sideways'] : [])]).toEqual([])
     })
   }
-
-  test('the slot check rejects a bar whose label is wider than its slot', () => {
-    const slots: Slot[] = [
-      { kind: 'tab', label: 'Home', width: 40, height: 44, labelWidth: 30 },
-      { kind: 'tab', label: 'Customers', width: 46, height: 44, labelWidth: 58 },
-    ]
-
-    expect(slotProblems(slots, 246)).toEqual([
-      'the slots are not Home, Sales, +, Customers, Products',
-      'Home is 40 px wide, under 44',
-      'Customers is 58 px of text in a 46 px slot',
-    ])
-  })
 
   test('the measurement rejects a bar that does not fit: at three times the text the labels overflow', async () => {
     const { problems } = await bottomBarProblems(page, 3)
