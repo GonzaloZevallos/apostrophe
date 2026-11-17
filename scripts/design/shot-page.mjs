@@ -201,3 +201,23 @@ export function adoptSheetInPage(css) {
 export function dropSheetInPage(sheet) {
   document.adoptedStyleSheets = document.adoptedStyleSheets.filter((other) => other !== sheet)
 }
+
+// The `scroll_top` step (GH-795): puts back to 0 the one scroller that holds a text. It finds the
+// innermost element whose trimmed text is exactly `text`, walks up its ancestors to the nearest one
+// whose computed `overflow-y` is `auto` or `scroll`, and sets that element's `scrollTop` to 0. The
+// document (`body`, `html`) is never reset. It changes nothing else, focuses nothing, clicks nothing,
+// and its refusals are fixed sentences: they name the rule, never the text.
+export function scrollTopInPage(text) {
+  const exact = [...document.body.querySelectorAll('*')].filter((element) => (element.textContent ?? '').trim() === text)
+  const innermost = exact.filter((element) => !exact.some((other) => other !== element && element.contains(other)))
+  if (innermost.length === 0) throw new Error('scroll_top: no element has exactly that text')
+  if (innermost.length > 1) throw new Error('scroll_top: more than one element has exactly that text')
+  for (let node = innermost[0].parentElement; node !== null && node !== document.body; node = node.parentElement) {
+    const { overflowY } = getComputedStyle(node)
+    if (overflowY === 'auto' || overflowY === 'scroll') {
+      node.scrollTop = 0
+      return
+    }
+  }
+  throw new Error('scroll_top: the text has no ancestor with overflow-y auto or scroll')
+}
