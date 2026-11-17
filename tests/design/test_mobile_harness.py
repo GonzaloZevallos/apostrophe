@@ -208,15 +208,35 @@ def test_the_front_pin_is_the_same_instant_as_the_servers() -> None:
     assert front == PINNED_INSTANT
 
 
-def test_no_file_under_web_but_pin_ts_writes_the_pinned_literal() -> None:
-    literal = "2026-09-16T15:00:00"
+PINNED_LITERAL = "2026-09-16T15:00:00"
+
+
+def files_writing_the_pinned_literal(root: Path, allowed: Path) -> list[str]:
+    """The files under `root` (skipping build output) that write the literal, `allowed` aside."""
     offenders: list[str] = []
-    for directory, subdirectories, files in os.walk(REPO_ROOT / "web"):
+    for directory, subdirectories, files in os.walk(root):
         subdirectories[:] = [name for name in subdirectories if name not in SKIPPED_DIRECTORIES]
         for name in files:
             path = Path(directory) / name
-            if path == PIN_SOURCE:
+            if path == allowed:
                 continue
-            if literal in path.read_text(encoding="utf-8", errors="ignore"):
-                offenders.append(str(path.relative_to(REPO_ROOT)))
+            if PINNED_LITERAL in path.read_text(encoding="utf-8", errors="ignore"):
+                offenders.append(str(path.relative_to(root)))
+    return sorted(offenders)
+
+
+def test_no_file_under_web_but_pin_ts_writes_the_pinned_literal() -> None:
+    offenders = files_writing_the_pinned_literal(REPO_ROOT / "web", PIN_SOURCE)
     assert offenders == [], f"the pinned literal is written outside pin.ts: {offenders}"
+
+
+def test_the_literal_scan_names_a_copy_and_skips_the_pin_and_build_output(tmp_path: Path) -> None:
+    pin = tmp_path / "src" / "pin.ts"
+    copy = tmp_path / "e2e" / "cells.ts"
+    ignored = tmp_path / "node_modules" / "lib" / "dep.js"
+    for path in (pin, copy, ignored):
+        path.parent.mkdir(parents=True)
+        path.write_text(f"new Date('{PINNED_LITERAL}Z')", encoding="utf-8")
+    (tmp_path / "e2e" / "clean.ts").write_text("export {}", encoding="utf-8")
+
+    assert files_writing_the_pinned_literal(tmp_path, pin) == [str(Path("e2e") / "cells.ts")]
