@@ -286,6 +286,8 @@ test.describe('the geometry checkers', () => {
 // The chrome rules judge by the screen's kind: the page reports facts, `judgeChrome` decides.
 const BAR = (style: string, attributes = ''): string =>
   `<nav class="${BOTTOM_BAR_CLASS}" ${attributes} style="${style}"><a href="#" style="display:block;height:48px">Inicio</a></nav>`
+// The bar's + in view: a card or detail has it too, so a card's fixture carries it.
+const PLUS = `<a class="${NEW_SALE_BUTTON_CLASS}" href="#" style="position:fixed;top:10px;left:10px;width:100px;height:48px">Vender</a>`
 const BAR_SHOWN = 'position:fixed;bottom:0;left:0;width:100%'
 const BAR_OFF_SCREEN = 'position:absolute;top:5000px;left:0;width:100%'
 
@@ -300,14 +302,14 @@ test.describe('the chrome rules, by kind', () => {
   }
 
   test('a bar pushed off screen on a card is reported at load and mid-scroll', async ({ browser }) => {
-    expect(await chromeOn(browser, BAR(BAR_OFF_SCREEN), 'card')).toEqual([
+    expect(await chromeOn(browser, BAR(BAR_OFF_SCREEN) + PLUS, 'card')).toEqual([
       'chrome-at-load chrome:bar',
       'chrome-mid-scroll chrome:bar',
     ])
   })
 
   test('a bar in view on a card passes, and the same bar on a form is reported', async ({ browser }) => {
-    expect(await chromeOn(browser, BAR(BAR_SHOWN), 'card')).toEqual([])
+    expect(await chromeOn(browser, BAR(BAR_SHOWN) + PLUS, 'card')).toEqual([])
     expect(await chromeOn(browser, BAR(BAR_SHOWN), 'form')).toEqual([
       'chrome-at-load chrome:bar',
       'chrome-mid-scroll chrome:bar',
@@ -315,7 +317,7 @@ test.describe('the chrome rules, by kind', () => {
   })
 
   test('an inert bar passes, even where it is forbidden and off screen', async ({ browser }) => {
-    expect(await chromeOn(browser, BAR(BAR_OFF_SCREEN, 'inert'), 'card')).toEqual([])
+    expect(await chromeOn(browser, BAR(BAR_OFF_SCREEN, 'inert') + PLUS, 'card')).toEqual([])
     expect(await chromeOn(browser, BAR(BAR_SHOWN, 'inert'), 'form')).toEqual([])
     expect(await chromeOn(browser, BAR(BAR_SHOWN, 'aria-hidden="true"'), 'form')).toEqual([])
   })
@@ -339,12 +341,22 @@ test.describe('the chrome rules, by kind', () => {
   })
 
   test('a tab root missing "+ New sale" is reported, one with it in view is not', async ({ browser }) => {
-    const sale = `<a class="${NEW_SALE_BUTTON_CLASS}" href="#" style="position:fixed;top:10px;left:10px;width:100px;height:48px">Nueva venta</a>`
     expect(await chromeOn(browser, BAR(BAR_SHOWN), 'root')).toEqual([
       'chrome-at-load chrome:new-sale',
       'chrome-mid-scroll chrome:new-sale',
     ])
-    expect(await chromeOn(browser, BAR(BAR_SHOWN) + sale, 'root')).toEqual([])
+    expect(await chromeOn(browser, BAR(BAR_SHOWN) + PLUS, 'root')).toEqual([])
+  })
+
+  test('a card has the + too: one without it is reported, and the + on a form is reported', async ({ browser }) => {
+    expect(await chromeOn(browser, BAR(BAR_SHOWN), 'card')).toEqual([
+      'chrome-at-load chrome:new-sale',
+      'chrome-mid-scroll chrome:new-sale',
+    ])
+    expect(await chromeOn(browser, PLUS, 'form')).toEqual([
+      'chrome-at-load chrome:new-sale',
+      'chrome-mid-scroll chrome:new-sale',
+    ])
   })
 
   test('the walk leaves the page where it found it: scrolled to the top', async ({ browser }) => {
