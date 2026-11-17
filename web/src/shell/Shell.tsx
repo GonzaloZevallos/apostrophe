@@ -149,15 +149,16 @@ function BarPlus() {
   const description = describeNewSale(OTHER_RECORDS)
   return (
     <>
-      <InAppLink
+      <BotonLink
         to={SALE_NEW}
+        icon="agregar"
         className="bar-inferior__mas"
-        aria-label={t('common:newSaleFabName')}
-        aria-haspopup="dialog"
-        aria-describedby={description === null ? undefined : PLUS_DESCRIPTION_ID}
+        ariaLabel={t('common:newSaleFabName')}
+        ariaHasPopup="dialog"
+        ariaDescribedBy={description === null ? undefined : PLUS_DESCRIPTION_ID}
       >
-        <Icono nombre="agregar" />
-      </InAppLink>
+        {null}
+      </BotonLink>
       {description !== null && (
         <span className="bar-inferior__mas-descripcion" id={PLUS_DESCRIPTION_ID}>
           {description}

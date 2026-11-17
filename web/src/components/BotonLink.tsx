@@ -17,6 +17,8 @@ export type BotonLinkProps = DistributiveOmit<BotonVisualProps, 'disabled' | 'ty
   Pick<LinkProps, 'to' | 'replace' | 'state'> & {
     /** Placement only (a margin, a fixed position): never a button look of its own. */
     className?: string
+    /** For a link that opens a dialog (the bar's +, which starts New sale). */
+    ariaHasPopup?: 'dialog'
   }
 
 export default function BotonLink(props: BotonLinkProps) {
@@ -30,6 +32,7 @@ export default function BotonLink(props: BotonLinkProps) {
       onClick={props.onClick}
       aria-label={ariaLabel}
       aria-describedby={props.ariaDescribedBy}
+      aria-haspopup={props.ariaHasPopup}
     >
       {content}
     </InAppLink>
