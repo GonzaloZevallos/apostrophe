@@ -88,8 +88,6 @@ test('a seller goes through every Configuración group from the phone, with no c
   await expectToast(page, 'Catalog saved', () => page.getByRole('button', { name: 'Save the message' }).click())
   await close()
 
-  // Categorías de gastos, the second row of Cobros y gastos: add, rename, a refused removal,
-  // then remove; its Close returns to the group, and the group's Close to the list.
   await openGroup('Payments and expenses')
   await page.getByRole('link', { name: 'Expense categories', exact: true }).click()
   await page.getByLabel('New category', { exact: true }).fill('Delivery en bici')
@@ -109,6 +107,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expect(page.getByText('Category deleted')).toBeVisible()
   await expect(page.getByText('Mensajería')).toHaveCount(0)
+  // Categorías de gastos (second row of Cobros y gastos): its Close returns to the group, the group's to the list.
   await page.getByRole('button', { name: 'Close', exact: true }).click()
   await expectPath(page, SETTINGS_PAYMENTS)
   await close()
