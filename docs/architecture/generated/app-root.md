@@ -19,8 +19,6 @@ classDiagram
   }
   class MalformedBuiltFront {
   }
-  class MalformedLegacyFrontPaths {
-  }
   class MissingBuiltFront {
   }
   class MissingSetting {
