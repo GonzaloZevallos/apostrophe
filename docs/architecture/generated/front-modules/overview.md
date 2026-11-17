@@ -110,6 +110,7 @@ src_shell-->src_flash
 src_shell-->src_format
 src_shell-->src_i18n
 src_shell-->src_routes_ts
+src_shell-->src_sales
 src_stock-->src_api
 src_stock-->src_copy
 src_stock-->src_format
