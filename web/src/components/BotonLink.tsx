@@ -15,7 +15,8 @@ type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K>
 
 export type BotonLinkProps = DistributiveOmit<BotonVisualProps, 'disabled' | 'type'> &
   Pick<LinkProps, 'to' | 'replace' | 'state'> & {
-    /** Placement only (a margin, a fixed position): never a button look of its own. */
+    /** Placement only (a margin, a fixed position), with one named exception: the bar's + (`.bar-inferior__mas`)
+     * draws its own round look from tokens in app.css. Any other class gives the button no look of its own. */
     className?: string
     /** For a link that opens a dialog (the bar's +, which starts New sale). */
     ariaHasPopup?: 'dialog'
