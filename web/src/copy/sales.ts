@@ -17,6 +17,9 @@ export const LANGUAGE: 'es' | 'en' = 'en'
 
 export const GRAMS_HELP = 'Comma, up to two decimals'
 export const OWING_HINT = 'To leave it owing, pick a customer'
+/** Shown under New sale in the computer rail and the phone bar while nothing is priced, and
+ * as the open line's hint on New sale when no Product has a Current price on the date. */
+export const NO_PRICE_HINT = 'Add a price to a product so you can sell'
 
 /** The line of a variety with no price on the sale's date. */
 export function noPriceMessage(varietyName: string): string {
@@ -51,6 +54,7 @@ export const SALE_BILL_TEXT = {
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: OWING_HINT },
+  { kind: 'help', text: NO_PRICE_HINT },
   { kind: 'help', text: GRAMS_HELP },
   { kind: 'help', text: noPriceMessage(SAMPLES.name) },
   { kind: 'notice', text: SALE_BILL_TEXT.shareFailed },

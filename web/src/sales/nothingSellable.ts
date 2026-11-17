@@ -14,6 +14,3 @@ export function nothingSellable(varieties: readonly Pick<Variety, 'current_price
   if (varieties.every((item) => item.current_price === null)) return 'noPrice'
   return null
 }
-
-/** The sentence for `'noPrice'`: the existing Copy-module text, re-exported so a screen never copies it. */
-export { NUEVA_VENTA_MISSING as NO_PRICE_HINT } from '../copy/inicio'
