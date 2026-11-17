@@ -1,3 +1,15 @@
+# Product language
+
+El único idioma en que escribe el producto: inglés. Abarca cada palabra que el producto mismo escribe para que la lea una persona: pantallas, estados, nombres accesibles, mensajes de la API dirigidos a una persona, las líneas que imprimen los scripts del **Operator**, las palabras propias del informe de la **Spreadsheet import** y las líneas fijas del **Catalog** de Telegram. Todo texto del front vive en un solo módulo con claves, el **Copy module**. No cambia ningún comportamiento de ninguna capacidad: pantallas, flujos, rutas, reglas y formatos quedan como los definen sus dueños. Reemplaza la regla de español rioplatense que antes establecían BRIEF.md y la sección de idioma y formatos de accounts.md. Los docs de capacidades y los archivos de diseño nombran cada pantalla, grupo, control y mensaje con ese mismo inglés, así que cada cosa tiene un solo nombre.
+
+Hay una sola excepción con nombre: el nombre accesible del + de la barra del celular es "Vender", bajo su propia clave `common:newSaleFabName` del Copy module (decisión 3 del humano en GH-727; navigation.md, "La barra del celular y su +"). El + no tiene texto visible, así que esa palabra solo la lee un lector de pantalla. Ninguna otra palabra en español aparece en la barra ni en ningún otro lugar de la app.
+
+Lo que vende un **Business** se llama en el Product language siempre "Product" / "Products", para todo Business; no es un dato de quien vende ni una configuración (varieties.md, docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md).
+
+El Product language no es el idioma de la documentación. La documentación funcional y técnica (`docs/product/` y las definiciones de `CONTEXT.md` incluidas) se escribe en español rioplatense, con identificadores, nombres de clases y nombres UML en inglés: es la **Documentation language**. Que los docs estén en español no cambia ninguna palabra que muestre la app.
+
+Cómo suena un texto del producto, cuánto puede medir según su tipo y cómo se ve un buen texto de cada tipo lo deciden los **Writing standards** ([`WRITING_STANDARDS.md`](../../WRITING_STANDARDS.md)), no este archivo.
+
 ## Jobs
 
 **Cuando** manejo mi negocio desde la app (en el celular entre pedidos, leyendo lo que me dice un rechazo o una confirmación, o revisando el Catalog que mi bot fija para los clientes), **quiero** que cada palabra que leemos yo o mis clientes esté en inglés, **para** trabajar en el único idioma del producto y no cruzarme nunca con una oración en otro.
@@ -19,16 +31,6 @@
 - Antes de este cambio, todo el producto hablaba español rioplatense con voseo. Ningún vendedor lo esquivaba; el paso al inglés es una decisión de producto, así que el alcance es una versión fiel en inglés de cada texto existente, sin reformular.
 - No promete nada, ni a favor ni en contra, sobre una vuelta del español en la app; solo garantiza que agregar un idioma más adelante sea un cambio en un solo lugar.
 - La única excepción con nombre al primer job es el nombre accesible "Vender" del + de la barra del celular (parte 3 de GH-727), que decidió el humano (decisión 3 de GH-727) y que no se reabre.
-
-# Product language
-
-El único idioma en que escribe el producto: inglés. Abarca cada palabra que el producto mismo escribe para que la lea una persona: pantallas, estados, nombres accesibles, mensajes de la API dirigidos a una persona, las líneas que imprimen los scripts del **Operator**, las palabras propias del informe de la **Spreadsheet import** y las líneas fijas del **Catalog** de Telegram. Todo texto del front vive en un solo módulo con claves, el **Copy module**. No cambia ningún comportamiento de ninguna capacidad: pantallas, flujos, rutas, reglas y formatos quedan como los definen sus dueños. Reemplaza la regla de español rioplatense que antes establecían BRIEF.md y la sección de idioma y formatos de accounts.md. Los docs de capacidades y los archivos de diseño nombran cada pantalla, grupo, control y mensaje con ese mismo inglés, así que cada cosa tiene un solo nombre.
-
-Hay una sola excepción con nombre: el nombre accesible del + de la barra del celular es "Vender", bajo su propia clave `common:newSaleFabName` del Copy module (decisión 3 del humano en GH-727; navigation.md, "La barra del celular y su +"). El + no tiene texto visible, así que esa palabra solo la lee un lector de pantalla. Ninguna otra palabra en español aparece en la barra ni en ningún otro lugar de la app.
-
-Lo que vende un **Business** se llama en el Product language siempre "Product" / "Products", para todo Business; no es un dato de quien vende ni una configuración (varieties.md, docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md).
-
-El Product language no es el idioma de la documentación. La documentación funcional y técnica (`docs/product/` y las definiciones de `CONTEXT.md` incluidas) se escribe en español rioplatense, con identificadores, nombres de clases y nombres UML en inglés: es la **Documentation language**. Que los docs estén en español no cambia ninguna palabra que muestre la app.
 
 Criterios de éxito:
 
@@ -132,6 +134,13 @@ Criterios de éxito:
   - la barra entra en 320 px con el texto al 130 %;
   - ninguna pantalla se desplaza en horizontal en anchos de celular;
   - las listas de excepciones del **Mobile check** solo pueden achicarse.
+
+### Criterios de redacción
+
+- Los criterios de redacción (largo por tipo de texto, voz en inglés, palabras a evitar, regla neutral para cualquier Business y patrones con ejemplos) viven en [`WRITING_STANDARDS.md`](../../WRITING_STANDARDS.md). Este archivo no los repite. La capacidad que los define está en [`writing-standards.md`](writing-standards.md).
+- Ese documento vuelve acá para el registro: inglés llano, en segunda persona, sin voseo (ver "Fiel, sin reformular", más arriba).
+- Para el vocabulario, el glosario ([`CONTEXT.md`](../../CONTEXT.md)); para el largo de las líneas siempre visibles y cómo se rotula cada cosa, [`icon-and-text-rule.md`](icon-and-text-rule.md).
+- Los textos existentes que rompen una regla de redacción los corrige #328.
 
 ### Docs
 

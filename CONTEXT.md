@@ -611,3 +611,7 @@ _Avoid_: guessed country, auto-detect, geolocation, locale, default country
 **Retired address**:
 Una dirección del front que la app dejó de admitir, como los paths viejos en español (`/ventas`, `/clientes/7`) o `/more` y `/mas`. Se borra: nunca redirige y responde exactamente como cualquier dirección desconocida, así que no queda ninguna lista de direcciones viejas que mantener y la única redirección de un path del front es la de un path actual con una sola barra final. Regla del dueño del 2026-11-16; en la app no tiene palabra propia.
 _Avoid_: legacy path, old path, alias, redirect, moved page, dirección vieja
+
+**Writing standards**:
+Las reglas de redacción del texto que la app muestra en pantalla: límites de largo por tipo de texto, voz en inglés, palabras a evitar, regla neutral para cualquier Business y patrones con ejemplos reales. Apunta a la Icon and text rule, al Product language y al glosario sin copiarlos. Su regla completa vive en `WRITING_STANDARDS.md`. En la app: no tiene palabra propia.
+_Avoid_: style guide, copy guide, UI guidelines
