@@ -24,6 +24,11 @@ const API_SEGMENTS = [
 const CENSUS = 'src/design/census.test.ts'
 const TAKE_SHOT = 'src/design/take-shot.test.ts'
 const CONFIG_EXCLUDE = ['**/node_modules/**', 'e2e/**']
+const CI_REPORTERS: ('default' | 'github-actions' | ['json', { outputFile: string }])[] = [
+  'default',
+  ...(process.env.GITHUB_ACTIONS ? (['github-actions'] as const) : []),
+  ['json', { outputFile: 'test-results/vitest.json' }],
+]
 
 export default defineConfig({
   plugins: [react()],
@@ -46,6 +51,14 @@ export default defineConfig({
     // measured under load. Both ceilings are set only here and there: a call site
     // never sets its own shorter one.
     testTimeout: 40_000,
+    // One retry per failed test in CI, none locally (GH-563). Set at the root so the `unit` and
+    // `census` projects inherit it: a real drift fails twice and stays red.
+    retry: process.env.CI ? 1 : 0,
+    // In CI a `json` reporter joins the default ones and feeds `scripts/ci_flaky.py` (GH-563): a
+    // test that passed after a retry keeps its failed attempt's `failureMessages` there. Naming
+    // reporters turns vitest's own choice off, so the GitHub annotations stay named. Locally the
+    // key is absent and nothing is written.
+    ...(process.env.CI ? { reporters: CI_REPORTERS } : {}),
     // `web/e2e/` is Playwright's own suite (`playwright.config.ts`'s `testDir`),
     // run by the `web-e2e` check; vitest's defaults would otherwise also try to
     // run `flow.spec.ts` as a unit test and collide with Playwright's `test`.

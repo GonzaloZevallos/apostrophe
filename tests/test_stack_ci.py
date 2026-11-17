@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import copy
 import re
+import tomllib
 from pathlib import Path
 from typing import Any, cast
 
@@ -46,7 +47,10 @@ COMMENT_RUN = (
     """"repos/$REPO/issues/comments/$id" --field body=@coverage-report.md; else gh api --method """
     """POST "repos/$REPO/issues/$PR/comments" --field body=@coverage-report.md; fi"""
 )
-PYTEST_RUN = "uv run --no-project pytest -n auto --cov --cov-report= -- $PATHS"
+PYTEST_RUN = (
+    "uv run --no-project pytest -n auto --reruns 1 --cov --cov-report= -o junit_family=xunit1 "
+    '--junitxml="$RUNNER_TEMP/pytest-${{ matrix.shard }}.xml" -- $PATHS'
+)
 VITEST_RUN = "npm --prefix web test -- --coverage $VITEST_ARGS"
 E2E_RUN = 'npm --prefix web run e2e -- --shard="$SHARD" $E2E_ARGS'
 E2E_GATE_RUN = 'test "$RESULT" = success || { echo "e2e shards: $RESULT"; exit 1; }'
@@ -155,6 +159,23 @@ CI_ONLY: dict[str, str] = {
         "binary installed only in CI"
     ),
     "uv run --no-project python -m scripts.docs.api_breaks": "needs the base ref and the PR body",
+    (
+        "uv run --no-project python -m scripts.ci_flaky extract pytest "
+        '"$RUNNER_TEMP/pytest-${{ matrix.shard }}.xml" '
+        '"$RUNNER_TEMP/flaky/flaky-pytest-${{ matrix.shard }}.json"'
+    ): "the flaky report of the pytest shard (GH-563); never changes the job's result",
+    (
+        "uv run --no-project python -m scripts.ci_flaky extract vitest "
+        'web/test-results/vitest.json "$RUNNER_TEMP/flaky/flaky-vitest.json"'
+    ): "the flaky report of the vitest run (GH-563); never changes the job's result",
+    (
+        "uv run --no-project python -m scripts.ci_flaky extract playwright "
+        "web/test-results/*/results.json "
+        '"$RUNNER_TEMP/flaky/flaky-playwright-${{ matrix.shard }}.json"'
+    ): "the flaky report of the e2e shard (GH-563); never changes the job's result",
+    "uv run --no-project python -m scripts.ci_flaky report flaky-data": (
+        "prints the `agentic-flakes:` lines agentic-system #464 reads from the `ci-ok` log"
+    ),
 }
 
 # Jobs outside `ci-ok`'s needs closure, each with the reason it gates nothing (ADR-0066, amended).
@@ -1173,7 +1194,11 @@ def test_a_coverage_failure_step_that_does_not_count_the_shards_is_refused() -> 
 
 def test_an_output_name_no_producer_emits_is_refused() -> None:
     workflow = _mutated()
-    step = workflow["jobs"]["e2e-shard"]["steps"][-2]
+    step = next(
+        each
+        for each in workflow["jobs"]["e2e-shard"]["steps"]
+        if str(each.get("run", "")).startswith("npm --prefix web run e2e")
+    )
     step["env"]["E2E_ARGS"] = "${{ needs.changes.outputs.e2e_arg }}"
     assert "output 'e2e_arg' is read but no producer emits it" in _problems(workflow)
 
@@ -1749,6 +1774,174 @@ def test_a_dispatch_key_that_differs_or_sits_before_ci_is_refused() -> None:
     assert "`ci_dispatch.sha_input` is not an input of `workflow_dispatch`" in (
         _dispatch_key_problems(stack, WORKFLOW)
     )
+
+
+def _pytest_commands(workflow: Data) -> list[str]:
+    return [
+        command
+        for command in _runs(workflow)["pytest"]
+        if " pytest " in command and "scripts.ci_flaky" not in command
+    ]
+
+
+def _rerun_problems(stack: Data, workflow: Data, addopts: str) -> list[str]:
+    """One retry for a failed pytest test, only in CI (GH-563): the `pytest` job carries
+    `--reruns 1` on its command line; no declared check and no `addopts` does."""
+    problems: list[str] = []
+    commands = _pytest_commands(workflow)
+    if len(commands) != 1 or " --reruns 1 " not in f" {commands[0]} ":
+        problems.append("the `pytest` job's command does not carry `--reruns 1`")
+    for key in ("checks", "affected_checks"):
+        problems.extend(
+            f"{key} {name!r} carries --reruns; a retry is CI only"
+            for name, command in cast("Data", stack.get(key, {})).items()
+            if "--reruns" in str(command)
+        )
+    if "--reruns" in addopts:
+        problems.append("pyproject.toml addopts carries --reruns; a retry is CI only")
+    return problems
+
+
+def _addopts() -> str:
+    text = (REPO_ROOT / "pyproject.toml").read_text()
+    pytest_options = tomllib.loads(text)["tool"]["pytest"]["ini_options"]
+    return str(pytest_options.get("addopts", ""))
+
+
+def test_pytest_retries_once_in_ci_only() -> None:
+    assert _rerun_problems(STACK, WORKFLOW, _addopts()) == []
+
+
+def test_pytest_rerunfailures_is_a_dev_dependency() -> None:
+    text = (REPO_ROOT / "pyproject.toml").read_text()
+    dev = tomllib.loads(text)["project"]["optional-dependencies"]["dev"]
+    assert any(str(item).startswith("pytest-rerunfailures") for item in dev)
+
+
+def test_a_pytest_job_without_reruns_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["pytest"]["steps"]
+    for step in steps:
+        if " pytest " in str(step.get("run", "")):
+            step["run"] = step["run"].replace(" --reruns 1", "")
+    assert _rerun_problems(STACK, workflow, "-q") == [
+        "the `pytest` job's command does not carry `--reruns 1`"
+    ]
+
+
+def test_a_pytest_job_that_retries_twice_is_refused() -> None:
+    workflow = _mutated()
+    for step in workflow["jobs"]["pytest"]["steps"]:
+        if " pytest " in str(step.get("run", "")):
+            step["run"] = step["run"].replace("--reruns 1", "--reruns 2")
+    assert _rerun_problems(STACK, workflow, "-q") == [
+        "the `pytest` job's command does not carry `--reruns 1`"
+    ]
+
+
+def test_a_stack_check_or_addopts_with_reruns_is_refused() -> None:
+    stack = copy.deepcopy(STACK)
+    stack["checks"]["tests"] += " --reruns 1"
+    stack["affected_checks"] = {"tests": "uv run --no-project pytest --reruns=1"}
+    assert _rerun_problems(stack, WORKFLOW, "-q --reruns 1") == [
+        "checks 'tests' carries --reruns; a retry is CI only",
+        "affected_checks 'tests' carries --reruns; a retry is CI only",
+        "pyproject.toml addopts carries --reruns; a retry is CI only",
+    ]
+
+
+NO_TESTS_GUARDS = {
+    "pytest": "exit 5",
+    "vitest": "--passWithNoTests",
+}
+RERUN_RUNNERS = {"web-tests": "vitest"}
+FORBIDDEN_RERUN_FLAGS = (
+    "--lf",
+    "--last-failed",
+    "--ff",
+    "--failed-first",
+    "--sw",
+    "--stepwise",
+    "--reruns",
+)
+
+
+def _rerun_form_problems(stack: Data) -> list[str]:
+    """The `rerun_checks` forms (agentic-system #360: `{command, test_id}` per check, the command
+    run verbatim, no failed-ids token): each names a declared check, carries both keys, selects
+    through no runner cache and no retry flag, and exits 0 on nothing to rerun (GH-563)."""
+    problems: list[str] = []
+    checks = cast("Data", stack.get("checks", {}))
+    for name, form in cast("Data", stack.get("rerun_checks", {})).items():
+        if name not in checks:
+            problems.append(f"rerun_checks {name!r} is not a key of checks")
+        command = str(form.get("command", "")) if isinstance(form, dict) else ""
+        if not command or not isinstance(form.get("test_id"), str):
+            problems.append(f"rerun_checks {name!r} needs a `command` and a `test_id`")
+        problems.extend(
+            f"rerun_checks {name!r} uses {flag}; no runner cache and no retry flag"
+            for flag in FORBIDDEN_RERUN_FLAGS
+            if re.search(rf"{re.escape(flag)}(?![\w-])", command)
+        )
+        runner = RERUN_RUNNERS.get(name, "pytest")
+        guard = NO_TESTS_GUARDS[runner]
+        if guard not in command and not (runner == "pytest" and "$? -eq 5" in command):
+            problems.append(f"rerun_checks {name!r} has no no-tests guard ({guard})")
+    return problems
+
+
+def test_the_real_rerun_checks_forms_are_sound() -> None:
+    assert _rerun_form_problems(STACK) == []
+
+
+def test_a_rerun_form_for_an_unknown_check_or_without_its_keys_is_refused() -> None:
+    stack = copy.deepcopy(STACK)
+    stack["rerun_checks"] = {
+        "nope": {"command": "pytest || [ $? -eq 5 ]", "test_id": "(x)"},
+        "tests": {"command": "uv run --no-project pytest"},
+    }
+    assert _rerun_form_problems(stack) == [
+        "rerun_checks 'nope' is not a key of checks",
+        "rerun_checks 'tests' needs a `command` and a `test_id`",
+        "rerun_checks 'tests' has no no-tests guard (exit 5)",
+    ]
+
+
+def test_a_rerun_form_with_a_cache_or_a_retry_flag_or_no_guard_is_refused() -> None:
+    stack = copy.deepcopy(STACK)
+    stack["rerun_checks"] = {
+        "tests": {"command": "uv run pytest --lf --reruns 1", "test_id": "(x)"},
+        "web-tests": {"command": "npm --prefix web test -- --sw", "test_id": "(x)"},
+    }
+    assert _rerun_form_problems(stack) == [
+        "rerun_checks 'tests' uses --lf; no runner cache and no retry flag",
+        "rerun_checks 'tests' uses --reruns; no runner cache and no retry flag",
+        "rerun_checks 'tests' has no no-tests guard (exit 5)",
+        "rerun_checks 'web-tests' uses --sw; no runner cache and no retry flag",
+        "rerun_checks 'web-tests' has no no-tests guard (--passWithNoTests)",
+    ]
+
+
+def test_a_rerun_form_that_selects_nothing_and_succeeds_is_accepted() -> None:
+    stack = copy.deepcopy(STACK)
+    stack["rerun_checks"] = {
+        "web-tests": {
+            "command": "npm --prefix web test -- --passWithNoTests",
+            "test_id": "(x)",
+        }
+    }
+    assert _rerun_form_problems(stack) == []
+
+
+def test_a_rerun_form_with_another_pytest_cache_selector_is_refused() -> None:
+    stack = copy.deepcopy(STACK)
+    stack["rerun_checks"] = {
+        "tests": {"command": "uv run pytest --ff --stepwise || [ $? -eq 5 ]", "test_id": "(x)"},
+    }
+    assert _rerun_form_problems(stack) == [
+        "rerun_checks 'tests' uses --ff; no runner cache and no retry flag",
+        "rerun_checks 'tests' uses --stepwise; no runner cache and no retry flag",
+    ]
 
 
 API_BREAKS = "uv run --no-project python -m scripts.docs.api_breaks"

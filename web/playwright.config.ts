@@ -63,16 +63,25 @@ export default defineConfig({
   // passing per spec over the 5 runs at 3 workers: sales 54 s (alone, in the former `timed`
   // phase), tapBudget 45 s, flow 30 s, insets 28 s, payments 23 s (before, on one worker: payments 75 s,
   // panel 69 s, passwords 67 s, insets 62 s, sales 117 s). So the default is 160 s;
-  // `sales.spec.ts` sets 240 s itself. Not measured: the CI box (2 vCPU).
+  // `sales.spec.ts` sets 240 s itself. Not measured: the CI box (2 vCPU). `timeout` is per attempt:
+  // with the CI retry a failing test can take twice as long.
   timeout: 160_000,
   expect: { timeout: 17_000 },
-  retries: 0,
+  // One retry per failed test in CI, none locally (GH-563, ADR-0040 addendum): a test that fails
+  // twice stays red, so a local `✘` is still a final failure.
+  retries: process.env.CI ? 1 : 0,
   fullyParallel: false,
   // A fixed constant, never derived from the machine (ADR-0040): the same figure everywhere,
   // so a run on a 2-vCPU CI box and on a 16-core one are the same shape.
   workers: 3,
   outputDir: OUTPUT_DIR,
-  reporter: [['list'], ['junit', { outputFile: `${OUTPUT_DIR}/junit.xml` }]],
+  // `json` feeds `scripts/ci_flaky.py` (GH-563): a test that failed and then passed is marked there,
+  // which junit does not say. `junit.xml` stays for `scripts/e2e_failures.py`.
+  reporter: [
+    ['list'],
+    ['junit', { outputFile: `${OUTPUT_DIR}/junit.xml` }],
+    ['json', { outputFile: `${OUTPUT_DIR}/results.json` }],
+  ],
   use: {
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',

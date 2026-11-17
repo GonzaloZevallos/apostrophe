@@ -184,3 +184,21 @@ ci: [ci-ok]
 ci_dispatch:
   workflow: ci.yml
   sha_input: sha
+# `rerun_checks` (agentic-system ADR-0066, ADR-0082, #360 as merged in 3649b334; GH-563): none is
+# declared, on purpose. The schema is `{<check>: {command, test_id}}`: the system runs `command`
+# verbatim after a failure and reads the failed ids from the first run's output with `test_id`;
+# it substitutes only `{base}` (in `affected_checks`) and no failed-ids token, so a form cannot be
+# handed the tests it should run. The only way left to select "the failed tests" is a cache the
+# runner keeps (pytest `--lf`, Playwright `--last-failed`), and both are refused here: `--lf`
+# would give `.pytest_cache` a second writer, and web/scripts/e2e.sh gives every run a new output
+# directory, so `.last-run.json` is never found again. vitest has no such cache. So a red check
+# reruns whole, as today, and the retry of ONE test happens inside CI (`--reruns 1`,
+# `retries: 1`, vitest `retry: 1`, all only under `CI`), not here. Validation: #360 gives no
+# command that validates this file; the pins in tests/test_stack_ci.py (`_rerun_form_problems`)
+# are the whole proof: a form added later must name a declared check, carry `command` and
+# `test_id`, use no cache selector (`--lf`, `--last-failed`, `--ff`, `--failed-first`, `--sw`,
+# `--stepwise`) nor `--reruns`, and exit 0 on nothing. The human moved the declaration to #602,
+# which waits for agentic-system #530 (a failed-ids token in `rerun_checks`).
+# Since GH-699 `web-e2e` is no longer a check, so no Playwright form can be declared here at all:
+# GitHub CI judges e2e, and its one retry lives in `retries: 1` under `CI`.
+# Read at a task's base, like every key here.

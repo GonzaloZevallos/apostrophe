@@ -350,3 +350,19 @@ A toast with no product timer (the history-state `Notice`, "Customer saved") kee
 - `expectToast` proves the toast was shown after the action, not that it was shown for the action: a different toast with the same text from another source in the window would pass.
 
 > Amended by ADR-0077: `login_guard` and `login_address_guard` carry a surrogate `id` primary key, unique on `email` / `address_digest`.
+
+## Addendum (2026-11-07, GH-563): one retry in CI
+
+This addendum supersedes the `retries: 0` sentences above; they stay as history.
+
+- In CI (`CI` set), `retries` is 1 for every suite, and a test that fails twice leaves its job red.
+  Locally it stays 0, so a `✘` in a local run is still a final failure.
+- `timeout` is per attempt. In CI the worst test therefore takes 2×160 s = 320 s, and
+  `sales.spec.ts` takes 2×240 s = 480 s.
+- A retry runs on a new worker, which gets a fresh worker-scoped backend and database
+  (`web/e2e/fixtures.ts`).
+- The three `describe.serial` groups retry as a whole, the one exception to "alone":
+  `web/e2e/navigation.spec.ts:69`, `web/e2e/scrollOnNavigate.spec.ts:97` and
+  `web/e2e/barFit.spec.ts:171`.
+
+Shard headroom: measured in GH-563 (c).

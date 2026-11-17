@@ -72,7 +72,7 @@ Antes de esto (GH-533), el job `e2e` de `.github/workflows/ci.yml` corría en ca
 Criterios de éxito:
 
 1. `agentic merge` rechaza un head cuyo job e2e falló, y nombra el job.
-2. La corrida de CI de master posterior al merge tiene todos los jobs en verde, e2e incluido. Se encontró la causa de cada rojo, y no se salteó, reintentó ni aflojó nada.
+2. La corrida de CI de master posterior al merge tiene todos los jobs en verde, e2e incluido. Se encontró la causa de cada rojo, y no se salteó ni aflojó nada; el reintento único de CI no cuenta como causa, y un flake reportado se arregla.
 3. Un pull request que agrega o cambia un spec e2e vio pasar ese spec en GitHub antes de pedir el merge.
 4. Cada test, doc y ADR que nombra los jobs que frenan el merge coincide con `ci:`, y ninguno sigue diciendo que e2e no frena nada.
 
@@ -112,15 +112,20 @@ Criterios de éxito:
 - **Cualquier estado que no sea éxito frena.** Para cada job de `ci:`, `agentic merge` rechaza un head cuyo job falló, se canceló, se salteó, sigue pendiente o falta, y nombra el job. e2e sigue la misma regla que los demás jobs, sin una regla propia. La prueba de ese rechazo vive fuera de este repo, en el sistema agentic (hallazgo `outside`); si alguno de los jobs existentes no se comportara así, eso se registra como una falla del comportamiento existente.
 - **Un spec e2e nuevo o cambiado se ve pasar en GitHub sin pasos extra.** Desde GH-476 el job `e2e-shard` corre en shards solo los specs que el cambio afecta (la suite completa en cada push a master, y en un pull request o un push a `agentic-ci/**` cuando el cambio es de infraestructura o no coincide con ninguna regla). Un push a `agentic-ci/**` selecciona contra el merge-base con `origin/master`, y cualquier falla para obtenerlo corre todo (ADR-0067, addendum GH-557). Un Dispatch de `ci.yml` en un sha es otra vía de entrada: corre el workflow y los scripts de master sobre el árbol de ese head, selecciona contra el merge-base del head con `origin/master` y corre todo ante cualquier falla (ADR-0072, addendum GH-562 de ADR-0067). `ci-ok` lee la bandera `e2e` de `changes` (ADR-0064, reglas 7 y 8; ADR-0067). Así, un pull request que agrega o cambia un spec e2e cumple "ver pasar ese spec en GitHub antes de pedir el merge" con solo cumplir la regla anterior. No es un paso manual aparte.
 - **El e2e lo juzga solo el CI de GitHub (GH-699).** `web-e2e` sale de `checks` y de `affected_checks` en `.agentic/stack.yaml`: ningún check local corre Playwright, ni el tier completo ni la entrega. Los fallos de GH-407 fueron solo por carga (carga sobre 40 en 16 núcleos, con los shards de CI en verde). El freno del merge sigue siendo el job `e2e` de GitHub, leído por `ci-ok`. Correr un solo spec a mano para depurar es una herramienta, no un freno. Si el `e2e` de master queda en rojo tras un merge (un head solo de backend no selecciona specs, así que nada lo corrió antes), es una regresión de producto y se abre un issue propio que nombra la corrida, el sha y el spec que falla (ADR-0054, enmienda GH-699).
-- **Nunca verde a la fuerza.** Un rojo se arregla encontrando su causa, en el spec o en el código que atrapó. Nunca se saltea, se pone en cuarentena, se reintenta hasta que pase ni se afloja una aserción. Un spec sigue la definición escrita vigente, nunca al revés.
+- **Nunca verde a la fuerza.** Un rojo se arregla encontrando su causa, en el spec o en el código que atrapó. Nunca se saltea, se pone en cuarentena ni se afloja una aserción. La única repetición que existe es el reintento único de CI de la sección siguiente, y un test que falla dos veces queda en rojo. Un spec sigue la definición escrita vigente, nunca al revés.
 
-### Un e2e en rojo que resulta ser un flake
+### Un test que falla una vez en CI: reintento único y reporte de flake
 
-- Volver a correr un job e2e en rojo se permite solo para averiguar si es un flake. Un re-run en verde nunca se registra como prueba de que el spec está bien.
-- Un flake es un defecto del Gate, no ruido con el que convivir. Recibe su propio issue que nombra el spec y la falla, como #428.
-- Si el spec que falla de forma intermitente es uno que el pull request agrega o cambia, el head no se integra hasta que se arregle el flake.
-- Si el pull request no toca ese spec, puede integrarse con el re-run en verde, pero solo después de abrir el issue del flake. El freno de `ci:` se cumple porque todos los jobs están en verde en el head.
-- Si un job `e2e-shard` se cancela o llega a su `timeout-minutes` (30), se vuelve a correr una sola vez, solo para distinguir un flake de una regresión. Un flake recibe su propio issue. El workflow no tiene ningún bucle de re-run.
+Decisión del dueño del 2026-11-03, que reemplaza la regla anterior de "nunca se reintenta" y "el workflow no tiene ningún bucle de re-run" (GH-563, addenda de ADR-0040 y ADR-0067).
+
+- **En CI, un test que falla se reintenta una sola vez, solo él.** Playwright con `retries: 1`, pytest con `--reruns 1` y vitest con `retry: 1`, los tres solo cuando `CI` está definida. La excepción escrita son los tres grupos `describe.serial` (`navigation.spec.ts`, `scrollOnNavigate.spec.ts` y `barFit.spec.ts`), que reintentan enteros.
+- **Un pase en el reintento es verde y se reporta como flake.** El test cuenta como pasado, y el job `ci-ok` imprime en su log una línea `agentic-flakes: ` con un JSON `{"v":1,"check":"<nombre>","tests":["<id>"]}` en el formato de agentic-system #464 (`agentic/core/process/domain/ci.py` en el commit `d052f6d74429ef4f2a34dc416b3aea27abeeed8a`, el mismo que cita el docstring de `scripts/ci_flaky.py`). Solo lleva ids de tests, nunca mensajes ni salida capturada. El reporte es evidencia, nunca un veredicto: no cambia el resultado de ningún job.
+- **El umbral y el issue los abre el sistema (#464).** Este repo no abre el issue ni fija el umbral; solo produce el reporte.
+- **Un test que falla dos veces es rojo.** El job queda en rojo y el head no se integra.
+- **Los runs locales nunca reintentan.** Sin `CI` definida, `retries`, `--reruns` y `retry` valen 0, así que un `✘` local es una falla final.
+- **Sin `skip`, cuarentena ni aserción aflojada**, como antes. Un reintento en verde no registra el spec como correcto: queda en el reporte como flake.
+- **Un flake sigue siendo un defecto del Gate**, no ruido con el que convivir. Un test que aparece como flake en el reporte se arregla, como #428; si el spec lo agrega o cambia el pull request, el head no se integra hasta que se arregle.
+- Si un job `e2e-shard` se cancela o llega a su `timeout-minutes` (30), se vuelve a correr una sola vez, solo para distinguir un flake de una regresión. El workflow no tiene ningún bucle de re-run fuera del reintento por test.
 
 ### Listas de infractores del texto en el front (GH-379, parte 2)
 
@@ -331,7 +336,7 @@ No hay telemetría. Se leen de la evidencia de la tarea y de la revisión.
 - **Gemelos alineados:** CODING_STANDARDS.md §10, el README del design system, el ítem 39 de accounts.md y el encabezado de `offenders/index.ts` nombran cada uno los dos crecimientos permitidos en una oración y remiten acá.
 - **e2e en rojo rechazado (job "Nada en rojo llega a master", criterio 1):** la evidencia muestra a `agentic merge` rechazando un head cuyo job `e2e` no está en verde y nombrando `e2e`. `tests/test_stack_ci.py` verifica que `ci-ok` depende de `e2e`, que `e2e` solo se omite con su bandera de `changes` y que su comando es un paso de un job que `ci:` gatea (GH-476).
 - **Todo estado que no sea éxito rechazado (mismo job, cuándo se integra):** la evidencia o los tests cubren fallado, cancelado, salteado, pendiente y faltante para un job de `ci:`. Cualquier falla encontrada en `test`, `web` o `docs` queda registrada.
-- **Master en verde (mismo job, criterio 2):** la primera corrida de CI de master después del merge tiene todos los jobs en verde, e2e incluido. La evidencia nombra la causa de cada rojo arreglado, y la revisión confirma que no se agregó ningún `skip`, `fixme`, reintento ni aserción aflojada.
+- **Master en verde (mismo job, criterio 2):** la primera corrida de CI de master después del merge tiene todos los jobs en verde, e2e incluido. La evidencia nombra la causa de cada rojo arreglado, y la revisión confirma que no se agregó ningún `skip`, `fixme`, reintento propio de un spec ni aserción aflojada.
 - **Spec visto pasar (mismo job, criterio 3):** la corrida e2e propia del pull request en GitHub está en verde antes de pedir el merge, con su link en la evidencia.
 - **Textos alineados (mismo job, criterio 4):** buscar los textos que dicen que e2e no frena nada y la lista de jobs que frenan el merge no encuentra ningún texto que no coincida con `ci:`, ni ningún ADR que lo contradiga sin un hallazgo `outside`.
 
@@ -347,5 +352,5 @@ No hay telemetría. Se leen de la evidencia de la tarea y de la revisión.
 - Dejar crecer las listas de infractores en cualquier caso que no sea el canje o una fila nueva del registro.
 - Traducir `docs/product/design-system/README.md`.
 - Volver a declarar `web-e2e` en `checks`, `affected_checks` o `delivery_checks`, o dar al e2e un respaldo local o un `ci_covers` distinto del job e2e de GitHub.
-- Saltear, poner en cuarentena, reintentar hasta que pase o aflojar una aserción para poner el Gate en verde.
+- Saltear, poner en cuarentena, reintentar más de la única vez que hace CI o aflojar una aserción para poner el Gate en verde.
 - Una regla de merge propia de e2e distinta de la de los demás jobs de `ci:`.
