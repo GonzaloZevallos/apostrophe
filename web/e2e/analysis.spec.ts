@@ -22,7 +22,7 @@ import { openAnalysis, openGastos } from './helpers/openScreens.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { setPriceDate } from './helpers/priceDate.js'
 import { uniqueTag } from './helpers/unique.js'
-import { NEW_SALE_BUTTON, NEW_SALE_GROUP } from './helpers/chrome.js'
+import { BOTTOM_BAR, NEW_SALE_BUTTON } from './helpers/chrome.js'
 
 test('a seller opens Análisis from the Home segment, moves back a month and reads each section', async ({
   page,
@@ -445,20 +445,20 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
 
 /**
  * The places of the month arrows and the "Nueva venta" button at 812 px and at the document's own height; the ones that
- * moved. The arrows sit in the flow, so their place is their top on the page. The button floats above the bar
- * (`position: fixed`, GH-373), so its place is its distance from the viewport's bottom edge: its top moves with the
+ * moved. The arrows sit in the flow, so their place is their top on the page. The + stands in the bar
+ * (`position: fixed`), so its place is its distance from the viewport's bottom edge: its top moves with the
  * viewport by design. A screen taller than its content shows as the document outgrowing the viewport it was grown to.
  */
 async function tallerMoves(page: Page): Promise<string[]> {
   const places = () =>
     page.evaluate(
-      ({ button, group }) =>
+      ({ button, bar }) =>
         Array.from(document.querySelectorAll(`.gastos__mes-boton, ${button}`)).map((node) => {
           const box = node.getBoundingClientRect()
-          const floats = getComputedStyle(node.closest(group) ?? node).position === 'fixed'
+          const floats = getComputedStyle(node.closest(bar) ?? node).position === 'fixed'
           return `${node.className}@${Math.round(floats ? window.innerHeight - box.bottom : box.top + window.scrollY)}`
         }),
-      { button: NEW_SALE_BUTTON, group: NEW_SALE_GROUP },
+      { button: NEW_SALE_BUTTON, bar: BOTTOM_BAR },
     )
   const size = page.viewportSize()
   if (size === null) throw new Error('no viewport')

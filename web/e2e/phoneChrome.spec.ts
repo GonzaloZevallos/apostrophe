@@ -1,10 +1,9 @@
 /**
- * The phone's fixed chrome and the keyboard, in a real browser (GH-319, "Fixed bar, floating
- * + New sale, toasts"): at 320, 360 and 390 px the bar and "+ New sale" stay inside the viewport at
- * the top, middle and bottom of every tab root, with the last row above them; a card keeps the bar
- * and has no button; a form has neither. On Customers, a keyboard (a lowered viewport with the
- * search focused) hides both, and bringing the height back returns them with the typed text and
- * the scroll position unchanged. An Android-sized scroll keeps the bar in view.
+ * The phone's fixed chrome and the keyboard, in a real browser (GH-319, GH-727): at 320, 360 and 390 px
+ * the bar and its + stay inside the viewport at the top, middle and bottom of every screen that
+ * shows the bar, with the last row above them; a card keeps the bar and its +; a form has neither.
+ * On Customers, a keyboard (a lowered viewport with the search focused) hides both, and bringing the
+ * height back returns them with the typed text and the scroll position unchanged. An Android-sized scroll keeps the bar in view.
  */
 
 import {
@@ -25,7 +24,6 @@ import {
   BOTTOM_BAR,
   bottomBar,
   NEW_SALE_BUTTON,
-  NEW_SALE_GROUP,
 } from "./helpers/chrome.js";
 import { seedLedger } from "./helpers/ledger.js";
 
@@ -35,8 +33,8 @@ const HEIGHT = 560;
 interface Edges {
   bar: { top: number; bottom: number } | null;
   button: { top: number; bottom: number } | null;
-  /** The top of the floating group: its missing line when there is one, else the button. */
-  groupTop: number | null;
+  /** The top of the + (it stands above the bar's top edge), or null when there is none. */
+  plusTop: number | null;
   lastRowBottom: number;
   viewport: number;
 }
@@ -50,7 +48,7 @@ async function edges(page: Page): Promise<Edges> {
         const { top, bottom } = element.getBoundingClientRect();
         return { top, bottom };
       };
-      const group = box(selectors.groupChild);
+      const plus = box(selectors.button);
       const children = [
         ...document.querySelectorAll(".columna-principal *"),
       ].filter(
@@ -62,7 +60,7 @@ async function edges(page: Page): Promise<Edges> {
       return {
         bar: box(selectors.bar),
         button: box(selectors.button),
-        groupTop: group === null ? null : group.top,
+        plusTop: plus === null ? null : plus.top,
         lastRowBottom: Math.max(
           0,
           ...children.map((element) => element.getBoundingClientRect().bottom),
@@ -73,8 +71,7 @@ async function edges(page: Page): Promise<Edges> {
     {
       bar: BOTTOM_BAR,
       button: `a${NEW_SALE_BUTTON}`,
-      groupChild: `${NEW_SALE_GROUP} > *`,
-      chrome: `${BOTTOM_BAR}, ${NEW_SALE_GROUP}`,
+      chrome: BOTTOM_BAR,
     },
   );
 }
@@ -89,7 +86,7 @@ async function scrollTo(
   }, where);
 }
 
-test("the bar and the button stay in view on every root, with the last row above them; a form shows neither", async ({
+test("the bar and the + stay in view on every screen that shows the bar, with the last row above them; a form shows neither", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 320, height: HEIGHT });
@@ -128,7 +125,11 @@ test("the bar and the button stay in view on every root, with the last row above
           );
           expect(
             found.button.bottom,
-            `${at}: button above the bar`,
+            `${at}: the + inside the viewport`,
+          ).toBeLessThanOrEqual(found.viewport);
+          expect(
+            found.button.top,
+            `${at}: the + stands at or above the bar's top edge`,
           ).toBeLessThanOrEqual(found.bar?.top ?? 0);
         }
       }
@@ -137,7 +138,7 @@ test("the bar and the button stay in view on every root, with the last row above
       expect(
         end.lastRowBottom,
         `${root} at ${width}: last row above the chrome`,
-      ).toBeLessThanOrEqual((end.groupTop ?? end.bar?.top ?? 0) + 0.5);
+      ).toBeLessThanOrEqual((end.plusTop ?? end.bar?.top ?? 0) + 0.5);
     }
   }
 
@@ -148,7 +149,7 @@ test("the bar and the button stay in view on every root, with the last row above
   await expect(anyNewSaleButton(page)).toHaveCount(0);
 });
 
-test("a card keeps the bar inside the viewport and has no button; a sheet shows neither", async ({
+test("a card keeps the bar and its + inside the viewport; a sheet shows neither", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 360, height: HEIGHT });
@@ -174,7 +175,7 @@ test("a card keeps the bar inside the viewport and has no button; a sheet shows 
       `card, ${where}: bar bottom`,
     ).toBeLessThanOrEqual(found.viewport);
   }
-  await expect(anyNewSaleButton(page)).toHaveCount(0);
+  await expect(anyNewSaleButton(page)).toHaveCount(1);
 
   // Collect from the customers list opens a sheet on the phone.
   await page.goto(CUSTOMERS);
@@ -187,7 +188,7 @@ test("a card keeps the bar inside the viewport and has no button; a sheet shows 
   await expect(anyNewSaleButton(page)).toHaveCount(0);
 });
 
-test("on Customers a keyboard hides the bar and the button; they come back with the text and the scroll as they were", async ({
+test("on Customers a keyboard hides the bar and its +; they come back with the text and the scroll as they were", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 360, height: 700 });

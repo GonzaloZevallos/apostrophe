@@ -17,6 +17,7 @@ import type { Locator, Page } from '@playwright/test'
 import { CUSTOMERS, EXPENSES, HOME, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { choosePaymentMethod, expect, test, withToastRecorder } from './fixtures.js'
 import { seedLongExpenses, seedLongLists, seedLongVarieties } from './helpers/scrollSeed.js'
+import { newSaleEntry } from './helpers/chrome.js'
 import { expectToast } from './helpers/toast.js'
 import { expectPath } from './helpers/url.js'
 
@@ -62,7 +63,9 @@ const rowOfSale = (page: Page): Locator => page.getByRole('link', { name: /Zeta 
 
 const backToSales = (page: Page): Locator => page.getByRole('button', { name: '‹ Sales' })
 
-const newSale = (page: Page): Locator => page.getByRole('link', { name: 'New sale', exact: true }).first()
+/** The phone's entry is the bar's +, the computer's the rail's "New sale"; the other is hidden and never matches. */
+const newSale = (page: Page, computer: boolean): Locator =>
+  computer ? page.getByRole('link', { name: 'New sale', exact: true }).first() : newSaleEntry(page)
 
 /** Two animation frames: whatever a frame callback was going to do has been done. */
 function twoFrames(page: Page): Promise<void> {
@@ -134,7 +137,7 @@ test.describe.serial('Scroll al cambiar de pantalla', () => {
         await page.goto(CUSTOMERS)
         await expect(page.getByRole('link', { name: /Zeta 40/ }).first()).toBeVisible()
         await scrollDown(page)
-        await tap(newSale(page))
+        await tap(newSale(page, computer))
         await expectPath(page, SALE_NEW)
         await expectAtTop(page)
       })
@@ -183,7 +186,7 @@ test.describe.serial('Scroll al cambiar de pantalla', () => {
         await page.goto(CUSTOMERS)
         await expect(page.getByRole('link', { name: /Zeta 40/ }).first()).toBeVisible()
         const offset = await scrollDown(page)
-        await tap(newSale(page))
+        await tap(newSale(page, computer))
         await expectPath(page, SALE_NEW)
         await expectAtTop(page)
 

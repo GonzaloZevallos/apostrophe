@@ -23,8 +23,6 @@ export const BOTTOM_BAR_PLUS = '.bar-inferior__mas'
 export const NEW_SALE_BUTTON_CLASS = 'bar-inferior__mas'
 export const NEW_SALE_BUTTON = `.${NEW_SALE_BUTTON_CLASS}`
 export const NEW_SALE_NAME = 'Vender'
-/** The computer rail's own New sale button, whatever its viewport modifier. */
-export const NEW_SALE_RAIL = '.boton-nueva-venta'
 /** The computer rail's own New sale button. */
 export const NEW_SALE_BUTTON_COMPUTER = '.boton-nueva-venta--escritorio'
 
@@ -43,12 +41,12 @@ export function newSaleEntry(page: Page): Locator {
 }
 
 /**
- * Every New sale entry on the page, whichever chrome draws it: the bar's + and the rail's button.
- * An absence or count-zero check uses this and never `newSaleEntry`, so the check cannot pass just
- * because the entry moved.
+ * Every phone New sale entry in the DOM, found by its class and not by role or name, so a count-zero
+ * check cannot pass just because the entry lost its name or moved. It never matches the computer
+ * rail's button (`NEW_SALE_BUTTON_COMPUTER`).
  */
 export function anyNewSaleButton(page: Page): Locator {
-  return page.locator(`a${NEW_SALE_BUTTON}, a${NEW_SALE_RAIL}`)
+  return page.locator(`a${NEW_SALE_BUTTON}`)
 }
 
 /** Taps the phone's New sale entry, the bar's +. */
