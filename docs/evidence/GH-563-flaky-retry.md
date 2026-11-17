@@ -172,7 +172,7 @@ imprime `E2E_ARGS: ` sin valor, y la matriz comparte la salida del job `changes`
   `mobile-setup` sembró una sola vez (`web/playwright.config.ts:106-122`), no en un backend nuevo. Lo de "worker nuevo con
   backend y base worker-scoped frescos" del addendum de GH-563 está mostrado para `secure-origin` solamente y no se
   ejercitó acá. La oración del ADR no se tocó.
-- El shard 1 es de lejos el más largo (859 a 1092 s contra 115 a 252 s de los otros tres) en las 10 corridas, y el margen
+- El shard 1 es de lejos el más largo (859 a 1092 s contra 123 a 252 s de los otros tres) en las 10 corridas, y el margen
   sale entero de él. No se investigó por qué; el reparto de archivos entre shards queda fuera de este issue.
 - El margen de 708 s es chico frente a un reintento de celda (600 s): si M subiera más de 108 s, `timeout-minutes: 30` ya no
   cubriría ese reintento y habría que subirlo a ⌈(M + 600) / 60⌉ minutos en `ci.yml`, `gate.md` y el ADR-0040.
