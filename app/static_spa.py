@@ -9,7 +9,6 @@ to a signed-out invitation link and turn an unknown API path into HTML.
 
 from __future__ import annotations
 
-import json
 import os
 import re
 from collections.abc import Collection
@@ -69,51 +68,6 @@ SHARED_FRONT_PATHS = frozenset(
 
 _ID = "{id}"
 
-# The old Spanish front paths and where they live now: one row each in
-# `legacy_front_paths.json` beside this module, the only home of the list (docs/adr/0033).
-LEGACY_FRONT_PATHS_FILE = Path(__file__).with_name("legacy_front_paths.json")
-_LITERAL_SEGMENT = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
-
-
-class MalformedLegacyFrontPaths(ValueError):
-    """The legacy rows file is not a list of `{old, now}` templates. Raised at import, so a
-    bad file fails the deploy instead of answering a wrong redirect."""
-
-
-def _check_template(template: object, role: str) -> str:
-    if not isinstance(template, str) or not template.startswith("/"):
-        raise MalformedLegacyFrontPaths(f"a legacy {role} path must be a string starting with /")
-    for segment in template[1:].split("/"):
-        if segment != _ID and not _LITERAL_SEGMENT.match(segment):
-            raise MalformedLegacyFrontPaths(
-                f"a legacy {role} path has a segment that is neither a literal nor {_ID}"
-            )
-    return template
-
-
-def parse_legacy_front_paths(text: str) -> tuple[tuple[str, str], ...]:
-    """The `(old, now)` templates of a rows file. Every segment is a literal or `{id}`, an
-    `{id}` in `now` needs one in `old` (there would be nothing to carry), and no old path
-    is listed twice. Anything else raises `MalformedLegacyFrontPaths`."""
-    try:
-        document = json.loads(text)
-    except json.JSONDecodeError as exc:
-        raise MalformedLegacyFrontPaths("the legacy rows file is not JSON") from exc
-    if not isinstance(document, list):
-        raise MalformedLegacyFrontPaths("the legacy rows file must be a list")
-    rows: list[tuple[str, str]] = []
-    for row in document:
-        if not isinstance(row, dict) or set(row) != {"old", "now"}:
-            raise MalformedLegacyFrontPaths("a legacy row has exactly `old` and `now`")
-        old = _check_template(row["old"], "old")
-        now = _check_template(row["now"], "now")
-        if _ID in now.split("/") and _ID not in old.split("/"):
-            raise MalformedLegacyFrontPaths(f"a legacy row's now has {_ID} but its old has none")
-        rows.append((old, now))
-    if len({old for old, _ in rows}) != len(rows):
-        raise MalformedLegacyFrontPaths("a legacy old path is listed twice")
-    return tuple(rows)
-
 
 def matches_template(path: str, template: str) -> dict[str, str] | None:
     """The one matcher of a request path against a front path (docs/adr/0024). The whole
@@ -138,27 +92,6 @@ def matches_template(path: str, template: str) -> dict[str, str] | None:
 
 def _matching(path: str, templates: frozenset[str]) -> bool:
     return any(matches_template(path, template) is not None for template in templates)
-
-
-def _legacy_target(path: str) -> str | None:
-    """The new path an old Spanish `path` (or it plus one trailing slash) moved to."""
-    whole = _without_one_slash(path)
-    for old, new in LEGACY_FRONT_PATHS:
-        captured = matches_template(whole, old)
-        if captured is not None:
-            return new.replace(_ID, captured.get("id", ""))
-    return None
-
-
-LEGACY_FRONT_PATHS: tuple[tuple[str, str], ...] = parse_legacy_front_paths(
-    LEGACY_FRONT_PATHS_FILE.read_text(encoding="utf-8")
-)
-
-
-# Retired front paths: they always go to `/`, with no query, through the same redirect as
-# the legacy rows. A separate list because the legacy table is Spanish-to-English and keeps
-# its query (docs/adr/20261116-more-and-mas-redirect-to-home-and-settings-marks-home).
-RETIRED_FRONT_PATHS: frozenset[str] = frozenset({"/more", "/mas"})
 
 
 class MissingBuiltFront(RuntimeError):
@@ -311,12 +244,8 @@ class SpaStatic(StaticFiles):
 
 class FrontNavigation:
     """Pure ASGI, outside Starlette's routing and its `redirect_slashes`, so the raw path
-    decides before the API's router can claim it (docs/adr/0024, docs/adr/0033):
+    decides before the API's router can claim it (docs/adr/0024):
 
-    - a legacy Spanish path (or it plus one trailing slash) is a 308 to its new path, for
-      any method and any `Accept`, keeping the query string;
-    - `/more` or `/mas` (or it plus one trailing slash) is a 308 to `/`, for any method, with
-      the query dropped; any path under them is left to the unknown-address rule;
     - for a `GET`/`HEAD` that accepts `text/html`, a whole-path `SHARED_FRONT_PATHS` match is
       the app shell, served by the same `SpaStatic` as `/` so its headers have one author,
       and the same path plus one trailing slash is a 308 to the slashless path;
@@ -332,13 +261,6 @@ class FrontNavigation:
             await self._app(scope, receive, send)
             return
         path: str = scope["path"]
-        legacy_target = _legacy_target(path)
-        if legacy_target is not None:
-            await self._redirect(legacy_target, scope, receive, send, keep_query=True)
-            return
-        if _without_one_slash(path) in RETIRED_FRONT_PATHS:
-            await self._redirect("/", scope, receive, send, keep_query=False)
-            return
         if scope["method"] in ("GET", "HEAD") and _accepts_html(scope):
             if _matching(path, SHARED_FRONT_PATHS):
                 response = await self._spa.get_response("index.html", scope)
@@ -346,15 +268,13 @@ class FrontNavigation:
                 return
             slashless = _without_one_slash(path)
             if slashless != path and _matching(slashless, SHARED_FRONT_PATHS):
-                await self._redirect(slashless, scope, receive, send, keep_query=True)
+                await self._redirect(slashless, scope, receive, send)
                 return
         await self._app(scope, receive, send)
 
     @staticmethod
-    async def _redirect(
-        target: str, scope: Scope, receive: Receive, send: Send, *, keep_query: bool
-    ) -> None:
-        query = scope["query_string"].decode("latin-1") if keep_query else ""
+    async def _redirect(target: str, scope: Scope, receive: Receive, send: Send) -> None:
+        query = scope["query_string"].decode("latin-1")
         location = f"{target}?{query}" if query else target
         await RedirectResponse(location, status_code=308)(scope, receive, send)
 
