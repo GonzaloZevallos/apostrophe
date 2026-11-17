@@ -18,7 +18,6 @@ import { expectPath } from './helpers/url.js'
 type Origin = 'customers' | 'home' | 'card'
 
 const ORIGINS: readonly Origin[] = ['customers', 'home', 'card']
-
 const VIEWPORTS = [
   { name: 'phone', width: 390, height: 844 },
   { name: 'computer', width: 1280, height: 800 },
