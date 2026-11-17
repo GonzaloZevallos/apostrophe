@@ -15,7 +15,7 @@ import type { WalkState } from '../../src/mobile-standard/states.ts'
 import type { Violation } from '../../src/mobile-standard/violation.ts'
 import { collect, pageViolation, type CellId } from './collect.js'
 import { runChrome } from './collectChrome.js'
-import { guardWrites, holdApi, holdReads, stubReads } from './network.js'
+import { guardWrites, holdApi, holdReads, stubReads, type Held } from './network.js'
 import { asScreen } from './states.js'
 import { open, painted, runSteps, settle, type Facts, type WalkScreen } from './walk.js'
 
@@ -30,11 +30,13 @@ export async function walkScreen(
   facts: Facts,
   bundle: Bundle,
   holdPath?: RegExp,
+  refetch?: WalkState['refetch'],
 ): Promise<Violation[]> {
   const found: Violation[] = []
   const hold = held ? await holdApi(page.context()) : null
   // A state that names one read walks it held first, then loaded: the loading state of one field.
   const readHold = holdPath === undefined || held ? null : await holdReads(page.context(), holdPath)
+  let refetchHold: Held | null = null
   try {
     await open(page, screen, facts)
     if (readHold !== null) {
@@ -65,10 +67,25 @@ export async function walkScreen(
       const expectation = expectationFor(screen.signedOut, new URL(page.url()).pathname, ROUTE_REGISTRY)
       if (expectation === null) found.push(pageViolation(cell, 'unreachable'))
       else found.push(...(await runChrome(page, cell, expectation)))
+      if (refetch !== undefined) {
+        // A later GET held across the refetch's steps: only its release is judged (the form stays drawn).
+        refetchHold = await holdReads(page.context(), refetch.holds)
+        if (!(await runSteps(page, { ...screen, steps: refetch.steps }, facts, bundle))) {
+          return [...found, pageViolation(cell, 'unreachable')]
+        }
+        if (!(await refetchHold.whenHeld(FETCH_WAIT_MS))) return [...found, pageViolation(cell, 'unreachable')]
+        await page.evaluate(() => {
+          if (window.__phone !== undefined) window.__phone.releasedAt = performance.now()
+        })
+        await refetchHold.release()
+        await settle(page)
+        found.push(...(await collect(page, 'released', cell)))
+      }
     }
   } finally {
     if (hold !== null) await hold.release()
     if (readHold !== null) await readHold.release()
+    if (refetchHold !== null) await refetchHold.release()
   }
   return found
 }
@@ -89,7 +106,7 @@ export async function walkState(
   const undoWrites = await guardWrites(context, state.writes ?? [])
   const undoReads = await stubReads(context, state.reads ?? [])
   try {
-    return await walkScreen(page, asScreen(state), cell, false, facts, bundle, state.holds)
+    return await walkScreen(page, asScreen(state), cell, false, facts, bundle, state.holds, state.refetch)
   } finally {
     await undoReads()
     await undoWrites()
