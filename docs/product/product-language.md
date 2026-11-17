@@ -1,11 +1,3 @@
-# Product language
-
-El único idioma en que escribe el producto: inglés. Abarca cada palabra que el producto mismo escribe para que la lea una persona: pantallas, estados, nombres accesibles, mensajes de la API dirigidos a una persona, las líneas que imprimen los scripts del **Operator**, las palabras propias del informe de la **Spreadsheet import** y las líneas fijas del **Catalog** de Telegram. Todo texto del front vive en un solo módulo con claves, el **Copy module**. No cambia ningún comportamiento de ninguna capacidad: pantallas, flujos, rutas, reglas y formatos quedan como los definen sus dueños. Reemplaza la regla de español rioplatense que antes establecían BRIEF.md y la sección de idioma y formatos de accounts.md. Los docs de capacidades y los archivos de diseño nombran cada pantalla, grupo, control y mensaje con ese mismo inglés, así que cada cosa tiene un solo nombre.
-
-Lo que vende un **Business** se llama en el Product language siempre "Product" / "Products", para todo Business; no es un dato de quien vende ni una configuración (varieties.md, docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md).
-
-El Product language no es el idioma de la documentación. La documentación funcional y técnica (`docs/product/` y las definiciones de `CONTEXT.md` incluidas) se escribe en español rioplatense, con identificadores, nombres de clases y nombres UML en inglés: es la **Documentation language**. Que los docs estén en español no cambia ninguna palabra que muestre la app.
-
 ## Jobs
 
 **Cuando** manejo mi negocio desde la app (en el celular entre pedidos, leyendo lo que me dice un rechazo o una confirmación, o revisando el Catalog que mi bot fija para los clientes), **quiero** que cada palabra que leemos yo o mis clientes esté en inglés, **para** trabajar en el único idioma del producto y no cruzarme nunca con una oración en otro.
@@ -26,10 +18,21 @@ El Product language no es el idioma de la documentación. La documentación func
 - El lector principal del quinto es el dueño, que decide a partir de esos archivos; le sigue el sistema agéntico, que depende de que los términos en inglés y las citas queden exactos porque el código, los tests y los ADRs apuntan a ellos. Antes, esos cuatro archivos eran justo donde el dueño se cruzaba con docs en dos idiomas, o con términos del glosario puestos en español, en el núcleo del problema de la planilla.
 - Antes de este cambio, todo el producto hablaba español rioplatense con voseo. Ningún vendedor lo esquivaba; el paso al inglés es una decisión de producto, así que el alcance es una versión fiel en inglés de cada texto existente, sin reformular.
 - No promete nada, ni a favor ni en contra, sobre una vuelta del español en la app; solo garantiza que agregar un idioma más adelante sea un cambio en un solo lugar.
+- La única excepción con nombre al primer job es el nombre accesible "Vender" del + de la barra del celular (parte 3 de GH-727), que decidió el humano (decisión 3 de GH-727) y que no se reabre.
+
+# Product language
+
+El único idioma en que escribe el producto: inglés. Abarca cada palabra que el producto mismo escribe para que la lea una persona: pantallas, estados, nombres accesibles, mensajes de la API dirigidos a una persona, las líneas que imprimen los scripts del **Operator**, las palabras propias del informe de la **Spreadsheet import** y las líneas fijas del **Catalog** de Telegram. Todo texto del front vive en un solo módulo con claves, el **Copy module**. No cambia ningún comportamiento de ninguna capacidad: pantallas, flujos, rutas, reglas y formatos quedan como los definen sus dueños. Reemplaza la regla de español rioplatense que antes establecían BRIEF.md y la sección de idioma y formatos de accounts.md. Los docs de capacidades y los archivos de diseño nombran cada pantalla, grupo, control y mensaje con ese mismo inglés, así que cada cosa tiene un solo nombre.
+
+Hay una sola excepción con nombre: el nombre accesible del + de la barra del celular es "Vender", bajo su propia clave `common:newSaleFabName` del Copy module (decisión 3 del humano en GH-727; navigation.md, "La barra del celular y su +"). El + no tiene texto visible, así que esa palabra solo la lee un lector de pantalla. Ninguna otra palabra en español aparece en la barra ni en ningún otro lugar de la app.
+
+Lo que vende un **Business** se llama en el Product language siempre "Product" / "Products", para todo Business; no es un dato de quien vende ni una configuración (varieties.md, docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md).
+
+El Product language no es el idioma de la documentación. La documentación funcional y técnica (`docs/product/` y las definiciones de `CONTEXT.md` incluidas) se escribe en español rioplatense, con identificadores, nombres de clases y nombres UML en inglés: es la **Documentation language**. Que los docs estén en español no cambia ninguna palabra que muestre la app.
 
 Criterios de éxito:
 
-1. **Nada de español en la app.** Una persona no encuentra ninguna palabra ni ninguna ruta en español en ninguno de estos lugares:
+1. **Nada de español en la app.** Una persona no encuentra ninguna palabra ni ninguna ruta en español en ninguno de estos lugares, salvo el nombre accesible "Vender" del + de la barra del celular (la excepción con nombre de arriba):
    - cada pantalla y estado (vacío, cargando, error, rechazo, confirmación, toast, aviso), en celular y en computadora;
    - cada nombre accesible;
    - cada mensaje de la API dirigido a una persona;
@@ -41,7 +44,7 @@ Criterios de éxito:
    - Cada texto es una versión fiel en inglés de su original, con los mismos datos.
    - Los textos de seguridad (el mensaje del **Login brake**, los textos de link muerto, el aviso de registro que ya no existe) no revelan nada nuevo.
    - Ningún estado se comunica solo por color, y los límites de largo del **Icon and text rule** se cumplen.
-4. **Un solo lugar para las palabras.** Cada texto que muestra el front, nombres accesibles incluidos, vive en el Copy module, y ninguna pantalla tiene un texto propio. No hay biblioteca de traducción ni selector de idioma.
+4. **Un solo lugar para las palabras.** Cada texto que muestra el front, nombres accesibles incluidos ("Vender" incluido), vive en el Copy module, y ninguna pantalla tiene un texto propio. No hay biblioteca de traducción ni selector de idioma.
 5. **Los datos de quien vende no se tocan.** Nada de lo que tipeó quien vende ni de lo que guardó el Business se reescribe.
 6. **Docs y archivos de diseño nombran las cosas como la app.**
    - Una búsqueda de revisión en los docs de capacidades no encuentra ningún nombre en español para una pantalla, grupo, control o mensaje.
@@ -64,6 +67,14 @@ Criterios de éxito:
 - **Fiel, sin reformular.** Ningún mensaje gana ni pierde información. El inglés no tiene voseo, así que el registro es un inglés llano en segunda persona.
 - **Idioma del documento HTML.** `<html lang="en">`, y el `lang` del manifest es `"en"`. El `id` y el `scope` del manifest no cambian nunca (accounts.md).
 - **La palabra para lo que se vende.** Donde un texto del producto nombraba lo que vende un Business como "Variety" / "Varieties", dice "Product" / "Products", para todo Business, los existentes incluidos, sin ninguna acción de su parte. No hay configuración, columna ni campo de la API para otra palabra. El "producto" / "productos" en español llega con #317.
+
+### La excepción "Vender" (parte 3 de GH-727)
+
+- **Qué es**: el nombre accesible del + de la barra del celular, que abre New sale. No tiene texto visible; solo lo lee un lector de pantalla.
+- **Dónde vive**: en el Copy module, bajo su propia clave `common:newSaleFabName`, como cualquier otro texto; ningún componente lo escribe como literal.
+- **Por qué**: decisión 3 del humano en GH-727. Es una decisión tomada y no se reabre.
+- **Guards**: si un guard de copy o de palabras en español la rechaza, se registra en los datos de excepción tipados de ese guard, citando la decisión 3 del humano, nunca con un comentario de bypass. Ninguna otra palabra en español entra por esa vía.
+- **Solo esa**: ninguna otra palabra en español aparece en la barra ni en ningún otro lugar de la app; la excepción no es un precedente para otra.
 
 ### Qué no cambia nunca
 
@@ -149,11 +160,11 @@ Criterios de éxito:
 No hay telemetría. Se leen de los tests y de la revisión.
 
 - **Nada de español en la app (criterio 1).**
-  - Un guard falla ante un literal visible para el usuario fuera del Copy module y ante cualquier string en español conocido.
+  - Un guard falla ante un literal visible para el usuario fuera del Copy module y ante cualquier string en español conocido, salvo "Vender" bajo `common:newSaleFabName`, registrado en los datos de excepción tipados del guard con la cita de la decisión 3 del humano de GH-727.
   - Un barrido de los rechazos de la API y de la salida de los scripts del Operator no encuentra español.
   - Las líneas fijas del bot se verifican en inglés con el adaptador falso.
-  - Un recorrido de cada pantalla del registro, en celular y computadora y en los dos temas, no encuentra español.
-  - Objetivo: 0 textos en español y 0 rutas en español.
+  - Un recorrido de cada pantalla del registro, en celular y computadora y en los dos temas, no encuentra español fuera de esa excepción.
+  - Objetivo: 0 textos en español y 0 rutas en español, aparte de la única excepción con nombre (1 nombre accesible, ningún texto visible).
 - **Formatos (criterio 2).** Los tests de formato existentes pasan sin cambios.
 - **Mismo comportamiento (criterio 3).**
   - Las suites pasan, con cambios limitados a textos y búsquedas por texto.
@@ -161,7 +172,7 @@ No hay telemetría. Se leen de los tests y de la revisión.
   - Los presupuestos de toques y la tabla de redirecciones no cambian.
   - Los textos de seguridad se revisan por lo que revelan.
   - Las listas de excepciones solo se achican.
-- **Un solo lugar (criterio 4).** El guard, más un test de que cada texto y cada nombre accesible se resuelve por clave.
+- **Un solo lugar (criterio 4).** El guard, más un test de que cada texto y cada nombre accesible se resuelve por clave, "Vender" incluido.
 - **Datos de quien vende (criterio 5).**
   - Los nombres, cada Note, el Catalog header and footer y cada Expense category guardados de un Business existente son idénticos antes y después.
   - Un Business nuevo recibe los valores por defecto en inglés.
@@ -184,7 +195,7 @@ No hay telemetría. Se leen de los tests y de la revisión.
   - Citas de encabezados traducidos que no apuntan al texto nuevo exacto después del cambio, según `rg`. Objetivo: 0; las citas viejas se listan en el PR.
 - **Una sola palabra para lo que se vende (criterio 8).** El barrido permanente de varieties.md (vitest en `web/src/copy/productWord.test.ts` sobre los valores del Copy module en cada Language y en el **Test locale** y sobre los nombres accesibles; pytest con TestClient en `tests/test_product_word_sweep.py` sobre los mensajes de la API que llegan a una pantalla, las líneas fijas del Catalog y del bot, las etiquetas de informes y la salida del Operator) encuentra 0 apariciones de "variety", "varieties", "variedad" o "variedades" fuera de su lista explícita de excepciones (texto citado de la planilla y datos de quien vende). No depende del calendario ni del orden de los tests.
 - **Pinned catalog.** Un Business publicado cuyo texto cambia solo en sus líneas fijas recibe una edición en el lugar y ningún mensaje nuevo.
-- **Medida de negocio.** Textos en español a los que llega una persona en la app: meta 0. Textos en español hallados después del merge: meta 0. Nombres de pantalla en español con los que se cruza quien lee un doc de capacidad: meta 0. Archivos de `docs/product/` con prosa mezclada entre inglés y español: meta 0.
+- **Medida de negocio.** Textos en español a los que llega una persona en la app: meta 0, aparte de la única excepción con nombre ("Vender"). Textos en español hallados después del merge: meta 0. Nombres de pantalla en español con los que se cruza quien lee un doc de capacidad: meta 0. Archivos de `docs/product/` con prosa mezclada entre inglés y español: meta 0.
 
 ## Fuera de alcance
 
@@ -199,3 +210,4 @@ No hay telemetría. Se leen de los tests y de la revisión.
 - Traducir los ADRs existentes, que quedan como fueron escritos.
 - Recrear un encabezado para que coincida con una cita vieja de un ADR.
 - Una palabra configurable para lo que vende un Business.
+- Cualquier otra excepción al inglés más allá de "Vender"; usar esa excepción como precedente.
