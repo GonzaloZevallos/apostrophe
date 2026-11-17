@@ -6252,6 +6252,9 @@ a.ajustes-tema__opcion {
   align-items: flex-start;
   gap: var(--espacio-xs);
   margin: 0;
+  /* Flush above the field, not `.pie`'s own screen padding and centring. */
+  padding: 0;
+  text-align: start;
 }
 
 .variedades__motivo {
