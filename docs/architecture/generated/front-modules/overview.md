@@ -81,6 +81,7 @@ src_router_tsx-->src_shell
 src_sales-->src_api
 src_sales-->src_copy
 src_sales-->src_format
+src_sales-->src_screens
 src_screens-->src_api
 src_screens-->src_clipboard_ts
 src_screens-->src_components
