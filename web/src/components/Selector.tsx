@@ -27,6 +27,7 @@ import {
   type RefCallback,
   useContext,
   useId,
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -63,6 +64,8 @@ type SelectorBase = {
   accessibleName?: string
   /** The id of the text that describes the field (its refusal): the field's `aria-describedby`. */
   describedBy?: string
+  /** Told whether the list is showing (the phone's Sheet or the computer's dropdown); false again on unmount. */
+  onOpenChange?: (open: boolean) => void
   /**
    * Where the phone's list is drawn instead of beside the field. A screen that needs what is beneath
    * the open list covered (`inert`) draws the list outside that part and says where here.
@@ -200,6 +203,12 @@ export default function Selector(props: SelectorProps) {
 
   const listOpen = mine && sheet.isOpen
   const shown = listOpen && !computer
+  const { onOpenChange } = props
+  const showing = computer ? dropdown : shown
+  useEffect(() => {
+    onOpenChange?.(showing)
+    return () => onOpenChange?.(false)
+  }, [showing, onOpenChange])
 
   function focusField(): void {
     const target = loading ? wrapperRef.current : fieldRef.current

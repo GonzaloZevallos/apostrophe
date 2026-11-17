@@ -187,3 +187,42 @@ test('opening a second line moves the single hint to it', async () => {
   expect(collapsed.getAttribute('aria-describedby') ?? '').not.toContain('nueva-venta-sin-vendible')
   expect(collapsed).not.toHaveTextContent(NO_PRICE)
 })
+
+test('with no Products the sentence is on screen once when the list opens, on the phone', async () => {
+  const user = userEvent.setup()
+  await openWith([])
+  expect(screen.getAllByText(NO_PRODUCTS)).toHaveLength(1)
+
+  await user.click(productField(1))
+
+  expect(await screen.findByRole('dialog', { name: 'Line 1 product options' })).toBeInTheDocument()
+  expect(screen.getAllByText(NO_PRODUCTS)).toHaveLength(1)
+  expect(screen.getByText(NO_PRODUCTS).closest('#nueva-venta-sin-vendible')).toBeNull()
+})
+
+test('with no Products on the computer the hint steps aside while the dropdown shows the sentence, and comes back', async () => {
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn((query: string) => ({
+      matches: query === '(min-width: 900px)',
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    })),
+  )
+  const user = userEvent.setup()
+  await openWith([])
+  expect(screen.getAllByText(NO_PRODUCTS)).toHaveLength(1)
+
+  await user.click(productField(1))
+
+  await waitFor(() => expect(productField(1)).toHaveAttribute('aria-expanded', 'true'))
+  expect(screen.getAllByText(NO_PRODUCTS)).toHaveLength(1)
+  expect(screen.getByText(NO_PRODUCTS).closest('#nueva-venta-sin-vendible')).toBeNull()
+
+  await user.click(productField(1))
+
+  await waitFor(() => expect(productField(1)).toHaveAttribute('aria-expanded', 'false'))
+  expect(screen.getAllByText(NO_PRODUCTS)).toHaveLength(1)
+  expect(screen.getByText(NO_PRODUCTS).closest('#nueva-venta-sin-vendible')).not.toBeNull()
+})

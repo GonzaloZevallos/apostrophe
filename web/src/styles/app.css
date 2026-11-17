@@ -6252,8 +6252,6 @@ a.ajustes-tema__opcion {
   align-items: flex-start;
   gap: var(--espacio-xs);
   margin: 0;
-  font-size: 13px;
-  color: var(--tinta2);
 }
 
 .variedades__motivo {

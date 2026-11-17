@@ -7,7 +7,7 @@
  * price per gram, rule and total, and "Quitar"). It only renders what it is given.
  */
 
-import type { FocusEvent, KeyboardEvent, RefObject } from 'react'
+import { type FocusEvent, type KeyboardEvent, type RefObject, useState } from 'react'
 import Boton from '../../components/Boton'
 import MoneyInput from '../../components/MoneyInput'
 import Loading from '../../components/Loading'
@@ -122,6 +122,10 @@ export default function NuevaVentaLinea({
   const isComputer = useViewport() === 'computer'
   const { t } = useTranslation()
   const gone = line.varietyId !== '' && variety === undefined
+  // The Product list is showing: with no Products its own message says the same words as the hint,
+  // so the hint steps aside while it shows and the sentence is never on screen twice.
+  const [listShowing, setListShowing] = useState(false)
+  const hintShown = nothingSellable !== null && !(nothingSellable === 'noProducts' && listShowing)
   // Focus bubbles out of the Selector's list (a portal) too: only the field itself scrolls the form.
   function onVarietyFocus(event: FocusEvent<HTMLElement>): void {
     if (event.target === varietyRef.current) scrollFieldIntoView(event.target)
@@ -170,8 +174,8 @@ export default function NuevaVentaLinea({
 
   return (
     <div className="nueva-venta__linea nueva-venta__linea--abierta">
-      {nothingSellable !== null && (
-        <p id={NOTHING_SELLABLE_ID} className="nueva-venta__sin-vendible">
+      {hintShown && (
+        <p id={NOTHING_SELLABLE_ID} className="pie nueva-venta__sin-vendible">
           <span className="aviso-ambar__icono">
             <Icono nombre="atencion" />
           </span>
@@ -188,7 +192,8 @@ export default function NuevaVentaLinea({
           value={line.varietyId === '' ? null : line.varietyId}
           selected={gone ? { value: line.varietyId, label: line.varietyName } : undefined}
           loading={varietiesLoading}
-          describedBy={nothingSellable !== null ? NOTHING_SELLABLE_ID : undefined}
+          describedBy={hintShown ? NOTHING_SELLABLE_ID : undefined}
+          onOpenChange={setListShowing}
           emptySetMessage={t('emptyStates:selectorNoVarieties')}
           fieldRef={varietyRef}
           listHost={listHost}
