@@ -208,12 +208,13 @@ export default function Shell() {
   const leaf = useLeafScreen()
   const barPlace = placeOf(leaf.id, 'phone').bar
   const railPlace = placeOf(leaf.id, 'computer').rail
-  const chrome = chromeOf(leaf, useViewport())
+  const viewport = useViewport()
+  const chrome = chromeOf(leaf, viewport)
   const backParent = useBackParentStore()
   const layoutRef = useRef<HTMLDivElement>(null)
   // The shell hides its bar and button while a text keyboard is up (ADR-0028); it pins nothing.
   useVisualViewport(layoutRef, { fixedForm: false })
-  const missing = useNuevaVentaMissing(chrome.railNuevaVenta)
+  const missing = useNuevaVentaMissing(viewport === 'computer' && chrome.railNuevaVenta)
   const railDescribedBy = missing ? RAIL_MISSING_ID : undefined
 
   return (
