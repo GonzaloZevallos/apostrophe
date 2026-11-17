@@ -3,7 +3,8 @@
  * "From New sale"; ADR-0078 and the ADR that extends it). Phone only: the sale stays mounted under
  * the Sheet, which is a history entry (`useSheet(1)`) New sale mirrors in `expenseOpen`.
  *
- * - `ExpenseRow`: "Other things to record" with one tile, "Expense", always offered.
+ * - `ExpenseRow`: "Other things to record" with one tile per `OTHER_RECORDS` entry (today only
+ *   "Expense"), always offered.
  * - `SaleExpenseSheet` (the host, mounted while `expenseOpen`): pushes its entry, and when that
  *   entry pops after it was seen open, calls `onClosed` (New sale clears `expenseOpen`). When the
  *   layout turns computer it pops the entry (marked `switching`) and calls `onClosed`: what was
@@ -19,19 +20,23 @@ import { type ReactNode, type Ref, useEffect, useLayoutEffect, useRef } from 're
 import Boton from '../../components/Boton'
 import { invalidateResource } from '../../api/keys'
 import type { SuccessToast } from '../../components/AvisoExito'
-import Icono from '../../components/Icono'
+import Icono, { type NombreIcono } from '../../components/Icono'
 import { SheetLevel, useSheet } from '../../components/useSheetStack'
 import { useFlash } from '../../flash/useFlash'
+import { OTHER_RECORDS, type OtherRecord } from '../../sales/otherRecords'
 import { useViewport } from '../../shell/useViewport'
 import ExpenseNewSheet from '../expenses/ExpenseNewSheet'
 import SaleInProgressStrip, { type SaleInProgressWords } from './SaleInProgressStrip'
 
 /** The row's own words, handed down by New sale, which reads the Copy module. */
-export interface ExpenseRowWords {
+export type ExpenseRowWords = {
   /** "Other things to record". */
   otherThingsToRecord: string
-  /** The tile: "Expense". */
-  expense: string
+} & Readonly<Record<OtherRecord, string>>
+
+/** Each record's tile, keyed by `OtherRecord`: a new record cannot be listed without its icon. */
+const TILES: Readonly<Record<OtherRecord, { icon: NombreIcono }>> = {
+  expense: { icon: 'gastos' },
 }
 
 interface ExpenseRowProps {
@@ -40,7 +45,7 @@ interface ExpenseRowProps {
   rowRef: Ref<HTMLElement>
   /** A sale save is in flight: the row does nothing. */
   locked: boolean
-  onOpen: () => void
+  onOpen: (record: OtherRecord) => void
 }
 
 export function ExpenseRow({ words, rowRef, locked, onOpen }: ExpenseRowProps) {
@@ -50,12 +55,14 @@ export function ExpenseRow({ words, rowRef, locked, onOpen }: ExpenseRowProps) {
         {words.otherThingsToRecord}
       </span>
       <div className="otras-cosas__fila">
-        <Boton variant="row" onClick={locked ? undefined : onOpen}>
-          <span className="otras-cosas__tile">
-            <Icono nombre="gastos" />
-            {words.expense}
-          </span>
-        </Boton>
+        {OTHER_RECORDS.map((record) => (
+          <Boton key={record} variant="row" onClick={locked ? undefined : () => onOpen(record)}>
+            <span className="otras-cosas__tile">
+              <Icono nombre={TILES[record].icon} />
+              {words[record]}
+            </span>
+          </Boton>
+        ))}
       </div>
     </nav>
   )
