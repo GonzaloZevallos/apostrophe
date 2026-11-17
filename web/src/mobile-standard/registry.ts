@@ -76,6 +76,8 @@ export const STATE_NAMES: readonly string[] = [
   'EntradasTodas',
   'stock-entry/variety-selector-open',
   'new-sale/line-variety-selector-open',
+  'new-sale/nothing-priced',
+  'new-sale/date-change-refetching',
   'new-sale/method-selector-open',
   'new-sale/method-selector-failed',
   'new-sale/method-selector-offline',

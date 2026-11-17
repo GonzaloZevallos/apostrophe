@@ -5,7 +5,8 @@ import { common, emptyState } from './copy.ts'
 import { DETECTED_COUNTRY_BUTTON } from './countryField.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { EXPENSES_TEXT } from '../copy/expenses.ts'
-import { SALES_TEXT } from '../copy/sales.ts'
+import { NO_PRICE_HINT, SALES_TEXT } from '../copy/sales.ts'
+import { DAY_BEFORE_PIN } from './pin.ts'
 import type { Expense } from '../api/expenses.ts'
 import type { WalkState } from './states.ts'
 
@@ -113,6 +114,28 @@ export const SALES_STATES: readonly WalkState[] = [
     steps: [{ press: `${SALES_TEXT.lineVariety(1)} ${common('common:pickAVariety')}` }],
     visible: 'Variedad 1',
     reads: [{ path: /^\/api\/products$/, status: 200, body: TWELVE_PRODUCTS }],
+  },
+  {
+    // No product has a price: line 1 is open on arrival with the hint, so no picker is opened.
+    screen: 'new-sale/nothing-priced',
+    route: SALE_NEW,
+    steps: [],
+    visible: NO_PRICE_HINT,
+    reads: [{ path: /^\/api\/products$/, status: 200, body: TWELVE_PRODUCTS }],
+    offendersAs: 'NuevaVenta',
+  },
+  {
+    // The same form with the Products read again after the date changed: the hint must keep its room while it loads.
+    screen: 'new-sale/date-change-refetching',
+    route: SALE_NEW,
+    steps: [],
+    visible: NO_PRICE_HINT,
+    reads: [{ path: /^\/api\/products$/, status: 200, body: TWELVE_PRODUCTS }],
+    refetch: {
+      holds: /^\/api\/products$/,
+      steps: [{ fill: { label: common('common:date'), value: DAY_BEFORE_PIN } }],
+    },
+    offendersAs: 'NuevaVenta',
   },
   {
     screen: 'ElegirCliente',

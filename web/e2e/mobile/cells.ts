@@ -4,13 +4,13 @@ import type { Browser, BrowserContext } from '@playwright/test'
 import { mobileBaseUrl } from '../env.js'
 import { withToastRecorder } from '../fixtures.js'
 import { installToolkit } from './toolkit.js'
+import { PINNED_INSTANT } from '../../src/mobile-standard/pin.ts'
 import { SIZES, THEMES, type Size, type Theme } from '../../src/mobile-standard/violation.ts'
 
 export { SIZES, THEMES }
 export type { Size, Theme }
 
-/** 2026-09-16 12:00 Argentina time, the instant the server's clock is pinned to. */
-export const PINNED_INSTANT = new Date('2026-09-16T15:00:00Z')
+export { PINNED_INSTANT }
 
 export function viewportOf(size: Size): { width: number; height: number } {
   const [width, height] = size.split('x').map(Number)

@@ -11,6 +11,8 @@ import { offendersAsProblems, stateNameProblems, type WalkState } from './states
 import { isConvertedRow } from '../i18n/step.ts'
 import { SALES_TEXT } from '../copy/sales.ts'
 import { EXPENSES_TEXT } from '../copy/expenses.ts'
+import { NO_PRICE_HINT } from '../copy/sales.ts'
+import { DAY_BEFORE_PIN } from './pin.ts'
 import { EXPENSE_RECORDED, SALE_IN_PROGRESS_LINE } from './statesSales.ts'
 
 describe('the walked states name no key yet', () => {
@@ -64,9 +66,11 @@ describe('a state that lists its offenders as a registry row', () => {
     expect(offendersAsProblems(STATES, rows)).toEqual([])
   })
 
-  it('is only sale/expense-returned, as NuevaVenta, whose page the walk ends on', () => {
+  it('is only the New sale states whose page the walk ends on, as NuevaVenta', () => {
     const borrowing = STATES.filter((state) => state.offendersAs !== undefined)
     expect(borrowing.map((state) => [state.screen, state.offendersAs])).toEqual([
+      ['new-sale/nothing-priced', 'NuevaVenta'],
+      ['new-sale/date-change-refetching', 'NuevaVenta'],
       ['sale/expense-returned', 'NuevaVenta'],
     ])
   })
@@ -85,6 +89,29 @@ describe('a state that lists its offenders as a registry row', () => {
       ])
     }
     expect(offendersAsProblems([state('NuevaVenta')], rows)).toEqual([])
+  })
+})
+
+describe('a walked state that holds a refetch after its steps', () => {
+  const refetching = STATES.filter((state) => state.refetch !== undefined)
+
+  it('is only new-sale/date-change-refetching', () => {
+    expect(refetching.map((state) => state.screen)).toEqual(['new-sale/date-change-refetching'])
+  })
+
+  it('holds GET /api/products and not /api/settings, and changes the date to the day before the pin', () => {
+    const refetch = refetching[0]?.refetch
+    expect(refetch?.holds.test('/api/products')).toBe(true)
+    expect(refetch?.holds.test('/api/settings')).toBe(false)
+    expect(refetch?.steps).toEqual([{ fill: { label: 'Date', value: DAY_BEFORE_PIN } }])
+  })
+
+  it('walks the nothing-priced hint on arrival, with no step of its own', () => {
+    for (const name of ['new-sale/nothing-priced', 'new-sale/date-change-refetching']) {
+      const found = STATES.find((state) => state.screen === name)
+      expect(found?.steps, name).toEqual([])
+      expect(found?.visible, name).toBe(NO_PRICE_HINT)
+    }
   })
 })
 

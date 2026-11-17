@@ -56,6 +56,11 @@ export interface WalkState {
   /** A GET path held while the state first draws (its loading is read), then let through before the steps run. */
   holds?: RegExp
   /**
+   * A later GET held across these steps after the state's own steps were checked loaded; only its
+   * release is judged, since the form stays drawn and section 10 point 7 is about a held first load.
+   */
+  refetch?: { holds: RegExp; steps: readonly WalkStep[] }
+  /**
    * The registry row whose page this state ends on, when the steps bring the walk back to it: the
    * state's cells are listed and diffed as that row's, so the row's own offenders are neither
    * listed a second time under the state's name nor passed over. Anything the state draws that
