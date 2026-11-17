@@ -92,7 +92,7 @@ Una contracción es una de estas terminaciones: `n't`, `'re`, `'ll`, `'ve`, `'d`
 - Se permiten solo en líneas de ayuda, toasts, More info y estados vacíos.
 - Un error, un aviso, un botón o un título va en la forma completa.
 
-**Prueba:** ¿el texto es una de esas cuatro clases? Si no lo es, ¿termina con una de esas terminaciones? Se expande a la forma completa; si el resultado dice lo mismo, era una contracción y se escribe completa. Si el `'s` solo marca de quién es algo, no hay nada que expandir.
+**Prueba:** ¿el texto es una de esas cuatro clases? Si no lo es, ¿alguna palabra del texto termina con una de esas terminaciones? Esa palabra se expande a la forma completa; si el resultado dice lo mismo, era una contracción y se escribe completa. Si el `'s` solo marca de quién es algo, no hay nada que expandir.
 
 - Bien (real, error de Find my chat): "We cannot read your bot's messages: find your number with @userinfobot, type it." El `'s` de "bot's" es un posesivo, no una contracción.
 - Mal (real, error del idioma en Settings → Business, va a #328): "That language isn't available for your business." `isn't` es una contracción en un error.
