@@ -19,7 +19,7 @@ import { useMoney } from '../../format/moneyContext'
 import { type priceLine, fromHundredths } from '../../sales/pricing'
 import { GRAMS_HELP, SALES_TEXT } from '../../copy/sales'
 import { useViewport } from '../../shell/useViewport'
-import { NUEVA_VENTA_MISSING } from '../../copy/inicio'
+import { NO_PRICE_HINT } from '../../sales/nothingSellable'
 import type { NothingSellable } from '../../sales/nothingSellable'
 import Icono from '../../components/Icono'
 import type { Variety } from '../Variedades'
@@ -172,10 +172,10 @@ export default function NuevaVentaLinea({
     <div className="nueva-venta__linea nueva-venta__linea--abierta">
       {nothingSellable !== null && (
         <p id={NOTHING_SELLABLE_ID} className="nueva-venta__sin-vendible">
-          <span className="nueva-venta__sin-vendible-icono">
+          <span className="aviso-ambar__icono">
             <Icono nombre="atencion" />
           </span>
-          <span>{nothingSellable === 'noProducts' ? t('emptyStates:selectorNoVarieties') : NUEVA_VENTA_MISSING}</span>
+          <span>{nothingSellable === 'noProducts' ? t('emptyStates:selectorNoVarieties') : NO_PRICE_HINT}</span>
         </p>
       )}
       <div className="campo" onFocus={onVarietyFocus}>

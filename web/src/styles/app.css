@@ -6256,12 +6256,6 @@ a.ajustes-tema__opcion {
   color: var(--tinta2);
 }
 
-.nueva-venta__sin-vendible-icono {
-  display: flex;
-  flex: none;
-  color: var(--deuda);
-}
-
 .variedades__motivo {
   flex-basis: 100%;
   margin: 0;
