@@ -18,6 +18,7 @@ import { forbiddenWhileLoading } from '../../src/mobile-standard/emptyStates.ts'
 import { loadBundle } from '../../scripts/i18n/loadBundle.ts'
 import { mobileLanguage } from '../env.js'
 import type { Collector } from './collect.js'
+import { BOTTOM_BAR, NEW_SALE_BUTTON } from '../helpers/chrome.js'
 
 /** What the held pass saw of the content area; `probeWaiting` compares the area after the release with it. */
 export interface HeldArea {
@@ -125,7 +126,7 @@ export function probeWaiting(area: typeof CONTENT_AREA): WaitingFacts {
   return { waiting: print !== held.print, busy: held.busy }
 }
 
-export function probeShifts(): ShiftSample[] {
+export function probeShifts({ bar, newSale }: { bar: string; newSale: string }): ShiftSample[] {
   const phone = window.__phone
   if (phone === undefined) throw new Error('the phone toolkit is not installed in this page')
   const nodes = new Map<Element, number>()
@@ -137,7 +138,7 @@ export function probeShifts(): ShiftSample[] {
     return false
   }
   const chrome = (element: Element): boolean =>
-    element.closest('nav.bar-inferior, a.boton-nueva-venta') !== null ||
+    element.closest(`${bar}, ${newSale}`) !== null ||
     element.closest('header') !== null && element.closest('header')?.closest('article, section, li, form, dialog, [role=dialog]') === null ||
     fixed(element)
   return phone.shifts
@@ -168,7 +169,7 @@ export const LOADING_COLLECTOR: Collector = {
 export const SHIFT_COLLECTOR: Collector = {
   name: 'shift',
   phase: 'released',
-  run: async (page, cell) => judgeShifts(await page.evaluate(probeShifts), cell),
+  run: async (page, cell) => judgeShifts(await page.evaluate(probeShifts, { bar: `nav${BOTTOM_BAR}`, newSale: `a${NEW_SALE_BUTTON}` }), cell),
 }
 
 export const WAITING_COLLECTOR: Collector = {

@@ -17,12 +17,22 @@ import {
 } from '../../src/mobile-standard/chrome.ts'
 import type { Violation } from '../../src/mobile-standard/violation.ts'
 import type { CellId } from './collect.js'
+import { BOTTOM_BAR, NEW_SALE_BUTTON } from '../helpers/chrome.js'
 
-export function collectChromeFacts({ width }: { width: number }): ChromeFacts {
+export function collectChromeFacts({
+  width,
+  bar,
+  newSale,
+}: {
+  width: number
+  /** The phone bar's selector with its `nav` qualifier, and New sale's with its `a`: never group-qualified. */
+  bar: string
+  newSale: string
+}): ChromeFacts {
   const MODAL = 'dialog:modal, [role=dialog][aria-modal="true"], [role=alertdialog][aria-modal="true"]'
   const ELEMENTS = [
-    { element: 'bar', selector: 'nav.bar-inferior' },
-    { element: 'newSale', selector: 'a.boton-nueva-venta' },
+    { element: 'bar', selector: bar },
+    { element: 'newSale', selector: newSale },
     { element: 'header', selector: 'header' },
   ] as const
 
@@ -85,5 +95,5 @@ export async function runChrome(
   expectation: ChromeExpectation,
 ): Promise<Violation[]> {
   const width = Number(cell.size.split('x')[0])
-  return judgeChrome(expectation, await page.evaluate(collectChromeFacts, { width }), cell)
+  return judgeChrome(expectation, await page.evaluate(collectChromeFacts, { width, bar: `nav${BOTTOM_BAR}`, newSale: `a${NEW_SALE_BUTTON}` }), cell)
 }

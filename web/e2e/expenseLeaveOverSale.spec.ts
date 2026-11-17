@@ -28,6 +28,7 @@ import { fillSaleLine } from './helpers/sale.js'
 import { setPriceDate } from './helpers/priceDate.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { expectPath } from './helpers/url.js'
+import { openNewSaleFromChrome } from './helpers/chrome.js'
 
 test.use({ viewport: { width: 390, height: 844 } })
 
@@ -49,7 +50,7 @@ async function touchedSale(page: Page): Promise<void> {
   await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
   // Through Sales, so the browser's Back from New sale has a screen of the app to go to.
   await page.getByRole('navigation', { name: 'Navigation' }).getByRole('link', { name: 'Sales' }).first().click()
-  await page.getByRole('link', { name: 'New sale' }).first().click()
+  await openNewSaleFromChrome(page)
   await expectPath(page, SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
 }

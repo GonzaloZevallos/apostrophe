@@ -14,11 +14,13 @@
 import type { Locator, Page } from '@playwright/test'
 
 /** The phone's fixed bottom bar (not the computer rail). */
-export const BOTTOM_BAR = '.bar-inferior'
+export const BOTTOM_BAR_CLASS = 'bar-inferior'
+export const BOTTOM_BAR = `.${BOTTOM_BAR_CLASS}`
 export const BOTTOM_BAR_ITEM = '.bar-inferior__item'
 /** The floating group above the bar: the + New sale button and, when there is one, its missing-price line. */
 export const NEW_SALE_GROUP = '.nueva-venta-flotante'
-export const NEW_SALE_BUTTON = '.boton-nueva-venta'
+export const NEW_SALE_BUTTON_CLASS = 'boton-nueva-venta'
+export const NEW_SALE_BUTTON = `.${NEW_SALE_BUTTON_CLASS}`
 /** The computer rail's own New sale button. */
 export const NEW_SALE_BUTTON_COMPUTER = '.boton-nueva-venta--escritorio'
 

@@ -22,6 +22,7 @@ import { openAnalysis, openGastos } from './helpers/openScreens.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { setPriceDate } from './helpers/priceDate.js'
 import { uniqueTag } from './helpers/unique.js'
+import { NEW_SALE_BUTTON, NEW_SALE_GROUP } from './helpers/chrome.js'
 
 test('a seller opens Análisis from the Home segment, moves back a month and reads each section', async ({
   page,
@@ -450,12 +451,14 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
  */
 async function tallerMoves(page: Page): Promise<string[]> {
   const places = () =>
-    page.evaluate(() =>
-      Array.from(document.querySelectorAll('.gastos__mes-boton, .boton-nueva-venta')).map((node) => {
-        const box = node.getBoundingClientRect()
-        const floats = getComputedStyle(node.closest('.nueva-venta-flotante') ?? node).position === 'fixed'
-        return `${node.className}@${Math.round(floats ? window.innerHeight - box.bottom : box.top + window.scrollY)}`
-      }),
+    page.evaluate(
+      ({ button, group }) =>
+        Array.from(document.querySelectorAll(`.gastos__mes-boton, ${button}`)).map((node) => {
+          const box = node.getBoundingClientRect()
+          const floats = getComputedStyle(node.closest(group) ?? node).position === 'fixed'
+          return `${node.className}@${Math.round(floats ? window.innerHeight - box.bottom : box.top + window.scrollY)}`
+        }),
+      { button: NEW_SALE_BUTTON, group: NEW_SALE_GROUP },
     )
   const size = page.viewportSize()
   if (size === null) throw new Error('no viewport')

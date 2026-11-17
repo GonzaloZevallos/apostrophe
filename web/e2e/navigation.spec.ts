@@ -32,6 +32,7 @@ import { watchConsole } from './console.js'
 import { LEGACY_REDIRECTS } from './helpers/legacyPaths.js'
 import { seedRecords, signUp, type Records } from './helpers/seed.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
+import { NEW_SALE_BUTTON_COMPUTER, newSaleEntry } from './helpers/chrome.js'
 
 interface Entry {
   route: string | null
@@ -220,18 +221,18 @@ test.describe.serial('navigation', () => {
 
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto(HOME)
-    await expectAction(page.locator('.nueva-venta-flotante > .boton-nueva-venta'))
+    await expectAction(newSaleEntry(page))
 
     await page.setViewportSize({ width: 1280, height: 920 })
     await page.goto(HOME)
-    await expectAction(page.locator('.boton-nueva-venta--escritorio'))
+    await expectAction(page.locator(NEW_SALE_BUTTON_COMPUTER))
 
     // The dark theme (`data-tema`, the attribute the Configuración switch sets) paints the
     // same action: the rail's on the computer, the bar's on the phone.
     await page.evaluate(() => document.documentElement.setAttribute('data-tema', 'oscuro'))
-    await expectAction(page.locator('.boton-nueva-venta--escritorio'))
+    await expectAction(page.locator(NEW_SALE_BUTTON_COMPUTER))
     await page.setViewportSize({ width: 390, height: 844 })
-    await expectAction(page.locator('.nueva-venta-flotante > .boton-nueva-venta'))
+    await expectAction(newSaleEntry(page))
     await page.evaluate(() => document.documentElement.removeAttribute('data-tema'))
 
     for (const size of [{ width: 390, height: 844 }, { width: 1280, height: 920 }]) {
@@ -245,9 +246,9 @@ test.describe.serial('navigation', () => {
     const fresh = await context.newPage()
     await signUp(fresh, 'PrimeraVez')
     await fresh.goto(HOME)
-    await expectAction(fresh.locator('.nueva-venta-flotante > .boton-nueva-venta'))
+    await expectAction(newSaleEntry(fresh))
     await fresh.setViewportSize({ width: 1280, height: 920 })
-    await expectAction(fresh.locator('.boton-nueva-venta--escritorio'))
+    await expectAction(fresh.locator(NEW_SALE_BUTTON_COMPUTER))
     await context.close()
   })
 

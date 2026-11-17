@@ -38,6 +38,7 @@ import { watchConsole } from './console.js'
 import { seedRecords, signUp } from './helpers/seed.js'
 import { uniqueTag } from './helpers/unique.js'
 import { servedCountry } from './helpers/phoneCountries.js'
+import { bottomBar } from './helpers/chrome.js'
 
 
 const PHONE = { width: 390, height: 844 }
@@ -157,7 +158,7 @@ test('a seller records an expense from the Expenses card and Close goes back to 
 
 /** Goes to a tab through the bar or the sidebar, one tap, unless the seller is already there. */
 async function viaTab(page: Page, counter: Counter, computer: boolean, label: string): Promise<void> {
-  const nav = page.locator(computer ? '.riel-lateral' : '.bar-inferior')
+  const nav = computer ? page.locator('.riel-lateral') : bottomBar(page)
   await tap(counter, nav.getByRole('link', { name: label, exact: true }))
 }
 
