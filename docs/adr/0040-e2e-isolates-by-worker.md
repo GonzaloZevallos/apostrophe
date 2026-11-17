@@ -365,4 +365,4 @@ This addendum supersedes the `retries: 0` sentences above; they stay as history.
   `web/e2e/navigation.spec.ts:69`, `web/e2e/scrollOnNavigate.spec.ts:97` and
   `web/e2e/barFit.spec.ts:171`.
 
-Shard headroom: measured in GH-563 (c).
+Shard headroom: over the last 10 green `ci.yml` runs on `master` (GitHub run ids 44077600358, 44077447364, 44069683662, 44039639085, 44030852688, 44026686450, 44016355878, 44012083965, 43919181190, 43849008456), the longest `e2e-shard` job took M = 1092 s (run 43849008456, shard 1). Headroom against `timeout-minutes: 30` is 1800 − 1092 = 708 s, which is ⌊708 / 160⌋ = 4 retries of a 160 s test. It is at least 600 s, so it also covers one retry of a phone cell (`MOBILE_TEST_TIMEOUT_MS`), and `timeout-minutes` stays 30. The table is in `docs/evidence/GH-563-flaky-retry.md`.
