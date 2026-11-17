@@ -52,7 +52,7 @@ El documento apunta a sus fuentes y no copia ninguna:
   - Hay uno por tipo de texto (botón, título, línea de ayuda, toast y error), cada uno con un ejemplo bueno y uno malo en inglés.
   - Un ejemplo bueno es un texto real y ya neutral, citado carácter por carácter de `web/src/copy/`, con su pantalla nombrada, y respeta su propio límite.
   - Donde el único ejemplo real menciona gramos, el patrón usa `<quantity>` y queda marcado como patrón.
-  - Un texto real que da por hecho gramos o flor aparece solo como ejemplo malo, con su pantalla nombrada.
+  - Un texto real que da por hecho gramos o un tipo de producto aparece solo como ejemplo malo, con su pantalla nombrada.
 - **Pruebas de decisión.** Cada regla que no se puede contar lleva una prueba que se corre sobre el texto solo, y quien escribe y quien revisa llegan a la misma respuesta.
 
 ## Qué no cubre

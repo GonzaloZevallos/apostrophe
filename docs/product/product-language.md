@@ -6,6 +6,8 @@ Lo que vende un **Business** se llama en el Product language siempre "Product" /
 
 El Product language no es el idioma de la documentación. La documentación funcional y técnica (`docs/product/` y las definiciones de `CONTEXT.md` incluidas) se escribe en español rioplatense, con identificadores, nombres de clases y nombres UML en inglés: es la **Documentation language**. Que los docs estén en español no cambia ninguna palabra que muestre la app.
 
+Cómo suena un texto del producto, cuánto puede medir según su tipo y cómo se ve un buen texto de cada tipo lo deciden los **Writing standards** ([`WRITING_STANDARDS.md`](../../WRITING_STANDARDS.md)), no este archivo.
+
 ## Jobs
 
 **Cuando** manejo mi negocio desde la app (en el celular entre pedidos, leyendo lo que me dice un rechazo o una confirmación, o revisando el Catalog que mi bot fija para los clientes), **quiero** que cada palabra que leemos yo o mis clientes esté en inglés, **para** trabajar en el único idioma del producto y no cruzarme nunca con una oración en otro.
@@ -121,6 +123,13 @@ Criterios de éxito:
   - la barra entra en 320 px con el texto al 130 %;
   - ninguna pantalla se desplaza en horizontal en anchos de celular;
   - las listas de excepciones del **Mobile check** solo pueden achicarse.
+
+### Criterios de redacción
+
+- Los criterios de redacción (largo por tipo de texto, voz en inglés, palabras a evitar, regla neutral para cualquier Business y patrones con ejemplos) viven en [`WRITING_STANDARDS.md`](../../WRITING_STANDARDS.md). Este archivo no los repite. La capacidad que los define está en [`writing-standards.md`](writing-standards.md).
+- Ese documento vuelve acá para el registro: inglés llano, en segunda persona, sin voseo (ver "Fiel, sin reformular", más arriba).
+- Para el vocabulario, el glosario ([`CONTEXT.md`](../../CONTEXT.md)); para el largo de las líneas siempre visibles y cómo se rotula cada cosa, [`icon-and-text-rule.md`](icon-and-text-rule.md).
+- Los textos existentes que rompen una regla de redacción los corrige #328.
 
 ### Docs
 
