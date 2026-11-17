@@ -5,7 +5,7 @@
  * jsdom lays nothing out: the list's back arrow reads the viewport.
  */
 
-import { EXPENSE_CATEGORIES, HOME, SALES, SETTINGS, SETTINGS_ACCOUNT, SETTINGS_APPEARANCE, SETTINGS_BUSINESS, SETTINGS_CATALOG_MESSAGE, SETTINGS_INTEGRATIONS, SETTINGS_PAYMENTS, SETTINGS_PRICES, SETTINGS_USERS } from '../../routes'
+import { HOME, SALES, SETTINGS, SETTINGS_ACCOUNT, SETTINGS_APPEARANCE, SETTINGS_BUSINESS, SETTINGS_CATALOG_MESSAGE, SETTINGS_INTEGRATIONS, SETTINGS_PAYMENTS, SETTINGS_PRICES, SETTINGS_USERS } from '../../routes'
 import { inAppState } from '../../components/inAppState'
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -22,7 +22,6 @@ const GROUPS = [
   ['Payments and expenses', SETTINGS_PAYMENTS],
   ['Integrations', SETTINGS_INTEGRATIONS],
   ['Catalog message', SETTINGS_CATALOG_MESSAGE],
-  ['Expense categories', EXPENSE_CATEGORIES],
   ['Appearance', SETTINGS_APPEARANCE],
   ['Your account', SETTINGS_ACCOUNT],
 ] as const

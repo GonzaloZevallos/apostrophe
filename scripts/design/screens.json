@@ -374,7 +374,7 @@
     { "path": "/settings/payments/methods/archived", "kind": "form", "parent": "/settings/payments/methods" },
     { "path": "/settings/integrations", "kind": "form", "parent": "/settings" },
     { "path": "/settings/catalog-message", "kind": "form", "parent": "/settings" },
-    { "path": "/settings/expense-categories", "kind": "form", "parent": "/settings" },
+    { "path": "/settings/expense-categories", "kind": "form", "parent": "/settings/payments" },
     { "path": "/settings/currency", "kind": "form", "parent": "/settings" },
     { "path": "/settings/withdrawal-reasons", "kind": "form", "parent": "/settings" },
     { "path": "/settings/appearance", "kind": "form", "parent": "/settings" },
