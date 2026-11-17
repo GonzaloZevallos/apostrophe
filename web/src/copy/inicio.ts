@@ -17,12 +17,9 @@ export const CHECKLIST_OPTIONAL = 'Optional'
 export const CHECKLIST_DONE = COMMON_TEXT.done
 export const STEP_STOCK_ENTRY = 'Add what you have today'
 export const STEP_SECOND_USER = 'Invite a partner'
-/** The line under "+ Nueva venta" while the checklist shows and no variety has a price. */
-export const NUEVA_VENTA_MISSING = 'Add a price to a product so you can sell'
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'notice', text: PINNED_CATALOG_OUT_OF_DATE },
-  { kind: 'help', text: NUEVA_VENTA_MISSING },
   { kind: 'help', text: STEP_STOCK_ENTRY },
   { kind: 'help', text: STEP_SECOND_USER },
 ]
