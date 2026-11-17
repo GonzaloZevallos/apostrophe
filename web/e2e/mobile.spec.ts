@@ -28,6 +28,7 @@ import { OFFENDERS, diffOffenders } from '../src/mobile-standard/offenders/index
 import { parseFacts, WALKABLE } from '../src/mobile-standard/registry.ts'
 import { GETTING_IN_STATES } from '../src/mobile-standard/statesGettingIn.ts'
 import type { Violation } from '../src/mobile-standard/violation.ts'
+import { BOTTOM_BAR_CLASS, NEW_SALE_BUTTON_CLASS } from './helpers/chrome.js'
 
 const SIGNED_OUT = { cookies: [], origins: [] } as { cookies: []; origins: [] }
 
@@ -168,7 +169,7 @@ test.describe('the states the walk adds', () => {
 const NONE = 'user-select:none;touch-action:manipulation'
 const BROKEN = `
   <div style="width:2000px;height:20px"></div>
-  <nav class="bar-inferior" style="position:absolute;top:5000px"><a href="#" style="display:block;height:48px">Inicio</a></nav>
+  <nav class="${BOTTOM_BAR_CLASS}" style="position:absolute;top:5000px"><a href="#" style="display:block;height:48px">Inicio</a></nav>
   <button style="width:20px;height:20px">x</button>
   <input aria-label="Gramos" style="font-size:10px;width:200px;height:48px">
   <input aria-label="Email" style="width:200px;height:48px">
@@ -177,7 +178,7 @@ const BROKEN = `
   <div style="width:80px">LarguísimoLarguísimoLarguísimoLarguísimo</div>`
 const CLEAN = `
   <html style="overscroll-behavior:none"><head><meta name="viewport" content="width=device-width, initial-scale=1"></head><body style="overscroll-behavior:none;margin:0">
-  <nav class="bar-inferior" style="position:fixed;bottom:0;left:0;width:100%;${NONE}"><a href="#" style="display:block;height:48px;font-size:16px;${NONE}">Inicio</a></nav>
+  <nav class="${BOTTOM_BAR_CLASS}" style="position:fixed;bottom:0;left:0;width:100%;${NONE}"><a href="#" style="display:block;height:48px;font-size:16px;${NONE}">Inicio</a></nav>
   <p style="font-size:16px">Hola</p></body></html>`
 
 test.describe('the geometry checkers', () => {
@@ -284,7 +285,7 @@ test.describe('the geometry checkers', () => {
 
 // The chrome rules judge by the screen's kind: the page reports facts, `judgeChrome` decides.
 const BAR = (style: string, attributes = ''): string =>
-  `<nav class="bar-inferior" ${attributes} style="${style}"><a href="#" style="display:block;height:48px">Inicio</a></nav>`
+  `<nav class="${BOTTOM_BAR_CLASS}" ${attributes} style="${style}"><a href="#" style="display:block;height:48px">Inicio</a></nav>`
 const BAR_SHOWN = 'position:fixed;bottom:0;left:0;width:100%'
 const BAR_OFF_SCREEN = 'position:absolute;top:5000px;left:0;width:100%'
 
@@ -338,7 +339,7 @@ test.describe('the chrome rules, by kind', () => {
   })
 
   test('a tab root missing "+ New sale" is reported, one with it in view is not', async ({ browser }) => {
-    const sale = '<a class="boton-nueva-venta" href="#" style="position:fixed;top:10px;left:10px;width:100px;height:48px">Nueva venta</a>'
+    const sale = `<a class="${NEW_SALE_BUTTON_CLASS}" href="#" style="position:fixed;top:10px;left:10px;width:100px;height:48px">Nueva venta</a>`
     expect(await chromeOn(browser, BAR(BAR_SHOWN), 'root')).toEqual([
       'chrome-at-load chrome:new-sale',
       'chrome-mid-scroll chrome:new-sale',
@@ -581,7 +582,7 @@ test.describe('the colour, loading and shift checkers', () => {
     const page = await context.newPage()
     await page.setContent(
       `<div id="above" style="height:10px"></div>
-       <nav class="bar-inferior" style="height:48px">Inicio</nav>
+       <nav class="${BOTTOM_BAR_CLASS}" style="height:48px">Inicio</nav>
        <div style="height:48px">Cerca</div><div style="height:48px">Lejos</div>`,
     )
     await page.evaluate(() => new Promise<void>((done) => requestAnimationFrame(() => requestAnimationFrame(() => done()))))

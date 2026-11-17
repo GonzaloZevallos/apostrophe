@@ -20,6 +20,13 @@ import { expect, test } from "./fixtures.js";
 import type { Page } from "@playwright/test";
 import { signUpNewBusiness } from "./helpers/signup.js";
 import { uniqueTag } from "./helpers/unique.js";
+import {
+  anyNewSaleButton,
+  BOTTOM_BAR,
+  bottomBar,
+  NEW_SALE_BUTTON,
+  NEW_SALE_GROUP,
+} from "./helpers/chrome.js";
 import { seedLedger } from "./helpers/ledger.js";
 
 const WIDTHS = [320, 360, 390] as const;
@@ -35,33 +42,41 @@ interface Edges {
 }
 
 async function edges(page: Page): Promise<Edges> {
-  return page.evaluate(() => {
-    const box = (selector: string) => {
-      const element = document.querySelector(selector);
-      if (element === null) return null;
-      const { top, bottom } = element.getBoundingClientRect();
-      return { top, bottom };
-    };
-    const group = box(".nueva-venta-flotante > *");
-    const children = [
-      ...document.querySelectorAll(".columna-principal *"),
-    ].filter(
-      (element) =>
-        element.closest(".bar-inferior, .nueva-venta-flotante") === null &&
-        element.children.length === 0 &&
-        element.getBoundingClientRect().height > 0,
-    );
-    return {
-      bar: box(".bar-inferior"),
-      button: box("a.boton-nueva-venta"),
-      groupTop: group === null ? null : group.top,
-      lastRowBottom: Math.max(
-        0,
-        ...children.map((element) => element.getBoundingClientRect().bottom),
-      ),
-      viewport: window.innerHeight,
-    };
-  });
+  return page.evaluate(
+    (selectors) => {
+      const box = (selector: string) => {
+        const element = document.querySelector(selector);
+        if (element === null) return null;
+        const { top, bottom } = element.getBoundingClientRect();
+        return { top, bottom };
+      };
+      const group = box(selectors.groupChild);
+      const children = [
+        ...document.querySelectorAll(".columna-principal *"),
+      ].filter(
+        (element) =>
+          element.closest(selectors.chrome) === null &&
+          element.children.length === 0 &&
+          element.getBoundingClientRect().height > 0,
+      );
+      return {
+        bar: box(selectors.bar),
+        button: box(selectors.button),
+        groupTop: group === null ? null : group.top,
+        lastRowBottom: Math.max(
+          0,
+          ...children.map((element) => element.getBoundingClientRect().bottom),
+        ),
+        viewport: window.innerHeight,
+      };
+    },
+    {
+      bar: BOTTOM_BAR,
+      button: `a${NEW_SALE_BUTTON}`,
+      groupChild: `${NEW_SALE_GROUP} > *`,
+      chrome: `${BOTTOM_BAR}, ${NEW_SALE_GROUP}`,
+    },
+  );
 }
 
 async function scrollTo(
@@ -94,7 +109,7 @@ test("the bar and the button stay in view on every root, with the last row above
       ANALYSIS,
     ]) {
       await page.goto(root);
-      await expect(page.locator(".bar-inferior")).toBeVisible();
+      await expect(bottomBar(page)).toBeVisible();
       for (const where of ["top", "middle", "bottom"] as const) {
         await scrollTo(page, where);
         const found = await edges(page);
@@ -129,8 +144,8 @@ test("the bar and the button stay in view on every root, with the last row above
   await page.setViewportSize({ width: 360, height: HEIGHT });
   await page.goto(SALE_NEW);
   await expect(page.locator(".encabezado-fila")).toBeVisible();
-  await expect(page.locator(".bar-inferior")).toHaveCount(0);
-  await expect(page.locator("a.boton-nueva-venta")).toHaveCount(0);
+  await expect(bottomBar(page)).toHaveCount(0);
+  await expect(anyNewSaleButton(page)).toHaveCount(0);
 });
 
 test("a card keeps the bar inside the viewport and has no button; a sheet shows neither", async ({
@@ -159,7 +174,7 @@ test("a card keeps the bar inside the viewport and has no button; a sheet shows 
       `card, ${where}: bar bottom`,
     ).toBeLessThanOrEqual(found.viewport);
   }
-  await expect(page.locator("a.boton-nueva-venta")).toHaveCount(0);
+  await expect(anyNewSaleButton(page)).toHaveCount(0);
 
   // Collect from the customers list opens a sheet on the phone.
   await page.goto(CUSTOMERS);
@@ -168,8 +183,8 @@ test("a card keeps the bar inside the viewport and has no button; a sheet shows 
     .first()
     .click();
   await expect(page.locator(".sheet")).toBeVisible();
-  await expect(page.locator(".bar-inferior")).toHaveCount(0);
-  await expect(page.locator("a.boton-nueva-venta")).toHaveCount(0);
+  await expect(bottomBar(page)).toHaveCount(0);
+  await expect(anyNewSaleButton(page)).toHaveCount(0);
 });
 
 test("on Customers a keyboard hides the bar and the button; they come back with the text and the scroll as they were", async ({
@@ -187,11 +202,11 @@ test("on Customers a keyboard hides the bar and the button; they come back with 
     .first();
   await expect(search).toBeVisible();
   // A new business has an empty list: give the page room to scroll, so the position is not 0.
-  await page.evaluate(() => {
+  await page.evaluate((bar) => {
     const room = document.createElement("div");
     room.style.height = "2000px";
-    document.querySelector(".bar-inferior")?.before(room);
-  });
+    document.querySelector(bar)?.before(room);
+  }, BOTTOM_BAR);
   await search.fill("Ana");
   await search.focus();
   await page.evaluate(() => window.scrollTo(0, 150));
@@ -204,8 +219,8 @@ test("on Customers a keyboard hides the bar and the button; they come back with 
     "data-teclado",
     "abierto",
   );
-  await expect(page.locator(".bar-inferior")).toBeHidden();
-  await expect(page.locator("a.boton-nueva-venta")).toBeHidden();
+  await expect(bottomBar(page)).toBeHidden();
+  await expect(anyNewSaleButton(page)).toBeHidden();
 
   await search.blur();
   await page.setViewportSize({ width: 360, height: 700 });
@@ -213,8 +228,8 @@ test("on Customers a keyboard hides the bar and the button; they come back with 
     "data-teclado",
     "abierto",
   );
-  await expect(page.locator(".bar-inferior")).toBeVisible();
-  await expect(page.locator("a.boton-nueva-venta")).toBeVisible();
+  await expect(bottomBar(page)).toBeVisible();
+  await expect(anyNewSaleButton(page)).toBeVisible();
   await expect(search).toHaveValue("Ana");
   expect(await page.evaluate(() => window.scrollY)).toBe(scrollY);
 });
@@ -235,6 +250,6 @@ test("scrolling an Android-sized viewport keeps the bar visible", async ({
       found.bar?.bottom ?? Infinity,
       `bar at ${where}`,
     ).toBeLessThanOrEqual(found.viewport);
-    await expect(page.locator(".bar-inferior")).toBeInViewport();
+    await expect(bottomBar(page)).toBeInViewport();
   }
 });

@@ -11,6 +11,7 @@ import type { Rule, Violation } from '../../src/mobile-standard/violation.ts'
 import { FIGURE_SOURCES } from '../../src/mobile-standard/figures.ts'
 import { LOGIN } from '../../src/routes.ts'
 import { collectGeometry } from './collectGeometry.js'
+import { BOTTOM_BAR } from '../helpers/chrome.js'
 import { COLOUR_COLLECTOR } from './collectColour.js'
 import { LOADING_COLLECTOR, SHIFT_COLLECTOR, WAITING_COLLECTOR } from './collectLoading.js'
 
@@ -35,7 +36,12 @@ export const GEOMETRY_COLLECTOR: Collector = {
   name: 'geometry',
   phase: 'loaded',
   run: (page, cell) =>
-    page.evaluate(collectGeometry, { cell, loginPath: LOGIN, figures: FIGURE_SOURCES }),
+    page.evaluate(collectGeometry, {
+      cell,
+      loginPath: LOGIN,
+      figures: FIGURE_SOURCES,
+      bar: `nav${BOTTOM_BAR}`,
+    }),
 }
 
 export const COLLECTORS: readonly Collector[] = [

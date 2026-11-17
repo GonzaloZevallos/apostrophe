@@ -27,6 +27,7 @@ import {
 } from './helpers/textScale.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { HOME } from '../src/routes.js'
+import { BOTTOM_BAR, BOTTOM_BAR_ITEM, bottomBar } from './helpers/chrome.js'
 
 const PHONE = { width: 320, height: 700 }
 const COMPUTER = { width: 1280, height: 920 }
@@ -148,19 +149,19 @@ async function surfaceBox(page: Page, surface: string): Promise<{ left: number; 
 async function bottomBarProblems(page: Page, scale: number): Promise<{ problems: string[]; items: Item[] }> {
   await page.setViewportSize(PHONE)
   await page.goto(HOME)
-  await expect(page.locator('.bar-inferior')).toBeVisible()
+  await expect(bottomBar(page)).toBeVisible()
 
   await expectCoarsePointer(page, 'the bottom bar')
-  const scaled = await applyTextScale(page, '.bar-inferior', scale)
+  const scaled = await applyTextScale(page, BOTTOM_BAR, scale)
   await expectTextScaled(page, scaled, scale)
 
-  const items = await measureItems(page, '.bar-inferior', '.bar-inferior__item')
-  const bar = await surfaceBox(page, '.bar-inferior')
+  const items = await measureItems(page, BOTTOM_BAR, BOTTOM_BAR_ITEM)
+  const bar = await surfaceBox(page, BOTTOM_BAR)
   const pageOverflows = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)
   const problems = [
     ...violations(items, BAR_LABELS, bar),
     ...overlaps(items),
-    ...(await iconProblems(page, '.bar-inferior', '.bar-inferior__item', true)),
+    ...(await iconProblems(page, BOTTOM_BAR, BOTTOM_BAR_ITEM, true)),
     ...(bar.overflows ? ['the bar scrolls sideways'] : []),
     ...(pageOverflows ? ['the page scrolls sideways'] : []),
   ]
@@ -226,14 +227,14 @@ test.describe.serial('bar and rail fit', () => {
   test('the scaling check rejects a label that did not take the scale, and one that is gone', async () => {
     await page.setViewportSize(PHONE)
     await page.goto(HOME)
-    await expect(page.locator('.bar-inferior')).toBeVisible()
+    await expect(bottomBar(page)).toBeVisible()
 
-    const stale = await applyTextScale(page, '.bar-inferior', TEXT_SCALE)
-    await page.locator('.bar-inferior a').first().evaluate((link) => link.setAttribute('style', 'font-size: 10px !important'))
+    const stale = await applyTextScale(page, BOTTOM_BAR, TEXT_SCALE)
+    await bottomBar(page).locator('a').first().evaluate((link) => link.setAttribute('style', 'font-size: 10px !important'))
     await expect(expectTextScaled(page, stale, TEXT_SCALE)).rejects.toThrow(/font-size of the scaled elements/)
 
-    const lost = await applyTextScale(page, '.bar-inferior', TEXT_SCALE)
-    await page.locator('.bar-inferior a').first().evaluate((link) => link.removeAttribute('data-fit'))
+    const lost = await applyTextScale(page, BOTTOM_BAR, TEXT_SCALE)
+    await bottomBar(page).locator('a').first().evaluate((link) => link.removeAttribute('data-fit'))
     await expect(expectTextScaled(page, lost, TEXT_SCALE)).rejects.toThrow(/gone/)
     await expect(expectTextScaled(page, [], TEXT_SCALE)).rejects.toThrow()
   })

@@ -23,10 +23,13 @@ export function collectGeometry({
   cell,
   loginPath,
   figures,
+  bar,
 }: {
   cell: CellId
   loginPath: string
   figures: readonly string[]
+  /** The phone bar's selector with its `nav` qualifier. */
+  bar: string
 }): Violation[] {
   const MIN_TOUCH = 44
   const MIN_INPUT_FONT = 16
@@ -251,7 +254,7 @@ export function collectGeometry({
   }
 
   // --- gestures ----------------------------------------------------------------------
-  for (const element of all('button, [role=button], [role=tab], nav.bar-inferior, nav.bar-inferior a')) {
+  for (const element of all(`button, [role=button], [role=tab], ${bar}, ${bar} a`)) {
     if (element.closest('[inert]') !== null) continue
     const style = getComputedStyle(element)
     if (style.userSelect !== 'none') add('user-select', element)

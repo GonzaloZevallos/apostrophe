@@ -12,8 +12,7 @@
  * Covers the PRD's own lifecycle for a customer with no number: registered, edited,
  * found by name, chosen for a sale left owing, paid through Registrar cobro, and
  * shown in Te deben — plus a new no-number customer created from Pick a customer
- * and sold to (its duration is not measured, docs/adr/0038), and that nothing personal reaches the console or the
- * browser's own storage.
+ * and sold to (its duration is not measured, docs/adr/0038), and that nothing personal reaches the console or the browser's own storage.
  */
 
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
@@ -27,6 +26,7 @@ import { fillSaleLine } from './helpers/sale.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { uniqueTag } from './helpers/unique.js'
 import { seedLedger } from './helpers/ledger.js'
+import { bottomBar } from './helpers/chrome.js'
 
 /** The customer's card, never the list beside it on a computer (the list holds the search box):
  * its "Te debe" and "Credit" are what these specs read. */
@@ -196,7 +196,7 @@ async function expectTheDocumentScrolls(page: Page): Promise<void> {
 async function expectPinnedInView(page: Page, footer: Locator, aboveBar = false): Promise<void> {
   const height = await viewportHeight(page)
   const box = await rectOf(footer)
-  const floor = aboveBar ? (await rectOf(page.locator('.bar-inferior'))).y : height
+  const floor = aboveBar ? (await rectOf(bottomBar(page))).y : height
   expect(box.y).toBeGreaterThanOrEqual(0)
   expect(box.y + box.height).toBeLessThanOrEqual(height + SUBPIXEL)
   expect(Math.abs(floor - (box.y + box.height))).toBeLessThanOrEqual(SUBPIXEL)
@@ -223,7 +223,7 @@ test.describe('the card\'s pinned "New sale to <name>" on a phone', () => {
     await scrollTo(page, 1)
     const end = await rectOf(footer)
     const last = await rectOf(page.locator('.cuenta-cliente__fila').last())
-    const bar = await rectOf(page.locator('.bar-inferior'))
+    const bar = await rectOf(bottomBar(page))
     expect(end.y).toBeGreaterThanOrEqual(last.y + last.height - SUBPIXEL)
     expect(end.y + end.height).toBeLessThanOrEqual(bar.y + SUBPIXEL)
   })
@@ -238,7 +238,7 @@ test.describe('the card\'s pinned "New sale to <name>" on a phone', () => {
     const height = await viewportHeight(page)
     const box = await rectOf(footer)
     const last = await rectOf(page.locator('.cuenta-cliente__fila').last())
-    const bar = await rectOf(page.locator('.bar-inferior'))
+    const bar = await rectOf(bottomBar(page))
     expect(box.y).toBeGreaterThanOrEqual(last.y + last.height - SUBPIXEL)
     expect(box.y + box.height).toBeLessThanOrEqual(height + SUBPIXEL)
     expect(box.y + box.height).toBeLessThanOrEqual(bar.y + SUBPIXEL)

@@ -7,7 +7,7 @@
  *
  * A phone viewport (`test.use` below), because PRD metric 1 is explicitly "from a
  * phone viewport", and because the fixed "New sale" button and the tab bar only
- * show their phone shape (`Shell.tsx`'s `.bar-inferior`/`.boton-nueva-venta`) below
+ * show their phone shape (`Shell.tsx`'s phone bar and floating button, `helpers/chrome.ts`) below
  * the design's own 900px breakpoint.
  *
  * One business proves the PRD's own metrics in sequence:
@@ -60,6 +60,7 @@ import { fillSaleLine } from './helpers/sale.js'
 import { whilePressed } from './helpers/pressed.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { uniqueTag } from './helpers/unique.js'
+import { openNewSaleFromChrome } from './helpers/chrome.js'
 
 test.use({ viewport: { width: 390, height: 844 } }) // a phone (PRD metric 1).
 
@@ -154,7 +155,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await page.goto(SALES)
 
   // Shell metric: the bar shows exactly Inicio, Ventas, Clientes and Variedades, in that
-  // order — the mobile bottom bar at this viewport (`Shell.tsx`'s `.bar-inferior`;
+  // order — the mobile bottom bar at this viewport (`Shell.tsx`'s phone bar, `bottomBar`;
   // the side rail, `.riel-lateral`, shares the same `aria-label` but is hidden here).
   const tabBar = page.getByRole('navigation', { name: 'Navigation' }).last()
   await expect(tabBar.getByRole('link')).toHaveText([
@@ -165,9 +166,8 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   ])
 
   // --- Sale A: caught-before-save, a new customer, two varieties, one shipping. ---
-  // `.last()`: at this phone viewport the side rail's own "New sale" link (first
-  // in `Shell.tsx`'s markup) is the one CSS hides; the fixed bottom button is last.
-  await page.getByRole('link', { name: 'New sale' }).last().click()
+  // The phone's floating button: at this viewport the side rail's own "New sale" link is hidden.
+  await openNewSaleFromChrome(page)
   await expectPath(page, SALE_NEW)
   const todayIso = await page.getByLabel('Date', { exact: true }).inputValue()
 
@@ -277,7 +277,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   // --- Sale C: no customer, assigned afterwards, then deleted. ---
   await page.goto(SALES)
-  await page.getByRole('link', { name: 'New sale' }).last().click()
+  await openNewSaleFromChrome(page)
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '2' })
   await page.getByRole('radio', { name: 'Paid' }).check(); await choosePaymentMethod(page, 'Cash')
   await page.getByRole('button', { name: 'Save sale' }).click()

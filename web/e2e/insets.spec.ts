@@ -34,6 +34,7 @@ import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { uniqueTag } from './helpers/unique.js'
+import { BOTTOM_BAR, BOTTOM_BAR_ITEM } from './helpers/chrome.js'
 
 const TOP = 47
 const BOTTOM = 34
@@ -148,11 +149,11 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
 
     if (!viewport.wide) {
       await scrollToEnd(page)
-      const bar = await box(page, '.bar-inferior')
+      const bar = await box(page, BOTTOM_BAR)
       expect(bar.left, where('bar left edge')).toBe(0)
       expect(bar.right, where('bar right edge')).toBe(viewport.width)
-      const first = await box(page, '.bar-inferior__item', 'first')
-      const last = await box(page, '.bar-inferior__item', 'last')
+      const first = await box(page, BOTTOM_BAR_ITEM, 'first')
+      const last = await box(page, BOTTOM_BAR_ITEM, 'last')
       expect(first.left, where('bar first item')).toBeGreaterThanOrEqual(SIDE)
       expect(last.right, where('bar last item')).toBeLessThanOrEqual(viewport.width - SIDE)
       expect(last.bottom, where('bar bottom')).toBeLessThanOrEqual(viewport.height - BOTTOM)
