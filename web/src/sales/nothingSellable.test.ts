@@ -7,7 +7,7 @@ import { expect, test } from 'vitest'
 import type { Variety } from '../screens/Variedades'
 import { nothingSellable } from './nothingSellable'
 
-const PRICE = { id: 9, effective_from: '2026-09-01', list_price: 1000, bulk_price: null, bulk_minimum: null }
+const PRICE = { id: 9, effective_from: '2026-09-01', list_price: 1000, bulk_price: null, bulk_minimum: null, vip_price: null }
 const UNPRICED: Variety = { id: 1, name: 'Rosa', archived: false, current_price: null }
 const PRICED: Variety = { id: 2, name: 'Lirio', archived: false, current_price: PRICE }
 
