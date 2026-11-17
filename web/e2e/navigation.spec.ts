@@ -1,9 +1,8 @@
 /**
  * Navigation against the real backend serving `web/dist` (PRD criteria 3 and 6): every path of
  * `screens.json` that is built opens the app on a browser navigation, never JSON or a 401;
- * signed out it lands on Entrar; every old Spanish path answers a permanent redirect to its
- * English route, keeping the id and the query; a gone sale shows "That is gone."; an unknown
- * address goes to Inicio. Paths come from `routes.ts` and `screens.json`, never written here.
+ * signed out it lands on Entrar; a gone sale shows "That is gone."; an unknown address, a
+ * retired one included, answers like any other and goes to Inicio. Paths come from `routes.ts` and `screens.json`, never written here.
  */
 
 import { readFileSync } from 'node:fs'
@@ -11,16 +10,13 @@ import { resolve } from 'node:path'
 import {
   ANALYSIS,
   CUSTOMER,
-  CUSTOMER_EDIT,
   EXPENSE_NEW,
   EXPENSES,
   HOME,
   LOGIN,
   SALE,
   SETTINGS,
-  STOCK_ENTRY,
   VARIETIES,
-  VARIETY,
   WITHDRAWAL_NEW,
   pathTo,
 } from '../src/routes.js'
@@ -29,7 +25,6 @@ import { expensesCard } from './helpers/openScreens.js'
 import { expect, test, withToastRecorder } from './fixtures.js'
 import type { Locator, Page } from '@playwright/test'
 import { watchConsole } from './console.js'
-import { LEGACY_REDIRECTS } from './helpers/legacyPaths.js'
 import { seedRecords, signUp, type Records } from './helpers/seed.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { NEW_SALE_BUTTON_COMPUTER, newSaleEntry } from './helpers/chrome.js'
@@ -52,7 +47,6 @@ function builtPaths(): string[] {
 }
 
 const GONE_ID = 999999
-const QUERY = '?month=2026-01'
 
 function filled(template: string, ids: Record<string, number>): string {
   return template.replace(/\{(\w+)\}/g, (_whole, name: string) => {
@@ -60,20 +54,6 @@ function filled(template: string, ids: Record<string, number>): string {
     if (id === undefined) throw new Error(`screens.json names {${name}}, which the spec has no id for`)
     return String(id)
   })
-}
-
-/** The record an old path's `:id` stands for, told by the route it moved to. */
-function legacyId(now: string, records: Records): number {
-  const byTarget = new Map([
-    [SALE, records.sale],
-    [CUSTOMER, records.customer],
-    [CUSTOMER_EDIT, records.customer],
-    [VARIETY, records.variety],
-    [STOCK_ENTRY, records.entry],
-  ])
-  const id = byTarget.get(now)
-  if (id === undefined) throw new Error(`no seeded record for ${now}`)
-  return id
 }
 
 /** The one console message a gone or foreign record is allowed to leave: the API's own 404. */
@@ -125,49 +105,10 @@ test.describe.serial('navigation', () => {
     }
   })
 
-  for (const [old, now] of LEGACY_REDIRECTS) {
-    test(`${old} answers a permanent redirect to ${now}, keeping the id and the query`, async () => {
-      const id = old.includes(':id') ? legacyId(now, records) : undefined
-      const from = pathTo(old, id === undefined ? {} : { id }) + QUERY
-      const to = pathTo(now, id === undefined ? {} : { id })
-
-      const raw = await page.request.fetch(from, { maxRedirects: 0, headers: { accept: 'text/html' } })
-      expect(raw.status()).toBe(308)
-      const location = new URL(raw.headers().location ?? '', raw.url())
-      expect(location.pathname).toBe(to)
-      expect(location.search).toBe(QUERY)
-
-      await page.goto(from)
-      await expect(page).toHaveURL((url) => url.pathname === to && url.search === QUERY)
-      await expectAppScreen(page)
-    })
-  }
-
-  test('an old link to a gone sale lands on the English route and says "That is gone."', async () => {
-    const old = LEGACY_REDIRECTS.find(([, now]) => now === SALE)
-    expect(old).toBeDefined()
-    await page.goto(pathTo(old?.[0] ?? '', { id: GONE_ID }))
-    expect(new URL(page.url()).pathname).toBe(pathTo(old?.[1] ?? '', { id: GONE_ID }))
+  test('a link to a gone sale says "That is gone."', async () => {
+    await page.goto(pathTo(SALE, { id: GONE_ID }))
     await expect(page.getByText('That is gone.')).toBeVisible()
     await expect(page.getByRole('link', { name: 'Back to Sales' }).or(page.getByRole('button', { name: 'Back to Sales' }))).toBeVisible()
-  })
-
-  test("an old link to another business's sale lands on the English route and says \"That is gone.\"", async ({
-    browser,
-    workerServer,
-  }) => {
-    const old = LEGACY_REDIRECTS.find(([, now]) => now === SALE)
-    expect(old).toBeDefined()
-    const context = await withToastRecorder(browser.newContext({ baseURL: workerServer.url, viewport: { width: 390, height: 844 } }))
-    const other = await context.newPage()
-    await signUp(other, 'Ajena')
-    await other.goto(pathTo(old?.[0] ?? '', { id: records.sale }))
-    expect(new URL(other.url()).pathname).toBe(pathTo(old?.[1] ?? '', { id: records.sale }))
-    await expect(other.getByText('That is gone.')).toBeVisible()
-    await expect(
-      other.getByRole('link', { name: 'Back to Sales' }).or(other.getByRole('button', { name: 'Back to Sales' })),
-    ).toBeVisible()
-    await context.close()
   })
 
   test('from the phone, each place the retired tab led to opens through the control that now holds it', async () => {
@@ -201,9 +142,18 @@ test.describe.serial('navigation', () => {
     await page.goto('/no-such-screen')
     await expect(page).toHaveURL(new RegExp(`${HOME}$`))
     await expect(page.locator('.encabezado__titulo')).toHaveText('Home')
-    // An old Spanish path with nothing behind it is no redirect row: the front's `*` takes it.
-    await page.goto(`${LEGACY_REDIRECTS[0]?.[0] ?? ''}/basura`)
-    await expect(page).toHaveURL(new RegExp(`${HOME}$`))
+    // A retired address answers like any unknown one (navigation.md, Direcciones retiradas): no
+    // redirect from the server, and the front's `*` takes it to Inicio.
+    const asANavigation = { maxRedirects: 0, headers: { accept: 'text/html' } }
+    for (const [retired, raw] of [
+      ['/ventas', await page.request.fetch('/ventas', asANavigation)],
+      ['/clientes/7', await page.request.fetch('/clientes/7', asANavigation)],
+    ] as const) {
+      expect(Math.floor(raw.status() / 100), retired).not.toBe(3)
+      expect(raw.headers().location, retired).toBeUndefined()
+      await page.goto(retired)
+      await expect(page).toHaveURL(new RegExp(`${HOME}$`))
+    }
   })
 
   test('"New sale", in every form, is drawn as an action: no underline, no link box-shadow', async ({ browser, workerServer }) => {

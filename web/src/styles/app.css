@@ -6271,7 +6271,8 @@ a.ajustes-tema__opcion {
 }
 
 /* New sale's hint when nothing is sellable on the sale's date: the Attention icon beside the
- * sentence, above the open line's Product field. It wraps freely and never reserves height. */
+ * sentence, above the open line's Product field. It wraps freely and reserves no height, except
+ * as the hidden copy kept while the Products are reloaded after a date change. */
 .nueva-venta__sin-vendible {
   display: flex;
   align-items: flex-start;

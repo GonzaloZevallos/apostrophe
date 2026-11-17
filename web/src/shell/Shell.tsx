@@ -45,7 +45,7 @@ import BrandMark from '../components/BrandMark'
 import BotonLink from '../components/BotonLink'
 import { NUEVA_VENTA_ESCRITORIO_CLASS } from '../components/botonVisual'
 import BackArrow from './BackArrow'
-import { NUEVA_VENTA_MISSING } from '../copy/inicio'
+import { NO_PRICE_HINT } from '../copy/sales'
 import { describeNewSale } from '../copy/readers/newSaleDescription'
 import { OTHER_RECORDS } from '../sales/otherRecords'
 import { chromeOf } from './chrome'
@@ -236,7 +236,7 @@ export default function Shell() {
               </BotonLink>
               {missing && (
                 <span className="nueva-venta__falta nueva-venta__falta--escritorio" id={RAIL_MISSING_ID}>
-                  {NUEVA_VENTA_MISSING}
+                  {NO_PRICE_HINT}
                 </span>
               )}
             </>

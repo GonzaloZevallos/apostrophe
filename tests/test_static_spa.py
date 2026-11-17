@@ -11,25 +11,19 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-from httpx2 import Response
 from sqlalchemy.engine import Engine
 
 from app.main import create_app
 from app.settings import Settings
 from app.shared.language import ENGLISH
 from app.static_spa import (
-    LEGACY_FRONT_PATHS,
-    RETIRED_FRONT_PATHS,
     SHARED_FRONT_PATHS,
     MalformedBuiltFront,
-    MalformedLegacyFrontPaths,
     ShellPage,
     matches_template,
-    parse_legacy_front_paths,
 )
 from tests.conftest import SETTINGS, TEST_HASHER, MovableClock
 from tests.fakes.telegram import FakeTelegram
-from tests.legacy_pin import PINNED_LEGACY_ROWS
 
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
@@ -110,20 +104,6 @@ def test_the_normaliser_reads_every_placeholder_name_as_an_id() -> None:
     assert normalise("/varieties/{low}/prices/new") == "/varieties/{id}/prices/new"
     assert normalise("/sales/{id}") == "/sales/{id}"
     assert normalise("/sales/new") == "/sales/new"
-
-
-def test_every_legacy_row_is_pinned_old_and_target() -> None:
-    # The raw templates, `{id}` still literal, before any id is substituted.
-    assert len(PINNED_LEGACY_ROWS) == 19
-    assert len(LEGACY_FRONT_PATHS) == 19
-    assert {old for old, _ in LEGACY_FRONT_PATHS} == {old for old, _ in PINNED_LEGACY_ROWS}
-    assert dict(LEGACY_FRONT_PATHS) == dict(PINNED_LEGACY_ROWS)
-
-
-def test_every_legacy_target_is_a_screen_of_the_design() -> None:
-    targets = [new for _, new in LEGACY_FRONT_PATHS]
-
-    assert not without_screen(targets, _screen_paths())
 
 
 def test_every_shared_template_is_a_screen_of_the_design() -> None:
@@ -213,45 +193,6 @@ def test_no_literal_shared_path_is_claimed_by_an_id_template(template: str) -> N
     assert claimed == []
 
 
-def _rows_text(rows: object) -> str:
-    return json.dumps(rows)
-
-
-def test_the_shipped_legacy_rows_load_from_their_file() -> None:
-    assert parse_legacy_front_paths((ROOT / "app" / "legacy_front_paths.json").read_text()) == (
-        LEGACY_FRONT_PATHS
-    )
-
-
-def test_a_well_formed_rows_file_is_read_in_order() -> None:
-    rows = [{"old": "/a-b/{id}", "now": "/c/{id}"}, {"old": "/d", "now": "/e"}]
-
-    assert parse_legacy_front_paths(_rows_text(rows)) == (("/a-b/{id}", "/c/{id}"), ("/d", "/e"))
-
-
-@pytest.mark.parametrize(
-    "text",
-    [
-        "not json",
-        "{}",
-        _rows_text([{"old": "/a"}]),
-        _rows_text([{"old": "/a", "now": "/b", "extra": "/c"}]),
-        _rows_text([{"old": 7, "now": "/b"}]),
-        _rows_text([{"old": "a", "now": "/b"}]),
-        _rows_text([{"old": "/a//b", "now": "/b"}]),
-        _rows_text([{"old": "/a/", "now": "/b"}]),
-        _rows_text([{"old": "/a/{name}", "now": "/b/{name}"}]),
-        _rows_text([{"old": "/a/[0-9]+", "now": "/b"}]),
-        _rows_text([{"old": "/A", "now": "/b"}]),
-        _rows_text([{"old": "/a", "now": "/b/{id}"}]),
-        _rows_text([{"old": "/a", "now": "/b"}, {"old": "/a", "now": "/c"}]),
-    ],
-)
-def test_a_malformed_rows_file_is_refused(text: str) -> None:
-    with pytest.raises(MalformedLegacyFrontPaths):
-        parse_legacy_front_paths(text)
-
-
 def test_the_api_document_is_the_one_committed_before_the_english_routes(
     clock: MovableClock,
 ) -> None:
@@ -316,16 +257,31 @@ def test_boot_accepts_a_page_with_one_html_tag_and_trailing_whitespace(tmp_path:
     ShellPage(index, None, (ENGLISH,))
 
 
-def _request(client: TestClient, method: str, path: str) -> Response:
-    return client.request(method, path, headers={"Accept": "text/html"}, follow_redirects=False)
+RETIRED_SAMPLE = (
+    "/ventas",
+    "/gastos",
+    "/clientes",
+    "/negocio",
+    "/catalogo",
+    "/clientes/7",
+    "/variedades/7",
+    "/mi-stock/entradas/7",
+    "/more",
+    "/mas",
+)
+SHELL_MARKER = "the app shell"
+SUFFIXES = tuple(slash + query for slash in ("", "/") for query in ("", "?month=2026-01&x=%C3%B1"))
 
 
-def test_a_retired_front_path_redirects_permanently_to_home_in_one_hop_without_its_query(
+def test_a_retired_address_answers_exactly_like_an_unknown_one(
     tmp_path: Path, engine: Engine, clock: MovableClock
 ) -> None:
+    """Retired address (glossary, navigation.md "Direcciones retiradas"): never a redirect,
+    judged only by equality with `/asdf` carrying the same method, Accept, slash and query."""
     dist = tmp_path / "dist"
     dist.mkdir()
-    (dist / "index.html").write_text('<html lang="en">the app shell</html>')
+    shell = f'<html lang="en">{SHELL_MARKER}</html>'
+    (dist / "index.html").write_text(shell)
     settings = Settings(
         secret_key=SETTINGS.secret_key, database_url=SETTINGS.database_url, web_dist=dist
     )
@@ -338,35 +294,22 @@ def test_a_retired_front_path_redirects_permanently_to_home_in_one_hop_without_i
         upkeep_ticker=False,
     )
 
-    with TestClient(app) as client:
+    with TestClient(app, follow_redirects=False) as client:
         # One app, every cell: building an app per case made the suite crawl.
-        for path in (
-            "/more",
-            "/mas",
-            "/more/",
-            "/mas/",
-            "/more?x=1",
-            "/mas/?month=2026-01&y=%C3%B1",
-        ):
-            for method in ("GET", "HEAD", "POST"):
-                response = _request(client, method, path)
-                assert response.status_code == 308, (method, path)
-                assert response.headers["location"] == "/", (method, path)
-        # Whatever is under a retired path is the unknown-address rule's, never this redirect.
-        for path in ("/more/x", "/mas/x", "/more/x/y", "/moreover"):
-            response = _request(client, "GET", path)
-            assert response.status_code == 200, path
-            assert "the app shell" in response.text, path
-            assert "location" not in response.headers, path
-        # A legacy row keeps forwarding its query.
-        response = _request(client, "GET", "/gastos?month=2026-01")
-        assert response.status_code == 308
-        assert response.headers["location"] == "/expenses?month=2026-01"
-
-
-def test_the_retired_front_paths_are_exactly_more_and_mas() -> None:
-    assert RETIRED_FRONT_PATHS == frozenset({"/more", "/mas"})
-
-
-def test_the_retired_front_paths_share_nothing_with_the_legacy_old_paths() -> None:
-    assert RETIRED_FRONT_PATHS.isdisjoint({old for old, _ in LEGACY_FRONT_PATHS})
+        for method in ("GET", "HEAD", "POST"):
+            for accept in ("text/html", "application/json", "*/*"):
+                for suffix in SUFFIXES:
+                    headers = {"Accept": accept}
+                    unknown = client.request(method, f"/asdf{suffix}", headers=headers)
+                    cell = (method, accept, suffix)
+                    assert not 300 <= unknown.status_code < 400, cell
+                    assert "location" not in unknown.headers, cell
+                    if (method, accept) == ("GET", "text/html"):
+                        assert SHELL_MARKER in unknown.text, cell
+                    for path in RETIRED_SAMPLE:
+                        response = client.request(method, f"{path}{suffix}", headers=headers)
+                        row = (method, accept, path, suffix)
+                        assert response.status_code == unknown.status_code, row
+                        assert response.content == unknown.content, row
+                        assert "location" not in response.headers, row
+                        assert not 300 <= response.status_code < 400, row

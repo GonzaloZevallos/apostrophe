@@ -114,5 +114,5 @@
   {"file":"src/screens/withdrawals/WithdrawalForm.tsx","imports":["settings.ts"],"issue":353},
   {"file":"src/screens/withdrawals/WithdrawalForm.tsx","imports":["stock.ts"],"issue":352},
   {"file":"src/screens/withdrawals/WithdrawalFormRoute.tsx","imports":["stock.ts"],"issue":352},
-  {"file":"src/shell/Shell.tsx","imports":["inicio.ts"],"issue":350}
+  {"file":"src/shell/Shell.tsx","imports":["sales.ts"],"issue":351}
 ]

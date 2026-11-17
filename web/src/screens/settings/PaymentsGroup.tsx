@@ -1,8 +1,8 @@
 /**
  * `PaymentsGroup`, Settings → Payments and expenses (`ConfiguracionCobros.dc.html`, Decision 21):
- * a Configuración group like its siblings (title and "Close"; `routes.test.ts` requires every group to be a form). It holds one row today, "Payment methods",
- * whose subtitle is the offered names joined by ", " (truncated by CSS). The Expense categories
- * and Withdrawal reasons rows stay where they are (`docs/product/payment-methods.md`).
+ * a Configuración group like its siblings (title and "Close"; `routes.test.ts` requires every group to be a form). It holds two rows:
+ * "Payment methods", whose subtitle is the offered names joined by ", " (truncated by CSS), and
+ * "Expense categories". The Withdrawal reasons row stays in Business (`docs/product/payment-methods.md`).
  */
 
 import { useQuery } from '@tanstack/react-query'
@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next'
 import { paymentMethodsQueryOptions } from '../../api/paymentMethods'
 import Icono from '../../components/Icono'
 import InAppLink from '../../components/InAppLink'
-import { SETTINGS_PAYMENT_METHODS } from '../../routes'
+import { EXPENSE_CATEGORIES, SETTINGS_PAYMENT_METHODS } from '../../routes'
 import SettingsGroup from './SettingsGroup'
 
 export default function PaymentsGroup() {
@@ -29,6 +29,15 @@ export default function PaymentsGroup() {
               <span className="ajustes__item-rotulo">{t('paymentMethods:group.row')}</span>
               {names !== undefined && <span className="ajustes__item-detalle">{names}</span>}
             </span>
+            <span className="ajustes__item-flecha">
+              <Icono nombre="chevron" />
+            </span>
+          </InAppLink>
+          <InAppLink to={EXPENSE_CATEGORIES} className="ajustes__item">
+            <span className="ajustes__item-icono">
+              <Icono nombre="categorias" />
+            </span>
+            <span className="ajustes__item-rotulo">{t('common:expenseCategories')}</span>
             <span className="ajustes__item-flecha">
               <Icono nombre="chevron" />
             </span>

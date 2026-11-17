@@ -114,11 +114,7 @@ const EXPECTED: Record<ScreenId, Expected> = {
   "settings-payment-methods-archived": expectation("form", "settings-payment-methods", SETTINGS_PLACE),
   "settings-integrations": expectation("form", "settings", SETTINGS_PLACE),
   "settings-catalog-message": expectation("form", "settings", SETTINGS_PLACE),
-  "settings-expense-categories": expectation(
-    "form",
-    "settings",
-    SETTINGS_PLACE,
-  ),
+  "settings-expense-categories": expectation("form", "settings-payments", SETTINGS_PLACE),
   "settings-currency": expectation("form", "settings", SETTINGS_PLACE),
   "settings-withdrawal-reasons": expectation("form", "settings", SETTINGS_PLACE),
   "settings-appearance": expectation("form", "settings", SETTINGS_PLACE),
@@ -1003,24 +999,6 @@ describe("screens.json against the English routes", () => {
     const leaf = matchRoutes(router.routes, "/varieties/entries")?.at(-1);
     expect(screenIdOf(leaf?.route ?? {})).toBe("stock");
     expect(parentOf("stock", "phone")?.titleKey).toBe("common:varieties");
-  });
-
-  test("routes.ts keeps no legacy list: the old paths live only in app/legacy_front_paths.json", () => {
-    expect(Object.keys(routes).filter((name) => name.startsWith("LEGACY"))).toEqual([]);
-  });
-
-  test("no old Spanish path of app/legacy_front_paths.json is a front route: the server redirects them", () => {
-    const rows: unknown = JSON.parse(
-      readFileSync(resolve(process.cwd(), "..", "app/legacy_front_paths.json"), "utf-8"),
-    );
-    if (!Array.isArray(rows)) throw new Error("legacy_front_paths.json is a list");
-    expect(rows.length).toBeGreaterThan(15);
-    for (const row of rows as { old: string }[]) {
-      const concrete = row.old.replace("{id}", "3");
-      expect(matchRoutes(router.routes, concrete)?.at(-1)?.route.path, concrete).toBe(
-        routes.CATCH_ALL,
-      );
-    }
   });
 });
 

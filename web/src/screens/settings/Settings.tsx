@@ -15,7 +15,6 @@ import type { Me } from '../../api/me'
 import Icono, { type NombreIcono } from '../../components/Icono'
 import InAppLink from '../../components/InAppLink'
 import {
-  EXPENSE_CATEGORIES,
   SETTINGS_ACCOUNT,
   SETTINGS_APPEARANCE,
   SETTINGS_BUSINESS,
@@ -38,7 +37,6 @@ const GROUPS: readonly { to: string; label: string | typeof PAYMENTS_GROUP_KEY; 
   { to: SETTINGS_PAYMENTS, label: PAYMENTS_GROUP_KEY, icon: 'tarjeta' },
   { to: SETTINGS_INTEGRATIONS, label: INTEGRATIONS_LINK_WORD, icon: 'integraciones' },
   { to: SETTINGS_CATALOG_MESSAGE, label: COMMON_TEXT.catalogMessage, icon: 'mensaje' },
-  { to: EXPENSE_CATEGORIES, label: COMMON_TEXT.expenseCategories, icon: 'categorias' },
   { to: SETTINGS_APPEARANCE, label: COMMON_TEXT.appearance, icon: 'apariencia' },
   { to: SETTINGS_ACCOUNT, label: COMMON_TEXT.yourAccount, icon: 'cuenta' },
 ]

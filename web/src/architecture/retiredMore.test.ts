@@ -6,8 +6,8 @@
  *
  * The scan reports `file:line`. The matcher is tested on strings it must refuse and look-alikes it must
  * accept, beside the real tree. Two things are left out, and only these: this file, which has to write the
- * patterns, and the one (file, rule) pair in EXEMPTIONS, the redirect case of `tests/test_static_spa.py`
- * (docs/adr/20261116-more-and-mas-redirect-to-home-and-settings-marks-home). Every other rule still scans
+ * patterns, and the one (file, rule) pair in EXEMPTIONS, the case of `tests/test_static_spa.py` that
+ * proves `/more` and `/mas` answer as unknown (navigation.md, Direcciones retiradas). Every other rule still scans
  * that file.
  */
 
@@ -132,7 +132,7 @@ interface Exemption {
   rule: string
 }
 
-/** The one pair the scan lets through: the server's redirect of `/more` and `/mas` is tested there. */
+/** The one pair the scan lets through: the test that `/more` and `/mas` answer as unknown addresses is there. */
 const EXEMPTIONS: readonly Exemption[] = [
   { path: 'tests/test_static_spa.py', rule: 'the /more or /mas path in Python' },
 ]

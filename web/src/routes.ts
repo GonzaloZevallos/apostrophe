@@ -408,7 +408,7 @@ export const SCREENS = [
     path: EXPENSE_CATEGORIES,
     declaredKind: 'form',
     titleKey: 'common:expenseCategories',
-    parent: 'settings',
+    parent: 'settings-payments',
   }),
   screen({
     id: 'settings-currency',
@@ -474,7 +474,7 @@ export const ONBOARDING_SCREENS: ReadonlySet<ScreenId> = new Set<ScreenId>([
 ])
 
 /** The public pages and the catch-all: every route outside `Shell`. No front code redirects a
- * Spanish path; the server's `LEGACY_FRONT_PATHS` does (308). */
+ * retired address: it falls to the catch-all like any unknown one (glossary, Retired address). */
 export const OUTSIDE: readonly Outside[] = [
   outside({ path: LOGIN }),
   outside({ path: INVITATION }),
