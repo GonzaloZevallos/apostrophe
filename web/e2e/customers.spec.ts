@@ -26,7 +26,7 @@ import { fillSaleLine } from './helpers/sale.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { uniqueTag } from './helpers/unique.js'
 import { seedLedger } from './helpers/ledger.js'
-import { bottomBar } from './helpers/chrome.js'
+import { bottomBar, bottomChromeTop } from './helpers/chrome.js'
 
 /** The customer's card, never the list beside it on a computer (the list holds the search box):
  * its "Te debe" and "Credit" are what these specs read. */
@@ -174,6 +174,10 @@ async function rectOf(locator: Locator): Promise<Rect> {
 
 // Sub-pixel rounding only: the footer's bottom edge is the viewport's, less the (zero here) inset.
 const SUBPIXEL = 1
+// The + 's `--papel` ring (`--plus-ring`): drawn outside its box, kept clear by `--bottom-chrome-height`.
+const PLUS_RING = 4
+// What `--bottom-chrome-height` reserves over the bar's top: the + 's lift (10) and its ring (4).
+const PLUS_OVERHANG = 14
 
 async function viewportHeight(page: Page): Promise<number> {
   const size = page.viewportSize()
@@ -192,14 +196,21 @@ async function expectTheDocumentScrolls(page: Page): Promise<void> {
   expect(scrolls).toBe(true)
 }
 
-/** The footer rests on the viewport's bottom, or on the fixed bar's top when `aboveBar`. */
+/**
+ * The footer rests on the viewport's bottom, or, when `aboveBar`, above the bar's + and its 4 px ring
+ * (the highest bottom chrome edge) and no higher than the bottom token reserves over the bar's top.
+ */
 async function expectPinnedInView(page: Page, footer: Locator, aboveBar = false): Promise<void> {
   const height = await viewportHeight(page)
   const box = await rectOf(footer)
-  const floor = aboveBar ? (await rectOf(bottomBar(page))).y : height
   expect(box.y).toBeGreaterThanOrEqual(0)
   expect(box.y + box.height).toBeLessThanOrEqual(height + SUBPIXEL)
-  expect(Math.abs(floor - (box.y + box.height))).toBeLessThanOrEqual(SUBPIXEL)
+  if (aboveBar) {
+    expect(box.y + box.height).toBeLessThanOrEqual((await bottomChromeTop(page)) - PLUS_RING + SUBPIXEL)
+    expect((await rectOf(bottomBar(page))).y - (box.y + box.height)).toBeLessThanOrEqual(PLUS_OVERHANG + SUBPIXEL)
+  } else {
+    expect(Math.abs(height - (box.y + box.height))).toBeLessThanOrEqual(SUBPIXEL)
+  }
 }
 
 test.describe('the card\'s pinned "New sale to <name>" on a phone', () => {

@@ -10,6 +10,7 @@
 import type { Page } from '@playwright/test'
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMERS, HOME, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { choosePaymentMethod, expect, test } from './fixtures.js'
+import { newSaleEntry } from './helpers/chrome.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { expectPath } from './helpers/url.js'
@@ -17,7 +18,6 @@ import { expectPath } from './helpers/url.js'
 type Origin = 'customers' | 'home' | 'card'
 
 const ORIGINS: readonly Origin[] = ['customers', 'home', 'card']
-
 const VIEWPORTS = [
   { name: 'phone', width: 390, height: 844 },
   { name: 'computer', width: 1280, height: 800 },
@@ -89,7 +89,7 @@ for (const viewport of VIEWPORTS) {
         await expect(page.getByRole('link', { name: OPENER[origin] })).toHaveCount(0)
         if (viewport.name === 'phone') {
           await expect(page.getByRole('navigation')).toHaveCount(0)
-          await expect(page.getByRole('link', { name: 'New sale' })).toHaveCount(0)
+          await expect(newSaleEntry(page)).toHaveCount(0)
           // A full-screen sheet (ADR-0062): it covers the screen it was opened from, with no peek,
           // and Save is within reach inside it.
           const box = await dialog.boundingBox()

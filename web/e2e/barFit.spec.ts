@@ -27,9 +27,14 @@ import {
 } from './helpers/textScale.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { HOME } from '../src/routes.js'
-import { BOTTOM_BAR, BOTTOM_BAR_ITEM, bottomBar } from './helpers/chrome.js'
+import { BOTTOM_BAR, BOTTOM_BAR_ITEM, BOTTOM_BAR_PLUS, bottomBar } from './helpers/chrome.js'
 
 const PHONE = { width: 320, height: 700 }
+/** The narrowest phone the bar must fit (Step 1 of GH-727: measure before anything is built on it). */
+const NARROW = { width: 246, height: 700 }
+const TAB_BOX = 44
+const PLUS_BOX = 52
+const LABEL_WEIGHT = 600
 const COMPUTER = { width: 1280, height: 920 }
 
 test.use(PHONE_CONTEXT)
@@ -168,6 +173,143 @@ async function bottomBarProblems(page: Page, scale: number): Promise<{ problems:
   return { problems, items }
 }
 
+interface Slot {
+  kind: 'tab' | 'plus'
+  label: string
+  width: number
+  height: number
+  /** The label's drawn width at weight 600 (a Range over its text, with the weight forced); 0 for the +. */
+  labelWidth: number
+  /** Whether the label is drawn (not the visually hidden text of the icons-only bar); false for the +. */
+  shown: boolean
+}
+
+/** Every slot of the bar in order, as it lays out now: the tabs' and the +'s boxes and each label's width at weight 600. */
+async function measureSlots(page: Page): Promise<Slot[]> {
+  return page.locator(BOTTOM_BAR).evaluate(
+    (bar, args) => {
+      // Only the slots: the + 's hidden description is a child of the bar too, but it is never a slot.
+      return [...bar.children].filter((child) => child.matches(`${args.item}, ${args.plus}`)).map((slot): Slot => {
+        const box = slot.getBoundingClientRect()
+        const label = slot.querySelector('span')
+        if (!slot.matches(args.item) || label === null) {
+          return { kind: 'plus', label: '+', width: box.width, height: box.height, labelWidth: 0, shown: false }
+        }
+        const before = label.style.fontWeight
+        label.style.fontWeight = String(args.weight)
+        const range = document.createRange()
+        range.selectNodeContents(label.firstChild ?? label)
+        const labelWidth = range.getBoundingClientRect().width
+        label.style.fontWeight = before
+        const shown = label.getBoundingClientRect().width > 1
+        return { kind: 'tab', label: label.textContent ?? '', width: box.width, height: box.height, labelWidth, shown }
+      })
+    },
+    { item: BOTTOM_BAR_ITEM, plus: BOTTOM_BAR_PLUS, weight: LABEL_WEIGHT },
+  )
+}
+
+/**
+ * Why the slots do not fit, one line each; empty when the bar is right for this width. Every tab box is
+ * at least 44 px each way at every width. Where 44 px for every tab, each label whole at weight 600 and
+ * the 52 px + are wider than the viewport, the bar is icons only (Human Decision 3, GH-789): no label is
+ * drawn but each stays in the DOM as the tab's name. Anywhere else every label is drawn whole in its box.
+ */
+function slotProblems(slots: Slot[], viewport: number): string[] {
+  const found: string[] = []
+  const tabs = slots.filter((slot) => slot.kind === 'tab')
+  const wanted = slots.reduce((sum, slot) => sum + (slot.kind === 'plus' ? PLUS_BOX : Math.max(TAB_BOX, slot.labelWidth)), 0)
+  const iconsOnly = wanted > viewport + TOLERANCE
+  if (slots.map((slot) => slot.label).join('|') !== ['Home', 'Sales', '+', 'Customers', 'Products'].join('|')) {
+    found.push('the slots are not Home, Sales, +, Customers, Products')
+  }
+  for (const slot of slots) {
+    const [minWidth, minHeight] = slot.kind === 'plus' ? [PLUS_BOX, PLUS_BOX] : [TAB_BOX, TAB_BOX]
+    if (slot.width < minWidth - TOLERANCE) found.push(`${slot.label} is ${slot.width} px wide, under ${minWidth}`)
+    if (slot.height < minHeight - TOLERANCE) found.push(`${slot.label} is ${slot.height} px tall, under ${minHeight}`)
+    if (slot.kind === 'tab' && slot.label.trim() === '') found.push('a tab has no name')
+    if (slot.kind === 'tab' && !iconsOnly && !slot.shown) found.push(`${slot.label} has no visible label where every label fits`)
+    if (slot.kind === 'tab' && iconsOnly && slot.shown) found.push(`${slot.label} draws its label where 44 px for every tab does not fit`)
+    if (slot.kind === 'tab' && slot.shown && slot.labelWidth > slot.width + TOLERANCE) {
+      found.push(`${slot.label} is ${slot.labelWidth} px of text in a ${slot.width} px slot`)
+    }
+  }
+  if (tabs.length === 0) found.push('the bar has no tabs')
+  if (slots.reduce((sum, slot) => sum + slot.width, 0) > viewport + TOLERANCE) found.push('the slots are wider than the viewport')
+  return found
+}
+
+function slotTable(slots: Slot[], viewport: number, theme: string): string {
+  const rows = slots.map(
+    (slot) =>
+      `| ${slot.label} | ${slot.width.toFixed(2)} | ${slot.kind === 'tab' ? slot.labelWidth.toFixed(2) : '-'} | ${
+        slot.kind === 'tab' ? (slot.width - slot.labelWidth).toFixed(2) : '-'
+      } | ${viewport} | ${theme} | ${slot.kind === 'tab' ? (slot.shown ? 'label' : 'icon only') : '-'} |`,
+  )
+  return ['| label | slot width | label width at 600 | slack | viewport | theme | mode |', '|---|---|---|---|---|---|---|', ...rows].join('\n')
+}
+
+const tabSlot = (label: string, width: number, labelWidth: number, shown = true): Slot => ({
+  kind: 'tab',
+  label,
+  width,
+  height: 44,
+  labelWidth,
+  shown,
+})
+const PLUS_SLOT: Slot = { kind: 'plus', label: '+', width: 52, height: 52, labelWidth: 0, shown: false }
+
+test('the slot check rejects a bar whose label is wider than its slot', () => {
+  const slots: Slot[] = [tabSlot('Home', 40, 30), tabSlot('Customers', 46, 58)]
+
+  expect(slotProblems(slots, 246)).toEqual([
+    'the slots are not Home, Sales, +, Customers, Products',
+    'Home is 40 px wide, under 44',
+    'Customers is 58 px of text in a 46 px slot',
+  ])
+})
+
+test('the slot check wants icons only where 44 px for every tab and every label does not fit, and labels elsewhere', () => {
+  const bar = (home: number, shown: boolean): Slot[] => [
+    tabSlot('Home', home, 34, shown),
+    tabSlot('Sales', home, 33, shown),
+    PLUS_SLOT,
+    tabSlot('Customers', 48.5, 65, shown),
+    tabSlot('Products', 48.5, 53, shown),
+  ]
+
+  // 246 px: 44 + 44 + 52 + 65 + 53 = 258 does not fit, so icons only, every tab 44 px or more.
+  expect(slotProblems(bar(48.5, false), 246)).toEqual([])
+  expect(slotProblems(bar(48.5, true), 246)).toEqual([
+    'Home draws its label where 44 px for every tab does not fit',
+    'Sales draws its label where 44 px for every tab does not fit',
+    'Customers draws its label where 44 px for every tab does not fit',
+    'Customers is 65 px of text in a 48.5 px slot',
+    'Products draws its label where 44 px for every tab does not fit',
+    'Products is 53 px of text in a 48.5 px slot',
+  ])
+  expect(slotProblems(bar(38, false), 246)).toEqual(['Home is 38 px wide, under 44', 'Sales is 38 px wide, under 44'])
+  // 320 px: every label fits, so every label is drawn and icons only is wrong.
+  const wide: Slot[] = [
+    tabSlot('Home', 60, 34),
+    tabSlot('Sales', 60, 33),
+    PLUS_SLOT,
+    tabSlot('Customers', 70, 65),
+    tabSlot('Products', 60, 53),
+  ]
+  expect(slotProblems(wide, 320)).toEqual([])
+  expect(slotProblems(bar(44, true), 320)).toEqual([
+    'Customers is 65 px of text in a 48.5 px slot',
+    'Products is 53 px of text in a 48.5 px slot',
+  ])
+  expect(slotProblems(bar(44, false), 320)).toEqual([
+    'Home has no visible label where every label fits',
+    'Sales has no visible label where every label fits',
+    'Customers has no visible label where every label fits',
+    'Products has no visible label where every label fits',
+  ])
+})
+
 // One business for the three tests: signing up is the slow step, and each test only reads layout.
 test.describe.serial('bar and rail fit', () => {
   let page: Page
@@ -189,6 +331,27 @@ test.describe.serial('bar and rail fit', () => {
     expect(problems).toEqual([])
     expect(items.filter((item) => item.current === 'page').map((item) => item.text)).toEqual(['Home'])
   })
+
+  for (const theme of ['light', 'dark'] as const) {
+    test(`at 246 px in ${theme}, the bar is icons only, every tab named and no box under its minimum`, async () => {
+      await page.emulateMedia({ colorScheme: theme })
+      await page.setViewportSize(NARROW)
+      await page.goto(HOME)
+      await expect(bottomBar(page)).toBeVisible()
+      await expect(page.locator(BOTTOM_BAR_PLUS)).toHaveCount(1)
+      // Automatic follows the emulated scheme: the attribute says `oscuro` in dark and is not that in light.
+      const dark = await page.evaluate(() => document.documentElement.getAttribute('data-tema') === 'oscuro')
+      expect(dark).toBe(theme === 'dark')
+
+      const slots = await measureSlots(page)
+      const table = slotTable(slots, NARROW.width, theme)
+      console.log(table)
+      await test.info().attach(`slots-246-${theme}`, { body: table, contentType: 'text/markdown' })
+
+      const overflows = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)
+      expect([...slotProblems(slots, NARROW.width), ...(overflows ? ['the page scrolls sideways'] : [])]).toEqual([])
+    })
+  }
 
   test('the measurement rejects a bar that does not fit: at three times the text the labels overflow', async () => {
     const { problems } = await bottomBarProblems(page, 3)

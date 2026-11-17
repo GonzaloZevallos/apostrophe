@@ -387,7 +387,7 @@ La estructura fija de la app para un Business: las pestañas del celular, la bar
 _Avoid_: menu, sitemap, routing, shell, More
 
 **Tab root**:
-Una pantalla que muestra la barra (o la barra lateral) y "+ New sale": Home, Sales, Customers, Products y Analysis, y en una computadora también Expenses, que se abre desde la barra lateral. En el celular, a Analysis se llega con el segmento Home | Analysis de Home, cuyas opciones reemplazan la entrada del historial, y Analysis marca Home como activa; Expenses es un detalle con "‹ Analysis". Cualquier otra pantalla es una tarjeta o un detalle (con una flecha de regreso a su pantalla madre) o un formulario o una Sheet (con "Close").
+Una pantalla que muestra la barra con su + en el celular, o la barra lateral con su "+ New sale" en una computadora: Home, Sales, Customers, Products y Analysis, y en una computadora también Expenses, que se abre desde la barra lateral. En el celular, a Analysis se llega con el segmento Home | Analysis de Home, cuyas opciones reemplazan la entrada del historial, y Analysis marca Home como activa; Expenses es un detalle con "‹ Analysis". Desde la parte 3 de GH-727, las tarjetas y los detalles (con una flecha de regreso a su pantalla madre) también muestran la barra con su +, y solo un formulario o una Sheet (con "Close") no muestra ni la barra ni el +.
 _Avoid_: home, main screen, section, More
 
 **Settings**:
@@ -463,7 +463,7 @@ La imagen de una pantalla del teléfono, tomada de la app construida sobre el ne
 _Avoid_: screenshot test, snapshot, mockup, Design capture
 
 **Product language**:
-El idioma en que el producto escribe lo que una persona lee. El inglés es el texto fuente y, hasta que salga un segundo idioma (#317), el único Selectable language. Abarca pantallas, nombres accesibles, mensajes de la API, la salida de los scripts del Operator y las líneas fijas del Catalog, nunca los datos propios del vendedor. El `detail` de un rechazo de la API es un diagnóstico en inglés, nunca se muestra. Los formatos numéricos y de fecha siguen siendo argentinos.
+El idioma en que el producto escribe lo que una persona lee. El inglés es el texto fuente y, hasta que salga un segundo idioma (#317), el único Selectable language. Abarca pantallas, nombres accesibles, mensajes de la API, la salida de los scripts del Operator y las líneas fijas del Catalog, nunca los datos propios del vendedor; su única excepción con nombre es el nombre accesible "Vender" del + de la barra del celular (`common:newSaleFabName`, decisión 3 del humano en GH-727). El `detail` de un rechazo de la API es un diagnóstico en inglés, nunca se muestra, y los formatos numéricos y de fecha siguen siendo argentinos.
 _Avoid_: locale, i18n, translation, Rioplatense
 
 **Language**:

@@ -32,7 +32,7 @@ function serving(body: unknown, extra?: FetchImpl): FetchImpl {
   }
 }
 
-test('shows the date, the reason by word, every line and the note, with the bar and no "+ New sale"', async () => {
+test('shows the date, the reason by word, every line and the note, with the bar and its + (Vender)', async () => {
   renderWithdrawals([VARIETIES_PATH, ONE], serving(WITHDRAWAL))
 
   expect(await screen.findByText('Zkittlez')).toBeInTheDocument()
@@ -43,7 +43,7 @@ test('shows the date, the reason by word, every line and the note, with the bar 
   expect(screen.getByText('Para la fiesta')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Edit' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument()
-  expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Vender' })).toBeInTheDocument()
   expect(document.querySelector('.bar-inferior')).not.toBeNull()
 })
 

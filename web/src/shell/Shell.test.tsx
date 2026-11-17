@@ -43,26 +43,29 @@ import {
   type Screen,
 } from '../routes'
 import { chooseTheme } from '../theme'
+import { describeNewSale } from '../copy/readers/newSaleDescription'
+import { OTHER_RECORDS } from '../sales/otherRecords'
 import Shell from './Shell'
 import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 const BAR = ['Home', 'Sales', 'Customers', 'Products']
+const PLUS_NAME = 'Vender'
 const RAIL = ['Home', 'Sales', 'Customers', 'Products', 'Expenses', 'Analysis']
 
 const viewport = vi.hoisted(() => ({ current: 'phone' as 'phone' | 'computer' }))
 
 vi.mock('./useViewport', () => ({ useViewport: () => viewport.current }))
 
-/** The tabs only, in the order they render: drops "New sale" and the business row. */
+/** The tabs only, in the order they render: drops "New sale", the + (it has no text) and the business row. */
 function tabNames(nav: HTMLElement): string[] {
   return within(nav)
     .getAllByRole('link')
     .map((link) => link.textContent)
     .filter(
       (name): name is string =>
-        name !== null && !name.startsWith('New sale') && !name.startsWith('LH'),
+        name !== null && name !== '' && !name.startsWith('New sale') && !name.startsWith('LH'),
     )
 }
 
@@ -157,10 +160,21 @@ test('the bar is Inicio, Ventas, Clientes and Variedades, with no Stock', () => 
 test('every bar tab draws an icon and a visible label', () => {
   const { container } = renderShell([HOME])
 
-  for (const link of within(bar(container)).getAllByRole('link')) {
+  const tabs = within(bar(container)).getAllByRole('link').filter((link) => link.getAttribute('aria-label') !== PLUS_NAME)
+  expect(tabs).toHaveLength(4)
+  for (const link of tabs) {
     expect(link.querySelector('svg')).not.toBeNull()
     expect(link.querySelector('span')?.textContent).not.toBe('')
   }
+})
+
+test('the bar has five slots in order: Home, Sales, the +, Customers, Products', () => {
+  const { container } = renderShell([HOME])
+
+  const names = within(bar(container))
+    .getAllByRole('link')
+    .map((link) => link.getAttribute('aria-label') ?? link.textContent)
+  expect(names).toEqual(['Home', 'Sales', PLUS_NAME, 'Customers', 'Products'])
 })
 
 test('the rail is "New sale", four tabs, a divider, Gastos and Análisis, then the business row', () => {
@@ -184,23 +198,22 @@ test('the rail is "New sale", four tabs, a divider, Gastos and Análisis, then t
   expect(tabNames(rail(container))).toEqual(RAIL)
 })
 
-test('"New sale" is fixed, apart from the tabs, and goes straight to the sale form', () => {
+test('the + and the rail\'s "New sale" are apart from the tabs and go straight to the sale form', () => {
   renderShell([HOME])
 
-  const links = screen.getAllByRole('link', { name: /New sale/ })
-  expect(links).toHaveLength(2)
-  for (const link of links) {
-    expect(link).toHaveAttribute('href', SALE_NEW)
+  expect(screen.getAllByRole('link', { name: /New sale/ })).toHaveLength(1)
+  for (const name of [PLUS_NAME, 'New sale']) {
+    expect(screen.getByRole('link', { name })).toHaveAttribute('href', SALE_NEW)
   }
 })
 
 test.each([
-  ['the bar', 0],
-  ['the rail', 1],
-])('"New sale" in %s opens the form as an in-app entry, so Close goes back through history', async (_where, index) => {
+  ['the bar\'s +', PLUS_NAME],
+  ['the rail', 'New sale'],
+])('"New sale" from %s opens the form as an in-app entry, so Close goes back through history', async (_where, name) => {
   renderShell([HOME])
 
-  await userEvent.click(screen.getAllByRole('link', { name: /New sale/ })[index] as HTMLElement)
+  await userEvent.click(screen.getByRole('link', { name }))
 
   expect(await screen.findByText(`en ${SALE_NEW} inApp=true`)).toBeInTheDocument()
 })
@@ -208,22 +221,23 @@ test.each([
 test.each([
   ['a root', HOME, true, true, false],
   ['a root: Análisis', ANALYSIS, true, true, false],
-  ['a card on the phone: Gastos', EXPENSES, true, false, true],
-  ['a card: a sale', pathTo(SALE, { id: 7 }), true, false, true],
-  ['a card: a customer', pathTo(CUSTOMER, { id: 3 }), true, false, true],
+  ['a card on the phone: Gastos', EXPENSES, true, true, true],
+  ['a card: a sale', pathTo(SALE, { id: 7 }), true, true, true],
+  ['a card: a customer', pathTo(CUSTOMER, { id: 3 }), true, true, true],
   // A variety's back names the loaded record, so it shows no arrow until its screen declares one.
-  ['a card: a variety', pathTo(VARIETY, { id: 2 }), true, false, false],
-  ['a card: Configuración', SETTINGS, true, false, true],
+  ['a card: a variety', pathTo(VARIETY, { id: 2 }), true, true, false],
+  ['a card: Configuración', SETTINGS, true, true, true],
   ['a form: the sale', SALE_NEW, false, false, false],
   ['a form: a Configuración group', SETTINGS_USERS, false, false, false],
   ['a form: the expense', EXPENSE_NEW, false, false, false],
 ])(
-  '%s: bar %s, "New sale" %s, arrow %s, from the leaf screen\'s kind alone',
+  '%s: bar %s, the + %s, arrow %s, from the leaf screen\'s kind alone',
   (_kind, path, hasBar, hasButton, hasArrow) => {
     const { container } = renderShell([path])
 
     expect(container.querySelector('.bar-inferior') !== null).toBe(hasBar)
-    expect(container.querySelector('.boton-nueva-venta') !== null).toBe(hasButton)
+    expect(screen.queryByRole('link', { name: PLUS_NAME }) !== null).toBe(hasButton)
+    expect(screen.queryAllByRole('link', { name: PLUS_NAME }).length).toBeLessThanOrEqual(1)
     expect(screen.queryAllByRole('button', { name: /^‹ / }).length > 0).toBe(hasArrow)
     expect(container.querySelector('.riel-lateral')).not.toBeNull()
   },
@@ -254,26 +268,30 @@ test.each([
   renderShell([path])
 
   expect(screen.getAllByRole('link', { name: /New sale/ }).length).toBeGreaterThan(0)
+  expect(screen.getByRole('link', { name: PLUS_NAME })).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /^‹ / })).not.toBeInTheDocument()
 })
 
 test.each([
   ['the catalog on a phone', CATALOG, false, '‹ Products'],
   ['the catalog on a computer', CATALOG, true, '‹ Products'],
-])('a card (%s) shows its "‹ parent" arrow and never "+ Nueva venta"', (_name, path, computer, arrow) => {
+])('a card (%s) shows its "‹ parent" arrow; it has the bar\'s + and no "+ New sale"', (_name, path, computer, arrow) => {
   renderShell([path], { computer })
 
   expect(screen.getByRole('button', { name: arrow })).toBeInTheDocument()
   expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
+  // The bar stays in the markup on a computer (CSS hides it); the + is the phone's entry.
+  expect(screen.getByRole('link', { name: PLUS_NAME })).toBeInTheDocument()
 })
 
 // A variety's back names the loaded record, so the shell shows no arrow for it until its screen
-// declares one (never a bare '‹' or the registry's 'Product'); it still shows no "New sale".
-test('a card that is a variety on a phone shows no arrow before its screen declares one, and no "New sale"', () => {
+// declares one (never a bare '‹' or the registry's 'Product'); it shows the bar's + all the same.
+test('a card that is a variety on a phone shows no arrow before its screen declares one, and has the bar\'s +', () => {
   renderShell([pathTo(VARIETY, { id: 2 })])
 
   expect(screen.queryByRole('button', { name: /^‹ / })).not.toBeInTheDocument()
   expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
+  expect(screen.getByRole('link', { name: PLUS_NAME })).toBeInTheDocument()
 })
 
 test.each([
@@ -285,6 +303,7 @@ test.each([
   expect(container.querySelector('.bar-inferior')).toBeNull()
   expect(screen.queryByRole('button', { name: /^‹ / })).not.toBeInTheDocument()
   expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: PLUS_NAME })).not.toBeInTheDocument()
 })
 
 test('the price form on a computer draws no side rail, and on a phone the rail stays in the markup', () => {
@@ -298,10 +317,11 @@ test('the price form on a computer draws no side rail, and on a phone the rail s
   expect(other.container.querySelector('.riel-lateral')).not.toBeNull()
 })
 
-test('on a phone a detail pane has no "New sale" at all', () => {
+test('on a phone a detail pane has the bar\'s + and no "+ New sale" link', () => {
   renderShell([pathTo(VARIETY, { id: 2 })])
 
   expect(screen.queryAllByRole('link', { name: /New sale/ })).toHaveLength(0)
+  expect(screen.getAllByRole('link', { name: PLUS_NAME })).toHaveLength(1)
 })
 
 test.each([
@@ -467,7 +487,13 @@ test('the bar is a menu of icon + text tabs, none sharing an icon (icon and text
   const { container } = renderShell([HOME])
 
   expect(bar(container)).toHaveAttribute('data-menu')
-  expectIconAndTextRule(bar(container))
+  // The + is the one icon-only entry (no visible text by design, named "Vender"): it is not a tab,
+  // so the rule runs on the four tabs, and the + is checked for its name and icon below.
+  const tabsOnly = bar(container).cloneNode(true) as HTMLElement
+  tabsOnly.querySelector(`[aria-label="${PLUS_NAME}"]`)?.remove()
+  expectIconAndTextRule(tabsOnly)
+  const plus = within(bar(container)).getByRole('link', { name: PLUS_NAME })
+  expect(plus.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
 })
 
 test('the rail is a menu too, and no two of its entries share an icon', () => {
@@ -518,22 +544,28 @@ function checklist(pricedDone: boolean): FirstRunAnswer {
 }
 
 for (const theme of ['claro', 'oscuro'] as const) {
-  test.each([
-    ['phone', false, 2],
-    ['computer', true, 2],
-  ])(`%s: while the checklist shows with no priced variety, "New sale" stays a link and says what is missing (${theme})`, async (_name, computer, buttons) => {
+  test(`computer: while the checklist shows with no priced variety, the rail's "New sale" stays a link and says what is missing (${theme})`, async () => {
     chooseTheme(theme)
-    renderShell([HOME], { computer, firstRun: checklist(false) })
+    renderShell([HOME], { computer: true, firstRun: checklist(false) })
 
     const lines = await screen.findAllByText(MISSING_LINE)
     expect(lines.length).toBeGreaterThan(0)
     const links = screen.getAllByRole('link', { name: /New sale/ })
-    expect(links).toHaveLength(buttons)
+    expect(links).toHaveLength(1)
     for (const link of links) expect(link).toHaveAttribute('href', SALE_NEW)
     for (const link of links) {
       const describedBy = link.getAttribute('aria-describedby')
       expect(describedBy === null ? null : document.getElementById(describedBy)?.textContent).toBe(MISSING_LINE)
     }
+  })
+
+  test(`phone: no missing line and no /first-run request, the + says nothing of it (${theme})`, async () => {
+    chooseTheme(theme)
+    renderShell([HOME], { firstRun: checklist(false) })
+
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(screen.queryByText(MISSING_LINE)).not.toBeInTheDocument()
+    expect(vi.mocked(fetch)).not.toHaveBeenCalled()
   })
 }
 
@@ -542,7 +574,7 @@ test.each([
   ['the first-run slot is something else', { ...checklist(false), kind: 'start_varieties' as const, checklist: [] }],
   ['no first-run element shows', { ...checklist(false), kind: 'none' as const, checklist: [] }],
 ])('no missing line when %s', async (_name, answer) => {
-  renderShell([HOME], { firstRun: answer })
+  renderShell([HOME], { computer: true, firstRun: answer })
 
   await act(async () => {
     await Promise.resolve()
@@ -555,11 +587,11 @@ test.each([
 test.each([
   ['pending', 'pending' as const],
   ['failed', undefined],
-])('while /first-run is %s, "New sale" draws normally, with no line', async (_name, firstRun) => {
-  renderShell([HOME], { firstRun })
+])('while /first-run is %s, the rail\'s "New sale" draws normally, with no line', async (_name, firstRun) => {
+  renderShell([HOME], { computer: true, firstRun })
 
   const links = screen.getAllByRole('link', { name: /New sale/ })
-  expect(links).toHaveLength(2)
+  expect(links).toHaveLength(1)
   for (const link of links) expect(link).not.toHaveAttribute('aria-describedby')
   await new Promise((resolve) => setTimeout(resolve, 20))
   expect(screen.queryByText(MISSING_LINE)).not.toBeInTheDocument()
@@ -573,27 +605,51 @@ test('a form shows no "New sale", so it asks nothing of /first-run', async () =>
   expect(vi.mocked(fetch)).not.toHaveBeenCalled()
 })
 
-// The fixed bar and the floating "+ New sale" (GH-319): the markup the phone CSS pins.
-test.each([
-  ['a root', HOME, true],
-  ['a root: Análisis', ANALYSIS, true],
-  ['a card on the phone: Gastos', EXPENSES, false],
-  ['a card: a sale', pathTo(SALE, { id: 7 }), false],
-  ['a form: the sale', SALE_NEW, false],
-])('%s: "New sale" and its missing line float as one group only on a root (%s)', async (_kind, path, grouped) => {
-  const { container } = renderShell([path], { firstRun: checklist(false) })
+// The bar's +: a link to a blank New sale (GH-727), never a tab, on every screen that shows the bar.
+test('the + is a link named "Vender" to New sale, opens a dialog and is described by describeNewSale(OTHER_RECORDS)', () => {
+  const { container } = renderShell([HOME])
 
-  await screen.findAllByText(MISSING_LINE).catch(() => [])
-  const group = container.querySelector('.nueva-venta-flotante')
-  expect(group !== null).toBe(grouped)
-  if (group !== null) {
-    expect(group.querySelector('a.boton-nueva-venta')).not.toBeNull()
-    expect(group.querySelector('.nueva-venta__falta')).not.toBeNull()
-  }
-  // The missing line never sits outside the group on the phone.
-  for (const line of container.querySelectorAll('.nueva-venta__falta:not(.nueva-venta__falta--escritorio)')) {
-    expect(line.closest('.nueva-venta-flotante')).not.toBeNull()
-  }
+  const plus = within(bar(container)).getByRole('link', { name: PLUS_NAME })
+  expect(plus).toHaveAttribute('href', SALE_NEW)
+  expect(plus).toHaveAttribute('aria-haspopup', 'dialog')
+  expect(plus).not.toHaveAttribute('aria-current')
+  expect(plus).toHaveTextContent('')
+  expect(plus.querySelector('svg')).not.toBeNull()
+  const description = describeNewSale(OTHER_RECORDS)
+  expect(description).not.toBeNull()
+  expect(plus).toHaveAccessibleDescription(description ?? '')
+  const describedBy = plus.getAttribute('aria-describedby')
+  expect(describedBy === null ? null : document.getElementById(describedBy)?.textContent).toBe(description)
+})
+
+test.each([
+  ['a root', HOME],
+  ['Analysis', ANALYSIS],
+  ['Expenses', EXPENSES],
+  ['a card: a sale', pathTo(SALE, { id: 7 }), ],
+  ['a card: a customer', pathTo(CUSTOMER, { id: 3 })],
+])('%s: the bar has exactly four tabs and the +, never marked, and nothing floats above it', (_kind, path) => {
+  const { container } = renderShell([path])
+
+  expect(within(bar(container)).getAllByRole('link')).toHaveLength(5)
+  expect(tabNames(bar(container))).toEqual(BAR)
+  expect(current(bar(container)).filter((name) => name === '')).toEqual([])
+  expect(within(bar(container)).getByRole('link', { name: PLUS_NAME })).not.toHaveAttribute('aria-current')
+  expect(screen.queryByText(MISSING_LINE)).not.toBeInTheDocument()
+})
+
+test('a form shows no bar and so no +', () => {
+  const { container } = renderShell([SALE_NEW])
+
+  expect(container.querySelector('.bar-inferior')).toBeNull()
+  expect(screen.queryByRole('link', { name: PLUS_NAME })).not.toBeInTheDocument()
+})
+
+test('the + never gets aria-current whichever tab is marked', () => {
+  const { container } = renderShell([VARIETIES])
+
+  expect(current(bar(container))).toEqual(['Products'])
+  expect(screen.getByRole('link', { name: PLUS_NAME })).not.toHaveAttribute('aria-current')
 })
 
 class FakeVisualViewport extends EventTarget {

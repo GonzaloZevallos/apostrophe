@@ -582,54 +582,103 @@ body {
 
 .bar-inferior {
   display: flex;
+  align-items: center;
   margin-inline: calc(-1 * var(--inset-izquierda)) calc(-1 * var(--inset-derecha));
-  padding: 14px calc(var(--espacio-sm) + var(--inset-derecha)) calc(20px + var(--inset-abajo))
-    calc(var(--espacio-sm) + var(--inset-izquierda));
+  padding: 14px var(--inset-derecha) calc(20px + var(--inset-abajo)) var(--inset-izquierda);
   border-top: 1px solid var(--linea);
 }
 
+/* The four tabs share what the + leaves, in equal parts: no side padding beyond the insets, no
+ * gap between slots. Each box is 44 px each way (`--alto-tocable`) or more. Where four equal parts
+ * no longer hold every label at 12 px, weight 600 (the width sizer below makes that the item's
+ * min-content), a tab takes the width its own label needs and the others share out what is left
+ * evenly: only then are the tabs unequal, and a tab's width is the same active or not. */
 .bar-inferior__item {
-  /* Sized by the label, then the spare room shared out: the longest word ("Variedades")
-   * never has to give up a letter to the shortest ("Ventas"). */
-  flex: 1 1 auto;
+  flex: 1 1 var(--alto-tocable);
   min-width: min-content;
   min-height: var(--alto-tocable);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 2px;
   text-decoration: none;
   color: var(--nav-inactivo);
   font-size: 0.6875rem;
   font-weight: 500;
 }
 
-/* A label is never clipped, cut with an ellipsis or broken mid-word: at 320 px with text at
- * 130 % the five words (the widest, "Variedades") fit side by side in the 304 px. */
+/* The + slot: a 52 px round box between the second tab and the third; it never grows or shrinks,
+ * so the tabs never spill over it. Tokens only: the --acento circle, a --papel ring and a soft
+ * shadow (both `box-shadow`, so they take no room), lifted above the bar's top edge by
+ * `--plus-lift` with `translate`, which moves the paint and never the box. The tap highlight is
+ * off and a tap selects nothing (`touch-action` is set on `.bar-inferior a` further down). */
+.bar-inferior__mas {
+  flex: none;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--plus-size);
+  height: var(--plus-size);
+  border-radius: var(--radio-pildora);
+  background: var(--acento);
+  color: var(--boton-texto);
+  box-shadow:
+    0 0 0 var(--plus-ring) var(--papel),
+    0 4px 12px color-mix(in srgb, var(--tinta) 22%, transparent);
+  translate: 0 calc(-1 * var(--plus-lift));
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bar-inferior__mas:active {
+  translate: 0 calc(-1 * var(--plus-lift) + 1px);
+  filter: brightness(0.92);
+}
+
+/* The + 's description: read by `aria-describedby`, never drawn. */
+.bar-inferior__mas-descripcion {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* A label is never clipped, cut with an ellipsis or broken mid-word. */
 .bar-inferior__item > span {
   text-align: center;
   line-height: 1.15;
 }
 
-/* Not color alone (README, accessibility rule 2): the active item is also bold,
- * same as the design's own bottom bar (`Inicio.dc.html`: `font-weight: 600` on the
- * active label, the default weight on the rest). */
-.bar-inferior__item--activo {
-  color: var(--tinta);
-  font-weight: 700;
+/* The width sizer: the label drawn again at the active weight, hidden and with no height, so the
+ * tab's box is the same whether or not it is active. It is generated content, not a DOM text
+ * node, and the empty alternative keeps it out of the accessibility tree. */
+.bar-inferior__item > span::after {
+  content: attr(data-label) / '';
+  display: block;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  font-weight: 600;
 }
 
-/* The mark is more than color: the icon is drawn filled and the label underlined
- * (`Variedades.dc.html`'s active tab). */
+/* Not color alone (README, accessibility rule 2): the active item is --acento, bold (weight 600,
+ * the width the sizer above already reserves) and drawn filled; no underline. */
+.bar-inferior__item--activo {
+  color: var(--acento);
+  font-weight: 600;
+}
+
 .bar-inferior__item--activo svg {
   fill: currentColor;
-  stroke: none;
-}
-
-.bar-inferior__item--activo > span {
-  box-shadow: 0 2px 0 var(--tinta);
-  padding-bottom: 2px;
+  stroke: currentColor;
 }
 
 /* The "‹ parent" arrow a card shows above its own header (`navigation.md`,
@@ -884,19 +933,12 @@ body {
   box-shadow: inset 2px 0 0 var(--acento);
 }
 
-/* The fixed "Nueva venta" button (accounts.md, "Shell"): a pill above the bottom
- * bar on the phone, matching `.boton`'s own shape (`Inicio.dc.html`). Its
- * `--escritorio` twin sits above the side rail's items instead (`InicioCompu.dc.html`)
- * and is hidden until the `min-width: 900px` query below swaps which one shows,
- * the same switch `.bar-inferior`/`.riel-lateral` already make. */
+/* The computer rail's "Nueva venta" button (accounts.md, "Shell"): the `--escritorio` twin sits
+ * above the side rail's items (`InicioCompu.dc.html`) and is hidden until the `min-width: 900px`
+ * query below swaps which one shows, the same switch `.bar-inferior`/`.riel-lateral` already
+ * make. The phone's entry is the bar's + (`.bar-inferior__mas`). */
 .boton-nueva-venta {
   margin: 0 var(--margen-pantalla) var(--espacio-md);
-}
-
-/* The phone's floating group (`Shell.tsx`) is a box only below 900 px; elsewhere it takes no part
- * in the layout, so the computer keeps the markup's old flow. */
-.nueva-venta-flotante {
-  display: contents;
 }
 
 .boton-nueva-venta--escritorio {
@@ -5135,36 +5177,30 @@ a.ajustes-tema__opcion {
   }
 }
 
-/* The phone's fixed chrome (GH-319): the bar is fixed to the bottom on tab roots and cards, and
- * "+ New sale" with its missing line floats just above it, on tab roots only. One token,
- * `--bottom-chrome-height` (the bar, the button group and the home-bar inset), feeds the content's
- * bottom padding, the group's `bottom` and the toast's `bottom`; no rule below states those heights
- * again. `html:has(...)` switches the parts on, so the toast (drawn outside the column) reads the
- * same token. A form or a sheet has no bar and no group, so its token is the inset alone, plus the
- * sheet's pinned action under a sheet. */
+/* The phone's fixed chrome (GH-319, GH-727): the bar is fixed to the bottom on every screen that is
+ * not a form, and its round + stands above the bar's top edge. One token, `--bottom-chrome-height`
+ * (the bar, the + 's overhang, a sheet's pinned action and the home-bar inset), feeds the content's
+ * bottom padding and the bottom of everything drawn above the bar (the toast, a card's pinned
+ * footer); no rule below states those heights again. `html:has(...)` switches the parts on, so the
+ * toast (drawn outside the column) reads the same token; the overhang is switched on in the very
+ * selector that sets `--bar-height`, so it exists only where the bar does. A form or a sheet has no
+ * bar, so its token is the inset alone, plus the sheet's pinned action under a sheet. */
 @media (max-width: 899.98px) {
   :root {
+    --plus-size: 52px;
+    --plus-ring: 4px;
+    --plus-lift: 10px;
     --bar-height: 0px;
-    --group-height: 0px;
+    --plus-overhang: 0px;
     --sheet-actions-height: 0px;
-    --missing-line-height: 2rem;
     --bottom-chrome-height: calc(
-      var(--bar-height) + var(--group-height) + var(--sheet-actions-height) + var(--inset-abajo)
+      var(--bar-height) + var(--plus-overhang) + var(--sheet-actions-height) + var(--inset-abajo)
     );
   }
 
   html:has(.bar-inferior) {
     --bar-height: calc(var(--alto-tocable) + 28px);
-  }
-
-  html:has(.nueva-venta-flotante) {
-    --group-height: calc(var(--alto-boton) + var(--espacio-md));
-  }
-
-  html:has(.nueva-venta-flotante .nueva-venta__falta) {
-    --group-height: calc(
-      var(--alto-boton) + var(--espacio-md) + var(--espacio-xs) + var(--missing-line-height)
-    );
+    --plus-overhang: calc(var(--plus-lift) + var(--plus-ring));
   }
 
   html:has(.sheet) {
@@ -5184,8 +5220,7 @@ a.ajustes-tema__opcion {
     box-sizing: border-box;
     height: calc(var(--bar-height) + var(--inset-abajo));
     margin-inline: 0;
-    padding: 8px calc(var(--espacio-sm) + var(--inset-derecha)) calc(12px + var(--inset-abajo))
-      calc(var(--espacio-sm) + var(--inset-izquierda));
+    padding: 8px var(--inset-derecha) calc(12px + var(--inset-abajo)) var(--inset-izquierda);
     background: var(--papel);
   }
 
@@ -5193,43 +5228,33 @@ a.ajustes-tema__opcion {
     font-size: 0.75rem;
   }
 
-  .nueva-venta-flotante {
-    position: fixed;
-    left: var(--inset-izquierda);
-    right: var(--inset-derecha);
-    bottom: calc(var(--bottom-chrome-height) - var(--group-height));
-    z-index: 5;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    gap: var(--espacio-xs);
-    padding: 0 var(--margen-pantalla) var(--espacio-md);
-    /* The strip around the button is not a target: only the button and its line are. */
-    pointer-events: none;
-  }
+  /* Too narrow for every tab to keep both its visible label and 44 px (Human Decision 3, GH-789):
+   * four labels at 12 px, weight 600, the 52 px + and a 44 px box for each of Home and Sales need
+   * 44 + 44 + 52 + 65 + 53 = 258 px (measured in `e2e/barFit.spec.ts`), so below 258 px the 44 px
+   * minimum wins and the bar shows icons only. The label stays in the DOM, visually hidden, so each
+   * tab keeps its accessible name; nothing is shrunk, cut or renamed, and no tab is under 44 px.
+   * (A viewport this narrow has no side insets, so the viewport is the bar's width.) */
+  @media (max-width: 257.98px) {
+    .bar-inferior__item {
+      min-width: var(--alto-tocable);
+    }
 
-  .nueva-venta-flotante > * {
-    pointer-events: auto;
-  }
-
-  .nueva-venta-flotante .boton-nueva-venta {
-    margin: 0;
-  }
-
-  .nueva-venta-flotante .nueva-venta__falta {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-    height: var(--missing-line-height);
-    margin: 0;
-    line-height: 1.25;
+    .bar-inferior__item > span {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
   }
 
   /* A text keyboard is up: hidden and untappable, never pushed above it. The padding stays, so
    * nothing shifts. */
-  .disposicion[data-teclado='abierto'] .bar-inferior,
-  .disposicion[data-teclado='abierto'] .nueva-venta-flotante {
+  .disposicion[data-teclado='abierto'] .bar-inferior {
     visibility: hidden;
     pointer-events: none;
   }
@@ -5239,8 +5264,8 @@ a.ajustes-tema__opcion {
     bottom: var(--bottom-chrome-height);
   }
 
-  /* Toasts only move: they sit above the bar and the button, above a sheet's pinned action, and
-   * over the sheet itself. */
+  /* Toasts only move: they sit above the bar and the +, above a sheet's pinned action, and over the
+   * sheet itself. */
   .aviso-flotante {
     top: auto;
     bottom: calc(var(--bottom-chrome-height) + var(--espacio-md));
@@ -6232,7 +6257,7 @@ a.ajustes-tema__opcion {
   outline: none;
 }
 
-/* The missing line under "+ Nueva venta", tokens only. */
+/* The missing line under the rail's "+ Nueva venta", tokens only. */
 .nueva-venta__falta {
   display: block;
   margin: calc(-1 * var(--espacio-sm) + var(--espacio-xs)) var(--margen-pantalla) var(--espacio-md);
@@ -6381,25 +6406,6 @@ a.ajustes-tema__opcion {
   .fila-venta__cuerpo {
     order: 3;
     flex: 1 0 100%;
-  }
-}
-
-/* At 246 px the five items need the whole bar: no side padding beyond the insets, and each
- * item at least 44 px wide (its label can still make it wider). */
-@media (max-width: 299.98px) {
-  .bar-inferior {
-    padding-inline: var(--inset-izquierda) var(--inset-derecha);
-  }
-
-  .bar-inferior__item {
-    flex: 1 1 44px;
-    min-width: min-content;
-  }
-
-  /* Geist is wider than the face this bar was sized for: a hair of tightening on the labels
-   * keeps the three short items at 44 px beside "Customers" and "Varieties". */
-  .bar-inferior__item > span {
-    letter-spacing: -0.02em;
   }
 }
 

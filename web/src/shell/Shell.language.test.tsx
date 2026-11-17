@@ -93,9 +93,10 @@ test('on the phone a root re-renders a bar label, "New sale" and the nav name in
   const { container } = renderShell(HOME, false)
   const bar = container.querySelector('.bar-inferior') as HTMLElement
   const barLabel = within(bar).getByText('Sales')
-  // Both surfaces are in the DOM (CSS picks one), so both draw "New sale".
+  // Both surfaces are in the DOM (CSS picks one): the rail draws "New sale", the bar its + ("Vender").
   const newSales = screen.getAllByRole('link', { name: 'New sale' })
-  expect(newSales).toHaveLength(2)
+  expect(newSales).toHaveLength(1)
+  const plus = within(bar).getByRole('link', { name: 'Vender' })
   expect(bar).toHaveAttribute('aria-label', 'Navigation')
   installGerman()
 
@@ -107,10 +108,11 @@ test('on the phone a root re-renders a bar label, "New sale" and the nav name in
     expect(newSale).toHaveTextContent('de:newSale')
     expect(newSale.isConnected).toBe(true)
   }
+  expect(plus).toHaveAttribute('aria-label', 'de:newSaleFabName')
   expect(bar).toHaveAttribute('aria-label', 'de:navigation')
   expect(container).not.toHaveTextContent('Sales')
   expect(container).not.toHaveTextContent('New sale')
-  noMissesFor(['common:sales', 'common:newSale', 'shell:navigation'])
+  noMissesFor(['common:sales', 'common:newSale', 'common:newSaleFabName', 'shell:navigation'])
 })
 
 test("on the phone a card re-renders its back arrow's registry parent word in the same node", async () => {

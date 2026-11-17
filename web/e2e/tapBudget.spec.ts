@@ -38,7 +38,7 @@ import { watchConsole } from './console.js'
 import { seedRecords, signUp } from './helpers/seed.js'
 import { uniqueTag } from './helpers/unique.js'
 import { servedCountry } from './helpers/phoneCountries.js'
-import { bottomBar } from './helpers/chrome.js'
+import { bottomBar, newSaleEntry } from './helpers/chrome.js'
 
 
 const PHONE = { width: 390, height: 844 }
@@ -198,12 +198,13 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
           page.locator('.riel-lateral').getByRole('link', { name: /New sale$/ }),
           label,
         ).toHaveCount(0)
-      } else if (!computer && root === EXPENSES) {
-        // On the phone Gastos is a card under Analysis: a card never shows "+ New sale", so
-        // the sale is not one tap from here; the computer, where it stays a root, measures it.
-        await expect(page.getByRole('link', { name: /New sale$/ }), label).toHaveCount(0)
       } else {
-        await tap(counter, page.getByRole('link', { name: /New sale$/ }).filter({ visible: true }).first())
+        // The phone's entry is the bar's + (shown on every screen with the bar, Gastos included);
+        // the computer's is the rail's "New sale".
+        await tap(
+          counter,
+          computer ? page.getByRole('link', { name: /New sale$/ }).filter({ visible: true }).first() : newSaleEntry(page),
+        )
         await expectPath(page, SALE_NEW)
         measure(`sale ${root}`, device, counter.taps)
       }
@@ -279,8 +280,8 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
 
   expect(Object.keys(taps).length).toBeGreaterThan(10)
   for (const [key, { phone, computer }] of Object.entries(taps)) {
-    if (key === `sale ${EXPENSES}` || key === `settings ${EXPENSES}`) {
-      // Phone-less on purpose (a card shows no "+ New sale" and no Settings avatar): the computer's one tap stands alone.
+    if (key === `settings ${EXPENSES}`) {
+      // Phone-less on purpose (a card shows no Settings avatar): the computer's one tap stands alone.
       expect(phone, `phone: ${key}`).toBe(0)
       expect(computer, `computer: ${key}`).toBe(1)
       continue

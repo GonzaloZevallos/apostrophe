@@ -38,13 +38,16 @@ import {
   CUSTOMERS,
   SETTINGS,
   VARIETIES,
+  type BarPlace,
   type RailPlace,
 } from '../routes'
 import BrandMark from '../components/BrandMark'
 import BotonLink from '../components/BotonLink'
-import { NUEVA_VENTA_CLASS, NUEVA_VENTA_ESCRITORIO_CLASS } from '../components/botonVisual'
+import { NUEVA_VENTA_ESCRITORIO_CLASS } from '../components/botonVisual'
 import BackArrow from './BackArrow'
 import { NO_PRICE_HINT } from '../copy/sales'
+import { describeNewSale } from '../copy/readers/newSaleDescription'
+import { OTHER_RECORDS } from '../sales/otherRecords'
 import { chromeOf } from './chrome'
 import { initialsOf } from '../format/initials'
 import { BackParentContext, type BackParentSlot, type BackParentStore } from './useBackParent'
@@ -106,9 +109,24 @@ function railClassName(item: Item, active: boolean): string {
   return active ? `${base} riel-lateral__item--activo` : base
 }
 
-/** One bottom-bar entry; `active` is the registry's mark, not a path comparison. */
+/** The bar's five slots, in order: a tab, or the round + that starts a sale between the second
+ * tab and the third. The + is never a tab, so it is never marked and `BAR_ITEMS` stays four. */
+type BarSlot = { kind: 'tab'; item: Item } | { kind: 'newSale' }
+
+const BAR_TABS_BEFORE_PLUS = 2
+
+const BAR_SLOTS: BarSlot[] = [
+  ...BAR_ITEMS.slice(0, BAR_TABS_BEFORE_PLUS).map((item): BarSlot => ({ kind: 'tab', item })),
+  { kind: 'newSale' },
+  ...BAR_ITEMS.slice(BAR_TABS_BEFORE_PLUS).map((item): BarSlot => ({ kind: 'tab', item })),
+]
+
+/** One bottom-bar entry; `active` is the registry's mark, not a path comparison. The label is
+ * also the `data-label` of its span: CSS draws it again, hidden, at the active weight, so the
+ * tab is as wide inactive as active without a second text node. */
 function BarItem({ item, active }: { item: Item; active: boolean }) {
   const { t } = useTranslation()
+  const label = t(item.labelKey)
   return (
     <Link
       to={item.to}
@@ -116,9 +134,48 @@ function BarItem({ item, active }: { item: Item; active: boolean }) {
       className={active ? 'bar-inferior__item bar-inferior__item--activo' : 'bar-inferior__item'}
     >
       {item.icono !== undefined && <Icono nombre={item.icono} />}
-      <span>{t(item.labelKey)}</span>
+      <span data-label={label}>{label}</span>
     </Link>
   )
+}
+
+const PLUS_DESCRIPTION_ID = 'bar-mas-descripcion'
+
+/** The bar's +: a link to a blank New sale, never a tab, so never marked. It draws an icon and no
+ * text; its name is `common:newSaleFabName` and its description, when there is one, is a hidden
+ * element `aria-describedby` points to (`describeNewSale(OTHER_RECORDS)`). */
+function BarPlus() {
+  const { t } = useTranslation()
+  const description = describeNewSale(OTHER_RECORDS)
+  return (
+    <>
+      <BotonLink
+        to={SALE_NEW}
+        icon="agregar"
+        className="bar-inferior__mas"
+        ariaLabel={t('common:newSaleFabName')}
+        ariaHasPopup="dialog"
+        ariaDescribedBy={description === null ? undefined : PLUS_DESCRIPTION_ID}
+      >
+        {null}
+      </BotonLink>
+      {description !== null && (
+        <span className="bar-inferior__mas-descripcion" id={PLUS_DESCRIPTION_ID}>
+          {description}
+        </span>
+      )}
+    </>
+  )
+}
+
+/** One slot of the bar. */
+function BarSlotView({ slot, barPlace }: { slot: BarSlot; barPlace: BarPlace }) {
+  switch (slot.kind) {
+    case 'tab':
+      return <BarItem item={slot.item} active={barPlace === slot.item.place} />
+    case 'newSale':
+      return <BarPlus />
+  }
 }
 
 /** The one slot a record-labelled card's `useBackParent` writes and `BackArrow` reads. */
@@ -133,11 +190,10 @@ function useBackParentStore(): BackParentStore {
   return useMemo(() => ({ slot, write, clearIf }), [slot, write, clearIf])
 }
 
-const NUEVA_VENTA_MISSING_ID = 'nueva-venta-falta'
 const RAIL_MISSING_ID = 'nueva-venta-falta-riel'
 
 /** Whether `GET /first-run` says the checklist shows with its priced-variety step not done.
- * Asked only where "+ Nueva venta" is drawn; while pending or failed it is `false`, so the
+ * Asked only where the rail's "+ Nueva venta" is drawn (the computer); the phone's + reads nothing from it; while pending or failed it is `false`, so the
  * button draws normally. The shell decides nothing: it shows the server's answer. */
 function useNuevaVentaMissing(enabled: boolean): boolean {
   const data = actionableFirstRun(useQuery({ ...firstRunQuery, enabled }))
@@ -153,13 +209,13 @@ export default function Shell() {
   const leaf = useLeafScreen()
   const barPlace = placeOf(leaf.id, 'phone').bar
   const railPlace = placeOf(leaf.id, 'computer').rail
-  const chrome = chromeOf(leaf, useViewport())
+  const viewport = useViewport()
+  const chrome = chromeOf(leaf, viewport)
   const backParent = useBackParentStore()
   const layoutRef = useRef<HTMLDivElement>(null)
   // The shell hides its bar and button while a text keyboard is up (ADR-0028); it pins nothing.
   useVisualViewport(layoutRef, { fixedForm: false })
-  const missing = useNuevaVentaMissing(chrome.railNuevaVenta || chrome.barNuevaVenta)
-  const barDescribedBy = missing ? NUEVA_VENTA_MISSING_ID : undefined
+  const missing = useNuevaVentaMissing(viewport === 'computer' && chrome.railNuevaVenta)
   const railDescribedBy = missing ? RAIL_MISSING_ID : undefined
 
   return (
@@ -223,22 +279,10 @@ export default function Shell() {
       <div className={chrome.bar ? 'columna-principal' : 'columna-principal columna-principal--sin-bar'}>
           {chrome.backArrow && <BackArrow id={leaf.id} />}
           <Outlet context={me} />
-          {chrome.barNuevaVenta && (
-            <div className="nueva-venta-flotante">
-              <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_CLASS} ariaDescribedBy={barDescribedBy}>
-                {t('common:newSale')}
-              </BotonLink>
-              {missing && (
-                <span className="nueva-venta__falta" id={NUEVA_VENTA_MISSING_ID}>
-                  {NO_PRICE_HINT}
-                </span>
-              )}
-            </div>
-          )}
           {chrome.bar && (
             <nav className="bar-inferior" aria-label={t('shell:navigation')} data-menu>
-              {BAR_ITEMS.map((item) => (
-                <BarItem key={item.to} item={item} active={barPlace === item.place} />
+              {BAR_SLOTS.map((slot) => (
+                <BarSlotView key={slot.kind === 'tab' ? slot.item.to : slot.kind} slot={slot} barPlace={barPlace} />
               ))}
             </nav>
           )}

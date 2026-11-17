@@ -21,6 +21,5 @@
   "^src/components/SelectorTestHost\\.tsx$",
   "^src/components/Selector\\.tsx$",
   "^src/components/selectorSearch\\.ts$",
-  "^src/phone/served\\.fixture\\.ts$",
-  "^src/copy/readers/newSaleDescription\\.ts$"
+  "^src/phone/served\\.fixture\\.ts$"
 ]

@@ -412,11 +412,12 @@ describe('the actions and the sections', () => {
     expect(screen.getByRole('link', { name: 'New price' })).toHaveAttribute('href', pathTo(VARIETY_PRICE_NEW, { id: 1 }))
   })
 
-  test('the page is a detail: "‹ Products" and no "+ New sale"', async () => {
+  test('the page is a detail: "‹ Products", the bar with its +, and no rail "+ New sale"', async () => {
     const { router } = renderPage(VARIETY_ONE)
 
     const back = await screen.findByRole('button', { name: '‹ Products' })
-    expect(screen.queryByText(/New sale/)).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Vender' })).toBeInTheDocument()
     expect(screen.getAllByRole('navigation').length).toBeGreaterThan(0)
     await userEvent.click(back)
     await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES))

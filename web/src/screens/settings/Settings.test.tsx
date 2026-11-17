@@ -71,23 +71,25 @@ test('lists exactly the nine groups in order, each a link to its own route', asy
   expect(links.map((link) => link.getAttribute('href'))).toEqual(GROUPS.map(([, path]) => path))
 })
 
-test('shows the bar and no "+ Nueva venta"', async () => {
+test('shows the bar with its + (Vender) and no "+ New sale" link', async () => {
   stubComputer(false)
   const { container } = renderApp([SETTINGS])
 
   await screen.findByRole('navigation', { name: 'Settings' })
 
   expect(container.querySelector('.bar-inferior')).not.toBeNull()
+  expect(screen.getByRole('link', { name: 'Vender' })).toBeInTheDocument()
   expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
 })
 
-test('a group route shows no bar and no "+ Nueva venta"', async () => {
+test('a group route shows no bar and no + (Vender)', async () => {
   stubComputer(false)
   const { container } = renderApp([SETTINGS_BUSINESS])
 
   await screen.findByRole('button', { name: 'Close' })
 
   expect(container.querySelector('.bar-inferior')).toBeNull()
+  expect(screen.queryByRole('link', { name: 'Vender' })).not.toBeInTheDocument()
   expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
 })
 

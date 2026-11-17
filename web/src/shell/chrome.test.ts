@@ -8,15 +8,15 @@ import { expect, test } from 'vitest'
 import { kindOf, SCREENS, screen as declare, screenOf, type ScreenId } from '../routes'
 import { chromeOf, type Chrome } from './chrome'
 
-const ROOT: Chrome = { rail: true, railNuevaVenta: true, barNuevaVenta: true, bar: true, backArrow: false }
-const CARD: Chrome = { rail: true, railNuevaVenta: false, barNuevaVenta: false, bar: true, backArrow: true }
-const FORM: Chrome = { rail: true, railNuevaVenta: false, barNuevaVenta: false, bar: false, backArrow: false }
+const ROOT: Chrome = { rail: true, railNuevaVenta: true, bar: true, backArrow: false }
+const CARD: Chrome = { rail: true, railNuevaVenta: false, bar: true, backArrow: true }
+const FORM: Chrome = { rail: true, railNuevaVenta: false, bar: false, backArrow: false }
 const MODAL_FORM: Chrome = { ...FORM, rail: false }
 /** Gastos: a card under Análisis on the phone, a root of the side rail on a computer. The rail
  * and the bar are both in the markup, so each keeps the flags of its own viewport's kind. */
 const CARD_ON_PHONE: readonly [Chrome, Chrome] = [
-  { rail: true, railNuevaVenta: true, barNuevaVenta: false, bar: true, backArrow: true },
-  { rail: true, railNuevaVenta: true, barNuevaVenta: false, bar: true, backArrow: false },
+  { rail: true, railNuevaVenta: true, bar: true, backArrow: true },
+  { rail: true, railNuevaVenta: true, bar: true, backArrow: false },
 ]
 
 /** Phone, then computer; the same on both unless a row says otherwise. */
@@ -112,13 +112,13 @@ test('only the explicit modalOnComputer hides the rail, and only on a computer',
   expect(chromeOf(plainForm, 'computer').rail).toBe(true)
 })
 
-test('no form, on either viewport, shows "+ Nueva venta" in the rail or on the bar', () => {
+test('no form, on either viewport, shows "+ Nueva venta" in the rail or the bar', () => {
   const forms = SCREENS.filter((entry) => kindOf(entry, 'phone') === 'form' && kindOf(entry, 'computer') === 'form')
   expect(forms.length).toBeGreaterThan(0)
   for (const form of forms) {
     for (const viewport of ['phone', 'computer'] as const) {
       const chrome = chromeOf(form, viewport)
-      expect({ id: form.id, viewport, rail: chrome.railNuevaVenta, bar: chrome.barNuevaVenta }).toEqual({
+      expect({ id: form.id, viewport, rail: chrome.railNuevaVenta, bar: chrome.bar }).toEqual({
         id: form.id,
         viewport,
         rail: false,

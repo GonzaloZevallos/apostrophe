@@ -242,9 +242,11 @@ describe('the list', () => {
 
     await screen.findByText('24K Gold')
     const bar = screen.getAllByRole('navigation', { name: 'Navigation' }).at(-1) as HTMLElement
-    expect(within(bar).getAllByRole('link').map((link) => link.textContent)).toEqual([
+    // Four tabs and, between the second and the third, the round + (named, with no text).
+    expect(within(bar).getAllByRole('link').map((link) => link.getAttribute('aria-label') ?? link.textContent)).toEqual([
       'Home',
       'Sales',
+      'Vender',
       'Customers',
       'Products',
     ])

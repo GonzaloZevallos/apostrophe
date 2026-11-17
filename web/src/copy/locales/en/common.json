@@ -123,5 +123,6 @@
   "homeSegmentAnalysis": "Analysis",
   "seeExpenses": "See expenses",
   "recordExpense": "Record expense",
-  "newSaleFabDescription": "Opens New sale. You can also record an expense from there."
+  "newSaleFabDescription": "Opens New sale. You can also record an expense from there.",
+  "newSaleFabName": "Vender"
 }
