@@ -4,8 +4,8 @@
  * (`e2e/mobile/collectChrome.ts`) reports facts only, and `judgeChrome` alone turns them
  * into `Violation`s.
  *
- * - tab root: the bar and "+ New sale";
- * - card or detail: the bar, no "+ New sale";
+ * - tab root: the bar and its + (the new-sale entry);
+ * - card or detail: the bar and its + too (a card's own "New sale to <name>" is a separate action);
  * - form: neither;
  * - signed out (getting-in screens, flagged on the screen or state): neither;
  * - the header wherever the screen has one: absent is fine, present must be in view.

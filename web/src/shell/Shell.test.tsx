@@ -275,20 +275,23 @@ test.each([
 test.each([
   ['the catalog on a phone', CATALOG, false, '‹ Products'],
   ['the catalog on a computer', CATALOG, true, '‹ Products'],
-])('a card (%s) shows its "‹ parent" arrow and never "+ Nueva venta"', (_name, path, computer, arrow) => {
+])('a card (%s) shows its "‹ parent" arrow; it has the bar\'s + and no "+ New sale"', (_name, path, computer, arrow) => {
   renderShell([path], { computer })
 
   expect(screen.getByRole('button', { name: arrow })).toBeInTheDocument()
   expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
+  // The bar stays in the markup on a computer (CSS hides it); the + is the phone's entry.
+  expect(screen.getByRole('link', { name: PLUS_NAME })).toBeInTheDocument()
 })
 
 // A variety's back names the loaded record, so the shell shows no arrow for it until its screen
-// declares one (never a bare '‹' or the registry's 'Product'); it still shows no "New sale".
-test('a card that is a variety on a phone shows no arrow before its screen declares one, and no "New sale"', () => {
+// declares one (never a bare '‹' or the registry's 'Product'); it shows the bar's + all the same.
+test('a card that is a variety on a phone shows no arrow before its screen declares one, and has the bar\'s +', () => {
   renderShell([pathTo(VARIETY, { id: 2 })])
 
   expect(screen.queryByRole('button', { name: /^‹ / })).not.toBeInTheDocument()
   expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
+  expect(screen.getByRole('link', { name: PLUS_NAME })).toBeInTheDocument()
 })
 
 test.each([
@@ -300,6 +303,7 @@ test.each([
   expect(container.querySelector('.bar-inferior')).toBeNull()
   expect(screen.queryByRole('button', { name: /^‹ / })).not.toBeInTheDocument()
   expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: PLUS_NAME })).not.toBeInTheDocument()
 })
 
 test('the price form on a computer draws no side rail, and on a phone the rail stays in the markup', () => {
@@ -313,10 +317,11 @@ test('the price form on a computer draws no side rail, and on a phone the rail s
   expect(other.container.querySelector('.riel-lateral')).not.toBeNull()
 })
 
-test('on a phone a detail pane has no "New sale" at all', () => {
+test('on a phone a detail pane has the bar\'s + and no "+ New sale" link', () => {
   renderShell([pathTo(VARIETY, { id: 2 })])
 
   expect(screen.queryAllByRole('link', { name: /New sale/ })).toHaveLength(0)
+  expect(screen.getAllByRole('link', { name: PLUS_NAME })).toHaveLength(1)
 })
 
 test.each([

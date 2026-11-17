@@ -186,7 +186,8 @@ interface Slot {
 async function measureSlots(page: Page): Promise<Slot[]> {
   return page.locator(BOTTOM_BAR).evaluate(
     (bar, args) => {
-      return [...bar.children].map((slot): Slot => {
+      // Only the slots: the + 's hidden description is a child of the bar too, but it is never a slot.
+      return [...bar.children].filter((child) => child.matches(`${args.item}, ${args.plus}`)).map((slot): Slot => {
         const box = slot.getBoundingClientRect()
         const label = slot.querySelector('span')
         if (!slot.matches(args.item) || label === null) {
@@ -201,7 +202,7 @@ async function measureSlots(page: Page): Promise<Slot[]> {
         return { kind: 'tab', label: label.textContent ?? '', width: box.width, height: box.height, labelWidth }
       })
     },
-    { item: BOTTOM_BAR_ITEM, weight: LABEL_WEIGHT },
+    { item: BOTTOM_BAR_ITEM, plus: BOTTOM_BAR_PLUS, weight: LABEL_WEIGHT },
   )
 }
 
